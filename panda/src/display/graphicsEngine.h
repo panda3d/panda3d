@@ -107,7 +107,8 @@ public:
     TS_do_flip,
     TS_do_release,
     TS_do_windows,
-    TS_terminate
+    TS_terminate,
+    TS_done
   };
 
   enum CallbackTime {
@@ -216,7 +217,8 @@ private:
 
     GraphicsEngine *_engine;
     Mutex _cv_mutex;
-    ConditionVar _cv;
+    ConditionVar _cv_start;
+    ConditionVar _cv_done;
     ThreadState _thread_state;
   };
 
@@ -243,6 +245,7 @@ private:
   FlipState _flip_state;
   Mutex _lock;
 
+  static PStatCollector _wait_pcollector;
   static PStatCollector _app_pcollector;
   static PStatCollector _yield_pcollector;
   static PStatCollector _cull_pcollector;

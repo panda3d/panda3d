@@ -24,7 +24,8 @@
      pStatClientVersion.cxx  \
      pStatClientControlMessage.cxx pStatCollectorDef.cxx  \
      pStatFrameData.cxx pStatProperties.cxx  \
-     pStatServerControlMessage.cxx 
+     pStatServerControlMessage.cxx \
+     pStatThread.cxx
 
   #define INSTALL_HEADERS \
     config_pstats.h pStatClient.I pStatClient.h \

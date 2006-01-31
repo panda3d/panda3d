@@ -16,6 +16,7 @@
 #include "error_utils.cxx"
 #include "encryptStreamBuf.cxx"
 #include "encryptStream.cxx"
+#include "externalThread.cxx"
 #include "hashGeneratorBase.cxx"
 #include "hashVal.cxx"
 #include "mainThread.cxx"

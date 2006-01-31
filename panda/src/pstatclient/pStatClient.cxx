@@ -29,6 +29,7 @@
 #include "pStatThread.h"
 #include "config_pstats.h"
 #include "pStatProperties.h"
+#include "thread.h"
 
 PStatCollector PStatClient::_total_size_pcollector("Memory usage");
 PStatCollector PStatClient::_cpp_size_pcollector("Memory usage:C++");
@@ -68,8 +69,8 @@ PStatClient() :
   //collector._def->_suggested_color.set(0.5, 0.5, 0.5);
   _collectors.push_back(collector);
 
-  // We also always have a thread at index 0 named "Main".
-  make_thread("Main");
+  // The main thread is always at index 0.
+  make_thread(Thread::get_main_thread());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,9 +149,8 @@ get_thread(int index) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::get_main_thread
 //       Access: Published
-//  Description: Returns a handle to the client's "Main", or default,
-//               thread.  This is where collectors will be started and
-//               stopped if they don't specify otherwise.
+//  Description: Returns a handle to the client's Main thread.  This
+//               is the thread that started the application.
 ////////////////////////////////////////////////////////////////////
 PStatThread PStatClient::
 get_main_thread() const {
@@ -158,10 +158,31 @@ get_main_thread() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::get_current_thread
+//       Access: Published
+//  Description: Returns a handle to the currently-executing thread.
+//               This is the thread that PStatCollectors will be
+//               counted in if they do not specify otherwise.
+////////////////////////////////////////////////////////////////////
+PStatThread PStatClient::
+get_current_thread() const {
+  Thread *thread = Thread::get_current_thread();
+  int thread_index = thread->get_pstats_index();
+  if (thread_index != -1) {
+    return PStatThread((PStatClient *)this, thread_index);
+  }
+
+  // This is the first time we have encountered this current Thread.
+  // Make a new PStatThread object for it.
+  return ((PStatClient *)this)->make_thread(thread);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::main_tick
 //       Access: Published, Static
 //  Description: A convenience function to call new_frame() on the
-//               global PStatClient's main thread.
+//               global PStatClient's main thread, and any other
+//               threads with a sync_name of "Main".
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 main_tick() {
@@ -186,18 +207,64 @@ main_tick() {
 }  
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::thread_tick
+//       Access: Published, Static
+//  Description: A convenience function to call new_frame() on any
+//               threads with the indicated sync_name
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+thread_tick(const string &sync_name) {
+  get_global_pstats()->client_thread_tick(sync_name);
+}  
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::client_main_tick
 //       Access: Published
 //  Description: A convenience function to call new_frame() on the
-//               the given client's main thread.
+//               given PStatClient's main thread, and any other
+//               threads with a sync_name of "Main".
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 client_main_tick() {
   ReMutexHolder holder(_lock);
   if (has_impl()) {
     _impl->client_main_tick();
+
+    MultiThingsByName::const_iterator ni =
+      _threads_by_sync_name.find("Main");
+    if (ni != _threads_by_sync_name.end()) {
+      const vector_int &indices = (*ni).second;
+      for (vector_int::const_iterator vi = indices.begin(); 
+           vi != indices.end(); 
+           ++vi) {
+        _impl->new_frame(*vi);
+      }
+    }
   }
-  get_main_thread().new_frame();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::client_thread_tick
+//       Access: Published
+//  Description: A convenience function to call new_frame() on all of
+//               the threads with the indicated sync name.
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+client_thread_tick(const string &sync_name) {
+  ReMutexHolder holder(_lock);
+
+  if (has_impl()) {
+    MultiThingsByName::const_iterator ni =
+      _threads_by_sync_name.find(sync_name);
+    if (ni != _threads_by_sync_name.end()) {
+      const vector_int &indices = (*ni).second;
+      for (vector_int::const_iterator vi = indices.begin(); 
+           vi != indices.end(); 
+           ++vi) {
+        _impl->new_frame(*vi);
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -347,35 +414,56 @@ make_collector_with_name(int parent_index, const string &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::make_thread
 //       Access: Private
-//  Description: Returns a PStatThread with the indicated name
-//               suitable for grouping collectors.  This is normally
-//               called by a PStatThread constructor.
+//  Description: Returns a PStatThread for the indicated Panda Thread
+//               object.  This is normally called by a PStatThread
+//               constructor.
 ////////////////////////////////////////////////////////////////////
 PStatThread PStatClient::
-make_thread(const string &name) {
+make_thread(Thread *thread) {
   ReMutexHolder holder(_lock);
 
-  ThingsByName::const_iterator ni =
-    _threads_by_name.find(name);
-
-  if (ni != _threads_by_name.end()) {
-    // We already had a thread by this name; return it.
-    int index = (*ni).second;
-    nassertr(index >= 0 && index < (int)_threads.size(), PStatThread());
-    return PStatThread(this, (*ni).second);
+  int thread_index = thread->get_pstats_index();
+  if (thread_index != -1) {
+    return PStatThread((PStatClient *)this, thread_index);
   }
 
-  // Create a new thread for this name.
+  MultiThingsByName::const_iterator ni =
+    _threads_by_name.find(thread->get_name());
+
+  if (ni != _threads_by_name.end()) {
+    // We have seen a thread with this name before.  Can we re-use any
+    // of them?
+    const vector_int &indices = (*ni).second;
+    for (vector_int::const_iterator vi = indices.begin(); 
+         vi != indices.end(); 
+         ++vi) {
+      int index = (*vi);
+      nassertr(index >= 0 && index < (int)_threads.size(), PStatThread());
+      if (_threads[index]._thread.was_deleted() &&
+          _threads[index]._sync_name == thread->get_sync_name()) {
+        // Yes, re-use this one.
+        _threads[index]._thread = thread;
+        thread->set_pstats_index(index);
+        return PStatThread(this, index);
+      }
+    }
+  }
+
+  // Create a new PStatsThread for this thread pointer.
   int new_index = _threads.size();
-  _threads_by_name.insert(ThingsByName::value_type(name, new_index));
+  thread->set_pstats_index(new_index);
+  _threads_by_name[thread->get_name()].push_back(new_index);
+  _threads_by_sync_name[thread->get_sync_name()].push_back(new_index);
+        
+  InternalThread pthread;
+  pthread._thread = thread;
+  pthread._name = thread->get_name();
+  pthread._sync_name = thread->get_sync_name();
+  pthread._is_active = false;
+  pthread._next_packet = 0.0;
+  pthread._frame_number = 0;
 
-  Thread thread;
-  thread._name = name;
-  thread._is_active = false;
-  thread._next_packet = 0.0;
-  thread._frame_number = 0;
-
-  _threads.push_back(thread);
+  _threads.push_back(pthread);
 
   // We need an additional PerThreadData for this thread in all of the
   // collectors.
@@ -508,10 +596,12 @@ stop(int collector_index, int thread_index) {
       _collectors[collector_index].is_active() &&
       _threads[thread_index]._is_active) {
     if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
-      pstats_cat.warning()
-        << "Collector " << get_collector_fullname(collector_index)
-        << " was already stopped in thread " << get_thread_name(thread_index)
-        << "!\n";
+      if (pstats_cat.is_debug()) {
+        pstats_cat.debug()
+          << "Collector " << get_collector_fullname(collector_index)
+          << " was already stopped in thread " << get_thread_name(thread_index)
+          << "!\n";
+      }
       return;
     }
 
@@ -546,10 +636,12 @@ stop(int collector_index, int thread_index, float as_of) {
       _collectors[collector_index].is_active() &&
       _threads[thread_index]._is_active) {
     if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
-      pstats_cat.warning()
-        << "Collector " << get_collector_fullname(collector_index)
-        << " was already stopped in thread " << get_thread_name(thread_index)
-        << "!\n";
+      if (pstats_cat.is_debug()) {
+        pstats_cat.debug()
+          << "Collector " << get_collector_fullname(collector_index)
+          << " was already stopped in thread " << get_thread_name(thread_index)
+          << "!\n";
+      }
       return;
     }
 

@@ -47,6 +47,7 @@ public:
 
 PUBLISHED:
   INLINE To *p() const;
+  INLINE To *get_orig() const;
 
   INLINE WeakPointerTo<T> &operator = (To *ptr);
   INLINE WeakPointerTo<T> &operator = (const PointerTo<T> &copy);
@@ -84,6 +85,7 @@ public:
 
 PUBLISHED:
   INLINE const To *p() const;
+  INLINE const To *get_orig() const;
 
   INLINE WeakConstPointerTo<T> &operator = (const To *ptr);
   INLINE WeakConstPointerTo<T> &operator = (const PointerTo<T> &copy);

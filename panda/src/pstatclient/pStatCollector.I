@@ -134,7 +134,11 @@ operator = (const PStatCollector &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PStatCollector::
 is_active() {
+#ifndef HAVE_THREADS
   return _client->is_active(_index, 0);
+#else  // HAVE_THREADS
+  return is_active(_client->get_current_thread());
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,7 +149,11 @@ is_active() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PStatCollector::
 is_started() {
+#ifndef HAVE_THREADS
   return _client->is_started(_index, 0);
+#else  // HAVE_THREADS
+  return is_started(_client->get_current_thread());
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,7 +164,11 @@ is_started() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 start() {
+#ifndef HAVE_THREADS
   _client->start(_index, 0);
+#else  // HAVE_THREADS
+  start(_client->get_current_thread());
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -167,7 +179,11 @@ start() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 stop() {
+#ifndef HAVE_THREADS
   _client->stop(_index, 0);
+#else  // HAVE_THREADS
+  stop(_client->get_current_thread());
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -180,7 +196,11 @@ stop() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 clear_level() {
+#ifndef HAVE_THREADS
   _client->clear_level(_index, 0);
+#else  // HAVE_THREADS
+  clear_level(_client->get_current_thread());
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,7 +212,11 @@ clear_level() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 set_level(float level) {
+#ifndef HAVE_THREADS
   _client->set_level(_index, 0, level);
+#else  // HAVE_THREADS
+  set_level(_client->get_current_thread(), level);
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -206,7 +230,11 @@ set_level(float level) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 add_level(float increment) {
+#ifndef HAVE_THREADS
   _client->add_level(_index, 0, increment);
+#else  // HAVE_THREADS
+  add_level(_client->get_current_thread(), increment);
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -220,7 +248,11 @@ add_level(float increment) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 sub_level(float decrement) {
-  _client->add_level(_index, 0, -decrement);
+#ifndef HAVE_THREADS
+  _client->sub_level(_index, 0, decrement);
+#else  // HAVE_THREADS
+  sub_level(_client->get_current_thread(), decrement);
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,12 +262,16 @@ sub_level(float decrement) {
 ////////////////////////////////////////////////////////////////////
 INLINE float PStatCollector::
 get_level() {
+#ifndef HAVE_THREADS
   return _client->get_level(_index, 0);
+#else  // HAVE_THREADS
+  return get_level(_client->get_current_thread());
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::is_active
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if this particular collector is active
 //               on the indicated thread, and we are currently
 //               transmitting PStats data.
@@ -247,7 +283,7 @@ is_active(const PStatThread &thread) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::is_started
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if this particular collector has been
 //               started on the indicated thread, or false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -258,7 +294,7 @@ is_started(const PStatThread &thread) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::start
-//       Access: Public
+//       Access: Published
 //  Description: Starts this timer ticking within a particular thread.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
@@ -268,7 +304,7 @@ start(const PStatThread &thread) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::start
-//       Access: Public
+//       Access: Published
 //  Description: Marks that the timer should have been started as of
 //               the indicated time.  This must be a time based on the
 //               PStatClient's clock (see PStatClient::get_clock()),
@@ -282,7 +318,7 @@ start(const PStatThread &thread, float as_of) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::stop
-//       Access: Public
+//       Access: Published
 //  Description: Stops this timer within a particular thread.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
@@ -292,7 +328,7 @@ stop(const PStatThread &thread) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::stop
-//       Access: Public
+//       Access: Published
 //  Description: Marks that the timer should have been stopped as of
 //               the indicated time.  This must be a time based on the
 //               PStatClient's clock (see PStatClient::get_clock()),
@@ -306,7 +342,7 @@ stop(const PStatThread &thread, float as_of) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::clear_level
-//       Access: Public
+//       Access: Published
 //  Description: Removes the level setting associated with this
 //               collector for the indicated thread.  The collector
 //               will no longer show up on any level graphs in this
@@ -319,7 +355,7 @@ clear_level(const PStatThread &thread) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::set_level
-//       Access: Public
+//       Access: Published
 //  Description: Sets the level setting associated with this
 //               collector for the indicated thread to the indicated
 //               value.
@@ -331,7 +367,7 @@ set_level(const PStatThread &thread, float level) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::add_level
-//       Access: Public
+//       Access: Published
 //  Description: Adds the indicated increment (which may be negative)
 //               to the level setting associated with this collector
 //               for the indicated thread.  If the collector did not
@@ -345,7 +381,7 @@ add_level(const PStatThread &thread, float increment) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::sub_level
-//       Access: Public
+//       Access: Published
 //  Description: Subtracts the indicated decrement (which may be
 //               negative) to the level setting associated with this
 //               collector for the indicated thread.  If the collector
@@ -359,7 +395,7 @@ sub_level(const PStatThread &thread, float decrement) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::get_level
-//       Access: Public
+//       Access: Published
 //  Description: Returns the current level value of the given collector.
 ////////////////////////////////////////////////////////////////////
 INLINE float PStatCollector::
@@ -369,7 +405,7 @@ get_level(const PStatThread &thread) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::get_index
-//       Access: Public
+//       Access: Published
 //  Description: Returns the index number of this particular collector
 //               within the PStatClient.
 ////////////////////////////////////////////////////////////////////

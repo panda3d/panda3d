@@ -1,5 +1,5 @@
-// Filename: mainThread.cxx
-// Created by:  drose (15Jan06)
+// Filename: externalThread.cxx
+// Created by:  drose (30Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,25 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "mainThread.h"
+#include "externalThread.h"
 
-TypeHandle MainThread::_type_handle;
+TypeHandle ExternalThread::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MainThread::Constructor
+//     Function: ExternalThread::Constructor
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-MainThread::
-MainThread() : Thread("Main", "Main") {
+ExternalThread::
+ExternalThread() : Thread("External", "External") {
   _started = true;
 }
  
 ////////////////////////////////////////////////////////////////////
-//     Function: MainThread::thread_main
+//     Function: ExternalThread::thread_main
 //       Access: Private, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void MainThread::
+void ExternalThread::
 thread_main() {
 }

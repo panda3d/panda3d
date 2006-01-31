@@ -23,28 +23,29 @@
 
 #include "pStatClient.h"
 
+class Thread;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : PStatThread
 // Description : A lightweight class that represents a single thread
-//               of execution to PStats.  It doesn't have any real
-//               connection to any actual threads, but it's used to
-//               differentiate tasks which run in different threads,
-//               so we can measure them properly.  It is presently the
-//               user's responsibility to correctly differentiate the
-//               various threads.
+//               of execution to PStats.  It corresponds one-to-one
+//               with Panda's Thread instance.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PStatThread {
 private:
   INLINE PStatThread();
   INLINE PStatThread(PStatClient *client, int index);
 
-public:
-  INLINE PStatThread(const string &name, PStatClient *client = NULL);
+PUBLISHED:
+  INLINE PStatThread(Thread *thread, PStatClient *client = NULL);
 
   INLINE PStatThread(const PStatThread &copy);
   INLINE void operator = (const PStatThread &copy);
 
   INLINE void new_frame();
+
+  Thread *get_thread() const;
+  INLINE int get_index() const;
 
 private:
   PStatClient *_client;

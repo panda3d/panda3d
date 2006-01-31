@@ -18,8 +18,10 @@
 
 #include "thread.h"
 #include "mainThread.h"
+#include "externalThread.h"
 
 Thread *Thread::_main_thread;
+Thread *Thread::_external_thread;
 TypeHandle Thread::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -51,6 +53,18 @@ void Thread::
 init_main_thread() {
   if (_main_thread == (Thread *)NULL) {
     _main_thread = new MainThread;
-    ((Thread *)_main_thread)->_started = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::init_external_thread
+//       Access: Private, Static
+//  Description: Creates the Thread object that represents all of the
+//               external threads.
+////////////////////////////////////////////////////////////////////
+void Thread::
+init_external_thread() {
+  if (_external_thread == (Thread *)NULL) {
+    _external_thread = new ExternalThread;
   }
 }

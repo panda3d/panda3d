@@ -48,17 +48,15 @@ PStatThread(PStatClient *client, int index) :
 //  Description: Creates a new named thread.  This will be used to
 //               unify tasks that share a common thread, and
 //               differentiate tasks that occur in different threads.
-//               If any two different PStatThread objects share the
-//               same name, then they are really the same thread.
 ////////////////////////////////////////////////////////////////////
 INLINE PStatThread::
-PStatThread(const string &name, PStatClient *client) {
+PStatThread(Thread *thread, PStatClient *client) {
 #ifdef DO_PSTATS
   if (client == (PStatClient *)NULL) {
     client = PStatClient::get_global_pstats();
   }
-  PStatThread thread(client->make_thread(name));
-  (*this) = thread;
+  PStatThread pthread(client->make_thread(thread));
+  (*this) = pthread;
 #else
   _client = (PStatClient *)NULL;
   _index = 0;
@@ -95,10 +93,25 @@ operator = (const PStatThread &copy) {
 //               whatever a frame may be deemed to be, to accumulate
 //               all the stats that have collected so far for the
 //               thread and ship them off to the server.
+//
+//               Calling PStatClient::thread_tick() will automatically
+//               call this for any threads with the indicated sync
+//               name.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatThread::
 new_frame() {
 #ifdef DO_PSTATS
   _client->get_impl()->new_frame(_index);
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatThread::get_index
+//       Access: Published
+//  Description: Returns the index number of this particular thread
+//               within the PStatClient.
+////////////////////////////////////////////////////////////////////
+INLINE int PStatThread::
+get_index() const {
+  return _index;
 }

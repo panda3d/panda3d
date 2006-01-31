@@ -121,6 +121,34 @@ get_thread_name(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::get_thread_sync_name
+//       Access: Published
+//  Description: Returns the sync_name of the indicated thread.
+////////////////////////////////////////////////////////////////////
+INLINE string PStatClient::
+get_thread_sync_name(int index) const {
+  ReMutexHolder holder(_lock);
+  nassertr(index >= 0 && index < (int)_threads.size(), string());
+  return _threads[index]._sync_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::get_thread_object
+//       Access: Published
+//  Description: Returns the Panda Thread object associated with the
+//               indicated PStatThread.
+////////////////////////////////////////////////////////////////////
+INLINE Thread *PStatClient::
+get_thread_object(int index) const {
+  ReMutexHolder holder(_lock);
+  nassertr(index >= 0 && index < (int)_threads.size(), NULL);
+  if (_threads[index]._thread.was_deleted()) {
+    return NULL;
+  }
+  return _threads[index]._thread;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::get_clock
 //       Access: Published
 //  Description: Returns a reference to the PStatClient's clock

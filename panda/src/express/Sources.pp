@@ -25,6 +25,7 @@
     dcast.T dcast.h \
     encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
     error_utils.h \
+    externalThread.h \
     hashGeneratorBase.I hashGeneratorBase.h \
     hashVal.I hashVal.h \
     indirectLess.I indirectLess.h \
@@ -88,6 +89,7 @@
     datagramSink.cxx dcast.cxx \
     encryptStreamBuf.cxx encryptStream.cxx \
     error_utils.cxx \
+    externalThread.cxx \
     hashGeneratorBase.cxx hashVal.cxx \
     mainThread.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
@@ -145,6 +147,7 @@
     datagramSink.I datagramSink.h dcast.T dcast.h \
     encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
     error_utils.h  \
+    externalThread.h \
     hashGeneratorBase.I \
     hashGeneratorBase.h hashVal.I hashVal.h \
     indirectLess.I indirectLess.h \

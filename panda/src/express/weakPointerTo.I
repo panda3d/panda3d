@@ -107,6 +107,18 @@ p() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WeakPointerTo::get_orig
+//       Access: Public
+//  Description: Returns the original pointer value, even if the
+//               object has since been deleted.
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE TYPENAME WeakPointerTo<T>::To *WeakPointerTo<T>::
+get_orig() const {
+  return (To *)WeakPointerToBase<T>::_void_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WeakPointerTo::Assignment operator
 //       Access: Public
 //  Description:
@@ -255,6 +267,18 @@ template<class T>
 INLINE const TYPENAME WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
 p() const {
   nassertr(!this->was_deleted(), (To *)NULL);
+  return (To *)WeakPointerToBase<T>::_void_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WeakConstPointerTo::get_orig
+//       Access: Public
+//  Description: Returns the original pointer value, even if the
+//               object has since been deleted.
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE const TYPENAME WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
+get_orig() const {
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 

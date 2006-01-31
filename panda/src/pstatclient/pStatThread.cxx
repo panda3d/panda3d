@@ -1,5 +1,5 @@
-// Filename: mainThread.cxx
-// Created by:  drose (15Jan06)
+// Filename: pStatThread.cxx
+// Created by:  drose (30Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,25 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "mainThread.h"
+#include "pStatThread.h"
+#include "pStatClient.h"
 
-TypeHandle MainThread::_type_handle;
-
 ////////////////////////////////////////////////////////////////////
-//     Function: MainThread::Constructor
-//       Access: Private
-//  Description: 
+//     Function: PStatThread::get_thread
+//       Access: Published
+//  Description: Returns the Panda Thread object associated with this
+//               particular PStatThread.
 ////////////////////////////////////////////////////////////////////
-MainThread::
-MainThread() : Thread("Main", "Main") {
-  _started = true;
-}
- 
-////////////////////////////////////////////////////////////////////
-//     Function: MainThread::thread_main
-//       Access: Private, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void MainThread::
-thread_main() {
+INLINE Thread *PStatThread::
+get_thread() const {
+  return _client->get_thread_object(_index);
 }

@@ -168,7 +168,7 @@ void PStatClientImpl::
 new_frame(int thread_index) {
   nassertv(thread_index >= 0 && thread_index < (int)_client->_threads.size());
 
-  PStatClient::Thread &thread = _client->_threads[thread_index];
+  PStatClient::InternalThread &pthread = _client->_threads[thread_index];
 
   // If we're the main thread, we should exchange control packets with
   // the server.
@@ -179,34 +179,34 @@ new_frame(int thread_index) {
   // If we've got the UDP port by the time the frame starts, it's
   // time to become active and start actually tracking data.
   if (_got_udp_port) {
-    thread._is_active = true;
+    pthread._is_active = true;
   }
 
-  if (!thread._is_active) {
+  if (!pthread._is_active) {
     return;
   }
 
   float frame_start = _clock.get_real_time();
 
-  if (!thread._frame_data.is_empty()) {
+  if (!pthread._frame_data.is_empty()) {
     // Collector 0 is the whole frame.
     _client->stop(0, thread_index, frame_start);
 
     // Fill up the level data for all the collectors who have level
-    // data for this thread.
+    // data for this pthread.
     int num_collectors = _client->_collectors.size();
     for (int i = 0; i < num_collectors; i++) {
       const PStatClient::PerThreadData &ptd = 
         _client->_collectors[i]._per_thread[thread_index];
       if (ptd._has_level) {
-        thread._frame_data.add_level(i, ptd._level);
+        pthread._frame_data.add_level(i, ptd._level);
       }
     }
     transmit_frame_data(thread_index);
   }
 
-  thread._frame_data.clear();
-  thread._frame_number++;
+  pthread._frame_data.clear();
+  pthread._frame_number++;
   _client->start(0, thread_index, frame_start);
 
   // Also record the time for the PStats operation itself.

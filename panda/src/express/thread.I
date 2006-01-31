@@ -27,10 +27,22 @@
 //               terminate and destruct itself.
 //
 //               Call start() to begin thread execution.
+//
+//               The name should be unique for each thread (though
+//               this is not enforced, and not strictly required).
+//               The sync_name can be shared between multiple
+//               different threads; threads that run synchronously
+//               with each other should be given the same sync_name,
+//               for the benefit of PStats.
 ////////////////////////////////////////////////////////////////////
 INLINE Thread::
-Thread(const string &name) : _name(name), _impl(this) {
+Thread(const string &name, const string &sync_name) : 
+  _name(name), 
+  _sync_name(sync_name), 
+  _impl(this) 
+{
   _started = false;
+  _pstats_index = -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,11 +68,53 @@ operator = (const Thread &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Thread::get_name
 //       Access: Public
-//  Description: Returns the name of the thread.
+//  Description: Returns the name of the thread.  Each thread should
+//               probably have a unique name, but this is not enforced
+//               (and not strictly required).
 ////////////////////////////////////////////////////////////////////
 INLINE const string &Thread::
 get_name() const {
   return _name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_sync_name
+//       Access: Public
+//  Description: Returns the sync name of the thread.  This name
+//               collects threads into "sync groups", which are
+//               expected to run synchronously.  This is mainly used
+//               for the benefit of PStats; threads with the same sync
+//               name can be ticked all at once via the thread_tick()
+//               call.
+////////////////////////////////////////////////////////////////////
+INLINE const string &Thread::
+get_sync_name() const {
+  return _sync_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_pstats_index
+//       Access: Public
+//  Description: Returns the PStats index associated with this thread,
+//               or -1 if no index has yet been associated with this
+//               thread.  This is used internally by the PStatClient;
+//               you should not need to call this directly.
+////////////////////////////////////////////////////////////////////
+INLINE int Thread::
+get_pstats_index() const {
+  return _pstats_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::set_pstats_index
+//       Access: Public
+//  Description: Stores a PStats index to be associated with this
+//               thread.  This is used internally by the PStatClient;
+//               you should not need to call this directly.
+////////////////////////////////////////////////////////////////////
+INLINE void Thread::
+set_pstats_index(int pstats_index) {
+  _pstats_index = pstats_index;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,17 +202,46 @@ get_main_thread() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_external_thread
+//       Access: Public, Static
+//  Description: Returns a pointer to the "external" Thread
+//               object--this is a special Thread object that
+//               corresponds to any thread spawned outside of Panda's
+//               threading interface.  Note that multiple different
+//               threads may share this same pointer.
+////////////////////////////////////////////////////////////////////
+INLINE Thread *Thread::
+get_external_thread() {
+  if (_external_thread == (Thread *)NULL) {
+    init_external_thread();
+  }
+  return _external_thread;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::get_current_thread
 //       Access: Public, Static
 //  Description: Returns a pointer to the currently-executing Thread
 //               object.  If this is called from the main thread, this
-//               will return the same value as get_main_thread().  If
-//               the current thread was spawned outside of Panda's
-//               threading system, this might return NULL.
+//               will return the same value as get_main_thread().
+//
+//               This will always return some valid Thread pointer.
+//               It will never return NULL, even if the current thread
+//               was spawned outside of Panda's threading system,
+//               although all non-Panda threads will return the exact
+//               same Thread pointer.
 ////////////////////////////////////////////////////////////////////
 INLINE Thread *Thread::
 get_current_thread() {
-  return ThreadImpl::get_current_thread();
+#ifndef HAVE_THREADS
+  return get_main_thread();
+#else  // HAVE_THREADS
+  Thread *thread = ThreadImpl::get_current_thread();
+  if (thread == (Thread *)NULL) {
+    return Thread::get_external_thread();
+  }
+  return thread;
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////

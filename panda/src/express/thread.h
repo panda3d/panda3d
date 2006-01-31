@@ -39,7 +39,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Thread : public TypedReferenceCount {
 public:
-  INLINE Thread(const string &name);
+  INLINE Thread(const string &name, const string &sync_name);
   virtual ~Thread();
 
 private:
@@ -51,6 +51,10 @@ protected:
 
 public:
   INLINE const string &get_name() const;
+  INLINE const string &get_sync_name() const;
+
+  INLINE int get_pstats_index() const;
+  INLINE void set_pstats_index(int pstats_index);
 
   INLINE bool start(ThreadPriority priority, bool global, bool joinable);
   INLINE void interrupt();
@@ -59,6 +63,7 @@ public:
   INLINE static void prepare_for_exit();
 
   INLINE static Thread *get_main_thread();
+  INLINE static Thread *get_external_thread();
   INLINE static Thread *get_current_thread();
   INLINE static bool is_threading_supported();
   INLINE static void sleep(double seconds);
@@ -67,12 +72,18 @@ public:
 
 private:
   static void init_main_thread();
+  static void init_external_thread();
 
+protected:
   bool _started;
   string _name;
+  string _sync_name;
   ThreadImpl _impl;
+  int _pstats_index;
 
+private:
   static Thread *_main_thread;
+  static Thread *_external_thread;
 
 public:
   static TypeHandle get_class_type() {

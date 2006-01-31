@@ -43,6 +43,7 @@
   #include <sys/time.h>
 #endif
 
+PStatCollector GraphicsEngine::_wait_pcollector("Wait");
 PStatCollector GraphicsEngine::_app_pcollector("App");
 PStatCollector GraphicsEngine::_yield_pcollector("App:Yield");
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
@@ -490,12 +491,24 @@ render_frame() {
     }
   }
   new_windows.swap(_windows);
+
+  // Now it's time to do any drawing from the main frame--after all of
+  // the App code has executed, but before we begin the next frame.
+  _app.do_frame(this);
   
-  // Grab each thread's mutex again after all windows have flipped.
+  // Grab each thread's mutex again after all windows have flipped,
+  // and wait for the thread to finish.
   Threads::const_iterator ti;
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     thread->_cv_mutex.lock();
+
+    if (thread->_thread_state != TS_wait) {
+      PStatTimer timer(_wait_pcollector);
+      while (thread->_thread_state != TS_wait) {
+        thread->_cv_done.wait();
+      }
+    }
   }
 
   // Now cycle the pipeline and officially begin the next frame.
@@ -524,12 +537,11 @@ render_frame() {
   }
 
   // Now signal all of our threads to begin their next frame.
-  _app.do_frame(this);
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     if (thread->_thread_state == TS_wait) {
       thread->_thread_state = TS_do_frame;
-      thread->_cv.signal();
+      thread->_cv_start.signal();
     }
     thread->_cv_mutex.release();
   }
@@ -579,10 +591,16 @@ open_windows() {
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     thread->_cv_mutex.lock();
-    if (thread->_thread_state == TS_wait) {
-      thread->_thread_state = TS_do_windows;
-      thread->_cv.signal();
+
+    if (thread->_thread_state != TS_wait) {
+      PStatTimer timer(_wait_pcollector);
+      while (thread->_thread_state != TS_wait) {
+        thread->_cv_done.wait();
+      }
     }
+
+    thread->_thread_state = TS_do_windows;
+    thread->_cv_start.signal();
     thread->_cv_mutex.release();
   }
 
@@ -591,10 +609,16 @@ open_windows() {
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     thread->_cv_mutex.lock();
-    if (thread->_thread_state == TS_wait) {
-      thread->_thread_state = TS_do_windows;
-      thread->_cv.signal();
+
+    if (thread->_thread_state != TS_wait) {
+      PStatTimer timer(_wait_pcollector);
+      while (thread->_thread_state != TS_wait) {
+        thread->_cv_done.wait();
+      }
     }
+
+    thread->_thread_state = TS_do_windows;
+    thread->_cv_start.signal();
     thread->_cv_mutex.release();
   }
 }
@@ -980,21 +1004,28 @@ do_flip_frame() {
   nassertv(_flip_state == FS_draw || _flip_state == FS_sync);
 
   // First, wait for all the threads to finish their current frame, if
-  // necessary.  Grabbing the mutex should achieve that.
+  // necessary.  Grabbing the mutex (and waiting for TS_wait) should
+  // achieve that.
   Threads::const_iterator ti;
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     thread->_cv_mutex.lock();
+
+    if (thread->_thread_state != TS_wait) {
+      PStatTimer timer(_wait_pcollector);
+      while (thread->_thread_state != TS_wait) {
+        thread->_cv_done.wait();
+      }
+    }
   }
   
   // Now signal all of our threads to flip the windows.
   _app.do_flip(this);
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
-    if (thread->_thread_state == TS_wait) {
-      thread->_thread_state = TS_do_flip;
-      thread->_cv.signal();
-    }
+    nassertv(thread->_thread_state == TS_wait);
+    thread->_thread_state = TS_do_flip;
+    thread->_cv_start.signal();
     thread->_cv_mutex.release();
   }
 
@@ -1305,10 +1336,15 @@ terminate_threads() {
   // Now tell them to release their windows' graphics contexts.
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
-    if (thread->_thread_state == TS_wait) {
-      thread->_thread_state = TS_do_release;
-      thread->_cv.signal();
+
+    if (thread->_thread_state != TS_wait) {
+      PStatTimer timer(_wait_pcollector);
+      while (thread->_thread_state != TS_wait) {
+        thread->_cv_done.wait();
+      }
     }
+    thread->_thread_state = TS_do_release;
+    thread->_cv_start.signal();
     thread->_cv_mutex.release();
   }
 
@@ -1322,7 +1358,7 @@ terminate_threads() {
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     thread->_thread_state = TS_terminate;
-    thread->_cv.signal();
+    thread->_cv_start.signal();
     thread->_cv_mutex.release();
   }
 
@@ -1738,9 +1774,10 @@ do_callbacks(GraphicsEngine::CallbackTime callback_time) {
 ////////////////////////////////////////////////////////////////////
 GraphicsEngine::RenderThread::
 RenderThread(const string &name, GraphicsEngine *engine) : 
-  Thread(name),
+  Thread(name, "Main"),
   _engine(engine),
-  _cv(_cv_mutex)
+  _cv_start(_cv_mutex),
+  _cv_done(_cv_mutex)
 {
   _thread_state = TS_wait;
 }
@@ -1756,6 +1793,8 @@ void GraphicsEngine::RenderThread::
 thread_main() {
   MutexHolder holder(_cv_mutex);
   while (true) {
+    nassertv(_cv_mutex.debug_is_locked());
+
     switch (_thread_state) {
     case TS_wait:
       break;
@@ -1763,31 +1802,41 @@ thread_main() {
     case TS_do_frame:
       do_pending(_engine);
       do_frame(_engine);
-      _thread_state = TS_wait;
       break;
 
     case TS_do_flip:
       do_flip(_engine);
-      _thread_state = TS_wait;
       break;
 
     case TS_do_release:
       do_pending(_engine);
       do_release(_engine);
-      _thread_state = TS_wait;
       break;
 
     case TS_do_windows:
       do_windows(_engine);
       do_pending(_engine);
-      _thread_state = TS_wait;
       break;
 
     case TS_terminate:
       do_pending(_engine);
       do_close(_engine);
+      _thread_state = TS_done;
+      _cv_done.signal();
+      return;
+
+    case TS_done:
+      // Shouldn't be possible to get here.
+      nassertv(false);
       return;
     }
-    _cv.wait();
+
+    _thread_state = TS_wait;
+    _cv_done.signal();
+
+    {
+      PStatTimer timer(_wait_pcollector);
+      _cv_start.wait();
+    }
   }
 }

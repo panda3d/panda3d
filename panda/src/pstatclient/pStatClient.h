@@ -28,6 +28,9 @@
 #include "reMutexHolder.h"
 #include "luse.h"
 #include "pmap.h"
+#include "thread.h"
+#include "weakPointerTo.h"
+#include "vector_int.h"
 
 class PStatCollector;
 class PStatCollectorDef;
@@ -71,8 +74,11 @@ PUBLISHED:
   INLINE int get_num_threads() const;
   PStatThread get_thread(int index) const;
   INLINE string get_thread_name(int index) const;
+  INLINE string get_thread_sync_name(int index) const;
+  INLINE Thread *get_thread_object(int index) const;
 
   PStatThread get_main_thread() const;
+  PStatThread get_current_thread() const;
 
   INLINE const ClockObject &get_clock() const;
 
@@ -83,8 +89,10 @@ PUBLISHED:
   INLINE static void resume_after_pause();
 
   static void main_tick();
+  static void thread_tick(const string &sync_name);
 
   void client_main_tick();
+  void client_thread_tick(const string &sync_name);
   INLINE bool client_connect(string hostname, int port);
   void client_disconnect();
   INLINE bool client_is_connected() const;
@@ -100,7 +108,7 @@ private:
 
   PStatCollector make_collector_with_relname(int parent_index, string relname);
   PStatCollector make_collector_with_name(int parent_index, const string &name);
-  PStatThread make_thread(const string &name);
+  PStatThread make_thread(Thread *thread);
 
   bool is_active(int collector_index, int thread_index) const;
   bool is_started(int collector_index, int thread_index) const;
@@ -119,9 +127,9 @@ private:
   // This mutex protects everything in this class.
   ReMutex _lock;
 
-  // Not a phash_map, so the threads remain sorted by name.
   typedef pmap<string, int> ThingsByName;
-  ThingsByName _threads_by_name;
+  typedef pmap<string, vector_int> MultiThingsByName;
+  MultiThingsByName _threads_by_name, _threads_by_sync_name;
 
   // This is for the data that is per-collector, per-thread.  A vector
   // of these is stored in each Collector object, below, indexed by
@@ -169,15 +177,17 @@ private:
   // This defines a single thread, i.e. a separate chain of execution,
   // independent of all other threads.  Timing and level data are
   // maintained separately for each thread.
-  class Thread {
+  class InternalThread {
   public:
+    WPT(Thread) _thread;
     string _name;
+    string _sync_name;
     PStatFrameData _frame_data;
     bool _is_active;
     int _frame_number;
     float _next_packet;
   };
-  typedef pvector<Thread> Threads;
+  typedef pvector<InternalThread> Threads;
   Threads _threads;
 
   PStatClientImpl *_impl;
