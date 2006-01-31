@@ -351,9 +351,19 @@ update_time_data(const PStatFrameData &frame_data) {
         // Here's a data point we care about: anything at constraint
         // level or below.
         if (is_start == samples[collector_index]._is_started) {
-          nout << "Unexpected data point for " 
-               << _client_data->get_collector_fullname(collector_index)
-               << "\n";
+          if (!is_start) {
+            // A "stop" in the middle of a frame implies a "start"
+            // since time 0 (that is, since the first data point in
+            // the frame).
+            samples[collector_index].data_point(frame_data.get_time(0), true, started);
+            samples[collector_index].data_point(frame_data.get_time(i), is_start, started);
+          } else {
+            // An extra "start" for a collector that's already started
+            // is an error.
+            nout << "Unexpected data point for " 
+                 << _client_data->get_collector_fullname(collector_index)
+                 << "\n";
+          }
         } else {
           samples[collector_index].data_point(frame_data.get_time(i), is_start, started);
           got_samples.insert(collector_index);
@@ -367,8 +377,6 @@ update_time_data(const PStatFrameData &frame_data) {
   Samples::iterator si;
   for (i = 0, si = samples.begin(); si != samples.end(); ++i, ++si) {
     if ((*si)._is_started) {
-      nout << _client_data->get_collector_fullname(i)
-           << " was not stopped at frame end!\n";
       (*si).data_point(frame_data.get_end(), false, started);
     }
   }

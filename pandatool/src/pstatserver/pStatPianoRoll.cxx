@@ -55,17 +55,29 @@ clear() {
 //               second data point turns it off (ends the bar).
 ////////////////////////////////////////////////////////////////////
 void PStatPianoRoll::BarBuilder::
-add_data_point(float time) {
-  if (_color_bars.empty() || _color_bars.back()._end >= 0.0) {
-    // This is an odd-numbered data point: start the bar.
-    ColorBar bar;
-    bar._start = time;
-    bar._end = -1.0;
-    _color_bars.push_back(bar);
+add_data_point(float time, bool is_start) {
+  if (is_start) {
+    // This is a "start" data point: start the bar.
+    if (_color_bars.empty() || _color_bars.back()._end >= 0.0) {
+      ColorBar bar;
+      bar._start = time;
+      bar._end = -1.0;
+      _color_bars.push_back(bar);
+    }
 
   } else {
-    // This is an even-numbered data point: end the bar.
-    _color_bars.back()._end = time;
+    // This is a "stop" data point: end the bar.
+    if (_color_bars.empty()) {
+      // A "stop" in the middle of the frame implies a "start" at time
+      // 0.
+      ColorBar bar;
+      bar._start = 0.0;
+      bar._end = time;
+      _color_bars.push_back(bar);
+
+    } else {
+      _color_bars.back()._end = time;
+    }
   }
 }
 
@@ -78,7 +90,6 @@ add_data_point(float time) {
 void PStatPianoRoll::BarBuilder::
 finish(float time) {
   if (!_color_bars.empty() && _color_bars.back()._end < 0.0) {
-    nout << "Warning: collector was left on at the end of the frame.\n";
     _color_bars.back()._end = time;
   }
 }
@@ -298,7 +309,8 @@ compute_page(const PStatFrameData &frame_data) {
   for (int i = 0; i < num_events; i++) {
     int collector_index = frame_data.get_time_collector(i);
     float time = frame_data.get_time(i);
-    _page_data[collector_index].add_data_point(time);
+    bool is_start = frame_data.is_start(i);
+    _page_data[collector_index].add_data_point(time, is_start);
   }
 
   // Now check to see if the set of bars has changed.

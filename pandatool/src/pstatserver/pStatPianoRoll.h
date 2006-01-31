@@ -91,7 +91,7 @@ private:
   public:
     BarBuilder();
     void clear();
-    void add_data_point(float time);
+    void add_data_point(float time, bool is_start);
     void finish(float time);
 
     bool _is_new;
