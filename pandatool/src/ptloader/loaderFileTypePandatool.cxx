@@ -119,9 +119,22 @@ load_file(const Filename &path, const LoaderOptions &options) const {
   file_path.append_directory(path.get_dirname());
   _converter->get_path_replace()->_path = file_path;
 
-  if (options.get_flags() & LoaderOptions::LF_convert_anim) {
-    // Convert animation, if the converter supports it.
+  // Convert animation, if the converter supports it.
+  switch (options.get_flags() & LoaderOptions::LF_convert_anim) {
+  case LoaderOptions::LF_convert_anim:
     _converter->set_animation_convert(AC_both);
+    break;
+    
+  case LoaderOptions::LF_convert_skeleton:
+    _converter->set_animation_convert(AC_model);
+    break;
+    
+  case LoaderOptions::LF_convert_channels:
+    _converter->set_animation_convert(AC_chan);
+    break;
+
+  default:
+    break;
   }
 
   if (_converter->convert_file(path)) {
