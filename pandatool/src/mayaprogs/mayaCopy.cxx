@@ -220,7 +220,10 @@ copy_maya_file(const Filename &source, const Filename &dest,
     Filename filename = 
       _path_replace->convert_path(Filename::from_os_specific(refs[ref_index].asChar()));
 
-    string execString = "file -loadReference \"" + _replace_prefix + "RN\" -type \"mayaBinary\" -options \"v=0\" \"" + filename.get_basename() + "\";";
+    CVSSourceTree::FilePath path =
+      _tree.choose_directory(filename.get_basename(), dir, _force, _interactive);
+    Filename new_filename = path.get_rel_from(dir);
+    string execString = "file -loadReference \"" + _replace_prefix + "RN\" -type \"mayaBinary\" -options \"v=0\" \"" + new_filename.to_os_generic() + "\";";
     maya_cat.info() << "executing command: " << execString << "\n";
     //MGlobal::executeCommand("file -loadReference \"mtpRN\" -type \"mayaBinary\" -options \"v=0\" \"m_t_pear_zero.mb\";");
     MGlobal::executeCommand(MString(execString.c_str()));
