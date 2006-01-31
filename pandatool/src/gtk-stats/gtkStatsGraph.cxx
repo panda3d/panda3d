@@ -136,12 +136,6 @@ GtkStatsGraph::
 ~GtkStatsGraph() {
   _monitor = (GtkStatsMonitor *)NULL;
   release_pixmap();
-
-  /*
-  DeleteObject(_dark_pen);
-  DeleteObject(_light_pen);
-  DeleteObject(_user_guide_bar_pen);
-  */
   
   Brushes::iterator bi;
   for (bi = _brushes.begin(); bi != _brushes.end(); ++bi) {
