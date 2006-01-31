@@ -210,6 +210,12 @@ void MovingPartBase::
 bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index, 
                bool is_included, BitArray &bound_joints,
                const PartSubset &subset) {
+  if (subset.matches_include(get_name())) {
+    is_included = true;
+  } else if (subset.matches_exclude(get_name())) {
+    is_included = false;
+  }
+
   if (chan_cat.is_debug()) {
     chan_cat.debug()
       << "binding " << *this << " to " << *anim << ", is_included = "
