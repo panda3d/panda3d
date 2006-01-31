@@ -38,7 +38,7 @@ public:
   ~GtkStatsChartMenu();
 
   GtkWidget *get_menu_widget();
-  void add_to_menu_bar(GtkWidget *menu_bar, int before_menu_id);
+  void add_to_menu_bar(GtkWidget *menu_bar, int position);
 
   void check_update();
   void do_update();

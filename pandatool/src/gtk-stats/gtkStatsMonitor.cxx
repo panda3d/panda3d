@@ -211,7 +211,8 @@ void GtkStatsMonitor::
 new_thread(int thread_index) {
   GtkStatsChartMenu *chart_menu = new GtkStatsChartMenu(this, thread_index);
   GtkWidget *menu_bar = gtk_item_factory_get_widget(_item_factory, "<PStats>");
-  chart_menu->add_to_menu_bar(menu_bar, MI_frame_rate_label);
+  chart_menu->add_to_menu_bar(menu_bar, _next_chart_index);
+  ++_next_chart_index;
   _chart_menus.push_back(chart_menu);
 }
 
@@ -267,23 +268,15 @@ idle() {
     (*mi)->check_update();
   }
 
-  /*
   // Update the frame rate label from the main thread (thread 0).
   const PStatThreadData *thread_data = get_client_data()->get_thread_data(0);
   float frame_rate = thread_data->get_frame_rate();
   if (frame_rate != 0.0f) {
     char buffer[128];
     sprintf(buffer, "%0.1f ms / %0.1f Hz", 1000.0f / frame_rate, frame_rate);
-  
-    MENUITEMINFO mii;
-    memset(&mii, 0, sizeof(mii));
-    mii.cbSize = sizeof(mii);
-    mii.fMask = MIIM_STRING;
-    mii.dwTypeData = buffer;
-    SetMenuItemInfo(_menu_bar, MI_frame_rate_label, FALSE, &mii);
-    DrawMenuBar(_window);
+
+    gtk_label_set_text(GTK_LABEL(_frame_rate_label), buffer);
   }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -483,10 +476,14 @@ create_window() {
 				this);
   gtk_window_add_accel_group(GTK_WINDOW(_window), accel_group);
   GtkWidget *menu_bar = gtk_item_factory_get_widget(_item_factory, "<PStats>");
+  _next_chart_index = 2;
+
+  setup_frame_rate_label();
 
   ChartMenus::iterator mi;
   for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
-    (*mi)->add_to_menu_bar(menu_bar, MI_frame_rate_label);
+    (*mi)->add_to_menu_bar(menu_bar, _next_chart_index);
+    ++_next_chart_index;
   }
 
   // Pack the menu into the window.
@@ -543,17 +540,17 @@ window_destroy(GtkWidget *widget, gpointer data) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMonitor::
 setup_frame_rate_label() {
-  /*
-  MENUITEMINFO mii;
-  memset(&mii, 0, sizeof(mii));
-  mii.cbSize = sizeof(mii);
+  GtkWidget *menu_bar = gtk_item_factory_get_widget(_item_factory, "<PStats>");
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
-  mii.fType = MFT_STRING | MFT_RIGHTJUSTIFY; 
-  mii.wID = MI_frame_rate_label;
-  mii.dwTypeData = ""; 
-  InsertMenuItem(_menu_bar, GetMenuItemCount(_menu_bar), TRUE, &mii);
-  */
+  _frame_rate_menu_item = gtk_menu_item_new();
+  _frame_rate_label = gtk_label_new("");
+  gtk_container_add(GTK_CONTAINER(_frame_rate_menu_item), _frame_rate_label);
+
+  gtk_widget_show(_frame_rate_menu_item);
+  gtk_widget_show(_frame_rate_label);
+  gtk_menu_item_right_justify(GTK_MENU_ITEM(_frame_rate_menu_item));
+
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), _frame_rate_menu_item);
 }
 
 ////////////////////////////////////////////////////////////////////

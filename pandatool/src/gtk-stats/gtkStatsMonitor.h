@@ -102,6 +102,9 @@ private:
 
   GtkWidget *_window;
   GtkItemFactory *_item_factory;
+  int _next_chart_index;
+  GtkWidget *_frame_rate_menu_item;
+  GtkWidget *_frame_rate_label;
   string _window_title;
   int _time_units;
   float _scroll_speed;

@@ -60,7 +60,7 @@ get_menu_widget() {
 //  Description: Adds the menu to the end of the indicated menu bar.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsChartMenu::
-add_to_menu_bar(GtkWidget *menu_bar, int before_menu_id) {
+add_to_menu_bar(GtkWidget *menu_bar, int position) {
   const PStatClientData *client_data = _monitor->get_client_data();
   string thread_name;
   if (_thread_index == 0) {
@@ -74,7 +74,7 @@ add_to_menu_bar(GtkWidget *menu_bar, int before_menu_id) {
   gtk_widget_show(menu_item);
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), _menu);
 
-  gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), menu_item);
+  gtk_menu_shell_insert(GTK_MENU_SHELL(menu_bar), menu_item, position);
 }
 
 ////////////////////////////////////////////////////////////////////
