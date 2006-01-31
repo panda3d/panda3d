@@ -42,8 +42,7 @@
 ////////////////////////////////////////////////////////////////////
 MayaCopy::
 MayaCopy() {
-  _replace_prefix = "none";
-
+  _curr_idx = 0;
   set_program_description
     ("mayacopy copies one or more Maya .mb files into a "
      "CVS source hierarchy.  "
@@ -66,9 +65,9 @@ MayaCopy() {
 
   add_option
     ("rp", "replace_prefix", 80,
-     "use this prefix when replacing reference with the recently copied file from the  "
+     "use these prefixes when replacing reference with the recently copied file from the  "
      "source filename before it is copied into the tree.",
-     &CVSCopy::dispatch_string, NULL, &_replace_prefix);
+     &CVSCopy::dispatch_vector_string, NULL, &_replace_prefix);
 
   add_path_replace_options();
 }
@@ -191,12 +190,13 @@ copy_maya_file(const Filename &source, const Filename &dest,
   */
 
   if (num_refs != 0) {
-    if (_replace_prefix.find("none") != string::npos) {
+    if (_replace_prefix.empty()) {
       // try to put the first word of the file name as the replace prefix
       size_t idx = source.get_basename().find("_",0);
       if (idx != string::npos) {
         string st = source.get_basename().substr(0, idx);
-        _replace_prefix = st;
+        _replace_prefix.push_back(st);
+        maya_cat.info() << "replace_prefix = " << st << endl;
       }
       else {
         maya_cat.error()
@@ -206,8 +206,8 @@ copy_maya_file(const Filename &source, const Filename &dest,
       }
     }
   }
-
   unsigned int ref_index;
+  maya_cat.info() << "num_refs = " << num_refs << endl;
   for (ref_index = 0; ref_index < num_refs; ref_index++) {
     // one thing we need to do is rename the path to the base file
     // that it is referencing to. This will guarantee that the
@@ -217,16 +217,17 @@ copy_maya_file(const Filename &source, const Filename &dest,
     // removeReference and reference didn't work for the animations
     // file -loadReference "mtpRN" -type "mayaBinary" -options "v=0"
     // "m_t_pear_zero.mb";
+    string lookup = refs[ref_index].asChar();
     Filename filename = 
       _path_replace->convert_path(Filename::from_os_specific(refs[ref_index].asChar()));
 
     CVSSourceTree::FilePath path =
       _tree.choose_directory(filename.get_basename(), dir, _force, _interactive);
     Filename new_filename = path.get_rel_from(dir);
-    string execString = "file -loadReference \"" + _replace_prefix + "RN\" -type \"mayaBinary\" -options \"v=0\" \"" + new_filename.to_os_generic() + "\";";
+    string execString = "file -loadReference \"" + _replace_prefix[_curr_idx++] + "RN\" -type \"mayaBinary\" -options \"v=0\" \"" + new_filename.to_os_generic() + "\";";
     maya_cat.info() << "executing command: " << execString << "\n";
     //MGlobal::executeCommand("file -loadReference \"mtpRN\" -type \"mayaBinary\" -options \"v=0\" \"m_t_pear_zero.mb\";");
-    MGlobal::executeCommand(MString(execString.c_str()));
+    status  = MGlobal::executeCommand(MString(execString.c_str()));
   }
 
   // Get all the shaders so we can determine the set of textures.
