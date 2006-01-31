@@ -249,7 +249,7 @@ add_level(float increment) {
 INLINE void PStatCollector::
 sub_level(float decrement) {
 #ifndef HAVE_THREADS
-  _client->sub_level(_index, 0, decrement);
+  _client->add_level(_index, 0, -decrement);
 #else  // HAVE_THREADS
   sub_level(_client->get_current_thread(), decrement);
 #endif  // HAVE_THREADS
