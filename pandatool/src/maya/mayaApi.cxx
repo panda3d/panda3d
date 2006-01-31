@@ -241,14 +241,11 @@ read(const Filename &filename) {
 
   maya_cat.info() << "Reading " << filename << "\n";
 
-  // Load the file into Maya
-  string os_filename = filename.to_os_specific();
+  // Load the file into Maya.  Maya seems to want forward slashes,
+  // even on Windows.
+  string os_filename = filename.to_os_generic();
 
-#ifdef WIN32
-  // Actually, Maya seems to want forward slashes, even on Windows.
-  os_filename = back_to_front_slash(os_filename);
-#endif
-
+  MFileIO::newFile(true);
   MStatus stat = MFileIO::open(os_filename.c_str());
   if (!stat) {
     stat.perror(os_filename.c_str());
@@ -266,10 +263,7 @@ read(const Filename &filename) {
 bool MayaApi::
 write(const Filename &filename) {
   maya_cat.info() << "Writing " << filename << "\n";
-  string os_filename = filename.to_os_specific();
-#ifdef WIN32
-  os_filename = back_to_front_slash(os_filename);
-#endif
+  string os_filename = filename.to_os_generic();
 
   const char *type = "mayaBinary";
   string extension = filename.get_extension();
