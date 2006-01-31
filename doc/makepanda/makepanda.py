@@ -2177,7 +2177,7 @@ EnqueueLink(opts=['ADVAPI', 'WINSOCK2', 'NSPR', 'OPENSSL', 'ZLIB'], dll='libpand
 #
 
 IPATH=['panda/src/putil']
-OPTS=['BUILDING_PANDA', 'NSPR']
+OPTS=['BUILDING_PANDA', 'NSPR', 'ZLIB']
 CopyAllHeaders('panda/src/putil')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='putil_composite1.cxx', obj='putil_composite1.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='putil_composite2.cxx', obj='putil_composite2.obj')
@@ -2251,7 +2251,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgsgbase.in', obj='libgsgbase_igate
 #
 
 IPATH=['panda/src/pnmimage']
-OPTS=['BUILDING_PANDA', 'NSPR']
+OPTS=['BUILDING_PANDA', 'NSPR', 'ZLIB']
 CopyAllHeaders('panda/src/pnmimage')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimage_composite.cxx', obj='pnmimage_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpnmimage.in', obj='libpnmimage_igate.obj',
@@ -2690,10 +2690,10 @@ if OMIT.count("OPENSSL")==0:
     EnqueueLink(dll='check_md5.exe', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=['check_md5_check_md5.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='multify.cxx', obj='multify_multify.obj')
     EnqueueLink(dll='multify.exe', opts=['ADVAPI', 'NSPR'], obj=['multify_multify.obj']+LIBS)
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='pcompress.cxx', obj='pcompress_pcompress.obj')
-    EnqueueLink(dll='pcompress.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=['pcompress_pcompress.obj']+LIBS)
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='pdecompress.cxx', obj='pdecompress_pdecompress.obj')
-    EnqueueLink(dll='pdecompress.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=['pdecompress_pdecompress.obj']+LIBS)
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='pzip.cxx', obj='pzip_pzip.obj')
+    EnqueueLink(dll='pzip.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=['pzip_pzip.obj']+LIBS)
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='punzip.cxx', obj='punzip_punzip.obj')
+    EnqueueLink(dll='punzip.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=['punzip_punzip.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pdecrypt.cxx', obj='pdecrypt_pdecrypt.obj')
     EnqueueLink(dll='pdecrypt.exe', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=['pdecrypt_pdecrypt.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pencrypt.cxx', obj='pencrypt_pencrypt.obj')
@@ -2803,7 +2803,7 @@ if (sys.platform == "win32"):
 #
 
 IPATH=['panda/src/egg']
-OPTS=['BUILDING_PANDAEGG', 'NSPR']
+OPTS=['BUILDING_PANDAEGG', 'NSPR', 'ZLIB']
 CopyAllHeaders('panda/src/egg')
 EnqueueBison(ipath=IPATH, opts=OPTS, pre='eggyy', src='parser.yxx', dsth='parser.h', obj='egg_parser.obj')
 EnqueueFlex(ipath=IPATH, opts=OPTS, pre='eggyy', src='lexer.lxx', obj='egg_lexer.obj', dashi=1)
@@ -3225,7 +3225,7 @@ if (OMIT.count("PANDATOOL")==0):
 
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/progbase']
-    OPTS=['NSPR']
+    OPTS=['NSPR', 'ZLIB']
     CopyAllHeaders('pandatool/src/progbase')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='progbase_composite1.cxx', obj='progbase_composite1.obj')
     EnqueueLib(lib='libprogbase.lib', obj=['progbase_composite1.obj'])
@@ -3608,7 +3608,7 @@ if (OMIT.count("PANDATOOL")==0):
 
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/flt']
-    OPTS=['NSPR']
+    OPTS=['NSPR', 'ZLIB']
     CopyAllHeaders('pandatool/src/flt')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='fltVectorRecord.cxx', obj='flt_fltVectorRecord.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='flt_composite1.cxx', obj='flt_composite1.obj')
