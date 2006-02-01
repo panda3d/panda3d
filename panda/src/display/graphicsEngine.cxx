@@ -513,14 +513,8 @@ render_frame() {
     }
   }
 
-  // Now cycle the pipeline and officially begin the next frame.
+  // Now cycle the pipeline
   _pipeline->cycle();
-  ClockObject *global_clock = ClockObject::get_global_clock();
-  global_clock->tick();
-  if (global_clock->check_errors()) {
-    throw_event("clock_error");
-  }
-  PStatClient::main_tick();
 
   // Reset our pcollectors that track data across the frame.
   CullTraverser::_nodes_pcollector.clear_level();
@@ -561,6 +555,14 @@ render_frame() {
     tv.tv_usec = 0;
     select(0, NULL, NULL, NULL, &tv);
   }
+
+  // officially begin the next frame.
+  ClockObject *global_clock = ClockObject::get_global_clock();
+  global_clock->tick();
+  if (global_clock->check_errors()) {
+    throw_event("clock_error");
+  }
+  PStatClient::main_tick();
 
   // Anything that happens outside of GraphicsEngine::render_frame()
   // is deemed to be App.
