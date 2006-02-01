@@ -1,5 +1,5 @@
-// Filename: pipelineCyclerBase.cxx
-// Created by:  drose (21Feb02)
+// Filename: pipelineCyclerTrivialImpl.cxx
+// Created by:  drose (31Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,17 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "pipelineCyclerBase.h"
-
-
-#ifdef DO_PIPELINING
-// The following implementations are to support compiled-in pipeline
-// sanity checks.
-
-
-#else  // !DO_PIPELINING
-// The following implementations are provided for when pipelining is
-// not compiled in.  They are trivial functions that do as little as
-// possible.
-
-#endif
+#include "pipelineCyclerTrivialImpl.h"

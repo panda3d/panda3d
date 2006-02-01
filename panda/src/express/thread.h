@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "typedReferenceCount.h"
+#include "pointerTo.h"
 #include "threadPriority.h"
 #include "threadImpl.h"
 #include "notify.h"
@@ -38,8 +39,10 @@
 //               are referencing it.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Thread : public TypedReferenceCount {
-public:
+protected:
   INLINE Thread(const string &name, const string &sync_name);
+
+PUBLISHED:
   virtual ~Thread();
 
 private:
@@ -49,18 +52,17 @@ private:
 protected:
   virtual void thread_main()=0;
 
-public:
+PUBLISHED:
+  static PT(Thread) bind_thread(const string &name, const string &sync_name);
+
   INLINE const string &get_name() const;
   INLINE const string &get_sync_name() const;
 
   INLINE int get_pstats_index() const;
   INLINE void set_pstats_index(int pstats_index);
 
-  INLINE bool start(ThreadPriority priority, bool global, bool joinable);
-  INLINE void interrupt();
-  INLINE void join();
-
-  INLINE static void prepare_for_exit();
+  INLINE int get_pipeline_stage() const;
+  INLINE void set_pipeline_stage(int pipeline_stage);
 
   INLINE static Thread *get_main_thread();
   INLINE static Thread *get_external_thread();
@@ -69,6 +71,13 @@ public:
   INLINE static void sleep(double seconds);
 
   virtual void output(ostream &out) const;
+
+public:
+  INLINE bool start(ThreadPriority priority, bool global, bool joinable);
+  INLINE void interrupt();
+  INLINE void join();
+
+  INLINE static void prepare_for_exit();
 
 private:
   static void init_main_thread();
@@ -80,6 +89,7 @@ protected:
   string _sync_name;
   ThreadImpl _impl;
   int _pstats_index;
+  int _pipeline_stage;
 
 private:
   static Thread *_main_thread;

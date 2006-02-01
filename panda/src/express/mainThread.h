@@ -33,10 +33,11 @@ private:
   MainThread();
   virtual void thread_main();
 
-public:
+PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+public:
   static void init_type() {
     Thread::init_type();
     register_type(_type_handle, "MainThread",

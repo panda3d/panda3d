@@ -33,6 +33,8 @@
 #include "cullFaceAttrib.h"
 #include "string_utils.h"
 #include "geomCacheManager.h"
+#include "thread.h"
+#include "pipeline.h"
 #include "throw_event.h"
 
 #if defined(WIN32)
@@ -1413,6 +1415,9 @@ get_window_renderer(const string &name) {
   }
 
   PT(RenderThread) thread = new RenderThread(name, this);
+  thread->set_pipeline_stage(1);
+  Pipeline::get_render_pipeline()->set_num_stages(2);
+
   thread->start(TP_normal, true, true);
   _threads[name] = thread;
 

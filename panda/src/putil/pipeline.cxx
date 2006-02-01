@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pipeline.h"
+#include "pipelineCyclerTrueImpl.h"
 
 Pipeline *Pipeline::_render_pipeline = (Pipeline *)NULL;
 
@@ -29,25 +30,99 @@ Pipeline::
 Pipeline(const string &name) :
   Namable(name)
 {
+  _num_stages = 1;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::Destructor
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 Pipeline::
 ~Pipeline() {
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+  nassertv(_cyclers.empty());
+#endif  // DO_PIPELINING && HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::cycle
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Flows all the pipeline data down to the next stage.
 ////////////////////////////////////////////////////////////////////
 void Pipeline::
 cycle() {
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+  Cyclers::iterator ci;
+  for (ci = _cyclers.begin(); ci != _cyclers.end(); ++ci) {
+    (*ci)->cycle();
+  }
+#endif  // DO_PIPELINING && HAVE_THREADS
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::set_num_stages
+//       Access: Public
+//  Description: Specifies the number of stages required for the
+//               pipeline.
+////////////////////////////////////////////////////////////////////
+void Pipeline::
+set_num_stages(int num_stages) {
+  nassertv(num_stages >= 1);
+  if (num_stages != _num_stages) {
+    _num_stages = num_stages;
+
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+    Cyclers::iterator ci;
+    for (ci = _cyclers.begin(); ci != _cyclers.end(); ++ci) {
+      (*ci)->set_num_stages(num_stages);
+    }
+#endif  // DO_PIPELINING && HAVE_THREADS
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::get_num_stages
+//       Access: Public
+//  Description: Returns the number of stages required for the
+//               pipeline.
+////////////////////////////////////////////////////////////////////
+int Pipeline::
+get_num_stages() const {
+  return _num_stages;
+}
+
+
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::add_cycler
+//       Access: Public
+//  Description: Adds the indicated cycler to the list of cyclers
+//               associated with the pipeline.  This method only
+//               exists when true pipelining is configured on.
+////////////////////////////////////////////////////////////////////
+void Pipeline::
+add_cycler(PipelineCyclerTrueImpl *cycler) {
+  bool inserted = _cyclers.insert(cycler).second;
+  nassertv(inserted);
+}
+#endif  // DO_PIPELINING && HAVE_THREADS
+
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::remove_cycler
+//       Access: Public
+//  Description: Removes the indicated cycler from the list of cyclers
+//               associated with the pipeline.  This method only
+//               exists when true pipelining is configured on.
+////////////////////////////////////////////////////////////////////
+void Pipeline::
+remove_cycler(PipelineCyclerTrueImpl *cycler) {
+  Cyclers::iterator ci = _cyclers.find(cycler);
+  nassertv(ci != _cyclers.end());
+  _cyclers.erase(ci);
+}
+#endif  // DO_PIPELINING && HAVE_THREADS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::make_render_pipeline
@@ -59,4 +134,3 @@ make_render_pipeline() {
   nassertv(_render_pipeline == (Pipeline *)NULL);
   _render_pipeline = new Pipeline("render");
 }
-

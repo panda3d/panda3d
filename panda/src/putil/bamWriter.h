@@ -28,8 +28,8 @@
 #include "pset.h"
 #include "pmap.h"
 #include "vector_int.h"
+#include "pipelineCyclerBase.h"
 
-struct PipelineCyclerBase;
 
 // A handy macro for writing PointerToArrays.
 #define WRITE_PTA(Manager, dest, Write_func, array)  \

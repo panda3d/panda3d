@@ -56,6 +56,53 @@ TypeHandle PandaNode::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+PandaNode::CData::
+CData(const PandaNode::CData &copy) :
+  _down(copy._down),
+  _stashed(copy._stashed),
+  _up(copy._up),
+  _paths(copy._paths),
+  _state(copy._state),
+  _effects(copy._effects),
+  _transform(copy._transform),
+  _prev_transform(copy._prev_transform),
+  _tag_data(copy._tag_data),
+  _draw_mask(copy._draw_mask),
+  _into_collide_mask(copy._into_collide_mask),
+  _net_collide_mask(copy._net_collide_mask),
+  _off_clip_planes(copy._off_clip_planes),
+  _fixed_internal_bound(copy._fixed_internal_bound)
+{
+  // Note that this copy constructor is not used by the PandaNode copy
+  // constructor!  Any elements that must be copied between nodes
+  // should also be explicitly copied there.
+
+#ifdef HAVE_PYTHON
+  // Copy and increment all of the Python objects held by the other
+  // node.
+  _python_tag_data = _python_tag_data;
+  inc_py_refs();
+#endif  // HAVE_PYTHON
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PandaNode::CData::
+~CData() {
+#ifdef HAVE_PYTHON
+  // Free all of the Python objects held by this node.
+  dec_py_refs();
+#endif  // HAVE_PYTHON
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::CData::make_copy
 //       Access: Public, Virtual
 //  Description:
@@ -160,9 +207,47 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::inc_py_refs
+//       Access: Public
+//  Description: Increments the reference counts on all held Python
+//               objects.
+////////////////////////////////////////////////////////////////////
+void PandaNode::CData::
+inc_py_refs() {
+  PythonTagData::const_iterator ti;
+  for (ti = _python_tag_data.begin();
+       ti != _python_tag_data.end();
+       ++ti) {
+    PyObject *value = (*ti).second;
+    Py_XINCREF(value);
+  }
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::dec_py_refs
+//       Access: Public
+//  Description: Decrements the reference counts on all held Python
+//               objects.
+////////////////////////////////////////////////////////////////////
+void PandaNode::CData::
+dec_py_refs() {
+  PythonTagData::const_iterator ti;
+  for (ti = _python_tag_data.begin();
+       ti != _python_tag_data.end();
+       ++ti) {
+    PyObject *value = (*ti).second;
+    Py_XDECREF(value);
+  }
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::CData::write_up_list
-//       Access: Private
+//       Access: Public
 //  Description: Writes the indicated list of parent node pointers to
 //               the datagram.
 ////////////////////////////////////////////////////////////////////
@@ -198,7 +283,7 @@ write_up_list(const PandaNode::Up &up_list,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::CData::write_down_list
-//       Access: Private
+//       Access: Public
 //  Description: Writes the indicated list of child node pointers to
 //               the datagram.
 ////////////////////////////////////////////////////////////////////
@@ -222,7 +307,7 @@ write_down_list(const PandaNode::Down &down_list,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::CData::complete_up_list
-//       Access: Private
+//       Access: Public
 //  Description: Calls complete_pointers() on the list of parent node
 //               pointers.
 ////////////////////////////////////////////////////////////////////
@@ -254,7 +339,7 @@ complete_up_list(PandaNode::Up &up_list,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::CData::complete_down_list
-//       Access: Private
+//       Access: Public
 //  Description: Calls complete_pointers() on the list of child node
 //               pointers.
 ////////////////////////////////////////////////////////////////////
@@ -279,7 +364,7 @@ complete_down_list(PandaNode::Down &down_list,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::CData::fillin_up_list
-//       Access: Private
+//       Access: Public
 //  Description: Reads the indicated list parent node pointers from
 //               the datagram (or at least calls read_pointer() for
 //               each one).
@@ -298,7 +383,7 @@ fillin_up_list(PandaNode::Up &up_list,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::CData::fillin_down_list
-//       Access: Private
+//       Access: Public
 //  Description: Reads the indicated list child node pointers from
 //               the datagram (or at least calls read_pointer() for
 //               each one).
@@ -370,20 +455,6 @@ PandaNode::
 #endif  // NDEBUG
 
   remove_all_children();
-
-#ifdef HAVE_PYTHON
-  {
-    // Free all of the Python objects held by this node.
-    CDReader cdata(_cycler);
-    PythonTagData::const_iterator ti;
-    for (ti = cdata->_python_tag_data.begin();
-         ti != cdata->_python_tag_data.end();
-         ++ti) {
-      PyObject *value = (*ti).second;
-      Py_XDECREF(value);
-    }
-  }
-#endif  // HAVE_PYTHON
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -418,21 +489,16 @@ PandaNode(const PandaNode &copy) :
   cdata->_tag_data = copy_cdata->_tag_data;
   cdata->_draw_mask = copy_cdata->_draw_mask;
   cdata->_into_collide_mask = copy_cdata->_into_collide_mask;
+  cdata->_net_collide_mask = CollideMask::all_off();
+  cdata->_off_clip_planes = NULL;
   cdata->_fixed_internal_bound = copy_cdata->_fixed_internal_bound;
 
 #ifdef HAVE_PYTHON
   // Copy and increment all of the Python objects held by the other
   // node.
   cdata->_python_tag_data = copy_cdata->_python_tag_data;
-  PythonTagData::const_iterator ti;
-  for (ti = cdata->_python_tag_data.begin();
-       ti != cdata->_python_tag_data.end();
-       ++ti) {
-    PyObject *value = (*ti).second;
-    Py_XINCREF(value);
-  }
+  cdata->inc_py_refs();
 #endif  // HAVE_PYTHON
-
 }
 
 ////////////////////////////////////////////////////////////////////

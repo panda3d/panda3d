@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Thread::Constructor
-//       Access: Public
+//       Access: Protected
 //  Description: Creates a new Thread object, but does not
 //               immediately start executing it.  This gives the
 //               caller a chance to store it in a PT(Thread) object,
@@ -43,6 +43,7 @@ Thread(const string &name, const string &sync_name) :
 {
   _started = false;
   _pstats_index = -1;
+  _pipeline_stage = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +68,7 @@ operator = (const Thread &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Thread::get_name
-//       Access: Public
+//       Access: Published
 //  Description: Returns the name of the thread.  Each thread should
 //               probably have a unique name, but this is not enforced
 //               (and not strictly required).
@@ -79,7 +80,7 @@ get_name() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Thread::get_sync_name
-//       Access: Public
+//       Access: Published
 //  Description: Returns the sync name of the thread.  This name
 //               collects threads into "sync groups", which are
 //               expected to run synchronously.  This is mainly used
@@ -94,7 +95,7 @@ get_sync_name() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Thread::get_pstats_index
-//       Access: Public
+//       Access: Published
 //  Description: Returns the PStats index associated with this thread,
 //               or -1 if no index has yet been associated with this
 //               thread.  This is used internally by the PStatClient;
@@ -107,7 +108,7 @@ get_pstats_index() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Thread::set_pstats_index
-//       Access: Public
+//       Access: Published
 //  Description: Stores a PStats index to be associated with this
 //               thread.  This is used internally by the PStatClient;
 //               you should not need to call this directly.
@@ -115,6 +116,120 @@ get_pstats_index() const {
 INLINE void Thread::
 set_pstats_index(int pstats_index) {
   _pstats_index = pstats_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_pipeline_stage
+//       Access: Published
+//  Description: Returns the Pipeline stage number associated with
+//               this thread.  The default stage is 0 if no stage is
+//               specified otherwise.  See set_pipeline_stage().
+////////////////////////////////////////////////////////////////////
+INLINE int Thread::
+get_pipeline_stage() const {
+  return _pipeline_stage;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::set_pipeline_stage
+//       Access: Published
+//  Description: Specifies the Pipeline stage number associated with
+//               this thread.  The default stage is 0 if no stage is
+//               specified otherwise.
+//
+//               This must be a value in the range [0
+//               .. pipeline->get_num_stages() - 1].  It specifies the
+//               values that this thread observes for all pipelined
+//               data.  Typically, an application thread will leave
+//               this at 0, but a render thread may set it to 1 or 2
+//               (to operate on the previous frame's data, or the
+//               second previous frame's data).
+////////////////////////////////////////////////////////////////////
+INLINE void Thread::
+set_pipeline_stage(int pipeline_stage) {
+  _pipeline_stage = pipeline_stage;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_main_thread
+//       Access: Published, Static
+//  Description: Returns a pointer to the "main" Thread object--this
+//               is the Thread that started the whole process.
+////////////////////////////////////////////////////////////////////
+INLINE Thread *Thread::
+get_main_thread() {
+  if (_main_thread == (Thread *)NULL) {
+    init_main_thread();
+  }
+  return _main_thread;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_external_thread
+//       Access: Published, Static
+//  Description: Returns a pointer to the "external" Thread
+//               object--this is a special Thread object that
+//               corresponds to any thread spawned outside of Panda's
+//               threading interface.  Note that multiple different
+//               threads may share this same pointer.
+////////////////////////////////////////////////////////////////////
+INLINE Thread *Thread::
+get_external_thread() {
+  if (_external_thread == (Thread *)NULL) {
+    init_external_thread();
+  }
+  return _external_thread;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_current_thread
+//       Access: Published, Static
+//  Description: Returns a pointer to the currently-executing Thread
+//               object.  If this is called from the main thread, this
+//               will return the same value as get_main_thread().
+//
+//               This will always return some valid Thread pointer.
+//               It will never return NULL, even if the current thread
+//               was spawned outside of Panda's threading system,
+//               although all non-Panda threads will return the exact
+//               same Thread pointer.
+////////////////////////////////////////////////////////////////////
+INLINE Thread *Thread::
+get_current_thread() {
+#ifndef HAVE_THREADS
+  return get_main_thread();
+#else  // HAVE_THREADS
+  Thread *thread = ThreadImpl::get_current_thread();
+  if (thread == (Thread *)NULL) {
+    return Thread::get_external_thread();
+  }
+  return thread;
+#endif  // HAVE_THREADS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::is_threading_supported
+//       Access: Published, Static
+//  Description: Returns true if a real threading library is available
+//               that supports threads, or false if no threading
+//               library is available (and Thread::start() will always
+//               fail).
+////////////////////////////////////////////////////////////////////
+INLINE bool Thread::
+is_threading_supported() {
+  return ThreadImpl::is_threading_supported();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::sleep
+//       Access: Published, Static
+//  Description: Suspends the current thread for at least the
+//               indicated amount of time.  It might be suspended for
+//               longer.
+////////////////////////////////////////////////////////////////////
+INLINE void Thread::
+sleep(double seconds) {
+  ThreadImpl::sleep(seconds);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,88 +300,6 @@ join() {
 INLINE void Thread::
 prepare_for_exit() {
   ThreadImpl::prepare_for_exit();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Thread::get_main_thread
-//       Access: Public, Static
-//  Description: Returns a pointer to the "main" Thread object--this
-//               is the Thread that started the whole process.
-////////////////////////////////////////////////////////////////////
-INLINE Thread *Thread::
-get_main_thread() {
-  if (_main_thread == (Thread *)NULL) {
-    init_main_thread();
-  }
-  return _main_thread;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Thread::get_external_thread
-//       Access: Public, Static
-//  Description: Returns a pointer to the "external" Thread
-//               object--this is a special Thread object that
-//               corresponds to any thread spawned outside of Panda's
-//               threading interface.  Note that multiple different
-//               threads may share this same pointer.
-////////////////////////////////////////////////////////////////////
-INLINE Thread *Thread::
-get_external_thread() {
-  if (_external_thread == (Thread *)NULL) {
-    init_external_thread();
-  }
-  return _external_thread;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Thread::get_current_thread
-//       Access: Public, Static
-//  Description: Returns a pointer to the currently-executing Thread
-//               object.  If this is called from the main thread, this
-//               will return the same value as get_main_thread().
-//
-//               This will always return some valid Thread pointer.
-//               It will never return NULL, even if the current thread
-//               was spawned outside of Panda's threading system,
-//               although all non-Panda threads will return the exact
-//               same Thread pointer.
-////////////////////////////////////////////////////////////////////
-INLINE Thread *Thread::
-get_current_thread() {
-#ifndef HAVE_THREADS
-  return get_main_thread();
-#else  // HAVE_THREADS
-  Thread *thread = ThreadImpl::get_current_thread();
-  if (thread == (Thread *)NULL) {
-    return Thread::get_external_thread();
-  }
-  return thread;
-#endif  // HAVE_THREADS
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Thread::is_threading_supported
-//       Access: Public, Static
-//  Description: Returns true if a real threading library is available
-//               that supports threads, or false if no threading
-//               library is available (and Thread::start() will always
-//               fail).
-////////////////////////////////////////////////////////////////////
-INLINE bool Thread::
-is_threading_supported() {
-  return ThreadImpl::is_threading_supported();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Thread::sleep
-//       Access: Public, Static
-//  Description: Suspends the current thread for at least the
-//               indicated amount of time.  It might be suspended for
-//               longer.
-////////////////////////////////////////////////////////////////////
-INLINE void Thread::
-sleep(double seconds) {
-  ThreadImpl::sleep(seconds);
 }
 
 INLINE ostream &

@@ -32,10 +32,9 @@
 #include "pset.h"
 #include "pmap.h"
 #include "dcast.h"
+#include "pipelineCyclerBase.h"
 
 #include <algorithm>
-
-struct PipelineCyclerBase;
 
 
 // A handy macro for reading PointerToArrays.

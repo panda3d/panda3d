@@ -21,6 +21,9 @@
 
 #include "pandabase.h"
 #include "namable.h"
+#include "pset.h"
+
+class PipelineCyclerTrueImpl;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Pipeline
@@ -38,15 +41,30 @@
 class EXPCL_PANDA Pipeline : public Namable {
 public:
   Pipeline(const string &name);
-  virtual ~Pipeline();
+  ~Pipeline();
 
   INLINE static Pipeline *get_render_pipeline();
 
-  virtual void cycle();
+  void cycle();
+
+  void set_num_stages(int num_stages);
+  int get_num_stages() const;
+
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+  void add_cycler(PipelineCyclerTrueImpl *cycler);
+  void remove_cycler(PipelineCyclerTrueImpl *cycler);
+#endif  // DO_PIPELINING && HAVE_THREADS
 
 private:
+  int _num_stages;
+
   static void make_render_pipeline();
   static Pipeline *_render_pipeline;
+
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+  typedef pset<PipelineCyclerTrueImpl *> Cyclers;
+  Cyclers _cyclers;
+#endif  // DO_PIPELINING && HAVE_THREADS
 };
 
 #include "pipeline.I"

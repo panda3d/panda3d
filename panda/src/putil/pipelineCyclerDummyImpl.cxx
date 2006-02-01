@@ -1,5 +1,5 @@
-// Filename: pStatThread.cxx
-// Created by:  drose (30Jan06)
+// Filename: pipelineCyclerDummyImpl.cxx
+// Created by:  drose (31Jan06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,16 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "pStatThread.h"
-#include "pStatClient.h"
-
-////////////////////////////////////////////////////////////////////
-//     Function: PStatThread::get_thread
-//       Access: Published
-//  Description: Returns the Panda Thread object associated with this
-//               particular PStatThread.
-////////////////////////////////////////////////////////////////////
-Thread *PStatThread::
-get_thread() const {
-  return _client->get_thread_object(_index);
-}
+#include "pipelineCyclerDummyImpl.h"

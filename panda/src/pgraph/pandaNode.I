@@ -126,33 +126,6 @@ CData() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE PandaNode::CData::
-CData(const PandaNode::CData &copy) :
-  _down(copy._down),
-  _stashed(copy._stashed),
-  _up(copy._up),
-  _paths(copy._paths),
-  _state(copy._state),
-  _effects(copy._effects),
-  _transform(copy._transform),
-  _prev_transform(copy._prev_transform),
-  _tag_data(copy._tag_data),
-  _draw_mask(copy._draw_mask),
-  _into_collide_mask(copy._into_collide_mask),
-  _fixed_internal_bound(copy._fixed_internal_bound)
-{
-  _net_collide_mask = CollideMask::all_off();
-
-  // Note that this copy constructor is not used by the PandaNode copy
-  // constructor!  Any elements that must be copied between nodes
-  // should also be explicitly copied there.
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Children::Constructor
 //       Access: Public
 //  Description:

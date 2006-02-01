@@ -799,7 +799,7 @@ Registry() {
                             (InternalName::get_vertex(), 3,
                              NT_float32, C_point,
                              InternalName::get_normal(), 3,
-                             NT_float32, C_point,
+                             NT_float32, C_vector,
                              InternalName::get_color(), 1,
                              NT_packed_dabc, C_color));
 
@@ -815,7 +815,7 @@ Registry() {
                               (InternalName::get_vertex(), 3,
                                NT_float32, C_point,
                                InternalName::get_normal(), 3,
-                               NT_float32, C_point,
+                               NT_float32, C_vector,
                                InternalName::get_color(), 1,
                                NT_packed_dabc, C_color,
                                InternalName::get_texcoord(), 2,
@@ -834,7 +834,7 @@ Registry() {
                             (InternalName::get_vertex(), 3,
                              NT_float32, C_point,
                              InternalName::get_normal(), 3,
-                             NT_float32, C_point,
+                             NT_float32, C_vector,
                              InternalName::get_color(), 4,
                              NT_uint8, C_color));
 
@@ -850,7 +850,7 @@ Registry() {
                               (InternalName::get_vertex(), 3,
                                NT_float32, C_point,
                                InternalName::get_normal(), 3,
-                               NT_float32, C_point,
+                               NT_float32, C_vector,
                                InternalName::get_color(), 4,
                                NT_uint8, C_color,
                                InternalName::get_texcoord(), 2,

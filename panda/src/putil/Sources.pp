@@ -48,7 +48,10 @@
     nodePointerTo.h nodePointerTo.I \
     pipeline.h pipeline.I \
     pipelineCycler.h pipelineCycler.I \
-    pipelineCyclerBase.h pipelineCyclerBase.I \
+    pipelineCyclerBase.h  \
+    pipelineCyclerDummyImpl.h pipelineCyclerDummyImpl.I \
+    pipelineCyclerTrivialImpl.h pipelineCyclerTrivialImpl.I \
+    pipelineCyclerTrueImpl.h pipelineCyclerTrueImpl.I \
     pta_double.h \
     pta_float.h pta_int.h \
     string_utils.I string_utils.N string_utils.h \
@@ -88,7 +91,9 @@
     nodePointerTo.cxx \
     pipeline.cxx \
     pipelineCycler.cxx \
-    pipelineCyclerBase.cxx \
+    pipelineCyclerDummyImpl.cxx \
+    pipelineCyclerTrivialImpl.cxx \
+    pipelineCyclerTrueImpl.cxx \
     pta_double.cxx pta_float.cxx \
     pta_int.cxx pta_ushort.cxx \
     string_utils.cxx timedCycle.cxx typedWritable.cxx \
@@ -138,7 +143,10 @@
     nodePointerTo.h nodePointerTo.I \
     pipeline.h pipeline.I \
     pipelineCycler.h pipelineCycler.I \
-    pipelineCyclerBase.h pipelineCyclerBase.I \
+    pipelineCyclerBase.h \
+    pipelineCyclerDummyImpl.h pipelineCyclerDummyImpl.I \
+    pipelineCyclerTrivialImpl.h pipelineCyclerTrivialImpl.I \
+    pipelineCyclerTrueImpl.h pipelineCyclerTrueImpl.I \
     pta_double.h \
     pta_float.h pta_int.h pta_ushort.h \
     string_utils.I \

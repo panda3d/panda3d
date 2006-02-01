@@ -18,11 +18,11 @@
 
 
 #ifdef DO_PIPELINING
-// The following implementations are to support compiled-in pipeline
-// sanity checks.
+// The following implementations are to support the
+// PipelineCyclerDummyImpl or the PipelineCyclerTrueImpl.
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::Constructor (sanity-check)
+//     Function: PipelineCycler::Constructor (dummy or true)
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -34,20 +34,19 @@ PipelineCycler(Pipeline *pipeline) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::Copy Constructor (sanity-check)
+//     Function: PipelineCycler::Copy Constructor (dummy or true)
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE PipelineCycler<CycleDataType>::
 PipelineCycler(const PipelineCycler<CycleDataType> &copy) :
-  // In the DO_PIPELINING copy constructor, the pointer value is ignored.
-  PipelineCyclerBase(NULL, copy)
+  PipelineCyclerBase(copy)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::Copy Assignment (sanity-check)
+//     Function: PipelineCycler::Copy Assignment (dummy or true)
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +57,7 @@ operator = (const PipelineCycler<CycleDataType> &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::read (sanity-check)
+//     Function: PipelineCycler::read (dummy or true)
 //       Access: Public
 //  Description: See PipelineCyclerBase::read().
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +68,7 @@ read() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::write (sanity-check)
+//     Function: PipelineCycler::write (dummy or true)
 //       Access: Public
 //  Description: See PipelineCyclerBase::write().
 ////////////////////////////////////////////////////////////////////
@@ -80,7 +79,7 @@ write() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::elevate_read (sanity-check)
+//     Function: PipelineCycler::elevate_read (dummy or true)
 //       Access: Public
 //  Description: See PipelineCyclerBase::elevate_read().
 ////////////////////////////////////////////////////////////////////
@@ -91,7 +90,7 @@ elevate_read(const CycleDataType *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::write_stage (sanity-check)
+//     Function: PipelineCycler::write_stage (dummy or true)
 //       Access: Public
 //  Description: See PipelineCyclerBase::write_stage().
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +101,7 @@ write_stage(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::cheat (sanity-check)
+//     Function: PipelineCycler::cheat (dummy or true)
 //       Access: Public
 //  Description: Returns a pointer without counting it.  This is only
 //               intended for use as the return value for certain
@@ -142,7 +141,7 @@ PipelineCycler(Pipeline *pipeline) :
 template<class CycleDataType>
 INLINE PipelineCycler<CycleDataType>::
 PipelineCycler(const PipelineCycler<CycleDataType> &copy) :
-  PipelineCyclerBase(&_typed_data, copy),
+  PipelineCyclerBase(&_typed_data),
   _typed_data(copy._typed_data)
 {
 }
@@ -155,7 +154,6 @@ PipelineCycler(const PipelineCycler<CycleDataType> &copy) :
 template<class CycleDataType>
 INLINE void PipelineCycler<CycleDataType>::
 operator = (const PipelineCycler<CycleDataType> &copy) {
-  PipelineCyclerBase::operator = (copy);
   _typed_data = copy._typed_data;
 }
 

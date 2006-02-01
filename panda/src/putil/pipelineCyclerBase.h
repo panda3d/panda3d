@@ -21,68 +21,32 @@
 
 #include "pandabase.h"
 
-#include "cycleData.h"
-#include "pipeline.h"
-#include "pointerTo.h"
-
-////////////////////////////////////////////////////////////////////
-//       Class : PipelineCyclerBase
-// Description : This is the non-template part of the implementation
-//               of PipelineCycler.  See PipelineCycler.
-//
-//               We define this as a struct instead of a class to
-//               guarantee byte placement within the object, so that
-//               (particularly for the trivial implementation) the
-//               inherited struct's data is likely to be placed by the
-//               compiler at the "this" pointer.
-////////////////////////////////////////////////////////////////////
-struct EXPCL_PANDA PipelineCyclerBase {
-public:
-  INLINE PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline = NULL);
-  INLINE PipelineCyclerBase(CycleData *initial_data, const PipelineCyclerBase &copy);
-  INLINE void operator = (const PipelineCyclerBase &copy);
-  INLINE ~PipelineCyclerBase();
-
-  INLINE const CycleData *read() const;
-  INLINE void increment_read(const CycleData *pointer) const;
-  INLINE void release_read(const CycleData *pointer) const;
-
-  INLINE CycleData *write();
-  INLINE CycleData *elevate_read(const CycleData *pointer);
-  INLINE void release_write(CycleData *pointer);
-
-  INLINE int get_num_stages();
-  INLINE bool is_stage_unique(int n) const;
-  INLINE CycleData *write_stage(int n);
-  INLINE void release_write_stage(int n, CycleData *pointer);
-
-  INLINE CycleData *cheat() const;
-  INLINE int get_read_count() const;
-  INLINE int get_write_count() const;
-
 #ifdef DO_PIPELINING
-  // This private data is only stored here if we have pipelining
-  // compiled in.  Actually, this particular data is only used for
-  // sanity checking the pipelining code; it doesn't do anything
-  // useful.
-private:
-  PT(CycleData) _data;
-  Pipeline *_pipeline;
-  short _read_count, _write_count;
 
-#else  // !DO_PIPELINING
-  // In a trivial implementation, we only need to store the CycleData
-  // pointer.  Actually, we don't even need to do that, if we're lucky
-  // and the compiler doesn't do anything funny with the struct
-  // layout.
-  #ifndef SIMPLE_STRUCT_POINTERS
-  CycleData *_data;
-  #endif  // SIMPLE_STRUCT_POINTERS
+#ifdef HAVE_THREADS
+
+// With DO_PIPELINING and threads available, we want the true cycler
+// implementation.
+#include "pipelineCyclerTrueImpl.h"
+typedef PipelineCyclerTrueImpl PipelineCyclerBase;
+
+#else  // HAVE_THREADS
+
+// With DO_PIPELINING but no threads available, we want the dummy,
+// self-validating cycler implementation.
+#include "pipelineCyclerDummyImpl.h"
+typedef PipelineCyclerDummyImpl PipelineCyclerBase;
+
+#endif // HAVE_THREADS
+
+#else  // DO_PIPELINING
+
+// Without DO_PIPELINING, we only want the trivial, do-nothing
+// implementation.
+#include "pipelineCyclerTrivialImpl.h"
+typedef PipelineCyclerTrivialImpl PipelineCyclerBase;
 
 #endif  // DO_PIPELINING
-};
-
-#include "pipelineCyclerBase.I"
 
 #endif
 

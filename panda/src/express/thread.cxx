@@ -26,7 +26,7 @@ TypeHandle Thread::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Thread::Destructor
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Thread::
@@ -34,8 +34,49 @@ Thread::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::bind_thread
+//       Access: Published, Static
+//  Description: Returns a new Panda Thread object associated with the
+//               current thread (which has been created externally).
+//               This can be used to bind a unique Panda Thread object
+//               with an external thread, such as a new Python thread.
+//
+//               It is particularly useful to bind a Panda Thread
+//               object to an external thread for the purposes of
+//               PStats monitoring.  Without this call, each external
+//               thread will be assigned the same global
+//               ExternalThread object, which means they will all
+//               appear in the same PStats graph.
+//
+//               It is the caller's responsibility to save the
+//               returned Thread pointer for the lifetime of the
+//               external thread.  It is an error for the Thread
+//               pointer to destruct while the external thread is
+//               still in the system.
+//
+//               It is also an error to call this method from the main
+//               thread, or twice within a given thread, unless it is
+//               given the same name each time (in which case the same
+//               pointer will be returned each time).
+////////////////////////////////////////////////////////////////////
+PT(Thread) Thread::
+bind_thread(const string &name, const string &sync_name) {
+  Thread *current_thread = get_current_thread();
+  if (current_thread != get_external_thread()) {
+    // This thread already has an associated thread.
+    nassertr(current_thread->get_name() == name && 
+             current_thread->get_sync_name() == sync_name, current_thread);
+    return current_thread;
+  }
+
+  PT(Thread) thread = new ExternalThread(name, sync_name);
+  ThreadImpl::bind_thread(thread);
+  return thread;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::output
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Thread::

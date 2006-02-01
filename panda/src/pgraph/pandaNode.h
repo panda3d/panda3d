@@ -315,11 +315,18 @@ private:
   class EXPCL_PANDA CData : public CycleData {
   public:
     INLINE CData();
-    INLINE CData(const CData &copy);
+    CData(const CData &copy);
+    virtual ~CData();
+
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
+
+#ifdef HAVE_PYTHON
+    void inc_py_refs();
+    void dec_py_refs();
+#endif
 
     void write_up_list(const Up &up_list,
                        BamWriter *manager, Datagram &dg) const;

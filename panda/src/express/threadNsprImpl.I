@@ -41,7 +41,7 @@ prepare_for_exit() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadNsprImpl::Constructor
+//     Function: ThreadNsprImpl::get_current_thread
 //       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -51,6 +51,22 @@ get_current_thread() {
     init_pt_ptr_index();
   }
   return (Thread *)PR_GetThreadPrivate(_pt_ptr_index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadNsprImpl::bind_thread
+//       Access: Public, Static
+//  Description: Associates the indicated Thread object with the
+//               currently-executing thread.  You should not call this
+//               directly; use Thread::bind_thread() instead.
+////////////////////////////////////////////////////////////////////
+INLINE void ThreadNsprImpl::
+bind_thread(Thread *thread) {
+  if (!_got_pt_ptr_index) {
+    init_pt_ptr_index();
+  }
+  PRStatus result = PR_SetThreadPrivate(_pt_ptr_index, thread);
+  nassertv(result == PR_SUCCESS);
 }
 
 ////////////////////////////////////////////////////////////////////
