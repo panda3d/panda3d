@@ -3416,7 +3416,7 @@ update_standard_texture_bindings() {
     apply_texture(i, tc);
     set_texture_blend_mode(i, stage);
 
-    int texcoord_dimensions = 0;
+    int texcoord_dimensions = 2;
 
     CPT(TransformState) tex_mat = TransformState::make_identity();
     if (_state._tex_matrix->has_stage(stage)) {
@@ -3521,7 +3521,7 @@ update_standard_texture_bindings() {
     set_render_state(D3DRS_POINTSPRITEENABLE, any_point_sprite);
 
     if (!tex_mat->is_identity()) {
-      if (tex_mat->is_2d() && texcoord_dimensions <= 2) {
+      if (/*tex_mat->is_2d() &&*/ texcoord_dimensions <= 2) {
         // For 2-d texture coordinates, we have to reorder the matrix.
         LMatrix4f m = tex_mat->get_mat();
         m.set(m(0, 0), m(0, 1), m(0, 3), 0.0f,
