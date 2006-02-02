@@ -75,6 +75,8 @@ private:
   int _curr_idx;
   vector_string _replace_prefix;
 
+  string _exec_string;
+
   PT(MayaApi) _maya;
   MayaShaders _shaders;
 };

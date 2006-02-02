@@ -42,7 +42,6 @@
 ////////////////////////////////////////////////////////////////////
 MayaCopy::
 MayaCopy() {
-  _curr_idx = 0;
   set_program_description
     ("mayacopy copies one or more Maya .mb files into a "
      "CVS source hierarchy.  "
@@ -87,6 +86,7 @@ run() {
 
   SourceFiles::iterator fi;
   for (fi = _source_files.begin(); fi != _source_files.end(); ++fi) {
+    _curr_idx = 0;
     ExtraData ed;
     ed._type = FT_maya;
 
@@ -224,10 +224,10 @@ copy_maya_file(const Filename &source, const Filename &dest,
     CVSSourceTree::FilePath path =
       _tree.choose_directory(filename.get_basename(), dir, _force, _interactive);
     Filename new_filename = path.get_rel_from(dir);
-    string execString = "file -loadReference \"" + _replace_prefix[_curr_idx++] + "RN\" -type \"mayaBinary\" -options \"v=0\" \"" + new_filename.to_os_generic() + "\";";
-    maya_cat.info() << "executing command: " << execString << "\n";
+    _exec_string = "file -loadReference \"" + _replace_prefix[_curr_idx++] + "RN\" -type \"mayaBinary\" -options \"v=0\" \"" + new_filename.to_os_generic() + "\";";
+    maya_cat.info() << "executing command: " << _exec_string << "\n";
     //MGlobal::executeCommand("file -loadReference \"mtpRN\" -type \"mayaBinary\" -options \"v=0\" \"m_t_pear_zero.mb\";");
-    status  = MGlobal::executeCommand(MString(execString.c_str()));
+    status  = MGlobal::executeCommand(MString(_exec_string.c_str()));
   }
 
   // Get all the shaders so we can determine the set of textures.
@@ -256,6 +256,15 @@ copy_maya_file(const Filename &source, const Filename &dest,
   for (ref_index = 0; ref_index < num_refs; ref_index++) {
     //maya_cat.info() << "refs filename: " << refs[ref_index].asChar() << "\n";
     //maya_cat.info() << "os_specific filename: " << Filename::from_os_specific(refs[ref_index].asChar()) << "\n";
+
+    //maya_cat.info() << "-----------exec_string = " << _exec_string << endl;
+    string original("loadReference");
+    string replace("unloadReference");
+    size_t index = _exec_string.find("loadReference");
+    _exec_string.replace(index, original.length(), replace, 0, replace.length());
+    maya_cat.info() << "executing command: " << _exec_string << "\n";
+    status  = MGlobal::executeCommand(MString(_exec_string.c_str()));
+
     Filename filename = 
       _path_replace->convert_path(Filename::from_os_specific(refs[ref_index].asChar()));
 
