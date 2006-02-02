@@ -2340,6 +2340,10 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
       }
     }
   }
+
+  // we don't want an extra light stage for interpolate mode, it takes care of automatically
+  if (is_interpolate)
+    is_decal = false;
   
   // new decal mode needs an extra dummy layers of textureStage
   EggTexture *dummy_tex = (EggTexture *)NULL;
