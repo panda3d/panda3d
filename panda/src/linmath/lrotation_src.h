@@ -30,6 +30,9 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LMatrix4) &);
   INLINE_LINMATH FLOATNAME(LRotation)(FLOATTYPE, FLOATTYPE, FLOATTYPE);
 
+  INLINE_LINMATH FLOATNAME(LRotation) operator * (FLOATTYPE scalar) const;
+  INLINE_LINMATH FLOATNAME(LRotation) operator / (FLOATTYPE scalar) const;
+
   INLINE_LINMATH FLOATNAME(LRotation)
   operator*(const FLOATNAME(LRotation)& other) const;
 

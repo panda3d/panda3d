@@ -93,6 +93,26 @@ FLOATNAME(LRotation)(FLOATTYPE h, FLOATTYPE p, FLOATTYPE r) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LRotation::rotation * scalar
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LRotation) FLOATNAME(LRotation)::
+operator * (FLOATTYPE scalar) const {
+  return FLOATNAME(LVecBase4)::operator * (scalar);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LRotation::rotation / scalar
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LRotation) FLOATNAME(LRotation)::
+operator / (FLOATTYPE scalar) const {
+  return FLOATNAME(LVecBase4)::operator / (scalar);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LRotation::operator *
 //       Access: public
 //  Description: Rotation * Rotation = Rotation
