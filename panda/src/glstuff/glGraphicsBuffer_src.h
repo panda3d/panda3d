@@ -22,8 +22,24 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : glGraphicsBuffer
-// Description : An offscreen render buffer.  This is implemented
-//               using the following OpenGL extensions:
+// Description : An offscreen render buffer.
+//
+//               The glGraphicsBuffer can export its color buffer as a
+//               texture.  It can also export its depth buffer as a depth
+//               texture and its stencil buffer as a stencil texture.
+//               Finally, it can have auxiliary buffers (additional 
+//               bitplanes above and beyond the usual set), which can
+//               also be exported as textures.  This is the key advantage
+//               of the glGraphicsBuffer: it can render to many textures
+//               at the same time.
+//
+//               The glGraphicsBuffer shares a gsg with a host window.
+//               If the host window is destroyed, the glGraphicsBuffer is
+//               lost as well.  If desired, the glGraphicsBuffer can
+//               track the size of the host window.
+//
+//               The glGraphicsBuffer is implemented using the following
+//               OpenGL extensions:
 //               
 //               EXT_framebuffer_object
 //               ARB_draw_buffers
@@ -34,13 +50,6 @@
 //               still be possible to create a wglGraphicsBuffer or
 //               glxGraphicsBuffer).
 //
-//               The glGraphicsBuffer can export its color buffer as a
-//               texture.  It can also export its depth buffer as a depth
-//               texture and its stencil buffer as a stencil texture.
-//               Finally, it can have auxiliary buffers (additional 
-//               bitplanes above and beyond the usual set), which can
-//               also be exported as textures.
-//
 ////////////////////////////////////////////////////////////////////
 
 class EXPCL_GL CLP(GraphicsBuffer) : public GraphicsBuffer {
@@ -50,21 +59,12 @@ public:
                       int x_size, int y_size);
   virtual ~CLP(GraphicsBuffer)();
 
-  virtual bool begin_frame();
   virtual void select_cube_map(int cube_map_index);
-
+  virtual void auto_resize();
   virtual void make_current();
-  virtual void release_gsg();
-
   virtual void begin_render_texture();
   virtual void end_render_texture();
   
-  virtual void process_events();
-
-protected:
-  virtual void close_buffer();
-  virtual bool open_buffer();
-
 private:
   // HPBUFFERARB _pbuffer;
   // HDC _pbuffer_dc;
