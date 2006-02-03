@@ -196,7 +196,8 @@ class AsyncRequest(DirectObject):
     #            self._checkCompletion, [None])
     #        self.air.queryObject(doId, context)
 
-    def createObject(self, name, className, values=None, context=None):
+    def createObject(self, name, className,
+            databaseId=None, values=None, context=None):
         """
         Create a new database object.  You can get the doId from within
         your self.finish() function.
@@ -226,7 +227,8 @@ class AsyncRequest(DirectObject):
         ## else:
         ##     self.accept(
         ##         "doRequestResponse-%s"%(context,), self._checkCompletion, [name])
-        self.air.requestDatabaseGenerate(className, context, values=values)
+        self.air.requestDatabaseGenerate(
+            className, context, databaseId=databaseId, values=values)
 
     def createObjectId(self, name, className, values=None, context=None):
         """
