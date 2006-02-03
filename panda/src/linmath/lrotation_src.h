@@ -23,7 +23,7 @@
 class EXPCL_PANDA FLOATNAME(LRotation) : public FLOATNAME(LQuaternion) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LRotation)();
-  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LQuaternion)&);
+  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LQuaternion) &);
   INLINE_LINMATH FLOATNAME(LRotation)(FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE);
   INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LVector3) &, FLOATTYPE);
   INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LMatrix3) &);
@@ -34,10 +34,10 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LRotation) operator / (FLOATTYPE scalar) const;
 
   INLINE_LINMATH FLOATNAME(LRotation)
-  operator*(const FLOATNAME(LRotation)& other) const;
+  operator * (const FLOATNAME(LRotation) &other) const;
 
   INLINE_LINMATH FLOATNAME(LQuaternion)
-  operator*(const FLOATNAME(LQuaternion)& other) const;
+  operator * (const FLOATNAME(LQuaternion) &other) const;
 
 public:
   static TypeHandle get_class_type() {

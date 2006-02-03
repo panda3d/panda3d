@@ -31,7 +31,7 @@ FLOATNAME(LRotation)() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
-FLOATNAME(LRotation)(const FLOATNAME(LQuaternion)& c) :
+FLOATNAME(LRotation)(const FLOATNAME(LQuaternion) &c) :
   FLOATNAME(LQuaternion)(c) {
 }
 
@@ -99,7 +99,7 @@ FLOATNAME(LRotation)(FLOATTYPE h, FLOATTYPE p, FLOATTYPE r) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation) FLOATNAME(LRotation)::
 operator * (FLOATTYPE scalar) const {
-  return FLOATNAME(LVecBase4)::operator * (scalar);
+  return FLOATNAME(LRotation)(FLOATNAME(LVecBase4)::operator * (scalar));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation) FLOATNAME(LRotation)::
 operator / (FLOATTYPE scalar) const {
-  return FLOATNAME(LVecBase4)::operator / (scalar);
+  return FLOATNAME(LRotation)(FLOATNAME(LVecBase4)::operator / (scalar));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,7 +118,7 @@ operator / (FLOATTYPE scalar) const {
 //  Description: Rotation * Rotation = Rotation
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation) FLOATNAME(LRotation)::
-operator*(const FLOATNAME(LRotation)& other) const {
+operator * (const FLOATNAME(LRotation) &other) const {
   return multiply(other);
 }
 
@@ -130,7 +130,7 @@ operator*(const FLOATNAME(LRotation)& other) const {
 //               to apply an orientation to a rotation.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LRotation)::
-operator*(const FLOATNAME(LQuaternion)& other) const {
+operator * (const FLOATNAME(LQuaternion) &other) const {
   nassert_raise("LRotation * LQuaternion is undefined; use LRotation * LRotation or LQuaternion * LQuaternion");
   return multiply(other);
 }
