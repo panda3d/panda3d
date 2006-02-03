@@ -78,16 +78,42 @@ wdxGraphicsBuffer9::
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsBuffer9::
 begin_frame() {
+  DBG_S dxgsg9_cat.debug ( ) << "wdxGraphicsBuffer9::begin_frame\n"; DBG_E
+  begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
+  auto_resize();
+  if (needs_context()) {
+    if (!make_context()) {
+      return false;
+    }
+  }
+  make_current();
+  begin_render_texture();
+  clear_cube_map_selection();
+  return _gsg->begin_frame();
+}
 
-  DBG_S dxgsg9_cat.debug ( ) << "wdxGraphicsBuffer9::begin_frame\n"; DBG_E
-
-  DXGraphicsStateGuardian9 *dxgsg;
-  DCAST_INTO_R(dxgsg, _gsg, false);
-
-  return GraphicsBuffer::begin_frame();
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsBuffer9::end_frame
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after rendering is completed for a given frame.  It
+//               should do whatever finalization is required.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsBuffer9::
+end_frame() {
+  end_frame_spam();
+  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  _gsg->end_frame();
+  end_render_texture();
+  copy_to_textures();
+  trigger_flip();
+  if (_one_shot) {
+    prepare_for_deletion();
+  }
+  clear_cube_map_selection();
 }
 
 ////////////////////////////////////////////////////////////////////

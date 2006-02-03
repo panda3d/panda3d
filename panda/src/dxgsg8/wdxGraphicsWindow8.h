@@ -38,9 +38,9 @@ public:
                      const string &name);
   virtual ~wdxGraphicsWindow8();
 
-  virtual void make_current();
-
   virtual bool begin_frame();
+  virtual void end_frame();
+  virtual void make_current();
   virtual void end_flip();
 
   virtual int verify_window_sizes(int numsizes, int *dimen);

@@ -43,6 +43,7 @@ public:
   virtual void release_gsg();
 
   virtual bool begin_frame();
+  virtual void end_frame();
   virtual void begin_flip();
 
   virtual void process_events();

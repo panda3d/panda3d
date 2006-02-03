@@ -185,7 +185,17 @@ public:
   // thread other than the window thread.  These methods are normally
   // called by the GraphicsEngine.
   virtual void process_events();
+
+protected:
+
+  void prepare_for_deletion();
+  void copy_to_textures();
   
+  INLINE void begin_frame_spam();
+  INLINE void end_frame_spam();
+  INLINE void clear_cube_map_selection();
+  INLINE void trigger_flip();
+
 protected:
 
   class RenderTexture {

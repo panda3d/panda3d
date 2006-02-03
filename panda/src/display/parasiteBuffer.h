@@ -63,10 +63,12 @@ PUBLISHED:
   virtual bool is_active() const;
 
 public:
+  virtual bool begin_frame();
+  virtual void end_frame();
   virtual GraphicsOutput *get_host();
   virtual void make_current();
   virtual void auto_resize();
-
+  
 private:
   PT(GraphicsOutput) _host;
   bool _track_host_size;

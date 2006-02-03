@@ -962,34 +962,53 @@ reset_window(bool swapchain) {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsOutput::
 begin_frame() {
-  if (display_cat.is_spam()) {
-    display_cat.spam()
-      << "begin_frame(): " << get_type() << " "
-      << get_name() << " " << (void *)this << "\n";
-  }
+  return false;
+}
 
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
-    return false;
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::end_frame
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after rendering is completed for a given frame.  It
+//               should do whatever finalization is required.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+end_frame() {
+}
 
-  // Track the size of some other graphics output, if desired.
-  auto_resize();
-
-  if (needs_context()) {
-    if (!make_context()) {
-      return false;
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::prepare_for_deletion
+//       Access: Protected
+//  Description: Set the delete flag, and do the usual cleanup 
+//               activities associated with that.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+prepare_for_deletion() {
+  // But when show-buffers mode is enabled, we want to keep the
+  // window around until the user has a chance to see the texture.
+  // So we don't do most of the following in show-buffers mode.
+  if (!show_buffers) {
+    _active = false;
+    _delete_flag = true;
+    
+    // We have to be sure to remove all of the display regions
+    // immediately, so that circular reference counts can be cleared
+    // up (each display region keeps a pointer to a CullResult,
+    // which can hold all sorts of pointers).
+    remove_all_display_regions();
+    
+    // If we were rendering directly to texture, we can't delete the
+    // buffer until the texture is gone too.
+    for (int i=0; i<count_textures(); i++) {
+      if (get_rtm_mode(i) == RTM_bind_or_copy) {
+        _hold_textures.push_back(get_texture(i));
+      }
     }
   }
-
-  // Okay, we already have a GSG, so activate it.
-  make_current();
-
-  begin_render_texture();
-
-  _cube_map_index = -1;
-  _cube_map_dr = NULL;
-
-  return _gsg->begin_frame();
+  
+  // We have to be sure to clear the _textures pointers, though, or
+  // we'll end up holding a reference to the textures forever.
+  clear_render_textures();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1020,27 +1039,14 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
+//     Function: GraphicsOutput::copy_to_textures
+//       Access: Protected
+//  Description: For all textures marked RTM_copy_texture,
+//               RTM_copy_ram, RTM_triggered_copy_texture, or
+//               RTM_triggered_copy_ram, do the necessary copies.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
-end_frame() {
-  if (display_cat.is_spam()) {
-    display_cat.spam()
-      << "end_frame(): " << get_type() << " "
-      << get_name() << " " << (void *)this << "\n";
-  }
-
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-  _gsg->end_frame();
-
-  // Handle all render-to-texture operations that use bind-to-texture
-  end_render_texture();
-
-  // Handle all render-to-texture operations that use copy-to-texture
+copy_to_textures() {
   for (int i=0; i<count_textures(); i++) {
     RenderTextureMode rtm_mode = get_rtm_mode(i);
     if ((rtm_mode == RTM_none)||(rtm_mode == RTM_bind_or_copy)) {
@@ -1082,44 +1088,6 @@ end_frame() {
     }
   }
   _trigger_copy = false;
-
-  // If we're not single-buffered, we're now ready to flip.
-  if (!_gsg->get_properties().is_single_buffered()) {
-    _flip_ready = true;
-  }
-
-  // In one-shot mode, we request the GraphicsEngine to delete the
-  // window after we have rendered a frame.
-  if (_one_shot) {
-    // But when show-buffers mode is enabled, we want to keep the
-    // window around until the user has a chance to see the texture.
-    // So we don't do most of the following in show-buffers mode.
-    if (!show_buffers) {
-      _active = false;
-      _delete_flag = true;
-
-      // We have to be sure to remove all of the display regions
-      // immediately, so that circular reference counts can be cleared
-      // up (each display region keeps a pointer to a CullResult,
-      // which can hold all sorts of pointers).
-      remove_all_display_regions();
-
-      // If we were rendering directly to texture, we can't delete the
-      // buffer until the texture is gone too.
-      for (int i=0; i<count_textures(); i++) {
-        if (get_rtm_mode(i) == RTM_bind_or_copy) {
-          _hold_textures.push_back(get_texture(i));
-        }
-      }
-    }
-
-    // We have to be sure to clear the _textures pointers, though, or
-    // we'll end up holding a reference to the textures forever.
-    clear_render_textures();
-  }
-
-  _cube_map_index = -1;
-  _cube_map_dr = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

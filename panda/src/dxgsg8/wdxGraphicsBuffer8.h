@@ -42,6 +42,7 @@ public:
   virtual ~wdxGraphicsBuffer8();
 
   virtual bool begin_frame();
+  virtual void end_frame();
   virtual void select_cube_map(int cube_map_index);
 
   virtual void make_current();

@@ -426,3 +426,55 @@ INLINE void GraphicsOutput::
 win_display_regions_changed() {
   _display_regions_stale = true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::begin_frame_spam
+//       Access: Public
+//  Description: Display the spam message associated with begin_frame
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsOutput::
+begin_frame_spam() {
+  if (display_cat.is_spam()) {
+    display_cat.spam()
+      << "begin_frame(): " << get_type() << " "
+      << get_name() << " " << (void *)this << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::end_frame_spam
+//       Access: Public
+//  Description: Display the spam message associated with end_frame
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsOutput::
+end_frame_spam() {
+  if (display_cat.is_spam()) {
+    display_cat.spam()
+      << "end_frame(): " << get_type() << " "
+      << get_name() << " " << (void *)this << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::clear_cube_map_selection
+//       Access: Public
+//  Description: Clear the variables that select a cube-map face.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsOutput::
+clear_cube_map_selection() {
+  _cube_map_index = -1;
+  _cube_map_dr = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::trigger_flip
+//       Access: Public
+//  Description: Set the flip_ready flag, only if legal to do so.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsOutput::
+trigger_flip() {
+  if (!_gsg->get_properties().is_single_buffered()) {
+    _flip_ready = true;
+  }
+}
+

@@ -97,6 +97,54 @@ get_host() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::begin_frame
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               before beginning rendering for a given frame.  It
+//               should do whatever setup is required, and return true
+//               if the frame should be rendered, or false if it
+//               should be skipped.
+////////////////////////////////////////////////////////////////////
+bool ParasiteBuffer::
+begin_frame() {
+  begin_frame_spam();
+  if (_gsg == (GraphicsStateGuardian *)NULL) {
+    return false;
+  }
+  auto_resize();
+  if (needs_context()) {
+    if (!make_context()) {
+      return false;
+    }
+  }
+  make_current();
+  begin_render_texture();
+  clear_cube_map_selection();
+  return _gsg->begin_frame();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::end_frame
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after rendering is completed for a given frame.  It
+//               should do whatever finalization is required.
+////////////////////////////////////////////////////////////////////
+void ParasiteBuffer::
+end_frame() {
+  end_frame_spam();
+  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  _gsg->end_frame();
+  end_render_texture();
+  copy_to_textures();
+  trigger_flip();
+  if (_one_shot) {
+    prepare_for_deletion();
+  }
+  clear_cube_map_selection();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ParasiteBuffer::make_current
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
