@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "namable.h"
 #include "pset.h"
-#include "pmutex.h"
+#include "reMutex.h"
 
 class PipelineCyclerTrueImpl;
 
@@ -67,7 +67,7 @@ private:
   typedef pset<PipelineCyclerTrueImpl *> Cyclers;
   Cyclers _cyclers;
 
-  Mutex _lock;
+  ReMutex _lock;
 #endif  // DO_PIPELINING && HAVE_THREADS
 };
 

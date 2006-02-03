@@ -18,7 +18,7 @@
 
 #include "pipeline.h"
 #include "pipelineCyclerTrueImpl.h"
-#include "mutexHolder.h"
+#include "reMutexHolder.h"
 
 Pipeline *Pipeline::_render_pipeline = (Pipeline *)NULL;
 
@@ -54,7 +54,7 @@ Pipeline::
 void Pipeline::
 cycle() {
 #if defined(DO_PIPELINING) && defined(HAVE_THREADS)
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   Cyclers::iterator ci;
   for (ci = _cyclers.begin(); ci != _cyclers.end(); ++ci) {
     (*ci)->cycle();
@@ -72,7 +72,7 @@ void Pipeline::
 set_num_stages(int num_stages) {
   nassertv(num_stages >= 1);
 #if defined(DO_PIPELINING) && defined(HAVE_THREADS)
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   if (num_stages != _num_stages) {
     
     // We need to lock every PipelineCycler object in the world before
@@ -121,7 +121,7 @@ get_num_stages() const {
 ////////////////////////////////////////////////////////////////////
 void Pipeline::
 add_cycler(PipelineCyclerTrueImpl *cycler) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   bool inserted = _cyclers.insert(cycler).second;
   nassertv(inserted);
 }
@@ -137,7 +137,7 @@ add_cycler(PipelineCyclerTrueImpl *cycler) {
 ////////////////////////////////////////////////////////////////////
 void Pipeline::
 remove_cycler(PipelineCyclerTrueImpl *cycler) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   Cyclers::iterator ci = _cyclers.find(cycler);
   nassertv(ci != _cyclers.end());
   _cyclers.erase(ci);
