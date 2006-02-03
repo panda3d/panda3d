@@ -63,6 +63,7 @@ PUBLISHED:
 
   INLINE int get_pipeline_stage() const;
   INLINE void set_pipeline_stage(int pipeline_stage);
+  INLINE void set_min_pipeline_stage(int min_pipeline_stage);
 
   INLINE static Thread *get_main_thread();
   INLINE static Thread *get_external_thread();

@@ -322,6 +322,9 @@ private:
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
+    virtual TypeHandle get_parent_type() const {
+      return PandaNode::get_class_type();
+    }
 
 #ifdef HAVE_PYTHON
     void inc_py_refs();

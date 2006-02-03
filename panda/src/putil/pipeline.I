@@ -29,3 +29,14 @@ get_render_pipeline() {
   }
   return _render_pipeline;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::set_min_stages
+//       Access: Public
+//  Description: Ensures that at least the indicated number of stages
+//               are in the pipeline.
+////////////////////////////////////////////////////////////////////
+INLINE void Pipeline::
+set_min_stages(int min_stages) {
+  set_num_stages(max(min_stages, get_num_stages()));
+}

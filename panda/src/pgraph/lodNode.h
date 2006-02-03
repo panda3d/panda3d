@@ -104,6 +104,9 @@ protected:
 
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
+    virtual TypeHandle get_parent_type() const {
+      return LODNode::get_class_type();
+    }
 
     LPoint3f _center;
     SwitchVector _switch_vector;

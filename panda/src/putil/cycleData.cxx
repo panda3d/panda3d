@@ -85,3 +85,25 @@ void CycleData::
 fillin(DatagramIterator &, BamReader *, void *) {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CycleData::get_parent_type
+//       Access: Public, Virtual
+//  Description: Returns the type of the container that owns the
+//               CycleData.  This is useful mainly for debugging.
+////////////////////////////////////////////////////////////////////
+TypeHandle CycleData::
+get_parent_type() const {
+  return TypeHandle::none();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleData::output
+//       Access: Public, Virtual
+//  Description: Formats the contents of the CycleData in some
+//               meaningful way for humans.  This is useful mainly for
+//               debugging.
+////////////////////////////////////////////////////////////////////
+void CycleData::
+output(ostream &out) const {
+  out << get_parent_type() << "::CData";
+}

@@ -26,6 +26,7 @@
 #include "cycleData.h"
 #include "pointerTo.h"
 #include "thread.h"
+#include "reMutex.h"
 
 class Pipeline;
 
@@ -61,7 +62,7 @@ public:
 
   INLINE int get_num_stages();
   INLINE bool is_stage_unique(int n) const;
-  INLINE CycleData *write_stage(int n);
+  CycleData *write_stage(int n);
   INLINE void release_write_stage(int n, CycleData *pointer);
 
   INLINE CycleData *cheat() const;
@@ -82,6 +83,8 @@ private:
 
   StageData *_data;
   int _num_stages;
+
+  ReMutex _lock;
 
   friend class Pipeline;
 };

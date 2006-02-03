@@ -81,6 +81,9 @@ private:
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
+    virtual TypeHandle get_parent_type() const {
+      return TransformTable::get_class_type();
+    }
 
     UpdateSeq _modified;
   };

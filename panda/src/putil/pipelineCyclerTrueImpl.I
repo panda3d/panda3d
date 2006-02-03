@@ -32,6 +32,7 @@ INLINE const CycleData *PipelineCyclerTrueImpl::
 read() const {
   int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
+  _lock.lock();
   return _data[pipeline_stage]._cycle_data;
 }
 
@@ -44,6 +45,12 @@ read() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrueImpl::
 increment_read(const CycleData *pointer) const {
+#ifndef NDEBUG
+  int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
+  nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
+  nassertv(_data[pipeline_stage]._cycle_data == pointer);
+#endif
+  _lock.lock();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,6 +61,12 @@ increment_read(const CycleData *pointer) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrueImpl::
 release_read(const CycleData *pointer) const {
+#ifndef NDEBUG
+  int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
+  nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
+  nassertv(_data[pipeline_stage]._cycle_data == pointer);
+#endif
+  _lock.release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,8 +88,7 @@ release_read(const CycleData *pointer) const {
 INLINE CycleData *PipelineCyclerTrueImpl::
 write() {
   int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
-  nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
-  return _data[pipeline_stage]._cycle_data;
+  return write_stage(pipeline_stage);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,7 +102,9 @@ write() {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerTrueImpl::
 elevate_read(const CycleData *pointer) {
-  return (CycleData *)pointer;
+  CycleData *new_pointer = write();
+  _lock.release();
+  return new_pointer;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,6 +115,12 @@ elevate_read(const CycleData *pointer) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrueImpl::
 release_write(CycleData *pointer) {
+#ifdef NDEBUG
+  int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
+  return release_write_stage(pipeline_stage);
+#else
+  _lock.release();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -123,23 +143,11 @@ get_num_stages() {
 INLINE bool PipelineCyclerTrueImpl::
 is_stage_unique(int n) const {
   nassertr(n >= 0 && n < _num_stages, false);
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::write_stage
-//       Access: Public
-//  Description: Returns a pointer suitable for writing to the nth
-//               stage of the pipeline.  This is for special
-//               applications that need to update the entire pipeline
-//               at once (for instance, to remove an invalid pointer).
-//               This pointer should later be released with
-//               release_write_stage().
-////////////////////////////////////////////////////////////////////
-INLINE CycleData *PipelineCyclerTrueImpl::
-write_stage(int n) {
-  nassertr(n >= 0 && n < _num_stages, (CycleData *)NULL);
-  return _data[n]._cycle_data;
+  if (n == 0) {
+    return true;
+  } else {
+    return _data[n]._cycle_data == _data[n - 1]._cycle_data;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,7 +158,11 @@ write_stage(int n) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrueImpl::
 release_write_stage(int n, CycleData *pointer) {
+#ifndef NDEBUG
   nassertv(n >= 0 && n < _num_stages);
+  nassertv(_data[n]._cycle_data == pointer);
+#endif
+  _lock.release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,7 +191,10 @@ cheat() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PipelineCyclerTrueImpl::
 get_read_count() const {
-  return 0;
+  int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
+  nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, 0);
+  _lock.lock();
+  return _lock.get_lock_count();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,5 +207,8 @@ get_read_count() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PipelineCyclerTrueImpl::
 get_write_count() const {
-  return 0;
+  int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
+  nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, 0);
+  _lock.lock();
+  return _lock.get_lock_count();
 }

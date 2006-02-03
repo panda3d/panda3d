@@ -177,6 +177,9 @@ private:
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
+    virtual TypeHandle get_parent_type() const {
+      return Geom::get_class_type();
+    }
 
     PT(GeomVertexData) _data;
     Primitives _primitives;

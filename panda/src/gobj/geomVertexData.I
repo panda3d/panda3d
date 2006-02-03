@@ -235,6 +235,18 @@ get_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::clear_cache
+//       Access: Published
+//  Description: Removes all of the previously-cached results of
+//               convert_to().
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexData::
+clear_cache() {
+  CDWriter cdata(_cycler);
+  do_clear_cache(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::has_vertex
 //       Access: Public
 //  Description: Returns true if the data has a "vertex" column, false

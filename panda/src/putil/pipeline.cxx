@@ -18,6 +18,7 @@
 
 #include "pipeline.h"
 #include "pipelineCyclerTrueImpl.h"
+#include "mutexHolder.h"
 
 Pipeline *Pipeline::_render_pipeline = (Pipeline *)NULL;
 
@@ -53,6 +54,7 @@ Pipeline::
 void Pipeline::
 cycle() {
 #if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+  MutexHolder holder(_lock);
   Cyclers::iterator ci;
   for (ci = _cyclers.begin(); ci != _cyclers.end(); ++ci) {
     (*ci)->cycle();
@@ -69,16 +71,32 @@ cycle() {
 void Pipeline::
 set_num_stages(int num_stages) {
   nassertv(num_stages >= 1);
-  if (num_stages != _num_stages) {
-    _num_stages = num_stages;
-
 #if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+  MutexHolder holder(_lock);
+  if (num_stages != _num_stages) {
+    
+    // We need to lock every PipelineCycler object in the world before
+    // we can adjust the number of stages.
     Cyclers::iterator ci;
+    for (ci = _cyclers.begin(); ci != _cyclers.end(); ++ci) {
+      (*ci)->_lock.lock();
+    }
+      
+    _num_stages = num_stages;
+      
     for (ci = _cyclers.begin(); ci != _cyclers.end(); ++ci) {
       (*ci)->set_num_stages(num_stages);
     }
-#endif  // DO_PIPELINING && HAVE_THREADS
+    
+    // Now release them all.
+    for (ci = _cyclers.begin(); ci != _cyclers.end(); ++ci) {
+      (*ci)->_lock.release();
+    }
   }
+
+#else  // DO_PIPELINING && HAVE_THREADS
+  _num_stages = num_stages;
+#endif  // DO_PIPELINING && HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,6 +121,7 @@ get_num_stages() const {
 ////////////////////////////////////////////////////////////////////
 void Pipeline::
 add_cycler(PipelineCyclerTrueImpl *cycler) {
+  MutexHolder holder(_lock);
   bool inserted = _cyclers.insert(cycler).second;
   nassertv(inserted);
 }
@@ -118,6 +137,7 @@ add_cycler(PipelineCyclerTrueImpl *cycler) {
 ////////////////////////////////////////////////////////////////////
 void Pipeline::
 remove_cycler(PipelineCyclerTrueImpl *cycler) {
+  MutexHolder holder(_lock);
   Cyclers::iterator ci = _cyclers.find(cycler);
   nassertv(ci != _cyclers.end());
   _cyclers.erase(ci);

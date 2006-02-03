@@ -123,6 +123,9 @@ private:
                                 void *extra_data) const;
     virtual void fillin(DatagramIterator &scan, BamReader *manager,
                         void *extra_data);
+    virtual TypeHandle get_parent_type() const {
+      return GeomVertexArrayData::get_class_type();
+    }
 
     UsageHint _usage_hint;
     PTA_uchar _data;

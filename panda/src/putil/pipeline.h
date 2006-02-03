@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "namable.h"
 #include "pset.h"
+#include "pmutex.h"
 
 class PipelineCyclerTrueImpl;
 
@@ -48,6 +49,7 @@ public:
   void cycle();
 
   void set_num_stages(int num_stages);
+  INLINE void set_min_stages(int min_stages);
   int get_num_stages() const;
 
 #if defined(DO_PIPELINING) && defined(HAVE_THREADS)
@@ -64,6 +66,8 @@ private:
 #if defined(DO_PIPELINING) && defined(HAVE_THREADS)
   typedef pset<PipelineCyclerTrueImpl *> Cyclers;
   Cyclers _cyclers;
+
+  Mutex _lock;
 #endif  // DO_PIPELINING && HAVE_THREADS
 };
 

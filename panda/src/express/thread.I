@@ -151,6 +151,18 @@ set_pipeline_stage(int pipeline_stage) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::set_min_pipeline_stage
+//       Access: Published
+//  Description: Sets this thread's pipeline stage number to at least
+//               the indicated value, unless it is already larger.
+//               See set_pipeline_stage().
+////////////////////////////////////////////////////////////////////
+INLINE void Thread::
+set_min_pipeline_stage(int min_pipeline_stage) {
+  _pipeline_stage = max(_pipeline_stage, min_pipeline_stage);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::get_main_thread
 //       Access: Published, Static
 //  Description: Returns a pointer to the "main" Thread object--this

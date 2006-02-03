@@ -46,6 +46,7 @@
 #endif
 
 PStatCollector GraphicsEngine::_wait_pcollector("Wait");
+PStatCollector GraphicsEngine::_cycle_pcollector("App:Cycle");
 PStatCollector GraphicsEngine::_app_pcollector("App");
 PStatCollector GraphicsEngine::_yield_pcollector("App:Yield");
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
@@ -487,12 +488,35 @@ render_frame() {
     GraphicsOutput *win = (*wi);
     if (win->get_delete_flag()) {
       do_remove_window(win);
-
+      
     } else {
       new_windows.push_back(win);
+      
+      // Let's calculate each scene's bounding volume here in App,
+      // before we cycle the pipeline.  The cull traversal will
+      // calculate it anyway, but if we calculate it in App first
+      // before it gets calculated in the Cull thread, it will be more
+      // likely to stick for subsequent frames, so we won't have to
+      // recompute it each frame.
+      int num_drs = win->get_num_active_display_regions();
+      for (int i = 0; i < num_drs; ++i) {
+        DisplayRegion *dr = win->get_active_display_region(i);
+        if (dr != (DisplayRegion *)NULL) {
+          NodePath camera_np = dr->get_camera();
+          if (!camera_np.is_empty()) {
+            Camera *camera = DCAST(Camera, camera_np.node());
+            NodePath scene = camera->get_scene();
+            if (scene.is_empty()) {
+              scene = camera_np.get_top();
+            }
+            if (!scene.is_empty()) {
+              scene.get_bounds();
+            }
+          }
+        }
+      }
     }
   }
-  new_windows.swap(_windows);
 
   // Now it's time to do any drawing from the main frame--after all of
   // the App code has executed, but before we begin the next frame.
@@ -500,13 +524,13 @@ render_frame() {
   
   // Grab each thread's mutex again after all windows have flipped,
   // and wait for the thread to finish.
-  Threads::const_iterator ti;
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    RenderThread *thread = (*ti).second;
-    thread->_cv_mutex.lock();
-
-    if (thread->_thread_state != TS_wait) {
-      PStatTimer timer(_wait_pcollector);
+  {
+    PStatTimer timer(_wait_pcollector);
+    Threads::const_iterator ti;
+    for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+      RenderThread *thread = (*ti).second;
+      thread->_cv_mutex.lock();
+      
       while (thread->_thread_state != TS_wait) {
         thread->_cv_done.wait();
       }
@@ -514,7 +538,10 @@ render_frame() {
   }
 
   // Now cycle the pipeline and officially begin the next frame.
-  _pipeline->cycle();
+  {
+    PStatTimer timer(_cycle_pcollector);
+    _pipeline->cycle();
+  }
   ClockObject *global_clock = ClockObject::get_global_clock();
   global_clock->tick();
   if (global_clock->check_errors()) {
@@ -539,6 +566,7 @@ render_frame() {
   }
 
   // Now signal all of our threads to begin their next frame.
+  Threads::const_iterator ti;
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     if (thread->_thread_state == TS_wait) {
@@ -589,39 +617,36 @@ open_windows() {
 
   _app.do_windows(this);
 
-  Threads::const_iterator ti;
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    RenderThread *thread = (*ti).second;
-    thread->_cv_mutex.lock();
-
-    if (thread->_thread_state != TS_wait) {
-      PStatTimer timer(_wait_pcollector);
+  {
+    PStatTimer timer(_wait_pcollector);
+    Threads::const_iterator ti;
+    for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+      RenderThread *thread = (*ti).second;
+      thread->_cv_mutex.lock();
+      
       while (thread->_thread_state != TS_wait) {
         thread->_cv_done.wait();
       }
+      
+      thread->_thread_state = TS_do_windows;
+      thread->_cv_start.signal();
+      thread->_cv_mutex.release();
     }
 
-    thread->_thread_state = TS_do_windows;
-    thread->_cv_start.signal();
-    thread->_cv_mutex.release();
-  }
-
-  // We do it twice, to allow both cull and draw to process the
-  // window.
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    RenderThread *thread = (*ti).second;
-    thread->_cv_mutex.lock();
-
-    if (thread->_thread_state != TS_wait) {
-      PStatTimer timer(_wait_pcollector);
+    // We do it twice, to allow both cull and draw to process the
+    // window.
+    for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+      RenderThread *thread = (*ti).second;
+      thread->_cv_mutex.lock();
+      
       while (thread->_thread_state != TS_wait) {
         thread->_cv_done.wait();
       }
+      
+      thread->_thread_state = TS_do_windows;
+      thread->_cv_start.signal();
+      thread->_cv_mutex.release();
     }
-
-    thread->_thread_state = TS_do_windows;
-    thread->_cv_start.signal();
-    thread->_cv_mutex.release();
   }
 }
 
@@ -1008,13 +1033,13 @@ do_flip_frame() {
   // First, wait for all the threads to finish their current frame, if
   // necessary.  Grabbing the mutex (and waiting for TS_wait) should
   // achieve that.
-  Threads::const_iterator ti;
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    RenderThread *thread = (*ti).second;
-    thread->_cv_mutex.lock();
-
-    if (thread->_thread_state != TS_wait) {
-      PStatTimer timer(_wait_pcollector);
+  {
+    PStatTimer timer(_wait_pcollector);
+    Threads::const_iterator ti;
+    for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+      RenderThread *thread = (*ti).second;
+      thread->_cv_mutex.lock();
+      
       while (thread->_thread_state != TS_wait) {
         thread->_cv_done.wait();
       }
@@ -1023,12 +1048,16 @@ do_flip_frame() {
   
   // Now signal all of our threads to flip the windows.
   _app.do_flip(this);
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    RenderThread *thread = (*ti).second;
-    nassertv(thread->_thread_state == TS_wait);
-    thread->_thread_state = TS_do_flip;
-    thread->_cv_start.signal();
-    thread->_cv_mutex.release();
+
+  {
+    Threads::const_iterator ti;
+    for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+      RenderThread *thread = (*ti).second;
+      nassertv(thread->_thread_state == TS_wait);
+      thread->_thread_state = TS_do_flip;
+      thread->_cv_start.signal();
+      thread->_cv_mutex.release();
+    }
   }
 
   _flip_state = FS_flip;
@@ -1156,6 +1185,9 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
       trav.set_view_frustum(local_frustum);
     }
   }
+
+  static PStatCollector traverse("Cull:Traverse");
+  PStatTimer timer2(traverse);
   
   trav.traverse(scene_setup->get_scene_root(), get_portal_cull());
 }
@@ -1326,6 +1358,10 @@ do_resort_windows() {
 void GraphicsEngine::
 terminate_threads() {
   MutexHolder holder(_lock);
+
+  // We spend almost our entire time in this method just waiting for
+  // threads.  Time it appropriately.
+  PStatTimer timer(_wait_pcollector);
   
   // First, wait for all the threads to finish their current frame.
   // Grabbing the mutex should achieve that.
@@ -1334,26 +1370,26 @@ terminate_threads() {
     RenderThread *thread = (*ti).second;
     thread->_cv_mutex.lock();
   }
-
+  
   // Now tell them to release their windows' graphics contexts.
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
-
-    if (thread->_thread_state != TS_wait) {
-      PStatTimer timer(_wait_pcollector);
-      while (thread->_thread_state != TS_wait) {
-        thread->_cv_done.wait();
-      }
+    
+    while (thread->_thread_state != TS_wait) {
+      thread->_cv_done.wait();
     }
     thread->_thread_state = TS_do_release;
     thread->_cv_start.signal();
     thread->_cv_mutex.release();
   }
-
+  
   // Grab the mutex again to wait for the above to complete.
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     thread->_cv_mutex.lock();
+    while (thread->_thread_state != TS_wait) {
+      thread->_cv_done.wait();
+    }
   }
 
   // Now tell them to close their windows and terminate.
@@ -1416,7 +1452,7 @@ get_window_renderer(const string &name) {
 
   PT(RenderThread) thread = new RenderThread(name, this);
   thread->set_pipeline_stage(1);
-  Pipeline::get_render_pipeline()->set_num_stages(2);
+  _pipeline->set_min_stages(2);
 
   thread->start(TP_normal, true, true);
   _threads[name] = thread;

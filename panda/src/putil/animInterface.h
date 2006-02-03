@@ -95,6 +95,9 @@ private:
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
+    virtual TypeHandle get_parent_type() const {
+      return AnimInterface::get_class_type();
+    }
 
     void play(double from, double to);
     void loop(bool restart, double from, double to);

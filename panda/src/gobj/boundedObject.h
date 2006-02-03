@@ -82,6 +82,9 @@ private:
     INLINE void operator = (const CData &copy);
 
     virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return BoundedObject::get_class_type();
+    }
 
     int _flags;
     BoundingVolumeType _bound_type;

@@ -197,6 +197,9 @@ private:
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
+    virtual TypeHandle get_parent_type() const {
+      return RopeNode::get_class_type();
+    }
 
     PT(NurbsCurveEvaluator) _curve;
     RenderMode _render_mode;

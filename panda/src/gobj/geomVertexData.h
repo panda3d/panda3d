@@ -142,7 +142,7 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
-  void clear_cache();
+  INLINE void clear_cache();
 
 public:
   bool get_array_info(const InternalName *name, 
@@ -191,7 +191,7 @@ private:
   INLINE static int 
   add_transform(TransformTable *table, const VertexTransform *transform,
                 TransformMap &already_added);
-  
+
 private:
   string _name;
   CPT(GeomVertexFormat) _format;
@@ -224,6 +224,9 @@ private:
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
+    virtual TypeHandle get_parent_type() const {
+      return GeomVertexData::get_class_type();
+    }
 
     UsageHint _usage_hint;
     Arrays _arrays;
@@ -241,8 +244,9 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
 
 private:
-  bool do_set_num_rows(int n, CDWriter &cdata);
-  void update_animated_vertices(CDWriter &cdata);
+  bool do_set_num_rows(int n, CData *cdata);
+  void update_animated_vertices(CData *cdata);
+  void do_clear_cache(CData *cdata);
 
   static PStatCollector _convert_pcollector;
   static PStatCollector _scale_color_pcollector;

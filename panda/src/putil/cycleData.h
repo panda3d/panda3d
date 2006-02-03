@@ -20,7 +20,7 @@
 #define CYCLEDATA_H
 
 #include "pandabase.h"
-
+#include "typeHandle.h"
 #include "referenceCount.h"
 
 class BamWriter;
@@ -64,7 +64,16 @@ public:
   virtual void fillin(DatagramIterator &scan, BamReader *manager);
   virtual void fillin(DatagramIterator &scan, BamReader *manager,
                       void *extra_data);
+
+  virtual TypeHandle get_parent_type() const;
+  virtual void output(ostream &out) const;
 };
+
+INLINE ostream &
+operator << (ostream &out, const CycleData &cd) {
+  cd.output(out);
+  return out;
+}
 
 #include "cycleData.I"
 

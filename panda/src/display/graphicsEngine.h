@@ -246,6 +246,7 @@ private:
   Mutex _lock;
 
   static PStatCollector _wait_pcollector;
+  static PStatCollector _cycle_pcollector;
   static PStatCollector _app_pcollector;
   static PStatCollector _yield_pcollector;
   static PStatCollector _cull_pcollector;

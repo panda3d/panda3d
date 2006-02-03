@@ -82,6 +82,9 @@ private:
     INLINE CData();
     CData(const CData &copy);
     virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return NodePathComponent::get_class_type();
+    }
 
     PT(NodePathComponent) _next;
     int _length;
