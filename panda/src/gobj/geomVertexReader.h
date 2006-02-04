@@ -100,6 +100,11 @@ PUBLISHED:
   INLINE const int *get_data3i();
   INLINE const int *get_data4i();
 
+  void output(ostream &out) const;
+
+protected:
+  INLINE GeomVertexColumn::Packer *get_packer() const;
+
 private:
   void initialize();
 
@@ -131,6 +136,12 @@ private:
   static const unsigned char empty_buffer[100];
 #endif
 };
+
+INLINE ostream &
+operator << (ostream &out, const GeomVertexReader &reader) {
+  reader.output(out);
+  return out;
+}
 
 #include "geomVertexReader.I"
 

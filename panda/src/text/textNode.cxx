@@ -368,6 +368,28 @@ generate() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_internal_geom
+//       Access: Published
+//  Description: Returns the actual node that is used internally to
+//               render the text, if the TextNode is parented within
+//               the scene graph.
+//
+//               In general, you should not call this method.  Call
+//               generate() instead if you want to get a handle to
+//               geometry that represents the text.  This method is
+//               provided as a debugging aid only.
+////////////////////////////////////////////////////////////////////
+PandaNode *TextNode::
+get_internal_geom() const {
+  // Output a nuisance warning to discourage the naive from calling
+  // this method accidentally.
+  text_cat.info()
+    << "TextNode::get_internal_geom() called.\n";
+  check_rebuild();
+  return _internal_geom;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_unsafe_to_apply_attribs
 //       Access: Public, Virtual
 //  Description: Returns the union of all attributes from

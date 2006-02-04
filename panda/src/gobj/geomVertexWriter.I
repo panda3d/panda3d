@@ -741,6 +741,16 @@ add_data4i(const int data[4]) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::get_packer
+//       Access: Protected
+//  Description: Returns the writer's Packer object.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexColumn::Packer *GeomVertexWriter::
+get_packer() const {
+  return _packer;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::set_pointer
 //       Access: Private
 //  Description: Sets up the array pointers freshly from the source

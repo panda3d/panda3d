@@ -1186,9 +1186,6 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
     }
   }
 
-  static PStatCollector traverse("Cull:Traverse");
-  PStatTimer timer2(traverse);
-  
   trav.traverse(scene_setup->get_scene_root(), get_portal_cull());
 }
 

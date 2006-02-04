@@ -135,6 +135,11 @@ PUBLISHED:
   INLINE void add_data4i(int a, int b, int c, int d);
   INLINE void add_data4i(const int data[4]);
 
+  void output(ostream &out) const;
+
+protected:
+  INLINE GeomVertexColumn::Packer *get_packer() const;
+
 private:
   class Writer;
 
@@ -169,6 +174,12 @@ private:
   static unsigned char empty_buffer[100];
 #endif
 };
+
+INLINE ostream &
+operator << (ostream &out, const GeomVertexWriter &writer) {
+  writer.output(out);
+  return out;
+}
 
 #include "geomVertexWriter.I"
 

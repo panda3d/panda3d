@@ -78,6 +78,25 @@ set_column(int array, const GeomVertexColumn *column) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomVertexReader::
+output(ostream &out) const {
+  const GeomVertexColumn *column = get_column();
+  if (column == (GeomVertexColumn *)NULL) {
+    out << "GeomVertexReader()";
+    
+  } else {
+    out << "GeomVertexReader, array = " << get_array_data()
+        << ", column = " << column->get_name()
+        << " (" << get_packer()->get_name()
+        << "), read row " << get_read_row();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexReader::initialize
 //       Access: Private
 //  Description: Called only by the constructor.

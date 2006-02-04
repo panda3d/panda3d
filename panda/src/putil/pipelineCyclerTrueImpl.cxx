@@ -61,8 +61,23 @@ PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
   _num_stages = _pipeline->get_num_stages();
   nassertv(_num_stages == copy._num_stages);
   _data = new StageData[_num_stages];
+
+  // It's important that we preserve pointerwise equivalence in the
+  // copy: if a and b of the original pipeline are the same pointer,
+  // then a' and b' of the copied pipeline should be the same pointer
+  // (but a' must be a different pointer than a).  This is important
+  // because we rely on pointer equivalence to determine whether an
+  // adjustment at a later stage in the pipeline is automatically
+  // propagated backwards.
+  typedef pmap<CycleData *, PT(CycleData) > Pointers;
+  Pointers pointers;
+
   for (int i = 0; i < _num_stages; ++i) {
-    _data[i]._cycle_data = copy._data[i]._cycle_data->make_copy();
+    PT(CycleData) &new_pt = pointers[copy._data[i]._cycle_data];
+    if (new_pt == NULL) {
+      new_pt = copy._data[i]._cycle_data->make_copy();
+    }
+    _data[i]._cycle_data = new_pt;
   }
 }
 

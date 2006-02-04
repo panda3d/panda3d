@@ -126,6 +126,10 @@ private:
     virtual void set_data3i(unsigned char *pointer, int a, int b, int c);
     virtual void set_data4i(unsigned char *pointer, int a, int b, int c, int d);
 
+    virtual const char *get_name() const {
+      return "Packer";
+    }
+
     INLINE float maybe_scale_color(unsigned int value);
     INLINE void maybe_scale_color(unsigned int a, unsigned int b);
     INLINE void maybe_scale_color(unsigned int a, unsigned int b,
@@ -162,6 +166,10 @@ private:
     virtual void set_data2f(unsigned char *pointer, const LVecBase2f &data);
     virtual void set_data3f(unsigned char *pointer, const LVecBase3f &data);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &data);
+
+    virtual const char *get_name() const {
+      return "Packer_point";
+    }
   };
 
   // This is similar to Packer_point, in that the fourth component is
@@ -173,6 +181,10 @@ private:
     virtual void set_data1f(unsigned char *pointer, float data);
     virtual void set_data2f(unsigned char *pointer, const LVecBase2f &data);
     virtual void set_data3f(unsigned char *pointer, const LVecBase3f &data);
+
+    virtual const char *get_name() const {
+      return "Packer_color";
+    }
   };
 
 
@@ -183,73 +195,125 @@ private:
   public:
     virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
     virtual void set_data3f(unsigned char *pointer, const LVecBase3f &value);
+
+    virtual const char *get_name() const {
+      return "Packer_float32_3";
+    }
   };
 
   class Packer_point_float32_2 : public Packer_point {
   public:
     virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
     virtual void set_data2f(unsigned char *pointer, const LVecBase2f &value);
+
+    virtual const char *get_name() const {
+      return "Packer_point_float32_2";
+    }
   };
 
   class Packer_point_float32_3 : public Packer_point {
   public:
     virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
     virtual void set_data3f(unsigned char *pointer, const LVecBase3f &value);
+
+    virtual const char *get_name() const {
+      return "Packer_point_float32_3";
+    }
   };
 
   class Packer_point_float32_4 : public Packer_point {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
+
+    virtual const char *get_name() const {
+      return "Packer_point_float32_4";
+    }
   };
 
   class Packer_nativefloat_3 : public Packer_float32_3 {
   public:
     virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
+
+    virtual const char *get_name() const {
+      return "Packer_nativefloat_3";
+    }
   };
 
   class Packer_point_nativefloat_2 : public Packer_point_float32_2 {
   public:
     virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
+
+    virtual const char *get_name() const {
+      return "Packer_nativefloat_2";
+    }
   };
 
   class Packer_point_nativefloat_3 : public Packer_point_float32_3 {
   public:
     virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
+
+    virtual const char *get_name() const {
+      return "Packer_point_nativefloat_3";
+    }
   };
 
   class Packer_point_nativefloat_4 : public Packer_point_float32_4 {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+
+    virtual const char *get_name() const {
+      return "Packer_point_nativefloat_4";
+    }
   };
 
   class Packer_argb_packed : public Packer_color {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
+
+    virtual const char *get_name() const {
+      return "Packer_argb_packed";
+    }
   };
 
   class Packer_rgba_uint8_4 : public Packer_color {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
+
+    virtual const char *get_name() const {
+      return "Packer_rgba_uint8_4";
+    }
   };
 
   class Packer_rgba_float32_4 : public Packer_color {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
+
+    virtual const char *get_name() const {
+      return "Packer_rgba_float32_4";
+    }
   };
 
   class Packer_rgba_nativefloat_4 : public Packer_rgba_float32_4 {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+
+    virtual const char *get_name() const {
+      return "Packer_rgba_nativefloat_4";
+    }
   };
 
   class Packer_uint16_1 : public Packer {
   public:
     virtual int get_data1i(const unsigned char *pointer);
     virtual void set_data1i(unsigned char *pointer, int value);
+
+    virtual const char *get_name() const {
+      return "Packer_uint16_1";
+    }
   };
 
   friend class GeomVertexArrayFormat;

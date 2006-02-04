@@ -78,6 +78,25 @@ set_column(int array, const GeomVertexColumn *column) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomVertexWriter::
+output(ostream &out) const {
+  const GeomVertexColumn *column = get_column();
+  if (column == (GeomVertexColumn *)NULL) {
+    out << "GeomVertexWriter()";
+    
+  } else {
+    out << "GeomVertexWriter, array = " << get_array_data()
+        << ", column = " << column->get_name()
+        << " (" << get_packer()->get_name()
+        << "), write row " << get_write_row();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::initialize
 //       Access: Private
 //  Description: Called only by the constructor.

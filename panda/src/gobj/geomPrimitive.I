@@ -388,6 +388,7 @@ CData(const GeomPrimitive::CData &copy) :
   _ends(copy._ends),
   _mins(copy._mins),
   _maxs(copy._maxs),
+  _modified(copy._modified),
   _got_minmax(copy._got_minmax),
   _min_vertex(copy._min_vertex),
   _max_vertex(copy._max_vertex)

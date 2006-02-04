@@ -436,6 +436,16 @@ get_data4i() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_packer
+//       Access: Protected
+//  Description: Returns the reader's Packer object.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexColumn::Packer *GeomVertexReader::
+get_packer() const {
+  return _packer;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexReader::set_pointer
 //       Access: Private
 //  Description: Sets up the array pointers freshly from the source

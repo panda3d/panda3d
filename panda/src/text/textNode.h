@@ -221,6 +221,8 @@ PUBLISHED:
   INLINE void update();
   INLINE void force_update();
 
+  PandaNode *get_internal_geom() const;
+
 public:
   // From parent class PandaNode
   virtual int get_unsafe_to_apply_attribs() const;

@@ -2133,6 +2133,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 void CLP(GraphicsStateGuardian)::
 apply_vertex_buffer(VertexBufferContext *vbc) {
   nassertv(_supports_buffers);
+  nassertv(vbc->get_data()->get_modified() != UpdateSeq::initial());
 
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
@@ -2300,6 +2301,7 @@ prepare_index_buffer(GeomPrimitive *data) {
 void CLP(GraphicsStateGuardian)::
 apply_index_buffer(IndexBufferContext *ibc) {
   nassertv(_supports_buffers);
+  nassertv(ibc->get_data()->get_modified() != UpdateSeq::initial());
 
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 

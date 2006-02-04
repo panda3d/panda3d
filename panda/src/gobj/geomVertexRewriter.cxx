@@ -17,3 +17,23 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "geomVertexRewriter.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexRewriter::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomVertexRewriter::
+output(ostream &out) const {
+  const GeomVertexColumn *column = get_column();
+  if (column == (GeomVertexColumn *)NULL) {
+    out << "GeomVertexRewriter()";
+    
+  } else {
+    out << "GeomVertexRewriter, array = " << get_array_data()
+        << ", column = " << column->get_name()
+        << " (" << GeomVertexReader::get_packer()->get_name()
+        << "), read row " << get_read_row()
+        << ", write row " << get_write_row();
+  }
+}
