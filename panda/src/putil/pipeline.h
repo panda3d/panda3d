@@ -24,7 +24,7 @@
 #include "pset.h"
 #include "reMutex.h"
 
-class PipelineCyclerTrueImpl;
+struct PipelineCyclerTrueImpl;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Pipeline
