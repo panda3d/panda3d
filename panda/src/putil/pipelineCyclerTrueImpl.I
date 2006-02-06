@@ -117,7 +117,7 @@ INLINE void PipelineCyclerTrueImpl::
 release_write(CycleData *pointer) {
 #ifdef NDEBUG
   int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
-  return release_write_stage(pipeline_stage);
+  return release_write_stage(pipeline_stage, pointer);
 #else
   _lock.release();
 #endif

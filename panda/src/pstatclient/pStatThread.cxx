@@ -27,5 +27,9 @@
 ////////////////////////////////////////////////////////////////////
 Thread *PStatThread::
 get_thread() const {
+#ifdef DO_PSTATS
   return _client->get_thread_object(_index);
+#else
+  return Thread::get_current_thread();
+#endif
 }
