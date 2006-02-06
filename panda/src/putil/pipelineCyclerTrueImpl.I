@@ -33,7 +33,7 @@ read() const {
   int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
   _lock.lock();
-  return _data[pipeline_stage]._cycle_data;
+  return _data[pipeline_stage];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ increment_read(const CycleData *pointer) const {
 #ifndef NDEBUG
   int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
   nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
-  nassertv(_data[pipeline_stage]._cycle_data == pointer);
+  nassertv(_data[pipeline_stage] == pointer);
 #endif
   _lock.lock();
 }
@@ -64,7 +64,7 @@ release_read(const CycleData *pointer) const {
 #ifndef NDEBUG
   int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
   nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
-  nassertv(_data[pipeline_stage]._cycle_data == pointer);
+  nassertv(_data[pipeline_stage] == pointer);
 #endif
   _lock.release();
 }
@@ -146,7 +146,7 @@ is_stage_unique(int n) const {
   if (n == 0) {
     return true;
   } else {
-    return _data[n]._cycle_data == _data[n - 1]._cycle_data;
+    return _data[n] == _data[n - 1];
   }
 }
 
@@ -160,7 +160,7 @@ INLINE void PipelineCyclerTrueImpl::
 release_write_stage(int n, CycleData *pointer) {
 #ifndef NDEBUG
   nassertv(n >= 0 && n < _num_stages);
-  nassertv(_data[n]._cycle_data == pointer);
+  nassertv(_data[n] == pointer);
 #endif
   _lock.release();
 }
@@ -179,7 +179,7 @@ INLINE CycleData *PipelineCyclerTrueImpl::
 cheat() const {
   int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
-  return _data[pipeline_stage]._cycle_data;
+  return _data[pipeline_stage];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -211,4 +211,53 @@ get_write_count() const {
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, 0);
   _lock.lock();
   return _lock.get_lock_count();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::cycle_2
+//       Access: Private
+//  Description: This is a special implementation of cycle() for the
+//               special case of just two stages to the pipeline.  It
+//               does the same thing as cycle(), but is a little bit
+//               faster because it knows there are exactly two stages.
+////////////////////////////////////////////////////////////////////
+INLINE PT(CycleData) PipelineCyclerTrueImpl::
+cycle_2() {
+  PT(CycleData) last_val = _data[1];
+  nassertr(_lock.debug_is_locked(), last_val);
+  nassertr(_dirty, last_val);
+  nassertr(_num_stages == 2, last_val);
+
+  _data[1] = _data[0];
+
+  // No longer dirty.
+  _dirty = false;
+  return last_val;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::cycle_3
+//       Access: Private
+//  Description: This is a special implementation of cycle() for the
+//               special case of exactly three stages to the pipeline.
+//               It does the same thing as cycle(), but is a little
+//               bit faster because it knows there are exactly three
+//               stages.
+////////////////////////////////////////////////////////////////////
+INLINE PT(CycleData) PipelineCyclerTrueImpl::
+cycle_3() {
+  PT(CycleData) last_val = _data[2];
+  nassertr(_lock.debug_is_locked(), last_val);
+  nassertr(_dirty, last_val);
+  nassertr(_num_stages == 3, last_val);
+
+  _data[2] = _data[1];
+  _data[1] = _data[0];
+
+  if (_data[2] == _data[1]) {
+    // No longer dirty.
+    _dirty = false;
+  }
+
+  return last_val;
 }

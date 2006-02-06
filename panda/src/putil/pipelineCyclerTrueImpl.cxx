@@ -22,8 +22,6 @@
 
 #include "config_util.h"
 #include "pipeline.h"
-#include "reMutexHolder.h"
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrueImpl::Constructor
@@ -32,7 +30,8 @@
 ////////////////////////////////////////////////////////////////////
 PipelineCyclerTrueImpl::
 PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
-  _pipeline(pipeline)
+  _pipeline(pipeline),
+  _dirty(false)
 {
   if (_pipeline == (Pipeline *)NULL) {
     _pipeline = Pipeline::get_render_pipeline();
@@ -40,9 +39,9 @@ PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
   _pipeline->add_cycler(this);
 
   _num_stages = _pipeline->get_num_stages();
-  _data = new StageData[_num_stages];
+  _data = new PT(CycleData)[_num_stages];
   for (int i = 0; i < _num_stages; ++i) {
-    _data[i]._cycle_data = initial_data;
+    _data[i] = initial_data;
   }
 }
 
@@ -53,14 +52,19 @@ PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
 ////////////////////////////////////////////////////////////////////
 PipelineCyclerTrueImpl::
 PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
-  _pipeline(copy._pipeline)
+  _pipeline(copy._pipeline),
+  _dirty(false)
 {
+  ReMutexHolder holder(_lock);
   _pipeline->add_cycler(this);
+  if (copy._dirty) {
+    _pipeline->add_dirty_cycler(this);
+  }
 
-  ReMutexHolder holder(copy._lock);
+  ReMutexHolder holder2(copy._lock);
   _num_stages = _pipeline->get_num_stages();
   nassertv(_num_stages == copy._num_stages);
-  _data = new StageData[_num_stages];
+  _data = new PT(CycleData)[_num_stages];
 
   // It's important that we preserve pointerwise equivalence in the
   // copy: if a and b of the original pipeline are the same pointer,
@@ -73,11 +77,11 @@ PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
   Pointers pointers;
 
   for (int i = 0; i < _num_stages; ++i) {
-    PT(CycleData) &new_pt = pointers[copy._data[i]._cycle_data];
+    PT(CycleData) &new_pt = pointers[copy._data[i]];
     if (new_pt == NULL) {
-      new_pt = copy._data[i]._cycle_data->make_copy();
+      new_pt = copy._data[i]->make_copy();
     }
-    _data[i]._cycle_data = new_pt;
+    _data[i] = new_pt;
   }
 }
 
@@ -93,7 +97,7 @@ operator = (const PipelineCyclerTrueImpl &copy) {
 
   nassertv(_num_stages == copy._num_stages);
   for (int i = 0; i < _num_stages; ++i) {
-    _data[i]._cycle_data = copy._data[i]._cycle_data;
+    _data[i] = copy._data[i];
   }
 }
 
@@ -105,9 +109,11 @@ operator = (const PipelineCyclerTrueImpl &copy) {
 PipelineCyclerTrueImpl::
 ~PipelineCyclerTrueImpl() {
   ReMutexHolder holder(_lock);
-  _pipeline->remove_cycler(this);
-
   delete[] _data;
+  _data = NULL;
+  _num_stages = 0;
+
+  _pipeline->remove_cycler(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,7 +137,7 @@ write_stage(int n) {
   }
 #endif  // NDEBUG
 
-  CycleData *old_data = _data[n]._cycle_data;
+  CycleData *old_data = _data[n];
 
   if (old_data->get_ref_count() != 1) {
     // Copy-on-write.
@@ -154,7 +160,7 @@ write_stage(int n) {
     // at all.
     int count = old_data->get_ref_count() - 1;
     int k = n - 1;
-    while (k >= 0 && _data[k]._cycle_data == old_data) {
+    while (k >= 0 && _data[k] == old_data) {
       --k;
       --count;
     }
@@ -163,31 +169,63 @@ write_stage(int n) {
       PT(CycleData) new_data = old_data->make_copy();
 
       int k = n - 1;
-      while (k >= 0 && _data[k]._cycle_data == old_data) {
-        _data[k]._cycle_data = new_data;
+      while (k >= 0 && _data[k] == old_data) {
+        _data[k] = new_data;
         --k;
       }
       
-      _data[n]._cycle_data = new_data;
+      _data[n] = new_data;
+
+      // Now we have differences between some of the data pointers, so
+      // we're "dirty".  Mark it so.
+      if (!_dirty) {
+        _pipeline->add_dirty_cycler(this);
+      }
     }
   }
 
-  return _data[n]._cycle_data;
+  return _data[n];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrueImpl::cycle
 //       Access: Private
 //  Description: Cycles the data between frames.  This is only called
-//               from Pipeline::cycle().
+//               from Pipeline::cycle(), and presumably it is only
+//               called if the cycler is "dirty".
+//
+//               At the conclusion of this method, the cycler should
+//               clear its dirty flag if it is no longer "dirty"--that
+//               is, if all of the pipeline pointers are the same.
+//
+//               The return value is the CycleData pointer which fell
+//               off the end of the cycle.  If this is allowed to
+//               destruct immediately, there may be side-effects that
+//               cascade through the system, so the caller may choose
+//               to hold the pointer until it can safely be released
+//               later.
 ////////////////////////////////////////////////////////////////////
-void PipelineCyclerTrueImpl::
+PT(CycleData) PipelineCyclerTrueImpl::
 cycle() {
-  ReMutexHolder holder(_lock);
+  PT(CycleData) last_val = _data[_num_stages - 1];
+  nassertr(_lock.debug_is_locked(), last_val);
+  nassertr(_dirty, last_val);
 
-  for (int i = _num_stages - 1; i > 0; --i) {
+  int i;
+  for (i = _num_stages - 1; i > 0; --i) {
     _data[i] = _data[i - 1];
   }
+
+  for (i = 1; i < _num_stages; ++i) {
+    if (_data[i] != _data[i - 1]) {
+      // Still dirty.
+      return last_val;
+    }
+  }
+
+  // No longer dirty.
+  _dirty = false;
+  return last_val;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,7 +242,7 @@ set_num_stages(int num_stages) {
     // Don't bother to reallocate the array smaller; we just won't use
     // the rest of the array.
     for (int i = _num_stages; i < num_stages; ++i) {
-      _data[i]._cycle_data.clear();
+      _data[i].clear();
     }
 
     _num_stages = num_stages;
@@ -212,13 +250,13 @@ set_num_stages(int num_stages) {
 
   } else {
     // To increase the array, we must reallocate it larger.
-    StageData *new_data = new StageData[num_stages];
+    PT(CycleData) *new_data = new PT(CycleData)[num_stages];
     int i;
     for (i = 0; i < _num_stages; ++i) {
       new_data[i] = _data[i];
     }
     for (i = _num_stages; i < num_stages; ++i) {
-      new_data[i]._cycle_data = _data[_num_stages - 1]._cycle_data;
+      new_data[i] = _data[_num_stages - 1];
     }
     delete[] _data;
 

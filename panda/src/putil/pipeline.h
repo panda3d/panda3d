@@ -54,6 +54,7 @@ public:
 
 #if defined(DO_PIPELINING) && defined(HAVE_THREADS)
   void add_cycler(PipelineCyclerTrueImpl *cycler);
+  void add_dirty_cycler(PipelineCyclerTrueImpl *cycler);
   void remove_cycler(PipelineCyclerTrueImpl *cycler);
 #endif  // DO_PIPELINING && HAVE_THREADS
 
@@ -66,6 +67,10 @@ private:
 #if defined(DO_PIPELINING) && defined(HAVE_THREADS)
   typedef pset<PipelineCyclerTrueImpl *> Cyclers;
   Cyclers _cyclers;
+  Cyclers _dirty_cyclers;
+
+  // This is true only during cycle().
+  bool _cycling;
 
   ReMutex _lock;
 #endif  // DO_PIPELINING && HAVE_THREADS

@@ -32,6 +32,10 @@ Pipeline(const string &name) :
   Namable(name)
 {
   _num_stages = 1;
+
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+  _cycling = false;
+#endif  // DO_PIPELINING && HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,6 +47,7 @@ Pipeline::
 ~Pipeline() {
 #if defined(DO_PIPELINING) && defined(HAVE_THREADS)
   nassertv(_cyclers.empty());
+  nassertv(!_cycling);
 #endif  // DO_PIPELINING && HAVE_THREADS
 }
 
@@ -54,11 +59,44 @@ Pipeline::
 void Pipeline::
 cycle() {
 #if defined(DO_PIPELINING) && defined(HAVE_THREADS)
-  ReMutexHolder holder(_lock);
-  Cyclers::iterator ci;
-  for (ci = _cyclers.begin(); ci != _cyclers.end(); ++ci) {
-    (*ci)->cycle();
+  pvector< PT(CycleData) > saved_cdatas;
+  saved_cdatas.reserve(_dirty_cyclers.size());
+  {
+    ReMutexHolder holder(_lock);
+    
+    nassertv(!_cycling);
+    _cycling = true;
+    
+    Cyclers next_dirty_cyclers;
+    
+    Cyclers::iterator ci;
+    for (ci = _dirty_cyclers.begin(); ci != _dirty_cyclers.end(); ++ci) {
+      PipelineCyclerTrueImpl *cycler = (*ci);
+      ReMutexHolder holder2(cycler->_lock);
+      
+      // We save the result of cycle(), so that we can defer the
+      // side-effects that might occur when CycleDatas destruct, at
+      // least until the end of this loop.
+      saved_cdatas.push_back(cycler->cycle());
+      
+      if (cycler->_dirty) {
+        // The cycler is still dirty after cycling.  Preserve it in the
+        // set for next time.
+        bool inserted = next_dirty_cyclers.insert(cycler).second;
+        nassertv(inserted);
+      }
+    }
+    
+    // Finally, we're ready for the next frame.
+    _dirty_cyclers.swap(next_dirty_cyclers);
+    _cycling = false;
   }
+
+  // And now it's safe to let the CycleData pointers in saved_cdatas
+  // destruct, which may cause cascading deletes, and which will in
+  // turn case PipelineCyclers to remove themselves from (or add
+  // themselves to) the _dirty_cyclers list.
+
 #endif  // DO_PIPELINING && HAVE_THREADS
 }
 
@@ -122,7 +160,33 @@ get_num_stages() const {
 void Pipeline::
 add_cycler(PipelineCyclerTrueImpl *cycler) {
   ReMutexHolder holder(_lock);
+  nassertv(!cycler->_dirty);
+  nassertv(!_cycling);
   bool inserted = _cyclers.insert(cycler).second;
+  nassertv(inserted);
+}
+#endif  // DO_PIPELINING && HAVE_THREADS
+
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::add_dirty_cycler
+//       Access: Public
+//  Description: Marks the indicated cycler as "dirty", meaning it
+//               will need to be cycled next frame.  This both adds it
+//               to the "dirty" set and also sets the "dirty" flag
+//               within the cycler.  This method only exists when true
+//               pipelining is configured on.
+////////////////////////////////////////////////////////////////////
+void Pipeline::
+add_dirty_cycler(PipelineCyclerTrueImpl *cycler) {
+  nassertv(cycler->_lock.debug_is_locked());
+
+  ReMutexHolder holder(_lock);
+  nassertv(!_cycling);
+  nassertv(!cycler->_dirty);
+  cycler->_dirty = true;
+
+  bool inserted = _dirty_cyclers.insert(cycler).second;
   nassertv(inserted);
 }
 #endif  // DO_PIPELINING && HAVE_THREADS
@@ -137,10 +201,21 @@ add_cycler(PipelineCyclerTrueImpl *cycler) {
 ////////////////////////////////////////////////////////////////////
 void Pipeline::
 remove_cycler(PipelineCyclerTrueImpl *cycler) {
+  nassertv(cycler->_lock.debug_is_locked());
+
   ReMutexHolder holder(_lock);
+  nassertv(!_cycling);
+  
   Cyclers::iterator ci = _cyclers.find(cycler);
   nassertv(ci != _cyclers.end());
   _cyclers.erase(ci);
+
+  if (cycler->_dirty) {
+    cycler->_dirty = false;
+    Cyclers::iterator ci = _dirty_cyclers.find(cycler);
+    nassertv(ci != _dirty_cyclers.end());
+    _dirty_cyclers.erase(ci);
+  }
 }
 #endif  // DO_PIPELINING && HAVE_THREADS
 

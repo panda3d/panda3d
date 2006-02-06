@@ -27,6 +27,7 @@
 #include "pointerTo.h"
 #include "thread.h"
 #include "reMutex.h"
+#include "reMutexHolder.h"
 
 class Pipeline;
 
@@ -70,19 +71,18 @@ public:
   INLINE int get_write_count() const;
 
 private:
-  void cycle();
+  PT(CycleData) cycle();
+  INLINE PT(CycleData) cycle_2();
+  INLINE PT(CycleData) cycle_3();
   void set_num_stages(int num_stages);
 
 private:
   Pipeline *_pipeline;
 
-  class StageData {
-  public:
-    PT(CycleData) _cycle_data;
-  };
-
-  StageData *_data;
+  // An array of PT(CycleData) objects.
+  PT(CycleData) *_data;
   int _num_stages;
+  bool _dirty;
 
   ReMutex _lock;
 
