@@ -63,30 +63,65 @@ cycle() {
   saved_cdatas.reserve(_dirty_cyclers.size());
   {
     ReMutexHolder holder(_lock);
+    if (_num_stages == 1) {
+      // No need to cycle if there's only one stage.
+      nassertv(_dirty_cyclers.empty());
+      return;
+    }
     
     nassertv(!_cycling);
     _cycling = true;
     
     Cyclers next_dirty_cyclers;
-    
+
     Cyclers::iterator ci;
-    for (ci = _dirty_cyclers.begin(); ci != _dirty_cyclers.end(); ++ci) {
-      PipelineCyclerTrueImpl *cycler = (*ci);
-      ReMutexHolder holder2(cycler->_lock);
-      
-      // We save the result of cycle(), so that we can defer the
-      // side-effects that might occur when CycleDatas destruct, at
-      // least until the end of this loop.
-      saved_cdatas.push_back(cycler->cycle());
-      
-      if (cycler->_dirty) {
-        // The cycler is still dirty after cycling.  Preserve it in the
-        // set for next time.
-        bool inserted = next_dirty_cyclers.insert(cycler).second;
-        nassertv(inserted);
+    switch (_num_stages) {
+    case 2:
+      for (ci = _dirty_cyclers.begin(); ci != _dirty_cyclers.end(); ++ci) {
+        PipelineCyclerTrueImpl *cycler = (*ci);
+        ReMutexHolder holder2(cycler->_lock);
+        
+        // We save the result of cycle(), so that we can defer the
+        // side-effects that might occur when CycleDatas destruct, at
+        // least until the end of this loop.
+        saved_cdatas.push_back(cycler->cycle_2());
+        
+        if (cycler->_dirty) {
+          // The cycler is still dirty after cycling.  Preserve it in the
+          // set for next time.
+          bool inserted = next_dirty_cyclers.insert(cycler).second;
+          nassertv(inserted);
+        }
       }
+      break;
+
+    case 3:
+      for (ci = _dirty_cyclers.begin(); ci != _dirty_cyclers.end(); ++ci) {
+        PipelineCyclerTrueImpl *cycler = (*ci);
+        ReMutexHolder holder2(cycler->_lock);
+        
+        saved_cdatas.push_back(cycler->cycle_3());
+        if (cycler->_dirty) {
+          bool inserted = next_dirty_cyclers.insert(cycler).second;
+          nassertv(inserted);
+        }
+      }
+      break;
+
+    default:
+      for (ci = _dirty_cyclers.begin(); ci != _dirty_cyclers.end(); ++ci) {
+        PipelineCyclerTrueImpl *cycler = (*ci);
+        ReMutexHolder holder2(cycler->_lock);
+        
+        saved_cdatas.push_back(cycler->cycle());
+        if (cycler->_dirty) {
+          bool inserted = next_dirty_cyclers.insert(cycler).second;
+          nassertv(inserted);
+        }
+      }
+      break;
     }
-    
+      
     // Finally, we're ready for the next frame.
     _dirty_cyclers.swap(next_dirty_cyclers);
     _cycling = false;
