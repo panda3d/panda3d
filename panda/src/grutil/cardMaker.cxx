@@ -24,7 +24,7 @@
 #include "geom.h"
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
-
+#include "geomVertexFormat.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CardMaker::reset
@@ -34,11 +34,20 @@
 void CardMaker::
 reset() {
   _has_uvs = true;
-  _ll.set(0.0f, 0.0f);
-  _ur.set(1.0f, 1.0f);
-  _frame.set(0.0f, 1.0f, 0.0f, 1.0f);
+
+  _ll_pos.set(0.0f, 0.0f, 0.0f);
+  _lr_pos.set(1.0f, 0.0f, 0.0f);
+  _ur_pos.set(1.0f, 0.0f, 1.0f);
+  _ul_pos.set(0.0f, 0.0f, 1.0f);
+
+  _ll_tex.set(0.0f, 0.0f, 0.0f);
+  _lr_tex.set(1.0f, 0.0f, 0.0f);
+  _ur_tex.set(1.0f, 1.0f, 0.0f);
+  _ul_tex.set(0.0f, 1.0f, 0.0f);
+
   _has_color = false;
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
+
   _has_normals = true;
   _source_geometry = (PandaNode *)NULL;
   _source_frame.set(0.0f, 0.0f, 0.0f, 0.0f);
@@ -59,21 +68,30 @@ generate() {
 
   PT(GeomNode) gnode = new GeomNode(get_name());
 
-  float left = _frame[0];
-  float right = _frame[1];
-  float bottom = _frame[2];
-  float top = _frame[3];
-
   CPT(GeomVertexFormat) format;
   if (_has_normals) {
     if (_has_uvs) {
-      format = GeomVertexFormat::get_v3n3cpt2();
+      format = GeomVertexFormat::register_format(new GeomVertexArrayFormat
+                                                 (InternalName::get_vertex(), 3,
+                                                  GeomEnums::NT_float32, GeomEnums::C_point,
+                                                  InternalName::get_normal(), 3,
+                                                  GeomEnums::NT_float32, GeomEnums::C_vector,
+                                                  InternalName::get_color(), 1,
+                                                  GeomEnums::NT_packed_dabc, GeomEnums::C_color,
+                                                  InternalName::get_texcoord(), 3,
+                                                  GeomEnums::NT_float32, GeomEnums::C_texcoord));
     } else {
       format = GeomVertexFormat::get_v3n3cp();
     }
   } else {
     if (_has_uvs) {
-      format = GeomVertexFormat::get_v3cpt2();
+      format = GeomVertexFormat::register_format(new GeomVertexArrayFormat
+                                                 (InternalName::get_vertex(), 3,
+                                                  GeomEnums::NT_float32, GeomEnums::C_point,
+                                                  InternalName::get_color(), 1,
+                                                  GeomEnums::NT_packed_dabc, GeomEnums::C_color,
+                                                  InternalName::get_texcoord(), 3,
+                                                  GeomEnums::NT_float32, GeomEnums::C_texcoord));
     } else {
       format = GeomVertexFormat::get_v3cp();
     }
@@ -84,10 +102,10 @@ generate() {
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter color(vdata, InternalName::get_color());
   
-  vertex.add_data3f(Vertexf::rfu(left, 0.0f, top));
-  vertex.add_data3f(Vertexf::rfu(left, 0.0f, bottom));
-  vertex.add_data3f(Vertexf::rfu(right, 0.0f, top));
-  vertex.add_data3f(Vertexf::rfu(right, 0.0f, bottom));
+  vertex.add_data3f(_ul_pos);
+  vertex.add_data3f(_ll_pos);
+  vertex.add_data3f(_ur_pos);
+  vertex.add_data3f(_lr_pos);
   
   color.add_data4f(_color);
   color.add_data4f(_color);
@@ -96,18 +114,27 @@ generate() {
   
   if (_has_uvs) {
     GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-    texcoord.add_data2f(_ll[0], _ur[1]);
-    texcoord.add_data2f(_ll[0], _ll[1]);
-    texcoord.add_data2f(_ur[0], _ur[1]);
-    texcoord.add_data2f(_ur[0], _ll[1]);
+    texcoord.add_data3f(_ul_tex);
+    texcoord.add_data3f(_ll_tex);
+    texcoord.add_data3f(_ur_tex);
+    texcoord.add_data3f(_lr_tex);
   }
   
   if (_has_normals) {
     GeomVertexWriter normal(vdata, InternalName::get_normal());
-    normal.add_data3f(LVector3f::back());
-    normal.add_data3f(LVector3f::back());
-    normal.add_data3f(LVector3f::back());
-    normal.add_data3f(LVector3f::back());
+    LVector3f n;
+    n = (_ll_pos - _ul_pos).cross(_ur_pos - _ul_pos);
+    n.normalize();
+    normal.add_data3f(n);
+    n = (_lr_pos - _ll_pos).cross(_ul_pos - _ll_pos);
+    n.normalize();
+    normal.add_data3f(n);
+    n = (_ul_pos - _ur_pos).cross(_lr_pos - _ur_pos);
+    n.normalize();
+    normal.add_data3f(n);
+    n = (_ur_pos - _lr_pos).cross(_ll_pos - _lr_pos);
+    n.normalize();
+    normal.add_data3f(n);
   }
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
@@ -134,24 +161,22 @@ rescale_source_geometry() {
   PT(PandaNode) root = _source_geometry->copy_subgraph();
 
   // Determine the translate and scale appropriate for our geometry.
-  float geom_center_x = (_source_frame[0] + _source_frame[1]) * 0.5f;
-  float geom_center_y = (_source_frame[2] + _source_frame[3]) * 0.5f;
+  LVector3f frame_max = _ll_pos.fmax(_lr_pos.fmax(_ur_pos.fmax(_ul_pos)));
+  LVector3f frame_min = _ll_pos.fmin(_lr_pos.fmin(_ur_pos.fmax(_ul_pos)));
+  LVector3f frame_ctr = (frame_max + frame_min) * 0.5f;
+  
+  LVector3f geom_center((_source_frame[0] + _source_frame[1]) * 0.5f,
+                        frame_ctr[1],
+                        (_source_frame[2] + _source_frame[3]) * 0.5f);
 
-  float frame_center_x = (_frame[0] + _frame[1]) * 0.5f;
-  float frame_center_y = (_frame[2] + _frame[3]) * 0.5f;
-
-  float scale_x = 
-    (_frame[1] - _frame[0]) / (_source_frame[1] - _source_frame[0]);
-  float scale_y = 
-    (_frame[3] - _frame[2]) / (_source_frame[3] - _source_frame[2]);
-
-  LVector3f trans = LVector3f::rfu(frame_center_x - geom_center_x, 0.0f, 
-                                   frame_center_y - geom_center_y);
-  LVector3f scale = LVector3f::rfu(scale_x, 1.0f, scale_y);
+  LVector3f scale((frame_max[0] - frame_min[0]) / (_source_frame[1] - _source_frame[0]),
+                  0.0,
+                  (frame_max[2] - frame_min[2]) / (_source_frame[3] - _source_frame[2]));
+  
+  LVector3f trans = frame_ctr - geom_center;
 
   CPT(TransformState) transform = 
-    TransformState::make_pos_hpr_scale(trans, LPoint3f(0.0f, 0.0f, 0.0f),
-                                       scale);
+    TransformState::make_pos_hpr_scale(trans, LPoint3f(0.0f, 0.0f, 0.0f), scale);
   root->set_transform(transform);
 
   if (_has_color) {

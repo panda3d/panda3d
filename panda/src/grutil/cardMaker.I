@@ -37,21 +37,6 @@ INLINE CardMaker::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CardMaker::set_uv_range
-//       Access: Public
-//  Description: Sets the range of UV's that will be applied to the
-//               vertices.  If set_has_uvs() is true (as it is by
-//               default), the vertices will be generated with the
-//               indicated range of UV's, which will be useful if a
-//               texture is applied.
-////////////////////////////////////////////////////////////////////
-INLINE void CardMaker::
-set_uv_range(const TexCoordf &ll, const TexCoordf &ur) {
-  _ll = ll;
-  _ur = ur;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CardMaker::set_has_uvs
 //       Access: Public
 //  Description: Sets the flag indicating whether vertices will be
@@ -63,13 +48,105 @@ set_has_uvs(bool flag) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_uv_range
+//       Access: Public
+//  Description: Sets the range of UV's that will be applied to the
+//               vertices.  If set_has_uvs() is true (as it is by
+//               default), the vertices will be generated with the
+//               indicated range of UV's, which will be useful if a
+//               texture is applied.
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+set_uv_range(const TexCoord3f &ll, const TexCoord3f &lr, const TexCoord3f &ur, const TexCoord3f &ul) {
+  _ll_tex = ll;
+  _lr_tex = lr;
+  _ur_tex = ur;
+  _ul_tex = ul;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_uv_range
+//       Access: Public
+//  Description: Sets the range of UV's that will be applied to the
+//               vertices.  If set_has_uvs() is true (as it is by
+//               default), the vertices will be generated with the
+//               indicated range of UV's, which will be useful if a
+//               texture is applied.
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+set_uv_range(const TexCoordf &ll, const TexCoordf &lr, const TexCoordf &ur, const TexCoordf &ul) {
+  _ll_tex.set(ll[0], ll[1], 0.0f);
+  _lr_tex.set(lr[0], lr[1], 0.0f);
+  _ur_tex.set(ur[0], ur[1], 0.0f);
+  _ul_tex.set(ul[0], ul[1], 0.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_uv_range
+//       Access: Public
+//  Description: Sets the range of UV's that will be applied to the
+//               vertices.  If set_has_uvs() is true (as it is by
+//               default), the vertices will be generated with the
+//               indicated range of UV's, which will be useful if a
+//               texture is applied.
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+set_uv_range(const TexCoordf &ll, const TexCoordf &ur) {
+  _ll_tex.set(ll[0], ll[1], 0.0f);
+  _lr_tex.set(ur[0], ll[1], 0.0f);
+  _ur_tex.set(ur[0], ur[1], 0.0f);
+  _ul_tex.set(ll[0], ur[1], 0.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_uv_range
+//       Access: Public
+//  Description: Sets the range of UV's that will be applied to the
+//               vertices.  If set_has_uvs() is true (as it is by
+//               default), the vertices will be generated with the
+//               indicated range of UV's, which will be useful if a
+//               texture is applied.
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+set_uv_range(const LVector4f &x, const LVector4f &y, const LVector4f &z) {
+  _ll_tex.set(x[0], y[0], z[0]);
+  _lr_tex.set(x[1], y[1], z[1]);
+  _ur_tex.set(x[2], y[2], z[2]);
+  _ul_tex.set(x[3], y[3], z[3]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_uv_range_cube
+//       Access: Public
+//  Description: Sets the range of UV's that will be applied to the
+//               vertices appropriately for a cube-map face.
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+set_uv_range_cube(int face) {
+  LVector4f varya(-1,  1,  1, -1);
+  LVector4f varyb(-1, -1,  1,  1);
+  LVector4f fixed( 1,  1,  1,  1);
+  switch(face) {
+  case 0: set_uv_range( fixed,  varya,  varyb); break; // positive_x
+  case 1: set_uv_range(-fixed, -varya, -varyb); break; // negative_x
+  case 2: set_uv_range( varya,  fixed,  varyb); break; // positive_y
+  case 3: set_uv_range(-varya, -fixed, -varyb); break; // negative_y
+  case 4: set_uv_range( varya,  varyb,  fixed); break; // positive_z
+  case 5: set_uv_range(-varya, -varyb, -fixed); break; // negative_z
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CardMaker::set_frame
 //       Access: Public
 //  Description: Sets the size of the card.
 ////////////////////////////////////////////////////////////////////
 INLINE void CardMaker::
 set_frame(float left, float right, float bottom, float top) {
-  set_frame(LVecBase4f(left, right, bottom, top));
+  _ll_pos.set(left,  0.0f, bottom);
+  _lr_pos.set(right, 0.0f, bottom);
+  _ur_pos.set(right, 0.0f, top);
+  _ul_pos.set(left,  0.0f, top);
 } 
 
 ////////////////////////////////////////////////////////////////////
@@ -79,7 +156,21 @@ set_frame(float left, float right, float bottom, float top) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CardMaker::
 set_frame(const LVecBase4f &frame) {
-  _frame = frame;
+  set_frame(frame[0], frame[1], frame[2], frame[3]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_frame
+//       Access: Public
+//  Description: Sets the size of the card.
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+set_frame(const Vertexf &ll, const Vertexf &lr, const Vertexf &ur, const Vertexf &ul)
+{
+  _ll_pos = ll;
+  _lr_pos = lr;
+  _ur_pos = ur;
+  _ul_pos = ul;
 }
 
 ////////////////////////////////////////////////////////////////////

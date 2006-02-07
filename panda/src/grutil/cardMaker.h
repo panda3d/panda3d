@@ -39,10 +39,15 @@ PUBLISHED:
 
   void reset();
   INLINE void set_uv_range(const TexCoordf &ll, const TexCoordf &ur);
+  INLINE void set_uv_range(const TexCoordf &ll, const TexCoordf &lr, const TexCoordf &ur, const TexCoordf &ul);
+  INLINE void set_uv_range(const TexCoord3f &ll, const TexCoord3f &lr, const TexCoord3f &ur, const TexCoord3f &ul);
+  INLINE void set_uv_range(const LVector4f &x, const LVector4f &y, const LVector4f &z);
   INLINE void set_has_uvs(bool flag);
+  INLINE void set_uv_range_cube(int face);
 
   INLINE void set_frame(float left, float right, float bottom, float top);
   INLINE void set_frame(const LVecBase4f &frame);
+  INLINE void set_frame(const Vertexf &ll, const Vertexf &lr, const Vertexf &ur, const Vertexf &ul);
 
   INLINE void set_color(float r, float g, float b, float a);
   INLINE void set_color(const Colorf &color);
@@ -58,8 +63,8 @@ private:
   PT(PandaNode) rescale_source_geometry();
 
   bool _has_uvs;
-  TexCoordf _ll, _ur;
-  LVecBase4f _frame;
+  Vertexf    _ul_tex, _ll_tex, _lr_tex, _ur_tex;
+  TexCoord3f _ul_pos, _ll_pos, _lr_pos, _ur_pos;
 
   bool _has_color;
   Colorf _color;
