@@ -112,6 +112,9 @@ PUBLISHED:
   INLINE_LINMATH void operator *= (FLOATTYPE scalar);
   INLINE_LINMATH void operator /= (FLOATTYPE scalar);
 
+  INLINE_LINMATH FLOATNAME(LVecBase4) fmax(const FLOATNAME(LVecBase4) &other);
+  INLINE_LINMATH FLOATNAME(LVecBase4) fmin(const FLOATNAME(LVecBase4) &other);
+
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other,
                            FLOATTYPE threshold) const;
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other) const;

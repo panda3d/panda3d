@@ -677,6 +677,32 @@ operator /= (FLOATTYPE scalar) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::fmax
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
+fmax(const FLOATNAME(LVecBase4) &other) {
+  return FLOATNAME(LVecBase4)(_v.v._0 > other._v.v._0 ? _v.v._0 : other._v.v._0,
+                              _v.v._1 > other._v.v._1 ? _v.v._1 : other._v.v._1,
+                              _v.v._2 > other._v.v._2 ? _v.v._2 : other._v.v._2,
+                              _v.v._3 > other._v.v._3 ? _v.v._3 : other._v.v._3);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::fmin
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
+fmin(const FLOATNAME(LVecBase4) &other) {
+  return FLOATNAME(LVecBase4)(_v.v._0 < other._v.v._0 ? _v.v._0 : other._v.v._0,
+                              _v.v._1 < other._v.v._1 ? _v.v._1 : other._v.v._1,
+                              _v.v._2 < other._v.v._2 ? _v.v._2 : other._v.v._2,
+                              _v.v._3 < other._v.v._3 ? _v.v._3 : other._v.v._3);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::almost_equal
 //       Access: Public
 //  Description: Returns true if two vectors are memberwise equal

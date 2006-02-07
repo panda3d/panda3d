@@ -559,6 +559,28 @@ operator /= (FLOATTYPE scalar) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::fmax
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
+fmax(const FLOATNAME(LVecBase2) &other) {
+  return FLOATNAME(LVecBase2)(_v.v._0 > other._v.v._0 ? _v.v._0 : other._v.v._0,
+                              _v.v._1 > other._v.v._1 ? _v.v._1 : other._v.v._1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::fmin
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
+fmin(const FLOATNAME(LVecBase2) &other) {
+  return FLOATNAME(LVecBase2)(_v.v._0 < other._v.v._0 ? _v.v._0 : other._v.v._0,
+                              _v.v._1 < other._v.v._1 ? _v.v._1 : other._v.v._1);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::almost_equal
 //       Access: Public
 //  Description: Returns true if two vectors are memberwise equal

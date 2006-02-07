@@ -115,6 +115,9 @@ PUBLISHED:
   INLINE_LINMATH void operator *= (FLOATTYPE scalar);
   INLINE_LINMATH void operator /= (FLOATTYPE scalar);
 
+  INLINE_LINMATH FLOATNAME(LVecBase3) fmax(const FLOATNAME(LVecBase3) &other);
+  INLINE_LINMATH FLOATNAME(LVecBase3) fmin(const FLOATNAME(LVecBase3) &other);
+
   INLINE_LINMATH void cross_into(const FLOATNAME(LVecBase3) &other);
 
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase3) &other,

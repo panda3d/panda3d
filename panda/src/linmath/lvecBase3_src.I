@@ -719,6 +719,30 @@ operator /= (FLOATTYPE scalar) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::fmax
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
+fmax(const FLOATNAME(LVecBase3) &other) {
+  return FLOATNAME(LVecBase3)(_v.v._0 > other._v.v._0 ? _v.v._0 : other._v.v._0,
+                              _v.v._1 > other._v.v._1 ? _v.v._1 : other._v.v._1,
+                              _v.v._2 > other._v.v._2 ? _v.v._2 : other._v.v._2);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::fmin
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
+fmin(const FLOATNAME(LVecBase3) &other) {
+  return FLOATNAME(LVecBase3)(_v.v._0 < other._v.v._0 ? _v.v._0 : other._v.v._0,
+                              _v.v._1 < other._v.v._1 ? _v.v._1 : other._v.v._1,
+                              _v.v._2 < other._v.v._2 ? _v.v._2 : other._v.v._2);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::cross product (with assigment)
 //       Access: Published
 //  Description:
