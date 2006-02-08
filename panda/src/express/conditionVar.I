@@ -77,6 +77,7 @@ get_mutex() {
   return _mutex;
 }
 
+#ifndef CHECK_REENTRANT_MUTEX
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVar::wait
 //       Access: Public
@@ -113,6 +114,7 @@ wait() {
   nassertv(_mutex.debug_is_locked());
   _impl.wait();
 }
+#endif  // CHECK_REENTRANT_MUTEX
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVar::signal
