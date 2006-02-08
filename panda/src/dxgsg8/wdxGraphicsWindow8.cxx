@@ -64,9 +64,74 @@ wdxGraphicsWindow8::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::make_current
+//     Function: wdxGraphicsWindow8::begin_frame
 //       Access: Public, Virtual
-//  Description:
+//  Description: This function will be called within the draw thread
+//               before beginning rendering for a given frame.  It
+//               should do whatever setup is required, and return true
+//               if the frame should be rendered, or false if it
+//               should be skipped.
+////////////////////////////////////////////////////////////////////
+bool wdxGraphicsWindow8::
+begin_frame(FrameMode mode) {
+  begin_frame_spam();
+  if (_gsg == (GraphicsStateGuardian *)NULL) {
+    return false;
+  }
+  
+  if (_awaiting_restore) {
+    // The fullscreen window was recently restored; we can't continue
+    // until the GSG says we can.
+    if (!_dxgsg->check_cooperative_level()) {
+      // Keep waiting.
+      return false;
+    }
+    _awaiting_restore = false;
+    init_resized_window();
+  }
+
+  make_current();
+
+  if (mode == FM_render) {
+    clear_cube_map_selection();
+  }
+  
+  bool return_val = _gsg->begin_frame();
+  _dxgsg->set_render_target();
+  return return_val;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow8::end_frame
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after rendering is completed for a given frame.  It
+//               should do whatever finalization is required.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsWindow8::
+end_frame(FrameMode mode) {
+
+  end_frame_spam();
+  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+
+  if (mode == FM_render) {
+    copy_to_textures();
+  }
+
+  _gsg->end_frame();
+
+  if (mode == FM_render) {
+    trigger_flip();
+    if (_one_shot) {
+      prepare_for_deletion();
+    }
+    clear_cube_map_selection();
+  }
+}
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow8::make_current
+//       Access: Private
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow8::
 make_current() {
@@ -87,67 +152,6 @@ make_current() {
     // other windows with a different buffer mask.
     dxgsg->_buffer_mask |= _buffer_mask;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
-bool wdxGraphicsWindow8::
-begin_frame() {
-  begin_frame_spam();
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
-    return false;
-  }
-  if (_awaiting_restore) {
-    // The fullscreen window was recently restored; we can't continue
-    // until the GSG says we can.
-    if (!_dxgsg->check_cooperative_level()) {
-      // Keep waiting.
-      return false;
-    }
-    _awaiting_restore = false;
-
-    init_resized_window();
-  }
-  auto_resize();
-  if (needs_context()) {
-    if (!make_context()) {
-      return false;
-    }
-  }
-  make_current();
-  begin_render_texture();
-  clear_cube_map_selection();
-  bool return_val = _gsg->begin_frame();
-  _dxgsg->set_render_target();
-  return return_val;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow8::
-end_frame() {
-  end_frame_spam();
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-  _gsg->end_frame();
-  end_render_texture();
-  copy_to_textures();
-  trigger_flip();
-  if (_one_shot) {
-    prepare_for_deletion();
-  }
-  clear_cube_map_selection();
 }
 
 ////////////////////////////////////////////////////////////////////

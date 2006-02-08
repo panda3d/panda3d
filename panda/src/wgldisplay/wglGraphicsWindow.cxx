@@ -157,20 +157,26 @@ wglGraphicsWindow::
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsWindow::
-begin_frame() {
+begin_frame(FrameMode mode) {
+  PStatTimer timer(_make_current_pcollector);
+
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
-  auto_resize();
-  if (needs_context()) {
-    if (!make_context()) {
-      return false;
-    }
+
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_R(wglgsg, _gsg, false);
+  
+  HGLRC context = wglgsg->get_context(_hdc);
+  nassertr(context, false);
+  wglMakeCurrent(_hdc, context);
+  wglgsg->reset_if_new();
+
+  if (mode == FM_render) {
+    clear_cube_map_selection();
   }
-  make_current();
-  begin_render_texture();
-  clear_cube_map_selection();
+  
   return _gsg->begin_frame();
 }
 
@@ -182,62 +188,25 @@ begin_frame() {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
-end_frame() {
+end_frame(FrameMode mode) {
+
   end_frame_spam();
+
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+
+  if (mode == FM_render) {
+    copy_to_textures();
+  }
+
   _gsg->end_frame();
-  end_render_texture();
-  copy_to_textures();
-  trigger_flip();
-  if (_one_shot) {
-    prepare_for_deletion();
+
+  if (mode == FM_render) {
+    trigger_flip();
+    if (_one_shot) {
+      prepare_for_deletion();
+    }
+    clear_cube_map_selection();
   }
-  clear_cube_map_selection();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::make_context
-//       Access: Public, Virtual
-//  Description: If _needs_context is true, this will be called
-//               in the draw thread prior to rendering into the
-//               window.  It should attempt to create a graphics
-//               context, and return true if successful, false
-//               otherwise.  If it returns false the window will be
-//               considered failed.
-////////////////////////////////////////////////////////////////////
-bool wglGraphicsWindow::
-make_context() {
-  PStatTimer timer(_make_current_pcollector);
-
-  wglGraphicsStateGuardian *wglgsg;
-  DCAST_INTO_R(wglgsg, _gsg, false);
-
-  HGLRC context = wglgsg->get_context(_hdc);
-  if (context) {
-    wglMakeCurrent(_hdc, context);
-    wglgsg->reset_if_new();
-    _needs_context = false;
-    return true;
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::make_current
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               during begin_frame() to ensure the graphics context
-//               is ready for drawing.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::
-make_current() {
-  PStatTimer timer(_make_current_pcollector);
-
-  wglGraphicsStateGuardian *wglgsg;
-  DCAST_INTO_V(wglgsg, _gsg);
-  HGLRC context = wglgsg->get_context(_hdc);
-  nassertv(context);
-  wglMakeCurrent(_hdc, context);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -277,8 +246,12 @@ begin_flip() {
     // called.  Empirically, it appears that it is not necessary in
     // many cases, but it definitely is necessary at least in the case
     // of Mesa on Windows.
-    make_current();
-
+    wglGraphicsStateGuardian *wglgsg;
+    DCAST_INTO_V(wglgsg, _gsg);
+    HGLRC context = wglgsg->get_context(_hdc);
+    nassertv(context);
+    wglMakeCurrent(_hdc, context);
+    
     SwapBuffers(_hdc);
   }
 }

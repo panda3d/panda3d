@@ -170,7 +170,7 @@ release_gsg() {
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool glxGraphicsWindow::
-begin_frame() {
+begin_frame(FrameMode mode) {
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
@@ -200,7 +200,7 @@ begin_frame() {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
-end_frame() {
+end_frame(FrameMode mode) {
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   _gsg->end_frame();

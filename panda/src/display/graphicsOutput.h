@@ -78,6 +78,13 @@ PUBLISHED:
     RTM_triggered_copy_ram,
   };
 
+  // There are many reasons to call begin_frame/end_frame.
+  enum FrameMode {
+    FM_render,   // We are rendering a frame.
+    FM_parasite, // We are rendering a frame of a parasite.
+    FM_refresh,  // We are just refreshing the display or exposing the window.
+  };
+
   virtual ~GraphicsOutput();
 
   INLINE GraphicsStateGuardian *get_gsg() const;
@@ -142,7 +149,6 @@ PUBLISHED:
 
 public:
   // These are not intended to be called directly by the user.
-  INLINE bool needs_context() const;
   INLINE bool flip_ready() const;
 
   INLINE bool operator < (const GraphicsOutput &other) const;
@@ -161,21 +167,22 @@ public:
   // thread other than the draw thread.  These methods are normally
   // called by the GraphicsEngine.
   void clear();
-  virtual bool begin_frame();
-  virtual void end_frame();
+  virtual bool begin_frame(FrameMode mode);
+  virtual void end_frame(FrameMode mode);
 
-  virtual void begin_render_texture();
-  virtual void end_render_texture();
+  // These entry points have been removed. Use begin_frame/end_frame instead.
+  //  virtual void begin_render_texture();
+  //  virtual void end_render_texture();
+  //  INLINE bool needs_context() const;
+  //  bool _needs_context;
+  //  virtual bool make_context();
+  //  virtual void make_current();
+  //  virtual void auto_resize();
 
   void change_scenes(DisplayRegion *new_dr);
   virtual void select_cube_map(int cube_map_index);
 
-  // This method is called in the draw thread prior to issuing any
-  // drawing commands for the window.
-  virtual bool make_context();
-  virtual void make_current();
   virtual void release_gsg();
-  virtual void auto_resize();
   
   // These methods will be called within the app (main) thread.
   virtual void begin_flip();
@@ -208,7 +215,6 @@ protected:
   string _name;
   pvector<RenderTexture> _textures;
   bool _flip_ready;
-  bool _needs_context;
   int _cube_map_index;
   DisplayRegion *_cube_map_dr;
   PT(Geom) _texture_card;

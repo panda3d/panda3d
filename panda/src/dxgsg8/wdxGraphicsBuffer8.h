@@ -41,15 +41,11 @@ public:
                     int x_size, int y_size);
   virtual ~wdxGraphicsBuffer8();
 
-  virtual bool begin_frame();
-  virtual void end_frame();
+  virtual bool begin_frame(FrameMode mode);
+  virtual void end_frame(FrameMode mode);
+  
   virtual void select_cube_map(int cube_map_index);
-
-  virtual void make_current();
   virtual void release_gsg();
-
-  virtual void begin_render_texture();
-  virtual void end_render_texture();
 
   virtual void process_events();
 
@@ -58,6 +54,8 @@ protected:
   virtual bool open_buffer();
 
 private:
+  void begin_render_texture();
+  void end_render_texture();
   static void process_1_event();
 
   int _cube_map_index;

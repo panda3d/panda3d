@@ -81,7 +81,6 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _has_size = false;
   _is_valid = false;
   _flip_ready = false;
-  _needs_context = true;
   _cube_map_index = -1;
   _cube_map_dr = NULL;
   _sort = 0;
@@ -961,7 +960,7 @@ reset_window(bool swapchain) {
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsOutput::
-begin_frame() {
+begin_frame(FrameMode mode) {
   return false;
 }
 
@@ -973,7 +972,7 @@ begin_frame() {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
-end_frame() {
+end_frame(FrameMode mode) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1091,37 +1090,6 @@ copy_to_textures() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::begin_render_texture
-//       Access: Public, Virtual
-//  Description: If the GraphicsOutput supports direct render-to-texture,
-//               and if any setup needs to be done during begin_frame,
-//               then the setup code should go here.  Any textures that
-//               can not be rendered to directly should be reflagged
-//               as RTM_copy_texture.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-begin_render_texture() {
-  for (int i=0; i<count_textures(); i++) {
-    if (get_rtm_mode(i) == RTM_bind_or_copy) {
-      _textures[i]._rtm_mode = RTM_copy_texture;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::end_render_texture
-//       Access: Public, Virtual
-//  Description: If the GraphicsOutput supports direct render-to-texture,
-//               and if any setup needs to be done during end_frame,
-//               then the setup code should go here.  Any textures that
-//               could not be rendered to directly should be reflagged
-//               as RTM_copy_texture.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-end_render_texture() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::change_scenes
 //       Access: Public
 //  Description: Called by the GraphicsEngine when the window is about
@@ -1189,33 +1157,6 @@ select_cube_map(int) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::make_context
-//       Access: Public, Virtual
-//  Description: If _needs_context is true, this will be called
-//               in the draw thread prior to rendering into the
-//               window.  It should attempt to create a graphics
-//               context, and return true if successful, false
-//               otherwise.  If it returns false the window will be
-//               considered failed.
-////////////////////////////////////////////////////////////////////
-bool GraphicsOutput::
-make_context() {
-  _needs_context = false;
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::make_current
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               during begin_frame() to ensure the graphics context
-//               is ready for drawing.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-make_current() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::release_gsg
 //       Access: Public
 //  Description: Releases the current GSG pointer, if it is currently
@@ -1228,17 +1169,6 @@ void GraphicsOutput::
 release_gsg() {
   _gsg.clear();
   _active = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::auto_resize
-//       Access: Public, Virtual
-//  Description: Certain graphics outputs can automatically resize
-//               themselves to automatically stay the same size as
-//               some other graphics output.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-auto_resize() {
 }
 
 ////////////////////////////////////////////////////////////////////

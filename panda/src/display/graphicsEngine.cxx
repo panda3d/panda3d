@@ -790,7 +790,7 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
-      if (win->begin_frame()) {
+      if (win->begin_frame(GraphicsOutput::FM_render)) {
         win->clear();
       
         int num_display_regions = win->get_num_active_display_regions();
@@ -800,7 +800,7 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
             cull_and_draw_together(win, dr);
           }
         }
-        win->end_frame();
+        win->end_frame(GraphicsOutput::FM_render);
 
         if (_auto_flip) {
           if (win->flip_ready()) {
@@ -864,7 +864,7 @@ cull_bin_draw(const GraphicsEngine::Windows &wlist) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
       // This should be done in the draw thread, not here.
-      if (win->begin_frame()) {
+      if (win->begin_frame(GraphicsOutput::FM_render)) {
         win->clear();
       
         int num_display_regions = win->get_num_active_display_regions();
@@ -874,7 +874,7 @@ cull_bin_draw(const GraphicsEngine::Windows &wlist) {
             cull_bin_draw(win, dr);
           }
         }
-        win->end_frame();
+        win->end_frame(GraphicsOutput::FM_render);
 
         if (_auto_flip) {
           if (win->flip_ready()) {
@@ -940,8 +940,8 @@ make_contexts(const GraphicsEngine::Windows &wlist) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
-    if (win->needs_context()) {
-      win->make_context();
+    if (win->begin_frame(GraphicsOutput::FM_refresh)) {
+      win->end_frame(GraphicsOutput::FM_refresh);
     }
   }
 }

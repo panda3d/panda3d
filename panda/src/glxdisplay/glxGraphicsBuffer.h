@@ -41,9 +41,8 @@ public:
 
   virtual ~glxGraphicsBuffer();
 
-  virtual bool begin_frame();
-  virtual void end_frame();
-  virtual void make_current();
+  virtual bool begin_frame(FrameMode mode);
+  virtual void end_frame(FrameMode mode);
   virtual void release_gsg();
 
 protected:

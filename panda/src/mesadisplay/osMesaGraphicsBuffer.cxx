@@ -61,14 +61,15 @@ begin_frame() {
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
-  auto_resize();
-  if (needs_context()) {
-    if (!make_context()) {
-      return false;
-    }
-  }
-  make_current();
-  begin_render_texture();
+
+  OSMesaGraphicsStateGuardian *mesagsg;
+  DCAST_INTO_V(mesagsg, _gsg);
+  OSMesaMakeCurrent(mesagsg->_context, _image.p(), _type,
+                    _x_size, _y_size);
+
+  mesagsg->reset_if_new();
+
+  // begin_render_texture();
   clear_cube_map_selection();
   return _gsg->begin_frame();
 }
@@ -85,30 +86,13 @@ end_frame() {
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   _gsg->end_frame();
-  end_render_texture();
+  // end_render_texture();
   copy_to_textures();
   trigger_flip();
   if (_one_shot) {
     prepare_for_deletion();
   }
   clear_cube_map_selection();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: OsMesaGraphicsBuffer::make_current
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               during begin_frame() to ensure the graphics context
-//               is ready for drawing.
-////////////////////////////////////////////////////////////////////
-void OsMesaGraphicsBuffer::
-make_current() {
-  OSMesaGraphicsStateGuardian *mesagsg;
-  DCAST_INTO_V(mesagsg, _gsg);
-  OSMesaMakeCurrent(mesagsg->_context, _image.p(), _type,
-                    _x_size, _y_size);
-
-  mesagsg->reset_if_new();
 }
 
 ////////////////////////////////////////////////////////////////////

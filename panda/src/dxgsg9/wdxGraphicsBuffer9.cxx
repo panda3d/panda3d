@@ -77,21 +77,19 @@ wdxGraphicsBuffer9::
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsBuffer9::
-begin_frame() {
+begin_frame(FrameMode mode) {
   DBG_S dxgsg9_cat.debug ( ) << "wdxGraphicsBuffer9::begin_frame\n"; DBG_E
+
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
-  auto_resize();
-  if (needs_context()) {
-    if (!make_context()) {
-      return false;
-    }
+
+  if (mode == FM_render) {
+    begin_render_texture();
+    clear_cube_map_selection();
   }
-  make_current();
-  begin_render_texture();
-  clear_cube_map_selection();
+  
   return _gsg->begin_frame();
 }
 
@@ -103,22 +101,30 @@ begin_frame() {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsBuffer9::
-end_frame() {
+end_frame(FrameMode mode) {
+
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-  _gsg->end_frame();
-  end_render_texture();
-  copy_to_textures();
-  trigger_flip();
-  if (_one_shot) {
-    prepare_for_deletion();
+
+  if (mode == FM_render) {
+    end_render_texture();
+    copy_to_textures();
   }
-  clear_cube_map_selection();
+
+  _gsg->end_frame();
+
+  if (mode == FM_render) {
+    trigger_flip();
+    if (_one_shot) {
+      prepare_for_deletion();
+    }
+    clear_cube_map_selection();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsStateGuardian::begin_render_texture
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: If the GraphicsOutput supports direct render-to-texture,
 //               and if any setup needs to be done during begin_frame,
 //               then the setup code should go here.  Any textures that
@@ -221,7 +227,7 @@ begin_render_texture() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::end_render_texture
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: If the GraphicsOutput supports direct render-to-texture,
 //               and if any setup needs to be done during end_frame,
 //               then the setup code should go here.  Any textures that
@@ -353,25 +359,6 @@ select_cube_map(int cube_map_index) {
       }
     }
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::make_current
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               during begin_frame() to ensure the graphics context
-//               is ready for drawing.
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsBuffer9::
-make_current() {
-  PStatTimer timer(_make_current_pcollector);
-
-  DXGraphicsStateGuardian9 *dxgsg;
-  DCAST_INTO_V(dxgsg, _gsg);
-
-  // do nothing here
-  DBG_S dxgsg9_cat.debug ( ) << "wdxGraphicsBuffer9::make_current\n"; DBG_E
-
 }
 
 ////////////////////////////////////////////////////////////////////

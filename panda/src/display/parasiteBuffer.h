@@ -63,11 +63,9 @@ PUBLISHED:
   virtual bool is_active() const;
 
 public:
-  virtual bool begin_frame();
-  virtual void end_frame();
+  virtual bool begin_frame(FrameMode mode);
+  virtual void end_frame(FrameMode mode);
   virtual GraphicsOutput *get_host();
-  virtual void make_current();
-  virtual void auto_resize();
   
 private:
   PT(GraphicsOutput) _host;

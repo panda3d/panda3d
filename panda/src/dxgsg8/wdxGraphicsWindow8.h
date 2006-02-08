@@ -38,9 +38,8 @@ public:
                      const string &name);
   virtual ~wdxGraphicsWindow8();
 
-  virtual bool begin_frame();
-  virtual void end_frame();
-  virtual void make_current();
+  virtual bool begin_frame(FrameMode mode);
+  virtual void end_frame(FrameMode mode);
   virtual void end_flip();
 
   virtual int verify_window_sizes(int numsizes, int *dimen);
@@ -73,6 +72,7 @@ private:
 
   bool reset_device_resize_window(UINT new_xsize, UINT new_ysize);
   void init_resized_window();
+  void make_current();
   static int D3DFMT_to_DepthBits(D3DFORMAT fmt);
   static bool is_badvidmem_card(D3DADAPTER_IDENTIFIER8 *pDevID);
 

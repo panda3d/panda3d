@@ -60,12 +60,12 @@ public:
   virtual ~CLP(GraphicsBuffer)();
 
   virtual void select_cube_map(int cube_map_index);
-  virtual void auto_resize();
-  virtual void make_current();
-  virtual void begin_render_texture();
-  virtual void end_render_texture();
-  
+
 private:
+  void make_current();
+  void begin_render_texture();
+  void end_render_texture();
+  
   // HPBUFFERARB _pbuffer;
   // HDC _pbuffer_dc;
 

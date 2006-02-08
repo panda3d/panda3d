@@ -106,21 +106,23 @@ get_host() {
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool ParasiteBuffer::
-begin_frame() {
+begin_frame(FrameMode mode) {
   begin_frame_spam();
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+
+  if (!_host->begin_frame(FM_parasite)) {
     return false;
   }
-  auto_resize();
-  if (needs_context()) {
-    if (!make_context()) {
-      return false;
+
+  if (_track_host_size) {
+    if ((_host->get_x_size() != _x_size)||
+        (_host->get_y_size() != _y_size)) {
+      set_size_and_recalc(_host->get_x_size(),
+                          _host->get_y_size());
     }
   }
-  make_current();
-  begin_render_texture();
+
   clear_cube_map_selection();
-  return _gsg->begin_frame();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,46 +133,23 @@ begin_frame() {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void ParasiteBuffer::
-end_frame() {
+end_frame(FrameMode mode) {
   end_frame_spam();
+
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-  _gsg->end_frame();
-  end_render_texture();
-  copy_to_textures();
-  trigger_flip();
-  if (_one_shot) {
-    prepare_for_deletion();
+
+  if (mode == FM_refresh) {
+    return;
   }
-  clear_cube_map_selection();
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParasiteBuffer::make_current
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               during begin_frame() to ensure the graphics context
-//               is ready for drawing.
-////////////////////////////////////////////////////////////////////
-void ParasiteBuffer::
-make_current() {
-  _host->make_current();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ParasiteBuffer::auto_resize
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               to make sure this buffer is the right size.  If not,
-//               it will be resized.
-////////////////////////////////////////////////////////////////////
-void ParasiteBuffer::
-auto_resize() {
-  if (_track_host_size) {
-    _host->auto_resize();
-    if ((_host->get_x_size() != _x_size)||
-        (_host->get_y_size() != _y_size)) {
-      set_size_and_recalc(_host->get_x_size(),
-                          _host->get_y_size());
+  _host->end_frame(FM_parasite);
+  
+  if (mode == FM_render) {
+    copy_to_textures();
+    if (_one_shot) {
+      prepare_for_deletion();
     }
+    clear_cube_map_selection();
   }
 }
+

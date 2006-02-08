@@ -99,11 +99,12 @@ make_current() {
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow9::
-begin_frame() {
+begin_frame(FrameMode mode) {
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
+  
   if (_awaiting_restore) {
     // The fullscreen window was recently restored; we can't continue
     // until the GSG says we can.
@@ -112,18 +113,15 @@ begin_frame() {
       return false;
     }
     _awaiting_restore = false;
-
     init_resized_window();
   }
-  auto_resize();
-  if (needs_context()) {
-    if (!make_context()) {
-      return false;
-    }
-  }
+
   make_current();
-  begin_render_texture();
-  clear_cube_map_selection();
+
+  if (mode == FM_render) {
+    clear_cube_map_selection();
+  }
+  
   bool return_val = _gsg->begin_frame();
   _dxgsg->set_render_target();
   return return_val;
@@ -137,17 +135,24 @@ begin_frame() {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow9::
-end_frame() {
+end_frame(FrameMode mode) {
+
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-  _gsg->end_frame();
-  end_render_texture();
-  copy_to_textures();
-  trigger_flip();
-  if (_one_shot) {
-    prepare_for_deletion();
+
+  if (mode == FM_render) {
+    copy_to_textures();
   }
-  clear_cube_map_selection();
+
+  _gsg->end_frame();
+
+  if (mode == FM_render) {
+    trigger_flip();
+    if (_one_shot) {
+      prepare_for_deletion();
+    }
+    clear_cube_map_selection();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -37,13 +37,10 @@ public:
   virtual ~glxGraphicsWindow();
 
   virtual bool move_pointer(int device, int x, int y);
-
-  virtual bool make_context();
-  virtual void make_current();
   virtual void release_gsg();
 
-  virtual bool begin_frame();
-  virtual void end_frame();
+  virtual bool begin_frame(FrameMode mode);
+  virtual void end_frame(FrameMode mode);
   virtual void begin_flip();
 
   virtual void process_events();

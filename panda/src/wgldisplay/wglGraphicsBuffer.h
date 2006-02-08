@@ -46,11 +46,10 @@ public:
                     int x_size, int y_size);
   virtual ~wglGraphicsBuffer();
 
-  virtual bool begin_frame();
-  virtual void end_frame();
-  virtual void select_cube_map(int cube_map_index);
+  virtual bool begin_frame(FrameMode mode);
+  virtual void end_frame(FrameMode mode);
 
-  virtual void make_current();
+  virtual void select_cube_map(int cube_map_index);
   virtual void release_gsg();
 
   virtual void begin_render_texture();

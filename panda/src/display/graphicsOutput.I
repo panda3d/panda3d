@@ -373,17 +373,6 @@ flip_ready() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::needs_context
-//       Access: Public
-//  Description: Returns true if make_context() still needs to be
-//               called, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsOutput::
-needs_context() const {
-  return _needs_context;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::operator <
 //       Access: Public
 //  Description: The sorting operator is used to order the
