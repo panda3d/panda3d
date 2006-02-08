@@ -85,7 +85,7 @@ child_integrate(Physical *physical,
     LRotationf accum_quat(0, 0, 0, 0);
 
     // set up the traversal stuff.
-    ForceNode *force_node;
+    //////////////////////ForceNode *force_node;
     AngularForceVector::const_iterator f_cur;
 
     LRotationf f;
@@ -101,13 +101,14 @@ child_integrate(Physical *physical,
         continue;
       }
 
-      force_node = cur_force->get_force_node();
+      /////////////////force_node = cur_force->get_force_node();
 
       // now we go from force space to our object's space.
       assert(index >= 0 && index < matrices.size());
-      f = matrices[index++] * cur_force->get_quat(current_object);
+      //f = matrices[index++] * cur_force->get_quat(current_object);
+      f = cur_force->get_quat(current_object);
 
-      // tally it into the accum vector, applying the inertial tensor.
+      // tally it into the accumulation quaternion
       accum_quat += f;
     }
 
@@ -121,16 +122,17 @@ child_integrate(Physical *physical,
         continue;
       }
 
-      force_node = cur_force->get_force_node();
+      ///////////////force_node = cur_force->get_force_node();
 
       // go from force space to object space
-      assert(index >= 0 && index < matrices.size());
-      f = matrices[index++] * cur_force->get_quat(current_object);
+      //assert(index >= 0 && index < matrices.size());
+      //f = matrices[index++] * cur_force->get_quat(current_object);
+      f = cur_force->get_quat(current_object);
 
-      // tally it into the accum vectors
+      // tally it into the accumulation quaternion
       accum_quat += f;
     }
-    assert(index == matrices.size());
+    //assert(index == matrices.size());
 
     // apply the accumulated torque vector to the object's inertial tensor.
     // this matrix represents how much force the object 'wants' applied to it
@@ -139,7 +141,8 @@ child_integrate(Physical *physical,
 
     // derive this into the angular velocity vector.
     LRotationf rot_quat = current_object->get_rotation();
-    rot_quat += (LVecBase4f(accum_quat) * dt);
+    #if 0
+    rot_quat += accum_quat * dt;
 
     if (rot_quat.normalize()) {
       LOrientationf old_orientation = current_object->get_orientation();
@@ -150,6 +153,23 @@ child_integrate(Physical *physical,
       current_object->set_orientation(new_orientation);
       current_object->set_rotation(rot_quat);
     }
+    #else
+    //accum_quat*=viscosityDamper;
+    LOrientationf orientation = current_object->get_orientation();
+    
+    //accum_quat.normalize();
+    // x = x + v * t + 0.5 * a * t * t
+    orientation = orientation * ((rot_quat * dt) * (accum_quat * (0.5 * dt * dt)));
+    // v = v + a * t
+    rot_quat = rot_quat + (accum_quat * dt);
+
+    //if (rot_quat.normalize()) {
+    //if (orientation.normalize() && rot_quat.normalize()) {
+      // and write the results back.
+      current_object->set_orientation(orientation);
+      current_object->set_rotation(rot_quat);
+    //}
+    #endif
   }
 }
 
