@@ -340,9 +340,11 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 ShaderContext *CLP(GraphicsStateGuardian)::
 prepare_shader(ShaderExpansion *se) {
+#ifdef HAVE_CGDX9
   CLP(ShaderContext) *result = new CLP(ShaderContext)(se, this);
   if (this -> _cg_context) return result;
   delete result;
+#endif
   return NULL;
 }
 
