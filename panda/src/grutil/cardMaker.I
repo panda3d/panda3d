@@ -127,12 +127,12 @@ set_uv_range_cube(int face) {
   LVector4f varyb(-1, -1,  1,  1);
   LVector4f fixed( 1,  1,  1,  1);
   switch(face) {
-  case 0: set_uv_range( fixed,  varya,  varyb); break; // positive_x
-  case 1: set_uv_range(-fixed, -varya, -varyb); break; // negative_x
-  case 2: set_uv_range( varya,  fixed,  varyb); break; // positive_y
+  case 0: set_uv_range( fixed, -varyb,  varya); break; // positive_x
+  case 1: set_uv_range(-fixed, -varyb, -varya); break; // negative_x
+  case 2: set_uv_range(-varya,  fixed,  varyb); break; // positive_y
   case 3: set_uv_range(-varya, -fixed, -varyb); break; // negative_y
-  case 4: set_uv_range( varya,  varyb,  fixed); break; // positive_z
-  case 5: set_uv_range(-varya, -varyb, -fixed); break; // negative_z
+  case 4: set_uv_range(-varya, -varyb,  fixed); break; // positive_z
+  case 5: set_uv_range( varya, -varyb, -fixed); break; // negative_z
   }
 }
 
