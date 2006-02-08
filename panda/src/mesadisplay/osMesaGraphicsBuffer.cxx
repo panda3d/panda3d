@@ -32,7 +32,7 @@ OsMesaGraphicsBuffer::
 OsMesaGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
                      const string &name,
                      int x_size, int y_size) :
-  GraphicsBuffer(pipe, gsg, name, x_size, y_size) 
+  GraphicsBuffer(pipe, gsg, name, x_size, y_size)
 {
   _type = GL_UNSIGNED_BYTE;
 }
@@ -63,7 +63,7 @@ begin_frame(FrameMode mode) {
   }
 
   OSMesaGraphicsStateGuardian *mesagsg;
-  DCAST_INTO_V(mesagsg, _gsg);
+  DCAST_INTO_R(mesagsg, _gsg, false);
   OSMesaMakeCurrent(mesagsg->_context, _image.p(), _type,
                     _x_size, _y_size);
 
