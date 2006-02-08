@@ -62,9 +62,9 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     NUMBER = 258,
-     ULONG = 259,
-     STRING = 260,
+     EGG_NUMBER = 258,
+     EGG_ULONG = 259,
+     EGG_STRING = 260,
      BEZIERCURVE = 261,
      BFACE = 262,
      BILLBOARD = 263,
@@ -152,9 +152,9 @@
      START_PRIMITIVE_BODY = 345
    };
 #endif
-#define NUMBER 258
-#define ULONG 259
-#define STRING 260
+#define EGG_NUMBER 258
+#define EGG_ULONG 259
+#define EGG_STRING 260
 #define BEZIERCURVE 261
 #define BFACE 262
 #define BILLBOARD 263
@@ -759,11 +759,11 @@ static const unsigned short yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals. */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "NUMBER", "ULONG", "STRING", "BEZIERCURVE", 
-  "BFACE", "BILLBOARD", "BILLBOARDCENTER", "BINORMAL", "BUNDLE", "CLOSED", 
-  "COLLIDE", "COMMENT", "COMPONENT", "COORDSYSTEM", "CV", "DART", 
-  "DNORMAL", "DRGBA", "DUV", "DXYZ", "DCS", "DISTANCE", "DTREF", 
-  "DYNAMICVERTEXPOOL", "EXTERNAL_FILE", "FLIGHT", "GROUP", "HIP", 
+  "$end", "error", "$undefined", "EGG_NUMBER", "EGG_ULONG", "EGG_STRING", 
+  "BEZIERCURVE", "BFACE", "BILLBOARD", "BILLBOARDCENTER", "BINORMAL", 
+  "BUNDLE", "CLOSED", "COLLIDE", "COMMENT", "COMPONENT", "COORDSYSTEM", 
+  "CV", "DART", "DNORMAL", "DRGBA", "DUV", "DXYZ", "DCS", "DISTANCE", 
+  "DTREF", "DYNAMICVERTEXPOOL", "EXTERNAL_FILE", "FLIGHT", "GROUP", "HIP", 
   "INTANGENT", "JOINT", "KNOTS", "INCLUDE", "INSTANCE", "LINE", "LOOP", 
   "MATERIAL", "MATRIX3", "MATRIX4", "MODEL", "MREF", "NORMAL", 
   "NURBSCURVE", "NURBSSURFACE", "OBJECTTYPE", "ORDER", "OUTTANGENT", 

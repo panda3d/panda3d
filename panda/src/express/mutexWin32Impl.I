@@ -1,5 +1,5 @@
-// Filename: conditionVarNsprImpl.I
-// Created by:  drose (09Aug02)
+// Filename: mutexWin32Impl.I
+// Created by:  drose (07Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,44 +18,41 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::Constructor
+//     Function: MutexWin32Impl::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarNsprImpl::
-ConditionVarNsprImpl(MutexNsprImpl &mutex) {
-  _cvar = PR_NewCondVar(mutex._lock);
-  nassertv(_cvar != (PRCondVar *)NULL);
+INLINE MutexWin32Impl::
+MutexWin32Impl() {
+  InitializeCriticalSection(&_lock);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::Destructor
+//     Function: MutexWin32Impl::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarNsprImpl::
-~ConditionVarNsprImpl() {
-  PR_DestroyCondVar(_cvar);
+INLINE MutexWin32Impl::
+~MutexWin32Impl() {
+  DeleteCriticalSection(&_lock);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::wait
+//     Function: MutexWin32Impl::lock
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarNsprImpl::
-wait() {
-  int status = PR_WaitCondVar(_cvar, PR_INTERVAL_NO_TIMEOUT);
-  nassertv(status == PR_SUCCESS);
+INLINE void MutexWin32Impl::
+lock() {
+  EnterCriticalSection(&_lock);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::signal
+//     Function: MutexWin32Impl::release
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarNsprImpl::
-signal() {
-  int status = PR_NotifyCondVar(_cvar);
-  nassertv(status == PR_SUCCESS);
+INLINE void MutexWin32Impl::
+release() {
+  LeaveCriticalSection(&_lock);
 }

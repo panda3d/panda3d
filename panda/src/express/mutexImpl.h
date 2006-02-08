@@ -26,11 +26,19 @@
 
 #include "mutexDummyImpl.h"
 typedef MutexDummyImpl MutexImpl;
+#undef MUTEX_REENTRANT
+
+#elif defined(THREAD_WIN32_IMPL)
+
+#include "mutexWin32Impl.h"
+typedef MutexWin32Impl MutexImpl;
+#define MUTEX_REENTRANT 1  // Win32 Mutexes are already reentrant.
 
 #elif defined(THREAD_NSPR_IMPL)
 
 #include "mutexNsprImpl.h"
 typedef MutexNsprImpl MutexImpl;
+#undef MUTEX_REENTRANT
 
 #endif
 

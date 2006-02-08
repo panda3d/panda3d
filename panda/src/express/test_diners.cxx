@@ -27,24 +27,27 @@
 #include "pointerTo.h"
 
 #ifdef WIN32_VC
+// Under Windows, the rand() function seems to return a sequence
+// per-thread, so we use this trick to set each thread to a different
+// seed.
 static int last_rand = 0;
 #endif /* __WIN32__ */
+
+Mutex print_mutex;
+
+#define PRINTMSG(x) { MutexHolder l(print_mutex); x; }
 
 Mutex rand_mutex;
 
 static double random_f(double max)
 {
-   MutexHolder l(rand_mutex);
-   int i = rand();
+  MutexHolder l(rand_mutex);
+  int i = rand();
 #ifdef WIN32_VC
-   last_rand = i;
+  last_rand = i;
 #endif /* __WIN32__ */
-   return max * (double)i / (double)RAND_MAX;
+  return max * (double)i / (double)RAND_MAX;
 }
-
-Mutex print_mutex;
-
-#define PRINTMSG(x) { MutexHolder l(print_mutex); x; }
 
 // n philosophers sharing n chopsticks.  Philosophers are poor folk and can't
 // afford luxuries like 2 chopsticks per person.
@@ -65,88 +68,90 @@ class philosopher;
 PT(philosopher) phils[N_DINERS];
 
 class philosopher : public Thread {
-   private:
-     int _id;
-     void thread_main() {
+private:
+  int _id;
+  void thread_main() {
 #ifdef WIN32_VC
-         rand_mutex.lock();
-         srand(last_rand);
-         rand_mutex.release();
+    rand_mutex.lock();
+    srand(last_rand);
+    rand_mutex.release();
+    random_f(1.0);
 #endif /* __WIN32__ */
-         int l = _id;
-         int r = l+1;
-         if (r == N_DINERS)
-            r = 0;
-         if (l & 1) {
-            int t = l;
-            l = r;
-            r = t;
-         }
-         PRINTMSG(cerr << "Philosopher #" << _id << " has entered the room."
-                  << endl);
-         int count = (int)random_f(10.0) + 1;
-         while (--count) {
-            chopsticks[l].lock();
-            chopsticks[r].lock();
-            PRINTMSG(cerr << "Philosopher #" << _id
-                     << " is eating spaghetti now." << endl);
-            Thread::sleep(random_f(3.0));
-            chopsticks[l].release();
-            chopsticks[r].release();
-            PRINTMSG(cerr << "Philosopher #" << _id
-                     << " is pondering about life." << endl);
-            Thread::sleep(random_f(3.0));
-         }
-         room_mutex.lock();
-         --room_occupancy;
-         phils[_id] = (philosopher*)0L;
-         room_condition.signal();
-         room_mutex.release();
-         PRINTMSG(cerr << "Philosopher #" << _id << " has left the room ("
-                  << room_occupancy << " left)." << endl);
-      }
+    int l = _id;
+    int r = l+1;
+    if (r == N_DINERS)
+      r = 0;
+    if (l & 1) {
+      int t = l;
+      l = r;
+      r = t;
+    }
+    PRINTMSG(cerr << "Philosopher #" << _id << " has entered the room."
+             << endl);
+    int count = (int)random_f(10.0) + 1;
+    while (--count) {
+      chopsticks[l].lock();
+      chopsticks[r].lock();
+      PRINTMSG(cerr << "Philosopher #" << _id
+               << " is eating spaghetti now." << endl);
+      Thread::sleep(random_f(3.0));
+      chopsticks[l].release();
+      chopsticks[r].release();
+      PRINTMSG(cerr << "Philosopher #" << _id
+               << " is pondering about life." << endl);
+      Thread::sleep(random_f(3.0));
+    }
+    room_mutex.lock();
+    --room_occupancy;
+    phils[_id] = (philosopher*)0L;
+    room_condition.signal();
+    room_mutex.release();
+    PRINTMSG(cerr << "Philosopher #" << _id << " has left the room ("
+             << room_occupancy << " left)." << endl);
+  }
 
-      inline void* make_arg(const int i) { return (void*)new int(i); }
-   public:
-      philosopher(const int id) : Thread("philosopher") {
-        _id = id;
-      }
+  inline void* make_arg(const int i) { return (void*)new int(i); }
+public:
+  philosopher(const int id) : Thread("philosopher", "a") {
+    _id = id;
+  }
 };
 
 int main(int, char**)
 {
-   int i;
-   room_mutex.lock();
-   for (i=0; i<N_DINERS; ++i) {
-      phils[i] = new philosopher(i);
-      phils[i]->start(TP_normal, false, false);
-   }
-   room_occupancy = N_DINERS;
-   while (1) {
-      while (room_occupancy == N_DINERS) {
-         PRINTMSG(cerr << "main thread about to block " << room_occupancy
-                  << endl);
-         room_condition.wait();
-      }
-      // hmm.. someone left the room.
-      room_mutex.release();
-      // sleep for a while and then create a new philosopher
-      PRINTMSG(cerr << "main thread sleep" << endl);
-      Thread::sleep(2.0);
-      PRINTMSG(cerr << "main thread wake up" << endl);
-      room_mutex.lock();
-      for (i=0; i<N_DINERS; ++i)
-         if (phils[i] == (philosopher*)0L)
-            break;
-      if (i == N_DINERS) {
-         PRINTMSG(cerr
-                  << "Contrary to what I was tolk, no one has left the room!!!"
-                  << endl);
-         PRINTMSG(cerr << "I give up!" << endl);
-         Thread::prepare_for_exit();
-         exit(1);
-      }
-      phils[i] = new philosopher(i);
-      ++room_occupancy;
-   }
+  int i;
+  room_mutex.lock();
+  for (i=0; i<N_DINERS; ++i) {
+    phils[i] = new philosopher(i);
+    phils[i]->start(TP_normal, false, false);
+  }
+  room_occupancy = N_DINERS;
+  while (1) {
+    while (room_occupancy == N_DINERS) {
+      PRINTMSG(cerr << "main thread about to block " << room_occupancy
+               << endl);
+      room_condition.wait();
+    }
+    // hmm.. someone left the room.
+    room_mutex.release();
+    // sleep for a while and then create a new philosopher
+    PRINTMSG(cerr << "main thread sleep" << endl);
+    Thread::sleep(2.0);
+    PRINTMSG(cerr << "main thread wake up" << endl);
+    room_mutex.lock();
+    for (i=0; i<N_DINERS; ++i)
+      if (phils[i] == (philosopher*)0L)
+        break;
+    if (i == N_DINERS) {
+      PRINTMSG(cerr
+               << "Contrary to what I was told, no one has left the room!!!"
+               << endl);
+      PRINTMSG(cerr << "I give up!" << endl);
+      Thread::prepare_for_exit();
+      exit(1);
+    }
+    phils[i] = new philosopher(i);
+    phils[i]->start(TP_normal, false, false);
+    ++room_occupancy;
+  }
 }

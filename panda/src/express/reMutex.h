@@ -25,7 +25,6 @@
 #include "mutexHolder.h"
 #include "thread.h"
 
-
 ////////////////////////////////////////////////////////////////////
 //       Class : ReMutex
 // Description : A reentrant mutex.  This kind of mutex can be locked
@@ -45,13 +44,15 @@ public:
   INLINE void lock() const;
   INLINE void release() const;
 
-  INLINE bool is_locked() const;
-  INLINE int get_lock_count() const;
-
   INLINE bool debug_is_locked() const;
 
 private:
-#if !defined(THREAD_DUMMY_IMPL) || defined(CHECK_REENTRANT_MUTEX)
+#ifdef MUTEX_REENTRANT
+  // If the native Mutex implementation is already reentrant, just use
+  // that.
+  MutexImpl _impl;
+
+#elif !defined(THREAD_DUMMY_IMPL) || defined(CHECK_REENTRANT_MUTEX)
   void do_lock();
   void do_release();
 

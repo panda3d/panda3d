@@ -115,6 +115,7 @@ private:
 
   friend class ThreadDummyImpl;
   friend class ThreadNsprImpl;
+  friend class ThreadWin32Impl;
 };
 
 INLINE ostream &operator << (ostream &out, const Thread &thread);

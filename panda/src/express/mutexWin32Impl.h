@@ -1,5 +1,5 @@
-// Filename: conditionVarNsprImpl.h
-// Created by:  drose (09Aug02)
+// Filename: mutexWin32Impl.h
+// Created by:  drose (07Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,39 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONDITIONVARNSPRIMPL_H
-#define CONDITIONVARNSPRIMPL_H
+#ifndef MUTEXWIN32IMPL_H
+#define MUTEXWIN32IMPL_H
 
 #include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_NSPR_IMPL
+#ifdef THREAD_WIN32_IMPL
 
-#include "mutexNsprImpl.h"
 #include "notify.h"
 
-#include <prcvar.h>
-
-class MutexNsprImpl;
+#include <windows.h>
 
 ////////////////////////////////////////////////////////////////////
-//       Class : ConditionVarNsprImpl
-// Description : Uses NSPR to implement a conditionVar.
+//       Class : MutexWin32Impl
+// Description : Uses Windows native calls to implement a mutex.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS ConditionVarNsprImpl {
+class EXPCL_PANDAEXPRESS MutexWin32Impl {
 public:
-  INLINE ConditionVarNsprImpl(MutexNsprImpl &mutex);
-  INLINE ~ConditionVarNsprImpl();
+  INLINE MutexWin32Impl();
+  INLINE ~MutexWin32Impl();
 
-  INLINE void wait();
-  INLINE void signal();
+  INLINE void lock();
+  INLINE void release();
 
 private:
-  PRCondVar *_cvar;
+  CRITICAL_SECTION _lock;
+  friend class ConditionVarWin32Impl;
 };
 
-#include "conditionVarNsprImpl.I"
+#include "mutexWin32Impl.I"
 
-#endif  // THREAD_NSPR_IMPL
+#endif  // THREAD_WIN32_IMPL
 
 #endif

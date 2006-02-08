@@ -1,5 +1,5 @@
-// Filename: conditionVarImpl.h
-// Created by:  drose (09Aug02)
+// Filename: mutexWin32Impl.cxx
+// Created by:  drose (07Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,30 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONDITIONVARIMPL_H
-#define CONDITIONVARIMPL_H
-
-#include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#if defined(THREAD_DUMMY_IMPL)
+#ifdef THREAD_WIN32_IMPL
 
-#include "conditionVarDummyImpl.h"
-typedef ConditionVarDummyImpl ConditionVarImpl;
+#include "mutexWin32Impl.h"
 
-#elif defined(THREAD_WIN32_IMPL)
-
-#include "conditionVarWin32Impl.h"
-typedef ConditionVarWin32Impl ConditionVarImpl;
-
-#elif defined(THREAD_NSPR_IMPL)
-
-#include "conditionVarNsprImpl.h"
-typedef ConditionVarNsprImpl ConditionVarImpl;
-
-#endif
-
-#endif
-
-
-
+#endif  // THREAD_WIN32_IMPL

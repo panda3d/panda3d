@@ -10,14 +10,16 @@
 
   #define SOURCES \
     atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I atomicAdjust.h \
-    atomicAdjust.I atomicAdjustImpl.h atomicAdjustNsprImpl.h \
-    atomicAdjustNsprImpl.I \
+    atomicAdjust.I atomicAdjustImpl.h \
+    atomicAdjustNsprImpl.h atomicAdjustNsprImpl.I \
+    atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
     bigEndian.h buffer.I buffer.h \
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
     circBuffer.h clockObject.I clockObject.h \
     conditionVarDummyImpl.h conditionVarDummyImpl.I conditionVar.h \
-    conditionVar.I conditionVarImpl.h conditionVarNsprImpl.h \
-    conditionVarNsprImpl.I \
+    conditionVar.I conditionVarImpl.h \
+    conditionVarNsprImpl.h conditionVarNsprImpl.I \
+    conditionVarWin32Impl.h conditionVarWin32Impl.I \
     config_express.h \
     datagram.I datagram.h datagramGenerator.I \
     datagramGenerator.h \
@@ -37,7 +39,9 @@
     memoryUsagePointers.I memoryUsagePointers.h \
     multifile.I multifile.h \
     mutexDummyImpl.h mutexDummyImpl.I pmutex.h mutexHolder.h \
-    mutexHolder.I pmutex.I mutexImpl.h mutexNsprImpl.h mutexNsprImpl.I \
+    mutexHolder.I pmutex.I mutexImpl.h \
+    mutexNsprImpl.h mutexNsprImpl.I \
+    mutexWin32Impl.h mutexWin32Impl.I \
     namable.I \
     namable.h nativeNumericData.I nativeNumericData.h \
     numeric_types.h \
@@ -61,7 +65,9 @@
     subStream.I subStream.h subStreamBuf.h \
     textEncoder.h textEncoder.I \
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
-    threadNsprImpl.h threadNsprImpl.I threadPriority.h \
+    threadNsprImpl.h threadNsprImpl.I \
+    threadWin32Impl.h threadWin32Impl.I \
+    threadPriority.h \
     tokenBoard.I \
     tokenBoard.h trueClock.I trueClock.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
@@ -81,9 +87,13 @@
     zStream.I zStream.h zStreamBuf.h
 
   #define INCLUDED_SOURCES  \
-    atomicAdjust.cxx atomicAdjustDummyImpl.cxx atomicAdjustNsprImpl.cxx \
+    atomicAdjust.cxx atomicAdjustDummyImpl.cxx \
+    atomicAdjustNsprImpl.cxx \
+    atomicAdjustWin32Impl.cxx \
     buffer.cxx checksumHashGenerator.cxx clockObject.cxx \
-    conditionVar.cxx conditionVarDummyImpl.cxx conditionVarNsprImpl.cxx \
+    conditionVar.cxx conditionVarDummyImpl.cxx \
+    conditionVarNsprImpl.cxx \
+    conditionVarWin32Impl.cxx \
     config_express.cxx datagram.cxx datagramGenerator.cxx \
     datagramIterator.cxx \
     datagramSink.cxx dcast.cxx \
@@ -94,7 +104,9 @@
     mainThread.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
     memoryUsagePointers.cxx multifile.cxx \
-    pmutex.cxx mutexHolder.cxx mutexDummyImpl.cxx mutexNsprImpl.cxx \
+    pmutex.cxx mutexHolder.cxx mutexDummyImpl.cxx \
+    mutexNsprImpl.cxx \
+    mutexWin32Impl.cxx \
     namable.cxx \
     nativeNumericData.cxx \
     ordered_vector.cxx \
@@ -115,7 +127,9 @@
     stringDecoder.cxx \
     subStream.cxx subStreamBuf.cxx \
     textEncoder.cxx \
-    thread.cxx threadDummyImpl.cxx threadNsprImpl.cxx \
+    thread.cxx threadDummyImpl.cxx \
+    threadNsprImpl.cxx \
+    threadWin32Impl.cxx \
     trueClock.cxx \
     typedReferenceCount.cxx \
     unicodeLatinMap.cxx \
@@ -133,14 +147,16 @@
 
   #define INSTALL_HEADERS  \
     atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I atomicAdjust.h \
-    atomicAdjust.I atomicAdjustImpl.h atomicAdjustNsprImpl.h \
-    atomicAdjustNsprImpl.I \
+    atomicAdjust.I atomicAdjustImpl.h \
+    atomicAdjustNsprImpl.h atomicAdjustNsprImpl.I \
+    atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
     bigEndian.h buffer.I buffer.h checksumHashGenerator.I  \
     checksumHashGenerator.h circBuffer.I circBuffer.h clockObject.I \
     clockObject.h \
     conditionVarDummyImpl.h conditionVarDummyImpl.I conditionVar.h \
-    conditionVar.I conditionVarImpl.h conditionVarNsprImpl.h \
-    conditionVarNsprImpl.I \
+    conditionVar.I conditionVarImpl.h \
+    conditionVarNsprImpl.h conditionVarNsprImpl.I \
+    conditionVarWin32Impl.h conditionVarWin32Impl.I \
     config_express.h datagram.I datagram.h \
     datagramGenerator.I datagramGenerator.h \
     datagramIterator.I datagramIterator.h \
@@ -158,7 +174,9 @@
     memoryUsagePointerCounts.h memoryUsagePointers.I \
     memoryUsagePointers.h multifile.I multifile.h \
     mutexDummyImpl.h mutexDummyImpl.I pmutex.h mutexHolder.h \
-    mutexHolder.I pmutex.I mutexImpl.h mutexNsprImpl.h mutexNsprImpl.I \
+    mutexHolder.I pmutex.I mutexImpl.h \
+    mutexNsprImpl.h mutexNsprImpl.I \
+    mutexWin32Impl.h mutexWin32Impl.I \
     namable.I namable.h \
     nativeNumericData.I nativeNumericData.h numeric_types.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
@@ -181,7 +199,9 @@
     subStream.I subStream.h subStreamBuf.h \
     textEncoder.h textEncoder.I \
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
-    threadNsprImpl.h threadNsprImpl.I threadPriority.h \
+    threadNsprImpl.h threadNsprImpl.I \
+    threadWin32Impl.h threadWin32Impl.I \
+    threadPriority.h \
     tokenBoard.I \
     tokenBoard.h trueClock.I trueClock.h \
     typedReferenceCount.I \
@@ -258,7 +278,7 @@
 #begin test_bin_target
   #define TARGET test_diners
   #define LOCAL_LIBS $[LOCAL_LIBS] express
-  #define OTHER_LIBS dtoolutil:c dtool:m pystub
+  #define OTHER_LIBS dtoolutil:c dtool:m dtoolconfig:m pystub
 
   #define SOURCES \
     test_diners.cxx

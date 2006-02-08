@@ -1,5 +1,5 @@
-// Filename: conditionVarNsprImpl.I
-// Created by:  drose (09Aug02)
+// Filename: conditionVarWin32Impl.I
+// Created by:  drose (07Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,44 +18,49 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::Constructor
+//     Function: ConditionVarWin32Impl::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarNsprImpl::
-ConditionVarNsprImpl(MutexNsprImpl &mutex) {
-  _cvar = PR_NewCondVar(mutex._lock);
-  nassertv(_cvar != (PRCondVar *)NULL);
+INLINE ConditionVarWin32Impl::
+ConditionVarWin32Impl(MutexWin32Impl &mutex) {
+  _external_mutex = &mutex._lock;
+
+  // Create an auto-reset event.
+  _event_signal = CreateEvent(NULL, false, false, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::Destructor
+//     Function: ConditionVarWin32Impl::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarNsprImpl::
-~ConditionVarNsprImpl() {
-  PR_DestroyCondVar(_cvar);
+INLINE ConditionVarWin32Impl::
+~ConditionVarWin32Impl() {
+  CloseHandle(_event_signal);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::wait
+//     Function: ConditionVarWin32Impl::wait
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarNsprImpl::
+INLINE void ConditionVarWin32Impl::
 wait() {
-  int status = PR_WaitCondVar(_cvar, PR_INTERVAL_NO_TIMEOUT);
-  nassertv(status == PR_SUCCESS);
+  LeaveCriticalSection(_external_mutex);
+
+  DWORD result = WaitForSingleObject(_event_signal, INFINITE);
+  nassertv(result == WAIT_OBJECT_0);
+
+  EnterCriticalSection(_external_mutex);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::signal
+//     Function: ConditionVarWin32Impl::signal
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarNsprImpl::
+INLINE void ConditionVarWin32Impl::
 signal() {
-  int status = PR_NotifyCondVar(_cvar);
-  nassertv(status == PR_SUCCESS);
+  SetEvent(_event_signal);
 }

@@ -101,15 +101,17 @@ get_mutex() {
 //               still be held when wait() returns.  However, it will
 //               be temporarily released during the wait() call
 //               itself.
+//
+//               This is defined as an inline method only when
+//               CHECK_REENTRANT_MUTEX is not defined.  If
+//               CHECK_REENTRANT_MUTEX is defined, it is an
+//               out-of-line method, just to avoid circular
+//               dependencies on #include files.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVar::
 wait() {
   nassertv(_mutex.debug_is_locked());
   _impl.wait();
-
-#ifdef CHECK_REENTRANT_MUTEX
-  _mutex._locking_thread = Thread::get_current_thread();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -132,20 +134,4 @@ INLINE void ConditionVar::
 signal() {
   nassertv(_mutex.debug_is_locked());
   _impl.signal();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVar::signal_all
-//       Access: Public
-//  Description: Wakes up all of the other threads currently blocked
-//               on wait().
-//
-//               The caller must be holding the mutex associated with
-//               the condition variable before making this call, which
-//               will not release the mutex.
-////////////////////////////////////////////////////////////////////
-INLINE void ConditionVar::
-signal_all() {
-  nassertv(_mutex.debug_is_locked());
-  _impl.signal_all();
 }

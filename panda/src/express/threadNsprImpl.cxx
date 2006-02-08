@@ -150,7 +150,11 @@ start(ThreadPriority priority, bool global, bool joinable) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ThreadNsprImpl::interrupt
 //       Access: Public
-//  Description: 
+//  Description: Sends an interrupt message to the thread.  This will
+//               interrupt any blocking-type system calls the thread
+//               may be waiting on, such as I/O, so that the thread
+//               may continue some other processing.  The specific
+//               behavior is implementation dependent.
 ////////////////////////////////////////////////////////////////////
 void ThreadNsprImpl::
 interrupt() {
@@ -162,7 +166,9 @@ interrupt() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ThreadNsprImpl::join
 //       Access: Public
-//  Description: 
+//  Description: Blocks the calling process until the thread
+//               terminates.  If the thread has already terminated,
+//               this returns immediately.
 ////////////////////////////////////////////////////////////////////
 void ThreadNsprImpl::
 join() {

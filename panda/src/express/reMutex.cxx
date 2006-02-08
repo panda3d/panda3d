@@ -18,6 +18,8 @@
 
 #include "reMutex.h"
 
+#ifndef MUTEX_REENTRANT
+
 // Most of the methods in this class are stubbed out in the
 // THREAD_DUMMY_IMPL case, especially when CHECK_REENTRANT_MUTEX is
 // not defined.  In this case, we're not performing any actual locking
@@ -78,3 +80,5 @@ do_release() {
 }
 
 #endif  // !THREAD_DUMMY_IMPL || CHECK_REENTRANT_MUTEX
+
+#endif  // MUTEX_REENTRANT

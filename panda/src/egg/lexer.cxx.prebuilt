@@ -1989,7 +1989,7 @@ YY_RULE_SETUP
   accept(); 
   eggyylval._number = atof(eggyytext); 
   eggyylval._string = yytext;
-  return NUMBER; 
+  return EGG_NUMBER; 
 }
 	YY_BREAK
 case 91:
@@ -2000,7 +2000,7 @@ YY_RULE_SETUP
   accept(); 
   eggyylval._ulong = strtoul(yytext+2, NULL, 16);
   eggyylval._string = yytext;
-  return ULONG; 
+  return EGG_ULONG; 
 }
 	YY_BREAK
 case 92:
@@ -2011,7 +2011,7 @@ YY_RULE_SETUP
   accept(); 
   eggyylval._ulong = strtoul(yytext+2, NULL, 2);
   eggyylval._string = yytext;
-  return ULONG; 
+  return EGG_ULONG; 
 }
 	YY_BREAK
 case 93:
@@ -2023,7 +2023,7 @@ YY_RULE_SETUP
   memset(&eggyylval._number, 0, sizeof(eggyylval._number));
   *(unsigned long *)&eggyylval._number = strtoul(yytext+3, NULL, 0);
   eggyylval._string = yytext;
-  return NUMBER;
+  return EGG_NUMBER;
 }
 	YY_BREAK
 case 94:
@@ -2034,7 +2034,7 @@ YY_RULE_SETUP
   accept(); 
   eggyylval._number = HUGE_VAL;
   eggyylval._string = yytext;
-  return NUMBER; 
+  return EGG_NUMBER; 
 }
 	YY_BREAK
 case 95:
@@ -2045,7 +2045,7 @@ YY_RULE_SETUP
   accept(); 
   eggyylval._number = -HUGE_VAL;
   eggyylval._string = yytext;
-  return NUMBER; 
+  return EGG_NUMBER; 
 }
 	YY_BREAK
 case 96:
@@ -2055,7 +2055,7 @@ YY_RULE_SETUP
   // Quoted string.
   accept();
   eggyylval._string = scan_quoted_string();
-  return STRING;
+  return EGG_STRING;
 }
 	YY_BREAK
 case 97:
@@ -2065,7 +2065,7 @@ YY_RULE_SETUP
   // Unquoted string.
   accept();
   eggyylval._string = yytext;
-  return STRING;
+  return EGG_STRING;
 }
 	YY_BREAK
 case 98:

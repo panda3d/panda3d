@@ -32,6 +32,12 @@
 // With threading disabled, use the do-nothing implementation.
 #define THREAD_DUMMY_IMPL 1
 
+#elif defined(WIN32)
+
+// In Windows, use the native threading library.
+#define THREAD_WIN32_IMPL 1
+#define THREAD_NSPR_IMPL 1  // Temp while developing.
+
 #elif defined(HAVE_NSPR)
 
 // If NSPR is available, use that.

@@ -27,6 +27,11 @@
 #include "atomicAdjustDummyImpl.h"
 typedef AtomicAdjustDummyImpl AtomicAdjustImpl;
 
+#elif defined(THREAD_WIN32_IMPL)
+
+#include "atomicAdjustWin32Impl.h"
+typedef AtomicAdjustWin32Impl AtomicAdjustImpl;
+
 #elif defined(THREAD_NSPR_IMPL)
 
 #include "atomicAdjustNsprImpl.h"

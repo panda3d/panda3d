@@ -22,7 +22,6 @@
 #include "pandabase.h"
 #include "pmutex.h"
 #include "conditionVarImpl.h"
-#include "thread.h"
 #include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -48,9 +47,12 @@ private:
 public:
   INLINE Mutex &get_mutex();
 
+#ifdef CHECK_REENTRANT_MUTEX
+  void wait();
+#else  // CHECK_REENTRANT_MUTEX
   INLINE void wait();
+#endif  // CHECK_REENTRANT_MUTEX
   INLINE void signal();
-  INLINE void signal_all();
 
 private:
   Mutex &_mutex;

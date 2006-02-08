@@ -142,9 +142,9 @@ egg_cleanup_parser() {
 
 %}
 
-%token <_number> NUMBER
-%token <_ulong> ULONG
-%token <_string> STRING
+%token <_number> EGG_NUMBER
+%token <_ulong> EGG_ULONG
+%token <_string> EGG_STRING
 
 %token BEZIERCURVE BFACE BILLBOARD BILLBOARDCENTER BINORMAL BUNDLE CLOSED
 %token COLLIDE COMMENT COMPONENT
@@ -1329,7 +1329,7 @@ group_body:
   int value = (int)$4;
   group->set_dcs_type(value!=0 ? EggGroup::DC_default : EggGroup::DC_none);
 }
-        | group_body DCS '{' STRING '}'
+        | group_body DCS '{' EGG_STRING '}'
 {
   // The special flavor of DCS, with { sync } or { nosync }.
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
@@ -1349,7 +1349,7 @@ group_body:
   int value = (int)$4;
   group->set_dart_type(value!=0 ? EggGroup::DT_default : EggGroup::DT_none);
 }
-        | group_body DART '{' STRING '}'
+        | group_body DART '{' EGG_STRING '}'
 {
   // The special flavor of DART, with { sync } or { nosync }.
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
@@ -2826,15 +2826,15 @@ optional_string:
  *
  */
 string:
-        NUMBER
+        EGG_NUMBER
 {
   $$ = $<_string>1;
 }
-        | ULONG
+        | EGG_ULONG
 {
   $$ = $<_string>1;
 }
-        | STRING
+        | EGG_STRING
         ;
 
 /*
@@ -2885,8 +2885,8 @@ repeated_string_body:
  *
  */
 real:
-        NUMBER
-        | ULONG
+        EGG_NUMBER
+        | EGG_ULONG
 {
   $$ = $1;
 }
@@ -2901,19 +2901,19 @@ real:
  *
  */
 real_or_string:
-        NUMBER
+        EGG_NUMBER
 {
   $<_number>$ = $1;
   $<_ulong>$ = (unsigned long)$1;
   $<_string>$ = $<_string>1;
 }
-        | ULONG
+        | EGG_ULONG
 {
   $<_number>$ = $1;
   $<_ulong>$ = $1;
   $<_string>$ = $<_string>1;
 }
-        | STRING
+        | EGG_STRING
 {
   $<_number>$ = 0.0;
   $<_ulong>$ = 0;
@@ -2930,7 +2930,7 @@ real_or_string:
  *
  */
 integer:
-        NUMBER
+        EGG_NUMBER
 {
   int i = (int)$1;
   if ((double)i != $1) {
@@ -2938,7 +2938,7 @@ integer:
     $$ = (double)i;
   }
 }
-        | ULONG
+        | EGG_ULONG
 {
   $$ = $1;
 }

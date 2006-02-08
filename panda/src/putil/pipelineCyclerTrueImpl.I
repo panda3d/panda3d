@@ -191,10 +191,7 @@ cheat() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PipelineCyclerTrueImpl::
 get_read_count() const {
-  int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
-  nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, 0);
-  _lock.lock();
-  return _lock.get_lock_count();
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,10 +204,7 @@ get_read_count() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PipelineCyclerTrueImpl::
 get_write_count() const {
-  int pipeline_stage = Thread::get_current_thread()->get_pipeline_stage();
-  nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, 0);
-  _lock.lock();
-  return _lock.get_lock_count();
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -679,7 +679,7 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept(); 
   eggyylval._number = atof(eggyytext); 
   eggyylval._string = yytext;
-  return NUMBER; 
+  return EGG_NUMBER; 
 }
 
 {HEX} {
@@ -687,7 +687,7 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept(); 
   eggyylval._ulong = strtoul(yytext+2, NULL, 16);
   eggyylval._string = yytext;
-  return ULONG; 
+  return EGG_ULONG; 
 }
 
 {BINARY} {
@@ -695,7 +695,7 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept(); 
   eggyylval._ulong = strtoul(yytext+2, NULL, 2);
   eggyylval._string = yytext;
-  return ULONG; 
+  return EGG_ULONG; 
 }
 
 "nan"{HEX} {
@@ -704,7 +704,7 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   memset(&eggyylval._number, 0, sizeof(eggyylval._number));
   *(unsigned long *)&eggyylval._number = strtoul(yytext+3, NULL, 0);
   eggyylval._string = yytext;
-  return NUMBER;
+  return EGG_NUMBER;
 }
 
 "inf" { 
@@ -712,7 +712,7 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept(); 
   eggyylval._number = HUGE_VAL;
   eggyylval._string = yytext;
-  return NUMBER; 
+  return EGG_NUMBER; 
 }
 
 "-inf" {
@@ -720,7 +720,7 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept(); 
   eggyylval._number = -HUGE_VAL;
   eggyylval._string = yytext;
-  return NUMBER; 
+  return EGG_NUMBER; 
 }
 
 
@@ -728,12 +728,12 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   // Quoted string.
   accept();
   eggyylval._string = scan_quoted_string();
-  return STRING;
+  return EGG_STRING;
 }
 
 [^ \t\n\r{}"]+ { 
   // Unquoted string.
   accept();
   eggyylval._string = yytext;
-  return STRING;
+  return EGG_STRING;
 }

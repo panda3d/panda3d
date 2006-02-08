@@ -1,5 +1,5 @@
-// Filename: conditionVarNsprImpl.h
-// Created by:  drose (09Aug02)
+// Filename: atomicAdjustWin32Impl.h
+// Created by:  drose (07Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,39 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONDITIONVARNSPRIMPL_H
-#define CONDITIONVARNSPRIMPL_H
+#ifndef ATOMICADJUSTWIN32IMPL_H
+#define ATOMICADJUSTWIN32IMPL_H
 
 #include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_NSPR_IMPL
+#ifdef THREAD_WIN32_IMPL
 
-#include "mutexNsprImpl.h"
 #include "notify.h"
 
-#include <prcvar.h>
-
-class MutexNsprImpl;
+#include <windows.h>
 
 ////////////////////////////////////////////////////////////////////
-//       Class : ConditionVarNsprImpl
-// Description : Uses NSPR to implement a conditionVar.
+//       Class : AtomicAdjustWin32Impl
+// Description : Uses Windows native calls to implement atomic
+//               adjustments.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS ConditionVarNsprImpl {
+class EXPCL_PANDAEXPRESS AtomicAdjustWin32Impl {
 public:
-  INLINE ConditionVarNsprImpl(MutexNsprImpl &mutex);
-  INLINE ~ConditionVarNsprImpl();
-
-  INLINE void wait();
-  INLINE void signal();
-
-private:
-  PRCondVar *_cvar;
+  INLINE static int inc(int &var);
+  INLINE static int dec(int &var);
+  INLINE static int set(int &var, int new_value);
 };
 
-#include "conditionVarNsprImpl.I"
+#include "atomicAdjustWin32Impl.I"
 
-#endif  // THREAD_NSPR_IMPL
+#endif  // THREAD_WIN32_IMPL
 
 #endif

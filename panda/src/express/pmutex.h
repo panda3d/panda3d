@@ -30,6 +30,18 @@ class Thread;
 //               thread can hold ("lock") a mutex at any given time;
 //               other threads trying to grab the mutex will block
 //               until the holding thread releases it.
+//
+//               The standard mutex is not reentrant: a thread may not
+//               attempt to lock it twice.  Although this may happen
+//               to work on some platforms (e.g. Win32), it will not
+//               work on all platforms; on some platforms, a thread
+//               can deadlock itself by attempting to lock the same
+//               mutex twice.  If your code requires a reentrant
+//               mutex, use the ReMutex class instead.  When this code
+//               is compiled with CHECK_REENTRANT_MUTEX true, then it
+//               will enable assertion checks to ensure that a
+//               particular thread doesn't try to lock the same mutex
+//               twice.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Mutex {
 public:

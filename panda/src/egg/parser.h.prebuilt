@@ -29,9 +29,9 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     NUMBER = 258,
-     ULONG = 259,
-     STRING = 260,
+     EGG_NUMBER = 258,
+     EGG_ULONG = 259,
+     EGG_STRING = 260,
      BEZIERCURVE = 261,
      BFACE = 262,
      BILLBOARD = 263,
@@ -119,9 +119,9 @@
      START_PRIMITIVE_BODY = 345
    };
 #endif
-#define NUMBER 258
-#define ULONG 259
-#define STRING 260
+#define EGG_NUMBER 258
+#define EGG_ULONG 259
+#define EGG_STRING 260
 #define BEZIERCURVE 261
 #define BFACE 262
 #define BILLBOARD 263
