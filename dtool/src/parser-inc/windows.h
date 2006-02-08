@@ -26,6 +26,11 @@
 
 typedef bool BOOL;
 typedef long DWORD;
+typedef int CRITICAL_SECTION;
+typedef int HANDLE;
+typedef void *LPVOID;
+
+#define WINAPI
 
 union LARGE_INTEGER {
   __int64 QuadPart;
