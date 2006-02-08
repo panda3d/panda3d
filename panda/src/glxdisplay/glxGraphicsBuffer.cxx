@@ -81,7 +81,7 @@ begin_frame(FrameMode mode) {
   }
 
   glxGraphicsStateGuardian *glxgsg;
-  DCAST_INTO_V(glxgsg, _gsg);
+  DCAST_INTO_R(glxgsg, _gsg, false);
   glXMakeCurrent(_display, _pbuffer, glxgsg->_context);
 
   // Now that we have made the context current to a window, we can
@@ -114,17 +114,6 @@ end_frame(FrameMode mode) {
     prepare_for_deletion();
   }
   clear_cube_map_selection();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::make_current
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               during begin_frame() to ensure the graphics context
-//               is ready for drawing.
-////////////////////////////////////////////////////////////////////
-void glxGraphicsBuffer::
-make_current() { 
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -102,50 +102,6 @@ move_pointer(int device, int x, int y) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::make_context
-//       Access: Public, Virtual
-//  Description: If _needs_context is true, this will be called
-//               in the draw thread prior to rendering into the
-//               window.  It should attempt to create a graphics
-//               context, and return true if successful, false
-//               otherwise.  If it returns false the window will be
-//               considered failed.
-////////////////////////////////////////////////////////////////////
-bool glxGraphicsWindow::
-make_context() {
-  PStatTimer timer(_make_current_pcollector);
-
-  glxGraphicsStateGuardian *glxgsg;
-  DCAST_INTO_R(glxgsg, _gsg, false);
-  glXMakeCurrent(_display, _xwindow, glxgsg->_context);
-  _needs_context = false;
-
-  // Now that we have made the context current to a window, we can
-  // reset the GSG state if this is the first time it has been used.
-  // (We can't just call reset() when we construct the GSG, because
-  // reset() requires having a current context.)
-  glxgsg->reset_if_new();
-
-  return glxgsg->is_valid();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::make_current
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               during begin_frame() to ensure the graphics context
-//               is ready for drawing.
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::
-make_current() {
-  PStatTimer timer(_make_current_pcollector);
-
-  glxGraphicsStateGuardian *glxgsg;
-  DCAST_INTO_V(glxgsg, _gsg);
-  glXMakeCurrent(_display, _xwindow, glxgsg->_context);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsWindow::release_gsg
 //       Access: Public
 //  Description: Releases the current GSG pointer, if it is currently
@@ -171,6 +127,8 @@ release_gsg() {
 ////////////////////////////////////////////////////////////////////
 bool glxGraphicsWindow::
 begin_frame(FrameMode mode) {
+  PStatTimer timer(_make_current_pcollector);
+
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
@@ -180,14 +138,18 @@ begin_frame(FrameMode mode) {
     // window and we haven't got the notification back yet.
     return false;
   }
-  auto_resize();
-  if (needs_context()) {
-    if (!make_context()) {
-      return false;
-    }
-  }
-  make_current();
-  begin_render_texture();
+
+  glxGraphicsStateGuardian *glxgsg;
+  DCAST_INTO_R(glxgsg, _gsg, false);
+  glXMakeCurrent(_display, _xwindow, glxgsg->_context);
+  
+  // Now that we have made the context current to a window, we can
+  // reset the GSG state if this is the first time it has been used.
+  // (We can't just call reset() when we construct the GSG, because
+  // reset() requires having a current context.)
+  glxgsg->reset_if_new();
+  
+  // begin_render_texture();
   clear_cube_map_selection();
   return _gsg->begin_frame();
 }
@@ -204,7 +166,7 @@ end_frame(FrameMode mode) {
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   _gsg->end_frame();
-  end_render_texture();
+  // end_render_texture();
   copy_to_textures();
   trigger_flip();
   if (_one_shot) {
