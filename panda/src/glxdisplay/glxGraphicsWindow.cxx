@@ -149,8 +149,10 @@ begin_frame(FrameMode mode) {
   // reset() requires having a current context.)
   glxgsg->reset_if_new();
   
-  // begin_render_texture();
-  clear_cube_map_selection();
+  if (mode == FM_render) {
+    // begin_render_texture();
+    clear_cube_map_selection();
+  }
   return _gsg->begin_frame();
 }
 
@@ -165,14 +167,21 @@ void glxGraphicsWindow::
 end_frame(FrameMode mode) {
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-  _gsg->end_frame();
-  // end_render_texture();
-  copy_to_textures();
-  trigger_flip();
-  if (_one_shot) {
-    prepare_for_deletion();
+
+  if (mode == FM_render) {
+    // end_render_texture();
+    copy_to_textures();
   }
-  clear_cube_map_selection();
+
+  _gsg->end_frame();
+
+  if (mode == FM_render) {
+    trigger_flip();
+    if (_one_shot) {
+      prepare_for_deletion();
+    }
+    clear_cube_map_selection();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

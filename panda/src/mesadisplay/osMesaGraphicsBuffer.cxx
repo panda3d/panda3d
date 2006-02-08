@@ -56,7 +56,7 @@ OsMesaGraphicsBuffer::
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool OsMesaGraphicsBuffer::
-begin_frame() {
+begin_frame(FrameMode mode) {
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
@@ -69,8 +69,10 @@ begin_frame() {
 
   mesagsg->reset_if_new();
 
-  // begin_render_texture();
-  clear_cube_map_selection();
+  if (mode == FM_render) {
+    // begin_render_texture();
+    clear_cube_map_selection();
+  }
   return _gsg->begin_frame();
 }
 
@@ -82,17 +84,24 @@ begin_frame() {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void OsMesaGraphicsBuffer::
-end_frame() {
+end_frame(FrameMode mode) {
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-  _gsg->end_frame();
-  // end_render_texture();
-  copy_to_textures();
-  trigger_flip();
-  if (_one_shot) {
-    prepare_for_deletion();
+
+  if (mode == FM_render) {
+    // end_render_texture();
+    copy_to_textures();
   }
-  clear_cube_map_selection();
+
+  _gsg->end_frame();
+
+  if (mode == FM_render) {
+    trigger_flip();
+    if (_one_shot) {
+      prepare_for_deletion();
+    }
+    clear_cube_map_selection();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
