@@ -332,14 +332,22 @@ class ShipPilot2(PhysicsWalker):
             self.phys.addLinearForce(buoyancy)
             self.buoyancyStarboard = buoyancy
         
-        fn=ForceNode("ship keel")
-        fnp=NodePath(fn)
-        #fnp.reparentTo(physicsActor)
-        fnp.reparentTo(render)
-        self.nodes.append(fnp)
-        self.keel=AngularVectorForce(0.0, 0.0, 0.0)
-        fn.addForce(self.keel)
-        self.phys.addAngularForce(self.keel)
+        if 0:
+            fn=ForceNode("ship keel")
+            fnp=NodePath(fn)
+            fnp.reparentTo(avatarNodePath)
+            self.nodes.append(fnp)
+            self.keel=AngularVectorForce(0.0, 0.0, 0.0)
+            fn.addForce(self.keel)
+            avatarNodePath.node().getPhysical(0).addAngularForce(self.keel)
+        else:
+            fn=ForceNode("ship keel")
+            fnp=NodePath(fn)
+            fnp.reparentTo(render)
+            self.nodes.append(fnp)
+            self.keel=AngularVectorForce(0.0, 0.0, 0.0)
+            fn.addForce(self.keel)
+            self.phys.addAngularForce(self.keel)
         
         fn=ForceNode("ship priorParent")
         fnp=NodePath(fn)
