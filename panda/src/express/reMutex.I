@@ -290,7 +290,7 @@ release() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ReMutex::
 debug_is_locked() const {
-  return is_locked();
+  return true;
 }
 
 #endif  // !THREAD_DUMMY_IMPL || CHECK_REENTRANT_MUTEX
