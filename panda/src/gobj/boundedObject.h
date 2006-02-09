@@ -25,6 +25,8 @@
 #include "cycleData.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
+#include "cycleDataStageReader.h"
+#include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
 #include "typedObject.h"
 #include "pointerTo.h"
@@ -36,6 +38,12 @@
 //               The user may set a fixed bounding volume, or s/he may
 //               specify that the volume should be recomputed
 //               dynamically.
+//
+//               In general, when in a multistate pipeline
+//               environment, changes to a bounding volume are
+//               automatically and immediately propagated upwards to
+//               upstream stages, and will propagate to downstream
+//               stages normally with each passing frame.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundedObject {
 public:
@@ -51,19 +59,25 @@ PUBLISHED:
   };
 
   INLINE void set_bound(BoundingVolumeType type);
+  INLINE void set_bound(BoundingVolumeType type, int pipeline_stage);
   INLINE void set_bound(const BoundingVolume &volume);
-  const BoundingVolume &get_bound() const;
+  INLINE void set_bound(const BoundingVolume &volume, int pipeline_stage);
+  INLINE const BoundingVolume *get_bound() const;
+  const BoundingVolume *get_bound(int pipeline_stage) const;
 
-  INLINE bool mark_bound_stale();
-  INLINE void force_bound_stale();
+  bool mark_bound_stale();
+  INLINE bool mark_bound_stale(int pipeline_stage);
+  void force_bound_stale();
+  INLINE void force_bound_stale(int pipeline_stage);
   INLINE bool is_bound_stale() const;
+  INLINE bool is_bound_stale(int pipeline_stagea) const;
 
   INLINE void set_final(bool flag);
   INLINE bool is_final() const;
 
 protected:
-  virtual void propagate_stale_bound();
-  virtual BoundingVolume *recompute_bound();
+  virtual void propagate_stale_bound(int pipeline_stage);
+  virtual BoundingVolume *recompute_bound(int pipeline_stage);
 
   INLINE const BoundingVolume *get_bound_ptr() const;
   INLINE BoundingVolume *set_bound_ptr(BoundingVolume *bound);
@@ -94,6 +108,8 @@ private:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
 public:
   static TypeHandle get_class_type() {

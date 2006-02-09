@@ -24,6 +24,8 @@
 #include "cycleData.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
+#include "cycleDataStageReader.h"
+#include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
 #include "renderState.h"
 #include "renderEffects.h"
@@ -113,10 +115,10 @@ PUBLISHED:
   INLINE int get_num_children() const;
   INLINE PandaNode *get_child(int n) const;
   INLINE int get_child_sort(int n) const;
-  int find_child(PandaNode *node) const;
+  INLINE int find_child(PandaNode *node) const;
 
   void add_child(PandaNode *child_node, int sort = 0);
-  void remove_child(int n);
+  INLINE void remove_child(int n);
   bool remove_child(PandaNode *child_node);
   bool replace_child(PandaNode *orig_child, PandaNode *new_child);
 
@@ -128,45 +130,45 @@ PUBLISHED:
   INLINE int get_num_stashed() const;
   INLINE PandaNode *get_stashed(int n) const;
   INLINE int get_stashed_sort(int n) const;
-  int find_stashed(PandaNode *node) const;
+  INLINE int find_stashed(PandaNode *node) const;
 
   void add_stashed(PandaNode *child_node, int sort = 0);
-  void remove_stashed(int n);
+  INLINE void remove_stashed(int n);
 
   void remove_all_children();
   void steal_children(PandaNode *other);
   void copy_children(PandaNode *other);
 
-  INLINE void set_attrib(const RenderAttrib *attrib, int override = 0);
+  void set_attrib(const RenderAttrib *attrib, int override = 0);
   INLINE const RenderAttrib *get_attrib(TypeHandle type) const;
   INLINE bool has_attrib(TypeHandle type) const;
-  INLINE void clear_attrib(TypeHandle type);
+  void clear_attrib(TypeHandle type);
 
-  INLINE void set_effect(const RenderEffect *effect);
+  void set_effect(const RenderEffect *effect);
   INLINE const RenderEffect *get_effect(TypeHandle type) const;
   INLINE bool has_effect(TypeHandle type) const;
-  INLINE void clear_effect(TypeHandle type);
+  void clear_effect(TypeHandle type);
 
-  INLINE void set_state(const RenderState *state);
+  void set_state(const RenderState *state);
   INLINE const RenderState *get_state() const;
-  INLINE void clear_state();
+  void clear_state();
 
-  INLINE void set_effects(const RenderEffects *effects);
+  void set_effects(const RenderEffects *effects);
   INLINE const RenderEffects *get_effects() const;
-  INLINE void clear_effects();
+  void clear_effects();
 
-  INLINE void set_transform(const TransformState *transform);
+  void set_transform(const TransformState *transform);
   INLINE const TransformState *get_transform() const;
-  INLINE void clear_transform();
+  void clear_transform();
 
-  INLINE void set_prev_transform(const TransformState *transform);
+  void set_prev_transform(const TransformState *transform);
   INLINE const TransformState *get_prev_transform() const;
   INLINE void reset_prev_transform();
 
-  INLINE void set_tag(const string &key, const string &value);
+  void set_tag(const string &key, const string &value);
   INLINE string get_tag(const string &key) const;
   INLINE bool has_tag(const string &key) const;
-  INLINE void clear_tag(const string &key);
+  void clear_tag(const string &key);
 
 #ifdef HAVE_PYTHON
   void set_python_tag(const string &key, PyObject *value);
@@ -179,15 +181,15 @@ PUBLISHED:
   void copy_tags(PandaNode *other);
   void list_tags(ostream &out, const string &separator = "\n") const;
 
-  INLINE void set_draw_mask(DrawMask mask);
+  void set_draw_mask(DrawMask mask);
   INLINE DrawMask get_draw_mask() const;
 
-  INLINE void set_into_collide_mask(CollideMask mask);
+  void set_into_collide_mask(CollideMask mask);
   INLINE CollideMask get_into_collide_mask() const;
   virtual CollideMask get_legal_collide_mask() const;
 
-  INLINE CollideMask get_net_collide_mask() const;
-  INLINE const RenderAttrib *get_off_clip_planes() const;
+  CollideMask get_net_collide_mask() const;
+  const RenderAttrib *get_off_clip_planes() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
@@ -206,10 +208,12 @@ PUBLISHED:
   // the external bound.  Although it might seem strange and confusing
   // to do this, this is actually the natural way the user thinks
   // about nodes and bounding volumes.
-  INLINE void set_bound(BoundingVolumeType type);
-  INLINE void set_bound(const BoundingVolume &volume);
-  INLINE const BoundingVolume &get_bound() const;
-  INLINE const BoundingVolume &get_internal_bound() const;
+  void set_bound(BoundingVolumeType type);
+  void set_bound(const BoundingVolume &volume);
+  INLINE const BoundingVolume *get_bound() const;
+  INLINE const BoundingVolume *get_bound(int pipeline_stage) const;
+  INLINE const BoundingVolume *get_internal_bound() const;
+  INLINE const BoundingVolume *get_internal_bound(int pipeline_stage) const;
 
   virtual bool is_geom_node() const;
   virtual bool is_lod_node() const;
@@ -217,17 +221,17 @@ PUBLISHED:
 
 protected:
   // Inherited from BoundedObject
-  virtual void propagate_stale_bound();
-  virtual BoundingVolume *recompute_bound();
+  virtual void propagate_stale_bound(int pipeline_stage);
+  virtual BoundingVolume *recompute_bound(int pipeline_stage);
 
   // Local to PandaNode
-  virtual BoundingVolume *recompute_internal_bound();
-  INLINE void changed_internal_bound();
-  virtual void parents_changed();
-  virtual void children_changed();
-  virtual void transform_changed();
-  virtual void state_changed();
-  virtual void draw_mask_changed();
+  virtual BoundingVolume *recompute_internal_bound(int pipeline_stage);
+  INLINE void changed_internal_bound(int pipeline_stage);
+  virtual void parents_changed(int pipeline_stage);
+  virtual void children_changed(int pipeline_stage);
+  virtual void transform_changed(int pipeline_stage);
+  virtual void state_changed(int pipeline_stage);
+  virtual void draw_mask_changed(int pipeline_stage);
   INLINE void add_net_collide_mask(CollideMask mask);
 
   typedef pmap<PandaNode *, PandaNode *> InstanceMap;
@@ -241,6 +245,22 @@ protected:
 
 private:
   class CData;
+
+  void update_child_cache();
+  void do_update_child_cache(int pipeline_stage, CData *cdata);
+  INLINE void mark_child_cache_stale(int pipeline_stage, CData *cdata);
+  void force_child_cache_stale(int pipeline_stage, CData *cdata);
+
+  INLINE int do_find_parent(PandaNode *node, const CData *cdata) const;
+  int do_find_child(PandaNode *node, const CData *cdata) const;
+  int do_find_stashed(PandaNode *node, const CData *cdata) const;
+  bool stage_remove_child(PandaNode *child_node, int pipeline_stage);
+  bool stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
+                           int pipeline_stage);
+  void do_remove_child(int n, PandaNode *child_node, int pipeline_stage,
+                       CData *cdata, CData *cdata_child);
+  void do_remove_stashed(int n, PandaNode *child_node, int pipeline_stage,
+                         CData *cdata, CData *cdata_child);
 
   // parent-child manipulation for NodePath support.  Don't try to
   // call these directly.
@@ -256,8 +276,10 @@ private:
   PT(NodePathComponent) get_generic_component(bool accept_ambiguity);
   PT(NodePathComponent) r_get_generic_component(bool accept_ambiguity, bool &ambiguity_detected);
   void delete_component(NodePathComponent *component);
-  static void sever_connection(PandaNode *parent_node, PandaNode *child_node);
-  static void new_connection(PandaNode *parent_node, PandaNode *child_node);
+  static void sever_connection(PandaNode *parent_node, PandaNode *child_node,
+                               CData *cdata_child);
+  static void new_connection(PandaNode *parent_node, PandaNode *child_node,
+                             CData *cdata_child);
   void fix_path_lengths(const CData *cdata);
   void r_list_descendants(ostream &out, int indent_level) const;
 
@@ -369,26 +391,25 @@ private:
     CollideMask _into_collide_mask;
 
     // This is the union of all into_collide_mask bits for any nodes
-    // at and below this level.  It's conceptually similar to a
-    // bounding volume--it represents the bounding volume of this node
-    // in the space of collision bits--and it needs to be updated for
-    // the same reasons the bounding volume needs to be updated.  So
-    // we update them together.
+    // at and below this level.  It's updated automatically whenever
+    // _stale_child_cache is true.
     CollideMask _net_collide_mask;
 
     // This is a ClipPlaneAttrib that represents the union of all clip
-    // planes that have been turned *off* at and below this level.  As
-    // above, it's similar to a bounding volume, and is updated at the
-    // same time.  TODO: fix the circular reference counts involved
-    // here.
+    // planes that have been turned *off* at and below this level.  We
+    // piggyback this automatic update on _stale_child_cache.  TODO:
+    // fix the circular reference counts involved here.
     CPT(RenderAttrib) _off_clip_planes;
 
+    bool _stale_child_cache;
     bool _fixed_internal_bound;
   };
 
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
 public:
   // Use this interface when you want to walk through the list of

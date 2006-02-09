@@ -309,8 +309,8 @@ draw() const {
 //               setting the _net_portal_mask bits.
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *PortalNode::
-recompute_bound() {
-  BoundingVolume *result = PandaNode::recompute_bound();
+recompute_bound(int pipeline_stage) {
+  BoundingVolume *result = PandaNode::recompute_bound(pipeline_stage);
   return result;
 }
 
@@ -323,9 +323,9 @@ recompute_bound() {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *PortalNode::
-recompute_internal_bound() {
+recompute_internal_bound(int pipeline_stage) {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_internal_bound();
+  BoundingVolume *bound = PandaNode::recompute_internal_bound(pipeline_stage);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);

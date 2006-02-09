@@ -30,8 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::PrimitiveType Geom::
 get_primitive_type() const {
-  CDReader cdata(_cycler);
-  return cdata->_primitive_type;
+  return _primitive_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,8 +42,7 @@ get_primitive_type() const {
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::ShadeModel Geom::
 get_shade_model() const {
-  CDReader cdata(_cycler);
-  return cdata->_shade_model;
+  return _shade_model;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,8 +54,7 @@ get_shade_model() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int Geom::
 get_geom_rendering() const {
-  CDReader cdata(_cycler);
-  return cdata->_geom_rendering;
+  return _geom_rendering;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,13 +66,10 @@ get_geom_rendering() const {
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::UsageHint Geom::
 get_usage_hint() const {
-  CDReader cdata(_cycler);
-  if (!cdata->_got_usage_hint) {
-    CDWriter cdataw(((Geom *)this)->_cycler, cdata);
-    ((Geom *)this)->reset_usage_hint(cdataw);
-    return cdataw->_usage_hint;
+  if (!_got_usage_hint) {
+    ((Geom *)this)->reset_usage_hint();
   }
-  return cdata->_usage_hint;
+  return _usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,8 +81,7 @@ get_usage_hint() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(GeomVertexData) Geom::
 get_vertex_data() const {
-  CDReader cdata(_cycler);
-  return cdata->_data;
+  return _data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,8 +93,7 @@ get_vertex_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int Geom::
 get_num_primitives() const {
-  CDReader cdata(_cycler);
-  return cdata->_primitives.size();
+  return _primitives.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,9 +106,8 @@ get_num_primitives() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomPrimitive *Geom::
 get_primitive(int i) const {
-  CDReader cdata(_cycler);
-  nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
-  return cdata->_primitives[i];
+  nassertr(i >= 0 && i < (int)_primitives.size(), NULL);
+  return _primitives[i];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,14 +121,13 @@ get_primitive(int i) const {
 INLINE GeomPrimitive *Geom::
 modify_primitive(int i) {
   clear_cache();
-  CDWriter cdata(_cycler);
-  nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
-  cdata->_got_usage_hint = false;
-  cdata->_modified = Geom::get_next_modified();
-  if (cdata->_primitives[i]->get_ref_count() > 1) {
-    cdata->_primitives[i] = cdata->_primitives[i]->make_copy();
+  nassertr(i >= 0 && i < (int)_primitives.size(), NULL);
+  _got_usage_hint = false;
+  _modified = Geom::get_next_modified();
+  if (_primitives[i]->get_ref_count() > 1) {
+    _primitives[i] = _primitives[i]->make_copy();
   }
-  return cdata->_primitives[i];
+  return _primitives[i];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -196,8 +186,7 @@ unify() const {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq Geom::
 get_modified() const {
-  CDReader cdata(_cycler);
-  return cdata->_modified;
+  return _modified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -272,40 +261,6 @@ operator < (const CacheEntry &other) const {
     return (_source_data < other._source_data);
   }
   return 0;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE Geom::CData::
-CData() :
-  _primitive_type(PT_none),
-  _shade_model(SM_uniform),
-  _geom_rendering(0),
-  _usage_hint(UH_unspecified),
-  _got_usage_hint(false)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE Geom::CData::
-CData(const Geom::CData &copy) :
-  _data(copy._data),
-  _primitives(copy._primitives),
-  _primitive_type(copy._primitive_type),
-  _shade_model(copy._shade_model),
-  _geom_rendering(copy._geom_rendering),
-  _usage_hint(copy._usage_hint),
-  _got_usage_hint(copy._got_usage_hint),
-  _modified(copy._modified)
-{
 }
 
 INLINE ostream &

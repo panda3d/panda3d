@@ -52,6 +52,9 @@ public:
   INLINE void operator = (const PipelineCyclerDummyImpl &copy);
   INLINE ~PipelineCyclerDummyImpl();
 
+  INLINE void lock();
+  INLINE void release();
+
   INLINE const CycleData *read() const;
   INLINE void increment_read(const CycleData *pointer) const;
   INLINE void release_read(const CycleData *pointer) const;
@@ -61,8 +64,11 @@ public:
   INLINE void release_write(CycleData *pointer);
 
   INLINE int get_num_stages();
-  INLINE bool is_stage_unique(int n) const;
+  INLINE const CycleData *read_stage(int n) const;
+  INLINE void release_read_stage(int n, const CycleData *pointer) const;
+  INLINE CycleData *write_upstream(bool force_to_0);
   INLINE CycleData *write_stage(int n);
+  INLINE CycleData *elevate_read_stage(int n, const CycleData *pointer);
   INLINE void release_write_stage(int n, CycleData *pointer);
 
   INLINE CycleData *cheat() const;
@@ -73,6 +79,7 @@ private:
   PT(CycleData) _data;
   Pipeline *_pipeline;
   short _read_count, _write_count;
+  short _locked;
 };
 
 #include "pipelineCyclerDummyImpl.I"

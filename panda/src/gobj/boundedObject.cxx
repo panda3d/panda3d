@@ -42,29 +42,83 @@ BoundedObject::
 //               different from the bounding volumes on the arcs,
 //               which enclose all geometry below them.
 ////////////////////////////////////////////////////////////////////
-const BoundingVolume &BoundedObject::
-get_bound() const {
-  {
-    CDReader cdata(_cycler);
-    if (cdata->_bound_type == BVT_static) {
-      CDWriter cdata_w(((BoundedObject *)this)->_cycler, cdata);
-      cdata_w->_flags &= ~F_bound_stale;
-      return *cdata_w->_bound;
-    }
-    
-    if (!is_bound_stale() && cdata->_bound != (BoundingVolume *)NULL) {
-      return *cdata->_bound;
-    }
-
-    // We need to recompute the bounding volume.  First, we need to
-    // release the old CDReader, so we can make a CDWriter in
-    // recompute_bound.
+const BoundingVolume *BoundedObject::
+get_bound(int pipeline_stage) const {
+  CDStageReader cdata(_cycler, pipeline_stage);
+  if (cdata->_bound_type == BVT_static) {
+    CDStageWriter cdataw(((BoundedObject *)this)->_cycler, pipeline_stage, cdata);
+    cdataw->_flags &= ~F_bound_stale;
+    return cdataw->_bound;
   }
 
-  // Now it's safe to recompute the bounds.
-  ((BoundedObject *)this)->recompute_bound();
-  CDReader cdata(_cycler);
-  return *cdata->_bound;
+  if ((cdata->_flags & F_bound_stale) == 0 &&
+      cdata->_bound != (BoundingVolume *)NULL) {
+    return cdata->_bound;
+  }
+
+  // We need to recompute the bounding volume.  We do this on the
+  // current pipeline stage as well as on all upstream stages, so we
+  // don't lose the cache value.
+  CDStageWriter cdataw(((BoundedObject *)this)->_cycler, pipeline_stage, cdata);
+
+#ifdef DO_PIPELINING
+  ((BoundedObject *)this)->_cycler.lock();
+  for (int i = 0; i < pipeline_stage; ++i) {
+    CDStageReader stage_cdata(_cycler, i);
+    if ((cdataw->_flags & F_bound_stale) != 0) {
+      CDStageWriter stage_cdataw(((BoundedObject *)this)->_cycler, i, stage_cdata);
+      ((BoundedObject *)this)->recompute_bound(i);
+    }
+  }
+  ((BoundedObject *)this)->_cycler.release();
+#endif
+
+  ((BoundedObject *)this)->recompute_bound(pipeline_stage);
+      
+  return cdataw->_bound;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundedObject::mark_bound_stale
+//       Access: Published
+//  Description: Marks the current bounding volume as stale, so that
+//               it will be recomputed later.  This may have a
+//               cascading effect up to the root of all graphs of
+//               which the node is a part.  Returns true if the
+//               setting was changed, or false if it was already
+//               marked stale (or if it is a static bounding volume).
+////////////////////////////////////////////////////////////////////
+bool BoundedObject::
+mark_bound_stale() {
+  // With no pipeline stage specified, we must mark the bound stale on
+  // all upstream stages.
+  bool any_changed = false;
+
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    if (mark_bound_stale(pipeline_stage)) {
+      any_changed = true;
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+
+  return any_changed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundedObject::force_bound_stale
+//       Access: Published
+//  Description: Marks the current volume as stale and propagates the
+//               effect at least one level, even if it had already
+//               been marked stale.
+////////////////////////////////////////////////////////////////////
+void BoundedObject::
+force_bound_stale() {
+  // With no pipeline stage specified, we must force the bound stale on
+  // all upstream stages.
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    force_bound_stale(pipeline_stage);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +139,7 @@ make_copy() const {
 //               depend on this one are marked stale also.
 ////////////////////////////////////////////////////////////////////
 void BoundedObject::
-propagate_stale_bound() {
+propagate_stale_bound(int pipeline_stage) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -96,13 +150,13 @@ propagate_stale_bound() {
 //               bounding volume; this may be overridden to extend it
 //               to create a nonempty bounding volume.  However, after
 //               calling this function, it is guaranteed that the
-//               _bound pointer will not be shared with any other
+//               _bound pointer will not be shared with any downstream
 //               stage of the pipeline, and this new pointer is
 //               returned.
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *BoundedObject::
-recompute_bound() {
-  CDWriter cdata(_cycler);
+recompute_bound(int pipeline_stage) {
+  CDStageWriter cdata(_cycler, pipeline_stage);
   switch (cdata->_bound_type) {
   case BVT_static:
     // Don't change it if it's a static volume.

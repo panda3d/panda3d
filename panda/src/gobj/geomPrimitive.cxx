@@ -52,9 +52,16 @@ GeomPrimitive() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 GeomPrimitive::
-GeomPrimitive(GeomPrimitive::UsageHint usage_hint) {
-  CDWriter cdata(_cycler);
-  cdata->_usage_hint = usage_hint;
+GeomPrimitive(GeomPrimitive::UsageHint usage_hint) :
+  _shade_model(SM_smooth),
+  _first_vertex(0),
+  _num_vertices(0),
+  _index_type(NT_uint16),
+  _usage_hint(usage_hint),
+  _got_minmax(true),
+  _min_vertex(0),
+  _max_vertex(0)
+{
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -65,8 +72,44 @@ GeomPrimitive(GeomPrimitive::UsageHint usage_hint) {
 GeomPrimitive::
 GeomPrimitive(const GeomPrimitive &copy) :
   TypedWritableReferenceCount(copy),
-  _cycler(copy._cycler)
+  _shade_model(copy._shade_model),
+  _first_vertex(copy._first_vertex),
+  _num_vertices(copy._num_vertices),
+  _index_type(copy._index_type),
+  _usage_hint(copy._usage_hint),
+  _vertices(copy._vertices),
+  _ends(copy._ends),
+  _mins(copy._mins),
+  _maxs(copy._maxs),
+  _modified(copy._modified),
+  _got_minmax(copy._got_minmax),
+  _min_vertex(copy._min_vertex),
+  _max_vertex(copy._max_vertex)
 {
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::Copy Assignment Operator
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomPrimitive::
+operator = (const GeomPrimitive &copy) {
+  TypedWritableReferenceCount::operator = (copy);
+
+  _shade_model = copy._shade_model;
+  _first_vertex = copy._first_vertex;
+  _num_vertices = copy._num_vertices;
+  _index_type = copy._index_type;
+  _usage_hint = copy._usage_hint;
+  _vertices = copy._vertices;
+  _ends = copy._ends;
+  _mins = copy._mins;
+  _maxs = copy._maxs;
+  _modified = copy._modified;
+  _got_minmax = copy._got_minmax;
+  _min_vertex = copy._min_vertex;
+  _max_vertex = copy._max_vertex;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,16 +146,15 @@ get_geom_rendering() const {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 set_usage_hint(GeomPrimitive::UsageHint usage_hint) {
-  CDWriter cdata(_cycler);
-  cdata->_usage_hint = usage_hint;
+  _usage_hint = usage_hint;
 
-  if (cdata->_vertices != (GeomVertexArrayData *)NULL) {
-    if (cdata->_vertices->get_ref_count() > 1) {
-      cdata->_vertices = new GeomVertexArrayData(*cdata->_vertices);
+  if (_vertices != (GeomVertexArrayData *)NULL) {
+    if (_vertices->get_ref_count() > 1) {
+      _vertices = new GeomVertexArrayData(*_vertices);
     }
     
-    cdata->_modified = Geom::get_next_modified();
-    cdata->_usage_hint = usage_hint;
+    _modified = Geom::get_next_modified();
+    _usage_hint = usage_hint;
   }
 }
 
@@ -125,24 +167,23 @@ set_usage_hint(GeomPrimitive::UsageHint usage_hint) {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 set_index_type(GeomPrimitive::NumericType index_type) {
-  CDWriter cdata(_cycler);
-  cdata->_index_type = index_type;
+  _index_type = index_type;
 
-  if (cdata->_vertices != (GeomVertexArrayData *)NULL) {
+  if (_vertices != (GeomVertexArrayData *)NULL) {
     CPT(GeomVertexArrayFormat) new_format = get_index_format();
     
-    if (cdata->_vertices->get_array_format() != new_format) {
+    if (_vertices->get_array_format() != new_format) {
       PT(GeomVertexArrayData) new_vertices = make_index_data();
-      new_vertices->set_num_rows(cdata->_vertices->get_num_rows());
+      new_vertices->set_num_rows(_vertices->get_num_rows());
 
-      GeomVertexReader from(cdata->_vertices, 0);
+      GeomVertexReader from(_vertices, 0);
       GeomVertexWriter to(new_vertices, 0);
       
       while (!from.is_at_end()) {
         to.set_data1i(from.get_data1i());
       }
-      cdata->_vertices = new_vertices;
-      cdata->_got_minmax = false;
+      _vertices = new_vertices;
+      _got_minmax = false;
     }
   }
 }
@@ -158,13 +199,12 @@ set_index_type(GeomPrimitive::NumericType index_type) {
 ////////////////////////////////////////////////////////////////////
 int GeomPrimitive::
 get_first_vertex() const {
-  CDReader cdata(_cycler);
-  if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
-    return cdata->_first_vertex;
-  } else if (cdata->_vertices->get_num_rows() == 0) {
+  if (_vertices == (GeomVertexArrayData *)NULL) {
+    return _first_vertex;
+  } else if (_vertices->get_num_rows() == 0) {
     return 0;
   } else {
-    GeomVertexReader index(cdata->_vertices, 0);
+    GeomVertexReader index(_vertices, 0);
     return index.get_data1i();
   }
 }
@@ -176,19 +216,17 @@ get_first_vertex() const {
 ////////////////////////////////////////////////////////////////////
 int GeomPrimitive::
 get_vertex(int i) const {
-  CDReader cdata(_cycler);
-
-  if (cdata->_vertices != (GeomVertexArrayData *)NULL) {
+  if (_vertices != (GeomVertexArrayData *)NULL) {
     // The indexed case.
-    nassertr(i >= 0 && i < (int)cdata->_vertices->get_num_rows(), -1);
+    nassertr(i >= 0 && i < (int)_vertices->get_num_rows(), -1);
 
-    GeomVertexReader index(cdata->_vertices, 0);
+    GeomVertexReader index(_vertices, 0);
     index.set_row(i);
     return index.get_data1i();
 
   } else {
     // The nonindexed case.
-    return cdata->_first_vertex + i;
+    return _first_vertex + i;
   }
 }
 
@@ -204,48 +242,46 @@ get_vertex(int i) const {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 add_vertex(int vertex) {
-  CDWriter cdata(_cycler);
-
   int num_primitives = get_num_primitives();
   if (num_primitives > 0 &&
       requires_unused_vertices() && 
       get_num_vertices() == get_primitive_end(num_primitives - 1)) {
     // If we are beginning a new primitive, give the derived class a
     // chance to insert some degenerate vertices.
-    if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
-      do_make_indexed(cdata);
+    if (_vertices == (GeomVertexArrayData *)NULL) {
+      make_indexed();
     }
-    append_unused_vertices(cdata->_vertices, vertex);
+    append_unused_vertices(_vertices, vertex);
   }
 
-  if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
+  if (_vertices == (GeomVertexArrayData *)NULL) {
     // The nonindexed case.  We can keep the primitive nonindexed only
     // if the vertex number happens to be the next available vertex.
-    if (cdata->_num_vertices == 0) {
-      cdata->_first_vertex = vertex;
-      cdata->_num_vertices = 1;
-      cdata->_modified = Geom::get_next_modified();
-      cdata->_got_minmax = false;
+    if (_num_vertices == 0) {
+      _first_vertex = vertex;
+      _num_vertices = 1;
+      _modified = Geom::get_next_modified();
+      _got_minmax = false;
       return;
 
-    } else if (vertex == cdata->_first_vertex + cdata->_num_vertices) {
-      ++cdata->_num_vertices;
-      cdata->_modified = Geom::get_next_modified();
-      cdata->_got_minmax = false;
+    } else if (vertex == _first_vertex + _num_vertices) {
+      ++_num_vertices;
+      _modified = Geom::get_next_modified();
+      _got_minmax = false;
       return;
     }
     
     // Otherwise, we need to suddenly become an indexed primitive.
-    do_make_indexed(cdata);
+    make_indexed();
   }
 
-  GeomVertexWriter index(cdata->_vertices, 0);
-  index.set_row(cdata->_vertices->get_num_rows());
+  GeomVertexWriter index(_vertices, 0);
+  index.set_row(_vertices->get_num_rows());
 
   index.add_data1i(vertex);
 
-  cdata->_modified = Geom::get_next_modified();
-  cdata->_got_minmax = false;
+  _modified = Geom::get_next_modified();
+  _got_minmax = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -261,45 +297,43 @@ add_consecutive_vertices(int start, int num_vertices) {
   }
   int end = (start + num_vertices) - 1;
 
-  CDWriter cdata(_cycler);
-
   int num_primitives = get_num_primitives();
   if (num_primitives > 0 &&
       get_num_vertices() == get_primitive_end(num_primitives - 1)) {
     // If we are beginning a new primitive, give the derived class a
     // chance to insert some degenerate vertices.
-    if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
-      do_make_indexed(cdata);
+    if (_vertices == (GeomVertexArrayData *)NULL) {
+      make_indexed();
     }
-    append_unused_vertices(cdata->_vertices, start);
+    append_unused_vertices(_vertices, start);
   }
 
-  if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
+  if (_vertices == (GeomVertexArrayData *)NULL) {
     // The nonindexed case.  We can keep the primitive nonindexed only
     // if the vertex number happens to be the next available vertex.
-    if (cdata->_num_vertices == 0) {
-      cdata->_first_vertex = start;
-      cdata->_num_vertices = num_vertices;
+    if (_num_vertices == 0) {
+      _first_vertex = start;
+      _num_vertices = num_vertices;
       return;
 
-    } else if (start == cdata->_first_vertex + cdata->_num_vertices) {
-      cdata->_num_vertices += num_vertices;
+    } else if (start == _first_vertex + _num_vertices) {
+      _num_vertices += num_vertices;
       return;
     }
     
     // Otherwise, we need to suddenly become an indexed primitive.
-    do_make_indexed(cdata);
+    make_indexed();
   }
 
-  GeomVertexWriter index(cdata->_vertices, 0);
-  index.set_row(cdata->_vertices->get_num_rows());
+  GeomVertexWriter index(_vertices, 0);
+  index.set_row(_vertices->get_num_rows());
 
   for (int v = start; v <= end; ++v) {
     index.add_data1i(v);
   }
 
-  cdata->_modified = Geom::get_next_modified();
-  cdata->_got_minmax = false;
+  _modified = Geom::get_next_modified();
+  _got_minmax = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -334,26 +368,25 @@ bool GeomPrimitive::
 close_primitive() {
   int num_vertices_per_primitive = get_num_vertices_per_primitive();
 
-  CDWriter cdata(_cycler);
   if (num_vertices_per_primitive == 0) {
     // This is a complex primitive type like a triangle strip: each
     // primitive uses a different number of vertices.
 #ifndef NDEBUG
     int num_added;
-    if (cdata->_ends.empty()) {
+    if (_ends.empty()) {
       num_added = get_num_vertices();
     } else {
-      num_added = get_num_vertices() - cdata->_ends.back();
+      num_added = get_num_vertices() - _ends.back();
       num_added -= get_num_unused_vertices_per_primitive();
     }
     nassertr(num_added >= get_min_num_vertices_per_primitive(), false);
 #endif
-    if (cdata->_ends.get_ref_count() > 1) {
+    if (_ends.get_ref_count() > 1) {
       PTA_int new_ends;
-      new_ends.v() = cdata->_ends.v();
-      cdata->_ends = new_ends;
+      new_ends.v() = _ends.v();
+      _ends = new_ends;
     }
-    cdata->_ends.push_back(get_num_vertices());
+    _ends.push_back(get_num_vertices());
 
   } else {
 #ifndef NDEBUG
@@ -368,7 +401,7 @@ close_primitive() {
 #endif
   }
 
-  cdata->_modified = Geom::get_next_modified();
+  _modified = Geom::get_next_modified();
 
   return true;
 }
@@ -381,15 +414,14 @@ close_primitive() {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 clear_vertices() {
-  CDWriter cdata(_cycler);
-  cdata->_first_vertex = 0;
-  cdata->_num_vertices = 0;
-  cdata->_vertices.clear();
-  cdata->_ends.clear();
-  cdata->_mins.clear();
-  cdata->_maxs.clear();
-  cdata->_modified = Geom::get_next_modified();
-  cdata->_got_minmax = false;
+  _first_vertex = 0;
+  _num_vertices = 0;
+  _vertices.clear();
+  _ends.clear();
+  _mins.clear();
+  _maxs.clear();
+  _modified = Geom::get_next_modified();
+  _got_minmax = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -407,10 +439,9 @@ offset_vertices(int offset) {
     }
 
   } else {
-    CDWriter cdata(_cycler);
-    cdata->_first_vertex += offset;
-    cdata->_modified = Geom::get_next_modified();
-    cdata->_got_minmax = false;
+    _first_vertex += offset;
+    _modified = Geom::get_next_modified();
+    _got_minmax = false;
   }
 }
 
@@ -494,8 +525,13 @@ pack_vertices(GeomVertexData *dest, const GeomVertexData *source) {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 make_indexed() {
-  CDWriter cdata(_cycler);
-  do_make_indexed(cdata);
+  if (_vertices == (GeomVertexArrayData *)NULL) {
+    _vertices = make_index_data();
+    GeomVertexWriter index(_vertices, 0);
+    for (int i = 0; i < _num_vertices; ++i) {
+      index.add_data1i(i + _first_vertex);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -509,11 +545,10 @@ int GeomPrimitive::
 get_num_primitives() const {
   int num_vertices_per_primitive = get_num_vertices_per_primitive();
 
-  CDReader cdata(_cycler);
   if (num_vertices_per_primitive == 0) {
     // This is a complex primitive type like a triangle strip: each
     // primitive uses a different number of vertices.
-    return cdata->_ends.size();
+    return _ends.size();
 
   } else {
     // This is a simple primitive type like a triangle: each primitive
@@ -544,12 +579,11 @@ get_primitive_start(int n) const {
   if (num_vertices_per_primitive == 0) {
     // This is a complex primitive type like a triangle strip: each
     // primitive uses a different number of vertices.
-    CDReader cdata(_cycler);
-    nassertr(n >= 0 && n <= (int)cdata->_ends.size(), -1);
+    nassertr(n >= 0 && n <= (int)_ends.size(), -1);
     if (n == 0) {
       return 0;
     } else {
-      return cdata->_ends[n - 1] + num_unused_vertices_per_primitive;
+      return _ends[n - 1] + num_unused_vertices_per_primitive;
     }
 
   } else {
@@ -573,9 +607,8 @@ get_primitive_end(int n) const {
   if (num_vertices_per_primitive == 0) {
     // This is a complex primitive type like a triangle strip: each
     // primitive uses a different number of vertices.
-    CDReader cdata(_cycler);
-    nassertr(n >= 0 && n < (int)cdata->_ends.size(), -1);
-    return cdata->_ends[n];
+    nassertr(n >= 0 && n < (int)_ends.size(), -1);
+    return _ends[n];
 
   } else {
     // This is a simple primitive type like a triangle: each primitive
@@ -599,13 +632,12 @@ get_primitive_num_vertices(int n) const {
   if (num_vertices_per_primitive == 0) {
     // This is a complex primitive type like a triangle strip: each
     // primitive uses a different number of vertices.
-    CDReader cdata(_cycler);
-    nassertr(n >= 0 && n < (int)cdata->_ends.size(), 0);
+    nassertr(n >= 0 && n < (int)_ends.size(), 0);
     if (n == 0) {
-      return cdata->_ends[0];
+      return _ends[0];
     } else {
       int num_unused_vertices_per_primitive = get_num_unused_vertices_per_primitive();
-      return cdata->_ends[n] - cdata->_ends[n - 1] - num_unused_vertices_per_primitive;
+      return _ends[n] - _ends[n - 1] - num_unused_vertices_per_primitive;
     }      
 
   } else {
@@ -777,10 +809,9 @@ match_shade_model(GeomPrimitive::ShadeModel shade_model) const {
 ////////////////////////////////////////////////////////////////////
 int GeomPrimitive::
 get_num_bytes() const {
-  CDReader cdata(_cycler);
-  int num_bytes = cdata->_ends.size() * sizeof(int) + sizeof(GeomPrimitive);
-  if (cdata->_vertices != (GeomVertexArrayData *)NULL) {
-    num_bytes += cdata->_vertices->get_data_size_bytes();
+  int num_bytes = _ends.size() * sizeof(int) + sizeof(GeomPrimitive);
+  if (_vertices != (GeomVertexArrayData *)NULL) {
+    num_bytes += _vertices->get_data_size_bytes();
   }
 
   return num_bytes;
@@ -864,19 +895,17 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayData *GeomPrimitive::
 modify_vertices() {
-  CDWriter cdata(_cycler);
-
-  if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
-    do_make_indexed(cdata);
+  if (_vertices == (GeomVertexArrayData *)NULL) {
+    make_indexed();
   }
 
-  if (cdata->_vertices->get_ref_count() > 1) {
-    cdata->_vertices = new GeomVertexArrayData(*cdata->_vertices);
+  if (_vertices->get_ref_count() > 1) {
+    _vertices = new GeomVertexArrayData(*_vertices);
   }
 
-  cdata->_modified = Geom::get_next_modified();
-  cdata->_got_minmax = false;
-  return cdata->_vertices;
+  _modified = Geom::get_next_modified();
+  _got_minmax = false;
+  return _vertices;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -888,11 +917,10 @@ modify_vertices() {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 set_vertices(const GeomVertexArrayData *vertices) {
-  CDWriter cdata(_cycler);
-  cdata->_vertices = (GeomVertexArrayData *)vertices;
+  _vertices = (GeomVertexArrayData *)vertices;
 
-  cdata->_modified = Geom::get_next_modified();
-  cdata->_got_minmax = false;
+  _modified = Geom::get_next_modified();
+  _got_minmax = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -903,14 +931,13 @@ set_vertices(const GeomVertexArrayData *vertices) {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 set_nonindexed_vertices(int first_vertex, int num_vertices) {
-  CDWriter cdata(_cycler);
-  cdata->_vertices = (GeomVertexArrayData *)NULL;
-  cdata->_first_vertex = first_vertex;
-  cdata->_num_vertices = num_vertices;
+  _vertices = (GeomVertexArrayData *)NULL;
+  _first_vertex = first_vertex;
+  _num_vertices = num_vertices;
 
-  cdata->_modified = Geom::get_next_modified();
-  cdata->_got_minmax = false;
-  recompute_minmax(cdata);
+  _modified = Geom::get_next_modified();
+  _got_minmax = false;
+  recompute_minmax();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -927,11 +954,9 @@ set_nonindexed_vertices(int first_vertex, int num_vertices) {
 ////////////////////////////////////////////////////////////////////
 PTA_int GeomPrimitive::
 modify_ends() {
-  CDWriter cdata(_cycler);
-
-  cdata->_modified = Geom::get_next_modified();
-  cdata->_got_minmax = false;
-  return cdata->_ends;
+  _modified = Geom::get_next_modified();
+  _got_minmax = false;
+  return _ends;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -948,11 +973,10 @@ modify_ends() {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 set_ends(CPTA_int ends) {
-  CDWriter cdata(_cycler);
-  cdata->_ends = (PTA_int &)ends;
+  _ends = (PTA_int &)ends;
 
-  cdata->_modified = Geom::get_next_modified();
-  cdata->_got_minmax = false;
+  _modified = Geom::get_next_modified();
+  _got_minmax = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1139,13 +1163,11 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
     return;
   }
 
-  CDReader cdata(_cycler);
-
-  if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
+  if (_vertices == (GeomVertexArrayData *)NULL) {
     // Nonindexed case.
     if (got_mat) {
-      for (int i = 0; i < cdata->_num_vertices; i++) {
-        reader.set_row(cdata->_first_vertex + i);
+      for (int i = 0; i < _num_vertices; i++) {
+        reader.set_row(_first_vertex + i);
         LPoint3f vertex = mat.xform_point(reader.get_data3f());
         
         if (found_any) {
@@ -1162,8 +1184,8 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
         }
       }
     } else {
-      for (int i = 0; i < cdata->_num_vertices; i++) {
-        reader.set_row(cdata->_first_vertex + i);
+      for (int i = 0; i < _num_vertices; i++) {
+        reader.set_row(_first_vertex + i);
         const LVecBase3f &vertex = reader.get_data3f();
         
         if (found_any) {
@@ -1183,7 +1205,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 
   } else {
     // Indexed case.
-    GeomVertexReader index(cdata->_vertices, 0);
+    GeomVertexReader index(_vertices, 0);
 
     if (got_mat) {
       while (!index.is_at_end()) {
@@ -1290,49 +1312,49 @@ append_unused_vertices(GeomVertexArrayData *, int) {
 //               necessary.
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
-recompute_minmax(GeomPrimitive::CDWriter &cdata) {
-  if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
+recompute_minmax() {
+  if (_vertices == (GeomVertexArrayData *)NULL) {
     // In the nonindexed case, we don't need to do much (the
     // minmax is trivial).
-    cdata->_min_vertex = cdata->_first_vertex;
-    cdata->_max_vertex = cdata->_first_vertex + cdata->_num_vertices - 1;
-    cdata->_mins.clear();
-    cdata->_maxs.clear();
+    _min_vertex = _first_vertex;
+    _max_vertex = _first_vertex + _num_vertices - 1;
+    _mins.clear();
+    _maxs.clear();
 
   } else if (get_num_vertices() == 0) {
     // Or if we don't have any vertices, the minmax is also trivial.
-    cdata->_min_vertex = 0;
-    cdata->_max_vertex = 0;
-    cdata->_mins.clear();
-    cdata->_maxs.clear();
+    _min_vertex = 0;
+    _max_vertex = 0;
+    _mins.clear();
+    _maxs.clear();
 
   } else if (get_num_vertices_per_primitive() == 0) {
     // This is a complex primitive type like a triangle strip; compute
     // the minmax of each primitive (as well as the overall minmax).
-    GeomVertexReader index(cdata->_vertices, 0);
+    GeomVertexReader index(_vertices, 0);
 
-    cdata->_mins = make_index_data();
-    cdata->_maxs = make_index_data();
+    _mins = make_index_data();
+    _maxs = make_index_data();
 
-    GeomVertexWriter mins(cdata->_mins, 0);
-    GeomVertexWriter maxs(cdata->_maxs, 0);
+    GeomVertexWriter mins(_mins, 0);
+    GeomVertexWriter maxs(_maxs, 0);
 
     int pi = 0;
     int vi = 0;
     
     unsigned int vertex = index.get_data1i();
-    cdata->_min_vertex = vertex;
-    cdata->_max_vertex = vertex;
+    _min_vertex = vertex;
+    _max_vertex = vertex;
     unsigned int min_prim = vertex;
     unsigned int max_prim = vertex;
     
     ++vi;
     while (!index.is_at_end()) {
       unsigned int vertex = index.get_data1i();
-      cdata->_min_vertex = min(cdata->_min_vertex, vertex);
-      cdata->_max_vertex = max(cdata->_max_vertex, vertex);
+      _min_vertex = min(_min_vertex, vertex);
+      _max_vertex = max(_max_vertex, vertex);
 
-      if (vi == cdata->_ends[pi]) {
+      if (vi == _ends[pi]) {
         mins.add_data1i(min_prim);
         maxs.add_data1i(max_prim);
         min_prim = vertex;
@@ -1348,44 +1370,28 @@ recompute_minmax(GeomPrimitive::CDWriter &cdata) {
     }
     mins.add_data1i(min_prim);
     maxs.add_data1i(max_prim);
-    nassertv(cdata->_mins->get_num_rows() == (int)cdata->_ends.size());
+    nassertv(_mins->get_num_rows() == (int)_ends.size());
 
   } else {
     // This is a simple primitive type like a triangle; just compute
     // the overall minmax.
-    GeomVertexReader index(cdata->_vertices, 0);
+    GeomVertexReader index(_vertices, 0);
 
-    cdata->_mins.clear();
-    cdata->_maxs.clear();
+    _mins.clear();
+    _maxs.clear();
 
     unsigned int vertex = index.get_data1i();
-    cdata->_min_vertex = vertex;
-    cdata->_max_vertex = vertex;
+    _min_vertex = vertex;
+    _max_vertex = vertex;
 
     while (!index.is_at_end()) {
       unsigned int vertex = index.get_data1i();
-      cdata->_min_vertex = min(cdata->_min_vertex, vertex);
-      cdata->_max_vertex = max(cdata->_max_vertex, vertex);
+      _min_vertex = min(_min_vertex, vertex);
+      _max_vertex = max(_max_vertex, vertex);
     }
   }
 
-  cdata->_got_minmax = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::do_make_indexed
-//       Access: Private
-//  Description: The private implementation of make_indexed().
-////////////////////////////////////////////////////////////////////
-void GeomPrimitive::
-do_make_indexed(GeomPrimitive::CDWriter &cdata) {
-  if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
-    cdata->_vertices = make_index_data();
-    GeomVertexWriter index(cdata->_vertices, 0);
-    for (int i = 0; i < cdata->_num_vertices; ++i) {
-      index.add_data1i(i + cdata->_first_vertex);
-    }
-  }
+  _got_minmax = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1398,7 +1404,14 @@ void GeomPrimitive::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
 
-  manager->write_cdata(dg, _cycler);
+  dg.add_uint8(_shade_model);
+  dg.add_uint32(_first_vertex);
+  dg.add_uint32(_num_vertices);
+  dg.add_uint8(_index_type);
+  dg.add_uint8(_usage_hint);
+
+  manager->write_pointer(dg, _vertices);
+  WRITE_PTA(manager, dg, IPD_int::write_datagram, _ends);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1417,6 +1430,22 @@ finalize(BamReader *manager) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::complete_pointers
+//       Access: Protected, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int GeomPrimitive::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = TypedWritable::complete_pointers(p_list, manager);
+
+  _vertices = DCAST(GeomVertexArrayData, p_list[pi++]);    
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::fillin
 //       Access: Protected
 //  Description: This internal function is called by make_from_bam to
@@ -1427,63 +1456,6 @@ void GeomPrimitive::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
-  manager->read_cdata(scan, _cycler);
-  manager->register_finalize(this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-CycleData *GeomPrimitive::CData::
-make_copy() const {
-  return new CData(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
-void GeomPrimitive::CData::
-write_datagram(BamWriter *manager, Datagram &dg) const {
-  dg.add_uint8(_shade_model);
-  dg.add_uint32(_first_vertex);
-  dg.add_uint32(_num_vertices);
-  dg.add_uint8(_index_type);
-  dg.add_uint8(_usage_hint);
-
-  manager->write_pointer(dg, _vertices);
-  WRITE_PTA(manager, dg, IPD_int::write_datagram, _ends);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::CData::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
-int GeomPrimitive::CData::
-complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int pi = CycleData::complete_pointers(p_list, manager);
-
-  _vertices = DCAST(GeomVertexArrayData, p_list[pi++]);    
-
-  return pi;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new GeomPrimitive.
-////////////////////////////////////////////////////////////////////
-void GeomPrimitive::CData::
-fillin(DatagramIterator &scan, BamReader *manager) {
   _shade_model = (ShadeModel)scan.get_uint8();
   _first_vertex = scan.get_uint32();
   _num_vertices = scan.get_uint32();
@@ -1495,4 +1467,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _modified = Geom::get_next_modified();
   _got_minmax = false;
+
+  manager->register_finalize(this);
 }

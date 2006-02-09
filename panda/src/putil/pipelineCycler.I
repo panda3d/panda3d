@@ -68,6 +68,17 @@ read() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::read (dummy or true)
+//       Access: Public
+//  Description: See PipelineCyclerBase::read_stage().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *PipelineCycler<CycleDataType>::
+read_stage(int n) const {
+  return (const CycleDataType *)PipelineCyclerBase::read_stage(n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCycler::write (dummy or true)
 //       Access: Public
 //  Description: See PipelineCyclerBase::write().
@@ -87,6 +98,28 @@ template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
 elevate_read(const CycleDataType *pointer) {
   return (CycleDataType *)PipelineCyclerBase::elevate_read(pointer);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read_stage (dummy or true)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read_stage().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read_stage(int n, const CycleDataType *pointer) {
+  return (CycleDataType *)PipelineCyclerBase::elevate_read_stage(n, pointer);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::write_upstream (dummy or true)
+//       Access: Public
+//  Description: See PipelineCyclerBase::write_upstream().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+write_upstream(bool force_to_0) {
+  return (CycleDataType *)PipelineCyclerBase::write_upstream(force_to_0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,6 +220,17 @@ write() {
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
 elevate_read(const CycleDataType *) {
+  return &_typed_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::write_upstream (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::write_upstream().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+write_upstream(bool) {
   return &_typed_data;
 }
 

@@ -20,7 +20,7 @@
 #define GEOMNODE_H
 
 #include "pandabase.h"
-
+#include "config_pgraph.h"
 #include "pandaNode.h"
 #include "pointerToArray.h"
 #include "geom.h"
@@ -63,7 +63,7 @@ PUBLISHED:
   INLINE const RenderState *get_geom_state(int n) const;
   INLINE void set_geom_state(int n, const RenderState *state);
 
-  int add_geom(Geom *geom, const RenderState *state = RenderState::make_empty());
+  void add_geom(Geom *geom, const RenderState *state = RenderState::make_empty());
   void add_geoms_from(const GeomNode *other);
   void set_geom(int n, Geom *geom);
   INLINE void remove_geom(int n);
@@ -83,7 +83,7 @@ public:
   virtual bool is_geom_node() const;
 
 protected:
-  virtual BoundingVolume *recompute_internal_bound();
+  virtual BoundingVolume *recompute_internal_bound(int pipeline_stage);
 
 public:
   // This must be declared public so that VC6 will allow the nested
@@ -121,6 +121,8 @@ private:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
 public:
   static void register_with_read_factory();

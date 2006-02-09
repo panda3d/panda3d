@@ -190,94 +190,97 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     }
   }
 
-  GeomNode::CDWriter cdata(_cycler);
-  GeomNode::Geoms::iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
-    GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = entry._geom->make_copy();
-
-    AccumulatedAttribs geom_attribs = attribs;
-    entry._state = geom_attribs.collect(entry._state, attrib_types);
-
-    bool any_changed = false;
-    
-    if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
-      if (geom_attribs._color != (const RenderAttrib *)NULL) {
-        const ColorAttrib *ca = DCAST(ColorAttrib, geom_attribs._color);
-        if (ca->get_color_type() == ColorAttrib::T_flat) {
-          if (transformer.set_color(new_geom, ca->get_color())) {
-            any_changed = true;
-          }
-        }
-      }
-    }
-    if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
-      if (geom_attribs._color_scale != (const RenderAttrib *)NULL) {
-        const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, geom_attribs._color_scale);
-        if (csa->get_scale() != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
-          if (transformer.transform_colors(new_geom, csa->get_scale())) {
-            any_changed = true;
-          }
-        }
-      }
-    }
-    if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
-      if (geom_attribs._tex_matrix != (const RenderAttrib *)NULL) {
-        // Determine which texture coordinate names are used more than
-        // once.  This assumes we have discovered all of the textures
-        // that are in effect on the geomNode; this may not be true if
-        // there is a texture that has been applied at a node above
-        // that from which we started the flatten operation, but
-        // caveat programmer.
-        NameCount name_count;
-
-        if (geom_attribs._texture != (RenderAttrib *)NULL) {
-          const TextureAttrib *ta = DCAST(TextureAttrib, geom_attribs._texture);
-          int num_on_stages = ta->get_num_on_stages();
-          for (int si = 0; si < num_on_stages; si++) {
-            TextureStage *stage = ta->get_on_stage(si);
-            const InternalName *name = stage->get_texcoord_name();
-            count_name(name_count, name);
-          }
-        }
-
-        const TexMatrixAttrib *tma = 
-          DCAST(TexMatrixAttrib, geom_attribs._tex_matrix);
-
-        CPT(TexMatrixAttrib) new_tma = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
-
-        int num_stages = tma->get_num_stages();
-        for (int i = 0; i < num_stages; i++) {
-          TextureStage *stage = tma->get_stage(i);
-          InternalName *name = stage->get_texcoord_name();
-          if (get_name_count(name_count, name) > 1) {
-            // We can't transform these texcoords, since the name is
-            // used by more than one active stage.
-            new_tma = DCAST(TexMatrixAttrib, new_tma->add_stage(stage, tma->get_transform(stage)));
-
-          } else {
-            // It's safe to transform these texcoords; the name is
-            // used by no more than one active stage.
-            if (transformer.transform_texcoords(new_geom, name, name, tma->get_mat(stage))) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    Geoms::iterator gi;
+    for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+      GeomEntry &entry = (*gi);
+      PT(Geom) new_geom = entry._geom->make_copy();
+      
+      AccumulatedAttribs geom_attribs = attribs;
+      entry._state = geom_attribs.collect(entry._state, attrib_types);
+      
+      bool any_changed = false;
+      
+      if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
+        if (geom_attribs._color != (const RenderAttrib *)NULL) {
+          const ColorAttrib *ca = DCAST(ColorAttrib, geom_attribs._color);
+          if (ca->get_color_type() == ColorAttrib::T_flat) {
+            if (transformer.set_color(new_geom, ca->get_color())) {
               any_changed = true;
             }
           }
         }
-
-        if (!new_tma->is_empty()) {
-          entry._state = entry._state->add_attrib(new_tma);
+      }
+      if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
+        if (geom_attribs._color_scale != (const RenderAttrib *)NULL) {
+          const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, geom_attribs._color_scale);
+          if (csa->get_scale() != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
+            if (transformer.transform_colors(new_geom, csa->get_scale())) {
+              any_changed = true;
+            }
+          }
         }
       }
-    }
+      if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
+        if (geom_attribs._tex_matrix != (const RenderAttrib *)NULL) {
+          // Determine which texture coordinate names are used more than
+          // once.  This assumes we have discovered all of the textures
+          // that are in effect on the geomNode; this may not be true if
+          // there is a texture that has been applied at a node above
+          // that from which we started the flatten operation, but
+          // caveat programmer.
+          NameCount name_count;
+          
+          if (geom_attribs._texture != (RenderAttrib *)NULL) {
+            const TextureAttrib *ta = DCAST(TextureAttrib, geom_attribs._texture);
+            int num_on_stages = ta->get_num_on_stages();
+            for (int si = 0; si < num_on_stages; si++) {
+              TextureStage *stage = ta->get_on_stage(si);
+              const InternalName *name = stage->get_texcoord_name();
+              count_name(name_count, name);
+            }
+          }
+          
+          const TexMatrixAttrib *tma = 
+            DCAST(TexMatrixAttrib, geom_attribs._tex_matrix);
+          
+          CPT(TexMatrixAttrib) new_tma = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
+          
+          int num_stages = tma->get_num_stages();
+          for (int i = 0; i < num_stages; i++) {
+            TextureStage *stage = tma->get_stage(i);
+            InternalName *name = stage->get_texcoord_name();
+            if (get_name_count(name_count, name) > 1) {
+              // We can't transform these texcoords, since the name is
+              // used by more than one active stage.
+              new_tma = DCAST(TexMatrixAttrib, new_tma->add_stage(stage, tma->get_transform(stage)));
+              
+            } else {
+              // It's safe to transform these texcoords; the name is
+              // used by no more than one active stage.
+              if (transformer.transform_texcoords(new_geom, name, name, tma->get_mat(stage))) {
+                any_changed = true;
+              }
+            }
+          }
+          
+          if (!new_tma->is_empty()) {
+            entry._state = entry._state->add_attrib(new_tma);
+          }
+        }
+      }
 
-    if (any_changed) {
-      entry._geom = new_geom;
-    }
-
-    if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
-      entry._state = geom_attribs._other->compose(entry._state);
+      if (any_changed) {
+        entry._geom = new_geom;
+      }
+      
+      if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
+        entry._state = geom_attribs._other->compose(entry._state);
+      }
     }
   }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -383,19 +386,20 @@ get_legal_collide_mask() const {
 //               indicated state (which may be
 //               RenderState::make_empty(), to completely inherit its
 //               state from the scene graph).
-//
-//               The return value is the index number of the new Geom.
 ////////////////////////////////////////////////////////////////////
-int GeomNode::
+void GeomNode::
 add_geom(Geom *geom, const RenderState *state) {
-  nassertr(geom != (Geom *)NULL, -1);
-  nassertr(geom->check_valid(), -1);
-  nassertr(state != (RenderState *)NULL, -1);
-  CDWriter cdata(_cycler);
+  nassertv(geom != (Geom *)NULL);
+  nassertv(geom->check_valid());
+  nassertv(state != (RenderState *)NULL);
 
-  cdata->_geoms.push_back(GeomEntry(geom, state));
-  mark_bound_stale();
-  return cdata->_geoms.size() - 1;
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+
+    cdata->_geoms.push_back(GeomEntry(geom, state));
+    mark_bound_stale(pipeline_stage);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -406,18 +410,21 @@ add_geom(Geom *geom, const RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 add_geoms_from(const GeomNode *other) {
-  CDReader cdata_other(other->_cycler);
-  CDWriter cdata(_cycler);
-  mark_bound_stale();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    CDStageReader cdata_other(other->_cycler, pipeline_stage);
+    mark_bound_stale(pipeline_stage);
 
-  Geoms::const_iterator gi;
-  for (gi = cdata_other->_geoms.begin(); 
-       gi != cdata_other->_geoms.end(); 
-       ++gi) {
-    const GeomEntry &entry = (*gi);
-    nassertv(entry._geom->check_valid());
-    cdata->_geoms.push_back(entry);
+    Geoms::const_iterator gi;
+    for (gi = cdata_other->_geoms.begin(); 
+         gi != cdata_other->_geoms.end(); 
+         ++gi) {
+      const GeomEntry &entry = (*gi);
+      nassertv(entry._geom->check_valid());
+      cdata->_geoms.push_back(entry);
+    }
   }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -425,13 +432,20 @@ add_geoms_from(const GeomNode *other) {
 //       Access: Public
 //  Description: Replaces the nth Geom of the node with a new pointer.
 //               There must already be a Geom in this slot.
+//
+//               Note that if this method is called in a downstream
+//               stage (for instance, during cull or draw), then it
+//               will propagate the new list of Geoms upstream all the
+//               way to pipeline stage 0, which may step on changes
+//               that were made independently in pipeline stage 0.
+//               Use with caution.
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 set_geom(int n, Geom *geom) {
   nassertv(geom != (Geom *)NULL);
   nassertv(geom->check_valid());
 
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, true);
   nassertv(n >= 0 && n < (int)cdata->_geoms.size());
   cdata->_geoms[n]._geom = geom;
 
@@ -479,46 +493,49 @@ check_valid() const {
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 unify() {
-  CDWriter cdata(_cycler);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
 
-  Geoms new_geoms;
+    Geoms new_geoms;
 
-  // Try to unify each Geom with each preceding Geom.  This is an n^2
-  // operation, but usually there are only a handful of Geoms to
-  // consider, so that's not a big deal.
-  Geoms::iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
-    const GeomEntry &entry = (*gi);
-    
-    bool unified = false;
-    Geoms::iterator gj;
-    for (gj = new_geoms.begin(); gj != new_geoms.end() && !unified; ++gj) {
-      GeomEntry &new_entry = (*gj);
-      if (entry._state == new_entry._state) {
-        // Both states match, so try to combine the primitives.
-        if (new_entry._geom->copy_primitives_from(entry._geom)) {
-          // Successfully combined!
-          unified = true;
+    // Try to unify each Geom with each preceding Geom.  This is an n^2
+    // operation, but usually there are only a handful of Geoms to
+    // consider, so that's not a big deal.
+    Geoms::iterator gi;
+    for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+      const GeomEntry &entry = (*gi);
+      
+      bool unified = false;
+      Geoms::iterator gj;
+      for (gj = new_geoms.begin(); gj != new_geoms.end() && !unified; ++gj) {
+        GeomEntry &new_entry = (*gj);
+        if (entry._state == new_entry._state) {
+          // Both states match, so try to combine the primitives.
+          if (new_entry._geom->copy_primitives_from(entry._geom)) {
+            // Successfully combined!
+            unified = true;
+          }
         }
       }
+      
+      if (!unified) {
+        // Couldn't unify this Geom with anything, so just add it to the
+        // output list.
+        new_geoms.push_back(entry);
+      }
     }
+    
+    // Done!  We'll keep whatever's left in the output list.
+    cdata->_geoms.swap(new_geoms);
+    new_geoms.clear();
 
-    if (!unified) {
-      // Couldn't unify this Geom with anything, so just add it to the
-      // output list.
-      new_geoms.push_back(entry);
+    // Finally, go back through and unify the resulting geom(s).
+    for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+      const GeomEntry &entry = (*gi);
+      entry._geom->unify_in_place();
     }
   }
-
-  // Done!  We'll keep whatever's left in the output list.
-  cdata->_geoms.swap(new_geoms);
-  new_geoms.clear();
-
-  // Finally, go back through and unify the resulting geom(s).
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
-    const GeomEntry &entry = (*gi);
-    entry._geom->unify_in_place();
-  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -622,20 +639,20 @@ is_geom_node() const {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *GeomNode::
-recompute_internal_bound() {
+recompute_internal_bound(int pipeline_stage) {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_internal_bound();
+  BoundingVolume *bound = PandaNode::recompute_internal_bound(pipeline_stage);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   // Now actually compute the bounding volume by putting it around all
   // of our geoms' bounding volumes.
   pvector<const BoundingVolume *> child_volumes;
 
-  CDReader cdata(_cycler);
+  CDStageReader cdata(_cycler, pipeline_stage);
   Geoms::const_iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     const GeomEntry &entry = (*gi);
-    child_volumes.push_back(&entry._geom->get_bound());
+    child_volumes.push_back(entry._geom->get_bound(pipeline_stage));
   }
 
   const BoundingVolume **child_begin = &child_volumes[0];

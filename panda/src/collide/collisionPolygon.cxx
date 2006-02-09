@@ -361,9 +361,9 @@ write(ostream &out, int indent_level) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *CollisionPolygon::
-recompute_bound() {
+recompute_bound(int pipeline_stage) {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = BoundedObject::recompute_bound();
+  BoundingVolume *bound = BoundedObject::recompute_bound(pipeline_stage);
   nassertr(bound != (BoundingVolume*)0L, bound);
 
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);

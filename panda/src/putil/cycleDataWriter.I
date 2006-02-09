@@ -35,6 +35,26 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::Constructor (full)
+//       Access: Public
+//  Description: This two-parameter constructor, with a bool parameter
+//               for the second parameter, automatically propagates
+//               the CycleData pointer upstream from the current
+//               stage, either stopping at the first pointer
+//               encountered that's different, going or all the way to
+//               stage 0, according to force_to_0.  See
+//               PipelineCycler::write_upstream().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataWriter<CycleDataType>::
+CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool force_to_0) :
+  _cycler(&cycler)
+{
+  _pointer = _cycler->write_upstream(force_to_0);
+  nassertv(_pointer != (CycleDataType *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CycleDataWriter::Copy Constructor (full)
 //       Access: Public
 //  Description:
@@ -164,6 +184,23 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler) {
   _pointer = cycler.write();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::Constructor (full)
+//       Access: Public
+//  Description: This two-parameter constructor, with a bool parameter
+//               for the second parameter, automatically propagates
+//               the CycleData pointer upstream from the current
+//               stage, either stopping at the first pointer
+//               encountered that's different, going or all the way to
+//               stage 0, according to force_to_0.  See
+//               PipelineCycler::write_upstream().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataWriter<CycleDataType>::
+CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool) {
+  _pointer = _cycler->write();
 }
 
 ////////////////////////////////////////////////////////////////////

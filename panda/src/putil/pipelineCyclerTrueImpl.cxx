@@ -66,13 +66,10 @@ PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
   nassertv(_num_stages == copy._num_stages);
   _data = new PT(CycleData)[_num_stages];
 
-  // It's important that we preserve pointerwise equivalence in the
-  // copy: if a and b of the original pipeline are the same pointer,
-  // then a' and b' of the copied pipeline should be the same pointer
-  // (but a' must be a different pointer than a).  This is important
-  // because we rely on pointer equivalence to determine whether an
-  // adjustment at a later stage in the pipeline is automatically
-  // propagated backwards.
+  // It's no longer critically important that we preserve pointerwise
+  // equivalence between different stages in the copy, but it doesn't
+  // cost much and might be a little more efficient, so we do it
+  // anyway.
   typedef pmap<CycleData *, PT(CycleData) > Pointers;
   Pointers pointers;
 
@@ -96,8 +93,20 @@ operator = (const PipelineCyclerTrueImpl &copy) {
   ReMutexHolder holder2(copy._lock);
 
   nassertv(_num_stages == copy._num_stages);
+
+  typedef pmap<CycleData *, PT(CycleData) > Pointers;
+  Pointers pointers;
+
   for (int i = 0; i < _num_stages; ++i) {
-    _data[i] = copy._data[i];
+    PT(CycleData) &new_pt = pointers[copy._data[i]];
+    if (new_pt == NULL) {
+      new_pt = copy._data[i]->make_copy();
+    }
+    _data[i] = new_pt;
+  }
+
+  if (copy._dirty && !_dirty) {
+    _pipeline->add_dirty_cycler(this);
   }
 }
 
@@ -117,6 +126,95 @@ PipelineCyclerTrueImpl::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::write_upstream
+//       Access: Public
+//  Description: This special variant on write() will automatically
+//               propagate changes back to upstream pipeline stages.
+//               If force_to_0 is false, then it propagates back only
+//               as long as the CycleData pointers are equivalent,
+//               guaranteeing that it does not modify upstream data
+//               (other than the modification that will be performed
+//               by the code that returns this pointer).  This is
+//               particularly appropriate for minor updates, where it
+//               doesn't matter much if the update is lost, such as
+//               storing a cached value.
+//
+//               If force_to_0 is true, then the CycleData pointer for
+//               the current pipeline stage is propagated all the way
+//               back up to stage 0; after this call, there will be
+//               only one CycleData pointer that is duplicated in all
+//               stages between stage 0 and the current stage.  This
+//               may undo some recent changes that were made
+//               independently at pipeline stage 0 (or any other
+//               upstream stage).  However, it guarantees that the
+//               change that is to be applied at this pipeline stage
+//               will stick.  This is slightly dangerous because of
+//               the risk of losing upstream changes; generally, this
+//               should only be done when you are confident that there
+//               are no upstream changes to be lost (for instance, for
+//               an object that has been recently created).
+////////////////////////////////////////////////////////////////////
+CycleData *PipelineCyclerTrueImpl::
+write_upstream(bool force_to_0) {
+  _lock.lock();
+  
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+
+#ifndef NDEBUG
+  nassertd(pipeline_stage >= 0 && pipeline_stage < _num_stages) {
+    _lock.release();
+    return NULL;
+  }
+#endif  // NDEBUG
+
+  CycleData *old_data = _data[pipeline_stage];
+
+  if (old_data->get_ref_count() != 1) {
+    // Count the number of references before the current stage, and
+    // the number of references remaining other than those.
+    int external_count = old_data->get_ref_count() - 1;
+    int k = pipeline_stage - 1;
+    while (k >= 0 && _data[k] == old_data) {
+      --k;
+      --external_count;
+    }
+    
+    if (external_count > 0) {
+      // There are references other than the ones before this stage in
+      // the pipeline; perform a copy-on-write.
+      PT(CycleData) new_data = old_data->make_copy();
+      
+      int k = pipeline_stage - 1;
+      while (k >= 0 && (_data[k] == old_data || force_to_0)) {
+        _data[k] = new_data;
+        --k;
+      }
+      
+      _data[pipeline_stage] = new_data;
+      
+      if (k >= 0 || pipeline_stage + 1 < _num_stages) {
+        // Now we have differences between some of the data pointers,
+        // which makes us "dirty".
+        if (!_dirty) {
+          _pipeline->add_dirty_cycler(this);
+        }
+      }
+
+    } else if (k >= 0 && force_to_0) {
+      // There are no external pointers, so no need to copy-on-write,
+      // but the current pointer doesn't go all the way back.  Make it
+      // do so.
+      while (k >= 0) {
+        _data[k] = old_data;
+        --k;
+      }
+    }
+  }
+
+  return _data[pipeline_stage];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrueImpl::write_stage
 //       Access: Public
 //  Description: Returns a pointer suitable for writing to the nth
@@ -127,64 +225,30 @@ PipelineCyclerTrueImpl::
 //               release_write_stage().
 ////////////////////////////////////////////////////////////////////
 CycleData *PipelineCyclerTrueImpl::
-write_stage(int n) {
+write_stage(int pipeline_stage) {
   _lock.lock();
 
 #ifndef NDEBUG
-  nassertd(n >= 0 && n < _num_stages) {
+  nassertd(pipeline_stage >= 0 && pipeline_stage < _num_stages) {
     _lock.release();
     return NULL;
   }
 #endif  // NDEBUG
 
-  CycleData *old_data = _data[n];
+  CycleData *old_data = _data[pipeline_stage];
 
   if (old_data->get_ref_count() != 1) {
     // Copy-on-write.
+    _data[pipeline_stage] = old_data->make_copy();
 
-    // There's a special problem that happens when we write to a stage
-    // other than stage 0.  If we do this, when the next frame cycles,
-    // the changes that we record to stage n will be lost when the
-    // data from stage (n - 1) is cycled into place.  This can be
-    // wasteful, especially if we are updating a cached value (which
-    // is generally the case when we are writing to stages other than
-    // stage 0).
-
-    // To minimize this, we make a special exception: whenever we
-    // write to stage n, if stage (n - 1) has the same pointer, we
-    // will write to stage (n - 1) at the same time, and so on all the
-    // way back to stage 0 or the last different stage.
-
-    // On the other hand, if *all* of the instances of this pointer
-    // are found in stages k .. n, then we don't need to do anything
-    // at all.
-    int count = old_data->get_ref_count() - 1;
-    int k = n - 1;
-    while (k >= 0 && _data[k] == old_data) {
-      --k;
-      --count;
-    }
-
-    if (count > 0) {
-      PT(CycleData) new_data = old_data->make_copy();
-
-      int k = n - 1;
-      while (k >= 0 && _data[k] == old_data) {
-        _data[k] = new_data;
-        --k;
-      }
-      
-      _data[n] = new_data;
-
-      // Now we have differences between some of the data pointers, so
-      // we're "dirty".  Mark it so.
-      if (!_dirty) {
-        _pipeline->add_dirty_cycler(this);
-      }
+    // Now we have differences between some of the data pointers, so
+    // we're "dirty".  Mark it so.
+    if (!_dirty) {
+      _pipeline->add_dirty_cycler(this);
     }
   }
 
-  return _data[n];
+  return _data[pipeline_stage];
 }
 
 ////////////////////////////////////////////////////////////////////

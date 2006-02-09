@@ -24,7 +24,10 @@
     config_util.N config_util.h configurable.h \
     cycleData.h cycleData.I \
     cycleDataReader.h cycleDataReader.I \
+    cycleDataStageReader.h cycleDataStageReader.I \
+    cycleDataStageWriter.h cycleDataStageWriter.I \
     cycleDataWriter.h cycleDataWriter.I \
+    cyclerHolder.h cyclerHolder.I \
     datagramInputFile.I datagramInputFile.h \
     datagramOutputFile.I datagramOutputFile.h \
     drawMask.h \
@@ -75,7 +78,10 @@
     config_util.cxx configurable.cxx \
     cycleData.cxx \
     cycleDataReader.cxx \
+    cycleDataStageReader.cxx \
+    cycleDataStageWriter.cxx \
     cycleDataWriter.cxx \
+    cyclerHolder.cxx \
     datagramInputFile.cxx datagramOutputFile.cxx \
     factoryBase.cxx \
     factoryParam.cxx factoryParams.cxx \
@@ -119,7 +125,10 @@
     config_util.h configurable.h factory.I factory.h \
     cycleData.h cycleData.I \
     cycleDataReader.h cycleDataReader.I \
+    cycleDataStageReader.h cycleDataStageReader.I \
+    cycleDataStageWriter.h cycleDataStageWriter.I \
     cycleDataWriter.h cycleDataWriter.I \
+    cyclerHolder.h cyclerHolder.I \
     datagramInputFile.I datagramInputFile.h \
     datagramOutputFile.I datagramOutputFile.h \
     drawMask.h \

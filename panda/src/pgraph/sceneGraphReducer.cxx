@@ -232,7 +232,7 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
 
   if (parent_node->safe_to_flatten_below()) {
     if ((combine_siblings_bits & CS_within_radius) != 0) {
-      const BoundingVolume *bv = &parent_node->get_bound();
+      const BoundingVolume *bv = parent_node->get_bound();
       if (bv->is_of_type(BoundingSphere::get_class_type())) {
         const BoundingSphere *bs = DCAST(BoundingSphere, bv);
         if (pgraph_cat.is_spam()) {

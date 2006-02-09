@@ -305,13 +305,13 @@ show_bounds(CullTraverserData &data, bool tight) {
 //               bounding volume.
 ////////////////////////////////////////////////////////////////////
 PT(Geom) CullTraverser::
-make_bounds_viz(const BoundingVolume &vol) {
+make_bounds_viz(const BoundingVolume *vol) {
   PT(Geom) geom;
-  if (vol.is_infinite()) {
+  if (vol->is_infinite()) {
     // No way to draw an infinite bounding volume.
 
-  } else if (vol.is_of_type(BoundingSphere::get_class_type())) {
-    const BoundingSphere *sphere = DCAST(BoundingSphere, &vol);
+  } else if (vol->is_of_type(BoundingSphere::get_class_type())) {
+    const BoundingSphere *sphere = DCAST(BoundingSphere, vol);
 
     static const int num_slices = 16;
     static const int num_stacks = 8;
@@ -343,7 +343,7 @@ make_bounds_viz(const BoundingVolume &vol) {
   } else {
     pgraph_cat.warning()
       << "Don't know how to draw a representation of "
-      << vol.get_class_type() << "\n";
+      << vol->get_class_type() << "\n";
   }
 
   return geom;

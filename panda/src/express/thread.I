@@ -220,6 +220,24 @@ get_current_thread() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_current_pipeline_stage
+//       Access: Published, Static
+//  Description: Returns the integer pipeline stage associated with
+//               the current thread.  This is the same thing as
+//               get_current_thread()->get_pipeline_stage(), but it
+//               may be faster to retrieve in some contexts.
+////////////////////////////////////////////////////////////////////
+INLINE int Thread::
+get_current_pipeline_stage() {
+#if !defined(HAVE_THREADS) || !defined(DO_PIPELINING)
+  // Without threads or pipelining, the result is always 0.
+  return 0;
+#else
+  return get_current_thread()->get_pipeline_stage();
+#endif  // !HAVE_THREADS || !DO_PIPELINING
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::is_threading_supported
 //       Access: Published, Static
 //  Description: Returns true if a real threading library is available

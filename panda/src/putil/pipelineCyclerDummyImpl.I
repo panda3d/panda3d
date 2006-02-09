@@ -18,7 +18,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::Constructor (sanity-check)
+//     Function: PipelineCyclerDummyImpl::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -27,7 +27,8 @@ PipelineCyclerDummyImpl(CycleData *initial_data, Pipeline *pipeline) :
   _data(initial_data),
   _pipeline(pipeline),
   _read_count(0),
-  _write_count(0)
+  _write_count(0),
+  _locked(false)
 {
   if (_pipeline == (Pipeline *)NULL) {
     _pipeline = Pipeline::get_render_pipeline();
@@ -35,7 +36,7 @@ PipelineCyclerDummyImpl(CycleData *initial_data, Pipeline *pipeline) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::Copy Constructor (sanity-check)
+//     Function: PipelineCyclerDummyImpl::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -44,12 +45,13 @@ PipelineCyclerDummyImpl(const PipelineCyclerDummyImpl &copy) :
   _data(copy._data->make_copy()),
   _pipeline(copy._pipeline),
   _read_count(0),
-  _write_count(0)
+  _write_count(0),
+  _locked(false)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::Copy Assignment (sanity-check)
+//     Function: PipelineCyclerDummyImpl::Copy Assignment
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -61,17 +63,42 @@ operator = (const PipelineCyclerDummyImpl &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::Destructor (sanity-check)
+//     Function: PipelineCyclerDummyImpl::Destructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PipelineCyclerDummyImpl::
 ~PipelineCyclerDummyImpl() {
-  nassertv(_read_count == 0 && _write_count == 0);
+  nassertv(_read_count == 0 && _write_count == 0 && !_locked);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::read (sanity-check)
+//     Function: PipelineCyclerDummyImpl::lock
+//       Access: Public
+//  Description: Grabs an overall lock on the cycler.  Release it with
+//               a call to release().  This lock should be held while
+//               walking the list of stages.
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerDummyImpl::
+lock() {
+  nassertv(!_locked);
+  _locked = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::release
+//       Access: Public
+//  Description: Release the overall lock on the cycler that was
+//               grabbed via lock().
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerDummyImpl::
+release() {
+  nassertv(_locked);
+  _locked = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::read
 //       Access: Public
 //  Description: Returns a const CycleData pointer, filled with the
 //               data for the current stage of the pipeline as seen by
@@ -93,7 +120,7 @@ read() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::increment_read (sanity-check)
+//     Function: PipelineCyclerDummyImpl::increment_read
 //       Access: Public
 //  Description: Increments the count on a pointer previously
 //               retrieved by read(); now the pointer will need to be
@@ -109,7 +136,7 @@ increment_read(const CycleData *pointer) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::release_read (sanity-check)
+//     Function: PipelineCyclerDummyImpl::release_read
 //       Access: Public
 //  Description: Releases a pointer previously obtained via a call to
 //               read().
@@ -124,7 +151,7 @@ release_read(const CycleData *pointer) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::write (sanity-check)
+//     Function: PipelineCyclerDummyImpl::write
 //       Access: Public
 //  Description: Returns a non-const CycleData pointer, filled with a
 //               unique copy of the data for the current stage of the
@@ -154,7 +181,7 @@ write() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::elevate_read (sanity-check)
+//     Function: PipelineCyclerDummyImpl::elevate_read
 //       Access: Public
 //  Description: Elevates a currently-held read pointer into a write
 //               pointer.  This may or may not change the value of the
@@ -169,7 +196,7 @@ elevate_read(const CycleData *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::release_write (sanity-check)
+//     Function: PipelineCyclerDummyImpl::release_write
 //       Access: Public
 //  Description: Releases a pointer previously obtained via a call to
 //               write().
@@ -182,7 +209,7 @@ release_write(CycleData *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::get_num_stages (sanity-check)
+//     Function: PipelineCyclerDummyImpl::get_num_stages
 //       Access: Public
 //  Description: Returns the number of stages in the pipeline.
 ////////////////////////////////////////////////////////////////////
@@ -192,20 +219,81 @@ get_num_stages() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::is_stage_unique (sanity-check)
+//     Function: PipelineCyclerDummyImpl::read_stage
 //       Access: Public
-//  Description: Returns true if the nth stage is a different pointer
-//               than the previous stage, or false if its pointer is
-//               shared with the previous one.
+//  Description: Returns a const CycleData pointer, filled with the
+//               data for the indicated stage of the pipeline.  This
+//               pointer should eventually be released by calling
+//               release_read_stage().
+//
+//               There should be no outstanding write pointers on the
+//               data when this function is called.
 ////////////////////////////////////////////////////////////////////
-INLINE bool PipelineCyclerDummyImpl::
-is_stage_unique(int n) const {
-  nassertr(n == 0, false);
-  return true;
+INLINE const CycleData *PipelineCyclerDummyImpl::
+read_stage(int n) const {
+  // This function isn't truly const, but it doesn't change the data
+  // in any meaningful way, so we pretend it is.
+  nassertr(n == 0, NULL);
+  ((PipelineCyclerDummyImpl *)this)->_read_count++;
+
+  // It's not an error to grab a read pointer while someone else holds
+  // a read or a write pointer.
+  return _data;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::write_stage (sanity-check)
+//     Function: PipelineCyclerDummyImpl::release_read_stage
+//       Access: Public
+//  Description: Releases a pointer previously obtained via a call to
+//               read_stage().
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerDummyImpl::
+release_read_stage(int n, const CycleData *pointer) const {
+  // This function isn't truly const, but it doesn't change the data
+  // in any meaningful way, so we pretend it is.
+  nassertv(n == 0);
+  nassertv(pointer == _data);
+  nassertv(_read_count > 0);
+  ((PipelineCyclerDummyImpl *)this)->_read_count--;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::write_upstream
+//       Access: Public
+//  Description: This special variant on write() will automatically
+//               propagate changes back to upstream pipeline stages.
+//               If force_to_0 is false, then it propagates back only
+//               as long as the CycleData pointers are equivalent,
+//               guaranteeing that it does not modify upstream data
+//               (other than the modification that will be performed
+//               by the code that returns this pointer).  This is
+//               particularly appropriate for minor updates, where it
+//               doesn't matter much if the update is lost, such as
+//               storing a cached value.
+//
+//               If force_to_0 is dummy, then the CycleData pointer for
+//               the current pipeline stage is propagated all the way
+//               back up to stage 0; after this call, there will be
+//               only one CycleData pointer that is duplicated in all
+//               stages between stage 0 and the current stage.  This
+//               may undo some recent changes that were made
+//               independently at pipeline stage 0 (or any other
+//               upstream stage).  However, it guarantees that the
+//               change that is to be applied at this pipeline stage
+//               will stick.  This is slightly dangerous because of
+//               the risk of losing upstream changes; generally, this
+//               should only be done when you are confident that there
+//               are no upstream changes to be lost (for instance, for
+//               an object that has been recently created).
+////////////////////////////////////////////////////////////////////
+CycleData *PipelineCyclerDummyImpl::
+write_upstream(bool) {
+  _write_count++;
+  return _data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::write_stage
 //       Access: Public
 //  Description: Returns a pointer suitable for writing to the nth
 //               stage of the pipeline.  This is for special
@@ -222,7 +310,23 @@ write_stage(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::release_write_stage (sanity-check)
+//     Function: PipelineCyclerDummyImpl::elevate_read_stage
+//       Access: Public
+//  Description: Elevates a currently-held read pointer into a write
+//               pointer.  This may or may not change the value of the
+//               pointer.  It is only valid to do this if this is the
+//               only currently-outstanding read pointer on the
+//               current stage.
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerDummyImpl::
+elevate_read_stage(int n, const CycleData *pointer) {
+  nassertr(n == 0, NULL);
+  release_read(pointer);
+  return write();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::release_write_stage
 //       Access: Public
 //  Description: Releases a pointer previously obtained via a call to
 //               write_stage().
@@ -235,7 +339,7 @@ release_write_stage(int n, CycleData *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::cheat (sanity-check)
+//     Function: PipelineCyclerDummyImpl::cheat
 //       Access: Public
 //  Description: Returns a pointer without counting it.  This is only
 //               intended for use as the return value for certain
@@ -250,7 +354,7 @@ cheat() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::get_read_count (sanity-check)
+//     Function: PipelineCyclerDummyImpl::get_read_count
 //       Access: Public
 //  Description: Returns the number of handles currently outstanding
 //               to read the current stage of the data.  This should
@@ -262,7 +366,7 @@ get_read_count() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::get_write_count (sanity-check)
+//     Function: PipelineCyclerDummyImpl::get_write_count
 //       Access: Public
 //  Description: Returns the number of handles currently outstanding
 //               to read the current stage of the data.  This will

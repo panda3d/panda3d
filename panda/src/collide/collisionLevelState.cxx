@@ -59,12 +59,12 @@ prepare_collider(const ColliderDef &def) {
   _colliders.push_back(def);
 
   CollisionSolid *collider = def._collider;
-  const BoundingVolume &bv = collider->get_bound();
-  if (!bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
+  const BoundingVolume *bv = collider->get_bound();
+  if (!bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
     _local_bounds.push_back((GeometricBoundingVolume *)NULL);
   } else {
     GeometricBoundingVolume *gbv;
-    DCAST_INTO_V(gbv, bv.make_copy());
+    DCAST_INTO_V(gbv, bv->make_copy());
 
     // TODO: we need to make this logic work in the new relative
     // world.  The bounding volume should be extended by the object's
@@ -118,10 +118,10 @@ any_in_bounds() {
   }
 #endif  // NDEBUG
 
-  const BoundingVolume &node_bv = node()->get_bound();
-  if (node_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
+  const BoundingVolume *node_bv = node()->get_bound();
+  if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
     const GeometricBoundingVolume *node_gbv;
-    DCAST_INTO_R(node_gbv, &node_bv, false);
+    DCAST_INTO_R(node_gbv, node_bv, false);
 
     int num_colliders = get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {

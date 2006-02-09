@@ -18,7 +18,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::Constructor (trivial)
+//     Function: PipelineCyclerTrivialImpl::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ PipelineCyclerTrivialImpl(CycleData *initial_data, Pipeline *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::Copy Constructor (trivial)
+//     Function: PipelineCyclerTrivialImpl::Copy Constructor
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ PipelineCyclerTrivialImpl(const PipelineCyclerTrivialImpl &) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::Copy Assignment (trivial)
+//     Function: PipelineCyclerTrivialImpl::Copy Assignment
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ operator = (const PipelineCyclerTrivialImpl &) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::Destructor (trivial)
+//     Function: PipelineCyclerTrivialImpl::Destructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -78,7 +78,28 @@ INLINE PipelineCyclerTrivialImpl::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::read (trivial)
+//     Function: PipelineCyclerTrivialImpl::lock
+//       Access: Public
+//  Description: Grabs an overall lock on the cycler.  Release it with
+//               a call to release().  This lock should be held while
+//               walking the list of stages.
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerTrivialImpl::
+lock() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrivialImpl::release
+//       Access: Public
+//  Description: Release the overall lock on the cycler that was
+//               grabbed via lock().
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerTrivialImpl::
+release() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrivialImpl::read
 //       Access: Public
 //  Description: Returns a const CycleData pointer, filled with the
 //               data for the current stage of the pipeline as seen by
@@ -95,7 +116,7 @@ read() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::increment_read (trivial)
+//     Function: PipelineCyclerTrivialImpl::increment_read
 //       Access: Public
 //  Description: Increments the count on a pointer previously
 //               retrieved by read(); now the pointer will need to be
@@ -106,7 +127,7 @@ increment_read(const CycleData *) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::release_read (trivial)
+//     Function: PipelineCyclerTrivialImpl::release_read
 //       Access: Public
 //  Description: Releases a pointer previously obtained via a call to
 //               read().
@@ -116,7 +137,7 @@ release_read(const CycleData *) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::write (trivial)
+//     Function: PipelineCyclerTrivialImpl::write
 //       Access: Public
 //  Description: Returns a non-const CycleData pointer, filled with a
 //               unique copy of the data for the current stage of the
@@ -141,7 +162,7 @@ write() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::elevate_read (trivial)
+//     Function: PipelineCyclerTrivialImpl::elevate_read
 //       Access: Public
 //  Description: Elevates a currently-held read pointer into a write
 //               pointer.  This may or may not change the value of the
@@ -159,7 +180,7 @@ elevate_read(const CycleData *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::release_write (trivial)
+//     Function: PipelineCyclerTrivialImpl::release_write
 //       Access: Public
 //  Description: Releases a pointer previously obtained via a call to
 //               write().
@@ -169,7 +190,7 @@ release_write(CycleData *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::get_num_stages (trivial)
+//     Function: PipelineCyclerTrivialImpl::get_num_stages
 //       Access: Public
 //  Description: Returns the number of stages in the pipeline.
 ////////////////////////////////////////////////////////////////////
@@ -179,19 +200,72 @@ get_num_stages() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::is_stage_unique (trivial)
+//     Function: PipelineCyclerTrivialImpl::read_stage
 //       Access: Public
-//  Description: Returns true if the nth stage is a different pointer
-//               than the previous stage, or false if its pointer is
-//               shared with the previous one.
+//  Description: Returns a const CycleData pointer, filled with the
+//               data for the indicated pipeline stage.  This pointer
+//               should eventually be released by calling
+//               release_read().
 ////////////////////////////////////////////////////////////////////
-INLINE bool PipelineCyclerTrivialImpl::
-is_stage_unique(int n) const {
-  return true;
+INLINE const CycleData *PipelineCyclerTrivialImpl::
+read_stage(int) const {
+#ifdef SIMPLE_STRUCT_POINTERS
+  return (const CycleData *)this;
+#else
+  return _data;
+#endif  // SIMPLE_STRUCT_POINTERS
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::write_stage (trivial)
+//     Function: PipelineCyclerTrivialImpl::release_read_stage
+//       Access: Public
+//  Description: Releases a pointer previously obtained via a call to
+//               read_stage().
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerTrivialImpl::
+release_read_stage(int, const CycleData *) const {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrivialImpl::write_upstream
+//       Access: Public
+//  Description: This special variant on write() will automatically
+//               propagate changes back to upstream pipeline stages.
+//               If force_to_0 is false, then it propagates back only
+//               as long as the CycleData pointers are equivalent,
+//               guaranteeing that it does not modify upstream data
+//               (other than the modification that will be performed
+//               by the code that returns this pointer).  This is
+//               particularly appropriate for minor updates, where it
+//               doesn't matter much if the update is lost, such as
+//               storing a cached value.
+//
+//               If force_to_0 is trivial, then the CycleData pointer for
+//               the current pipeline stage is propagated all the way
+//               back up to stage 0; after this call, there will be
+//               only one CycleData pointer that is duplicated in all
+//               stages between stage 0 and the current stage.  This
+//               may undo some recent changes that were made
+//               independently at pipeline stage 0 (or any other
+//               upstream stage).  However, it guarantees that the
+//               change that is to be applied at this pipeline stage
+//               will stick.  This is slightly dangerous because of
+//               the risk of losing upstream changes; generally, this
+//               should only be done when you are confident that there
+//               are no upstream changes to be lost (for instance, for
+//               an object that has been recently created).
+////////////////////////////////////////////////////////////////////
+CycleData *PipelineCyclerTrivialImpl::
+write_upstream(bool) {
+#ifdef SIMPLE_STRUCT_POINTERS
+  return (CycleData *)this;
+#else
+  return _data;
+#endif  // SIMPLE_STRUCT_POINTERS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrivialImpl::write_stage
 //       Access: Public
 //  Description: Returns a pointer suitable for writing to the nth
 //               stage of the pipeline.  This is for special
@@ -202,11 +276,33 @@ is_stage_unique(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerTrivialImpl::
 write_stage(int) {
+#ifdef SIMPLE_STRUCT_POINTERS
   return (CycleData *)this;
+#else
+  return _data;
+#endif  // SIMPLE_STRUCT_POINTERS
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::release_write_stage (trivial)
+//     Function: PipelineCyclerTrivialImpl::elevate_read_stage
+//       Access: Public
+//  Description: Elevates a currently-held read pointer into a write
+//               pointer.  This may or may not change the value of the
+//               pointer.  It is only valid to do this if this is the
+//               only currently-outstanding read pointer on the
+//               current stage.
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerTrivialImpl::
+elevate_read_stage(int, const CycleData *) {
+#ifdef SIMPLE_STRUCT_POINTERS
+  return (CycleData *)this;
+#else
+  return _data;
+#endif  // SIMPLE_STRUCT_POINTERS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrivialImpl::release_write_stage
 //       Access: Public
 //  Description: Releases a pointer previously obtained via a call to
 //               write_stage().
@@ -216,7 +312,7 @@ release_write_stage(int, CycleData *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::cheat (trivial)
+//     Function: PipelineCyclerTrivialImpl::cheat
 //       Access: Public
 //  Description: Returns a pointer without counting it.  This is only
 //               intended for use as the return value for certain
@@ -235,7 +331,7 @@ cheat() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::get_read_count (trivial)
+//     Function: PipelineCyclerTrivialImpl::get_read_count
 //       Access: Public
 //  Description: Returns the number of handles currently outstanding
 //               to read the current stage of the data.  This should
@@ -247,7 +343,7 @@ get_read_count() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::get_write_count (trivial)
+//     Function: PipelineCyclerTrivialImpl::get_write_count
 //       Access: Public
 //  Description: Returns the number of handles currently outstanding
 //               to read the current stage of the data.  This will

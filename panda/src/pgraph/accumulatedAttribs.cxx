@@ -18,7 +18,6 @@
 
 #include "accumulatedAttribs.h"
 #include "sceneGraphReducer.h"
-#include "geomTransformer.h"
 #include "pandaNode.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
@@ -77,7 +76,7 @@ collect(PandaNode *node, int attrib_types) {
     nassertv(_transform != (TransformState *)NULL);
     _transform = _transform->compose(node->get_transform());
     node->set_transform(TransformState::make_identity());
-    node->reset_prev_transform();
+    node->set_prev_transform(TransformState::make_identity());
   }
 
   if ((attrib_types & SceneGraphReducer::TT_color) != 0) {

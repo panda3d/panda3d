@@ -578,9 +578,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *TextNode::
-recompute_internal_bound() {
+recompute_internal_bound(int pipeline_stage) {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_internal_bound();
+  BoundingVolume *bound = PandaNode::recompute_internal_bound(pipeline_stage);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);

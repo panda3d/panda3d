@@ -237,7 +237,7 @@ public:
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
-  virtual BoundingVolume *recompute_internal_bound();
+  virtual BoundingVolume *recompute_internal_bound(int pipeline_stage);
 
 private:
   INLINE void invalidate_no_measure();

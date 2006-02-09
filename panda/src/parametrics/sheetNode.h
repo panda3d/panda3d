@@ -68,10 +68,11 @@ PUBLISHED:
   void reset_bound(const NodePath &rel_to);
 
 protected:
-  virtual BoundingVolume *recompute_internal_bound();
+  virtual BoundingVolume *recompute_internal_bound(int pipeline_stage);
 
 private:
-  BoundingVolume *do_recompute_bound(const NodePath &rel_to);
+  BoundingVolume *do_recompute_bound(const NodePath &rel_to,
+                                     int pipeline_stage);
   void render_sheet(CullTraverser *trav, CullTraverserData &data, 
                     NurbsSurfaceResult *result);
 

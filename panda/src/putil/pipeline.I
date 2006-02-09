@@ -40,3 +40,14 @@ INLINE void Pipeline::
 set_min_stages(int min_stages) {
   set_num_stages(max(min_stages, get_num_stages()));
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::get_num_stages
+//       Access: Public
+//  Description: Returns the number of stages required for the
+//               pipeline.
+////////////////////////////////////////////////////////////////////
+INLINE int Pipeline::
+get_num_stages() const {
+  return _num_stages;
+}

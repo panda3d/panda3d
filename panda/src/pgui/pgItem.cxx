@@ -127,8 +127,8 @@ make_copy() const {
 //               classes can do something special in this case.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-transform_changed() {
-  PandaNode::transform_changed();
+transform_changed(int pipeline_stage) {
+  PandaNode::transform_changed(pipeline_stage);
   if (has_notify()) {
     get_notify()->item_transform_changed(this);
   }
@@ -142,8 +142,8 @@ transform_changed() {
 //               classes can do something special in this case.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-draw_mask_changed() {
-  PandaNode::draw_mask_changed();
+draw_mask_changed(int pipeline_stage) {
+  PandaNode::draw_mask_changed(pipeline_stage);
   if (has_notify()) {
     get_notify()->item_draw_mask_changed(this);
   }
@@ -261,9 +261,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *PGItem::
-recompute_internal_bound() {
+recompute_internal_bound(int pipeline_stage) {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_internal_bound();
+  BoundingVolume *bound = PandaNode::recompute_internal_bound(pipeline_stage);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   // Now actually compute the bounding volume by putting it around all
@@ -276,7 +276,7 @@ recompute_internal_bound() {
   for (int i = 0; i < (int)_state_defs.size(); i++) {
     NodePath &root = get_state_def(i);
     if (!root.is_empty()) {
-      child_volumes.push_back(&root.node()->get_bound());
+      child_volumes.push_back(root.node()->get_bound());
     }
   }
 

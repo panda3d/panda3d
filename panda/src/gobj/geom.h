@@ -22,10 +22,6 @@
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
 #include "boundedObject.h"
-#include "cycleData.h"
-#include "cycleDataReader.h"
-#include "cycleDataWriter.h"
-#include "pipelineCycler.h"
 #include "geomVertexData.h"
 #include "geomPrimitive.h"
 #include "geomMunger.h"
@@ -131,7 +127,7 @@ public:
   typedef pset<TextureStage *> NoTexCoordStages;
 
 protected:
-  virtual BoundingVolume *recompute_bound();
+  virtual BoundingVolume *recompute_bound(int pipeline_stage);
 
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
@@ -145,6 +141,9 @@ private:
   // cache needs to be stored in the CycleData, which makes accurate
   // cleanup more difficult.  We use the GeomCacheManager class to
   // avoid cache bloat.
+
+  // Actually, the above is no longer true.  Need to investigate if we
+  // can go back to having explicit cleanup to make this better.
   class CacheEntry : public GeomCacheEntry {
   public:
     INLINE CacheEntry(const GeomVertexData *source_data,
@@ -168,36 +167,20 @@ private:
   };
   typedef pset<PT(CacheEntry), IndirectLess<CacheEntry> > Cache;
 
-  // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
-  public:
-    INLINE CData();
-    INLINE CData(const CData &copy);
-    virtual CycleData *make_copy() const;
-    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
-    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
-    virtual void fillin(DatagramIterator &scan, BamReader *manager);
-    virtual TypeHandle get_parent_type() const {
-      return Geom::get_class_type();
-    }
+  // We don't need to cycle any data in the Geom, since the Geom
+  // itself is cycled through the stages.
+  PT(GeomVertexData) _data;
+  Primitives _primitives;
+  PrimitiveType _primitive_type;
+  ShadeModel _shade_model;
+  int _geom_rendering;
+  UsageHint _usage_hint;
+  bool _got_usage_hint;
+  UpdateSeq _modified;
+  Cache _cache;
 
-    PT(GeomVertexData) _data;
-    Primitives _primitives;
-    PrimitiveType _primitive_type;
-    ShadeModel _shade_model;
-    int _geom_rendering;
-    UsageHint _usage_hint;
-    bool _got_usage_hint;
-    UpdateSeq _modified;
-    Cache _cache;
-  };
-
-  PipelineCycler<CData> _cycler;
-  typedef CycleDataReader<CData> CDReader;
-  typedef CycleDataWriter<CData> CDWriter;
-
-  void reset_usage_hint(CDWriter &cdata);
-  void reset_geom_rendering(CDWriter &cdata);
+  void reset_usage_hint();
+  void reset_geom_rendering();
 
   // This works just like the Texture contexts: each Geom keeps a
   // record of all the PGO objects that hold the Geom, and vice-versa.
@@ -214,6 +197,7 @@ public:
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:

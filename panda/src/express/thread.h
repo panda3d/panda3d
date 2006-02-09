@@ -68,6 +68,7 @@ PUBLISHED:
   INLINE static Thread *get_main_thread();
   INLINE static Thread *get_external_thread();
   INLINE static Thread *get_current_thread();
+  INLINE static int get_current_pipeline_stage();
   INLINE static bool is_threading_supported();
   INLINE static void sleep(double seconds);
 

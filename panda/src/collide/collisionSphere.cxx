@@ -104,8 +104,8 @@ output(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *CollisionSphere::
-recompute_bound() {
-  BoundingVolume *bound = BoundedObject::recompute_bound();
+recompute_bound(int pipeline_stage) {
+  BoundingVolume *bound = BoundedObject::recompute_bound(pipeline_stage);
   nassertr(bound != (BoundingVolume*)0L, bound);
   nassertr(!_center.is_nan() && !cnan(_radius), bound);
   BoundingSphere sphere(_center, _radius);

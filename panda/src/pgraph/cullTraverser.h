@@ -96,7 +96,7 @@ public:
 
 private:
   void show_bounds(CullTraverserData &data, bool tight);
-  PT(Geom) make_bounds_viz(const BoundingVolume &vol);
+  PT(Geom) make_bounds_viz(const BoundingVolume *vol);
   PT(Geom) make_tight_bounds_viz(PandaNode *node);
   static Vertexf compute_point(const BoundingSphere *sphere, 
                                float latitude, float longitude);

@@ -1,5 +1,5 @@
-// Filename: cycleDataReader.I
-// Created by:  drose (21Feb02)
+// Filename: cycleDataStageReader.I
+// Created by:  drose (08Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,105 +16,110 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 #ifdef DO_PIPELINING
 // This is the implementation for full support of pipelining (as well
 // as the sanity-check only implementation).
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Constructor (full)
+//     Function: CycleDataStageReader::Constructor (full)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE CycleDataReader<CycleDataType>::
-CycleDataReader(const PipelineCycler<CycleDataType> &cycler) :
-  _cycler(&cycler)
+INLINE CycleDataStageReader<CycleDataType>::
+CycleDataStageReader(const PipelineCycler<CycleDataType> &cycler,
+                     int stage) :
+  _cycler(&cycler),
+  _stage(stage)
 {
-  _pointer = _cycler->read();
+  _pointer = _cycler->read_stage(_stage);
   nassertv(_pointer != (const CycleDataType *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Copy Constructor (full)
+//     Function: CycleDataStageReader::Copy Constructor (full)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE CycleDataReader<CycleDataType>::
-CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
+INLINE CycleDataStageReader<CycleDataType>::
+CycleDataStageReader(const CycleDataStageReader<CycleDataType> &copy) :
   _cycler(copy._cycler),
-  _pointer(copy._pointer)
+  _pointer(copy._pointer),
+  _stage(copy._stage)
 {
   nassertv(_pointer != (const CycleDataType *)NULL);
   _cycler->increment_read(_pointer);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Copy Assignment (full)
+//     Function: CycleDataStageReader::Copy Assignment (full)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE void CycleDataReader<CycleDataType>::
-operator = (const CycleDataReader<CycleDataType> &copy) {
+INLINE void CycleDataStageReader<CycleDataType>::
+operator = (const CycleDataStageReader<CycleDataType> &copy) {
   _cycler = copy._cycler;
   _pointer = copy._pointer;
+  _stage = copy._stage;
 
   nassertv(_pointer != (const CycleDataType *)NULL);
   _cycler->increment_read(_pointer);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Destructor (full)
+//     Function: CycleDataStageReader::Destructor (full)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE CycleDataReader<CycleDataType>::
-~CycleDataReader() {
+INLINE CycleDataStageReader<CycleDataType>::
+~CycleDataStageReader() {
   if (_pointer != NULL) {
-    _cycler->release_read(_pointer);
+    _cycler->release_read_stage(_stage, _pointer);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::operator -> (full)
+//     Function: CycleDataStageReader::operator -> (full)
 //       Access: Public
 //  Description: This provides an indirect member access to the actual
 //               CycleData data.
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE const CycleDataType *CycleDataReader<CycleDataType>::
+INLINE const CycleDataType *CycleDataStageReader<CycleDataType>::
 operator -> () const {
   nassertr(_pointer != (const CycleDataType *)NULL, _cycler->cheat());
   return _pointer;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Typecast pointer (full)
+//     Function: CycleDataStageReader::Typecast pointer (full)
 //       Access: Public
-//  Description: This allows the CycleDataReader to be passed to any
+//  Description: This allows the CycleDataStageReader to be passed to any
 //               function that expects a const CycleDataType pointer.
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE CycleDataReader<CycleDataType>::
+INLINE CycleDataStageReader<CycleDataType>::
 operator const CycleDataType * () const {
   nassertr(_pointer != (const CycleDataType *)NULL, _cycler->cheat());
   return _pointer;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::take_pointer (full)
+//     Function: CycleDataStageReader::take_pointer (full)
 //       Access: Public
 //  Description: This is intended to be called only from
-//               CycleDataWriter when it elevates the pointer from
+//               CycleDataStageWriter when it elevates the pointer from
 //               read to write status.  This function returns the
 //               reader's pointer and relinquishes ownership of the
 //               pointer, rendering the reader invalid for future
 //               reads.
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE const CycleDataType *CycleDataReader<CycleDataType>::
+INLINE const CycleDataType *CycleDataStageReader<CycleDataType>::
 take_pointer() {
   const CycleDataType *pointer = _pointer;
   _pointer = (CycleDataType *)NULL;
@@ -126,85 +131,85 @@ take_pointer() {
 // This is the trivial, do-nothing implementation.
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Constructor (trivial)
+//     Function: CycleDataStageReader::Constructor (trivial)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE CycleDataReader<CycleDataType>::
-CycleDataReader(const PipelineCycler<CycleDataType> &cycler) {
+INLINE CycleDataStageReader<CycleDataType>::
+CycleDataStageReader(const PipelineCycler<CycleDataType> &cycler, int) {
   _pointer = cycler.read();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Copy Constructor (trivial)
+//     Function: CycleDataStageReader::Copy Constructor (trivial)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE CycleDataReader<CycleDataType>::
-CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
+INLINE CycleDataStageReader<CycleDataType>::
+CycleDataStageReader(const CycleDataStageReader<CycleDataType> &copy) :
   _pointer(copy._pointer)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Copy Assignment (trivial)
+//     Function: CycleDataStageReader::Copy Assignment (trivial)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE void CycleDataReader<CycleDataType>::
-operator = (const CycleDataReader<CycleDataType> &copy) {
+INLINE void CycleDataStageReader<CycleDataType>::
+operator = (const CycleDataStageReader<CycleDataType> &copy) {
   _pointer = copy._pointer;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Destructor (trivial)
+//     Function: CycleDataStageReader::Destructor (trivial)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE CycleDataReader<CycleDataType>::
-~CycleDataReader() {
+INLINE CycleDataStageReader<CycleDataType>::
+~CycleDataStageReader() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::operator -> (trivial)
+//     Function: CycleDataStageReader::operator -> (trivial)
 //       Access: Public
 //  Description: This provides an indirect member access to the actual
 //               CycleData data.
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE const CycleDataType *CycleDataReader<CycleDataType>::
+INLINE const CycleDataType *CycleDataStageReader<CycleDataType>::
 operator -> () const {
   return _pointer;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Typecast pointer (trivial)
+//     Function: CycleDataStageReader::Typecast pointer (trivial)
 //       Access: Public
-//  Description: This allows the CycleDataReader to be passed to any
+//  Description: This allows the CycleDataStageReader to be passed to any
 //               function that expects a const CycleDataType pointer.
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE CycleDataReader<CycleDataType>::
+INLINE CycleDataStageReader<CycleDataType>::
 operator const CycleDataType * () const {
   return _pointer;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::take_pointer (trivial)
+//     Function: CycleDataStageReader::take_pointer (trivial)
 //       Access: Public
 //  Description: This is intended to be called only from
-//               CycleDataWriter when it elevates the pointer from
+//               CycleDataStageWriter when it elevates the pointer from
 //               read to write status.  This function returns the
 //               reader's pointer and relinquishes ownership of the
 //               pointer, rendering the reader invalid for future
 //               reads.
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-INLINE const CycleDataType *CycleDataReader<CycleDataType>::
+INLINE const CycleDataType *CycleDataStageReader<CycleDataType>::
 take_pointer() {
   return _pointer;
 }

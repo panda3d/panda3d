@@ -1,5 +1,5 @@
-// Filename: cycleDataReader.h
-// Created by:  drose (21Feb02)
+// Filename: cycleDataStageReader.h
+// Created by:  drose (08Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CYCLEDATAREADER_H
-#define CYCLEDATAREADER_H
+#ifndef CYCLEDATASTAGEREADER_H
+#define CYCLEDATASTAGEREADER_H
 
 #include "pandabase.h"
 
@@ -25,25 +25,19 @@
 #include "pipelineCycler.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CycleDataReader
-// Description : This template class calls PipelineCycler::read() in
-//               the constructor and PipelineCycler::release_read() in
-//               the destructor.  In the interim, it provides a
-//               transparent read-only access to the CycleData.
-//
-//               It exists as a syntactic convenience to access the
-//               data in the CycleData.  It also allows the whole
-//               system to compile down to nothing if
-//               SUPPORT_PIPELINING is not defined.
+//       Class : CycleDataStageReader
+// Description : This class is similar to CycleDataReader, except it
+//               allows reading from a particular stage of the
+//               pipeline.
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-class CycleDataReader {
+class CycleDataStageReader {
 public:
-  INLINE CycleDataReader(const PipelineCycler<CycleDataType> &cycler);
-  INLINE CycleDataReader(const CycleDataReader<CycleDataType> &copy);
-  INLINE void operator = (const CycleDataReader<CycleDataType> &copy);
+  INLINE CycleDataStageReader(const PipelineCycler<CycleDataType> &cycler, int stage);
+  INLINE CycleDataStageReader(const CycleDataStageReader<CycleDataType> &copy);
+  INLINE void operator = (const CycleDataStageReader<CycleDataType> &copy);
 
-  INLINE ~CycleDataReader();
+  INLINE ~CycleDataStageReader();
 
   INLINE const CycleDataType *operator -> () const;
   INLINE operator const CycleDataType * () const;
@@ -55,13 +49,13 @@ private:
   // This is the data stored for a real pipelining implementation.
   const PipelineCycler<CycleDataType> *_cycler;
   const CycleDataType *_pointer;
-  CycleDataType *_write_pointer;
+  int _stage;
 #else  // !DO_PIPELINING
   // This is all we need for the trivial, do-nothing implementation.
   const CycleDataType *_pointer;
 #endif  // DO_PIPELINING
 };
 
-#include "cycleDataReader.I"
+#include "cycleDataStageReader.I"
 
 #endif

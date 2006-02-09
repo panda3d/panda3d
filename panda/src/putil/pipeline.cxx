@@ -172,17 +172,6 @@ set_num_stages(int num_stages) {
 #endif  // DO_PIPELINING && HAVE_THREADS
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::get_num_stages
-//       Access: Public
-//  Description: Returns the number of stages required for the
-//               pipeline.
-////////////////////////////////////////////////////////////////////
-int Pipeline::
-get_num_stages() const {
-  return _num_stages;
-}
-
 
 #if defined(DO_PIPELINING) && defined(HAVE_THREADS)
 ////////////////////////////////////////////////////////////////////

@@ -5313,7 +5313,7 @@ hide_bounds() {
 PT(BoundingVolume) NodePath::
 get_bounds() const {
   nassertr_always(!is_empty(), new BoundingSphere);
-  return node()->get_bound().make_copy();
+  return node()->get_bound()->make_copy();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -215,8 +215,9 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void SheetNode::
 reset_bound(const NodePath &rel_to) {
-  do_recompute_bound(rel_to);
-  changed_internal_bound();
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  do_recompute_bound(rel_to, pipeline_stage);
+  changed_internal_bound(pipeline_stage);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -228,8 +229,8 @@ reset_bound(const NodePath &rel_to) {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *SheetNode::
-recompute_internal_bound() {
-  return do_recompute_bound(NodePath(this));
+recompute_internal_bound(int pipeline_stage) {
+  return do_recompute_bound(NodePath(this), pipeline_stage);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -238,9 +239,13 @@ recompute_internal_bound() {
 //  Description: Does the actual internal recompute.
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *SheetNode::
-do_recompute_bound(const NodePath &rel_to) {
+do_recompute_bound(const NodePath &rel_to, int pipeline_stage) {
+  // TODO: fix the bounds so that it properly reflects the indicated
+  // pipeline stage.  At the moment, we cheat and get some of the
+  // properties from the current pipeline stage, the lazy way.
+
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_internal_bound();
+  BoundingVolume *bound = PandaNode::recompute_internal_bound(pipeline_stage);
   nassertr(bound != (BoundingVolume *)NULL, bound);
   
   NurbsSurfaceEvaluator *surface = get_surface();

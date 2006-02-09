@@ -122,6 +122,7 @@ CData() {
   _draw_mask = DrawMask::all_on();
   _into_collide_mask = CollideMask::all_off();
   _net_collide_mask = CollideMask::all_off();
+  _stale_child_cache = true;
   _fixed_internal_bound = false;
 }
 
@@ -257,11 +258,7 @@ get_parent(int n) const {
 INLINE int PandaNode::
 find_parent(PandaNode *node) const {
   CDReader cdata(_cycler);
-  Up::const_iterator ui = cdata->_up.find(UpConnection(node));
-  if (ui == cdata->_up.end()) {
-    return -1;
-  }
-  return ui - cdata->_up.begin();
+  return do_find_parent(node, cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -303,6 +300,36 @@ get_child_sort(int n) const {
   CDReader cdata(_cycler);
   nassertr(n >= 0 && n < (int)cdata->_down.size(), -1);
   return cdata->_down[n].get_sort();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::find_child
+//       Access: Published
+//  Description: Returns the index of the indicated child node, if it
+//               is a child, or -1 if it is not.
+////////////////////////////////////////////////////////////////////
+INLINE int PandaNode::
+find_child(PandaNode *node) const {
+  CDReader cdata(_cycler);
+  return do_find_child(node, cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::remove_child
+//       Access: Published
+//  Description: Removes the nth child from the node.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+remove_child(int n) {
+  CDWriter cdata(_cycler);
+  nassertv(n >= 0 && n < (int)cdata->_down.size());
+  
+  PT(PandaNode) child_node = cdata->_down[n].get_child();
+  CDWriter cdata_child(child_node->_cycler);
+
+  do_remove_child(n, child_node, 
+                  Thread::get_current_pipeline_stage(),
+                  cdata, cdata_child);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -397,27 +424,33 @@ get_stashed_sort(int n) const {
   return cdata->_stashed[n].get_sort();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::find_stashed
+//       Access: Published
+//  Description: Returns the index of the indicated stashed node, if
+//               it is a stashed child, or -1 if it is not.
+////////////////////////////////////////////////////////////////////
+INLINE int PandaNode::
+find_stashed(PandaNode *node) const {
+  CDReader cdata(_cycler);
+  return do_find_stashed(node, cdata);
+}
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_attrib
+//     Function: PandaNode::remove_stashed
 //       Access: Published
-//  Description: Adds the indicated render attribute to the scene
-//               graph on this node.  This attribute will now apply to
-//               this node and everything below.  If there was already
-//               an attribute of the same type, it is replaced.
+//  Description: Removes the nth stashed child from the node.
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
-set_attrib(const RenderAttrib *attrib, int override) {
+remove_stashed(int n) {
   CDWriter cdata(_cycler);
-  CPT(RenderState) new_state = cdata->_state->add_attrib(attrib, override);
-  if (cdata->_state != new_state) {
-    cdata->_state = new_state;
+  nassertv(n >= 0 && n < (int)cdata->_stashed.size());
+  
+  PT(PandaNode) child_node = cdata->_stashed[n].get_child();
+  CDWriter cdata_child(child_node->_cycler);
 
-    // We mark the bound stale when the state changes, in case we have
-    // changed a ClipPlaneAttrib.
-    mark_bound_stale();
-    state_changed();
-  }
+  do_remove_stashed(n, child_node, Thread::get_current_pipeline_stage(),
+                    cdata, cdata_child);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -454,41 +487,6 @@ has_attrib(TypeHandle type) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::clear_attrib
-//       Access: Published
-//  Description: Removes the render attribute of the given type from
-//               this node.  This node, and the subgraph below, will
-//               now inherit the indicated render attribute from the
-//               nodes above this one.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-clear_attrib(TypeHandle type) {
-  CDWriter cdata(_cycler);
-  CPT(RenderState) new_state = cdata->_state->remove_attrib(type);
-  if (cdata->_state != new_state) {
-    cdata->_state = new_state;
-  
-    // We mark the bound stale when the state changes, in case we have
-    // changed a ClipPlaneAttrib.
-    mark_bound_stale();
-    state_changed();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_effect
-//       Access: Published
-//  Description: Adds the indicated render effect to the scene
-//               graph on this node.  If there was already an effect
-//               of the same type, it is replaced.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-set_effect(const RenderEffect *effect) {
-  CDWriter cdata(_cycler);
-  cdata->_effects = cdata->_effects->add_effect(effect);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_effect
 //       Access: Published
 //  Description: Returns the render effect of the indicated type,
@@ -519,41 +517,6 @@ has_effect(TypeHandle type) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::clear_effect
-//       Access: Published
-//  Description: Removes the render effect of the given type from
-//               this node.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-clear_effect(TypeHandle type) {
-  CDWriter cdata(_cycler);
-  cdata->_effects = cdata->_effects->remove_effect(type);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_state
-//       Access: Published
-//  Description: Sets the complete RenderState that will be applied to
-//               all nodes at this level and below.  (The actual state
-//               that will be applied to lower nodes is based on the
-//               composition of RenderStates from above this node as
-//               well).  This completely replaces whatever has been
-//               set on this node via repeated calls to set_attrib().
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-set_state(const RenderState *state) {
-  CDWriter cdata(_cycler);
-  if (cdata->_state != state) {
-    cdata->_state = state;
-
-    // We mark the bound stale when the state changes, in case we have
-    // changed a ClipPlaneAttrib.
-    mark_bound_stale();
-    state_changed();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_state
 //       Access: Published
 //  Description: Returns the complete RenderState that will be applied
@@ -569,41 +532,6 @@ get_state() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::clear_state
-//       Access: Published
-//  Description: Resets this node to leave the render state alone.
-//               Nodes at this level and below will once again inherit
-//               their render state unchanged from the nodes above
-//               this level.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-clear_state() {
-  CDWriter cdata(_cycler);
-  if (!cdata->_state->is_empty()) {
-    cdata->_state = RenderState::make_empty();
-
-    // We mark the bound stale when the state changes, in case we have
-    // changed a ClipPlaneAttrib.
-    mark_bound_stale();
-    state_changed();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_effects
-//       Access: Published
-//  Description: Sets the complete RenderEffects that will be applied
-//               this node.  This completely replaces whatever has
-//               been set on this node via repeated calls to
-//               set_attrib().
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-set_effects(const RenderEffects *effects) {
-  CDWriter cdata(_cycler);
-  cdata->_effects = effects;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_effects
 //       Access: Published
 //  Description: Returns the complete RenderEffects that will be
@@ -613,34 +541,6 @@ INLINE const RenderEffects *PandaNode::
 get_effects() const {
   CDReader cdata(_cycler);
   return cdata->_effects;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::clear_effects
-//       Access: Published
-//  Description: Resets this node to have no render effects.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-clear_effects() {
-  CDWriter cdata(_cycler);
-  cdata->_effects = RenderEffects::make_empty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_transform
-//       Access: Published
-//  Description: Sets the transform that will be applied to this node
-//               and below.  This defines a new coordinate space at
-//               this point in the scene graph and below.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-set_transform(const TransformState *transform) {
-  CDWriter cdata(_cycler);
-  if (cdata->_transform != transform) {
-    cdata->_transform = transform;
-    mark_bound_stale();
-    transform_changed();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -655,36 +555,6 @@ INLINE const TransformState *PandaNode::
 get_transform() const {
   CDReader cdata(_cycler);
   return cdata->_transform;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::clear_transform
-//       Access: Published
-//  Description: Resets the transform on this node to the identity
-//               transform.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-clear_transform() {
-  CDWriter cdata(_cycler);
-  if (!cdata->_transform->is_identity()) {
-    cdata->_transform = TransformState::make_identity();
-    mark_bound_stale();
-    transform_changed();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_prev_transform
-//       Access: Published
-//  Description: Sets the transform that represents this node's
-//               "previous" position, one frame ago, for the purposes
-//               of detecting motion for accurate collision
-//               calculations.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-set_prev_transform(const TransformState *transform) {
-  CDWriter cdata(_cycler);
-  cdata->_prev_transform = transform;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -709,27 +579,10 @@ get_prev_transform() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
 reset_prev_transform() {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+
   CDWriter cdata(_cycler);
   cdata->_prev_transform = cdata->_transform;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_tag
-//       Access: Published
-//  Description: Associates a user-defined value with a user-defined
-//               key which is stored on the node.  This value has no
-//               meaning to Panda; but it is stored indefinitely on
-//               the node until it is requested again.
-//
-//               Each unique key stores a different string value.
-//               There is no effective limit on the number of
-//               different keys that may be stored or on the length of
-//               any one key's value.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-set_tag(const string &key, const string &value) {
-  CDWriter cdata(_cycler);
-  cdata->_tag_data[key] = value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -767,19 +620,6 @@ has_tag(const string &key) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::clear_tag
-//       Access: Published
-//  Description: Removes the value defined for this key on this
-//               particular node.  After a call to clear_tag(),
-//               has_tag() will return false for the indicated key.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-clear_tag(const string &key) {
-  CDWriter cdata(_cycler);
-  cdata->_tag_data.erase(key);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::has_tags
 //       Access: Published
 //  Description: Returns true if the node has any tags (or any Python
@@ -811,28 +651,6 @@ ls(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_draw_mask
-//       Access: Published
-//  Description: Sets the hide/show bits of this particular node.
-//
-//               During the cull traversal, a node is not visited if
-//               none of its draw mask bits intersect with the
-//               camera's draw mask bits.  These masks can be used to
-//               selectively hide and show different parts of the
-//               scene graph from different cameras that are otherwise
-//               viewing the same scene.  See
-//               Camera::set_camera_mask().
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-set_draw_mask(DrawMask mask) {
-  CDWriter cdata(_cycler);
-  if (cdata->_draw_mask != mask) {
-    cdata->_draw_mask = mask;
-    draw_mask_changed();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_draw_mask
 //       Access: Published
 //  Description: Returns the hide/show bits of this particular node.
@@ -842,34 +660,6 @@ INLINE DrawMask PandaNode::
 get_draw_mask() const {
   CDReader cdata(_cycler);
   return cdata->_draw_mask;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_into_collide_mask
-//       Access: Published
-//  Description: Sets the "into" CollideMask.  
-//
-//               This specifies the set of bits that must be shared
-//               with a CollisionNode's "from" CollideMask in order
-//               for the CollisionNode to detect a collision with this
-//               particular node.
-//
-//               The actual CollideMask that will be set is masked by
-//               the return value from get_legal_collide_mask().
-//               Thus, the into_collide_mask cannot be set to anything
-//               other than nonzero except for those types of nodes
-//               that can be collided into, such as CollisionNodes and
-//               GeomNodes.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-set_into_collide_mask(CollideMask mask) {
-  CDWriter cdata(_cycler);
-  cdata->_into_collide_mask = mask & get_legal_collide_mask();
-
-  // We mark the bound stale when this changes, not because the actual
-  // bounding volume changes, but rather because we piggyback the
-  // computing of the _net_collide_mask on the bounding volume.
-  mark_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -884,62 +674,15 @@ get_into_collide_mask() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_net_collide_mask
+//     Function: PandaNode::get_bound
 //       Access: Published
-//  Description: Returns the union of all into_collide_mask() values
-//               set at CollisionNodes at this level and below.
+//  Description: Returns the node's external bounding volume.  This is
+//               the bounding volume around the node and all of its
+//               children.
 ////////////////////////////////////////////////////////////////////
-INLINE CollideMask PandaNode::
-get_net_collide_mask() const {
-  // Call get_bound() first to ensure the mask is recomputed.
-  BoundedObject::get_bound();
-  CDReader cdata(_cycler);
-  return cdata->_net_collide_mask;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_off_clip_planes
-//       Access: Published
-//  Description: Returns a ClipPlaneAttrib which represents the union
-//               of all of the clip planes that have been turned *off*
-//               at this level and below.
-////////////////////////////////////////////////////////////////////
-INLINE const RenderAttrib *PandaNode::
-get_off_clip_planes() const {
-  // Call get_bound() first to ensure the attrib is recomputed.
-  BoundedObject::get_bound();
-  CDReader cdata(_cycler);
-  return cdata->_off_clip_planes;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_bound
-//       Access: Published
-//  Description: Sets the type of the external bounding volume that is
-//               placed around this node and all of its children.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-set_bound(BoundingVolumeType type) {
-  CDWriter cdata(_cycler);
-  cdata->_fixed_internal_bound = false;
-  BoundedObject::set_bound(type);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_bound
-//       Access: Published
-//  Description: Resets the internal bounding volume so that it is the
-//               indicated volume.  The external bounding volume as
-//               returned by get_bound() (which includes all of the
-//               node's children) will be adjusted to include this
-//               internal volume.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-set_bound(const BoundingVolume &volume) {
-  CDWriter cdata(_cycler);
-  cdata->_fixed_internal_bound = true;
-  _internal_bound.set_bound(volume);
-  changed_internal_bound();
+INLINE const BoundingVolume *PandaNode::
+get_bound() const {
+  return BoundedObject::get_bound();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -949,9 +692,9 @@ set_bound(const BoundingVolume &volume) {
 //               the bounding volume around the node and all of its
 //               children.
 ////////////////////////////////////////////////////////////////////
-INLINE const BoundingVolume &PandaNode::
-get_bound() const {
-  return BoundedObject::get_bound();
+INLINE const BoundingVolume *PandaNode::
+get_bound(int pipeline_stage) const {
+  return BoundedObject::get_bound(pipeline_stage);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -961,14 +704,28 @@ get_bound() const {
 //               the bounding volume around the node alone, without
 //               including children.
 ////////////////////////////////////////////////////////////////////
-INLINE const BoundingVolume &PandaNode::
+INLINE const BoundingVolume *PandaNode::
 get_internal_bound() const {
-  CDReader cdata(_cycler);
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  return get_internal_bound(pipeline_stage);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_internal_bound
+//       Access: Published
+//  Description: Returns the node's internal bounding volume.  This is
+//               the bounding volume around the node alone, without
+//               including children.
+////////////////////////////////////////////////////////////////////
+INLINE const BoundingVolume *PandaNode::
+get_internal_bound(int pipeline_stage) const {
+  CDStageReader cdata(_cycler, pipeline_stage);
   if (!cdata->_fixed_internal_bound && 
-      (is_bound_stale() || _internal_bound.is_bound_stale())) {
-    ((PandaNode *)this)->recompute_internal_bound();
+      (is_bound_stale(pipeline_stage) || 
+       _internal_bound.is_bound_stale(pipeline_stage))) {
+    ((PandaNode *)this)->recompute_internal_bound(pipeline_stage);
   }
-  return _internal_bound.get_bound();
+  return _internal_bound.get_bound(pipeline_stage);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -979,8 +736,8 @@ get_internal_bound() const {
 //               bounding volume to be recomputed.
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
-changed_internal_bound() {
-  BoundedObject::mark_bound_stale();
+changed_internal_bound(int pipeline_stage) {
+  BoundedObject::mark_bound_stale(pipeline_stage);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1019,3 +776,30 @@ get_children_copy() const {
   return ChildrenCopy(cdata);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::mark_child_cache_stale
+//       Access: Private
+//  Description: Indicates that the _child_cache value that is
+//               propagated upwards has changed for this node.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+mark_child_cache_stale(int pipeline_stage, CData *cdata) {
+  if (!cdata->_stale_child_cache) {
+    force_child_cache_stale(pipeline_stage, cdata);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::do_find_parent
+//       Access: Private
+//  Description: The private implementation of find_parent().
+////////////////////////////////////////////////////////////////////
+INLINE int PandaNode::
+do_find_parent(PandaNode *node, const CData *cdata) const {
+  Up::const_iterator ui = cdata->_up.find(UpConnection(node));
+  if (ui == cdata->_up.end()) {
+    return -1;
+  }
+  return ui - cdata->_up.begin();
+}

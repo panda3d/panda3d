@@ -45,7 +45,8 @@ GeomVertexArrayData() {
 GeomVertexArrayData::
 GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
                     GeomVertexArrayData::UsageHint usage_hint) :
-  _array_format(array_format)
+  _array_format(array_format),
+  _usage_hint(UH_unspecified)
 {
   set_usage_hint(usage_hint);
   _endian_reversed = false;
@@ -61,7 +62,9 @@ GeomVertexArrayData::
 GeomVertexArrayData(const GeomVertexArrayData &copy) :
   TypedWritableReferenceCount(copy),
   _array_format(copy._array_format),
-  _cycler(copy._cycler)
+  _usage_hint(copy._usage_hint),
+  _data(copy._data),
+  _modified(copy._modified)
 {
   _endian_reversed = false;
   nassertv(_array_format->is_registered());
@@ -76,10 +79,10 @@ void GeomVertexArrayData::
 operator = (const GeomVertexArrayData &copy) {
   TypedWritableReferenceCount::operator = (copy);
   _array_format = copy._array_format;
-  _cycler = copy._cycler;
 
-  CDWriter cdata(_cycler);
-  cdata->_modified = Geom::get_next_modified();
+  _usage_hint = copy._usage_hint;
+  _data = copy._data;
+  _modified = Geom::get_next_modified();
 
   nassertv(_array_format->is_registered());
 }
@@ -114,35 +117,33 @@ GeomVertexArrayData::
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexArrayData::
 set_num_rows(int n) {
-  CDWriter cdata(_cycler);
-
   int stride = _array_format->get_stride();
-  int delta = n - (cdata->_data.size() / stride);
+  int delta = n - (_data.size() / stride);
   
   if (delta != 0) {
-    if (cdata->_data.get_ref_count() > 1) {
+    if (_data.get_ref_count() > 1) {
       // Copy-on-write: the data is already reffed somewhere else,
       // so we're just going to make a copy.
       PTA_uchar new_data;
       new_data.reserve(n * stride);
       new_data.insert(new_data.end(), n * stride, 0);
-      memcpy(new_data, cdata->_data, 
-             min((size_t)(n * stride), cdata->_data.size()));
-      cdata->_data = new_data;
+      memcpy(new_data, _data, 
+             min((size_t)(n * stride), _data.size()));
+      _data = new_data;
       
     } else {
       // We've got the only reference to the data, so we can change
       // it directly.
       if (delta > 0) {
-        cdata->_data.insert(cdata->_data.end(), delta * stride, 0);
+        _data.insert(_data.end(), delta * stride, 0);
         
       } else {
-        cdata->_data.erase(cdata->_data.begin() + n * stride, 
-                           cdata->_data.end());
+        _data.erase(_data.begin() + n * stride, 
+                           _data.end());
       }
     }
 
-    cdata->_modified = Geom::get_next_modified();
+    _modified = Geom::get_next_modified();
 
     return true;
   }
@@ -158,9 +159,8 @@ set_num_rows(int n) {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 set_usage_hint(GeomVertexArrayData::UsageHint usage_hint) {
-  CDWriter cdata(_cycler);
-  cdata->_usage_hint = usage_hint;
-  cdata->_modified = Geom::get_next_modified();
+  _usage_hint = usage_hint;
+  _modified = Geom::get_next_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -195,16 +195,14 @@ modify_data() {
   // Perform copy-on-write: if the reference count on the vertex data
   // is greater than 1, assume some other GeomVertexData has the same
   // pointer, so make a copy of it first.
-  CDWriter cdata(_cycler);
-
-  if (cdata->_data.get_ref_count() > 1) {
-    PTA_uchar orig_data = cdata->_data;
-    cdata->_data = PTA_uchar();
-    cdata->_data.v() = orig_data.v();
+  if (_data.get_ref_count() > 1) {
+    PTA_uchar orig_data = _data;
+    _data = PTA_uchar();
+    _data.v() = orig_data.v();
   }
-  cdata->_modified = Geom::get_next_modified();
+  _modified = Geom::get_next_modified();
 
-  return cdata->_data;
+  return _data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -215,9 +213,8 @@ modify_data() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 set_data(CPTA_uchar array) {
-  CDWriter cdata(_cycler);
-  cdata->_data = (PTA_uchar &)array;
-  cdata->_modified = Geom::get_next_modified();
+  _data = (PTA_uchar &)array;
+  _modified = Geom::get_next_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -410,13 +407,15 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritableReferenceCount::write_datagram(manager, dg);
 
   manager->write_pointer(dg, _array_format);
-  manager->write_cdata(dg, _cycler, this);
+
+  dg.add_uint8(_usage_hint);
+  WRITE_PTA(manager, dg, write_raw_data, _data);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::write_raw_data
 //       Access: Public
-//  Description: Called by CData::write_datagram to write the raw data
+//  Description: Called by write_datagram() to write the raw data
 //               of the array to the indicated datagram.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
@@ -437,7 +436,7 @@ write_raw_data(BamWriter *manager, Datagram &dg, const PTA_uchar &data) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::read_raw_data
 //       Access: Public
-//  Description: Called by CData::fillin to read the raw data
+//  Description: Called by fillin() to read the raw data
 //               of the array from the indicated datagram.
 ////////////////////////////////////////////////////////////////////
 PTA_uchar GeomVertexArrayData::
@@ -457,8 +456,7 @@ read_raw_data(BamReader *manager, DatagramIterator &scan) {
       _endian_reversed = true;
     } else {
       // Since we have the _array_format pointer now, we can reverse
-      // it immediately (and we should, to support threaded CData
-      // updates).
+      // it immediately.
       data = reverse_data_endianness(data);
     }
   }
@@ -498,8 +496,6 @@ finalize(BamReader *manager) {
   // cause the unregistered object to destruct, we have to also tell
   // the BamReader to return the new object from now on.
 
-  CDWriter cdata(_cycler);
-
   CPT(GeomVertexArrayFormat) new_array_format = 
     GeomVertexArrayFormat::register_format(_array_format);
 
@@ -508,7 +504,7 @@ finalize(BamReader *manager) {
 
   if (_endian_reversed) {
     // Now is the time to endian-reverse the data.
-    cdata->_data = reverse_data_endianness(cdata->_data);
+    _data = reverse_data_endianness(_data);
   }
 }
 
@@ -545,44 +541,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
 
   manager->read_pointer(scan);
-  manager->read_cdata(scan, _cycler, this);
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-CycleData *GeomVertexArrayData::CData::
-make_copy() const {
-  return new CData(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
-void GeomVertexArrayData::CData::
-write_datagram(BamWriter *manager, Datagram &dg, void *extra_data) const {
-  GeomVertexArrayData *array_data = (GeomVertexArrayData *)extra_data;
-  dg.add_uint8(_usage_hint);
-  WRITE_PTA(manager, dg, array_data->write_raw_data, _data);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new GeomVertexArrayData.
-////////////////////////////////////////////////////////////////////
-void GeomVertexArrayData::CData::
-fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
-  GeomVertexArrayData *array_data = (GeomVertexArrayData *)extra_data;
   _usage_hint = (UsageHint)scan.get_uint8();
-  READ_PTA(manager, scan, array_data->read_raw_data, _data);
+  READ_PTA(manager, scan, read_raw_data, _data);
 
   _modified = Geom::get_next_modified();
 }

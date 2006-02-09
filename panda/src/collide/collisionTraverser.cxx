@@ -519,10 +519,10 @@ r_traverse(CollisionLevelState &level_state) {
   if (node->is_exact_type(CollisionNode::get_class_type())) {
     CollisionNode *cnode;
     DCAST_INTO_V(cnode, node);
-    const BoundingVolume &node_bv = cnode->get_bound();
+    const BoundingVolume *node_bv = cnode->get_bound();
     const GeometricBoundingVolume *node_gbv = NULL;
-    if (node_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
-      DCAST_INTO_V(node_gbv, &node_bv);
+    if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
+      DCAST_INTO_V(node_gbv, node_bv);
     }
 
     CollisionEntry entry;
@@ -560,10 +560,10 @@ r_traverse(CollisionLevelState &level_state) {
     
     GeomNode *gnode;
     DCAST_INTO_V(gnode, node);
-    const BoundingVolume &node_bv = gnode->get_bound();
+    const BoundingVolume *node_bv = gnode->get_bound();
     const GeometricBoundingVolume *node_gbv = NULL;
-    if (node_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
-      DCAST_INTO_V(node_gbv, &node_bv);
+    if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
+      DCAST_INTO_V(node_gbv, node_bv);
     }
 
     CollisionEntry entry;
@@ -642,16 +642,16 @@ compare_collider_to_node(CollisionEntry &entry,
     for (int s = 0; s < num_solids; ++s) {
       entry._into = cnode->get_solid(s);
       if (entry._from != entry._into) {
-        const BoundingVolume &solid_bv = entry._into->get_bound();
+        const BoundingVolume *solid_bv = entry._into->get_bound();
         const GeometricBoundingVolume *solid_gbv = NULL;
         if (num_solids > 1 &&
-            solid_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
+            solid_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
           // Only bother to test against each solid's bounding
           // volume if we have more than one solid in the node, as a
           // slight optimization.  (If the node contains just one
           // solid, then the node's bounding volume, which we just
           // tested, is the same as the solid's bounding volume.)
-          DCAST_INTO_V(solid_gbv, &solid_bv);
+          DCAST_INTO_V(solid_gbv, solid_bv);
         }
 
         compare_collider_to_solid(entry, from_node_gbv, solid_gbv);
@@ -684,16 +684,16 @@ compare_collider_to_geom_node(CollisionEntry &entry,
       entry._into = (CollisionSolid *)NULL;
       const Geom *geom = DCAST(Geom, gnode->get_geom(s));
       if (geom != (Geom *)NULL) {
-        const BoundingVolume &geom_bv = geom->get_bound();
+        const BoundingVolume *geom_bv = geom->get_bound();
         const GeometricBoundingVolume *geom_gbv = NULL;
         if (num_geoms > 1 &&
-            geom_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
+            geom_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
           // Only bother to test against each geom's bounding
           // volume if we have more than one geom in the node, as a
           // slight optimization.  (If the node contains just one
           // geom, then the node's bounding volume, which we just
           // tested, is the same as the geom's bounding volume.)
-          DCAST_INTO_V(geom_gbv, &geom_bv);
+          DCAST_INTO_V(geom_gbv, geom_bv);
         }
 
         compare_collider_to_geom(entry, geom, from_node_gbv, geom_gbv);

@@ -127,17 +127,20 @@ bool GeomTransformer::
 transform_vertices(GeomNode *node, const LMatrix4f &mat) {
   bool any_changed = false;
 
-  GeomNode::CDWriter cdata(node->_cycler);
-  GeomNode::Geoms::iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
-    GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = entry._geom->make_copy();
-    if (transform_vertices(new_geom, mat)) {
-      node->mark_bound_stale();
-      entry._geom = new_geom;
-      any_changed = true;
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler) {
+    GeomNode::CDStageWriter cdata(node->_cycler, pipeline_stage);
+    GeomNode::Geoms::iterator gi;
+    for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+      GeomNode::GeomEntry &entry = (*gi);
+      PT(Geom) new_geom = entry._geom->make_copy();
+      if (transform_vertices(new_geom, mat)) {
+        node->mark_bound_stale(pipeline_stage);
+        entry._geom = new_geom;
+        any_changed = true;
+      }
     }
   }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler);
 
   return any_changed;
 }

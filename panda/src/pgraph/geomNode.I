@@ -72,6 +72,8 @@ get_geom(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE Geom *GeomNode::
 get_unique_geom(int n) {
+  pgraph_cat.warning() 
+    << "Deprecated method GeomNode::get_unique_geom() called.  Use modify_geom() instead.\n";
   return modify_geom(n);
 }
 
@@ -85,10 +87,17 @@ get_unique_geom(int n) {
 //               "copy on write" that ensures that the Geom that is
 //               returned is unique to this GeomNode and is not shared
 //               with any other GeomNodes.
+//
+//               Note that if this method is called in a downstream
+//               stage (for instance, during cull or draw), then it
+//               will propagate the new list of Geoms upstream all the
+//               way to pipeline stage 0, which may step on changes
+//               that were made independently in pipeline stage 0.
+//               Use with caution.
 ////////////////////////////////////////////////////////////////////
 INLINE Geom *GeomNode::
 modify_geom(int n) {
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, true);
   nassertr(n >= 0 && n < (int)cdata->_geoms.size(), NULL);
   Geom *geom = cdata->_geoms[n]._geom;
   if (geom->get_ref_count() > 1) {
@@ -124,10 +133,17 @@ get_geom_state(int n) const {
 //               the Geom is rendered will also be affected by
 //               RenderStates that appear on the scene graph in nodes
 //               above this GeomNode.
+//
+//               Note that if this method is called in a downstream
+//               stage (for instance, during cull or draw), then it
+//               will propagate the new list of Geoms upstream all the
+//               way to pipeline stage 0, which may step on changes
+//               that were made independently in pipeline stage 0.
+//               Use with caution.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomNode::
 set_geom_state(int n, const RenderState *state) {
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, true);
   nassertv(n >= 0 && n < (int)cdata->_geoms.size());
   cdata->_geoms[n]._state = state;
 }

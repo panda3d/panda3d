@@ -30,10 +30,6 @@
 #include "transformBlendTable.h"
 #include "sliderTable.h"
 #include "internalName.h"
-#include "cycleData.h"
-#include "cycleDataReader.h"
-#include "cycleDataWriter.h"
-#include "pipelineCycler.h"
 #include "pStatCollector.h"
 #include "pointerTo.h"
 #include "pmap.h"
@@ -94,7 +90,7 @@ PUBLISHED:
   INLINE bool has_column(const InternalName *name) const;
 
   int get_num_rows() const;
-  INLINE bool set_num_rows(int n);
+  bool set_num_rows(int n);
   void clear_rows();
 
   INLINE int get_num_arrays() const;
@@ -142,7 +138,7 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
-  INLINE void clear_cache();
+  void clear_cache();
 
 public:
   bool get_array_info(const InternalName *name, 
@@ -215,38 +211,20 @@ private:
   };
   typedef pset<PT(CacheEntry), IndirectLess<CacheEntry> > Cache;
 
-  // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
-  public:
-    INLINE CData();
-    INLINE CData(const CData &copy);
-    virtual CycleData *make_copy() const;
-    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
-    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
-    virtual void fillin(DatagramIterator &scan, BamReader *manager);
-    virtual TypeHandle get_parent_type() const {
-      return GeomVertexData::get_class_type();
-    }
-
-    UsageHint _usage_hint;
-    Arrays _arrays;
-    CPT(TransformTable) _transform_table;
-    PT(TransformBlendTable) _transform_blend_table;
-    CPT(SliderTable) _slider_table;
-    PT(GeomVertexData) _animated_vertices;
-    UpdateSeq _animated_vertices_modified;
-    UpdateSeq _modified;
-    Cache _cache;
-  };
-
-  PipelineCycler<CData> _cycler;
-  typedef CycleDataReader<CData> CDReader;
-  typedef CycleDataWriter<CData> CDWriter;
+  // We don't need to cycle any data in the GeomVertexData, since the
+  // GeomVertexData itself is cycled through the stages.
+  UsageHint _usage_hint;
+  Arrays _arrays;
+  CPT(TransformTable) _transform_table;
+  PT(TransformBlendTable) _transform_blend_table;
+  CPT(SliderTable) _slider_table;
+  PT(GeomVertexData) _animated_vertices;
+  UpdateSeq _animated_vertices_modified;
+  UpdateSeq _modified;
+  Cache _cache;
 
 private:
-  bool do_set_num_rows(int n, CData *cdata);
-  void update_animated_vertices(CData *cdata);
-  void do_clear_cache(CData *cdata);
+  void update_animated_vertices();
 
   static PStatCollector _convert_pcollector;
   static PStatCollector _scale_color_pcollector;

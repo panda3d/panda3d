@@ -75,6 +75,7 @@ CData(const PandaNode::CData &copy) :
   _into_collide_mask(copy._into_collide_mask),
   _net_collide_mask(copy._net_collide_mask),
   _off_clip_planes(copy._off_clip_planes),
+  _stale_child_cache(copy._stale_child_cache),
   _fixed_internal_bound(copy._fixed_internal_bound)
 {
   // Note that this copy constructor is not used by the PandaNode copy
@@ -491,6 +492,7 @@ PandaNode(const PandaNode &copy) :
   cdata->_into_collide_mask = copy_cdata->_into_collide_mask;
   cdata->_net_collide_mask = CollideMask::all_off();
   cdata->_off_clip_planes = NULL;
+  cdata->_stale_child_cache = true;
   cdata->_fixed_internal_bound = copy_cdata->_fixed_internal_bound;
 
 #ifdef HAVE_PYTHON
@@ -876,29 +878,6 @@ copy_subgraph() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::find_child
-//       Access: Published
-//  Description: Returns the index of the indicated child node, if it
-//               is a child, or -1 if it is not.
-////////////////////////////////////////////////////////////////////
-int PandaNode::
-find_child(PandaNode *node) const {
-  nassertr(node != (PandaNode *)NULL, -1);
-  CDReader cdata(_cycler);
-
-  // We have to search for the child by brute force, since we don't
-  // know what sort index it was added as.
-  Down::const_iterator di;
-  for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
-    if ((*di).get_child() == node) {
-      return di - cdata->_down.begin();
-    }
-  }
-
-  return -1;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::add_child
 //       Access: Published
 //  Description: Adds a new child to the node.  The child is added in
@@ -915,48 +894,28 @@ add_child(PandaNode *child_node, int sort) {
   // Ensure the child_node is not deleted while we do this.
   PT(PandaNode) keep_child = child_node;
   remove_child(child_node);
-  
-  CDWriter cdata(_cycler);
-  CDWriter cdata_child(child_node->_cycler);
-  
-  cdata->_down.insert(DownConnection(child_node, sort));
-  cdata_child->_up.insert(UpConnection(this));
 
-  new_connection(this, child_node);
+  // Apply this operation to the current stage as well as to all
+  // upstream stages.
+  _cycler.lock();
+  child_node->_cycler.lock();
+  for (int pipeline_stage = Thread::get_current_pipeline_stage();
+       pipeline_stage >= 0;
+       --pipeline_stage) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    CDStageWriter cdata_child(child_node->_cycler, pipeline_stage);
+    
+    cdata->_down.insert(DownConnection(child_node, sort));
+    cdata_child->_up.insert(UpConnection(this));
+    new_connection(this, child_node, cdata_child);
+    force_child_cache_stale(pipeline_stage, cdata);
+    force_bound_stale(pipeline_stage);
 
-  // Mark the bounding volumes stale.
-  force_bound_stale();
-
-  // Call callback hooks.
-  children_changed();
-  child_node->parents_changed();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::remove_child
-//       Access: Published
-//  Description: Removes the nth child from the node.
-////////////////////////////////////////////////////////////////////
-void PandaNode::
-remove_child(int n) {
-  CDWriter cdata(_cycler);
-  nassertv(n >= 0 && n < (int)cdata->_down.size());
-  
-  PT(PandaNode) child_node = cdata->_down[n].get_child();
-  CDWriter cdata_child(child_node->_cycler);
-  
-  cdata->_down.erase(cdata->_down.begin() + n);
-  int num_erased = cdata_child->_up.erase(UpConnection(this));
-  nassertv(num_erased == 1);
-
-  sever_connection(this, child_node);
-
-  // Mark the bounding volumes stale.
-  force_bound_stale();
-
-  // Call callback hooks.
-  children_changed();
-  child_node->parents_changed();
+    children_changed(pipeline_stage);
+    child_node->parents_changed(pipeline_stage);
+  }
+  child_node->_cycler.release();
+  _cycler.release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -970,33 +929,29 @@ remove_child(int n) {
 bool PandaNode::
 remove_child(PandaNode *child_node) {
   nassertr(child_node != (PandaNode *)NULL, false);
-  // First, look for the parent in the child's up list, to ensure the
-  // child is known.
-  int parent_index = child_node->find_parent(this);
-  if (parent_index < 0) {
-    // Nope, no relation.
-    return false;
-  }
+  
+  // Make sure the child node is not destructed during the execution
+  // of this method.
+  PT(PandaNode) keep_child = child_node;
 
-  int child_index = find_child(child_node);
-  if (child_index >= 0) {
-    // The child exists; remove it.
-    remove_child(child_index);
-    return true;
-  }
+  // We have to do this for each upstream pipeline stage.
+  bool any_removed = false;
 
-  int stashed_index = find_stashed(child_node);
-  if (stashed_index >= 0) {
-    // The child has been stashed; remove it.
-    remove_stashed(stashed_index);
-    return true;
+  _cycler.lock();
+  child_node->_cycler.lock();
+  for (int pipeline_stage = Thread::get_current_pipeline_stage();
+       pipeline_stage >= 0; 
+       --pipeline_stage) {
+    if (stage_remove_child(child_node, pipeline_stage)) {
+      any_removed = true;
+      children_changed(pipeline_stage);
+      child_node->parents_changed(pipeline_stage);
+    }
   }
+  child_node->_cycler.release();
+  _cycler.release();
 
-  // Never heard of this child.  This shouldn't be possible, because
-  // the parent was in the child's up list, above.  Must be some
-  // internal error.
-  nassertr(false, false);
-  return false;
+  return any_removed;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1011,68 +966,38 @@ bool PandaNode::
 replace_child(PandaNode *orig_child, PandaNode *new_child) {
   nassertr(orig_child != (PandaNode *)NULL, false);
   nassertr(new_child != (PandaNode *)NULL, false);
-  // First, look for the parent in the child's up list, to ensure the
-  // child is known.
-  int parent_index = orig_child->find_parent(this);
-  if (parent_index < 0) {
-    // Nope, no relation.
-    return false;
-  }
 
   if (orig_child == new_child) {
     // Trivial no-op.
     return true;
   }
   
-  // Don't let orig_child be destructed yet.
+  // Make sure the orig_child node is not destructed during the
+  // execution of this method.
   PT(PandaNode) keep_orig_child = orig_child;
 
-  int child_index = find_child(orig_child);
-  if (child_index >= 0) {
-    // The child exists; replace it.
-    CDWriter cdata(_cycler);
-    DownConnection &down = cdata->_down[child_index];
-    nassertr(down.get_child() == orig_child, false);
-    down.set_child(new_child);
+  // We have to do this for each upstream pipeline stage.
+  bool any_replaced = false;
 
-  } else {
-    int stashed_index = find_stashed(orig_child);
-    if (stashed_index >= 0) {
-      // The child has been stashed; remove it.
-      CDWriter cdata(_cycler);
-      DownConnection &down = cdata->_stashed[stashed_index];
-      nassertr(down.get_child() == orig_child, false);
-      down.set_child(new_child);
+  _cycler.lock();
+  orig_child->_cycler.lock();
+  new_child->_cycler.lock();
+  for (int pipeline_stage = Thread::get_current_pipeline_stage();
+       pipeline_stage >= 0;
+       --pipeline_stage) {
+    if (stage_replace_child(orig_child, new_child, pipeline_stage)) {
+      any_replaced = true;
 
-    } else {
-      // Never heard of this child.  This shouldn't be possible, because
-      // the parent was in the child's up list, above.  Must be some
-      // internal error.
-      nassertr(false, false);
-      return false;
+      children_changed(pipeline_stage);
+      orig_child->parents_changed(pipeline_stage);
+      new_child->parents_changed(pipeline_stage);
     }
   }
+  new_child->_cycler.release();
+  orig_child->_cycler.release();
+  _cycler.release();
 
-  // Now adjust the bookkeeping on both children.
-
-  CDWriter cdata_orig_child(orig_child->_cycler);
-  CDWriter cdata_new_child(new_child->_cycler);
-  
-  cdata_new_child->_up.insert(UpConnection(this));
-  int num_erased = cdata_orig_child->_up.erase(UpConnection(this));
-  nassertr(num_erased == 1, false);
-
-  sever_connection(this, orig_child);
-  orig_child->parents_changed();
-
-  new_connection(this, new_child);
-  new_child->parents_changed();
-
-  // Mark the bounding volumes stale.
-  force_bound_stale();
-  children_changed();
-
-  return true;
+  return any_replaced;
 }
 
 
@@ -1086,9 +1011,13 @@ replace_child(PandaNode *orig_child, PandaNode *new_child) {
 //               PandaNode, and is not visited in normal traversals.
 //               It is invisible and uncollidable.  The child may
 //               later be restored by calling unstash_child().
+//
+//               This can only be called from the top pipeline stage
+//               (i.e. from App).
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 stash_child(int child_index) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
   nassertv(child_index >= 0 && child_index < get_num_children());
 
   // Save a reference count for ourselves.  I don't think this should
@@ -1108,14 +1037,15 @@ stash_child(int child_index) {
   cdata->_stashed.insert(DownConnection(child_node, sort));
   cdata_child->_up.insert(UpConnection(this));
 
-  new_connection(this, child_node);
+  new_connection(this, child_node, cdata_child);
 
-  // Mark the bounding volumes stale.
-  force_bound_stale();
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  force_child_cache_stale(pipeline_stage, cdata);
+  force_bound_stale(pipeline_stage);
 
   // Call callback hooks.
-  children_changed();
-  child_node->parents_changed();
+  children_changed(pipeline_stage);
+  child_node->parents_changed(pipeline_stage);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1128,9 +1058,13 @@ stash_child(int child_index) {
 //               contributes to the bounding volume of the PandaNode,
 //               and will be visited in normal traversals.  It is
 //               visible and collidable.
+//
+//               This can only be called from the top pipeline stage
+//               (i.e. from App).
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-unstash_child(int stashed_index) {
+unstash_child(int stashed_index) { 
+  nassertv(Thread::get_current_pipeline_stage() == 0);
   nassertv(stashed_index >= 0 && stashed_index < get_num_stashed());
 
   // Save a reference count for ourselves.  I don't think this should
@@ -1150,36 +1084,15 @@ unstash_child(int stashed_index) {
   cdata->_down.insert(DownConnection(child_node, sort));
   cdata_child->_up.insert(UpConnection(this));
 
-  new_connection(this, child_node);
+  new_connection(this, child_node, cdata_child);
 
-  // Mark the bounding volumes stale.
-  force_bound_stale();
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  force_child_cache_stale(pipeline_stage, cdata);
+  force_bound_stale(pipeline_stage);
 
   // Call callback hooks.
-  children_changed();
-  child_node->parents_changed();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::find_stashed
-//       Access: Published
-//  Description: Returns the index of the indicated stashed node, if
-//               it is a stashed child, or -1 if it is not.
-////////////////////////////////////////////////////////////////////
-int PandaNode::
-find_stashed(PandaNode *node) const {
-  CDReader cdata(_cycler);
-
-  // We have to search for the child by brute force, since we don't
-  // know what sort index it was added as.
-  Down::const_iterator di;
-  for (di = cdata->_stashed.begin(); di != cdata->_stashed.end(); ++di) {
-    if ((*di).get_child() == node) {
-      return di - cdata->_stashed.begin();
-    }
-  }
-
-  return -1;
+  children_changed(pipeline_stage);
+  child_node->parents_changed(pipeline_stage);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1192,9 +1105,14 @@ find_stashed(PandaNode *node) const {
 //
 //               If the same child is added to a node more than once,
 //               the previous instance is first removed.
+//
+//               This can only be called from the top pipeline stage
+//               (i.e. from App).
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 add_stashed(PandaNode *child_node, int sort) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+
   // Ensure the child_node is not deleted while we do this.
   PT(PandaNode) keep_child = child_node;
   remove_child(child_node);
@@ -1205,38 +1123,12 @@ add_stashed(PandaNode *child_node, int sort) {
   cdata->_stashed.insert(DownConnection(child_node, sort));
   cdata_child->_up.insert(UpConnection(this));
 
-  new_connection(this, child_node);
+  new_connection(this, child_node, cdata_child);
 
   // Call callback hooks.
-  children_changed();
-  child_node->parents_changed();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::remove_stashed
-//       Access: Published
-//  Description: Removes the nth stashed child from the node.
-////////////////////////////////////////////////////////////////////
-void PandaNode::
-remove_stashed(int n) {
-  CDWriter cdata(_cycler);
-  nassertv(n >= 0 && n < (int)cdata->_stashed.size());
-  
-  PT(PandaNode) child_node = cdata->_stashed[n].get_child();
-  CDWriter cdata_child(child_node->_cycler);
-  
-  cdata->_stashed.erase(cdata->_stashed.begin() + n);
-  int num_erased = cdata_child->_up.erase(UpConnection(this));
-  nassertv(num_erased == 1);
-
-  sever_connection(this, child_node);
-
-  // Mark the bounding volumes stale.
-  force_bound_stale();
-
-  // Call callback hooks.
-  children_changed();
-  child_node->parents_changed();
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  children_changed(pipeline_stage);
+  child_node->parents_changed(pipeline_stage);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1244,34 +1136,41 @@ remove_stashed(int n) {
 //       Access: Published
 //  Description: Removes all the children from the node at once,
 //               including stashed children.
+//
+//               This can only be called from the top pipeline stage
+//               (i.e. from App).
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 remove_all_children() {
-  CDWriter cdata(_cycler);
-  Down::iterator di;
-  for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
-    PT(PandaNode) child_node = (*di).get_child();
-    CDWriter cdata_child(child_node->_cycler);
-    cdata_child->_up.erase(UpConnection(this));
-
-    sever_connection(this, child_node);
-    child_node->parents_changed();
+  // We have to do this for each upstream pipeline stage.
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    
+    Down::iterator di;
+    for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
+      PT(PandaNode) child_node = (*di).get_child();
+      CDStageWriter cdata_child(child_node->_cycler, pipeline_stage);
+      cdata_child->_up.erase(UpConnection(this));
+      
+      sever_connection(this, child_node, cdata_child);
+      child_node->parents_changed(pipeline_stage);
+    }
+    cdata->_down.clear();
+    
+    for (di = cdata->_stashed.begin(); di != cdata->_stashed.end(); ++di) {
+      PT(PandaNode) child_node = (*di).get_child();
+      CDStageWriter cdata_child(child_node->_cycler, pipeline_stage);
+      cdata_child->_up.erase(UpConnection(this));
+      
+      sever_connection(this, child_node, cdata_child);
+      child_node->parents_changed(pipeline_stage);
+    }
+    cdata->_stashed.clear();
+    force_child_cache_stale(pipeline_stage, cdata);
+    force_bound_stale(pipeline_stage);
+    children_changed(pipeline_stage);
   }
-  cdata->_down.clear();
-
-  for (di = cdata->_stashed.begin(); di != cdata->_stashed.end(); ++di) {
-    PT(PandaNode) child_node = (*di).get_child();
-    CDWriter cdata_child(child_node->_cycler);
-    cdata_child->_up.erase(UpConnection(this));
-
-    sever_connection(this, child_node);
-    child_node->parents_changed();
-  }
-  cdata->_stashed.clear();
-
-  // Mark the bounding volumes stale.
-  force_bound_stale();
-  children_changed();
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1279,9 +1178,14 @@ remove_all_children() {
 //       Access: Published
 //  Description: Moves all the children from the other node onto this
 //               node.
+//
+//               This can only be called from the top pipeline stage
+//               (i.e. from App).
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 steal_children(PandaNode *other) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+
   if (other == this) {
     // Trivial.
     return;
@@ -1339,6 +1243,275 @@ copy_children(PandaNode *other) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_attrib
+//       Access: Published
+//  Description: Adds the indicated render attribute to the scene
+//               graph on this node.  This attribute will now apply to
+//               this node and everything below.  If there was already
+//               an attribute of the same type, it is replaced.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_attrib(const RenderAttrib *attrib, int override) {
+  // Apply this operation to the current stage as well as to all
+  // upstream stages.
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    
+    CPT(RenderState) new_state = cdata->_state->add_attrib(attrib, override);
+    if (cdata->_state != new_state) {
+      cdata->_state = new_state;
+
+      // Maybe we changed a ClipPlaneAttrib.
+      mark_child_cache_stale(pipeline_stage, cdata);
+      state_changed(pipeline_stage);
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_attrib
+//       Access: Published
+//  Description: Removes the render attribute of the given type from
+//               this node.  This node, and the subgraph below, will
+//               now inherit the indicated render attribute from the
+//               nodes above this one.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+clear_attrib(TypeHandle type) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    
+    CPT(RenderState) new_state = cdata->_state->remove_attrib(type);
+    if (cdata->_state != new_state) {
+      cdata->_state = new_state;
+      
+      // We mark the child_cache stale when the state changes, in case
+      // we have changed a ClipPlaneAttrib.
+      mark_child_cache_stale(pipeline_stage, cdata);
+      state_changed(pipeline_stage);
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_effect
+//       Access: Published
+//  Description: Adds the indicated render effect to the scene
+//               graph on this node.  If there was already an effect
+//               of the same type, it is replaced.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_effect(const RenderEffect *effect) {
+  // Apply this operation to the current stage as well as to all
+  // upstream stages.
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_effects = cdata->_effects->add_effect(effect);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_effect
+//       Access: Published
+//  Description: Removes the render effect of the given type from
+//               this node.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+clear_effect(TypeHandle type) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_effects = cdata->_effects->remove_effect(type);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_state
+//       Access: Published
+//  Description: Sets the complete RenderState that will be applied to
+//               all nodes at this level and below.  (The actual state
+//               that will be applied to lower nodes is based on the
+//               composition of RenderStates from above this node as
+//               well).  This completely replaces whatever has been
+//               set on this node via repeated calls to set_attrib().
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_state(const RenderState *state) {
+  // Apply this operation to the current stage as well as to all
+  // upstream stages.
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    if (cdata->_state != state) {
+      cdata->_state = state;
+
+      // Maybe we have changed a ClipPlaneAttrib.
+      mark_child_cache_stale(pipeline_stage, cdata);
+      state_changed(pipeline_stage);
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_state
+//       Access: Published
+//  Description: Resets this node to leave the render state alone.
+//               Nodes at this level and below will once again inherit
+//               their render state unchanged from the nodes above
+//               this level.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+clear_state() {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    if (!cdata->_state->is_empty()) {
+      cdata->_state = RenderState::make_empty();
+      
+      // Maybe we have changed a ClipPlaneAttrib.
+      mark_child_cache_stale(pipeline_stage, cdata);
+      state_changed(pipeline_stage);
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_effects
+//       Access: Published
+//  Description: Sets the complete RenderEffects that will be applied
+//               this node.  This completely replaces whatever has
+//               been set on this node via repeated calls to
+//               set_attrib().
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_effects(const RenderEffects *effects) {
+  // Apply this operation to the current stage as well as to all
+  // upstream stages.
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_effects = effects;
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_effects
+//       Access: Published
+//  Description: Resets this node to have no render effects.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+clear_effects() {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_effects = RenderEffects::make_empty();
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_transform
+//       Access: Published
+//  Description: Sets the transform that will be applied to this node
+//               and below.  This defines a new coordinate space at
+//               this point in the scene graph and below.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_transform(const TransformState *transform) {
+  // Apply this operation to the current stage as well as to all
+  // upstream stages.
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    if (cdata->_transform != transform) {
+      cdata->_transform = transform;
+      mark_bound_stale(pipeline_stage);
+      transform_changed(pipeline_stage);
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_transform
+//       Access: Published
+//  Description: Resets the transform on this node to the identity
+//               transform.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+clear_transform() {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    if (!cdata->_transform->is_identity()) {
+      cdata->_transform = TransformState::make_identity();
+      mark_bound_stale(pipeline_stage);
+      transform_changed(pipeline_stage);
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_prev_transform
+//       Access: Published
+//  Description: Sets the transform that represents this node's
+//               "previous" position, one frame ago, for the purposes
+//               of detecting motion for accurate collision
+//               calculations.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_prev_transform(const TransformState *transform) {
+  // Apply this operation to the current stage as well as to all
+  // upstream stages.
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_prev_transform = transform;
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_tag
+//       Access: Published
+//  Description: Associates a user-defined value with a user-defined
+//               key which is stored on the node.  This value has no
+//               meaning to Panda; but it is stored indefinitely on
+//               the node until it is requested again.
+//
+//               Each unique key stores a different string value.
+//               There is no effective limit on the number of
+//               different keys that may be stored or on the length of
+//               any one key's value.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_tag(const string &key, const string &value) {
+  // Apply this operation to the current stage as well as to all
+  // upstream stages.
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_tag_data[key] = value;
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_tag
+//       Access: Published
+//  Description: Removes the value defined for this key on this
+//               particular node.  After a call to clear_tag(),
+//               has_tag() will return false for the indicated key.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+clear_tag(const string &key) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_tag_data.erase(key);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::set_python_tag
@@ -1356,6 +1529,8 @@ copy_children(PandaNode *other) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 set_python_tag(const string &key, PyObject *value) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+
   CDWriter cdata(_cycler);
   Py_XINCREF(value);
 
@@ -1425,6 +1600,8 @@ has_python_tag(const string &key) const {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 clear_python_tag(const string &key) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+
   CDWriter cdata(_cycler);
   PythonTagData::iterator ti;
   ti = cdata->_python_tag_data.find(key);
@@ -1451,39 +1628,50 @@ copy_tags(PandaNode *other) {
     return;
   }
 
-  CDWriter cdataw(_cycler);
-  CDReader cdatar(other->_cycler);
-  TagData::const_iterator ti;
-  for (ti = cdatar->_tag_data.begin();
-       ti != cdatar->_tag_data.end();
-       ++ti) {
-    cdataw->_tag_data[(*ti).first] = (*ti).second;
-  }
-
-#ifdef HAVE_PYTHON
-  PythonTagData::const_iterator pti;
-  for (pti = cdatar->_python_tag_data.begin();
-       pti != cdatar->_python_tag_data.end();
-       ++pti) {
-    const string &key = (*pti).first;
-    PyObject *value = (*pti).second;
-    Py_XINCREF(value);
-
-    pair<PythonTagData::iterator, bool> result;
-    result = cdataw->_python_tag_data.insert(PythonTagData::value_type(key, value));
-
-    if (!result.second) {
-      // The insert was unsuccessful; that means the key was already
-      // present in the map.  In this case, we should decrement the
-      // original value's reference count and replace it with the new
-      // object.
-      PythonTagData::iterator wpti = result.first;
-      PyObject *old_value = (*wpti).second;
-      Py_XDECREF(old_value);
-      (*wpti).second = value;
+  // Apply this operation to the current stage as well as to all
+  // upstream stages.
+  _cycler.lock();
+  other->_cycler.lock();
+  for (int pipeline_stage = Thread::get_current_pipeline_stage();
+       pipeline_stage >= 0;
+       --pipeline_stage) {
+    CDStageWriter cdataw(_cycler, pipeline_stage);
+    CDStageWriter cdatar(other->_cycler, pipeline_stage);
+      
+    TagData::const_iterator ti;
+    for (ti = cdatar->_tag_data.begin();
+         ti != cdatar->_tag_data.end();
+         ++ti) {
+      cdataw->_tag_data[(*ti).first] = (*ti).second;
     }
-  }
+    
+#ifdef HAVE_PYTHON
+    PythonTagData::const_iterator pti;
+    for (pti = cdatar->_python_tag_data.begin();
+         pti != cdatar->_python_tag_data.end();
+         ++pti) {
+      const string &key = (*pti).first;
+      PyObject *value = (*pti).second;
+      Py_XINCREF(value);
+      
+      pair<PythonTagData::iterator, bool> result;
+      result = cdataw->_python_tag_data.insert(PythonTagData::value_type(key, value));
+      
+      if (!result.second) {
+        // The insert was unsuccessful; that means the key was already
+        // present in the map.  In this case, we should decrement the
+        // original value's reference count and replace it with the new
+        // object.
+        PythonTagData::iterator wpti = result.first;
+        PyObject *old_value = (*wpti).second;
+        Py_XDECREF(old_value);
+        (*wpti).second = value;
+      }
+    }
 #endif // HAVE_PYTHON
+  }
+  other->_cycler.release();
+  _cycler.release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1528,6 +1716,60 @@ list_tags(ostream &out, const string &separator) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_draw_mask
+//       Access: Published
+//  Description: Sets the hide/show bits of this particular node.
+//
+//               During the cull traversal, a node is not visited if
+//               none of its draw mask bits intersect with the
+//               camera's draw mask bits.  These masks can be used to
+//               selectively hide and show different parts of the
+//               scene graph from different cameras that are otherwise
+//               viewing the same scene.  See
+//               Camera::set_camera_mask().
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_draw_mask(DrawMask mask) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    if (cdata->_draw_mask != mask) {
+      cdata->_draw_mask = mask;
+      draw_mask_changed(pipeline_stage);
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_into_collide_mask
+//       Access: Published
+//  Description: Sets the "into" CollideMask.  
+//
+//               This specifies the set of bits that must be shared
+//               with a CollisionNode's "from" CollideMask in order
+//               for the CollisionNode to detect a collision with this
+//               particular node.
+//
+//               The actual CollideMask that will be set is masked by
+//               the return value from get_legal_collide_mask().
+//               Thus, the into_collide_mask cannot be set to anything
+//               other than nonzero except for those types of nodes
+//               that can be collided into, such as CollisionNodes and
+//               GeomNodes.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_into_collide_mask(CollideMask mask) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_into_collide_mask = mask & get_legal_collide_mask();
+
+    // This change must be propagated upward.
+    mark_child_cache_stale(pipeline_stage, cdata);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_legal_collide_mask
 //       Access: Published, Virtual
 //  Description: Returns the subset of CollideMask bits that may be
@@ -1541,6 +1783,43 @@ list_tags(ostream &out, const string &separator) const {
 CollideMask PandaNode::
 get_legal_collide_mask() const {
   return CollideMask::all_off();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_net_collide_mask
+//       Access: Published
+//  Description: Returns the union of all into_collide_mask() values
+//               set at CollisionNodes at this level and below.
+////////////////////////////////////////////////////////////////////
+CollideMask PandaNode::
+get_net_collide_mask() const {
+  CDReader cdata(_cycler);
+  if (cdata->_stale_child_cache) {
+    CDWriter cdataw(((PandaNode *)this)->_cycler, cdata);
+    ((PandaNode *)this)->update_child_cache();
+    nassertr(!cdataw->_stale_child_cache, cdataw->_net_collide_mask);
+    return cdataw->_net_collide_mask;
+  }
+  return cdata->_net_collide_mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_off_clip_planes
+//       Access: Published
+//  Description: Returns a ClipPlaneAttrib which represents the union
+//               of all of the clip planes that have been turned *off*
+//               at this level and below.
+////////////////////////////////////////////////////////////////////
+const RenderAttrib *PandaNode::
+get_off_clip_planes() const {
+  CDReader cdata(_cycler);
+  if (cdata->_stale_child_cache) {
+    CDWriter cdataw(((PandaNode *)this)->_cycler, cdata);
+    ((PandaNode *)this)->update_child_cache();
+    nassertr(!cdataw->_stale_child_cache, cdataw->_off_clip_planes);
+    return cdataw->_off_clip_planes;
+  }
+  return cdata->_off_clip_planes;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1577,6 +1856,44 @@ write(ostream &out, int indent_level) const {
     out << " " << *cdata->_effects;
   }
   out << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_bound
+//       Access: Published
+//  Description: Sets the type of the external bounding volume that is
+//               placed around this node and all of its children.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_bound(BoundingVolumeType type) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    
+    cdata->_fixed_internal_bound = false;
+    BoundedObject::set_bound(type, pipeline_stage);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_bound
+//       Access: Published
+//  Description: Resets the internal bounding volume so that it is the
+//               indicated volume.  The external bounding volume as
+//               returned by get_bound() (which includes all of the
+//               node's children) will be adjusted to include this
+//               internal volume.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_bound(const BoundingVolume &volume) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    
+    cdata->_fixed_internal_bound = true;
+    _internal_bound.set_bound(volume);
+    changed_internal_bound(pipeline_stage);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1630,13 +1947,14 @@ as_light() {
 //               depend on this one are marked stale also.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-propagate_stale_bound() {
+propagate_stale_bound(int pipeline_stage) {
   // Mark all of our parent nodes stale as well.
-  CDWriter cdata(_cycler);
+
+  CDStageWriter cdata(_cycler, pipeline_stage);
   Up::const_iterator ui;
   for (ui = cdata->_up.begin(); ui != cdata->_up.end(); ++ui) {
     PandaNode *parent_node = (*ui).get_parent();
-    parent_node->mark_bound_stale();
+    parent_node->mark_bound_stale(pipeline_stage);
   }
 }
 
@@ -1653,50 +1971,38 @@ propagate_stale_bound() {
 //               returned.
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *PandaNode::
-recompute_bound() {
+recompute_bound(int pipeline_stage) {
   // Get the internal bound before we do anything else, since the
   // is_bound_stale() flag may also apply to this.
-  const BoundingVolume *internal_bound = &get_internal_bound();
+  const BoundingVolume *internal_bound = get_internal_bound();
 
   // Now, get ourselves a fresh, empty bounding volume.  This will
   // reset the is_bound_stale() flag if it was set.
-  BoundingVolume *bound = BoundedObject::recompute_bound();
+  BoundingVolume *bound = BoundedObject::recompute_bound(pipeline_stage);
   nassertr(bound != (BoundingVolume*)NULL, bound);
 
-  // Also, recompute the net_collide_mask bits while we do this.
-  CDWriter cdata(_cycler);
-  cdata->_net_collide_mask = cdata->_into_collide_mask;
-
-  // And compute the set of "off" clip planes.
-  cdata->_off_clip_planes = cdata->_state->get_clip_plane();
-  if (cdata->_off_clip_planes == (RenderAttrib *)NULL) {
-    cdata->_off_clip_planes = ClipPlaneAttrib::make();
-  }
-
+  CDStageReader cdata(_cycler, pipeline_stage);
+    
   // Now actually compute the bounding volume by putting it around all
   // of our child bounding volumes.
   pvector<const BoundingVolume *> child_volumes;
-
+  
   // It goes around this node's internal bounding volume . . .
   child_volumes.push_back(internal_bound);
-
+  
   Down::const_iterator di;
   for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
     // . . . plus each node's external bounding volume.
     PandaNode *child = (*di).get_child();
-    const BoundingVolume &child_bound = child->get_bound();
-    child_volumes.push_back(&child_bound);
-    cdata->_net_collide_mask |= child->get_net_collide_mask();
-    CPT(ClipPlaneAttrib) orig = DCAST(ClipPlaneAttrib, cdata->_off_clip_planes);
-    cdata->_off_clip_planes = orig->compose_off(child->get_off_clip_planes());
+    const BoundingVolume *child_bound = child->get_bound(pipeline_stage);
+    child_volumes.push_back(child_bound);
   }
-
+  
   const BoundingVolume **child_begin = &child_volumes[0];
   const BoundingVolume **child_end = child_begin + child_volumes.size();
-
-  bool success =
-    bound->around(child_begin, child_end);
-
+  
+  bool success = bound->around(child_begin, child_end);
+  
 #ifndef NDEBUG
   if (!success) {
     pgraph_cat.error()
@@ -1708,16 +2014,16 @@ recompute_bound() {
     }
   }
 #endif
-
+  
   // Now, if we have a transform, apply it to the bounding volume we
   // just computed.
-  const TransformState *transform = get_transform();
+  const TransformState *transform = cdata->_transform;
   if (!transform->is_identity()) {
     GeometricBoundingVolume *gbv;
     DCAST_INTO_R(gbv, bound, bound);
     gbv->xform(transform->get_mat());
   }
-
+      
   return bound;
 }
 
@@ -1730,8 +2036,8 @@ recompute_bound() {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *PandaNode::
-recompute_internal_bound() {
-  BoundingVolume *result = _internal_bound.recompute_bound();
+recompute_internal_bound(int pipeline_stage) {
+  BoundingVolume *result = _internal_bound.recompute_bound(pipeline_stage);
   return result;
 }
 
@@ -1745,7 +2051,7 @@ recompute_internal_bound() {
 //               node has.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-parents_changed() {
+parents_changed(int pipeline_stage) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1758,7 +2064,7 @@ parents_changed() {
 //               node has.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-children_changed() {
+children_changed(int pipeline_stage) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1769,7 +2075,7 @@ children_changed() {
 //               classes can do something special in this case.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-transform_changed() {
+transform_changed(int pipeline_stage) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1780,7 +2086,7 @@ transform_changed() {
 //               classes can do something special in this case.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-state_changed() {
+state_changed(int pipeline_stage) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1791,7 +2097,7 @@ state_changed() {
 //               classes can do something special in this case.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-draw_mask_changed() {
+draw_mask_changed(int pipeline_stage) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1862,6 +2168,285 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::update_child_cache
+//       Access: Private
+//  Description: Updates the cached values of the node that are
+//               dependent on its children, such as the
+//               _net_collide_mask and the _off_clip_planes.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+update_child_cache() {
+  // We update the current pipeline stage as well as all upstream
+  // stages, so we don't lose the cache value.
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageReader cdata(_cycler, pipeline_stage);
+    if (cdata->_stale_child_cache) {
+      CDStageWriter cdataw(_cycler, pipeline_stage, cdata);
+      do_update_child_cache(pipeline_stage, cdataw);
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::do_update_child_cache
+//       Access: Private
+//  Description: The implementation of update_child_cache(), for a
+//               particular pipeline stage.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+do_update_child_cache(int pipeline_stage, CData *cdata) {
+  nassertv(cdata->_stale_child_cache);
+
+  cdata->_net_collide_mask = cdata->_into_collide_mask;
+  cdata->_off_clip_planes = cdata->_state->get_clip_plane();
+
+  if (cdata->_off_clip_planes == (RenderAttrib *)NULL) {
+    cdata->_off_clip_planes = ClipPlaneAttrib::make();
+  }
+  
+  Down::const_iterator di;
+  for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
+    PandaNode *child = (*di).get_child();
+    CDStageReader child_cdata(child->_cycler, pipeline_stage);
+    
+    CPT(ClipPlaneAttrib) orig = DCAST(ClipPlaneAttrib, cdata->_off_clip_planes);
+    
+    if (child_cdata->_stale_child_cache) {
+      // Child needs update.
+      CDStageWriter child_cdataw(child->_cycler, pipeline_stage, child_cdata);
+      child->do_update_child_cache(pipeline_stage, child_cdataw);
+      
+      cdata->_net_collide_mask |= child_cdataw->_net_collide_mask;
+      cdata->_off_clip_planes = orig->compose_off(child_cdataw->_off_clip_planes);
+    } else {
+      // Child is good.
+      cdata->_net_collide_mask |= child_cdata->_net_collide_mask;
+      cdata->_off_clip_planes = orig->compose_off(child_cdata->_off_clip_planes);
+    }          
+  }
+
+  cdata->_stale_child_cache = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::force_child_cache_stale
+//       Access: Private
+//  Description: Indicates that _child_cache is stale and must be
+//               recomputed for this node (and, by extension, for any
+//               parent node).
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+force_child_cache_stale(int pipeline_stage, CData *cdata) {
+  cdata->_stale_child_cache = true;
+    
+  Up::const_iterator ui;
+  for (ui = cdata->_up.begin(); ui != cdata->_up.end(); ++ui) {
+    PandaNode *parent = (*ui).get_parent();
+    CDStageReader parent_cdata(parent->_cycler, pipeline_stage);
+    if (parent_cdata->_stale_child_cache) {
+      // Parent needs to be marked stale.
+      CDStageWriter parent_cdataw(parent->_cycler, pipeline_stage, parent_cdata);
+      parent->force_child_cache_stale(pipeline_stage, parent_cdataw);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::do_find_child
+//       Access: Private
+//  Description: The private implementation of find_child().
+////////////////////////////////////////////////////////////////////
+int PandaNode::
+do_find_child(PandaNode *node, const CData *cdata) const {
+  nassertr(node != (PandaNode *)NULL, -1);
+
+  // We have to search for the child by brute force, since we don't
+  // know what sort index it was added as.
+  Down::const_iterator di;
+  for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
+    if ((*di).get_child() == node) {
+      return di - cdata->_down.begin();
+    }
+  }
+
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::do_find_stashed
+//       Access: Private
+//  Description: The private implementation of find_stashed().
+////////////////////////////////////////////////////////////////////
+int PandaNode::
+do_find_stashed(PandaNode *node, const CData *cdata) const {
+  nassertr(node != (PandaNode *)NULL, -1);
+
+  // We have to search for the child by brute force, since we don't
+  // know what sort index it was added as.
+  Down::const_iterator di;
+  for (di = cdata->_stashed.begin(); di != cdata->_stashed.end(); ++di) {
+    if ((*di).get_child() == node) {
+      return di - cdata->_stashed.begin();
+    }
+  }
+
+  return -1;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::stage_remove_child
+//       Access: Private
+//  Description: The private implementation of remove_child(), for a
+//               particular pipeline stage.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+stage_remove_child(PandaNode *child_node, int pipeline_stage) {
+  CDStageWriter cdata(_cycler, pipeline_stage);
+      
+  // First, look for the parent in the child's up list, to ensure the
+  // child is known.
+  CDStageWriter cdata_child(child_node->_cycler, pipeline_stage);
+  int parent_index = child_node->do_find_parent(this, cdata_child);
+  if (parent_index < 0) {
+    // Nope, no relation.
+    return false;
+  }
+
+  int child_index = do_find_child(child_node, cdata);
+  if (child_index >= 0) {
+    // The child exists; remove it.
+    do_remove_child(child_index, child_node, pipeline_stage,
+                    cdata, cdata_child);
+    return true;
+  }
+
+  int stashed_index = do_find_stashed(child_node, cdata);
+  if (stashed_index >= 0) {
+    // The child has been stashed; remove it.
+    do_remove_stashed(stashed_index, child_node, pipeline_stage,
+                      cdata, cdata_child);
+    return true;
+  }
+
+  // Never heard of this child.  This shouldn't be possible, because
+  // the parent was in the child's up list, above.  Must be some
+  // internal error.
+  nassertr(false, false);
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::stage_replace_child
+//       Access: Private
+//  Description: The private implementation of replace_child(), for a
+//               particular pipeline stage.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
+                    int pipeline_stage) {
+  CDStageWriter cdata(_cycler, pipeline_stage);
+  CDStageWriter cdata_orig_child(orig_child->_cycler, pipeline_stage);
+  CDStageWriter cdata_new_child(new_child->_cycler, pipeline_stage);
+      
+  // First, look for the parent in the child's up list, to ensure the
+  // child is known.
+  int parent_index = orig_child->do_find_parent(this, cdata_orig_child);
+  if (parent_index < 0) {
+    // Nope, no relation.
+    return false;
+  }
+
+  if (orig_child == new_child) {
+    // Trivial no-op.
+    return true;
+  }
+  
+  // Don't let orig_child be destructed yet.
+  PT(PandaNode) keep_orig_child = orig_child;
+
+  int child_index = do_find_child(orig_child, cdata);
+  if (child_index >= 0) {
+    // The child exists; replace it.
+    DownConnection &down = cdata->_down[child_index];
+    nassertr(down.get_child() == orig_child, false);
+    down.set_child(new_child);
+
+  } else {
+    int stashed_index = do_find_stashed(orig_child, cdata);
+    if (stashed_index >= 0) {
+      // The child has been stashed; remove it.
+      DownConnection &down = cdata->_stashed[stashed_index];
+      nassertr(down.get_child() == orig_child, false);
+      down.set_child(new_child);
+
+    } else {
+      // Never heard of this child.  This shouldn't be possible, because
+      // the parent was in the child's up list, above.  Must be some
+      // internal error.
+      nassertr(false, false);
+      return false;
+    }
+  }
+
+  force_child_cache_stale(pipeline_stage, cdata);
+  force_bound_stale(pipeline_stage);
+
+  // Now adjust the bookkeeping on both children.
+  cdata_new_child->_up.insert(UpConnection(this));
+  int num_erased = cdata_orig_child->_up.erase(UpConnection(this));
+  nassertr(num_erased == 1, false);
+
+  sever_connection(this, orig_child, cdata_orig_child);
+  orig_child->parents_changed(pipeline_stage);
+
+  new_connection(this, new_child, cdata_new_child);
+  new_child->parents_changed(pipeline_stage);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::do_remove_child
+//       Access: Private
+//  Description: The private implementation of remove_child().
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+do_remove_child(int n, PandaNode *child_node, int pipeline_stage,
+                CData *cdata, CData *cdata_child) {
+  cdata->_down.erase(cdata->_down.begin() + n);
+  int num_erased = cdata_child->_up.erase(UpConnection(this));
+  nassertv(num_erased == 1);
+
+  sever_connection(this, child_node, cdata_child);
+  force_child_cache_stale(pipeline_stage, cdata);
+  force_bound_stale(pipeline_stage);
+
+  // Call callback hooks.
+  children_changed(pipeline_stage);
+  child_node->parents_changed(pipeline_stage);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::do_remove_stashed
+//       Access: Private
+//  Description: The private implementation of remove_stashed().
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+do_remove_stashed(int n, PandaNode *child_node, int pipeline_stage,
+                  CData *cdata, CData *cdata_child) {
+  cdata->_stashed.erase(cdata->_stashed.begin() + n);
+  int num_erased = cdata_child->_up.erase(UpConnection(this));
+  nassertv(num_erased == 1);
+
+  sever_connection(this, child_node, cdata_child);
+
+  // Call callback hooks.
+  child_node->parents_changed(pipeline_stage);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::attach
 //       Access: Private, Static
 //  Description: Creates a new parent-child relationship, and returns
@@ -1876,8 +2461,12 @@ attach(NodePathComponent *parent, PandaNode *child_node, int sort) {
     // attachments, and no questions asked.
     PT(NodePathComponent) child = 
       new NodePathComponent(child_node, (NodePathComponent *)NULL);
-    CDWriter cdata_child(child_node->_cycler);
-    cdata_child->_paths.insert(child);
+
+    OPEN_ITERATE_CURRENT_AND_UPSTREAM(child_node->_cycler) {
+      CDStageWriter cdata_child(child_node->_cycler, pipeline_stage);
+      cdata_child->_paths.insert(child);
+    }
+    CLOSE_ITERATE_CURRENT_AND_UPSTREAM(child_node->_cycler);
     return child;
   }
 
@@ -1912,49 +2501,56 @@ detach(NodePathComponent *child) {
   // came from a NodePathComponent that ought to know about this
   // sort of thing.
   nassertv(child_node->find_parent(parent_node) >= 0);
+
+  parent_node->_cycler.lock();
+  child_node->_cycler.lock();
+  for (int pipeline_stage = Thread::get_current_pipeline_stage();
+       pipeline_stage >= 0;
+       --pipeline_stage) {
+    CDStageWriter cdata_parent(parent_node->_cycler, pipeline_stage);
+    CDStageWriter cdata_child(child_node->_cycler, pipeline_stage);
   
-  CDWriter cdata_child(child_node->_cycler);
-  CDWriter cdata_parent(parent_node->_cycler);
-  
-  // Now look for the child and break the actual connection.
-  
-  // First, look for and remove the parent node from the child's up
-  // list.
-  int num_erased = cdata_child->_up.erase(UpConnection(parent_node));
-  nassertv(num_erased == 1);
-  
-  // Now, look for and remove the child node from the parent's down
-  // list.  We also check in the stashed list, in case the child node
-  // has been stashed.
-  Down::iterator di;
-  bool found = false;
-  for (di = cdata_parent->_down.begin(); 
-       di != cdata_parent->_down.end() && !found; 
-       ++di) {
-    if ((*di).get_child() == child_node) {
-      cdata_parent->_down.erase(di);
-      found = true;
+    // Now look for the child and break the actual connection.
+    
+    // First, look for and remove the parent node from the child's up
+    // list.
+    int num_erased = cdata_child->_up.erase(UpConnection(parent_node));
+    nassertv(num_erased == 1);
+    
+    // Now, look for and remove the child node from the parent's down
+    // list.  We also check in the stashed list, in case the child node
+    // has been stashed.
+    Down::iterator di;
+    bool found = false;
+    for (di = cdata_parent->_down.begin(); 
+         di != cdata_parent->_down.end() && !found; 
+         ++di) {
+      if ((*di).get_child() == child_node) {
+        cdata_parent->_down.erase(di);
+        found = true;
+      }
     }
-  }
-  for (di = cdata_parent->_stashed.begin(); 
-       di != cdata_parent->_stashed.end() && !found; 
-       ++di) {
-    if ((*di).get_child() == child_node) {
-      cdata_parent->_stashed.erase(di);
-      found = true;
+    for (di = cdata_parent->_stashed.begin(); 
+         di != cdata_parent->_stashed.end() && !found; 
+         ++di) {
+      if ((*di).get_child() == child_node) {
+        cdata_parent->_stashed.erase(di);
+        found = true;
+      }
     }
+    nassertv(found);
+    
+    // Finally, break the NodePathComponent connection.
+    sever_connection(parent_node, child_node, cdata_child);
+    parent_node->force_child_cache_stale(pipeline_stage, cdata_parent);
+    parent_node->force_bound_stale(pipeline_stage);
+
+    // Call callback hooks.
+    parent_node->children_changed(pipeline_stage);
+    child_node->parents_changed(pipeline_stage);
   }
-  nassertv(found);
-
-  // Finally, break the NodePathComponent connection.
-  sever_connection(parent_node, child_node);
-
-  // Mark the bounding volumes stale.
-  parent_node->force_bound_stale();
-
-  // Call callback hooks.
-  parent_node->children_changed();
-  child_node->parents_changed();
+  child_node->_cycler.release();
+  parent_node->_cycler.release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1992,27 +2588,35 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
     child->set_next(new_parent);
     
     // Now reattach the child node at the indicated sort position.
-    CDWriter cdata_parent(parent_node->_cycler);
-    CDWriter cdata_child(child_node->_cycler);
+    parent_node->_cycler.lock();
+    child_node->_cycler.lock();
+    for (int pipeline_stage = Thread::get_current_pipeline_stage();
+         pipeline_stage >= 0;
+         --pipeline_stage) {
+      CDStageWriter cdata_parent(parent_node->_cycler, pipeline_stage);
+      CDStageWriter cdata_child(child_node->_cycler, pipeline_stage);
 
-    if (as_stashed) {
-      cdata_parent->_stashed.insert(DownConnection(child_node, sort));
-    } else {
-      cdata_parent->_down.insert(DownConnection(child_node, sort));
-    }
-    cdata_child->_up.insert(UpConnection(parent_node));
-    
-    cdata_child->_paths.insert(child);
-    child_node->fix_path_lengths(cdata_child);
-    
-    // Mark the bounding volumes stale.
-    if (!as_stashed) {
-      parent_node->force_bound_stale();
-    }
+      if (as_stashed) {
+        cdata_parent->_stashed.insert(DownConnection(child_node, sort));
+      } else {
+        cdata_parent->_down.insert(DownConnection(child_node, sort));
+      }
+      cdata_child->_up.insert(UpConnection(parent_node));
+      
+      cdata_child->_paths.insert(child);
+      child_node->fix_path_lengths(cdata_child);
+      
+      if (!as_stashed) {
+        parent_node->force_child_cache_stale(pipeline_stage, cdata_parent);
+        parent_node->force_bound_stale(pipeline_stage);
+      }
 
-    // Call callback hooks.
-    parent_node->children_changed();
-    child_node->parents_changed();
+      // Call callback hooks.
+      parent_node->children_changed(pipeline_stage);
+      child_node->parents_changed(pipeline_stage);
+    }
+    child_node->_cycler.release();
+    parent_node->_cycler.release();
   }
 
   return true;
@@ -2189,15 +2793,12 @@ delete_component(NodePathComponent *component) {
   // not just the current one.
   int max_num_erased = 0;
 
-  int num_stages = _cycler.get_num_stages();
-  for (int i = 0; i < num_stages; i++) {
-    if (_cycler.is_stage_unique(i)) {
-      CData *cdata = _cycler.write_stage(i);
-      int num_erased = cdata->_paths.erase(component);
-      max_num_erased = max(max_num_erased, num_erased);
-      _cycler.release_write_stage(i, cdata);
-    }
+  OPEN_ITERATE_ALL_STAGES(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    int num_erased = cdata->_paths.erase(component);
+    max_num_erased = max(max_num_erased, num_erased);
   }
+  CLOSE_ITERATE_ALL_STAGES(_cycler);
 
   nassertv(max_num_erased == 1);
 }
@@ -2217,9 +2818,8 @@ delete_component(NodePathComponent *component) {
 //               have parents.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-sever_connection(PandaNode *parent_node, PandaNode *child_node) {
-  CDWriter cdata_child(child_node->_cycler);
-
+sever_connection(PandaNode *parent_node, PandaNode *child_node,
+                 PandaNode::CData *cdata_child) {
   Paths::iterator pi;
   for (pi = cdata_child->_paths.begin();
        pi != cdata_child->_paths.end();
@@ -2246,9 +2846,8 @@ sever_connection(PandaNode *parent_node, PandaNode *child_node) {
 //               a new instance of the child.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-new_connection(PandaNode *parent_node, PandaNode *child_node) {
-  CDWriter cdata_child(child_node->_cycler);
-
+new_connection(PandaNode *parent_node, PandaNode *child_node,
+               PandaNode::CData *cdata_child) {
   Paths::iterator pi;
   for (pi = cdata_child->_paths.begin();
        pi != cdata_child->_paths.end();

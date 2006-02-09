@@ -76,7 +76,7 @@ is_dynamic() const {
 //               depend on this one are marked stale also.
 ////////////////////////////////////////////////////////////////////
 void dDrawable::
-propagate_stale_bound() {
+propagate_stale_bound(int) {
   // Unforunately, we don't have a pointer to the GeomNode that
   // includes us, so we can't propagate the bounding volume change
   // upwards.  Need to address this.

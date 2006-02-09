@@ -1,3 +1,4 @@
+#include "modifierButtons.cxx"
 #include "mouseButton.cxx"
 #include "mouseData.cxx"
 #include "nameUniquifier.cxx"

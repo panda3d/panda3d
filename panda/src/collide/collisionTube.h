@@ -64,7 +64,7 @@ PUBLISHED:
   INLINE float get_radius() const;
 
 protected:
-  virtual BoundingVolume *recompute_bound();
+  virtual BoundingVolume *recompute_bound(int pipeline_stage);
 
 protected:
   virtual PT(CollisionEntry)

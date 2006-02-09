@@ -25,10 +25,6 @@
 #include "writableConfigurable.h"
 #include "referenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
-
 class GraphicsStateGuardianBase;
 class Datagram;
 class DatagramIterator;
@@ -58,7 +54,7 @@ public:
   virtual bool is_dynamic() const;
 
 protected:
-  virtual void propagate_stale_bound();
+  virtual void propagate_stale_bound(int pipeline_stage);
 
 public:
   virtual void write_datagram(BamWriter* manager, Datagram &me);

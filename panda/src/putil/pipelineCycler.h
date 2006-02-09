@@ -20,8 +20,8 @@
 #define PIPELINECYCLER_H
 
 #include "pandabase.h"
-
 #include "pipelineCyclerBase.h"
+#include "cyclerHolder.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PipelineCycler
@@ -63,8 +63,11 @@ public:
   INLINE void operator = (const PipelineCycler<CycleDataType> &copy);
 
   INLINE const CycleDataType *read() const;
+  INLINE const CycleDataType *read_stage(int n) const;
   INLINE CycleDataType *write();
   INLINE CycleDataType *elevate_read(const CycleDataType *pointer);
+  INLINE CycleDataType *elevate_read_stage(int n, const CycleDataType *pointer);
+  INLINE CycleDataType *write_upstream(bool force_to_0);
   INLINE CycleDataType *write_stage(int n);
 
   INLINE CycleDataType *cheat() const;
@@ -76,6 +79,74 @@ private:
   CycleDataType _typed_data;
 #endif  // !DO_PIPELINING
 };
+
+// These macros are handy for iterating through the set of pipeline
+// stages.  They're particularly useful for updating cache values
+// upstream of the current stage, or for removing bad pointers from
+// all stages of the pipeline.  In each case, the variable
+// pipeline_stage is defined within the loop to be the current stage
+// of the pipeline traversed by the loop.
+#ifdef DO_PIPELINING
+
+// Iterates through all of the pipeline stages upstream of the current
+// stage, but not including the current stage.
+#define OPEN_ITERATE_UPSTREAM_ONLY(cycler) {                        \
+    CyclerHolder cholder(cycler);                                   \
+    int pipeline_stage;                                             \
+    for (pipeline_stage = Thread::get_current_pipeline_stage() - 1; \
+         pipeline_stage >= 0;                                       \
+         --pipeline_stage)
+
+#define CLOSE_ITERATE_UPSTREAM_ONLY(cycler)     \
+  }
+
+// Iterates through all of the pipeline stages upstream of the current
+// stage, and including the current stage.
+#define OPEN_ITERATE_CURRENT_AND_UPSTREAM(cycler) {                 \
+    CyclerHolder cholder(cycler);                                   \
+    int pipeline_stage;                                             \
+    for (pipeline_stage = Thread::get_current_pipeline_stage() ;    \
+         pipeline_stage >= 0;                                       \
+         --pipeline_stage)
+
+#define CLOSE_ITERATE_CURRENT_AND_UPSTREAM(cycler)      \
+  }
+
+// Iterates through all of the pipeline stages.
+#define OPEN_ITERATE_ALL_STAGES(cycler) {                           \
+    int pipeline_stage;                                             \
+    for (pipeline_stage = (cycler).get_num_stages() - 1;            \
+         pipeline_stage >= 0;                                       \
+         --pipeline_stage)
+
+#define CLOSE_ITERATE_ALL_STAGES(cycler)        \
+  }
+
+#else  // DO_PIPELINING
+
+// These are trivial implementations of the above macros, defined when
+// pipelining is not enabled, that simply operate on stage 0 without
+// bothering to create a for loop.
+#define OPEN_ITERATE_UPSTREAM_ONLY(cycler)      \
+  if (false) {                                  \
+    const int pipeline_stage = -1;                   
+
+#define CLOSE_ITERATE_UPSTREAM_ONLY(cycler)     \
+  }
+
+#define OPEN_ITERATE_CURRENT_AND_UPSTREAM(cycler) {                     \
+    const int pipeline_stage = 0;                                       \
+    
+#define CLOSE_ITERATE_CURRENT_AND_UPSTREAM(cycler)      \
+  }
+
+#define OPEN_ITERATE_ALL_STAGES(cycler) {                               \
+    const int pipeline_stage = 0;                                       \
+    
+#define CLOSE_ITERATE_ALL_STAGES(cycler)        \
+  }
+
+#endif  // DO_PIPELINING
 
 #include "pipelineCycler.I"
 

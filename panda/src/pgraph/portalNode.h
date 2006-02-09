@@ -85,8 +85,8 @@ PUBLISHED:
   //  void draw () const;
 
 protected:
-  virtual BoundingVolume *recompute_bound();
-  virtual BoundingVolume *recompute_internal_bound();
+  virtual BoundingVolume *recompute_bound(int pipeline_stage);
+  virtual BoundingVolume *recompute_internal_bound(int pipeline_stage);
 
 private:
   CPT(RenderState) get_last_pos_state();

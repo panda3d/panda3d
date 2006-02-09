@@ -1,5 +1,5 @@
-// Filename: cycleDataWriter.h
-// Created by:  drose (21Feb02)
+// Filename: cycleDataStageWriter.h
+// Created by:  drose (06Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,39 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CYCLEDATAWRITER_H
-#define CYCLEDATAWRITER_H
+#ifndef CYCLEDATASTAGEWRITER_H
+#define CYCLEDATASTAGEWRITER_H
 
 #include "pandabase.h"
 
 #include "cycleData.h"
 #include "pipelineCycler.h"
-#include "cycleDataReader.h"
+#include "cycleDataStageReader.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CycleDataWriter
-// Description : This template class calls PipelineCycler::write() in
-//               the constructor and PipelineCycler::release_write() in
-//               the destructor.  In the interim, it provides a
-//               transparent read-write access to the CycleData.
-//
-//               It exists as a syntactic convenience to access the
-//               data in the CycleData.  It also allows the whole
-//               system to compile down to nothing if
-//               SUPPORT_PIPELINING is not defined.
+//       Class : CycleDataStageWriter
+// Description : This class is similar to CycleDataWriter, except it
+//               allows writing to a particular stage of the pipeline.
+//               Usually this is used to implement writing directly to
+//               an upstream pipeline value, to recompute a cached
+//               value there (otherwise, the cached value would go
+//               away with the next pipeline cycle).
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-class CycleDataWriter {
+class CycleDataStageWriter {
 public:
-  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler);
-  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool force_to_0);
-  INLINE CycleDataWriter(const CycleDataWriter<CycleDataType> &copy);
-  INLINE void operator = (const CycleDataWriter<CycleDataType> &copy);
+  INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage);
+  INLINE CycleDataStageWriter(const CycleDataStageWriter<CycleDataType> &copy);
+  INLINE void operator = (const CycleDataStageWriter<CycleDataType> &copy);
 
-  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataWriter<CycleDataType> &take_from);
-  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataReader<CycleDataType> &take_from);
+  INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
+                              CycleDataStageReader<CycleDataType> &take_from);
 
-  INLINE ~CycleDataWriter();
+  INLINE ~CycleDataStageWriter();
 
   INLINE CycleDataType *operator -> ();
   INLINE const CycleDataType *operator -> () const;
@@ -60,12 +56,13 @@ private:
   // This is the data stored for a real pipelining implementation.
   PipelineCycler<CycleDataType> *_cycler;
   CycleDataType *_pointer;
+  int _stage;
 #else  // !DO_PIPELINING
   // This is all we need for the trivial, do-nothing implementation.
   CycleDataType *_pointer;
 #endif  // DO_PIPELINING
 };
 
-#include "cycleDataWriter.I"
+#include "cycleDataStageWriter.I"
 
 #endif

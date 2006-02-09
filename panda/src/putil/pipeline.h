@@ -50,7 +50,7 @@ public:
 
   void set_num_stages(int num_stages);
   INLINE void set_min_stages(int min_stages);
-  int get_num_stages() const;
+  INLINE int get_num_stages() const;
 
 #if defined(DO_PIPELINING) && defined(HAVE_THREADS)
   void add_cycler(PipelineCyclerTrueImpl *cycler);

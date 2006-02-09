@@ -56,7 +56,7 @@ PUBLISHED:
   INLINE float get_radius() const;
 
 protected:
-  virtual BoundingVolume *recompute_bound();
+  virtual BoundingVolume *recompute_bound(int pipeline_stage);
 
   virtual PT(CollisionEntry)
   test_intersection_from_sphere(const CollisionEntry &entry) const;

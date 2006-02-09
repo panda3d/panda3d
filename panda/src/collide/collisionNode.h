@@ -74,7 +74,7 @@ PUBLISHED:
   INLINE static CollideMask get_default_collide_mask();
 
 protected:
-  virtual BoundingVolume *recompute_internal_bound();
+  virtual BoundingVolume *recompute_internal_bound(int pipeline_stage);
 
 private:
   CPT(RenderState) get_last_pos_state();

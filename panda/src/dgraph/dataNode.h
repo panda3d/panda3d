@@ -90,7 +90,7 @@ protected:
 
 protected:
   // Inherited from PandaNode
-  virtual void parents_changed();
+  virtual void parents_changed(int pipeline_stage);
 
   // Local to DataNode
   virtual void do_transmit_data(const DataNodeTransmit &input,

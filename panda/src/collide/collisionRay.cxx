@@ -131,8 +131,8 @@ set_from_lens(LensNode *camera, const LPoint2f &point) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *CollisionRay::
-recompute_bound() {
-  BoundedObject::recompute_bound();
+recompute_bound(int pipeline_stage) {
+  BoundedObject::recompute_bound(pipeline_stage);
   // Less than ideal: we throw away whatever we just allocated in
   // BoundedObject.
   return set_bound_ptr(new BoundingLine(_origin, _origin + _direction));

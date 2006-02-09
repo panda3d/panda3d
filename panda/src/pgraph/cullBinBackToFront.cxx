@@ -51,12 +51,12 @@ CullBinBackToFront::
 void CullBinBackToFront::
 add_object(CullableObject *object) {
   // Determine the center of the bounding volume.
-  const BoundingVolume &volume = object->_geom->get_bound();
+  const BoundingVolume *volume = object->_geom->get_bound();
 
-  if (!volume.is_empty() &&
-      volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
+  if (!volume->is_empty() &&
+      volume->is_of_type(GeometricBoundingVolume::get_class_type())) {
     const GeometricBoundingVolume *gbv;
-    DCAST_INTO_V(gbv, &volume);
+    DCAST_INTO_V(gbv, volume);
     
     LPoint3f center = gbv->get_approx_center();
     nassertv(object->_modelview_transform != (const TransformState *)NULL);

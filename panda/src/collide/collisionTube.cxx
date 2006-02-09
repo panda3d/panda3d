@@ -99,8 +99,8 @@ output(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *CollisionTube::
-recompute_bound() {
-  BoundingVolume *bound = BoundedObject::recompute_bound();
+recompute_bound(int pipeline_stage) {
+  BoundingVolume *bound = BoundedObject::recompute_bound(pipeline_stage);
 
   if (bound->is_of_type(GeometricBoundingVolume::get_class_type())) {
     GeometricBoundingVolume *gbound;

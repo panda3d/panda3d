@@ -93,8 +93,8 @@ output(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *CollisionPlane::
-recompute_bound() {
-  BoundedObject::recompute_bound();
+recompute_bound(int pipeline_stage) {
+  BoundedObject::recompute_bound(pipeline_stage);
   // Less than ideal: we throw away whatever we just allocated in
   // BoundedObject.
   return set_bound_ptr(new BoundingPlane(_plane));

@@ -54,7 +54,7 @@ PUBLISHED:
   INLINE const Planef &get_plane() const;
 
 protected:
-  virtual BoundingVolume *recompute_bound();
+  virtual BoundingVolume *recompute_bound(int pipeline_stage);
 
 protected:
   virtual PT(CollisionEntry)

@@ -356,9 +356,9 @@ get_collide_geom() const {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *CollisionNode::
-recompute_internal_bound() {
+recompute_internal_bound(int pipeline_stage) {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_internal_bound();
+  BoundingVolume *bound = PandaNode::recompute_internal_bound(pipeline_stage);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   // Now actually compute the bounding volume by putting it around all
@@ -367,7 +367,7 @@ recompute_internal_bound() {
 
   Solids::const_iterator gi;
   for (gi = _solids.begin(); gi != _solids.end(); ++gi) {
-    child_volumes.push_back(&(*gi)->get_bound());
+    child_volumes.push_back((*gi)->get_bound());
   }
 
   const BoundingVolume **child_begin = &child_volumes[0];

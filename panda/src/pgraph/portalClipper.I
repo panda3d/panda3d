@@ -150,7 +150,7 @@ is_facing_view(Planef portal_plane) {
 INLINE bool PortalClipper::
 is_whole_portal_in_view(LMatrix4f cmat) {
   // I am about to xform this gbv, so lets make a copy
-  const BoundingVolume *bv = &_portal_node->get_bound();
+  const BoundingVolume *bv = _portal_node->get_bound();
   BoundingVolume *cbv = bv->make_copy();
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, cbv);
 
