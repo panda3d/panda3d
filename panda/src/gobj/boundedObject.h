@@ -30,6 +30,7 @@
 #include "pipelineCycler.h"
 #include "typedObject.h"
 #include "pointerTo.h"
+#include "thread.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BoundedObject
