@@ -522,4 +522,9 @@ $[cdefine VC6_STYLE_ALLOCATOR]
 $[cdefine MODERN_STYLE_ALLOCATOR]
 $[cdefine NO_STYLE_ALLOCATOR]
 
+
+
+$[cdefine IS_OSX]
+
+
 #end dtool_config.h

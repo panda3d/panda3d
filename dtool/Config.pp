@@ -485,6 +485,7 @@
   #defer GL_IPATH
   #defer GL_LPATH
   #defer GL_FRAMEWORK OpenGL
+  #defer GL_LIBS GL GLU
 #else
   #defer GL_IPATH
   #defer GL_LPATH /usr/X11R6/lib
@@ -716,6 +717,7 @@
 //    BOUNDS (BoundsChecker)
 //    INTEL  (Intel C/C++ compiler)
 
+#define USE_COMPILER GCC
 #if $[WINDOWS_PLATFORM]
   #if $[eq $[USE_COMPILER],]
     #define USE_COMPILER MSVC7
