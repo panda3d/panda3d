@@ -2257,12 +2257,12 @@ do_update_child_cache(int pipeline_stage, CData *cdata) {
 void PandaNode::
 force_child_cache_stale(int pipeline_stage, CData *cdata) {
   cdata->_stale_child_cache = true;
-    
+
   Up::const_iterator ui;
   for (ui = cdata->_up.begin(); ui != cdata->_up.end(); ++ui) {
     PandaNode *parent = (*ui).get_parent();
     CDStageReader parent_cdata(parent->_cycler, pipeline_stage);
-    if (parent_cdata->_stale_child_cache) {
+    if (!parent_cdata->_stale_child_cache) {
       // Parent needs to be marked stale.
       CDStageWriter parent_cdataw(parent->_cycler, pipeline_stage, parent_cdata);
       parent->force_child_cache_stale(pipeline_stage, parent_cdataw);
