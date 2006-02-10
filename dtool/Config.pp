@@ -481,6 +481,10 @@
   #defer GL_IPATH
   #defer GL_LPATH
   #define GL_LIBS opengl32.lib glu32.lib
+#elif $[OSX_PLATFORM]
+  #defer GL_IPATH
+  #defer GL_LPATH
+  #defer GL_FRAMEWORK OpenGL
 #else
   #defer GL_IPATH
   #defer GL_LPATH /usr/X11R6/lib

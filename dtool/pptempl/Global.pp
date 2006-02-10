@@ -123,6 +123,7 @@
   #define gl_lpath $[wildcard $[GL_LPATH]]
   #define gl_cflags $[GL_CFLAGS]
   #define gl_libs $[GL_LIBS]
+  #define gl_framework $[GL_FRAMEWORK]
 #endif
 
 #if $[HAVE_MESA]
