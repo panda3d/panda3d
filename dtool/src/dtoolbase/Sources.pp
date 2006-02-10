@@ -11,7 +11,7 @@
     stl_compares.I stl_compares.h \
     pallocator.T pallocator.h \
     pdeque.h plist.h pmap.h pset.h pvector.h \
-    dlmalloc.c ptmalloc2_smp.c
+    dlmalloc.c
 
   #define INSTALL_HEADERS \
     cmath.I cmath.h \

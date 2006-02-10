@@ -72,7 +72,7 @@ void (*global_operator_delete)(void *ptr) = &default_operator_delete;
 
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
-#include "dlmalloc.h"
+#include "ptmalloc2_smp.c"
 
 void *default_operator_new(size_t size) {
   void *ptr = dlmalloc(size);
