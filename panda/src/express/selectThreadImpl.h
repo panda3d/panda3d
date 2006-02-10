@@ -32,7 +32,7 @@
 // With threading disabled, use the do-nothing implementation.
 #define THREAD_DUMMY_IMPL 1
 
-#elif defined(WIN32)
+#elif defined(WIN32_VC)
 
 // In Windows, use the native threading library.
 #define THREAD_WIN32_IMPL 1
