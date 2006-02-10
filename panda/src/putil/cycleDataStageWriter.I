@@ -185,6 +185,7 @@ INLINE CycleDataStageWriter<CycleDataType>::
 CycleDataStageWriter(PipelineCycler<CycleDataType> &, int,
                      CycleDataStageReader<CycleDataType> &take_from) :
   _pointer((CycleDataType *)take_from.take_pointer())
+{
 }
 
 ////////////////////////////////////////////////////////////////////
