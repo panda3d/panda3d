@@ -558,7 +558,7 @@ issue_vertex() {
   }
 #endif  // NDEBUG
 
-  (*_func)(1, (const unsigned int *)&d);
+  (*_func)(1, (const GLuint *)&d);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -577,7 +577,7 @@ issue_vertex() {
   }
 #endif  // NDEBUG
 
-  (*_func)(2, (const unsigned int *)d);
+  (*_func)(2, (const GLuint *)d);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -596,7 +596,7 @@ issue_vertex() {
   }
 #endif  // NDEBUG
 
-  (*_func)(3, (const unsigned int *)d);
+  (*_func)(3, (const GLuint *)d);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -615,7 +615,7 @@ issue_vertex() {
   }
 #endif  // NDEBUG
 
-  (*_func)(4, (const unsigned int *)d);
+  (*_func)(4, (const GLuint *)d);
 }
 
 #endif  // SUPPORT_IMMEDIATE_MODE

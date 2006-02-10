@@ -1,5 +1,5 @@
 #define OTHER_LIBS interrogatedb:c prc:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m pystub
+                   dtoolutil:c dtoolbase:c dtool:m pystub prc:c
 #define LOCAL_LIBS downloader express event
 
 #begin bin_target

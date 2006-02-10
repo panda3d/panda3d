@@ -11,7 +11,7 @@
     distort effects
 #define LOCAL_LIBS putil express
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolbase:c dtoolutil:c dtool:m
+    dtoolbase:c dtoolutil:c dtool:m prc:c
 
 #begin metalib_target
   #define TARGET pandafx

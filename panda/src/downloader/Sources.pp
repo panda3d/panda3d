@@ -1,6 +1,6 @@
 #define LOCAL_LIBS express pandabase
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m
+                   dtoolutil:c dtoolbase:c prc:c dtool:m
 #define USE_PACKAGES zlib net openssl
 
 #begin lib_target

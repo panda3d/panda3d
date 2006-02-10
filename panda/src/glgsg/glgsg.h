@@ -43,8 +43,13 @@
 #include <windows.h>
 #endif
 
-#include <GL/gl.h>
-#include <GL/glu.h>
+#ifdef  IS_OSX
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else
+#include <gl/gl.h>
+#include <gl/glu.h>
+#endif 
 
 #include "glstuff_src.h"
 

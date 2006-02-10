@@ -17,7 +17,8 @@
 #endif
 
 #define LOCAL_LIBS gsgbase display express
-#define OTHER_LIBS dtoolconfig dtool
+#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
+                   dtoolutil:c dtoolbase:c dtool:m prc:c
 
 #begin metalib_target
   #define TARGET pandagl

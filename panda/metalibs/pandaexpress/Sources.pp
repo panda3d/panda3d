@@ -9,7 +9,7 @@
 #define USE_PACKAGES net
 
 #define COMPONENT_LIBS downloader ipc express pandabase
-#define OTHER_LIBS dtoolconfig dtool
+#define OTHER_LIBS dtoolconfig dtool dconfig prc interrogatedb dtoolutil dtoolbase
 
 #begin metalib_target
   #define TARGET pandaexpress

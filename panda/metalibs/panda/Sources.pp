@@ -17,14 +17,14 @@
     parametrics pnm \
     pnmimagetypes pnmimage sgattrib sgmanip sgraph sgraphutil \
     switchnode pnmtext text tform tiff lerp loader putil \
-    audio pgui pandabase helix
+    audio pgui pandabase helix 
 
 #define LOCAL_LIBS \
   downloader express pandabase
 #define OTHER_LIBS \
   pandaexpress:m \
   interrogatedb:c dconfig:c dtoolconfig:m \
-  dtoolutil:c dtoolbase:c dtool:m
+  dtoolutil:c dtoolbase:c dtool:m prc:c
 
 #if $[LINK_IN_GL]
   #define BUILDING_DLL $[BUILDING_DLL] BUILDING_PANDAGL

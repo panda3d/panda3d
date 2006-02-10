@@ -1,5 +1,5 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m
+                   dtoolutil:c dtoolbase:c dtool:m prc:c
 #define LOCAL_LIBS \
     lerp event gsgbase gobj putil linmath \
     downloader express pandabase pstatclient 
