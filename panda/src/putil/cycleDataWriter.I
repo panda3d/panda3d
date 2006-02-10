@@ -200,7 +200,7 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler) {
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool) {
-  _pointer = _cycler->write();
+  _pointer = cycler.write();
 }
 
 ////////////////////////////////////////////////////////////////////
