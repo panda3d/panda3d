@@ -571,21 +571,6 @@ get_prev_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::reset_prev_transform
-//       Access: Published
-//  Description: Resets the "previous" transform on this node to be
-//               the same as the current transform.  This is not the
-//               same as clearing it to identity.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-reset_prev_transform() {
-  nassertv(Thread::get_current_pipeline_stage() == 0);
-
-  CDWriter cdata(_cycler);
-  cdata->_prev_transform = cdata->_transform;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_tag
 //       Access: Published
 //  Description: Retrieves the user-defined value that was previously

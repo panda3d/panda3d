@@ -320,7 +320,7 @@ reparent_to(const NodePath &other, int sort) {
   nassertv_always(!is_empty());
   nassertv(other._error_type == ET_ok);
 
-  // Reparenting implicitly resents the delta vector.
+  // Reparenting implicitly resets the delta vector.
   node()->reset_prev_transform();
 
   bool reparented = PandaNode::reparent(other._head, _head, sort, false);

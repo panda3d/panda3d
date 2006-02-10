@@ -163,7 +163,7 @@ PUBLISHED:
 
   void set_prev_transform(const TransformState *transform);
   INLINE const TransformState *get_prev_transform() const;
-  INLINE void reset_prev_transform();
+  void reset_prev_transform();
 
   void set_tag(const string &key, const string &value);
   INLINE string get_tag(const string &key) const;

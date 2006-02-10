@@ -1473,6 +1473,24 @@ set_prev_transform(const TransformState *transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::reset_prev_transform
+//       Access: Published
+//  Description: Resets the "previous" transform on this node to be
+//               the same as the current transform.  This is not the
+//               same as clearing it to identity.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+reset_prev_transform() {
+  // Apply this operation to the current stage as well as to all
+  // upstream stages.
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_prev_transform = cdata->_transform;
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::set_tag
 //       Access: Published
 //  Description: Associates a user-defined value with a user-defined
