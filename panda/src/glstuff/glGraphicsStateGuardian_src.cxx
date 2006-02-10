@@ -69,7 +69,7 @@ null_glPointParameterfv(GLenum, const GLfloat *) {
 }
 
 static void APIENTRY
-null_glDrawRangeElements(GLenum mode, GLuint start, GLuint end, 
+null_glDrawRangeElements(GLenum mode, GLuint start, GLuint end,
                          GLsizei count, GLenum type, const GLvoid *indices) {
   // If we don't support glDrawRangeElements(), just use the original
   // glDrawElements() instead.
@@ -98,7 +98,7 @@ null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 //               BGR to RGB arrangement.
 ////////////////////////////////////////////////////////////////////
 static void
-uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source, 
+uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source,
                  int num_pixels) {
   for (int i = 0; i < num_pixels; i++) {
     dest[0] = source[2];
@@ -115,7 +115,7 @@ uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source,
 //               BGRA to RGBA arrangement.
 ////////////////////////////////////////////////////////////////////
 static void
-uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source, 
+uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source,
                    int num_pixels) {
   for (int i = 0; i < num_pixels; i++) {
     dest[0] = source[2];
@@ -133,7 +133,7 @@ uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source,
 //               BGR to RGB arrangement.
 ////////////////////////////////////////////////////////////////////
 static void
-ushort_bgr_to_rgb(unsigned short *dest, const unsigned short *source, 
+ushort_bgr_to_rgb(unsigned short *dest, const unsigned short *source,
                   int num_pixels) {
   for (int i = 0; i < num_pixels; i++) {
     dest[0] = source[2];
@@ -150,7 +150,7 @@ ushort_bgr_to_rgb(unsigned short *dest, const unsigned short *source,
 //               BGRA to RGBA arrangement.
 ////////////////////////////////////////////////////////////////////
 static void
-ushort_bgra_to_rgba(unsigned short *dest, const unsigned short *source, 
+ushort_bgra_to_rgba(unsigned short *dest, const unsigned short *source,
                     int num_pixels) {
   for (int i = 0; i < num_pixels; i++) {
     dest[0] = source[2];
@@ -200,7 +200,7 @@ reduce_image(CPTA_uchar orig_image, int byte_chunk, int stride) {
 //               image, or the original image if it is unchanged.
 ////////////////////////////////////////////////////////////////////
 static PTA_uchar
-fix_component_ordering(CPTA_uchar orig_image, GLenum external_format, 
+fix_component_ordering(CPTA_uchar orig_image, GLenum external_format,
                        Texture *tex) {
   size_t orig_image_size = orig_image.size();
   PTA_uchar new_image = (PTA_uchar &)orig_image;
@@ -215,8 +215,8 @@ fix_component_ordering(CPTA_uchar orig_image, GLenum external_format,
 
     case Texture::T_unsigned_short:
       new_image = PTA_uchar::empty_array(orig_image_size);
-      ushort_bgr_to_rgb((unsigned short *)new_image.p(), 
-                        (const unsigned short *)orig_image.p(), 
+      ushort_bgr_to_rgb((unsigned short *)new_image.p(),
+                        (const unsigned short *)orig_image.p(),
                         orig_image_size / 6);
       break;
 
@@ -234,8 +234,8 @@ fix_component_ordering(CPTA_uchar orig_image, GLenum external_format,
 
     case Texture::T_unsigned_short:
       new_image = PTA_uchar::empty_array(orig_image_size);
-      ushort_bgra_to_rgba((unsigned short *)new_image.p(), 
-                          (const unsigned short *)orig_image.p(), 
+      ushort_bgra_to_rgba((unsigned short *)new_image.p(),
+                          (const unsigned short *)orig_image.p(),
                           orig_image_size / 8);
       break;
 
@@ -258,7 +258,7 @@ fix_component_ordering(CPTA_uchar orig_image, GLenum external_format,
 ////////////////////////////////////////////////////////////////////
 CLP(GraphicsStateGuardian)::
 CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties) :
-  GraphicsStateGuardian(properties, CS_yup_right) 
+  GraphicsStateGuardian(properties, CS_yup_right)
 {
   _error_count = 0;
 }
@@ -292,7 +292,7 @@ reset() {
   get_extra_extensions();
   report_extensions();
 
-  _supported_geom_rendering = 
+  _supported_geom_rendering =
     Geom::GR_indexed_point |
     Geom::GR_point | Geom::GR_point_uniform_size |
     Geom::GR_indexed_other |
@@ -371,7 +371,7 @@ reset() {
     _glMatrixIndexuivARB = (PFNGLMATRIXINDEXUIVARBPROC)
       get_extension_func(GLPREFIX_QUOTED, "MatrixIndexuivARB");
 
-    if (_glCurrentPaletteMatrixARB == NULL || 
+    if (_glCurrentPaletteMatrixARB == NULL ||
         _glMatrixIndexPointerARB == NULL ||
         _glMatrixIndexuivARB == NULL) {
       GLCAT.warning()
@@ -427,7 +427,7 @@ reset() {
     _glDrawRangeElements = null_glDrawRangeElements;
   }
 
-  _supports_3d_texture = 
+  _supports_3d_texture =
     has_extension("GL_EXT_texture3D") || is_at_least_version(1, 2);
 
   if (is_at_least_version(1, 2)) {
@@ -455,23 +455,23 @@ reset() {
     }
   }
 
-  _supports_cube_map = 
+  _supports_cube_map =
     has_extension("GL_ARB_texture_cube_map") || is_at_least_version(1, 3);
 
-  _supports_bgr = 
+  _supports_bgr =
     has_extension("GL_EXT_bgra") || is_at_least_version(1, 2);
-  _supports_rescale_normal = 
+  _supports_rescale_normal =
     CLP(support_rescale_normal) &&
     (has_extension("GL_EXT_rescale_normal") || is_at_least_version(1, 2));
 
-  _supports_multisample = 
+  _supports_multisample =
     has_extension("GL_ARB_multisample");
 
-  _supports_generate_mipmap = 
+  _supports_generate_mipmap =
     has_extension("GL_SGIS_generate_mipmap") || is_at_least_version(1, 4);
 
   _supports_multitexture = false;
-    
+
   if (is_at_least_version(1, 3)) {
     _supports_multitexture = true;
 
@@ -507,7 +507,7 @@ reset() {
 
   if (_supports_multitexture) {
     if (_glActiveTexture == NULL || _glClientActiveTexture == NULL ||
-        _glMultiTexCoord1f == NULL || _glMultiTexCoord2f == NULL || 
+        _glMultiTexCoord1f == NULL || _glMultiTexCoord2f == NULL ||
         _glMultiTexCoord3f == NULL || _glMultiTexCoord4f == NULL) {
       GLCAT.warning()
         << "Multitexture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
@@ -528,8 +528,8 @@ reset() {
       has_extension("GL_ARB_fragment_program_shadow")) {
     _supports_shadow_filter = true;
   }
-  
-  _supports_texture_combine = 
+
+  _supports_texture_combine =
     has_extension("GL_ARB_texture_env_combine") || is_at_least_version(1, 3);
   _supports_texture_saved_result =
     has_extension("GL_ARB_texture_env_crossbar") || is_at_least_version(1, 4);
@@ -537,7 +537,7 @@ reset() {
     has_extension("GL_ARB_texture_env_dot3") || is_at_least_version(1, 3);
 
   _supports_buffers = false;
-    
+
   if (is_at_least_version(1, 5)) {
     _supports_buffers = true;
 
@@ -628,7 +628,7 @@ reset() {
     _glDrawBuffers = (PFNGLDRAWBUFFERSARBPROC)
       get_extension_func(GLPREFIX_QUOTED, "DrawBuffersARB");
   }
-  
+
   _glBlendEquation = NULL;
   bool supports_blend_equation = false;
   if (is_at_least_version(1, 2)) {
@@ -712,7 +712,7 @@ reset() {
   GLint max_texture_size;
   GLint max_3d_texture_size;
   GLint max_cube_map_size;
-  
+
   GLP(GetIntegerv)(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   _max_texture_dimension = max_texture_size;
 
@@ -811,7 +811,7 @@ reset() {
   _flat_shade_model = false;
   _decal_level = 0;
   _tex_gen_point_sprite = false;
-  
+
   // Dither is on by default in GL; let's turn it off
   GLP(Disable)(GL_DITHER);
   _dithering_enabled = false;
@@ -824,7 +824,7 @@ reset() {
   _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
   _texture_binding_shader_expansion = (ShaderExpansion *)NULL;
   _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
-  
+
   // Count the max number of lights
   GLint max_lights;
   GLP(GetIntegerv)(GL_MAX_LIGHTS, &max_lights);
@@ -883,7 +883,7 @@ reset() {
     GLP(Enable)(GL_DITHER);
     _dithering_enabled = true;
     if (GLCAT.is_debug()) {
-      GLCAT.debug() 
+      GLCAT.debug()
         << "frame buffer depth = " << num_red_bits
         << " bits/channel, enabling dithering\n";
     }
@@ -917,7 +917,7 @@ do_clear(const RenderBuffer &buffer) {
     mask |= GL_COLOR_BUFFER_BIT;
     set_draw_buffer(buffer);
   }
-  
+
   if (buffer_type & RenderBuffer::T_depth) {
     GLP(ClearDepth)(_depth_clear_value);
     mask |= GL_DEPTH_BUFFER_BIT;
@@ -935,7 +935,7 @@ do_clear(const RenderBuffer &buffer) {
                     _accum_clear_value[3]);
     mask |= GL_ACCUM_BUFFER_BIT;
   }
-  
+
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "glClear(";
     if (mask & GL_COLOR_BUFFER_BIT) {
@@ -952,7 +952,7 @@ do_clear(const RenderBuffer &buffer) {
     }
     GLCAT.spam(false) << ")" << endl;
   }
-  
+
   GLP(Clear)(mask);
   report_my_gl_errors();
 }
@@ -1168,7 +1168,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
     }
   }
 
-  const GeomVertexAnimationSpec &animation = 
+  const GeomVertexAnimationSpec &animation =
     _vertex_data->get_format()->get_animation();
   bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
   if (hardware_animation) {
@@ -1230,14 +1230,14 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
           GLP(LoadMatrixf)(mat.get_data());
           ++i;
         }
-        
+
         // Setting the GL_MODELVIEW0 matrix steps on the world matrix,
         // so we have to set a flag to reload the world matrix later.
         _transform_stale = true;
       }
     }
     _vertex_blending_enabled = true;
-    
+
   } else {
     // We're not using vertex blending.
     if (_vertex_blending_enabled) {
@@ -1266,7 +1266,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
     GLP(LoadIdentity)();
   }
 
-  if (geom->get_usage_hint() == Geom::UH_static && 
+  if (geom->get_usage_hint() == Geom::UH_static &&
       _vertex_data->get_usage_hint() == Geom::UH_static &&
       display_lists && (!hardware_animation || display_list_animation)) {
     // If the geom claims to be totally static, try to build it into
@@ -1365,7 +1365,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
   }
   _vertex_array_shader_expansion = _current_shader_expansion;
   _vertex_array_shader_context = _current_shader_context;
-  
+
   report_my_gl_errors();
   return true;
 }
@@ -1385,7 +1385,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
 void CLP(GraphicsStateGuardian)::
 update_standard_vertex_arrays()
 {
-  const GeomVertexAnimationSpec &animation = 
+  const GeomVertexAnimationSpec &animation =
     _vertex_data->get_format()->get_animation();
   bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
 #ifdef SUPPORT_IMMEDIATE_MODE
@@ -1404,11 +1404,11 @@ update_standard_vertex_arrays()
     // Now set up each of the active texture coordinate stages--or at
     // least those for which we're not generating texture coordinates
     // automatically.
-    const Geom::ActiveTextureStages &active_stages = 
+    const Geom::ActiveTextureStages &active_stages =
       _state._texture->get_on_stages();
-    const Geom::NoTexCoordStages &no_texcoords = 
+    const Geom::NoTexCoordStages &no_texcoords =
       _state._tex_gen->get_no_texcoords();
-    
+
     int max_stage_index = (int)active_stages.size();
     int stage_index = 0;
     while (stage_index < max_stage_index) {
@@ -1427,14 +1427,14 @@ update_standard_vertex_arrays()
         } else {
           // Other stages require the multitexture functions.
           _sender.add_texcoord_column(_vertex_data, name, stage_index,
-                                      _glMultiTexCoord1f, _glMultiTexCoord2f, 
+                                      _glMultiTexCoord1f, _glMultiTexCoord2f,
                                       _glMultiTexCoord3f, _glMultiTexCoord4f);
         }
       }
-      
+
       ++stage_index;
     }
-    
+
     // Be sure also to disable any texture stages we had enabled before.
     while (stage_index < _last_max_stage_index) {
       _glClientActiveTexture(GL_TEXTURE0 + stage_index);
@@ -1448,7 +1448,7 @@ update_standard_vertex_arrays()
         // Issue the weights and/or transform indices for vertex blending.
         _sender.add_vector_column(_vertex_data, InternalName::get_transform_weight(),
                                   _glWeightfvARB);
-        
+
         if (animation.get_indexed_transforms()) {
           // Issue the matrix palette indices.
           _sender.add_vector_uint_column(_vertex_data, InternalName::get_transform_index(),
@@ -1471,40 +1471,40 @@ update_standard_vertex_arrays()
     Geom::NumericType numeric_type;
     int start;
     int stride;
-    
-    if (_vertex_data->get_normal_info(array_data, numeric_type, 
+
+    if (_vertex_data->get_normal_info(array_data, numeric_type,
                                       start, stride)) {
       const unsigned char *client_pointer = setup_array_data(array_data);
-      GLP(NormalPointer)(get_numeric_type(numeric_type), stride, 
+      GLP(NormalPointer)(get_numeric_type(numeric_type), stride,
                          client_pointer + start);
       GLP(EnableClientState)(GL_NORMAL_ARRAY);
     } else {
       GLP(DisableClientState)(GL_NORMAL_ARRAY);
     }
-    
-    if (_vertex_data->get_color_info(array_data, num_values, numeric_type, 
+
+    if (_vertex_data->get_color_info(array_data, num_values, numeric_type,
                                      start, stride) &&
         numeric_type != Geom::NT_packed_dabc) {
       const unsigned char *client_pointer = setup_array_data(array_data);
-      GLP(ColorPointer)(num_values, get_numeric_type(numeric_type), 
+      GLP(ColorPointer)(num_values, get_numeric_type(numeric_type),
                         stride, client_pointer + start);
       GLP(EnableClientState)(GL_COLOR_ARRAY);
     } else {
       GLP(DisableClientState)(GL_COLOR_ARRAY);
-      
+
       // Since we don't have per-vertex color, the implicit color is
       // white.
       GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
     }
-    
+
     // Now set up each of the active texture coordinate stages--or at
     // least those for which we're not generating texture coordinates
     // automatically.
-    const Geom::ActiveTextureStages &active_stages = 
+    const Geom::ActiveTextureStages &active_stages =
       _state._texture->get_on_stages();
-    const Geom::NoTexCoordStages &no_texcoords = 
+    const Geom::NoTexCoordStages &no_texcoords =
       _state._tex_gen->get_no_texcoords();
-    
+
     int max_stage_index = (int)active_stages.size();
     int stage_index = 0;
     while (stage_index < max_stage_index) {
@@ -1514,15 +1514,15 @@ update_standard_vertex_arrays()
         // This stage is not one of the stages that doesn't need
         // texcoords issued for it.
         const InternalName *name = stage->get_texcoord_name();
-        
-        if (_vertex_data->get_array_info(name, array_data, num_values, 
+
+        if (_vertex_data->get_array_info(name, array_data, num_values,
                                          numeric_type, start, stride)) {
           // The vertex data does have texcoords for this stage.
           const unsigned char *client_pointer = setup_array_data(array_data);
-          GLP(TexCoordPointer)(num_values, get_numeric_type(numeric_type), 
+          GLP(TexCoordPointer)(num_values, get_numeric_type(numeric_type),
                                stride, client_pointer + start);
           GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
-          
+
         } else {
           // The vertex data doesn't have texcoords for this stage (even
           // though they're needed).
@@ -1532,10 +1532,10 @@ update_standard_vertex_arrays()
         // No texcoords are needed for this stage.
         GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
       }
-      
+
       ++stage_index;
     }
-    
+
     // Be sure also to disable any texture stages we had enabled before.
     while (stage_index < _last_max_stage_index) {
       _glClientActiveTexture(GL_TEXTURE0 + stage_index);
@@ -1548,30 +1548,30 @@ update_standard_vertex_arrays()
       if (hardware_animation) {
         // Issue the weights and/or transform indices for vertex blending.
         if (_vertex_data->get_array_info(InternalName::get_transform_weight(),
-                                         array_data, num_values, numeric_type, 
+                                         array_data, num_values, numeric_type,
                                          start, stride)) {
           const unsigned char *client_pointer = setup_array_data(array_data);
-          _glWeightPointerARB(num_values, get_numeric_type(numeric_type), 
+          _glWeightPointerARB(num_values, get_numeric_type(numeric_type),
                               stride, client_pointer + start);
           GLP(EnableClientState)(GL_WEIGHT_ARRAY_ARB);
         } else {
           GLP(DisableClientState)(GL_WEIGHT_ARRAY_ARB);
         }
-        
+
         if (animation.get_indexed_transforms()) {
           // Issue the matrix palette indices.
           if (_vertex_data->get_array_info(InternalName::get_transform_index(),
-                                           array_data, num_values, numeric_type, 
+                                           array_data, num_values, numeric_type,
                                            start, stride)) {
             const unsigned char *client_pointer = setup_array_data(array_data);
-            _glMatrixIndexPointerARB(num_values, get_numeric_type(numeric_type), 
+            _glMatrixIndexPointerARB(num_values, get_numeric_type(numeric_type),
                                      stride, client_pointer + start);
             GLP(EnableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
           } else {
             GLP(DisableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
           }
         }
-        
+
       } else {
         GLP(DisableClientState)(GL_WEIGHT_ARRAY_ARB);
         if (_supports_matrix_palette) {
@@ -1582,10 +1582,10 @@ update_standard_vertex_arrays()
 
     // There's no requirement that we add vertices last, but we do
     // anyway.
-    if (_vertex_data->get_vertex_info(array_data, num_values, numeric_type, 
+    if (_vertex_data->get_vertex_info(array_data, num_values, numeric_type,
                                       start, stride)) {
       const unsigned char *client_pointer = setup_array_data(array_data);
-      GLP(VertexPointer)(num_values, get_numeric_type(numeric_type), 
+      GLP(VertexPointer)(num_values, get_numeric_type(numeric_type),
                          stride, client_pointer + start);
       GLP(EnableClientState)(GL_VERTEX_ARRAY);
     }
@@ -1620,14 +1620,14 @@ disable_standard_vertex_arrays()
   }
   _last_max_stage_index = 0;
   report_my_gl_errors();
-  
+
   if (_supports_vertex_blend) {
     GLP(DisableClientState)(GL_WEIGHT_ARRAY_ARB);
     if (_supports_matrix_palette) {
       GLP(DisableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
     }
   }
-  
+
   GLP(DisableClientState)(GL_VERTEX_ARRAY);
   report_my_gl_errors();
 }
@@ -1649,7 +1649,7 @@ draw_triangles(const GeomTriangles *primitive) {
   if (_use_sender) {
     draw_immediate_simple_primitives(primitive, GL_TRIANGLES);
 
-  } else 
+  } else
 #endif  // SUPPORT_IMMEDIATE_MODE
   {
     _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
@@ -1657,12 +1657,12 @@ draw_triangles(const GeomTriangles *primitive) {
 
     if (primitive->is_indexed()) {
       const unsigned char *client_pointer = setup_primitive(primitive);
-      
-      _glDrawRangeElements(GL_TRIANGLES, 
+
+      _glDrawRangeElements(GL_TRIANGLES,
                            primitive->get_min_vertex(),
                            primitive->get_max_vertex(),
                            primitive->get_num_vertices(),
-                           get_numeric_type(primitive->get_index_type()), 
+                           get_numeric_type(primitive->get_index_type()),
                            client_pointer);
     } else {
       GLP(DrawArrays)(GL_TRIANGLES,
@@ -1670,7 +1670,7 @@ draw_triangles(const GeomTriangles *primitive) {
                       primitive->get_num_vertices());
     }
   }
-  
+
   report_my_gl_errors();
 }
 
@@ -1694,7 +1694,7 @@ draw_tristrips(const GeomTristrips *primitive) {
   if (_use_sender) {
     draw_immediate_composite_primitives(primitive, GL_TRIANGLE_STRIP);
 
-  } else 
+  } else
 #endif  // SUPPORT_IMMEDIATE_MODE
   {
     if (connect_triangle_strips && _render_mode != RenderModeAttrib::M_wireframe) {
@@ -1704,39 +1704,39 @@ draw_tristrips(const GeomTristrips *primitive) {
       _primitive_batches_tristrip_pcollector.add_level(1);
       if (primitive->is_indexed()) {
         const unsigned char *client_pointer = setup_primitive(primitive);
-        _glDrawRangeElements(GL_TRIANGLE_STRIP, 
+        _glDrawRangeElements(GL_TRIANGLE_STRIP,
                              primitive->get_min_vertex(),
                              primitive->get_max_vertex(),
                              primitive->get_num_vertices(),
-                             get_numeric_type(primitive->get_index_type()), 
+                             get_numeric_type(primitive->get_index_type()),
                              client_pointer);
       } else {
         GLP(DrawArrays)(GL_TRIANGLE_STRIP,
                         primitive->get_first_vertex(),
                         primitive->get_num_vertices());
       }
-      
+
     } else {
       // Send the individual triangle strips, stepping over the
       // degenerate vertices.
       CPTA_int ends = primitive->get_ends();
-      
+
       _primitive_batches_tristrip_pcollector.add_level(ends.size());
       if (primitive->is_indexed()) {
         const unsigned char *client_pointer = setup_primitive(primitive);
         int index_stride = primitive->get_index_stride();
         GeomVertexReader mins(primitive->get_mins(), 0);
         GeomVertexReader maxs(primitive->get_maxs(), 0);
-        nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
+        nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() &&
                  primitive->get_maxs()->get_num_rows() == (int)ends.size());
-        
+
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          _glDrawRangeElements(GL_TRIANGLE_STRIP, 
-                               mins.get_data1i(), maxs.get_data1i(), 
+          _glDrawRangeElements(GL_TRIANGLE_STRIP,
+                               mins.get_data1i(), maxs.get_data1i(),
                                ends[i] - start,
-                               get_numeric_type(primitive->get_index_type()), 
+                               get_numeric_type(primitive->get_index_type()),
                                client_pointer + start * index_stride);
           start = ends[i] + 2;
         }
@@ -1745,14 +1745,14 @@ draw_tristrips(const GeomTristrips *primitive) {
         int first_vertex = primitive->get_first_vertex();
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          GLP(DrawArrays)(GL_TRIANGLE_STRIP, first_vertex + start, 
+          GLP(DrawArrays)(GL_TRIANGLE_STRIP, first_vertex + start,
                           ends[i] - start);
           start = ends[i] + 2;
         }
       }
     }
   }
-    
+
   report_my_gl_errors();
 }
 
@@ -1772,28 +1772,28 @@ draw_trifans(const GeomTrifans *primitive) {
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
     draw_immediate_composite_primitives(primitive, GL_TRIANGLE_FAN);
-  } else 
+  } else
 #endif  // SUPPORT_IMMEDIATE_MODE
   {
     // Send the individual triangle fans.  There's no connecting fans
     // with degenerate vertices, so no worries about that.
     CPTA_int ends = primitive->get_ends();
-    
+
     _primitive_batches_trifan_pcollector.add_level(ends.size());
     if (primitive->is_indexed()) {
       const unsigned char *client_pointer = setup_primitive(primitive);
       int index_stride = primitive->get_index_stride();
       GeomVertexReader mins(primitive->get_mins(), 0);
       GeomVertexReader maxs(primitive->get_maxs(), 0);
-      nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() && 
+      nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() &&
                primitive->get_maxs()->get_num_rows() == (int)ends.size());
-      
+
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
-        _glDrawRangeElements(GL_TRIANGLE_FAN, 
+        _glDrawRangeElements(GL_TRIANGLE_FAN,
                              mins.get_data1i(), maxs.get_data1i(), ends[i] - start,
-                             get_numeric_type(primitive->get_index_type()), 
+                             get_numeric_type(primitive->get_index_type()),
                              client_pointer + start * index_stride);
         start = ends[i];
       }
@@ -1808,7 +1808,7 @@ draw_trifans(const GeomTrifans *primitive) {
       }
     }
   }
-    
+
   report_my_gl_errors();
 }
 
@@ -1828,19 +1828,19 @@ draw_lines(const GeomLines *primitive) {
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
     draw_immediate_simple_primitives(primitive, GL_LINES);
-  } else 
+  } else
 #endif  // SUPPORT_IMMEDIATE_MODE
   {
     _vertices_other_pcollector.add_level(primitive->get_num_vertices());
     _primitive_batches_other_pcollector.add_level(1);
-    
+
     if (primitive->is_indexed()) {
       const unsigned char *client_pointer = setup_primitive(primitive);
-      _glDrawRangeElements(GL_LINES, 
+      _glDrawRangeElements(GL_LINES,
                            primitive->get_min_vertex(),
                            primitive->get_max_vertex(),
                            primitive->get_num_vertices(),
-                           get_numeric_type(primitive->get_index_type()), 
+                           get_numeric_type(primitive->get_index_type()),
                            client_pointer);
     } else {
       GLP(DrawArrays)(GL_LINES,
@@ -1883,19 +1883,19 @@ draw_points(const GeomPoints *primitive) {
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
     draw_immediate_simple_primitives(primitive, GL_POINTS);
-  } else 
+  } else
 #endif  // SUPPORT_IMMEDIATE_MODE
   {
     _vertices_other_pcollector.add_level(primitive->get_num_vertices());
     _primitive_batches_other_pcollector.add_level(1);
-    
+
     if (primitive->is_indexed()) {
       const unsigned char *client_pointer = setup_primitive(primitive);
-      _glDrawRangeElements(GL_POINTS, 
+      _glDrawRangeElements(GL_POINTS,
                            primitive->get_min_vertex(),
                            primitive->get_max_vertex(),
                            primitive->get_num_vertices(),
-                           get_numeric_type(primitive->get_index_type()), 
+                           get_numeric_type(primitive->get_index_type()),
                            client_pointer);
     } else {
       GLP(DrawArrays)(GL_POINTS,
@@ -1923,7 +1923,7 @@ end_draw_primitives() {
 
     if (!CLP(compile_and_execute)) {
       GLP(CallList)(_geom_display_list);
-    }      
+    }
     _primitive_batches_display_list_pcollector.add_level(1);
   }
   _geom_display_list = 0;
@@ -1936,7 +1936,7 @@ end_draw_primitives() {
     }
     _vertex_blending_enabled = false;
   }
-  
+
   if (_transform_stale) {
     GLP(MatrixMode)(GL_MODELVIEW);
     GLP(LoadMatrixf)(_internal_transform->get_mat().get_data());
@@ -2113,10 +2113,10 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "creating vertex buffer " << gvbc->_index << ": "
-        << data->get_num_rows() << " vertices " 
+        << data->get_num_rows() << " vertices "
         << *data->get_array_format() << "\n";
     }
-    
+
     report_my_gl_errors();
     return gvbc;
   }
@@ -2146,7 +2146,7 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     _current_vbuffer_index = gvbc->_index;
     add_to_vertex_buffer_record(gvbc);
   }
-  
+
   if (gvbc->was_modified()) {
     PStatTimer timer(_load_vertex_buffer_pcollector);
     int num_bytes = gvbc->get_data()->get_data_size_bytes();
@@ -2158,9 +2158,9 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     if (num_bytes != 0) {
       if (gvbc->changed_size() || gvbc->changed_usage_hint()) {
         _glBufferData(GL_ARRAY_BUFFER, num_bytes,
-                      gvbc->get_data()->get_data(), 
+                      gvbc->get_data()->get_data(),
                       get_usage(gvbc->get_data()->get_usage_hint()));
-        
+
       } else {
         _glBufferSubData(GL_ARRAY_BUFFER, 0, num_bytes,
                          gvbc->get_data()->get_data());
@@ -2185,7 +2185,7 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
 void CLP(GraphicsStateGuardian)::
 release_vertex_buffer(VertexBufferContext *vbc) {
   nassertv(_supports_buffers);
-  
+
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
   if (GLCAT.is_debug()) {
@@ -2280,11 +2280,11 @@ prepare_index_buffer(GeomPrimitive *data) {
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "creating index buffer " << gibc->_index << ": "
-        << data->get_num_vertices() << " indices (" 
+        << data->get_num_vertices() << " indices ("
         << data->get_vertices()->get_array_format()->get_column(0)->get_numeric_type()
         << ")\n";
     }
-    
+
     report_my_gl_errors();
     return gibc;
   }
@@ -2314,7 +2314,7 @@ apply_index_buffer(IndexBufferContext *ibc) {
     _current_ibuffer_index = gibc->_index;
     add_to_index_buffer_record(gibc);
   }
-  
+
   if (gibc->was_modified()) {
     PStatTimer timer(_load_index_buffer_pcollector);
     int num_bytes = gibc->get_data()->get_data_size_bytes();
@@ -2326,9 +2326,9 @@ apply_index_buffer(IndexBufferContext *ibc) {
     if (num_bytes != 0) {
       if (gibc->changed_size() || gibc->changed_usage_hint()) {
         _glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_bytes,
-                      gibc->get_data()->get_data(), 
+                      gibc->get_data()->get_data(),
                       get_usage(gibc->get_data()->get_usage_hint()));
-        
+
       } else {
         _glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, num_bytes,
                          gibc->get_data()->get_data());
@@ -2353,7 +2353,7 @@ apply_index_buffer(IndexBufferContext *ibc) {
 void CLP(GraphicsStateGuardian)::
 release_index_buffer(IndexBufferContext *ibc) {
   nassertv(_supports_buffers);
-  
+
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 
   if (GLCAT.is_debug()) {
@@ -2457,7 +2457,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   dr->get_region_pixels(xo, yo, w, h);
   tex->set_x_size(Texture::up_to_power_2(w));
   tex->set_y_size(Texture::up_to_power_2(h));
-  
+
   // Sanity check everything.
   if (z >= 0) {
     if (!_supports_cube_map) {
@@ -2473,7 +2473,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   } else {
     nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
   }
-  
+
   // Match framebuffer format if necessary.
   if (tex->get_match_framebuffer_format()) {
     const FrameBufferProperties &properties = get_properties();
@@ -2502,11 +2502,11 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   GLP(BindTexture)(target, gtc->_index);
   GLint internal_format = get_internal_image_format(tex->get_format());
   GLenum imagetarget = (z >= 0) ? (GL_TEXTURE_CUBE_MAP_POSITIVE_X + z) : GL_TEXTURE_2D;
-  
+
   // If the texture has never been uploaded before, create it.
   // We cannot use glCopyTexImage2D to create a texture that may be
   // larger than the screen, so use glTexImage2D with arbitrary data.
-  
+
   if ((gtc->_already_applied == false)||
       (gtc->_internal_format != internal_format)||
       (gtc->_width  != tex->get_x_size())||
@@ -2517,33 +2517,33 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
     memset(image, 128, tex->get_x_size() * tex->get_y_size());
     switch (tex->get_format()) {
     case Texture::F_depth_component:
-      GLP(TexImage2D)(imagetarget, 0, internal_format, 
+      GLP(TexImage2D)(imagetarget, 0, internal_format,
                       tex->get_x_size(), tex->get_y_size(), 0,
                       GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, image);
       break;
     case Texture::F_stencil_index:
-      GLP(TexImage2D)(imagetarget, 0, internal_format, 
+      GLP(TexImage2D)(imagetarget, 0, internal_format,
                       tex->get_x_size(), tex->get_y_size(), 0,
                       GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, image);
       break;
     default:
-      GLP(TexImage2D)(imagetarget, 0, internal_format, 
+      GLP(TexImage2D)(imagetarget, 0, internal_format,
                       tex->get_x_size(), tex->get_y_size(), 0,
                       GL_LUMINANCE, GL_UNSIGNED_BYTE, image);
       break;
     }
     delete image;
-    
+
     gtc->_already_applied = true;
     gtc->_internal_format = internal_format;
     gtc->_width  = tex->get_x_size();
     gtc->_height = tex->get_y_size();
     gtc->_depth  = 1;
   }
-  
+
   // Copy the pixel data from the frame buffer.
   GLP(CopyTexSubImage2D)(imagetarget, 0, 0, 0, xo, yo, w, h);
-  
+
   report_my_gl_errors();
 
   // Force reload of texture state, since we've just monkeyed with it.
@@ -2573,7 +2573,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   // NOTE: reading the depth buffer is *much* slower than reading the
   // color buffer
   set_state_and_transform(RenderState::make_empty(), _external_transform);
-  
+
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
 
@@ -2627,7 +2627,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
       tex->get_format() != format ||
       tex->get_texture_type() != texture_type) {
     // Re-setup the texture; its properties have changed.
-    tex->setup_texture(texture_type, w, h, tex->get_z_size(), 
+    tex->setup_texture(texture_type, w, h, tex->get_z_size(),
                        component_type, format);
   }
 
@@ -2689,7 +2689,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   // a cube map in ascending order, since we can't do this until we
   // have rendered the last face.
   if (color_mode && !_supports_bgr && (z == -1 || z == 5)) {
-    tex->set_ram_image(fix_component_ordering(tex->get_ram_image(), 
+    tex->set_ram_image(fix_component_ordering(tex->get_ram_image(),
                                               external_format, tex));
   }
 
@@ -2750,7 +2750,7 @@ do_issue_transform() {
 
   if (_current_shader_context)
     _current_shader_context->issue_transform(this);
-  
+
   report_my_gl_errors();
 }
 
@@ -2778,7 +2778,7 @@ do_issue_shade_model() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_shader
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_shader() {
@@ -2793,12 +2793,12 @@ do_issue_shader() {
         set_shader_expansion(expansion);
     }
   }
-  
+
   if (expansion) {
     context = (CLP(ShaderContext) *)(expansion->prepare_now(get_prepared_objects(), this));
   }
 
-  if (context == 0) {
+  if (context == 0 || (context && context -> valid ( ) == false)) {
     if (_current_shader_context != 0) {
       _current_shader_context->unbind();
       _current_shader_expansion = 0;
@@ -2806,7 +2806,7 @@ do_issue_shader() {
     }
     return;
   }
-  
+
   if (context != _current_shader_context) {
     // Use a completely different shader than before.
     // Unbind old shader, bind the new one.
@@ -2824,7 +2824,7 @@ do_issue_shader() {
     // Use the same shader as before, but with new input arguments.
     context->issue_parameters(this);
   }
-  
+
   report_my_gl_errors();
 }
 
@@ -3109,7 +3109,7 @@ void CLP(GraphicsStateGuardian)::
 do_issue_material() {
   static Material empty;
   const Material *material;
-  if (_target._material == (MaterialAttrib *)NULL || 
+  if (_target._material == (MaterialAttrib *)NULL ||
       _target._material->is_off()) {
     material = &empty;
   } else {
@@ -3208,7 +3208,7 @@ do_issue_blending() {
       }
     }
   }
-  
+
   CPT(ColorBlendAttrib) color_blend = _target._color_blend;
   ColorBlendAttrib::Mode color_blend_mode = _target._color_blend->get_mode();
   TransparencyAttrib::Mode transparency_mode = _target._transparency->get_mode();
@@ -3226,9 +3226,9 @@ do_issue_blending() {
 
     if (_color_blend_involves_color_scale) {
       // Apply the current color scale to the blend mode.
-      _glBlendColor(_current_color_scale[0], _current_color_scale[1], 
+      _glBlendColor(_current_color_scale[0], _current_color_scale[1],
                     _current_color_scale[2], _current_color_scale[3]);
-      
+
     } else {
       Colorf c = color_blend->get_color();
       _glBlendColor(c[0], c[1], c[2], c[3]);
@@ -3241,7 +3241,7 @@ do_issue_blending() {
   case TransparencyAttrib::M_none:
   case TransparencyAttrib::M_binary:
     break;
-    
+
   case TransparencyAttrib::M_alpha:
   case TransparencyAttrib::M_dual:
     enable_multisample_alpha_one(false);
@@ -3250,20 +3250,20 @@ do_issue_blending() {
     _glBlendEquation(GL_FUNC_ADD);
     GLP(BlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     return;
-    
+
   case TransparencyAttrib::M_multisample:
     // We need to enable *both* of these in M_multisample case.
     enable_multisample_alpha_one(true);
     enable_multisample_alpha_mask(true);
     enable_blend(false);
     return;
-    
+
   case TransparencyAttrib::M_multisample_mask:
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(true);
     enable_blend(false);
     return;
-    
+
   default:
     GLCAT.error()
       << "invalid transparency mode " << (int)transparency_mode << endl;
@@ -3462,7 +3462,7 @@ draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode)
   _vertices_immediate_pcollector.add_level(primitive->get_num_vertices());
   CPTA_int ends = primitive->get_ends();
   int num_unused_vertices_per_primitive = primitive->get_num_unused_vertices_per_primitive();
-      
+
   if (primitive->is_indexed()) {
     int begin = 0;
     CPTA_int::const_iterator ei;
@@ -3475,7 +3475,7 @@ draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode)
         _sender.issue_vertex();
       }
       GLP(End)();
-      
+
       begin = end + num_unused_vertices_per_primitive;
     }
 
@@ -3491,7 +3491,7 @@ draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode)
         _sender.issue_vertex();
       }
       GLP(End)();
-      
+
       begin = end + num_unused_vertices_per_primitive;
     }
   }
@@ -3512,16 +3512,16 @@ report_errors_loop(int line, const char *source_file, GLenum error_code,
 #ifndef NDEBUG
   static const int max_gl_errors_reported = 20;
 
-  while ((error_count < max_gl_errors_reported) && 
+  while ((error_count < max_gl_errors_reported) &&
          (error_code != GL_NO_ERROR)) {
     const GLubyte *error_string = GLUP(ErrorString)(error_code);
     if (error_string != (const GLubyte *)NULL) {
       GLCAT.error()
-        << "at " << line << " of " << source_file << ": " 
+        << "at " << line << " of " << source_file << ": "
         << error_string << "\n";
     } else {
       GLCAT.error()
-        << "at " << line << " of " << source_file << ": " 
+        << "at " << line << " of " << source_file << ": "
         << "GL error " << (int)error_code << "\n";
     }
     error_code = GLP(GetError)();
@@ -3597,7 +3597,7 @@ query_gl_version() {
 
     GLCAT.debug()
       << "GL_VERSION = " << (const char *)text << ", decoded to "
-      << _gl_version_major << "." << _gl_version_minor 
+      << _gl_version_major << "." << _gl_version_minor
       << "." << _gl_version_release << "\n";
   }
 }
@@ -3614,7 +3614,7 @@ save_extensions(const char *extensions) {
   if (extensions != (const char *)NULL) {
     vector_string tokens;
     extract_words(extensions, tokens);
-    
+
     vector_string::iterator ti;
     for (ti = tokens.begin(); ti != tokens.end(); ++ti) {
       _extensions.insert(*ti);
@@ -3671,7 +3671,7 @@ has_extension(const string &extension) const {
 //               least the indicated value, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-is_at_least_version(int major_version, int minor_version, 
+is_at_least_version(int major_version, int minor_version,
                     int release_version) const {
   if (_gl_version_major < major_version) {
     return false;
@@ -3823,7 +3823,7 @@ get_numeric_type(Geom::NumericType numeric_type) {
   case Geom::NT_packed_dcba:
   case Geom::NT_packed_dabc:
     return GL_UNSIGNED_BYTE;
-    
+
   case Geom::NT_float32:
     return GL_FLOAT;
   }
@@ -4110,16 +4110,16 @@ get_external_texture_bytes(int width, int height, int depth,
     num_components = 2;
     break;
 
-  case GL_BGR: 
+  case GL_BGR:
   case GL_RGB:
     num_components = 3;
     break;
 
-  case GL_BGRA: 
+  case GL_BGRA:
   case GL_RGBA:
     num_components = 4;
     break;
-    
+
   default:
     GLCAT.error()
       << "Unexpected external_format in get_external_texture_bytes(): "
@@ -4206,7 +4206,7 @@ get_texture_combine_type(TextureStage::CombineMode cm) {
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
 get_texture_src_type(TextureStage::CombineSource cs,
-                     int last_stage, int last_saved_result, 
+                     int last_stage, int last_saved_result,
                      int this_stage) const {
   switch (cs) {
   case TextureStage::CS_undefined: // fall through
@@ -4215,7 +4215,7 @@ get_texture_src_type(TextureStage::CombineSource cs,
   case TextureStage::CS_primary_color: return GL_PRIMARY_COLOR;
   case TextureStage::CS_constant_color_scale: return GL_CONSTANT;
 
-  case TextureStage::CS_previous: 
+  case TextureStage::CS_previous:
     if (last_stage == this_stage - 1) {
       return GL_PREVIOUS;
     } else if (last_stage == -1) {
@@ -4227,8 +4227,8 @@ get_texture_src_type(TextureStage::CombineSource cs,
         << "Current OpenGL driver does not support texture crossbar blending.\n";
       return GL_PRIMARY_COLOR;
     }
-      
-  case TextureStage::CS_last_saved_result: 
+
+  case TextureStage::CS_last_saved_result:
     if (last_saved_result == this_stage - 1) {
       return GL_PREVIOUS;
     } else if (last_saved_result == -1) {
@@ -4301,19 +4301,19 @@ get_blend_equation_type(ColorBlendAttrib::Mode mode) {
   case ColorBlendAttrib::M_none:
   case ColorBlendAttrib::M_add:
     return GL_FUNC_ADD;
-    
+
   case ColorBlendAttrib::M_subtract:
     return GL_FUNC_SUBTRACT;
-    
+
   case ColorBlendAttrib::M_inv_subtract:
     return GL_FUNC_REVERSE_SUBTRACT;
-    
+
   case ColorBlendAttrib::M_min:
     return GL_MIN;
-    
+
   case ColorBlendAttrib::M_max:
     return GL_MAX;
-  }    
+  }
 
   GLCAT.error()
     << "Unknown color blend mode " << (int)mode << endl;
@@ -4549,9 +4549,9 @@ begin_bind_lights() {
   // root.  (Alternatively, we could leave the current transform where
   // it is and compute the light position relative to that transform
   // instead of relative to the root, by composing with the matrix
-  // computed by _internal_transform->invert_compose(render_transform).  
+  // computed by _internal_transform->invert_compose(render_transform).
   // But I think loading a completely new matrix is simpler.)
-  CPT(TransformState) render_transform = 
+  CPT(TransformState) render_transform =
     _cs_transform->compose(_scene_setup->get_world_transform());
 
   GLP(MatrixMode)(GL_MODELVIEW);
@@ -4612,7 +4612,7 @@ begin_bind_clip_planes() {
   // instead of relative to the root, by composing with the matrix
   // computed by _internal_transform->invert_compose(render_transform).
   // But I think loading a completely new matrix is simpler.)
-  CPT(TransformState) render_transform = 
+  CPT(TransformState) render_transform =
     _cs_transform->compose(_scene_setup->get_world_transform());
 
   GLP(MatrixMode)(GL_MODELVIEW);
@@ -4687,7 +4687,7 @@ set_state_and_transform(const RenderState *target,
     _internal_transform = _cs_transform->compose(transform);
     do_issue_transform();
   }
-  
+
   if (target == _state_rs) {
     return;
   }
@@ -4704,67 +4704,67 @@ set_state_and_transform(const RenderState *target,
     do_issue_alpha_test();
     _state._alpha_test = _target._alpha_test;
   }
-  
+
   if (_target._antialias != _state._antialias) {
     do_issue_antialias();
     _state._antialias = _target._antialias;
   }
-  
+
   if (_target._clip_plane != _state._clip_plane) {
     do_issue_clip_plane();
     _state._clip_plane = _target._clip_plane;
   }
-  
+
   if (_target._color != _state._color) {
     do_issue_color();
     _state._color = _target._color;
   }
-  
+
   if (_target._color_scale != _state._color_scale) {
     do_issue_color_scale();
     _state._color_scale = _target._color_scale;
   }
-  
+
   if (_target._cull_face != _state._cull_face) {
     do_issue_cull_face();
     _state._cull_face = _target._cull_face;
   }
-  
+
   if (_target._depth_offset != _state._depth_offset) {
     do_issue_depth_offset();
     _state._depth_offset = _target._depth_offset;
   }
-  
+
   if (_target._depth_test != _state._depth_test) {
     do_issue_depth_test();
     _state._depth_test = _target._depth_test;
   }
-  
+
   if (_target._depth_write != _state._depth_write) {
     do_issue_depth_write();
     _state._depth_write = _target._depth_write;
   }
-  
+
   if (_target._fog != _state._fog) {
     do_issue_fog();
     _state._fog = _target._fog;
   }
-  
+
   if (_target._render_mode != _state._render_mode) {
     do_issue_render_mode();
     _state._render_mode = _target._render_mode;
   }
-  
+
   if (_target._rescale_normal != _state._rescale_normal) {
     do_issue_rescale_normal();
     _state._rescale_normal = _target._rescale_normal;
   }
-  
+
   if (_target._shade_model != _state._shade_model) {
     do_issue_shade_model();
     _state._shade_model = _target._shade_model;
   }
-  
+
   if ((_target._transparency != _state._transparency)||
       (_target._color_write != _state._color_write)||
       (_target._color_blend != _state._color_blend)) {
@@ -4773,25 +4773,25 @@ set_state_and_transform(const RenderState *target,
     _state._color_write = _target._color_write;
     _state._color_blend = _target._color_blend;
   }
-  
+
   if (_target._shader != _state._shader) {
     do_issue_shader();
     _state._shader = _target._shader;
     _state._texture = 0;
   }
-  
+
   if (_target._texture != _state._texture) {
     do_issue_texture();
     _state._texture = _target._texture;
     _state._tex_gen = 0;
     _state._tex_matrix = 0;
   }
-  
+
   if (_target._material != _state._material) {
     do_issue_material();
     _state._material = _target._material;
   }
-  
+
   if (_target._light != _state._light) {
     do_issue_light();
     _state._light = _target._light;
@@ -4807,17 +4807,17 @@ set_state_and_transform(const RenderState *target,
       _state._tex_gen = 0;
     }
   }
-  
+
   if (_target._tex_matrix != _state._tex_matrix) {
     do_issue_tex_matrix();
     _state._tex_matrix = _target._tex_matrix;
   }
-  
+
   if (_target._tex_gen != _state._tex_gen) {
     do_issue_tex_gen();
     _state._tex_gen = _target._tex_gen;
   }
-  
+
   _state_rs = _target_rs;
 }
 
@@ -4852,7 +4852,7 @@ do_auto_rescale_normal() {
         GLCAT.spam() << "glDisable(GL_RESCALE_NORMAL)\n";
       }
     }
-    
+
   } else if (_external_transform->has_uniform_scale()) {
     // There's a uniform scale; use the rescale feature if available.
     if (_supports_rescale_normal && support_rescale_normal) {
@@ -4868,7 +4868,7 @@ do_auto_rescale_normal() {
         GLCAT.spam() << "glEnable(GL_NORMALIZE)\n";
       }
     }
-  
+
   } else {
     // If there's a non-uniform scale, normalize everything.
     GLP(Enable)(GL_NORMALIZE);
@@ -4893,7 +4893,7 @@ do_auto_rescale_normal() {
 void CLP(GraphicsStateGuardian)::
 do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
-  
+
   if (_texture_binding_shader_context==0) {
     if (_current_shader_context==0) {
       update_standard_texture_bindings();
@@ -4917,7 +4917,7 @@ do_issue_texture() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::update_standard_texture_bindings
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 update_standard_texture_bindings()
@@ -4927,8 +4927,8 @@ update_standard_texture_bindings()
   if (_state._texture != (TextureAttrib *)NULL) {
     num_old_stages = _state._texture->get_num_on_stages();
   }
-  
-  nassertv(num_stages <= _max_texture_stages && 
+
+  nassertv(num_stages <= _max_texture_stages &&
            num_old_stages <= _max_texture_stages);
 
   _texture_involves_color_scale = false;
@@ -4940,7 +4940,7 @@ update_standard_texture_bindings()
     TextureStage *stage = _target._texture->get_on_stage(i);
     Texture *texture = _target._texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
-    
+
     if (i >= num_old_stages ||
         _state._texture == (TextureAttrib *)NULL ||
         stage != _state._texture->get_on_stage(i) ||
@@ -5002,7 +5002,7 @@ update_standard_texture_bindings()
           GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
           GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_RGB, GL_TEXTURE);
           GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_RGB, GL_SRC_ALPHA);
-          
+
         } else {
           // Normal 3- and 4-channel decal textures.
           GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
@@ -5018,65 +5018,65 @@ update_standard_texture_bindings()
           GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_INTERPOLATE);
           GLP(TexEnvi)(GL_TEXTURE_ENV, GL_RGB_SCALE, stage->get_rgb_scale());
           GLP(TexEnvi)(GL_TEXTURE_ENV, GL_ALPHA_SCALE, stage->get_alpha_scale());
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_RGB, 
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_RGB,
                        get_texture_combine_type(stage->get_combine_rgb_mode()));
-          
+
           switch (stage->get_num_combine_rgb_operands()) {
           case 3:
-            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_RGB, 
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_RGB,
                          get_texture_src_type(stage->get_combine_rgb_source2(),
                                               last_stage, last_saved_result, i));
-            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_RGB, 
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_RGB,
                          get_texture_operand_type(stage->get_combine_rgb_operand2()));
             // fall through
-            
+
           case 2:
-            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_RGB, 
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_RGB,
                          get_texture_src_type(stage->get_combine_rgb_source1(),
                                               last_stage, last_saved_result, i));
-            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_RGB, 
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_RGB,
                          get_texture_operand_type(stage->get_combine_rgb_operand1()));
             // fall through
-            
+
           case 1:
-            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_RGB, 
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_RGB,
                          get_texture_src_type(stage->get_combine_rgb_source0(),
                                               last_stage, last_saved_result, i));
-            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_RGB, 
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_RGB,
                          get_texture_operand_type(stage->get_combine_rgb_operand0()));
             // fall through
-            
+
           default:
             break;
           }
-          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, 
+          GLP(TexEnvi)(GL_TEXTURE_ENV, GL_COMBINE_ALPHA,
                        get_texture_combine_type(stage->get_combine_alpha_mode()));
-          
+
           switch (stage->get_num_combine_alpha_operands()) {
           case 3:
-            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_ALPHA, 
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC2_ALPHA,
                          get_texture_src_type(stage->get_combine_alpha_source2(),
                                               last_stage, last_saved_result, i));
-            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA, 
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA,
                          get_texture_operand_type(stage->get_combine_alpha_operand2()));
             // fall through
-            
+
           case 2:
-            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_ALPHA, 
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC1_ALPHA,
                          get_texture_src_type(stage->get_combine_alpha_source1(),
                                               last_stage, last_saved_result, i));
-            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, 
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA,
                          get_texture_operand_type(stage->get_combine_alpha_operand1()));
             // fall through
-            
+
           case 1:
-            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_ALPHA, 
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_SRC0_ALPHA,
                          get_texture_src_type(stage->get_combine_alpha_source0(),
                                               last_stage, last_saved_result, i));
-            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, 
+            GLP(TexEnvi)(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA,
                          get_texture_operand_type(stage->get_combine_alpha_operand0()));
             // fall through
-            
+
           default:
             break;
           }
@@ -5093,7 +5093,7 @@ update_standard_texture_bindings()
         GLP(LoadIdentity)();
       }
     }
-    
+
     if (stage->get_saved_result()) {
       // This texture's result will be "saved" for a future stage's
       // input.
@@ -5104,7 +5104,7 @@ update_standard_texture_bindings()
       last_stage = i;
     }
   }
-    
+
   // Disable the texture stages that are no longer used.
   for (i = num_stages; i < num_old_stages; i++) {
     _glActiveTexture(GL_TEXTURE0 + i);
@@ -5125,7 +5125,7 @@ update_standard_texture_bindings()
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::disable_standard_texture_bindings
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 disable_standard_texture_bindings() {
@@ -5146,30 +5146,30 @@ disable_standard_texture_bindings() {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
   }
-  
+
   report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_tex_matrix
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_tex_matrix() {
   int num_stages = _target._texture->get_num_on_stages();
   nassertv(num_stages <= _max_texture_stages);
-  
+
   for (int i = 0; i < num_stages; i++) {
     TextureStage *stage = _target._texture->get_on_stage(i);
     _glActiveTexture(GL_TEXTURE0 + i);
-    
+
     GLP(MatrixMode)(GL_TEXTURE);
     if (_target._tex_matrix->has_stage(stage)) {
       GLP(LoadMatrixf)(_target._tex_matrix->get_mat(stage).get_data());
     } else {
       GLP(LoadIdentity)();
-      
+
       // For some reason, the glLoadIdentity() call doesn't work on
       // my Dell laptop's IBM OpenGL driver, when used in
       // conjunction with glTexGen(), below.  But explicitly loading
@@ -5185,7 +5185,7 @@ do_issue_tex_matrix() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_tex_gen
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_tex_gen() {
@@ -5193,7 +5193,7 @@ do_issue_tex_gen() {
 
   int num_stages = _target._texture->get_num_on_stages();
   nassertv(num_stages <= _max_texture_stages);
-  
+
   // These are passed in for the four OBJECT_PLANE or EYE_PLANE
   // values; they effectively define an identity matrix that maps
   // the spatial coordinates one-for-one to UV's.  If you want a
@@ -5203,11 +5203,11 @@ do_issue_tex_gen() {
   static const float t_data[4] = { 0, 1, 0, 0 };
   static const float r_data[4] = { 0, 0, 1, 0 };
   static const float q_data[4] = { 0, 0, 0, 1 };
-  
+
   _tex_gen_modifies_mat = false;
-  
+
   bool got_point_sprites = false;
-  
+
   for (int i = 0; i < num_stages; i++) {
     TextureStage *stage = _target._texture->get_on_stage(i);
     _glActiveTexture(GL_TEXTURE0 + i);
@@ -5218,13 +5218,13 @@ do_issue_tex_gen() {
     if (_supports_point_sprite) {
       GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_FALSE);
     }
-    
+
     TexGenAttrib::Mode mode = _target._tex_gen->get_mode(stage);
     switch (mode) {
     case TexGenAttrib::M_off:
     case TexGenAttrib::M_light_vector:
       break;
-      
+
     case TexGenAttrib::M_eye_sphere_map:
       GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
       GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
@@ -5232,7 +5232,7 @@ do_issue_tex_gen() {
       GLP(Enable)(GL_TEXTURE_GEN_T);
       force_normal = true;
       break;
-      
+
     case TexGenAttrib::M_eye_cube_map:
       if (_supports_cube_map) {
         // We need to rotate the normals out of GL's coordinate
@@ -5242,11 +5242,11 @@ do_issue_tex_gen() {
         mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
         GLP(MatrixMode)(GL_TEXTURE);
         GLP(MultMatrixf)(mat.get_data());
-        
+
         // Now we need to reset the texture matrix next time
         // around to undo this.
         _tex_gen_modifies_mat = true;
-        
+
         GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
         GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
         GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
@@ -5256,7 +5256,7 @@ do_issue_tex_gen() {
         force_normal = true;
       }
       break;
-      
+
     case TexGenAttrib::M_world_cube_map:
       if (_supports_cube_map) {
         // We dynamically transform normals from eye space to world
@@ -5266,16 +5266,16 @@ do_issue_tex_gen() {
         // transform, since the current modelview doesn't affect
         // GL_REFLECTION_MAP.
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
-        
+
         LMatrix4f mat = camera_transform->get_mat();
         mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
         GLP(MatrixMode)(GL_TEXTURE);
         GLP(MultMatrixf)(mat.get_data());
-        
+
         // Now we need to reset the texture matrix next time
         // around to undo this.
         _tex_gen_modifies_mat = true;
-        
+
         GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
         GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
         GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
@@ -5285,7 +5285,7 @@ do_issue_tex_gen() {
         force_normal = true;
       }
       break;
-      
+
     case TexGenAttrib::M_eye_normal:
       if (_supports_cube_map) {
         // We need to rotate the normals out of GL's coordinate
@@ -5295,11 +5295,11 @@ do_issue_tex_gen() {
         mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
         GLP(MatrixMode)(GL_TEXTURE);
         GLP(MultMatrixf)(mat.get_data());
-        
+
         // Now we need to reset the texture matrix next time
         // around to undo this.
         _tex_gen_modifies_mat = true;
-        
+
         GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
         GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
         GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
@@ -5309,7 +5309,7 @@ do_issue_tex_gen() {
         force_normal = true;
       }
       break;
-      
+
     case TexGenAttrib::M_world_normal:
       if (_supports_cube_map) {
         // We dynamically transform normals from eye space to world
@@ -5319,16 +5319,16 @@ do_issue_tex_gen() {
         // transform, since the current modelview doesn't affect
         // GL_NORMAL_MAP.
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
-        
+
         LMatrix4f mat = camera_transform->get_mat();
         mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
         GLP(MatrixMode)(GL_TEXTURE);
         GLP(MultMatrixf)(mat.get_data());
-        
+
         // Now we need to reset the texture matrix next time
         // around to undo this.
         _tex_gen_modifies_mat = true;
-        
+
         GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
         GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
         GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
@@ -5338,33 +5338,33 @@ do_issue_tex_gen() {
         force_normal = true;
       }
       break;
-      
+
     case TexGenAttrib::M_eye_position:
       // To represent eye position correctly, we need to temporarily
       // load the coordinate-system transform.
       GLP(MatrixMode)(GL_MODELVIEW);
       GLP(PushMatrix)();
       GLP(LoadMatrixf)(_cs_transform->get_mat().get_data());
-      
+
       GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-      
+
       GLP(TexGenfv)(GL_S, GL_EYE_PLANE, s_data);
       GLP(TexGenfv)(GL_T, GL_EYE_PLANE, t_data);
       GLP(TexGenfv)(GL_R, GL_EYE_PLANE, r_data);
       GLP(TexGenfv)(GL_Q, GL_EYE_PLANE, q_data);
-      
+
       GLP(Enable)(GL_TEXTURE_GEN_S);
       GLP(Enable)(GL_TEXTURE_GEN_T);
       GLP(Enable)(GL_TEXTURE_GEN_R);
       GLP(Enable)(GL_TEXTURE_GEN_Q);
-      
+
       GLP(MatrixMode)(GL_MODELVIEW);
       GLP(PopMatrix)();
       break;
-      
+
     case TexGenAttrib::M_world_position:
       // We achieve world position coordinates by using the eye
       // position mode, and loading the transform of the root
@@ -5378,33 +5378,33 @@ do_issue_tex_gen() {
         GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        
+
         GLP(TexGenfv)(GL_S, GL_EYE_PLANE, s_data);
         GLP(TexGenfv)(GL_T, GL_EYE_PLANE, t_data);
         GLP(TexGenfv)(GL_R, GL_EYE_PLANE, r_data);
         GLP(TexGenfv)(GL_Q, GL_EYE_PLANE, q_data);
-        
+
         GLP(Enable)(GL_TEXTURE_GEN_S);
         GLP(Enable)(GL_TEXTURE_GEN_T);
         GLP(Enable)(GL_TEXTURE_GEN_R);
         GLP(Enable)(GL_TEXTURE_GEN_Q);
-        
+
         GLP(MatrixMode)(GL_MODELVIEW);
         GLP(PopMatrix)();
       }
       break;
-      
+
     case TexGenAttrib::M_point_sprite:
       nassertv(_supports_point_sprite);
       GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
       got_point_sprites = true;
       break;
-      
+
     case TexGenAttrib::M_unused:
       break;
     }
   }
-  
+
   if (got_point_sprites != _tex_gen_point_sprite) {
     _tex_gen_point_sprite = got_point_sprites;
     if (_tex_gen_point_sprite) {
@@ -5413,7 +5413,7 @@ do_issue_tex_gen() {
       GLP(Disable)(GL_POINT_SPRITE_ARB);
     }
   }
-  
+
   // Certain texgen modes (sphere_map, cube_map) require forcing the
   // normal to be sent to the GL while the texgen mode is in effect.
   if (force_normal != _texgen_forced_normal) {
@@ -5424,7 +5424,7 @@ do_issue_tex_gen() {
     }
     _texgen_forced_normal = force_normal;
   }
-  
+
   report_my_gl_errors();
 }
 
@@ -5468,7 +5468,7 @@ specify_texture(Texture *tex) {
   }
 #endif
 
-  if (_supports_generate_mipmap && 
+  if (_supports_generate_mipmap &&
       (auto_generate_mipmaps || !tex->might_have_ram_image())) {
     // If the hardware can automatically generate mipmaps, ask it to
     // do so now, but only if the texture requires them.
@@ -5482,7 +5482,7 @@ specify_texture(Texture *tex) {
     // mipmaps.
     uses_mipmaps = false;
   }
- 
+
   GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER,
                      get_texture_filter_type(minfilter, !uses_mipmaps));
   GLP(TexParameteri)(target, GL_TEXTURE_MAG_FILTER,
@@ -5500,7 +5500,7 @@ specify_texture(Texture *tex) {
       }
     }
   }
-  
+
   report_my_gl_errors();
 }
 
@@ -5513,7 +5513,7 @@ specify_texture(Texture *tex) {
 //               debugging.
 ////////////////////////////////////////////////////////////////////
 static int
-compute_gl_image_size(int x_size, int y_size, int z_size, 
+compute_gl_image_size(int x_size, int y_size, int z_size,
                       int external_format, int type) {
   int num_components = 0;
   switch (external_format) {
@@ -5705,7 +5705,7 @@ upload_texture(CLP(TextureContext) *gtc) {
   }
 
 #ifndef NDEBUG
-  int wanted_size = 
+  int wanted_size =
     compute_gl_image_size(width, height, depth, external_format, component_type);
   nassertr(wanted_size == (int)image.size(), false);
 #endif  // NDEBUG
@@ -5732,43 +5732,43 @@ upload_texture(CLP(TextureContext) *gtc) {
 
     size_t page_size = height * width * texel_size;
     const unsigned char *image_base = image;
-    
+
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
        internal_format, width, height, depth, external_format, component_type,
        image_base);
     image_base += page_size;
-    
+
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
        internal_format, width, height, depth, external_format, component_type,
        image_base);
     image_base += page_size;
-    
+
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
        internal_format, width, height, depth, external_format, component_type,
        image_base);
     image_base += page_size;
-    
+
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
        internal_format, width, height, depth, external_format, component_type,
        image_base);
     image_base += page_size;
-    
+
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
        internal_format, width, height, depth, external_format, component_type,
        image_base);
     image_base += page_size;
-    
+
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
        internal_format, width, height, depth, external_format, component_type,
        image_base);
     image_base += page_size;
-    
+
     nassertr((size_t)(image_base - image) == image.size(), false);
 
   } else {
@@ -5807,11 +5807,11 @@ upload_texture(CLP(TextureContext) *gtc) {
 //               image, from system RAM to texture memory.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-upload_texture_image(CLP(TextureContext) *gtc, 
-                     bool uses_mipmaps, 
-                     GLenum target, GLint internal_format, 
+upload_texture_image(CLP(TextureContext) *gtc,
+                     bool uses_mipmaps,
+                     GLenum target, GLint internal_format,
                      int width, int height, int depth,
-                     GLint external_format, GLenum component_type, 
+                     GLint external_format, GLenum component_type,
                      const unsigned char *image) {
   if (target == GL_NONE) {
     // Unsupported target (e.g. 3-d texturing on GL 1.1).
@@ -5825,9 +5825,9 @@ upload_texture_image(CLP(TextureContext) *gtc,
       build_phony_mipmaps(gtc->_texture);
       report_my_gl_errors();
       return true;
-      
-    } else 
-#endif 
+
+    } else
+#endif
       if (!_supports_generate_mipmap || !auto_generate_mipmaps) {
         // We only need to build the mipmaps by hand if the GL
         // doesn't support generating them automatically.
@@ -5867,7 +5867,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
       }
   }
 
-  if (!gtc->_already_applied || 
+  if (!gtc->_already_applied ||
       gtc->_internal_format != internal_format ||
       gtc->_width != width ||
       gtc->_height != height ||
@@ -5908,7 +5908,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
 #endif
     switch (target) {
     case GL_TEXTURE_1D:
-      GLP(TexSubImage1D)(target, 0, 0, width, 
+      GLP(TexSubImage1D)(target, 0, 0, width,
                          external_format, component_type, image);
       break;
 
@@ -5970,7 +5970,7 @@ do_point_size() {
     LVector3f height(0.0f, _point_size, 1.0f);
     height = height * _projection_mat;
     float s = height[1] * _viewport_height / _point_size;
-    
+
     if (_current_lens->is_orthographic()) {
       // If we have an orthographic lens in effect, we don't actually
       // apply a perspective transform: we just scale the points once,
@@ -6095,9 +6095,9 @@ build_phony_mipmap_level(int level, int x_size, int y_size) {
     GLenum internal_format = get_internal_image_format(tex->get_format());
     GLenum external_format = get_external_image_format(tex->get_format());
     GLenum component_type = get_component_type(tex->get_component_type());
-    
+
 #ifdef DO_PSTATS
-    int num_bytes = 
+    int num_bytes =
       get_external_texture_bytes(tex->get_x_size(), tex->get_y_size(), 1,
                                  external_format, component_type);
     _data_transferred_pcollector.add_level(num_bytes);
@@ -6147,13 +6147,13 @@ save_mipmap_images(Texture *tex) {
     y_size = max(y_size, 1);
 
     PT(Texture) mtex = new Texture;
-    mtex->setup_2d_texture(x_size, y_size, tex->get_component_type(), 
+    mtex->setup_2d_texture(x_size, y_size, tex->get_component_type(),
                            tex->get_format());
-    GLP(GetTexImage)(GL_TEXTURE_2D, mipmap_level, external_format, 
+    GLP(GetTexImage)(GL_TEXTURE_2D, mipmap_level, external_format,
                      type, mtex->make_ram_image());
     Filename mipmap_filename = name + "_" + format_string(mipmap_level) + ".rgb";
     nout << "Writing mipmap level " << mipmap_level
-         << " (" << x_size << " by " << y_size << ") " 
+         << " (" << x_size << " by " << y_size << ") "
          << mipmap_filename << "\n";
     mtex->write(mipmap_filename);
 
