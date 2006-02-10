@@ -21,6 +21,7 @@
 #include "thread.cxx"
 #include "threadDummyImpl.cxx"
 #include "threadNsprImpl.cxx"
+#include "threadPosixImpl.cxx"
 #include "threadWin32Impl.cxx"
 #include "trueClock.cxx"
 #include "typedReferenceCount.cxx"

@@ -115,8 +115,9 @@ private:
   static TypeHandle _type_handle;
 
   friend class ThreadDummyImpl;
-  friend class ThreadNsprImpl;
   friend class ThreadWin32Impl;
+  friend class ThreadPosixImpl;
+  friend class ThreadNsprImpl;
 };
 
 INLINE ostream &operator << (ostream &out, const Thread &thread);

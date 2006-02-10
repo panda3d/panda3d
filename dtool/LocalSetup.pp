@@ -456,6 +456,9 @@ $[cdefine HAVE_SYS_SOUNDCARD_H]
 /* Do we have RTTI (and <typeinfo>)? */
 $[cdefine HAVE_RTTI]
 
+/* Do we have Posix threads? */
+$[cdefine HAVE_POSIX_THREADS]
+
 /* Must global operator new and delete functions throw exceptions? */
 $[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 

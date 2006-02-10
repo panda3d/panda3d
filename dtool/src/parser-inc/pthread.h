@@ -1,5 +1,5 @@
-// Filename: threadImpl.h
-// Created by:  drose (09Aug02)
+// Filename: pthread.h
+// Created by:  drose (10Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,32 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef THREADIMPL_H
-#define THREADIMPL_H
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
 
-#include "pandabase.h"
-#include "selectThreadImpl.h"
+#ifndef PTHREAD_H
+#define PTHREAD_H
 
-#if defined(THREAD_DUMMY_IMPL)
-
-#include "threadDummyImpl.h"
-typedef ThreadDummyImpl ThreadImpl;
-
-#elif defined(THREAD_WIN32_IMPL)
-
-#include "threadWin32Impl.h"
-typedef ThreadWin32Impl ThreadImpl;
-
-#elif defined(THREAD_POSIX_IMPL)
-
-#include "threadPosixImpl.h"
-typedef ThreadPosixImpl ThreadImpl;
-
-#elif defined(THREAD_NSPR_IMPL)
-
-#include "threadNsprImpl.h"
-typedef ThreadNsprImpl ThreadImpl;
-
-#endif
+typedef int pthread_t;
+typedef int pthread_key_t;
+typedef int pthread_mutex_t;
+typedef int pthread_cond_t;
 
 #endif

@@ -23,8 +23,8 @@
 //  Description: Atomically increments the indicated variable and
 //               returns the new value.
 ////////////////////////////////////////////////////////////////////
-INLINE int AtomicAdjustDummyImpl::
-inc(int &var) {
+INLINE PN_int32 AtomicAdjustDummyImpl::
+inc(PN_int32 &var) {
   return ++var;
 }
 
@@ -34,8 +34,8 @@ inc(int &var) {
 //  Description: Atomically decrements the indicated variable and
 //               returns the new value.
 ////////////////////////////////////////////////////////////////////
-INLINE int AtomicAdjustDummyImpl::
-dec(int &var) {
+INLINE PN_int32 AtomicAdjustDummyImpl::
+dec(PN_int32 &var) {
   return --var;
 }
 
@@ -45,9 +45,9 @@ dec(int &var) {
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE int AtomicAdjustDummyImpl::
-set(int &var, int new_value) {
-  int orig_value = var;
+INLINE PN_int32 AtomicAdjustDummyImpl::
+set(PN_int32 &var, PN_int32 new_value) {
+  PN_int32 orig_value = var;
   var = new_value;
   return orig_value;
 }

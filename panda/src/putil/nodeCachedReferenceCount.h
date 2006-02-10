@@ -72,7 +72,7 @@ protected:
   bool do_test_ref_count_integrity() const;
   
 private:
-  int _node_ref_count;
+  PN_int32 _node_ref_count;
 
 public:
   static TypeHandle get_class_type() {

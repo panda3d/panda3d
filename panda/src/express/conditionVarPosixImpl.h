@@ -1,5 +1,5 @@
-// Filename: atomicAdjustNsprImpl.h
-// Created by:  drose (09Aug02)
+// Filename: conditionVarPosixImpl.h
+// Created by:  drose (10Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,32 +16,40 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef ATOMICADJUSTNSPRIMPL_H
-#define ATOMICADJUSTNSPRIMPL_H
+#ifndef CONDITIONVARPOSIXIMPL_H
+#define CONDITIONVARPOSIXIMPL_H
 
 #include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_NSPR_IMPL
+#ifdef THREAD_POSIX_IMPL
 
+#include "mutexPosixImpl.h"
 #include "notify.h"
-#include "numeric_types.h"
 
-#include <pratom.h>
+#include <pthread.h>
+
+class MutexPosixImpl;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : AtomicAdjustNsprImpl
-// Description : Uses NSPR to implement atomic adjustments.
+//       Class : ConditionVarPosixImpl
+// Description : Uses Posix threads to implement a conditionVar.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS AtomicAdjustNsprImpl {
+class EXPCL_PANDAEXPRESS ConditionVarPosixImpl {
 public:
-  INLINE static PN_int32 inc(PN_int32 &var);
-  INLINE static PN_int32 dec(PN_int32 &var);
-  INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
+  INLINE ConditionVarPosixImpl(MutexPosixImpl &mutex);
+  INLINE ~ConditionVarPosixImpl();
+
+  INLINE void wait();
+  INLINE void signal();
+
+private:
+  MutexPosixImpl &_mutex;
+  pthread_cond_t _cvar;
 };
 
-#include "atomicAdjustNsprImpl.I"
+#include "conditionVarPosixImpl.I"
 
-#endif  // THREAD_NSPR_IMPL
+#endif  // THREAD_POSIX_IMPL
 
 #endif

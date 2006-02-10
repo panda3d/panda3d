@@ -555,6 +555,10 @@
 // cause libdirect.dll to fail to load on Win98 clients.
 #define HAVE_DIRECTD
 
+// If your system supports the Posix threads interface
+// (pthread_create(), etc.), define this true.
+#define HAVE_POSIX_THREADS $[isfile /usr/include/pthread.h]
+
 // Do you want to build in support for threading (multiprocessing)?
 // Building in support for threading will enable Panda to take
 // advantage of multiple CPU's if you have them (and if the OS
@@ -562,8 +566,11 @@
 // slightly slow down Panda for the single CPU case, so this is not
 // enabled by default.
 
-// Currently, threading support requires NSPR, so you should not
-// define this true unless you have NSPR installed.
+// You should only turn this on if you have some threading library
+// available (most people will have one).  Windows has one built-in.
+// Linux uses Posix threads, which most Linuxes provide.
+// Alternatively, the NSPR library also provides a threading interface
+// that Panda can use.
 #define HAVE_THREADS
 
 // Even if threading is not defined, you might want to double-check

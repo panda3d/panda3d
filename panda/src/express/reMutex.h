@@ -47,10 +47,10 @@ public:
   INLINE bool debug_is_locked() const;
 
 private:
-#ifdef MUTEX_REENTRANT
-  // If the native Mutex implementation is already reentrant, just use
-  // that.
-  MutexImpl _impl;
+#ifdef HAVE_REMUTEXIMPL
+  // If the native Mutex implementation provides a reentrant flavor,
+  // just use that.
+  ReMutexImpl _impl;
 
 #elif !defined(THREAD_DUMMY_IMPL) || defined(CHECK_REENTRANT_MUTEX)
   void do_lock();

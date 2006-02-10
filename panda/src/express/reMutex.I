@@ -17,10 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 
-#ifdef MUTEX_REENTRANT
+#ifdef HAVE_REMUTEXIMPL
 // In this branch, the ReMutex class is implemented as a thin wrapper
-// around the native MutexImpl class (which is already reentrant
-// anyway).
+// around the native ReMutexImpl class.
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutex::Constructor

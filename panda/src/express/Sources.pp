@@ -12,6 +12,7 @@
     atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I atomicAdjust.h \
     atomicAdjust.I atomicAdjustImpl.h \
     atomicAdjustNsprImpl.h atomicAdjustNsprImpl.I \
+    atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I \
     atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
     bigEndian.h buffer.I buffer.h \
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
@@ -19,6 +20,7 @@
     conditionVarDummyImpl.h conditionVarDummyImpl.I conditionVar.h \
     conditionVar.I conditionVarImpl.h \
     conditionVarNsprImpl.h conditionVarNsprImpl.I \
+    conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
     config_express.h \
     datagram.I datagram.h datagramGenerator.I \
@@ -41,6 +43,7 @@
     mutexDummyImpl.h mutexDummyImpl.I pmutex.h mutexHolder.h \
     mutexHolder.I pmutex.I mutexImpl.h \
     mutexNsprImpl.h mutexNsprImpl.I \
+    mutexPosixImpl.h mutexPosixImpl.I \
     mutexWin32Impl.h mutexWin32Impl.I \
     namable.I \
     namable.h nativeNumericData.I nativeNumericData.h \
@@ -66,6 +69,7 @@
     textEncoder.h textEncoder.I \
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
     threadNsprImpl.h threadNsprImpl.I \
+    threadPosixImpl.h threadPosixImpl.I \
     threadWin32Impl.h threadWin32Impl.I \
     threadPriority.h \
     tokenBoard.I \
@@ -89,10 +93,12 @@
   #define INCLUDED_SOURCES  \
     atomicAdjust.cxx atomicAdjustDummyImpl.cxx \
     atomicAdjustNsprImpl.cxx \
+    atomicAdjustPosixImpl.cxx \
     atomicAdjustWin32Impl.cxx \
     buffer.cxx checksumHashGenerator.cxx clockObject.cxx \
     conditionVar.cxx conditionVarDummyImpl.cxx \
     conditionVarNsprImpl.cxx \
+    conditionVarPosixImpl.cxx \
     conditionVarWin32Impl.cxx \
     config_express.cxx datagram.cxx datagramGenerator.cxx \
     datagramIterator.cxx \
@@ -106,6 +112,7 @@
     memoryUsagePointers.cxx multifile.cxx \
     pmutex.cxx mutexHolder.cxx mutexDummyImpl.cxx \
     mutexNsprImpl.cxx \
+    mutexPosixImpl.cxx \
     mutexWin32Impl.cxx \
     namable.cxx \
     nativeNumericData.cxx \
@@ -129,6 +136,7 @@
     textEncoder.cxx \
     thread.cxx threadDummyImpl.cxx \
     threadNsprImpl.cxx \
+    threadPosixImpl.cxx \
     threadWin32Impl.cxx \
     trueClock.cxx \
     typedReferenceCount.cxx \
@@ -149,6 +157,7 @@
     atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I atomicAdjust.h \
     atomicAdjust.I atomicAdjustImpl.h \
     atomicAdjustNsprImpl.h atomicAdjustNsprImpl.I \
+    atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I \
     atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
     bigEndian.h buffer.I buffer.h checksumHashGenerator.I  \
     checksumHashGenerator.h circBuffer.I circBuffer.h clockObject.I \
@@ -156,6 +165,7 @@
     conditionVarDummyImpl.h conditionVarDummyImpl.I conditionVar.h \
     conditionVar.I conditionVarImpl.h \
     conditionVarNsprImpl.h conditionVarNsprImpl.I \
+    conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
     config_express.h datagram.I datagram.h \
     datagramGenerator.I datagramGenerator.h \
@@ -176,6 +186,7 @@
     mutexDummyImpl.h mutexDummyImpl.I pmutex.h mutexHolder.h \
     mutexHolder.I pmutex.I mutexImpl.h \
     mutexNsprImpl.h mutexNsprImpl.I \
+    mutexPosixImpl.h mutexPosixImpl.I \
     mutexWin32Impl.h mutexWin32Impl.I \
     namable.I namable.h \
     nativeNumericData.I nativeNumericData.h numeric_types.h \
@@ -200,6 +211,7 @@
     textEncoder.h textEncoder.I \
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
     threadNsprImpl.h threadNsprImpl.I \
+    threadPosixImpl.h threadPosixImpl.I \
     threadWin32Impl.h threadWin32Impl.I \
     threadPriority.h \
     tokenBoard.I \

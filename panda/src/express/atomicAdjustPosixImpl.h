@@ -1,5 +1,5 @@
-// Filename: atomicAdjustNsprImpl.h
-// Created by:  drose (09Aug02)
+// Filename: atomicAdjustPosixImpl.h
+// Created by:  drose (10Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,32 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef ATOMICADJUSTNSPRIMPL_H
-#define ATOMICADJUSTNSPRIMPL_H
+#ifndef ATOMICADJUSTPOSIXIMPL_H
+#define ATOMICADJUSTPOSIXIMPL_H
 
 #include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_NSPR_IMPL
+#ifdef THREAD_POSIX_IMPL
 
 #include "notify.h"
 #include "numeric_types.h"
 
-#include <pratom.h>
+#include <pthread.h>
 
 ////////////////////////////////////////////////////////////////////
-//       Class : AtomicAdjustNsprImpl
-// Description : Uses NSPR to implement atomic adjustments.
+//       Class : AtomicAdjustPosixImpl
+// Description : Uses POSIX to implement atomic adjustments.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS AtomicAdjustNsprImpl {
+class EXPCL_PANDAEXPRESS AtomicAdjustPosixImpl {
 public:
   INLINE static PN_int32 inc(PN_int32 &var);
   INLINE static PN_int32 dec(PN_int32 &var);
   INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
+
+private:
+  static pthread_mutex_t _mutex;
 };
 
-#include "atomicAdjustNsprImpl.I"
+#include "atomicAdjustPosixImpl.I"
 
-#endif  // THREAD_NSPR_IMPL
+#endif  // THREAD_POSIX_IMPL
 
 #endif

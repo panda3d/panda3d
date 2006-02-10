@@ -18,7 +18,7 @@
 
 #include "reMutex.h"
 
-#ifndef MUTEX_REENTRANT
+#ifndef HAVE_REMUTEXIMPL
 
 // Most of the methods in this class are stubbed out in the
 // THREAD_DUMMY_IMPL case, especially when CHECK_REENTRANT_MUTEX is
@@ -81,4 +81,5 @@ do_release() {
 
 #endif  // !THREAD_DUMMY_IMPL || CHECK_REENTRANT_MUTEX
 
-#endif  // MUTEX_REENTRANT
+#endif  // !HAVE_REMUTEXIMPL
+

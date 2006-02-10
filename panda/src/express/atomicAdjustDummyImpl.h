@@ -23,7 +23,9 @@
 #include "selectThreadImpl.h"
 
 #ifdef THREAD_DUMMY_IMPL
+
 #include "notify.h"
+#include "numeric_types.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AtomicAdjustDummyImpl
@@ -33,9 +35,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS AtomicAdjustDummyImpl {
 public:
-  INLINE static int inc(int &var);
-  INLINE static int dec(int &var);
-  INLINE static int set(int &var, int new_value);
+  INLINE static PN_int32 inc(PN_int32 &var);
+  INLINE static PN_int32 dec(PN_int32 &var);
+  INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
 };
 
 #include "atomicAdjustDummyImpl.I"

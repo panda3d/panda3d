@@ -25,6 +25,7 @@
 #include "memoryUsage.h"
 #include "config_express.h"
 #include "atomicAdjust.h"
+#include "numeric_types.h"
 
 #include <stdlib.h>
 
@@ -81,7 +82,7 @@ private:
     deleted_ref_count = -100,
   };
 
-  int _ref_count;
+  PN_int32 _ref_count;
   WeakReferenceList *_weak_list;
 
 public:

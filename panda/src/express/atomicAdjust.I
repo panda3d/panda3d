@@ -23,8 +23,8 @@
 //  Description: Atomically increments the indicated variable and
 //               returns the new value.
 ////////////////////////////////////////////////////////////////////
-INLINE int AtomicAdjust::
-inc(int &var) {
+INLINE PN_int32 AtomicAdjust::
+inc(PN_int32 &var) {
   return AtomicAdjustImpl::inc(var);
 }
 
@@ -34,8 +34,8 @@ inc(int &var) {
 //  Description: Atomically decrements the indicated variable and
 //               returns the new value.
 ////////////////////////////////////////////////////////////////////
-INLINE int AtomicAdjust::
-dec(int &var) {
+INLINE PN_int32 AtomicAdjust::
+dec(PN_int32 &var) {
   return AtomicAdjustImpl::dec(var);
 }
 
@@ -45,7 +45,7 @@ dec(int &var) {
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE int AtomicAdjust::
-set(int &var, int new_value) {
+INLINE PN_int32 AtomicAdjust::
+set(PN_int32 &var, PN_int32 new_value) {
   return AtomicAdjustImpl::set(var, new_value);
 }

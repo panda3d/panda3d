@@ -32,6 +32,11 @@ typedef ConditionVarDummyImpl ConditionVarImpl;
 #include "conditionVarWin32Impl.h"
 typedef ConditionVarWin32Impl ConditionVarImpl;
 
+#elif defined(THREAD_POSIX_IMPL)
+
+#include "conditionVarPosixImpl.h"
+typedef ConditionVarPosixImpl ConditionVarImpl;
+
 #elif defined(THREAD_NSPR_IMPL)
 
 #include "conditionVarNsprImpl.h"
