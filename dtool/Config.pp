@@ -562,7 +562,7 @@
 
 // If your system supports the Posix threads interface
 // (pthread_create(), etc.), define this true.
-#define HAVE_POSIX_THREADS $[isfile /usr/include/pthread.h]
+#define HAVE_POSIX_THREADS $[and $[isfile /usr/include/pthread.h],$[not $[WINDOWS_PLATFORM]]]
 
 // Do you want to build in support for threading (multiprocessing)?
 // Building in support for threading will enable Panda to take
