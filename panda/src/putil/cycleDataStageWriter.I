@@ -174,6 +174,20 @@ operator = (const CycleDataStageWriter<CycleDataType> &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CycleDataStageWriter::Constructor (trivial)
+//       Access: Public
+//  Description: This flavor of the constructor elevates the pointer
+//               from the CycleDataStageReader from a read to a write
+//               pointer (and invalidates the reader).
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataStageWriter<CycleDataType>::
+CycleDataStageWriter(PipelineCycler<CycleDataType> &, int,
+                     CycleDataStageReader<CycleDataType> &take_from) :
+  _pointer((CycleDataType *)take_from.take_pointer())
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CycleDataStageWriter::Destructor (trivial)
 //       Access: Public
 //  Description:
