@@ -28,7 +28,7 @@ class ShaderExpansion;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Shader
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 
 class EXPCL_PANDA Shader: public TypedWritableReferenceCount {
@@ -36,37 +36,39 @@ PUBLISHED:
   static CPT(Shader) load(const Filename &file, int preprocessor=0);
   static CPT(Shader) load(const string &file,   int preprocessor=0);
   static CPT(Shader) make(const string &body,   int preprocessor=0);
-  
+
   INLINE const string   &get_name() const;
   INLINE const Filename &get_file() const;
   INLINE const string   &get_body() const;
   INLINE int             get_preprocessor() const;
   INLINE bool            get_loaded() const;
-  
+  INLINE bool            get_load_error() const;
+
   PT(ShaderExpansion) macroexpand(const RenderState *context) const;
-  
+
 public:
   Shader();
   ~Shader();
-  
+
 private:
   string   _name;
   Filename _file;
   string   _body;
   bool     _loaded;
+  bool     _load_error;
   int      _preprocessor;
-  
+
   PT(ShaderExpansion) _fixed_expansion;
-  
+
   typedef pair < Filename, int > LoadTableKey;
   typedef pair < string,   int > MakeTableKey;
 
   typedef pmap < LoadTableKey , Shader * > LoadTable;
   typedef pmap < MakeTableKey , Shader * > MakeTable;
-  
+
   static LoadTable _load_table;
   static MakeTable _make_table;
-  
+
 public:
   static void register_with_read_factory();
 

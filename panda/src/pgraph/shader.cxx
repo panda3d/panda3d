@@ -26,16 +26,17 @@ Shader::MakeTable Shader::_make_table;
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::Constructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Shader::
 Shader() {
+  this -> _load_error = false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::Destructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Shader::
 ~Shader() {
@@ -51,7 +52,7 @@ Shader::
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::load
 //       Access: Published, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(Shader) Shader::
 load(const string &file, int preprocessor) {
@@ -61,7 +62,7 @@ load(const string &file, int preprocessor) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::load
 //       Access: Published, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(Shader) Shader::
 load(const Filename &file, int preprocessor) {
@@ -80,6 +81,7 @@ load(const Filename &file, int preprocessor) {
   if (!vfs->read_file(file, result->_body, true)) {
     cerr << "Could not read shader file: " << file << "\n";
     result->_body = "";
+    result->_load_error = true;
   }
   _load_table[key] = result;
   return result;
@@ -88,7 +90,7 @@ load(const Filename &file, int preprocessor) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::make
 //       Access: Published, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(Shader) Shader::
 make(const string &body, int preprocessor) {
@@ -116,7 +118,7 @@ make(const string &body, int preprocessor) {
 //               shader text in Cg, GLSL, HLSL, or whatever.  The
 //               macro preprocessor will be able to query the RenderState
 //               and generate different shader code for different states.
-//               
+//
 //               The macroexpansion of the shader is stored in an object
 //               of class ShaderExpansion.  This is somewhat expensive
 //               to generate, so the ShaderExpansion is cached inside the
@@ -153,7 +155,7 @@ macroexpand(const RenderState *context) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::register_with_read_factory
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Shader::
 register_with_read_factory() {
