@@ -49,6 +49,8 @@ public:
   void disable_shader_texture_bindings(GSG *gsg);
   void update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg);
 
+  bool _state;
+
 private:
 
 #ifdef HAVE_CGGL
@@ -106,7 +108,7 @@ private:
   CGprofile _cg_profile[2];
   CGprogram _cg_program[2];
   string    _cg_errors;
-  
+
   // These arrays contain lists of "bindings." They
   // tell us how to fill the shader's input parameters.
   vector <ShaderAutoBind> _cg_auto_trans;
@@ -117,7 +119,7 @@ private:
   vector <ShaderTransBind> _cg_transform_bind;
   vector <ShaderTransBind> _cg_parameter_bind;
   vector <ShaderVarying> _cg_varying;
-  
+
   bool try_cg_compile(ShaderExpansion *s, GSG *gsg);
   void bind_cg_transform(const ShaderTransBind &stb,
                          CLP(GraphicsStateGuardian) *gsg);

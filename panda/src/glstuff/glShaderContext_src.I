@@ -28,7 +28,7 @@
 INLINE bool CLP(ShaderContext)::
 valid() {
 #ifdef HAVE_CGGL
-  if (_cg_context) return true;
+  if (_state && _cg_context) return true;
 #endif
   return false;
 }

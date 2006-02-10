@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#define DEBUG_GL_SHADER 0
+
 TypeHandle CLP(ShaderContext)::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -28,14 +30,16 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
   string header;
   s->parse_init();
   s->parse_line(header, true, true);
-  
+
+  _state = false;
+
 #ifdef HAVE_CGGL
   _cg_context = (CGcontext)0;
   _cg_profile[SHADER_type_vert] = CG_PROFILE_UNKNOWN;
   _cg_profile[SHADER_type_frag] = CG_PROFILE_UNKNOWN;
   _cg_program[SHADER_type_vert] = (CGprogram)0;
   _cg_program[SHADER_type_frag] = (CGprogram)0;
-  
+
   if (header == "//Cg") {
     // Create the Cg context.
     _cg_context = cgCreateContext();
@@ -44,7 +48,7 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
       cerr << "Cg not supported by this video card.\n";
       return;
     }
-    
+
     // Parse any directives in the source.
     string directive;
     while (!s->parse_eof()) {
@@ -55,7 +59,7 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
         suggest_cg_profile(pieces[2], pieces[3]);
       }
     }
-    
+
     // Select a profile if no preferred profile specified in the source.
     if (_cg_profile[SHADER_type_vert] == CG_PROFILE_UNKNOWN) {
       _cg_profile[SHADER_type_vert] = cgGLGetLatestProfile(CG_GL_VERTEX);
@@ -63,7 +67,7 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
     if (_cg_profile[SHADER_type_frag] == CG_PROFILE_UNKNOWN) {
       _cg_profile[SHADER_type_frag] = cgGLGetLatestProfile(CG_GL_FRAGMENT);
     }
-    
+
     // If we still haven't chosen a profile, give up.
     if ((_cg_profile[SHADER_type_vert] == CG_PROFILE_UNKNOWN)||
         (_cg_profile[SHADER_type_frag] == CG_PROFILE_UNKNOWN)) {
@@ -71,14 +75,14 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
       cerr << "Cg not supported by this video card.\n";
       return;
     }
-    
+
     // Compile the program.
     try_cg_compile(s, gsg);
     cerr << _cg_errors;
     return;
   }
 #endif
-  
+
   cerr << s->get_name() << ": unrecognized shader language " << header << "\n";
 }
 
@@ -96,7 +100,7 @@ suggest_cg_profile(const string &vpro, const string &fpro)
       (_cg_profile[SHADER_type_frag] != CG_PROFILE_UNKNOWN)) {
     return;
   }
-  
+
   // Parse the suggestion. If not parseable, print error and ignore.
   _cg_profile[SHADER_type_vert] = parse_cg_profile(vpro, true);
   _cg_profile[SHADER_type_frag] = parse_cg_profile(fpro, false);
@@ -158,24 +162,34 @@ bool CLP(ShaderContext)::
 try_cg_compile(ShaderExpansion *s, GSG *gsg)
 {
   _cg_errors = "";
-  
+
   cgGetError();
   _cg_program[0] =
     cgCreateProgram(_cg_context, CG_SOURCE, s->_text.c_str(),
                     _cg_profile[0], "vshader", (const char**)NULL);
   print_cg_compile_errors(s->get_name(), _cg_context);
-  
+
   cgGetError();
   _cg_program[1] =
     cgCreateProgram(_cg_context, CG_SOURCE, s->_text.c_str(),
                     _cg_profile[1], "fshader", (const char**)NULL);
   print_cg_compile_errors(s->get_name(), _cg_context);
-  
+
   if ((_cg_program[SHADER_type_vert]==0)||(_cg_program[SHADER_type_frag]==0)) {
     release_resources();
     return false;
   }
-  
+
+#if DEBUG_GL_SHADER
+  // DEBUG: output the generated program
+  {
+    const char *program;
+    program = cgGetProgramString (_cg_program[1], CG_COMPILED_PROGRAM);
+
+    glgsg_cat.debug ( ) << program << "\n";
+  }
+#endif
+
   // The following code is present to work around a bug in the Cg compiler.
   // It does not generate correct code for shadow map lookups when using arbfp1.
   // This is a particularly onerous limitation, given that arbfp1 is the only
@@ -247,7 +261,7 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
       }
     }
   }
-  
+
   bool success = true;
   CGparameter parameter;
   for (int progindex=0; progindex<2; progindex++) {
@@ -261,13 +275,16 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
     release_resources();
     return false;
   }
-  
+
   cgGLLoadProgram(_cg_program[SHADER_type_vert]);
   cgGLLoadProgram(_cg_program[SHADER_type_frag]);
-  
+
   _cg_errors = s->get_name() + ": compiled to "
     + cgGetProfileString(_cg_profile[SHADER_type_vert]) + " "
     + cgGetProfileString(_cg_profile[SHADER_type_frag]) + "\n";
+
+  _state = true;
+
   return true;
 }
 #endif
@@ -316,7 +333,7 @@ bind(GSG *gsg) {
 
     // Pass in k-parameters and transform-parameters
     issue_parameters(gsg);
-    
+
     // Bind the shaders.
     cgGLEnableProfile(_cg_profile[SHADER_type_vert]);
     cgGLBindProgram(_cg_program[SHADER_type_vert]);
@@ -371,6 +388,25 @@ issue_cg_auto_bind(const ShaderAutoBind &bind, GSG *gsg)
   case SIC_inv_modelproj:
   case SIC_tps_modelproj:
   case SIC_itp_modelproj:
+
+/*
+    float data [16];
+
+    glGetFloatv (GL_MODELVIEW_MATRIX, data);
+    glgsg_cat.debug ( ) << "MODELVIEW MATRIX \n" <<
+      data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+      data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+      data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+      data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+
+    glGetFloatv (GL_PROJECTION_MATRIX, data);
+    glgsg_cat.debug ( ) << "PROJECTION MATRIX \n" <<
+      data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
+      data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
+      data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
+      data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
+*/
+
     cgGLSetStateMatrixParameter(p, (CGGLenum)((bind.value >> 2)+4), (CGGLenum)(bind.value & 3));
     return;
   case SIC_sys_windowsize:
@@ -420,8 +456,22 @@ issue_parameters(GSG *gsg)
       InternalName *id = _cg_fbind[i].name;
       const ShaderInput *input = gsg->_target._shader->get_shader_input(id);
       cgGLSetParameter4fv(_cg_fbind[i].parameter, input->get_vector().get_data());
+
+#if DEBUG_GL_SHADER
+      // DEBUG
+      {
+        const float *data;
+        char string [256];
+
+        data = input->get_vector().get_data();
+        sprintf (string, "%f  %f  %f  %f \n", data [0], data [1], data [2], data [3]);
+
+        glgsg_cat.debug ( ) << "SHADER: issue_parameters, _cg_fbind " << id -> get_name ( ) << "\n";
+        glgsg_cat.debug ( ) << string;
+      }
+#endif
     }
-    
+
     // Pass in k-float4x4 parameters.
     for (int i=0; i<(int)_cg_npbind.size(); i++) {
       InternalName *id = _cg_npbind[i].name;
@@ -434,12 +484,12 @@ issue_parameters(GSG *gsg)
       }
       cgGLSetMatrixParameterfc(_cg_npbind[i].parameter, dat);
     }
-    
+
     // Pass in system parameters
     for (int i=0; i<(int)_cg_auto_param.size(); i++) {
       issue_cg_auto_bind(_cg_auto_param[i], gsg);
     }
-    
+
     // Pass in trans,tpose,row,col,xvec,yvec,zvec,pos parameters
     for (int i=0; i<(int)_cg_parameter_bind.size(); i++) {
       bind_cg_transform(_cg_parameter_bind[i], gsg);
@@ -520,7 +570,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
         InternalName *name = _cg_varying[i].name;
         int texslot = _cg_varying[i].append_uv;
         if (texslot >= 0) {
-          const Geom::ActiveTextureStages &active_stages = 
+          const Geom::ActiveTextureStages &active_stages =
             gsg->_state._texture->get_on_stages();
           if (texslot < (int)active_stages.size()) {
             TextureStage *stage = active_stages[texslot];
@@ -533,7 +583,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
           }
         }
         if (gsg->_vertex_data->get_array_info(name,
-                                              array_data, num_values, numeric_type, 
+                                              array_data, num_values, numeric_type,
                                               start, stride)) {
           const unsigned char *client_pointer = gsg->setup_array_data(array_data);
           cgGLSetParameterPointer(_cg_varying[i].parameter,
@@ -630,7 +680,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
         continue;
       }
       GLP(Enable)(target);
-      
+
       gsg->apply_texture(tc);
     }
   }
@@ -641,7 +691,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::bind_cg_transform
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
@@ -649,7 +699,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
   const float *data;
   CPT(TransformState) src;
   CPT(TransformState) rel;
-  
+
   if (stb.src_name == InternalName::get_camera()) {
     src = TransformState::make_identity();
   } else if (stb.src_name == InternalName::get_view()) {
@@ -685,23 +735,23 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
         compose(input->get_nodepath().get_net_transform());
     }
   }
-  
+
   CPT(TransformState) total = rel->invert_compose(src);
 
   //  data = src->get_mat().get_data();
-  //  cerr << "Src for " << cgGetParameterName(stb.parameter) << " is\n" << 
+  //  cerr << "Src for " << cgGetParameterName(stb.parameter) << " is\n" <<
   //    data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
   //    data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
   //    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
   //    data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
   //  data = rel->get_mat().get_data();
-  //  cerr << "Rel for " << cgGetParameterName(stb.parameter) << " is\n" << 
+  //  cerr << "Rel for " << cgGetParameterName(stb.parameter) << " is\n" <<
   //    data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
   //    data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
   //    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
   //    data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
   //  data = total->get_mat().get_data();
-  //  cerr << "Total for " << cgGetParameterName(stb.parameter) << " is\n" << 
+  //  cerr << "Total for " << cgGetParameterName(stb.parameter) << " is\n" <<
   //    data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
   //    data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
   //    data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
@@ -737,7 +787,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::errchk_cg_parameter_words
 //       Access: Public, Static
-//  Description: Make sure the provided Cg parameter contains 
+//  Description: Make sure the provided Cg parameter contains
 //               the specified number of words.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
@@ -783,9 +833,9 @@ bool CLP(ShaderContext)::
 errchk_cg_parameter_variance(CGparameter p, CGenum var)
 {
   if (cgGetParameterVariability(p) != var) {
-    if (var == CG_UNIFORM) 
+    if (var == CG_UNIFORM)
       errchk_cg_output(p, "parameter should be declared 'uniform'");
-    if (var == CG_VARYING) 
+    if (var == CG_VARYING)
       errchk_cg_output(p, "parameter should be declared 'varying'");
     if (var == CG_CONSTANT)
       errchk_cg_output(p, "parameter should be declared 'const'");
@@ -889,9 +939,9 @@ errchk_cg_output(CGparameter p, const string &msg)
   if (d == CG_IN)    dstr = "in ";
   if (d == CG_OUT)   dstr = "out ";
   if (d == CG_INOUT) dstr = "inout ";
-  
+
   const char *ts = cgGetTypeString(cgGetParameterType(p));
-  
+
   string err;
   string fn = _shader_expansion->get_name();
   err = fn + ": " + msg + " (" + vstr + dstr + ts + " " + cgGetParameterName(p) + ")\n";
@@ -948,7 +998,7 @@ compile_cg_parameter(CGparameter p)
     errchk_cg_output(p,"invalid parameter name");
     return false;
   }
-  
+
   if (pieces[0] == "vtx") {
     if ((!errchk_cg_parameter_direction(p, CG_IN)) ||
         (!errchk_cg_parameter_variance(p, CG_VARYING)) ||
@@ -990,7 +1040,7 @@ compile_cg_parameter(CGparameter p)
     _cg_varying.push_back(bind);
     return true;
   }
-  
+
   if ((pieces[0] == "trans")||
       (pieces[0] == "tpose")||
       (pieces[0] == "row0")||
@@ -1054,7 +1104,7 @@ compile_cg_parameter(CGparameter p)
       return false;
     ShaderTransBind bind;
     bind.parameter = p;
-    
+
     if      (pieces[0]=="wstrans") { bind.rel_name = InternalName::get_world();  bind.trans_piece = SHADER_data_matrix; }
     else if (pieces[0]=="vstrans") { bind.rel_name = InternalName::get_view();   bind.trans_piece = SHADER_data_matrix; }
     else if (pieces[0]=="cstrans") { bind.rel_name = InternalName::get_camera(); bind.trans_piece = SHADER_data_matrix; }
@@ -1065,7 +1115,7 @@ compile_cg_parameter(CGparameter p)
     else if (pieces[0]=="mspos")   { bind.rel_name = InternalName::get_model();  bind.trans_piece = SHADER_data_row3; }
 
     bind.src_name = InternalName::make(pieces[1]);
-    
+
     if ((bind.trans_piece == SHADER_data_matrix)||(bind.trans_piece == SHADER_data_transpose)) {
       if (!errchk_cg_parameter_type(p, CG_FLOAT4x4)) return false;
     } else {
@@ -1111,7 +1161,7 @@ compile_cg_parameter(CGparameter p)
     if ((!errchk_cg_parameter_words(p,2)) ||
         (!errchk_cg_parameter_direction(p, CG_IN)) ||
         (!errchk_cg_parameter_variance(p, CG_UNIFORM))) {
-      return false;    
+      return false;
     }
     ShaderAutoBind bind;
     bind.parameter = p;
@@ -1192,14 +1242,14 @@ compile_cg_parameter(CGparameter p)
       _cg_npbind.push_back(bind);
       break;
     }
-    case CG_SAMPLER1D: { 
+    case CG_SAMPLER1D: {
       ShaderTexBind bind;
       bind.parameter = p;
       bind.name = InternalName::make(pieces[1]);
       bind.desiredtype=Texture::TT_1d_texture;
       _cg_texbind.push_back(bind);
       break;
-    }      
+    }
     case CG_SAMPLER2D: {
       ShaderTexBind bind;
       bind.parameter = p;
@@ -1230,17 +1280,17 @@ compile_cg_parameter(CGparameter p)
     }
     return true;
   }
-  
+
   if (pieces[0] == "l") {
     // IMPLEMENT THE ERROR CHECKING
     return true; // Cg handles this automatically.
   }
-  
+
   if (pieces[0] == "o") {
     // IMPLEMENT THE ERROR CHECKING
     return true; // Cg handles this automatically.
   }
-  
+
   errchk_cg_output(p, "unrecognized parameter name");
   return false;
 }
