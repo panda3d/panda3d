@@ -33,8 +33,8 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 #define DISASSEMBLE_SHADER true
 #define dx_verify(result) __dx_verify ((result), __FILE__, __LINE__)
 
-static char *hlsl_vertex_shader_function_name = "vshader";
-static char *hlsl_pixel_shader_function_name = "fshader";
+static char *vertex_shader_function_name = "vshader";
+static char *pixel_shader_function_name = "fshader";
 
 void print_string (char *string) {
   DBG_HLSL
@@ -104,6 +104,24 @@ void free_pixel_shader (DIRECT_3D_PIXEL_SHADER direct_3d_pixel_shader)
   if (direct_3d_pixel_shader) {
     direct_3d_pixel_shader -> Release ( );
   }
+}
+
+bool find_character_in_c_string (char character, const char *c_string)
+{
+  bool find;
+  int index;
+  int length;
+
+  find = false;
+  length = strlen (c_string);
+  for (index = 0; index < length; index++) {
+    if (c_string [index] == character) {
+      find = true;
+      break;
+    }
+  }
+
+  return find;
 }
 
 DIRECT_3D_SHADER compile_shader (int hlsl, int vertex_shader, char *shader_profile, char *function_name, char *file_path, char *program, DIRECT_3D_DEVICE direct_3d_device)
@@ -248,6 +266,75 @@ DIRECT_3D_SHADER compile_shader (int hlsl, int vertex_shader, char *shader_profi
     }
   }
 
+  if (vertex_shader) {
+
+// parse vertex shader inputs
+    int index;
+    int total_words;
+    int function_name_length;
+    bool function_name_found;
+    string program_string;
+    vector_string program_vector_string;
+
+    program_string = program;
+    function_name_length = strlen (function_name);
+
+    function_name_found = false;
+    total_words = extract_words (program_string, program_vector_string);
+
+    // look for the vertex shader's function name
+    for (index = 0; index < total_words; index++) {
+      dxgsg9_cat.debug ( ) << program_vector_string [index] << "\n";
+
+      if (program_vector_string [index].compare (0, function_name_length, function_name) == 0) {
+        dxgsg9_cat.debug ( ) << "FUNCTION NAME FOUND\n";
+        function_name_found = true;
+        break;
+      }
+    }
+
+    // look for the left parenthesis
+    if (function_name_found) {
+      int start_index;
+
+      start_index = index;
+      for (index = start_index; index < total_words; index++) {
+
+        dxgsg9_cat.debug ( ) << program_vector_string [index] << "\n";
+
+        const char *c_string;
+
+        c_string = program_vector_string [index].c_str ( );
+        if (find_character_in_c_string ('(', c_string)) {
+          dxgsg9_cat.debug ( ) << "LEFT PARENTHESIS FOUND\n";
+          break;
+        }
+      }
+      start_index = index;
+
+      vector_string first_words;
+
+      tokenize (program_vector_string [index], first_words, "(");
+
+      if (first_words.size ( ) > 1) {
+
+// type
+first_words [1];
+
+// identifier
+
+      }
+
+      for (index = start_index + 1; index < total_words; index++) {
+
+
+      }
+    }
+    else {
+      dxgsg9_cat.error ( ) << "vertex shader function name not found\n";
+    }
+  }
+
   return direct_3d_shader;
 }
 
@@ -275,8 +362,7 @@ void set_dx_shader_parameter_float (DX_PARAMETER *dx_parameter, const float *dat
           }
         }
       }
-      else
-      {
+      else {
         if (constant_description -> Columns == 4) {
           direct_3d_device -> SetPixelShaderConstantF (constant_description -> RegisterIndex, data, constant_description -> Rows);
         }
@@ -294,7 +380,6 @@ void set_dx_shader_parameter_float (DX_PARAMETER *dx_parameter, const float *dat
     }
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXShaderContext9::Constructor
@@ -419,10 +504,10 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
     };
     char *function_name;
 
-    function_name = "vshader";
+    function_name = vertex_shader_function_name;
     _direct_3d_vertex_shader = compile_shader (hlsl, TRUE, gsg -> _vertex_shader_profile, function_name, (char *) _name.c_str ( ), (char *) s -> _text.c_str ( ), gsg -> _d3d_device);
 
-    function_name = "fshader";
+    function_name = pixel_shader_function_name;
     _direct_3d_pixel_shader = compile_shader (hlsl, FALSE, gsg -> _pixel_shader_profile, function_name, (char *) _name.c_str ( ), (char *) s -> _text.c_str ( ), gsg -> _d3d_device);
 
     if (_direct_3d_vertex_shader.state && _direct_3d_pixel_shader.state) {
@@ -768,13 +853,13 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
   cgGetError();
   _cg_program[0] =
     cgCreateProgram(gsg -> _cg_context, CG_SOURCE, s->_text.c_str(),
-                    _cg_profile[0], "vshader", (const char**)NULL);
+                    _cg_profile[0], vertex_shader_function_name, (const char**)NULL);
   print_cg_compile_errors(s->get_name(), gsg -> _cg_context);
 
   cgGetError();
   _cg_program[1] =
     cgCreateProgram(gsg -> _cg_context, CG_SOURCE, s->_text.c_str(),
-                    _cg_profile[1], "fshader", (const char**)NULL);
+                    _cg_profile[1], pixel_shader_function_name, (const char**)NULL);
   print_cg_compile_errors(s->get_name(), gsg -> _cg_context);
 
   if ((_cg_program[SHADER_type_vert]==0)||(_cg_program[SHADER_type_frag]==0)) {
@@ -881,7 +966,7 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
       cgDestroyProgram(_cg_program[1]);
       _cg_program[1] =
         cgCreateProgram(gsg -> _cg_context, CG_OBJECT, result.c_str(),
-                        _cg_profile[1], "fshader", (const char**)NULL);
+                        _cg_profile[1], pixel_shader_function_name, (const char**)NULL);
       print_cg_compile_errors(s->get_name(), gsg -> _cg_context);
       if (_cg_program[SHADER_type_frag]==0) {
         release_resources();
