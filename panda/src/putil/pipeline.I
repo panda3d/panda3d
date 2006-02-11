@@ -51,3 +51,34 @@ INLINE int Pipeline::
 get_num_stages() const {
   return _num_stages;
 }
+
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::get_num_cyclers
+//       Access: Public
+//  Description: Returns the number of PipelineCyclers in the universe
+//               that reference this Pipeline object.
+////////////////////////////////////////////////////////////////////
+INLINE int Pipeline::
+get_num_cyclers() const {
+  ReMutexHolder holder(_lock);
+  return _cyclers.size();
+}
+#endif  // DO_PIPELINING && HAVE_THREADS
+
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::get_num_dirty_cyclers
+//       Access: Public
+//  Description: Returns the number of PipelineCyclers in the universe
+//               that reference this Pipeline object and are currently
+//               marked "dirty"; that is, there is a difference in
+//               pointer value between some of their stages.
+////////////////////////////////////////////////////////////////////
+INLINE int Pipeline::
+get_num_dirty_cyclers() const {
+  ReMutexHolder holder(_lock);
+  return _dirty_cyclers.size();
+}
+#endif  // DO_PIPELINING && HAVE_THREADS
+

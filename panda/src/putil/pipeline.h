@@ -56,6 +56,9 @@ public:
   void add_cycler(PipelineCyclerTrueImpl *cycler);
   void add_dirty_cycler(PipelineCyclerTrueImpl *cycler);
   void remove_cycler(PipelineCyclerTrueImpl *cycler);
+
+  INLINE int get_num_cyclers() const;
+  INLINE int get_num_dirty_cyclers() const;
 #endif  // DO_PIPELINING && HAVE_THREADS
 
 private:

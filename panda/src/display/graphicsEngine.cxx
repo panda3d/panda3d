@@ -59,6 +59,8 @@ PStatCollector GraphicsEngine::_transform_states_pcollector("TransformStates");
 PStatCollector GraphicsEngine::_transform_states_unused_pcollector("TransformStates:Unused");
 PStatCollector GraphicsEngine::_render_states_pcollector("RenderStates");
 PStatCollector GraphicsEngine::_render_states_unused_pcollector("RenderStates:Unused");
+PStatCollector GraphicsEngine::_cyclers_pcollector("PipelineCyclers");
+PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("PipelineCyclers:Dirty");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::Constructor
@@ -536,6 +538,11 @@ render_frame() {
       }
     }
   }
+
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+  _cyclers_pcollector.set_level(_pipeline->get_num_cyclers());
+  _dirty_cyclers_pcollector.set_level(_pipeline->get_num_dirty_cyclers());
+#endif  // DO_PIPELINING && HAVE_THREADS
 
   // Now cycle the pipeline and officially begin the next frame.
   {

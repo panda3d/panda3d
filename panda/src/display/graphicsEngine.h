@@ -259,6 +259,8 @@ private:
   static PStatCollector _transform_states_unused_pcollector;
   static PStatCollector _render_states_pcollector;
   static PStatCollector _render_states_unused_pcollector;
+  static PStatCollector _cyclers_pcollector;
+  static PStatCollector _dirty_cyclers_pcollector;
 
   friend class WindowRenderer;
   friend class GraphicsOutput;
