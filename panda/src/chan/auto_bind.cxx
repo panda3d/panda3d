@@ -42,15 +42,17 @@ static void
 bind_anims(const PartNodes &parts, const AnimNodes &anims,
            AnimControlCollection &controls,
            int hierarchy_match_flags) {
-
+  cerr << "bind_anims\n";
   PartNodes::const_iterator pni;
 
   for (pni = parts.begin(); pni != parts.end(); ++pni) {
     PartBundle *part = (*pni)->get_bundle();
+    cerr << "got part " << *part << "\n";
 
     AnimNodes::const_iterator ani;
     for (ani = anims.begin(); ani != anims.end(); ++ani) {
       AnimBundle *anim = (*ani)->get_bundle();
+      cerr << "got anim " << *anim << "\n";
 
       if (chan_cat.is_info()) {
         chan_cat.info()
@@ -207,9 +209,33 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
       // name.
     }
   }
-  if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name)
+
+  if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name) {
+    // Continue searching through the remaining anims and parts.
+
+    while (ai != anims.end()) {
+      // Here's an anim with no matching parts.
+      if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name) {
+	AnimNodes::const_iterator ani;
+	for (ani = (*ai).second.begin(); ani != (*ai).second.end(); ++ani)
+	  extraAnims.insert(*ani);
+      }
+      ++ai;
+    }
+    
+    while (pi != parts.end()) {
+      // And here's a part with no matching anims.
+      if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name) {
+	PartNodes::const_iterator pni;
+	for (pni = (*pi).second.begin(); pni != (*pi).second.end(); ++pni)
+	  extraParts.insert(*pni);
+      }
+      ++pi;
+    }
+    
     bind_anims(extraParts, extraAnims, controls,
                hierarchy_match_flags);
+  }
 }
 
 
