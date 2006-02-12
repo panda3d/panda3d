@@ -29,6 +29,7 @@ class OnscreenText(DirectObject, NodePath):
                  align = None,
                  wordwrap = None,
                  drawOrder = None,
+                 decal = 0,
                  font = None,
                  parent = None,
                  sort = 0,
@@ -80,6 +81,10 @@ class OnscreenText(DirectObject, NodePath):
               all other things in the 'fixed' bin within render2d.
               The text will actually use drawOrder through drawOrder +
               2.
+
+          decal: if this is True, the text is decalled onto its
+              background card.  Useful when the text will be parented
+              into the 3-D scene graph.
 
           font: the font to use for the text.
 
@@ -153,6 +158,9 @@ class OnscreenText(DirectObject, NodePath):
         self.scale = scale
         self.pos = pos
         self.roll = roll
+
+        if decal:
+            textNode.setCardDecal(1)
 
         if font == None:
             font = DirectGuiGlobals.getDefaultFont()
@@ -231,6 +239,11 @@ class OnscreenText(DirectObject, NodePath):
     # text, and for those rare occasions when you actually want to
     # change a text's property after it has been created.
 
+    def setDecal(self, decal):
+        self.textNode.setCardDecal(decal)
+
+    def getDecal(self):
+        return self.textNode.getCardDecal()
 
     def setFont(self, font):
         self.textNode.setFont(font)
