@@ -872,7 +872,8 @@ load(const Filename& filename, size_t &size) const {
     return NULL;
   }
   
-  audioFile = vfs->open_read_file(binary_filename, true);
+  PT(VirtualFile) audioFileHandle = vfs->get_file(binary_filename);
+  audioFile = audioFile->open_read_file(true);
 
   if (audioFile == (istream *)NULL) {
     // Unable to open.
@@ -881,26 +882,24 @@ load(const Filename& filename, size_t &size) const {
   }
 
   // Determine the file size.
-  audioFile->seekg(0, ios::end);
-  size = (size_t)audioFile->tellg();
-  audioFile->seekg(0, ios::beg);
+  size = audioFileHandle->get_file_size(audioFile);
   
   // Read the entire file into memory.
   char *buffer = new char[size];
   if (buffer == NULL) {
     audio_error("out-of-memory error while loading "<<filename);
-    vfs->close_read_file(audioFile);
+    audioFileHandle->close_read_file(audioFile);
     return NULL;
   }
   audioFile->read(buffer, size);
   if (!(*audioFile)) {
     audio_error("Read error while loading "<<filename);
-    vfs->close_read_file(audioFile);
+    audioFileHandle->close_read_file(audioFile);
     delete [] buffer;
     return NULL;
   }
 
-  vfs->close_read_file(audioFile);
+  audioFileHandle->close_read_file(audioFile);
   return buffer;
 }
 
