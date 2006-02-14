@@ -1988,12 +1988,7 @@ make_from_bam(const FactoryParams &params) {
 void TransformState::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
-
-  if (manager->get_file_minor_ver() < 2) {
-    _flags = scan.get_uint16();
-  } else {
-    _flags = scan.get_uint32();
-  }
+  _flags = scan.get_uint32();
 
   if ((_flags & F_components_given) != 0) {
     // Componentwise transform.

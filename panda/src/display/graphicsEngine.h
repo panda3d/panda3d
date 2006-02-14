@@ -145,8 +145,10 @@ private:
   void cull_and_draw_together(const Windows &wlist);
   void cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr);
 
-  void cull_bin_draw(const Windows &wlist);
-  void cull_bin_draw(GraphicsOutput *win, DisplayRegion *dr);
+  void cull_to_bins(const Windows &wlist);
+  void cull_to_bins(GraphicsOutput *win, DisplayRegion *dr);
+  void draw_bins(const Windows &wlist);
+  void draw_bins(GraphicsOutput *win, DisplayRegion *dr);
   void make_contexts(const Windows &wlist);
 
   void process_events(const Windows &wlist);
@@ -222,7 +224,7 @@ private:
     ThreadState _thread_state;
   };
 
-  WindowRenderer *get_window_renderer(const string &name);
+  WindowRenderer *get_window_renderer(const string &name, int pipeline_stage);
 
   Pipeline *_pipeline;
   Windows _windows;

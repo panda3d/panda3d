@@ -30,7 +30,7 @@
 
 class HermiteCurve;
 class ParametricCurve;
-class ClassicNurbsCurve;
+class NurbsCurve;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CurveFitter

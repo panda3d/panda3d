@@ -26,7 +26,7 @@
 
 #include "notify.h"
 #include "threadPriority.h"
-#include "pmutex.h"
+#include "mutexPosixImpl.h"
 
 #include <pthread.h>
 
@@ -63,7 +63,7 @@ private:
     S_finished,
   };
 
-  Mutex _mutex;
+  MutexPosixImpl _mutex;
   Thread *_parent_obj;
   pthread_t _thread;
   bool _joinable;

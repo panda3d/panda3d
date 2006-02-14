@@ -50,7 +50,7 @@ CollisionVisualizer::
 CollisionVisualizer(const string &name) : PandaNode(name) {
   // We always want to render the CollisionVisualizer node itself
   // (even if it doesn't appear to have any geometry within it).
-  set_bound(OmniBoundingVolume());
+  set_internal_bounds(new OmniBoundingVolume());
   _viz_scale = 1.0f;
 }
 

@@ -30,7 +30,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::PrimitiveType Geom::
 get_primitive_type() const {
-  return _primitive_type;
+  CDReader cdata(_cycler);
+  return cdata->_primitive_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,7 +43,8 @@ get_primitive_type() const {
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::ShadeModel Geom::
 get_shade_model() const {
-  return _shade_model;
+  CDReader cdata(_cycler);
+  return cdata->_shade_model;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,7 +56,8 @@ get_shade_model() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int Geom::
 get_geom_rendering() const {
-  return _geom_rendering;
+  CDReader cdata(_cycler);
+  return cdata->_geom_rendering;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,10 +69,13 @@ get_geom_rendering() const {
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::UsageHint Geom::
 get_usage_hint() const {
-  if (!_got_usage_hint) {
-    ((Geom *)this)->reset_usage_hint();
+  CDReader cdata(_cycler);
+  if (!cdata->_got_usage_hint) {
+    CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
+    ((Geom *)this)->reset_usage_hint(cdataw);
+    return cdataw->_usage_hint;
   }
-  return _usage_hint;
+  return cdata->_usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,7 +87,8 @@ get_usage_hint() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(GeomVertexData) Geom::
 get_vertex_data() const {
-  return _data;
+  CDReader cdata(_cycler);
+  return cdata->_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,7 +100,8 @@ get_vertex_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int Geom::
 get_num_primitives() const {
-  return _primitives.size();
+  CDReader cdata(_cycler);
+  return cdata->_primitives.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,8 +114,9 @@ get_num_primitives() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomPrimitive *Geom::
 get_primitive(int i) const {
-  nassertr(i >= 0 && i < (int)_primitives.size(), NULL);
-  return _primitives[i];
+  CDReader cdata(_cycler);
+  nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
+  return cdata->_primitives[i];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,17 +126,22 @@ get_primitive(int i) const {
 //               object stored within the Geom, so application code
 //               can directly manipulate the properties of this
 //               primitive.
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPrimitive *Geom::
 modify_primitive(int i) {
-  clear_cache();
-  nassertr(i >= 0 && i < (int)_primitives.size(), NULL);
-  _got_usage_hint = false;
-  _modified = Geom::get_next_modified();
-  if (_primitives[i]->get_ref_count() > 1) {
-    _primitives[i] = _primitives[i]->make_copy();
+  CDWriter cdata(_cycler, true);
+  nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
+  cdata->_got_usage_hint = false;
+  cdata->_modified = Geom::get_next_modified();
+  do_clear_cache(cdata);
+  if (cdata->_primitives[i]->get_ref_count() > 1) {
+    cdata->_primitives[i] = cdata->_primitives[i]->make_copy();
   }
-  return _primitives[i];
+  return cdata->_primitives[i];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,7 +200,90 @@ unify() const {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq Geom::
 get_modified() const {
-  return _modified;
+  CDReader cdata(_cycler);
+  return cdata->_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::mark_bounds_stale
+//       Access: Published
+//  Description: Marks the bounding volume of the Geom as stale so
+//               that it should be recomputed.  Usually it is not
+//               necessary to call this explicitly.
+////////////////////////////////////////////////////////////////////
+INLINE void Geom::
+mark_bounds_stale() const {
+  CDWriter cdata(((Geom *)this)->_cycler, false);
+  ((Geom *)this)->mark_internal_bounds_stale(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::set_bounds
+//       Access: Published
+//  Description: Resets the bounding volume so that it is the
+//               indicated volume.  When it is explicitly set, the
+//               bounding volume will no longer be automatically
+//               computed; call clear_bounds() if you would like to
+//               return the bounding volume to its default behavior.
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
+////////////////////////////////////////////////////////////////////
+INLINE void Geom::
+set_bounds(const BoundingVolume *volume) {
+  CDWriter cdata(_cycler, true);
+  if (volume == NULL) {
+    cdata->_user_bounds = NULL;
+  } else {
+    cdata->_user_bounds = volume->make_copy();
+  }
+  mark_internal_bounds_stale(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::clear_bounds
+//       Access: Published
+//  Description: Reverses the effect of a previous call to
+//               set_bounds(), and allows the bounding volume to be
+//               automatically computed once more based on the
+//               vertices.
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
+////////////////////////////////////////////////////////////////////
+INLINE void Geom::
+clear_bounds() {
+  CDWriter cdata(_cycler, true);
+  cdata->_user_bounds = NULL;
+  mark_internal_bounds_stale(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::calc_tight_bounds
+//       Access: Public
+//  Description: Expands min_point and max_point to include all of the
+//               vertices in the Geom, if any.  found_any is set true
+//               if any points are found.  It is the caller's
+//               responsibility to initialize min_point, max_point,
+//               and found_any before calling this function.
+//
+//               This version of the method allows the Geom to specify
+//               an alternate vertex data table (for instance, if the
+//               vertex data has already been munged), and also allows
+//               the result to be computed in any coordinate space by
+//               specifying a transform matrix.
+////////////////////////////////////////////////////////////////////
+INLINE void Geom::
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                  bool &found_any, 
+                  const GeomVertexData *vertex_data,
+                  bool got_mat, const LMatrix4f &mat) const {
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  return do_calc_tight_bounds(min_point, max_point, found_any, 
+			      vertex_data, got_mat, mat,
+			      pipeline_stage);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,6 +304,19 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                   bool &found_any) const {
   calc_tight_bounds(min_point, max_point, found_any,
                     get_vertex_data(), false, LMatrix4f::ident_mat());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::mark_internal_bounds_stale
+//       Access: Private
+//  Description: Should be called to mark the internal bounding
+//               volume stale, so that recompute_internal_bounds()
+//               will be called when the bounding volume is next
+//               requested.
+////////////////////////////////////////////////////////////////////
+INLINE void Geom::
+mark_internal_bounds_stale(CData *cdata) {
+  cdata->_internal_bounds_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -261,6 +371,44 @@ operator < (const CacheEntry &other) const {
     return (_source_data < other._source_data);
   }
   return 0;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CData::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Geom::CData::
+CData() :
+  _primitive_type(PT_none),
+  _shade_model(SM_uniform),
+  _geom_rendering(0),
+  _usage_hint(UH_unspecified),
+  _got_usage_hint(false),
+  _internal_bounds_stale(true)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Geom::CData::
+CData(const Geom::CData &copy) :
+  _data(copy._data),
+  _primitives(copy._primitives),
+  _primitive_type(copy._primitive_type),
+  _shade_model(copy._shade_model),
+  _geom_rendering(copy._geom_rendering),
+  _usage_hint(copy._usage_hint),
+  _got_usage_hint(copy._got_usage_hint),
+  _modified(copy._modified),
+  _internal_bounds(copy._internal_bounds),
+  _internal_bounds_stale(copy._internal_bounds_stale),
+  _user_bounds(copy._user_bounds)
+{
 }
 
 INLINE ostream &

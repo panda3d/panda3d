@@ -77,31 +77,13 @@ CycleDataWriter(const CycleDataWriter<CycleDataType> &copy) :
 template<class CycleDataType>
 INLINE void CycleDataWriter<CycleDataType>::
 operator = (const CycleDataWriter<CycleDataType> &copy) {
+  nassertv(_pointer == (CycleDataType *)NULL);
+
   _cycler = copy._cycler;
   _pointer = copy._pointer;
 
   nassertv(_pointer != (CycleDataType *)NULL);
   _cycler->increment_write(_pointer);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataWriter::Constructor (full)
-//       Access: Public
-//  Description: This is a lot like a copy constructor, in that the
-//               new CycleDataWriter object gets a handle to the same
-//               pointer held by the old CycleDataWriter object.
-//               However, since only one write pointer may be active
-//               at a time, this invalidates the old object.
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE CycleDataWriter<CycleDataType>::
-CycleDataWriter(PipelineCycler<CycleDataType> &cycler, 
-                CycleDataWriter<CycleDataType> &take_from) :
-  _cycler(&cycler),
-  _pointer(take_from._pointer)
-{
-  take_from._pointer = (CycleDataType *)NULL;
-  nassertv(_pointer != (CycleDataType *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,6 +100,25 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
   _cycler(&cycler)
 {
   _pointer = _cycler->elevate_read(take_from.take_pointer());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::Constructor (full)
+//       Access: Public
+//  Description: This flavor of the constructor elevates the pointer
+//               from the CycleDataReader from a read to a write
+//               pointer (and invalidates the reader).  It also
+//               propagates the pointer back upstream; see
+//               PipelineCycler::write_upstream().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataWriter<CycleDataType>::
+CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
+                CycleDataReader<CycleDataType> &take_from,
+		bool force_to_0) :
+  _cycler(&cycler)
+{
+  _pointer = _cycler->elevate_read_upstream(take_from.take_pointer(), force_to_0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -229,23 +230,6 @@ operator = (const CycleDataWriter<CycleDataType> &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CycleDataWriter::Constructor (trivial)
 //       Access: Public
-//  Description: This is a lot like a copy constructor, in that the
-//               new CycleDataWriter object gets a handle to the same
-//               pointer held by the old CycleDataWriter object.
-//               However, since only one write pointer may be active
-//               at a time, this invalidates the old object.
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE CycleDataWriter<CycleDataType>::
-CycleDataWriter(PipelineCycler<CycleDataType> &, 
-                CycleDataWriter<CycleDataType> &take_from) :
-  _pointer(take_from.take_pointer())
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataWriter::Constructor (trivial)
-//       Access: Public
 //  Description: This flavor of the constructor elevates the pointer
 //               from the CycleDataReader from a read to a write
 //               pointer (and invalidates the reader).
@@ -254,6 +238,24 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &,
                 CycleDataReader<CycleDataType> &take_from) :
+  _pointer((CycleDataType *)take_from.take_pointer())
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::Constructor (trivial)
+//       Access: Public
+//  Description: This flavor of the constructor elevates the pointer
+//               from the CycleDataReader from a read to a write
+//               pointer (and invalidates the reader).  It also
+//               propagates the pointer back upstream; see
+//               PipelineCycler::write_upstream().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataWriter<CycleDataType>::
+CycleDataWriter(PipelineCycler<CycleDataType> &,
+                CycleDataReader<CycleDataType> &take_from,
+		bool force_to_0) :
   _pointer((CycleDataType *)take_from.take_pointer())
 {
 }

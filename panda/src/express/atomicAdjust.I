@@ -49,3 +49,17 @@ INLINE PN_int32 AtomicAdjust::
 set(PN_int32 &var, PN_int32 new_value) {
   return AtomicAdjustImpl::set(var, new_value);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjust::get
+//       Access: Public, Static
+//  Description: Atomically retrieves the snapshot value of the
+//               indicated variable.  This is the only guaranteed safe
+//               way to retrieve the value that other threads might be
+//               asynchronously setting, incrementing, or decrementing
+//               (via other AtomicAjust methods).
+////////////////////////////////////////////////////////////////////
+INLINE PN_int32 AtomicAdjust::
+get(const PN_int32 &var) {
+  return AtomicAdjustImpl::get(var);
+}

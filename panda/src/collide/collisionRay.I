@@ -78,7 +78,7 @@ CollisionRay(const CollisionRay &copy) :
 INLINE void CollisionRay::
 set_origin(const LPoint3f &origin) {
   _origin = origin;
-  mark_bound_stale();
+  mark_internal_bounds_stale();
   mark_viz_stale();
 }
 
@@ -110,7 +110,7 @@ get_origin() const {
 INLINE void CollisionRay::
 set_direction(const LVector3f &direction) {
   _direction = direction;
-  mark_bound_stale();
+  mark_internal_bounds_stale();
   mark_viz_stale();
   nassertv(_direction != LPoint3f::zero());
 }

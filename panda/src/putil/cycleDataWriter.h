@@ -45,8 +45,8 @@ public:
   INLINE CycleDataWriter(const CycleDataWriter<CycleDataType> &copy);
   INLINE void operator = (const CycleDataWriter<CycleDataType> &copy);
 
-  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataWriter<CycleDataType> &take_from);
   INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataReader<CycleDataType> &take_from);
+  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataReader<CycleDataType> &take_from, bool force_to_0);
 
   INLINE ~CycleDataWriter();
 

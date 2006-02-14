@@ -1,6 +1,5 @@
 
 #include "config_gobj.cxx"
-#include "drawable.cxx"
 #include "indexBufferContext.cxx"
 #include "internalName.cxx"
 #include "lens.cxx"

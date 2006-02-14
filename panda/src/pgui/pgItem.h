@@ -62,13 +62,13 @@ protected:
   PGItem(const PGItem &copy);
 
   virtual PandaNode *make_copy() const;
-  virtual void transform_changed(int pipeline_stage);
-  virtual void draw_mask_changed(int pipeline_stage);
+  virtual void transform_changed();
+  virtual void draw_mask_changed();
 
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
-  virtual BoundingVolume *recompute_internal_bound(int pipeline_stage);
+  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage) const;
 
 public:
   virtual void xform(const LMatrix4f &mat);

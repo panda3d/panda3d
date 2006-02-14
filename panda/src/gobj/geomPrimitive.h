@@ -28,6 +28,10 @@
 #include "pointerTo.h"
 #include "pta_int.h"
 #include "pStatCollector.h"
+#include "cycleData.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "pipelineCycler.h"
 
 class GeomVertexData;
 class PreparedGraphicsObjects;
@@ -189,6 +193,12 @@ protected:
                                       int vertex);
 
 private:
+  class CData;
+
+  void recompute_minmax(CData *cdata);
+  void do_make_indexed(CData *cdata);
+
+private:
   // A GeomPrimitive keeps a list (actually, a map) of all the
   // PreparedGraphicsObjects tables that it has been prepared into.
   // Each PGO conversely keeps a list (a set) of all the Geoms that
@@ -197,24 +207,38 @@ private:
   typedef pmap<PreparedGraphicsObjects *, IndexBufferContext *> Contexts;
   Contexts _contexts;
     
-  // We don't need to cycle any data in the GeomPrimitive, since the
-  // GeomPrimitive itself is cycled through the stages.
-  ShadeModel _shade_model;
-  int _first_vertex;
-  int _num_vertices;
-  NumericType _index_type;
-  UsageHint _usage_hint;
-  PT(GeomVertexArrayData) _vertices;
-  PTA_int _ends;
-  PT(GeomVertexArrayData) _mins;
-  PT(GeomVertexArrayData) _maxs;
-  UpdateSeq _modified;
-  
-  bool _got_minmax;
-  unsigned int _min_vertex;
-  unsigned int _max_vertex;
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA CData : public CycleData {
+  public:
+    INLINE CData();
+    INLINE CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
+    virtual TypeHandle get_parent_type() const {
+      return GeomPrimitive::get_class_type();
+    }
 
-  void recompute_minmax();
+    ShadeModel _shade_model;
+    int _first_vertex;
+    int _num_vertices;
+    NumericType _index_type;
+    UsageHint _usage_hint;
+    PT(GeomVertexArrayData) _vertices;
+    PTA_int _ends;
+    PT(GeomVertexArrayData) _mins;
+    PT(GeomVertexArrayData) _maxs;
+    UpdateSeq _modified;
+
+    bool _got_minmax;
+    unsigned int _min_vertex;
+    unsigned int _max_vertex;
+  };
+
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
 
   static PStatCollector _decompose_pcollector;
   static PStatCollector _rotate_pcollector;
@@ -225,7 +249,6 @@ public:
   virtual void finalize(BamReader *manager);
 
 protected:
-  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:

@@ -20,10 +20,8 @@
 #define REMUTEX_H
 
 #include "pandabase.h"
-#include "pmutex.h"
-#include "conditionVar.h"
-#include "mutexHolder.h"
-#include "thread.h"
+#include "mutexDebug.h"
+#include "reMutexDirect.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ReMutex
@@ -31,36 +29,23 @@
 //               more than once by the thread that already holds it,
 //               without deadlock.  The thread must eventually release
 //               the mutex the same number of times it locked it.
+//
+//               This class inherits its implementation either from
+//               MutexDebug or ReMutexDirect, depending on the
+//               definition of DEBUG_THREADS.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS ReMutex {
+#ifdef DEBUG_THREADS
+class EXPCL_PANDAEXPRESS ReMutex : public MutexDebug
+#else
+class EXPCL_PANDAEXPRESS ReMutex : public ReMutexDirect
+#endif  // DEBUG_THREADS
+{
 public:
   INLINE ReMutex();
   INLINE ~ReMutex();
 private:
   INLINE ReMutex(const ReMutex &copy);
   INLINE void operator = (const ReMutex &copy);
-
-public:
-  INLINE void lock() const;
-  INLINE void release() const;
-
-  INLINE bool debug_is_locked() const;
-
-private:
-#ifdef HAVE_REMUTEXIMPL
-  // If the native Mutex implementation provides a reentrant flavor,
-  // just use that.
-  ReMutexImpl _impl;
-
-#elif !defined(THREAD_DUMMY_IMPL) || defined(CHECK_REENTRANT_MUTEX)
-  void do_lock();
-  void do_release();
-
-  Mutex _mutex;
-  ConditionVar _cvar;
-  Thread *_locking_thread;
-  int _lock_count;
-#endif  // !THREAD_DUMMY_IMPL || CHECK_REENTRANT_MUTEX
 };
 
 #include "reMutex.I"

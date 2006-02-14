@@ -57,6 +57,8 @@ CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
 template<class CycleDataType>
 INLINE void CycleDataReader<CycleDataType>::
 operator = (const CycleDataReader<CycleDataType> &copy) {
+  nassertv(_pointer == (CycleDataType *)NULL);
+
   _cycler = copy._cycler;
   _pointer = copy._pointer;
 

@@ -32,12 +32,11 @@ class NurbsVertex;
 //               It can return the point and/or tangent to the curve
 //               at any point.
 //
-//               This is not related to NurbsCurve, ClassicNurbsCurve,
-//               CubicCurveseg or any of the ParametricCurve-derived
-//               objects in this module.  It is a completely parallel
-//               implementation of NURBS curves, and will probably
-//               eventually replace the whole ParametricCurve class
-//               hierarchy.
+//               This is not related to NurbsCurve, CubicCurveseg or
+//               any of the ParametricCurve-derived objects in this
+//               module.  It is a completely parallel implementation
+//               of NURBS curves, and will probably eventually replace
+//               the whole ParametricCurve class hierarchy.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NurbsCurveResult : public ReferenceCount {
 public:

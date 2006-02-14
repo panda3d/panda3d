@@ -281,7 +281,7 @@ show_bounds(CullTraverserData &data, bool tight) {
     }
     
   } else {
-    PT(Geom) bounds_viz = make_bounds_viz(node->get_bound());
+    PT(Geom) bounds_viz = make_bounds_viz(node->get_bounds());
 
     if (bounds_viz != (Geom *)NULL) {
       _geoms_pcollector.add_level(2);

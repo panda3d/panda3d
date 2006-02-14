@@ -62,7 +62,7 @@ add_object(CullableObject *) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullBin::finish_cull
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Called after all the geoms have been added, this
 //               indicates that the cull process is finished for this
 //               frame and gives the bins a chance to do any
@@ -75,7 +75,7 @@ finish_cull() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullBin::draw
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Draws all the geoms in the bin, in the appropriate
 //               order.
 ////////////////////////////////////////////////////////////////////

@@ -299,33 +299,17 @@ draw() const {
 */
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::recompute_bound
-//       Access: Protected, Virtual
-//  Description: Recomputes the dynamic bounding volume for this
-//               object.  This is the bounding volume for the node and
-//               all of its children, and normally does not need to be
-//               specialized beyond PandaNode; we specialize this
-//               function just so we can piggyback on it the
-//               setting the _net_portal_mask bits.
-////////////////////////////////////////////////////////////////////
-BoundingVolume *PortalNode::
-recompute_bound(int pipeline_stage) {
-  BoundingVolume *result = PandaNode::recompute_bound(pipeline_stage);
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::recompute_internal_bound
+//     Function: PortalNode::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description: Called when needed to recompute the node's
 //               _internal_bound object.  Nodes that contain anything
 //               of substance should redefine this to do the right
 //               thing.
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *PortalNode::
-recompute_internal_bound(int pipeline_stage) {
+PT(BoundingVolume) PortalNode::
+compute_internal_bounds(int pipeline_stage) const {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_internal_bound(pipeline_stage);
+  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);

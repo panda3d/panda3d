@@ -101,6 +101,17 @@ elevate_read(const CycleDataType *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read_upstream (dummy or true)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read_upstream().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read_upstream(const CycleDataType *pointer, bool force_to_0) {
+  return (CycleDataType *)PipelineCyclerBase::elevate_read_upstream(pointer, force_to_0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCycler::elevate_read_stage (dummy or true)
 //       Access: Public
 //  Description: See PipelineCyclerBase::elevate_read_stage().
@@ -220,6 +231,17 @@ write() {
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
 elevate_read(const CycleDataType *) {
+  return &_typed_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read_upstream (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read_upstream().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read_upstream(const CycleDataType *, bool) {
   return &_typed_data;
 }
 

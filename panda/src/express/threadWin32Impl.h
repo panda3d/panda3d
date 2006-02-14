@@ -26,8 +26,8 @@
 
 #include "notify.h"
 #include "threadPriority.h"
-#include "pmutex.h"
-#include "conditionVar.h"
+#include "mutexWin32Impl.h"
+#include "conditionVarWin32Impl.h"
 
 #include <windows.h>
 
@@ -64,8 +64,8 @@ private:
     S_finished
   };
 
-  Mutex _mutex;
-  ConditionVar _cv;
+  MutexWin32Impl _mutex;
+  ConditionVarWin32Impl _cv;
   Thread *_parent_obj;
   HANDLE _thread;
   DWORD _thread_id;

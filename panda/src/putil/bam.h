@@ -29,19 +29,14 @@
 // ASCII/Binary conversion.
 static const string _bam_header = string("pbj\0\n\r", 6);
 
-static const unsigned short _bam_major_ver = 5;
+static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 2 on 7/6/00 due to major changes in Character.
 // Bumped to major version 3 on 12/8/00 to change float64's to float32's.
 // Bumped to major version 4 on 4/10/02 to store new scene graph.
 // Bumped to major version 5 on 5/6/05 for new Geom implementation.
+// Bumped to major version 6 on 2/11/06 to factor out PandaNode::CData.
 
-static const unsigned short _bam_minor_ver = 6;
-// Bumped to minor version 1 on 7/14/05 to add TextureStage::_saved_result.
-// Bumped to minor version 2 on 7/21/05 to add TransformState::is_2d.
-// Bumped to minor version 3 on 8/25/05 to add ModelNode::_preserve_attributes.
-// Bumped to minor version 4 on 9/27/05 to make SequenceNode inherit from AnimInterface.
-// Bumped to minor version 5 on 12/22/05 to add Texture::_border_color.
-// Bumped to minor version 6 on 1/14/06 to add Material::_name.
+static const unsigned short _bam_minor_ver = 0;
 
 
 #endif

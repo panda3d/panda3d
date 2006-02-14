@@ -39,7 +39,7 @@ PGTop(const string &name) :
 
   // A PGTop node normally has an infinite bounding volume.  Screw
   // culling.
-  set_bound(OmniBoundingVolume());
+  set_internal_bounds(new OmniBoundingVolume());
   set_final(true);
 
   // Also, screw state sorting.  By default, everything under PGTop

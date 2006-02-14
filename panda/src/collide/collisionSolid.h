@@ -23,7 +23,6 @@
 
 #include "config_collide.h"
 #include "typedWritableReferenceCount.h"
-#include "boundedObject.h"
 #include "luse.h"
 #include "pointerTo.h"
 #include "renderState.h"
@@ -49,8 +48,7 @@ class CullTraverserData;
 //               function calls handle the subset of the N*N
 //               intersection tests that we care about.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionSolid :
-  public TypedWritableReferenceCount, public BoundedObject {
+class EXPCL_PANDA CollisionSolid : public TypedWritableReferenceCount {
 public:
   CollisionSolid();
   CollisionSolid(const CollisionSolid &copy);
@@ -71,6 +69,8 @@ PUBLISHED:
   INLINE void set_respect_effective_normal(bool respect_effective_normal);
   INLINE bool get_respect_effective_normal() const;
 
+  CPT(BoundingVolume) get_bounds() const;
+  
 public:
   virtual PT(CollisionEntry)
   test_intersection(const CollisionEntry &entry) const;
@@ -86,6 +86,9 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
+  INLINE void mark_internal_bounds_stale();
+  virtual PT(BoundingVolume) compute_internal_bounds() const;
+
   virtual PT(CollisionEntry)
   test_intersection_from_sphere(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
@@ -114,6 +117,7 @@ protected:
 
 private:
   LVector3f _effective_normal;
+  PT(BoundingVolume) _internal_bounds;
 
   // Be careful reordering these bits, since they are written to a bam
   // file.
@@ -122,6 +126,7 @@ private:
     F_effective_normal          = 0x02,
     F_viz_geom_stale            = 0x04,
     F_ignore_effective_normal   = 0x08,
+    F_internal_bounds_stale     = 0x10,
   };
   int _flags;
 
@@ -137,10 +142,8 @@ public:
   }
   static void init_type() {
     TypedWritableReferenceCount::init_type();
-    BoundedObject::init_type();
     register_type(_type_handle, "CollisionSolid",
-                  TypedWritableReferenceCount::get_class_type(),
-                  BoundedObject::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -356,8 +356,8 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
   for (int i = 0; i < num_geoms; i++) {
     const Geom *geom = get_geom(i);
     geom->calc_tight_bounds(min_point, max_point, found_any,
-                              geom->get_vertex_data()->animate_vertices(),
-                              !next_transform->is_identity(), mat);
+			    geom->get_vertex_data()->animate_vertices(),
+			    !next_transform->is_identity(), mat);
   }
 
   return next_transform;
@@ -397,9 +397,10 @@ add_geom(Geom *geom, const RenderState *state) {
     CDStageWriter cdata(_cycler, pipeline_stage);
 
     cdata->_geoms.push_back(GeomEntry(geom, state));
-    mark_bound_stale(pipeline_stage);
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -413,7 +414,6 @@ add_geoms_from(const GeomNode *other) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
     CDStageWriter cdata(_cycler, pipeline_stage);
     CDStageReader cdata_other(other->_cycler, pipeline_stage);
-    mark_bound_stale(pipeline_stage);
 
     Geoms::const_iterator gi;
     for (gi = cdata_other->_geoms.begin(); 
@@ -425,6 +425,8 @@ add_geoms_from(const GeomNode *other) {
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -449,7 +451,7 @@ set_geom(int n, Geom *geom) {
   nassertv(n >= 0 && n < (int)cdata->_geoms.size());
   cdata->_geoms[n]._geom = geom;
 
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -631,17 +633,17 @@ is_geom_node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomNode::recompute_internal_bound
+//     Function: GeomNode::compute_internal_bounds
 //       Access: Protected, Virtual
-//  Description: Called when needed to recompute the node's
-//               _internal_bound object.  Nodes that contain anything
-//               of substance should redefine this to do the right
-//               thing.
+//  Description: Returns a newly-allocated BoundingVolume that
+//               represents the internal contents of the node.  Should
+//               be overridden by PandaNode classes that contain
+//               something internally.
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *GeomNode::
-recompute_internal_bound(int pipeline_stage) {
+PT(BoundingVolume) GeomNode::
+compute_internal_bounds(int pipeline_stage) const {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_internal_bound(pipeline_stage);
+  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   // Now actually compute the bounding volume by putting it around all
@@ -652,7 +654,7 @@ recompute_internal_bound(int pipeline_stage) {
   Geoms::const_iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     const GeomEntry &entry = (*gi);
-    child_volumes.push_back(entry._geom->get_bound(pipeline_stage));
+    child_volumes.push_back(entry._geom->get_bounds());
   }
 
   const BoundingVolume **child_begin = &child_volumes[0];

@@ -33,9 +33,7 @@
 static int last_rand = 0;
 #endif /* __WIN32__ */
 
-Mutex print_mutex;
-
-#define PRINTMSG(x) { MutexHolder l(print_mutex); x; }
+#define PRINTMSG(x) { MutexHolder l(Mutex::_notify_mutex); x; }
 
 Mutex rand_mutex;
 
@@ -53,7 +51,16 @@ static double random_f(double max)
 // afford luxuries like 2 chopsticks per person.
 #define N_DINERS 5
 
-Mutex chopsticks[N_DINERS];
+class ChopstickMutex : public Mutex {
+public:
+  void output(ostream &out) const {
+    out << "chopstick " << _n;
+  }
+  int _n;
+};
+
+
+ChopstickMutex chopsticks[N_DINERS];
 
 // At most n philosophers are allowed into the room, others would have to
 // wait at the door.  This restriction demonstrates the use of condition
@@ -81,17 +88,20 @@ private:
     int r = l+1;
     if (r == N_DINERS)
       r = 0;
+    /*
     if (l & 1) {
       int t = l;
       l = r;
       r = t;
     }
+    */
     PRINTMSG(cerr << "Philosopher #" << _id << " has entered the room."
              << endl);
     int count = (int)random_f(10.0) + 1;
     while (--count) {
-      chopsticks[l].lock();
       chopsticks[r].lock();
+      Thread::sleep(1);
+      chopsticks[l].lock();
       PRINTMSG(cerr << "Philosopher #" << _id
                << " is eating spaghetti now." << endl);
       Thread::sleep(random_f(3.0));
@@ -115,12 +125,19 @@ public:
   philosopher(const int id) : Thread("philosopher", "a") {
     _id = id;
   }
+
+  virtual void output(ostream &out) const {
+    out << "philosopher " << _id;
+  }
 };
 
 int main(int, char**)
 {
   int i;
   room_mutex.lock();
+  for (i=0; i<N_DINERS; ++i) {
+    chopsticks[i]._n = i;
+  }
   for (i=0; i<N_DINERS; ++i) {
     phils[i] = new philosopher(i);
     phils[i]->start(TP_normal, false, false);

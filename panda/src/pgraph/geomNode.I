@@ -159,7 +159,7 @@ remove_geom(int n) {
   nassertv(n >= 0 && n < (int)cdata->_geoms.size());
 
   cdata->_geoms.erase(cdata->_geoms.begin() + n);
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,7 +171,7 @@ INLINE void GeomNode::
 remove_all_geoms() {
   CDWriter cdata(_cycler);
   cdata->_geoms.clear();
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

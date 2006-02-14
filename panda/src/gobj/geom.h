@@ -21,7 +21,12 @@
 
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
-#include "boundedObject.h"
+#include "cycleData.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "cycleDataStageReader.h"
+#include "cycleDataStageWriter.h"
+#include "pipelineCycler.h"
 #include "geomVertexData.h"
 #include "geomPrimitive.h"
 #include "geomMunger.h"
@@ -32,6 +37,7 @@
 #include "pointerTo.h"
 #include "indirectLess.h"
 #include "pset.h"
+#include "boundingVolume.h"
 
 class GeomContext;
 class PreparedGraphicsObjects;
@@ -47,7 +53,7 @@ class PreparedGraphicsObjects;
 //               and all of them must be rendered at the same time, in
 //               the same graphics state.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Geom : public TypedWritableReferenceCount, public BoundedObject, public GeomEnums {
+class EXPCL_PANDA Geom : public TypedWritableReferenceCount, public GeomEnums {
 PUBLISHED:
   Geom(const GeomVertexData *data);
 protected:
@@ -96,6 +102,11 @@ PUBLISHED:
   bool check_valid() const;
   bool check_valid(const GeomVertexData *vertex_data) const;
 
+  CPT(BoundingVolume) get_bounds() const;
+  INLINE void mark_bounds_stale() const;
+  INLINE void set_bounds(const BoundingVolume *volume);
+  INLINE void clear_bounds();
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
@@ -113,10 +124,10 @@ public:
             const GeomMunger *munger,
             const GeomVertexData *vertex_data) const;
 
-  void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
-                         bool &found_any, 
-                         const GeomVertexData *vertex_data,
-                         bool got_mat, const LMatrix4f &mat) const;
+  INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+				bool &found_any, 
+				const GeomVertexData *vertex_data,
+				bool got_mat, const LMatrix4f &mat) const;
   INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                                 bool &found_any) const;
 
@@ -126,12 +137,29 @@ public:
   typedef pvector< PT(TextureStage) > ActiveTextureStages;
   typedef pset<TextureStage *> NoTexCoordStages;
 
-protected:
-  virtual BoundingVolume *recompute_bound(int pipeline_stage);
-
 private:
+  class CData;
+
+  INLINE void mark_internal_bounds_stale(CData *cdata);
+  PT(BoundingVolume) compute_internal_bounds(int pipeline_stage) const;
+
+  void do_calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+			    bool &found_any, 
+			    const GeomVertexData *vertex_data,
+			    bool got_mat, const LMatrix4f &mat,
+			    int pipeline_stage) const;
+
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   bool check_will_be_valid(const GeomVertexData *vertex_data) const;
+
+  void do_clear_cache(CData *cdata);
+  void do_draw(GraphicsStateGuardianBase *gsg, 
+	       const GeomMunger *munger,
+	       const GeomVertexData *vertex_data,
+	       const CData *cdata) const;
+
+  void reset_usage_hint(CData *cdata);
+  void reset_geom_rendering(CData *cdata);
 
 private:
   typedef pvector<PT(GeomPrimitive) > Primitives;
@@ -141,9 +169,6 @@ private:
   // cache needs to be stored in the CycleData, which makes accurate
   // cleanup more difficult.  We use the GeomCacheManager class to
   // avoid cache bloat.
-
-  // Actually, the above is no longer true.  Need to investigate if we
-  // can go back to having explicit cleanup to make this better.
   class CacheEntry : public GeomCacheEntry {
   public:
     INLINE CacheEntry(const GeomVertexData *source_data,
@@ -167,20 +192,39 @@ private:
   };
   typedef pset<PT(CacheEntry), IndirectLess<CacheEntry> > Cache;
 
-  // We don't need to cycle any data in the Geom, since the Geom
-  // itself is cycled through the stages.
-  PT(GeomVertexData) _data;
-  Primitives _primitives;
-  PrimitiveType _primitive_type;
-  ShadeModel _shade_model;
-  int _geom_rendering;
-  UsageHint _usage_hint;
-  bool _got_usage_hint;
-  UpdateSeq _modified;
-  Cache _cache;
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA CData : public CycleData {
+  public:
+    INLINE CData();
+    INLINE CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
+    virtual TypeHandle get_parent_type() const {
+      return Geom::get_class_type();
+    }
 
-  void reset_usage_hint();
-  void reset_geom_rendering();
+    PT(GeomVertexData) _data;
+    Primitives _primitives;
+    PrimitiveType _primitive_type;
+    ShadeModel _shade_model;
+    int _geom_rendering;
+    UsageHint _usage_hint;
+    bool _got_usage_hint;
+    UpdateSeq _modified;
+    Cache _cache;
+  
+    CPT(BoundingVolume) _internal_bounds;
+    bool _internal_bounds_stale;
+    CPT(BoundingVolume) _user_bounds;
+  };
+
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
   // This works just like the Texture contexts: each Geom keeps a
   // record of all the PGO objects that hold the Geom, and vice-versa.
@@ -197,7 +241,6 @@ public:
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
-  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
@@ -206,10 +249,8 @@ public:
   }
   static void init_type() {
     TypedWritableReferenceCount::init_type();
-    BoundedObject::init_type();
     register_type(_type_handle, "Geom",
-                  TypedWritableReferenceCount::get_class_type(),
-                  BoundedObject::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

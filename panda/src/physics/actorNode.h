@@ -55,7 +55,7 @@ private:
 
   // node hook if the client changes the node's transform.
   // i.e. copy from PandaNode to PhysicsObject
-  virtual void transform_changed(int pipeline_stage);
+  virtual void transform_changed();
 
 public:
   static TypeHandle get_class_type() {

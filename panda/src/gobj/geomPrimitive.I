@@ -26,7 +26,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPrimitive::ShadeModel GeomPrimitive::
 get_shade_model() const {
-  return _shade_model;
+  CDReader cdata(_cycler);
+  return cdata->_shade_model;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,10 +40,15 @@ get_shade_model() const {
 //               when rendering, but rather serves as a hint to the
 //               renderer to tell it how the per-vertex colors and
 //               normals on this primitive are applied.
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomPrimitive::
 set_shade_model(GeomPrimitive::ShadeModel shade_model) {
-  _shade_model = shade_model;
+  CDWriter cdata(_cycler, true);
+  cdata->_shade_model = shade_model;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,7 +69,8 @@ set_shade_model(GeomPrimitive::ShadeModel shade_model) {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPrimitive::UsageHint GeomPrimitive::
 get_usage_hint() const {
-  return _usage_hint;
+  CDReader cdata(_cycler);
+  return cdata->_usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,7 +81,8 @@ get_usage_hint() const {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPrimitive::NumericType GeomPrimitive::
 get_index_type() const {
-  return _index_type;
+  CDReader cdata(_cycler);
+  return cdata->_index_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,7 +111,8 @@ is_composite() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomPrimitive::
 is_indexed() const {
-  return (_vertices != (GeomVertexArrayData *)NULL);
+  CDReader cdata(_cycler);
+  return (cdata->_vertices != (GeomVertexArrayData *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,10 +123,11 @@ is_indexed() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
 get_num_vertices() const {
-  if (_vertices == (GeomVertexArrayData *)NULL) {
-    return _num_vertices;
+  CDReader cdata(_cycler);
+  if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
+    return cdata->_num_vertices;
   } else {
-    return _vertices->get_num_rows();
+    return cdata->_vertices->get_num_rows();
   }
 }
 
@@ -169,11 +179,14 @@ get_primitive_num_faces(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
 get_min_vertex() const {
-  if (!_got_minmax) {
-    ((GeomPrimitive *)this)->recompute_minmax();
+  CDReader cdata(_cycler);
+  if (!cdata->_got_minmax) {
+    CDWriter cdataw(((GeomPrimitive *)this)->_cycler, cdata, false);
+    ((GeomPrimitive *)this)->recompute_minmax(cdataw);
+    return cdataw->_min_vertex;
   }
   
-  return _min_vertex;
+  return cdata->_min_vertex;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,10 +197,13 @@ get_min_vertex() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
 get_max_vertex() const {
-  if (!_got_minmax) {
-    ((GeomPrimitive *)this)->recompute_minmax();
+  CDReader cdata(_cycler);
+  if (!cdata->_got_minmax) {
+    CDWriter cdataw(((GeomPrimitive *)this)->_cycler, cdata, false);
+    ((GeomPrimitive *)this)->recompute_minmax(cdataw);
+    return cdataw->_max_vertex;
   }
-  return _max_vertex;
+  return cdata->_max_vertex;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,7 +214,8 @@ get_max_vertex() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
 get_data_size_bytes() const {
-  return _vertices->get_data_size_bytes();
+  CDReader cdata(_cycler);
+  return cdata->_vertices->get_data_size_bytes();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,7 +227,8 @@ get_data_size_bytes() const {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq GeomPrimitive::
 get_modified() const {
-  return _modified;
+  CDReader cdata(_cycler);
+  return cdata->_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -224,7 +242,8 @@ get_modified() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomVertexArrayData *GeomPrimitive::
 get_vertices() const {
-  return _vertices;
+  CDReader cdata(_cycler);
+  return cdata->_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -266,7 +285,8 @@ get_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPTA_int GeomPrimitive::
 get_ends() const {
-  return _ends;
+  CDReader cdata(_cycler);
+  return cdata->_ends;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,10 +303,13 @@ get_ends() const {
 INLINE const GeomVertexArrayData *GeomPrimitive::
 get_mins() const {
   nassertr(is_indexed(), NULL);
-  if (!_got_minmax) {
-    ((GeomPrimitive *)this)->recompute_minmax();
+  CDReader cdata(_cycler);
+  if (!cdata->_got_minmax) {
+    CDWriter cdataw(((GeomPrimitive *)this)->_cycler, cdata, false);
+    ((GeomPrimitive *)this)->recompute_minmax(cdataw);
+    return cdataw->_mins;
   }
-  return _mins;
+  return cdata->_mins;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -303,10 +326,13 @@ get_mins() const {
 INLINE const GeomVertexArrayData *GeomPrimitive::
 get_maxs() const {
   nassertr(is_indexed(), NULL);
-  if (!_got_minmax) {
-    ((GeomPrimitive *)this)->recompute_minmax();
+  CDReader cdata(_cycler);
+  if (!cdata->_got_minmax) {
+    CDWriter cdataw(((GeomPrimitive *)this)->_cycler, cdata, false);
+    ((GeomPrimitive *)this)->recompute_minmax(cdataw);
+    return cdataw->_maxs;
   }
-  return _maxs;
+  return cdata->_maxs;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -319,7 +345,7 @@ INLINE CPT(GeomVertexArrayFormat) GeomPrimitive::
 get_index_format() const {
   return GeomVertexArrayFormat::register_format
     (new GeomVertexArrayFormat(InternalName::get_index(), 1, 
-                               get_index_type(), C_index));
+                                 get_index_type(), C_index));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -330,6 +356,47 @@ get_index_format() const {
 INLINE PT(GeomVertexArrayData) GeomPrimitive::
 make_index_data() const {
   return new GeomVertexArrayData(get_index_format(), get_usage_hint());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::CData::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomPrimitive::CData::
+CData() :
+  _shade_model(SM_smooth),
+  _first_vertex(0),
+  _num_vertices(0),
+  _index_type(NT_uint16),
+  _usage_hint(UH_unspecified),
+  _got_minmax(true),
+  _min_vertex(0),
+  _max_vertex(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomPrimitive::CData::
+CData(const GeomPrimitive::CData &copy) :
+  _shade_model(copy._shade_model),
+  _first_vertex(copy._first_vertex),
+  _num_vertices(copy._num_vertices),
+  _index_type(copy._index_type),
+  _usage_hint(copy._usage_hint),
+  _vertices(copy._vertices),
+  _ends(copy._ends),
+  _mins(copy._mins),
+  _maxs(copy._maxs),
+  _modified(copy._modified),
+  _got_minmax(copy._got_minmax),
+  _min_vertex(copy._min_vertex),
+  _max_vertex(copy._max_vertex)
+{
 }
 
 INLINE ostream &

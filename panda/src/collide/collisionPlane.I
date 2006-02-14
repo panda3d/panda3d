@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::Default Constructor
 //       Access: Protected
@@ -78,7 +79,7 @@ dist_to_plane(const LPoint3f &point) const {
 INLINE void CollisionPlane::
 set_plane(const Planef &plane) {
   _plane = plane;
-  mark_bound_stale();
+  mark_internal_bounds_stale();
   mark_viz_stale();
 }
 

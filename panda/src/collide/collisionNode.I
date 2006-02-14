@@ -81,7 +81,7 @@ get_into_collide_mask() const {
 INLINE void CollisionNode::
 clear_solids() {
   _solids.clear();
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ INLINE void CollisionNode::
 set_solid(int n, CollisionSolid *solid) {
   nassertv(n >= 0 && n < get_num_solids());
   _solids[n] = solid;
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -127,7 +127,7 @@ INLINE void CollisionNode::
 remove_solid(int n) {
   nassertv(n >= 0 && n < get_num_solids());
   _solids.erase(_solids.begin() + n);
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ remove_solid(int n) {
 INLINE int CollisionNode::
 add_solid(CollisionSolid *solid) {
   _solids.push_back(solid);
-  mark_bound_stale();
+  mark_internal_bounds_stale();
   return _solids.size() - 1;
 }
 

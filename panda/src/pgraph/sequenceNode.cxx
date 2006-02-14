@@ -201,12 +201,5 @@ make_from_bam(const FactoryParams &params) {
 void SequenceNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   SelectiveChildNode::fillin(scan, manager);
-  if (manager->get_file_minor_ver() < 4) {
-    float cycle_rate = scan.get_float32();
-    scan.get_float32();
-    set_frame_rate(cycle_rate);
-    loop(true);
-  } else {
-    AnimInterface::fillin(scan, manager);
-  }
+  AnimInterface::fillin(scan, manager);
 }

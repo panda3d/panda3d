@@ -38,12 +38,11 @@
 //               defined by a NodePath), as well as an optional knot
 //               vector.
 //
-//               This is not related to NurbsCurve, ClassicNurbsCurve,
-//               CubicCurveseg or any of the ParametricCurve-derived
-//               objects in this module.  It is a completely parallel
-//               implementation of NURBS curves, and will probably
-//               eventually replace the whole ParametricCurve class
-//               hierarchy.
+//               This is not related to NurbsCurve, CubicCurveseg or
+//               any of the ParametricCurve-derived objects in this
+//               module.  It is a completely parallel implementation
+//               of NURBS curves, and will probably eventually replace
+//               the whole ParametricCurve class hierarchy.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NurbsCurveEvaluator : public ReferenceCount {
 PUBLISHED:

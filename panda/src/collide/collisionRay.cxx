@@ -119,23 +119,20 @@ set_from_lens(LensNode *camera, const LPoint2f &point) {
     _direction = far_point - near_point;
   }
 
-  mark_bound_stale();
+  mark_internal_bounds_stale();
   mark_viz_stale();
 
   return success;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionRay::recompute_bound
+//     Function: CollisionRay::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *CollisionRay::
-recompute_bound(int pipeline_stage) {
-  BoundedObject::recompute_bound(pipeline_stage);
-  // Less than ideal: we throw away whatever we just allocated in
-  // BoundedObject.
-  return set_bound_ptr(new BoundingLine(_origin, _origin + _direction));
+PT(BoundingVolume) CollisionRay::
+compute_internal_bounds() const {
+  return new BoundingLine(_origin, _origin + _direction);
 }
 
 ////////////////////////////////////////////////////////////////////

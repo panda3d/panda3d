@@ -1,4 +1,4 @@
-// Filename: classicNurbsCurve.cxx
+// Filename: nurbsCurve.cxx
 // Created by:  drose (27Feb98)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "classicNurbsCurve.h"
+#include "nurbsCurve.h"
 #include "config_parametrics.h"
 
 #include "indent.h"
@@ -25,36 +25,27 @@
 #include "bamWriter.h"
 #include "bamReader.h"
 
-////////////////////////////////////////////////////////////////////
-// Statics
-////////////////////////////////////////////////////////////////////
-
-TypeHandle ClassicNurbsCurve::_type_handle;
-TypeHandle ClassicNurbsCurve::_orig_type_handle;
-
-static const LVecBase3f zero = LVecBase3f(0.0f, 0.0f, 0.0f);
-// This is returned occasionally from some of the functions, and is
-// used from time to time as an initializer.
+TypeHandle NurbsCurve::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::Constructor
+//     Function: NurbsCurve::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-ClassicNurbsCurve::
-ClassicNurbsCurve() {
+NurbsCurve::
+NurbsCurve() {
   _order = 4;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::Copy Constructor
+//     Function: NurbsCurve::Copy Constructor
 //       Access: Published
 //  Description: Constructs a NURBS curve equivalent to the indicated
 //               (possibly non-NURBS) curve.
 ////////////////////////////////////////////////////////////////////
-ClassicNurbsCurve::
-ClassicNurbsCurve(const ParametricCurve &pc) {
+NurbsCurve::
+NurbsCurve(const ParametricCurve &pc) {
   _order = 4;
 
   if (!pc.convert_to_nurbs(this)) {
@@ -64,13 +55,13 @@ ClassicNurbsCurve(const ParametricCurve &pc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::Constructor
+//     Function: NurbsCurve::Constructor
 //       Access: Published
 //  Description: Constructs a NURBS curve according to the indicated
 //               NURBS parameters.
 ////////////////////////////////////////////////////////////////////
-ClassicNurbsCurve::
-ClassicNurbsCurve(int order, int num_cvs,
+NurbsCurve::
+NurbsCurve(int order, int num_cvs,
                   const float knots[], const LVecBase4f cvs[]) {
   _order = order;
 
@@ -89,22 +80,22 @@ ClassicNurbsCurve(int order, int num_cvs,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::Destructor
+//     Function: NurbsCurve::Destructor
 //       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-ClassicNurbsCurve::
-~ClassicNurbsCurve() {
+NurbsCurve::
+~NurbsCurve() {
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::set_order
+//     Function: NurbsCurve::set_order
 //       Access: Published, Virtual
 //  Description: Changes the order of the curve.  Must be a value from
 //               1 to 4.  Can only be done when there are no cv's.
 ////////////////////////////////////////////////////////////////////
-void ClassicNurbsCurve::
+void NurbsCurve::
 set_order(int order) {
   nassertv(order >= 1 && order <= 4);
   nassertv(_cvs.empty());
@@ -113,31 +104,31 @@ set_order(int order) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::get_order
+//     Function: NurbsCurve::get_order
 //       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int ClassicNurbsCurve::
+int NurbsCurve::
 get_order() const {
   return _order;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::get_num_cvs
+//     Function: NurbsCurve::get_num_cvs
 //       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int ClassicNurbsCurve::
+int NurbsCurve::
 get_num_cvs() const {
   return _cvs.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::get_num_knots
+//     Function: NurbsCurve::get_num_knots
 //       Access: Published, Virtual
 //  Description: Returns the number of knots on the curve.
 ////////////////////////////////////////////////////////////////////
-int ClassicNurbsCurve::
+int NurbsCurve::
 get_num_knots() const {
   return _cvs.size() + _order;
 }
@@ -145,7 +136,7 @@ get_num_knots() const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::insert_cv
+//     Function: NurbsCurve::insert_cv
 //       Access: Published, Virtual
 //  Description: Inserts a new CV into the middle of the curve at the
 //               indicated parametric value.  This doesn't change the
@@ -154,7 +145,7 @@ get_num_knots() const {
 //               the curve will be changed.  Returns true if
 //               successful, false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool ClassicNurbsCurve::
+bool NurbsCurve::
 insert_cv(float t) {
   if (_cvs.empty()) {
     append_cv(0.0f, 0.0f, 0.0f);
@@ -207,12 +198,12 @@ insert_cv(float t) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::remove_cv
+//     Function: NurbsCurve::remove_cv
 //       Access: Published, Virtual
 //  Description: Removes the indicated CV from the curve.  Returns
 //               true if the CV index was valid, false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool ClassicNurbsCurve::
+bool NurbsCurve::
 remove_cv(int n) {
   if (n < 0 || n >= (int)_cvs.size()) {
     return false;
@@ -223,23 +214,23 @@ remove_cv(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::remove_all_cvs
+//     Function: NurbsCurve::remove_all_cvs
 //       Access: Published, Virtual
 //  Description: Removes all CV's from the curve.
 ////////////////////////////////////////////////////////////////////
-void ClassicNurbsCurve::
+void NurbsCurve::
 remove_all_cvs() {
   _cvs.erase(_cvs.begin(), _cvs.end());
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::set_cv
+//     Function: NurbsCurve::set_cv
 //       Access: Published, Virtual
 //  Description: Repositions the indicated CV.  Returns true if
 //               successful, false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool ClassicNurbsCurve::
+bool NurbsCurve::
 set_cv(int n, const LVecBase4f &v) {
   nassertr(n >= 0 && n < get_num_cvs(), false);
 
@@ -248,12 +239,12 @@ set_cv(int n, const LVecBase4f &v) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::get_cv
+//     Function: NurbsCurve::get_cv
 //       Access: Published, Virtual
 //  Description: Returns the position in homogeneous space of the
 //               indicated CV.
 ////////////////////////////////////////////////////////////////////
-LVecBase4f ClassicNurbsCurve::
+LVecBase4f NurbsCurve::
 get_cv(int n) const {
   nassertr(n >= 0 && n < get_num_cvs(), LVecBase4f::zero());
 
@@ -262,7 +253,7 @@ get_cv(int n) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::set_knot
+//     Function: NurbsCurve::set_knot
 //       Access: Published, Virtual
 //  Description: Sets the value of the indicated knot.  There are
 //               get_num_cvs() + _order knot values, but the first
@@ -270,7 +261,7 @@ get_cv(int n) const {
 //               changed.  It is also an error to set a knot value
 //               outside the range of its neighbors.
 ////////////////////////////////////////////////////////////////////
-bool ClassicNurbsCurve::
+bool NurbsCurve::
 set_knot(int n, float t) {
   nassertr(n >= 0 && n < get_num_knots(), false);
 
@@ -282,11 +273,11 @@ set_knot(int n, float t) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::get_knot
+//     Function: NurbsCurve::get_knot
 //       Access: Published, Virtual
 //  Description: Retrieves the value of the indicated knot.
 ////////////////////////////////////////////////////////////////////
-float ClassicNurbsCurve::
+float NurbsCurve::
 get_knot(int n) const {
   if (n < _order || _cvs.empty()) {
     return 0.0f;
@@ -299,7 +290,7 @@ get_knot(int n) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::recompute
+//     Function: NurbsCurve::recompute
 //       Access: Published, Virtual
 //  Description: Recalculates the curve basis according to the latest
 //               position of the CV's, knots, etc.  Until this
@@ -308,7 +299,7 @@ get_knot(int n) const {
 //               true if the resulting curve is valid, false
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
-bool ClassicNurbsCurve::
+bool NurbsCurve::
 recompute() {
   _segs.erase(_segs.begin(), _segs.end());
 
@@ -339,7 +330,7 @@ recompute() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::rebuild_curveseg
+//     Function: NurbsCurve::rebuild_curveseg
 //       Access: Public, Virtual
 //  Description: Rebuilds the current curve segment (as selected by
 //               the most recent call to find_curve()) according to
@@ -347,7 +338,7 @@ recompute() {
 //               CubicCurveseg::compute_seg).  Returns true if
 //               possible, false if something goes horribly wrong.
 ////////////////////////////////////////////////////////////////////
-bool ClassicNurbsCurve::
+bool NurbsCurve::
 rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
                  int rtype1, float t1, const LVecBase4f &v1,
                  int rtype2, float t2, const LVecBase4f &v2,
@@ -377,8 +368,7 @@ rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
   // properties depends on the original value.
   if ((rtype0 | rtype1 | rtype2 | rtype3) & RT_KEEP_ORIG) {
     for (c = 0; c < 4; c++) {
-      static const LVecBase4f zero_vec(0.0f, 0.0f, 0.0f, 0.0f);
-      const LVecBase4f &s = (c < _order) ? _cvs[c+cv]._p : zero_vec;
+      const LVecBase4f &s = (c < _order) ? _cvs[c+cv]._p : LVecBase4f::zero();
 
       G.set_col(c, s);
     }
@@ -413,7 +403,7 @@ rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::stitch
+//     Function: NurbsCurve::stitch
 //       Access: Published, Virtual
 //  Description: Regenerates this curve as one long curve: the first
 //               curve connected end-to-end with the second one.
@@ -422,13 +412,13 @@ rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
 //               Returns true if successful, false on failure or if
 //               the curve type does not support stitching.
 ////////////////////////////////////////////////////////////////////
-bool ClassicNurbsCurve::
+bool NurbsCurve::
 stitch(const ParametricCurve *a, const ParametricCurve *b) {
   // First, make a copy of both of our curves.  This ensures they are
   // of the correct type, and also protects us in case one of them is
   // the same as 'this'.
-  PT(ClassicNurbsCurve) na = new ClassicNurbsCurve(*a);
-  PT(ClassicNurbsCurve) nb = new ClassicNurbsCurve(*b);
+  PT(NurbsCurve) na = new NurbsCurve(*a);
+  PT(NurbsCurve) nb = new NurbsCurve(*b);
 
   if (na->get_num_cvs() == 0 || nb->get_num_cvs() == 0) {
     return false;
@@ -471,73 +461,73 @@ stitch(const ParametricCurve *a, const ParametricCurve *b) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::get_nurbs_interface
+//     Function: NurbsCurve::get_nurbs_interface
 //       Access: Public, Virtual
 //  Description: Returns a pointer to the object as a
 //               NurbsCurveInterface object if it happens to be a
 //               NURBS-style curve; otherwise, returns NULL.
 ////////////////////////////////////////////////////////////////////
-NurbsCurveInterface *ClassicNurbsCurve::
+NurbsCurveInterface *NurbsCurve::
 get_nurbs_interface() {
   return this;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::convert_to_nurbs
+//     Function: NurbsCurve::convert_to_nurbs
 //       Access: Public, Virtual
 //  Description: Stores in the indicated NurbsCurve a NURBS
 //               representation of an equivalent curve.  Returns true
 //               if successful, false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool ClassicNurbsCurve::
+bool NurbsCurve::
 convert_to_nurbs(ParametricCurve *nc) const {
   nc->set_curve_type(_curve_type);
   return NurbsCurveInterface::convert_to_nurbs(nc);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::write
+//     Function: NurbsCurve::write
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void ClassicNurbsCurve::
+void NurbsCurve::
 write(ostream &out, int indent_level) const {
   NurbsCurveInterface::write(out, indent_level);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::append_cv_impl
+//     Function: NurbsCurve::append_cv_impl
 //       Access: Protected, Virtual
 //  Description: Adds a new CV to the end of the curve.  Creates a new
 //               knot value by adding 1 to the last knot value.
 //               Returns the index of the new CV.
 ////////////////////////////////////////////////////////////////////
-int ClassicNurbsCurve::
+int NurbsCurve::
 append_cv_impl(const LVecBase4f &v) {
   _cvs.push_back(CV(v, get_knot(_cvs.size())+1.0f));
   return _cvs.size()-1;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::format_egg
+//     Function: NurbsCurve::format_egg
 //       Access: Protected, Virtual
 //  Description: Formats the curve as an egg structure to write to the
 //               indicated stream.  Returns true on success, false on
 //               failure.
 ////////////////////////////////////////////////////////////////////
-bool ClassicNurbsCurve::
+bool NurbsCurve::
 format_egg(ostream &out, const string &name, const string &curve_type,
            int indent_level) const {
   return NurbsCurveInterface::format_egg(out, name, curve_type, indent_level);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::find_cv
+//     Function: NurbsCurve::find_cv
 //       Access: Protected
 //  Description: Finds the first knot whose value is >= t, or -1 if t
 //               is beyond the end of the curve.
 ////////////////////////////////////////////////////////////////////
-int ClassicNurbsCurve::
+int NurbsCurve::
 find_cv(float t) {
   int i;
   for (i = _order-1; i < (int)_cvs.size(); i++) {
@@ -550,25 +540,24 @@ find_cv(float t) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::register_with_factory
+//     Function: NurbsCurve::register_with_read_factory
 //       Access: Public, Static
 //  Description: Initializes the factory for reading these things from
 //               Bam files.
 ////////////////////////////////////////////////////////////////////
-void ClassicNurbsCurve::
+void NurbsCurve::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_ClassicNurbsCurve);
-  BamReader::get_factory()->register_factory(_orig_type_handle, make_ClassicNurbsCurve);
+  BamReader::get_factory()->register_factory(get_class_type(), make_NurbsCurve);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::make_ClassicNurbsCurve
+//     Function: NurbsCurve::make_NurbsCurve
 //       Access: Protected
 //  Description: Factory method to generate an object of this type.
 ////////////////////////////////////////////////////////////////////
-TypedWritable *ClassicNurbsCurve::
-make_ClassicNurbsCurve(const FactoryParams &params) {
-  ClassicNurbsCurve *me = new ClassicNurbsCurve;
+TypedWritable *NurbsCurve::
+make_NurbsCurve(const FactoryParams &params) {
+  NurbsCurve *me = new NurbsCurve;
   DatagramIterator scan;
   BamReader *manager;
 
@@ -578,12 +567,12 @@ make_ClassicNurbsCurve(const FactoryParams &params) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::write_datagram
+//     Function: NurbsCurve::write_datagram
 //       Access: Protected, Virtual
 //  Description: Function to write the important information in
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
-void ClassicNurbsCurve::
+void NurbsCurve::
 write_datagram(BamWriter *manager, Datagram &me) {
   PiecewiseCurve::write_datagram(manager, me);
 
@@ -599,14 +588,14 @@ write_datagram(BamWriter *manager, Datagram &me) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::fillin
+//     Function: NurbsCurve::fillin
 //       Access: Protected
 //  Description: Function that reads out of the datagram (or asks
 //               manager to read) all of the data that is needed to
 //               re-create this object and stores it in the appropiate
 //               place
 ////////////////////////////////////////////////////////////////////
-void ClassicNurbsCurve::
+void NurbsCurve::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PiecewiseCurve::fillin(scan, manager);
 

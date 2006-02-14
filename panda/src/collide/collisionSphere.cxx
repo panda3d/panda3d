@@ -72,7 +72,7 @@ xform(const LMatrix4f &mat) {
   LVector3f radius_v = LVector3f(_radius, 0.0f, 0.0f) * mat;
   _radius = length(radius_v);
   mark_viz_stale();
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,19 +99,13 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::recompute_bound
+//     Function: CollisionSphere::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *CollisionSphere::
-recompute_bound(int pipeline_stage) {
-  BoundingVolume *bound = BoundedObject::recompute_bound(pipeline_stage);
-  nassertr(bound != (BoundingVolume*)0L, bound);
-  nassertr(!_center.is_nan() && !cnan(_radius), bound);
-  BoundingSphere sphere(_center, _radius);
-  bound->extend_by(&sphere);
-
-  return bound;
+PT(BoundingVolume) CollisionSphere::
+compute_internal_bounds() const {
+  return new BoundingSphere(_center, _radius);
 }
 
 ////////////////////////////////////////////////////////////////////

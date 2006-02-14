@@ -52,7 +52,7 @@ get_num_stages() const {
   return _num_stages;
 }
 
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::get_num_cyclers
 //       Access: Public
@@ -64,9 +64,9 @@ get_num_cyclers() const {
   ReMutexHolder holder(_lock);
   return _cyclers.size();
 }
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::get_num_dirty_cyclers
 //       Access: Public
@@ -80,5 +80,5 @@ get_num_dirty_cyclers() const {
   ReMutexHolder holder(_lock);
   return _dirty_cyclers.size();
 }
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 

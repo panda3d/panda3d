@@ -17,8 +17,11 @@
     bigEndian.h buffer.I buffer.h \
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
     circBuffer.h clockObject.I clockObject.h \
-    conditionVarDummyImpl.h conditionVarDummyImpl.I conditionVar.h \
-    conditionVar.I conditionVarImpl.h \
+    conditionVar.h conditionVar.I \
+    conditionVarDebug.h conditionVarDebug.I \
+    conditionVarDirect.h conditionVarDirect.I \
+    conditionVarDummyImpl.h conditionVarDummyImpl.I \
+    conditionVarImpl.h \
     conditionVarNsprImpl.h conditionVarNsprImpl.I \
     conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
@@ -40,8 +43,11 @@
     memoryUsagePointerCounts.I memoryUsagePointerCounts.h \
     memoryUsagePointers.I memoryUsagePointers.h \
     multifile.I multifile.h \
-    mutexDummyImpl.h mutexDummyImpl.I pmutex.h mutexHolder.h \
-    mutexHolder.I pmutex.I mutexImpl.h \
+    mutexDebug.h mutexDebug.I \
+    mutexDirect.h mutexDirect.I \
+    mutexDummyImpl.h mutexDummyImpl.I \
+    mutexHolder.h mutexHolder.I \
+    mutexImpl.h \
     mutexNsprImpl.h mutexNsprImpl.I \
     mutexPosixImpl.h mutexPosixImpl.I \
     mutexWin32Impl.h mutexWin32Impl.I \
@@ -51,6 +57,7 @@
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \
     patchfile.I patchfile.h \
+    pmutex.h pmutex.I \
     pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h \
     pointerToBase.I pointerToBase.h \
@@ -60,6 +67,7 @@
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
     reMutex.I reMutex.h \
+    reMutexDirect.h reMutexDirect.I \
     reMutexHolder.I reMutexHolder.h \
     reversedNumericData.I reversedNumericData.h \
     selectThreadImpl.h \
@@ -96,7 +104,10 @@
     atomicAdjustPosixImpl.cxx \
     atomicAdjustWin32Impl.cxx \
     buffer.cxx checksumHashGenerator.cxx clockObject.cxx \
-    conditionVar.cxx conditionVarDummyImpl.cxx \
+    conditionVar.cxx \
+    conditionVarDebug.cxx \
+    conditionVarDirect.cxx \
+    conditionVarDummyImpl.cxx \
     conditionVarNsprImpl.cxx \
     conditionVarPosixImpl.cxx \
     conditionVarWin32Impl.cxx \
@@ -110,10 +121,14 @@
     mainThread.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
     memoryUsagePointers.cxx multifile.cxx \
-    pmutex.cxx mutexHolder.cxx mutexDummyImpl.cxx \
+    mutexDebug.cxx \
+    mutexDirect.cxx \
+    mutexHolder.cxx \
+    mutexDummyImpl.cxx \
     mutexNsprImpl.cxx \
     mutexPosixImpl.cxx \
     mutexWin32Impl.cxx \
+    pmutex.cxx \
     namable.cxx \
     nativeNumericData.cxx \
     ordered_vector.cxx \
@@ -128,6 +143,7 @@
     ramfile.cxx \
     referenceCount.cxx \
     reMutex.cxx \
+    reMutexDirect.cxx \
     reMutexHolder.cxx \
     reversedNumericData.cxx \
     streamReader.cxx streamWriter.cxx \
@@ -162,8 +178,11 @@
     bigEndian.h buffer.I buffer.h checksumHashGenerator.I  \
     checksumHashGenerator.h circBuffer.I circBuffer.h clockObject.I \
     clockObject.h \
-    conditionVarDummyImpl.h conditionVarDummyImpl.I conditionVar.h \
-    conditionVar.I conditionVarImpl.h \
+    conditionVar.h conditionVar.I \
+    conditionVarDebug.h conditionVarDebug.I \
+    conditionVarDirect.h conditionVarDirect.I \
+    conditionVarDummyImpl.h conditionVarDummyImpl.I \
+    conditionVarImpl.h \
     conditionVarNsprImpl.h conditionVarNsprImpl.I \
     conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
@@ -183,8 +202,11 @@
     memoryUsage.h memoryUsagePointerCounts.I \
     memoryUsagePointerCounts.h memoryUsagePointers.I \
     memoryUsagePointers.h multifile.I multifile.h \
-    mutexDummyImpl.h mutexDummyImpl.I pmutex.h mutexHolder.h \
-    mutexHolder.I pmutex.I mutexImpl.h \
+    mutexDebug.h mutexDebug.I \
+    mutexDirect.h mutexDirect.I \
+    mutexDummyImpl.h mutexDummyImpl.I \
+    mutexHolder.h mutexHolder.I \
+    mutexImpl.h \
     mutexNsprImpl.h mutexNsprImpl.I \
     mutexPosixImpl.h mutexPosixImpl.I \
     mutexWin32Impl.h mutexWin32Impl.I \
@@ -193,6 +215,7 @@
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \
     patchfile.I patchfile.h \
+    pmutex.h pmutex.I \
     pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h \
     pointerToBase.I pointerToBase.h \
@@ -202,6 +225,7 @@
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
     reMutex.I reMutex.h \
+    reMutexDirect.h reMutexDirect.I \
     reMutexHolder.I reMutexHolder.h \
     reversedNumericData.I reversedNumericData.h \
     selectThreadImpl.h \

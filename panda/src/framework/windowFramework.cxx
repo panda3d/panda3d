@@ -61,11 +61,12 @@
 
 // This is generated data for the standard texture we apply to the
 // blue triangle.
-#include "rock_floor_src.cxx"
+#include "rock_floor.rgb.c"
 
 // This is generated data for shuttle_controls.bam, a bamified version
-// of shuttle_controls.egg (found in the models tree).
-#include "shuttle_controls_src.cxx"
+// of shuttle_controls.egg (found in the models tree).  It's
+// compiled in shuttle_controls.bam.c.
+#include "shuttle_controls.bam.c"
 
 // This number is chosen arbitrarily to override any settings in model
 // files.

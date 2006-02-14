@@ -31,7 +31,8 @@
 PipelineCyclerTrueImpl::
 PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
   _pipeline(pipeline),
-  _dirty(false)
+  _dirty(false),
+  _lock(this)
 {
   if (_pipeline == (Pipeline *)NULL) {
     _pipeline = Pipeline::get_render_pipeline();
@@ -53,7 +54,8 @@ PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
 PipelineCyclerTrueImpl::
 PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
   _pipeline(copy._pipeline),
-  _dirty(false)
+  _dirty(false),
+  _lock(this)
 {
   ReMutexHolder holder(_lock);
   _pipeline->add_cycler(this);
@@ -169,7 +171,7 @@ write_upstream(bool force_to_0) {
 
   CycleData *old_data = _data[pipeline_stage];
 
-  if (old_data->get_ref_count() != 1) {
+  if (old_data->get_ref_count() != 1 || force_to_0) {
     // Count the number of references before the current stage, and
     // the number of references remaining other than those.
     int external_count = old_data->get_ref_count() - 1;
@@ -184,7 +186,7 @@ write_upstream(bool force_to_0) {
       // the pipeline; perform a copy-on-write.
       PT(CycleData) new_data = old_data->make_copy();
       
-      int k = pipeline_stage - 1;
+      k = pipeline_stage - 1;
       while (k >= 0 && (_data[k] == old_data || force_to_0)) {
         _data[k] = new_data;
         --k;
@@ -331,3 +333,15 @@ set_num_stages(int num_stages) {
 
 #endif  // DO_PIPELINING && HAVE_THREADS
 
+
+#ifdef DEBUG_THREADS
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::CyclerMutex::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PipelineCyclerTrueImpl::CyclerMutex::
+output(ostream &out) const {
+  _cycler->cheat()->output(out);
+}
+#endif

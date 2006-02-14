@@ -77,6 +77,12 @@ PUBLISHED:
   INLINE void sub_level(float decrement);
   INLINE float get_level();
 
+  INLINE void clear_thread_level();
+  INLINE void set_thread_level(float level);
+  INLINE void add_thread_level(float increment);
+  INLINE void sub_thread_level(float decrement);
+  INLINE float get_thread_level();
+
   INLINE bool is_active(const PStatThread &thread);
   INLINE bool is_started(const PStatThread &thread);
   INLINE void start(const PStatThread &thread);

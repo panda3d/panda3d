@@ -59,7 +59,7 @@ prepare_collider(const ColliderDef &def) {
   _colliders.push_back(def);
 
   CollisionSolid *collider = def._collider;
-  const BoundingVolume *bv = collider->get_bound();
+  CPT(BoundingVolume) bv = collider->get_bounds();
   if (!bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
     _local_bounds.push_back((GeometricBoundingVolume *)NULL);
   } else {
@@ -118,7 +118,7 @@ any_in_bounds() {
   }
 #endif  // NDEBUG
 
-  const BoundingVolume *node_bv = node()->get_bound();
+  CPT(BoundingVolume) node_bv = node()->get_bounds();
   if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
     const GeometricBoundingVolume *node_gbv;
     DCAST_INTO_R(node_gbv, node_bv, false);

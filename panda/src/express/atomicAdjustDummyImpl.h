@@ -38,6 +38,7 @@ public:
   INLINE static PN_int32 inc(PN_int32 &var);
   INLINE static PN_int32 dec(PN_int32 &var);
   INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
+  INLINE static PN_int32 get(const PN_int32 &var);
 };
 
 #include "atomicAdjustDummyImpl.I"

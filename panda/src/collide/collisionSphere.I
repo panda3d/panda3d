@@ -70,7 +70,7 @@ CollisionSphere(const CollisionSphere &copy) :
 INLINE void CollisionSphere::
 set_center(const LPoint3f &center) {
   _center = center;
-  mark_bound_stale();
+  mark_internal_bounds_stale();
   mark_viz_stale();
 }
 
@@ -102,7 +102,7 @@ get_center() const {
 INLINE void CollisionSphere::
 set_radius(float radius) {
   _radius = radius;
-  mark_bound_stale();
+  mark_internal_bounds_stale();
   mark_viz_stale();
 }
 

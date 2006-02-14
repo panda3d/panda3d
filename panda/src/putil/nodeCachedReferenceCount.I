@@ -138,7 +138,7 @@ get_node_ref_count() const {
 #ifndef NDEBUG
   test_ref_count_integrity();
 #endif
-  return _node_ref_count;
+  return AtomicAdjust::get(_node_ref_count);
 }
 
 ////////////////////////////////////////////////////////////////////

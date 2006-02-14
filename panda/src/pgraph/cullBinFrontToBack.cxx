@@ -51,7 +51,7 @@ CullBinFrontToBack::
 void CullBinFrontToBack::
 add_object(CullableObject *object) {
   // Determine the center of the bounding volume.
-  const BoundingVolume *volume = object->_geom->get_bound();
+  CPT(BoundingVolume) volume = object->_geom->get_bounds();
 
   if (!volume->is_empty() &&
       volume->is_of_type(GeometricBoundingVolume::get_class_type())) {

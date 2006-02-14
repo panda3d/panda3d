@@ -1,5 +1,5 @@
-// Filename: classicNurbsCurve.I
-// Created by:  drose (02Mar01)
+// Filename: conditionVarDirect.cxx
+// Created by:  drose (13Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,13 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "conditionVarDirect.h"
+
+#ifndef DEBUG_THREADS
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClassicNurbsCurve::get_curveseg
+//     Function: ConditionVarDirect::output
 //       Access: Public
-//  Description:
+//  Description: This method is declared virtual in ConditionVarDebug,
+//               but non-virtual in ConditionVarDirect.
 ////////////////////////////////////////////////////////////////////
-INLINE CubicCurveseg *ClassicNurbsCurve::
-get_curveseg(int ti) {
-  return (CubicCurveseg *)PiecewiseCurve::get_curveseg(ti);
+void ConditionVarDirect::
+output(ostream &out) const {
+  out << "ConditionVar " << (void *)this;
 }
+
+#endif  // !DEBUG_THREADS

@@ -59,7 +59,7 @@ set_into_portal_mask(PortalMask mask) {
   // We mark the bound stale when this changes, not because the actual
   // bounding volume changes, but rather because we piggyback the
   // computing of the _net_portal_mask on the bounding volume.
-  mark_bound_stale();
+  mark_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

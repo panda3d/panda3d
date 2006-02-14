@@ -27,6 +27,9 @@
 #include "notify.h"
 
 #include <pthread.h>
+#include <errno.h>
+
+#define MUTEX_DEFINES_TRYLOCK 1
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexPosixImpl
@@ -38,6 +41,7 @@ public:
   INLINE ~MutexPosixImpl();
 
   INLINE void lock();
+  INLINE bool try_lock();
   INLINE void release();
 
 private:
@@ -55,6 +59,7 @@ public:
   INLINE ~ReMutexPosixImpl();
 
   INLINE void lock();
+  INLINE bool try_lock();
   INLINE void release();
 
 private:

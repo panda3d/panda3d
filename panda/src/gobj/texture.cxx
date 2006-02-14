@@ -1827,10 +1827,7 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
   _minfilter = (FilterType)scan.get_uint8();
   _magfilter = (FilterType)scan.get_uint8();
   _anisotropic_degree = scan.get_int16();
-
-  if (manager->get_file_minor_ver() >= 5) {
-    _border_color.read_datagram(scan);
-  }
+  _border_color.read_datagram(scan);
 
   Format format = (Format)scan.get_uint8();
   int num_components = scan.get_uint8();

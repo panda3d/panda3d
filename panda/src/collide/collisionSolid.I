@@ -136,6 +136,19 @@ get_respect_effective_normal() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::mark_internal_bounds_stale
+//       Access: Protected
+//  Description: Should be called by a derived class to mark the
+//               internal bounding volume stale, so that
+//               recompute_internal_bounds() will be called when the
+//               bounding volume is next requested.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionSolid::
+mark_internal_bounds_stale() {
+  _flags |= F_internal_bounds_stale;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::mark_viz_stale
 //       Access: Protected
 //  Description: Called internally when the visualization may have

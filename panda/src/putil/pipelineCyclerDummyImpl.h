@@ -61,6 +61,8 @@ public:
 
   INLINE CycleData *write();
   INLINE CycleData *elevate_read(const CycleData *pointer);
+  INLINE CycleData *elevate_read_upstream(const CycleData *pointer, bool force_to_0);
+  INLINE void increment_write(CycleData *pointer) const;
   INLINE void release_write(CycleData *pointer);
 
   INLINE int get_num_stages();

@@ -88,16 +88,13 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionPlane::recompute_bound
+//     Function: CollisionPlane::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *CollisionPlane::
-recompute_bound(int pipeline_stage) {
-  BoundedObject::recompute_bound(pipeline_stage);
-  // Less than ideal: we throw away whatever we just allocated in
-  // BoundedObject.
-  return set_bound_ptr(new BoundingPlane(_plane));
+PT(BoundingVolume) CollisionPlane::
+compute_internal_bounds() const {
+  return new BoundingPlane(_plane);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -33,12 +33,11 @@ class GeomVertexData;
 //               NURBS curve stored in its NurbsCurveEvaluator.  It
 //               automatically recomputes the curve every frame.
 //
-//               This is not related to NurbsCurve, ClassicNurbsCurve,
-//               CubicCurveseg or any of the ParametricCurve-derived
-//               objects in this module.  It is a completely parallel
-//               implementation of NURBS curves, and will probably
-//               eventually replace the whole ParametricCurve class
-//               hierarchy.
+//               This is not related to NurbsCurve, CubicCurveseg or
+//               any of the ParametricCurve-derived objects in this
+//               module.  It is a completely parallel implementation
+//               of NURBS curves, and will probably eventually replace
+//               the whole ParametricCurve class hierarchy.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA RopeNode : public PandaNode {
 PUBLISHED:
@@ -143,13 +142,13 @@ PUBLISHED:
   void reset_bound(const NodePath &rel_to);
 
 protected:
-  virtual BoundingVolume *recompute_internal_bound(int pipeline_stage);
+  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage) const;
 
 private:
   CPT(GeomVertexFormat) get_format(bool support_normals) const;
 
-  BoundingVolume *do_recompute_bound(const NodePath &rel_to,
-                                     int pipeline_stage);
+  PT(BoundingVolume) do_recompute_bounds(const NodePath &rel_to,
+					 int pipeline_stage) const;
   void render_thread(CullTraverser *trav, CullTraverserData &data, 
                      NurbsCurveResult *result) const;
   void render_tape(CullTraverser *trav, CullTraverserData &data, 

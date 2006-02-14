@@ -25,7 +25,9 @@
 INLINE GraphicsThreadingModel::
 GraphicsThreadingModel(const GraphicsThreadingModel &copy) :
   _cull_name(copy._cull_name),
+  _cull_stage(copy._cull_stage),
   _draw_name(copy._draw_name),
+  _draw_stage(copy._draw_stage),
   _cull_sorting(copy._cull_sorting)
 {
 }
@@ -38,7 +40,9 @@ GraphicsThreadingModel(const GraphicsThreadingModel &copy) :
 INLINE void GraphicsThreadingModel::
 operator = (const GraphicsThreadingModel &copy) {
   _cull_name = copy._cull_name;
+  _cull_stage = copy._cull_stage;
   _draw_name = copy._draw_name;
+  _draw_stage = copy._draw_stage;
   _cull_sorting = copy._cull_sorting;
 }
 
@@ -54,6 +58,19 @@ get_cull_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsThreadingModel::get_cull_stage
+//       Access: Published
+//  Description: Returns the pipeline stage from which the cull thread
+//               should access data.  This will be 0 if the cull is
+//               run in the same thread as app, or 1 if it is its own
+//               thread.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsThreadingModel::
+get_cull_stage() const {
+  return _cull_stage;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsThreadingModel::get_draw_name
 //       Access: Published
 //  Description: Returns the name of the thread that will handle
@@ -63,6 +80,20 @@ get_cull_name() const {
 INLINE const string &GraphicsThreadingModel::
 get_draw_name() const {
   return _draw_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsThreadingModel::get_draw_stage
+//       Access: Published
+//  Description: Returns the pipeline stage from which the draw thread
+//               should access data.  This will be the same value as
+//               get_cull_stage() if cull and draw are run in the same
+//               thread, or one more than that value if draw should be
+//               in its own thread.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsThreadingModel::
+get_draw_stage() const {
+  return _draw_stage;
 }
 
 ////////////////////////////////////////////////////////////////////

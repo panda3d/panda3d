@@ -55,5 +55,11 @@
 
 #endif
 
+// Let's also factor out some of the other configuration variables.
+#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#define THREADED_PIPELINE 1
+#else
+#undef THREADED_PIPELINE
+#endif
 
 #endif

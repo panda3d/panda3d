@@ -62,6 +62,8 @@ public:
 
   INLINE CycleData *write();
   INLINE CycleData *elevate_read(const CycleData *pointer);
+  INLINE CycleData *elevate_read_upstream(const CycleData *pointer, bool force_to_0);
+  INLINE void increment_write(CycleData *pointer) const;
   INLINE void release_write(CycleData *pointer);
 
   INLINE int get_num_stages();
@@ -75,6 +77,20 @@ public:
   INLINE CycleData *cheat() const;
   INLINE int get_read_count() const;
   INLINE int get_write_count() const;
+
+public:
+  // We redefine the ReMutex class, solely so we can define the
+  // output() operator.  This is only useful for debugging, but does
+  // no harm in the production case.
+  class CyclerMutex : public ReMutex {
+  public:
+    INLINE CyclerMutex(PipelineCyclerTrueImpl *cycler);
+
+#ifdef DEBUG_THREADS
+    virtual void output(ostream &out) const;
+    PipelineCyclerTrueImpl *_cycler;
+#endif
+  };
 
 private:
   PT(CycleData) cycle();
@@ -90,7 +106,7 @@ private:
   int _num_stages;
   bool _dirty;
 
-  ReMutex _lock;
+  CyclerMutex _lock;
 
   friend class Pipeline;
 };

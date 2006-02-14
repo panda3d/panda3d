@@ -83,7 +83,7 @@ public:
   virtual bool is_geom_node() const;
 
 protected:
-  virtual BoundingVolume *recompute_internal_bound(int pipeline_stage);
+  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage) const;
 
 public:
   // This must be declared public so that VC6 will allow the nested
@@ -149,7 +149,6 @@ public:
 private:
   static TypeHandle _type_handle;
 
-  friend class PandaNode::Children;
   friend class GeomTransformer;
 };
 

@@ -182,7 +182,7 @@ describe_scene_graph(PandaNode *node) {
   num_nodes = _analyzer._num_nodes - num_nodes;
 
   nout << "  " << num_nodes << " nodes, bounding volume is "
-       << root->get_bound() << "\n";
+       << *root->get_bounds() << "\n";
 
   if (_ls || _verbose_geoms || _verbose_transitions) {
     list_hierarchy(node, 0);

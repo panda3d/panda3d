@@ -141,7 +141,7 @@ set_radius(float radius) {
 
   // We don't need to call recalc_internals(), since the radius
   // doesn't change either of those properties.
-  mark_bound_stale();
+  mark_internal_bounds_stale();
   mark_viz_stale();
 }
 

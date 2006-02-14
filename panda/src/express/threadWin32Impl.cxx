@@ -23,7 +23,6 @@
 
 #include "pointerTo.h"
 #include "config_express.h"
-#include "mutexHolder.h"
 
 DWORD ThreadWin32Impl::_pt_ptr_index = 0;
 bool ThreadWin32Impl::_got_pt_ptr_index = false;
@@ -49,12 +48,16 @@ ThreadWin32Impl::
 ////////////////////////////////////////////////////////////////////
 bool ThreadWin32Impl::
 start(ThreadPriority priority, bool global, bool joinable) {
-  MutexHolder holder(_mutex);
+  _mutex.lock();
   if (thread_cat.is_debug()) {
     thread_cat.debug() << "Starting thread " << _parent_obj->get_name() << "\n";
   }
-  nassertr(_status == S_new, false);
-  nassertr(_thread == 0, false);
+
+  nassertd(_status == S_new && _thread == 0) {
+    _mutex.release();
+    return false;
+  }
+
   _joinable = joinable;
   _status = S_start_called;
 
@@ -73,6 +76,7 @@ start(ThreadPriority priority, bool global, bool joinable) {
     // reference count we incremented above, and return false to
     // indicate failure.
     unref_delete(_parent_obj);
+    _mutex.release();
     return false;
   }
 
@@ -80,10 +84,6 @@ start(ThreadPriority priority, bool global, bool joinable) {
   switch (priority) {
   case TP_low:
     SetThreadPriority(_thread, THREAD_PRIORITY_BELOW_NORMAL);
-    break;
-
-  case TP_normal:
-    SetThreadPriority(_thread, THREAD_PRIORITY_NORMAL);
     break;
 
   case TP_high:
@@ -94,10 +94,13 @@ start(ThreadPriority priority, bool global, bool joinable) {
     SetThreadPriority(_thread, THREAD_PRIORITY_HIGHEST);
     break;
 
+  case TP_normal:
   default:
-    nassertr(false, false);
+    SetThreadPriority(_thread, THREAD_PRIORITY_NORMAL);
+    break;
   }
 
+  _mutex.release();
   return true;
 }
 
@@ -123,13 +126,16 @@ interrupt() {
 ////////////////////////////////////////////////////////////////////
 void ThreadWin32Impl::
 join() {
-  MutexHolder holder(_mutex);
-  nassertv(_joinable);
-  nassertv(_status != S_new);
+  _mutex.lock();
+  nassertd(_joinable && _status != S_new) {
+    _mutex.release();
+    return;
+  }
 
   while (_status != S_finished) {
     _cv.wait();
   }
+  _mutex.release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,10 +150,14 @@ root_func(LPVOID data) {
   nassertr(result, 1);
 
   {
-    MutexHolder holder(self->_mutex);
-    nassertr(self->_status == S_start_called, 1);
+    self->_mutex.lock();
+    nassertd(self->_status == S_start_called) {
+      self->_mutex.release();
+      return 1;
+    }
     self->_status = S_running;
     self->_cv.signal();
+    self->_mutex.release();
   }
 
   self->_parent_obj->thread_main();
@@ -159,10 +169,14 @@ root_func(LPVOID data) {
   }
 
   {
-    MutexHolder holder(self->_mutex);
-    nassertr(self->_status == S_running, 1);
+    self->_mutex.lock();
+    nassertd(self->_status == S_running) {
+      self->_mutex.release();
+      return 1;
+    }
     self->_status = S_finished;
     self->_cv.signal();
+    self->_mutex.release();
   }
 
   // Now drop the parent object reference that we grabbed in start().

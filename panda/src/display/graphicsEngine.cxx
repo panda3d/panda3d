@@ -149,13 +149,14 @@ get_frame_buffer_properties() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 set_threading_model(const GraphicsThreadingModel &threading_model) {
-  if (!threading_model.is_single_threaded() && 
-      !Thread::is_threading_supported()) {
+#ifndef THREADED_PIPELINE
+  if (!threading_model.is_single_threaded()) {
     display_cat.warning()
       << "Threading model " << threading_model
-      << " requested but threading not supported.\n";
+      << " requested but multithreaded render pipelines not enabled in build.\n";
     return;
   }
+#endif  // THREADED_PIPELINE
   MutexHolder holder(_lock);
   _threading_model = threading_model;
 }
@@ -712,7 +713,7 @@ void GraphicsEngine::
 render_subframe(GraphicsOutput *win, DisplayRegion *dr,
                 bool cull_sorting) {
   if (cull_sorting) {
-    cull_bin_draw(win, dr);
+    cull_to_bins(win, dr);
   } else {
     cull_and_draw_together(win, dr);
   }
@@ -740,7 +741,7 @@ add_callback(const string &thread_name,
              GraphicsEngine::CallbackTime callback_time,
              GraphicsEngine::CallbackFunction *func, void *data) {
   MutexHolder holder(_lock);
-  WindowRenderer *wr = get_window_renderer(thread_name);
+  WindowRenderer *wr = get_window_renderer(thread_name, 0);
   return wr->add_callback(callback_time, Callback(func, data));
 }
 
@@ -757,11 +758,11 @@ add_callback(const string &thread_name,
 //               removed).
 ////////////////////////////////////////////////////////////////////
 bool GraphicsEngine::
-remove_callback(const string &thread_name, 
+remove_callback(const string &thread_name,
                 GraphicsEngine::CallbackTime callback_time,
                 GraphicsEngine::CallbackFunction *func, void *data) {
   MutexHolder holder(_lock);
-  WindowRenderer *wr = get_window_renderer(thread_name);
+  WindowRenderer *wr = get_window_renderer(thread_name, 0);
   return wr->remove_callback(callback_time, Callback(func, data));
 }
 
@@ -857,7 +858,7 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::cull_bin_draw
+//     Function: GraphicsEngine::cull_to_bins
 //       Access: Private
 //  Description: This is called in the cull thread by individual
 //               RenderThread objects during the frame rendering.  It
@@ -865,12 +866,68 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr) {
 //               drawing.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-cull_bin_draw(const GraphicsEngine::Windows &wlist) {
+cull_to_bins(const GraphicsEngine::Windows &wlist) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
-      // This should be done in the draw thread, not here.
+      int num_display_regions = win->get_num_active_display_regions();
+      for (int i = 0; i < num_display_regions; ++i) {
+        DisplayRegion *dr = win->get_active_display_region(i);
+        if (dr != (DisplayRegion *)NULL) {
+          cull_to_bins(win, dr);
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::cull_to_bins
+//       Access: Private
+//  Description: This variant of cull_to_bins() is called
+//               by render_subframe(), as well as within the
+//               implementation of cull_to_bins(), above.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+cull_to_bins(GraphicsOutput *win, DisplayRegion *dr) {
+  GraphicsStateGuardian *gsg = win->get_gsg();
+  nassertv(gsg != (GraphicsStateGuardian *)NULL);
+
+  PT(CullResult) cull_result = dr->get_cull_result();
+  if (cull_result != (CullResult *)NULL) {
+    cull_result = cull_result->make_next();
+  } else {
+    cull_result = new CullResult(gsg);
+  }
+
+  PT(SceneSetup) scene_setup = setup_scene(gsg, dr);
+  if (scene_setup != (SceneSetup *)NULL) {
+    BinCullHandler cull_handler(cull_result);
+    do_cull(&cull_handler, scene_setup, gsg);
+    
+    cull_result->finish_cull();
+    
+    // Save the results for next frame.
+    dr->set_cull_result(cull_result, scene_setup);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::draw_bins
+//       Access: Private
+//  Description: This is called in the draw thread by individual
+//               RenderThread objects during the frame rendering.  It
+//               issues the graphics commands to draw the objects that
+//               have been collected into bins by a previous call to
+//               cull_to_bins().
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+draw_bins(const GraphicsEngine::Windows &wlist) {
+  Windows::const_iterator wi;
+  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
+    GraphicsOutput *win = (*wi);
+    if (win->is_active() && win->get_gsg()->is_active()) {
       if (win->begin_frame(GraphicsOutput::FM_render)) {
         win->clear();
       
@@ -878,7 +935,7 @@ cull_bin_draw(const GraphicsEngine::Windows &wlist) {
         for (int i = 0; i < num_display_regions; ++i) {
           DisplayRegion *dr = win->get_active_display_region(i);
           if (dr != (DisplayRegion *)NULL) {
-            cull_bin_draw(win, dr);
+            draw_bins(win, dr);
           }
         }
         win->end_frame(GraphicsOutput::FM_render);
@@ -901,36 +958,20 @@ cull_bin_draw(const GraphicsEngine::Windows &wlist) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::cull_bin_draw
+//     Function: GraphicsEngine::draw_bins
 //       Access: Private
-//  Description: This variant of cull_bin_draw() is called
-//               by render_subframe(), as well as within the
-//               implementation of cull_bin_draw(), above.
+//  Description: This variant on draw_bins() is only called from
+//               draw_bins(), above.  It draws the cull result for a
+//               particular DisplayRegion.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-cull_bin_draw(GraphicsOutput *win, DisplayRegion *dr) {
+draw_bins(GraphicsOutput *win, DisplayRegion *dr) {
   GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
-  PT(CullResult) cull_result = dr->_cull_result;
-  if (cull_result != (CullResult *)NULL) {
-    cull_result = cull_result->make_next();
-  } else {
-    cull_result = new CullResult(gsg);
-  }
-
-  PT(SceneSetup) scene_setup = setup_scene(gsg, dr);
-  if (scene_setup != (SceneSetup *)NULL) {
-    BinCullHandler cull_handler(cull_result);
-    do_cull(&cull_handler, scene_setup, gsg);
-    
-    cull_result->finish_cull();
-    
-    // Save the results for next frame.
-    dr->_cull_result = cull_result;
-    
-    // Now draw.
-    // This should get deferred into the next pipeline stage.
+  PT(CullResult) cull_result = dr->get_cull_result();
+  PT(SceneSetup) scene_setup = dr->get_scene_setup();
+  if (cull_result != (CullResult *)NULL && scene_setup != (SceneSetup *)NULL) {
     do_draw(cull_result, scene_setup, win, dr);
   }
 }
@@ -1046,7 +1087,7 @@ do_flip_frame() {
     for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
       RenderThread *thread = (*ti).second;
       thread->_cv_mutex.lock();
-      
+
       while (thread->_thread_state != TS_wait) {
         thread->_cv_done.wait();
       }
@@ -1269,8 +1310,12 @@ do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
   _windows_sorted = false;
   _windows.push_back(window);
   
-  WindowRenderer *cull = get_window_renderer(threading_model.get_cull_name());
-  WindowRenderer *draw = get_window_renderer(threading_model.get_draw_name());
+  WindowRenderer *cull = 
+    get_window_renderer(threading_model.get_cull_name(),
+                        threading_model.get_cull_stage());
+  WindowRenderer *draw = 
+    get_window_renderer(threading_model.get_draw_name(),
+                        threading_model.get_draw_stage());
   draw->add_gsg(gsg);
   
   if (threading_model.get_cull_sorting()) {
@@ -1438,11 +1483,15 @@ get_invert_polygon_state() {
 //       Access: Private
 //  Description: Returns the WindowRenderer with the given name.
 //               Creates a new RenderThread if there is no such thread
-//               already.  You must already be holding the lock before
-//               calling this method.
+//               already.  The pipeline_stage number specifies the
+//               pipeline stage that will be assigned to the thread
+//               (unless was previously given a higher stage).
+//
+//               You must already be holding the lock before calling
+//               this method.
 ////////////////////////////////////////////////////////////////////
 GraphicsEngine::WindowRenderer *GraphicsEngine::
-get_window_renderer(const string &name) {
+get_window_renderer(const string &name, int pipeline_stage) {
   nassertr(_lock.debug_is_locked(), NULL);
 
   if (name.empty()) {
@@ -1455,8 +1504,8 @@ get_window_renderer(const string &name) {
   }
 
   PT(RenderThread) thread = new RenderThread(name, this);
-  thread->set_pipeline_stage(1);
-  _pipeline->set_min_stages(2);
+  thread->set_min_pipeline_stage(pipeline_stage);
+  _pipeline->set_min_stages(pipeline_stage + 1);
 
   thread->start(TP_normal, true, true);
   _threads[name] = thread;
@@ -1592,8 +1641,9 @@ do_frame(GraphicsEngine *engine) {
 
   do_callbacks(CB_pre_frame);
 
-  engine->cull_bin_draw(_cull);
+  engine->cull_to_bins(_cull);
   engine->cull_and_draw_together(_cdraw);
+  engine->draw_bins(_draw);
   engine->process_events(_window);
 
   // If any GSG's on the list have no more outstanding pointers, clean

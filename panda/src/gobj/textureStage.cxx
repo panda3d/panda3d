@@ -287,9 +287,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _rgb_scale = scan.get_uint8();
   _alpha_scale = scan.get_uint8();
   _saved_result = false;
-  if (manager->get_file_minor_ver() >= 1) {
-    _saved_result = scan.get_bool();
-  }
+  _saved_result = scan.get_bool();
 
   _combine_rgb_mode = (TextureStage::CombineMode) scan.get_uint8();
   _num_combine_rgb_operands = scan.get_uint8();

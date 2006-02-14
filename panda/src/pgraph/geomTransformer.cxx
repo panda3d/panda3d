@@ -134,13 +134,16 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
       GeomNode::GeomEntry &entry = (*gi);
       PT(Geom) new_geom = entry._geom->make_copy();
       if (transform_vertices(new_geom, mat)) {
-        node->mark_bound_stale(pipeline_stage);
         entry._geom = new_geom;
         any_changed = true;
       }
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler);
+
+  if (any_changed) {
+    node->mark_internal_bounds_stale();
+  }
 
   return any_changed;
 }

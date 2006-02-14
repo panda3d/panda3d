@@ -30,8 +30,7 @@
 //       Class : MutexDummyImpl
 // Description : A fake mutex implementation for single-threaded
 //               applications that don't need any synchronization
-//               control.  This does nothing but assert that the same
-//               process does not try to grab the mutex twice.
+//               control.  This does nothing at all.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS MutexDummyImpl {
 public:
@@ -40,11 +39,6 @@ public:
 
   INLINE void lock();
   INLINE void release();
-
-private:
-#ifdef CHECK_REENTRANT_MUTEX
-  int _lock_count;
-#endif
 };
 
 #include "mutexDummyImpl.I"

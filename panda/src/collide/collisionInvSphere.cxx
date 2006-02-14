@@ -68,16 +68,15 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::recompute_bound
+//     Function: CollisionInvSphere::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *CollisionInvSphere::
-recompute_bound(int pipeline_stage) {
-  BoundedObject::recompute_bound(pipeline_stage);
+PT(BoundingVolume) CollisionInvSphere::
+compute_internal_bounds() const {
   // An inverse sphere always has an infinite bounding volume, since
   // everything outside the sphere is solid matter.
-  return set_bound_ptr(new OmniBoundingVolume());
+  return new OmniBoundingVolume();
 }
 
 ////////////////////////////////////////////////////////////////////

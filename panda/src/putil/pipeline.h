@@ -23,6 +23,7 @@
 #include "namable.h"
 #include "pset.h"
 #include "reMutex.h"
+#include "reMutexHolder.h"
 
 struct PipelineCyclerTrueImpl;
 
@@ -52,14 +53,14 @@ public:
   INLINE void set_min_stages(int min_stages);
   INLINE int get_num_stages() const;
 
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
   void add_cycler(PipelineCyclerTrueImpl *cycler);
   void add_dirty_cycler(PipelineCyclerTrueImpl *cycler);
   void remove_cycler(PipelineCyclerTrueImpl *cycler);
 
   INLINE int get_num_cyclers() const;
   INLINE int get_num_dirty_cyclers() const;
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 
 private:
   int _num_stages;
@@ -67,7 +68,7 @@ private:
   static void make_render_pipeline();
   static Pipeline *_render_pipeline;
 
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
   typedef pset<PipelineCyclerTrueImpl *> Cyclers;
   Cyclers _cyclers;
   Cyclers _dirty_cyclers;
@@ -76,7 +77,7 @@ private:
   bool _cycling;
 
   ReMutex _lock;
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 };
 
 #include "pipeline.I"

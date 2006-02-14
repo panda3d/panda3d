@@ -22,7 +22,7 @@
 #include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
-
+#include "boundingSphere.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
@@ -43,7 +43,7 @@ TypeHandle CollisionSolid::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CollisionSolid::
 CollisionSolid() {
-  _flags = F_viz_geom_stale | F_tangible;
+  _flags = F_viz_geom_stale | F_tangible | F_internal_bounds_stale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,6 +54,7 @@ CollisionSolid() {
 CollisionSolid::
 CollisionSolid(const CollisionSolid &copy) :
   _effective_normal(copy._effective_normal),
+  _internal_bounds(copy._internal_bounds),
   _flags(copy._flags)
 {
   _flags |= F_viz_geom_stale;
@@ -66,6 +67,20 @@ CollisionSolid(const CollisionSolid &copy) :
 ////////////////////////////////////////////////////////////////////
 CollisionSolid::
 ~CollisionSolid() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::get_bounds
+//       Access: Protected
+//  Description: Returns the solid's bounding volume.
+////////////////////////////////////////////////////////////////////
+CPT(BoundingVolume) CollisionSolid::
+get_bounds() const {
+  if (_flags & F_internal_bounds_stale) {
+    ((CollisionSolid *)this)->_internal_bounds = compute_internal_bounds();
+    ((CollisionSolid *)this)->_flags &= ~F_internal_bounds_stale;
+  }
+  return _internal_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -96,7 +111,7 @@ xform(const LMatrix4f &mat) {
   }
 
   mark_viz_stale();
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,6 +161,16 @@ output(ostream &out) const {
 void CollisionSolid::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::compute_internal_bounds
+//       Access: Protected, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(BoundingVolume) CollisionSolid::
+compute_internal_bounds() const {
+  return new BoundingSphere;
 }
 
 ////////////////////////////////////////////////////////////////////

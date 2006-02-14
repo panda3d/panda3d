@@ -23,7 +23,6 @@
 
 #include "pointerTo.h"
 #include "config_express.h"
-#include "mutexHolder.h"
 
 #include <sched.h>
 
@@ -42,12 +41,14 @@ ThreadPosixImpl::
       << "Deleting thread " << _parent_obj->get_name() << "\n";
   }
 
-  MutexHolder holder(_mutex);
+  _mutex.lock();
 
   if (!_detached) {
     pthread_detach(_thread);
     _detached = true;
   }
+
+  _mutex.release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,12 +58,16 @@ ThreadPosixImpl::
 ////////////////////////////////////////////////////////////////////
 bool ThreadPosixImpl::
 start(ThreadPriority priority, bool global, bool joinable) {
-  MutexHolder holder(_mutex);
+  _mutex.lock();
   if (thread_cat.is_debug()) {
     thread_cat.debug() << "Starting thread " << _parent_obj->get_name() << "\n";
   }
 
-  nassertr(_status == S_new, false);
+  nassertd(_status == S_new) {
+    _mutex.release();
+    return false;
+  }
+
   _joinable = joinable;
   _status = S_start_called;
   _detached = false;
@@ -123,10 +128,12 @@ start(ThreadPriority priority, bool global, bool joinable) {
     // reference count we incremented above, and return false to
     // indicate failure.
     unref_delete(_parent_obj);
+    _mutex.release();
     return false;
   }
 
   // Thread was successfully started.
+  _mutex.release();
   return true;
 }
 
@@ -175,9 +182,14 @@ root_func(void *data) {
   nassertr(result == 0, NULL);
 
   {
-    MutexHolder holder(self->_mutex);
-    nassertr(self->_status == S_start_called, NULL);
+    self->_mutex.lock();
+    nassertd(self->_status == S_start_called) {
+      self->_mutex.release();
+      return NULL;
+    }
+      
     self->_status = S_running;
+    self->_mutex.release();
   }
 
   self->_parent_obj->thread_main();
@@ -189,9 +201,13 @@ root_func(void *data) {
   }
 
   {
-    MutexHolder holder(self->_mutex);
-    nassertr(self->_status == S_running, NULL);
+    self->_mutex.lock();
+    nassertd(self->_status == S_running) {
+      self->_mutex.release();
+      return NULL;
+    }
     self->_status = S_finished;
+    self->_mutex.release();
   }
 
   // Now drop the parent object reference that we grabbed in start().

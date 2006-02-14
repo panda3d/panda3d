@@ -26,7 +26,7 @@
 
 #include "notify.h"
 #include "threadPriority.h"
-#include "pmutex.h"
+#include "mutexNsprImpl.h"
 
 #include <prthread.h>
 #include <prinit.h>
@@ -57,7 +57,7 @@ private:
   static void root_func(void *data);
   static void init_pt_ptr_index();
 
-  Mutex _mutex;
+  MutexNsprImpl _mutex;
   Thread *_parent_obj;
   PRThread *_thread;
   bool _joinable;

@@ -320,15 +320,14 @@
 
 // Do you want to compile in support for pipelining?  This enables
 // setting and accessing multiple different copies of frame-specific
-// data stored in nodes, etc.  At the moment, Panda cannot actually
-// take advantage of this support to do anything useful, but
-// eventually this will enable multi-stage pipelining of the render
-// process, as well as potentially remote rendering using a
-// distributed scene graph.  For now, we enable this when building
-// optimize 1 only, since turning this on does perform some additional
-// sanity checks, but doesn't do anything else useful other than
-// increase run-time overhead.
-#defer DO_PIPELINING $[<= $[OPTIMIZE], 1]
+// data stored in nodes, etc.  This is necessary, in conjunction with
+// HAVE_THREADS, to implement threaded multistage rendering in Panda.
+// However, compiling this option in does add some additional runtime
+// overhead even if it is not used.  By default, we enable pipelining
+// whenever threads are enabled, assuming that if you have threads,
+// you also want to use piplining.  We also enable it at OPTIMIZE
+// level 1, since that enables additional runtime checks.
+#defer DO_PIPELINING $[or $[<= $[OPTIMIZE], 1],$[HAVE_THREADS]]
 
 // Do you want to use one of the alternative malloc implementations?
 // This is almost always a good idea on Windows, where the standard
@@ -578,9 +577,13 @@
 // that Panda can use.
 #define HAVE_THREADS
 
-// Even if threading is not defined, you might want to double-check
-// that ordinary mutexes are not locked reentrantly:
-#define CHECK_REENTRANT_MUTEX
+// Whether threading is defined or not, you might want to validate the
+// thread and synchronization operations.  With threading enabled,
+// defining this will also enable deadlock detection and logging.
+// Without threading enabled, defining this will simply verify that a
+// mutex is not recursively locked.  There is, of course, additional
+// run-time overhead for these tests.
+#defer DEBUG_THREADS $[<= $[OPTIMIZE], 2]
 
 // Do you want to build the network interface?  What additional libraries
 // are required?  Currently, this requires NSPR.

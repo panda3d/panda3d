@@ -10,9 +10,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
-    boundedObject.I boundedObject.h \
     config_gobj.h \
-    drawable.h \
     geom.h geom.I \
     geomContext.I geomContext.h \
     geomEnums.h \
@@ -62,9 +60,7 @@
     videoTexture.I videoTexture.h
     
   #define INCLUDED_SOURCES \
-    boundedObject.cxx \
     config_gobj.cxx \
-    drawable.cxx \
     geomContext.cxx \
     geom.cxx \
     geomEnums.cxx \
@@ -111,9 +107,8 @@
     videoTexture.cxx
 
   #define INSTALL_HEADERS \
-    boundedObject.I boundedObject.h \
     config_gobj.h \
-    drawable.h geom.I geom.h \
+    geom.I geom.h \
     textureContext.I textureContext.h \
     geom.h geom.I \
     geomContext.I geomContext.h \

@@ -135,7 +135,7 @@ apply_transform_and_state(CullTraverser *trav,
 ////////////////////////////////////////////////////////////////////
 bool CullTraverserData::
 is_in_view_impl() {
-  const BoundingVolume *node_volume = node()->get_bound();
+  CPT(BoundingVolume) node_volume = node()->get_bounds();
   nassertr(node_volume->is_of_type(GeometricBoundingVolume::get_class_type()), false);
   const GeometricBoundingVolume *node_gbv =
     DCAST(GeometricBoundingVolume, node_volume);
@@ -227,7 +227,7 @@ test_within_clip_planes_impl(const CullTraverser *trav,
   int result = BoundingVolume::IF_all | BoundingVolume::IF_possible | BoundingVolume::IF_some;
 
 
-  const BoundingVolume *node_volume = node()->get_bound();
+  const BoundingVolume *node_volume = node()->get_bounds();
   nassertr(node_volume->is_of_type(GeometricBoundingVolume::get_class_type()), result);
   const GeometricBoundingVolume *node_gbv =
     DCAST(GeometricBoundingVolume, node_volume);

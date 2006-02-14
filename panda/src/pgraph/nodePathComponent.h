@@ -27,6 +27,9 @@
 #include "cycleData.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
+#include "cycleDataStageReader.h"
+#include "cycleDataStageWriter.h"
+#include "pmutex.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NodePathComponent
@@ -46,7 +49,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodePathComponent : public ReferenceCount {
 private:
-  INLINE NodePathComponent(PandaNode *node, NodePathComponent *next = NULL);
+  NodePathComponent(PandaNode *node, NodePathComponent *next,
+		    int pipeline_stage);
   INLINE NodePathComponent(const NodePathComponent &copy);
   INLINE void operator = (const NodePathComponent &copy);
 
@@ -56,18 +60,18 @@ public:
   INLINE PandaNode *get_node() const;
   INLINE bool has_key() const;
   int get_key() const;
-  bool is_top_node() const;
+  bool is_top_node(int pipeline_stage) const;
   
-  NodePathComponent *get_next() const;
-  int get_length() const;
+  NodePathComponent *get_next(int pipeline_stage) const;
+  int get_length(int pipeline_stage) const;
 
-  bool fix_length();
+  bool fix_length(int pipeline_stage);
 
   void output(ostream &out) const;
   
 private:
-  void set_next(NodePathComponent *next);
-  void set_top_node();
+  void set_next(NodePathComponent *next, int pipeline_stage);
+  void set_top_node(int pipeline_stage);
 
   // We don't have to cycle the _node and _key elements, since these
   // are permanent properties of this object.  (Well, the _key is
@@ -93,8 +97,11 @@ private:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
   static int _next_key;
+  static Mutex _key_lock;
 
 public:
   static TypeHandle get_class_type() {

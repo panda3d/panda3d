@@ -15,6 +15,7 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef DISPLAYREGION_H
 #define DISPLAYREGION_H
 
@@ -24,8 +25,12 @@
 #include "referenceCount.h"
 #include "nodePath.h"
 #include "cullResult.h"
+#include "sceneSetup.h"
 #include "pointerTo.h"
-#include "pmutex.h"
+#include "cycleData.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "pipelineCycler.h"
 #include "config_display.h"
 
 #include "plist.h"
@@ -51,8 +56,7 @@ class EXPCL_PANDA DisplayRegion : public ReferenceCount, public DrawableRegion {
 protected:
   DisplayRegion(GraphicsOutput *window);
   DisplayRegion(GraphicsOutput *window,
-                const float l, const float r,
-                const float b, const float t);
+                float l, float r, float b, float t);
 private:
   DisplayRegion(const DisplayRegion &copy);
   void operator = (const DisplayRegion &copy);
@@ -102,40 +106,95 @@ PUBLISHED:
   bool save_screenshot(const Filename &filename);
   bool get_screenshot(PNMImage &image);
 
+public:
+  INLINE void set_cull_result(CullResult *cull_result, SceneSetup *scene_setup);
+  INLINE CullResult *get_cull_result() const;
+  INLINE SceneSetup *get_scene_setup() const;
+
 private:
+  class CData;
+
   void win_display_regions_changed();
-  void do_compute_pixels(int x_size, int y_size);
-  Mutex _lock;
+  void do_compute_pixels(int x_size, int y_size, CData *cdata);
 
-  float _l;
-  float _r;
-  float _b;
-  float _t;
-
-  int _pl;
-  int _pr;
-  int _pb;
-  int _pt;
-  int _pbi;
-  int _pti;
-
+  // The associated window is a permanent property of the
+  // DisplayRegion.  It doesn't need to be cycled.
   GraphicsOutput *_window;
-  NodePath _camera;
 
-  // This needs to be a PT(Camera) so we prevent the Camera node from
-  // destructing while we hold its pointer.
-  PT(Camera) _camera_node;
+  // This is the data that is associated with the DisplayRegion that
+  // needs to be cycled every frame, but represents the parameters as
+  // specified by the user, and which probably will not change that
+  // often.
+  class EXPCL_PANDA CData : public CycleData {
+  public:
+    CData();
+    CData(const CData &copy);
 
-  bool _active;
-  int _sort;
-  int _cube_map_index;
+    virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return DisplayRegion::get_class_type();
+    }
 
-  // This is used to cache the culling result from last frame's
-  // drawing into this display region.  It should only be accessed or
-  // modified by the GraphicsEngine, during the cull traversal.
-  PT(CullResult) _cull_result;
+    float _l;
+    float _r;
+    float _b;
+    float _t;
+    
+    int _pl;
+    int _pr;
+    int _pb;
+    int _pt;
+    int _pbi;
+    int _pti;
+    
+    NodePath _camera;
+    Camera *_camera_node;
+    
+    bool _active;
+    int _sort;
+    int _cube_map_index;
+  };
 
-  friend class GraphicsEngine;
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
+
+  // This is a special cycler created to hold the results from the
+  // cull traversal, for (a) the draw traversal, and (b) the next
+  // frame's cull traversal.  It needs to be cycled, but it gets its
+  // own cycler because it will certainly change every frame, so we
+  // don't need to lump all the heavy data above in with this
+  // lightweight cycler.
+  class EXPCL_PANDA CDataCull : public CycleData {
+  public:
+    CDataCull();
+    CDataCull(const CDataCull &copy);
+
+    virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return DisplayRegion::get_class_type();
+    }
+
+    PT(CullResult) _cull_result;
+    PT(SceneSetup) _scene_setup;
+  };
+  PipelineCycler<CDataCull> _cycler_cull;
+  typedef CycleDataReader<CDataCull> CDCullReader;
+  typedef CycleDataWriter<CDataCull> CDCullWriter;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    ReferenceCount::init_type();
+    register_type(_type_handle, "DisplayRegion",
+                  ReferenceCount::get_class_type());
+  }
+
+private:
+  static TypeHandle _type_handle;
+
   friend class GraphicsOutput;
 };
 

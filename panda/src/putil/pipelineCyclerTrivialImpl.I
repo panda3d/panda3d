@@ -180,6 +180,34 @@ elevate_read(const CycleData *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrivialImpl::elevate_read_upstream
+//       Access: Public
+//  Description: Elevates a currently-held read pointer into a write
+//               pointer, like elevate_read(), but also propagates the
+//               pointer back to upstream stages, like
+//               write_upstream().
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerTrivialImpl::
+elevate_read_upstream(const CycleData *, bool) {
+#ifdef SIMPLE_STRUCT_POINTERS
+  return (CycleData *)this;
+#else
+  return _data;
+#endif  // SIMPLE_STRUCT_POINTERS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrivialImpl::increment_write
+//       Access: Public
+//  Description: Increments the count on a pointer previously
+//               retrieved by write(); now the pointer will need to be
+//               released twice.
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerTrivialImpl::
+increment_write(CycleData *) const {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrivialImpl::release_write
 //       Access: Public
 //  Description: Releases a pointer previously obtained via a call to

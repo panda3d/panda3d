@@ -17,11 +17,12 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "nodePathComponent.h"
-
+#include "mutexHolder.h"
 
 // We start the key counters off at 1, since 0 is reserved for an
 // empty NodePath (and also for an unassigned key).
 int NodePathComponent::_next_key = 1;
+Mutex NodePathComponent::_key_lock;
 TypeHandle NodePathComponent::_type_handle;
 
 
@@ -36,6 +37,35 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathComponent::Constructor
+//       Access: Private
+//  Description: Constructs a new NodePathComponent from the
+//               indicated node.  Don't try to call this directly; ask
+//               the PandaNode to do it for you.
+////////////////////////////////////////////////////////////////////
+NodePathComponent::
+NodePathComponent(PandaNode *node, NodePathComponent *next,
+		  int pipeline_stage) :
+  _node(node),
+  _key(0)
+{
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, get_class_type());
+#endif
+
+  for (int pipeline_stage_i = pipeline_stage;
+       pipeline_stage_i >= 0; 
+       --pipeline_stage_i) {
+    CDStageWriter cdata(_cycler, pipeline_stage_i);
+    cdata->_next = next;
+    
+    if (next != (NodePathComponent *)NULL) {
+      cdata->_length = next->get_length(pipeline_stage_i) + 1;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathComponent::get_key
 //       Access: Public
 //  Description: Returns an index number that is guaranteed to be
@@ -45,6 +75,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 int NodePathComponent::
 get_key() const {
+  MutexHolder holder(_key_lock);
   if (_key == 0) {
     // The first time someone asks for a particular component's key,
     // we make it up on the spot.  This helps keep us from wasting
@@ -63,8 +94,8 @@ get_key() const {
 //               node in the path.
 ////////////////////////////////////////////////////////////////////
 bool NodePathComponent::
-is_top_node() const {
-  CDReader cdata(_cycler);
+is_top_node(int pipeline_stage) const {
+  CDStageReader cdata(_cycler, pipeline_stage);
   return (cdata->_next == (NodePathComponent *)NULL);
 }
 
@@ -74,8 +105,8 @@ is_top_node() const {
 //  Description: Returns the length of the path to this node.
 ////////////////////////////////////////////////////////////////////
 int NodePathComponent::
-get_length() const {
-  CDReader cdata(_cycler);
+get_length(int pipeline_stage) const {
+  CDStageReader cdata(_cycler, pipeline_stage);
   return cdata->_length;
 }
 
@@ -85,8 +116,8 @@ get_length() const {
 //  Description: Returns the next component in the path.
 ////////////////////////////////////////////////////////////////////
 NodePathComponent *NodePathComponent::
-get_next() const {
-  CDReader cdata(_cycler);
+get_next(int pipeline_stage) const {
+  CDStageReader cdata(_cycler, pipeline_stage);
   NodePathComponent *next = cdata->_next;
   
   return next;
@@ -101,17 +132,20 @@ get_next() const {
 //               component has been changed; otherwise, returns false.
 ////////////////////////////////////////////////////////////////////
 bool NodePathComponent::
-fix_length() {
+fix_length(int pipeline_stage) {
+  CDStageReader cdata(_cycler, pipeline_stage);
+
   int length_should_be = 1;
-  if (!is_top_node()) {
-    length_should_be = get_next()->get_length() + 1;
+  if (cdata->_next != (NodePathComponent *)NULL) {
+    length_should_be = cdata->_next->get_length(pipeline_stage) + 1;
   }
-  if (get_length() == length_should_be) {
+
+  if (cdata->_length == length_should_be) {
     return false;
   }
 
-  CDWriter cdata(_cycler);
-  cdata->_length = length_should_be;
+  CDStageWriter cdataw(_cycler, pipeline_stage, cdata);
+  cdataw->_length = length_should_be;
   return true;
 }
 
@@ -125,8 +159,10 @@ fix_length() {
 ////////////////////////////////////////////////////////////////////
 void NodePathComponent::
 output(ostream &out) const {
-  PandaNode *node = this->get_node();
-  NodePathComponent *next = this->get_next();
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+
+  PandaNode *node = get_node();
+  NodePathComponent *next = get_next(pipeline_stage);
   if (next != (NodePathComponent *)NULL) {
     // This is not the head of the list; keep going up.
     next->output(out);
@@ -158,9 +194,9 @@ output(ostream &out) const {
 //  Description: Sets the next pointer in the path.
 ////////////////////////////////////////////////////////////////////
 void NodePathComponent::
-set_next(NodePathComponent *next) {
+set_next(NodePathComponent *next, int pipeline_stage) {
   nassertv(next != (NodePathComponent *)NULL);
-  CDWriter cdata(_cycler);
+  CDStageWriter cdata(_cycler, pipeline_stage);
   cdata->_next = next;
 }
 
@@ -171,7 +207,7 @@ set_next(NodePathComponent *next) {
 //               path and makes this component a top node.
 ////////////////////////////////////////////////////////////////////
 void NodePathComponent::
-set_top_node() {
-  CDWriter cdata(_cycler);
+set_top_node(int pipeline_stage) {
+  CDStageWriter cdata(_cycler, pipeline_stage);
   cdata->_next = (NodePathComponent *)NULL;
 }

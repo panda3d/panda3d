@@ -18,6 +18,7 @@
 
 
 #include "config_display.h"
+#include "displayRegion.h"
 #include "standardMunger.h"
 #include "graphicsStateGuardian.h"
 #include "graphicsPipe.h"
@@ -26,6 +27,7 @@
 #include "graphicsWindow.h"
 #include "graphicsDevice.h"
 #include "parasiteBuffer.h"
+#include "pandaSystem.h"
 
 ConfigureDef(config_display);
 NotifyCategoryDef(display, "");
@@ -260,13 +262,19 @@ init_libdisplay() {
     return;
   }
   initialized = true;
-  
-  StandardMunger::init_type();
-  GraphicsStateGuardian::init_type();
-  GraphicsPipe::init_type();
-  GraphicsOutput::init_type();
-  GraphicsWindow::init_type();
+
+  DisplayRegion::init_type();
   GraphicsBuffer::init_type();
   GraphicsDevice::init_type();
+  GraphicsOutput::init_type();
+  GraphicsPipe::init_type();
+  GraphicsStateGuardian::init_type();
+  GraphicsWindow::init_type();
   ParasiteBuffer::init_type();
+  StandardMunger::init_type();
+
+#if defined(HAVE_THREADS) && defined(DO_PIPELINING)
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("pipelining");
+#endif
 }

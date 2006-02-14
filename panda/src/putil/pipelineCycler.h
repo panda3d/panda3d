@@ -66,6 +66,7 @@ public:
   INLINE const CycleDataType *read_stage(int n) const;
   INLINE CycleDataType *write();
   INLINE CycleDataType *elevate_read(const CycleDataType *pointer);
+  INLINE CycleDataType *elevate_read_upstream(const CycleDataType *pointer, bool force_to_0);
   INLINE CycleDataType *elevate_read_stage(int n, const CycleDataType *pointer);
   INLINE CycleDataType *write_upstream(bool force_to_0);
   INLINE CycleDataType *write_stage(int n);
@@ -105,11 +106,21 @@ private:
 #define OPEN_ITERATE_CURRENT_AND_UPSTREAM(cycler) {                 \
     CyclerHolder cholder(cycler);                                   \
     int pipeline_stage;                                             \
-    for (pipeline_stage = Thread::get_current_pipeline_stage() ;    \
+    for (pipeline_stage = Thread::get_current_pipeline_stage();	    \
          pipeline_stage >= 0;                                       \
          --pipeline_stage)
 
 #define CLOSE_ITERATE_CURRENT_AND_UPSTREAM(cycler)      \
+  }
+
+// As above, but without holding the cycler lock during the loop.
+#define OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler) {	    \
+    int pipeline_stage;                                             \
+    for (pipeline_stage = Thread::get_current_pipeline_stage();	    \
+         pipeline_stage >= 0;                                       \
+         --pipeline_stage)
+
+#define CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler)	\
   }
 
 // Iterates through all of the pipeline stages.
@@ -138,6 +149,12 @@ private:
     const int pipeline_stage = 0;                                       \
     
 #define CLOSE_ITERATE_CURRENT_AND_UPSTREAM(cycler)      \
+  }
+
+#define OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler) {		\
+    const int pipeline_stage = 0;                                       \
+    
+#define CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler)	\
   }
 
 #define OPEN_ITERATE_ALL_STAGES(cycler) {                               \

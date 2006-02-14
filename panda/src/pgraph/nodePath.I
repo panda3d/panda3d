@@ -40,7 +40,8 @@ NodePath(const string &top_node_name) :
   _error_type(ET_ok)
 {
   PandaNode *top_node = new PandaNode(top_node_name);
-  _head = top_node->get_generic_component(false);
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  _head = top_node->get_generic_component(false, pipeline_stage);
   _backup_key = 0;
 }
 
@@ -60,7 +61,8 @@ NodePath(PandaNode *node) :
   _error_type(ET_ok)
 {
   if (node != (PandaNode *)NULL) {
-    _head = node->get_generic_component(false);
+    int pipeline_stage = Thread::get_current_pipeline_stage();
+    _head = node->get_generic_component(false, pipeline_stage);
   }
   _backup_key = 0;
 }
@@ -78,7 +80,8 @@ INLINE NodePath NodePath::
 any_path(PandaNode *node) {
   NodePath result;
   if (node != (PandaNode *)NULL) {
-    result._head = node->get_generic_component(true);
+    int pipeline_stage = Thread::get_current_pipeline_stage();
+    result._head = node->get_generic_component(true, pipeline_stage);
   }
   return result;
 }
@@ -96,7 +99,8 @@ NodePath(const NodePath &parent, PandaNode *child_node) :
 {
   nassertv(!parent.is_empty());
   nassertv(child_node != (PandaNode *)NULL);
-  _head = PandaNode::get_component(parent._head, child_node);
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  _head = PandaNode::get_component(parent._head, child_node, pipeline_stage);
   nassertv(_head != (NodePathComponent *)NULL);
 
   if (_head != (NodePathComponent *)NULL) {
@@ -226,7 +230,8 @@ is_empty() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 is_singleton() const {
-  return (_head != (NodePathComponent *)NULL && _head->is_top_node());
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  return (_head != (NodePathComponent *)NULL && _head->is_top_node(pipeline_stage));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -378,7 +383,9 @@ INLINE NodePath NodePath::
 get_child(int n) const {
   nassertr(n >= 0 && n < get_num_children(), NodePath());
   NodePath child;
-  child._head = PandaNode::get_component(_head, _head->get_node()->get_child(n));
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  child._head = PandaNode::get_component(_head, _head->get_node()->get_child(n),
+					 pipeline_stage);
   return child;
 }
 
@@ -406,8 +413,11 @@ get_parent() const {
   if (!has_parent()) {
     return NodePath();
   }
+
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+
   NodePath parent;
-  parent._head = _head->get_next();
+  parent._head = _head->get_next(pipeline_stage);
   return parent;
 }
 
@@ -474,17 +484,6 @@ reverse_ls(ostream &out, int indent_level) const {
   }
   node()->write(out, indent_level);
   return indent_level + 2;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_state
-//       Access: Published
-//  Description: Returns the complete state object set on this node.
-////////////////////////////////////////////////////////////////////
-INLINE const RenderState *NodePath::
-get_state() const {
-  nassertr_always(!is_empty(), RenderState::make_empty());
-  return node()->get_state();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -653,17 +652,6 @@ clear_effects() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_transform
-//       Access: Published
-//  Description: Returns the complete transform object set on this node.
-////////////////////////////////////////////////////////////////////
-INLINE const TransformState *NodePath::
-get_transform() const {
-  nassertr_always(!is_empty(), TransformState::make_identity());
-  return node()->get_transform();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_transform
 //       Access: Published
 //  Description: Sets the transform object on this node to identity.
@@ -705,19 +693,6 @@ INLINE CPT(TransformState) NodePath::
 get_net_transform() const {
   nassertr(_error_type == ET_ok, TransformState::make_identity());
   return r_get_net_transform(_head);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_prev_transform
-//       Access: Published
-//  Description: Returns the transform that has been set as this
-//               node's "previous" position.  See
-//               set_prev_transform().
-////////////////////////////////////////////////////////////////////
-INLINE const TransformState *NodePath::
-get_prev_transform() const {
-  nassertr_always(!is_empty(), TransformState::make_identity());
-  return node()->get_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////

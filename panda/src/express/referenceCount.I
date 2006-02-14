@@ -165,7 +165,7 @@ get_ref_count() const {
 #ifndef NDEBUG
   test_ref_count_integrity();
 #endif
-  return _ref_count;
+  return AtomicAdjust::get(_ref_count);
 }
 
 ////////////////////////////////////////////////////////////////////

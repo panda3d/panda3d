@@ -40,29 +40,6 @@ CData(const NodePathComponent::CData &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::Constructor
-//       Access: Private
-//  Description: Constructs a new NodePathComponent from the
-//               indicated node.  Don't try to call this directly; ask
-//               the PandaNode to do it for you.
-////////////////////////////////////////////////////////////////////
-INLINE NodePathComponent::
-NodePathComponent(PandaNode *node, NodePathComponent *next) :
-  _node(node),
-  _key(0)
-{
-#ifdef DO_MEMORY_USAGE
-  MemoryUsage::update_type(this, get_class_type());
-#endif
-  CDWriter cdata(_cycler);
-  cdata->_next = next;
-
-  if (next != (NodePathComponent *)NULL) {
-    cdata->_length = next->get_length() + 1;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePathComponent::Copy Constructor
 //       Access: Private
 //  Description: NodePathComponents should not be copied.

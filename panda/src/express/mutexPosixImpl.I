@@ -55,6 +55,18 @@ lock() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MutexPosixImpl::try_lock
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool MutexPosixImpl::
+try_lock() {
+  int result = pthread_mutex_trylock(&_lock);
+  nassertr(result == 0 || result == EBUSY, false);
+  return (result == 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MutexPosixImpl::release
 //       Access: Public
 //  Description: 
@@ -100,6 +112,18 @@ INLINE void ReMutexPosixImpl::
 lock() {
   int result = pthread_mutex_lock(&_lock);
   nassertv(result == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexPosixImpl::try_lock
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool ReMutexPosixImpl::
+try_lock() {
+  int result = pthread_mutex_trylock(&_lock);
+  nassertr(result == 0 || result == EBUSY, false);
+  return (result == 0);
 }
 
 ////////////////////////////////////////////////////////////////////

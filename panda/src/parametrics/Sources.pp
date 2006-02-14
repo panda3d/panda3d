@@ -1,8 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c
 
-#define USE_PACKAGES nurbspp
-
 #begin lib_target
   #define TARGET parametrics
   #define LOCAL_LIBS \
@@ -11,10 +9,11 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
-    classicNurbsCurve.I classicNurbsCurve.h config_parametrics.h  \
+    config_parametrics.h  \
     cubicCurveseg.h parametricCurveDrawer.I  \
     parametricCurveDrawer.h curveFitter.I curveFitter.h  \
-    hermiteCurve.h nurbsCurve.h \
+    hermiteCurve.h \
+    nurbsCurve.I nurbsCurve.h \
     nurbsCurveDrawer.I nurbsCurveDrawer.h \
     nurbsCurveEvaluator.I nurbsCurveEvaluator.h \
     nurbsCurveInterface.I nurbsCurveInterface.h \
@@ -27,13 +26,12 @@
     parametricCurveCollection.I parametricCurveCollection.h  \
     piecewiseCurve.h \
     ropeNode.I ropeNode.h \
-    sheetNode.I sheetNode.h \
-    $[if $[HAVE_NURBSPP], nurbsPPCurve.cxx nurbsPPCurve.h]
-
+    sheetNode.I sheetNode.h
 
   #define INCLUDED_SOURCES \
-    classicNurbsCurve.cxx config_parametrics.cxx cubicCurveseg.cxx  \
+    config_parametrics.cxx cubicCurveseg.cxx  \
     parametricCurveDrawer.cxx curveFitter.cxx hermiteCurve.cxx  \
+    nurbsCurve.cxx \
     nurbsCurveDrawer.cxx \
     nurbsCurveEvaluator.cxx \
     nurbsCurveInterface.cxx  \
@@ -48,13 +46,12 @@
     sheetNode.cxx
 
   #define INSTALL_HEADERS \
-    classicNurbsCurve.I classicNurbsCurve.h \
     config_parametrics.h \
     cubicCurveseg.h \
     parametricCurveDrawer.I parametricCurveDrawer.h \
     curveFitter.I curveFitter.h \
     hermiteCurve.h \
-    nurbsCurve.h \
+    nurbsCurve.I nurbsCurve.h \
     nurbsCurveDrawer.I nurbsCurveDrawer.h \
     nurbsCurveEvaluator.I nurbsCurveEvaluator.h \
     nurbsCurveInterface.I nurbsCurveInterface.h \
@@ -63,7 +60,6 @@
     nurbsSurfaceEvaluator.I nurbsSurfaceEvaluator.h \
     nurbsSurfaceResult.I nurbsSurfaceResult.h \
     nurbsVertex.h nurbsVertex.I \
-    nurbsPPCurve.h \
     parametricCurve.h \
     parametricCurveCollection.I parametricCurveCollection.h \
     piecewiseCurve.h \

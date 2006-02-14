@@ -17,9 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_util.h"
-#include "boundedObject.h"
 #include "config_gobj.h"
-#include "drawable.h"
 #include "geom.h"
 #include "geomMunger.h"
 #include "geomPrimitive.h"
@@ -230,7 +228,6 @@ ConfigVariableDouble default_keystone
 
 
 ConfigureFn(config_gobj) {
-  BoundedObject::init_type();
   Geom::init_type();
   GeomMunger::init_type();
   GeomPrimitive::init_type();
@@ -255,7 +252,6 @@ ConfigureFn(config_gobj) {
   Lens::init_type();
   SliderTable::init_type();
   Texture::init_type();
-  dDrawable::init_type();
   TextureStage::init_type();
   ShaderExpansion::init_type();
   ShaderContext::init_type();

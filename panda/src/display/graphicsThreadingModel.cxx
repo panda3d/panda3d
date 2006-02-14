@@ -64,8 +64,19 @@ GraphicsThreadingModel(const string &model) {
     _cull_name = model.substr(start, slash - start);
     _draw_name = model.substr(slash + 1);
   }
+  if (_cull_name.empty()) {
+    _cull_stage = 0;
+  } else {
+    _cull_stage = 1;
+  }
   if (!_cull_sorting || _draw_name.empty()) {
     _draw_name = _cull_name;
+  }
+
+  if (_draw_name == _cull_name) {
+    _draw_stage = _cull_stage;
+  } else {
+    _draw_stage = _cull_stage + 1;
   }
 }
   

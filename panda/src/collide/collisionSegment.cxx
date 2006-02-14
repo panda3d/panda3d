@@ -116,20 +116,20 @@ set_from_lens(LensNode *camera, const LPoint2f &point) {
     success = false;
   }
 
-  mark_bound_stale();
+  mark_internal_bounds_stale();
   mark_viz_stale();
 
   return success;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSegment::recompute_bound
+//     Function: CollisionSegment::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *CollisionSegment::
-recompute_bound(int pipeline_stage) {
-  BoundingVolume *bound = BoundedObject::recompute_bound(pipeline_stage);
+PT(BoundingVolume) CollisionSegment::
+compute_internal_bounds() const {
+  PT(BoundingVolume) bound = CollisionSolid::compute_internal_bounds();
 
   if (bound->is_of_type(GeometricBoundingVolume::get_class_type())) {
     GeometricBoundingVolume *gbound;

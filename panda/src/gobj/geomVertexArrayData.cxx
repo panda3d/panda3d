@@ -45,8 +45,7 @@ GeomVertexArrayData() {
 GeomVertexArrayData::
 GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
                     GeomVertexArrayData::UsageHint usage_hint) :
-  _array_format(array_format),
-  _usage_hint(UH_unspecified)
+  _array_format(array_format)
 {
   set_usage_hint(usage_hint);
   _endian_reversed = false;
@@ -62,9 +61,7 @@ GeomVertexArrayData::
 GeomVertexArrayData(const GeomVertexArrayData &copy) :
   TypedWritableReferenceCount(copy),
   _array_format(copy._array_format),
-  _usage_hint(copy._usage_hint),
-  _data(copy._data),
-  _modified(copy._modified)
+  _cycler(copy._cycler)
 {
   _endian_reversed = false;
   nassertv(_array_format->is_registered());
@@ -73,16 +70,22 @@ GeomVertexArrayData(const GeomVertexArrayData &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::Copy Assignment Operator
 //       Access: Published
-//  Description: 
+//  Description: The copy assignment operator is not pipeline-safe.
+//               This will completely obliterate all stages of the
+//               pipeline, so don't do it for a GeomVertexArrayData
+//               that is actively being used for rendering.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 operator = (const GeomVertexArrayData &copy) {
   TypedWritableReferenceCount::operator = (copy);
   _array_format = copy._array_format;
+  _cycler = copy._cycler;
 
-  _usage_hint = copy._usage_hint;
-  _data = copy._data;
-  _modified = Geom::get_next_modified();
+  OPEN_ITERATE_ALL_STAGES(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_modified = Geom::get_next_modified();
+  }
+  CLOSE_ITERATE_ALL_STAGES(_cycler);
 
   nassertv(_array_format->is_registered());
 }
@@ -114,36 +117,42 @@ GeomVertexArrayData::
 //               The new vertex data is initialized to 0, including
 //               the "color" column (but see
 //               GeomVertexData::set_num_rows()).
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexArrayData::
 set_num_rows(int n) {
+  CDWriter cdata(_cycler, true);
+
   int stride = _array_format->get_stride();
-  int delta = n - (_data.size() / stride);
+  int delta = n - (cdata->_data.size() / stride);
   
   if (delta != 0) {
-    if (_data.get_ref_count() > 1) {
+    if (cdata->_data.get_ref_count() > 1) {
       // Copy-on-write: the data is already reffed somewhere else,
       // so we're just going to make a copy.
       PTA_uchar new_data;
       new_data.reserve(n * stride);
       new_data.insert(new_data.end(), n * stride, 0);
-      memcpy(new_data, _data, 
-             min((size_t)(n * stride), _data.size()));
-      _data = new_data;
+      memcpy(new_data, cdata->_data, 
+             min((size_t)(n * stride), cdata->_data.size()));
+      cdata->_data = new_data;
       
     } else {
       // We've got the only reference to the data, so we can change
       // it directly.
       if (delta > 0) {
-        _data.insert(_data.end(), delta * stride, 0);
+        cdata->_data.insert(cdata->_data.end(), delta * stride, 0);
         
       } else {
-        _data.erase(_data.begin() + n * stride, 
-                           _data.end());
+        cdata->_data.erase(cdata->_data.begin() + n * stride, 
+                           cdata->_data.end());
       }
     }
 
-    _modified = Geom::get_next_modified();
+    cdata->_modified = Geom::get_next_modified();
 
     return true;
   }
@@ -156,11 +165,16 @@ set_num_rows(int n) {
 //       Access: Published
 //  Description: Changes the UsageHint hint for this array.  See
 //               get_usage_hint().
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 set_usage_hint(GeomVertexArrayData::UsageHint usage_hint) {
-  _usage_hint = usage_hint;
-  _modified = Geom::get_next_modified();
+  CDWriter cdata(_cycler, true);
+  cdata->_usage_hint = usage_hint;
+  cdata->_modified = Geom::get_next_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -189,20 +203,26 @@ write(ostream &out, int indent_level) const {
 //  Description: Returns a modifiable pointer to the actual vertex
 //               array, so that application code may directly
 //               manipulate it.  Use with caution.
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 PTA_uchar GeomVertexArrayData::
 modify_data() {
   // Perform copy-on-write: if the reference count on the vertex data
   // is greater than 1, assume some other GeomVertexData has the same
   // pointer, so make a copy of it first.
-  if (_data.get_ref_count() > 1) {
-    PTA_uchar orig_data = _data;
-    _data = PTA_uchar();
-    _data.v() = orig_data.v();
-  }
-  _modified = Geom::get_next_modified();
+  CDWriter cdata(_cycler, true);
 
-  return _data;
+  if (cdata->_data.get_ref_count() > 1) {
+    PTA_uchar orig_data = cdata->_data;
+    cdata->_data = PTA_uchar();
+    cdata->_data.v() = orig_data.v();
+  }
+  cdata->_modified = Geom::get_next_modified();
+
+  return cdata->_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,11 +230,16 @@ modify_data() {
 //       Access: Public
 //  Description: Replaces the vertex data array with a completely new
 //               array.
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 set_data(CPTA_uchar array) {
-  _data = (PTA_uchar &)array;
-  _modified = Geom::get_next_modified();
+  CDWriter cdata(_cycler, true);
+  cdata->_data = (PTA_uchar &)array;
+  cdata->_modified = Geom::get_next_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -407,15 +432,13 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritableReferenceCount::write_datagram(manager, dg);
 
   manager->write_pointer(dg, _array_format);
-
-  dg.add_uint8(_usage_hint);
-  WRITE_PTA(manager, dg, write_raw_data, _data);
+  manager->write_cdata(dg, _cycler, this);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::write_raw_data
 //       Access: Public
-//  Description: Called by write_datagram() to write the raw data
+//  Description: Called by CData::write_datagram to write the raw data
 //               of the array to the indicated datagram.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
@@ -436,7 +459,7 @@ write_raw_data(BamWriter *manager, Datagram &dg, const PTA_uchar &data) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::read_raw_data
 //       Access: Public
-//  Description: Called by fillin() to read the raw data
+//  Description: Called by CData::fillin to read the raw data
 //               of the array from the indicated datagram.
 ////////////////////////////////////////////////////////////////////
 PTA_uchar GeomVertexArrayData::
@@ -456,7 +479,8 @@ read_raw_data(BamReader *manager, DatagramIterator &scan) {
       _endian_reversed = true;
     } else {
       // Since we have the _array_format pointer now, we can reverse
-      // it immediately.
+      // it immediately (and we should, to support threaded CData
+      // updates).
       data = reverse_data_endianness(data);
     }
   }
@@ -496,6 +520,8 @@ finalize(BamReader *manager) {
   // cause the unregistered object to destruct, we have to also tell
   // the BamReader to return the new object from now on.
 
+  CDWriter cdata(_cycler, true);
+
   CPT(GeomVertexArrayFormat) new_array_format = 
     GeomVertexArrayFormat::register_format(_array_format);
 
@@ -504,7 +530,7 @@ finalize(BamReader *manager) {
 
   if (_endian_reversed) {
     // Now is the time to endian-reverse the data.
-    _data = reverse_data_endianness(_data);
+    cdata->_data = reverse_data_endianness(cdata->_data);
   }
 }
 
@@ -541,9 +567,44 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
 
   manager->read_pointer(scan);
+  manager->read_cdata(scan, _cycler, this);
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::CData::make_copy
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CycleData *GeomVertexArrayData::CData::
+make_copy() const {
+  return new CData(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::CData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void GeomVertexArrayData::CData::
+write_datagram(BamWriter *manager, Datagram &dg, void *extra_data) const {
+  GeomVertexArrayData *array_data = (GeomVertexArrayData *)extra_data;
+  dg.add_uint8(_usage_hint);
+  WRITE_PTA(manager, dg, array_data->write_raw_data, _data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::CData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new GeomVertexArrayData.
+////////////////////////////////////////////////////////////////////
+void GeomVertexArrayData::CData::
+fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
+  GeomVertexArrayData *array_data = (GeomVertexArrayData *)extra_data;
   _usage_hint = (UsageHint)scan.get_uint8();
-  READ_PTA(manager, scan, read_raw_data, _data);
+  READ_PTA(manager, scan, array_data->read_raw_data, _data);
 
   _modified = Geom::get_next_modified();
 }

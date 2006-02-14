@@ -56,7 +56,8 @@ get_format() const {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexData::UsageHint GeomVertexData::
 get_usage_hint() const {
-  return _usage_hint;
+  CDReader cdata(_cycler);
+  return cdata->_usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,6 +73,37 @@ has_column(const InternalName *name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::set_num_rows
+//       Access: Published
+//  Description: Sets the length of the array to n rows in all of
+//               the various arrays (presumably by adding rows).
+//
+//               The new vertex data is initialized to 0, except for
+//               the "color" column, which is initialized to (1, 1, 1,
+//               1).
+//
+//               The return value is true if the number of rows
+//               was changed, false if the object already contained n
+//               rows (or if there was some error).
+//
+//               Although this method is Published, application code
+//               only very rarely has any need to call it.  Instead,
+//               you should use the GeomVertexWriter to build up the
+//               rows in a GeomVertexData object automatically,
+//               without need to explicitly set the number of
+//               rows.
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexData::
+set_num_rows(int n) {
+  CDWriter cdata(_cycler, true);
+  return do_set_num_rows(n, cdata);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::get_num_arrays
 //       Access: Published
 //  Description: Returns the number of individual arrays stored within
@@ -80,7 +112,8 @@ has_column(const InternalName *name) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomVertexData::
 get_num_arrays() const {
-  return _arrays.size();
+  CDReader cdata(_cycler);
+  return cdata->_arrays.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,8 +125,9 @@ get_num_arrays() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomVertexArrayData *GeomVertexData::
 get_array(int i) const {
-  nassertr(i >= 0 && i < (int)_arrays.size(), NULL);
-  return _arrays[i];
+  CDReader cdata(_cycler);
+  nassertr(i >= 0 && i < (int)cdata->_arrays.size(), NULL);
+  return cdata->_arrays[i];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,7 +148,8 @@ get_array(int i) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformTable *GeomVertexData::
 get_transform_table() const {
-  return _transform_table;
+  CDReader cdata(_cycler);
+  return cdata->_transform_table;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,7 +180,8 @@ clear_transform_table() {
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformBlendTable *GeomVertexData::
 get_transform_blend_table() const {
-  return _transform_blend_table;
+  CDReader cdata(_cycler);
+  return cdata->_transform_blend_table;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -173,7 +209,8 @@ clear_transform_blend_table() {
 ////////////////////////////////////////////////////////////////////
 INLINE const SliderTable *GeomVertexData::
 get_slider_table() const {
-  return _slider_table;
+  CDReader cdata(_cycler);
+  return cdata->_slider_table;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,7 +234,24 @@ clear_slider_table() {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq GeomVertexData::
 get_modified() const {
-  return _modified;
+  CDReader cdata(_cycler);
+  return cdata->_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::clear_cache
+//       Access: Published
+//  Description: Removes all of the previously-cached results of
+//               convert_to().
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexData::
+clear_cache() {
+  CDWriter cdata(_cycler, true);
+  do_clear_cache(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -364,6 +418,35 @@ CacheEntry(GeomVertexData *source,
 INLINE bool GeomVertexData::CacheEntry::
 operator < (const CacheEntry &other) const {
   return _modifier < other._modifier;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::CData::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexData::CData::
+CData() :
+  _usage_hint(UH_unspecified)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexData::CData::
+CData(const GeomVertexData::CData &copy) :
+  _usage_hint(copy._usage_hint),
+  _arrays(copy._arrays),
+  _transform_table(copy._transform_table),
+  _transform_blend_table(copy._transform_blend_table),
+  _slider_table(copy._slider_table),
+  _animated_vertices(copy._animated_vertices),
+  _animated_vertices_modified(copy._animated_vertices_modified),
+  _modified(copy._modified)
+{
 }
 
 INLINE ostream &

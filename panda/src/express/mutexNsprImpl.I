@@ -49,6 +49,18 @@ lock() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MutexNsprImpl::try_lock
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool MutexNsprImpl::
+try_lock() {
+  // NSPR doesn't define a try_lock function.  Too bad.  We just
+  // report that it would always block (since we don't know).
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MutexNsprImpl::release
 //       Access: Public
 //  Description: 

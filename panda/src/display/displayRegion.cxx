@@ -22,9 +22,9 @@
 #include "texture.h"
 #include "camera.h"
 #include "dcast.h"
-#include "mutexHolder.h"
 #include "pnmImage.h"
 
+TypeHandle DisplayRegion::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::Constructor
@@ -33,12 +33,7 @@
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 DisplayRegion(GraphicsOutput *window) :
-  _l(0.), _r(1.), _b(0.), _t(1.),
-  _window(window),
-  _camera_node((Camera *)NULL),
-  _active(true),
-  _sort(0),
-  _cube_map_index(-1)
+  _window(window)
 {
   _draw_buffer_type = window->get_draw_buffer_type();
   compute_pixels();
@@ -50,17 +45,11 @@ DisplayRegion(GraphicsOutput *window) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
-DisplayRegion(GraphicsOutput *window, const float l,
-              const float r, const float b, const float t) :
-  _l(l), _r(r), _b(b), _t(t),
-  _window(window),
-  _camera_node((Camera *)NULL),
-  _active(true),
-  _sort(0),
-  _cube_map_index(-1)
+DisplayRegion(GraphicsOutput *window, float l, float r, float b, float t) :
+  _window(window)
 {
   _draw_buffer_type = window->get_draw_buffer_type();
-  compute_pixels();
+  set_dimensions(l, r, b, t);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,7 +98,8 @@ void DisplayRegion::
 cleanup() {
   set_camera(NodePath());
 
-  _cull_result = NULL;
+  CDCullWriter cdata(_cycler_cull, true);
+  cdata->_cull_result = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,11 +111,11 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 get_dimensions(float &l, float &r, float &b, float &t) const {
-  MutexHolder holder(_lock);
-  l = _l;
-  r = _r;
-  b = _b;
-  t = _t;
+  CDReader cdata(_cycler);
+  l = cdata->_l;
+  r = cdata->_r;
+  b = cdata->_b;
+  t = cdata->_t;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,8 +127,8 @@ get_dimensions(float &l, float &r, float &b, float &t) const {
 ////////////////////////////////////////////////////////////////////
 float DisplayRegion::
 get_left() const {
-  MutexHolder holder(_lock);
-  return _l;
+  CDReader cdata(_cycler);
+  return cdata->_l;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,8 +140,8 @@ get_left() const {
 ////////////////////////////////////////////////////////////////////
 float DisplayRegion::
 get_right() const {
-  MutexHolder holder(_lock);
-  return _r;
+  CDReader cdata(_cycler);
+  return cdata->_r;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,8 +153,8 @@ get_right() const {
 ////////////////////////////////////////////////////////////////////
 float DisplayRegion::
 get_bottom() const {
-  MutexHolder holder(_lock);
-  return _b;
+  CDReader cdata(_cycler);
+  return cdata->_b;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -176,8 +166,8 @@ get_bottom() const {
 ////////////////////////////////////////////////////////////////////
 float DisplayRegion::
 get_top() const {
-  MutexHolder holder(_lock);
-  return _t;
+  CDReader cdata(_cycler);
+  return cdata->_t;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -191,14 +181,17 @@ get_top() const {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 set_dimensions(float l, float r, float b, float t) {
-  MutexHolder holder(_lock);
-  _l = l;
-  _r = r;
-  _b = b;
-  _t = t;
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage == 0);
+  CDWriter cdata(_cycler);
+
+  cdata->_l = l;
+  cdata->_r = r;
+  cdata->_b = b;
+  cdata->_t = t;
 
   if (_window != (GraphicsOutput *)NULL && _window->has_size()) {
-    do_compute_pixels(_window->get_x_size(), _window->get_y_size());
+    do_compute_pixels(_window->get_x_size(), _window->get_y_size(), cdata);
   }
 }
 
@@ -211,7 +204,6 @@ set_dimensions(float l, float r, float b, float t) {
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput *DisplayRegion::
 get_window() const {
-  MutexHolder holder(_lock);
   return _window;
 }
 
@@ -224,7 +216,6 @@ get_window() const {
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe *DisplayRegion::
 get_pipe() const {
-  MutexHolder holder(_lock);
   return (_window != (GraphicsOutput *)NULL) ? _window->get_pipe() : NULL;
 }
 
@@ -242,25 +233,32 @@ get_pipe() const {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 set_camera(const NodePath &camera) {
-  MutexHolder holder(_lock);
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage == 0);
+  CDWriter cdata(_cycler);
+
   Camera *camera_node = (Camera *)NULL;
   if (!camera.is_empty()) {
     DCAST_INTO_V(camera_node, camera.node());
   }
 
-  if (camera_node != _camera_node) {
-    if (_camera_node != (Camera *)NULL) {
+  if (camera_node != cdata->_camera_node) {
+    // Note that these operations on the DisplayRegion are not
+    // pipelined: they operate across all pipeline stages.  Since we
+    // have already asserted we are running in pipeline stage 0, no
+    // problem.
+    if (cdata->_camera_node != (Camera *)NULL) {
       // We need to tell the old camera we're not using him anymore.
-      _camera_node->remove_display_region(this);
+      cdata->_camera_node->remove_display_region(this);
     }
-    _camera_node = camera_node;
-    if (_camera_node != (Camera *)NULL) {
+    cdata->_camera_node = camera_node;
+    if (cdata->_camera_node != (Camera *)NULL) {
       // Now tell the new camera we are using him.
-      _camera_node->add_display_region(this);
+      cdata->_camera_node->add_display_region(this);
     }
   }
 
-  _camera = camera;
+  cdata->_camera = camera;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -272,8 +270,8 @@ set_camera(const NodePath &camera) {
 ////////////////////////////////////////////////////////////////////
 NodePath DisplayRegion::
 get_camera() const {
-  MutexHolder holder(_lock);
-  return _camera;
+  CDReader cdata(_cycler);
+  return cdata->_camera;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -285,9 +283,13 @@ get_camera() const {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 set_active(bool active) {
-  MutexHolder holder(_lock);
-  if (active != _active) {
-    _active = active;
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage == 0);
+  CDReader cdata(_cycler);
+
+  if (active != cdata->_active) {
+    CDWriter cdataw(_cycler, cdata);
+    cdataw->_active = active;
     win_display_regions_changed();
   }
 }
@@ -302,9 +304,13 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 set_sort(int sort) {
-  MutexHolder holder(_lock);
-  if (sort != _sort) {
-    _sort = sort;
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage == 0);
+  CDReader cdata(_cycler);
+
+  if (sort != cdata->_sort) {
+    CDWriter cdataw(_cycler, cdata);
+    cdataw->_sort = sort;
     win_display_regions_changed();
   }
 }
@@ -318,9 +324,13 @@ set_sort(int sort) {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 compute_pixels() {
-  MutexHolder holder(_lock);
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage == 0);
+
   if (_window != (GraphicsOutput *)NULL) {
-    do_compute_pixels(_window->get_x_size(), _window->get_y_size());
+    CDWriter cdata(_cycler);
+    do_compute_pixels(_window->get_x_size(), _window->get_y_size(), 
+                      cdata);
   }
 }
 
@@ -333,8 +343,10 @@ compute_pixels() {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 compute_pixels(int x_size, int y_size) {
-  MutexHolder holder(_lock);
-  do_compute_pixels(x_size, y_size);
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage == 0);
+  CDWriter cdata(_cycler);
+  do_compute_pixels(x_size, y_size, cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -345,11 +357,11 @@ compute_pixels(int x_size, int y_size) {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 get_pixels(int &pl, int &pr, int &pb, int &pt) const {
-  MutexHolder holder(_lock);
-  pl = _pl;
-  pr = _pr;
-  pb = _pb;
-  pt = _pt;
+  CDReader cdata(_cycler);
+  pl = cdata->_pl;
+  pr = cdata->_pr;
+  pb = cdata->_pb;
+  pt = cdata->_pt;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -361,11 +373,11 @@ get_pixels(int &pl, int &pr, int &pb, int &pt) const {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 get_region_pixels(int &xo, int &yo, int &w, int &h) const {
-  MutexHolder holder(_lock);
-  xo = _pl;
-  yo = _pb;
-  w = _pr - _pl;
-  h = _pt - _pb;
+  CDReader cdata(_cycler);
+  xo = cdata->_pl;
+  yo = cdata->_pb;
+  w = cdata->_pr - cdata->_pl;
+  h = cdata->_pt - cdata->_pb;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -378,11 +390,11 @@ get_region_pixels(int &xo, int &yo, int &w, int &h) const {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
-  MutexHolder holder(_lock);
-  xo = _pl;
-  yo = _pti;
-  w = _pr - _pl;
-  h = _pbi - _pti;
+  CDReader cdata(_cycler);
+  xo = cdata->_pl;
+  yo = cdata->_pti;
+  w = cdata->_pr - cdata->_pl;
+  h = cdata->_pbi - cdata->_pti;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -392,8 +404,8 @@ get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
 ////////////////////////////////////////////////////////////////////
 int DisplayRegion::
 get_pixel_width() const {
-  MutexHolder holder(_lock);
-  return _pr - _pl;
+  CDReader cdata(_cycler);
+  return cdata->_pr - cdata->_pl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -403,8 +415,8 @@ get_pixel_width() const {
 ////////////////////////////////////////////////////////////////////
 int DisplayRegion::
 get_pixel_height() const {
-  MutexHolder holder(_lock);
-  return _pt - _pb;
+  CDReader cdata(_cycler);
+  return cdata->_pt - cdata->_pb;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -414,9 +426,10 @@ get_pixel_height() const {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 output(ostream &out) const {
-  MutexHolder holder(_lock);
-  out << "DisplayRegion(" << _l << " " << _r << " " << _b << " " << _t
-      << ")=pixels(" << _pl << " " << _pr << " " << _pb << " " << _pt
+  CDReader cdata(_cycler);
+  out << "DisplayRegion(" << cdata->_l << " " << cdata->_r << " "
+      << cdata->_b << " " << cdata->_t << ")=pixels(" << cdata->_pl
+      << " " << cdata->_pr << " " << cdata->_pb << " " << cdata->_pt
       << ")";
 }
 
@@ -593,28 +606,88 @@ win_display_regions_changed() {
 //               assumes that we already have the lock.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
-do_compute_pixels(int x_size, int y_size) {
+do_compute_pixels(int x_size, int y_size, CData *cdata) {
   if (display_cat.is_debug()) {
     display_cat.debug()
       << "DisplayRegion::do_compute_pixels(" << x_size << ", " << y_size << ")\n";
   }
 
-  _pl = int((_l * x_size) + 0.5);
-  _pr = int((_r * x_size) + 0.5);
+  cdata->_pl = int((cdata->_l * x_size) + 0.5);
+  cdata->_pr = int((cdata->_r * x_size) + 0.5);
 
   nassertv(_window != (GraphicsOutput *)NULL);
   if (_window->get_inverted()) {
     // The window is inverted; compute the DisplayRegion accordingly.
-    _pb = int(((1.0f - _t) * y_size) + 0.5);
-    _pt = int(((1.0f - _b) * y_size) + 0.5);
-    _pbi = int((_t * y_size) + 0.5);
-    _pti = int((_b * y_size) + 0.5);
+    cdata->_pb = int(((1.0f - cdata->_t) * y_size) + 0.5);
+    cdata->_pt = int(((1.0f - cdata->_b) * y_size) + 0.5);
+    cdata->_pbi = int((cdata->_t * y_size) + 0.5);
+    cdata->_pti = int((cdata->_b * y_size) + 0.5);
 
   } else {
     // The window is normal.
-    _pb = int((_b * y_size) + 0.5);
-    _pt = int((_t * y_size) + 0.5);
-    _pbi = int(((1.0f - _b) * y_size) + 0.5);
-    _pti = int(((1.0f - _t) * y_size) + 0.5);
+    cdata->_pb = int((cdata->_b * y_size) + 0.5);
+    cdata->_pt = int((cdata->_t * y_size) + 0.5);
+    cdata->_pbi = int(((1.0f - cdata->_b) * y_size) + 0.5);
+    cdata->_pti = int(((1.0f - cdata->_t) * y_size) + 0.5);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::CData::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+DisplayRegion::CData::
+CData() :
+  _l(0.), _r(1.), _b(0.), _t(1.),
+  _camera_node((Camera *)NULL),
+  _active(true),
+  _sort(0),
+  _cube_map_index(-1)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+DisplayRegion::CData::
+CData(const DisplayRegion::CData &copy) :
+  _l(copy._l),
+  _r(copy._r),
+  _b(copy._b),
+  _t(copy._t),
+  _pl(copy._pl),
+  _pr(copy._pr),
+  _pb(copy._pb),
+  _pt(copy._pt),
+  _pbi(copy._pbi),
+  _pti(copy._pti),
+  _camera(copy._camera),
+  _camera_node(copy._camera_node),
+  _active(copy._active),
+  _sort(copy._sort),
+  _cube_map_index(copy._cube_map_index)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::CData::make_copy
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CycleData *DisplayRegion::CData::
+make_copy() const {
+  return new CData(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::CDataCull::make_copy
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CycleData *DisplayRegion::CDataCull::
+make_copy() const {
+  return new CDataCull(*this);
 }

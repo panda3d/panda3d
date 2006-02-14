@@ -20,6 +20,8 @@
 #define UPDATE_SEQ
 
 #include "pandabase.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : UpdateSeq
@@ -70,6 +72,10 @@ PUBLISHED:
   INLINE void output(ostream &out) const;
 
 private:
+  INLINE bool priv_is_special() const;
+  INLINE bool priv_lt(const UpdateSeq &other) const;
+
+private:
   enum SpecialCases {
     SC_initial = 0,
     SC_old = 1,
@@ -77,6 +83,9 @@ private:
   };
 
   unsigned int _seq;
+
+  // This mutex globally protects all UpdateSeqs in the world.
+  static Mutex _lock;
 };
 
 INLINE ostream &operator << (ostream &out, const UpdateSeq &value);

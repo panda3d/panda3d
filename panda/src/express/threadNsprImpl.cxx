@@ -23,7 +23,6 @@
 
 #include "pointerTo.h"
 #include "config_express.h"
-#include "mutexHolder.h"
 
 PRUintn ThreadNsprImpl::_pt_ptr_index = 0;
 bool ThreadNsprImpl::_got_pt_ptr_index = false;
@@ -89,11 +88,15 @@ ThreadNsprImpl::
 ////////////////////////////////////////////////////////////////////
 bool ThreadNsprImpl::
 start(ThreadPriority priority, bool global, bool joinable) {
-  MutexHolder holder(_mutex);
+  _mutex.lock();
   if (thread_cat.is_debug()) {
     thread_cat.debug() << "Starting thread " << _parent_obj->get_name() << "\n";
   }
-  nassertr(_thread == (PRThread *)NULL, false);
+  nassertd(_thread == (PRThread *)NULL) {
+    _mutex.release();
+    return false;
+  }
+
   _joinable = joinable;
 
   if (!_got_pt_ptr_index) {
@@ -107,10 +110,6 @@ start(ThreadPriority priority, bool global, bool joinable) {
     nspr_pri = PR_PRIORITY_LOW;
     break;
 
-  case TP_normal:
-    nspr_pri = PR_PRIORITY_NORMAL;
-    break;
-
   case TP_high:
     nspr_pri = PR_PRIORITY_HIGH;
     break;
@@ -119,8 +118,8 @@ start(ThreadPriority priority, bool global, bool joinable) {
     nspr_pri = PR_PRIORITY_URGENT;
     break;
 
+  case TP_normal:
   default:
-    nassertr(false, false);
     nspr_pri = PR_PRIORITY_NORMAL;
   }
 
@@ -140,10 +139,12 @@ start(ThreadPriority priority, bool global, bool joinable) {
     // reference count we incremented above, and return false to
     // indicate failure.
     unref_delete(_parent_obj);
+    _mutex.release();
     return false;
   }
 
   // Thread was successfully started.
+  _mutex.release();
   return true;
 }
 
@@ -172,11 +173,12 @@ interrupt() {
 ////////////////////////////////////////////////////////////////////
 void ThreadNsprImpl::
 join() {
-  MutexHolder holder(_mutex);
+  _mutex.lock();
   if (_joinable && _thread != (PRThread *)NULL) {
     PR_JoinThread(_thread);
     _thread = (PRThread *)NULL;
   }
+  _mutex.release();
 }
 
 ////////////////////////////////////////////////////////////////////

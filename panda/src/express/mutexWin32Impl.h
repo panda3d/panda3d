@@ -28,6 +28,8 @@
 
 #include <windows.h>
 
+#define MUTEX_DEFINES_TRYLOCK 1
+
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexWin32Impl
 // Description : Uses Windows native calls to implement a mutex.
@@ -38,6 +40,7 @@ public:
   INLINE ~MutexWin32Impl();
 
   INLINE void lock();
+  INLINE bool try_lock();
   INLINE void release();
 
 private:

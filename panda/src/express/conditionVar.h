@@ -20,9 +20,8 @@
 #define CONDITIONVAR_H
 
 #include "pandabase.h"
-#include "pmutex.h"
-#include "conditionVarImpl.h"
-#include "notify.h"
+#include "conditionVarDebug.h"
+#include "conditionVarDirect.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ConditionVar
@@ -35,8 +34,17 @@
 //               A condition variable is associated with a single
 //               mutex, and several condition variables may share the
 //               same mutex.
+//
+//               This class inherits its implementation either from
+//               ConditionVarDebug or ConditionVarDirect, depending on
+//               the definition of DEBUG_THREADS.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS ConditionVar {
+#ifdef DEBUG_THREADS
+class EXPCL_PANDAEXPRESS ConditionVar : public ConditionVarDebug
+#else
+class EXPCL_PANDAEXPRESS ConditionVar : public ConditionVarDirect
+#endif  // DEBUG_THREADS
+{
 public:
   INLINE ConditionVar(Mutex &mutex);
   INLINE ~ConditionVar();
@@ -45,18 +53,7 @@ private:
   INLINE void operator = (const ConditionVar &copy);
 
 public:
-  INLINE Mutex &get_mutex();
-
-#ifdef CHECK_REENTRANT_MUTEX
-  void wait();
-#else  // CHECK_REENTRANT_MUTEX
-  INLINE void wait();
-#endif  // CHECK_REENTRANT_MUTEX
-  INLINE void signal();
-
-private:
-  Mutex &_mutex;
-  ConditionVarImpl _impl;
+  INLINE Mutex &get_mutex() const;
 };
 
 #include "conditionVar.I"

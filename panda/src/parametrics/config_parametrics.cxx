@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "classicNurbsCurve.h"
+#include "nurbsCurve.h"
 #include "config_parametrics.h"
 #include "cubicCurveseg.h"
 #include "curveFitter.h"
@@ -29,15 +29,11 @@
 #include "ropeNode.h"
 #include "sheetNode.h"
 
-#ifdef HAVE_NURBSPP
-#include "nurbsPPCurve.h"
-#endif
-
 Configure(config_parametrics);
 NotifyCategoryDef(parametrics, "");
 
 ConfigureFn(config_parametrics) {
-  ClassicNurbsCurve::init_type();
+  NurbsCurve::init_type();
   CubicCurveseg::init_type();
   CurveFitter::init_type();
   HermiteCurve::init_type();
@@ -49,12 +45,7 @@ ConfigureFn(config_parametrics) {
   RopeNode::init_type();
   SheetNode::init_type();
 
-#ifdef HAVE_NURBSPP
-  NurbsPPCurve::init_type();
-  NurbsPPCurve::register_with_read_factory();
-#endif
-
-  ClassicNurbsCurve::register_with_read_factory();
+  NurbsCurve::register_with_read_factory();
   CubicCurveseg::register_with_read_factory();
   HermiteCurve::register_with_read_factory();
   RopeNode::register_with_read_factory();

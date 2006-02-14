@@ -94,13 +94,13 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::recompute_bound
+//     Function: CollisionTube::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *CollisionTube::
-recompute_bound(int pipeline_stage) {
-  BoundingVolume *bound = BoundedObject::recompute_bound(pipeline_stage);
+PT(BoundingVolume) CollisionTube::
+compute_internal_bounds() const {
+  PT(BoundingVolume) bound = CollisionSolid::compute_internal_bounds();
 
   if (bound->is_of_type(GeometricBoundingVolume::get_class_type())) {
     GeometricBoundingVolume *gbound;
@@ -458,7 +458,7 @@ recalc_internals() {
   _inv_mat.invert_from(_mat);
 
   mark_viz_stale();
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

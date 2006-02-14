@@ -242,7 +242,7 @@ PUBLISHED:
 
 
   // Aggregate transform and state information.
-  INLINE const RenderState *get_state() const;
+  const RenderState *get_state() const;
   INLINE void set_state(const RenderState *state);
   CPT(RenderState) get_state(const NodePath &other) const;
   void set_state(const NodePath &other, const RenderState *state);
@@ -262,7 +262,7 @@ PUBLISHED:
   INLINE const RenderEffects *get_effects() const;
   INLINE void clear_effects();
 
-  INLINE const TransformState *get_transform() const;
+  const TransformState *get_transform() const;
   INLINE void clear_transform();
   INLINE void set_transform(const TransformState *transform);
   CPT(TransformState) get_transform(const NodePath &other) const;
@@ -270,7 +270,7 @@ PUBLISHED:
   void set_transform(const NodePath &other, const TransformState *transform);
   INLINE CPT(TransformState) get_net_transform() const;
 
-  INLINE const TransformState *get_prev_transform() const;
+  const TransformState *get_prev_transform() const;
   INLINE void set_prev_transform(const TransformState *transform);
   CPT(TransformState) get_prev_transform(const NodePath &other) const;
   void set_prev_transform(const NodePath &other, const TransformState *transform);

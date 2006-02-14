@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::Default Constructor
 //       Access: Public
@@ -77,7 +78,7 @@ CollisionSegment(const CollisionSegment &copy) :
 INLINE void CollisionSegment::
 set_point_a(const LPoint3f &a) {
   _a = a;
-  mark_bound_stale();
+  mark_internal_bounds_stale();
   mark_viz_stale();
   // We don't assert here that a != b, on the assumption that you
   // might be about to change both at once, and you'll probably start
@@ -112,7 +113,7 @@ get_point_a() const {
 INLINE void CollisionSegment::
 set_point_b(const LPoint3f &b) {
   _b = b;
-  mark_bound_stale();
+  mark_internal_bounds_stale();
   mark_viz_stale();
   nassertv(_a != _b);
 }

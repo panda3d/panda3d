@@ -51,7 +51,7 @@ END_PUBLISH //]
 class ParametricCurveDrawer;
 class HermiteCurveCV;
 class HermiteCurve;
-class ClassicNurbsCurve;
+class NurbsCurve;
 class NurbsCurveInterface;
 
 

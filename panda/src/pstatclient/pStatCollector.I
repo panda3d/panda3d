@@ -196,11 +196,7 @@ stop() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 clear_level() {
-#ifndef HAVE_THREADS
   _client->clear_level(_index, 0);
-#else  // HAVE_THREADS
-  clear_level(_client->get_current_thread());
-#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -212,11 +208,7 @@ clear_level() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 set_level(float level) {
-#ifndef HAVE_THREADS
   _client->set_level(_index, 0, level);
-#else  // HAVE_THREADS
-  set_level(_client->get_current_thread(), level);
-#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,11 +222,7 @@ set_level(float level) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 add_level(float increment) {
-#ifndef HAVE_THREADS
   _client->add_level(_index, 0, increment);
-#else  // HAVE_THREADS
-  add_level(_client->get_current_thread(), increment);
-#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -248,6 +236,82 @@ add_level(float increment) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 sub_level(float decrement) {
+  _client->add_level(_index, 0, -decrement);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::get_level
+//       Access: Published
+//  Description: Returns the current level value of the given
+//               collector in the main thread.
+////////////////////////////////////////////////////////////////////
+INLINE float PStatCollector::
+get_level() {
+  return _client->get_level(_index, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::clear_thread_level
+//       Access: Published
+//  Description: Removes the level setting associated with this
+//               collector for the current thread.  The collector
+//               will no longer show up on any level graphs in the
+//               current thread.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+clear_thread_level() {
+#ifndef HAVE_THREADS
+  _client->clear_level(_index, 0);
+#else  // HAVE_THREADS
+  clear_level(_client->get_current_thread());
+#endif  // HAVE_THREADS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::set_thread_level
+//       Access: Published
+//  Description: Sets the level setting associated with this
+//               collector for the current thread to the indicated
+//               value.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+set_thread_level(float level) {
+#ifndef HAVE_THREADS
+  _client->set_level(_index, 0, level);
+#else  // HAVE_THREADS
+  set_level(_client->get_current_thread(), level);
+#endif  // HAVE_THREADS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::add_thread_level
+//       Access: Published
+//  Description: Adds the indicated increment (which may be negative)
+//               to the level setting associated with this collector
+//               for the current thread.  If the collector did not
+//               already have a level setting for the current thread,
+//               it is initialized to 0.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+add_thread_level(float increment) {
+#ifndef HAVE_THREADS
+  _client->add_level(_index, 0, increment);
+#else  // HAVE_THREADS
+  add_level(_client->get_current_thread(), increment);
+#endif  // HAVE_THREADS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::sub_thread_level
+//       Access: Published
+//  Description: Subtracts the indicated decrement (which may be
+//               negative) to the level setting associated with this
+//               collector for the current thread.  If the collector
+//               did not already have a level setting for the current
+//               thread, it is initialized to 0.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+sub_thread_level(float decrement) {
 #ifndef HAVE_THREADS
   _client->add_level(_index, 0, -decrement);
 #else  // HAVE_THREADS
@@ -256,12 +320,13 @@ sub_level(float decrement) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatCollector::get_level
+//     Function: PStatCollector::get_thread_level
 //       Access: Published
-//  Description: Returns the current level value of the given collector.
+//  Description: Returns the current level value of the given
+//               collector in the current thread.
 ////////////////////////////////////////////////////////////////////
 INLINE float PStatCollector::
-get_level() {
+get_thread_level() {
 #ifndef HAVE_THREADS
   return _client->get_level(_index, 0);
 #else  // HAVE_THREADS

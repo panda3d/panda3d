@@ -30,9 +30,9 @@
 //               NURBS surface stored in its NurbsSurfaceEvaluator.  It
 //               automatically recomputes the surface every frame.
 //
-//               This is not related to NurbsSurface, ClassicNurbsSurface,
-//               CubicSurfaceseg or any of the ParametricSurface-derived
-//               objects in this module.  It is a completely parallel
+//               This is not related to NurbsSurface, CubicSurfaceseg
+//               or any of the ParametricSurface-derived objects in
+//               this module.  It is a completely parallel
 //               implementation of NURBS surfaces, and will probably
 //               eventually replace the whole ParametricSurface class
 //               hierarchy.
@@ -68,11 +68,11 @@ PUBLISHED:
   void reset_bound(const NodePath &rel_to);
 
 protected:
-  virtual BoundingVolume *recompute_internal_bound(int pipeline_stage);
+  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage) const;
 
 private:
-  BoundingVolume *do_recompute_bound(const NodePath &rel_to,
-                                     int pipeline_stage);
+  PT(BoundingVolume) do_recompute_bounds(const NodePath &rel_to,
+					 int pipeline_stage) const;
   void render_sheet(CullTraverser *trav, CullTraverserData &data, 
                     NurbsSurfaceResult *result);
 

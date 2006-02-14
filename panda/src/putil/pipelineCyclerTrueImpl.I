@@ -136,6 +136,43 @@ elevate_read(const CycleData *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::elevate_read_upstream
+//       Access: Public
+//  Description: Elevates a currently-held read pointer into a write
+//               pointer, like elevate_read(), but also propagates the
+//               pointer back to upstream stages, like
+//               write_upstream().
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerTrueImpl::
+elevate_read_upstream(const CycleData *pointer, bool force_to_0) {
+#ifndef NDEBUG
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
+  nassertr(_data[pipeline_stage] == pointer, NULL);
+#endif
+  CycleData *new_pointer = write_upstream(force_to_0);
+  _lock.release();
+  return new_pointer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::increment_write
+//       Access: Public
+//  Description: Increments the count on a pointer previously
+//               retrieved by write(); now the pointer will need to be
+//               released twice.
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerTrueImpl::
+increment_write(CycleData *pointer) const {
+#ifndef NDEBUG
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
+  nassertv(_data[pipeline_stage] == pointer);
+#endif
+  _lock.lock();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrueImpl::release_write
 //       Access: Public
 //  Description: Releases a pointer previously obtained via a call to
@@ -318,4 +355,16 @@ cycle_3() {
   }
 
   return last_val;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::CyclerMutex::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PipelineCyclerTrueImpl::CyclerMutex::
+CyclerMutex(PipelineCyclerTrueImpl *cycler) {
+#ifdef DEBUG_THREADS
+  _cycler = cycler;
+#endif
 }

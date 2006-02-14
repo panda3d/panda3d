@@ -36,7 +36,8 @@ get_array_format() const {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayData::UsageHint GeomVertexArrayData::
 get_usage_hint() const {
-  return _usage_hint;
+  CDReader cdata(_cycler);
+  return cdata->_usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,7 +83,8 @@ clear_rows() {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomVertexArrayData::
 get_data_size_bytes() const {
-  return _data.size();
+  CDReader cdata(_cycler);
+  return cdata->_data.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,7 +96,8 @@ get_data_size_bytes() const {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq GeomVertexArrayData::
 get_modified() const {
-  return _modified;
+  CDReader cdata(_cycler);
+  return cdata->_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,5 +109,36 @@ get_modified() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPTA_uchar GeomVertexArrayData::
 get_data() const {
-  return _data;
+  CDReader cdata(_cycler);
+  return cdata->_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::CData::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexArrayData::CData::
+CData() :
+  _usage_hint(UH_unspecified)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexArrayData::CData::
+CData(const GeomVertexArrayData::CData &copy) :
+  _usage_hint(copy._usage_hint),
+  _data(copy._data),
+  _modified(copy._modified)
+{
+}
+
+INLINE ostream &
+operator << (ostream &out, const GeomVertexArrayData &obj) {
+  obj.output(out);
+  return out;
 }

@@ -67,9 +67,9 @@ fresh() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq::
-UpdateSeq(const UpdateSeq &copy) :
-  _seq(copy._seq)
-{
+UpdateSeq(const UpdateSeq &copy) {
+  MutexHolder holder(_lock);
+  _seq = copy._seq;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,6 +79,7 @@ UpdateSeq(const UpdateSeq &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq &UpdateSeq::
 operator = (const UpdateSeq &copy) {
+  MutexHolder holder(_lock);
   _seq = copy._seq;
   return *this;
 }
@@ -90,6 +91,7 @@ operator = (const UpdateSeq &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void UpdateSeq::
 clear() {
+  MutexHolder holder(_lock);
   _seq = (unsigned int)SC_initial;
 }
 
@@ -101,6 +103,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_initial() const {
+  MutexHolder holder(_lock);
   return _seq == (unsigned int)SC_initial;
 }
 
@@ -111,6 +114,7 @@ is_initial() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_old() const {
+  MutexHolder holder(_lock);
   return _seq == (unsigned int)SC_old;
 }
 
@@ -122,6 +126,7 @@ is_old() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_fresh() const {
+  MutexHolder holder(_lock);
   return _seq == (unsigned int)SC_fresh;
 }
 
@@ -133,8 +138,8 @@ is_fresh() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_special() const {
-  // This relies on the assumption that (~0 + 1) == 0.
-  return ((_seq + 1) <= 2);
+  MutexHolder holder(_lock);
+  return priv_is_special();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,6 +149,7 @@ is_special() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 operator == (const UpdateSeq &other) const {
+  MutexHolder holder(_lock);
   return (_seq == other._seq);
 }
 
@@ -154,6 +160,7 @@ operator == (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 operator != (const UpdateSeq &other) const {
+  MutexHolder holder(_lock);
   return (_seq != other._seq);
 }
 
@@ -164,14 +171,8 @@ operator != (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 operator < (const UpdateSeq &other) const {
-  // The special cases of SC_initial or SC_old are less than all other
-  // non-special numbers, and SC_initial is less than SC_old.  The
-  // special case of SC_fresh is greater than all other non-special
-  // numbers.  For all other cases, we use a circular comparision such
-  // that n < m iff (signed)(n - m) < 0.
-  return
-    (is_special() || other.is_special()) ? (_seq < other._seq) :
-    ((signed int)(_seq - other._seq) < 0);
+  MutexHolder holder(_lock);
+  return priv_lt(other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -181,7 +182,8 @@ operator < (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 operator <= (const UpdateSeq &other) const {
-  return (*this) == other || (*this) < other;
+  MutexHolder holder(_lock);
+  return _seq == other._seq || priv_lt(other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -211,13 +213,16 @@ operator >= (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq UpdateSeq::
 operator ++ () {
-  ++_seq;
-  if (is_special()) {
-    // Oops, wraparound.  We don't want to confuse the new value
-    // with our special cases.
-    _seq = (unsigned int)SC_old + 1;
+  {
+    MutexHolder holder(_lock);
+    ++_seq;
+    if (priv_is_special()) {
+      // Oops, wraparound.  We don't want to confuse the new value
+      // with our special cases.
+      _seq = (unsigned int)SC_old + 1;
+    }
   }
-
+    
   return *this;
 }
 
@@ -228,8 +233,17 @@ operator ++ () {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq UpdateSeq::
 operator ++ (int) {
-  UpdateSeq temp = (*this);
-  operator ++ ();
+  UpdateSeq temp;
+  {
+    MutexHolder holder(_lock);
+    temp._seq = _seq;
+    
+    ++_seq;
+    if (priv_is_special()) {
+      _seq = (unsigned int)SC_old + 1;
+    }
+  }
+    
   return temp;
 }
 
@@ -240,7 +254,12 @@ operator ++ (int) {
 ////////////////////////////////////////////////////////////////////
 INLINE void UpdateSeq::
 output(ostream &out) const {
-  switch (_seq) {
+  unsigned int seq;
+  {
+    MutexHolder holder(_lock);
+    seq = _seq;
+  }
+  switch (seq) {
   case SC_initial:
     out << "initial";
     break;
@@ -254,8 +273,38 @@ output(ostream &out) const {
     break;
 
   default:
-    out << (long unsigned int)_seq;
+    out << (long unsigned int)seq;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UpdateSeq::priv_is_special
+//       Access: Published
+//  Description: The private implementation of is_special().  Assumes
+//               the lock is already held.
+////////////////////////////////////////////////////////////////////
+INLINE bool UpdateSeq::
+priv_is_special() const {
+  // This relies on the assumption that (~0 + 1) == 0.
+  return ((_seq + 1) <= 2);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UpdateSeq::priv_lt
+//       Access: Published
+//  Description: The private implementation of operator < ().  Assumes
+//               the lock is already held.
+////////////////////////////////////////////////////////////////////
+INLINE bool UpdateSeq::
+priv_lt(const UpdateSeq &other) const {
+  // The special cases of SC_initial or SC_old are less than all other
+  // non-special numbers, and SC_initial is less than SC_old.  The
+  // special case of SC_fresh is greater than all other non-special
+  // numbers.  For all other cases, we use a circular comparision such
+  // that n < m iff (signed)(n - m) < 0.
+  return
+    (priv_is_special() || other.priv_is_special()) ? (_seq < other._seq) :
+    ((signed int)(_seq - other._seq) < 0);
 }
 
 INLINE ostream &operator << (ostream &out, const UpdateSeq &value) {

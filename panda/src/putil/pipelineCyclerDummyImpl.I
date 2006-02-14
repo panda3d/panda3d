@@ -196,6 +196,36 @@ elevate_read(const CycleData *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::elevate_read_upstream
+//       Access: Public
+//  Description: Elevates a currently-held read pointer into a write
+//               pointer, like elevate_read(), but also propagates the
+//               pointer back to upstream stages, like
+//               write_upstream().
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerDummyImpl::
+elevate_read_upstream(const CycleData *pointer, bool force_to_0) {
+  release_read(pointer);
+  return write_upstream(force_to_0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::increment_write
+//       Access: Public
+//  Description: Increments the count on a pointer previously
+//               retrieved by write(); now the pointer will need to be
+//               released twice.
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerDummyImpl::
+increment_write(CycleData *pointer) const {
+  // This function isn't truly const, but it doesn't change the data
+  // in any meaningful way, so we pretend it is.
+  nassertv(pointer == _data);
+  nassertv(_write_count > 0);
+  ((PipelineCyclerDummyImpl *)this)->_write_count++;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerDummyImpl::release_write
 //       Access: Public
 //  Description: Releases a pointer previously obtained via a call to

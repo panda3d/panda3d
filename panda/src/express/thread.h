@@ -26,6 +26,10 @@
 #include "threadImpl.h"
 #include "notify.h"
 
+class Mutex;
+class ReMutex;
+class MutexDebug;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : Thread
 // Description : A thread; that is, a lightweight process.  This is an
@@ -87,11 +91,17 @@ private:
 
 protected:
   bool _started;
+
+private:
   string _name;
   string _sync_name;
   ThreadImpl _impl;
   int _pstats_index;
   int _pipeline_stage;
+
+#ifdef DEBUG_THREADS
+  MutexDebug *_blocked_on_mutex;
+#endif
 
 private:
   static Thread *_main_thread;
@@ -113,6 +123,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class MutexDebug;
 
   friend class ThreadDummyImpl;
   friend class ThreadWin32Impl;

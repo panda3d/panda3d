@@ -128,7 +128,7 @@ xform(const LMatrix4f &mat) {
 
     solid->xform(mat);
   }
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,7 +157,7 @@ combine_with(PandaNode *other) {
       const PT(CollisionSolid) *solids_begin = &cother->_solids[0];
       const PT(CollisionSolid) *solids_end = solids_begin + cother->_solids.size();
       _solids.insert(_solids.end(), solids_begin, solids_end);
-      mark_bound_stale();
+      mark_internal_bounds_stale();
       return this;
     }
 
@@ -348,17 +348,17 @@ get_collide_geom() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::recompute_internal_bound
+//     Function: CollisionNode::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description: Called when needed to recompute the node's
 //               _internal_bound object.  Nodes that contain anything
 //               of substance should redefine this to do the right
 //               thing.
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *CollisionNode::
-recompute_internal_bound(int pipeline_stage) {
+PT(BoundingVolume) CollisionNode::
+compute_internal_bounds(int pipeline_stage) const {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_internal_bound(pipeline_stage);
+  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   // Now actually compute the bounding volume by putting it around all
@@ -367,7 +367,7 @@ recompute_internal_bound(int pipeline_stage) {
 
   Solids::const_iterator gi;
   for (gi = _solids.begin(); gi != _solids.end(); ++gi) {
-    child_volumes.push_back((*gi)->get_bound());
+    child_volumes.push_back((*gi)->get_bounds());
   }
 
   const BoundingVolume **child_begin = &child_volumes[0];

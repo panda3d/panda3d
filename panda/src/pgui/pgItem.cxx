@@ -127,8 +127,8 @@ make_copy() const {
 //               classes can do something special in this case.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-transform_changed(int pipeline_stage) {
-  PandaNode::transform_changed(pipeline_stage);
+transform_changed() {
+  PandaNode::transform_changed();
   if (has_notify()) {
     get_notify()->item_transform_changed(this);
   }
@@ -142,8 +142,8 @@ transform_changed(int pipeline_stage) {
 //               classes can do something special in this case.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-draw_mask_changed(int pipeline_stage) {
-  PandaNode::draw_mask_changed(pipeline_stage);
+draw_mask_changed() {
+  PandaNode::draw_mask_changed();
   if (has_notify()) {
     get_notify()->item_draw_mask_changed(this);
   }
@@ -253,17 +253,17 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGItem::recompute_internal_bound
+//     Function: PGItem::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description: Called when needed to recompute the node's
 //               _internal_bound object.  Nodes that contain anything
 //               of substance should redefine this to do the right
 //               thing.
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *PGItem::
-recompute_internal_bound(int pipeline_stage) {
+PT(BoundingVolume) PGItem::
+compute_internal_bounds(int pipeline_stage) const {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_internal_bound(pipeline_stage);
+  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   // Now actually compute the bounding volume by putting it around all
@@ -274,9 +274,9 @@ recompute_internal_bound(int pipeline_stage) {
   // get_state_def() on each one, to ensure that the frames are
   // updated correctly before we measure their bounding volumes.
   for (int i = 0; i < (int)_state_defs.size(); i++) {
-    NodePath &root = get_state_def(i);
+    NodePath &root = ((PGItem *)this)->get_state_def(i);
     if (!root.is_empty()) {
-      child_volumes.push_back(root.node()->get_bound());
+      child_volumes.push_back(root.node()->get_bounds());
     }
   }
 
@@ -319,7 +319,7 @@ xform(const LMatrix4f &mat) {
       (*di)._frame_stale = true;
     }
   }
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -840,7 +840,7 @@ clear_state_def(int state) {
   _state_defs[state]._frame = NodePath();
   _state_defs[state]._frame_stale = true;
 
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -882,7 +882,7 @@ instance_to_state_def(int state, const NodePath &path) {
     return NodePath();
   }
 
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 
   return path.instance_to(get_state_def(state));
 }
@@ -917,7 +917,7 @@ set_frame_style(int state, const PGFrameStyle &style) {
   _state_defs[state]._frame_style = style;
   _state_defs[state]._frame_stale = true;
 
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 #ifdef HAVE_AUDIO
@@ -1166,7 +1166,7 @@ mark_frames_stale() {
     (*di)._frame.remove_node();
     (*di)._frame_stale = true;
   }
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

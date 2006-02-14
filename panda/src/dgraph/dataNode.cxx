@@ -254,8 +254,8 @@ define_output(const string &name, TypeHandle data_type) {
 //               node has.
 ////////////////////////////////////////////////////////////////////
 void DataNode::
-parents_changed(int pipeline_stage) {
-  PandaNode::parents_changed(pipeline_stage);
+parents_changed() {
+  PandaNode::parents_changed();
   reconnect();
 }
 

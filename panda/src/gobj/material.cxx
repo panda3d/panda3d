@@ -257,9 +257,7 @@ make_Material(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void Material::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  if (manager->get_file_minor_ver() >= 6) {
-    set_name(scan.get_string());
-  }
+  set_name(scan.get_string());
   _ambient.read_datagram(scan);
   _diffuse.read_datagram(scan);
   _specular.read_datagram(scan);

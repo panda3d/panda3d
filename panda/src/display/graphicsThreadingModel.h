@@ -34,7 +34,9 @@ PUBLISHED:
   
   string get_model() const;
   INLINE const string &get_cull_name() const;
+  INLINE int get_cull_stage() const;
   INLINE const string &get_draw_name() const;
+  INLINE int get_draw_stage() const;
   INLINE bool get_cull_sorting() const;
  
   INLINE bool is_single_threaded() const;
@@ -43,7 +45,9 @@ PUBLISHED:
 
 private:
   string _cull_name;
+  int _cull_stage;
   string _draw_name;
+  int _draw_stage;
   bool _cull_sorting;
 };
 

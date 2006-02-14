@@ -356,14 +356,14 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::recompute_bound
+//     Function: CollisionPolygon::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *CollisionPolygon::
-recompute_bound(int pipeline_stage) {
+PT(BoundingVolume) CollisionPolygon::
+compute_internal_bounds() const {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = BoundedObject::recompute_bound(pipeline_stage);
+  PT(BoundingVolume) bound = CollisionSolid::compute_internal_bounds();
   nassertr(bound != (BoundingVolume*)0L, bound);
 
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);

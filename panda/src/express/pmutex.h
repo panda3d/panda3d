@@ -20,9 +20,8 @@
 #define PMUTEX_H
 
 #include "pandabase.h"
-#include "mutexImpl.h"
-
-class Thread;
+#include "mutexDebug.h"
+#include "mutexDirect.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Mutex
@@ -37,13 +36,18 @@ class Thread;
 //               work on all platforms; on some platforms, a thread
 //               can deadlock itself by attempting to lock the same
 //               mutex twice.  If your code requires a reentrant
-//               mutex, use the ReMutex class instead.  When this code
-//               is compiled with CHECK_REENTRANT_MUTEX true, then it
-//               will enable assertion checks to ensure that a
-//               particular thread doesn't try to lock the same mutex
-//               twice.
+//               mutex, use the ReMutex class instead.
+//
+//               This class inherits its implementation either from
+//               MutexDebug or MutexDirect, depending on the
+//               definition of DEBUG_THREADS.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS Mutex {
+#ifdef DEBUG_THREADS
+class EXPCL_PANDAEXPRESS Mutex : public MutexDebug
+#else
+class EXPCL_PANDAEXPRESS Mutex : public MutexDirect
+#endif  // DEBUG_THREADS
+{
 public:
   INLINE Mutex();
   INLINE ~Mutex();
@@ -52,29 +56,9 @@ private:
   INLINE void operator = (const Mutex &copy);
 
 public:
-  INLINE void lock() const;
-  INLINE void release() const;
-
-#ifdef CHECK_REENTRANT_MUTEX
-  bool debug_is_locked() const;
-#else
-  INLINE bool debug_is_locked() const;
-#endif
-
-private:
-  void do_lock();
-  void do_release();
-
-private:
-  MutexImpl _impl;
-
-#ifdef CHECK_REENTRANT_MUTEX
-  // Make sure that ordinary mutexes are not locked reentrantly
-  // (that's what a ReMutex is for).
-  Thread *_locking_thread;
-#endif
-
-  friend class ConditionVar;
+  // This is a global mutex set aside for the purpose of protecting
+  // Notify messages from being interleaved between threads.
+  static Mutex _notify_mutex;
 };
 
 #include "pmutex.I"

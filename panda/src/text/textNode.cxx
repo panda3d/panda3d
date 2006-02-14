@@ -570,17 +570,17 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::recompute_internal_bound
+//     Function: TextNode::compute_internal_bound
 //       Access: Protected, Virtual
 //  Description: Called when needed to recompute the node's
 //               _internal_bound object.  Nodes that contain anything
 //               of substance should redefine this to do the right
 //               thing.
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *TextNode::
-recompute_internal_bound(int pipeline_stage) {
+PT(BoundingVolume) TextNode::
+compute_internal_bounds(int pipeline_stage) const {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_internal_bound(pipeline_stage);
+  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);

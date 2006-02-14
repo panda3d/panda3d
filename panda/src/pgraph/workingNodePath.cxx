@@ -50,7 +50,8 @@ is_valid() const {
 int WorkingNodePath::
 get_num_nodes() const {
   if (_next == (WorkingNodePath *)NULL) {
-    return _start->get_length();
+    int pipeline_stage = Thread::get_current_pipeline_stage();
+    return _start->get_length(pipeline_stage);
   }
 
   return _next->get_num_nodes() + 1;
@@ -110,13 +111,15 @@ r_get_node_path() const {
   PT(NodePathComponent) comp = _next->r_get_node_path();
   nassertr(comp != (NodePathComponent *)NULL, NULL);
 
-  PT(NodePathComponent) result = PandaNode::get_component(comp, _node);
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  PT(NodePathComponent) result = PandaNode::get_component(comp, _node,
+							  pipeline_stage);
   if (result == (NodePathComponent *)NULL) {
     // This means we found a disconnected chain in the
     // WorkingNodePath's ancestry: the node above this node isn't
     // connected.  In this case, don't attempt to go higher; just
     // truncate the NodePath at the bottom of the disconnect.
-    return PandaNode::get_top_component(_node, true);
+    return PandaNode::get_top_component(_node, true, pipeline_stage);
   }
 
   return result;

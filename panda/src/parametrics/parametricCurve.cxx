@@ -19,7 +19,7 @@
 #include "parametricCurve.h"
 #include "config_parametrics.h"
 #include "hermiteCurve.h"
-#include "classicNurbsCurve.h"
+#include "nurbsCurve.h"
 #include "parametricCurveDrawer.h"
 
 #include "datagram.h"

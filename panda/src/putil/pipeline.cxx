@@ -33,9 +33,9 @@ Pipeline(const string &name) :
 {
   _num_stages = 1;
 
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
   _cycling = false;
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,10 +45,10 @@ Pipeline(const string &name) :
 ////////////////////////////////////////////////////////////////////
 Pipeline::
 ~Pipeline() {
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
   nassertv(_cyclers.empty());
   nassertv(!_cycling);
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ Pipeline::
 ////////////////////////////////////////////////////////////////////
 void Pipeline::
 cycle() {
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
   pvector< PT(CycleData) > saved_cdatas;
   saved_cdatas.reserve(_dirty_cyclers.size());
   {
@@ -132,7 +132,7 @@ cycle() {
   // turn case PipelineCyclers to remove themselves from (or add
   // themselves to) the _dirty_cyclers list.
 
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,7 +144,7 @@ cycle() {
 void Pipeline::
 set_num_stages(int num_stages) {
   nassertv(num_stages >= 1);
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
   ReMutexHolder holder(_lock);
   if (num_stages != _num_stages) {
     
@@ -167,13 +167,13 @@ set_num_stages(int num_stages) {
     }
   }
 
-#else  // DO_PIPELINING && HAVE_THREADS
+#else  // THREADED_PIPELINE
   _num_stages = num_stages;
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 }
 
 
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::add_cycler
 //       Access: Public
@@ -189,9 +189,9 @@ add_cycler(PipelineCyclerTrueImpl *cycler) {
   bool inserted = _cyclers.insert(cycler).second;
   nassertv(inserted);
 }
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::add_dirty_cycler
 //       Access: Public
@@ -213,9 +213,9 @@ add_dirty_cycler(PipelineCyclerTrueImpl *cycler) {
   bool inserted = _dirty_cyclers.insert(cycler).second;
   nassertv(inserted);
 }
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::remove_cycler
 //       Access: Public
@@ -241,7 +241,7 @@ remove_cycler(PipelineCyclerTrueImpl *cycler) {
     _dirty_cyclers.erase(ci);
   }
 }
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::make_render_pipeline

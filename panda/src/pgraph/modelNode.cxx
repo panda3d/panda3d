@@ -181,8 +181,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
 
   _preserve_transform = (PreserveTransform)scan.get_uint8();
-  _preserve_attributes = 0;
-  if (manager->get_file_minor_ver() >= 3) {
-    _preserve_attributes = scan.get_uint16();
-  }
+  _preserve_attributes = scan.get_uint16();
 }

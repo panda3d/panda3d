@@ -25,6 +25,12 @@
 #include "geomEnums.h"
 #include "pta_uchar.h"
 #include "updateSeq.h"
+#include "cycleData.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "cycleDataStageReader.h"
+#include "cycleDataStageWriter.h"
+#include "pipelineCycler.h"
 #include "pmap.h"
 
 class PreparedGraphicsObjects;
@@ -56,7 +62,7 @@ private:
 
 PUBLISHED:
   GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
-                        UsageHint usage_hint);
+                      UsageHint usage_hint);
   GeomVertexArrayData(const GeomVertexArrayData &copy);
   void operator = (const GeomVertexArrayData &copy);
   virtual ~GeomVertexArrayData();
@@ -109,11 +115,30 @@ private:
   // to indicate the data must be endian-reversed in finalize().
   bool _endian_reversed;
 
-  // We don't need to cycle any data in the GeomVertexArrayData, since
-  // the GeomVertexArrayData itself is cycled through the stages.
-  UsageHint _usage_hint;
-  PTA_uchar _data;
-  UpdateSeq _modified;
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA CData : public CycleData {
+  public:
+    INLINE CData();
+    INLINE CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg,
+                                void *extra_data) const;
+    virtual void fillin(DatagramIterator &scan, BamReader *manager,
+                        void *extra_data);
+    virtual TypeHandle get_parent_type() const {
+      return GeomVertexArrayData::get_class_type();
+    }
+
+    UsageHint _usage_hint;
+    PTA_uchar _data;
+    UpdateSeq _modified;
+  };
+
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
 public:
   static void register_with_read_factory();

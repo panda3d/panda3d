@@ -22,7 +22,7 @@
 #include "curveFitter.h"
 #include "config_parametrics.h"
 #include "parametricCurve.h"
-#include "classicNurbsCurve.h"
+#include "nurbsCurve.h"
 #include "hermiteCurve.h"
 #include <algorithm>
 
@@ -421,7 +421,7 @@ make_nurbs() const {
 
   int num_curves = hermites->get_num_curves();
   for (int c = 0; c < num_curves; c++) {
-    ClassicNurbsCurve *nc = new ClassicNurbsCurve(*hermites->get_curve(c));
+    NurbsCurve *nc = new NurbsCurve(*hermites->get_curve(c));
     result->add_curve(nc);
 
     // Now we even out the knots to smooth out the curve and make

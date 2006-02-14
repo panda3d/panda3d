@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool DisplayRegion::
 operator < (const DisplayRegion &other) const {
-  return _sort < other._sort;
+  return get_sort() < other.get_sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,7 +36,8 @@ operator < (const DisplayRegion &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool DisplayRegion::
 is_active() const {
-  return _active;
+  CDReader cdata(_cycler);
+  return cdata->_active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,7 +48,8 @@ is_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegion::
 get_sort() const {
-  return _sort;
+  CDReader cdata(_cycler);
+  return cdata->_sort;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,7 +65,10 @@ get_sort() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegion::
 set_cube_map_index(int cube_map_index) {
-  _cube_map_index = cube_map_index;
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage == 0);
+  CDWriter cdata(_cycler);
+  cdata->_cube_map_index = cube_map_index;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,7 +81,77 @@ set_cube_map_index(int cube_map_index) {
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegion::
 get_cube_map_index() const {
-  return _cube_map_index;
+  CDReader cdata(_cycler);
+  return cdata->_cube_map_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_cull_result
+//       Access: Public
+//  Description: Stores the result of performing a cull operation on
+//               this DisplayRegion.  Normally, this will only be
+//               called by the GraphicsEngine; you should not call
+//               this directly.
+//
+//               The stored result will automatically be applied back
+//               to all upstream pipeline stages.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_cull_result(CullResult *cull_result, SceneSetup *scene_setup) {
+  CDCullWriter cdata(_cycler_cull, true);
+  cdata->_cull_result = cull_result;
+  cdata->_scene_setup = scene_setup;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_cull_result
+//       Access: Public
+//  Description: Returns the CullResult value that was stored on this
+//               DisplayRegion, presumably by the last successful cull
+//               operation.  This method is for the benefit of the
+//               GraphicsEngine; normally you shouldn't call this
+//               directly.
+////////////////////////////////////////////////////////////////////
+INLINE CullResult *DisplayRegion::
+get_cull_result() const {
+  CDCullReader cdata(_cycler_cull);
+  return cdata->_cull_result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_scene_setup
+//       Access: Public
+//  Description: Returns the SceneSetup value that was stored on this
+//               DisplayRegion, presumably by the last successful cull
+//               operation.  This method is for the benefit of the
+//               GraphicsEngine; normally you shouldn't call this
+//               directly.
+////////////////////////////////////////////////////////////////////
+INLINE SceneSetup *DisplayRegion::
+get_scene_setup() const {
+  CDCullReader cdata(_cycler_cull);
+  return cdata->_scene_setup;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::CDataCull::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion::CDataCull::
+CDataCull() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::CDataCull::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion::CDataCull::
+CDataCull(const DisplayRegion::CDataCull &copy) :
+  _cull_result(copy._cull_result),
+  _scene_setup(copy._scene_setup)
+{
 }
 
 INLINE ostream &operator << (ostream &out, const DisplayRegion &dr) {

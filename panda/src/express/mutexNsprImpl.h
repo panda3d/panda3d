@@ -28,6 +28,8 @@
 
 #include <prlock.h>
 
+#undef MUTEX_DEFINES_TRYLOCK
+
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexNsprImpl
 // Description : Uses NSPR to implement a mutex.
@@ -38,6 +40,7 @@ public:
   INLINE ~MutexNsprImpl();
 
   INLINE void lock();
+  INLINE bool try_lock();
   INLINE void release();
 
 private:

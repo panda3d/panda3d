@@ -1412,7 +1412,7 @@ invalidate_no_measure() {
 INLINE void TextNode::
 invalidate_with_measure() {
   _flags |= (F_needs_rebuild | F_needs_measure);
-  mark_bound_stale();
+  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

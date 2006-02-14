@@ -81,7 +81,6 @@
 #include "collisionPolygon.h"
 #include "parametricCurve.h"
 #include "nurbsCurve.h"
-#include "classicNurbsCurve.h"
 #include "nurbsCurveInterface.h"
 #include "nurbsCurveEvaluator.h"
 #include "nurbsSurfaceEvaluator.h"
@@ -665,10 +664,10 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_old_nurbs_curve
 //       Access: Private
-//  Description: This deprecated interface creates a NurbsCurve (or a
-//               ClassicNurbsCurve) object for the EggNurbsCurve
-//               entry.  It will eventually be removed in favor of the
-//               above, which creates a RopeNode.
+//  Description: This deprecated interface creates a NurbsCurve object
+//               for the EggNurbsCurve entry.  It will eventually be
+//               removed in favor of the above, which creates a
+//               RopeNode.
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 make_old_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
@@ -677,12 +676,7 @@ make_old_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
   assert(!parent->is_geom_node());
 
   PT(ParametricCurve) curve;
-
-  if (egg_load_classic_nurbs_curves) {
-    curve = new ClassicNurbsCurve;
-  } else {
-    curve = new NurbsCurve;
-  }
+  curve = new NurbsCurve;
 
   NurbsCurveInterface *nurbs = curve->get_nurbs_interface();
   nassertv(nurbs != (NurbsCurveInterface *)NULL);

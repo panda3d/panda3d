@@ -53,7 +53,7 @@
 // Regenerate this file with (cmss12.egg can be loaded from the models tree):
 
 // egg2bam -rawtex -o cmss12.bam cmss12.egg
-// pcompress cmss12.bam
+// pzip cmss12.bam
 // bin2c -n default_font_data -o cmss12.bam.pz.c cmss12.bam.pz
 
 #include "cmss12.bam.pz.c"

@@ -765,11 +765,12 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   for (i = 0; i < anim_count; ++i) {
     for (j = 0; j < _anim_size[i]; ++j) {
       nassertv(_sprite_primitive[i][j]->check_valid());
-      _sprite_primitive[i][j]->set_bound(BoundingSphere(aabb_center, radius));
+      BoundingSphere sphere(aabb_center, radius);
+      _sprite_primitive[i][j]->set_bounds(&sphere);
     }
   }
 
-  get_render_node()->mark_bound_stale();
+  get_render_node()->mark_bounds_stale();
   nassertv(render_node->check_valid());
   _animation_removed = false;
 }

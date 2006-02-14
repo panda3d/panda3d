@@ -29,8 +29,11 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ConditionVar::
 ConditionVar(Mutex &mutex) :
-  _mutex(mutex),
-  _impl(mutex._impl)
+#ifdef DEBUG_THREADS
+  ConditionVarDebug(mutex)
+#else 
+  ConditionVarDirect(mutex)
+#endif  // DEBUG_THREADS
 {
 }
 
@@ -50,8 +53,11 @@ INLINE ConditionVar::
 ////////////////////////////////////////////////////////////////////
 INLINE ConditionVar::
 ConditionVar(const ConditionVar &copy) : 
-  _mutex(copy._mutex), 
-  _impl(_mutex._impl)
+#ifdef DEBUG_THREADS
+  ConditionVarDebug(copy.get_mutex())
+#else 
+  ConditionVarDirect(copy.get_mutex())
+#endif  // DEBUG_THREADS
 {
   nassertv(false);
 }
@@ -73,67 +79,10 @@ operator = (const ConditionVar &copy) {
 //               variable.
 ////////////////////////////////////////////////////////////////////
 INLINE Mutex &ConditionVar::
-get_mutex() {
-  return _mutex;
-}
-
-#ifndef CHECK_REENTRANT_MUTEX
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVar::wait
-//       Access: Public
-//  Description: Waits on the condition.  The caller must already be
-//               holding the lock associated with the condition
-//               variable before calling this function.
-//
-//               wait() will release the lock, then go to sleep until
-//               some other thread calls signal() on this condition
-//               variable.  At that time at least one thread waiting
-//               on the same ConditionVar will grab the lock again,
-//               and then return from wait().
-//
-//               It is possible that wait() will return even if no one
-//               has called signal().  It is the responsibility of the
-//               calling process to verify the condition on return
-//               from wait, and possibly loop back to wait again if
-//               necessary.
-//
-//               Note the semantics of a condition variable: the mutex
-//               must be held before wait() is called, and it will
-//               still be held when wait() returns.  However, it will
-//               be temporarily released during the wait() call
-//               itself.
-//
-//               This is defined as an inline method only when
-//               CHECK_REENTRANT_MUTEX is not defined.  If
-//               CHECK_REENTRANT_MUTEX is defined, it is an
-//               out-of-line method, just to avoid circular
-//               dependencies on #include files.
-////////////////////////////////////////////////////////////////////
-INLINE void ConditionVar::
-wait() {
-  nassertv(_mutex.debug_is_locked());
-  _impl.wait();
-}
-#endif  // CHECK_REENTRANT_MUTEX
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVar::signal
-//       Access: Public
-//  Description: Informs one of the other threads who are currently
-//               blocked on wait() that the relevant condition has
-//               changed.  If multiple threads are currently waiting,
-//               at least one of them will be woken up, although there
-//               is no way to predict which one.
-//
-//               The caller must be holding the mutex associated with
-//               the condition variable before making this call, which
-//               will not release the mutex.
-//
-//               If no threads are waiting, this is a no-op: the
-//               signal is lost.
-////////////////////////////////////////////////////////////////////
-INLINE void ConditionVar::
-signal() {
-  nassertv(_mutex.debug_is_locked());
-  _impl.signal();
+get_mutex() const {
+#ifdef DEBUG_THREADS
+  return (Mutex &)ConditionVarDebug::get_mutex();
+#else 
+  return (Mutex &)ConditionVarDirect::get_mutex();
+#endif  // DEBUG_THREADS
 }

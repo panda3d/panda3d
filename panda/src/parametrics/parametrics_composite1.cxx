@@ -1,4 +1,4 @@
-#include "classicNurbsCurve.cxx"
+#include "nurbsCurve.cxx"
 #include "cubicCurveseg.cxx"
 #include "curveFitter.cxx"
 #include "hermiteCurve.cxx"

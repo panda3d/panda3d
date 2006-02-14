@@ -44,6 +44,10 @@ Thread(const string &name, const string &sync_name) :
   _started = false;
   _pstats_index = -1;
   _pipeline_stage = 0;
+
+#ifdef DEBUG_THREADS
+  _blocked_on_mutex = NULL;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

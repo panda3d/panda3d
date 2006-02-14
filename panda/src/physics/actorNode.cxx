@@ -90,8 +90,8 @@ update_transform() {
 //                i.e. copy from PandaNode to PhysicsObject
 ////////////////////////////////////////////////////////////////////
 void ActorNode::
-transform_changed(int pipeline_stage) {
-  PandaNode::transform_changed(pipeline_stage);
+transform_changed() {
+  PandaNode::transform_changed();
 
   // this callback could be triggered by update_transform, BAD.
   if (!_ok_to_callback) {
