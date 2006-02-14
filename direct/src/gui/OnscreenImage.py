@@ -1,7 +1,9 @@
 """OnscreenImage module: contains the OnscreenImage class"""
 
-from direct.showbase.DirectObject import *
+from pandac.PandaModules import *
+from direct.showbase.DirectObject import DirectObject
 import types
+import string
 
 class OnscreenImage(DirectObject, NodePath):
     def __init__(self, image = None,

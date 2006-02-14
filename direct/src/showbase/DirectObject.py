@@ -1,8 +1,5 @@
 
 from MessengerGlobal import messenger
-#from direct.directnotify.DirectNotifyGlobal import *
-from PythonUtil import *
-from pandac.PandaModules import *
 
 class DirectObject:
     """

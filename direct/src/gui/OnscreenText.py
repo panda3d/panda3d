@@ -1,8 +1,10 @@
 """OnscreenText module: contains the OnscreenText class"""
 
-from direct.showbase.DirectObject import *
+from pandac.PandaModules import *
+from direct.showbase.DirectObject import DirectObject
 import DirectGuiGlobals
 import types
+import string
 
 ## These are the styles of text we might commonly see.  They set the
 ## overall appearance of the text according to one of a number of

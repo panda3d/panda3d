@@ -1,6 +1,7 @@
 """Actor module: contains the Actor class"""
 
-from direct.showbase.DirectObject import *
+from pandac.PandaModules import *
+from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import LODNode
 import types
 import copy as copy_module
