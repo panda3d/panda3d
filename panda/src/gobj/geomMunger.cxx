@@ -109,35 +109,37 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data) {
 
   // Look up the munger in the geom's cache--maybe we've recently
   // applied it.
-  {
-    Geom::CDReader cdata(geom->_cycler);
-    Geom::CacheEntry temp_entry(source_data, this);
-    temp_entry.local_object();
-    Geom::Cache::const_iterator ci = cdata->_cache.find(&temp_entry);
-    if (ci != cdata->_cache.end()) {
-      Geom::CacheEntry *entry = (*ci);
+  PT(Geom::CacheEntry) entry;
 
-      if (geom->get_modified() <= entry->_geom_result->get_modified() &&
-          data->get_modified() <= entry->_data_result->get_modified()) {
-        // The cache entry is still good; use it.
+  Geom::CacheEntry temp_entry(source_data, this);
+  temp_entry.local_object();
+  Geom::Cache::const_iterator ci = geom->_cache.find(&temp_entry);
+  if (ci != geom->_cache.end()) {
+    entry = (*ci);
+    nassertv(entry->_source == geom);
 
-        // Record a cache hit, so this element will stay in the cache a
-        // while longer.
-        entry->refresh();
-        geom = entry->_geom_result;
-        data = entry->_data_result;
-        return;
-      }
+    // Here's an element in the cache for this computation.  Record a
+    // cache hit, so this element will stay in the cache a while
+    // longer.
+    entry->refresh();
 
-      // The cache entry is stale, remove it.
-      if (gobj_cat.is_debug()) {
-        gobj_cat.debug()
-          << "Cache entry " << *entry << " is stale, removing.\n";
-      }
-      entry->erase();
-      Geom::CDWriter cdataw(((Geom *)geom.p())->_cycler, cdata);
-      cdataw->_cache.erase(entry);
+    // Now check that it's fresh.
+    Geom::CDCacheReader cdata(entry->_cycler);
+    nassertv(cdata->_source == geom);
+    if (cdata->_geom_result != (Geom *)NULL &&
+	geom->get_modified() <= cdata->_geom_result->get_modified() &&
+	data->get_modified() <= cdata->_data_result->get_modified()) {
+      // The cache entry is still good; use it.
+      
+      geom = cdata->_geom_result;
+      data = cdata->_data_result;
+      return;
     }
+    
+    // The cache entry is stale, but we'll recompute it below.  Note
+    // that there's a small race condition here; another thread might
+    // recompute the cache at the same time.  No big deal, since it'll
+    // compute the same result.
   }
 
   // Ok, invoke the munger.
@@ -147,22 +149,23 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data) {
   data = munge_data(data);
   munge_geom_impl(geom, data);
 
-  {
-    // Record the new result in the cache.
-    Geom::CacheEntry *entry;
-    {
-      Geom::CDWriter cdata(((Geom *)orig_geom.p())->_cycler);
-      entry = new Geom::CacheEntry((Geom *)orig_geom.p(), source_data, this,
-                                     geom, data);
-      bool inserted = cdata->_cache.insert(entry).second;
-      nassertv(inserted);
-    }
-    
+  // Record the new result in the cache.
+  if (entry == (Geom::CacheEntry *)NULL) {
+    // Create a new entry for the result.
+    entry = new Geom::CacheEntry((Geom *)orig_geom.p(), source_data, this);
+    bool inserted = ((Geom *)orig_geom.p())->_cache.insert(entry).second;
+    nassertv(inserted);
+  
     // And tell the cache manager about the new entry.  (It might
     // immediately request a delete from the cache of the thing we
     // just added.)
     entry->record();
   }
+
+  // Finally, store the cached result on the entry.
+  Geom::CDCacheWriter cdata(entry->_cycler, true);
+  cdata->_source = (Geom *)orig_geom.p();
+  cdata->set_result(geom, data);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -239,22 +239,6 @@ get_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::clear_cache
-//       Access: Published
-//  Description: Removes all of the previously-cached results of
-//               convert_to().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexData::
-clear_cache() {
-  CDWriter cdata(_cycler, true);
-  do_clear_cache(cdata);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::has_vertex
 //       Access: Public
 //  Description: Returns true if the data has a "vertex" column, false
@@ -383,15 +367,42 @@ add_transform(TransformTable *table, const VertexTransform *transform,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::CacheEntry::Constructor
+//     Function: GeomVertexData::CDataCache::Constructor
 //       Access: Public
 //  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexData::CDataCache::
+CDataCache() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::CDataCache::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexData::CDataCache::
+CDataCache(const GeomVertexData::CDataCache &copy) :
+  _result(copy._result)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::CacheEntry::Constructor
+//       Access: Public
+//  Description: This constructor makes an invalid CacheEntry that
+//               holds no data.  CacheEntries like this are normally
+//               not stored in the cache; this is usually used as a
+//               key to find an existing (valid) CacheEntry already in
+//               the cache.
+//
+//               However, it is possible for an empty CacheEntry to
+//               end up in the cache if its data gets cleared by
+//               clear_cache_stage().
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexData::CacheEntry::
 CacheEntry(const GeomVertexFormat *modifier) :
   _source(NULL),
-  _modifier(modifier),
-  _result(NULL)
+  _modifier(modifier)
 {
 }
 
@@ -402,11 +413,9 @@ CacheEntry(const GeomVertexFormat *modifier) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexData::CacheEntry::
 CacheEntry(GeomVertexData *source,
-           const GeomVertexFormat *modifier,
-           const GeomVertexData *result) :
+           const GeomVertexFormat *modifier) :
   _source(source),
-  _modifier(modifier),
-  _result(result)
+  _modifier(modifier)
 {
 }
 

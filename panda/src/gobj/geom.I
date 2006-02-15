@@ -137,7 +137,7 @@ modify_primitive(int i) {
   nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
   cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
-  do_clear_cache(cdata);
+  clear_cache_stage();
   if (cdata->_primitives[i]->get_ref_count() > 1) {
     cdata->_primitives[i] = cdata->_primitives[i]->make_copy();
   }
@@ -320,17 +320,73 @@ mark_internal_bounds_stale(CData *cdata) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::CacheEntry::Constructor
+//     Function: Geom::CDataCache::Constructor
 //       Access: Public
 //  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Geom::CDataCache::
+CDataCache() :
+  _source(NULL),
+  _geom_result(NULL),
+  _data_result(NULL)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CDataCache::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Geom::CDataCache::
+CDataCache(const Geom::CDataCache &copy) :
+  _source(copy._source),
+  _geom_result(copy._geom_result),
+  _data_result(copy._data_result)
+{
+  if (_geom_result != _source && _geom_result != (Geom *)NULL) {
+    _geom_result->ref();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CDataCache::set_result
+//       Access: Public
+//  Description: Stores the geom_result and data_result on the cache,
+//               upping and/or dropping the reference count
+//               appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE void Geom::CDataCache::
+set_result(const Geom *geom_result, const GeomVertexData *data_result) {
+  if (geom_result != _geom_result) {
+    if (_geom_result != _source && _geom_result != (Geom *)NULL) {
+      unref_delete(_geom_result);
+    }
+    _geom_result = geom_result;
+    if (_geom_result != _source && _geom_result != (Geom *)NULL) {
+      _geom_result->ref();
+    }
+  }
+  _data_result = data_result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CacheEntry::Constructor
+//       Access: Public
+//  Description: This constructor makes an invalid CacheEntry that
+//               holds no data.  CacheEntries like this are normally
+//               not stored in the cache; this is usually used as a
+//               key to find an existing (valid) CacheEntry already in
+//               the cache.
+//
+//               However, it is possible for an empty CacheEntry to
+//               end up in the cache if its data gets cleared by
+//               clear_cache_stage().
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::CacheEntry::
 CacheEntry(const GeomVertexData *source_data, const GeomMunger *modifier) :
   _source(NULL),
   _source_data(source_data),
-  _modifier(modifier),
-  _geom_result(NULL),
-  _data_result(NULL)
+  _modifier(modifier)
 {
 }
 
@@ -341,17 +397,11 @@ CacheEntry(const GeomVertexData *source_data, const GeomMunger *modifier) :
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::CacheEntry::
 CacheEntry(Geom *source, const GeomVertexData *source_data,
-           const GeomMunger *modifier, const Geom *geom_result, 
-           const GeomVertexData *data_result) :
+           const GeomMunger *modifier) :
   _source(source),
   _source_data(source_data),
-  _modifier(modifier),
-  _geom_result(geom_result),
-  _data_result(data_result)
+  _modifier(modifier)
 {
-  if (_geom_result != _source) {
-    _geom_result->ref();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

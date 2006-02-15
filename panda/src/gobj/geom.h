@@ -111,6 +111,7 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level = 0) const;
 
   void clear_cache();
+  void clear_cache_stage();
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool release(PreparedGraphicsObjects *prepared_objects);
@@ -152,7 +153,6 @@ private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   bool check_will_be_valid(const GeomVertexData *vertex_data) const;
 
-  void do_clear_cache(CData *cdata);
   void do_draw(GraphicsStateGuardianBase *gsg, 
 	       const GeomMunger *munger,
 	       const GeomVertexData *vertex_data,
@@ -169,26 +169,49 @@ private:
   // cache needs to be stored in the CycleData, which makes accurate
   // cleanup more difficult.  We use the GeomCacheManager class to
   // avoid cache bloat.
+
+  // Note: the above comment is no longer true.  The cache is not
+  // stored in the CycleData, which just causes problems; instead, we
+  // cycle each individual CacheEntry as needed.  Need to investigate
+  // if we could simplify the cache system now.
+
+  // The pipelined data with each CacheEntry.
+  class CDataCache : public CycleData {
+  public:
+    INLINE CDataCache();
+    INLINE CDataCache(const CDataCache &copy);
+    virtual ~CDataCache();
+    virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return Geom::get_class_type();
+    }
+
+    INLINE void set_result(const Geom *geom_result, const GeomVertexData *data_result);
+
+    Geom *_source;  // A back pointer to the containing Geom
+    const Geom *_geom_result;  // ref-counted if not NULL and not same as _source
+    CPT(GeomVertexData) _data_result;
+  };
+  typedef CycleDataReader<CDataCache> CDCacheReader;
+  typedef CycleDataWriter<CDataCache> CDCacheWriter;
+  
   class CacheEntry : public GeomCacheEntry {
   public:
     INLINE CacheEntry(const GeomVertexData *source_data,
                       const GeomMunger *modifier);
     INLINE CacheEntry(Geom *source, 
                       const GeomVertexData *source_data,
-                      const GeomMunger *modifier, 
-                      const Geom *geom_result, 
-                      const GeomVertexData *data_result);
-    virtual ~CacheEntry();
+                      const GeomMunger *modifier);
     INLINE bool operator < (const CacheEntry &other) const;
 
     virtual void evict_callback();
     virtual void output(ostream &out) const;
 
-    Geom *_source;
+    Geom *_source;  // A back pointer to the containing Geom
     CPT(GeomVertexData) _source_data;
     CPT(GeomMunger) _modifier;
-    const Geom *_geom_result;  // ref-counted if not same as _source
-    CPT(GeomVertexData) _data_result;
+
+    PipelineCycler<CDataCache> _cycler;
   };
   typedef pset<PT(CacheEntry), IndirectLess<CacheEntry> > Cache;
 
@@ -213,18 +236,19 @@ private:
     UsageHint _usage_hint;
     bool _got_usage_hint;
     UpdateSeq _modified;
-    Cache _cache;
   
     CPT(BoundingVolume) _internal_bounds;
     bool _internal_bounds_stale;
     CPT(BoundingVolume) _user_bounds;
   };
-
+ 
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageReader<CData> CDStageReader;
   typedef CycleDataStageWriter<CData> CDStageWriter;
+
+  Cache _cache;
 
   // This works just like the Texture contexts: each Geom keeps a
   // record of all the PGO objects that hold the Geom, and vice-versa.

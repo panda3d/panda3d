@@ -154,11 +154,7 @@ void GeomVertexData::
 operator = (const GeomVertexData &copy) {
   TypedWritableReferenceCount::operator = (copy);
 
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    do_clear_cache(cdata);
-  } 
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
+  clear_cache();
 
   _name = copy._name;
   _format = copy._format;
@@ -183,14 +179,7 @@ operator = (const GeomVertexData &copy) {
 ////////////////////////////////////////////////////////////////////
 GeomVertexData::
 ~GeomVertexData() {
-  // When we destruct, we should ensure that all of our cached
-  // entries, across all pipeline stages, are properly removed from
-  // the cache manager.
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    do_clear_cache(cdata);
-  }
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
+  clear_cache();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,7 +221,7 @@ set_usage_hint(GeomVertexData::UsageHint usage_hint) {
     }
     (*ai)->set_usage_hint(usage_hint);
   }
-  do_clear_cache(cdata);
+  clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 }
@@ -283,7 +272,7 @@ clear_rows() {
     }
     (*ai)->clear_rows();
   }
-  do_clear_cache(cdata);
+  clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
   cdata->_animated_vertices.clear();
 }
@@ -313,7 +302,7 @@ modify_array(int i) {
   if (cdata->_arrays[i]->get_ref_count() > 1) {
     cdata->_arrays[i] = new GeomVertexArrayData(*cdata->_arrays[i]);
   }
-  do_clear_cache(cdata);
+  clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 
@@ -337,7 +326,7 @@ set_array(int i, const GeomVertexArrayData *array) {
   CDWriter cdata(_cycler, true);
   nassertv(i >= 0 && i < (int)cdata->_arrays.size());
   cdata->_arrays[i] = (GeomVertexArrayData *)array;
-  do_clear_cache(cdata);
+  clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 }
@@ -361,7 +350,7 @@ set_transform_table(const TransformTable *table) {
 
   CDWriter cdata(_cycler, true);
   cdata->_transform_table = (TransformTable *)table;
-  do_clear_cache(cdata);
+  clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 }
@@ -388,7 +377,7 @@ modify_transform_blend_table() {
   if (cdata->_transform_blend_table->get_ref_count() > 1) {
     cdata->_transform_blend_table = new TransformBlendTable(*cdata->_transform_blend_table);
   }
-  do_clear_cache(cdata);
+  clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 
@@ -412,7 +401,7 @@ void GeomVertexData::
 set_transform_blend_table(const TransformBlendTable *table) {
   CDWriter cdata(_cycler, true);
   cdata->_transform_blend_table = (TransformBlendTable *)table;
-  do_clear_cache(cdata);
+  clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 }
@@ -438,7 +427,7 @@ set_slider_table(const SliderTable *table) {
 
   CDWriter cdata(_cycler, true);
   cdata->_slider_table = (SliderTable *)table;
-  do_clear_cache(cdata);
+  clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 }
@@ -723,18 +712,29 @@ convert_to(const GeomVertexFormat *new_format) const {
 
   // Look up the new format in our cache--maybe we've recently applied
   // it.
-  {
-    CDReader cdata(_cycler);
-    CacheEntry temp_entry(new_format);
-    temp_entry.local_object();
-    Cache::const_iterator ci = cdata->_cache.find(&temp_entry);
-    if (ci != cdata->_cache.end()) {
-      CacheEntry *entry = (*ci);
-      // Record a cache hit, so this element will stay in the cache a
-      // while longer.
-      entry->refresh();
-      return entry->_result;
+  PT(CacheEntry) entry;
+
+  CacheEntry temp_entry(new_format);
+  temp_entry.local_object();
+  Cache::const_iterator ci = _cache.find(&temp_entry);
+  if (ci != _cache.end()) {
+    entry = (*ci);
+    nassertr(entry->_source == this, NULL);
+
+    // Here's an element in the cache for this computation.  Record a
+    // cache hit, so this element will stay in the cache a while
+    // longer.
+    entry->refresh();
+
+    CDCacheReader cdata(entry->_cycler);
+    if (cdata->_result != (GeomVertexData *)NULL) {
+      return cdata->_result;
     }
+
+    // The cache entry is stale, but we'll recompute it below.  Note
+    // that there's a small race condition here; another thread might
+    // recompute the cache at the same time.  No big deal, since it'll
+    // compute the same result.
   }
 
   // Okay, convert the data to the new format.
@@ -752,21 +752,22 @@ convert_to(const GeomVertexFormat *new_format) const {
 
   new_data->copy_from(this, false);
 
-  {
-    // Record the new result in the cache.
-    CacheEntry *entry;
-    {
-      CDWriter cdata(((GeomVertexData *)this)->_cycler, false);
-      entry = new CacheEntry((GeomVertexData *)this, new_format, new_data);
-      bool inserted = cdata->_cache.insert(entry).second;
-      nassertr(inserted, new_data);
-    }
+  // Record the new result in the cache.
+  if (entry == (CacheEntry *)NULL) {
+    // Create a new entry for the result.
+    entry = new CacheEntry((GeomVertexData *)this, new_format);
+    bool inserted = ((GeomVertexData *)this)->_cache.insert(entry).second;
+    nassertr(inserted, new_data);
     
     // And tell the cache manager about the new entry.  (It might
     // immediately request a delete from the cache of the thing we
     // just added.)
     entry->record();
   }
+
+  // Finally, store the cached result on the entry.
+  CDCacheWriter cdata(entry->_cycler, true);
+  cdata->_result = new_data;
 
   return new_data;
 }
@@ -1120,6 +1121,50 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::clear_cache
+//       Access: Published
+//  Description: Removes all of the previously-cached results of
+//               convert_to().
+//
+//               This blows away the entire cache, upstream and
+//               downstream the pipeline.  Use clear_cache_stage()
+//               instead if you only want to blow away the cache at
+//               the current stage and upstream.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+clear_cache() {
+  for (Cache::iterator ci = _cache.begin();
+       ci != _cache.end();
+       ++ci) {
+    CacheEntry *entry = (*ci);
+    entry->erase();
+  }
+  _cache.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::clear_cache_stage
+//       Access: Published
+//  Description: Removes all of the previously-cached results of
+//               convert_to(), at the current pipeline stage and
+//               upstream.  Does not affect the downstream cache.
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+clear_cache_stage() {
+  for (Cache::iterator ci = _cache.begin();
+       ci != _cache.end();
+       ++ci) {
+    CacheEntry *entry = (*ci);
+    CDCacheWriter cdata(entry->_cycler);
+    cdata->_result = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::get_array_info
 //       Access: Public
 //  Description: A convenience function to collect together the
@@ -1354,7 +1399,7 @@ do_set_num_rows(int n, GeomVertexData::CData *cdata) {
   }
 
   if (any_changed) {
-    do_clear_cache(cdata);
+    clear_cache_stage();
     cdata->_modified = Geom::get_next_modified();
     cdata->_animated_vertices.clear();
   }
@@ -1505,22 +1550,6 @@ update_animated_vertices(GeomVertexData::CData *cdata) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::do_clear_cache
-//       Access: Private
-//  Description: The private implementation of clear_cache().
-////////////////////////////////////////////////////////////////////
-void GeomVertexData::
-do_clear_cache(GeomVertexData::CData *cdata) {
-  for (Cache::iterator ci = cdata->_cache.begin();
-       ci != cdata->_cache.end();
-       ++ci) {
-    CacheEntry *entry = (*ci);
-    entry->erase();
-  }
-  cdata->_cache.clear();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
@@ -1656,6 +1685,16 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::CDataCache::make_copy
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CycleData *GeomVertexData::CDataCache::
+make_copy() const {
+  return new CDataCache(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::CacheEntry::evict_callback
 //       Access: Public, Virtual
 //  Description: Called when the entry is evicted from the cache, this
@@ -1663,13 +1702,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::CacheEntry::
 evict_callback() {
-  OPEN_ITERATE_ALL_STAGES(_source->_cycler) {
-    CDStageWriter cdata(_source->_cycler, pipeline_stage);
-    // Because of the multistage pipeline, we might not actually have
-    // a cache entry at every stage.  No big deal if we don't.
-    cdata->_cache.erase(this);
-  }
-  CLOSE_ITERATE_ALL_STAGES(_source->_cycler);
+  Cache::iterator ci = _source->_cache.find(this);
+  nassertv(ci != _source->_cache.end());
+  nassertv((*ci) == this);
+  _source->_cache.erase(ci);
 }
 
 ////////////////////////////////////////////////////////////////////

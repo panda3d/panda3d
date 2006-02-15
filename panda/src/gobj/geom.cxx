@@ -64,11 +64,7 @@ void Geom::
 operator = (const Geom &copy) {
   TypedWritableReferenceCount::operator = (copy);
 
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    do_clear_cache(cdata);
-  } 
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
+  clear_cache();
 
   _cycler = copy._cycler;
 
@@ -86,15 +82,7 @@ operator = (const Geom &copy) {
 ////////////////////////////////////////////////////////////////////
 Geom::
 ~Geom() {
-  // When we destruct, we should ensure that all of our cached
-  // entries, across all pipeline stages, are properly removed from
-  // the cache manager.
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    do_clear_cache(cdata);
-  }
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
-
+  clear_cache();
   release_all();
 }
 
@@ -135,7 +123,7 @@ set_usage_hint(Geom::UsageHint usage_hint) {
     (*pi)->set_usage_hint(usage_hint);
   }
 
-  do_clear_cache(cdata);
+  clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
 }
 
@@ -159,7 +147,7 @@ modify_vertex_data() {
   if (cdata->_data->get_ref_count() > 1) {
     cdata->_data = new GeomVertexData(*cdata->_data);
   }
-  do_clear_cache(cdata);
+  clear_cache_stage();
   mark_internal_bounds_stale(cdata);
   return cdata->_data;
 }
@@ -179,7 +167,7 @@ set_vertex_data(const GeomVertexData *data) {
   nassertv(check_will_be_valid(data));
   CDWriter cdata(_cycler, true);
   cdata->_data = (GeomVertexData *)data;
-  do_clear_cache(cdata);
+  clear_cache_stage();
   mark_internal_bounds_stale(cdata);
   reset_geom_rendering(cdata);
 }
@@ -222,7 +210,7 @@ offset_vertices(const GeomVertexData *data, int offset) {
   }
 
   cdata->_modified = Geom::get_next_modified();
-  do_clear_cache(cdata);
+  clear_cache_stage();
   nassertv(all_is_valid);
 }
 
@@ -290,7 +278,7 @@ make_nonindexed(bool composite_only) {
     cdata->_data = new_data;
     cdata->_primitives.swap(new_prims);
     cdata->_modified = Geom::get_next_modified();
-    do_clear_cache(cdata);
+    clear_cache_stage();
   }
 
   return num_changed;
@@ -335,7 +323,7 @@ set_primitive(int i, const GeomPrimitive *primitive) {
   reset_geom_rendering(cdata);
   cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
-  do_clear_cache(cdata);
+  clear_cache_stage();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -379,7 +367,7 @@ add_primitive(const GeomPrimitive *primitive) {
   reset_geom_rendering(cdata);
   cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
-  do_clear_cache(cdata);
+  clear_cache_stage();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -403,7 +391,7 @@ remove_primitive(int i) {
   reset_geom_rendering(cdata);
   cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
-  do_clear_cache(cdata);
+  clear_cache_stage();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -425,7 +413,7 @@ clear_primitives() {
   cdata->_primitive_type = PT_none;
   cdata->_shade_model = SM_uniform;
   reset_geom_rendering(cdata);
-  do_clear_cache(cdata);
+  clear_cache_stage();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -460,7 +448,7 @@ decompose_in_place() {
 
   cdata->_modified = Geom::get_next_modified();
   reset_geom_rendering(cdata);
-  do_clear_cache(cdata);
+  clear_cache_stage();
 
   nassertv(all_is_valid);
 }
@@ -496,7 +484,7 @@ rotate_in_place() {
   }
 
   cdata->_modified = Geom::get_next_modified();
-  do_clear_cache(cdata);
+  clear_cache_stage();
 
   nassertv(all_is_valid);
 }
@@ -568,7 +556,7 @@ unify_in_place() {
   cdata->_primitives.push_back(new_prim);
 
   cdata->_modified = Geom::get_next_modified();
-  do_clear_cache(cdata);
+  clear_cache_stage();
   reset_geom_rendering(cdata);
 }
 
@@ -802,14 +790,42 @@ write(ostream &out, int indent_level) const {
 //  Description: Removes all of the previously-cached results of
 //               munge_geom().
 //
+//               This blows away the entire cache, upstream and
+//               downstream the pipeline.  Use clear_cache_stage()
+//               instead if you only want to blow away the cache at
+//               the current stage and upstream.
+////////////////////////////////////////////////////////////////////
+void Geom::
+clear_cache() {
+  for (Cache::iterator ci = _cache.begin();
+       ci != _cache.end();
+       ++ci) {
+    CacheEntry *entry = (*ci);
+    entry->erase();
+  }
+  _cache.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::clear_cache_stage
+//       Access: Published
+//  Description: Removes all of the previously-cached results of
+//               munge_geom(), at the current pipeline stage and
+//               upstream.  Does not affect the downstream cache.
+//
 //               Don't call this in a downstream thread unless you
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 void Geom::
-clear_cache() {
-  CDWriter cdata(_cycler, true);
-  do_clear_cache(cdata);
+clear_cache_stage() {
+  for (Cache::iterator ci = _cache.begin();
+       ci != _cache.end();
+       ++ci) {
+    CacheEntry *entry = (*ci);
+    CDCacheWriter cdata(entry->_cycler);
+    cdata->set_result(NULL, NULL);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1060,22 +1076,6 @@ check_will_be_valid(const GeomVertexData *vertex_data) const {
 
   return true;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::do_clear_cache
-//       Access: Private
-//  Description: The private implementation of clear_cache().
-////////////////////////////////////////////////////////////////////
-void Geom::
-do_clear_cache(Geom::CData *cdata) {
-  for (Cache::iterator ci = cdata->_cache.begin();
-       ci != cdata->_cache.end();
-       ++ci) {
-    CacheEntry *entry = (*ci);
-    entry->erase();
-  }
-  cdata->_cache.clear();
-}
   
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::do_draw
@@ -1238,15 +1238,23 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::CacheEntry::Destructor
+//     Function: Geom::CDataCache::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-Geom::CacheEntry::
-~CacheEntry() {
-  if (_geom_result != _source) {
-    unref_delete(_geom_result);
-  }
+Geom::CDataCache::
+~CDataCache() {
+  set_result(NULL, NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CDataCache::make_copy
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CycleData *Geom::CDataCache::
+make_copy() const {
+  return new CDataCache(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1257,13 +1265,10 @@ Geom::CacheEntry::
 ////////////////////////////////////////////////////////////////////
 void Geom::CacheEntry::
 evict_callback() {
-  OPEN_ITERATE_ALL_STAGES(_source->_cycler) {
-    CDStageWriter cdata(_source->_cycler, pipeline_stage);
-    // Because of the multistage pipeline, we might not actually have
-    // a cache entry at every stage.  No big deal if we don't.
-    cdata->_cache.erase(this);
-  }
-  CLOSE_ITERATE_ALL_STAGES(_source->_cycler);
+  Cache::iterator ci = _source->_cache.find(this);
+  nassertv(ci != _source->_cache.end());
+  nassertv((*ci) == this);
+  _source->_cache.erase(ci);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -144,7 +144,8 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
-  INLINE void clear_cache();
+  void clear_cache();
+  void clear_cache_stage();
 
 public:
   bool get_array_info(const InternalName *name, 
@@ -200,20 +201,35 @@ private:
 
   typedef pvector< PT(GeomVertexArrayData) > Arrays;
 
+  // The pipelined data with each CacheEntry.
+  class CDataCache : public CycleData {
+  public:
+    INLINE CDataCache();
+    INLINE CDataCache(const CDataCache &copy);
+    virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return GeomVertexData::get_class_type();
+    }
+
+    CPT(GeomVertexData) _result;
+  };
+  typedef CycleDataReader<CDataCache> CDCacheReader;
+  typedef CycleDataWriter<CDataCache> CDCacheWriter;
+
   class CacheEntry : public GeomCacheEntry {
   public:
     INLINE CacheEntry(const GeomVertexFormat *modifier);
     INLINE CacheEntry(GeomVertexData *source,
-                      const GeomVertexFormat *modifier,
-                      const GeomVertexData *result);
+                      const GeomVertexFormat *modifier);
     INLINE bool operator < (const CacheEntry &other) const;
 
     virtual void evict_callback();
     virtual void output(ostream &out) const;
 
-    GeomVertexData *_source;
+    GeomVertexData *_source;  // A back pointer to the containing GeomVertexData
     CPT(GeomVertexFormat) _modifier;
-    CPT(GeomVertexData) _result;
+
+    PipelineCycler<CDataCache> _cycler;
   };
   typedef pset<PT(CacheEntry), IndirectLess<CacheEntry> > Cache;
 
@@ -238,7 +254,6 @@ private:
     PT(GeomVertexData) _animated_vertices;
     UpdateSeq _animated_vertices_modified;
     UpdateSeq _modified;
-    Cache _cache;
   };
 
   PipelineCycler<CData> _cycler;
@@ -247,10 +262,11 @@ private:
   typedef CycleDataStageReader<CData> CDStageReader;
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
+  Cache _cache;
+
 private:
   bool do_set_num_rows(int n, CData *cdata);
   void update_animated_vertices(CData *cdata);
-  void do_clear_cache(CData *cdata);
 
   static PStatCollector _convert_pcollector;
   static PStatCollector _scale_color_pcollector;
