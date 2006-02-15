@@ -379,7 +379,7 @@
 
     # user callable lerp methods
     def lerpColor(self, *posArgs, **keyArgs):
-        """lerpColor(self, *positionArgs, **keywordArgs)
+        """
         determine which lerpColor* to call based on arguments
         """
         if (len(posArgs) == 2):
