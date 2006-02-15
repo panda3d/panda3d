@@ -1127,17 +1127,17 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
       case WM_XBUTTONDOWN:
         {
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
-        }
-        SetCapture(hwnd);
-        int whichButton = GET_XBUTTON_WPARAM(wparam);
-        _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
-        if (whichButton == XBUTTON1) {
+          if (_lost_keypresses) {
+            resend_lost_keypresses();
+          }
+          SetCapture(hwnd);
+          int whichButton = GET_XBUTTON_WPARAM(wparam);
+          _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+          if (whichButton == XBUTTON1) {
             _input_devices[0].button_down(MouseButton::button(3), get_message_time());
-        } else if (whichButton == XBUTTON2) {
+          } else if (whichButton == XBUTTON2) {
             _input_devices[0].button_down(MouseButton::button(4), get_message_time());
-        }
+          }
         }
         break;
     
