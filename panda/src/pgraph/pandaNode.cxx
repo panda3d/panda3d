@@ -2642,8 +2642,16 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
 
     // Start with a clean slate, or at least with the contents of the
     // node itself.
-    CollideMask net_collide_mask = get_into_collide_mask();
-    CPT(RenderAttrib) off_clip_planes = get_state()->get_clip_plane();
+    CollideMask net_collide_mask;
+    {
+      CDHeavyStageReader cdata(_cycler_heavy, pipeline_stage);
+      net_collide_mask = cdata->_into_collide_mask;
+    }
+    CPT(RenderAttrib) off_clip_planes;
+    {
+      CDLightStageReader cdata(_cycler_light, pipeline_stage);
+      off_clip_planes = cdata->_state->get_clip_plane();
+    }
     if (off_clip_planes == (RenderAttrib *)NULL) {
       off_clip_planes = ClipPlaneAttrib::make();
     }
@@ -2667,12 +2675,12 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
     for (int i = 0; i < num_children; ++i) {
       PandaNode *child = children.get_child(i);
 
-      CPT(ClipPlaneAttrib) orig_cp = DCAST(ClipPlaneAttrib, child->get_off_clip_planes());
+      const ClipPlaneAttrib *orig_cp = DCAST(ClipPlaneAttrib, off_clip_planes);
       
       CDBoundsStageReader child_cdata(child->_cycler_bounds, pipeline_stage);
       if (child_cdata->_last_update != child_cdata->_next_update) {
 	// Child needs update.
-	CDBoundsStageWriter child_cdataw = update_bounds(pipeline_stage, child_cdata);
+	CDBoundsStageWriter child_cdataw = child->update_bounds(pipeline_stage, child_cdata);
       
 	net_collide_mask |= child_cdataw->_net_collide_mask;
 	off_clip_planes = orig_cp->compose_off(child_cdataw->_off_clip_planes);
