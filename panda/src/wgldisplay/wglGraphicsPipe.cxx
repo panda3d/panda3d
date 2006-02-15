@@ -145,7 +145,7 @@ make_gsg(const FrameBufferProperties &properties,
   // Actually, don't bother with the advanced stuff unless the
   // requested frame buffer requires multisample, since at the moment
   // that's the only reason we'd need to use the advanced query.
-  if (frame_buffer_mode & FrameBufferProperties::FM_multisample) {
+  if (frame_buffer_mode & (FrameBufferProperties::FM_multisample)) {
     HDC twindow_dc = temp_gsg->get_twindow_dc();
     if (twindow_dc != 0) {
       wglMakeCurrent(twindow_dc, temp_gsg->get_context(twindow_dc));
@@ -358,6 +358,10 @@ try_for_pfnum(HDC hdc, bool hardware, bool software, int frame_buffer_mode,
   case FrameBufferProperties::FM_triple_buffer:
     want_flags |= PFD_DOUBLEBUFFER;
     break;
+  }
+
+  if (frame_buffer_mode & FrameBufferProperties::FM_stereo) {
+    want_flags |= PFD_STEREO;
   }
 
   // We have to call DescribePixelFormat() once just to get the
