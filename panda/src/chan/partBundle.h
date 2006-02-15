@@ -25,6 +25,7 @@
 #include "animControl.h"
 #include "partSubset.h"
 #include "pointerTo.h"
+#include "thread.h"
 
 class AnimBundle;
 class PartBundleNode;
