@@ -41,12 +41,10 @@ TypeHandle PartBundle::_type_handle;
 ////////////////////////////////////////////////////////////////////
 PartBundle::
 PartBundle(const PartBundle &copy) :
-  PartGroup(copy),
-  _blend_type(copy._blend_type)
+  PartGroup(copy)
 {
-  _last_control_set = NULL;
-  _net_blend = 0.0f;
-  _anim_changed = false;
+  CDWriter cdata(_cycler, true);
+  cdata->_blend_type = copy.get_blend_type();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,11 +56,6 @@ PartBundle(const PartBundle &copy) :
 ////////////////////////////////////////////////////////////////////
 PartBundle::
 PartBundle(const string &name) : PartGroup(name) {
-  _blend_type = BT_single;
-
-  _last_control_set = NULL;
-  _net_blend = 0.0f;
-  _anim_changed = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,19 +92,23 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
 set_blend_type(BlendType bt) {
-  if (_blend_type != bt) {
-    _blend_type = bt;
+  nassertv(Thread::get_current_pipeline_stage() == 0);
 
-    if (_blend_type == BT_single && control_size() > 1) {
+  CDReader cdata(_cycler);
+  if (cdata->_blend_type != bt) {
+    CDWriter cdataw(_cycler, cdata);
+    cdataw->_blend_type = bt;
+
+    if (cdataw->_blend_type == BT_single && cdataw->_blend.size() > 1) {
       // If we just changed to a single blend type, i.e. no blending,
       // we should eliminate all the AnimControls other than the
       // most-recently-added one.
 
-      nassertv(_last_control_set != NULL);
-      clear_and_stop_intersecting(_last_control_set);
+      nassertv(cdataw->_last_control_set != NULL);
+      clear_and_stop_intersecting(cdataw->_last_control_set, cdataw);
     }
 
-    _anim_changed = true;
+    cdataw->_anim_changed = true;
   }
 }
 
@@ -132,83 +129,16 @@ set_blend_type(BlendType bt) {
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
 clear_control_effects() {
-  if (!_blend.empty()) {
-    _blend.clear();
-    _net_blend = 0.0f;
-    _anim_changed = true;
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+
+  CDReader cdata(_cycler);
+  if (!cdata->_blend.empty()) {
+    CDWriter cdataw(_cycler, cdata);
+    cdataw->_blend.clear();
+    cdataw->_net_blend = 0.0f;
+    cdataw->_anim_changed = true;
   }
 }
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::set_control_effect
-//       Access: Published
-//  Description: Sets the amount by which the character is affected by
-//               the indicated AnimControl (and its associated
-//               animation).  Normally, this will only be zero or one.
-//               Zero indicates the animation does not affect the
-//               character, and one means it does.
-//
-//               If the blend_type is not BT_single (see
-//               set_blend_type()), it is possible to have multiple
-//               AnimControls in effect simultaneously.  In this case,
-//               the effect is a weight that indicates the relative
-//               importance of each AnimControl to the final
-//               animation.
-////////////////////////////////////////////////////////////////////
-void PartBundle::
-set_control_effect(AnimControl *control, float effect) {
-  nassertv(control->get_part() == this);
-
-  if (effect == 0.0f) {
-    // An effect of zero means to eliminate the control.
-    ChannelBlend::iterator cbi = _blend.find(control);
-    if (cbi != _blend.end()) {
-      _blend.erase(cbi);
-      _anim_changed = true;
-    }
-
-  } else {
-    // Otherwise we define it.
-
-    // If we currently have BT_single, we only allow one AnimControl
-    // at a time.  Stop all of the other AnimControls.
-    if (get_blend_type() == BT_single) {
-      clear_and_stop_intersecting(control);
-    }
-
-    if (get_control_effect(control) != effect) {
-      _blend[control] = effect;
-      _anim_changed = true;
-    }
-    _last_control_set = control;
-  }
-
-  recompute_net_blend();
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::get_control_effect
-//       Access: Published
-//  Description: Returns the amount by which the character is affected
-//               by the indicated AnimControl and its associated
-//               animation.  See set_control_effect().
-////////////////////////////////////////////////////////////////////
-float PartBundle::
-get_control_effect(AnimControl *control) {
-  nassertr(control->get_part() == this, 0.0f);
-
-  ChannelBlend::iterator cbi = _blend.find(control);
-  if (cbi == _blend.end()) {
-    // The control is not in effect.
-    return 0.0f;
-  } else {
-    return (*cbi).second;
-  }
-}
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::output
@@ -261,6 +191,8 @@ write(ostream &out, int indent_level) const {
 PT(AnimControl) PartBundle::
 bind_anim(AnimBundle *anim, int hierarchy_match_flags,
           const PartSubset &subset) {
+  nassertr(Thread::get_current_pipeline_stage() == 0, NULL);
+
   if ((hierarchy_match_flags & HMF_ok_wrong_root_name) == 0) {
     // Make sure the root names match.
     if (get_name() != anim->get_name()) {
@@ -308,15 +240,22 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
 ////////////////////////////////////////////////////////////////////
 bool PartBundle::
 update() {
-  bool any_changed = do_update(this, NULL, false, _anim_changed);
+  bool anim_changed;
+  {
+    CDReader cdata(_cycler);
+    anim_changed = cdata->_anim_changed;
+  }
+  bool any_changed = do_update(this, NULL, false, anim_changed);
 
   // Now update all the controls for next time.
+  CDWriter cdata(_cycler, false);
   ChannelBlend::const_iterator cbi;
-  for (cbi = _blend.begin(); cbi != _blend.end(); ++cbi) {
+  for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
     AnimControl *control = (*cbi).first;
     control->mark_channels();
   }
-  _anim_changed = false;
+  
+  cdata->_anim_changed = false;
 
   return any_changed;
 }
@@ -333,12 +272,14 @@ force_update() {
   bool any_changed = do_update(this, NULL, true, true);
 
   // Now update all the controls for next time.
+  CDWriter cdata(_cycler, false);
   ChannelBlend::const_iterator cbi;
-  for (cbi = _blend.begin(); cbi != _blend.end(); ++cbi) {
+  for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
     AnimControl *control = (*cbi).first;
     control->mark_channels();
   }
-  _anim_changed = false;
+  
+  cdata->_anim_changed = false;
 
   return any_changed;
 }
@@ -353,31 +294,128 @@ force_update() {
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
 control_activated(AnimControl *control) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
   nassertv(control->get_part() == this);
 
+  CDReader cdata(_cycler);
   // If (and only if) our blend type is BT_single, which means no
   // blending, then starting an animation implicitly enables it.
-  if (get_blend_type() == BT_single) {
-    set_control_effect(control, 1.0f);
+  if (cdata->_blend_type == BT_single) {
+    CDWriter cdataw(_cycler, cdata);
+    do_set_control_effect(control, 1.0f, cdataw);
   }
 }
 
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::do_set_control_effect
+//       Access: Private
+//  Description: The private implementation of set_control_effect().
+////////////////////////////////////////////////////////////////////
+void PartBundle::
+do_set_control_effect(AnimControl *control, float effect, CData *cdata) {
+  nassertv(control->get_part() == this);
+
+  if (effect == 0.0f) {
+    // An effect of zero means to eliminate the control.
+    ChannelBlend::iterator cbi = cdata->_blend.find(control);
+    if (cbi != cdata->_blend.end()) {
+      cdata->_blend.erase(cbi);
+      cdata->_anim_changed = true;
+    }
+
+  } else {
+    // Otherwise we define it.
+
+    // If we currently have BT_single, we only allow one AnimControl
+    // at a time.  Stop all of the other AnimControls.
+    if (cdata->_blend_type == BT_single) {
+      clear_and_stop_intersecting(control, cdata);
+    }
+
+    if (do_get_control_effect(control, cdata) != effect) {
+      cdata->_blend[control] = effect;
+      cdata->_anim_changed = true;
+    }
+    cdata->_last_control_set = control;
+  }
+
+  recompute_net_blend(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::do_get_control_effect
+//       Access: Private
+//  Description: The private implementation of get_control_effect().
+////////////////////////////////////////////////////////////////////
+float PartBundle::
+do_get_control_effect(AnimControl *control, const CData *cdata) const {
+  nassertr(control->get_part() == this, 0.0f);
+
+  ChannelBlend::const_iterator cbi = cdata->_blend.find(control);
+  if (cbi == cdata->_blend.end()) {
+    // The control is not in effect.
+    return 0.0f;
+  } else {
+    return (*cbi).second;
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::recompute_net_blend
-//       Access: Protected
+//       Access: Private
 //  Description: Recomputes the total blending amount after a control
 //               effect has been adjusted.  This value must be kept
 //               up-to-date so we can normalize the blending amounts.
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
-recompute_net_blend() {
-  _net_blend = 0.0f;
+recompute_net_blend(CData *cdata) {
+  cdata->_net_blend = 0.0f;
 
   ChannelBlend::const_iterator bti;
-  for (bti = _blend.begin(); bti != _blend.end(); ++bti) {
-    _net_blend += (*bti).second;
+  for (bti = cdata->_blend.begin(); bti != cdata->_blend.end(); ++bti) {
+    cdata->_net_blend += (*bti).second;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::clear_and_stop_intersecting
+//       Access: Private
+//  Description: Removes and stops all the currently activated
+//               AnimControls that animate some joints also animated
+//               by the indicated AnimControl.  This is a special
+//               internal function that's only called when _blend_type
+//               is BT_single, to automatically stop all the other
+//               currently-executing animations.
+////////////////////////////////////////////////////////////////////
+void PartBundle::
+clear_and_stop_intersecting(AnimControl *control, CData *cdata) {
+  double new_net_blend = 0.0f;
+  ChannelBlend new_blend;
+  bool any_changed = false;
+
+  ChannelBlend::iterator cbi;
+  for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
+    AnimControl *ac = (*cbi).first;
+    if (ac == control ||
+        !ac->get_bound_joints().has_bits_in_common(control->get_bound_joints())) {
+      // Save this control--it's either the target control, or it has
+      // no joints in common with the target control.
+      new_blend.insert(new_blend.end(), (*cbi));
+      new_net_blend += (*cbi).second;
+    } else {
+      // Remove and stop this control.
+      ac->stop();
+      any_changed = true;
+    }
+  }
+
+  if (any_changed) {
+    cdata->_net_blend = new_net_blend;
+    cdata->_blend.swap(new_blend);
+    cdata->_anim_changed = true;
   }
 }
 
@@ -423,40 +461,42 @@ register_with_read_factory()
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::clear_and_stop_intersecting
-//       Access: Protected
-//  Description: Removes and stops all the currently activated
-//               AnimControls that animate some joints also animated
-//               by the indicated AnimControl.  This is a special
-//               internal function that's only called when _blend_type
-//               is BT_single, to automatically stop all the other
-//               currently-executing animations.
+//     Function: PartBundle::CData::Constructor
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void PartBundle::
-clear_and_stop_intersecting(AnimControl *control) {
-  double new_net_blend = 0.0f;
-  ChannelBlend new_blend;
-  bool any_changed = false;
+PartBundle::CData::
+CData() {
+  _blend_type = BT_single;
+  _last_control_set = NULL;
+  _net_blend = 0.0f;
+  _anim_changed = false;
+}
 
-  ChannelBlend::iterator cbi;
-  for (cbi = _blend.begin(); cbi != _blend.end(); ++cbi) {
-    AnimControl *ac = (*cbi).first;
-    if (ac == control ||
-        !ac->get_bound_joints().has_bits_in_common(control->get_bound_joints())) {
-      // Save this control--it's either the target control, or it has
-      // no joints in common with the target control.
-      new_blend.insert(new_blend.end(), (*cbi));
-      new_net_blend += (*cbi).second;
-    } else {
-      // Remove and stop this control.
-      ac->stop();
-      any_changed = true;
-    }
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+PartBundle::CData::
+CData(const PartBundle::CData &copy) :
+  _blend_type(copy._blend_type),
+  _last_control_set(copy._last_control_set),
+  _blend(copy._blend),
+  _net_blend(copy._net_blend),
+  _anim_changed(copy._anim_changed)
+{
+  // Note that this copy constructor is not used by the PartBundle
+  // copy constructor!  Any elements that must be copied between
+  // PartBundles should also be explicitly copied there.
+}
 
-  if (any_changed) {
-    _net_blend = new_net_blend;
-    _blend.swap(new_blend);
-    _anim_changed = true;
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::CData::make_copy
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CycleData *PartBundle::CData::
+make_copy() const {
+  return new CData(*this);
 }

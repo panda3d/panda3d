@@ -104,16 +104,19 @@ do_update(PartBundle *root, PartGroup *parent,
 
   // See if any of the channel values have changed since last time.
 
-  PartBundle::control_iterator bci;
-  for (bci = root->control_begin();
-       !needs_update && bci != root->control_end();
-       ++bci) {
-    AnimControl *control = (*bci);
-    int channel_index = control->get_channel_index();
-    nassertr(channel_index >= 0 && channel_index < (int)_channels.size(), false);
-    AnimChannelBase *channel = _channels[channel_index];
-    if (channel != (AnimChannelBase*)NULL) {
-      needs_update = control->channel_has_changed(channel);
+  {
+    PartBundle::CDReader cdata(root->_cycler);
+    PartBundle::ChannelBlend::const_iterator bci;
+    for (bci = cdata->_blend.begin();
+         !needs_update && bci != cdata->_blend.end();
+         ++bci) {
+      AnimControl *control = (*bci).first;
+      int channel_index = control->get_channel_index();
+      nassertr(channel_index >= 0 && channel_index < (int)_channels.size(), false);
+      AnimChannelBase *channel = _channels[channel_index];
+      if (channel != (AnimChannelBase*)NULL) {
+        needs_update = control->channel_has_changed(channel);
+      }
     }
   }
 

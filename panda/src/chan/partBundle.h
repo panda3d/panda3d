@@ -25,7 +25,6 @@
 #include "animControl.h"
 #include "partSubset.h"
 #include "pointerTo.h"
-#include "iterator_types.h"
 
 class AnimBundle;
 class PartBundleNode;
@@ -43,9 +42,6 @@ public:
   // This is passed down through the MovingParts during the
   // do_update() call to specify the channels that are in effect.
   typedef pmap<AnimControl *, float> ChannelBlend;
-
-  typedef first_of_pair_iterator<ChannelBlend::const_iterator> control_iterator;
-  typedef ChannelBlend::size_type control_size_type;
 
 protected:
   // The copy constructor is protected; use make_copy() or copy_subgraph().
@@ -105,8 +101,8 @@ PUBLISHED:
   INLINE PartBundleNode *get_node() const;
 
   void clear_control_effects();
-  void set_control_effect(AnimControl *control, float effect);
-  float get_control_effect(AnimControl *control);
+  INLINE void set_control_effect(AnimControl *control, float effect);
+  INLINE float get_control_effect(AnimControl *control) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
@@ -116,15 +112,6 @@ PUBLISHED:
                             const PartSubset &subset = PartSubset());
 
 public:
-  // The following functions may be used to traverse the set of
-  // controls applied to the PartBundle.  Beware!  These are not safe
-  // to use outside of PANDA.DLL.
-  INLINE control_iterator control_begin() const;
-  INLINE control_iterator control_end() const;
-  INLINE control_size_type control_size() const;
-
-  INLINE const ChannelBlend &get_blend_map() const;
-
   // The following functions aren't really part of the public
   // interface; they're just public so we don't have to declare a
   // bunch of friends.
@@ -133,17 +120,37 @@ public:
   bool force_update();
   virtual void control_activated(AnimControl *control);
 
-protected:
-  void recompute_net_blend();
-  void clear_and_stop_intersecting(AnimControl *control);
+private:
+  class CData;
 
-  BlendType _blend_type;
+  void do_set_control_effect(AnimControl *control, float effect, CData *cdata);
+  float do_get_control_effect(AnimControl *control, const CData *cdata) const;
+  void recompute_net_blend(CData *cdata);
+  void clear_and_stop_intersecting(AnimControl *control, CData *cdata);
+
   PartBundleNode *_node;
 
-  AnimControl *_last_control_set;
-  ChannelBlend _blend;
-  float _net_blend;
-  bool _anim_changed;
+  // This is the data that must be cycled between pipeline stages.
+  class CData : public CycleData {
+  public:
+    CData();
+    CData(const CData &copy);
+
+    virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return PartBundle::get_class_type();
+    }
+
+    BlendType _blend_type;
+    AnimControl *_last_control_set;
+    ChannelBlend _blend;
+    float _net_blend;
+    bool _anim_changed;
+  };
+
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
 
 public:
   static void register_with_read_factory();
@@ -170,6 +177,9 @@ private:
   static TypeHandle _type_handle;
 
   friend class PartBundleNode;
+  friend class MovingPartBase;
+  friend class MovingPartMatrix;
+  friend class MovingPartScalar;
 };
 
 inline ostream &operator <<(ostream &out, const PartBundle &bundle) {

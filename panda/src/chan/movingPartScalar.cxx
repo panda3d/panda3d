@@ -48,15 +48,15 @@ MovingPartScalar::
 ////////////////////////////////////////////////////////////////////
 void MovingPartScalar::
 get_blend_value(const PartBundle *root) {
-  const PartBundle::ChannelBlend &blend = root->get_blend_map();
+  PartBundle::CDReader cdata(root->_cycler);
 
-  if (blend.empty()) {
+  if (cdata->_blend.empty()) {
     // No channel is bound; supply the default value.
     _value = _initial_value;
 
-  } else if (blend.size() == 1) {
+  } else if (cdata->_blend.size() == 1) {
     // A single value, the normal case.
-    AnimControl *control = (*blend.begin()).first;
+    AnimControl *control = (*cdata->_blend.begin()).first;
 
     int channel_index = control->get_channel_index();
     nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
@@ -75,7 +75,7 @@ get_blend_value(const PartBundle *root) {
     float net = 0.0f;
 
     PartBundle::ChannelBlend::const_iterator cbi;
-    for (cbi = blend.begin(); cbi != blend.end(); ++cbi) {
+    for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
       AnimControl *control = (*cbi).first;
       float effect = (*cbi).second;
       nassertv(effect != 0.0f);

@@ -25,7 +25,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE PartBundle::BlendType PartBundle::
 get_blend_type() const {
-  return _blend_type;
+  CDReader cdata(_cycler);
+  return cdata->_blend_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,50 +40,41 @@ get_node() const {
   return _node;
 }
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::control_begin
-//       Access: Public
-//  Description: Returns an iterator that can be used to traverse the
-//               entire set of AnimControls currently in effect.
+//     Function: PartBundle::set_control_effect
+//       Access: Published
+//  Description: Sets the amount by which the character is affected by
+//               the indicated AnimControl (and its associated
+//               animation).  Normally, this will only be zero or one.
+//               Zero indicates the animation does not affect the
+//               character, and one means it does.
+//
+//               If the blend_type is not BT_single (see
+//               set_blend_type()), it is possible to have multiple
+//               AnimControls in effect simultaneously.  In this case,
+//               the effect is a weight that indicates the relative
+//               importance of each AnimControl to the final
+//               animation.
 ////////////////////////////////////////////////////////////////////
-INLINE PartBundle::control_iterator PartBundle::
-control_begin() const {
-  return _blend.begin();
+void PartBundle::
+set_control_effect(AnimControl *control, float effect) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+
+  CDWriter cdata(_cycler);
+  do_set_control_effect(control, effect, cdata);
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::control_end
-//       Access: Public
-//  Description: Returns an iterator that can be used to traverse the
-//               entire set of AnimControls currently in effect.
+//     Function: PartBundle::get_control_effect
+//       Access: Published
+//  Description: Returns the amount by which the character is affected
+//               by the indicated AnimControl and its associated
+//               animation.  See set_control_effect().
 ////////////////////////////////////////////////////////////////////
-INLINE PartBundle::control_iterator PartBundle::
-control_end() const {
-  return _blend.end();
+INLINE float PartBundle::
+get_control_effect(AnimControl *control) const {
+  CDReader cdata(_cycler);
+  return do_get_control_effect(control, cdata);
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::control_size
-//       Access: Public
-//  Description: Returns the number of entries between control_begin()
-//               and control_end(): the number of AnimControls
-//               currently in effect.
-////////////////////////////////////////////////////////////////////
-INLINE PartBundle::control_size_type PartBundle::
-control_size() const {
-  return _blend.size();
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::get_blend_map
-//       Access: Public
-//  Description: Returns the entire mapping of AnimControls to blend
-//               effect.
-////////////////////////////////////////////////////////////////////
-INLINE const PartBundle::ChannelBlend &PartBundle::
-get_blend_map() const {
-  return _blend;
-}
