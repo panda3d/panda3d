@@ -23,7 +23,8 @@
 
 #ifndef DO_PIPELINING
 
-class CycleData;
+#include "cycleData.h"
+
 class Pipeline;
 
 ////////////////////////////////////////////////////////////////////
