@@ -212,7 +212,7 @@ INLINE void TransformBlend::
 update_blend() const {
   CDReader cdata(_cycler);
   if (cdata->_global_modified != VertexTransform::get_global_modified()) {
-    CDWriter cdataw(((TransformBlend *)this)->_cycler, cdata);
+    CDWriter cdataw(((TransformBlend *)this)->_cycler, cdata, false);
     ((TransformBlend *)this)->recompute_result(cdataw);
   }
 }
@@ -295,7 +295,7 @@ INLINE UpdateSeq TransformBlend::
 get_modified() const {
   CDReader cdata(_cycler);
   if (cdata->_global_modified != VertexTransform::get_global_modified()) {
-    CDWriter cdataw(((TransformBlend *)this)->_cycler, cdata);
+    CDWriter cdataw(((TransformBlend *)this)->_cycler, cdata, false);
     ((TransformBlend *)this)->recompute_result(cdataw);
     return cdataw->_modified;
   } else {

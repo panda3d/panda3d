@@ -21,6 +21,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+TypeHandle TransformBlend::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformBlend::compare_to
@@ -201,7 +202,7 @@ write(ostream &out, int indent_level) const {
 //               VertexTransform objects, if necessary.
 ////////////////////////////////////////////////////////////////////
 void TransformBlend::
-recompute_result(TransformBlend::CDWriter &cdata) {
+recompute_result(CData *cdata) {
   // Update the global_modified sequence number first, to prevent race
   // conditions.
   cdata->_global_modified = VertexTransform::get_global_modified();
@@ -235,7 +236,7 @@ recompute_result(TransformBlend::CDWriter &cdata) {
 ////////////////////////////////////////////////////////////////////
 void TransformBlend::
 clear_result() {
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, true);
   cdata->_global_modified = UpdateSeq();
   if (cdata->_modified != UpdateSeq()) {
     cdata->_modified = UpdateSeq();

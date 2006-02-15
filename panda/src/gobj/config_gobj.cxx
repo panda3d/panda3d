@@ -42,6 +42,7 @@
 #include "textureContext.h"
 #include "shaderExpansion.h"
 #include "shaderContext.h"
+#include "transformBlend.h"
 #include "transformBlendTable.h"
 #include "transformTable.h"
 #include "userVertexSlider.h"
@@ -255,6 +256,7 @@ ConfigureFn(config_gobj) {
   TextureStage::init_type();
   ShaderExpansion::init_type();
   ShaderContext::init_type();
+  TransformBlend::init_type();
   TransformBlendTable::init_type();
   TransformTable::init_type();
   UserVertexSlider::init_type();

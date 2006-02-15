@@ -82,6 +82,11 @@ PUBLISHED:
   void write(ostream &out, int indent_level) const;
 
 private:
+  class CData;
+
+  void recompute_result(CData *cdata);
+  void clear_result();
+
   class TransformEntry {
   public:
     INLINE bool operator < (const TransformEntry &other) const;
@@ -99,6 +104,9 @@ private:
     INLINE CData();
     INLINE CData(const CData &copy);
     virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return TransformBlend::get_class_type();
+    }
 
     LMatrix4f _result;
     UpdateSeq _modified;
@@ -109,15 +117,23 @@ private:
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
 
-  void recompute_result(CDWriter &cdata);
-  void clear_result();
-
 public:
   void write_datagram(BamWriter *manager, Datagram &dg) const;
   int complete_pointers(TypedWritable **plist, BamReader *manager);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
   friend class VertexTransform;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "TransformBlend");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE ostream &operator << (ostream &out, const TransformBlend &obj);
