@@ -1,4 +1,4 @@
-from direct.showbase.DirectObject import *
+from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
 from Tree import *
 

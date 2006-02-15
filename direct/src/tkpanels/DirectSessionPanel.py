@@ -1,7 +1,6 @@
 """ DIRECT Session Main panel """
 
 # Import Tkinter, Pmw, and the dial code
-from direct.showbase.DirectObject import *
 from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *
 

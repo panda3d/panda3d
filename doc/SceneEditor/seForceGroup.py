@@ -1,5 +1,5 @@
 from pandac.PandaModules import *
-from direct.showbase.DirectObject import *
+from direct.showbase.DirectObject import DirectObject
 from direct.showbase.PhysicsManagerGlobal import *
 #Manakel 2/12/2005: replace from pandac import by from pandac.PandaModules import
 from pandac.PandaModules import ForceNode

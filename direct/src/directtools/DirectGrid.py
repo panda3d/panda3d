@@ -1,8 +1,10 @@
-from direct.showbase.DirectObject import *
+
+from pandac.PandaModules import *
+from direct.showbase.DirectObject import DirectObject
 from DirectUtil import *
 from DirectGeometry import *
 
-class DirectGrid(NodePath,DirectObject):
+class DirectGrid(NodePath, DirectObject):
     def __init__(self):
         # Initialize superclass
         NodePath.__init__(self)

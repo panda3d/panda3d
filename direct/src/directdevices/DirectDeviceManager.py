@@ -1,6 +1,6 @@
 """ Class used to create and control vrpn devices """
 
-from direct.showbase.DirectObject import *
+from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import *
 
 ANALOG_MIN = -0.95

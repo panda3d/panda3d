@@ -11,7 +11,7 @@
 # (If we do change original directools, it will force user has to install the latest version of OUR Panda)
 #
 #################################################################
-from direct.showbase.DirectObject import *
+from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectUtil import *
 from seGeometry import *
 from direct.directtools.DirectGlobals import *

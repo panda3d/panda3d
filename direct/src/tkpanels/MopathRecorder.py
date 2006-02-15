@@ -1,7 +1,8 @@
 """ Mopath Recorder Panel Module """
 
 # Import Tkinter, Pmw, and the dial code from this directory tree.
-from direct.showbase.DirectObject import *
+from pandac.PandaModules import *
+from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *
 from direct.directtools.DirectGlobals import *

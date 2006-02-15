@@ -1,4 +1,4 @@
-from direct.showbase.DirectObject import *
+
 from DirectGlobals import *
 
 # Routines to adjust values
@@ -13,7 +13,9 @@ def CLAMP(val, minVal, maxVal):
 
 # Create a tk compatible color string
 def getTkColorString(color):
-    """ Print out a Tk compatible version of a color string """
+    """
+    Print out a Tk compatible version of a color string
+    """
     def toHex(intVal):
         val = int(round(intVal))
         if val < 16:
@@ -27,7 +29,9 @@ def getTkColorString(color):
 
 ## Background Color ##
 def lerpBackgroundColor(r,g,b,duration):
-    """ Function to lerp background color to a new value """
+    """
+    Function to lerp background color to a new value
+    """
     def lerpColor(state):
         dt = globalClock.getDt()
         state.time += dt

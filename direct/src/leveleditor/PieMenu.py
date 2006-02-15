@@ -1,4 +1,6 @@
-from direct.showbase.DirectObject import *
+
+from pandac.PandaModules import *
+from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectGeometry import *
 from direct.task import Task
 
@@ -21,7 +23,7 @@ class PieMenu(NodePath, DirectObject):
         if self.numItems == 0:
             self.degreesPerItem = 0.0
         else:
-            self.degreesPerItem = 360.0/self.numItems            
+            self.degreesPerItem = 360.0/self.numItems
         self.itemOffset = self.degreesPerItem / 2.0
         self.sfx = self.visibleMenu.getSx()
         self.sfz = self.visibleMenu.getSz()

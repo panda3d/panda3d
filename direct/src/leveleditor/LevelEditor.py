@@ -1,5 +1,7 @@
+
+from pandac.PandaModules import *
 from direct.directbase.DirectStart import *
-from direct.showbase.DirectObject import *
+from direct.showbase.DirectObject import DirectObject
 from PieMenu import *
 from direct.gui.DirectGuiGlobals import *
 from direct.showbase.TkGlobal import *

@@ -1,5 +1,5 @@
 """ Showutil Effects module: contains code for useful showcode effects. """
-from direct.showbase.DirectObject import *
+
 from pandac.PandaModules import *
 from direct.interval.IntervalGlobal import *
 

@@ -1,6 +1,5 @@
 """ProjectileInterval module: contains the ProjectileInterval class"""
 
-from direct.showbase.DirectObject import *
 from pandac.PandaModules import *
 from Interval import Interval
 from direct.showbase.PythonUtil import lerp

@@ -1,6 +1,5 @@
 """DistributedObjectGlobal module: contains the DistributedObjectGlobal class"""
 
-from direct.showbase.DirectObject import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObject import DistributedObject
 
