@@ -132,6 +132,7 @@ static TimeCollectorProperties time_properties[] = {
   { 0, "*:Munge:Decompose",                { 0.1, 0.3, 0.1 } },
   { 1, "*:PStats",                         { 0.4, 0.8, 1.0 } },
   { 1, "*:Animation",                      { 1.0, 0.0, 1.0 } },
+  { 0, "*:Flatten",                        { 0.0, 0.7, 0.4 } },
   { 1, "Draw",                             { 1.0, 0.0, 0.0 },  1.0 / 30.0 },
   { 1, "Draw:Make current",                { 0.4, 0.2, 0.6 } },
   { 1, "Draw:Copy texture",                { 0.2, 0.6, 0.4 } },
