@@ -31,17 +31,6 @@ get_render_pipeline() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::set_min_stages
-//       Access: Public
-//  Description: Ensures that at least the indicated number of stages
-//               are in the pipeline.
-////////////////////////////////////////////////////////////////////
-INLINE void Pipeline::
-set_min_stages(int min_stages) {
-  set_num_stages(max(min_stages, get_num_stages()));
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::get_num_stages
 //       Access: Public
 //  Description: Returns the number of stages required for the
@@ -62,7 +51,7 @@ get_num_stages() const {
 INLINE int Pipeline::
 get_num_cyclers() const {
   ReMutexHolder holder(_lock);
-  return _cyclers.size();
+  return _num_cyclers;
 }
 #endif  // THREADED_PIPELINE
 

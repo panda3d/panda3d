@@ -19,6 +19,7 @@
 #include "pipeline.h"
 #include "pipelineCyclerTrueImpl.h"
 #include "reMutexHolder.h"
+#include "configVariableInt.h"
 
 Pipeline *Pipeline::_render_pipeline = (Pipeline *)NULL;
 
@@ -28,12 +29,12 @@ Pipeline *Pipeline::_render_pipeline = (Pipeline *)NULL;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 Pipeline::
-Pipeline(const string &name) :
-  Namable(name)
+Pipeline(const string &name, int num_stages) :
+  Namable(name),
+  _num_stages(num_stages)
 {
-  _num_stages = 1;
-
 #ifdef THREADED_PIPELINE
+  _num_cyclers = 0;
   _cycling = false;
 #endif  // THREADED_PIPELINE
 }
@@ -46,7 +47,7 @@ Pipeline(const string &name) :
 Pipeline::
 ~Pipeline() {
 #ifdef THREADED_PIPELINE
-  nassertv(_cyclers.empty());
+  nassertv(_num_cyclers == 0);
   nassertv(!_cycling);
 #endif  // THREADED_PIPELINE
 }
@@ -91,6 +92,10 @@ cycle() {
           // set for next time.
           bool inserted = next_dirty_cyclers.insert(cycler).second;
           nassertv(inserted);
+        } else {
+#ifdef DEBUG_THREADS
+          inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
+#endif
         }
       }
       break;
@@ -104,6 +109,10 @@ cycle() {
         if (cycler->_dirty) {
           bool inserted = next_dirty_cyclers.insert(cycler).second;
           nassertv(inserted);
+        } else {
+#ifdef DEBUG_THREADS
+          inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
+#endif
         }
       }
       break;
@@ -117,6 +126,10 @@ cycle() {
         if (cycler->_dirty) {
           bool inserted = next_dirty_cyclers.insert(cycler).second;
           nassertv(inserted);
+        } else {
+#ifdef DEBUG_THREADS
+          inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
+#endif
         }
       }
       break;
@@ -135,44 +148,6 @@ cycle() {
 #endif  // THREADED_PIPELINE
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::set_num_stages
-//       Access: Public
-//  Description: Specifies the number of stages required for the
-//               pipeline.
-////////////////////////////////////////////////////////////////////
-void Pipeline::
-set_num_stages(int num_stages) {
-  nassertv(num_stages >= 1);
-#ifdef THREADED_PIPELINE
-  ReMutexHolder holder(_lock);
-  if (num_stages != _num_stages) {
-    
-    // We need to lock every PipelineCycler object in the world before
-    // we can adjust the number of stages.
-    Cyclers::iterator ci;
-    for (ci = _cyclers.begin(); ci != _cyclers.end(); ++ci) {
-      (*ci)->_lock.lock();
-    }
-      
-    _num_stages = num_stages;
-      
-    for (ci = _cyclers.begin(); ci != _cyclers.end(); ++ci) {
-      (*ci)->set_num_stages(num_stages);
-    }
-    
-    // Now release them all.
-    for (ci = _cyclers.begin(); ci != _cyclers.end(); ++ci) {
-      (*ci)->_lock.release();
-    }
-  }
-
-#else  // THREADED_PIPELINE
-  _num_stages = num_stages;
-#endif  // THREADED_PIPELINE
-}
-
-
 #ifdef THREADED_PIPELINE
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::add_cycler
@@ -186,8 +161,11 @@ add_cycler(PipelineCyclerTrueImpl *cycler) {
   ReMutexHolder holder(_lock);
   nassertv(!cycler->_dirty);
   nassertv(!_cycling);
-  bool inserted = _cyclers.insert(cycler).second;
-  nassertv(inserted);
+  ++_num_cyclers;
+
+#ifdef DEBUG_THREADS
+  inc_cycler_type(_all_cycler_types, cycler->get_parent_type(), 1);
+#endif
 }
 #endif  // THREADED_PIPELINE
 
@@ -212,6 +190,10 @@ add_dirty_cycler(PipelineCyclerTrueImpl *cycler) {
 
   bool inserted = _dirty_cyclers.insert(cycler).second;
   nassertv(inserted);
+
+#ifdef DEBUG_THREADS
+  inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), 1);
+#endif
 }
 #endif  // THREADED_PIPELINE
 
@@ -229,19 +211,65 @@ remove_cycler(PipelineCyclerTrueImpl *cycler) {
 
   ReMutexHolder holder(_lock);
   nassertv(!_cycling);
-  
-  Cyclers::iterator ci = _cyclers.find(cycler);
-  nassertv(ci != _cyclers.end());
-  _cyclers.erase(ci);
+
+  --_num_cyclers;
+
+#ifdef DEBUG_THREADS
+  inc_cycler_type(_all_cycler_types, cycler->get_parent_type(), -1);
+#endif
 
   if (cycler->_dirty) {
     cycler->_dirty = false;
     Cyclers::iterator ci = _dirty_cyclers.find(cycler);
     nassertv(ci != _dirty_cyclers.end());
     _dirty_cyclers.erase(ci);
+#ifdef DEBUG_THREADS
+    inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
+#endif
   }
 }
 #endif  // THREADED_PIPELINE
+
+#ifdef DEBUG_THREADS
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::iterate_all_cycler_types
+//       Access: Public
+//  Description: Walks through the list of all the different
+//               PipelineCycler types in the universe.  For each one,
+//               calls the indicated callback function with the
+//               TypeHandle of the respective type (actually, the
+//               result of cycler::get_parent_type()) and the count of
+//               pipeline cyclers of that type.  Mainly used for
+//               PStats reporting.
+////////////////////////////////////////////////////////////////////
+void Pipeline::
+iterate_all_cycler_types(CallbackFunc *func, void *data) const {
+  ReMutexHolder holder(_lock);
+  TypeCount::const_iterator ci;
+  for (ci = _all_cycler_types.begin(); ci != _all_cycler_types.end(); ++ci) {
+    func((*ci).first, (*ci).second, data);
+  }
+}
+#endif  // DEBUG_THREADS
+
+#ifdef DEBUG_THREADS
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::iterate_dirty_cycler_types
+//       Access: Public
+//  Description: Walks through the list of all the different
+//               PipelineCycler types, for only the dirty
+//               PipelineCyclers.  See also
+//               iterate_all_cycler_types().
+////////////////////////////////////////////////////////////////////
+void Pipeline::
+iterate_dirty_cycler_types(CallbackFunc *func, void *data) const {
+  ReMutexHolder holder(_lock);
+  TypeCount::const_iterator ci;
+  for (ci = _dirty_cycler_types.begin(); ci != _dirty_cycler_types.end(); ++ci) {
+    func((*ci).first, (*ci).second, data);
+  }
+}
+#endif  // DEBUG_THREADS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::make_render_pipeline
@@ -250,6 +278,38 @@ remove_cycler(PipelineCyclerTrueImpl *cycler) {
 ////////////////////////////////////////////////////////////////////
 void Pipeline::
 make_render_pipeline() {
+  ConfigVariableInt pipeline_stages
+    ("pipeline-stages", 1,
+     PRC_DESC("The number of stages in the render pipeline.  This is only "
+              "meaningful if threaded pipelining is compiled into Panda, in "
+              "which case you should set this to 1, 2, or 3, according to "
+              "your application's threading model.  You may set it larger "
+              "than your application requires, but this will incur additional "
+              "overhead."));
+
   nassertv(_render_pipeline == (Pipeline *)NULL);
-  _render_pipeline = new Pipeline("render");
+  _render_pipeline = new Pipeline("render", pipeline_stages);
 }
+
+#ifdef DEBUG_THREADS
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::inc_cycler_type
+//       Access: Private, Static
+//  Description: Increments (or decrements, according to added) the
+//               value for TypeHandle in the indicated TypeCount map.
+//               This is used in DEBUG_THREADS mode to track the types
+//               of PipelineCyclers that are coming and going, mainly
+//               for PStats reporting.
+//
+//               It is assumed the lock is held during this call.
+////////////////////////////////////////////////////////////////////
+void Pipeline::
+inc_cycler_type(TypeCount &count, TypeHandle type, int addend) {
+  TypeCount::iterator ci = count.find(type);
+  if (ci == count.end()) {
+    ci = count.insert(TypeCount::value_type(type, 0)).first;
+  }
+  (*ci).second += addend;
+  nassertv((*ci).second >= 0);
+}
+#endif  // DEBUG_THREADS

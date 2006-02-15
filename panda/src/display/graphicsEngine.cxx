@@ -60,7 +60,7 @@ PStatCollector GraphicsEngine::_transform_states_unused_pcollector("TransformSta
 PStatCollector GraphicsEngine::_render_states_pcollector("RenderStates");
 PStatCollector GraphicsEngine::_render_states_unused_pcollector("RenderStates:Unused");
 PStatCollector GraphicsEngine::_cyclers_pcollector("PipelineCyclers");
-PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("PipelineCyclers:Dirty");
+PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("Dirty PipelineCyclers");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::Constructor
@@ -540,10 +540,18 @@ render_frame() {
     }
   }
 
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#if defined(THREADED_PIPELINE) && defined(DO_PSTATS)
   _cyclers_pcollector.set_level(_pipeline->get_num_cyclers());
   _dirty_cyclers_pcollector.set_level(_pipeline->get_num_dirty_cyclers());
-#endif  // DO_PIPELINING && HAVE_THREADS
+
+#ifdef DEBUG_THREADS
+  if (PStatClient::is_connected()) {
+    _pipeline->iterate_all_cycler_types(pstats_count_cycler_type, this);
+    _pipeline->iterate_dirty_cycler_types(pstats_count_dirty_cycler_type, this);
+  }
+#endif  // DEBUG_THREADS
+
+#endif  // THREADED_PIPELINE && DO_PSTATS
 
   // Now cycle the pipeline and officially begin the next frame.
   {
@@ -1459,6 +1467,42 @@ terminate_threads() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::pstats_count_cycler_type
+//       Access: Private, Static
+//  Description: A callback function for
+//               Pipeline::iterate_all_cycler_types() to report the
+//               cycler types to PStats.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+pstats_count_cycler_type(TypeHandle type, int count, void *data) {
+  GraphicsEngine *self = (GraphicsEngine *)data;
+  CyclerTypeCounters::iterator ci = self->_all_cycler_types.find(type);
+  if (ci == self->_all_cycler_types.end()) {
+    PStatCollector collector(_cyclers_pcollector, type.get_name());
+    ci = self->_all_cycler_types.insert(CyclerTypeCounters::value_type(type, collector)).first;
+  }
+  (*ci).second.set_level(count);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::pstats_count_dirty_cycler_type
+//       Access: Private, Static
+//  Description: A callback function for
+//               Pipeline::iterate_dirty_cycler_types() to report the
+//               cycler types to PStats.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+pstats_count_dirty_cycler_type(TypeHandle type, int count, void *data) {
+  GraphicsEngine *self = (GraphicsEngine *)data;
+  CyclerTypeCounters::iterator ci = self->_dirty_cycler_types.find(type);
+  if (ci == self->_dirty_cycler_types.end()) {
+    PStatCollector collector(_dirty_cyclers_pcollector, type.get_name());
+    ci = self->_dirty_cycler_types.insert(CyclerTypeCounters::value_type(type, collector)).first;
+  }
+  (*ci).second.set_level(count);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::get_invert_polygon_state
 //       Access: Protected, Static
 //  Description: Returns a RenderState for inverting the sense of
@@ -1505,10 +1549,11 @@ get_window_renderer(const string &name, int pipeline_stage) {
 
   PT(RenderThread) thread = new RenderThread(name, this);
   thread->set_min_pipeline_stage(pipeline_stage);
-  _pipeline->set_min_stages(pipeline_stage + 1);
 
   thread->start(TP_normal, true, true);
   _threads[name] = thread;
+
+  nassertr(pipeline_stage < _pipeline->get_num_stages(), thread.p());
 
   return thread.p();
 }

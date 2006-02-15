@@ -171,6 +171,14 @@ private:
   void do_resort_windows();
   void terminate_threads();
 
+#ifdef DO_PSTATS
+  typedef map<TypeHandle, PStatCollector> CyclerTypeCounters;
+  CyclerTypeCounters _all_cycler_types;
+  CyclerTypeCounters _dirty_cycler_types;
+  static void pstats_count_cycler_type(TypeHandle type, int count, void *data);
+  static void pstats_count_dirty_cycler_type(TypeHandle type, int count, void *data);
+#endif  // DO_PSTATS
+
   static const RenderState *get_invert_polygon_state();
 
   // The WindowRenderer class records the stages of the pipeline that

@@ -74,6 +74,8 @@ public:
   INLINE CycleData *elevate_read_stage(int n, const CycleData *pointer);
   INLINE void release_write_stage(int n, CycleData *pointer);
 
+  INLINE TypeHandle get_parent_type() const;
+
   INLINE CycleData *cheat() const;
   INLINE int get_read_count() const;
   INLINE int get_write_count() const;

@@ -37,13 +37,14 @@ PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
   if (_pipeline == (Pipeline *)NULL) {
     _pipeline = Pipeline::get_render_pipeline();
   }
-  _pipeline->add_cycler(this);
 
   _num_stages = _pipeline->get_num_stages();
   _data = new PT(CycleData)[_num_stages];
   for (int i = 0; i < _num_stages; ++i) {
     _data[i] = initial_data;
   }
+
+  _pipeline->add_cycler(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,29 +59,30 @@ PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
   _lock(this)
 {
   ReMutexHolder holder(_lock);
-  _pipeline->add_cycler(this);
-  if (copy._dirty) {
-    _pipeline->add_dirty_cycler(this);
-  }
-
   ReMutexHolder holder2(copy._lock);
+  
   _num_stages = _pipeline->get_num_stages();
   nassertv(_num_stages == copy._num_stages);
   _data = new PT(CycleData)[_num_stages];
-
+  
   // It's no longer critically important that we preserve pointerwise
   // equivalence between different stages in the copy, but it doesn't
   // cost much and might be a little more efficient, so we do it
   // anyway.
   typedef pmap<CycleData *, PT(CycleData) > Pointers;
   Pointers pointers;
-
+  
   for (int i = 0; i < _num_stages; ++i) {
     PT(CycleData) &new_pt = pointers[copy._data[i]];
     if (new_pt == NULL) {
       new_pt = copy._data[i]->make_copy();
     }
     _data[i] = new_pt;
+  }
+
+  _pipeline->add_cycler(this);
+  if (copy._dirty) {
+    _pipeline->add_dirty_cycler(this);
   }
 }
 
@@ -93,8 +95,7 @@ void PipelineCyclerTrueImpl::
 operator = (const PipelineCyclerTrueImpl &copy) {
   ReMutexHolder holder1(_lock);
   ReMutexHolder holder2(copy._lock);
-
-  nassertv(_num_stages == copy._num_stages);
+  nassertv(get_parent_type() == copy.get_parent_type());
 
   typedef pmap<CycleData *, PT(CycleData) > Pointers;
   Pointers pointers;
@@ -120,11 +121,12 @@ operator = (const PipelineCyclerTrueImpl &copy) {
 PipelineCyclerTrueImpl::
 ~PipelineCyclerTrueImpl() {
   ReMutexHolder holder(_lock);
+
+  _pipeline->remove_cycler(this);
+
   delete[] _data;
   _data = NULL;
   _num_stages = 0;
-
-  _pipeline->remove_cycler(this);
 }
 
 ////////////////////////////////////////////////////////////////////

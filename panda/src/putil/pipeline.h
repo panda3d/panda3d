@@ -42,15 +42,13 @@ struct PipelineCyclerTrueImpl;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Pipeline : public Namable {
 public:
-  Pipeline(const string &name);
+  Pipeline(const string &name, int num_stages);
   ~Pipeline();
 
   INLINE static Pipeline *get_render_pipeline();
 
   void cycle();
 
-  void set_num_stages(int num_stages);
-  INLINE void set_min_stages(int min_stages);
   INLINE int get_num_stages() const;
 
 #ifdef THREADED_PIPELINE
@@ -60,6 +58,13 @@ public:
 
   INLINE int get_num_cyclers() const;
   INLINE int get_num_dirty_cyclers() const;
+  
+#ifdef DEBUG_THREADS
+  typedef void CallbackFunc(TypeHandle type, int count, void *data);
+  void iterate_all_cycler_types(CallbackFunc *func, void *data) const;
+  void iterate_dirty_cycler_types(CallbackFunc *func, void *data) const;
+#endif  // DEBUG_THREADS
+
 #endif  // THREADED_PIPELINE
 
 private:
@@ -69,9 +74,16 @@ private:
   static Pipeline *_render_pipeline;
 
 #ifdef THREADED_PIPELINE
+  int _num_cyclers;
   typedef pset<PipelineCyclerTrueImpl *> Cyclers;
-  Cyclers _cyclers;
   Cyclers _dirty_cyclers;
+
+#ifdef DEBUG_THREADS
+  typedef pmap<TypeHandle, int> TypeCount;
+  TypeCount _all_cycler_types, _dirty_cycler_types;
+  
+  static void inc_cycler_type(TypeCount &count, TypeHandle type, int addend);
+#endif  // DEBUG_THREADS
 
   // This is true only during cycle().
   bool _cycling;

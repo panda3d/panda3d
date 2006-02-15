@@ -369,6 +369,17 @@ release_write_stage(int n, CycleData *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::get_parent_type
+//       Access: Public
+//  Description: Returns the type of object that owns this cycler, as
+//               reported by CycleData::get_parent_type().
+////////////////////////////////////////////////////////////////////
+INLINE TypeHandle PipelineCyclerDummyImpl::
+get_parent_type() const {
+  return _data->get_parent_type();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerDummyImpl::cheat
 //       Access: Public
 //  Description: Returns a pointer without counting it.  This is only
