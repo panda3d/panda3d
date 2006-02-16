@@ -20,6 +20,7 @@
 #include "pipelineCyclerTrueImpl.h"
 #include "reMutexHolder.h"
 #include "configVariableInt.h"
+#include "config_util.h"
 
 Pipeline *Pipeline::_render_pipeline = (Pipeline *)NULL;
 
@@ -197,9 +198,9 @@ set_num_stages(int num_stages) {
   }
 
 #else  // THREADED_PIPELINE
-  if (_num_stages != 1) {
-    display_cat.warning()
-      << "Requested " << pipeline_stages
+  if (num_stages != 1) {
+    util_cat.warning()
+      << "Requested " << num_stages
       << " pipeline stages but multithreaded render pipelines not enabled in build.\n";
   }
   _num_stages = 1;
