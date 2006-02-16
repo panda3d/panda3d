@@ -75,7 +75,7 @@ template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 all_on() {
   BitMask result;
-  result._word = ~0;
+  result._word = (WordType)~0;
   return result;
 }
 
@@ -136,7 +136,7 @@ range(int low_bit, int size) {
   if (size <= 0) {
     result._word = 0;
   } else if (size >= num_bits) {
-    result._word = ~0;
+    result._word = (WordType)~0;
   } else {
     result._word = ((WordType)1 << size) - 1;
   }
