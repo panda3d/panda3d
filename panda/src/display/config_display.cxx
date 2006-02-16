@@ -150,6 +150,18 @@ ConfigVariableBool window_inverted
           "they will render upside-down and backwards.  Normally this is useful only "
           "for debugging."));
 
+ConfigVariableBool red_blue_stereo
+("red-blue-stereo", false,
+ PRC_DESC("Set this true to create windows with red-blue stereo mode enabled "
+	  "by default, if the framebuffer does not support true stereo "
+	  "rendering."));
+
+ConfigVariableBool invert_red_blue_stereo
+("invert-red-blue-stereo", false,
+ PRC_DESC("When this is true, the red and blue colors of red-blue stereo mode "
+	  "are inverted from their default convention, so the blue is on the "
+	  "left and red is on the right."));
+
 ConfigVariableBool depth_offset_decals
 ("depth-offset-decals", false,
  PRC_DESC("Set this true to allow decals to be implemented via the advanced "

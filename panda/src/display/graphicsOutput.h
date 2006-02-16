@@ -113,6 +113,10 @@ PUBLISHED:
   void set_inverted(bool inverted);
   INLINE bool get_inverted() const;
 
+  INLINE void set_red_blue_stereo(bool red_blue_stereo);
+  INLINE bool get_red_blue_stereo() const;
+  INLINE bool is_stereo() const;
+
   INLINE void clear_delete_flag();
   INLINE bool get_delete_flag() const;
 
@@ -235,6 +239,7 @@ protected:
   bool _active;
   bool _one_shot;
   bool _inverted;
+  bool _red_blue_stereo;
   bool _delete_flag;
 
   // These weak pointers are used to keep track of whether the

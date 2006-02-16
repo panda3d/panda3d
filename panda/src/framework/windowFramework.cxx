@@ -126,7 +126,8 @@ WindowFramework(const WindowFramework &copy, DisplayRegion *display_region) :
 
   set_background_type(copy._background_type);
   // Set up a 3-d camera for the window by default.
-  make_camera();
+  NodePath camera_np = make_camera();
+  _display_region_3d->set_camera(camera_np);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,16 +176,29 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
     
     // Create a display region that covers the entire window.
     _display_region_3d = _window->make_display_region();
-    _display_region_3d->set_sort(0);
 
     // Make sure the DisplayRegion does the clearing, not the window,
     // so we can have multiple DisplayRegions of different colors.
     _window->set_clear_color_active(false);
     _window->set_clear_depth_active(false);
-    set_background_type(_background_type);
 
     // Set up a 3-d camera for the window by default.
-    make_camera();
+    NodePath camera_np = make_camera();
+    _display_region_3d->set_camera(camera_np);
+
+    if (_window->is_stereo()) {
+      // Actually, let's make a stereo camera.  That means the
+      // _display_region_3d will be the left channel, and we need to
+      // make another one to be the right channel.
+
+      _display_region_3d->set_stereo_channel(Lens::SC_left);
+
+      _display_region_right = _window->make_display_region();
+      _display_region_right->set_stereo_channel(Lens::SC_right);
+      _display_region_right->set_camera(camera_np);
+    }
+
+    set_background_type(_background_type);
     
     if (show_frame_rate_meter) {
       _frame_rate_meter = new FrameRateMeter("frame_rate_meter");
@@ -952,6 +966,12 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_depth_active(true);
     _display_region_3d->set_clear_color(_window->get_clear_color());
     _display_region_3d->set_clear_depth(_window->get_clear_depth());
+    if (_display_region_right) {
+      _display_region_right->set_clear_color_active(!_window->get_red_blue_stereo());
+      _display_region_right->set_clear_depth_active(true);
+      _display_region_right->set_clear_color(_window->get_clear_color());
+      _display_region_right->set_clear_depth(_window->get_clear_depth());
+    }
     break;
     
   case BT_black:
@@ -959,6 +979,12 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_depth_active(true);
     _display_region_3d->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
+    if (_display_region_right) {
+      _display_region_right->set_clear_color_active(!_window->get_red_blue_stereo());
+      _display_region_right->set_clear_depth_active(true);
+      _display_region_right->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
+      _display_region_right->set_clear_depth(1.0f);
+    }
     break;
     
   case BT_gray:
@@ -966,6 +992,12 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_depth_active(true);
     _display_region_3d->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
+    if (_display_region_right) {
+      _display_region_right->set_clear_color_active(!_window->get_red_blue_stereo());
+      _display_region_right->set_clear_depth_active(true);
+      _display_region_right->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 0.0f));
+      _display_region_right->set_clear_depth(1.0f);
+    }
     break;
     
   case BT_white:
@@ -973,11 +1005,21 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_depth_active(true);
     _display_region_3d->set_clear_color(Colorf(1.0f, 1.0f, 1.0f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
+    if (_display_region_right) {
+      _display_region_right->set_clear_color_active(!_window->get_red_blue_stereo());
+      _display_region_right->set_clear_depth_active(true);
+      _display_region_right->set_clear_color(Colorf(1.0f, 1.0f, 1.0f, 0.0f));
+      _display_region_right->set_clear_depth(1.0f);
+    }
     break;
 
   case BT_none:
     _display_region_3d->set_clear_color_active(false);
     _display_region_3d->set_clear_depth_active(false);
+    if (_display_region_right) {
+      _display_region_right->set_clear_color_active(false);
+      _display_region_right->set_clear_depth_active(false);
+    }
     break;
   }
 }
@@ -1012,7 +1054,7 @@ get_shuttle_controls_font() {
 //       Access: Protected
 //  Description: Makes a new 3-d camera for the window.
 ////////////////////////////////////////////////////////////////////
-PT(Camera) WindowFramework::
+NodePath WindowFramework::
 make_camera() {
   // Finally, we need a camera to associate with the display region.
   PT(Camera) camera = new Camera("camera");
@@ -1038,9 +1080,8 @@ make_camera() {
   }
 
   camera->set_lens(lens);
-  _display_region_3d->set_camera(camera_np);
 
-  return camera;
+  return camera_np;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -746,26 +746,19 @@ class ShowBase(DirectObject.DirectObject):
         return aspectRatio
 
     def makeCamera(self, win, sort = 0, scene = None,
-                   displayRegion = (0, 1, 0, 1), stereoChannel = None,
-                   aspectRatio = None,
+                   displayRegion = (0, 1, 0, 1), stereo = None,
+                   aspectRatio = None, clearDepth = 0, clearColor = None,
                    lens = None, camName = 'cam'):
         """
         Makes a new 3-d camera associated with the indicated window,
         and creates a display region in the indicated subrectangle.
+
+        If stereo is True, then a stereo camera is created, with a
+        pair of DisplayRegions.  If stereo is False, then a standard
+        camera is created.  If stereo is None or omitted, a stereo
+        camera is created if the window says it can render in stereo.
         """
-        dr = win.makeDisplayRegion(*displayRegion)
-        dr.setSort(sort)
-
-        if stereoChannel != None:
-            dr.setStereoChannel(stereoChannel)
-
-        if scene == None:
-            scene = self.render
-
-        # By default, we do not clear 3-d display regions (the entire
-        # window will be cleared, which is normally sufficient).
-
-        # Now make a new Camera node.
+        # First, make a new Camera node.
         camNode = Camera(camName)
         if lens == None:
             lens = PerspectiveLens()
@@ -776,6 +769,9 @@ class ShowBase(DirectObject.DirectObject):
 
         camNode.setLens(lens)
 
+        if scene != None:
+            camNode.setScene(scene)
+
         # self.camera is the parent node of all cameras: a node that
         # we can move around to move all cameras as a group.
         if self.camera == None:
@@ -783,7 +779,6 @@ class ShowBase(DirectObject.DirectObject):
             __builtins__["camera"] = self.camera
 
         cam = self.camera.attachNewNode(camNode)
-        dr.setCamera(cam)
 
         if self.cam == None:
             self.cam = cam
@@ -791,6 +786,38 @@ class ShowBase(DirectObject.DirectObject):
             self.camLens = lens
 
         self.camList.append(cam)
+
+        # Now, make a DisplayRegion for the camera.
+        dr = win.makeDisplayRegion(*displayRegion)
+        dr.setSort(sort)
+
+        # By default, we do not clear 3-d display regions (the entire
+        # window will be cleared, which is normally sufficient).  But
+        # we will if clearDepth is specified.
+        if clearDepth:
+            dr.setClearDepthActive(1)
+        if clearColor:
+            dr.setClearColorActive(1)
+            dr.setClearColor(clearColor)
+
+        dr.setCamera(cam)
+
+        if stereo == None:
+            stereo = win.isStereo()
+        if stereo:
+            # A stereo camera!  The first DisplayRegion becomes the
+            # left channel.
+            dr.setStereoChannel(Lens.SCLeft)
+
+            # So we'll need another DisplayRegion for the right channel.
+            dr = win.makeDisplayRegion(*displayRegion)
+            dr.setSort(sort)
+            dr.setClearDepthActive(1)
+            if clearColor:
+                dr.setClearColorActive(1)
+                dr.setClearColor(clearColor)
+            dr.setCamera(cam)
+            dr.setStereoChannel(Lens.SCRight)
 
         return cam
 

@@ -69,6 +69,8 @@ extern EXPCL_PANDA ConfigVariableInt geom_cache_min_frames;
 extern ConfigVariableDouble default_near;
 extern ConfigVariableDouble default_far;
 extern ConfigVariableDouble default_fov;
+extern ConfigVariableDouble default_iod;
+extern ConfigVariableDouble default_converge;
 extern ConfigVariableDouble default_keystone;
 
 #endif

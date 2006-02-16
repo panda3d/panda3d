@@ -112,12 +112,13 @@ clear() {
   _view_hpr.set(0.0f, 0.0f, 0.0f);
   _view_vector.set(0.0f, 1.0f, 0.0f);
   _up_vector.set(0.0f, 0.0f, 1.0f);
-  _interocular_distance = 0.0f;
-  _convergence_distance = 0.0f;
   _keystone.set(0.0f, 0.0f);
 
   _user_flags = 0;
   _comp_flags = CF_fov;
+
+  set_interocular_distance(default_iod);
+  set_convergence_distance(default_converge);
 
   if (default_keystone.has_value()) {
     _keystone.set(default_keystone[0], default_keystone[1]);

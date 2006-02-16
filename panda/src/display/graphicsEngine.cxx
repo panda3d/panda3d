@@ -1178,6 +1178,31 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
     initial_state = initial_state->compose(get_invert_polygon_state());
   }
 
+  if (window->get_red_blue_stereo()) {
+    // If the window has red-blue stereo mode, apply the appropriate
+    // color mask to the initial state.
+    switch (dr->get_stereo_channel()) {
+    case Lens::SC_left:
+      if (invert_red_blue_stereo) {
+	initial_state = initial_state->compose(get_blue_channel_state());
+      } else {
+	initial_state = initial_state->compose(get_red_channel_state());
+      }
+      break;
+
+    case Lens::SC_right:
+      if (invert_red_blue_stereo) {
+	initial_state = initial_state->compose(get_red_channel_state());
+      } else {
+	initial_state = initial_state->compose(get_blue_channel_state());
+      }
+      break;
+
+    case Lens::SC_both:
+      break;
+    }
+  }
+
   scene_setup->set_display_region(dr);
   scene_setup->set_viewport_size(dr->get_pixel_width(), dr->get_pixel_height());
   scene_setup->set_scene_root(scene_root);
@@ -1473,7 +1498,9 @@ pstats_count_cycler_type(TypeHandle type, int count, void *data) {
   }
   (*ci).second.set_level(count);
 }
+#endif // DO_PSTATS
 
+#ifdef DO_PSTATS
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::pstats_count_dirty_cycler_type
 //       Access: Private, Static
@@ -1492,6 +1519,7 @@ pstats_count_dirty_cycler_type(TypeHandle type, int count, void *data) {
   (*ci).second.set_level(count);
 }
 #endif // DO_PSTATS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::get_invert_polygon_state
 //       Access: Protected, Static
@@ -1507,6 +1535,44 @@ get_invert_polygon_state() {
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make(CullFaceAttrib::make_reverse());
+  }
+
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_red_channel_state
+//       Access: Protected, Static
+//  Description: Returns a RenderState for rendering only to the red
+//               channel of the color buffer, for implementing
+//               red-blue stereo.
+////////////////////////////////////////////////////////////////////
+const RenderState *GraphicsEngine::
+get_red_channel_state() {
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) state = (const RenderState *)NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make(ColorWriteAttrib::make(ColorWriteAttrib::C_red));
+  }
+
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_blue_channel_state
+//       Access: Protected, Static
+//  Description: Returns a RenderState for rendering only to the blue
+//               channel of the color buffer, for implementing
+//               red-blue stereo.
+////////////////////////////////////////////////////////////////////
+const RenderState *GraphicsEngine::
+get_blue_channel_state() {
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) state = (const RenderState *)NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make(ColorWriteAttrib::make(ColorWriteAttrib::C_blue));
   }
 
   return state;

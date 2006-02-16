@@ -57,6 +57,8 @@ extern EXPCL_PANDA ConfigVariableBool support_render_texture;
 extern EXPCL_PANDA ConfigVariableBool support_rescale_normal;
 extern EXPCL_PANDA ConfigVariableBool copy_texture_inverted;
 extern EXPCL_PANDA ConfigVariableBool window_inverted;
+extern EXPCL_PANDA ConfigVariableBool red_blue_stereo;
+extern EXPCL_PANDA ConfigVariableBool invert_red_blue_stereo;
 extern EXPCL_PANDA ConfigVariableBool depth_offset_decals;
 extern EXPCL_PANDA ConfigVariableBool auto_generate_mipmaps;
 extern EXPCL_PANDA ConfigVariableBool color_scale_via_lighting;

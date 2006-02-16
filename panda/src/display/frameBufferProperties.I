@@ -122,6 +122,20 @@ is_single_buffered() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::is_stereo
+//       Access: Published
+//  Description: Returns true if the frame buffer indicates a
+//               hardware stereo mode, false otherwise.  This is a
+//               convenience function to access this useful tidbit of
+//               data.
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+is_stereo() const {
+  nassertr(has_frame_buffer_mode(), false);
+  return (_frame_buffer_mode & FM_stereo) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::set_depth_bits
 //       Access: Published
 //  Description: Specifies the minimum number of bits that are

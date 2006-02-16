@@ -88,12 +88,12 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _active = true;
   _one_shot = false;
   _inverted = window_inverted;
+  _red_blue_stereo = false;
   _delete_flag = false;
   _texture_card = 0;
   _trigger_copy = false;
 
-  int mode = gsg->get_properties().get_frame_buffer_mode();
-  if ((mode & FrameBufferProperties::FM_buffer) == FrameBufferProperties::FM_single_buffer) {
+  if (gsg->get_properties().is_single_buffered()) {
     // Single buffered; we must draw into the front buffer.
     _draw_buffer_type = RenderBuffer::T_front;
   }

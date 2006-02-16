@@ -221,6 +221,13 @@ ConfigVariableDouble default_fov
 ("default-fov", 40.0,
  PRC_DESC("The default field of view in degrees for all cameras."));
 
+ConfigVariableDouble default_iod
+("default-iod", 0.2,
+ PRC_DESC("The default interocular distance for stereo cameras."));
+
+ConfigVariableDouble default_converge
+("default-converge", 25.0,
+ PRC_DESC("The default convergence distance for stereo cameras."));
 
 ConfigVariableDouble default_keystone
 ("default-keystone", 0.0f,

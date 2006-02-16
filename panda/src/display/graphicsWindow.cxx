@@ -49,6 +49,8 @@ GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
       << " using GSG " << (void *)gsg << "\n";
   }
 
+  _red_blue_stereo = red_blue_stereo && !_gsg->get_properties().is_stereo();
+
   _properties.set_open(false);
   _properties.set_undecorated(false);
   _properties.set_fullscreen(false);

@@ -226,6 +226,48 @@ get_inverted() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::set_red_blue_stereo
+//       Access: Published
+//  Description: Enables red-blue stereo mode on this particular
+//               window.  When red-blue stereo mode is in effect,
+//               DisplayRegions that have the "left" channel set will
+//               render in the red channel only, while DisplayRegions
+//               that have the "right" channel set will render in the
+//               blue channel only.
+//
+//               This can be used to achieve a cheesy stereo mode in
+//               the absence of hardware-supported stereo.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsOutput::
+set_red_blue_stereo(bool red_blue_stereo) {
+  _red_blue_stereo = red_blue_stereo;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_red_blue_stereo
+//       Access: Published
+//  Description: Returns whether red-blue stereo mode is in effect for
+//               this particular window.  See set_red_blue_stereo().
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+get_red_blue_stereo() const {
+  return _red_blue_stereo;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::is_stereo
+//       Access: Published
+//  Description: Returns Returns true if this window can render stereo
+//               DisplayRegions, either through red-blue stereo (see
+//               set_red_blue_stereo()) or through true hardware
+//               stereo rendering.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+is_stereo() const {
+  return _red_blue_stereo || _gsg->get_properties().is_stereo();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::clear_delete_flag
 //       Access: Published
 //  Description: Resets the delete flag, so the GraphicsOutput will

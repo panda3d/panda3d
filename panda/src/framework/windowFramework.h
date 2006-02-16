@@ -132,7 +132,7 @@ public:
   static TextFont *get_shuttle_controls_font();
 
 protected:
-  PT(Camera) make_camera();
+  NodePath make_camera();
   void setup_lights();
 
 private:
@@ -160,6 +160,7 @@ private:
   PT(GraphicsWindow) _window;
   PT(DisplayRegion) _display_region_2d;
   PT(DisplayRegion) _display_region_3d;
+  PT(DisplayRegion) _display_region_right;
 
   NodePath _camera_group;
   typedef pvector< PT(Camera) > Cameras;

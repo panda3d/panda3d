@@ -180,6 +180,8 @@ private:
 #endif  // DO_PSTATS
 
   static const RenderState *get_invert_polygon_state();
+  static const RenderState *get_red_channel_state();
+  static const RenderState *get_blue_channel_state();
 
   // The WindowRenderer class records the stages of the pipeline that
   // each thread (including the main thread, a.k.a. "app") should
