@@ -1454,6 +1454,8 @@ terminate_threads() {
   _threads.clear();
 }
 
+
+#ifdef DO_PSTATS
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::pstats_count_cycler_type
 //       Access: Private, Static
@@ -1489,7 +1491,7 @@ pstats_count_dirty_cycler_type(TypeHandle type, int count, void *data) {
   }
   (*ci).second.set_level(count);
 }
-
+#endif // DO_PSTATS
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::get_invert_polygon_state
 //       Access: Protected, Static
