@@ -333,9 +333,6 @@ set_num_stages(int num_stages) {
   }
 }
 
-#endif  // DO_PIPELINING && HAVE_THREADS
-
-
 #ifdef DEBUG_THREADS
 ////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrueImpl::CyclerMutex::output
@@ -347,3 +344,7 @@ output(ostream &out) const {
   _cycler->cheat()->output(out);
 }
 #endif
+
+#endif  // DO_PIPELINING && HAVE_THREADS
+
+
