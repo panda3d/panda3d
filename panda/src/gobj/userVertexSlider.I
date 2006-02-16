@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void UserVertexSlider::
 set_slider(float slider) {
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, true);
   cdata->_slider = slider;
   mark_modified();
 }

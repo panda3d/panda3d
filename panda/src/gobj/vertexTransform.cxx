@@ -141,7 +141,7 @@ UpdateSeq VertexTransform::
 get_next_modified() {
   ++_next_modified;
 
-  CDWriter cdatag(_global_cycler);
+  CDWriter cdatag(_global_cycler, true);
   cdatag->_modified = _next_modified;
 
   return _next_modified;
@@ -157,7 +157,7 @@ get_next_modified() {
 ////////////////////////////////////////////////////////////////////
 void VertexTransform::
 mark_modified() {
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, true);
   cdata->_modified = get_next_modified();
   
   Palettes::iterator pi;

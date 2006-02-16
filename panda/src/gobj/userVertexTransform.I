@@ -35,7 +35,7 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void UserVertexTransform::
 set_matrix(const LMatrix4f &matrix) {
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, true);
   cdata->_matrix = matrix;
   mark_modified();
 }

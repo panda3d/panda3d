@@ -50,7 +50,7 @@ INLINE UpdateSeq TransformBlendTable::
 get_modified() const {
   CDReader cdata(_cycler);
   if (cdata->_global_modified != VertexTransform::get_global_modified()) {
-    CDWriter cdataw(((TransformBlendTable *)this)->_cycler, cdata);
+    CDWriter cdataw(((TransformBlendTable *)this)->_cycler, cdata, false);
     ((TransformBlendTable *)this)->recompute_modified(cdataw);
     return cdataw->_modified;
   } else {

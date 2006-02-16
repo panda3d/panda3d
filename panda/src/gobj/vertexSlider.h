@@ -85,9 +85,6 @@ private:
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
 
-  static PipelineCycler<CData> _global_cycler;
-  static UpdateSeq _next_modified;
-
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
 

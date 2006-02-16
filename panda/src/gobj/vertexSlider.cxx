@@ -76,7 +76,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void VertexSlider::
 mark_modified() {
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, true);
   cdata->_modified = VertexTransform::get_next_modified();
   
   Tables::iterator ti;

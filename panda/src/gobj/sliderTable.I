@@ -144,7 +144,7 @@ get_modified() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void SliderTable::
 update_modified(UpdateSeq modified) {
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, true);
   cdata->_modified = modified;
 }
 

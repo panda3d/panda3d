@@ -38,7 +38,7 @@
 //               combinations of transforms and blend amounts used by
 //               a GeomVertexData, to facilitate computing dynamic
 //               vertices on the CPU at runtime.  Each vertex has a
-//               pointer to exactly one of entries in this table,
+//               pointer to exactly one of the entries in this table,
 //               and each entry defines a number of transform/blend
 //               combinations.
 //
@@ -68,9 +68,14 @@ PUBLISHED:
   void write(ostream &out, int indent_level) const;
 
 private:
+  class CData;
+
   void clear_index();
   INLINE void consider_rebuild_index() const;
   void rebuild_index();
+
+  void recompute_modified(CData *cdata);
+  void clear_modified();
 
 private:
   // We don't bother with registering the table, or protecting its
@@ -111,9 +116,6 @@ private:
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
 
-  void recompute_modified(CDWriter &cdata);
-  void clear_modified();
-
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
@@ -131,10 +133,6 @@ public:
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "TransformBlendTable",
                   TypedWritableReferenceCount::get_class_type());
-    // The _palette_type_handle is defined only to support older bam
-    // files, generated before we renamed the type to TransformBlendTable.
-    register_type(_palette_type_handle, "TransformBlendPalette",
-                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -143,7 +141,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-  static TypeHandle _palette_type_handle;
 
   friend class VertexTransform;
 };

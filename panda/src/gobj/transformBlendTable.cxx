@@ -22,7 +22,6 @@
 #include "bamWriter.h"
 
 TypeHandle TransformBlendTable::_type_handle;
-TypeHandle TransformBlendTable::_palette_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformBlendTable::Constructor
@@ -175,7 +174,7 @@ rebuild_index() {
 //               TransformBlend objects, if necessary.
 ////////////////////////////////////////////////////////////////////
 void TransformBlendTable::
-recompute_modified(TransformBlendTable::CDWriter &cdata) {
+recompute_modified(TransformBlendTable::CData *cdata) {
   // Update the global_modified sequence number first, to prevent race
   // conditions.
   cdata->_global_modified = VertexTransform::get_global_modified();
@@ -198,7 +197,7 @@ recompute_modified(TransformBlendTable::CDWriter &cdata) {
 ////////////////////////////////////////////////////////////////////
 void TransformBlendTable::
 clear_modified() {
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, true);
   cdata->_global_modified = UpdateSeq();
   cdata->_modified = UpdateSeq();
 }
@@ -212,7 +211,6 @@ clear_modified() {
 void TransformBlendTable::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
-  BamReader::get_factory()->register_factory(_palette_type_handle, make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
