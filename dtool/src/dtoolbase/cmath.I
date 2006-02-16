@@ -17,10 +17,12 @@
 ////////////////////////////////////////////////////////////////////
 
 #ifdef __APPLE__
+#ifndef isnan
 #define isnan(x) \
   ((sizeof(x) == sizeof(double)) ? \
     __isnand(x) : \
    (sizeof(x) == sizeof(float)) ? __isnanf(x) : __isnan(x))
+#endif
 #endif
 
 #ifdef __INTEL_COMPILER
