@@ -103,7 +103,9 @@ get_geom(Geom::UsageHint usage_hint) const {
   // this behavior to properly count references to this glyph.
   PT(Geom) new_geom = _geom->make_copy();
   new_geom->set_usage_hint(usage_hint);
-  if (new_geom->get_vertex_data()->get_usage_hint() != usage_hint) {
+  const GeomVertexData *vdata = new_geom->get_vertex_data();
+  nassertr(vdata != NULL, new_geom);
+  if (vdata->get_usage_hint() != usage_hint) {
     new_geom->modify_vertex_data()->set_usage_hint(usage_hint);
   }
   return new_geom;

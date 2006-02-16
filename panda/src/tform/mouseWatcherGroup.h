@@ -26,6 +26,7 @@
 #include "referenceCount.h"
 #include "pvector.h"
 #include "nodePath.h"
+#include "pmutex.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MouseWatcherGroup
@@ -59,6 +60,11 @@ PUBLISHED:
 protected:
   typedef pvector< PT(MouseWatcherRegion) > Regions;
   Regions _regions;
+
+  // This mutex protects the above list of regions, as well as the
+  // below list of vizzes.  It is also referenced directly by
+  // MouseWatcher, a derived class.
+  Mutex _lock;
 
 private:
 #ifndef NDEBUG

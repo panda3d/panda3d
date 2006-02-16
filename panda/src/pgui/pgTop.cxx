@@ -34,7 +34,6 @@ PGTop::
 PGTop(const string &name) : 
   PandaNode(name)
 {
-  _watcher_group = (PGMouseWatcherGroup *)NULL;
   _start_sort = 0;
 
   // A PGTop node normally has an infinite bounding volume.  Screw
@@ -107,9 +106,14 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 bool PGTop::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  // Empty our set of regions in preparation for re-adding whichever
-  // ones we encounter in the traversal that are current.
-  clear_regions();
+  // We create a new MouseWatcherGroup for the purposes of collecting
+  // a new set of regions visible onscreen.
+  PT(PGMouseWatcherGroup) old_watcher_group;
+  if (_watcher_group != (PGMouseWatcherGroup *)NULL) {
+    _watcher_group->clear_top(this);
+    old_watcher_group = _watcher_group;
+    _watcher_group = new PGMouseWatcherGroup(this);
+  }
 
   // Now subsitute for the normal CullTraverser a special one of our
   // own choosing.  This just carries around a pointer back to the
@@ -118,6 +122,16 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   PGCullTraverser pg_trav(this, trav);
   pg_trav._sort_index = _start_sort;
   pg_trav.traverse_below(data);
+
+  // Now tell the watcher about the new set of regions.  Strictly
+  // speaking, we shouldn't do this until the frame that we're about
+  // to render has been presented; otherwise, we may make regions
+  // active before they are actually visible.  But no one has
+  // complained about this so far.
+  if (_watcher_group != (PGMouseWatcherGroup *)NULL) {
+    nassertr(_watcher != (MouseWatcher *)NULL, false);
+    _watcher->replace_group(old_watcher_group, _watcher_group);
+  }
 
   // We've taken care of the traversal, thank you.
   return false;
@@ -143,8 +157,6 @@ set_mouse_watcher(MouseWatcher *watcher) {
   _watcher_group = (PGMouseWatcherGroup *)NULL;
 
   if (_watcher != (MouseWatcher *)NULL) {
-    // We create a new PGMouseWatcherGroup, but we don't own the
-    // reference count; the watcher will own this for us.
     _watcher_group = new PGMouseWatcherGroup(this);
     _watcher->add_group(_watcher_group);
   }

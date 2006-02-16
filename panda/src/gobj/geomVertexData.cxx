@@ -67,14 +67,17 @@ GeomVertexData(const string &name,
   set_usage_hint(usage_hint);
 
   // Create some empty arrays as required by the format.
-  CDWriter cdata(_cycler, true);
-
-  int num_arrays = _format->get_num_arrays();
-  for (int i = 0; i < num_arrays; i++) {
-    PT(GeomVertexArrayData) array = new GeomVertexArrayData
-      (_format->get_array(i), usage_hint);
-    cdata->_arrays.push_back(array);
+  // Let's ensure the vertex data gets set on all stages at once.
+  OPEN_ITERATE_ALL_STAGES(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    int num_arrays = _format->get_num_arrays();
+    for (int i = 0; i < num_arrays; i++) {
+      PT(GeomVertexArrayData) array = new GeomVertexArrayData
+        (_format->get_array(i), usage_hint);
+      cdata->_arrays.push_back(array);
+    }
   }
+  CLOSE_ITERATE_ALL_STAGES(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////

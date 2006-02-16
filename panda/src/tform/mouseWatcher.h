@@ -111,6 +111,7 @@ PUBLISHED:
 
   bool add_group(MouseWatcherGroup *group);
   bool remove_group(MouseWatcherGroup *group);
+  bool replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group);
   int get_num_groups() const;
   MouseWatcherGroup *get_group(int n) const;
 
@@ -119,20 +120,21 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
-  typedef pvector< PT(MouseWatcherRegion) > VRegions;
-  void get_over_regions(VRegions &regions, const LPoint2f &pos) const;
-  static MouseWatcherRegion *get_preferred_region(const VRegions &regions);
+  void get_over_regions(Regions &regions, const LPoint2f &pos) const;
+  static MouseWatcherRegion *get_preferred_region(const Regions &regions);
 
-  void set_current_regions(VRegions &regions);
+  void set_current_regions(Regions &regions);
   void clear_current_regions();
-  static void intersect_regions(MouseWatcher::VRegions &result,
-                                const MouseWatcher::VRegions &regions_a,
-                                const MouseWatcher::VRegions &regions_b);
-  static void remove_region_from(MouseWatcher::VRegions &regions,
-                                 MouseWatcherRegion *region);
-  static void remove_regions_from(MouseWatcher::VRegions &regions,
-                                  MouseWatcherGroup *group);
 
+  static void intersect_regions(Regions &only_a,
+                                Regions &only_b,
+                                Regions &both,
+                                const Regions &regions_a,
+                                const Regions &regions_b);
+  static bool remove_region_from(Regions &regions,
+                                 MouseWatcherRegion *region);
+  static bool has_region_in(const Regions &regions,
+                            MouseWatcherRegion *region);
     
   void throw_event_pattern(const string &pattern,
                            const MouseWatcherRegion *region,
@@ -171,7 +173,7 @@ protected:
   LPoint2f _mouse;
   LPoint2f _mouse_pixel;
 
-  VRegions _current_regions;
+  Regions _current_regions;
   PT(MouseWatcherRegion) _preferred_region;
   PT(MouseWatcherRegion) _preferred_button_down_region;
   bool _button_down;

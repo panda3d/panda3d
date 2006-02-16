@@ -19,6 +19,7 @@
 #include "mouseWatcherGroup.h"
 #include "lineSegs.h"
 #include "indent.h"
+#include "mutexHolder.h"
 
 TypeHandle MouseWatcherGroup::_type_handle;
 
@@ -55,6 +56,8 @@ void MouseWatcherGroup::
 add_region(MouseWatcherRegion *region) {
   PT(MouseWatcherRegion) pt = region;
 
+  MutexHolder holder(_lock);
+
   // We will only bother to check for duplicates in the region list if
   // we are building a development Panda.  The overhead for doing this
   // may be too high if we have many regions.
@@ -82,6 +85,8 @@ add_region(MouseWatcherRegion *region) {
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcherGroup::
 has_region(MouseWatcherRegion *region) const {
+  MutexHolder holder(_lock);
+
   // See if the region is in the vector.
   PT(MouseWatcherRegion) pt = region;
   Regions::const_iterator ri = 
@@ -103,6 +108,8 @@ has_region(MouseWatcherRegion *region) const {
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcherGroup::
 remove_region(MouseWatcherRegion *region) {
+  MutexHolder holder(_lock);
+
   // See if the region is in the vector.
   PT(MouseWatcherRegion) pt = region;
   Regions::iterator ri = 
@@ -137,6 +144,8 @@ remove_region(MouseWatcherRegion *region) {
 ////////////////////////////////////////////////////////////////////
 MouseWatcherRegion *MouseWatcherGroup::
 find_region(const string &name) const {
+  MutexHolder holder(_lock);
+
   Regions::const_iterator ri;
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
     MouseWatcherRegion *region = (*ri);
@@ -155,6 +164,8 @@ find_region(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 clear_regions() {
+  MutexHolder holder(_lock);
+
   _regions.clear();
 
 #ifndef NDEBUG
@@ -172,18 +183,26 @@ clear_regions() {
 ////////////////////////////////////////////////////////////////////
 int MouseWatcherGroup::
 get_num_regions() const {
+  MutexHolder holder(_lock);
+
   return _regions.size();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherGroup::get_region
 //       Access: Published
-//  Description: Returns the nth regions in the group.
+//  Description: Returns the nth region of the group; returns NULL if
+//               there is no nth region.  Note that this is not
+//               thread-safe; another thread might have removed the
+//               nth region before you called this method.
 ////////////////////////////////////////////////////////////////////
 MouseWatcherRegion *MouseWatcherGroup::
 get_region(int n) const {
-  nassertr(n >= 0 && n < (int)_regions.size(), NULL);
-  return _regions[n];
+  MutexHolder holder(_lock);
+  if (n >= 0 && n < (int)_regions.size()) {
+    return _regions[n];
+  }
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -203,6 +222,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 write(ostream &out, int indent_level) const {
+  MutexHolder holder(_lock);
+
   Regions::const_iterator ri;
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
     MouseWatcherRegion *region = (*ri);
@@ -221,6 +242,8 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 show_regions(const NodePath &render2d) {
+  MutexHolder holder(_lock);
+
   _show_regions = true;
   _show_regions_root = render2d.attach_new_node("show_regions");
   _show_regions_root.set_bin("unsorted", 0);
@@ -238,6 +261,8 @@ show_regions(const NodePath &render2d) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 set_color(const Colorf &color) {
+  MutexHolder holder(_lock);
+
   _color = color;
   update_regions();
 }
@@ -252,6 +277,8 @@ set_color(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 hide_regions() {
+  MutexHolder holder(_lock);
+
   _show_regions_root.remove_node();
   _show_regions = false;
   _vizzes.clear();
@@ -263,10 +290,12 @@ hide_regions() {
 //     Function: MouseWatcherGroup::update_regions
 //       Access: Private
 //  Description: Internally regenerates the show_regions()
-//               visualization.
+//               visualization.  Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 update_regions() {
+  nassertv(_lock.debug_is_locked());
+
   _show_regions_root.node()->remove_all_children();
   _vizzes.clear();
   _vizzes.reserve(_regions.size());
@@ -284,10 +313,12 @@ update_regions() {
 //       Access: Private
 //  Description: Creates a node to represent the indicated region, and
 //               attaches it to the _show_regions_root.  Does not add
-//               it to _vizzes.
+//               it to _vizzes.  Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 PandaNode *MouseWatcherGroup::
 make_viz_region(MouseWatcherRegion *region) {
+  nassertr(_lock.debug_is_locked(), NULL);
+
   LineSegs ls("show_regions");
   ls.set_color(_color);
 

@@ -72,7 +72,7 @@ public:
 
 private:
   PT(MouseWatcher) _watcher;
-  PGMouseWatcherGroup *_watcher_group;
+  PT(PGMouseWatcherGroup) _watcher_group;
   int _start_sort;
   
 public:

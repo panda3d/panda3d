@@ -37,7 +37,12 @@ TypeHandle Geom::_type_handle;
 ////////////////////////////////////////////////////////////////////
 Geom::
 Geom(const GeomVertexData *data) {
-  set_vertex_data(data);
+  // Let's ensure the vertex data gets set on all stages at once.
+  OPEN_ITERATE_ALL_STAGES(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_data = (GeomVertexData *)data;
+  }
+  CLOSE_ITERATE_ALL_STAGES(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////

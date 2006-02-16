@@ -30,6 +30,7 @@
 #include "displayRegion.h"
 #include "dcast.h"
 #include "indent.h"
+#include "mutexHolder.h"
 
 #include <algorithm>
 
@@ -96,6 +97,8 @@ MouseWatcher::
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcher::
 remove_region(MouseWatcherRegion *region) {
+  MutexHolder holder(_lock);
+
   remove_region_from(_current_regions, region);
   if (region == _preferred_region) {
     _preferred_region = (MouseWatcherRegion *)NULL;
@@ -118,7 +121,9 @@ remove_region(MouseWatcherRegion *region) {
 ////////////////////////////////////////////////////////////////////
 MouseWatcherRegion *MouseWatcher::
 get_over_region(const LPoint2f &pos) const {
-  VRegions regions;
+  MutexHolder holder(_lock);
+
+  Regions regions;
   get_over_regions(regions, pos);
   return get_preferred_region(regions);
 }
@@ -141,7 +146,7 @@ get_over_region(const LPoint2f &pos) const {
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcher::
 add_group(MouseWatcherGroup *group) {
-  // return _groups.insert(group).second;
+  MutexHolder holder(_lock);
 
   // See if the group is in the set/vector already
   PT(MouseWatcherGroup) pt = group;
@@ -167,11 +172,18 @@ add_group(MouseWatcherGroup *group) {
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcher::
 remove_group(MouseWatcherGroup *group) {
-  remove_regions_from(_current_regions, group);
-  if (group->has_region(_preferred_region)) {
+  MutexHolder holder(_lock);
+  MutexHolder holder2(group->_lock);
+
+  Regions only_a, only_b, both;
+  intersect_regions(only_a, only_b, both,
+                    _current_regions, group->_regions);
+  _current_regions.swap(only_a);
+
+  if (has_region_in(both, _preferred_region)) {
     _preferred_region = (MouseWatcherRegion *)NULL;
   }
-  if (group->has_region(_preferred_button_down_region)) {
+  if (has_region_in(both, _preferred_button_down_region)) {
     _preferred_button_down_region = (MouseWatcherRegion *)NULL;
   }
 
@@ -190,6 +202,79 @@ remove_group(MouseWatcherGroup *group) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::replace_group
+//       Access: Published
+//  Description: Atomically removes old_group fom the MouseWatcher,
+//               and replaces it with new_group.  Presumably old_group
+//               and new_group might have some regions in common;
+//               these are handled properly.
+//
+//               If old_group is not already present, simply adds
+//               new_group and returns false.  Otherwise, removes
+//               old_group and adds new_group, and then returns true.
+////////////////////////////////////////////////////////////////////
+bool MouseWatcher::
+replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
+  if (old_group == new_group) {
+    // Trivial.
+    return true;
+  }
+
+  MutexHolder holder(_lock);
+  MutexHolder holder2(old_group->_lock);
+  MutexHolder holder3(new_group->_lock);
+
+  // Figure out the list of regions that change
+  Regions remove, add, keep;
+  intersect_regions(remove, add, keep,
+                    old_group->_regions, new_group->_regions);
+
+  // Remove the old regions
+  if (!remove.empty()) {
+    Regions only_a, only_b, both;
+    intersect_regions(only_a, only_b, both,
+                      _current_regions, remove);
+    _current_regions.swap(only_a);
+
+    if (has_region_in(both, _preferred_region)) {
+      _preferred_region = (MouseWatcherRegion *)NULL;
+    }
+    if (has_region_in(both, _preferred_button_down_region)) {
+      _preferred_button_down_region = (MouseWatcherRegion *)NULL;
+    }
+  }
+
+  // And add the new regions
+  if (!add.empty()) {
+    Regions new_list;
+    intersect_regions(new_list, new_list, new_list,
+                      _current_regions, add);
+    _current_regions.swap(new_list);
+  }
+
+  // Add the new group, if it's not already there.
+  PT(MouseWatcherGroup) pt = new_group;
+  Groups::iterator gi = 
+    find(_groups.begin(), _groups.end(), pt);
+  if (gi == _groups.end()) {
+    _groups.push_back(new_group);
+  }
+    
+  // Remove the old group, if it is already there.
+  pt = old_group;
+  gi = find(_groups.begin(), _groups.end(), pt);
+  if (gi != _groups.end()) {
+    // Found it, now erase it
+    _groups.erase(gi);
+    return true;
+  }
+
+  // Did not find the group to erase
+  return false;
+
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_num_groups
 //       Access: Published
 //  Description: Returns the number of separate groups added to the
@@ -197,6 +282,7 @@ remove_group(MouseWatcherGroup *group) {
 ////////////////////////////////////////////////////////////////////
 int MouseWatcher::
 get_num_groups() const {
+  MutexHolder holder(_lock);
   return _groups.size();
 }
 
@@ -208,6 +294,7 @@ get_num_groups() const {
 ////////////////////////////////////////////////////////////////////
 MouseWatcherGroup *MouseWatcher::
 get_group(int n) const {
+  MutexHolder holder(_lock);
   nassertr(n >= 0 && n < (int)_groups.size(), NULL);
   return _groups[n];
 }
@@ -220,6 +307,7 @@ get_group(int n) const {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 output(ostream &out) const {
+  MutexHolder holder(_lock);
   DataNode::output(out);
 
   int count = _regions.size();
@@ -243,6 +331,7 @@ write(ostream &out, int indent_level) const {
     << "MouseWatcher " << get_name() << ":\n";
   MouseWatcherGroup::write(out, indent_level + 2);
 
+  MutexHolder holder(_lock);
   if (!_groups.empty()) {
     Groups::const_iterator gi;
     for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
@@ -259,10 +348,12 @@ write(ostream &out, int indent_level) const {
 //       Access: Protected
 //  Description: Fills up the "regions" list with the set of regions
 //               that the indicated point is over, sorted in order by
-//               pointer.
+//               pointer.  Assumes the lock is held.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
-get_over_regions(MouseWatcher::VRegions &regions, const LPoint2f &pos) const {
+get_over_regions(MouseWatcher::Regions &regions, const LPoint2f &pos) const {
+  nassertv(_lock.debug_is_locked());
+
   // Ensure the vector is empty before we begin.
   regions.clear();
 
@@ -308,15 +399,16 @@ get_over_regions(MouseWatcher::VRegions &regions, const LPoint2f &pos) const {
 //  Description: Returns the innermost region of all the regions
 //               indicated in the given vector (usually, the regions
 //               the mouse is over).  This is the "preferred" region
-//               that gets some special treatment.
+//               that gets some special treatment.  Assumes the lock
+//               is already held.
 ////////////////////////////////////////////////////////////////////
 MouseWatcherRegion *MouseWatcher::
-get_preferred_region(const MouseWatcher::VRegions &regions) {
+get_preferred_region(const MouseWatcher::Regions &regions) {
   if (regions.empty()) {
     return (MouseWatcherRegion *)NULL;
   }
 
-  VRegions::const_iterator ri;
+  Regions::const_iterator ri;
   ri = regions.begin();
   MouseWatcherRegion *preferred = *ri;
   ++ri;
@@ -339,18 +431,21 @@ get_preferred_region(const MouseWatcher::VRegions &regions) {
 //               mouse to be over--to the indicated list, and throws
 //               whatever events are appropriate because of that.
 //
-//               The list passed in is destroyed.
+//               The list passed in is destroyed.  Assumes the lock is
+//               already held.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
-set_current_regions(MouseWatcher::VRegions &regions) {
+set_current_regions(MouseWatcher::Regions &regions) {
+  nassertv(_lock.debug_is_locked());
+
   // Set up a parameter for passing through any change events.
   MouseWatcherParameter param;
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
 
   // Now do a standard sorted comparison between the two vectors.
-  VRegions::const_iterator new_ri = regions.begin();
-  VRegions::const_iterator old_ri = _current_regions.begin();
+  Regions::const_iterator new_ri = regions.begin();
+  Regions::const_iterator old_ri = _current_regions.begin();
 
   // Queue up all the new regions so we can send the within patterns
   // all at once, after all of the without patterns have been thrown.
@@ -436,17 +531,20 @@ set_current_regions(MouseWatcher::VRegions &regions) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::clear_current_regions
 //       Access: Protected
-//  Description: Empties the set of current regions.
+//  Description: Empties the set of current regions.  Assumes the lock
+//               is already held.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 clear_current_regions() {
+  nassertv(_lock.debug_is_locked());
+
   if (!_current_regions.empty()) {
     // Set up a parameter for passing through any change events.
     MouseWatcherParameter param;
     param.set_modifier_buttons(_mods);
     param.set_mouse(_mouse);
     
-    VRegions::const_iterator old_ri = _current_regions.begin();
+    Regions::const_iterator old_ri = _current_regions.begin();
     
     while (old_ri != _current_regions.end()) {
       // Here's a region we don't have any more.
@@ -469,43 +567,45 @@ clear_current_regions() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::intersect_regions
 //       Access: Protected, Static
-//  Description: Sets result to be the intersection of the list of
-//               regions in regions_a and regions_b.  It is assumed
-//               that both vectors are already sorted in pointer
-//               order.
+//  Description: Computes the list of regions that are in both
+//               regions_a and regions_b, as well as the list of
+//               regions only in regions_a, and the list of regions
+//               only in regions_b.  Any or all of the three output
+//               lists may be the same object, but they must be
+//               different objects from both of the input lists.
+//
+//               It is assumed that both vectors are already sorted in
+//               pointer order.  It is also assumed that any relevant
+//               locks are already held.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
-intersect_regions(MouseWatcher::VRegions &result,
-                  const MouseWatcher::VRegions &regions_a,
-                  const MouseWatcher::VRegions &regions_b) {
-  // Get a temporary vector for storing the result in.  We don't use
-  // result directly, because it might be the same vector as one of a
-  // or b.
-  VRegions temp;
-
+intersect_regions(MouseWatcher::Regions &only_a,
+                  MouseWatcher::Regions &only_b,
+                  MouseWatcher::Regions &both,
+                  const MouseWatcher::Regions &regions_a,
+                  const MouseWatcher::Regions &regions_b) {
   // Now do a standard sorted intersection between the two vectors.
-  VRegions::const_iterator a_ri = regions_a.begin();
-  VRegions::const_iterator b_ri = regions_b.begin();
+  Regions::const_iterator a_ri = regions_a.begin();
+  Regions::const_iterator b_ri = regions_b.begin();
 
   while (a_ri != regions_a.end() && b_ri != regions_b.end()) {
     if ((*a_ri) < (*b_ri)) {
       // Here's a region in a, not in b.
+      only_a.push_back(*a_ri);
       ++a_ri;
 
     } else if ((*b_ri) < (*a_ri)) {
       // Here's a region in b, not in a.
+      only_b.push_back(*b_ri);
       ++b_ri;
 
     } else {
       // Here's a region in both vectors.
-      temp.push_back(*a_ri);
+      both.push_back(*a_ri);
       ++a_ri;
       ++b_ri;
     }
   }
-
-  // Now store the result!
-  result.swap(temp);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -513,58 +613,39 @@ intersect_regions(MouseWatcher::VRegions &result,
 //       Access: Protected, Static
 //  Description: Removes the indicated region from the given vector.
 //               Assumes the vector is sorted in pointer order.
+//               Returns true if removed, false if it wasn't there.
+//               Assumes any relevent locks are already held.
 ////////////////////////////////////////////////////////////////////
-void MouseWatcher::
-remove_region_from(MouseWatcher::VRegions &regions,
+bool MouseWatcher::
+remove_region_from(MouseWatcher::Regions &regions,
                    MouseWatcherRegion *region) {
   PT(MouseWatcherRegion) ptr = region;
-  VRegions::iterator ri = lower_bound(regions.begin(), regions.end(), ptr);
+  Regions::iterator ri = lower_bound(regions.begin(), regions.end(), ptr);
   if (ri != regions.end() && (*ri) == ptr) {
     // The region is in the vector.  Remove it.
     regions.erase(ri);
+    return true;
   }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::remove_regions_from
+//     Function: MouseWatcher::has_region_in
 //       Access: Protected, Static
-//  Description: Removes all the regions in the indicated group from
-//               the given vector.  Assumes the vector is sorted in
-//               pointer order.
+//  Description: Returns true if the indicated region is a member of
+//               the given sorted list, false otherwise.
 ////////////////////////////////////////////////////////////////////
-void MouseWatcher::
-remove_regions_from(MouseWatcher::VRegions &regions,
-                    MouseWatcherGroup *group) {
-  // Since the group stores a set of regions, which are also sorted in
-  // pointer order, we can just do an intersection operation here.
-  VRegions temp;
-
-  VRegions::const_iterator a_ri = regions.begin();
-  MouseWatcherGroup::Regions::const_iterator b_ri = group->_regions.begin();
-
-  while (a_ri != regions.end() && b_ri != group->_regions.end()) {
-    if ((*a_ri) < (*b_ri)) {
-      // Here's a region in the group, not in regions.
-      ++a_ri;
-
-    } else if ((*b_ri) < (*a_ri)) {
-      // Here's a region in regions, not in the group.
-      temp.push_back(*b_ri);
-      ++b_ri;
-
-    } else {
-      // Here's a region in the group and in regions.
-      ++a_ri;
-      ++b_ri;
-    }
-  }
-
-  // Now store the result!
-  regions.swap(temp);
+bool MouseWatcher::
+has_region_in(const MouseWatcher::Regions &regions,
+              MouseWatcherRegion *region) {
+  PT(MouseWatcherRegion) ptr = region;
+  Regions::const_iterator ri = lower_bound(regions.begin(), regions.end(), ptr);
+  return (ri != regions.end() && (*ri) == ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::throw_event_for
+//     Function: MouseWatcher::throw_event_pattern
 //       Access: Protected
 //  Description: Throws an event associated with the indicated region,
 //               using the given pattern.
@@ -629,6 +710,8 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 move() {
+  nassertv(_lock.debug_is_locked());
+
   MouseWatcherParameter param;
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
@@ -646,6 +729,8 @@ move() {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 press(ButtonHandle button) {
+  nassertv(_lock.debug_is_locked());
+
   MouseWatcherParameter param;
   param.set_button(button);
   param.set_modifier_buttons(_mods);
@@ -695,6 +780,8 @@ press(ButtonHandle button) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 release(ButtonHandle button) {
+  nassertv(_lock.debug_is_locked());
+
   MouseWatcherParameter param;
   param.set_button(button);
   param.set_modifier_buttons(_mods);
@@ -738,6 +825,8 @@ release(ButtonHandle button) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 keystroke(int keycode) {
+  nassertv(_lock.debug_is_locked());
+
   MouseWatcherParameter param;
   param.set_keycode(keycode);
   param.set_modifier_buttons(_mods);
@@ -785,6 +874,8 @@ keystroke(int keycode) {
 void MouseWatcher::
 candidate(const wstring &candidate_string, size_t highlight_start, 
           size_t highlight_end, size_t cursor_pos) {
+  nassertv(_lock.debug_is_locked());
+
   MouseWatcherParameter param;
   param.set_candidate(candidate_string, highlight_start, highlight_end, cursor_pos);
   param.set_modifier_buttons(_mods);
@@ -827,6 +918,8 @@ candidate(const wstring &candidate_string, size_t highlight_start,
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 global_keyboard_press(const MouseWatcherParameter &param) {
+  nassertv(_lock.debug_is_locked());
+
   Regions::const_iterator ri;
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
     MouseWatcherRegion *region = (*ri);
@@ -860,6 +953,8 @@ global_keyboard_press(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 global_keyboard_release(const MouseWatcherParameter &param) {
+  nassertv(_lock.debug_is_locked());
+
   Regions::const_iterator ri;
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
     MouseWatcherRegion *region = (*ri);
@@ -886,11 +981,13 @@ global_keyboard_release(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::enter_region
 //       Access: Protected
-//  Description: Called internally to indicate the mouse pointer is no
-//               longer favoring the indicated region.
+//  Description: Called internally to indicate the mouse pointer is 
+//               favoring the indicated region.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 enter_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
+  nassertv(_lock.debug_is_locked());
+
   region->enter(param);
   throw_event_pattern(_enter_pattern, region, ButtonHandle::none());
   if (_implicit_click) {
@@ -908,6 +1005,8 @@ enter_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 exit_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
+  nassertv(_lock.debug_is_locked());
+
   if (_implicit_click) {
     MouseWatcherParameter param1(param);
     param1.set_button(MouseButton::one());
@@ -925,6 +1024,8 @@ exit_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 set_no_mouse() {
+  nassertv(_lock.debug_is_locked());
+
   if (_has_mouse) {
     // Hide the mouse pointer.
     if (!_geometry.is_null()) {
@@ -945,6 +1046,8 @@ set_no_mouse() {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 set_mouse(const LVecBase2f &xy, const LVecBase2f &pixel_xy) {
+  nassertv(_lock.debug_is_locked());
+
   if (!_geometry.is_null()) {
     // Transform the mouse pointer.
     _geometry->set_transform(TransformState::make_pos(LVecBase3f(xy[0], 0, xy[1])));
@@ -958,7 +1061,7 @@ set_mouse(const LVecBase2f &xy, const LVecBase2f &pixel_xy) {
   _mouse = xy;
   _mouse_pixel = pixel_xy;
     
-  VRegions regions;
+  Regions regions;
   get_over_regions(regions, _mouse);
   set_current_regions(regions);
 }
@@ -997,6 +1100,8 @@ consider_keyboard_suppress(const MouseWatcherRegion *region) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
+  MutexHolder holder(_lock);
+
   // Initially, we do not suppress any events to objects below us in
   // the data graph.
   _internal_suppress = 0;

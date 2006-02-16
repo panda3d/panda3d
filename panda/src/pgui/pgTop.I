@@ -102,16 +102,3 @@ add_region(MouseWatcherRegion *region) {
   nassertv(_watcher_group != (PGMouseWatcherGroup *)NULL);
   _watcher_group->add_region(region);
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGTop::clear_regions
-//       Access: Public
-//  Description: Removes all the regions from the group.
-////////////////////////////////////////////////////////////////////
-INLINE void PGTop::
-clear_regions() {
-  if (_watcher_group == (PGMouseWatcherGroup *)NULL) {
-    return;
-  }
-  _watcher_group->clear_regions();
-}

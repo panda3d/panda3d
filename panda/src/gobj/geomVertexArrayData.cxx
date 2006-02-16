@@ -47,7 +47,12 @@ GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
                     GeomVertexArrayData::UsageHint usage_hint) :
   _array_format(array_format)
 {
-  set_usage_hint(usage_hint);
+  OPEN_ITERATE_ALL_STAGES(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_usage_hint = usage_hint;
+  }
+  CLOSE_ITERATE_ALL_STAGES(_cycler);
+
   _endian_reversed = false;
   nassertv(_array_format->is_registered());
 }
