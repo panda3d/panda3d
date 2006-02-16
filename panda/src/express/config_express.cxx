@@ -185,14 +185,18 @@ init_libexpress() {
 
   init_system_type_handles();
 
-  PandaSystem *ps = PandaSystem::get_global_ptr();
-
 #ifdef HAVE_ZLIB
+ {
+  PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("zlib");
+ }
 #endif
 
 #ifdef HAVE_THREADS
+ {
+  PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("threads");
+  }
 #endif
 }
 

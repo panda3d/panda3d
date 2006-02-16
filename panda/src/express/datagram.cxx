@@ -58,7 +58,7 @@ dump_hex(ostream &out) const {
   size_t num_bytes = get_length();
   for (size_t line = 0; line < num_bytes; line += 16) {
     char hex[12];
-    sprintf(hex, "%04x ", line);
+    sprintf(hex, "%04x ", ((unsigned int )line));
     out << hex;
 
     size_t p;
