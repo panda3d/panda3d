@@ -565,7 +565,7 @@ set_size_and_recalc(int x, int y) {
   for (dri = _total_display_regions.begin();
        dri != _total_display_regions.end();
        ++dri) {
-    (*dri)->compute_pixels(x,y);
+    (*dri)->compute_pixels_all_stages(x, y);
   }
 
   if (_texture_card != 0) {

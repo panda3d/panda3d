@@ -36,7 +36,7 @@ DisplayRegion(GraphicsOutput *window) :
   _window(window)
 {
   _draw_buffer_type = window->get_draw_buffer_type();
-  compute_pixels();
+  compute_pixels_all_stages();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,6 +50,7 @@ DisplayRegion(GraphicsOutput *window, float l, float r, float b, float t) :
 {
   _draw_buffer_type = window->get_draw_buffer_type();
   set_dimensions(l, r, b, t);
+  compute_pixels_all_stages();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -335,6 +336,28 @@ compute_pixels() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::compute_pixels_all_stages
+//       Access: Published
+//  Description: Computes the pixel locations of the DisplayRegion
+//               within its window.  The DisplayRegion will request
+//               the size from the window.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+compute_pixels_all_stages() {
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage == 0);
+
+  if (_window != (GraphicsOutput *)NULL) {
+    OPEN_ITERATE_ALL_STAGES(_cycler) {
+      CDStageWriter cdata(_cycler, pipeline_stage);
+      do_compute_pixels(_window->get_x_size(), _window->get_y_size(), 
+                        cdata);
+    }
+    CLOSE_ITERATE_ALL_STAGES(_cycler);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::compute_pixels
 //       Access: Published
 //  Description: Computes the pixel locations of the DisplayRegion
@@ -347,6 +370,24 @@ compute_pixels(int x_size, int y_size) {
   nassertv(pipeline_stage == 0);
   CDWriter cdata(_cycler);
   do_compute_pixels(x_size, y_size, cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::compute_pixels_all_stages
+//       Access: Published
+//  Description: Performs a compute_pixels() operation for all stages
+//               of the pipeline.  This is appropriate, for instance,
+//               when a window changes sizes, since this is a global
+//               operation; and you want the new window size to be
+//               immediately available even to the downstream stages.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+compute_pixels_all_stages(int x_size, int y_size) {
+  OPEN_ITERATE_ALL_STAGES(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    do_compute_pixels(x_size, y_size, cdata);
+  } 
+  CLOSE_ITERATE_ALL_STAGES(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -640,6 +681,8 @@ do_compute_pixels(int x_size, int y_size, CData *cdata) {
 DisplayRegion::CData::
 CData() :
   _l(0.), _r(1.), _b(0.), _t(1.),
+  _pl(0), _pr(0), _pb(0), _pt(0),
+  _pbi(0), _pti(0),
   _camera_node((Camera *)NULL),
   _active(true),
   _sort(0),

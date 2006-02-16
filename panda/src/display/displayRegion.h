@@ -30,6 +30,7 @@
 #include "cycleData.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
+#include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
 #include "config_display.h"
 
@@ -91,7 +92,9 @@ PUBLISHED:
   INLINE int get_cube_map_index() const;
 
   void compute_pixels();
+  void compute_pixels_all_stages();
   void compute_pixels(int x_size, int y_size);
+  void compute_pixels_all_stages(int x_size, int y_size);
   void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
   void get_region_pixels(int &xo, int &yo, int &w, int &h) const;
   void get_region_pixels_i(int &xo, int &yo, int &w, int &h) const;
@@ -158,6 +161,7 @@ private:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataWriter<CData> CDStageWriter;
 
   // This is a special cycler created to hold the results from the
   // cull traversal, for (a) the draw traversal, and (b) the next
