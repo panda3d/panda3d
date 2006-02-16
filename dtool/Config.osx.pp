@@ -8,7 +8,7 @@
 
 // What additional flags should we pass to interrogate?
 #define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const
-
+#define HAVE_GL 1
 #define IS_OSX 1
 
 // Is the platform big-endian (like an SGI workstation) or
