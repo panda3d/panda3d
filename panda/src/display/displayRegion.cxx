@@ -75,7 +75,7 @@ operator = (const DisplayRegion&) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::Destructor
-//       Access: Public
+//       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
@@ -305,14 +305,60 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 set_sort(int sort) {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  nassertv(pipeline_stage == 0);
+  nassertv(Thread::get_current_pipeline_stage() == 0);
   CDReader cdata(_cycler);
 
   if (sort != cdata->_sort) {
     CDWriter cdataw(_cycler, cdata);
     cdataw->_sort = sort;
     win_display_regions_changed();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_stereo_channel
+//       Access: Published
+//  Description: Specifies whether the DisplayRegion represents the
+//               left or right channel of a stereo pair, or whether it
+//               is a normal, monocular image.  See
+//               set_stereo_channel().
+//
+//               This controls which direction--to the left or the
+//               right--the view from a PerspectiveLens is shifted
+//               when it is used to render into this DisplayRegion.
+//               Also see Lens::set_interocular_distance() and
+//               Lens::set_convergence_distance().
+//
+//               Normally you would create at least two DisplayRegions
+//               for a stereo window, one for each of the left and
+//               right channels.  The two DisplayRegions may share the
+//               same camera (and thus the same lens); this parameter
+//               is used to control the exact properties of the lens
+//               when it is used to render into this DisplayRegion.
+//
+//               When the DisplayRegion is attached to a stereo window
+//               (one in which FrameBufferProperties::FM_stereo is
+//               set), this also specifies which physical channel the
+//               DisplayRegion renders to.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+set_stereo_channel(Lens::StereoChannel stereo_channel) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+
+  CDWriter cdata(_cycler);
+  cdata->_stereo_channel = stereo_channel;
+  switch (stereo_channel) {
+  case Lens::SC_left:
+    cdata->_draw_buffer_mask = ~(RenderBuffer::T_front_right | RenderBuffer::T_back_right);
+    break;
+
+  case Lens::SC_right:
+    cdata->_draw_buffer_mask = ~(RenderBuffer::T_front_left | RenderBuffer::T_back_left);
+    break;
+
+  case Lens::SC_both:
+    cdata->_draw_buffer_mask = ~0;
+    break;
   }
 }
 
@@ -625,6 +671,33 @@ get_screenshot(PNMImage &image) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_screenshot_buffer_type
+//       Access: Public, Virtual
+//  Description: Returns the RenderBuffer that should be used for
+//               capturing screenshots from this particular
+//               DrawableRegion.
+////////////////////////////////////////////////////////////////////
+int DisplayRegion::
+get_screenshot_buffer_type() const {
+  CDReader cdata(_cycler);
+  return _screenshot_buffer_type & cdata->_draw_buffer_mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_draw_buffer_type
+//       Access: Public, Virtual
+//  Description: Returns the RenderBuffer into which the GSG should
+//               issue draw commands.  Normally, this is the back
+//               buffer for double-buffered windows, and the front
+//               buffer for single-buffered windows.
+////////////////////////////////////////////////////////////////////
+int DisplayRegion::
+get_draw_buffer_type() const {
+  CDReader cdata(_cycler);
+  return _draw_buffer_type & cdata->_draw_buffer_mask;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::win_display_regions_changed
 //       Access: Private
 //  Description: Intended to be called when the active state on a
@@ -686,6 +759,8 @@ CData() :
   _camera_node((Camera *)NULL),
   _active(true),
   _sort(0),
+  _stereo_channel(Lens::SC_both),
+  _draw_buffer_mask(~0),
   _cube_map_index(-1)
 {
 }
@@ -711,6 +786,8 @@ CData(const DisplayRegion::CData &copy) :
   _camera_node(copy._camera_node),
   _active(copy._active),
   _sort(copy._sort),
+  _stereo_channel(copy._stereo_channel),
+  _draw_buffer_mask(copy._draw_buffer_mask),
   _cube_map_index(copy._cube_map_index)
 {
 }

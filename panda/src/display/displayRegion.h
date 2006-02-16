@@ -33,6 +33,7 @@
 #include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
 #include "config_display.h"
+#include "lens.h"
 
 #include "plist.h"
 
@@ -63,7 +64,7 @@ private:
   void operator = (const DisplayRegion &copy);
 
 public:
-  ~DisplayRegion();
+  virtual ~DisplayRegion();
   void cleanup();
 
   INLINE bool operator < (const DisplayRegion &other) const;
@@ -87,6 +88,9 @@ PUBLISHED:
 
   void set_sort(int sort);
   INLINE int get_sort() const;
+
+  void set_stereo_channel(Lens::StereoChannel stereo_channel);
+  INLINE Lens::StereoChannel get_stereo_channel();
 
   INLINE void set_cube_map_index(int cube_map_index);
   INLINE int get_cube_map_index() const;
@@ -113,6 +117,9 @@ public:
   INLINE void set_cull_result(CullResult *cull_result, SceneSetup *scene_setup);
   INLINE CullResult *get_cull_result() const;
   INLINE SceneSetup *get_scene_setup() const;
+
+  virtual int get_screenshot_buffer_type() const;
+  virtual int get_draw_buffer_type() const;
 
 private:
   class CData;
@@ -155,6 +162,8 @@ private:
     
     bool _active;
     int _sort;
+    Lens::StereoChannel _stereo_channel;
+    int _draw_buffer_mask;
     int _cube_map_index;
   };
 

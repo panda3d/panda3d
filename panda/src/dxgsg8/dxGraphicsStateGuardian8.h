@@ -67,7 +67,7 @@ public:
   virtual void do_clear(const RenderBuffer &buffer);
 
   virtual void prepare_display_region();
-  virtual bool prepare_lens();
+  virtual bool prepare_lens(Lens::StereoChannel stereo_channel);
 
   virtual bool begin_frame();
   virtual bool begin_scene();

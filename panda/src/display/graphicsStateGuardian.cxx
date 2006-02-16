@@ -625,7 +625,7 @@ clear(DrawableRegion *clearable) {
 //               false if it is not.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-prepare_lens() {
+prepare_lens(Lens::StereoChannel stereo_channel) {
   return false;
 }
 

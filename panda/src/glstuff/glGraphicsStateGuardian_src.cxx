@@ -794,6 +794,7 @@ reset() {
     GLP(Disable)(GL_MULTISAMPLE);
   }
 
+  _stereo = ((get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_stereo) != 0);
 
   // Set up all the enabled/disabled flags to GL's known initial
   // values: everything off.
@@ -984,6 +985,7 @@ prepare_display_region() {
     GLsizei width = GLsizei(w);
     GLsizei height = GLsizei(h);
 
+    set_draw_buffer(get_render_buffer(_actual_display_region->get_draw_buffer_type()));
     enable_scissor(true);
     GLP(Scissor)(x, y, width, height);
     GLP(Viewport)(x, y, width, height);
@@ -1006,7 +1008,7 @@ prepare_display_region() {
 //               false if it is not.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-prepare_lens() {
+prepare_lens(Lens::StereoChannel stereo_channel) {
   if (_current_lens == (Lens *)NULL) {
     return false;
   }
@@ -1015,7 +1017,7 @@ prepare_lens() {
     return false;
   }
 
-  const LMatrix4f &lens_mat = _current_lens->get_projection_mat();
+  const LMatrix4f &lens_mat = _current_lens->get_projection_mat(stereo_channel);
 
   // The projection matrix must always be right-handed Y-up, even if
   // our coordinate system of choice is otherwise, because certain GL
@@ -3732,19 +3734,35 @@ set_draw_buffer(const RenderBuffer &rb) {
     break;
 
   case RenderBuffer::T_front_right:
-    GLP(DrawBuffer)(GL_FRONT_RIGHT);
+    if (_stereo) {
+      GLP(DrawBuffer)(GL_FRONT_RIGHT);
+    } else {
+      GLP(DrawBuffer)(GL_FRONT);
+    }
     break;
 
   case RenderBuffer::T_front_left:
-    GLP(DrawBuffer)(GL_FRONT_LEFT);
+    if (_stereo) {
+      GLP(DrawBuffer)(GL_FRONT_LEFT);
+    } else {
+      GLP(DrawBuffer)(GL_FRONT);
+    }
     break;
 
   case RenderBuffer::T_back_right:
-    GLP(DrawBuffer)(GL_BACK_RIGHT);
+    if (_stereo) {
+      GLP(DrawBuffer)(GL_BACK_RIGHT);
+    } else {
+      GLP(DrawBuffer)(GL_BACK);
+    }
     break;
 
   case RenderBuffer::T_back_left:
-    GLP(DrawBuffer)(GL_BACK_LEFT);
+    if (_stereo) {
+      GLP(DrawBuffer)(GL_BACK_LEFT);
+    } else {
+      GLP(DrawBuffer)(GL_BACK);
+    }
     break;
 
   default:

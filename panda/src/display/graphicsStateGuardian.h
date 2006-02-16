@@ -25,7 +25,7 @@
 #include "displayRegionStack.h"
 #include "lensStack.h"
 #include "preparedGraphicsObjects.h"
-
+#include "lens.h"
 #include "graphicsStateGuardianBase.h"
 #include "graphicsThreadingModel.h"
 #include "graphicsPipe.h"
@@ -161,7 +161,7 @@ public:
   INLINE void clear(DisplayRegion *dr);
 
   virtual void prepare_display_region()=0;
-  virtual bool prepare_lens();
+  virtual bool prepare_lens(Lens::StereoChannel stereo_channel);
 
   INLINE int force_normals();
   INLINE int undo_force_normals();

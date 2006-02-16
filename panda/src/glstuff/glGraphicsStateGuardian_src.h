@@ -78,7 +78,7 @@ public:
   virtual void do_clear(const RenderBuffer &buffer);
 
   virtual void prepare_display_region();
-  virtual bool prepare_lens();
+  virtual bool prepare_lens(Lens::StereoChannel stereo_channel);
 
   virtual bool begin_frame();
   virtual void end_frame();
@@ -281,6 +281,8 @@ protected:
     MM_alpha_one  = 0x0002,
     MM_alpha_mask = 0x0004,
   };
+
+  bool _stereo;
 
   int _multisample_mode;
   bool _line_smooth_enabled;

@@ -38,6 +38,7 @@ public:
   INLINE DrawableRegion();
   INLINE DrawableRegion(const DrawableRegion &copy);
   INLINE void operator = (const DrawableRegion &copy);
+  virtual ~DrawableRegion();
 
   INLINE void copy_clear_settings(const DrawableRegion &copy);
 
@@ -57,8 +58,8 @@ PUBLISHED:
   INLINE bool is_any_clear_active() const;
 
 public:
-  INLINE int get_screenshot_buffer_type() const;
-  INLINE int get_draw_buffer_type() const;
+  virtual int get_screenshot_buffer_type() const;
+  virtual int get_draw_buffer_type() const;
 
 protected:
   int _screenshot_buffer_type;

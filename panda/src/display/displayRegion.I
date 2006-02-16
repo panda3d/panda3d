@@ -53,6 +53,20 @@ get_sort() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_stereo_channel
+//       Access: Published
+//  Description: Returns whether the DisplayRegion is specified as the
+//               left or right channel of a stereo pair, or whether it
+//               is a normal, monocular image.  See
+//               set_stereo_channel().
+////////////////////////////////////////////////////////////////////
+INLINE Lens::StereoChannel DisplayRegion::
+get_stereo_channel() {
+  CDReader cdata(_cycler);
+  return cdata->_stereo_channel;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_cube_map_index
 //       Access: Published
 //  Description: This is a special parameter that is only used when

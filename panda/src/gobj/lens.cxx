@@ -66,6 +66,13 @@ operator = (const Lens &copy) {
   _aspect_ratio = copy._aspect_ratio;
   _near_distance = copy._near_distance;
   _far_distance = copy._far_distance;
+
+  _view_hpr = copy._view_hpr;
+  _view_vector = copy._view_vector;
+  _interocular_distance = copy._interocular_distance;
+  _convergence_distance = copy._convergence_distance;
+  _keystone = copy._keystone;
+
   _user_flags = copy._user_flags;
   _comp_flags = 0;
 
@@ -105,7 +112,8 @@ clear() {
   _view_hpr.set(0.0f, 0.0f, 0.0f);
   _view_vector.set(0.0f, 1.0f, 0.0f);
   _up_vector.set(0.0f, 0.0f, 1.0f);
-  _iod_offset = 0.0f;
+  _interocular_distance = 0.0f;
+  _convergence_distance = 0.0f;
   _keystone.set(0.0f, 0.0f);
 
   _user_flags = 0;
@@ -432,7 +440,7 @@ set_view_hpr(const LVecBase3f &view_hpr) {
   _view_hpr = view_hpr;
   adjust_user_flags(UF_view_vector | UF_view_mat,
                     UF_view_hpr);
-  adjust_comp_flags(CF_mat | CF_view_vector | CF_iod_offset,
+  adjust_comp_flags(CF_mat | CF_view_vector,
                     CF_view_hpr);
   throw_change_event();
 }
@@ -465,7 +473,7 @@ set_view_vector(const LVector3f &view_vector, const LVector3f &up_vector) {
   _up_vector = up_vector;
   adjust_user_flags(UF_view_hpr | UF_view_mat,
                     UF_view_vector);
-  adjust_comp_flags(CF_mat | CF_view_hpr | CF_iod_offset,
+  adjust_comp_flags(CF_mat | CF_view_hpr,
                     CF_view_vector);
   throw_change_event();
 }
@@ -509,39 +517,71 @@ get_nodal_point() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Lens::set_iod_offset
+//     Function: Lens::set_interocular_distance
 //       Access: Published
-//  Description: Sets the amount by which the lens is shifted to the
-//               right, perpendicular to its view vector and up
-//               vector.  This is normally used to shift one or both
-//               lens of a stereo camera to generate parallax.  You
-//               can also simply set a complete transformation matrix
-//               (via set_view_mat()) that includes an arbitrary
-//               translation.
+//  Description: Sets the distance between the left and right eyes of
+//               a stereo camera.  This distance is used to apply a
+//               stereo effect when the lens is rendered on a stereo
+//               display region.  It only has an effect on a
+//               PerspectiveLens.
+//
+//               Also see set_interocular_distance(), which relates.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_iod_offset(float iod_offset) {
-  _iod_offset = iod_offset;
-  adjust_user_flags(UF_view_mat,
-                    UF_iod_offset);
-  adjust_comp_flags(CF_mat | CF_view_hpr | CF_view_vector,
-                    CF_iod_offset);
+set_interocular_distance(float interocular_distance) {
+  _interocular_distance = interocular_distance;
+  if (_interocular_distance == 0.0f) {
+    adjust_user_flags(UF_interocular_distance, 0);
+  } else {
+    adjust_user_flags(0, UF_interocular_distance);
+  }
+
+  adjust_comp_flags(CF_mat, 0);
   throw_change_event();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_iod_offset
+//     Function: Lens::get_interocular_distance
 //       Access: Published
-//  Description: Returns the aspect ratio of the Lens.  This is
-//               determined based on the indicated film size; see
-//               set_film_size().
+//  Description: See set_interocular_distance().
 ////////////////////////////////////////////////////////////////////
 float Lens::
-get_iod_offset() const {
-  if ((_comp_flags & CF_iod_offset) == 0) {
-    ((Lens *)this)->compute_iod_offset();
+get_interocular_distance() const {
+  return _interocular_distance;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_convergence_distance
+//       Access: Published
+//  Description: Sets the distance between the left and right eyes of
+//               a stereo camera.  This distance is used to apply a
+//               stereo effect when the lens is rendered on a stereo
+//               display region.  It only has an effect on a
+//               PerspectiveLens.
+//
+//               Also see set_interocular_distance(), which relates.
+////////////////////////////////////////////////////////////////////
+void Lens::
+set_convergence_distance(float convergence_distance) {
+  _convergence_distance = convergence_distance;
+  if (_convergence_distance == 0.0f) {
+    adjust_user_flags(UF_convergence_distance, 0);
+  } else {
+    adjust_user_flags(0, UF_convergence_distance);
   }
-  return _iod_offset;
+
+  adjust_comp_flags(CF_mat, 0);
+  throw_change_event();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_convergence_distance
+//       Access: Published
+//  Description: See set_convergence_distance().
+////////////////////////////////////////////////////////////////////
+float Lens::
+get_convergence_distance() const {
+  return _convergence_distance;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -549,7 +589,7 @@ get_iod_offset() const {
 //       Access: Published
 //  Description: Sets an arbitrary transformation on the lens.  This
 //               replaces the individual transformation components
-//               like set_view_hpr() or set_iod_offset().
+//               like set_view_hpr().
 //
 //               Setting a transformation here will have a slightly
 //               different effect than putting one on the LensNode
@@ -562,9 +602,11 @@ get_iod_offset() const {
 void Lens::
 set_view_mat(const LMatrix4f &view_mat) {
   _lens_mat = view_mat;
-  adjust_user_flags(UF_view_vector | UF_view_hpr | UF_iod_offset,
+  adjust_user_flags(UF_view_vector | UF_view_hpr,
                     UF_view_mat);
-  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | CF_lens_mat_inv | CF_view_hpr | CF_view_vector | CF_iod_offset,
+  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | 
+                    CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
+                    CF_lens_mat_inv | CF_view_hpr | CF_view_vector,
                     CF_lens_mat);
   throw_change_event();
 }
@@ -590,8 +632,10 @@ get_view_mat() const {
 void Lens::
 clear_view_mat() {
   _lens_mat = LMatrix4f::ident_mat();
-  adjust_user_flags(0, UF_view_vector | UF_view_hpr | UF_iod_offset | UF_view_mat);
-  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | CF_lens_mat_inv | CF_view_hpr | CF_view_vector | CF_iod_offset,
+  adjust_user_flags(0, UF_view_vector | UF_view_hpr | UF_view_mat);
+  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | 
+                    CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
+                    CF_lens_mat_inv | CF_view_hpr | CF_view_vector,
                     CF_lens_mat);
   throw_change_event();
 }
@@ -617,7 +661,9 @@ void Lens::
 set_keystone(const LVecBase2f &keystone) {
   _keystone = keystone;
   adjust_user_flags(0, UF_keystone);
-  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | CF_film_mat | CF_film_mat_inv, 0);
+  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv |
+                    CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
+                    CF_film_mat | CF_film_mat_inv, 0);
   throw_change_event();
 }
 
@@ -630,7 +676,9 @@ void Lens::
 clear_keystone() {
   _keystone.set(0.0f, 0.0f);
   adjust_user_flags(UF_keystone, 0);
-  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | CF_film_mat | CF_film_mat_inv, 0);
+  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | 
+                    CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
+                    CF_film_mat | CF_film_mat_inv, 0);
   throw_change_event();
 }
 
@@ -642,9 +690,9 @@ clear_keystone() {
 //               PerspectiveLens, but it may be called for other kinds
 //               of lenses as well.
 //
-//               The frustum will be rooted at the origin (or offset
-//               by iod_offset, or by whatever translation might have
-//               been specified in a previous call to set_view_mat).
+//               The frustum will be rooted at the origin (or by
+//               whatever translation might have been specified in a
+//               previous call to set_view_mat).
 //
 //               It is legal for the four points not to be arranged in
 //               a rectangle; if this is the case, the frustum will be
@@ -699,8 +747,7 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
                          int flags) {
   // We'll need to know the pre-existing eyepoint translation from the
   // center, so we can preserve it in the new frustum.  This is
-  // usually just a shift along the x axis, if anything at all, for
-  // the iod offset, but it could be an arbitrary vector.
+  // usually (0, 0, 0), but it could be an arbitrary vector.
   const LMatrix4f &lens_mat_inv = get_lens_mat_inv();
   LVector3f eye_offset;
   lens_mat_inv.get_row3(eye_offset, 3);
@@ -1018,22 +1065,59 @@ make_bounds() const {
 //               nonlinear.
 ////////////////////////////////////////////////////////////////////
 const LMatrix4f &Lens::
-get_projection_mat() const {
+get_projection_mat(StereoChannel channel) const {
   if ((_comp_flags & CF_projection_mat) == 0) {
     ((Lens *)this)->compute_projection_mat();
   }
+
+  switch (channel) {
+  case SC_left:
+    return _projection_mat_left;
+  case SC_right:
+    return _projection_mat_right;
+  case SC_both:
+    return _projection_mat;
+  }
+
   return _projection_mat;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::get_projection_mat_inv
-//       Access: Public
+//       Access: Published
 //  Description: Returns the matrix that transforms from a 2-d point
 //               on the film to a 3-d vector in space, if such a
 //               matrix exists.
 ////////////////////////////////////////////////////////////////////
 const LMatrix4f &Lens::
-get_projection_mat_inv() const {
+get_projection_mat_inv(StereoChannel stereo_channel) const {
+  switch (stereo_channel) {
+  case SC_left:
+    {
+      if ((_comp_flags & CF_projection_mat_left_inv) == 0) {
+        Lens *non_const = (Lens *)this;
+        const LMatrix4f &projection_mat_left = get_projection_mat(SC_left);
+        non_const->_projection_mat_left_inv.invert_from(projection_mat_left);
+        non_const->adjust_comp_flags(0, CF_projection_mat_left_inv);
+      }
+    }
+    return _projection_mat_left_inv;
+
+  case SC_right:
+    {
+      if ((_comp_flags & CF_projection_mat_right_inv) == 0) {
+        Lens *non_const = (Lens *)this;
+        const LMatrix4f &projection_mat_right = get_projection_mat(SC_right);
+        non_const->_projection_mat_right_inv.invert_from(projection_mat_right);
+        non_const->adjust_comp_flags(0, CF_projection_mat_right_inv);
+      }
+    }
+    return _projection_mat_right_inv;
+
+  case SC_both:
+    break;
+  }
+
   if ((_comp_flags & CF_projection_mat_inv) == 0) {
     Lens *non_const = (Lens *)this;
     const LMatrix4f &projection_mat = get_projection_mat();
@@ -1041,6 +1125,68 @@ get_projection_mat_inv() const {
     non_const->adjust_comp_flags(0, CF_projection_mat_inv);
   }
   return _projection_mat_inv;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_film_mat
+//       Access: Published
+//  Description: Returns the matrix that transforms from a point
+//               behind the lens to a point on the film.
+////////////////////////////////////////////////////////////////////
+const LMatrix4f &Lens::
+get_film_mat() const {
+  if ((_comp_flags & CF_film_mat) == 0) {
+    ((Lens *)this)->compute_film_mat();
+  }
+  return _film_mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_film_mat_inv
+//       Access: Published
+//  Description: Returns the matrix that transforms from a point on
+//               the film to a point behind the lens.
+////////////////////////////////////////////////////////////////////
+const LMatrix4f &Lens::
+get_film_mat_inv() const {
+  if ((_comp_flags & CF_film_mat_inv) == 0) {
+    Lens *non_const = (Lens *)this;
+    const LMatrix4f &film_mat = get_film_mat();
+    non_const->_film_mat_inv.invert_from(film_mat);
+    non_const->adjust_comp_flags(0, CF_film_mat_inv);
+  }
+  return _film_mat_inv;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_lens_mat
+//       Access: Published
+//  Description: Returns the matrix that transforms from a point
+//               in front of the lens to a point in space.
+////////////////////////////////////////////////////////////////////
+const LMatrix4f &Lens::
+get_lens_mat() const {
+  if ((_comp_flags & CF_lens_mat) == 0) {
+    ((Lens *)this)->compute_lens_mat();
+  }
+  return _lens_mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_lens_mat_inv
+//       Access: Published
+//  Description: Returns the matrix that transforms from a point in
+//               space to a point in front of the lens.
+////////////////////////////////////////////////////////////////////
+const LMatrix4f &Lens::
+get_lens_mat_inv() const {
+  if ((_comp_flags & CF_lens_mat_inv) == 0) {
+    Lens *non_const = (Lens *)this;
+    const LMatrix4f &lens_mat = get_lens_mat();
+    non_const->_lens_mat_inv.invert_from(lens_mat);
+    non_const->adjust_comp_flags(0, CF_lens_mat_inv);
+  }
+  return _lens_mat_inv;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1089,68 +1235,6 @@ throw_change_event() {
       define_geom_data();
     }
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_film_mat
-//       Access: Protected
-//  Description: Returns the matrix that transforms from a point
-//               behind the lens to a point on the film.
-////////////////////////////////////////////////////////////////////
-const LMatrix4f &Lens::
-get_film_mat() const {
-  if ((_comp_flags & CF_film_mat) == 0) {
-    ((Lens *)this)->compute_film_mat();
-  }
-  return _film_mat;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_film_mat_inv
-//       Access: Protected
-//  Description: Returns the matrix that transforms from a point on
-//               the film to a point behind the lens.
-////////////////////////////////////////////////////////////////////
-const LMatrix4f &Lens::
-get_film_mat_inv() const {
-  if ((_comp_flags & CF_film_mat_inv) == 0) {
-    Lens *non_const = (Lens *)this;
-    const LMatrix4f &film_mat = get_film_mat();
-    non_const->_film_mat_inv.invert_from(film_mat);
-    non_const->adjust_comp_flags(0, CF_film_mat_inv);
-  }
-  return _film_mat_inv;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_lens_mat
-//       Access: Protected
-//  Description: Returns the matrix that transforms from a point
-//               in front of the lens to a point in space.
-////////////////////////////////////////////////////////////////////
-const LMatrix4f &Lens::
-get_lens_mat() const {
-  if ((_comp_flags & CF_lens_mat) == 0) {
-    ((Lens *)this)->compute_lens_mat();
-  }
-  return _lens_mat;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_lens_mat_inv
-//       Access: Protected
-//  Description: Returns the matrix that transforms from a point in
-//               space to a point in front of the lens.
-////////////////////////////////////////////////////////////////////
-const LMatrix4f &Lens::
-get_lens_mat_inv() const {
-  if ((_comp_flags & CF_lens_mat_inv) == 0) {
-    Lens *non_const = (Lens *)this;
-    const LMatrix4f &lens_mat = get_lens_mat();
-    non_const->_lens_mat_inv.invert_from(lens_mat);
-    non_const->adjust_comp_flags(0, CF_lens_mat_inv);
-  }
-  return _lens_mat_inv;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1412,23 +1496,6 @@ compute_view_vector() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Lens::compute_iod_offset
-//       Access: Protected, Virtual
-//  Description: Computes the IOD offset: the translation along the
-//               "right" axis.
-////////////////////////////////////////////////////////////////////
-void Lens::
-compute_iod_offset() {
-  if ((_user_flags & UF_iod_offset) == 0) {
-    const LMatrix4f &lens_mat_inv = get_lens_mat_inv();
-    LVector3f translate;
-    lens_mat_inv.get_row3(translate, 3);
-    _iod_offset = -translate.dot(LVector3f::right(_cs));
-  }
-  adjust_comp_flags(0, CF_iod_offset);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Lens::compute_projection_mat
 //       Access: Protected, Virtual
 //  Description: Computes the complete transformation matrix from 3-d
@@ -1436,9 +1503,15 @@ compute_iod_offset() {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 compute_projection_mat() {
-  _projection_mat = LMatrix4f::ident_mat();
-  _projection_mat_inv = _projection_mat;
-  adjust_comp_flags(0, CF_projection_mat | CF_projection_mat_inv);
+  _projection_mat = 
+    _projection_mat_left = 
+    _projection_mat_right =
+    _projection_mat_inv = 
+    _projection_mat_left_inv = 
+    _projection_mat_right_inv = 
+    LMatrix4f::ident_mat();
+  adjust_comp_flags(0, CF_projection_mat | CF_projection_mat_inv |
+                    CF_projection_mat_left_inv |CF_projection_mat_right_inv);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1497,11 +1570,6 @@ compute_lens_mat() {
 
     } else {
       _lens_mat = LMatrix4f::ident_mat();
-    }
-
-    if ((_user_flags & UF_iod_offset) != 0) {
-      LVector3f iod_vector = _iod_offset * LVector3f::right(_cs);
-      _lens_mat = LMatrix4f::translate_mat(iod_vector) * _lens_mat;
     }
   }
   adjust_comp_flags(CF_lens_mat_inv,

@@ -76,8 +76,8 @@ compute_projection_mat() {
   float a = (fFar + fNear);
   float b = -2.0f * fFar * fNear;
 
-  a/=far_minus_near;
-  b/=far_minus_near;
+  a /= far_minus_near;
+  b /= far_minus_near;
 
   LMatrix4f canonical;
   switch (cs) {
@@ -115,9 +115,29 @@ compute_projection_mat() {
     canonical = LMatrix4f::ident_mat();
   }
 
-
   _projection_mat = get_lens_mat_inv() * canonical * get_film_mat();
-  adjust_comp_flags(CF_projection_mat_inv, 
+
+  if ((_user_flags & UF_interocular_distance) == 0) {
+    _projection_mat_left = _projection_mat_right = _projection_mat;
+
+  } else {
+    // Compute the left and right projection matrices in case this
+    // lens is assigned to a stereo DisplayRegion.
+
+    LVector3f iod = _interocular_distance * 0.5f * LVector3f::left(_cs);
+    _projection_mat_left = get_lens_mat_inv() * LMatrix4f::translate_mat(-iod) * canonical * get_film_mat();
+    _projection_mat_right = get_lens_mat_inv() * LMatrix4f::translate_mat(iod) * canonical * get_film_mat();
+    
+    if (_user_flags & UF_convergence_distance) {
+      nassertv(_convergence_distance != 0.0f);
+      LVector3f cd = (0.25f / _convergence_distance) * LVector3f::left(_cs);
+      _projection_mat_left *= LMatrix4f::translate_mat(cd);
+      _projection_mat_right *= LMatrix4f::translate_mat(-cd);
+    }
+  }
+
+  adjust_comp_flags(CF_projection_mat_inv | CF_projection_mat_left_inv | 
+                    CF_projection_mat_right_inv,
                     CF_projection_mat);
 }
 

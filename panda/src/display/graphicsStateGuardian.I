@@ -574,7 +574,7 @@ set_scene(SceneSetup *scene_setup) {
   if (_current_lens == (Lens *)NULL) {
     return false;
   }
-  return prepare_lens();
+  return prepare_lens(scene_setup->get_display_region()->get_stereo_channel());
 }
 
 ////////////////////////////////////////////////////////////////////

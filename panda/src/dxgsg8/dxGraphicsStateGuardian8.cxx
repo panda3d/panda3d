@@ -609,7 +609,7 @@ prepare_display_region() {
 //               false if it is not.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
-prepare_lens() {
+prepare_lens(Lens::StereoChannel stereo_channel) {
   if (_current_lens == (Lens *)NULL) {
     return false;
   }
@@ -619,7 +619,7 @@ prepare_lens() {
   }
 
   // Start with the projection matrix from the lens.
-  const LMatrix4f &lens_mat = _current_lens->get_projection_mat();
+  const LMatrix4f &lens_mat = _current_lens->get_projection_mat(stereo_channel);
 
   // The projection matrix must always be left-handed Y-up internally,
   // to match DirectX's convention, even if our coordinate system of
@@ -1301,7 +1301,8 @@ end_draw_primitives() {
 
   if (_vertex_data->is_vertex_transformed()) {
     // Restore the projection matrix that we wiped out above.
-    prepare_lens();
+    _d3d_device->SetTransform(D3DTS_PROJECTION,
+                              (D3DMATRIX*)_projection_mat.get_data());
   }
 
   GraphicsStateGuardian::end_draw_primitives();

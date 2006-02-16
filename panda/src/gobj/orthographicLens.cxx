@@ -119,9 +119,11 @@ compute_projection_mat() {
     canonical = LMatrix4f::ident_mat();
   }
 
-
   _projection_mat = get_lens_mat_inv() * canonical * get_film_mat();
-  adjust_comp_flags(CF_projection_mat_inv, 
+  _projection_mat_left = _projection_mat_right = _projection_mat;
+
+  adjust_comp_flags(CF_projection_mat_inv | CF_projection_mat_left_inv | 
+                    CF_projection_mat_right_inv,
                     CF_projection_mat);
 }
 

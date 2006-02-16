@@ -746,7 +746,8 @@ class ShowBase(DirectObject.DirectObject):
         return aspectRatio
 
     def makeCamera(self, win, sort = 0, scene = None,
-                   displayRegion = (0, 1, 0, 1), aspectRatio = None,
+                   displayRegion = (0, 1, 0, 1), stereoChannel = None,
+                   aspectRatio = None,
                    lens = None, camName = 'cam'):
         """
         Makes a new 3-d camera associated with the indicated window,
@@ -754,6 +755,9 @@ class ShowBase(DirectObject.DirectObject):
         """
         dr = win.makeDisplayRegion(*displayRegion)
         dr.setSort(sort)
+
+        if stereoChannel != None:
+            dr.setStereoChannel(stereoChannel)
 
         if scene == None:
             scene = self.render

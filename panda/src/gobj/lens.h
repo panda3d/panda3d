@@ -49,6 +49,12 @@ public:
   void operator = (const Lens &copy);
 
 PUBLISHED:
+  enum StereoChannel {
+    SC_left  = 0x01,
+    SC_right = 0x02,
+    SC_both  = 0x03,  // == SC_left | SC_right
+  };
+
   virtual PT(Lens) make_copy() const=0;
 
   INLINE bool extrude(const LPoint2f &point2d,
@@ -107,8 +113,11 @@ PUBLISHED:
   const LVector3f &get_view_vector() const;
   const LVector3f &get_up_vector() const;
   LPoint3f get_nodal_point() const;
-  void set_iod_offset(float offset);
-  float get_iod_offset() const;
+
+  void set_interocular_distance(float interocular_distance);
+  float get_interocular_distance() const;
+  void set_convergence_distance(float convergence_distance);
+  float get_convergence_distance() const;
 
   void set_view_mat(const LMatrix4f &view_mat);
   const LMatrix4f &get_view_mat() const;
@@ -142,8 +151,14 @@ PUBLISHED:
 
   virtual PT(BoundingVolume) make_bounds() const;
 
-  const LMatrix4f &get_projection_mat() const;
-  const LMatrix4f &get_projection_mat_inv() const;
+  const LMatrix4f &get_projection_mat(StereoChannel channel = SC_both) const;
+  const LMatrix4f &get_projection_mat_inv(StereoChannel channel = SC_both) const;
+
+  const LMatrix4f &get_film_mat() const;
+  const LMatrix4f &get_film_mat_inv() const;
+
+  const LMatrix4f &get_lens_mat() const;
+  const LMatrix4f &get_lens_mat_inv() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -157,12 +172,6 @@ protected:
 
   void throw_change_event();
 
-  const LMatrix4f &get_film_mat() const;
-  const LMatrix4f &get_film_mat_inv() const;
-
-  const LMatrix4f &get_lens_mat() const;
-  const LMatrix4f &get_lens_mat_inv() const;
-
   virtual bool extrude_impl(const LPoint3f &point2d,
                             LPoint3f &near_point, LPoint3f &far_point) const;
   virtual bool extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const;
@@ -174,7 +183,6 @@ protected:
   virtual void compute_aspect_ratio();
   virtual void compute_view_hpr();
   virtual void compute_view_vector();
-  virtual void compute_iod_offset();
   virtual void compute_projection_mat();
   virtual void compute_film_mat();
   virtual void compute_lens_mat();
@@ -206,26 +214,30 @@ protected:
 
   LVecBase3f _view_hpr;
   LVector3f _view_vector, _up_vector;
-  float _iod_offset;
+  float _interocular_distance;
+  float _convergence_distance;
   LVecBase2f _keystone;
 
   LMatrix4f _film_mat, _film_mat_inv;
   LMatrix4f _lens_mat, _lens_mat_inv;
   LMatrix4f _projection_mat, _projection_mat_inv;
+  LMatrix4f _projection_mat_left, _projection_mat_left_inv;
+  LMatrix4f _projection_mat_right, _projection_mat_right_inv;
 
   enum UserFlags {
     // Parameters the user may have explicitly specified.
-    UF_film_width          = 0x0001,
-    UF_film_height         = 0x0002,
-    UF_focal_length        = 0x0004,
-    UF_hfov                = 0x0008,
-    UF_vfov                = 0x0010,
-    UF_aspect_ratio        = 0x0020,
-    UF_view_hpr            = 0x0040,
-    UF_view_vector         = 0x0080,
-    UF_iod_offset          = 0x0100,
-    UF_view_mat            = 0x0200,
-    UF_keystone            = 0x0400,
+    UF_film_width           = 0x0001,
+    UF_film_height          = 0x0002,
+    UF_focal_length         = 0x0004,
+    UF_hfov                 = 0x0008,
+    UF_vfov                 = 0x0010,
+    UF_aspect_ratio         = 0x0020,
+    UF_view_hpr             = 0x0040,
+    UF_view_vector          = 0x0080,
+    UF_interocular_distance = 0x0100,
+    UF_convergence_distance = 0x0200,
+    UF_view_mat             = 0x0400,
+    UF_keystone             = 0x0800,
   };
 
   enum CompFlags {
@@ -236,15 +248,16 @@ protected:
     CF_lens_mat_inv        = 0x0008,
     CF_projection_mat      = 0x0010,
     CF_projection_mat_inv  = 0x0020,
-    CF_mat                 = 0x003f,  // all of the above.
+    CF_projection_mat_left_inv  = 0x0040,
+    CF_projection_mat_right_inv = 0x0080,
+    CF_mat                 = 0x00ff,  // all of the above.
 
-    CF_focal_length        = 0x0040,
-    CF_fov                 = 0x0080,
     CF_film_size           = 0x0100,
     CF_aspect_ratio        = 0x0200,
     CF_view_hpr            = 0x0400,
     CF_view_vector         = 0x0800,
-    CF_iod_offset          = 0x1000,
+    CF_focal_length        = 0x1000,
+    CF_fov                 = 0x2000,
   };
   short _user_flags;
   short _comp_flags;
