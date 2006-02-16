@@ -230,7 +230,7 @@ remove_cycler(PipelineCyclerTrueImpl *cycler) {
 }
 #endif  // THREADED_PIPELINE
 
-#ifdef DEBUG_THREADS
+#if defined(THREADED_PIPELINE) && defined(DEBUG_THREADS) 
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::iterate_all_cycler_types
 //       Access: Public
@@ -250,9 +250,9 @@ iterate_all_cycler_types(CallbackFunc *func, void *data) const {
     func((*ci).first, (*ci).second, data);
   }
 }
-#endif  // DEBUG_THREADS
+#endif  // THREADED_PIPELINE && DEBUG_THREADS
 
-#ifdef DEBUG_THREADS
+#if defined(THREADED_PIPELINE) && defined(DEBUG_THREADS) 
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::iterate_dirty_cycler_types
 //       Access: Public
@@ -269,7 +269,7 @@ iterate_dirty_cycler_types(CallbackFunc *func, void *data) const {
     func((*ci).first, (*ci).second, data);
   }
 }
-#endif  // DEBUG_THREADS
+#endif  // THREADED_PIPELINE && DEBUG_THREADS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::make_render_pipeline
@@ -291,7 +291,7 @@ make_render_pipeline() {
   _render_pipeline = new Pipeline("render", pipeline_stages);
 }
 
-#ifdef DEBUG_THREADS
+#if defined(THREADED_PIPELINE) && defined(DEBUG_THREADS) 
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::inc_cycler_type
 //       Access: Private, Static
@@ -312,4 +312,4 @@ inc_cycler_type(TypeCount &count, TypeHandle type, int addend) {
   (*ci).second += addend;
   nassertv((*ci).second >= 0);
 }
-#endif  // DEBUG_THREADS
+#endif  // THREADED_PIPELINE && DEBUG_THREADS
