@@ -34,6 +34,8 @@ ConfigVariableDouble aspect_ratio
 ("aspect-ratio", 0.0);
 ConfigVariableBool show_frame_rate_meter
 ("show-frame-rate-meter", false);
+ConfigVariableBool default_stereo_camera
+("default-stereo-camera", true);
 
 ConfigVariableString record_session
 ("record-session", "");

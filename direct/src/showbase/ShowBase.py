@@ -371,8 +371,8 @@ class ShowBase(DirectObject.DirectObject):
                         pipeType.getName()))
 
     def openWindow(self, props = None, pipe = None, gsg = None,
-                   type = None, name = None, scene = None,
-                   size = None, aspectRatio = None):
+                   type = None, name = None, size = None, aspectRatio = None,
+                   makeCamera = 1, scene = None, stereo = None):
         """
         Creates a window and adds it to the list of windows that are
         to be updated every frame.
@@ -433,7 +433,9 @@ class ShowBase(DirectObject.DirectObject):
         self.winList.append(win)
 
         # Set up a 3-d camera for the window by default.
-        self.makeCamera(win, scene = scene, aspectRatio = aspectRatio)
+        if makeCamera:
+            self.makeCamera(win, scene = scene, aspectRatio = aspectRatio,
+                            stereo = stereo)
 
         return win
 
@@ -803,7 +805,7 @@ class ShowBase(DirectObject.DirectObject):
         dr.setCamera(cam)
 
         if stereo == None:
-            stereo = win.isStereo()
+            stereo = (win.isStereo() and self.config.GetBool('default-stereo-camera', 1))
         if stereo:
             # A stereo camera!  The first DisplayRegion becomes the
             # left channel.

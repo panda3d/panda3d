@@ -186,7 +186,7 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
     NodePath camera_np = make_camera();
     _display_region_3d->set_camera(camera_np);
 
-    if (_window->is_stereo()) {
+    if (_window->is_stereo() && default_stereo_camera) {
       // Actually, let's make a stereo camera.  That means the
       // _display_region_3d will be the left channel, and we need to
       // make another one to be the right channel.
