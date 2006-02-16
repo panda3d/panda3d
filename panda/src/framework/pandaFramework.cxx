@@ -905,6 +905,9 @@ event_esc(CPT_Event event, void *data) {
     // Free up the mouse for that window.
     self->remove_mouse(win);
 
+    // Make sure the close request propagates through the system.
+    self->_engine->open_windows();
+
     // If we closed the last window, shut down.
     if (self->all_windows_closed()) {
       self->_exit_flag = true;

@@ -631,26 +631,14 @@ open_windows() {
     do_resort_windows();
   }
 
-  _app.do_windows(this);
+  // We do it twice, to allow both cull and draw to process the
+  // window.
+  for (int i = 0; i < 2; ++i) {
+    _app.do_windows(this);
+    _app.do_pending(this);
 
-  {
     PStatTimer timer(_wait_pcollector);
     Threads::const_iterator ti;
-    for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-      RenderThread *thread = (*ti).second;
-      thread->_cv_mutex.lock();
-      
-      while (thread->_thread_state != TS_wait) {
-        thread->_cv_done.wait();
-      }
-      
-      thread->_thread_state = TS_do_windows;
-      thread->_cv_start.signal();
-      thread->_cv_mutex.release();
-    }
-
-    // We do it twice, to allow both cull and draw to process the
-    // window.
     for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
       RenderThread *thread = (*ti).second;
       thread->_cv_mutex.lock();
