@@ -20,6 +20,7 @@
 #define PIPELINE_H
 
 #include "pandabase.h"
+#include "pipelineCyclerLinks.h"
 #include "namable.h"
 #include "pset.h"
 #include "reMutex.h"
@@ -40,7 +41,7 @@ struct PipelineCyclerTrueImpl;
 //               pipeline.  Other specialty pipelines may be created
 //               as needed.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Pipeline : public Namable {
+class EXPCL_PANDA Pipeline : public PipelineCyclerLinks, public Namable {
 public:
   Pipeline(const string &name, int num_stages);
   ~Pipeline();
@@ -49,6 +50,8 @@ public:
 
   void cycle();
 
+  void set_num_stages(int num_stages);
+  INLINE void set_min_stages(int min_stages);
   INLINE int get_num_stages() const;
 
 #ifdef THREADED_PIPELINE

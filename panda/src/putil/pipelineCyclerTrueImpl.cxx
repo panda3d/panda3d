@@ -18,7 +18,7 @@
 
 #include "pipelineCyclerTrueImpl.h"
 
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
 
 #include "config_util.h"
 #include "pipeline.h"
@@ -343,8 +343,8 @@ void PipelineCyclerTrueImpl::CyclerMutex::
 output(ostream &out) const {
   _cycler->cheat()->output(out);
 }
-#endif
+#endif  // DEBUG_THREADS
 
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 
 

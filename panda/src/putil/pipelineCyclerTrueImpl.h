@@ -21,8 +21,9 @@
 
 #include "pandabase.h"
 
-#if defined(DO_PIPELINING) && defined(HAVE_THREADS)
+#ifdef THREADED_PIPELINE
 
+#include "pipelineCyclerLinks.h"
 #include "cycleData.h"
 #include "pointerTo.h"
 #include "thread.h"
@@ -46,7 +47,9 @@ class Pipeline;
 //               mainly to be consistent with
 //               PipelineCyclerTrivialImpl.
 ////////////////////////////////////////////////////////////////////
-struct EXPCL_PANDA PipelineCyclerTrueImpl {
+struct EXPCL_PANDA PipelineCyclerTrueImpl : public PipelineCyclerLinks {
+private:
+  PipelineCyclerTrueImpl();
 public:
   PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline = NULL);
   PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy);
@@ -91,7 +94,7 @@ public:
 #ifdef DEBUG_THREADS
     virtual void output(ostream &out) const;
     PipelineCyclerTrueImpl *_cycler;
-#endif
+#endif  // DEBUG_THREADS
   };
 
 private:
@@ -115,7 +118,7 @@ private:
 
 #include "pipelineCyclerTrueImpl.I"
 
-#endif  // DO_PIPELINING && HAVE_THREADS
+#endif  // THREADED_PIPELINE
 
 #endif
 

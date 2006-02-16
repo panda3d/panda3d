@@ -1605,6 +1605,7 @@ get_window_renderer(const string &name, int pipeline_stage) {
 
   PT(RenderThread) thread = new RenderThread(name, this);
   thread->set_min_pipeline_stage(pipeline_stage);
+  _pipeline->set_min_stages(pipeline_stage + 1);
 
   thread->start(TP_normal, true, true);
   _threads[name] = thread;

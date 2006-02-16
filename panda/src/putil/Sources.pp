@@ -51,6 +51,7 @@
     nodePointerTo.h nodePointerTo.I \
     pipeline.h pipeline.I \
     pipelineCycler.h pipelineCycler.I \
+    pipelineCyclerLinks.h pipelineCyclerLinks.I \
     pipelineCyclerBase.h  \
     pipelineCyclerDummyImpl.h pipelineCyclerDummyImpl.I \
     pipelineCyclerTrivialImpl.h pipelineCyclerTrivialImpl.I \
@@ -152,6 +153,7 @@
     nodePointerTo.h nodePointerTo.I \
     pipeline.h pipeline.I \
     pipelineCycler.h pipelineCycler.I \
+    pipelineCyclerLinks.h pipelineCyclerLinks.I \
     pipelineCyclerBase.h \
     pipelineCyclerDummyImpl.h pipelineCyclerDummyImpl.I \
     pipelineCyclerTrivialImpl.h pipelineCyclerTrivialImpl.I \

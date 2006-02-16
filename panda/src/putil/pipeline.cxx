@@ -30,13 +30,20 @@ Pipeline *Pipeline::_render_pipeline = (Pipeline *)NULL;
 ////////////////////////////////////////////////////////////////////
 Pipeline::
 Pipeline(const string &name, int num_stages) :
-  Namable(name),
-  _num_stages(num_stages)
+  Namable(name)
 {
 #ifdef THREADED_PIPELINE
+  // Set up the linked list of cyclers to be a circular list that
+  // begins with this object.
+  _prev = this;
+  _next = this;
+
   _num_cyclers = 0;
   _cycling = false;
+
 #endif  // THREADED_PIPELINE
+
+  set_num_stages(num_stages);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,6 +55,9 @@ Pipeline::
 ~Pipeline() {
 #ifdef THREADED_PIPELINE
   nassertv(_num_cyclers == 0);
+  nassertv(_prev == this && _next == this);
+  _prev = NULL;
+  _next = NULL;
   nassertv(!_cycling);
 #endif  // THREADED_PIPELINE
 }
@@ -148,6 +158,54 @@ cycle() {
 #endif  // THREADED_PIPELINE
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Pipeline::set_num_stages
+//       Access: Public
+//  Description: Specifies the number of stages required for the
+//               pipeline.
+////////////////////////////////////////////////////////////////////
+void Pipeline::
+set_num_stages(int num_stages) {
+  nassertv(num_stages >= 1);
+#ifdef THREADED_PIPELINE
+  ReMutexHolder holder(_lock);
+  if (num_stages != _num_stages) {
+
+    // We need to lock every PipelineCycler object attached to this
+    // pipeline before we can adjust the number of stages.
+    PipelineCyclerLinks *links;
+    for (links = this->_next; links != this; links = links->_next) {
+      PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
+      cycler->_lock.lock();
+    }
+
+    _num_stages = num_stages;
+
+    for (links = this->_next; links != this; links = links->_next) {
+      PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
+      cycler->set_num_stages(num_stages);
+    }
+
+    // Now release them all.
+    int count = 0;
+    for (links = this->_next; links != this; links = links->_next) {
+      PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
+      cycler->_lock.release();
+      ++count;
+    }
+    nassertv(count == _num_cyclers);
+  }
+
+#else  // THREADED_PIPELINE
+  if (_num_stages != 1) {
+    display_cat.warning()
+      << "Requested " << pipeline_stages
+      << " pipeline stages but multithreaded render pipelines not enabled in build.\n";
+  }
+  _num_stages = 1;
+#endif  // THREADED_PIPELINE
+}
+
 #ifdef THREADED_PIPELINE
 ////////////////////////////////////////////////////////////////////
 //     Function: Pipeline::add_cycler
@@ -162,7 +220,8 @@ add_cycler(PipelineCyclerTrueImpl *cycler) {
   nassertv(!cycler->_dirty);
   nassertv(!_cycling);
   ++_num_cyclers;
-
+  cycler->insert_before(this);
+  
 #ifdef DEBUG_THREADS
   inc_cycler_type(_all_cycler_types, cycler->get_parent_type(), 1);
 #endif
@@ -213,6 +272,7 @@ remove_cycler(PipelineCyclerTrueImpl *cycler) {
   nassertv(!_cycling);
 
   --_num_cyclers;
+  cycler->remove_from_list();
 
 #ifdef DEBUG_THREADS
   inc_cycler_type(_all_cycler_types, cycler->get_parent_type(), -1);
@@ -280,12 +340,13 @@ void Pipeline::
 make_render_pipeline() {
   ConfigVariableInt pipeline_stages
     ("pipeline-stages", 1,
-     PRC_DESC("The number of stages in the render pipeline.  This is only "
-              "meaningful if threaded pipelining is compiled into Panda, in "
-              "which case you should set this to 1, 2, or 3, according to "
-              "your application's threading model.  You may set it larger "
-              "than your application requires, but this will incur additional "
-              "overhead."));
+     PRC_DESC("The initial number of stages in the render pipeline.  This is "
+              "only meaningful if threaded pipelining is compiled into "
+              "Panda.  In most cases, you should not set this at all anyway, "
+              "since the pipeline can automatically grow stages as needed, "
+              "but it will not remove stages automatically, and having more "
+              "pipeline stages than your application requires will incur "
+              "additional runtime overhead."));
 
   nassertv(_render_pipeline == (Pipeline *)NULL);
   _render_pipeline = new Pipeline("render", pipeline_stages);
