@@ -43,11 +43,14 @@
 #if defined(GL_GLEXT_VERSION) && GL_GLEXT_VERSION < 29
   #undef GL_GLEXT_VERSION
   #undef GL_GLEXT_PROTOTYPES
+#ifndef IS_OSX
   #undef GL_VERSION_1_2
   #undef GL_VERSION_1_3
   #undef GL_VERSION_1_4
   #undef GL_VERSION_1_5
 #endif
+#endif
+
 #include "panda_glext.h"
 
 #include "glmisc_src.h"
