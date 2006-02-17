@@ -268,7 +268,8 @@ BMPwriterow(
         unsigned long   cx,
         unsigned short  bpp,
         int             indexed,
-        colorhash_table cht)
+        colorhash_table cht,
+        xelval maxval)
 {
         BITSTREAM       b;
         unsigned        nbyte = 0;
@@ -299,9 +300,9 @@ BMPwriterow(
 
           for (x = 0; x < cx; x++, row++)
             {
-              PutByte(fp, PPM_GETB(*row));
-              PutByte(fp, PPM_GETG(*row));
-              PutByte(fp, PPM_GETR(*row));
+              PutByte(fp, PPM_GETB(*row) * 255 / maxval);
+              PutByte(fp, PPM_GETG(*row) * 255 / maxval);
+              PutByte(fp, PPM_GETR(*row) * 255 / maxval);
               nbyte += 3;
             }
         }
@@ -329,7 +330,8 @@ BMPwritebits(
         unsigned short  cBitCount,
         pixel         **pixels,
         int             indexed,
-        colorhash_table cht)
+        colorhash_table cht,
+        xelval maxval)
 {
         int             nbyte = 0;
         long            y;
@@ -347,7 +349,8 @@ BMPwritebits(
         for (y = (long)cy - 1; y >= 0; y--)
         {
                 int rc;
-                rc = BMPwriterow(fp, pixels[y], cx, cBitCount, indexed, cht);
+                rc = BMPwriterow(fp, pixels[y], cx, cBitCount, indexed, cht,
+                                 maxval);
 
                 if(rc == -1)
                 {
@@ -460,7 +463,7 @@ BMPEncode(
                 pm_error(er_internal, "BMPEncode");
         }
 
-        nbyte += BMPwritebits(fp, x, y, bpp, pixels, true, cht);
+        nbyte += BMPwritebits(fp, x, y, bpp, pixels, true, cht, 255);
         if(nbyte != BMPlenfile(classv, bpp, x, y))
         {
                 pm_error(er_internal, "BMPEncode");
@@ -476,7 +479,8 @@ BMPEncode24(
         int             classv,
         int             x,
         int             y,
-        pixel         **pixels)
+        pixel         **pixels,
+        xelval maxval)
 {
         unsigned long   nbyte = 0;
         int             bpp = 24;
@@ -493,7 +497,8 @@ BMPEncode24(
                 pm_error(er_internal, "BMPEncode24");
         }
 
-        nbyte += BMPwritebits(fp, x, y, bpp, pixels, false, colorhash_table());
+        nbyte += BMPwritebits(fp, x, y, bpp, pixels, false, colorhash_table(),
+                              maxval);
         if(nbyte != BMPlenfile(classv, bpp, x, y))
         {
                 pm_error(er_internal, "BMPEncode24");
@@ -582,7 +587,7 @@ write_data(xel *array, xelval *) {
   chv = ppm_computecolorhist(pixels, _x_size, _y_size, MAXCOLORS, &colors);
   if (bmp_bpp > 8) {
     // Quietly generate a 24-bit image.
-    BMPEncode24(_file, classv, _x_size, _y_size, pixels);
+    BMPEncode24(_file, classv, _x_size, _y_size, pixels, _maxval);
 
   } else if (chv == (colorhist_vector) 0) {
     if (bmp_bpp != 0) {
@@ -591,7 +596,7 @@ write_data(xel *array, xelval *) {
         << "too many colors for " << bmp_bpp << "-bit image.\n";
     }
 
-    BMPEncode24(_file, classv, _x_size, _y_size, pixels);
+    BMPEncode24(_file, classv, _x_size, _y_size, pixels, _maxval);
 
   } else {
     pnmimage_bmp_cat.debug()

@@ -63,6 +63,12 @@ public:
     virtual bool read_row(xel *array, xelval *alpha);
 
   private:
+    xelval next_sample_lt_8(unsigned char *&buf_ptr, int &bits_left) const;
+    xelval next_sample_8(unsigned char *&buf_ptr, int &bits_left) const;
+    xelval next_sample_16(unsigned char *&buf_ptr, int &bits_left) const;
+    xelval next_sample_32(unsigned char *&buf_ptr, int &bits_left) const;
+    xelval next_sample_general(unsigned char *&buf_ptr, int &bits_left) const;
+
     unsigned short photomet;
     unsigned short bps, spp;
     unsigned short unassoc_alpha_sample, assoc_alpha_sample;

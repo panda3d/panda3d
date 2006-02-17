@@ -582,17 +582,6 @@ supports_read_row() const {
   return true;
 }
 
-#define NEXTSAMPLE \
-  { \
-    if ( bitsleft == 0 ) \
-    { \
-      ++inP; \
-      bitsleft = 8; \
-    } \
-    bitsleft -= bps; \
-    sample = ( *inP >> bitsleft ) & _maxval; \
-  }
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTIFF::Reader::read_row
 //       Access: Public, Virtual
@@ -608,7 +597,9 @@ read_row(xel *row_data, xelval *alpha_data) {
     return false;
   }
 
-  unsigned char *buf = (unsigned char*) alloca((size_t)TIFFScanlineSize(tif));
+  size_t scanline_size = (size_t)TIFFScanlineSize(tif);
+  unsigned char *buf = (unsigned char*) alloca(scanline_size);
+  
   int col;
   xelval gray, sample;
   xelval r, g, b;
@@ -619,19 +610,42 @@ read_row(xel *row_data, xelval *alpha_data) {
     return false;
   }
 
-  unsigned char *inP = buf;
+  unsigned char *buf_ptr = buf;
   unsigned s;
-  int bitsleft = 8;
+  int bits_left = 8;
+
+  // Get a pointer to a function that extracts the next bps-bit sample
+  // from the bitarray.  There are a handful of different functions,
+  // which are optimized for different values of bps.
+  xelval (PNMFileTypeTIFF::Reader::*next_sample)(unsigned char *&buf_ptr, int &bits_left) const;
+
+  if (bps < 8) {
+    next_sample = &PNMFileTypeTIFF::Reader::next_sample_lt_8;
+  
+  } else if (bps == 8) {
+    next_sample = &PNMFileTypeTIFF::Reader::next_sample_8;
+
+  } else if (bps == 16) {
+    next_sample = &PNMFileTypeTIFF::Reader::next_sample_16;
+
+  } else if (bps == 32) {
+    // Actually, it's not likely that a 32-bit sample will fit within
+    // a xelval.  Deal with this when we come to it.
+    next_sample = &PNMFileTypeTIFF::Reader::next_sample_32;
+
+  } else {
+    next_sample = &PNMFileTypeTIFF::Reader::next_sample_general;
+  }
 
   switch ( photomet ) {
   case PHOTOMETRIC_MINISBLACK:
     for ( col = 0; col < _x_size; ++col )
       {
-        NEXTSAMPLE;
+        sample = (this->*next_sample)(buf_ptr, bits_left);
         gray = sample;
 
         for (s = 1; s < spp; s++) {
-          NEXTSAMPLE;
+          sample = (this->*next_sample)(buf_ptr, bits_left);
           if (s == unassoc_alpha_sample) {
             alpha_data[col] = sample;
 
@@ -649,10 +663,10 @@ read_row(xel *row_data, xelval *alpha_data) {
   case PHOTOMETRIC_MINISWHITE:
     for ( col = 0; col < _x_size; ++col )
       {
-        NEXTSAMPLE;
+        sample = (this->*next_sample)(buf_ptr, bits_left);
         gray = _maxval - sample;
         for (s = 1; s < spp; s++) {
-          NEXTSAMPLE;
+          sample = (this->*next_sample)(buf_ptr, bits_left);
           sample = _maxval - sample;
 
           if (s == unassoc_alpha_sample) {
@@ -673,11 +687,11 @@ read_row(xel *row_data, xelval *alpha_data) {
   case PHOTOMETRIC_PALETTE:
     for ( col = 0; col < _x_size; ++col )
       {
-        NEXTSAMPLE;
+        sample = (this->*next_sample)(buf_ptr, bits_left);
         row_data[col] = colormap[sample];
 
         for (s = 1; s < spp; s++) {
-          NEXTSAMPLE;
+          sample = (this->*next_sample)(buf_ptr, bits_left);
           if (s == unassoc_alpha_sample) {
             alpha_data[col] = sample;
 
@@ -699,15 +713,15 @@ read_row(xel *row_data, xelval *alpha_data) {
 
   case PHOTOMETRIC_RGB:
     for ( col = 0; col < _x_size; ++col ) {
-      NEXTSAMPLE;
+      sample = (this->*next_sample)(buf_ptr, bits_left);
       r = sample;
-      NEXTSAMPLE;
+      sample = (this->*next_sample)(buf_ptr, bits_left);
       g = sample;
-      NEXTSAMPLE;
+      sample = (this->*next_sample)(buf_ptr, bits_left);
       b = sample;
 
       for (s = 3; s < spp; s++) {
-        NEXTSAMPLE;
+        sample = (this->*next_sample)(buf_ptr, bits_left);
         if (s == unassoc_alpha_sample) {
           alpha_data[col] = sample;
           
@@ -731,8 +745,104 @@ read_row(xel *row_data, xelval *alpha_data) {
     return false;
   }
 
+  nassertr(buf_ptr <= buf + scanline_size, false);
+
   current_row++;
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::Reader::next_sample_lt_8
+//       Access: Private
+//  Description: Returns the next color sample from the row, when it
+//               is known that bps < 8.
+////////////////////////////////////////////////////////////////////
+xelval PNMFileTypeTIFF::Reader::
+next_sample_lt_8(unsigned char *&buf_ptr, int &bits_left) const {
+  if (bits_left == 0) {
+    ++buf_ptr;
+    bits_left = 8;
+  }
+
+  bits_left -= bps;
+  return (*buf_ptr >> bits_left) & _maxval;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::Reader::next_sample_8
+//       Access: Private
+//  Description: Returns the next color sample from the row, when it
+//               is known that bps == 8.
+////////////////////////////////////////////////////////////////////
+xelval PNMFileTypeTIFF::Reader::
+next_sample_8(unsigned char *&buf_ptr, int &bits_left) const {
+  return *buf_ptr++;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::Reader::next_sample_16
+//       Access: Private
+//  Description: Returns the next color sample from the row, when it
+//               is known that bps == 16.
+////////////////////////////////////////////////////////////////////
+xelval PNMFileTypeTIFF::Reader::
+next_sample_16(unsigned char *&buf_ptr, int &bits_left) const {
+  // The TIFF library has already byte-swapped the values if
+  // necessary.  Thus, we only need to treat it as an array of shorts.
+  unsigned short result = *(unsigned short *)buf_ptr;
+  buf_ptr += 2;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::Reader::next_sample_32
+//       Access: Private
+//  Description: Returns the next color sample from the row, when it
+//               is known that bps == 32.
+////////////////////////////////////////////////////////////////////
+xelval PNMFileTypeTIFF::Reader::
+next_sample_32(unsigned char *&buf_ptr, int &bits_left) const {
+  // The TIFF library has already byte-swapped the values if
+  // necessary.  Thus, we only need to treat it as an array of longs.
+  unsigned long result = *(unsigned long *)buf_ptr;
+  buf_ptr += 2;
+  return (xelval)result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::Reader::next_sample_general
+//       Access: Private
+//  Description: Returns the next color sample from the row, in
+//               general.  This unpacks an arbitrary string of bits
+//               from the sequence.
+////////////////////////////////////////////////////////////////////
+xelval PNMFileTypeTIFF::Reader::
+next_sample_general(unsigned char *&buf_ptr, int &bits_left) const {
+  unsigned int result = 0;
+  int bits_needed = bps;
+
+  while (bits_needed > 0) {
+    nassertr(bits_left >= 0, 0);
+    if (bits_left == 0) {
+      ++buf_ptr;
+      bits_left = 8;
+    }
+    
+    if (bits_needed <= bits_left) {
+      bits_left -= bits_needed;
+      unsigned int mask = (1 << bits_needed) - 1;
+      result |= ((*buf_ptr) >> bits_left) & mask;
+      bits_needed = 0;
+      
+    } else {
+      bits_needed -= bits_left;
+      unsigned int mask = (1 << bits_left) - 1;
+      result |= ((*buf_ptr) & mask) << bits_needed;
+      bits_left = 0;
+    }
+  }
+
+  return result;
 }
 
 
