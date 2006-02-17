@@ -277,6 +277,7 @@ protected:
   CPT(GeomVertexData) _vertex_data;
 
   int _buffer_mask;
+  int _stereo_buffer_mask;
   unsigned int _color_write_mask;
   Colorf _color_clear_value;
   float _depth_clear_value;

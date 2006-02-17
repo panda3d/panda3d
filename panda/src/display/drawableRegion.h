@@ -58,8 +58,8 @@ PUBLISHED:
   INLINE bool is_any_clear_active() const;
 
 public:
-  virtual int get_screenshot_buffer_type() const;
-  virtual int get_draw_buffer_type() const;
+  INLINE int get_screenshot_buffer_type() const;
+  INLINE int get_draw_buffer_type() const;
 
 protected:
   int _screenshot_buffer_type;

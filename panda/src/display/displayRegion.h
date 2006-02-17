@@ -121,9 +121,6 @@ public:
   INLINE CullResult *get_cull_result() const;
   INLINE SceneSetup *get_scene_setup() const;
 
-  virtual int get_screenshot_buffer_type() const;
-  virtual int get_draw_buffer_type() const;
-
 private:
   class CData;
 
@@ -167,7 +164,6 @@ private:
     bool _active;
     int _sort;
     Lens::StereoChannel _stereo_channel;
-    int _draw_buffer_mask;
     int _cube_map_index;
   };
 

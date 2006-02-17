@@ -973,7 +973,7 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
   GLint y = GLint(b);
   GLsizei width = GLsizei(w);
   GLsizei height = GLsizei(h);
-  
+
   set_draw_buffer(get_render_buffer(_current_display_region->get_draw_buffer_type()));
   enable_scissor(true);
   GLP(Scissor)(x, y, width, height);
@@ -3721,35 +3721,23 @@ set_draw_buffer(const RenderBuffer &rb) {
     break;
 
   case RenderBuffer::T_front_right:
-    if (_is_stereo) {
-      GLP(DrawBuffer)(GL_FRONT_RIGHT);
-    } else {
-      GLP(DrawBuffer)(GL_FRONT);
-    }
+    nassertv(_is_stereo);
+    GLP(DrawBuffer)(GL_FRONT_RIGHT);
     break;
 
   case RenderBuffer::T_front_left:
-    if (_is_stereo) {
-      GLP(DrawBuffer)(GL_FRONT_LEFT);
-    } else {
-      GLP(DrawBuffer)(GL_FRONT);
-    }
+    nassertv(_is_stereo);
+    GLP(DrawBuffer)(GL_FRONT_LEFT);
     break;
 
   case RenderBuffer::T_back_right:
-    if (_is_stereo) {
-      GLP(DrawBuffer)(GL_BACK_RIGHT);
-    } else {
-      GLP(DrawBuffer)(GL_BACK);
-    }
+    nassertv(_is_stereo);
+    GLP(DrawBuffer)(GL_BACK_RIGHT);
     break;
 
   case RenderBuffer::T_back_left:
-    if (_is_stereo) {
-      GLP(DrawBuffer)(GL_BACK_LEFT);
-    } else {
-      GLP(DrawBuffer)(GL_BACK);
-    }
+    nassertv(_is_stereo);
+    GLP(DrawBuffer)(GL_BACK_LEFT);
     break;
 
   default:

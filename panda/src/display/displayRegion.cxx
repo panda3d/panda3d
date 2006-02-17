@@ -349,20 +349,6 @@ set_stereo_channel(Lens::StereoChannel stereo_channel) {
 
   CDWriter cdata(_cycler);
   cdata->_stereo_channel = stereo_channel;
-  switch (stereo_channel) {
-  case Lens::SC_left:
-    cdata->_draw_buffer_mask = ~(RenderBuffer::T_front_right | RenderBuffer::T_back_right);
-    break;
-
-  case Lens::SC_right:
-    cdata->_draw_buffer_mask = ~(RenderBuffer::T_front_left | RenderBuffer::T_back_left);
-    break;
-
-  case Lens::SC_mono:
-  case Lens::SC_stereo:
-    cdata->_draw_buffer_mask = ~0;
-    break;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -674,33 +660,6 @@ get_screenshot(PNMImage &image) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_screenshot_buffer_type
-//       Access: Public, Virtual
-//  Description: Returns the RenderBuffer that should be used for
-//               capturing screenshots from this particular
-//               DrawableRegion.
-////////////////////////////////////////////////////////////////////
-int DisplayRegion::
-get_screenshot_buffer_type() const {
-  CDReader cdata(_cycler);
-  return _screenshot_buffer_type & cdata->_draw_buffer_mask;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_draw_buffer_type
-//       Access: Public, Virtual
-//  Description: Returns the RenderBuffer into which the GSG should
-//               issue draw commands.  Normally, this is the back
-//               buffer for double-buffered windows, and the front
-//               buffer for single-buffered windows.
-////////////////////////////////////////////////////////////////////
-int DisplayRegion::
-get_draw_buffer_type() const {
-  CDReader cdata(_cycler);
-  return _draw_buffer_type & cdata->_draw_buffer_mask;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::win_display_regions_changed
 //       Access: Private
 //  Description: Intended to be called when the active state on a
@@ -763,7 +722,6 @@ CData() :
   _active(true),
   _sort(0),
   _stereo_channel(Lens::SC_mono),
-  _draw_buffer_mask(~0),
   _cube_map_index(-1)
 {
 }
@@ -790,7 +748,6 @@ CData(const DisplayRegion::CData &copy) :
   _active(copy._active),
   _sort(copy._sort),
   _stereo_channel(copy._stereo_channel),
-  _draw_buffer_mask(copy._draw_buffer_mask),
   _cube_map_index(copy._cube_map_index)
 {
 }

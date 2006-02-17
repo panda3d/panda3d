@@ -27,28 +27,3 @@
 DrawableRegion::
 ~DrawableRegion() {
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: DrawableRegion::get_screenshot_buffer_type
-//       Access: Public, Virtual
-//  Description: Returns the RenderBuffer that should be used for
-//               capturing screenshots from this particular
-//               DrawableRegion.
-////////////////////////////////////////////////////////////////////
-int DrawableRegion::
-get_screenshot_buffer_type() const {
-  return _screenshot_buffer_type;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DrawableRegion::get_draw_buffer_type
-//       Access: Public, Virtual
-//  Description: Returns the RenderBuffer into which the GSG should
-//               issue draw commands.  Normally, this is the back
-//               buffer for double-buffered windows, and the front
-//               buffer for single-buffered windows.
-////////////////////////////////////////////////////////////////////
-int DrawableRegion::
-get_draw_buffer_type() const {
-  return _draw_buffer_type;
-}

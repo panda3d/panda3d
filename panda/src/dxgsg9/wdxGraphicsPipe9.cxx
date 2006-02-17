@@ -793,9 +793,12 @@ make_gsg(const FrameBufferProperties &properties,
     return NULL;
   }
 
-  // FrameBufferProperties really belongs as part of the window/renderbuffer specification
-  // put here because of GLX multithreading requirement
-  PT(DXGraphicsStateGuardian9) gsg = new DXGraphicsStateGuardian9(properties);
+  // DX never supports stereo.  We should also remove other properties
+  // we don't have, but we don't know enough right now.
+  FrameBufferProperties new_properties = properties;
+  new_properties.set_frame_buffer_mode(properties.get_frame_buffer_mode() & ~FrameBufferProperties::FM_stereo);
+
+  PT(DXGraphicsStateGuardian9) gsg = new DXGraphicsStateGuardian9(new_properties);
   return gsg.p();
 }
 

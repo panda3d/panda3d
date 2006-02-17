@@ -281,6 +281,7 @@ reset() {
   _scene_setup = _scene_null;
   
   _buffer_mask = 0;
+  _stereo_buffer_mask = ~0;
   _color_write_mask = ColorWriteAttrib::C_all;
   _color_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
   _depth_clear_value = 1.0f;
@@ -342,7 +343,7 @@ set_state_and_transform(const RenderState *state,
 ////////////////////////////////////////////////////////////////////
 RenderBuffer GraphicsStateGuardian::
 get_render_buffer(int buffer_type) {
-  return RenderBuffer(this, buffer_type & _buffer_mask);
+  return RenderBuffer(this, buffer_type & _buffer_mask & _stereo_buffer_mask);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -651,13 +652,21 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
   _current_display_region = dr;
   _current_stereo_channel = stereo_channel;
 
+  _stereo_buffer_mask = ~0;
+
   switch (stereo_channel) {
   case Lens::SC_left:
     _color_write_mask = dr->get_window()->get_left_eye_color_mask();
+    if (_is_stereo) {
+      _stereo_buffer_mask = ~(RenderBuffer::T_front_right | RenderBuffer::T_back_right);
+    }
     break;
 
   case Lens::SC_right:
     _color_write_mask = dr->get_window()->get_right_eye_color_mask();
+    if (_is_stereo) {
+      _stereo_buffer_mask = ~(RenderBuffer::T_front_left | RenderBuffer::T_back_left);
+    }
     break;
 
   case Lens::SC_mono:
