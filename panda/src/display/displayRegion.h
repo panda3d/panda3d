@@ -174,7 +174,7 @@ private:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
-  typedef CycleDataWriter<CData> CDStageWriter;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
   // This is a special cycler created to hold the results from the
   // cull traversal, for (a) the draw traversal, and (b) the next
