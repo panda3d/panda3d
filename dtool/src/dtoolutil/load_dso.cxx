@@ -107,49 +107,27 @@ load_dso_error() {
 
 /* end Win32-specific code */
 
-#elif defined(PENV_OSX)
+#elif defined(IS_OSX)
 /* begin Mac OS X code */
 
 #include <mach-o/dyld.h>
+#include <dlfcn.h>
 
-void *
-load_dso(const Filename &filename) {
-  enum DYLD_BOOL result;
-  cerr << "_dyld_present() = " << _dyld_present() << endl;
+void * load_dso(const Filename &filename) 
+{
+ cerr << "_dyld_present() = " << _dyld_present() << endl;
   cerr << "_dyld_image_count() = " << _dyld_image_count() << endl;
-  string os_specific = filename.to_os_specific();
-  result = NSAddLibrary(os_specific().c_str());
-  if (result == FALSE) {
-    cerr << "Failed to load '" << filename << "'" << endl;
-  }
-  // need to reference a symbol in the lib in order for static init to happen
-  // need to figure out how to do this
-  cerr << "_dyld_present() = " << _dyld_present() << endl;
+
+	std::string fname = filename.to_os_specific();
+	printf("----- Trying To Load %s \n",fname.c_str());
+
+	void * answer = dlopen(fname.c_str(),RTLD_NOW| RTLD_LOCAL);
+ cerr << "_dyld_present() = " << _dyld_present() << endl;
   cerr << "_dyld_image_count() = " << _dyld_image_count() << endl;
-  for (unsigned long i=0; i<_dyld_image_count(); ++i)
-    cerr << "_dyld_get_image_name(" << i << ") = '" << _dyld_get_image_name(i)
-         << "'" << endl;
-  string stmp = filename;
-  cerr << "filename = '" << filename << "'" << endl;
-  int i = stmp.rfind(".dylib");
-  stmp.erase(i, i+6);
-  stmp += "_so";
-  cerr << "filename with tail patched = '" << stmp << "'" << endl;
-  i = stmp.rfind("lib");
-  if (i != 0) {
-    if (stmp[i-1] != '/')
-      i = stmp.rfind("lib", i-1);
-    stmp.erase(0, i);
-  }
-  cerr << "final patched filename = '" << stmp << "'" << endl;
-  stmp = "___" + stmp + "_find_me__";
-  cerr << "symbol name searching for = '" << stmp << "'" << endl;
-  unsigned long foo1;
-  void *foo2;
-  _dyld_lookup_and_bind(stmp.c_str(), &foo1, &foo2);
-  char *foo3 = (char*)foo1;
-  cerr << "symbol value = '" << foo3 << "'" << endl;
-  return (void*)0L;
+
+
+	return answer;
+
 }
 
 string

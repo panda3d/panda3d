@@ -911,6 +911,22 @@ to_os_specific() const {
   Filename standard(*this);
   standard.standardize();
 
+#ifdef IS_OSX 
+	if(get_type() == T_dso)
+	{
+          std::string workname = standard.get_fullpath();
+	  size_t dot = workname.rfind('.');
+	  if (dot != string::npos) 
+	  {
+		  if (workname.substr(dot) == ".so") 
+		  {
+  			string dyLibBase = workname.substr(0, dot)+".dylib";
+			return dyLibBase ; 
+		  }
+  	    }
+	}
+#endif
+
 #ifdef WIN32
   switch (get_type()) {
   case T_dso:
