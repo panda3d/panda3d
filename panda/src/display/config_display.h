@@ -75,6 +75,12 @@ extern EXPCL_PANDA ConfigVariableEnum<WindowProperties::ZOrder> z_order;
 extern EXPCL_PANDA ConfigVariableString window_title;
 
 extern EXPCL_PANDA ConfigVariableString framebuffer_mode;
+extern EXPCL_PANDA ConfigVariableBool framebuffer_hardware;
+extern EXPCL_PANDA ConfigVariableBool framebuffer_software;
+extern EXPCL_PANDA ConfigVariableBool framebuffer_multisample;
+extern EXPCL_PANDA ConfigVariableBool framebuffer_depth;
+extern EXPCL_PANDA ConfigVariableBool framebuffer_alpha;
+extern EXPCL_PANDA ConfigVariableBool framebuffer_stereo;
 extern EXPCL_PANDA ConfigVariableInt depth_bits;
 extern EXPCL_PANDA ConfigVariableInt color_bits;
 extern EXPCL_PANDA ConfigVariableInt alpha_bits;

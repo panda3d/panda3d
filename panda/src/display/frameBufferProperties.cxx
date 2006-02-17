@@ -70,15 +70,15 @@ get_default() {
 
     } else if (cmp_nocase_uh(word, "single") == 0 ||
                cmp_nocase_uh(word, "single-buffer") == 0) {
-      mode |= FM_single_buffer;
+      mode = (mode & ~FM_buffer) | FM_single_buffer;
 
     } else if (cmp_nocase_uh(word, "double") == 0 ||
                cmp_nocase_uh(word, "double-buffer") == 0) {
-      mode |= FM_double_buffer;
+      mode = (mode & ~FM_buffer) | FM_double_buffer;
 
     } else if (cmp_nocase_uh(word, "triple") == 0 ||
                cmp_nocase_uh(word, "triple-buffer") == 0) {
-      mode |= FM_triple_buffer;
+      mode = (mode & ~FM_buffer) | FM_triple_buffer;
 
     } else if (cmp_nocase_uh(word, "accum") == 0) {
       mode |= FM_accum;
@@ -111,6 +111,25 @@ get_default() {
       display_cat.warning()
         << "Unknown framebuffer keyword: " << word << "\n";
     }
+  }
+
+  if (framebuffer_hardware) {
+    mode |= FM_hardware;
+  }
+  if (framebuffer_software) {
+    mode |= FM_software;
+  }
+  if (framebuffer_multisample) {
+    mode |= FM_multisample;
+  }
+  if (framebuffer_depth) {
+    mode |= FM_depth;
+  }
+  if (framebuffer_alpha) {
+    mode |= FM_alpha;
+  }
+  if (framebuffer_stereo) {
+    mode |= FM_stereo;
   }
 
   props.set_frame_buffer_mode(mode);

@@ -228,9 +228,37 @@ ConfigVariableString window_title
 ("window-title", "Panda");
 
 ConfigVariableString framebuffer_mode
-("framebuffer-mode", "rgba double-buffer depth hardware",
+("framebuffer-mode", "rgb double-buffer",
  PRC_DESC("A space-separated list of keywords that describe the default "
           "framebuffer properties requested for a window."));
+ConfigVariableBool framebuffer_hardware
+("framebuffer-hardware", true,
+ PRC_DESC("True if FM_hardware should be added to the default framebuffer "
+          "properties, which requests a hardware-accelerated display."));
+ConfigVariableBool framebuffer_software
+("framebuffer-software", false,
+ PRC_DESC("True if FM_software should be added to the default framebuffer "
+          "properties, which requests a software-only display."));
+ConfigVariableBool framebuffer_multisample
+("framebuffer-multisample", false,
+ PRC_DESC("True if FM_multisample should be added to the default framebuffer "
+          "properties, which requests a multisample-capable display, if "
+          "possible.  This can be used to implement full-screen "
+          "antialiasing."));
+ConfigVariableBool framebuffer_depth
+("framebuffer-depth", true,
+ PRC_DESC("True if FM_depth should be added to the default framebuffer "
+          "properties, which requests a depth buffer."));
+ConfigVariableBool framebuffer_alpha
+("framebuffer-alpha", true,
+ PRC_DESC("True if FM_depth should be added to the default framebuffer "
+          "properties, which requests an alpha channel if possible."));
+ConfigVariableBool framebuffer_stereo
+("framebuffer-stereo", false,
+ PRC_DESC("True if FM_stereo should be added to the default framebuffer "
+          "properties, which requests a stereo-capable display, if "
+          "supported by the graphics driver."));
+
 ConfigVariableInt depth_bits
 ("depth-bits", 1,
  PRC_DESC("The minimum number of depth bits requested if the depth keyword "
