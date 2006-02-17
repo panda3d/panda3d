@@ -25,6 +25,7 @@
 #include "pvector.h"
 #include "pmap.h"
 #include "vector_int.h"
+#include "pmutex.h"
 
 class EventQueue;
 
@@ -94,6 +95,8 @@ private:
 
   int _first_slot;
   int _next_event_index;
+
+  Mutex _lock;
 
   static CIntervalManager *_global_ptr;
 };

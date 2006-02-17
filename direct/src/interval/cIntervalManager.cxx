@@ -20,6 +20,7 @@
 #include "cMetaInterval.h"
 #include "dcast.h"
 #include "eventQueue.h"
+#include "mutexHolder.h"
 
 CIntervalManager *CIntervalManager::_global_ptr;
 
@@ -66,6 +67,8 @@ CIntervalManager::
 ////////////////////////////////////////////////////////////////////
 int CIntervalManager::
 add_c_interval(CInterval *interval, bool external) {
+  MutexHolder holder(_lock);
+
   // First, check the name index.  If we already have an interval by
   // this name, it gets finished and removed.
   NameIndex::iterator ni = _name_index.find(interval->get_name());
@@ -123,6 +126,8 @@ add_c_interval(CInterval *interval, bool external) {
 ////////////////////////////////////////////////////////////////////
 int CIntervalManager::
 find_c_interval(const string &name) const {
+  MutexHolder holder(_lock);
+
   NameIndex::const_iterator ni = _name_index.find(name);
   if (ni != _name_index.end()) {
     return (*ni).second;
@@ -137,6 +142,8 @@ find_c_interval(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 CInterval *CIntervalManager::
 get_c_interval(int index) const {
+  MutexHolder holder(_lock);
+
   nassertr(index >= 0 && index < (int)_intervals.size(), NULL);
   return _intervals[index]._interval;
 }
@@ -151,6 +158,8 @@ get_c_interval(int index) const {
 ////////////////////////////////////////////////////////////////////
 void CIntervalManager::
 remove_c_interval(int index) {
+  MutexHolder holder(_lock);
+
   nassertv(index >= 0 && index < (int)_intervals.size());
   IntervalDef &def = _intervals[index];
   nassertv(def._interval != (CInterval *)NULL);
@@ -178,6 +187,8 @@ remove_c_interval(int index) {
 ////////////////////////////////////////////////////////////////////
 int CIntervalManager::
 interrupt() {
+  MutexHolder holder(_lock);
+
   int num_paused = 0;
 
   NameIndex::iterator ni;
@@ -241,6 +252,8 @@ interrupt() {
 ////////////////////////////////////////////////////////////////////
 int CIntervalManager::
 get_num_intervals() const {
+  MutexHolder holder(_lock);
+
   return _name_index.size();
 }
 
@@ -256,6 +269,8 @@ get_num_intervals() const {
 ////////////////////////////////////////////////////////////////////
 int CIntervalManager::
 get_max_index() const {
+  MutexHolder holder(_lock);
+
   return _intervals.size();
 }
 
@@ -275,6 +290,8 @@ get_max_index() const {
 ////////////////////////////////////////////////////////////////////
 void CIntervalManager::
 step() {
+  MutexHolder holder(_lock);
+
   NameIndex::iterator ni;
   ni = _name_index.begin();
   while (ni != _name_index.end()) {
@@ -318,6 +335,8 @@ step() {
 ////////////////////////////////////////////////////////////////////
 int CIntervalManager::
 get_next_event() {
+  MutexHolder holder(_lock);
+
   while (_next_event_index < (int)_intervals.size()) {
     IntervalDef &def = _intervals[_next_event_index];
     if (def._interval != (CInterval *)NULL) {
@@ -355,6 +374,8 @@ get_next_event() {
 ////////////////////////////////////////////////////////////////////
 int CIntervalManager::
 get_next_removal() {
+  MutexHolder holder(_lock);
+
   if (!_removed.empty()) {
     int index = _removed.back();
     _removed.pop_back();
@@ -377,6 +398,8 @@ get_next_removal() {
 ////////////////////////////////////////////////////////////////////
 void CIntervalManager::
 output(ostream &out) const {
+  MutexHolder holder(_lock);
+
   out << "CIntervalManager, " << (int)_name_index.size() << " intervals.";
 }
 
@@ -387,6 +410,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void CIntervalManager::
 write(ostream &out) const {
+  MutexHolder holder(_lock);
+
   // We need to write this line so that it's clear what's going on
   // when there are no intervals in the list.
   out << (int)_name_index.size() << " intervals.\n";
@@ -454,10 +479,12 @@ finish_interval(CInterval *interval) {
 //  Description: Removes the indicated index number from the active
 //               list, either by moving it to the removed queue if it
 //               is flagged external, or by simply making the slot
-//               available again if it is not.
+//               available again if it is not.  Assumes the lock is
+//               already held.
 ////////////////////////////////////////////////////////////////////
 void CIntervalManager::
 remove_index(int index) {
+  nassertv(_lock.debug_is_locked());
   nassertv(index >= 0 && index < (int)_intervals.size());
   IntervalDef &def = _intervals[index];
   if ((def._flags & F_external) != 0) {
