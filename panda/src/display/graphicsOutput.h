@@ -113,8 +113,13 @@ PUBLISHED:
   void set_inverted(bool inverted);
   INLINE bool get_inverted() const;
 
-  INLINE void set_red_blue_stereo(bool red_blue_stereo);
+  INLINE void set_red_blue_stereo(bool red_blue_stereo,
+                                  unsigned int left_eye_color_mask,
+                                  unsigned int right_eye_color_mask);
   INLINE bool get_red_blue_stereo() const;
+  INLINE unsigned int get_left_eye_color_mask() const;
+  INLINE unsigned int get_right_eye_color_mask() const;
+
   INLINE bool is_stereo() const;
 
   INLINE void clear_delete_flag();
@@ -240,6 +245,8 @@ protected:
   bool _one_shot;
   bool _inverted;
   bool _red_blue_stereo;
+  unsigned int _left_eye_color_mask;
+  unsigned int _right_eye_color_mask;
   bool _delete_flag;
 
   // These weak pointers are used to keep track of whether the

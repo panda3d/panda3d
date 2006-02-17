@@ -794,8 +794,6 @@ reset() {
     GLP(Disable)(GL_MULTISAMPLE);
   }
 
-  _stereo = ((get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_stereo) != 0);
-
   // Set up all the enabled/disabled flags to GL's known initial
   // values: everything off.
   _multisample_mode = 0;
@@ -816,8 +814,6 @@ reset() {
   // Dither is on by default in GL; let's turn it off
   GLP(Disable)(GL_DITHER);
   _dithering_enabled = false;
-
-  _texgen_forced_normal = false;
 
   _current_shader_expansion = (ShaderExpansion *)NULL;
   _current_shader_context = (CLP(ShaderContext) *)NULL;
@@ -3185,7 +3181,9 @@ do_issue_blending() {
   // all the other blending-related stuff doesn't matter.  If the
   // device doesn't support color-write, we use blending tricks
   // to effectively disable color write.
-  if (_target._color_write->get_channels() == ColorWriteAttrib::C_off) {
+  unsigned int color_channels = 
+    _target._color_write->get_channels() & _color_write_mask;
+  if (color_channels == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
       enable_multisample_alpha_one(false);
       enable_multisample_alpha_mask(false);
@@ -3202,11 +3200,10 @@ do_issue_blending() {
   } else {
     if (_target._color_write != _state._color_write) {
       if (CLP(color_mask)) {
-        unsigned int channels = _target._color_write->get_channels();
-        GLP(ColorMask)((channels & ColorWriteAttrib::C_red) != 0,
-                       (channels & ColorWriteAttrib::C_green) != 0,
-                       (channels & ColorWriteAttrib::C_blue) != 0,
-                       (channels & ColorWriteAttrib::C_alpha) != 0);
+        GLP(ColorMask)((color_channels & ColorWriteAttrib::C_red) != 0,
+                       (color_channels & ColorWriteAttrib::C_green) != 0,
+                       (color_channels & ColorWriteAttrib::C_blue) != 0,
+                       (color_channels & ColorWriteAttrib::C_alpha) != 0);
       }
     }
   }
@@ -3734,7 +3731,7 @@ set_draw_buffer(const RenderBuffer &rb) {
     break;
 
   case RenderBuffer::T_front_right:
-    if (_stereo) {
+    if (_is_stereo) {
       GLP(DrawBuffer)(GL_FRONT_RIGHT);
     } else {
       GLP(DrawBuffer)(GL_FRONT);
@@ -3742,7 +3739,7 @@ set_draw_buffer(const RenderBuffer &rb) {
     break;
 
   case RenderBuffer::T_front_left:
-    if (_stereo) {
+    if (_is_stereo) {
       GLP(DrawBuffer)(GL_FRONT_LEFT);
     } else {
       GLP(DrawBuffer)(GL_FRONT);
@@ -3750,7 +3747,7 @@ set_draw_buffer(const RenderBuffer &rb) {
     break;
 
   case RenderBuffer::T_back_right:
-    if (_stereo) {
+    if (_is_stereo) {
       GLP(DrawBuffer)(GL_BACK_RIGHT);
     } else {
       GLP(DrawBuffer)(GL_BACK);
@@ -3758,7 +3755,7 @@ set_draw_buffer(const RenderBuffer &rb) {
     break;
 
   case RenderBuffer::T_back_left:
-    if (_stereo) {
+    if (_is_stereo) {
       GLP(DrawBuffer)(GL_BACK_LEFT);
     } else {
       GLP(DrawBuffer)(GL_BACK);
@@ -3768,6 +3765,13 @@ set_draw_buffer(const RenderBuffer &rb) {
   default:
     GLP(DrawBuffer)(GL_FRONT_AND_BACK);
   }
+
+  // Also ensure that any global color channels are masked out.
+  GLP(ColorMask)((_color_write_mask & ColorWriteAttrib::C_red) != 0,
+                 (_color_write_mask & ColorWriteAttrib::C_green) != 0,
+                 (_color_write_mask & ColorWriteAttrib::C_blue) != 0,
+                 (_color_write_mask & ColorWriteAttrib::C_alpha) != 0);
+  
   report_my_gl_errors();
 }
 
@@ -5430,17 +5434,6 @@ do_issue_tex_gen() {
     } else {
       GLP(Disable)(GL_POINT_SPRITE_ARB);
     }
-  }
-
-  // Certain texgen modes (sphere_map, cube_map) require forcing the
-  // normal to be sent to the GL while the texgen mode is in effect.
-  if (force_normal != _texgen_forced_normal) {
-    if (force_normal) {
-      force_normals();
-    } else  {
-      undo_force_normals();
-    }
-    _texgen_forced_normal = force_normal;
   }
 
   report_my_gl_errors();

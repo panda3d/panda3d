@@ -289,8 +289,6 @@ protected:
     MM_alpha_mask = 0x0004,
   };
 
-  bool _stereo;
-
   int _multisample_mode;
   bool _line_smooth_enabled;
   bool _point_smooth_enabled;
@@ -306,7 +304,6 @@ protected:
   int _decal_level;
   
   bool _dithering_enabled;
-  bool _texgen_forced_normal;
 
   LMatrix4f _projection_mat;
   int _viewport_width;

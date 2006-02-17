@@ -125,7 +125,7 @@ PUBLISHED:
   INLINE static GraphicsStateGuardian *get_global_gsg();
 
 public:
-  INLINE bool set_scene(SceneSetup *scene_setup);
+  bool set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
 
   virtual PreparedGraphicsObjects *get_prepared_objects();
@@ -162,9 +162,6 @@ public:
 
   virtual void prepare_display_region()=0;
   virtual bool prepare_lens(Lens::StereoChannel stereo_channel);
-
-  INLINE int force_normals();
-  INLINE int undo_force_normals();
 
   virtual bool begin_frame();
   virtual bool begin_scene();
@@ -284,6 +281,7 @@ protected:
   CPT(GeomVertexData) _vertex_data;
 
   int _buffer_mask;
+  unsigned int _color_write_mask;
   Colorf _color_clear_value;
   float _depth_clear_value;
   bool _stencil_clear_value;
@@ -296,15 +294,12 @@ protected:
   CPT(DisplayRegion) _current_display_region;
   CPT(Lens) _current_lens;
 
-  // This is used by wants_normals().  It's used as a semaphore:
-  // increment it to enable normals, and decrement it when you're
-  // done.  The graphics engine will apply normals if it is nonzero.
-  int _force_normals;
-
   CoordinateSystem _coordinate_system;
   CoordinateSystem _internal_coordinate_system;
   CPT(TransformState) _cs_transform;
   CPT(TransformState) _inv_cs_transform;
+
+  bool _is_stereo;
 
   Colorf _scene_graph_color;
   bool _has_scene_graph_color;

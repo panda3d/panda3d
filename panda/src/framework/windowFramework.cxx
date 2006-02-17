@@ -967,7 +967,7 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_color(_window->get_clear_color());
     _display_region_3d->set_clear_depth(_window->get_clear_depth());
     if (_display_region_right) {
-      _display_region_right->set_clear_color_active(!_window->get_red_blue_stereo());
+      _display_region_right->set_clear_color_active(true);
       _display_region_right->set_clear_depth_active(true);
       _display_region_right->set_clear_color(_window->get_clear_color());
       _display_region_right->set_clear_depth(_window->get_clear_depth());
@@ -980,7 +980,7 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
     if (_display_region_right) {
-      _display_region_right->set_clear_color_active(!_window->get_red_blue_stereo());
+      _display_region_right->set_clear_color_active(true);
       _display_region_right->set_clear_depth_active(true);
       _display_region_right->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
       _display_region_right->set_clear_depth(1.0f);
@@ -993,7 +993,7 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
     if (_display_region_right) {
-      _display_region_right->set_clear_color_active(!_window->get_red_blue_stereo());
+      _display_region_right->set_clear_color_active(true);
       _display_region_right->set_clear_depth_active(true);
       _display_region_right->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 0.0f));
       _display_region_right->set_clear_depth(1.0f);
@@ -1006,7 +1006,7 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_color(Colorf(1.0f, 1.0f, 1.0f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
     if (_display_region_right) {
-      _display_region_right->set_clear_color_active(!_window->get_red_blue_stereo());
+      _display_region_right->set_clear_color_active(true);
       _display_region_right->set_clear_depth_active(true);
       _display_region_right->set_clear_color(Colorf(1.0f, 1.0f, 1.0f, 0.0f));
       _display_region_right->set_clear_depth(1.0f);

@@ -89,6 +89,8 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _one_shot = false;
   _inverted = window_inverted;
   _red_blue_stereo = false;
+  _left_eye_color_mask = 0x0f;
+  _right_eye_color_mask = 0x0f;
   _delete_flag = false;
   _texture_card = 0;
   _trigger_copy = false;

@@ -101,6 +101,9 @@ protected:
   // thread other than the window thread.
   void system_changed_properties(const WindowProperties &properties);
   void system_changed_size(int x_size, int y_size);
+
+private:
+  static unsigned int parse_color_mask(const string &word);
   
 protected:
   typedef vector_GraphicsWindowInputDevice InputDevices;

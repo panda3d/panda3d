@@ -560,24 +560,6 @@ get_global_gsg() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_scene
-//       Access: Public
-//  Description: Sets the SceneSetup object that indicates the initial
-//               camera position, etc.  This must be called before
-//               traversal begins.  Returns true if the scene is
-//               acceptable, false if something's wrong.
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsStateGuardian::
-set_scene(SceneSetup *scene_setup) {
-  _scene_setup = scene_setup;
-  _current_lens = scene_setup->get_lens();
-  if (_current_lens == (Lens *)NULL) {
-    return false;
-  }
-  return prepare_lens(scene_setup->get_display_region()->get_stereo_channel());
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_scene
 //       Access: Public
 //  Description: Returns the SceneSetup object.
@@ -603,39 +585,6 @@ clear(DisplayRegion *dr) {
   prepare_display_region();
   clear((DrawableRegion *)dr);
   pop_display_region(old_dr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::force_normals
-//       Access: Public
-//  Description: Temporarily forces the GSG to issue normals to the
-//               graphics pipe.  Normally, the GSG will issue normals
-//               only if lighting is on.
-//
-//               This call must be matched with exactly one call to
-//               undo_force_normals().
-////////////////////////////////////////////////////////////////////
-INLINE int GraphicsStateGuardian::
-force_normals() {
-  nassertr(_force_normals >= 0, _force_normals);
-  _force_normals++;
-  return _force_normals;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::undo_force_normals
-//       Access: Public
-//  Description: Undoes the effect of a previous call to
-//               force_normals().
-//
-//               This call must be matched with one-to-one with a
-//               previous call to force_normals().
-////////////////////////////////////////////////////////////////////
-INLINE int GraphicsStateGuardian::
-undo_force_normals() {
-  _force_normals--;
-  nassertr(_force_normals >= 0, _force_normals);
-  return _force_normals;
 }
 
 ////////////////////////////////////////////////////////////////////

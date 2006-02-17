@@ -33,6 +33,7 @@
 #include "geomTristrips.h"
 #include "geomTrifans.h"
 #include "geomLinestrips.h"
+#include "colorWriteAttrib.h"
 #include "shader.h"
 
 #include <algorithm>
@@ -283,11 +284,13 @@ reset() {
   _scene_setup = _scene_null;
   
   _buffer_mask = 0;
+  _color_write_mask = ColorWriteAttrib::C_all;
   _color_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
   _depth_clear_value = 1.0f;
   _stencil_clear_value = 0.0f;
   _accum_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
-  _force_normals = 0;
+
+  _is_stereo = get_properties().is_stereo();
 
   _has_scene_graph_color = false;
   _transform_stale = true;
@@ -343,6 +346,39 @@ set_state_and_transform(const RenderState *state,
 RenderBuffer GraphicsStateGuardian::
 get_render_buffer(int buffer_type) {
   return RenderBuffer(this, buffer_type & _buffer_mask);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_scene
+//       Access: Public
+//  Description: Sets the SceneSetup object that indicates the initial
+//               camera position, etc.  This must be called before
+//               traversal begins.  Returns true if the scene is
+//               acceptable, false if something's wrong.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+set_scene(SceneSetup *scene_setup) {
+  _scene_setup = scene_setup;
+  _current_lens = scene_setup->get_lens();
+  if (_current_lens == (Lens *)NULL) {
+    return false;
+  }
+  DisplayRegion *dr = scene_setup->get_display_region();
+  Lens::StereoChannel stereo_channel = dr->get_stereo_channel();
+  switch (stereo_channel) {
+  case Lens::SC_left:
+    _color_write_mask = dr->get_window()->get_left_eye_color_mask();
+    break;
+
+  case Lens::SC_right:
+    _color_write_mask = dr->get_window()->get_right_eye_color_mask();
+    break;
+
+  case Lens::SC_both:
+    _color_write_mask = ColorWriteAttrib::C_all;
+  }
+
+  return prepare_lens(stereo_channel);
 }
 
 ////////////////////////////////////////////////////////////////////

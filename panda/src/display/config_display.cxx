@@ -156,6 +156,13 @@ ConfigVariableBool red_blue_stereo
 	  "by default, if the framebuffer does not support true stereo "
 	  "rendering."));
 
+ConfigVariableString red_blue_stereo_colors
+("red-blue-stereo-colors", "red blue",
+ PRC_DESC("This defines the color channels that are used for the left and "
+          "right eye, respectively, for red-blue-stereo mode.  This should "
+          "be a two-word string, where each word is one of 'red', 'blue', "
+          "'green', or 'alpha'."));
+
 ConfigVariableBool invert_red_blue_stereo
 ("invert-red-blue-stereo", false,
  PRC_DESC("When this is true, the red and blue colors of red-blue stereo mode "

@@ -231,16 +231,29 @@ get_inverted() const {
 //  Description: Enables red-blue stereo mode on this particular
 //               window.  When red-blue stereo mode is in effect,
 //               DisplayRegions that have the "left" channel set will
-//               render in the red channel only, while DisplayRegions
-//               that have the "right" channel set will render in the
-//               blue channel only.
+//               render in the red (or specified) channel only, while
+//               DisplayRegions that have the "right" channel set will
+//               render in the blue (or specified) channel only.
+//
+//               The remaining two parameters specify the particular
+//               color channel(s) to associate with each eye.  Use the
+//               bits defined in ColorWriteAttrib::Channels.
 //
 //               This can be used to achieve a cheesy stereo mode in
 //               the absence of hardware-supported stereo.
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsOutput::
-set_red_blue_stereo(bool red_blue_stereo) {
+set_red_blue_stereo(bool red_blue_stereo,
+                    unsigned int left_eye_color_mask,
+                    unsigned int right_eye_color_mask) {
   _red_blue_stereo = red_blue_stereo;
+  if (_red_blue_stereo) {
+    _left_eye_color_mask = left_eye_color_mask;
+    _right_eye_color_mask = right_eye_color_mask;
+  } else {
+    _left_eye_color_mask = 0x0f;
+    _right_eye_color_mask = 0x0f;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -252,6 +265,32 @@ set_red_blue_stereo(bool red_blue_stereo) {
 INLINE bool GraphicsOutput::
 get_red_blue_stereo() const {
   return _red_blue_stereo;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_left_eye_color_mask
+//       Access: Published
+//  Description: Returns the color mask in effect when rendering a
+//               left-eye view in red_blue stereo mode.  This is one
+//               or more bits defined in ColorWriteAttrib::Channels.
+//               See set_red_blue_stereo().
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int GraphicsOutput::
+get_left_eye_color_mask() const {
+  return _left_eye_color_mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_right_eye_color_mask
+//       Access: Published
+//  Description: Returns the color mask in effect when rendering a
+//               right-eye view in red_blue stereo mode.  This is one
+//               or more bits defined in ColorWriteAttrib::Channels.
+//               See set_red_blue_stereo().
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int GraphicsOutput::
+get_right_eye_color_mask() const {
+  return _right_eye_color_mask;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -689,32 +689,7 @@ flip_frame() {
     do_flip_frame();
   }
 }
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::render_subframe
-//       Access: Published
-//  Description: Performs a complete cull and draw pass for one
-//               particular display region.  This is normally useful
-//               only for special effects, like shaders, that require
-//               a complete offscreen render pass before they can
-//               complete.
-//
-//               This always executes completely within the calling
-//               thread, regardless of the threading model in use.
-//               Thus, it must always be called from the draw thread,
-//               whichever thread that may be.
-////////////////////////////////////////////////////////////////////
-void GraphicsEngine::
-render_subframe(GraphicsOutput *win, DisplayRegion *dr,
-                bool cull_sorting) {
-  if (cull_sorting) {
-    cull_to_bins(win, dr);
-  } else {
-    cull_and_draw_together(win, dr);
-  }
-}
-
+ 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::add_callback
 //       Access: Public
@@ -826,8 +801,8 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::cull_and_draw_together
 //       Access: Private
-//  Description: This variant of cull_and_draw_together() is called
-//               only by render_subframe().
+//  Description: Called only from within the inner loop in
+//               cull_and_draw_together(), above.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr) {
@@ -863,6 +838,11 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 cull_to_bins(const GraphicsEngine::Windows &wlist) {
+  // Keep track of the cameras we have already used in this thread to
+  // render DisplayRegions.
+  typedef pmap<NodePath, DisplayRegion *> AlreadyCulled;
+  AlreadyCulled already_culled;
+
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
@@ -871,7 +851,26 @@ cull_to_bins(const GraphicsEngine::Windows &wlist) {
       for (int i = 0; i < num_display_regions; ++i) {
         DisplayRegion *dr = win->get_active_display_region(i);
         if (dr != (DisplayRegion *)NULL) {
-          cull_to_bins(win, dr);
+          NodePath camera = dr->get_camera();
+          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(camera, NULL)).first;
+          if ((*aci).second == NULL) {
+            // We have not used this camera already in this thread.
+            // Perform the cull operation.
+            (*aci).second = dr;
+            cull_to_bins(win, dr);
+
+          } else {
+            // We have already culled a scene using this camera in
+            // this thread, and now we're being asked to cull another
+            // scene using the same camera.  (Maybe this represents
+            // two different DisplayRegions for the left and right
+            // channels of a stereo image.)  Of course, the cull
+            // result will be the same, so just use the result from
+            // the other DisplayRegion.
+            DisplayRegion *other_dr = (*aci).second;
+            dr->set_cull_result(other_dr->get_cull_result(),
+                                setup_scene(win->get_gsg(), dr));
+          }
         }
       }
     }
@@ -881,9 +880,8 @@ cull_to_bins(const GraphicsEngine::Windows &wlist) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::cull_to_bins
 //       Access: Private
-//  Description: This variant of cull_to_bins() is called
-//               by render_subframe(), as well as within the
-//               implementation of cull_to_bins(), above.
+//  Description: Called only within the inner loop of cull_to_bins(),
+//               above.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 cull_to_bins(GraphicsOutput *win, DisplayRegion *dr) {
@@ -1176,31 +1174,6 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
     // This also means we need to globally invert the sense of polygon
     // vertex ordering.
     initial_state = initial_state->compose(get_invert_polygon_state());
-  }
-
-  if (window->get_red_blue_stereo()) {
-    // If the window has red-blue stereo mode, apply the appropriate
-    // color mask to the initial state.
-    switch (dr->get_stereo_channel()) {
-    case Lens::SC_left:
-      if (invert_red_blue_stereo) {
-	initial_state = initial_state->compose(get_blue_channel_state());
-      } else {
-	initial_state = initial_state->compose(get_red_channel_state());
-      }
-      break;
-
-    case Lens::SC_right:
-      if (invert_red_blue_stereo) {
-	initial_state = initial_state->compose(get_red_channel_state());
-      } else {
-	initial_state = initial_state->compose(get_blue_channel_state());
-      }
-      break;
-
-    case Lens::SC_both:
-      break;
-    }
   }
 
   scene_setup->set_display_region(dr);
@@ -1535,44 +1508,6 @@ get_invert_polygon_state() {
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make(CullFaceAttrib::make_reverse());
-  }
-
-  return state;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::get_red_channel_state
-//       Access: Protected, Static
-//  Description: Returns a RenderState for rendering only to the red
-//               channel of the color buffer, for implementing
-//               red-blue stereo.
-////////////////////////////////////////////////////////////////////
-const RenderState *GraphicsEngine::
-get_red_channel_state() {
-  // Once someone asks for this pointer, we hold its reference count
-  // and never free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
-    state = RenderState::make(ColorWriteAttrib::make(ColorWriteAttrib::C_red));
-  }
-
-  return state;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::get_blue_channel_state
-//       Access: Protected, Static
-//  Description: Returns a RenderState for rendering only to the blue
-//               channel of the color buffer, for implementing
-//               red-blue stereo.
-////////////////////////////////////////////////////////////////////
-const RenderState *GraphicsEngine::
-get_blue_channel_state() {
-  // Once someone asks for this pointer, we hold its reference count
-  // and never free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
-    state = RenderState::make(ColorWriteAttrib::make(ColorWriteAttrib::C_blue));
   }
 
   return state;
