@@ -388,7 +388,7 @@ void DXGraphicsStateGuardian9::
 apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context) {
   DXVertexBufferContext9 *dvbc = DCAST(DXVertexBufferContext9, vbc);
 
-  DBG_SH2 dxgsg9_cat.debug ( ) << "apply_vertex_buffer\n"; DBG_E
+  DBG_SH3 dxgsg9_cat.debug ( ) << "apply_vertex_buffer\n"; DBG_E
 
   bool set_stream_source;
   HRESULT hr;
@@ -501,18 +501,18 @@ apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context
 
             offset = 0;
             source_vertex_element_type = dvbc -> _vertex_element_type_array;
-            while (source_vertex_element_type -> id != VS_END) {
-              if (source_vertex_element_type -> id ==
-                  vertex_element_type -> id) {
+            while (source_vertex_element_type -> vs_input_type != VS_END) {
+              if (source_vertex_element_type -> vs_input_type == vertex_element_type -> vs_input_type &&
+                  source_vertex_element_type -> index == vertex_element_type -> index) {
                   offset = source_vertex_element_type -> offset;
                   break;
               }
               source_vertex_element_type++;
             }
-            if (source_vertex_element_type -> id == VS_END) {
+            if (source_vertex_element_type -> vs_input_type == VS_END) {
               dxgsg9_cat.error()
                 << "unable to find a mapping for vertex shader input type="
-                << vertex_element_type -> id
+                << vertex_element_type -> vs_input_type
                 << " from vertex elements\n";
             }
 
@@ -1142,8 +1142,6 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
 
   DBG_SH5 dxgsg9_cat.debug ( ) << "begin_draw_primitives\n"; DBG_E
 
-
-
 // SHADER
   if (_vertex_array_shader_context==0) {
     if (_current_shader_context==0) {
@@ -1164,13 +1162,108 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
   _vertex_array_shader_expansion = _current_shader_expansion;
   _vertex_array_shader_context = _current_shader_context;
 
-// const GeomVertexFormat *format = _vertex_data->get_format();
-
+  const GeomVertexFormat *format = _vertex_data->get_format ( );
   const GeomVertexArrayData *data;
+  int number_of_arrays = _vertex_data -> get_num_arrays ( );
 
-  // use the original data if possible
-  if (_current_shader_context && _vertex_data->get_num_arrays ( ) > 1) {
-    data = _vertex_data->get_array(1);
+  if (_current_shader_context && number_of_arrays > 1) {
+
+    // find a matching vertex format for the vertex shader's input if possible
+    VertexElementArray *vertex_element_array;
+
+    vertex_element_array = _current_shader_context -> _vertex_element_array;
+    if (vertex_element_array)
+    {
+      bool match;
+      bool multiple_matches;
+      int index;
+      int first_index;
+
+      match = false;
+      multiple_matches = false;
+      first_index = -1;
+
+      // quick check for a match
+      // find the one array with the minimum number of elements if possible
+      {
+        for (index = 0; index < number_of_arrays; index++) {
+          data = _vertex_data -> get_array (index);
+
+          const GeomVertexArrayFormat *array_format = data->get_array_format();
+          int number_of_columns = array_format->get_num_columns();
+
+          DBG_VEA
+            dxgsg9_cat.debug ( )
+              << " data index " << index
+              << " number_of_columns " << number_of_columns
+              << " vertex_element_array -> total_elements " << vertex_element_array -> total_elements
+              << "\n";
+          DBG_E
+
+          if (number_of_columns >= vertex_element_array -> total_elements) {
+            if (first_index >= 0) {
+              multiple_matches = true;
+            }
+            else {
+              first_index = index;
+            }
+          }
+        }
+      }
+
+      if (multiple_matches)
+      {
+        // ugh slow, need to find which one
+        for (index = first_index; index < number_of_arrays; index++)
+        {
+          data = _vertex_data -> get_array (index);
+
+          const GeomVertexArrayFormat *array_format = data->get_array_format();
+          int number_of_columns = array_format->get_num_columns();
+
+          if (number_of_columns >= vertex_element_array -> total_elements)
+          {
+
+// check not implemented yet
+dxgsg9_cat.error ( ) << "vertex_element_type_array check not implemented yet\n";
+
+// build a vertex_element_type_array from data
+
+// compare both vertex_element_type_array for a match
+vertex_element_array -> vertex_element_type_array;
+
+
+          }
+        }
+
+// since the check is not implemented yet use first_index for now
+data = _vertex_data -> get_array (first_index);
+
+        match = true;
+      }
+      else
+      {
+        if (first_index >= 0) {
+          data = _vertex_data -> get_array (first_index);
+          match = true;
+        }
+      }
+
+      if (match) {
+
+      }
+      else {
+        // ERROR
+        dxgsg9_cat.error ( ) << "could not find matching vertex element data for vertex shader\n";
+
+        // just use the 0 array
+        data = _vertex_data->get_array(0);
+      }
+    }
+    else {
+      // ERROR
+      dxgsg9_cat.error ( ) << "_current_shader_context -> _vertex_element_array == 0\n";
+    }
   }
   else {
     // The munger should have put the FVF data in the first array.
@@ -2412,20 +2505,37 @@ reset() {
   _supports_render_texture = false;
 
   // default render to texture format
-  _screen->_render_to_texture_d3d_format = D3DFMT_X8R8G8B8;
+  _screen->_render_to_texture_d3d_format = D3DFMT_A8R8G8B8;
+
+  #define TOTAL_RENDER_TO_TEXTURE_FORMATS 3
+
+  D3DFORMAT render_to_texture_formats [TOTAL_RENDER_TO_TEXTURE_FORMATS] =
+  {
+    D3DFMT_A8R8G8B8,  // check for this format first
+    D3DFMT_X8R8G8B8,
+    (D3DFORMAT) 0,    // place holder for _screen->_display_mode.Format
+  };
+
+  render_to_texture_formats [TOTAL_RENDER_TO_TEXTURE_FORMATS - 1] = _screen->_display_mode.Format;
+
   hr = _d3d_device->GetCreationParameters (&creation_parameters);
   if (SUCCEEDED (hr)) {
-    hr = _screen->_d3d9->CheckDeviceFormat (
-        creation_parameters.AdapterOrdinal,
-        creation_parameters.DeviceType,
-        _screen->_display_mode.Format,
-        D3DUSAGE_RENDERTARGET,
-        D3DRTYPE_TEXTURE,
-        _screen->_render_to_texture_d3d_format);
-    if (SUCCEEDED (hr)) {
-      // match the display mode format for render to texture
-      _screen->_render_to_texture_d3d_format = _screen->_display_mode.Format;
-      _supports_render_texture = true;
+    int index;
+    for (index = 0; index < TOTAL_RENDER_TO_TEXTURE_FORMATS; index++) {
+      hr = _screen->_d3d9->CheckDeviceFormat (
+          creation_parameters.AdapterOrdinal,
+          creation_parameters.DeviceType,
+          _screen->_display_mode.Format,
+          D3DUSAGE_RENDERTARGET,
+          D3DRTYPE_TEXTURE,
+          render_to_texture_formats [index]);
+      if (SUCCEEDED (hr)) {
+        _screen->_render_to_texture_d3d_format = render_to_texture_formats [index];
+        _supports_render_texture = true;
+      }
+      if (_supports_render_texture) {
+        break;
+      }
     }
   }
   if (dxgsg9_cat.is_debug()) {
@@ -2706,7 +2816,7 @@ do_issue_shader() {
     context = (CLP(ShaderContext) *)(expansion->prepare_now(get_prepared_objects(), this));
   }
 
-  if (context == 0) {
+  if (context == 0 || (context && context -> valid (this) == false)) {
     if (_current_shader_context != 0) {
       _current_shader_context->unbind(this);
       _current_shader_expansion = 0;

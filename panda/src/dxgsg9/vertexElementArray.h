@@ -42,7 +42,7 @@ enum
 
 typedef struct
 {
-  int id; // this is VS_XXXXX
+  int vs_input_type; // this is VS_XXXXX from the enum above
   int index;
   int stream;
   int offset;
@@ -72,6 +72,7 @@ public:
   ~VertexElementArray ( );
 
   int set_vertex_element_offset (int vertex_element_index, int offset);
+  void set_vs_input_type (int vs_input_type, VERTEX_ELEMENT_TYPE *vertex_element_type);
 
   void add_position_xyz_vertex_element (int stream_index);
   void add_position_xyzw_vertex_element (int stream_index);

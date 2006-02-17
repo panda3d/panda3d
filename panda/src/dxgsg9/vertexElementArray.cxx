@@ -50,6 +50,12 @@ int VertexElementArray::set_vertex_element_offset (int vertex_element_index, int
   return state;
 }
 
+void VertexElementArray::set_vs_input_type (int vs_input_type, VERTEX_ELEMENT_TYPE *vertex_element_type) {
+  vertex_element_type -> vs_input_type = vs_input_type;
+  vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> vs_input_type];
+  vertex_element_type_counter_array [vertex_element_type -> vs_input_type]++;
+}
+
 void VertexElementArray::add_position_xyz_vertex_element (int stream_index) {
   DIRECT_3D_VERTEX_ELEMENT *vertex_element;
   VERTEX_ELEMENT_TYPE *vertex_element_type;
@@ -58,9 +64,7 @@ void VertexElementArray::add_position_xyz_vertex_element (int stream_index) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
 
-    vertex_element_type -> id = VS_POSITION_XYZ;
-    vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
-    vertex_element_type_counter_array [vertex_element_type -> id]++;
+    set_vs_input_type (VS_POSITION_XYZ, vertex_element_type);
 
     vertex_element -> Stream = stream_index;
     vertex_element -> Offset = this -> offset;
@@ -83,9 +87,7 @@ void VertexElementArray::add_position_xyzw_vertex_element (int stream_index) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
 
-    vertex_element_type -> id = VS_POSITION_XYZW;
-    vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
-    vertex_element_type_counter_array [vertex_element_type -> id]++;
+    set_vs_input_type (VS_POSITION_XYZW, vertex_element_type);
 
     vertex_element -> Stream = stream_index;
     vertex_element -> Offset = this -> offset;
@@ -108,9 +110,7 @@ void VertexElementArray::add_normal_vertex_element (int stream_index) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
 
-    vertex_element_type -> id = VS_NORMAL;
-    vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
-    vertex_element_type_counter_array [vertex_element_type -> id]++;
+    set_vs_input_type (VS_NORMAL, vertex_element_type);
 
     vertex_element -> Stream = stream_index;
     vertex_element -> Offset = this -> offset;
@@ -133,9 +133,7 @@ void VertexElementArray::add_binormal_vertex_element (int stream_index) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
 
-    vertex_element_type -> id = VS_BINORMAL;
-    vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
-    vertex_element_type_counter_array [vertex_element_type -> id]++;
+    set_vs_input_type (VS_BINORMAL, vertex_element_type);
 
     vertex_element -> Stream = stream_index;
     vertex_element -> Offset = this -> offset;
@@ -158,9 +156,7 @@ void VertexElementArray::add_tangent_vertex_element (int stream_index) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
 
-    vertex_element_type -> id = VS_TANGENT;
-    vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
-    vertex_element_type_counter_array [vertex_element_type -> id]++;
+    set_vs_input_type (VS_TANGENT, vertex_element_type);
 
     vertex_element -> Stream = stream_index;
     vertex_element -> Offset = this -> offset;
@@ -183,9 +179,7 @@ void VertexElementArray::add_diffuse_color_vertex_element (int stream_index) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
 
-    vertex_element_type -> id = VS_DIFFUSE;
-    vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
-    vertex_element_type_counter_array [vertex_element_type -> id]++;
+    set_vs_input_type (VS_DIFFUSE, vertex_element_type);
 
     vertex_element -> Stream = stream_index;
     vertex_element -> Offset = this -> offset;
@@ -208,9 +202,7 @@ void VertexElementArray::add_specular_color_vertex_element (int stream_index) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
 
-    vertex_element_type -> id = VS_SPECULAR;
-    vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
-    vertex_element_type_counter_array [vertex_element_type -> id]++;
+    set_vs_input_type (VS_SPECULAR, vertex_element_type);
 
     vertex_element -> Stream = stream_index;
     vertex_element -> Offset = this -> offset;
@@ -233,9 +225,7 @@ void VertexElementArray::add_u_vertex_element (int stream_index) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
 
-    vertex_element_type -> id = VS_TEXTURE_U;
-    vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
-    vertex_element_type_counter_array [vertex_element_type -> id]++;
+    set_vs_input_type (VS_TEXTURE_U, vertex_element_type);
 
     vertex_element -> Stream = stream_index;
     vertex_element -> Offset = this -> offset;
@@ -258,9 +248,7 @@ void VertexElementArray::add_uv_vertex_element (int stream_index) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
 
-    vertex_element_type -> id = VS_TEXTURE_UV;
-    vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
-    vertex_element_type_counter_array [vertex_element_type -> id]++;
+    set_vs_input_type (VS_TEXTURE_UV, vertex_element_type);
 
     vertex_element -> Stream = stream_index;
     vertex_element -> Offset = this -> offset;
@@ -283,9 +271,7 @@ void VertexElementArray::add_uvw_vertex_element (int stream_index) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
 
-    vertex_element_type -> id = VS_TEXTURE_UVW;
-    vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> id];
-    vertex_element_type_counter_array [vertex_element_type -> id]++;
+    set_vs_input_type (VS_TEXTURE_UVW, vertex_element_type);
 
     vertex_element -> Stream = stream_index;
     vertex_element -> Offset = this -> offset;
@@ -310,7 +296,7 @@ int VertexElementArray::add_end_vertex_element (void) {
     vertex_element = &this -> vertex_element_array [this -> total_elements];
     vertex_element_type = &this -> vertex_element_type_array [this -> total_elements];
 
-    vertex_element_type -> id = VS_END;
+    vertex_element_type -> vs_input_type = VS_END;
 
     vertex_element -> Stream = 0xFF;
     vertex_element -> Type = D3DDECLTYPE_UNUSED;

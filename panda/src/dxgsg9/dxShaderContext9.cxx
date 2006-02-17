@@ -392,11 +392,12 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
   s->parse_init();
   s->parse_line(header, true, true);
 
+  _state = false;
+
 #ifdef HAVE_CGDX9
 
   DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: Create ShaderContext \n"; DBG_E
 
-  _state = false;
   _cg_shader = false;
 
   _cg_profile[SHADER_type_vert] = CG_PROFILE_UNKNOWN;
@@ -626,7 +627,7 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
 
 // SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER?
         stream_index = 0;
-        vertex_element_array = new VertexElementArray (_direct_3d_vertex_shader.total_semantics + 16);
+        vertex_element_array = new VertexElementArray (_direct_3d_vertex_shader.total_semantics + 2);
 
         for (index = 0; index < _direct_3d_vertex_shader.total_semantics; index++) {
           D3DXSEMANTIC *semantic;
@@ -1661,7 +1662,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 
 // SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER?
       stream_index = 0;
-      vertex_element_array = new VertexElementArray (nvarying + 16);
+      vertex_element_array = new VertexElementArray (nvarying + 2);
 
       for (int i=0; i<nvarying; i++) {
         InternalName *name = _cg_varying[i].name;

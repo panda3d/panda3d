@@ -46,92 +46,119 @@ DXVertexBufferContext9(GeomVertexArrayData *data, DXScreenData &scrn) :
   int index;
   int n = 0;
   int num_columns = array_format->get_num_columns();
-  int total_elements;
 
-  total_elements = num_columns + 2;
-  _vertex_element_type_array = new VERTEX_ELEMENT_TYPE [total_elements];
-  memset (_vertex_element_type_array, 0, total_elements * sizeof (VERTEX_ELEMENT_TYPE));
+  _vertex_element_type_array = 0;
 
-  // create a simple vertex type mapping from the vertex elements
-  for (index = 0; index < num_columns; index++)
+  VERTEX_ELEMENT_TYPE *vertex_element_type_array;
+
+//  if (scrn._dxgsg9 -> _current_shader_context)
   {
-    int num_values;
-    const InternalName *name;
+    int total_elements;
+    unsigned char vertex_element_type_counter_array [VS_TOTAL_TYPES];
+    VERTEX_ELEMENT_TYPE *vertex_element_type;
 
-    name = array_format -> get_column (index) -> get_name ( );
-    num_values = array_format -> get_column(index) -> get_num_values ( );
+    total_elements = num_columns + 2;
+    vertex_element_type_array = new VERTEX_ELEMENT_TYPE [total_elements];
+    memset (vertex_element_type_array, 0, total_elements * sizeof (VERTEX_ELEMENT_TYPE));
+    memset (vertex_element_type_counter_array, 0, sizeof (vertex_element_type_counter_array));
 
-    if (false) {
+    // create a simple vertex type mapping from the vertex elements
+    vertex_element_type = vertex_element_type_array;
+    for (index = 0; index < num_columns; index++)
+    {
+      int num_values;
+      const InternalName *name;
 
-    } else if (name == InternalName::get_vertex ( )) {
+      name = array_format -> get_column (index) -> get_name ( );
+      num_values = array_format -> get_column(index) -> get_num_values ( );
 
-      switch (num_values)
-      {
-        case 3:
-          _vertex_element_type_array [index].id = VS_POSITION_XYZ;
-          break;
-        case 4:
-          _vertex_element_type_array [index].id = VS_POSITION_XYZW;
-          break;
-        default:
-          dxgsg9_cat.warning ( ) << "VERTEX ERROR: invalid number of position coordinate elements " << num_values << "\n";
-          break;
+      if (false) {
+
+      } else if (name -> get_top ( ) == InternalName::get_vertex ( )) {
+
+        switch (num_values)
+        {
+          case 3:
+            vertex_element_type -> vs_input_type = VS_POSITION_XYZ;
+            break;
+          case 4:
+            vertex_element_type -> vs_input_type = VS_POSITION_XYZW;
+            break;
+          default:
+            dxgsg9_cat.warning ( ) << "VERTEX ERROR: invalid number of position coordinate elements " << num_values << "\n";
+            break;
+        }
+
+      } else if (name -> get_top ( ) == InternalName::get_texcoord ( )) {
+
+        switch (num_values)
+        {
+          case 1:
+            vertex_element_type -> vs_input_type = VS_TEXTURE_U;
+            break;
+          case 2:
+            vertex_element_type -> vs_input_type = VS_TEXTURE_UV;
+            break;
+          case 3:
+            vertex_element_type -> vs_input_type = VS_TEXTURE_UVW;
+            break;
+          default:
+            dxgsg9_cat.warning ( ) << "VERTEX ERROR: invalid number of vertex texture coordinate elements " << num_values << "\n";
+            break;
+        }
+
+      } else if (name -> get_top ( ) == InternalName::get_normal ( )) {
+
+        vertex_element_type -> vs_input_type = VS_NORMAL;
+
+      } else if (name -> get_top ( ) == InternalName::get_binormal ( )) {
+
+        vertex_element_type -> vs_input_type = VS_BINORMAL;
+
+      } else if (name -> get_top ( ) == InternalName::get_tangent ( )) {
+
+        vertex_element_type -> vs_input_type = VS_TANGENT;
+
+      } else if (name -> get_top ( ) == InternalName::get_color ( )) {
+
+        vertex_element_type -> vs_input_type = VS_DIFFUSE;
+
+      } else {
+
+        dxgsg9_cat.error ( )
+          << "VERTEX ERROR: unsupported vertex element " << name -> get_name ( )
+          << "\n";
+
+        vertex_element_type -> vs_input_type = VS_ERROR;
       }
 
-    } else if (name == InternalName::get_texcoord ( )) {
+      vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> vs_input_type];
+      vertex_element_type_counter_array [vertex_element_type -> vs_input_type]++;
 
-      switch (num_values)
-      {
-        case 1:
-          _vertex_element_type_array [index].id = VS_TEXTURE_U;
-          break;
-        case 2:
-          _vertex_element_type_array [index].id = VS_TEXTURE_UV;
-          break;
-        case 3:
-          _vertex_element_type_array [index].id = VS_TEXTURE_UVW;
-          break;
-        default:
-          dxgsg9_cat.warning ( ) << "VERTEX ERROR: invalid number of vertex texture coordinate elements " << num_values << "\n";
-          break;
-      }
+  // SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER ???
+      vertex_element_type -> stream = 0;
+      vertex_element_type -> offset = array_format -> get_column(index) -> get_start ( );
 
-    } else if (name == InternalName::get_normal ( )) {
+      DBG_VEA  dxgsg9_cat.debug()
+        << "INFO VertexElementArray " << index
+        << " " << name -> get_name ( )
+        << " VS INPUT TYPE " << vertex_element_type -> vs_input_type
+        << " index " << vertex_element_type -> index
+        << " offset " << vertex_element_type -> offset
+        << "\n";
+      DBG_E
 
-      _vertex_element_type_array [index].id = VS_NORMAL;
-
-    } else if (name == InternalName::get_binormal ( )) {
-
-      _vertex_element_type_array [index].id = VS_BINORMAL;
-
-    } else if (name == InternalName::get_tangent ( )) {
-
-      _vertex_element_type_array [index].id = VS_TANGENT;
-
-    } else if (name == InternalName::get_color ( )) {
-
-      _vertex_element_type_array [index].id = VS_DIFFUSE;
-
-    } else {
-
-      dxgsg9_cat.warning ( ) << "VERTEX ERROR: unsupported vertex element " << name -> get_name ( ) << "\n";
-      _vertex_element_type_array [index].id = VS_ERROR;
+      vertex_element_type++;
     }
 
-// SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER ???
-    _vertex_element_type_array [index].stream = 0;
-    _vertex_element_type_array [index].offset = array_format -> get_column(index) -> get_start ( );
-
-    DBG_VEA  dxgsg9_cat.debug() << "INFO VertexElementArray " << index
-      << " " << name -> get_name ( )
-      << " VS ID " << _vertex_element_type_array [index].id
-      << " offset " << _vertex_element_type_array [index].offset
+    DBG_VEA  dxgsg9_cat.debug()
+      << "INFO stride " << array_format -> get_stride ( )
+      << " total bytes " << array_format-> get_total_bytes ( )
       << "\n";
     DBG_E
   }
 
-  DBG_VEA  dxgsg9_cat.debug() << "INFO stride " << array_format -> get_stride ( ) << " total bytes " << array_format-> get_total_bytes ( ) << "\n"; DBG_E
-
+  _vertex_element_type_array = vertex_element_type_array;
 
   _fvf = 0;
   _managed = -1;
