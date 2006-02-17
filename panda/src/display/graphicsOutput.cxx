@@ -1033,9 +1033,8 @@ clear() {
 
     nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
-    DisplayRegionStack old_dr = _gsg->push_display_region(_default_display_region);
+    _gsg->prepare_display_region(_default_display_region, Lens::SC_mono);
     _gsg->clear(this);
-    _gsg->pop_display_region(old_dr);
   }
 }
 

@@ -84,8 +84,8 @@ public:
 
   virtual void do_clear(const RenderBuffer &buffer);
 
-  virtual void prepare_display_region();
-  virtual bool prepare_lens(Lens::StereoChannel stereo_channel);
+  virtual void prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel);
+  virtual bool prepare_lens();
 
   virtual bool begin_frame();
   virtual void end_frame();
@@ -321,8 +321,6 @@ protected:
   PT(ShaderExpansion)  _texture_binding_shader_expansion;
   CLP(ShaderContext)  *_texture_binding_shader_context;
   
-  CPT(DisplayRegion) _actual_display_region;
-
 #ifdef SUPPORT_IMMEDIATE_MODE
   CLP(ImmediateModeSender) _sender;
   bool _use_sender;

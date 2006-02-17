@@ -187,15 +187,8 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
     _display_region_3d->set_camera(camera_np);
 
     if (_window->is_stereo() && default_stereo_camera) {
-      // Actually, let's make a stereo camera.  That means the
-      // _display_region_3d will be the left channel, and we need to
-      // make another one to be the right channel.
-
-      _display_region_3d->set_stereo_channel(Lens::SC_left);
-
-      _display_region_right = _window->make_display_region();
-      _display_region_right->set_stereo_channel(Lens::SC_right);
-      _display_region_right->set_camera(camera_np);
+      // Actually, let's make a stereo DisplayRegion.
+      _display_region_3d->set_stereo_channel(Lens::SC_stereo);
     }
 
     set_background_type(_background_type);
@@ -966,12 +959,6 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_depth_active(true);
     _display_region_3d->set_clear_color(_window->get_clear_color());
     _display_region_3d->set_clear_depth(_window->get_clear_depth());
-    if (_display_region_right) {
-      _display_region_right->set_clear_color_active(true);
-      _display_region_right->set_clear_depth_active(true);
-      _display_region_right->set_clear_color(_window->get_clear_color());
-      _display_region_right->set_clear_depth(_window->get_clear_depth());
-    }
     break;
     
   case BT_black:
@@ -979,12 +966,6 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_depth_active(true);
     _display_region_3d->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
-    if (_display_region_right) {
-      _display_region_right->set_clear_color_active(true);
-      _display_region_right->set_clear_depth_active(true);
-      _display_region_right->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
-      _display_region_right->set_clear_depth(1.0f);
-    }
     break;
     
   case BT_gray:
@@ -992,12 +973,6 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_depth_active(true);
     _display_region_3d->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
-    if (_display_region_right) {
-      _display_region_right->set_clear_color_active(true);
-      _display_region_right->set_clear_depth_active(true);
-      _display_region_right->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 0.0f));
-      _display_region_right->set_clear_depth(1.0f);
-    }
     break;
     
   case BT_white:
@@ -1005,21 +980,11 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_depth_active(true);
     _display_region_3d->set_clear_color(Colorf(1.0f, 1.0f, 1.0f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
-    if (_display_region_right) {
-      _display_region_right->set_clear_color_active(true);
-      _display_region_right->set_clear_depth_active(true);
-      _display_region_right->set_clear_color(Colorf(1.0f, 1.0f, 1.0f, 0.0f));
-      _display_region_right->set_clear_depth(1.0f);
-    }
     break;
 
   case BT_none:
     _display_region_3d->set_clear_color_active(false);
     _display_region_3d->set_clear_depth_active(false);
-    if (_display_region_right) {
-      _display_region_right->set_clear_color_active(false);
-      _display_region_right->set_clear_depth_active(false);
-    }
     break;
   }
 }

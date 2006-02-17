@@ -67,6 +67,37 @@ get_stereo_channel() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_clear_depth_between_eyes
+//       Access: Published
+//  Description: Specifies whether the depth buffer is cleared again
+//               between the left and right eyes of a stereo
+//               DisplayRegion.  This has an effect only when
+//               get_stereo_channel() returns Lens::SC_stereo; other
+//               kinds of DisplayRegions are monocular and do not
+//               render two different eyes.
+//
+//               Normally, you want this to be true, since if you're
+//               using a depth buffer you normally need to clear it
+//               between the left and right eyes.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_clear_depth_between_eyes(bool clear_depth_between_eyes) {
+  _clear_depth_between_eyes = clear_depth_between_eyes;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_clear_depth_between_eyes
+//       Access: Published
+//  Description: Returns whether the depth buffer is cleared again
+//               between the left and right eyes of a stereo
+//               DisplayRegion.  See set_clear_depth_between_eyes().
+////////////////////////////////////////////////////////////////////
+INLINE bool DisplayRegion::
+get_clear_depth_between_eyes() const {
+  return _clear_depth_between_eyes;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_cube_map_index
 //       Access: Published
 //  Description: This is a special parameter that is only used when

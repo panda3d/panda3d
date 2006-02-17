@@ -15,8 +15,6 @@
     config_display.h \
     drawableRegion.I drawableRegion.h \
     displayRegion.I displayRegion.h  \
-    displayRegionStack.I \
-    displayRegionStack.h \
     frameBufferProperties.I frameBufferProperties.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsOutput.I graphicsOutput.h \
@@ -32,7 +30,6 @@
     graphicsDevice.h graphicsDevice.I \
     parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
-    lensStack.I lensStack.h \
     lru.h
     
  #define INCLUDED_SOURCES  \
@@ -58,8 +55,7 @@
     standardMunger.I standardMunger.h \
     config_display.h \
     drawableRegion.I drawableRegion.h \
-    displayRegion.I displayRegion.h displayRegionStack.I \
-    displayRegionStack.h \
+    displayRegion.I displayRegion.h \
     frameBufferProperties.I frameBufferProperties.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsOutput.I graphicsOutput.h \
@@ -74,7 +70,6 @@
     graphicsDevice.I graphicsDevice.h \
     parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
-    lensStack.I lensStack.h \
     renderBuffer.h
 
   #define IGATESCAN all

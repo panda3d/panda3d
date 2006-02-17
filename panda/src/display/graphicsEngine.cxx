@@ -809,11 +809,16 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr) {
   GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
+  win->change_scenes(dr);
+  gsg->prepare_display_region(dr, dr->get_stereo_channel());
+
   PT(SceneSetup) scene_setup = setup_scene(gsg, dr);
-  if (setup_gsg(gsg, scene_setup)) {
-    win->change_scenes(dr);
-    DisplayRegionStack old_dr = gsg->push_display_region(dr);
-    gsg->prepare_display_region();
+  if (!gsg->set_scene(scene_setup)) {
+    // The scene or lens is inappropriate somehow.
+    display_cat.error()
+      << gsg->get_type() << " cannot render scene with specified lens.\n";
+
+  } else {
     if (dr->is_any_clear_active()) {
       gsg->clear(dr);
     }
@@ -823,8 +828,6 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr) {
       do_cull(&cull_handler, scene_setup, gsg);
       gsg->end_scene();
     }
-    
-    gsg->pop_display_region(old_dr);
   }
 }
 
@@ -1243,43 +1246,59 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
   PStatTimer timer(_draw_pcollector);
 
   GraphicsStateGuardian *gsg = win->get_gsg();
-  if (setup_gsg(gsg, scene_setup)) {
-    win->change_scenes(dr);
-    DisplayRegionStack old_dr = gsg->push_display_region(dr);
-    gsg->prepare_display_region();
+  win->change_scenes(dr);
+
+  if (dr->get_stereo_channel() == Lens::SC_stereo) {
+    // A special case.  For a stereo DisplayRegion, we render the left
+    // eye, followed by the right eye.
     if (dr->is_any_clear_active()) {
+      gsg->prepare_display_region(dr, Lens::SC_stereo);
       gsg->clear(dr);
     }
-    if (gsg->begin_scene()) {
-      cull_result->draw();
-      gsg->end_scene();
+    gsg->prepare_display_region(dr, Lens::SC_left);
+
+    if (!gsg->set_scene(scene_setup)) {
+      // The scene or lens is inappropriate somehow.
+      display_cat.error()
+        << gsg->get_type() << " cannot render scene with specified lens.\n";
+    } else {
+      if (gsg->begin_scene()) {
+        cull_result->draw();
+        gsg->end_scene();
+      }
+      if (dr->get_clear_depth_between_eyes()) {
+        DrawableRegion clear_region;
+        clear_region.set_clear_depth_active(true);
+        clear_region.set_clear_depth(dr->get_clear_depth());
+        gsg->clear(&clear_region);
+      }
+      gsg->prepare_display_region(dr, Lens::SC_right);
+      gsg->set_scene(scene_setup);
+      if (gsg->begin_scene()) {
+        cull_result->draw();
+        gsg->end_scene();
+      }
     }
-    gsg->pop_display_region(old_dr);
-  }
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::setup_gsg
-//       Access: Private
-//  Description: Sets up the GSG to draw the indicated scene.  Returns
-//               true if the scene (and its lens) is acceptable, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
-bool GraphicsEngine::
-setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup) {
-  if (scene_setup == (SceneSetup *)NULL) {
-    // No scene, no draw.
-    return false;
-  }
+  } else {
+    // For a mono DisplayRegion, or a left/right eye only
+    // DisplayRegion, we just render that.
+    gsg->prepare_display_region(dr, dr->get_stereo_channel());
 
-  if (!gsg->set_scene(scene_setup)) {
-    // The scene or lens is inappropriate somehow.
-    display_cat.error()
-      << gsg->get_type() << " cannot render scene with specified lens.\n";
-    return false;
+    if (!gsg->set_scene(scene_setup)) {
+      // The scene or lens is inappropriate somehow.
+      display_cat.error()
+        << gsg->get_type() << " cannot render scene with specified lens.\n";
+    } else {
+      if (dr->is_any_clear_active()) {
+        gsg->clear(dr);
+      }
+      if (gsg->begin_scene()) {
+        cull_result->draw();
+        gsg->end_scene();
+      }
+    }
   }
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

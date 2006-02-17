@@ -92,6 +92,9 @@ PUBLISHED:
   void set_stereo_channel(Lens::StereoChannel stereo_channel);
   INLINE Lens::StereoChannel get_stereo_channel();
 
+  INLINE void set_clear_depth_between_eyes(bool clear_depth_between_eyes);
+  INLINE bool get_clear_depth_between_eyes() const;
+
   INLINE void set_cube_map_index(int cube_map_index);
   INLINE int get_cube_map_index() const;
 
@@ -130,6 +133,7 @@ private:
   // The associated window is a permanent property of the
   // DisplayRegion.  It doesn't need to be cycled.
   GraphicsOutput *_window;
+  bool _clear_depth_between_eyes;
 
   // This is the data that is associated with the DisplayRegion that
   // needs to be cycled every frame, but represents the parameters as

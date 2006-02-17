@@ -1076,7 +1076,8 @@ get_projection_mat(StereoChannel channel) const {
     return _projection_mat_left;
   case SC_right:
     return _projection_mat_right;
-  case SC_both:
+  case SC_mono:
+  case SC_stereo:
     return _projection_mat;
   }
 
@@ -1115,7 +1116,8 @@ get_projection_mat_inv(StereoChannel stereo_channel) const {
     }
     return _projection_mat_right_inv;
 
-  case SC_both:
+  case SC_mono:
+  case SC_stereo:
     break;
   }
 

@@ -160,7 +160,6 @@ private:
   PT(GraphicsWindow) _window;
   PT(DisplayRegion) _display_region_2d;
   PT(DisplayRegion) _display_region_3d;
-  PT(DisplayRegion) _display_region_right;
 
   NodePath _camera_group;
   typedef pvector< PT(Camera) > Cameras;

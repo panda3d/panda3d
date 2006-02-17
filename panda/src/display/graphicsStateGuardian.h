@@ -22,8 +22,6 @@
 #include "pandabase.h"
 
 #include "frameBufferProperties.h"
-#include "displayRegionStack.h"
-#include "lensStack.h"
 #include "preparedGraphicsObjects.h"
 #include "lens.h"
 #include "graphicsStateGuardianBase.h"
@@ -158,10 +156,10 @@ public:
   virtual void do_clear(const RenderBuffer &buffer)=0;
 
   void clear(DrawableRegion *clearable);
-  INLINE void clear(DisplayRegion *dr);
 
-  virtual void prepare_display_region()=0;
-  virtual bool prepare_lens(Lens::StereoChannel stereo_channel);
+  virtual void prepare_display_region(DisplayRegion *dr,
+                                      Lens::StereoChannel stereo_channel);
+  virtual bool prepare_lens();
 
   virtual bool begin_frame();
   virtual bool begin_scene();
@@ -194,10 +192,8 @@ public:
   RenderBuffer get_render_buffer(int buffer_type);
 
   INLINE const DisplayRegion *get_current_display_region() const;
+  INLINE Lens::StereoChannel get_current_stereo_channel() const;
   INLINE const Lens *get_current_lens() const;
-
-  INLINE DisplayRegionStack push_display_region(const DisplayRegion *dr);
-  INLINE void pop_display_region(DisplayRegionStack &node);
 
   INLINE const TransformState *get_cs_transform() const;
   INLINE const TransformState *get_inv_cs_transform() const;
@@ -287,11 +283,8 @@ protected:
   bool _stencil_clear_value;
   Colorf _accum_clear_value;
 
-  int _display_region_stack_level;
-  int _frame_buffer_stack_level;
-  int _lens_stack_level;
-
   CPT(DisplayRegion) _current_display_region;
+  Lens::StereoChannel _current_stereo_channel;
   CPT(Lens) _current_lens;
 
   CoordinateSystem _coordinate_system;

@@ -807,19 +807,8 @@ class ShowBase(DirectObject.DirectObject):
         if stereo == None:
             stereo = (win.isStereo() and self.config.GetBool('default-stereo-camera', 1))
         if stereo:
-            # A stereo camera!  The first DisplayRegion becomes the
-            # left channel.
-            dr.setStereoChannel(Lens.SCLeft)
-
-            # So we'll need another DisplayRegion for the right channel.
-            dr = win.makeDisplayRegion(*displayRegion)
-            dr.setSort(sort)
-            dr.setClearDepthActive(1)
-            if clearColor:
-                dr.setClearColorActive(1)
-                dr.setClearColor(clearColor)
-            dr.setCamera(cam)
-            dr.setStereoChannel(Lens.SCRight)
+            # A stereo camera!
+            dr.setStereoChannel(Lens.SCStereo)
 
         return cam
 

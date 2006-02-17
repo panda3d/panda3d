@@ -570,24 +570,6 @@ get_scene() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::clear
-//       Access: Public
-//  Description: Clears the framebuffer within the indicated
-//               DisplayRegion, according to the flags indicated by
-//               the DisplayRegion object (inheriting from
-//               DrawableRegion).  Note that by default, a
-//               DisplayRegion does not have any clear flags set, in
-//               which case this function will do nothing.
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsStateGuardian::
-clear(DisplayRegion *dr) {
-  DisplayRegionStack old_dr = push_display_region(dr);
-  prepare_display_region();
-  clear((DrawableRegion *)dr);
-  pop_display_region(old_dr);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::reset_if_new
 //       Access: Public
 //  Description: Calls reset() to initialize the GSG, but only if it
@@ -632,14 +614,22 @@ get_transform() {
 //     Function: GraphicsStateGuardian::get_current_display_region
 //       Access: Public
 //  Description: Returns the current display region being rendered to,
-//               as set by the last call to push_display_region() (or
-//               restored by pop_display_region()).  This display
-//               region will be made active (if it is not already) by
-//               a call to prepare_display_region().
+//               as set by the last call to prepare_display_region().
 ////////////////////////////////////////////////////////////////////
 INLINE const DisplayRegion *GraphicsStateGuardian::
 get_current_display_region() const {
   return _current_display_region;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_current_stereo_channel
+//       Access: Public
+//  Description: Returns the current stereo channel being rendered to,
+//               as set by the last call to prepare_display_region().
+////////////////////////////////////////////////////////////////////
+INLINE Lens::StereoChannel GraphicsStateGuardian::
+get_current_stereo_channel() const {
+  return _current_stereo_channel;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -652,49 +642,6 @@ get_current_display_region() const {
 INLINE const Lens *GraphicsStateGuardian::
 get_current_lens() const {
   return _current_lens;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::push_display_region
-//       Access: Public
-//  Description: Saves the current display region information and sets
-//               up a new display region for rendering.  The return
-//               value from this function must eventually be passed to
-//               a matching pop_display_region() call.
-//
-//               The new display region will not actually be made
-//               active for rendering until the next call to
-//               prepare_display_region().  This is a state-changing
-//               optimization.
-////////////////////////////////////////////////////////////////////
-INLINE DisplayRegionStack GraphicsStateGuardian::
-push_display_region(const DisplayRegion *dr) {
-  DisplayRegionStack old;
-  old._display_region = _current_display_region;
-  old._stack_level = _display_region_stack_level;
-  _display_region_stack_level++;
-  _current_display_region = dr;
-  return old;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::pop_display_region
-//       Access: Public
-//  Description: Restores the display region previously in effect,
-//               before the matching call to push_display_region().
-//
-//               The newly-restored display region will not actually
-//               be made active for rendering until the next call to
-//               prepare_display_region().  This is a state-changing
-//               optimization.
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsStateGuardian::
-pop_display_region(DisplayRegionStack &node) {
-  nassertv(_display_region_stack_level > 0);
-  _display_region_stack_level--;
-  nassertv(node._stack_level == _display_region_stack_level);
-  _current_display_region = node._display_region;
-  node._stack_level = -1;
 }
 
 ////////////////////////////////////////////////////////////////////

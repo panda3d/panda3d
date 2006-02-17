@@ -33,7 +33,8 @@ TypeHandle DisplayRegion::_type_handle;
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 DisplayRegion(GraphicsOutput *window) :
-  _window(window)
+  _window(window),
+  _clear_depth_between_eyes(true)
 {
   _draw_buffer_type = window->get_draw_buffer_type();
   compute_pixels_all_stages();
@@ -46,7 +47,8 @@ DisplayRegion(GraphicsOutput *window) :
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 DisplayRegion(GraphicsOutput *window, float l, float r, float b, float t) :
-  _window(window)
+  _window(window),
+  _clear_depth_between_eyes(true)
 {
   _draw_buffer_type = window->get_draw_buffer_type();
   set_dimensions(l, r, b, t);
@@ -356,7 +358,8 @@ set_stereo_channel(Lens::StereoChannel stereo_channel) {
     cdata->_draw_buffer_mask = ~(RenderBuffer::T_front_left | RenderBuffer::T_back_left);
     break;
 
-  case Lens::SC_both:
+  case Lens::SC_mono:
+  case Lens::SC_stereo:
     cdata->_draw_buffer_mask = ~0;
     break;
   }
@@ -759,7 +762,7 @@ CData() :
   _camera_node((Camera *)NULL),
   _active(true),
   _sort(0),
-  _stereo_channel(Lens::SC_both),
+  _stereo_channel(Lens::SC_mono),
   _draw_buffer_mask(~0),
   _cube_map_index(-1)
 {

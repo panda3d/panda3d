@@ -101,6 +101,7 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   set_coordinate_system(get_default_coordinate_system());
 
   _current_display_region = (DisplayRegion*)0L;
+  _current_stereo_channel = Lens::SC_mono;
   _current_lens = (Lens *)NULL;
   _needs_reset = true;
   _is_valid = false;
@@ -270,10 +271,6 @@ reset() {
   _needs_reset = false;
   _is_valid = false;
 
-  _display_region_stack_level = 0;
-  _frame_buffer_stack_level = 0;
-  _lens_stack_level = 0;
-
   _state_rs = NULL;
   _target_rs = NULL;
   _state.clear_to_zero();
@@ -363,22 +360,8 @@ set_scene(SceneSetup *scene_setup) {
   if (_current_lens == (Lens *)NULL) {
     return false;
   }
-  DisplayRegion *dr = scene_setup->get_display_region();
-  Lens::StereoChannel stereo_channel = dr->get_stereo_channel();
-  switch (stereo_channel) {
-  case Lens::SC_left:
-    _color_write_mask = dr->get_window()->get_left_eye_color_mask();
-    break;
 
-  case Lens::SC_right:
-    _color_write_mask = dr->get_window()->get_right_eye_color_mask();
-    break;
-
-  case Lens::SC_both:
-    _color_write_mask = ColorWriteAttrib::C_all;
-  }
-
-  return prepare_lens(stereo_channel);
+  return prepare_lens();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -627,6 +610,10 @@ set_depth_clear_value(const float value) {
 //  Description: Clears the framebuffer within the current
 //               DisplayRegion, according to the flags indicated by
 //               the given DrawableRegion object.
+//
+//               This does not set the DisplayRegion first.  You
+//               should call prepare_display_region() to specify the
+//               region you wish the clear operation to apply to.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 clear(DrawableRegion *clearable) {
@@ -643,8 +630,39 @@ clear(DrawableRegion *clearable) {
   }
 
   if (clear_buffer_type != 0) {
-    prepare_display_region();
     do_clear(get_render_buffer(clear_buffer_type));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::prepare_display_region
+//       Access: Public, Virtual
+//  Description: Makes the specified DisplayRegion current.  All
+//               future drawing and clear operations will be
+//               constrained within the given DisplayRegion.
+//
+//               The stereo_channel parameter further qualifies the
+//               channel that is to be rendered into, in the case of a
+//               stereo display region.  Normally, in the monocular
+//               case, it is Lens::SC_mono.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
+  _current_display_region = dr;
+  _current_stereo_channel = stereo_channel;
+
+  switch (stereo_channel) {
+  case Lens::SC_left:
+    _color_write_mask = dr->get_window()->get_left_eye_color_mask();
+    break;
+
+  case Lens::SC_right:
+    _color_write_mask = dr->get_window()->get_right_eye_color_mask();
+    break;
+
+  case Lens::SC_mono:
+  case Lens::SC_stereo:
+    _color_write_mask = ColorWriteAttrib::C_all;
   }
 }
 
@@ -661,7 +679,7 @@ clear(DrawableRegion *clearable) {
 //               false if it is not.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-prepare_lens(Lens::StereoChannel stereo_channel) {
+prepare_lens() {
   return false;
 }
 

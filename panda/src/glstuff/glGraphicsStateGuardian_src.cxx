@@ -961,33 +961,25 @@ do_clear(const RenderBuffer &buffer) {
 //               scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-prepare_display_region() {
-  if (_current_display_region == (DisplayRegion*)0L) {
-    GLCAT.error()
-      << "Invalid NULL display region in prepare_display_region()\n";
-    enable_scissor(false);
-    _viewport_width = 1;
-    _viewport_height = 1;
+prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
+  nassertv(dr != (DisplayRegion *)NULL);
+  GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
 
-  } else if (_current_display_region != _actual_display_region) {
-    _actual_display_region = _current_display_region;
+  int l, b, w, h;
+  _current_display_region->get_region_pixels(l, b, w, h);
+  _viewport_width = w;
+  _viewport_height = h;
+  GLint x = GLint(l);
+  GLint y = GLint(b);
+  GLsizei width = GLsizei(w);
+  GLsizei height = GLsizei(h);
+  
+  set_draw_buffer(get_render_buffer(_current_display_region->get_draw_buffer_type()));
+  enable_scissor(true);
+  GLP(Scissor)(x, y, width, height);
+  GLP(Viewport)(x, y, width, height);
 
-    int l, b, w, h;
-    _actual_display_region->get_region_pixels(l, b, w, h);
-    _viewport_width = w;
-    _viewport_height = h;
-    GLint x = GLint(l);
-    GLint y = GLint(b);
-    GLsizei width = GLsizei(w);
-    GLsizei height = GLsizei(h);
-
-    set_draw_buffer(get_render_buffer(_actual_display_region->get_draw_buffer_type()));
-    enable_scissor(true);
-    GLP(Scissor)(x, y, width, height);
-    GLP(Viewport)(x, y, width, height);
-  }
   report_my_gl_errors();
-
   do_point_size();
 }
 
@@ -1004,7 +996,7 @@ prepare_display_region() {
 //               false if it is not.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-prepare_lens(Lens::StereoChannel stereo_channel) {
+prepare_lens() {
   if (_current_lens == (Lens *)NULL) {
     return false;
   }
@@ -1013,7 +1005,7 @@ prepare_lens(Lens::StereoChannel stereo_channel) {
     return false;
   }
 
-  const LMatrix4f &lens_mat = _current_lens->get_projection_mat(stereo_channel);
+  const LMatrix4f &lens_mat = _current_lens->get_projection_mat(_current_stereo_channel);
 
   // The projection matrix must always be right-handed Y-up, even if
   // our coordinate system of choice is otherwise, because certain GL
@@ -1070,8 +1062,6 @@ begin_frame() {
   _vertices_immediate_pcollector.clear_level();
   _primitive_batches_display_list_pcollector.clear_level();
 #endif
-
-  _actual_display_region = NULL;
 
   report_my_gl_errors();
   return true;

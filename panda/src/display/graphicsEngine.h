@@ -160,8 +160,6 @@ private:
   void do_draw(CullResult *cull_result, SceneSetup *scene_setup,
                GraphicsOutput *win, DisplayRegion *dr);
 
-  bool setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup);
-
   void do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
                      const GraphicsThreadingModel &threading_model);
   void do_remove_window(GraphicsOutput *window);

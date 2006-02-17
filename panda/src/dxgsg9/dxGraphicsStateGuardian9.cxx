@@ -768,49 +768,43 @@ do_clear(const RenderBuffer &buffer) {
 //       scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-prepare_display_region() {
+prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
+  nassertv(dr != (DisplayRegion *)NULL);
+  GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
 
 // DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::PRE prepare_display_region\n"; DBG_E
 
-  if (_current_display_region == (DisplayRegion*)0L) {
-    dxgsg9_cat.error()
-      << "Invalid NULL display region in prepare_display_region()\n";
-
-  } else if (_current_display_region != _actual_display_region) {
-    _actual_display_region = _current_display_region;
-
 // DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::prepare_display_region\n"; DBG_E
 
-    int l, u, w, h;
-    _actual_display_region->get_region_pixels_i(l, u, w, h);
+  int l, u, w, h;
+  _current_display_region->get_region_pixels_i(l, u, w, h);
+  
+  DBG_S dxgsg9_cat.debug ( ) << "display_region " << l << " " << u << " "  << w << " "  << h << "\n"; DBG_E
 
-    DBG_S dxgsg9_cat.debug ( ) << "display_region " << l << " " << u << " "  << w << " "  << h << "\n"; DBG_E
-
-    // Create the viewport
-    D3DVIEWPORT9 vp = { l, u, w, h, 0.0f, 1.0f };
-    HRESULT hr = _d3d_device->SetViewport(&vp);
+  // Create the viewport
+  D3DVIEWPORT9 vp = { l, u, w, h, 0.0f, 1.0f };
+  HRESULT hr = _d3d_device->SetViewport(&vp);
+  if (FAILED(hr)) {
+    dxgsg9_cat.error()
+      << "_screen->_swap_chain = " << _screen->_swap_chain << " _swap_chain = " << _swap_chain << "\n";
+    dxgsg9_cat.error()
+      << "SetViewport(" << l << ", " << u << ", " << w << ", " << h
+      << ") failed" << D3DERRORSTRING(hr);
+    
+    D3DVIEWPORT9 vp_old;
+    _d3d_device->GetViewport(&vp_old);
+    dxgsg9_cat.error()
+      << "GetViewport(" << vp_old.X << ", " << vp_old.Y << ", " << vp_old.Width << ", "
+      << vp_old.Height << ") returned: Trying to set that vp---->\n";
+    hr = _d3d_device->SetViewport(&vp_old);
+    
     if (FAILED(hr)) {
-      dxgsg9_cat.error()
-        << "_screen->_swap_chain = " << _screen->_swap_chain << " _swap_chain = " << _swap_chain << "\n";
-      dxgsg9_cat.error()
-        << "SetViewport(" << l << ", " << u << ", " << w << ", " << h
-        << ") failed" << D3DERRORSTRING(hr);
-
-      D3DVIEWPORT9 vp_old;
-      _d3d_device->GetViewport(&vp_old);
-      dxgsg9_cat.error()
-        << "GetViewport(" << vp_old.X << ", " << vp_old.Y << ", " << vp_old.Width << ", "
-        << vp_old.Height << ") returned: Trying to set that vp---->\n";
-      hr = _d3d_device->SetViewport(&vp_old);
-
-      if (FAILED(hr)) {
-        dxgsg9_cat.error() << "Failed again\n";
-        throw_event("panda3d-render-error");
-        nassertv(false);
-      }
+      dxgsg9_cat.error() << "Failed again\n";
+      throw_event("panda3d-render-error");
+      nassertv(false);
     }
-    // Note: for DX9, also change scissor clipping state here
   }
+  // Note: for DX9, also change scissor clipping state here
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -826,7 +820,7 @@ prepare_display_region() {
 //               false if it is not.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
-prepare_lens(Lens::StereoChannel stereo_channel) {
+prepare_lens() {
   if (_current_lens == (Lens *)NULL) {
     return false;
   }
@@ -836,7 +830,7 @@ prepare_lens(Lens::StereoChannel stereo_channel) {
   }
 
   // Start with the projection matrix from the lens.
-  const LMatrix4f &lens_mat = _current_lens->get_projection_mat(stereo_channel);
+  const LMatrix4f &lens_mat = _current_lens->get_projection_mat(_current_stereo_channel);
 
   // The projection matrix must always be left-handed Y-up internally,
   // to match DirectX's convention, even if our coordinate system of

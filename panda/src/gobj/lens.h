@@ -50,9 +50,10 @@ public:
 
 PUBLISHED:
   enum StereoChannel {
-    SC_left  = 0x01,
-    SC_right = 0x02,
-    SC_both  = 0x03,  // == SC_left | SC_right
+    SC_mono    = 0x00,
+    SC_left    = 0x01,
+    SC_right   = 0x02,
+    SC_stereo  = 0x03,  // == SC_left | SC_right
   };
 
   virtual PT(Lens) make_copy() const=0;
@@ -151,8 +152,8 @@ PUBLISHED:
 
   virtual PT(BoundingVolume) make_bounds() const;
 
-  const LMatrix4f &get_projection_mat(StereoChannel channel = SC_both) const;
-  const LMatrix4f &get_projection_mat_inv(StereoChannel channel = SC_both) const;
+  const LMatrix4f &get_projection_mat(StereoChannel channel = SC_mono) const;
+  const LMatrix4f &get_projection_mat_inv(StereoChannel channel = SC_mono) const;
 
   const LMatrix4f &get_film_mat() const;
   const LMatrix4f &get_film_mat_inv() const;
