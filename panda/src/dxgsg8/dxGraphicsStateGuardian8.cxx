@@ -558,41 +558,40 @@ do_clear(const RenderBuffer &buffer) {
 //       scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-prepare_display_region() {
-  if (_current_display_region == (DisplayRegion*)0L) {
+prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
+  nassertv(dr != (DisplayRegion *)NULL);
+  GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
+
+  int l, u, w, h;
+  _current_display_region->get_region_pixels_i(l, u, w, h);
+  
+  // Create the viewport
+  D3DVIEWPORT8 vp = { l, u, w, h, 0.0f, 1.0f };
+  HRESULT hr = _d3d_device->SetViewport(&vp);
+  if (FAILED(hr)) {
     dxgsg8_cat.error()
-      << "Invalid NULL display region in prepare_display_region()\n";
-
-  } else if (_current_display_region != _actual_display_region) {
-    _actual_display_region = _current_display_region;
-
-    int l, u, w, h;
-    _actual_display_region->get_region_pixels_i(l, u, w, h);
-
-    // Create the viewport
-    D3DVIEWPORT8 vp = { l, u, w, h, 0.0f, 1.0f };
-    HRESULT hr = _d3d_device->SetViewport(&vp);
+      << "_screen->_swap_chain = " << _screen->_swap_chain << " _swap_chain = " << _swap_chain << "\n";
+    dxgsg8_cat.error()
+      << "SetViewport(" << l << ", " << u << ", " << w << ", " << h
+      << ") failed" << D3DERRORSTRING(hr);
+    
+    D3DVIEWPORT8 vp_old;
+    _d3d_device->GetViewport(&vp_old);
+    dxgsg8_cat.error()
+      << "GetViewport(" << vp_old.X << ", " << vp_old.Y << ", " << vp_old.Width << ", "
+      << vp_old.Height << ") returned: Trying to set that vp---->\n";
+    hr = _d3d_device->SetViewport(&vp_old);
+    
     if (FAILED(hr)) {
-      dxgsg8_cat.error()
-        << "_screen->_swap_chain = " << _screen->_swap_chain << " _swap_chain = " << _swap_chain << "\n";
-      dxgsg8_cat.error()
-        << "SetViewport(" << l << ", " << u << ", " << w << ", " << h
-        << ") failed" << D3DERRORSTRING(hr);
-
-      D3DVIEWPORT8 vp_old;
-      _d3d_device->GetViewport(&vp_old);
-      dxgsg8_cat.error()
-        << "GetViewport(" << vp_old.X << ", " << vp_old.Y << ", " << vp_old.Width << ", "
-        << vp_old.Height << ") returned: Trying to set that vp---->\n";
-      hr = _d3d_device->SetViewport(&vp_old);
-
-      if (FAILED(hr)) {
-        dxgsg8_cat.error() << "Failed again\n";
-        throw_event("panda3d-render-error");
-        nassertv(false);
-      }
+      dxgsg8_cat.error() << "Failed again\n";
+      throw_event("panda3d-render-error");
+      nassertv(false);
     }
-    // Note: for DX9, also change scissor clipping state here
+  }
+  // Note: for DX9, also change scissor clipping state here
+
+  if (_screen->_can_direct_disable_color_writes) {
+    _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, _color_write_mask);
   }
 }
 
@@ -609,7 +608,7 @@ prepare_display_region() {
 //               false if it is not.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
-prepare_lens(Lens::StereoChannel stereo_channel) {
+prepare_lens() {
   if (_current_lens == (Lens *)NULL) {
     return false;
   }
@@ -619,7 +618,7 @@ prepare_lens(Lens::StereoChannel stereo_channel) {
   }
 
   // Start with the projection matrix from the lens.
-  const LMatrix4f &lens_mat = _current_lens->get_projection_mat(stereo_channel);
+  const LMatrix4f &lens_mat = _current_lens->get_projection_mat(_current_stereo_channel);
 
   // The projection matrix must always be left-handed Y-up internally,
   // to match DirectX's convention, even if our coordinate system of
@@ -1715,9 +1714,6 @@ reset() {
 
   _d3d_device->SetRenderState(D3DRS_CLIPPING, true);
 
-  // these both reflect d3d defaults
-  _color_writemask = 0xFFFFFFFF;
-
   _d3d_device->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
 
   _d3d_device->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
@@ -2788,7 +2784,9 @@ do_issue_blending() {
   // all the other blending-related stuff doesn't matter.  If the
   // device doesn't support color-write, we use blending tricks
   // to effectively disable color write.
-  if (_target._color_write->get_channels() == ColorWriteAttrib::C_off) {
+  unsigned int color_channels = 
+    _target._color_write->get_channels() & _color_write_mask;
+  if (color_channels == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
       if (_screen->_can_direct_disable_color_writes) {
         _d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
@@ -2803,7 +2801,7 @@ do_issue_blending() {
   } else {
     if (_target._color_write != _state._color_write) {
       if (_screen->_can_direct_disable_color_writes) {
-        _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, _target._color_write->get_channels());
+        _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, color_channels);
       }
     }
   }

@@ -258,7 +258,6 @@ protected:
   bool _auto_rescale_normal;
 
   D3DCOLOR _d3dcolor_clear_value;
-  UINT _color_writemask;
 
   float _material_ambient;
   float _material_diffuse;
@@ -286,7 +285,6 @@ protected:
   PT(ShaderExpansion)  _texture_binding_shader_expansion;
   CLP(ShaderContext)  *_texture_binding_shader_context;
 
-  CPT(DisplayRegion) _actual_display_region;
   const DXVertexBufferContext9 *_active_vbuffer;
   const DXIndexBufferContext9 *_active_ibuffer;
 

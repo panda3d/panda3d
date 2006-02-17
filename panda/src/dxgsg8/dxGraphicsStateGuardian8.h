@@ -66,8 +66,8 @@ public:
 
   virtual void do_clear(const RenderBuffer &buffer);
 
-  virtual void prepare_display_region();
-  virtual bool prepare_lens(Lens::StereoChannel stereo_channel);
+  virtual void prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel);
+  virtual bool prepare_lens();
 
   virtual bool begin_frame();
   virtual bool begin_scene();
@@ -201,7 +201,6 @@ protected:
   bool _auto_rescale_normal;
 
   D3DCOLOR _d3dcolor_clear_value;
-  UINT _color_writemask;
 
   float _material_ambient;
   float _material_diffuse;
@@ -222,7 +221,6 @@ protected:
 
   LMatrix4f _projection_mat;
 
-  CPT(DisplayRegion) _actual_display_region;
   const DXVertexBufferContext8 *_active_vbuffer;
   const DXIndexBufferContext8 *_active_ibuffer;
 

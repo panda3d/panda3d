@@ -804,7 +804,10 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
       nassertv(false);
     }
   }
-  // Note: for DX9, also change scissor clipping state here
+
+  if (_screen->_can_direct_disable_color_writes) {
+    set_render_state(D3DRS_COLORWRITEENABLE, _color_write_mask);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2560,9 +2563,6 @@ reset() {
 
   set_render_state(D3DRS_CLIPPING, true);
 
-  // these both reflect d3d defaults
-  _color_writemask = 0xFFFFFFFF;
-
   set_render_state(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
 
   set_render_state(D3DRS_ZWRITEENABLE, TRUE);
@@ -3682,7 +3682,9 @@ do_issue_blending() {
   // all the other blending-related stuff doesn't matter.  If the
   // device doesn't support color-write, we use blending tricks
   // to effectively disable color write.
-  if (_target._color_write->get_channels() == ColorWriteAttrib::C_off) {
+  unsigned int color_channels = 
+    _target._color_write->get_channels() & _color_write_mask;
+  if (color_channels == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
       if (_screen->_can_direct_disable_color_writes) {
         set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
@@ -3697,7 +3699,7 @@ do_issue_blending() {
   } else {
     if (_target._color_write != _state._color_write) {
       if (_screen->_can_direct_disable_color_writes) {
-        set_render_state(D3DRS_COLORWRITEENABLE, _target._color_write->get_channels());
+        set_render_state(D3DRS_COLORWRITEENABLE, color_channels);
       }
     }
   }
