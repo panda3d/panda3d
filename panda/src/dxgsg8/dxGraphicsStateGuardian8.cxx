@@ -1656,24 +1656,38 @@ reset() {
 
   _supports_render_texture = false;
 
-  hr = _d3d_device->GetCreationParameters (&creation_parameters);
-
   // default render to texture format
-  //  _screen->_render_to_texture_d3d_format = D3DFMT_X8R8G8B8;
+  _screen->_render_to_texture_d3d_format = D3DFMT_A8R8G8B8;
 
-  // match the display mode format for render to texture
-  _screen->_render_to_texture_d3d_format = _screen->_display_mode.Format;
+  #define TOTAL_RENDER_TO_TEXTURE_FORMATS 3
 
+  D3DFORMAT render_to_texture_formats [TOTAL_RENDER_TO_TEXTURE_FORMATS] =
+  {
+    D3DFMT_A8R8G8B8,  // check for this format first
+    D3DFMT_X8R8G8B8,
+    (D3DFORMAT) 0,    // place holder for _screen->_display_mode.Format
+  };
+
+  render_to_texture_formats [TOTAL_RENDER_TO_TEXTURE_FORMATS - 1] = _screen->_display_mode.Format;
+
+  hr = _d3d_device->GetCreationParameters (&creation_parameters);
   if (SUCCEEDED (hr)) {
-    hr = _screen->_d3d8->CheckDeviceFormat (
-                                            creation_parameters.AdapterOrdinal,
-                                            creation_parameters.DeviceType,
-                                            _screen->_display_mode.Format,
-                                            D3DUSAGE_RENDERTARGET,
-                                            D3DRTYPE_TEXTURE,
-                                            _screen->_render_to_texture_d3d_format);
-    if (SUCCEEDED (hr)) {
-      _supports_render_texture = true;
+    int index;
+    for (index = 0; index < TOTAL_RENDER_TO_TEXTURE_FORMATS; index++) {
+      hr = _screen->_d3d8->CheckDeviceFormat (
+          creation_parameters.AdapterOrdinal,
+          creation_parameters.DeviceType,
+          _screen->_display_mode.Format,
+          D3DUSAGE_RENDERTARGET,
+          D3DRTYPE_TEXTURE,
+          render_to_texture_formats [index]);
+      if (SUCCEEDED (hr)) {
+        _screen->_render_to_texture_d3d_format = render_to_texture_formats [index];
+        _supports_render_texture = true;
+      }
+      if (_supports_render_texture) {
+        break;
+      }
     }
   }
   if (dxgsg8_cat.is_debug()) {
