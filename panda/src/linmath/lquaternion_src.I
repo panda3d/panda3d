@@ -37,6 +37,16 @@ FLOATNAME(LQuaternion)(const FLOATNAME(LVecBase4) &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::Copy Constructor
+//       Access: public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LQuaternion)::
+FLOATNAME(LQuaternion)(FLOATTYPE r, const FLOATNAME(LVecBase3) &copy) {
+  set(r, copy[0], copy[1], copy[2]);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::Constructor
 //       Access: public
 //  Description:
@@ -55,10 +65,27 @@ INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LQuaternion)::
 xform(const FLOATNAME(LVecBase3) &v) const {
   FLOATNAME(LQuaternion) v_quat(0.0f, v[0], v[1], v[2]);
 
-  FLOATNAME(LQuaternion) inv(_v.data[0], -_v.data[1], -_v.data[2], -_v.data[3]);
-  v_quat = inv * v_quat * (*this);
+  FLOATNAME(LQuaternion) conjugate(
+    _v.data[0], -_v.data[1], -_v.data[2], -_v.data[3]);
+  v_quat = conjugate * v_quat * (*this);
 
   return FLOATNAME(LVecBase3)(v_quat[1], v_quat[2], v_quat[3]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::xform
+//       Access: Published
+//  Description: Transforms a 4-d vector by the indicated rotation
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LQuaternion)::
+xform(const FLOATNAME(LVecBase4) &v) const {
+  FLOATNAME(LQuaternion) v_quat(v[0], v[1], v[2], v[3]);
+
+  FLOATNAME(LQuaternion) conjugate(
+    _v.data[0], -_v.data[1], -_v.data[2], -_v.data[3]);
+  v_quat = conjugate * v_quat * (*this);
+
+  return FLOATNAME(LVecBase4)(v_quat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -429,6 +456,54 @@ normalize() {
   } else if (!IS_THRESHOLD_EQUAL(length_squared, 1.0f, NEARLY_ZERO(FLOATTYPE))) {
     (*this) /= csqrt(length_squared);
   }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::conjugate
+//       Access: Published
+//  Description: Returns the complex conjugate of this quat.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
+conjugate() const {
+  return FLOATNAME(LQuaternion)(_v.v._0, -_v.v._1, -_v.v._2, -_v.v._3);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::conjugate_from
+//       Access: Published
+//  Description: Computes the conjugate of the other quat, and stores
+//               the result in this quat.  This is a fully general
+//               operation and makes no assumptions about the type of
+//               transform represented by the quat.
+//
+//               The other quat must be a different object than this
+//               quat.  However, if you need to get a conjugate of a
+//               quat in place, see conjugate_in_place.
+//
+//               The return value is true if the quat was
+//               successfully inverted, false if there was a
+//               singularity.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LQuaternion)::
+conjugate_from(const FLOATNAME(LQuaternion) &other) {
+  set(other._v.v._0, -other._v.v._1, -other._v.v._2, -other._v.v._3);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::conjugate_in_place
+//       Access: Published
+//  Description: Sets this to be the conjugate of the current quat.
+//               Returns true if the successful, false if the quat
+//               was singular.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LQuaternion)::
+conjugate_in_place() {
+  // _v.v._0 = _v.v._0;
+  _v.v._1 = -_v.v._1;
+  _v.v._2 = -_v.v._2;
+  _v.v._3 = -_v.v._3;
   return true;
 }
 

@@ -24,12 +24,18 @@ class EXPCL_PANDA FLOATNAME(LQuaternion) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LQuaternion)();
   INLINE_LINMATH FLOATNAME(LQuaternion)(const FLOATNAME(LVecBase4) &copy);
+  INLINE_LINMATH FLOATNAME(LQuaternion)(FLOATTYPE, const FLOATNAME(LVecBase3) &copy);
   INLINE_LINMATH FLOATNAME(LQuaternion)(FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE);
 
   static FLOATNAME(LQuaternion) pure_imaginary(const FLOATNAME(LVector3) &);
 
+  INLINE_LINMATH FLOATNAME(LQuaternion) conjugate() const;
+
   INLINE_LINMATH FLOATNAME(LVecBase3)
     xform(const FLOATNAME(LVecBase3) &v) const;
+
+  INLINE_LINMATH FLOATNAME(LVecBase4)
+    xform(const FLOATNAME(LVecBase4) &v) const;
 
   INLINE_LINMATH FLOATNAME(LQuaternion)
     multiply(const FLOATNAME(LQuaternion) &rhs) const;
@@ -88,6 +94,9 @@ PUBLISHED:
   INLINE_LINMATH void set_k(FLOATTYPE k);
 
   INLINE_LINMATH bool normalize();
+
+  INLINE_LINMATH bool conjugate_from(const FLOATNAME(LQuaternion) &other);
+  INLINE_LINMATH bool conjugate_in_place();
 
   INLINE_LINMATH bool invert_from(const FLOATNAME(LQuaternion) &other);
   INLINE_LINMATH bool invert_in_place();
