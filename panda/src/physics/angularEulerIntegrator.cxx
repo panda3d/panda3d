@@ -112,6 +112,7 @@ child_integrate(Physical *physical,
       accum_quat += f;
     }
 
+    LOrientationf orientation = current_object->get_orientation();
     // local forces
     f_cur = physical->get_angular_forces().begin();
     for (; f_cur != physical->get_angular_forces().end(); ++f_cur) {
@@ -130,7 +131,7 @@ child_integrate(Physical *physical,
       f = cur_force->get_quat(current_object);
 
       // tally it into the accumulation quaternion
-      accum_quat += f;
+      accum_quat += orientation.xform(f); // i.e. orientation * f * orientation.conjugate();
     }
     //assert(index == matrices.size());
 
@@ -155,7 +156,7 @@ child_integrate(Physical *physical,
     }
     #else
     //accum_quat*=viscosityDamper;
-    LOrientationf orientation = current_object->get_orientation();
+    //LOrientationf orientation = current_object->get_orientation();
     
     //accum_quat.normalize();
     // x = x + v * t + 0.5 * a * t * t
@@ -164,11 +165,11 @@ child_integrate(Physical *physical,
     rot_quat = rot_quat + (accum_quat * dt);
 
     //if (rot_quat.normalize()) {
-    //if (orientation.normalize() && rot_quat.normalize()) {
+    if (orientation.normalize() && rot_quat.normalize()) {
       // and write the results back.
       current_object->set_orientation(orientation);
       current_object->set_rotation(rot_quat);
-    //}
+    }
     #endif
   }
 }
