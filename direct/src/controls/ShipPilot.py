@@ -23,13 +23,13 @@ import math
 
 from PhysicsWalker import PhysicsWalker
 
-#import LineStream
-
 class ShipPilot(PhysicsWalker):
 
     notify = directNotify.newCategory("PhysicsWalker")
-    wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
+    wantDebugIndicator = base.config.GetBool(
+        'want-avatar-physics-indicator', 0)
     
+    useBowSternSpheres = 1
     useLifter = 0
     useHeightRay = 0
     
@@ -40,8 +40,7 @@ class ShipPilot(PhysicsWalker):
             "PhysicsWalker(gravity=%s, standableGround=%s)"%(
             gravity, standableGround))
         PhysicsWalker.__init__(
-            self, gravity = -32.1740, standableGround=0.707,
-            hardLandingForce=16.0)
+            self, gravity, standableGround, hardLandingForce)
         self.__gravity=gravity
         self.__standableGround=standableGround
         self.__hardLandingForce=hardLandingForce
@@ -196,7 +195,7 @@ class ShipPilot(PhysicsWalker):
 
         #self.pusher.addCollider(self.cSphereNodePath, self.avatarNodePath)
 
-        if 1:
+        if self.useBowSternSpheres:
             # Front sphere:
             self.cBowSphere = CollisionSphere(
                 0.0, self.frontSphereOffset, -5.0, avatarRadius)
@@ -380,8 +379,9 @@ class ShipPilot(PhysicsWalker):
         self.avatarRadius = avatarRadius
         self.floorOffset = floorOffset
         self.reach = reach
-        self.frontSphereOffset = frontSphereOffset
-        self.backSphereOffset = backSphereOffset
+        if self.useBowSternSpheres:
+            self.frontSphereOffset = frontSphereOffset
+            self.backSphereOffset = backSphereOffset
 
     def deleteCollisions(self):
         assert self.debugPrint("deleteCollisions()")
@@ -469,18 +469,20 @@ class ShipPilot(PhysicsWalker):
         if self.collisionsActive != active:
             self.collisionsActive = active
             if active:
-                #self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
-                self.cTrav.addCollider(self.cBowSphereNodePath, self.pusher)
-                self.cTrav.addCollider(self.cSternSphereNodePath, self.pusher)
+                if self.useBowSternSpheres:
+                    #self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
+                    self.cTrav.addCollider(self.cBowSphereNodePath, self.pusher)
+                    self.cTrav.addCollider(self.cSternSphereNodePath, self.pusher)
                 if self.useHeightRay:
                     if self.useLifter:
                         self.cTrav.addCollider(self.cRayNodePath, self.lifter)
                     else:
                         self.cTrav.addCollider(self.cRayNodePath, self.cRayQueue)
             else:
-                #self.cTrav.removeCollider(self.cSphereNodePath)
-                self.cTrav.removeCollider(self.cBowSphereNodePath)
-                self.cTrav.removeCollider(self.cSternSphereNodePath)
+                if self.useBowSternSpheres:
+                    #self.cTrav.removeCollider(self.cSphereNodePath)
+                    self.cTrav.removeCollider(self.cBowSphereNodePath)
+                    self.cTrav.removeCollider(self.cSternSphereNodePath)
                 if self.useHeightRay:
                     self.cTrav.removeCollider(self.cRayNodePath)
                 # Now that we have disabled collisions, make one more pass
@@ -578,10 +580,10 @@ class ShipPilot(PhysicsWalker):
             onScreenDebug.add("w momentumForce len",
                 "% 10.4f"%momentumForce.length())
 
-        if 0:
-            keel = self.keel.getHpr()
-            onScreenDebug.add("w keel vec",
-                keel.pPrintValues())
+        ## if 1:
+            ## keel = self.keel.getLocalVector()
+            ## onScreenDebug.add("w keel vec",
+            ##    keel.pPrintValues())
         if 0:
             onScreenDebug.add("posDelta4", 
                 self.priorParentNp.getRelativeVector(
@@ -608,8 +610,8 @@ class ShipPilot(PhysicsWalker):
             if self.wantDebugIndicator:
                 onScreenDebug.append("localAvatar pos = %s\n"%(
                     base.localAvatar.getPos().pPrintValues(),))
-                onScreenDebug.append("localAvatar h = % 10.4f\n"%(
-                    base.localAvatar.getH(),))
+                onScreenDebug.append("localAvatar hpr = %s\n"%(
+                    base.localAvatar.getHpr().pPrintValues(),))
                 #onScreenDebug.append("localAvatar anim = %s\n"%(
                 #    base.localAvatar.animFSM.getCurrentState().getName(),))
         #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
@@ -797,7 +799,7 @@ class ShipPilot(PhysicsWalker):
             q2=physObject.getOrientation()
             q1.normalize()
             q2.normalize()
-            assert q1.isSameDirection(q2) or q1.getHpr() == q2.getHpr()
+            assert q1.isSameDirection(q2) or (q1.getHpr() == q2.getHpr())
         assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
 
         moveToGround = Vec3.zero()
@@ -821,7 +823,7 @@ class ShipPilot(PhysicsWalker):
             q2=physObject.getOrientation()
             q1.normalize()
             q2.normalize()
-            assert q1.isSameDirection(q2) or q1.getHpr() == q2.getHpr()
+            assert q1.isSameDirection(q2) or (q1.getHpr() == q2.getHpr())
         assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
 
         # Check to see if we're moving at all:
