@@ -97,6 +97,9 @@ PUBLISHED:
   INLINE int get_num_vertices() const;
   int get_vertex(int i) const;
   void add_vertex(int vertex);
+  INLINE void add_vertices(int v1, int v2);
+  INLINE void add_vertices(int v1, int v2, int v3);
+  INLINE void add_vertices(int v1, int v2, int v3, int v4);
   void add_consecutive_vertices(int start, int num_vertices);
   void add_next_vertices(int num_vertices);
   bool close_primitive();

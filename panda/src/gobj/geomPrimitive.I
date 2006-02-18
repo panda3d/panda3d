@@ -336,6 +336,42 @@ get_maxs() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::add_vertices
+//       Access: Public
+//  Description: Adds several vertices in a row.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomPrimitive::
+add_vertices(int v1, int v2) {
+  add_vertex(v1);
+  add_vertex(v2);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::add_vertices
+//       Access: Public
+//  Description: Adds several vertices in a row.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomPrimitive::
+add_vertices(int v1, int v2, int v3) {
+  add_vertex(v1);
+  add_vertex(v2);
+  add_vertex(v3);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::add_vertices
+//       Access: Public
+//  Description: Adds several vertices in a row.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomPrimitive::
+add_vertices(int v1, int v2, int v3, int v4) {
+  add_vertex(v1);
+  add_vertex(v2);
+  add_vertex(v3);
+  add_vertex(v4);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_index_format
 //       Access: Protected
 //  Description: Returns a registered format appropriate for using to
