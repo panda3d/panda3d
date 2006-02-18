@@ -36,6 +36,7 @@
 #include "geomNode.h"
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
+#include "throw_event.h"
 
 TypeHandle GraphicsOutput::_type_handle;
 
@@ -196,6 +197,7 @@ GraphicsOutput::
 void GraphicsOutput::
 clear_render_textures() {
   MutexHolder holder(_lock);
+  throw_event("render-texture-targets-changed");
   _textures.clear();
 }
 
@@ -222,6 +224,8 @@ add_render_texture(Texture *tex, RenderTextureMode mode) {
     return;
   }
   MutexHolder holder(_lock);
+
+  throw_event("render-texture-targets-changed");
 
   if (tex == (Texture *)NULL) {
     tex = new Texture(get_name());
@@ -508,19 +512,23 @@ get_active_display_region(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: create_texture_card_vdata
-//       Access: Static
+//     Function: GraphicsOuput::create_texture_card_vdata
+//       Access: Private
 //  Description: Generates a GeomVertexData for a texture card.
 ////////////////////////////////////////////////////////////////////
-static PT(GeomVertexData)
+PT(GeomVertexData) GraphicsOutput::
 create_texture_card_vdata(int x, int y)
 {
-  int xru = Texture::up_to_power_2(x);
-  int yru = Texture::up_to_power_2(y);
+  float xhi = 1.0;
+  float yhi = 1.0;
 
-  float xhi = (x * 1.0f) / xru;
-  float yhi = (y * 1.0f) / yru;
-
+  if (!_gsg->get_supports_tex_non_pow2()) {
+    int xru = Texture::up_to_power_2(x);
+    int yru = Texture::up_to_power_2(y);
+    xhi = (x * 1.0f) / xru;
+    yhi = (y * 1.0f) / yru;
+  }
+  
   CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3n3t2();
 
   PT(GeomVertexData) vdata = new GeomVertexData
@@ -682,14 +690,15 @@ make_texture_buffer(const string &name, int x_size, int y_size,
     return buffer;
   }
 
-  if (show_buffers) {
-    // If show_buffers is true, just go ahead and call make_buffer(),
-    // since it all amounts to the same thing anyway--this will
-    // actually create a new GraphicsWindow.
-    buffer = engine->make_buffer(gsg, name, sort, x_size, y_size);
-    buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
-    return buffer;
-  }
+  // I'll remove this permanently in a few days. - Josh
+  //  if (show_buffers) {
+  //    // If show_buffers is true, just go ahead and call make_buffer(),
+  //    // since it all amounts to the same thing anyway--this will
+  //    // actually create a new GraphicsWindow.
+  //    buffer = engine->make_buffer(gsg, name, sort, x_size, y_size);
+  //    buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
+  //    return buffer;
+  //  }
 
   bool allow_bind =
     (prefer_texture_buffer && support_render_texture &&
@@ -846,19 +855,23 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
   tex->set_wrap_u(Texture::WM_clamp);
   tex->set_wrap_v(Texture::WM_clamp);
   GraphicsOutput *buffer;
-  if (show_buffers) {
-    // If show_buffers is true, we'd like to create a window with the
-    // six buffers spread out and all visible at once, for the user's
-    // convenience.
-    buffer = make_texture_buffer(name, size * 3, size * 2, tex, to_ram);
-    tex->set_x_size(size);
-    tex->set_y_size(size);
 
-  } else {
-    // In the normal case, the six buffers are stacked on top of each
-    // other like pancakes.
-    buffer = make_texture_buffer(name, size, size, tex, to_ram);
-  }
+  // I'll remove this permanently in a few days.
+  //  if (show_buffers) {
+  //    // If show_buffers is true, we'd like to create a window with the
+  //    // six buffers spread out and all visible at once, for the user's
+  //    // convenience.
+  //    buffer = make_texture_buffer(name, size * 3, size * 2, tex, to_ram);
+  //    tex->set_x_size(size);
+  //    tex->set_y_size(size);
+  //
+  //  } else {
+  //    // In the normal case, the six buffers are stacked on top of each
+  //    // other like pancakes.
+  //    buffer = make_texture_buffer(name, size, size, tex, to_ram);
+  //  }
+
+  buffer = make_texture_buffer(name, size, size, tex, to_ram);
 
   // We don't need to clear the overall buffer; instead, we'll clear
   // each display region.
@@ -876,12 +889,15 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
     camera_np.look_at(cube_faces[i]._look_at, cube_faces[i]._up);
 
     DisplayRegion *dr;
-    if (show_buffers) {
-      const ShowBuffersCubeMapRegions &r = cube_map_regions[i];
-      dr = buffer->make_display_region(r.l, r.r, r.b, r.t);
-    } else {
-      dr = buffer->make_display_region();
-    }
+    // I'll remove this permanently in a few days. - Josh
+    //    if (show_buffers) {
+    //      const ShowBuffersCubeMapRegions &r = cube_map_regions[i];
+    //      dr = buffer->make_display_region(r.l, r.r, r.b, r.t);
+    //    } else {
+    //      dr = buffer->make_display_region();
+    //    }
+    dr = buffer->make_display_region();
+
     dr->set_cube_map_index(i);
     dr->copy_clear_settings(*this);
     dr->set_camera(camera_np);
@@ -985,27 +1001,32 @@ end_frame(FrameMode mode) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 prepare_for_deletion() {
+
+  // I'll remove this permanently in a few days. - Josh
+  // HOWEVER - it might be nice to add this functionality to the
+  // new module.  It's not in there yet.
+
   // But when show-buffers mode is enabled, we want to keep the
   // window around until the user has a chance to see the texture.
   // So we don't do most of the following in show-buffers mode.
-  if (!show_buffers) {
-    _active = false;
-    _delete_flag = true;
-    
-    // We have to be sure to remove all of the display regions
-    // immediately, so that circular reference counts can be cleared
-    // up (each display region keeps a pointer to a CullResult,
-    // which can hold all sorts of pointers).
-    remove_all_display_regions();
-    
-    // If we were rendering directly to texture, we can't delete the
-    // buffer until the texture is gone too.
-    for (int i=0; i<count_textures(); i++) {
-      if (get_rtm_mode(i) == RTM_bind_or_copy) {
-        _hold_textures.push_back(get_texture(i));
-      }
-    }
-  }
+  //  if (!show_buffers) {
+  //    _active = false;
+  //    _delete_flag = true;
+  //    
+  //    // We have to be sure to remove all of the display regions
+  //    // immediately, so that circular reference counts can be cleared
+  //    // up (each display region keeps a pointer to a CullResult,
+  //    // which can hold all sorts of pointers).
+  //    remove_all_display_regions();
+  //    
+  //    // If we were rendering directly to texture, we can't delete the
+  //    // buffer until the texture is gone too.
+  //    for (int i=0; i<count_textures(); i++) {
+  //      if (get_rtm_mode(i) == RTM_bind_or_copy) {
+  //        _hold_textures.push_back(get_texture(i));
+  //      }
+  //    }
+  //  }
   
   // We have to be sure to clear the _textures pointers, though, or
   // we'll end up holding a reference to the textures forever.

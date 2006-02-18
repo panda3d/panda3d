@@ -80,7 +80,7 @@ GraphicsEngine(Pipeline *pipeline) :
 
   _windows_sorted = true;
   _window_sort_index = 0;
-
+  
   // Default frame buffer properties.
   _frame_buffer_properties = FrameBufferProperties::get_default();
 
@@ -255,17 +255,18 @@ make_window(GraphicsStateGuardian *gsg, const string &name, int sort) {
 GraphicsOutput *GraphicsEngine::
 make_buffer(GraphicsStateGuardian *gsg, const string &name, 
             int sort, int x_size, int y_size) {
-  if (show_buffers) {
-    GraphicsWindow *window = make_window(gsg, name, sort);
-    if (window != (GraphicsWindow *)NULL) {
-      WindowProperties props;
-      props.set_size(x_size, y_size);
-      props.set_fixed_size(true);
-      props.set_title(name);
-      window->request_properties(props);
-      return window;
-    }
-  }
+  // I'll remove this permanently in a few days. - Josh
+  //  if (show_buffers) {
+  //    GraphicsWindow *window = make_window(gsg, name, sort);
+  //    if (window != (GraphicsWindow *)NULL) {
+  //      WindowProperties props;
+  //      props.set_size(x_size, y_size);
+  //      props.set_fixed_size(true);
+  //      props.set_title(name);
+  //      window->request_properties(props);
+  //      return window;
+  //    }
+  //  }
 
   GraphicsThreadingModel threading_model = get_threading_model();
   nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
@@ -301,18 +302,19 @@ make_parasite(GraphicsOutput *host, const string &name,
               int sort, int x_size, int y_size) {
   GraphicsStateGuardian *gsg = host->get_gsg();
 
-  if (show_buffers) {
-    GraphicsWindow *window = make_window(gsg, name, sort);
-    if (window != (GraphicsWindow *)NULL) {
-      WindowProperties props;
-      props.set_size(x_size, y_size);
-      props.set_fixed_size(true);
-      props.set_title(name);
-      window->request_properties(props);
-
-      return window;
-    }
-  }
+  // I'll remove this permanently in a few days. - Josh
+  //  if (show_buffers) {
+  //    GraphicsWindow *window = make_window(gsg, name, sort);
+  //    if (window != (GraphicsWindow *)NULL) {
+  //      WindowProperties props;
+  //      props.set_size(x_size, y_size);
+  //      props.set_fixed_size(true);
+  //      props.set_title(name);
+  //      window->request_properties(props);
+  //
+  //      return window;
+  //    }
+  //  }
 
   GraphicsThreadingModel threading_model = get_threading_model();
   nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);

@@ -83,11 +83,12 @@ ConfigVariableString screenshot_extension
  PRC_DESC("This specifies the default filename extension (and therefore the "
           "default image type) to be used for saving screenshots."));
 
-ConfigVariableBool show_buffers
-("show-buffers", false,
- PRC_DESC("Set this true to cause offscreen GraphicsBuffers to be created as "
-          "GraphicsWindows, if possible, so that their contents may be viewed "
-          "interactively.  Handy during development of multipass algorithms."));
+// I'll remove this permanently in a few days. - Josh
+//ConfigVariableBool show_buffers
+//("show-buffers", false,
+// PRC_DESC("Set this true to cause offscreen GraphicsBuffers to be created as "
+//          "GraphicsWindows, if possible, so that their contents may be viewed "
+//          "interactively.  Handy during development of multipass algorithms."));
 
 ConfigVariableBool prefer_texture_buffer
 ("prefer-texture-buffer", true,

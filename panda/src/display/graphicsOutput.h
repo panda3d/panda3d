@@ -230,6 +230,8 @@ protected:
   bool _trigger_copy;
   
 private:
+  PT(GeomVertexData) create_texture_card_vdata(int x, int y);
+  
   DisplayRegion *add_display_region(DisplayRegion *display_region);
 
   INLINE void win_display_regions_changed();

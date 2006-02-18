@@ -47,7 +47,8 @@ extern EXPCL_PANDA ConfigVariableBool yield_timeslice;
 extern EXPCL_PANDA ConfigVariableString screenshot_filename;
 extern EXPCL_PANDA ConfigVariableString screenshot_extension;
 
-extern EXPCL_PANDA ConfigVariableBool show_buffers;
+// I'll remove this permanently in a few days. - Josh
+// extern EXPCL_PANDA ConfigVariableBool show_buffers;
 
 extern EXPCL_PANDA ConfigVariableBool prefer_texture_buffer;
 extern EXPCL_PANDA ConfigVariableBool prefer_parasite_buffer;
