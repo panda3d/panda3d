@@ -19,7 +19,7 @@ from PhysicsManagerGlobal import *
 #from direct.interval.IntervalManager import ivalMgr
 from direct.interval import IntervalManager
 from InputStateGlobal import inputState
-
+from direct.showbase.BufferViewer import BufferViewer
 from direct.task import Task
 import EventManager
 import math
@@ -259,6 +259,9 @@ class ShowBase(DirectObject.DirectObject):
         sleepTime = self.config.GetFloat('client-sleep', 0.0)
         self.clientSleep = 0.0
         self.setSleep(sleepTime)
+
+        # Offscreen buffer viewing utility.
+        self.bufferViewer = BufferViewer()
 
         # Start Tk and DIRECT if specified by Config.prc
         fTk = self.config.GetBool('want-tk', 0)
