@@ -191,7 +191,6 @@ class Actor(DirectObject, NodePath):
 
         else:
             # act like a copy constructor
-
             # copy the scene graph elements of other
             otherCopy = other.copyTo(hidden)
             otherCopy.detachNode()
@@ -346,14 +345,20 @@ class Actor(DirectObject, NodePath):
         Actor cleanup function
         """
         self.stop()
+        self.flush()
+        self.__geomNode.removeNode()
+        if not self.isEmpty():
+            self.removeNode()
 
+    def flush(self):
+        """
+        Actor flush function
+        """
         self.__partBundleDict = {}
         self.__subpartDict = {}
         self.__sortedLODNames = []
         self.__animControlDict = {}
         self.__controlJoints = {}
-
-        self.__geomNode.removeNode()
 
         if self.__LODNode:
             self.__LODNode.removeNode()
@@ -361,9 +366,6 @@ class Actor(DirectObject, NodePath):
 
         self.__hasLOD = 0
 
-        if not self.isEmpty():
-            self.removeNode()
-            
     # accessing
 
     def getAnimControlDict(self):
@@ -1583,10 +1585,17 @@ class Actor(DirectObject, NodePath):
         """
         for lodName in other.__partBundleDict.keys():
             self.__partBundleDict[lodName] = {}
-            self.__updateSortedLODNames()            
+            self.__updateSortedLODNames()
+            # find the lod :Asad:
+            partLod = self.find("**/" + lodName)
+            if (partLod == None):
+                Actor.notify.warning("no lod named: %s" % (lodName))
+                return None
             for partName in other.__partBundleDict[lodName].keys():
                 # find the part in our tree
-                partBundle = self.find("**/" + Actor.partPrefix + partName) 
+                #partBundle = self.find("**/" + Actor.partPrefix + partName)
+                # Asad: changed above line to below
+                partBundle = partLod.find("**/" + Actor.partPrefix + partName) 
                 if (partBundle != None):
                     # store the part bundle
                     self.__partBundleDict[lodName][partName] = partBundle
