@@ -332,7 +332,7 @@ class ShipPilot2(PhysicsWalker):
             self.phys.addLinearForce(buoyancy)
             self.buoyancyStarboard = buoyancy
         
-        if 0:
+        if 1:
             fn=ForceNode("ship keel")
             fnp=NodePath(fn)
             fnp.reparentTo(avatarNodePath)
@@ -862,7 +862,7 @@ class ShipPilot2(PhysicsWalker):
             q2=physObject.getOrientation()
             q1.normalize()
             q2.normalize()
-            assert q1.isSameDirection(q2) or q1.getHpr() == q2.getHpr()
+            assert q1.isSameDirection(q2) or (q1.getHpr() == q2.getHpr())
         assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
 
         moveToGround = Vec3.zero()
@@ -886,7 +886,7 @@ class ShipPilot2(PhysicsWalker):
             q2=physObject.getOrientation()
             q1.normalize()
             q2.normalize()
-            assert q1.isSameDirection(q2) or q1.getHpr() == q2.getHpr()
+            assert q1.isSameDirection(q2) or (q1.getHpr() == q2.getHpr())
         assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
 
         # Check to see if we're moving at all:
