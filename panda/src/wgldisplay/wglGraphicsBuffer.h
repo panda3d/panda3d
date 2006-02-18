@@ -52,9 +52,6 @@ public:
   virtual void select_cube_map(int cube_map_index);
   virtual void release_gsg();
 
-  virtual void begin_render_texture();
-  virtual void end_render_texture();
-  
   virtual void process_events();
 
 protected:
@@ -62,6 +59,8 @@ protected:
   virtual bool open_buffer();
 
 private:
+  void begin_render_texture();
+  void end_render_texture();
   bool make_pbuffer(HDC window_dc);
   int choose_pbuffer_format(HDC twindow_dc, bool draw_to_texture);
 

@@ -128,7 +128,7 @@ end_frame(FrameMode mode) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsStateGuardian::begin_render_texture
-//       Access: Public, Virtual
+//       Access: Private
 //  Description: If the GraphicsOutput supports direct render-to-texture,
 //               and if any setup needs to be done during begin_frame,
 //               then the setup code should go here.  Any textures that
@@ -149,7 +149,7 @@ begin_render_texture() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::end_render_texture
-//       Access: Public, Virtual
+//       Access: Private
 //  Description: If the GraphicsOutput supports direct render-to-texture,
 //               and if any setup needs to be done during end_frame,
 //               then the setup code should go here.  Any textures that
