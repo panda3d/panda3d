@@ -43,7 +43,6 @@
 //               
 //               EXT_framebuffer_object
 //               ARB_draw_buffers
-//               ARB_texture_non_power_of_two
 //
 //               If any of these extensions is missing, then
 //               glGraphicsBuffer is not available (although it may
@@ -59,16 +58,30 @@ public:
                       int x_size, int y_size);
   virtual ~CLP(GraphicsBuffer)();
 
+  virtual bool begin_frame(FrameMode mode);
+  virtual void end_frame(FrameMode mode);
+
   virtual void select_cube_map(int cube_map_index);
 
-private:
-  void make_current();
-  void begin_render_texture();
-  void end_render_texture();
-  
-  // HPBUFFERARB _pbuffer;
-  // HDC _pbuffer_dc;
+protected:
+  virtual void close_buffer();
+  virtual bool open_buffer();
 
+private:
+  PT(GraphicsOutput) _host;
+  bool _track_host_size;
+  
+  int _fbo;
+  int _fbo_size_x;
+  int _fbo_size_y;
+  int _attached_cube_face;
+  Texture *_attached_color;
+  Texture *_attached_depth;
+  Texture *_attached_stencil;
+  int _attached_color_rb;
+  int _attached_depth_rb;
+  int _attached_stencil_rb;
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

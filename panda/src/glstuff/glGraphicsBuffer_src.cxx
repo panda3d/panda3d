@@ -44,7 +44,7 @@ CLP(GraphicsBuffer)::
 }
  
 ////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::begin_frame
+//     Function: wglGraphicsBuffer::begin_frame
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
 //               before beginning rendering for a given frame.  It
@@ -52,77 +52,68 @@ CLP(GraphicsBuffer)::
 //               if the frame should be rendered, or false if it
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
-bool CLP(GraphicsBuffer)::
-begin_frame() {
+bool wglGraphicsBuffer::
+begin_frame(FrameMode mode) {
+  PStatTimer timer(_make_current_pcollector);
+
+  begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
 
-  return GraphicsBuffer::begin_frame();
+  if (!_host->begin_frame(FM_parasite)) {
+    return false;
+  }
+
+  if (_track_host_size) {
+    if ((_host->get_x_size() != _x_size)||
+        (_host->get_y_size() != _y_size)) {
+      set_size_and_recalc(_host->get_x_size(),
+                          _host->get_y_size());
+    }
+  }
+
+  // This function also contains the code to *reopen* the window
+  // in the event that configuration parameters (ie, size, texture
+  // bindings) have changed.
+  open_window();
+  
+  // bind the FBO
+
+  if (mode == FM_render) {
+    begin_render_texture();
+    clear_cube_map_selection();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsStateGuardian::begin_render_texture
+//     Function: wglGraphicsBuffer::end_frame
 //       Access: Public, Virtual
-//  Description: If the GraphicsOutput supports direct render-to-texture,
-//               and if any setup needs to be done during begin_frame,
-//               then the setup code should go here.  Any textures that
-//               can not be rendered to directly should be reflagged
-//               as RTM_copy_to_texture.
+//  Description: This function will be called within the draw thread
+//               after rendering is completed for a given frame.  It
+//               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsBuffer)::
-begin_render_texture() {
-  // glGraphicsStateGuardian *glgsg;
-  // DCAST_INTO_V(glgsg, _gsg);
+void wglGraphicsBuffer::
+end_frame(FrameMode mode) {
+  end_frame_spam();
+  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
-  // Find the color texture, if there is one. That one can be bound to
-  // the framebuffer.  All others must be marked RTM_copy_to_texture.
-  //  int tex_index = -1;
-  //  for (int i=0; i<count_textures(); i++) {
-  //    if (get_rtm_mode(i) == RTM_bind_or_copy) {
-  //      if ((get_texture(i)->get_format() != Texture::F_depth_component)&&
-  //          (get_texture(i)->get_format() != Texture::F_stencil_index)&&
-  //          (tex_index < 0)) {
-  //        tex_index = i;
-  //      } else {
-  //        _textures[i]._rtm_mode = RTM_copy_texture;
-  //      }
-  //    }
-  //  }
-  //  
-  //  if (tex_index >= 0) {
-  //    Texture *tex = get_texture(tex_index);
-  //    TextureContext *tc = tex->prepare_now(_gsg->get_prepared_objects(), _gsg);
-  //    nassertv(tc != (TextureContext *)NULL);
-  //    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-  //    GLenum target = glgsg->get_texture_target(tex->get_texture_type());
-  //    if (target == GL_NONE) {
-  //      _textures[tex_index]._rtm_mode = RTM_copy_texture;
-  //      return;
-  //    }
-  //    GLP(BindTexture)(target, gtc->_index);
-  //    if (_gsg->get_properties().is_single_buffered()) {
-  //      glgsg->_glBindTexImageARB(_pbuffer, GL_FRONT_LEFT_ARB);
-  //    } else {
-  //      glgsg->_glBindTexImageARB(_pbuffer, GL_BACK_LEFT_ARB);
-  //    }
-  //  }
-}  
+  if (mode == FM_render) {
+    end_render_texture();
+    copy_to_textures();
+  }
 
+  // Unbind the FBO
+  
+  _host->end_frame(FM_parasite);
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::end_render_texture
-//       Access: Public, Virtual
-//  Description: If the GraphicsOutput supports direct render-to-texture,
-//               and if any setup needs to be done during end_frame,
-//               then the setup code should go here.  Any textures that
-//               could not be rendered to directly should be reflagged
-//               as RTM_copy_texture.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsBuffer)::
-end_render_texture() {
-  // glGraphicsStateGuardian *glgsg;
-  // DCAST_INTO_V(glgsg, _gsg);
+  if (mode == FM_render) {
+    trigger_flip();
+    if (_one_shot) {
+      prepare_for_deletion();
+    }
+    clear_cube_map_selection();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,22 +127,68 @@ end_render_texture() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 select_cube_map(int cube_map_index) {
-  // glGraphicsStateGuardian *glgsg;
-  // DCAST_INTO_V(glgsg, _gsg);
+  open_buffer();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::make_current
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               during begin_frame() to ensure the graphics context
-//               is ready for drawing.
+//     Function: wglGraphicsBuffer::open_buffer
+//       Access: Protected, Virtual
+//  Description: Opens the window right now.  Called from the window
+//               thread.  Returns true if the window is successfully
+//               opened, or false if there was a problem.
+//
+//               This particular version of open_buffer is also
+//               capable of reopening the buffer, which is necessary
+//               if the texture bindings, size, or cube face has
+//               changed.  Caution: since this function is called
+//               at every cube-map switch, it needs to be reasonably
+//               fast in the case that little is changing.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsBuffer)::
-make_current() {
-  PStatTimer timer(_make_current_pcollector);
+bool wglGraphicsBuffer::
+open_buffer() {
+  // Make sure the FBO is allocated.
+  
+  // Figure out the desired size of the FBO
+  int desired_x = _x_size;
+  int desired_y = _y_size;
+  if (!_gsg->get_supports_tex_non_pow2()) {
+    desired_x = Texture::up_to_power_2(desired_x);
+    desired_y = Texture::up_to_power_2(desired_y);
+  }
 
-  // How to implement this is not obvious.
+  // Scan the textures list to see which textures should be attached.
+  Texture *attach_color = 0;
+  Texture *attach_depth = 0;
+  Texture *attach_stencil = 0;
+  
+
+  // For all slots containing textures, detach if:
+  //   - they aren't supposed to be attached any more, or
+  //   - there is a size mismatch, or
+  //   - there is a cube-face mismatch
+  
+  // For all renderbuffers, detach and deallocate if:
+  //   - there is a size mismatch, or,
+  //   - there is a texture to be attached at that point
+  
+  // For all to-be-attached textures, attach if not already
+  // attached.  During attachment process, resize and reformat
+  // if needed.
+  
+  // For all unfilled slots, allocate and attach render buffers.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsBuffer::close_buffer
+//       Access: Protected, Virtual
+//  Description: Closes the buffer right now.  Called from the window
+//               thread.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsBuffer::
+close_buffer() {
+  // Detach all renderbuffers
+  // Detach all textures
+  // Deallocate the FBO itself.
 }
 
 ////////////////////////////////////////////////////////////////////
