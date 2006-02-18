@@ -37,7 +37,7 @@ VERBOSE=1
 COMPRESSOR="zlib"
 PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
           "OPENSSL","FREETYPE","FFTW","MILES","MAYA6","MAYA65","MAYA7","MAX6","MAX7","MAX8",
-          "BISON","FLEX","OPENCV","PANDATOOL","PANDAAPP"]
+          "BISON","FLEX","OPENCV","PANDATOOL","PANDAAPP","DX8","DX9"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
 DIRECTXSDK = None
@@ -631,6 +631,10 @@ if (OMIT.count("MILES")==0):
     WARNINGS.append("makepanda currently does not support miles sound system")
     WARNINGS.append("I have automatically added this command-line option: --no-miles")
     OMIT.append("MILES")
+
+if (sys.platform != "win32"):
+    if (OMIT.count("DX8")==0): OMIT.append("DX8")
+    if (OMIT.count("DX9")==0): OMIT.append("DX9")
 
 ##########################################################################################
 #
@@ -1340,6 +1344,8 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
     if (PkgSelected(opts,"NVIDIACG")):
         if (opts.count("CGGL")):
             cmd = cmd + ' thirdparty/win-libs-vc7/nvidiacg/lib/cgGL.lib'
+        if (opts.count("CGDX9")):
+            cmd = cmd + ' thirdparty/win-libs-vc7/nvidiacg/lib/cgD3D9.lib'
         cmd = cmd + ' thirdparty/win-libs-vc7/nvidiacg/lib/cg.lib'
     if (PkgSelected(opts,"HELIX")):
         cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/runtlib.lib'
@@ -1390,7 +1396,7 @@ def CompileLinkLINUXA(wdll, obj, wobj, opts, dll, ldef):
     if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/fmod/lib -lfmod-3.74'
     if (PkgSelected(opts,"NVIDIACG")):
         cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
-        if (opts.count("CGGL")): cmd = cmd + " -lCgGL"
+        if (opts.count("CGGL")):  cmd = cmd + " -lCgGL"
         cmd = cmd + " -lCg"
     if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/nspr/lib -lpandanspr4'
     if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
@@ -1712,6 +1718,7 @@ DTOOLDEFAULTS=[
     ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
     ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),
     ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
     ]
 
@@ -1734,6 +1741,7 @@ def CalculateDtoolConfig():
     if (OMIT.count("NVIDIACG")==0):
         dtoolconfig["HAVE_CG"] = '1'
         dtoolconfig["HAVE_CGGL"] = '1'
+        dtoolconfig["HAVE_CGDX9"] = '1'
     
     if (OPTIMIZE <= 3):
         if (dtoolconfig["HAVE_NET"] != 'UNDEF'):
@@ -2723,7 +2731,7 @@ if (sys.platform == "win32"):
 # DIRECTORY: panda/metalibs/pandadx7/
 #
 # 
-# if (sys.platform == "win32"):
+# if OMIT.count("DX7")==0:
 #     IPATH=['panda/src/dxgsg7']
 #     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
 #     CopyAllHeaders('panda/src/dxgsg7')
@@ -2750,7 +2758,7 @@ if (sys.platform == "win32"):
 # DIRECTORY: panda/metalibs/pandadx8/
 #
 
-if (sys.platform == "win32"):
+if OMIT.count("DX8")==0:
     IPATH=['panda/src/dxgsg8', 'panda/metalibs/pandadx8']
     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
     CopyAllHeaders('panda/src/dxgsg8')
@@ -2773,30 +2781,27 @@ if (sys.platform == "win32"):
 #
 # DIRECTORY: panda/metalibs/pandadx9/
 #
-# 
-# if (sys.platform == "win32"):
-#     IPATH=['panda/src/dxgsg9']
-#     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
-#     CopyAllHeaders('panda/src/dxgsg9')
-#     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian9.cxx', obj='dxgsg9_dxGraphicsStateGuardian9.obj')
-#     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg9_composite.cxx', obj='dxgsg9_composite.obj')
-# 
-#     IPATH=['panda/metalibs/pandadx9']
-#     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
-#     CopyAllHeaders('panda/metalibs/pandadx9')
-#     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandadx9.cxx', obj='pandadx9_pandadx9.obj')
-#     EnqueueLink(dll='libpandadx9.dll',
-#       opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D9', 'NSPR'], obj=[
-#       'pandadx9_pandadx9.obj',
-#       'dxgsg9_dxGraphicsStateGuardian9.obj',
-#       'dxgsg9_composite.obj',
-#       'libpanda.dll',
-#       'libpandaexpress.dll',
-#       'libwindisplay.dll',
-#       'libdtoolconfig.dll',
-#       'libdtool.dll',
-#       ])
-# 
+
+if OMIT.count("DX9")==0:
+    IPATH=['panda/src/dxgsg9']
+    OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR', 'NVIDIACG', 'CGDX9']
+    CopyAllHeaders('panda/src/dxgsg9')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian9.cxx', obj='dxgsg9_dxGraphicsStateGuardian9.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg9_composite.cxx', obj='dxgsg9_composite.obj')
+    IPATH=['panda/metalibs/pandadx9']
+    CopyAllHeaders('panda/metalibs/pandadx9')
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandadx9.cxx', obj='pandadx9_pandadx9.obj')
+    EnqueueLink(dll='libpandadx9.dll',
+      opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D9', 'NSPR', 'NVIDIACG', 'CGDX9'], obj=[
+      'pandadx9_pandadx9.obj',
+      'dxgsg9_dxGraphicsStateGuardian9.obj',
+      'dxgsg9_composite.obj',
+      'libpanda.dll',
+      'libpandaexpress.dll',
+      'libwindisplay.dll',
+      'libdtoolconfig.dll',
+      'libdtool.dll',
+      ])
 
 #
 # DIRECTORY: panda/src/egg/
