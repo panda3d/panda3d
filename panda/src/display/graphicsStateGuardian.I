@@ -346,6 +346,17 @@ get_supports_cube_map() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_tex_non_pow2
+//       Access: Published
+//  Description: Returns true if this GSG can handle non power of two
+//               sized textures.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_tex_non_pow2() const {
+  return _supports_tex_non_pow2;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_max_lights
 //       Access: Published
 //  Description: Returns the maximum number of simultaneous lights

@@ -472,6 +472,9 @@ reset() {
 
   _supports_multitexture = false;
 
+  _supports_tex_non_pow2 =
+    has_extension("GL_ARB_texture_non_power_of_two");
+  
   if (is_at_least_version(1, 3)) {
     _supports_multitexture = true;
 
@@ -2443,9 +2446,14 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
-  tex->set_x_size(Texture::up_to_power_2(w));
-  tex->set_y_size(Texture::up_to_power_2(h));
-
+  if (_supports_tex_non_pow2) {
+    tex->set_x_size(w);
+    tex->set_y_size(h);
+  } else {
+    tex->set_x_size(Texture::up_to_power_2(w));
+    tex->set_y_size(Texture::up_to_power_2(h));
+  }
+  
   // Sanity check everything.
   if (z >= 0) {
     if (!_supports_cube_map) {

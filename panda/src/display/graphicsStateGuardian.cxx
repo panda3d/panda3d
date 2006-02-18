@@ -132,7 +132,8 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
 
   _supports_3d_texture = false;
   _supports_cube_map = false;
-
+  _supports_tex_non_pow2 = false;
+  
   // Assume no limits on number of lights or clip planes.
   _max_lights = -1;
   _max_clip_planes = -1;

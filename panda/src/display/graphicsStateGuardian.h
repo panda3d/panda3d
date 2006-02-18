@@ -96,6 +96,7 @@ PUBLISHED:
 
   INLINE bool get_supports_3d_texture() const;
   INLINE bool get_supports_cube_map() const;
+  INLINE bool get_supports_tex_non_pow2() const;
 
   INLINE int get_max_lights() const;
   INLINE int get_max_clip_planes() const;
@@ -336,6 +337,7 @@ protected:
 
   bool _supports_3d_texture;
   bool _supports_cube_map;
+  bool _supports_tex_non_pow2;
 
   int _max_lights;
   int _max_clip_planes;
