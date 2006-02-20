@@ -170,7 +170,7 @@ will_close_connection() const {
 //               once for a particular HTTPChannel.
 ////////////////////////////////////////////////////////////////////
 istream *HTTPChannel::
-open_read_file() const {
+open_read_file(bool auto_unwrap) const {
   return ((HTTPChannel *)this)->read_body();
 }
 
