@@ -45,12 +45,7 @@
     multifile.I multifile.h \
     mutexDebug.h mutexDebug.I \
     mutexDirect.h mutexDirect.I \
-    mutexDummyImpl.h mutexDummyImpl.I \
     mutexHolder.h mutexHolder.I \
-    mutexImpl.h \
-    mutexNsprImpl.h mutexNsprImpl.I \
-    mutexPosixImpl.h mutexPosixImpl.I \
-    mutexWin32Impl.h mutexWin32Impl.I \
     namable.I \
     namable.h nativeNumericData.I nativeNumericData.h \
     numeric_types.h \
@@ -70,7 +65,6 @@
     reMutexDirect.h reMutexDirect.I \
     reMutexHolder.I reMutexHolder.h \
     reversedNumericData.I reversedNumericData.h \
-    selectThreadImpl.h \
     streamReader.I streamReader.h streamWriter.I streamWriter.h \
     stringDecoder.h stringDecoder.I \
     subStream.I subStream.h subStreamBuf.h \
@@ -124,10 +118,6 @@
     mutexDebug.cxx \
     mutexDirect.cxx \
     mutexHolder.cxx \
-    mutexDummyImpl.cxx \
-    mutexNsprImpl.cxx \
-    mutexPosixImpl.cxx \
-    mutexWin32Impl.cxx \
     pmutex.cxx \
     namable.cxx \
     nativeNumericData.cxx \
@@ -204,12 +194,7 @@
     memoryUsagePointers.h multifile.I multifile.h \
     mutexDebug.h mutexDebug.I \
     mutexDirect.h mutexDirect.I \
-    mutexDummyImpl.h mutexDummyImpl.I \
     mutexHolder.h mutexHolder.I \
-    mutexImpl.h \
-    mutexNsprImpl.h mutexNsprImpl.I \
-    mutexPosixImpl.h mutexPosixImpl.I \
-    mutexWin32Impl.h mutexWin32Impl.I \
     namable.I namable.h \
     nativeNumericData.I nativeNumericData.h numeric_types.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
@@ -228,7 +213,6 @@
     reMutexDirect.h reMutexDirect.I \
     reMutexHolder.I reMutexHolder.h \
     reversedNumericData.I reversedNumericData.h \
-    selectThreadImpl.h \
     streamReader.I streamReader.h streamWriter.I streamWriter.h \
     stringDecoder.h stringDecoder.I \
     subStream.I subStream.h subStreamBuf.h \
