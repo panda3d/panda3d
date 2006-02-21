@@ -1,4 +1,3 @@
-
 #include "vector_int.cxx"
 #include "dtool_super_base.cxx"
 #include "config_interrogatedb.cxx"
@@ -9,5 +8,7 @@
 #include "interrogateFunctionWrapper.cxx"
 #include "interrogate_datafile.cxx"
 #include "interrogate_interface.cxx"
+#include "interrogateDatabase.cxx"
+#include "interrogateManifest.cxx"
 
 

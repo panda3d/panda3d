@@ -20,7 +20,7 @@
 #define TYPEREGISTRY_H
 
 #include "dtoolbase.h"
-
+#include "mutexImpl.h"
 #include "notify.h"
 #include "pvector.h"
 #include "pmap.h"
@@ -106,6 +106,7 @@ private:
 
   bool _derivations_fresh;
 
+  static MutexImpl _lock;
   static TypeRegistry *_global_pointer;
 };
 

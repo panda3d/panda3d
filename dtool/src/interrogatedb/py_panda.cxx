@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "py_panda.h"
+#include "config_interrogatedb.h"
 
 #ifdef HAVE_PYTHON
 

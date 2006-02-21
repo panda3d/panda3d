@@ -15,8 +15,14 @@
      interrogateManifest.h interrogateType.I interrogateType.h  \
      interrogate_datafile.I interrogate_datafile.h  \
      interrogate_interface.h interrogate_request.h \
+     mutexImpl.h \
+     mutexDummyImpl.h mutexDummyImpl.I \
+     mutexNsprImpl.h mutexNsprImpl.I \
+     mutexPosixImpl.h mutexPosixImpl.I \
+     mutexWin32Impl.h mutexWin32Impl.I \
      py_panda.h \
      register_type.I register_type.h \
+     selectThreadImpl.h \
      typedObject.I typedObject.h \
      typeHandle.I typeHandle.h \
      typeRegistry.I typeRegistry.h \
@@ -32,6 +38,10 @@
      interrogateFunctionWrapper.cxx interrogateManifest.cxx  \
      interrogateType.cxx interrogate_datafile.cxx  \
      interrogate_interface.cxx interrogate_request.cxx  \
+     mutexDummyImpl.cxx \
+     mutexNsprImpl.cxx \
+     mutexPosixImpl.cxx \
+     mutexWin32Impl.cxx \
      py_panda.cxx \
      register_type.cxx \
      typedObject.cxx \
@@ -41,8 +51,15 @@
 
   #define INSTALL_HEADERS \
     interrogate_interface.h interrogate_request.h vector_int.h \
-    config_interrogatedb.h py_panda.h \
+    config_interrogatedb.h \
+    mutexImpl.h \
+    mutexDummyImpl.h mutexDummyImpl.I \
+    mutexNsprImpl.h mutexNsprImpl.I \
+    mutexPosixImpl.h mutexPosixImpl.I \
+    mutexWin32Impl.h mutexWin32Impl.I \
+    py_panda.h \
     register_type.I register_type.h \
+    selectThreadImpl.h \
     typedObject.I typedObject.h \
     typeHandle.I typeHandle.h \
     typeRegistry.I typeRegistry.h \
