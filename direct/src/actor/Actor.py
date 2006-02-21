@@ -1587,8 +1587,11 @@ class Actor(DirectObject, NodePath):
             self.__partBundleDict[lodName] = {}
             self.__updateSortedLODNames()
             # find the lod :Asad:
-            partLod = self.find("**/" + lodName)
-            if (partLod == None):
+            if lodName == 'lodRoot':
+                partLod = self
+            else:
+                partLod = self.find("**/" + lodName)
+            if partLod.isEmpty():
                 Actor.notify.warning("no lod named: %s" % (lodName))
                 return None
             for partName in other.__partBundleDict[lodName].keys():
