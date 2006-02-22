@@ -22,12 +22,6 @@
     portalMask.h \
     compareTo.I compareTo.h \
     config_util.N config_util.h configurable.h \
-    cycleData.h cycleData.I \
-    cycleDataReader.h cycleDataReader.I \
-    cycleDataStageReader.h cycleDataStageReader.I \
-    cycleDataStageWriter.h cycleDataStageWriter.I \
-    cycleDataWriter.h cycleDataWriter.I \
-    cyclerHolder.h cyclerHolder.I \
     datagramInputFile.I datagramInputFile.h \
     datagramOutputFile.I datagramOutputFile.h \
     drawMask.h \
@@ -49,13 +43,6 @@
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
     nodePointerToBase.h nodePointerToBase.I \
     nodePointerTo.h nodePointerTo.I \
-    pipeline.h pipeline.I \
-    pipelineCycler.h pipelineCycler.I \
-    pipelineCyclerLinks.h pipelineCyclerLinks.I \
-    pipelineCyclerBase.h  \
-    pipelineCyclerDummyImpl.h pipelineCyclerDummyImpl.I \
-    pipelineCyclerTrivialImpl.h pipelineCyclerTrivialImpl.I \
-    pipelineCyclerTrueImpl.h pipelineCyclerTrueImpl.I \
     pta_double.h \
     pta_float.h pta_int.h \
     string_utils.I string_utils.N string_utils.h \
@@ -77,12 +64,6 @@
     buttonHandle.cxx buttonRegistry.cxx \
     cachedTypedWritableReferenceCount.cxx \
     config_util.cxx configurable.cxx \
-    cycleData.cxx \
-    cycleDataReader.cxx \
-    cycleDataStageReader.cxx \
-    cycleDataStageWriter.cxx \
-    cycleDataWriter.cxx \
-    cyclerHolder.cxx \
     datagramInputFile.cxx datagramOutputFile.cxx \
     factoryBase.cxx \
     factoryParam.cxx factoryParams.cxx \
@@ -96,11 +77,6 @@
     nodeCachedReferenceCount.cxx \
     nodePointerToBase.cxx \
     nodePointerTo.cxx \
-    pipeline.cxx \
-    pipelineCycler.cxx \
-    pipelineCyclerDummyImpl.cxx \
-    pipelineCyclerTrivialImpl.cxx \
-    pipelineCyclerTrueImpl.cxx \
     pta_double.cxx pta_float.cxx \
     pta_int.cxx pta_ushort.cxx \
     string_utils.cxx timedCycle.cxx typedWritable.cxx \
@@ -124,12 +100,6 @@
     collideMask.h portalMask.h \
     compareTo.I compareTo.h \
     config_util.h configurable.h factory.I factory.h \
-    cycleData.h cycleData.I \
-    cycleDataReader.h cycleDataReader.I \
-    cycleDataStageReader.h cycleDataStageReader.I \
-    cycleDataStageWriter.h cycleDataStageWriter.I \
-    cycleDataWriter.h cycleDataWriter.I \
-    cyclerHolder.h cyclerHolder.I \
     datagramInputFile.I datagramInputFile.h \
     datagramOutputFile.I datagramOutputFile.h \
     drawMask.h \
@@ -151,13 +121,6 @@
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
     nodePointerToBase.h nodePointerToBase.I \
     nodePointerTo.h nodePointerTo.I \
-    pipeline.h pipeline.I \
-    pipelineCycler.h pipelineCycler.I \
-    pipelineCyclerLinks.h pipelineCyclerLinks.I \
-    pipelineCyclerBase.h \
-    pipelineCyclerDummyImpl.h pipelineCyclerDummyImpl.I \
-    pipelineCyclerTrivialImpl.h pipelineCyclerTrivialImpl.I \
-    pipelineCyclerTrueImpl.h pipelineCyclerTrueImpl.I \
     pta_double.h \
     pta_float.h pta_int.h pta_ushort.h \
     string_utils.I \
