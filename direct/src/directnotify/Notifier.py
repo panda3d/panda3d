@@ -49,11 +49,11 @@ class Notifier:
         delta = int(round(delta))
         Notifier.serverDelta = delta + time.timezone - timezone
 
+        # The following call is necessary to make the output from C++
+        # notify messages show the same timestamp as those generated
+        # from Python-level notify messages.
         from pandac.PandaModules import NotifyCategory
-
-        # HACK - JAY, crashes when try to log into someone else's server
-        # NotifyCategory.setServerDelta(self.serverDelta)
-        NotifyCategory.setServerDelta(0)
+        NotifyCategory.setServerDelta(self.serverDelta)
          
         self.info("Notify clock adjusted by %s (and timezone adjusted by %s hours) to synchronize with server." % (PythonUtil.formatElapsedSeconds(delta), (time.timezone - timezone) / 3600))
 
