@@ -22,6 +22,7 @@
 #include "bamWriter.h"
 #include "config_recorder.h"
 #include "bam.h"
+#include "clockObject.h"
 
 TypeHandle RecorderController::_type_handle;
 RecorderController::RecorderFactory *RecorderController::_factory = NULL;
