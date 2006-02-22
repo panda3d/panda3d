@@ -28,6 +28,7 @@
 #include "cycleDataWriter.h"
 #include "cycleDataStageReader.h"
 #include "pipelineCycler.h"
+#include "thread.h"
 
 class EXPCL_PANDAEXPRESS TimeVal {
 PUBLISHED:
