@@ -1,5 +1,8 @@
-#include "patchfile.cxx"
-#include "password_hash.cxx"
+#include "pipeline.cxx"
+#include "pipelineCycler.cxx"
+#include "pipelineCyclerDummyImpl.cxx"
+#include "pipelineCyclerTrivialImpl.cxx"
+#include "pipelineCyclerTrueImpl.cxx"
 #include "pmutex.cxx"
 #include "pointerTo.cxx"
 #include "pointerToArray.cxx"
@@ -42,4 +45,3 @@
 #include "windowsRegistry.cxx"
 #include "zStream.cxx"
 #include "zStreamBuf.cxx"
-

@@ -18,6 +18,7 @@
 
 
 #include "config_express.h"
+#include "clockObject.h"
 #include "datagram.h"
 #include "mainThread.h"
 #include "externalThread.h"
@@ -168,6 +169,7 @@ init_libexpress() {
   }
   initialized = true;
 
+  ClockObject::init_type();
   Datagram::init_type();
   MainThread::init_type();
   ExternalThread::init_type();

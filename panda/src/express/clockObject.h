@@ -23,6 +23,11 @@
 
 #include "trueClock.h"
 #include "pdeque.h"
+#include "cycleData.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "cycleDataStageReader.h"
+#include "pipelineCycler.h"
 
 class EXPCL_PANDAEXPRESS TimeVal {
 PUBLISHED:
@@ -113,10 +118,7 @@ private:
   Mode _mode;
   double _start_short_time;
   double _start_long_time;
-  int _frame_count;
   double _actual_frame_time;
-  double _reported_frame_time;
-  double _dt;
   double _max_dt;
   double _degrade_factor;
   int _error_count;
@@ -127,7 +129,39 @@ private:
   typedef pdeque<double> Ticks;
   Ticks _ticks;
 
+  // This is the data that needs to be cycled each frame.
+  class EXPCL_PANDAEXPRESS CData : public CycleData {
+  public:
+    CData();
+    INLINE CData(const CData &copy);
+
+    virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return ClockObject::get_class_type();
+    }
+
+    int _frame_count;
+    double _reported_frame_time;
+    double _dt;
+  };
+
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+
   static ClockObject *_global_clock;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "ClockObject");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 EXPCL_PANDAEXPRESS ostream &

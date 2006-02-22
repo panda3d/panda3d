@@ -26,6 +26,12 @@
     conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
     config_express.h \
+    cycleData.h cycleData.I \
+    cycleDataReader.h cycleDataReader.I \
+    cycleDataStageReader.h cycleDataStageReader.I \
+    cycleDataStageWriter.h cycleDataStageWriter.I \
+    cycleDataWriter.h cycleDataWriter.I \
+    cyclerHolder.h cyclerHolder.I \
     datagram.I datagram.h datagramGenerator.I \
     datagramGenerator.h \
     datagramIterator.I datagramIterator.h datagramSink.I datagramSink.h \
@@ -52,6 +58,13 @@
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \
     patchfile.I patchfile.h \
+    pipeline.h pipeline.I \
+    pipelineCycler.h pipelineCycler.I \
+    pipelineCyclerLinks.h pipelineCyclerLinks.I \
+    pipelineCyclerBase.h  \
+    pipelineCyclerDummyImpl.h pipelineCyclerDummyImpl.I \
+    pipelineCyclerTrivialImpl.h pipelineCyclerTrivialImpl.I \
+    pipelineCyclerTrueImpl.h pipelineCyclerTrueImpl.I \
     pmutex.h pmutex.I \
     pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h \
@@ -105,7 +118,14 @@
     conditionVarNsprImpl.cxx \
     conditionVarPosixImpl.cxx \
     conditionVarWin32Impl.cxx \
-    config_express.cxx datagram.cxx datagramGenerator.cxx \
+    config_express.cxx \
+    cycleData.cxx \
+    cycleDataReader.cxx \
+    cycleDataStageReader.cxx \
+    cycleDataStageWriter.cxx \
+    cycleDataWriter.cxx \
+    cyclerHolder.cxx \
+    datagram.cxx datagramGenerator.cxx \
     datagramIterator.cxx \
     datagramSink.cxx dcast.cxx \
     encryptStreamBuf.cxx encryptStream.cxx \
@@ -118,6 +138,11 @@
     mutexDebug.cxx \
     mutexDirect.cxx \
     mutexHolder.cxx \
+    pipeline.cxx \
+    pipelineCycler.cxx \
+    pipelineCyclerDummyImpl.cxx \
+    pipelineCyclerTrivialImpl.cxx \
+    pipelineCyclerTrueImpl.cxx \
     pmutex.cxx \
     namable.cxx \
     nativeNumericData.cxx \
@@ -176,7 +201,14 @@
     conditionVarNsprImpl.h conditionVarNsprImpl.I \
     conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
-    config_express.h datagram.I datagram.h \
+    config_express.h \
+    cycleData.h cycleData.I \
+    cycleDataReader.h cycleDataReader.I \
+    cycleDataStageReader.h cycleDataStageReader.I \
+    cycleDataStageWriter.h cycleDataStageWriter.I \
+    cycleDataWriter.h cycleDataWriter.I \
+    cyclerHolder.h cyclerHolder.I \
+    datagram.I datagram.h \
     datagramGenerator.I datagramGenerator.h \
     datagramIterator.I datagramIterator.h \
     datagramSink.I datagramSink.h dcast.T dcast.h \
@@ -200,6 +232,13 @@
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \
     patchfile.I patchfile.h \
+    pipeline.h pipeline.I \
+    pipelineCycler.h pipelineCycler.I \
+    pipelineCyclerLinks.h pipelineCyclerLinks.I \
+    pipelineCyclerBase.h  \
+    pipelineCyclerDummyImpl.h pipelineCyclerDummyImpl.I \
+    pipelineCyclerTrivialImpl.h pipelineCyclerTrivialImpl.I \
+    pipelineCyclerTrueImpl.h pipelineCyclerTrueImpl.I \
     pmutex.h pmutex.I \
     pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h \

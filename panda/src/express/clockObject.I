@@ -28,13 +28,35 @@ INLINE ClockObject::
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::set_mode
 //       Access: Published
-//  Description: Changes the mode of the clock, e.g. from normal
-//               (real-time) to non-real-time.  In non-real-time mode,
-//               tick() will add the value of dt to the value returned
-//               by get_frame_time(), regardless of how much time has
-//               actually passed.  In normal, real-time mode, tick()
-//               will set the value returned by get_frame_time() to
-//               the current real time.
+//  Description: Changes the mode of the clock.  Normally, the clock
+//               is in mode M_normal. In this mode, each call to
+//               tick() will set the value returned by
+//               get_frame_time() to the current real time; thus, the
+//               clock simply reports time advancing.
+//
+//               Other possible modes:
+//
+//               M_non_real_time - the clock ignores real time
+//               completely; at each call to tick(), it pretends that
+//               exactly dt seconds have elapsed since the last call
+//               to tick().  You may set the value of dt with
+//               set_dt().
+//
+//               M_forced - the clock forces the application to run at
+//               the rate specified by set_dt().  If the application
+//               would run faster than this rate, the clock will slow
+//               down the application; if the application would run
+//               slower than this rate, the clock slows down time so
+//               that the application believes it is running at the
+//               given rate.
+//
+//               M_degrade - the clock runs at real time, but the
+//               application is slowed down by a set factor of its
+//               frame rate, specified by set_degrade_factor().
+//
+//               M_slave - the clock does not advance, but relies on
+//               the user to call set_frame_time() and/or
+//               set_frame_count() each frame.
 ////////////////////////////////////////////////////////////////////
 INLINE void ClockObject::
 set_mode(ClockObject::Mode mode) {
@@ -66,7 +88,8 @@ get_mode() const {
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
 get_frame_time() const {
-  return _reported_frame_time;
+  CDReader cdata(_cycler);
+  return cdata->_reported_frame_time;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,7 +153,8 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 INLINE int ClockObject::
 get_frame_count() const {
-  return _frame_count;
+  CDReader cdata(_cycler);
+  return cdata->_frame_count;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,10 +180,11 @@ get_net_frame_rate() const {
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
 get_dt() const {
+  CDReader cdata(_cycler);
   if (_max_dt > 0.0) {
-    return min(_max_dt, _dt);
+    return min(_max_dt, cdata->_dt);
   }
-  return _dt;
+  return cdata->_dt;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -172,7 +197,9 @@ get_dt() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ClockObject::
 set_dt(double dt) {
-  _dt = dt;
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+  CDWriter cdata(_cycler);
+  cdata->_dt = dt;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -282,10 +309,11 @@ get_average_frame_rate_interval() const {
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
 get_average_frame_rate() const {
+  CDStageReader cdata(_cycler, 0);
   if (_ticks.size() <= 1) {
     return 0.0;
   } else {
-    return _ticks.size() / (_reported_frame_time - _ticks.front());
+    return _ticks.size() / (cdata->_reported_frame_time - _ticks.front());
   }
 }
 
@@ -301,6 +329,7 @@ get_average_frame_rate() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ClockObject::
 check_errors() {
+  CDReader cdata(_cycler);  // Just to hold a mutex.
   int orig_error_count = _error_count;
   _error_count = _true_clock->get_error_count();
   return (_error_count != orig_error_count);
@@ -319,6 +348,19 @@ get_global_clock() {
     make_global_clock();
   }
   return _global_clock;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ClockObject::CData::
+CData(const ClockObject::CData &copy) : 
+  _frame_count(copy._frame_count), 
+  _reported_frame_time(copy._reported_frame_time),
+  _dt(copy._dt)
+{
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -20,16 +20,10 @@
 #include "clockObject.h"
 #include "config_express.h"
 #include "configVariableEnum.h"
-
-#if defined(WIN32)
-  #define WINDOWS_LEAN_AND_MEAN
-  #include <wtypes.h>  // For select()
-  #undef WINDOWS_LEAN_AND_MEAN  
-#else
-  #include <sys/time.h>  // For select()
-#endif
+#include "thread.h"
 
 ClockObject *ClockObject::_global_clock = (ClockObject *)NULL;
+TypeHandle ClockObject::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::Constructor
@@ -47,10 +41,7 @@ ClockObject() {
 
   _start_short_time = _true_clock->get_short_time();
   _start_long_time = _true_clock->get_long_time();
-  _frame_count = 0;
   _actual_frame_time = 0.0;
-  _reported_frame_time = 0.0;
-  _dt = 1.0 / clock_frame_rate;
   _max_dt = max_dt;
   _degrade_factor = clock_degrade_factor;
   _average_frame_rate_interval = average_frame_rate_interval;
@@ -91,6 +82,7 @@ set_real_time(double time) {
 ////////////////////////////////////////////////////////////////////
 void ClockObject::
 set_frame_time(double time) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
 #ifdef NOTIFY_DEBUG
   if (this == _global_clock && _mode != M_slave) {
     express_cat.warning()
@@ -98,8 +90,9 @@ set_frame_time(double time) {
       << " seconds.\n";
   }
 #endif  // NOTIFY_DEBUG
+  CDWriter cdata(_cycler);
   _actual_frame_time = time;
-  _reported_frame_time = time;
+  cdata->_reported_frame_time = time;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,6 +104,7 @@ set_frame_time(double time) {
 ////////////////////////////////////////////////////////////////////
 void ClockObject::
 set_frame_count(int frame_count) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
 #ifdef NOTIFY_DEBUG
   if (this == _global_clock && _mode != M_slave) {
     express_cat.warning()
@@ -118,7 +112,8 @@ set_frame_count(int frame_count) {
       << frame_count - get_frame_count() << " frames.\n";
   }
 #endif  // NOTIFY_DEBUG
-  _frame_count = frame_count;
+  CDWriter cdata(_cycler);
+  cdata->_frame_count = frame_count;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,7 +128,9 @@ set_frame_count(int frame_count) {
 ////////////////////////////////////////////////////////////////////
 void ClockObject::
 tick() {
-  double old_reported_time = _reported_frame_time;
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+  CDWriter cdata(_cycler);
+  double old_reported_time = cdata->_reported_frame_time;
 
   if (_mode != M_slave) {
     double old_time = _actual_frame_time;
@@ -142,39 +139,39 @@ tick() {
     switch (_mode) {
     case M_normal:
       // Time runs as it will; we simply report time elapsing.
-      _dt = _actual_frame_time - old_time;
-      _reported_frame_time = _actual_frame_time;
+      cdata->_dt = _actual_frame_time - old_time;
+      cdata->_reported_frame_time = _actual_frame_time;
       break;
       
     case M_non_real_time:
       // Ignore real time.  We always report the same interval having
       // elapsed each frame.
-      _reported_frame_time += _dt;
+      cdata->_reported_frame_time += cdata->_dt;
       break;
       
     case M_forced:
       // If we are running faster than the desired interval, slow down.
       // If we are running slower than the desired interval, ignore that
       // and pretend we're running at the specified rate.
-      wait_until(old_time + _dt);
-      _reported_frame_time += _dt;
+      wait_until(old_time + cdata->_dt);
+      cdata->_reported_frame_time += cdata->_dt;
       break;
       
     case M_degrade:
       // Each frame, wait a certain fraction of the previous frame's
       // time to degrade performance uniformly.
-      _dt = (_actual_frame_time - old_time) * _degrade_factor;
+      cdata->_dt = (_actual_frame_time - old_time) * _degrade_factor;
       
       if (_degrade_factor < 1.0) {
         // If the degrade_factor is less than one, we want to simulate a
         // higher frame rate by incrementing the clock more slowly.
-        _reported_frame_time += _dt;
+        cdata->_reported_frame_time += cdata->_dt;
         
       } else {
         // Otherwise, we simulate a lower frame rate by waiting until
         // the appropriate time has elapsed.
-        wait_until(old_time + _dt);
-        _reported_frame_time = _actual_frame_time;
+        wait_until(old_time + cdata->_dt);
+        cdata->_reported_frame_time = _actual_frame_time;
       }
       
       break;
@@ -184,13 +181,13 @@ tick() {
       break;
     }
 
-    _frame_count++;
+    cdata->_frame_count++;
   }
 
   if (_average_frame_rate_interval > 0.0) {
     _ticks.push_back(old_reported_time);
     while (!_ticks.empty() && 
-           _reported_frame_time - _ticks.front() > _average_frame_rate_interval) {
+           cdata->_reported_frame_time - _ticks.front() > _average_frame_rate_interval) {
       _ticks.pop_front();
     }
   }
@@ -213,7 +210,8 @@ tick() {
 void ClockObject::
 sync_frame_time() {
   if (_mode == M_normal) {
-    _reported_frame_time = get_real_time();
+    CDWriter cdata(_cycler);
+    cdata->_reported_frame_time = get_real_time();
   }
 }
 
@@ -229,10 +227,7 @@ wait_until(double want_time) {
   double wait_interval = (want_time - _actual_frame_time) - sleep_precision;
     
   if (wait_interval > 0.0) {
-    struct timeval tv;
-    tv.tv_sec = (int)(wait_interval);
-    tv.tv_usec = (int)((wait_interval - tv.tv_sec) * 1000000.0);
-    select(0, NULL, NULL, NULL, &tv);
+    Thread::sleep(wait_interval);
   }
   
   // Now busy-wait until the actual time elapses.
@@ -260,6 +255,28 @@ make_global_clock() {
 
   _global_clock = new ClockObject;
   _global_clock->set_mode(clock_mode);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::CData::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+ClockObject::CData::
+CData() {
+  _frame_count = 0;
+  _reported_frame_time = 0.0;
+  _dt = 1.0 / clock_frame_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::CData::make_copy
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CycleData *ClockObject::CData::
+make_copy() const {
+  return new CData(*this);
 }
 
 ////////////////////////////////////////////////////////////////////

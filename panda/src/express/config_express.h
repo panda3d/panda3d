@@ -21,7 +21,6 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
-#include "clockObject.h"
 #include "dconfig.h"
 
 // We include these files to force them to be instrumented by
