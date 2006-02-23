@@ -27,6 +27,7 @@ CollisionTube(const LPoint3f &a, const LPoint3f &b, float radius) :
   _a(a), _b(b), _radius(radius)
 {
   recalc_internals();
+  nassertv(_radius >= 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,6 +42,7 @@ CollisionTube(float ax, float ay, float az,
   _a(ax, ay, az), _b(bx, by, bz), _radius(radius)
 {
   recalc_internals();
+  nassertv(_radius >= 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,6 +139,7 @@ get_point_b() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionTube::
 set_radius(float radius) {
+  nassertv(radius >= 0.0f);
   _radius = radius;
 
   // We don't need to call recalc_internals(), since the radius

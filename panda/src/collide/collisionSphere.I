@@ -26,6 +26,7 @@ INLINE CollisionSphere::
 CollisionSphere(const LPoint3f &center, float radius) :
   _center(center), _radius(radius)
 {
+  nassertv(_radius >= 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -37,6 +38,7 @@ INLINE CollisionSphere::
 CollisionSphere(float cx, float cy, float cz, float radius) :
   _center(cx, cy, cz), _radius(radius)
 {
+  nassertv(_radius >= 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,6 +103,7 @@ get_center() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSphere::
 set_radius(float radius) {
+  nassertv(radius >= 0.0f);
   _radius = radius;
   mark_internal_bounds_stale();
   mark_viz_stale();
