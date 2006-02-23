@@ -493,7 +493,7 @@ recompute_geom_node(const WorkingNodePath &np, LMatrix4f &rel_mat,
 
   int num_geoms = node->get_num_geoms();
   for (int i = 0; i < num_geoms; i++) {
-    Geom *geom = node->get_unique_geom(i);
+    Geom *geom = node->modify_geom(i);
     recompute_geom(geom, rel_mat);
   }
 }
