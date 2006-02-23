@@ -3,6 +3,7 @@ from DirectGlobals import *
 from DirectUtil import *
 from DirectGeometry import *
 from direct.task import Task
+import types
 
 class DirectManipulationControl(DirectObject):
     def __init__(self):
