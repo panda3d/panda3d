@@ -51,6 +51,7 @@ class ActorInterval(Interval.Interval):
         self.loopAnim = loop
         self.constrainedLoop = constrainedLoop
         self.forceUpdate = forceUpdate
+        self.playRate = playRate
 
         # If no name specified, use id as name
         if (name == None):
