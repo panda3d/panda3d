@@ -1744,6 +1744,10 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     }
   }
 
+  bool keep_all_uvsets = egg_group->has_object_type("keep-all-uvsets");
+  if (keep_all_uvsets)
+    mayaegg_cat.info() << "will keep_all_uvsets" << endl;
+
   MStringArray maya_uvset_names;
   status = mesh.getUVSetNames(maya_uvset_names);
   if (!status) {
@@ -1871,13 +1875,24 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
             colordef_uv_name = "default";
 
           // get the shader color def that matches this EggTexture
+          // Asad: optimizing uvset: to discard unused uvsets. This for 
+          // loop figures out which ones are unused.
+          // 
+          bool found = false;
           for (size_t tj=0; tj< shader->_color.size(); ++tj) {
             color_def = shader->get_color_def(tj);
             if (color_def->_uvset_name == colordef_uv_name) {
               mayaegg_cat.debug() << "matched colordef idx: " << tj << endl;
+              found = true;
               break;
             }
           }
+          // if uvset is not used don't add it to the vertex
+          if (!found && !keep_all_uvsets) {
+            mayaegg_cat.spam() << "discarding unused uvset " << uvset_name << endl;
+            continue;
+          }
+
           mayaegg_cat.debug() << "color_def->uvset_name :" << color_def->_uvset_name << endl;
           if (color_def->has_projection()) {
             // If the shader has a projection, use it instead of the
