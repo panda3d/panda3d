@@ -382,6 +382,7 @@ init_libpgraph() {
   RenderEffects::register_with_read_factory();
   RenderModeAttrib::register_with_read_factory();
   RenderState::register_with_read_factory();
+  RescaleNormalAttrib::register_with_read_factory();
   SequenceNode::register_with_read_factory();
   ShadeModelAttrib::register_with_read_factory();
   ShaderInput::register_with_read_factory();
