@@ -364,10 +364,13 @@ compute_internal_bounds(int pipeline_stage) const {
   // Now actually compute the bounding volume by putting it around all
   // of our solids' bounding volumes.
   pvector<const BoundingVolume *> child_volumes;
+  pvector<CPT(BoundingVolume) > cpt_volumes;
 
   Solids::const_iterator gi;
   for (gi = _solids.begin(); gi != _solids.end(); ++gi) {
-    child_volumes.push_back((*gi)->get_bounds());
+    CPT(BoundingVolume) volume = (*gi)->get_bounds();
+    cpt_volumes.push_back(volume);
+    child_volumes.push_back(volume);
   }
 
   const BoundingVolume **child_begin = &child_volumes[0];

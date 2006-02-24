@@ -331,8 +331,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _effective_normal.read_datagram(scan);
   }
 
-  // The viz is always stale after reading from a bam file.
-  _flags |= F_viz_geom_stale;
+  // The viz is always stale after reading from a bam file.  So is the
+  // bounding volume.
+  _flags |= F_viz_geom_stale | F_internal_bounds_stale;
 }
 
 
