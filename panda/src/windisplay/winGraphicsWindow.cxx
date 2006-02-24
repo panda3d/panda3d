@@ -297,6 +297,17 @@ set_properties_now(WindowProperties &properties) {
     
     properties.clear_z_order();
   }
+
+  if (properties.has_foreground() && properties.get_foreground()) {
+    if (!SetForegroundWindow(_hWnd)) {
+      windisplay_cat.warning()
+        << "SetForegroundWindow() failed!\n";
+    } else {
+      _properties.set_foreground(true);
+    }
+
+    properties.clear_foreground();
+  }
 }
 
 
