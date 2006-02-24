@@ -87,7 +87,7 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
         taskMgr.remove(self.taskName("updateGridTask"))
         self.updateTaskStarted = 0
 
-    def updateGridTask(self, task):
+    def updateGridTask(self, task=None):
         # Run through all grid objects and update their parents if needed
         for avId in self.gridObjects:
             av = self.gridObjects[avId]
@@ -97,7 +97,8 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
                 # we are out of the bounds of this current cell
                 self.handleAvatarZoneChange(av)
         # Do this every second, not every frame
-        task.delayTime = 1.0
+        if (task):
+            task.delayTime = 1.0
         return Task.again
 
     def handleAvatarZoneChange(self, av, useZoneId=-1):
