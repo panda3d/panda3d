@@ -2,18 +2,17 @@
 from pandac.PandaModules import *
 
 from direct.task import Task
-import DistributedNodeAI
-import CartesianGridBase
+from DistributedNodeAI import DistributedNodeAI
+from CartesianGridBase import CartesianGridBase
 
-class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
-                                 CartesianGridBase.CartesianGridBase):
-
+class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
     notify = directNotify.newCategory("DistributedCartesianGridAI")
 
     RuleSeparator = ":"
 
-    def __init__(self, air, startingZone, gridSize, gridRadius, style="Cartesian"):
-        DistributedNodeAI.DistributedNodeAI.__init__(self, air)
+    def __init__(self, air, startingZone, gridSize, gridRadius,
+            style="Cartesian"):
+        DistributedNodeAI.__init__(self, air)
         self.style = style
         self.startingZone = startingZone
         self.gridSize = gridSize
@@ -24,11 +23,12 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
         self.updateTaskStarted = 0
 
     def delete(self):
-        DistributedNodeAI.DistributedNodeAI.delete(self)
+        DistributedNodeAI.delete(self)
         self.stopUpdateGridTask()
 
     def isGridParent(self):
-        # If this distributed object is a DistributedGrid return 1.  0 by default
+        # If this distributed object is a DistributedGrid return 1.
+        # 0 by default
         return 1
 
     def getParentingRules(self):
@@ -72,11 +72,13 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
     # updateGridTask
     # This task is similar to the processVisibility task for the local client.
     # A couple differences:
-    #  - we are not doing setInterest on the AI (that is a local client specific call).
-    #  - we assume that the moving objects on the grid are parented to a gridParent,
-    #    and are broadcasting their position relative to that gridParent.  This
-    #    makes the task's math easy.  Just check to see when our position goes
-    #    out of the current grid cell.  When it does, call handleAvatarZoneChange
+    #  - we are not doing setInterest on the AI (that is a local client
+    #    specific call).
+    #  - we assume that the moving objects on the grid are parented to a
+    #    gridParent, and are broadcasting their position relative to that
+    #    gridParent.  This makes the task's math easy.  Just check to see
+    #    when our position goes out of the current grid cell.  When it does,
+    #    call handleAvatarZoneChange
 
     def startUpdateGridTask(self):
         self.stopUpdateGridTask()
@@ -114,8 +116,9 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
             zoneId = useZoneId
 
         if not self.isValidZone(zoneId):
-            self.notify.warning("%s handleAvatarZoneChange %s: not a valid zone (%s) for pos %s" %
-                                (self.doId, av.doId, zoneId, pos))
+            self.notify.warning(
+                "%s handleAvatarZoneChange %s: not a valid zone (%s) for pos %s" %
+                (self.doId, av.doId, zoneId, pos))
             return
         
         # Set the location on the server.
