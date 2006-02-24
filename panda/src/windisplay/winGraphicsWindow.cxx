@@ -349,6 +349,9 @@ open_window() {
   if (_cursor == 0) {
     _cursor = LoadCursor(NULL, IDC_ARROW);
   }
+  bool want_foreground = (!_properties.has_foreground() || _properties.get_foreground());
+
+  HWND old_foreground_window = GetForegroundWindow();
 
   // Store the current window pointer in _creating_window, so we can
   // call CreateWindow() and know which window it is sending events to
@@ -379,7 +382,14 @@ open_window() {
   ShowWindow(_hWnd, SW_SHOWNORMAL);
   ShowWindow(_hWnd, SW_SHOWNORMAL);
 
-  if (!SetForegroundWindow(_hWnd)) {
+  HWND new_foreground_window = _hWnd;
+  if (!want_foreground) {
+    // If we specifically requested the window not to be on top,
+    // restore the previous foreground window (if we can).
+    new_foreground_window = old_foreground_window;
+  }
+
+  if (!SetForegroundWindow(new_foreground_window)) {
     windisplay_cat.warning()
       << "SetForegroundWindow() failed!\n";
   }
