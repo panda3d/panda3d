@@ -45,10 +45,8 @@ public:
   };
 
 public:
-  GtkStatsGraph(GtkStatsMonitor *monitor, int thread_index);
+  GtkStatsGraph(GtkStatsMonitor *monitor);
   virtual ~GtkStatsGraph();
-
-  int get_thread_index() const;
 
   virtual void new_collector(int collector_index);
   virtual void new_data(int thread_index, int frame_number);
@@ -81,7 +79,6 @@ protected:
   Brushes _brushes;
 
   GtkStatsMonitor *_monitor;
-  int _thread_index;
   GtkWidget *_parent_window;
   GtkWidget *_window;
   GtkWidget *_graph_window;

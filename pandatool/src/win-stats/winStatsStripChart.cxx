@@ -43,10 +43,11 @@ WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
                    int collector_index, bool show_level) :
   PStatStripChart(monitor, 
                   show_level ? monitor->get_level_view(collector_index, thread_index) : monitor->get_view(thread_index), 
+                  thread_index,
                   collector_index, 
                   default_strip_chart_width,
                   default_strip_chart_height),
-  WinStatsGraph(monitor, thread_index)
+  WinStatsGraph(monitor)
 {
   _brush_origin = 0;
 

@@ -75,8 +75,10 @@ protected:
 private:
   void compute_page(const PStatFrameData &frame_data);
 
+protected:
   int _thread_index;
 
+private:
   float _time_width;
   float _start_time;
 

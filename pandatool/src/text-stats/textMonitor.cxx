@@ -113,7 +113,7 @@ new_data(int thread_index, int frame_number) {
       for (int tc = 0; tc < num_toplevel_collectors; tc++) {
         int collector = client_data->get_toplevel_collector(tc);
         if (client_data->has_collector(collector) && 
-            client_data->get_collector_has_level(collector)) {
+            client_data->get_collector_has_level(collector, thread_index)) {
           
           PStatView &level_view = get_level_view(collector, thread_index);
           level_view.set_to_frame(frame_number);

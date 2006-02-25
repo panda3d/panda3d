@@ -42,9 +42,8 @@ const GdkColor GtkStatsGraph::rgb_user_guide_bar = {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsGraph::
-GtkStatsGraph(GtkStatsMonitor *monitor, int thread_index) :
-  _monitor(monitor),
-  _thread_index(thread_index)
+GtkStatsGraph(GtkStatsMonitor *monitor) :
+  _monitor(monitor)
 {
   _parent_window = NULL;
   _window = NULL;
@@ -144,17 +143,6 @@ GtkStatsGraph::
   }
 
   gtk_widget_destroy(_window);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsGraph::get_thread_index
-//       Access: Public
-//  Description: Returns the thread index associated with this
-//               particular graph.
-////////////////////////////////////////////////////////////////////
-int GtkStatsGraph::
-get_thread_index() const {
-  return _thread_index;
 }
 
 ////////////////////////////////////////////////////////////////////

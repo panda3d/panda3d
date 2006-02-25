@@ -128,7 +128,7 @@ do_update() {
   for (int tc = 0; tc < num_toplevel_collectors; tc++) {
     int collector = client_data->get_toplevel_collector(tc);
     if (client_data->has_collector(collector) && 
-        client_data->get_collector_has_level(collector)) {
+        client_data->get_collector_has_level(collector, _thread_index)) {
 
       // We put a separator between the above frame collector and the
       // first level collector.

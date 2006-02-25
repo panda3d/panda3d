@@ -26,6 +26,7 @@
 #include "pStatClientVersion.h"
 #include "referenceCount.h"
 #include "pointerTo.h"
+#include "bitArray.h"
 
 #include "pvector.h"
 #include "vector_int.h"
@@ -51,8 +52,8 @@ public:
   const PStatCollectorDef &get_collector_def(int index) const;
   string get_collector_name(int index) const;
   string get_collector_fullname(int index) const;
-  bool set_collector_has_level(int index, bool flag);
-  bool get_collector_has_level(int index) const;
+  bool set_collector_has_level(int index, int thread_index, bool flag);
+  bool get_collector_has_level(int index, int thread_index) const;
 
   int get_num_toplevel_collectors() const;
   int get_toplevel_collector(int index) const;
@@ -81,7 +82,7 @@ private:
   class Collector {
   public:
     PStatCollectorDef *_def;
-    bool _is_level;
+    BitArray _is_level;
   };
 
   typedef pvector<Collector> Collectors;

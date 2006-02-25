@@ -32,9 +32,8 @@ WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_VISIBLE;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 WinStatsGraph::
-WinStatsGraph(WinStatsMonitor *monitor, int thread_index) :
-  _monitor(monitor),
-  _thread_index(thread_index)
+WinStatsGraph(WinStatsMonitor *monitor) :
+  _monitor(monitor)
 {
   _window = 0;
   _graph_window = 0;
@@ -91,17 +90,6 @@ WinStatsGraph::
     DestroyWindow(_window);
     _window = 0;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::get_thread_index
-//       Access: Public
-//  Description: Returns the thread index associated with this
-//               particular graph.
-////////////////////////////////////////////////////////////////////
-int WinStatsGraph::
-get_thread_index() const {
-  return _thread_index;
 }
 
 ////////////////////////////////////////////////////////////////////

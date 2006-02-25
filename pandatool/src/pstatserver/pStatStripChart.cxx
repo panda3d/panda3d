@@ -34,8 +34,9 @@
 ////////////////////////////////////////////////////////////////////
 PStatStripChart::
 PStatStripChart(PStatMonitor *monitor, PStatView &view,
-                int collector_index, int xsize, int ysize) :
+                int thread_index, int collector_index, int xsize, int ysize) :
   PStatGraph(monitor, xsize, ysize),
+  _thread_index(thread_index),
   _view(view),
   _collector_index(collector_index)
 {
@@ -280,7 +281,6 @@ get_title_text() {
   string text;
 
   _title_unknown = false;
-  int _thread_index = 0;
 
   const PStatClientData *client_data = _monitor->get_client_data();
   if (client_data->has_collector(_collector_index)) {
@@ -299,7 +299,7 @@ get_title_text() {
 
   if (_thread_index != 0) {
     if (client_data->has_thread(_thread_index)) {
-      text += "(" + client_data->get_thread_name(_thread_index) + " thread)";
+      text += " (" + client_data->get_thread_name(_thread_index) + " thread)";
     } else {
       _title_unknown = true;
     }

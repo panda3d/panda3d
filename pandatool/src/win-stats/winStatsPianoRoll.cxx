@@ -36,7 +36,7 @@ WinStatsPianoRoll(WinStatsMonitor *monitor, int thread_index) :
   PStatPianoRoll(monitor, thread_index, 
                  default_piano_roll_width,
                  default_piano_roll_height),
-  WinStatsGraph(monitor, thread_index)
+  WinStatsGraph(monitor)
 {
   _left_margin = 128;
   _right_margin = 8;
@@ -127,7 +127,7 @@ set_time_units(int unit_mask) {
 void WinStatsPianoRoll::
 clicked_label(int collector_index) {
   if (collector_index >= 0) {
-    WinStatsGraph::_monitor->open_strip_chart(WinStatsGraph::_thread_index, collector_index, false);
+    WinStatsGraph::_monitor->open_strip_chart(_thread_index, collector_index, false);
   }
 }
 
@@ -467,7 +467,7 @@ update_labels() {
   for (int i = 0; i < get_num_labels(); i++) {
     int label_index = 
       _label_stack.add_label(WinStatsGraph::_monitor, this,
-                             WinStatsGraph::_thread_index,
+                             _thread_index,
                              get_label_collector(i), true);
   }
   _labels_changed = false;
@@ -562,7 +562,7 @@ create_window() {
 
   const PStatClientData *client_data = 
     WinStatsGraph::_monitor->get_client_data();
-  string thread_name = client_data->get_thread_name(WinStatsGraph::_thread_index);
+  string thread_name = client_data->get_thread_name(_thread_index);
   string window_title = thread_name + " thread piano roll";
 
 

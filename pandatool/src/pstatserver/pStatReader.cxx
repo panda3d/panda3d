@@ -314,10 +314,10 @@ dequeue_frame_data() {
     int num_levels = data._frame_data->get_num_levels();
     for (int i = 0; i < num_levels; i++) {
       int collector_index = data._frame_data->get_level_collector(i);
-      if (!_client_data->get_collector_has_level(collector_index)) {
+      if (!_client_data->get_collector_has_level(collector_index, data._thread_index)) {
         // This collector is now reporting level data, and it wasn't
         // before.
-        _client_data->set_collector_has_level(collector_index, true);
+        _client_data->set_collector_has_level(collector_index, data._thread_index, true);
         _monitor->new_collector(collector_index);
       }
     }

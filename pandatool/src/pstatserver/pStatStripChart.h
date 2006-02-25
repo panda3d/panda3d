@@ -46,7 +46,7 @@ class PStatView;
 class PStatStripChart : public PStatGraph {
 public:
   PStatStripChart(PStatMonitor *monitor, PStatView &view,
-                  int collector_index, int xsize, int ysize);
+                  int thread_index, int collector_index, int xsize, int ysize);
   virtual ~PStatStripChart();
 
   void new_data(int frame_number);
@@ -124,6 +124,10 @@ private:
   void dec_label_usage(const FrameData &fdata);
   void inc_label_usage(const FrameData &fdata);
 
+protected:
+  int _thread_index;
+
+private:
   PStatView &_view;
   int _collector_index;
   bool _scroll_mode;

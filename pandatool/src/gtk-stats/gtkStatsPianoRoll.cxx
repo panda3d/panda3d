@@ -34,7 +34,7 @@ GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index) :
   PStatPianoRoll(monitor, thread_index, 
                  default_piano_roll_width,
                  default_piano_roll_height),
-  GtkStatsGraph(monitor, thread_index)
+  GtkStatsGraph(monitor)
 {
   // Let's show the units on the guide bar labels.  There's room.
   set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
@@ -52,6 +52,12 @@ GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index) :
   gtk_widget_set_size_request(_graph_window, default_piano_roll_width,
 			      default_piano_roll_height);
 
+  const PStatClientData *client_data = 
+    GtkStatsGraph::_monitor->get_client_data();
+  string thread_name = client_data->get_thread_name(_thread_index);
+  string window_title = thread_name + " thread piano roll";
+  gtk_window_set_title(GTK_WINDOW(_window), window_title.c_str());
+      
   gtk_widget_show_all(_window);  
   gtk_widget_show(_window);
 
@@ -137,7 +143,7 @@ set_time_units(int unit_mask) {
 void GtkStatsPianoRoll::
 clicked_label(int collector_index) {
   if (collector_index >= 0) {
-    GtkStatsGraph::_monitor->open_strip_chart(GtkStatsGraph::_thread_index, collector_index, false);
+    GtkStatsGraph::_monitor->open_strip_chart(_thread_index, collector_index, false);
   }
 }
 
@@ -418,7 +424,7 @@ update_labels() {
   _label_stack.clear_labels();
   for (int i = 0; i < get_num_labels(); i++) {
     _label_stack.add_label(GtkStatsGraph::_monitor, this,
-			   GtkStatsGraph::_thread_index,
+			   _thread_index,
 			   get_label_collector(i), true);
   }
   _labels_changed = false;

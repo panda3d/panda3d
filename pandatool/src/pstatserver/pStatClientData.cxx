@@ -161,21 +161,21 @@ get_collector_fullname(int index) const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool PStatClientData::
-set_collector_has_level(int index, bool flag) {
+set_collector_has_level(int index, int thread_index, bool flag) {
   bool any_changed = false;
   slot_collector(index);
   nassertr(index >= 0 && index < (int)_collectors.size(), false);
 
-  if (_collectors[index]._is_level != flag) {
+  if (_collectors[index]._is_level.get_bit(thread_index) != flag) {
     any_changed = true;
-    _collectors[index]._is_level = flag;
+    _collectors[index]._is_level.set_bit_to(thread_index, flag);
 
     // Turning this on for a given collector also implicitly turns all
     // of its ancestors.
     if (flag) {
       PStatCollectorDef *def = _collectors[index]._def;
       if (def->_parent_index != 0) {
-        set_collector_has_level(def->_parent_index, flag);
+        set_collector_has_level(def->_parent_index, thread_index, flag);
       }
     }
   }
@@ -192,9 +192,9 @@ set_collector_has_level(int index, bool flag) {
 //               Levels menu).
 ////////////////////////////////////////////////////////////////////
 bool PStatClientData::
-get_collector_has_level(int index) const {
+get_collector_has_level(int index, int thread_index) const {
   return (index >= 0 && index < (int)_collectors.size() &&
-          _collectors[index]._is_level);
+          _collectors[index]._is_level.get_bit(thread_index));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -327,8 +327,12 @@ add_collector(PStatCollectorDef *def) {
 
   // If we already had the _is_level flag set, it should be
   // immediately applied to all ancestors.
-  if (_collectors[def->_index]._is_level) {
-    set_collector_has_level(def->_parent_index, true);
+  const BitArray &is_level = _collectors[def->_index]._is_level;
+  int max_threads = is_level.get_num_bits();
+  for (int thread_index = 0; thread_index < max_threads; ++thread_index) {
+    if (is_level.get_bit(thread_index)) {
+      set_collector_has_level(def->_parent_index, thread_index, true);
+    }
   }
 }
 
@@ -391,7 +395,6 @@ slot_collector(int collector_index) {
   while ((int)_collectors.size() <= collector_index) {
     Collector collector;
     collector._def = (PStatCollectorDef *)NULL;
-    collector._is_level = false;
     _collectors.push_back(collector);
   }
 }

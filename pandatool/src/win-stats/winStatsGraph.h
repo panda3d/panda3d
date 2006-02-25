@@ -47,10 +47,8 @@ public:
   };
 
 public:
-  WinStatsGraph(WinStatsMonitor *monitor, int thread_index);
+  WinStatsGraph(WinStatsMonitor *monitor);
   virtual ~WinStatsGraph();
-
-  int get_thread_index() const;
 
   virtual void new_collector(int collector_index);
   virtual void new_data(int thread_index, int frame_number);
@@ -90,7 +88,6 @@ protected:
   Brushes _brushes;
 
   WinStatsMonitor *_monitor;
-  int _thread_index;
   HWND _window;
   HWND _graph_window;
   WinStatsLabelStack _label_stack;
