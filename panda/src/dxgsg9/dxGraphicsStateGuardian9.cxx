@@ -972,6 +972,7 @@ DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::begin_scene\n"; DBG_E
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 end_scene() {
+  GraphicsStateGuardian::end_scene();
 
 DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::end_scene\n"; DBG_E
 
@@ -3197,9 +3198,9 @@ set_state_and_transform(const RenderState *target,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
-  // Get the light in "world coordinates".  This means the light in
-  // the coordinate space of the camera, converted to DX's coordinate
-  // system.
+  // Get the light in "world coordinates" (actually, view
+  // coordinates).  This means the light in the coordinate space of
+  // the camera, converted to DX's coordinate system.
   CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
   const LMatrix4f &light_mat = transform->get_mat();
   LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
@@ -3243,9 +3244,9 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
-  // Get the light in "world coordinates".  This means the light in
-  // the coordinate space of the camera, converted to DX's coordinate
-  // system.
+  // Get the light in "world coordinates" (actually, view
+  // coordinates).  This means the light in the coordinate space of
+  // the camera, converted to DX's coordinate system.
   CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
   const LMatrix4f &light_mat = transform->get_mat();
   LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
@@ -3292,9 +3293,9 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   Lens *lens = light_obj->get_lens();
   nassertv(lens != (Lens *)NULL);
 
-  // Get the light in "world coordinates".  This means the light in
-  // the coordinate space of the camera, converted to DX's coordinate
-  // system.
+  // Get the light in "world coordinates" (actually, view
+  // coordinates).  This means the light in the coordinate space of
+  // the camera, converted to DX's coordinate system.
   CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
   const LMatrix4f &light_mat = transform->get_mat();
   LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
@@ -3857,9 +3858,9 @@ enable_clip_plane(int plane_id, bool enable) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 bind_clip_plane(const NodePath &plane, int plane_id) {
-  // Get the plane in "world coordinates".  This means the plane in
-  // the coordinate space of the camera, converted to DX's coordinate
-  // system.
+  // Get the plane in "world coordinates" (actually, view
+  // coordinates).  This means the plane in the coordinate space of
+  // the camera, converted to DX's coordinate system.
   CPT(TransformState) transform = plane.get_transform(_scene_setup->get_camera_path());
   const LMatrix4f &plane_mat = transform->get_mat();
   LMatrix4f rel_mat = plane_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
