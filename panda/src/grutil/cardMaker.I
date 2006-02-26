@@ -48,6 +48,19 @@ set_has_uvs(bool flag) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_has_3d_uvs
+//       Access: Public
+//  Description: Sets the flag indicating whether vertices will be
+//               generated with 3-component UVW's (true) or
+//               2-component UV's (the default, false).  Normally,
+//               this will be implicitly set by setting the uv_range.
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+set_has_3d_uvs(bool flag) {
+  _has_3d_uvs = flag;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CardMaker::set_uv_range
 //       Access: Public
 //  Description: Sets the range of UV's that will be applied to the
@@ -62,6 +75,8 @@ set_uv_range(const TexCoord3f &ll, const TexCoord3f &lr, const TexCoord3f &ur, c
   _lr_tex = lr;
   _ur_tex = ur;
   _ul_tex = ul;
+  _has_uvs = true;
+  _has_3d_uvs = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,6 +94,8 @@ set_uv_range(const TexCoordf &ll, const TexCoordf &lr, const TexCoordf &ur, cons
   _lr_tex.set(lr[0], lr[1], 0.0f);
   _ur_tex.set(ur[0], ur[1], 0.0f);
   _ul_tex.set(ul[0], ul[1], 0.0f);
+  _has_uvs = true;
+  _has_3d_uvs = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -96,6 +113,8 @@ set_uv_range(const TexCoordf &ll, const TexCoordf &ur) {
   _lr_tex.set(ur[0], ll[1], 0.0f);
   _ur_tex.set(ur[0], ur[1], 0.0f);
   _ul_tex.set(ll[0], ur[1], 0.0f);
+  _has_uvs = true;
+  _has_3d_uvs = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -113,6 +132,8 @@ set_uv_range(const LVector4f &x, const LVector4f &y, const LVector4f &z) {
   _lr_tex.set(x[1], y[1], z[1]);
   _ur_tex.set(x[2], y[2], z[2]);
   _ul_tex.set(x[3], y[3], z[3]);
+  _has_uvs = true;
+  _has_3d_uvs = true;
 }
 
 ////////////////////////////////////////////////////////////////////

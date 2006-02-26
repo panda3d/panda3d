@@ -34,6 +34,7 @@
 void CardMaker::
 reset() {
   _has_uvs = true;
+  _has_3d_uvs = false;
 
   _ll_pos.set(0.0f, 0.0f, 0.0f);
   _lr_pos.set(1.0f, 0.0f, 0.0f);
@@ -71,27 +72,35 @@ generate() {
   CPT(GeomVertexFormat) format;
   if (_has_normals) {
     if (_has_uvs) {
-      format = GeomVertexFormat::register_format(new GeomVertexArrayFormat
-                                                 (InternalName::get_vertex(), 3,
-                                                  GeomEnums::NT_float32, GeomEnums::C_point,
-                                                  InternalName::get_normal(), 3,
-                                                  GeomEnums::NT_float32, GeomEnums::C_vector,
-                                                  InternalName::get_color(), 1,
-                                                  GeomEnums::NT_packed_dabc, GeomEnums::C_color,
-                                                  InternalName::get_texcoord(), 3,
-                                                  GeomEnums::NT_float32, GeomEnums::C_texcoord));
+      if (_has_3d_uvs) {
+	format = GeomVertexFormat::register_format(new GeomVertexArrayFormat
+						   (InternalName::get_vertex(), 3,
+						    GeomEnums::NT_float32, GeomEnums::C_point,
+						    InternalName::get_normal(), 3,
+						    GeomEnums::NT_float32, GeomEnums::C_vector,
+						    InternalName::get_color(), 1,
+						    GeomEnums::NT_packed_dabc, GeomEnums::C_color,
+						    InternalName::get_texcoord(), 3,
+						    GeomEnums::NT_float32, GeomEnums::C_texcoord));
+      } else {
+	format = GeomVertexFormat::get_v3n3cpt2();
+      }
     } else {
       format = GeomVertexFormat::get_v3n3cp();
     }
   } else {
     if (_has_uvs) {
-      format = GeomVertexFormat::register_format(new GeomVertexArrayFormat
-                                                 (InternalName::get_vertex(), 3,
-                                                  GeomEnums::NT_float32, GeomEnums::C_point,
-                                                  InternalName::get_color(), 1,
-                                                  GeomEnums::NT_packed_dabc, GeomEnums::C_color,
-                                                  InternalName::get_texcoord(), 3,
-                                                  GeomEnums::NT_float32, GeomEnums::C_texcoord));
+      if (_has_3d_uvs) {
+	format = GeomVertexFormat::register_format(new GeomVertexArrayFormat
+						   (InternalName::get_vertex(), 3,
+						    GeomEnums::NT_float32, GeomEnums::C_point,
+						    InternalName::get_color(), 1,
+						    GeomEnums::NT_packed_dabc, GeomEnums::C_color,
+						    InternalName::get_texcoord(), 3,
+						    GeomEnums::NT_float32, GeomEnums::C_texcoord));
+      } else {
+	format = GeomVertexFormat::get_v3cpt2();
+      }
     } else {
       format = GeomVertexFormat::get_v3cp();
     }
