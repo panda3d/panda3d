@@ -679,7 +679,7 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
       p++;
       if (cmd == "r") {
         if (region != (MouseWatcherRegion *)NULL) {
-          event += button_name;
+          event += region->get_name();
         }
 
       } else if (cmd == "b") {
