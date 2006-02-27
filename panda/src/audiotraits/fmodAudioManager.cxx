@@ -873,7 +873,7 @@ load(const Filename& filename, size_t &size) const {
   }
   
   PT(VirtualFile) audioFileHandle = vfs->get_file(binary_filename);
-  audioFile = audioFile->open_read_file(true);
+  audioFile = audioFileHandle->open_read_file(true);
 
   if (audioFile == (istream *)NULL) {
     // Unable to open.
