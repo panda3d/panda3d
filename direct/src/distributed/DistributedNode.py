@@ -48,7 +48,8 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
         DistributedObject.DistributedObject.setLocation(self, parentId, zoneId)
         parentObj = self.cr.doId2do.get(parentId)
         if parentObj:
-            if parentObj.isGridParent():
+            # Make sure you in a zone that is in the grid before making a GridParent
+            if (parentObj.isGridParent() and (zoneId >= parentObj.startingZone)):
                 if not self.gridParent:
                     self.gridParent = GridParent.GridParent(self)
                 self.gridParent.setGridParent(parentObj, zoneId, teleport)
