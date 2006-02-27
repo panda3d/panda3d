@@ -132,7 +132,7 @@ any_in_bounds() {
         // Don't even bother testing the bounding volume if there are
         // no collide bits in common between our collider and this
         // node.
-        CollideMask from_mask = cnode->get_from_collide_mask();
+        CollideMask from_mask = cnode->get_from_collide_mask() & _include_mask;
         if (cnode->get_collide_geom() ||
             (from_mask & node()->get_net_collide_mask()) != 0) {
           // There are bits in common, so go ahead and try the

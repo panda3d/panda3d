@@ -25,7 +25,8 @@
 INLINE CollisionLevelState::
 CollisionLevelState(const NodePath &node_path) :
   _node_path(node_path),
-  _current(0)
+  _current(0),
+  _include_mask(CollideMask::all_on())
 {
 }
 
@@ -40,6 +41,7 @@ CollisionLevelState(const CollisionLevelState &parent, PandaNode *child) :
   _node_path(parent._node_path, child),
   _colliders(parent._colliders),
   _current(parent._current),
+  _include_mask(parent._include_mask),
   _local_bounds(parent._local_bounds)
 {
 }
@@ -54,6 +56,7 @@ CollisionLevelState(const CollisionLevelState &copy) :
   _node_path(copy._node_path),
   _colliders(copy._colliders),
   _current(copy._current),
+  _include_mask(copy._include_mask),
   _local_bounds(copy._local_bounds),
   _parent_bounds(copy._parent_bounds)
 {
@@ -69,6 +72,7 @@ operator = (const CollisionLevelState &copy) {
   _node_path = copy._node_path;
   _colliders = copy._colliders;
   _current = copy._current;
+  _include_mask = copy._include_mask;
   _local_bounds = copy._local_bounds;
   _parent_bounds = copy._parent_bounds;
 }
@@ -230,6 +234,39 @@ omit_collider(int n) {
   nassertv(has_collider(n));
 
   _current &= ~get_mask(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionLevelState::set_include_mask
+//       Access: Public
+//  Description: Specifies the mask that is applied to the into
+//               CollideMask of nodes in the scene graph before
+//               testing for bits in common with the from CollideMask
+//               of colliders.  This is normally all bits on, but you
+//               may set it to some other mask to restrict certain
+//               bits from consideration.
+//
+//               This is used by the CollisionTraverser to restrict
+//               collision with geometry except under the lowest level
+//               of LOD.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionLevelState::
+set_include_mask(CollideMask include_mask) {
+  _include_mask = include_mask;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionLevelState::get_include_mask
+//       Access: Public
+//  Description: Returns the mask that is applied to the into
+//               CollideMask of nodes in the scene graph before
+//               testing for bits in common with the from CollideMask
+//               of colliders.  See set_include_mask().
+////////////////////////////////////////////////////////////////////
+INLINE CollideMask CollisionLevelState::
+get_include_mask() const {
+  return _include_mask;
 }
 
 ////////////////////////////////////////////////////////////////////

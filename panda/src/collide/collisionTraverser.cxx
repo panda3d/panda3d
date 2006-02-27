@@ -602,10 +602,19 @@ r_traverse(CollisionLevelState &level_state) {
     }
 
   } else if (node->is_lod_node()) {
-    // If it's an LODNode, visit the lowest level of detail.
+    // If it's an LODNode, visit the lowest level of detail with all
+    // bits, allowing collision with geometry under the lowest level
+    // of default; and visit all other levels without
+    // GeomNode::get_default_collide_mask(), allowing only collision
+    // with CollisionNodes and special geometry under higher levels of
+    // detail.
     int index = DCAST(LODNode, node)->get_lowest_switch();
-    if (index >= 0 && index < node->get_num_children()) {
-      CollisionLevelState next_state(level_state, node->get_child(index));
+    int num_children = node->get_num_children();
+    for (int i = 0; i < num_children; ++i) {
+      CollisionLevelState next_state(level_state, node->get_child(i));
+      if (i != index) {
+        next_state.set_include_mask(next_state.get_include_mask() & ~GeomNode::get_default_collide_mask());
+      }
       r_traverse(next_state);
     }
 

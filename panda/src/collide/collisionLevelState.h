@@ -77,6 +77,9 @@ public:
 
   INLINE void omit_collider(int n);
 
+  INLINE void set_include_mask(CollideMask include_mask);
+  INLINE CollideMask get_include_mask() const;
+
 private:
   // CurrentMask here is a locally-defined value that simply serves
   // to keep track of the colliders that are still interested in the
@@ -92,6 +95,7 @@ private:
   typedef PTA(ColliderDef) Colliders;
   Colliders _colliders;
   CurrentMask _current;
+  CollideMask _include_mask;
 
   typedef PTA(CPT(GeometricBoundingVolume)) BoundingVolumes;
   BoundingVolumes _local_bounds;
