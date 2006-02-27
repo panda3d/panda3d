@@ -2296,7 +2296,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpstatclient.in', obj='libpstatclie
 #
 
 IPATH=['panda/src/gobj']
-OPTS=['BUILDING_PANDA', 'NSPR']
+OPTS=['BUILDING_PANDA', 'NSPR', 'NVIDIACG']
 CopyAllHeaders('panda/src/gobj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gobj_composite1.cxx', obj='gobj_composite1.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gobj_composite2.cxx', obj='gobj_composite2.obj')
@@ -2572,7 +2572,7 @@ CopyAllHeaders('panda/src/physics')
 CopyAllHeaders('panda/src/particlesystem')
 IPATH=['panda/metalibs/panda']
 OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'NSPR', 'FREETYPE', 'HELIX', 'FFTW', 'OPENCV',
-      'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
+      'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'NVIDIACG']
 INFILES=['librecorder.in', 'libpgraph.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
          'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libevent.in',
          'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libparametrics.in',

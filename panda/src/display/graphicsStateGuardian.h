@@ -42,6 +42,7 @@
 #include "notify.h"
 #include "pvector.h"
 #include "attribSlots.h"
+#include "shaderContext.h"
 
 class DrawableRegion;
 class GraphicsEngine;
@@ -158,8 +159,12 @@ public:
 
   void clear(DrawableRegion *clearable);
 
+  bool fetch_specified_value(const ShaderContext::ShaderMatSpec &spec, LMatrix4f &result);
+  
   virtual void prepare_display_region(DisplayRegion *dr,
                                       Lens::StereoChannel stereo_channel);
+
+  virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
   virtual bool prepare_lens();
 
   virtual bool begin_frame();
@@ -198,7 +203,7 @@ public:
 
   INLINE const TransformState *get_cs_transform() const;
   INLINE const TransformState *get_inv_cs_transform() const;
-
+  
   void do_issue_clip_plane();
   void do_issue_color();
   void do_issue_color_scale();
@@ -288,7 +293,11 @@ protected:
   CPT(DisplayRegion) _current_display_region;
   Lens::StereoChannel _current_stereo_channel;
   CPT(Lens) _current_lens;
-
+  CPT(TransformState) _projection_mat;
+  CPT(TransformState) _projection_mat_inv;
+  CPT(TransformState) _view_to_clip;
+  CPT(TransformState) _clip_to_view;
+  
   CoordinateSystem _coordinate_system;
   CoordinateSystem _internal_coordinate_system;
   CPT(TransformState) _cs_transform;

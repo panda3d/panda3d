@@ -845,8 +845,6 @@ reset() {
       << "max clip planes = " << _max_clip_planes << "\n";
   }
 
-  _projection_mat = LMatrix4f::ident_mat();
-
   if (_supports_multitexture) {
     GLint max_texture_stages;
     GLP(GetIntegerv)(GL_MAX_TEXTURE_UNITS, &max_texture_stages);
@@ -987,6 +985,48 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::calc_projection_mat
+//       Access: Public, Virtual
+//  Description: Given a lens, calculates the appropriate projection
+//               matrix for use with this gsg.  Note that the
+//               projection matrix depends a lot upon the coordinate
+//               system of the rendering API.
+//
+//               The return value is a TransformState if the lens is
+//               acceptable, NULL if it is not.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) CLP(GraphicsStateGuardian)::
+calc_projection_mat(const Lens *lens) {
+  if (lens == (Lens *)NULL) {
+    return NULL;
+  }
+
+  if (!lens->is_linear()) {
+    return NULL;
+  }
+
+  // The projection matrix must always be right-handed Y-up, even if
+  // our coordinate system of choice is otherwise, because certain GL
+  // calls (specifically glTexGen(GL_SPHERE_MAP)) assume this kind of
+  // a coordinate system.  Sigh.  In order to implement a Z-up (or
+  // other arbitrary) coordinate system, we'll use a Y-up projection
+  // matrix, and store the conversion to our coordinate system of
+  // choice in the modelview matrix.
+
+  LMatrix4f &result =
+    LMatrix4f::convert_mat(CS_yup_right, _current_lens->get_coordinate_system()) *
+    lens->get_projection_mat(_current_stereo_channel);
+
+  if (_scene_setup->get_inverted()) {
+    // If the scene is supposed to be inverted, then invert the
+    // projection matrix.
+    result *= LMatrix4f::scale_mat(1.0f, -1.0f, 1.0f);
+  }
+
+  return TransformState::make_mat(result);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::prepare_lens
 //       Access: Public, Virtual
 //  Description: Makes the current lens (whichever lens was most
@@ -1000,40 +1040,12 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 prepare_lens() {
-  if (_current_lens == (Lens *)NULL) {
-    return false;
-  }
-
-  if (!_current_lens->is_linear()) {
-    return false;
-  }
-
-  const LMatrix4f &lens_mat = _current_lens->get_projection_mat(_current_stereo_channel);
-
-  // The projection matrix must always be right-handed Y-up, even if
-  // our coordinate system of choice is otherwise, because certain GL
-  // calls (specifically glTexGen(GL_SPHERE_MAP)) assume this kind of
-  // a coordinate system.  Sigh.  In order to implement a Z-up (or
-  // other arbitrary) coordinate system, we'll use a Y-up projection
-  // matrix, and store the conversion to our coordinate system of
-  // choice in the modelview matrix.
-  _projection_mat =
-    LMatrix4f::convert_mat(CS_yup_right, _current_lens->get_coordinate_system()) *
-    lens_mat;
-
-  if (_scene_setup->get_inverted()) {
-    // If the scene is supposed to be inverted, then invert the
-    // projection matrix.
-    static LMatrix4f invert_mat = LMatrix4f::scale_mat(1.0f, -1.0f, 1.0f);
-    _projection_mat *= invert_mat;
-  }
-
   if (GLCAT.is_spam()) {
     GLCAT.spam()
-      << "glMatrixMode(GL_PROJECTION): " << _projection_mat << endl;
+      << "glMatrixMode(GL_PROJECTION): " << _projection_mat->get_mat() << endl;
   }
   GLP(MatrixMode)(GL_PROJECTION);
-  GLP(LoadMatrixf)(_projection_mat.get_data());
+  GLP(LoadMatrixf)(_projection_mat->get_mat().get_data());
   report_my_gl_errors();
 
   do_point_size();
@@ -2745,7 +2757,7 @@ do_issue_transform() {
   }
 
   if (_current_shader_context)
-    _current_shader_context->issue_transform(this);
+    _current_shader_context->issue_parameters(this, false);
 
   report_my_gl_errors();
 }
@@ -2818,7 +2830,7 @@ do_issue_shader() {
     }
   } else {
     // Use the same shader as before, but with new input arguments.
-    context->issue_parameters(this);
+    context->issue_parameters(this, true);
   }
 
   report_my_gl_errors();
@@ -5965,7 +5977,7 @@ do_point_size() {
     // scaling factor based on the current viewport and projection
     // matrix.
     LVector3f height(0.0f, _point_size, 1.0f);
-    height = height * _projection_mat;
+    height = height * _projection_mat->get_mat();
     float s = height[1] * _viewport_height / _point_size;
 
     if (_current_lens->is_orthographic()) {

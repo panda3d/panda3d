@@ -442,3 +442,35 @@ operator << (ostream &out, const Lens &lens) {
   lens.output(out);
   return out;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_projection_mat
+//       Access: Published
+//  Description: Returns the complete transformation matrix from a 3-d
+//               point in space to a point on the film, if such a
+//               matrix exists, or the identity matrix if the lens is
+//               nonlinear, in the specified coordinate system.
+////////////////////////////////////////////////////////////////////
+const LMatrix4f Lens::
+get_projection_mat(CoordinateSystem cs, StereoChannel channel) const {
+  return
+    LMatrix4f::convert_mat(cs, _cs) *
+    get_projection_mat(channel) *
+    LMatrix4f::convert_mat(CS_yup_right, cs);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_projection_mat_inv
+//       Access: Published
+//  Description: Returns the matrix that transforms from a 2-d point
+//               on the film to a 3-d vector in space, if such a
+//               matrix exists, in the specified coordinate system.
+////////////////////////////////////////////////////////////////////
+const LMatrix4f Lens::
+get_projection_mat_inv(CoordinateSystem cs, StereoChannel channel) const {
+  return
+    LMatrix4f::convert_mat(cs, CS_yup_right) *
+    get_projection_mat_inv(channel) *
+    LMatrix4f::convert_mat(_cs, cs);
+}
+

@@ -2058,22 +2058,22 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
   data = total->get_mat().get_data();
   switch (stb.trans_piece) {
 /*
-  case SHADER_data_matrix: cgD3D9SetMatrixParameterfc(stb.parameter, data); break;
-  case SHADER_data_transpose:  cgD3D9SetMatrixParameterfr(stb.parameter, data); break;
-  case SHADER_data_row0: cgD3D9SetParameter4fv(stb.parameter, data+ 0); break;
-  case SHADER_data_row1: cgD3D9SetParameter4fv(stb.parameter, data+ 4); break;
-  case SHADER_data_row2: cgD3D9SetParameter4fv(stb.parameter, data+ 8); break;
-  case SHADER_data_row3: cgD3D9SetParameter4fv(stb.parameter, data+12); break;
-  case SHADER_data_col0: cgD3D9SetParameter4f(stb.parameter, data[0], data[4], data[ 8], data[12]); break;
-  case SHADER_data_col1: cgD3D9SetParameter4f(stb.parameter, data[1], data[5], data[ 9], data[13]); break;
-  case SHADER_data_col2: cgD3D9SetParameter4f(stb.parameter, data[2], data[6], data[10], data[14]); break;
-  case SHADER_data_col3: cgD3D9SetParameter4f(stb.parameter, data[3], data[7], data[11], data[15]); break;
+  case SMP_whole: cgD3D9SetMatrixParameterfc(stb.parameter, data); break;
+  case SMP_transpose:  cgD3D9SetMatrixParameterfr(stb.parameter, data); break;
+  case SMP_row0: cgD3D9SetParameter4fv(stb.parameter, data+ 0); break;
+  case SMP_row1: cgD3D9SetParameter4fv(stb.parameter, data+ 4); break;
+  case SMP_row2: cgD3D9SetParameter4fv(stb.parameter, data+ 8); break;
+  case SMP_row3: cgD3D9SetParameter4fv(stb.parameter, data+12); break;
+  case SMP_col0: cgD3D9SetParameter4f(stb.parameter, data[0], data[4], data[ 8], data[12]); break;
+  case SMP_col1: cgD3D9SetParameter4f(stb.parameter, data[1], data[5], data[ 9], data[13]); break;
+  case SMP_col2: cgD3D9SetParameter4f(stb.parameter, data[2], data[6], data[10], data[14]); break;
+  case SMP_col3: cgD3D9SetParameter4f(stb.parameter, data[3], data[7], data[11], data[15]); break;
 */
 
     float vector [4];
     float matrix [16];
 
-    case SHADER_data_matrix:
+    case SMP_whole:
       if (_cg_shader) {
         cgD3D9SetUniform (stb.parameter, data);
       }
@@ -2081,7 +2081,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
         set_dx_shader_parameter_float (stb.dx_parameter, data, gsg -> _d3d_device);
       }
       break;
-    case SHADER_data_transpose:
+    case SMP_transpose:
       matrix [0] = data[0];
       matrix [1] = data[4];
       matrix [2] = data[8];
@@ -2105,7 +2105,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
         set_dx_shader_parameter_float (stb.dx_parameter, matrix, gsg -> _d3d_device);
       }
       break;
-    case SHADER_data_row0:
+    case SMP_row0:
       if (_cg_shader) {
         cgD3D9SetUniform (stb.parameter, data);
       }
@@ -2113,7 +2113,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
         set_dx_shader_parameter_float (stb.dx_parameter, data, gsg -> _d3d_device);
       }
       break;
-    case SHADER_data_row1:
+    case SMP_row1:
       if (_cg_shader) {
         cgD3D9SetUniform (stb.parameter, data + 4);
       }
@@ -2121,7 +2121,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
         set_dx_shader_parameter_float (stb.dx_parameter, data + 4, gsg -> _d3d_device);
       }
       break;
-    case SHADER_data_row2:
+    case SMP_row2:
       if (_cg_shader) {
         cgD3D9SetUniform (stb.parameter, data + 8);
       }
@@ -2129,7 +2129,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
         set_dx_shader_parameter_float (stb.dx_parameter, data + 8, gsg -> _d3d_device);
       }
       break;
-    case SHADER_data_row3:
+    case SMP_row3:
       if (_cg_shader) {
         cgD3D9SetUniform (stb.parameter, data + 12);
       }
@@ -2137,7 +2137,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
         set_dx_shader_parameter_float (stb.dx_parameter, data + 12, gsg -> _d3d_device);
       }
       break;
-    case SHADER_data_col0:
+    case SMP_col0:
       vector [0] = data[0];
       vector [1] = data[4];
       vector [2] = data[8];
@@ -2149,7 +2149,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
         set_dx_shader_parameter_float (stb.dx_parameter, vector, gsg -> _d3d_device);
       }
       break;
-    case SHADER_data_col1:
+    case SMP_col1:
       vector [0] = data[1];
       vector [1] = data[5];
       vector [2] = data[9];
@@ -2161,7 +2161,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
         set_dx_shader_parameter_float (stb.dx_parameter, vector, gsg -> _d3d_device);
       }
       break;
-    case SHADER_data_col2:
+    case SMP_col2:
       vector [0] = data[2];
       vector [1] = data[6];
       vector [2] = data[10];
@@ -2173,7 +2173,7 @@ bind_cg_transform(const ShaderTransBind &stb, GSG *gsg)
         set_dx_shader_parameter_float (stb.dx_parameter, vector, gsg -> _d3d_device);
       }
       break;
-    case SHADER_data_col3:
+    case SMP_col3:
       vector [0] = data[3];
       vector [1] = data[7];
       vector [2] = data[11];
@@ -2499,21 +2499,21 @@ compile_cg_parameter(CGparameter p, DX_PARAMETER *dx_parameter)
     bind.parameter = p;
     bind.dx_parameter = dx_parameter;
 
-    if      (pieces[0]=="trans") bind.trans_piece = SHADER_data_matrix;
-    else if (pieces[0]=="tpose") bind.trans_piece = SHADER_data_transpose;
-    else if (pieces[0]=="row0") bind.trans_piece = SHADER_data_row0;
-    else if (pieces[0]=="row1") bind.trans_piece = SHADER_data_row1;
-    else if (pieces[0]=="row2") bind.trans_piece = SHADER_data_row2;
-    else if (pieces[0]=="row3") bind.trans_piece = SHADER_data_row3;
-    else if (pieces[0]=="col0") bind.trans_piece = SHADER_data_col0;
-    else if (pieces[0]=="col1") bind.trans_piece = SHADER_data_col1;
-    else if (pieces[0]=="col2") bind.trans_piece = SHADER_data_col2;
-    else if (pieces[0]=="col3") bind.trans_piece = SHADER_data_col3;
+    if      (pieces[0]=="trans") bind.trans_piece = SMP_whole;
+    else if (pieces[0]=="tpose") bind.trans_piece = SMP_transpose;
+    else if (pieces[0]=="row0") bind.trans_piece = SMP_row0;
+    else if (pieces[0]=="row1") bind.trans_piece = SMP_row1;
+    else if (pieces[0]=="row2") bind.trans_piece = SMP_row2;
+    else if (pieces[0]=="row3") bind.trans_piece = SMP_row3;
+    else if (pieces[0]=="col0") bind.trans_piece = SMP_col0;
+    else if (pieces[0]=="col1") bind.trans_piece = SMP_col1;
+    else if (pieces[0]=="col2") bind.trans_piece = SMP_col2;
+    else if (pieces[0]=="col3") bind.trans_piece = SMP_col3;
 
     bind.src_name = InternalName::make(pieces[1]);
     bind.rel_name = InternalName::make(pieces[3]);
 
-    if ((bind.trans_piece == SHADER_data_matrix)||(bind.trans_piece == SHADER_data_transpose)) {
+    if ((bind.trans_piece == SMP_whole)||(bind.trans_piece == SMP_transpose)) {
       if (!errchk_cg_parameter_type(p, CG_FLOAT4x4)) return false;
     } else {
       if (!errchk_cg_parameter_type(p, CG_FLOAT4)) return false;
@@ -2541,18 +2541,18 @@ compile_cg_parameter(CGparameter p, DX_PARAMETER *dx_parameter)
     bind.parameter = p;
     bind.dx_parameter = dx_parameter;
 
-    if      (pieces[0]=="wstrans") { bind.rel_name = InternalName::get_world();  bind.trans_piece = SHADER_data_matrix; }
-    else if (pieces[0]=="vstrans") { bind.rel_name = InternalName::get_view();   bind.trans_piece = SHADER_data_matrix; }
-    else if (pieces[0]=="cstrans") { bind.rel_name = InternalName::get_camera(); bind.trans_piece = SHADER_data_matrix; }
-    else if (pieces[0]=="mstrans") { bind.rel_name = InternalName::get_model();  bind.trans_piece = SHADER_data_matrix; }
-    else if (pieces[0]=="wspos")   { bind.rel_name = InternalName::get_world();  bind.trans_piece = SHADER_data_row3; }
-    else if (pieces[0]=="vspos")   { bind.rel_name = InternalName::get_view();   bind.trans_piece = SHADER_data_row3; }
-    else if (pieces[0]=="cspos")   { bind.rel_name = InternalName::get_camera(); bind.trans_piece = SHADER_data_row3; }
-    else if (pieces[0]=="mspos")   { bind.rel_name = InternalName::get_model();  bind.trans_piece = SHADER_data_row3; }
+    if      (pieces[0]=="wstrans") { bind.rel_name = InternalName::get_world();  bind.trans_piece = SMP_whole; }
+    else if (pieces[0]=="vstrans") { bind.rel_name = InternalName::get_view();   bind.trans_piece = SMP_whole; }
+    else if (pieces[0]=="cstrans") { bind.rel_name = InternalName::get_camera(); bind.trans_piece = SMP_whole; }
+    else if (pieces[0]=="mstrans") { bind.rel_name = InternalName::get_model();  bind.trans_piece = SMP_whole; }
+    else if (pieces[0]=="wspos")   { bind.rel_name = InternalName::get_world();  bind.trans_piece = SMP_row3; }
+    else if (pieces[0]=="vspos")   { bind.rel_name = InternalName::get_view();   bind.trans_piece = SMP_row3; }
+    else if (pieces[0]=="cspos")   { bind.rel_name = InternalName::get_camera(); bind.trans_piece = SMP_row3; }
+    else if (pieces[0]=="mspos")   { bind.rel_name = InternalName::get_model();  bind.trans_piece = SMP_row3; }
 
     bind.src_name = InternalName::make(pieces[1]);
 
-    if ((bind.trans_piece == SHADER_data_matrix)||(bind.trans_piece == SHADER_data_transpose)) {
+    if ((bind.trans_piece == SMP_whole)||(bind.trans_piece == SMP_transpose)) {
       if (!errchk_cg_parameter_type(p, CG_FLOAT4x4)) return false;
     } else {
       if (!errchk_cg_parameter_type(p, CG_FLOAT4)) return false;
