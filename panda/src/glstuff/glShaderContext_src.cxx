@@ -20,6 +20,7 @@
 
 TypeHandle CLP(ShaderContext)::_type_handle;
 
+#ifdef HAVE_CGGL
 ////////////////////////////////////////////////////////////////////
 //     Function: cg_type_to_panda_type
 //       Access: Public, Static
@@ -40,7 +41,9 @@ cg_type_to_panda_type(CGtype n) {
   default:           return ShaderContext::SAT_unknown;
   }
 }
+#endif  // HAVE_CGGL
 
+#ifdef HAVE_CGGL
 ////////////////////////////////////////////////////////////////////
 //     Function: cg_dir_to_panda_dir
 //       Access: Public, Static
@@ -55,6 +58,7 @@ cg_dir_to_panda_dir(CGenum n) {
   default:       return ShaderContext::SAD_unknown;
   }
 }
+#endif  // HAVE_CGGL
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::Constructor
@@ -121,6 +125,7 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
   GLCAT.error() << s->get_name() << ": unrecognized shader language " << header << "\n";
 }
 
+#ifdef HAVE_CGGL
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::report_cg_compile_errors
 //       Access: Public, Static
@@ -149,6 +154,7 @@ report_cg_compile_errors(const string &file, CGcontext ctx)
     }
   }
 }
+#endif  // HAVE_CGGL
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::suggest_cg_profile
