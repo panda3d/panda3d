@@ -1204,7 +1204,7 @@ issue_cg_auto_bind(const ShaderAutoBind &bind, GSG *gsg)
         break;
       case CG_GL_PROJECTION_MATRIX:
 
-        p_matrix = &gsg->_projection_mat;
+        p_matrix = &gsg->_projection_mat->get_mat();
 
         if (_transpose_matrix) {
           temp_matrix.transpose_from (*p_matrix);
@@ -1232,7 +1232,7 @@ issue_cg_auto_bind(const ShaderAutoBind &bind, GSG *gsg)
 
         DBG_SH4  dxgsg9_cat.debug ( ) << "SHADER: issue_cg_auto_bind CG_GL_MODELVIEW_PROJECTION_MATRIX " << bind.value << "\n"; DBG_E
 
-        projection_matrix = &gsg->_projection_mat;
+        projection_matrix = &gsg->_projection_mat->get_mat();
 
 // which matrix ?????
 // which multiply order ?????

@@ -67,6 +67,7 @@ public:
   virtual void do_clear(const RenderBuffer &buffer);
 
   virtual void prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel);
+  virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
   virtual bool prepare_lens();
 
   virtual bool begin_frame();
@@ -218,8 +219,6 @@ protected:
   DWORD _clip_plane_bits;
   CullFaceAttrib::Mode _cull_face_mode;
   RenderModeAttrib::Mode _current_fill_mode;  //point/wireframe/solid
-
-  LMatrix4f _projection_mat;
 
   const DXVertexBufferContext8 *_active_vbuffer;
   const DXIndexBufferContext8 *_active_ibuffer;

@@ -596,6 +596,50 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::calc_projection_mat
+//       Access: Public, Virtual
+//  Description: Given a lens, calculates the appropriate projection
+//               matrix for use with this gsg.  Note that the
+//               projection matrix depends a lot upon the coordinate
+//               system of the rendering API.
+//
+//               The return value is a TransformState if the lens is
+//               acceptable, NULL if it is not.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) DXGraphicsStateGuardian8::
+calc_projection_mat(const Lens *lens) {
+  if (lens == (Lens *)NULL) {
+    return NULL;
+  }
+
+  if (!lens->is_linear()) {
+    return NULL;
+  }
+
+  // DirectX also uses a Z range of 0 to 1, whereas the Panda
+  // convention is for the projection matrix to produce a Z range of
+  // -1 to 1.  We have to rescale to compensate.
+  static const LMatrix4f rescale_mat
+    (1, 0, 0, 0,
+     0, 1, 0, 0,
+     0, 0, 0.5, 0,
+     0, 0, 0.5, 1);
+
+  LMatrix4f result =
+    LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system()) *
+    lens->get_projection_mat(_current_stereo_channel) *
+    rescale_mat;
+  
+  if (_scene_setup->get_inverted()) {
+    // If the scene is supposed to be inverted, then invert the
+    // projection matrix.
+    result *= LMatrix4f::scale_mat(1.0f, -1.0f, 1.0f);
+  }
+  
+  return TransformState::make_mat(result);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::prepare_lens
 //       Access: Public, Virtual
 //  Description: Makes the current lens (whichever lens was most
@@ -609,44 +653,9 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
 prepare_lens() {
-  if (_current_lens == (Lens *)NULL) {
-    return false;
-  }
-
-  if (!_current_lens->is_linear()) {
-    return false;
-  }
-
-  // Start with the projection matrix from the lens.
-  const LMatrix4f &lens_mat = _current_lens->get_projection_mat(_current_stereo_channel);
-
-  // The projection matrix must always be left-handed Y-up internally,
-  // to match DirectX's convention, even if our coordinate system of
-  // choice is otherwise.
-  const LMatrix4f &convert_mat =
-    LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system());
-
-  // DirectX also uses a Z range of 0 to 1, whereas the Panda
-  // convention is for the projection matrix to produce a Z range of
-  // -1 to 1.  We have to rescale to compensate.
-  static const LMatrix4f rescale_mat
-    (1, 0, 0, 0,
-     0, 1, 0, 0,
-     0, 0, 0.5, 0,
-     0, 0, 0.5, 1);
-
-  _projection_mat = convert_mat * lens_mat * rescale_mat;
-
-  if (_scene_setup->get_inverted()) {
-    // If the scene is supposed to be inverted, then invert the
-    // projection matrix.
-    static LMatrix4f invert_mat = LMatrix4f::scale_mat(1.0f, -1.0f, 1.0f);
-    _projection_mat *= invert_mat;
-  }
-
   HRESULT hr =
     _d3d_device->SetTransform(D3DTS_PROJECTION,
-                              (D3DMATRIX*)_projection_mat.get_data());
+                              (D3DMATRIX*)_projection_mat->get_mat().get_data());
   return SUCCEEDED(hr);
 }
 
@@ -1302,7 +1311,7 @@ end_draw_primitives() {
   if (_vertex_data->is_vertex_transformed()) {
     // Restore the projection matrix that we wiped out above.
     _d3d_device->SetTransform(D3DTS_PROJECTION,
-                              (D3DMATRIX*)_projection_mat.get_data());
+                              (D3DMATRIX*)_projection_mat->get_mat().get_data());
   }
 
   GraphicsStateGuardian::end_draw_primitives();
@@ -1727,7 +1736,6 @@ reset() {
 
   _d3d_device->SetRenderState(D3DRS_FOGENABLE, FALSE);
 
-  _projection_mat = LMatrix4f::ident_mat();
   _has_scene_graph_color = false;
 
   _last_testcooplevel_result = D3D_OK;
@@ -1941,7 +1949,7 @@ do_issue_render_mode() {
     _d3d_device->SetRenderState(D3DRS_POINTSCALEENABLE, TRUE);
 
     LVector3f height(0.0f, point_size, 1.0f);
-    height = height * _projection_mat;
+    height = height * _projection_mat->get_mat();
     float s = height[1] / point_size;
 
     float zero = 0.0f;

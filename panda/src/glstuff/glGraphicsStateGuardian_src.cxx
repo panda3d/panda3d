@@ -1013,7 +1013,7 @@ calc_projection_mat(const Lens *lens) {
   // matrix, and store the conversion to our coordinate system of
   // choice in the modelview matrix.
 
-  LMatrix4f &result =
+  LMatrix4f result =
     LMatrix4f::convert_mat(CS_yup_right, _current_lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel);
 
