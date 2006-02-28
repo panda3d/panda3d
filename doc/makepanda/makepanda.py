@@ -40,7 +40,7 @@ PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","
           "BISON","FLEX","OPENCV","PANDATOOL","PANDAAPP","DX8","DX9"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
-DIRECTXSDK = None
+DIRECTXSDK = {}
 MAYASDK = {}
 MAXSDK = {}
 MAXSDKCS = {}
@@ -52,6 +52,7 @@ FILEDATECACHE = {}
 CXXINCLUDECACHE = {}
 SLAVEBUILD=0
 THREADCOUNT=0
+DXVERSIONS=["8","9"]
 MAYAVERSIONS=["6","65","7"]
 MAXVERSIONS=["6","7","8"]
 
@@ -124,6 +125,19 @@ def xpaths(prefix,base,suffix):
 
 if sys.platform == "win32":
     import _winreg
+
+    def ListRegistryKeys(path):
+        result=[]
+        index=0
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, path, 0, _winreg.KEY_READ)
+            while (1):
+                result.append(_winreg.EnumKey(key, index))
+                index = index + 1
+        except: pass
+        if (key!=0): _winreg.CloseKey(key)
+        return result
+
     def GetRegistryKey(path, subkey):
         k1=0
         key=0
@@ -359,7 +373,7 @@ def usage(problem):
 
 def parseopts(args):
     global COMPILER,OPTIMIZE,OMIT,INSTALLER,GENMAN,SLAVEBUILD
-    global VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE,SLAVEFILE,THREADCOUNT
+    global VERSION,COMPRESSOR,VERBOSE,SLAVEFILE,THREADCOUNT
     longopts = [
         "help","package-info","compiler=","directx-sdk=","slavebuild=",
         "optimize=","everything","nothing","installer","quiet","verbose",
@@ -373,7 +387,6 @@ def parseopts(args):
             if (option=="--help"): raise "usage"
             elif (option=="--package-info"): raise "package-info"
             elif (option=="--compiler"): COMPILER=value
-            elif (option=="--directx-sdk"): DIRECTXSDK=value
             elif (option=="--optimize"): OPTIMIZE=value
             elif (option=="--quiet"): VERBOSE-=1
             elif (option=="--verbose"): VERBOSE+=1
@@ -434,7 +447,8 @@ os.chdir(PANDASOURCE)
 ########################################################################
 
 if (os.path.isdir("sdks")):
-    DIRECTXSDK="sdks/directx"
+#    DIRECTXSDK["DX8"] = "sdks/directx8"
+#    DIRECTXSDK["DX9"] = "sdks/directx9"
     MAXSDKCS["MAX6"] = "sdks/maxsdk6"
     MAXSDKCS["MAX7"] = "sdks/maxsdk7"
     MAXSDKCS["MAX8"] = "sdks/maxsdk8"
@@ -449,24 +463,33 @@ if (os.path.isdir("sdks")):
 ##
 ## Locate the DirectX SDK
 ##
+## Microsoft keeps changing the &*#$*& registry key for the DirectX SDK.
+## The only way to reliably find it is to search through the installer's
+## uninstall-directories, look in each one, and see if it contains the
+## relevant files.
+##
 ########################################################################
 
-if sys.platform == "win32" and DIRECTXSDK is None:
-    dxdir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX SDK", "DX9SDK Samples Path")
-    if (dxdir != 0): DIRECTXSDK = os.path.dirname(dxdir)
-    else:
-        dxdir = GetRegistryKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment","DXSDK_DIR")
-        if (dxdir != 0): DIRECTXSDK=dxdir
+if sys.platform == "win32":
+    uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+    for subdir in ListRegistryKeys(uninstaller):
+        if (subdir[0]=="{"):
+            dir = GetRegistryKey(uninstaller+"\\"+subdir, "InstallLocation")
+            if (dir != 0):
+                for ver in DXVERSIONS:
+                    if ((DIRECTXSDK.has_key("DX"+ver)==0) and
+                        (os.path.isfile(dir+"\\Include\\d3d"+ver+".h")) and
+                        (os.path.isfile(dir+"\\Include\\d3dx"+ver+".h")) and
+                        (os.path.isfile(dir+"\\Lib\\x86\\d3d"+ver+".lib")) and
+                        (os.path.isfile(dir+"\\Lib\\x86\\d3dx"+ver+".lib"))):
+                        DIRECTXSDK["DX"+ver] = dir.replace("\\", "/").rstrip("/")
+    for ver in DXVERSIONS:
+        if (DIRECTXSDK.has_key("DX"+ver)==0) and (OMIT.count("DX"+ver)==0):
+            WARNINGS.append("I cannot locate SDK for DX"+ver)
+            WARNINGS.append("I have automatically added this command-line option: --no-dx"+ver)
+            OMIT.append("DX"+ver)
         else:
-            dxdir = GetRegistryKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment","DXSDKROOT")
-            if dxdir != 0:
-                if dxdir[-2:]=="/.":
-                    DIRECTXSDK=dxdir[:-1]
-                else:
-                    DIRECTXSDK=dxdir
-            else:
-                exit("The registry does not appear to contain a pointer to the DirectX 9.0 SDK.")
-    DIRECTXSDK=DIRECTXSDK.replace("\\", "/").rstrip("/")
+            WARNINGS.append("Using DX"+ver+" sdk: "+DIRECTXSDK["DX"+ver])
 
 ########################################################################
 ##
@@ -597,11 +620,9 @@ def LocateVisualStudio():
         AddToVisualStudioPath("PATH", vcdir + "\\bin")
         AddToVisualStudioPath("INCLUDE", platsdk + "\\include")
         AddToVisualStudioPath("INCLUDE", vcdir + "\\include")
-        AddToVisualStudioPath("INCLUDE", DIRECTXSDK + "\\include")
         AddToVisualStudioPath("LIB",     platsdk + "\\lib")
         AddToVisualStudioPath("LIB",     vcdir + "\\lib")
         AddToVisualStudioPath("LIB",     "thirdparty\\win-libs-vc7\\extras\\lib")
-        AddToVisualStudioPath("INCLUDE", DIRECTXSDK + "\\lib")
         return
 
     # Give up
@@ -719,7 +740,6 @@ def printStatus(header,warnings):
         print "Makepanda: Optimize:",OPTIMIZE
         print "Makepanda: Keep Pkg:",tkeep
         print "Makepanda: Omit Pkg:",tomit
-        print "Makepanda: DirectX SDK dir:",DIRECTXSDK
         print "Makepanda: Verbose vs. Quiet Level:",VERBOSE
         if (GENMAN): print "Makepanda: Generate API reference manual"
         else       : print "Makepanda: Don't generate API reference manual"
@@ -971,7 +991,9 @@ def CopyTree(dstdir,srcdir):
 def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
     cmd = "cl /Fo" + wobj + " /nologo /c"
     if (OMIT.count("PYTHON")==0): cmd = cmd + " /Ibuilt/python/include"
-    if (opts.count("DXSDK")): cmd = cmd + ' /I"' + DIRECTXSDK + '/include"'
+    for ver in DXVERSIONS:
+        if (PkgSelected(opts,"DX"+ver)):
+            cmd = cmd + ' /I"' + DIRECTXSDK["DX"+ver] + '/include"'
     for ver in MAYAVERSIONS:
         if (PkgSelected(opts,"MAYA"+ver)):
             cmd = cmd + ' /I"' + MAYASDK["MAYA"+ver] + '/include"'
@@ -979,7 +1001,7 @@ def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
         if (PkgSelected(opts,"MAX"+ver)):
             cmd = cmd + ' /I"' + MAXSDK["MAX"+ver] + '/include" /I"' + MAXSDKCS["MAX"+ver] + '" /DMAX' + ver
     for pkg in PACKAGES:
-        if (pkg[:4] != "MAYA") and (pkg[:3]!="MAX") and PkgSelected(opts,pkg):
+        if (pkg[:4] != "MAYA") and (pkg[:3]!="MAX") and (pkg[:2]!="DX") and PkgSelected(opts,pkg):
             cmd = cmd + " /Ithirdparty/win-libs-vc7/" + pkg.lower() + "/include"
     for x in ipath: cmd = cmd + " /I" + x
     if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
@@ -1143,7 +1165,9 @@ def CompileIgateMSVC7(ipath,opts,outd,outc,wobj,src,module,library,files):
         if (building): cmd = cmd + " -DBUILDING_"+building
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
         cmd = cmd + ' -module ' + module + ' -library ' + library
-        if ((COMPILER=="MSVC7") and opts.count("DXSDK")): cmd = cmd + ' -I"' + DIRECTXSDK + '/include"'
+        for ver in DXVERSIONS:
+            if ((COMPILER=="MSVC7") and PkgSelected(opts,"DX"+ver)):
+                cmd = cmd + ' -I"' + DIRECTXSDK["DX"+ver] + '/include"'
         for ver in MAYAVERSIONS:
             if ((COMPILER=="MSVC7") and PkgSelected(opts,"MAYA"+ver)):
                 cmd = cmd + ' -I"' + MAYASDK["MAYA"+ver] + '/include"'
@@ -1174,7 +1198,6 @@ def CompileIgateLINUXA(ipath,opts,outd,outc,wobj,src,module,library,files):
         if (building): cmd = cmd + " -DBUILDING_"+building
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
         cmd = cmd + ' -module ' + module + ' -library ' + library
-        if (opts.count("DXSDK")): cmd = cmd + ' -I"' + DIRECTXSDK + '/include"'
         for ver in MAYAVERSIONS:
             if (PkgSelected(opts, "MAYA"+ver)):
                 cmd = cmd + ' -I"' + MAYASDK["MAYA"+ver] + '/include"'
@@ -1310,14 +1333,11 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
     if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:built/python/libs '
     for x in wobj: cmd = cmd + ' ' + x
     if (wdll[-4:]==".exe"): cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
-    if (opts.count("D3D8") or opts.count("D3D9") or opts.count("DXDRAW") or opts.count("DXSOUND") or opts.count("DXGUID")):
-        cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + '/lib/x86"'
-        cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + '/lib"'
-    if (opts.count("D3D8")):        cmd = cmd + ' d3d8.lib d3dx8.lib dxerr8.lib'
-    if (opts.count("D3D9")):        cmd = cmd + ' d3d9.lib d3dx9.lib dxerr9.lib'
-    if (opts.count("DXDRAW")):      cmd = cmd + ' ddraw.lib'
-    if (opts.count("DXSOUND")):     cmd = cmd + ' dsound.lib'
-    if (opts.count("DXGUID")):      cmd = cmd + ' dxguid.lib'
+    for ver in DXVERSIONS:
+        if (PkgSelected(opts,"DX"+ver)):
+            cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK["DX"+ver] + '/lib/x86"'
+            cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK["DX"+ver] + '/lib"'
+            cmd = cmd + ' d3dVER.lib d3dxVER.lib dxerrVER.lib ddraw.lib dxguid.lib'.replace("VER",ver)
     if (opts.count("WINSOCK")):     cmd = cmd + " wsock32.lib"
     if (opts.count("WINSOCK2")):    cmd = cmd + " wsock32.lib ws2_32.lib"
     if (opts.count("WINCOMCTL")):   cmd = cmd + ' comctl32.lib'
@@ -2296,7 +2316,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpstatclient.in', obj='libpstatclie
 #
 
 IPATH=['panda/src/gobj']
-OPTS=['BUILDING_PANDA', 'NSPR', 'NVIDIACG']
+OPTS=['BUILDING_PANDA', 'NSPR']
 CopyAllHeaders('panda/src/gobj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gobj_composite1.cxx', obj='gobj_composite1.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gobj_composite2.cxx', obj='gobj_composite2.obj')
@@ -2572,7 +2592,7 @@ CopyAllHeaders('panda/src/physics')
 CopyAllHeaders('panda/src/particlesystem')
 IPATH=['panda/metalibs/panda']
 OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'NSPR', 'FREETYPE', 'HELIX', 'FFTW', 'OPENCV',
-      'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'NVIDIACG']
+      'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
 INFILES=['librecorder.in', 'libpgraph.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
          'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libevent.in',
          'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libparametrics.in',
@@ -2760,14 +2780,14 @@ if (sys.platform == "win32"):
 
 if OMIT.count("DX8")==0:
     IPATH=['panda/src/dxgsg8', 'panda/metalibs/pandadx8']
-    OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
+    OPTS=['BUILDING_PANDADX', 'DX8', 'NSPR']
     CopyAllHeaders('panda/src/dxgsg8')
     CopyAllHeaders('panda/metalibs/pandadx8')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian8.cxx', obj='dxgsg8_dxGraphicsStateGuardian8.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg8_composite.cxx', obj='dxgsg8_composite.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandadx8.cxx', obj='pandadx8_pandadx8.obj')
     EnqueueLink(dll='libpandadx8.dll',
-      opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D8', 'NSPR'], obj=[
+      opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DX8', 'NSPR'], obj=[
       'pandadx8_pandadx8.obj',
       'dxgsg8_dxGraphicsStateGuardian8.obj',
       'dxgsg8_composite.obj',
@@ -2784,7 +2804,7 @@ if OMIT.count("DX8")==0:
 
 if OMIT.count("DX9")==0:
     IPATH=['panda/src/dxgsg9']
-    OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR', 'NVIDIACG', 'CGDX9']
+    OPTS=['BUILDING_PANDADX', 'DX9', 'NSPR', 'NVIDIACG', 'CGDX9']
     CopyAllHeaders('panda/src/dxgsg9')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian9.cxx', obj='dxgsg9_dxGraphicsStateGuardian9.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg9_composite.cxx', obj='dxgsg9_composite.obj')
@@ -2792,7 +2812,7 @@ if OMIT.count("DX9")==0:
     CopyAllHeaders('panda/metalibs/pandadx9')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandadx9.cxx', obj='pandadx9_pandadx9.obj')
     EnqueueLink(dll='libpandadx9.dll',
-      opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D9', 'NSPR', 'NVIDIACG', 'CGDX9'], obj=[
+      opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DX9', 'NSPR', 'NVIDIACG', 'CGDX9'], obj=[
       'pandadx9_pandadx9.obj',
       'dxgsg9_dxGraphicsStateGuardian9.obj',
       'dxgsg9_composite.obj',

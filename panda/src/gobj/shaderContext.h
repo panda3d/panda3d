@@ -23,13 +23,6 @@
 #include "internalName.h"
 #include "savedContext.h"
 #include "shaderExpansion.h"
-#ifdef HAVE_CG
-// Instead of including the whole header file, just include these stubs.
-typedef struct _CGcontext *CGcontext;
-typedef struct _CGprogram *CGprogram;
-typedef struct _CGparameter *CGparameter;
-#endif
-
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ShaderContext
@@ -55,6 +48,27 @@ public:
     SHADER_type_frag=1,
     SHADER_type_both=2,
   };
+
+  enum ShaderArgType {
+    SAT_float1,
+    SAT_float2,
+    SAT_float3,
+    SAT_float4,
+    SAT_float4x4,
+    SAT_sampler1d,
+    SAT_sampler2d,
+    SAT_sampler3d,
+    SAT_samplercube,
+    SAT_unknown,
+  };
+
+  enum ShaderArgDir {
+    SAD_in,
+    SAD_out,
+    SAD_inout,
+    SAD_unknown,
+  };
+
   enum ShaderMatOp {
     SMO_identity,
 
@@ -99,6 +113,7 @@ public:
     SMO_transpose,
     SMO_noop,
   };
+
   enum ShaderMatPiece {
     SMP_whole,
     SMP_transpose,
@@ -111,6 +126,7 @@ public:
     SMP_col2,
     SMP_col3,
   };
+
   struct ShaderMatSpec {
     pvector<ShaderMatOp>      _opcodes;
     pvector<PT(InternalName)> _args;
@@ -118,6 +134,7 @@ public:
     bool                      _trans_dependent;
     void                     *_parameter;
   };
+
   struct ShaderTexSpec {
     PT(InternalName)  _name;
     int               _stage;
@@ -125,10 +142,19 @@ public:
     PT(InternalName)  _suffix;
     void             *_parameter;
   };
+
   struct ShaderVarSpec {
     PT(InternalName) _name;
     int              _append_uv;
     void            *_parameter;
+  };
+
+  struct ShaderArgInfo {
+    string          _name;
+    ShaderArgType   _type;
+    ShaderArgDir    _direction;
+    bool            _varying;
+    NotifyCategory *_cat;
   };
 
 protected:
@@ -136,18 +162,17 @@ protected:
   pvector <ShaderTexSpec> _tex_spec;
   pvector <ShaderVarSpec> _var_spec;
   
-#ifdef HAVE_CG
 private:
-  // These functions are only called by 'compile_cg_parameter'
-  NotifyCategory *_cg_report_cat;
-  void report_cg_parameter_error(CGparameter p, const string &msg);
-  bool errchk_cg_parameter_words(CGparameter p, int len);
-  bool errchk_cg_parameter_in(CGparameter p);
-  bool errchk_cg_parameter_varying(CGparameter p);
-  bool errchk_cg_parameter_uniform(CGparameter p);
-  bool errchk_cg_parameter_float(CGparameter p, int lo, int hi);
-  bool errchk_cg_parameter_sampler(CGparameter p);
-  bool parse_cg_trans_clause(CGparameter p,
+  // These functions are only called from compile_parameter.
+
+  void cp_report_error(ShaderArgInfo &arg, const string &msg);
+  bool cp_errchk_parameter_words(ShaderArgInfo &arg, int len);
+  bool cp_errchk_parameter_in(ShaderArgInfo &arg);
+  bool cp_errchk_parameter_varying(ShaderArgInfo &arg);
+  bool cp_errchk_parameter_uniform(ShaderArgInfo &arg);
+  bool cp_errchk_parameter_float(ShaderArgInfo &arg, int lo, int hi);
+  bool cp_errchk_parameter_sampler(ShaderArgInfo &arg);
+  bool cp_parse_trans_clause(ShaderArgInfo &arg,
                              ShaderMatSpec &spec,
                              const vector_string &pieces,
                              int &next,
@@ -155,10 +180,12 @@ private:
                              ShaderMatOp op);
 
 protected:
-  void report_cg_compile_errors(const string &file, CGcontext ctx,
-                                NotifyCategory *cat);
-  bool compile_cg_parameter(CGparameter p, NotifyCategory *cat);
-#endif
+  bool compile_parameter(void *reference,
+                         const string   &arg_name,
+                         ShaderArgType   arg_type,
+                         ShaderArgDir    arg_direction,
+                         bool            arg_varying,
+                         NotifyCategory *arg_cat);
 
 public:
   static TypeHandle get_class_type() {

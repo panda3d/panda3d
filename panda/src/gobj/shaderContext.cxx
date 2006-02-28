@@ -18,196 +18,169 @@
 
 TypeHandle ShaderContext::_type_handle;
 
-#ifdef HAVE_CG
-#include "Cg/cg.h"
-
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::report_cg_compile_errors
-//       Access: Public, Static
-//  Description: Used only after a Cg compile command, to print
-//               out any error messages that may have occurred
-//               during the Cg shader compilation.  The 'file'
-//               is the name of the file containing the Cg code.
-////////////////////////////////////////////////////////////////////
-void ShaderContext::
-report_cg_compile_errors(const string &file, CGcontext ctx,
-                         NotifyCategory *cat)
-{
-  CGerror err = cgGetError();
-  if (err != CG_NO_ERROR) {
-    if (err == CG_COMPILER_ERROR) {
-      string listing = cgGetLastListing(ctx);
-      vector_string errlines;
-      tokenize(listing, errlines, "\n");
-      for (int i=0; i<(int)errlines.size(); i++) {
-        string line = trim(errlines[i]);
-        if (line != "") {
-          cat->error() << file << " " << errlines[i] << "\n";
-        }
-      }
-    } else {
-      cat->error() << file << ": " << cgGetErrorString(err) << "\n";
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::report_cg_parameter_error
+//     Function: Shader::cp_report_error
 //       Access: Public
 //  Description: Generate an error message including a description
-//               of the specified Cg parameter.
+//               of the specified parameter.
 ////////////////////////////////////////////////////////////////////
 void ShaderContext::
-report_cg_parameter_error(CGparameter p, const string &msg)
+cp_report_error(ShaderArgInfo &p, const string &msg)
 {
   string vstr;
-  CGenum v = cgGetParameterVariability(p);
-  if (v == CG_UNIFORM)  vstr = "uniform ";
-  if (v == CG_VARYING)  vstr = "varying ";
-  if (v == CG_CONSTANT) vstr = "const ";
+  if (p._varying) vstr = "varying ";
+  else            vstr = "uniform ";
 
-  string dstr;
-  CGenum d = cgGetParameterDirection(p);
-  if (d == CG_IN)    dstr = "in ";
-  if (d == CG_OUT)   dstr = "out ";
-  if (d == CG_INOUT) dstr = "inout ";
+  string dstr = "unknown ";
+  if (p._direction == SAD_in)    dstr = "in ";
+  if (p._direction == SAD_out)   dstr = "out ";
+  if (p._direction == SAD_inout) dstr = "inout ";
 
-  const char *ts = cgGetTypeString(cgGetParameterType(p));
+  string tstr = "unknown ";
+  switch (p._type) {
+  case SAT_float1: tstr = "float1 "; break;
+  case SAT_float2: tstr = "float2 "; break;
+  case SAT_float3: tstr = "float3 "; break;
+  case SAT_float4: tstr = "float4 "; break;
+  case SAT_float4x4: tstr = "float4x4 "; break;
+  case SAT_sampler1d: tstr = "sampler1d "; break;
+  case SAT_sampler2d: tstr = "sampler2d "; break;
+  case SAT_sampler3d: tstr = "sampler3d "; break;
+  case SAT_samplercube: tstr = "samplercube "; break;
+  }
 
-  string err;
   string fn = _shader_expansion->get_name();
-  _cg_report_cat->error() << fn << ": " << msg << " (" <<
-    vstr << dstr << ts << " " << cgGetParameterName(p) << ")\n";
+  p._cat->error() << fn << ": " << msg << " (" <<
+    vstr << dstr << tstr << p._name << ")\n";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::errchk_cg_parameter_words
+//     Function: Shader::cp_errchk_parameter_words
 //       Access: Public, Static
-//  Description: Make sure the provided Cg parameter contains
+//  Description: Make sure the provided parameter contains
 //               the specified number of words.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
 bool ShaderContext::
-errchk_cg_parameter_words(CGparameter p, int len)
+cp_errchk_parameter_words(ShaderArgInfo &p, int len)
 {
   vector_string words;
-  tokenize(cgGetParameterName(p), words, "_");
+  tokenize(p._name, words, "_");
   if (words.size() != len) {
-    report_cg_parameter_error(p, "parameter name has wrong number of words");
+    cp_report_error(p, "parameter name has wrong number of words");
     return false;
   }
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::errchk_cg_parameter_in
+//     Function: Shader::cp_errchk_parameter_in
 //       Access: Public, Static
-//  Description: Make sure the provided Cg parameter has the
-//               CG_IN direction.  If not, print
+//  Description: Make sure the provided parameter has the
+//               'in' direction.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
 bool ShaderContext::
-errchk_cg_parameter_in(CGparameter p)
+cp_errchk_parameter_in(ShaderArgInfo &p)
 {
-  if (cgGetParameterDirection(p) != CG_IN) {
-    report_cg_parameter_error(p, "parameter should be declared 'in'");
+  if (p._direction != SAD_in) {
+    cp_report_error(p, "parameter should be declared 'in'");
     return false;
   }
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::errchk_cg_parameter_varying
+//     Function: Shader::cp_errchk_parameter_varying
 //       Access: Public, Static
-//  Description: Make sure the provided Cg parameter has the
+//  Description: Make sure the provided parameter has the
 //               correct variance.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
 bool ShaderContext::
-errchk_cg_parameter_varying(CGparameter p)
+cp_errchk_parameter_varying(ShaderArgInfo &p)
 {
-  if (cgGetParameterVariability(p) != CG_VARYING) {
-    report_cg_parameter_error(p, "parameter should be declared 'varying'");
+  if (!p._varying) {
+    cp_report_error(p, "parameter should be declared 'varying'");
     return false;
   }
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::errchk_cg_parameter_uniform
+//     Function: Shader::cp_errchk_parameter_uniform
 //       Access: Public, Static
-//  Description: Make sure the provided Cg parameter has the
+//  Description: Make sure the provided parameter has the
 //               correct variance.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
 bool ShaderContext::
-errchk_cg_parameter_uniform(CGparameter p)
+cp_errchk_parameter_uniform(ShaderArgInfo &p)
 {
-  if (cgGetParameterVariability(p) != CG_UNIFORM) {
-    report_cg_parameter_error(p, "parameter should be declared 'uniform'");
+  if (p._varying) {
+    cp_report_error(p, "parameter should be declared 'uniform'");
     return false;
   }
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::errchk_cg_parameter_float
+//     Function: Shader::cp_errchk_parameter_float
 //       Access: Public, Static
-//  Description: Make sure the provided Cg parameter has
+//  Description: Make sure the provided parameter has
 //               a floating point type.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
 bool ShaderContext::
-errchk_cg_parameter_float(CGparameter p, int lo, int hi)
+cp_errchk_parameter_float(ShaderArgInfo &p, int lo, int hi)
 {
-  CGtype t = cgGetParameterType(p);
   int nfloat = 0;
-  switch (t) {
-  case CG_FLOAT1: nfloat = 1; break;
-  case CG_FLOAT2: nfloat = 2; break;
-  case CG_FLOAT3: nfloat = 3; break;
-  case CG_FLOAT4: nfloat = 4; break;
-  case CG_FLOAT4x4: nfloat = 16; break;
+  switch (p._type) {
+  case SAT_float1: nfloat = 1; break;
+  case SAT_float2: nfloat = 2; break;
+  case SAT_float3: nfloat = 3; break;
+  case SAT_float4: nfloat = 4; break;
+  case SAT_float4x4: nfloat = 16; break;
   }
   if ((nfloat < lo)||(nfloat > hi)) {
-    report_cg_parameter_error(p, "wrong float-type for parameter");
+    string msg = "wrong type for parameter: should be float";
+    cp_report_error(p, msg);
     return false;
   }
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::errchk_cg_parameter_sampler
+//     Function: Shader::cp_errchk_parameter_sampler
 //       Access: Public, Static
-//  Description: Make sure the provided Cg parameter has
+//  Description: Make sure the provided parameter has
 //               a texture type.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
 bool ShaderContext::
-errchk_cg_parameter_sampler(CGparameter p)
+cp_errchk_parameter_sampler(ShaderArgInfo &p)
 {
-  CGtype t = cgGetParameterType(p);
-  if ((t!=CG_SAMPLER1D)&&
-      (t!=CG_SAMPLER2D)&&
-      (t!=CG_SAMPLER3D)&&
-      (t!=CG_SAMPLERCUBE)) {
-    report_cg_parameter_error(p, "parameter should have a 'sampler' type");
+  if ((p._type!=SAT_sampler1d)&&
+      (p._type!=SAT_sampler2d)&&
+      (p._type!=SAT_sampler3d)&&
+      (p._type!=SAT_samplercube)) {
+    cp_report_error(p, "parameter should have a 'sampler' type");
     return false;
   }
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::parse_cg_trans_clause
+//     Function: GLShaderContext::cp_parse_trans_clause
 //       Access: Public
 //  Description: Parses a single clause of a "trans" parameter.
 ////////////////////////////////////////////////////////////////////
 bool ShaderContext::
-parse_cg_trans_clause(CGparameter p, ShaderMatSpec &spec, const vector_string &pieces,
+cp_parse_trans_clause(ShaderArgInfo &p, ShaderMatSpec &spec, const vector_string &pieces,
                       int &next, ShaderMatOp ofop, ShaderMatOp op) {
   if (pieces[next+1]=="of") {
     if (pieces[next+2]=="") {
-      report_cg_parameter_error(p, "'of' should be followed by a name");
+      cp_report_error(p, "'of' should be followed by a name");
       return false;
     }
     if (ofop != SMO_noop) {
@@ -226,41 +199,51 @@ parse_cg_trans_clause(CGparameter p, ShaderMatSpec &spec, const vector_string &p
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::compile_cg_parameter
+//     Function: GLShaderContext::compile_parameter
 //       Access: Public
-//  Description: Analyzes a Cg parameter and decides how to
+//  Description: Analyzes a parameter and decides how to
 //               bind the parameter to some part of panda's
-//               internal state.  Updates one of the cg bind
+//               internal state.  Updates one of the bind
 //               arrays to cause the binding to occur.
 //
 //               If there is an error, this routine will append
 //               an error message onto the error messages.
 ////////////////////////////////////////////////////////////////////
 bool ShaderContext::
-compile_cg_parameter(CGparameter p, NotifyCategory *cat)
+compile_parameter(void *reference,
+                  const string   &arg_name,
+                  ShaderArgType   arg_type,
+                  ShaderArgDir    arg_direction,
+                  bool            arg_varying,
+                  NotifyCategory *arg_cat)
 {
-  _cg_report_cat = cat;
-  string pname = cgGetParameterName(p);
-  if (pname.size() == 0) return true;
-  if (pname[0] == '$') return true;
+  ShaderArgInfo p;
+  p._name       = arg_name;
+  p._type       = arg_type;
+  p._direction  = arg_direction;
+  p._varying    = arg_varying;
+  p._cat        = arg_cat;
+
+  if (p._name.size() == 0) return true;
+  if (p._name[0] == '$') return true;
   vector_string pieces;
-  tokenize(pname, pieces, "_");
+  tokenize(p._name, pieces, "_");
 
   if (pieces.size() < 2) {
-    report_cg_parameter_error(p, "invalid parameter name");
+    cp_report_error(p, "invalid parameter name");
     return false;
   }
 
   // Implement vtx parameters - the varying kind.
   
   if (pieces[0] == "vtx") {
-    if ((!errchk_cg_parameter_in(p)) ||
-        (!errchk_cg_parameter_varying(p)) ||
-        (!errchk_cg_parameter_float(p, 1, 4))) {
+    if ((!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_varying(p)) ||
+        (!cp_errchk_parameter_float(p, 1, 4))) {
       return false;
     }
     ShaderVarSpec bind;
-    bind._parameter = (void*)p;
+    bind._parameter = reference;
     if (pieces.size() == 2) {
       if (pieces[1]=="position") {
         bind._name = InternalName::get_vertex();
@@ -343,7 +326,7 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
 
   if ((pieces[0] == "mat")||(pieces[0] == "inv")||
       (pieces[0] == "tps")||(pieces[0] == "itp")) {
-    if (!errchk_cg_parameter_words(p, 2)) {
+    if (!cp_errchk_parameter_words(p, 2)) {
       return false;
     }
     string trans = pieces[0];
@@ -356,7 +339,7 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
     } else if (matrix == "modelproj") {
       tokenize("trans_model_to_apiclip", pieces, "_");
     } else {
-      report_cg_parameter_error(p,"unrecognized matrix name");
+      cp_report_error(p,"unrecognized matrix name");
       return false;
     }
     if (trans=="mat") {
@@ -388,12 +371,12 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
       (pieces[0]=="col2")||
       (pieces[0]=="col3")) {
     
-    if ((!errchk_cg_parameter_in(p)) ||
-        (!errchk_cg_parameter_uniform(p)))
+    if ((!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p)))
       return false;
     
     ShaderMatSpec bind;
-    bind._parameter = (void*)p;
+    bind._parameter = reference;
     bind._trans_dependent = false;
 
     int next = 1;
@@ -411,29 +394,29 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
     else if (pieces[0]=="col2")    bind._piece = SMP_col2;
     else if (pieces[0]=="col3")    bind._piece = SMP_col3;
     if (bind._piece == SMP_whole) {
-      if (!errchk_cg_parameter_float(p, 16, 16)) return false;
+      if (!cp_errchk_parameter_float(p, 16, 16)) return false;
     } else {
-      if (!errchk_cg_parameter_float(p, 4, 4)) return false;
+      if (!cp_errchk_parameter_float(p, 4, 4)) return false;
     }
     
     // Parse the first half of the clause.
     bool ok = true;
     if ((pieces[next]=="")||(pieces[next]=="of")||(pieces[next]=="to")){
-      report_cg_parameter_error(p, "argument missing");
+      cp_report_error(p, "argument missing");
       return false;
     } else if (pieces[next] == "world") {
       bind._opcodes.push_back(SMO_world_to_view);
       next += 1;
     } else if (pieces[next] == "model") {
-      ok &= parse_cg_trans_clause(p, bind, pieces, next, SMO_view_x_to_view, SMO_model_to_view);
+      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_x_to_view, SMO_model_to_view);
     } else if (pieces[next] == "clip") {
-      ok &= parse_cg_trans_clause(p, bind, pieces, next, SMO_clip_x_to_view, SMO_clip_to_view);
+      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_clip_x_to_view, SMO_clip_to_view);
     } else if (pieces[next] == "view") {
-      ok &= parse_cg_trans_clause(p, bind, pieces, next, SMO_view_x_to_view, SMO_identity);
+      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_x_to_view, SMO_identity);
     } else if (pieces[next] == "apiview") {
-      ok &= parse_cg_trans_clause(p, bind, pieces, next, SMO_apiview_x_to_view, SMO_apiview_to_view);
+      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_apiview_x_to_view, SMO_apiview_to_view);
     } else if (pieces[next] == "apiclip") {
-      ok &= parse_cg_trans_clause(p, bind, pieces, next, SMO_apiclip_x_to_view, SMO_apiclip_to_view);
+      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_apiclip_x_to_view, SMO_apiclip_to_view);
     } else {
       bind._opcodes.push_back(SMO_view_x_to_view);
       bind._args.push_back(InternalName::make(pieces[next]));
@@ -452,7 +435,7 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
 
     // Check for syntactic well-formed-ness.
     if (pieces[next] != "to") {
-      report_cg_parameter_error(p, "keyword 'to' expected");
+      cp_report_error(p, "keyword 'to' expected");
       return false;
     } else {
       next += 1;
@@ -460,21 +443,21 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
     
     // Parse the second half of the clause.
     if ((pieces[next]=="")||(pieces[next]=="of")||(pieces[next]=="to")){
-      report_cg_parameter_error(p, "argument missing");
+      cp_report_error(p, "argument missing");
       return false;
     } else if (pieces[next] == "world") {
       bind._opcodes.push_back(SMO_view_to_world_C);
       next += 1;
     } else if (pieces[next] == "model") {
-      ok &= parse_cg_trans_clause(p, bind, pieces, next, SMO_view_to_view_x_C, SMO_view_to_model_C);
+      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_to_view_x_C, SMO_view_to_model_C);
     } else if (pieces[next] == "clip") {
-      ok &= parse_cg_trans_clause(p, bind, pieces, next, SMO_view_to_clip_x_C, SMO_view_to_clip_C);
+      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_to_clip_x_C, SMO_view_to_clip_C);
     } else if (pieces[next] == "view") {
-      ok &= parse_cg_trans_clause(p, bind, pieces, next, SMO_view_to_view_x_C, SMO_noop);
+      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_to_view_x_C, SMO_noop);
     } else if (pieces[next] == "apiview") {
-      ok &= parse_cg_trans_clause(p, bind, pieces, next, SMO_view_to_apiview_x_C, SMO_view_to_apiview_C);
+      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_to_apiview_x_C, SMO_view_to_apiview_C);
     } else if (pieces[next] == "apiclip") {
-      ok &= parse_cg_trans_clause(p, bind, pieces, next, SMO_view_to_apiclip_x_C, SMO_view_to_apiclip_C);
+      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_to_apiclip_x_C, SMO_view_to_apiclip_C);
     } else {
       bind._opcodes.push_back(SMO_view_to_view_x_C);
       bind._args.push_back(InternalName::make(pieces[next]));
@@ -493,7 +476,7 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
     
     // Check for syntactic well-formed-ness.
     if (pieces[next] != "") {
-      report_cg_parameter_error(p, "end of line expected");
+      cp_report_error(p, "end of line expected");
       return false;
     }
     
@@ -504,32 +487,32 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
   // Keywords to access unusual parameters.
   
   if (pieces[0] == "sys") {
-    if ((!errchk_cg_parameter_words(p,2)) ||
-        (!errchk_cg_parameter_in(p)) ||
-        (!errchk_cg_parameter_uniform(p))) {
+    if ((!cp_errchk_parameter_words(p,2)) ||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))) {
       return false;
     }
     ShaderMatSpec bind;
-    bind._parameter = (void*)p;
+    bind._parameter = reference;
     bind._trans_dependent = false;
     bind._piece = SMP_row3;
     if (pieces[1] == "pixelsize") {
-      if (!errchk_cg_parameter_float(p, 2, 2)) {
+      if (!cp_errchk_parameter_float(p, 2, 2)) {
         return false;
       }
       bind._opcodes.push_back(SMO_pixel_size);
     } else if (pieces[1] == "windowsize") {
-      if (!errchk_cg_parameter_float(p, 2, 2)) {
+      if (!cp_errchk_parameter_float(p, 2, 2)) {
         return false;
       }
       bind._opcodes.push_back(SMO_window_size);
     } else if (pieces[1] == "cardcenter") {
-      if (!errchk_cg_parameter_float(p, 2, 2)) {
+      if (!cp_errchk_parameter_float(p, 2, 2)) {
         return false;
       }
       bind._opcodes.push_back(SMO_card_center);
     } else {
-      report_cg_parameter_error(p,"unknown system parameter");
+      cp_report_error(p,"unknown system parameter");
       return false;
     }
     _mat_spec.push_back(bind);
@@ -539,25 +522,25 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
   // Keywords to access textures.
   
   if (pieces[0] == "tex") {
-    if ((!errchk_cg_parameter_in(p)) ||
-        (!errchk_cg_parameter_uniform(p)) ||
-        (!errchk_cg_parameter_sampler(p)))
+    if ((!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p)) ||
+        (!cp_errchk_parameter_sampler(p)))
       return false;
     if ((pieces.size() != 2)&&(pieces.size() != 3)) {
-      report_cg_parameter_error(p, "Invalid parameter name");
+      cp_report_error(p, "Invalid parameter name");
       return false;
     }
     ShaderTexSpec bind;
-    bind._parameter = (void*)p;
+    bind._parameter = reference;
     bind._name = 0;
     bind._stage = atoi(pieces[1].c_str());
-    switch (cgGetParameterType(p)) {
-    case CG_SAMPLER1D:   bind._desired_type = Texture::TT_1d_texture; break;
-    case CG_SAMPLER2D:   bind._desired_type = Texture::TT_2d_texture; break;
-    case CG_SAMPLER3D:   bind._desired_type = Texture::TT_3d_texture; break;
-    case CG_SAMPLERCUBE: bind._desired_type = Texture::TT_cube_map; break;
+    switch (p._type) {
+    case SAT_sampler1d:   bind._desired_type = Texture::TT_1d_texture; break;
+    case SAT_sampler2d:   bind._desired_type = Texture::TT_2d_texture; break;
+    case SAT_sampler3d:   bind._desired_type = Texture::TT_3d_texture; break;
+    case SAT_samplercube: bind._desired_type = Texture::TT_cube_map; break;
     default:
-      report_cg_parameter_error(p, "Invalid type for a tex-parameter");
+      cp_report_error(p, "Invalid type for a tex-parameter");
       return false;
     }
     if (pieces.size()==3) {
@@ -570,14 +553,14 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
   // Keywords to access constants.
 
   if (pieces[0] == "k") {
-    if ((!errchk_cg_parameter_words(p,2)) ||
-        (!errchk_cg_parameter_in(p)) ||
-        (!errchk_cg_parameter_uniform(p)))
+    if ((!cp_errchk_parameter_words(p,2)) ||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p)))
       return false;
-    switch (cgGetParameterType(p)) {
-    case CG_FLOAT4: {
+    switch (p._type) {
+    case SAT_float4: {
       ShaderMatSpec bind;
-      bind._parameter = (void*)p;
+      bind._parameter = reference;
       bind._trans_dependent = false;
       bind._piece = SMP_row3;
       bind._opcodes.push_back(SMO_vec_constant_x);
@@ -585,9 +568,9 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
       _mat_spec.push_back(bind);
       break;
     }
-    case CG_FLOAT4x4: {
+    case SAT_float4x4: {
       ShaderMatSpec bind;
-      bind._parameter = (void*)p;
+      bind._parameter = reference;
       bind._trans_dependent = false;
       bind._piece = SMP_whole;
       bind._opcodes.push_back(SMO_mat_constant_x);
@@ -595,40 +578,40 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
       _mat_spec.push_back(bind);
       break;
     }
-    case CG_SAMPLER1D: {
+    case SAT_sampler1d: {
       ShaderTexSpec bind;
-      bind._parameter = (void*)p;
+      bind._parameter = reference;
       bind._name = InternalName::make(pieces[1]);
       bind._desired_type=Texture::TT_1d_texture;
       _tex_spec.push_back(bind);
       break;
     }
-    case CG_SAMPLER2D: {
+    case SAT_sampler2d: {
       ShaderTexSpec bind;
-      bind._parameter = (void*)p;
+      bind._parameter = reference;
       bind._name = InternalName::make(pieces[1]);
       bind._desired_type=Texture::TT_2d_texture;
       _tex_spec.push_back(bind);
       break;
     }
-    case CG_SAMPLER3D: {
+    case SAT_sampler3d: {
       ShaderTexSpec bind;
-      bind._parameter = (void*)p;
+      bind._parameter = reference;
       bind._name = InternalName::make(pieces[1]);
       bind._desired_type=Texture::TT_3d_texture;
       _tex_spec.push_back(bind);
       break;
     }
-    case CG_SAMPLERCUBE: {
+    case SAT_samplercube: {
       ShaderTexSpec bind;
-      bind._parameter = (void*)p;
+      bind._parameter = reference;
       bind._name = InternalName::make(pieces[1]);
       bind._desired_type = Texture::TT_cube_map;
       _tex_spec.push_back(bind);
       break;
     }
     default:
-      report_cg_parameter_error(p, "Invalid type for a k-parameter");
+      cp_report_error(p, "Invalid type for a k-parameter");
       return false;
     }
     return true;
@@ -644,8 +627,8 @@ compile_cg_parameter(CGparameter p, NotifyCategory *cat)
     return true; // Cg handles this automatically.
   }
 
-  report_cg_parameter_error(p, "unrecognized parameter name");
+  cp_report_error(p, "unrecognized parameter name");
   return false;
 }
 
-#endif // HAVE_CG
+

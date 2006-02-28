@@ -21,6 +21,42 @@
 TypeHandle CLP(ShaderContext)::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: cg_type_to_panda_type
+//       Access: Public, Static
+//  Description: convert a cg shader-arg type to a panda shader-arg type.
+////////////////////////////////////////////////////////////////////
+static ShaderContext::ShaderArgType
+cg_type_to_panda_type(CGtype n) {
+  switch (n) {
+  case CG_FLOAT1:      return ShaderContext::SAT_float1;
+  case CG_FLOAT2:      return ShaderContext::SAT_float2;
+  case CG_FLOAT3:      return ShaderContext::SAT_float3;
+  case CG_FLOAT4:      return ShaderContext::SAT_float4;
+  case CG_FLOAT4x4:    return ShaderContext::SAT_float4x4;
+  case CG_SAMPLER1D:   return ShaderContext::SAT_sampler1d;
+  case CG_SAMPLER2D:   return ShaderContext::SAT_sampler2d;
+  case CG_SAMPLER3D:   return ShaderContext::SAT_sampler3d;
+  case CG_SAMPLERCUBE: return ShaderContext::SAT_samplercube;
+  default:           return ShaderContext::SAT_unknown;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: cg_dir_to_panda_dir
+//       Access: Public, Static
+//  Description: convert a cg shader-arg type to a panda shader-arg type.
+////////////////////////////////////////////////////////////////////
+static ShaderContext::ShaderArgDir
+cg_dir_to_panda_dir(CGenum n) {
+  switch (n) {
+  case CG_IN:    return ShaderContext::SAD_in;
+  case CG_OUT:   return ShaderContext::SAD_out;
+  case CG_INOUT: return ShaderContext::SAD_inout;
+  default:       return ShaderContext::SAD_unknown;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::Constructor
 //       Access: Public
 //  Description: xyz
@@ -83,6 +119,35 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
 #endif
 
   GLCAT.error() << s->get_name() << ": unrecognized shader language " << header << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::report_cg_compile_errors
+//       Access: Public, Static
+//  Description: Used only after a Cg compile command, to print
+//               out any error messages that may have occurred
+//               during the Cg shader compilation.  The 'file'
+//               is the name of the file containing the Cg code.
+////////////////////////////////////////////////////////////////////
+void CLP(ShaderContext)::
+report_cg_compile_errors(const string &file, CGcontext ctx)
+{
+  CGerror err = cgGetError();
+  if (err != CG_NO_ERROR) {
+    if (err == CG_COMPILER_ERROR) {
+      string listing = cgGetLastListing(ctx);
+      vector_string errlines;
+      tokenize(listing, errlines, "\n");
+      for (int i=0; i<(int)errlines.size(); i++) {
+        string line = trim(errlines[i]);
+        if (line != "") {
+          GLCAT.error() << file << " " << errlines[i] << "\n";
+        }
+      }
+    } else {
+      GLCAT.error() << file << ": " << cgGetErrorString(err) << "\n";
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,13 +229,13 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
   _cg_program[0] =
     cgCreateProgram(_cg_context, CG_SOURCE, s->_text.c_str(),
                     _cg_profile[0], "vshader", (const char**)NULL);
-  report_cg_compile_errors(s->get_name(), _cg_context, GLCAT.get_safe_ptr());
+  report_cg_compile_errors(s->get_name(), _cg_context);
 
   cgGetError();
   _cg_program[1] =
     cgCreateProgram(_cg_context, CG_SOURCE, s->_text.c_str(),
                     _cg_profile[1], "fshader", (const char**)NULL);
-  report_cg_compile_errors(s->get_name(), _cg_context, GLCAT.get_safe_ptr());
+  report_cg_compile_errors(s->get_name(), _cg_context);
 
   if ((_cg_program[SHADER_type_vert]==0)||(_cg_program[SHADER_type_frag]==0)) {
     release_resources();
@@ -251,7 +316,7 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
       _cg_program[1] =
         cgCreateProgram(_cg_context, CG_OBJECT, result.c_str(),
                         _cg_profile[1], "fshader", (const char**)NULL);
-      report_cg_compile_errors(s->get_name(), _cg_context, GLCAT.get_safe_ptr());
+      report_cg_compile_errors(s->get_name(), _cg_context);
       if (_cg_program[SHADER_type_frag]==0) {
         release_resources();
         return false;
@@ -266,7 +331,15 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
     for (parameter = cgGetFirstLeafParameter(_cg_program[progindex],CG_PROGRAM);
          parameter != 0;
          parameter = cgGetNextLeafParameter(parameter)) {
-      success &= compile_cg_parameter(parameter, GLCAT.get_safe_ptr());
+      CGenum vbl = cgGetParameterVariability(parameter);
+      if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)) {
+        success &= compile_parameter(parameter, 
+                                     cgGetParameterName(parameter),
+                                     cg_type_to_panda_type(cgGetParameterType(parameter)),
+                                     cg_dir_to_panda_dir(cgGetParameterDirection(parameter)),
+                                     (vbl == CG_VARYING),
+                                     GLCAT.get_safe_ptr());
+      }
     }
     if ((progindex == SHADER_type_frag) && (nvtx != _var_spec.size())) {
       GLCAT.error() << "Cannot use vtx parameters in an fshader\n";

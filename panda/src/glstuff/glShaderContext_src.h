@@ -56,10 +56,10 @@ private:
   CGprofile _cg_profile[2];
   CGprogram _cg_program[2];
 
+  void report_cg_compile_errors(const string &file, CGcontext ctx);
   bool try_cg_compile(ShaderExpansion *s, GSG *gsg);
   void suggest_cg_profile(const string &vpro, const string &fpro);
   CGprofile parse_cg_profile(const string &id, bool vertex);
-  void print_cg_compile_errors(const string &file, CGcontext ctx);
 #endif
   
   void release_resources(void);
