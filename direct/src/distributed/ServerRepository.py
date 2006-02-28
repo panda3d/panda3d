@@ -212,7 +212,7 @@ class ServerRepository:
 
         if type == CLIENT_DISCONNECT:
             self.handleClientDisconnect(datagram.getConnection())
-        elif type == CLIENT_SET_ZONE:
+        elif type == CLIENT_SET_ZONE_CMU:
             self.handleSetZone(dgi, datagram.getConnection())
         elif type == CLIENT_REMOVE_ZONE:
             self.handleRemoveZone(dgi, datagram.getConnection())
@@ -270,12 +270,13 @@ class ServerRepository:
               "Received update for field %s on object %s; no such field for class %s." % (
               fieldid, doid, dclass.getName()))
           return
-        if (dcfield.isBroadcast()):
-          if (dcfield.isP2p()):
+        if (dcfield.hasKeyword('broadcast')):
+
+          if (dcfield.hasKeyword('p2p')):
             self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, 0)
           else:
             self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, connection)
-        elif (dcfield.isP2p()):
+        elif (dcfield.hasKeyword('p2p')):
           doidbase = (doid / self.DOIDrange) * self.DOIDrange
           self.cw.send(datagram, self.DOIDtoClient[doidbase])
         else:
@@ -352,7 +353,7 @@ class ServerRepository:
             del self.ClientDOIDbase[connection]
             del self.ClientObjects[connection]
 
-    #  client told us it's zone(s), store information
+    #  client told us its zone(s), store information
     def handleSetZone(self, dgi, connection):
         while dgi.getRemainingSize() > 0:
             ZoneID = dgi.getUint32()

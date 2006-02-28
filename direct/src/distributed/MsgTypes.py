@@ -29,6 +29,7 @@ CLIENT_OBJECT_DISABLE_OWNER =                26
 CLIENT_OBJECT_DISABLE_OWNER_RESP =           26
 CLIENT_OBJECT_DELETE =                       27
 CLIENT_OBJECT_DELETE_RESP =                  27
+CLIENT_SET_ZONE_CMU =                        29
 CLIENT_REMOVE_ZONE =                         30
 CLIENT_SET_AVATAR =                          32
 CLIENT_CREATE_OBJECT_REQUIRED =              34

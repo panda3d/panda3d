@@ -139,6 +139,10 @@ class ConnectionRepository(
         self.dclassesByNumber = {}
         self.hashVal = 0
 
+        if isinstance(dcFileNames, types.StringTypes):
+            # If we were given a single string, make it a list.
+            dcFileNames = [dcFileNames]
+
         dcImports = {}
         if dcFileNames == None:
             readResult = dcFile.readAll()
