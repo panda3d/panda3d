@@ -264,11 +264,16 @@ typedef_decl:
         ;
 
 keyword_decl:
-        KW_KEYWORD IDENTIFIER
+        KW_KEYWORD keyword_decl_list
+	;
+
+keyword_decl_list:
+	empty
+        | keyword_decl_list IDENTIFIER
 {
   dc_file->add_keyword($2);
 }
-        | KW_KEYWORD KEYWORD
+        | keyword_decl_list KEYWORD
 {
   // This keyword has already been defined.  But since we are now
   // explicitly defining it, clear its bitmask, so that we will have a
