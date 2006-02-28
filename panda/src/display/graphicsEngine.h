@@ -253,6 +253,8 @@ private:
   static PStatCollector _wait_pcollector;
   static PStatCollector _cycle_pcollector;
   static PStatCollector _app_pcollector;
+  static PStatCollector _render_frame_pcollector;
+  static PStatCollector _do_frame_pcollector;
   static PStatCollector _yield_pcollector;
   static PStatCollector _cull_pcollector;
   static PStatCollector _draw_pcollector;

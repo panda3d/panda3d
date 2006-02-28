@@ -47,7 +47,9 @@
 
 PStatCollector GraphicsEngine::_wait_pcollector("Wait");
 PStatCollector GraphicsEngine::_cycle_pcollector("App:Cycle");
-PStatCollector GraphicsEngine::_app_pcollector("App");
+PStatCollector GraphicsEngine::_app_pcollector("App:Show code");
+PStatCollector GraphicsEngine::_render_frame_pcollector("App:render_frame");
+PStatCollector GraphicsEngine::_do_frame_pcollector("*:do_frame");
 PStatCollector GraphicsEngine::_yield_pcollector("App:Yield");
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
 PStatCollector GraphicsEngine::_draw_pcollector("Draw");
@@ -466,6 +468,7 @@ render_frame() {
   // Anything that happens outside of GraphicsEngine::render_frame()
   // is deemed to be App.
 #ifdef DO_PSTATS
+  _render_frame_pcollector.start();
   if (_app_pcollector.is_started()) {
     _app_pcollector.stop();
   }
@@ -611,6 +614,7 @@ render_frame() {
   // Anything that happens outside of GraphicsEngine::render_frame()
   // is deemed to be App.
   _app_pcollector.start();
+  _render_frame_pcollector.stop();
 }
 
 
@@ -1695,6 +1699,7 @@ resort_windows() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
 do_frame(GraphicsEngine *engine) {
+  PStatTimer timer(engine->_do_frame_pcollector);
   MutexHolder holder(_wl_lock);
 
   do_callbacks(CB_pre_frame);
