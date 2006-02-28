@@ -296,10 +296,12 @@ collision_tested(const CollisionEntry &entry, bool detected) {
 
   NodePath node_path = entry.get_into_node_path();
   CPT(TransformState) net_transform = node_path.get_net_transform();
+  const CollisionSolid *solid = entry.get_into();
+  nassertv(solid != (CollisionSolid *)NULL);
 
   VizInfo &viz_info = _data[net_transform];
   if (detected) {
-    viz_info._solids[entry.get_into()]._detected_count++;
+    viz_info._solids[solid]._detected_count++;
 
     if (entry.has_surface_point()) {
       CollisionPoint p;
@@ -309,7 +311,7 @@ collision_tested(const CollisionEntry &entry, bool detected) {
     }
 
   } else {
-    viz_info._solids[entry.get_into()]._missed_count++;
+    viz_info._solids[solid]._missed_count++;
   }
 }
 

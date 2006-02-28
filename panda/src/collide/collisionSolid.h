@@ -27,6 +27,8 @@
 #include "pointerTo.h"
 #include "renderState.h"
 #include "geomNode.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 
 class CollisionHandler;
 class CollisionEntry;
@@ -129,6 +131,8 @@ private:
     F_internal_bounds_stale     = 0x10,
   };
   int _flags;
+
+  Mutex _lock;
 
 public:
   virtual void write_datagram(BamWriter* manager, Datagram &me);

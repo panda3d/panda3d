@@ -771,6 +771,7 @@ fill_viz_geom() {
     collide_cat.debug()
       << "Recomputing viz for " << *this << "\n";
   }
+  nassertv(_viz_geom != (GeomNode *)NULL && _bounds_viz_geom != (GeomNode *)NULL);
   draw_polygon(_viz_geom, _bounds_viz_geom, _points);
 }
 

@@ -76,6 +76,7 @@ CollisionSolid::
 ////////////////////////////////////////////////////////////////////
 CPT(BoundingVolume) CollisionSolid::
 get_bounds() const {
+  MutexHolder holder(_lock);
   if (_flags & F_internal_bounds_stale) {
     ((CollisionSolid *)this)->_internal_bounds = compute_internal_bounds();
     ((CollisionSolid *)this)->_flags &= ~F_internal_bounds_stale;
@@ -105,13 +106,13 @@ test_intersection(const CollisionEntry &) const {
 ////////////////////////////////////////////////////////////////////
 void CollisionSolid::
 xform(const LMatrix4f &mat) {
+  MutexHolder holder(_lock);
   if ((_flags & F_effective_normal) != 0) {
     _effective_normal = _effective_normal * mat;
     _effective_normal.normalize();
   }
 
-  mark_viz_stale();
-  mark_internal_bounds_stale();
+  _flags |= F_viz_geom_stale | F_internal_bounds_stale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,6 +125,7 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) CollisionSolid::
 get_viz(const CullTraverser *, const CullTraverserData &, bool bounds_only) const {
+  MutexHolder holder(_lock);
   if ((_flags & F_viz_geom_stale) != 0) {
     if (_viz_geom == (GeomNode *)NULL) {
       ((CollisionSolid *)this)->_viz_geom = new GeomNode("viz");
@@ -310,6 +312,7 @@ void CollisionSolid::
 write_datagram(BamWriter *, Datagram &me) {
   // For now, we need only 8 bits of flags.  If we need to expand this
   // later, we will have to increase the bam version.
+  MutexHolder holder(_lock);
   me.add_uint8(_flags);
   if ((_flags & F_effective_normal) != 0) {
     _effective_normal.write_datagram(me);
