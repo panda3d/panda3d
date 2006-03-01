@@ -28,6 +28,7 @@
 #include "workingNodePath.h"
 #include "pointerTo.h"
 #include "plist.h"
+#include "pStatCollector.h"
 
 class CollisionSolid;
 class CollisionNode;
@@ -100,6 +101,8 @@ private:
   typedef PTA(CPT(GeometricBoundingVolume)) BoundingVolumes;
   BoundingVolumes _local_bounds;
   BoundingVolumes _parent_bounds;
+
+  static PStatCollector _node_volume_pcollector;
 };
 
 #include "collisionLevelState.I"

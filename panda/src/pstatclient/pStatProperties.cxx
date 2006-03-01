@@ -214,6 +214,8 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "RenderStates:Unused",              { 0.2, 0.2, 0.2 } },
   { 1, "PipelineCyclers",                  { 0.5, 0.5, 1.0 },  "", 50000 },
   { 1, "Dirty PipelineCyclers",            { 0.2, 0.2, 0.2 },  "", 5000 },
+  { 1, "Collision Volumes",                { 1.0, 0.8, 0.5 },  "", 500 },
+  { 1, "Collision Tests",                  { 0.5, 0.8, 1.0 },  "", 100 },
   { 0, NULL }
 };
 

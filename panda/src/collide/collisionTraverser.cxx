@@ -20,6 +20,7 @@
 #include "collisionNode.h"
 #include "collisionEntry.h"
 #include "collisionPolygon.h"
+#include "collisionGeom.h"
 #include "collisionRecorder.h"
 #include "collisionVisualizer.h"
 #include "config_collide.h"
@@ -37,6 +38,10 @@
 
 PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 PStatCollector CollisionTraverser::_reset_prev_pcollector("App:Collisions:Reset");
+
+PStatCollector CollisionTraverser::_cnode_volume_pcollector("Collision Volumes:CollisionNode");
+PStatCollector CollisionTraverser::_gnode_volume_pcollector("Collision Volumes:GeomNode");
+PStatCollector CollisionTraverser::_geom_volume_pcollector("Collision Volumes:Geom");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::Constructor
@@ -642,6 +647,7 @@ compare_collider_to_node(CollisionEntry &entry,
   if (from_parent_gbv != (GeometricBoundingVolume *)NULL &&
       into_node_gbv != (GeometricBoundingVolume *)NULL) {
     within_node_bounds = (into_node_gbv->contains(from_parent_gbv) != 0);
+    _cnode_volume_pcollector.add_level(1);
   }
 
   if (within_node_bounds) {
@@ -683,6 +689,7 @@ compare_collider_to_geom_node(CollisionEntry &entry,
   if (from_parent_gbv != (GeometricBoundingVolume *)NULL &&
       into_node_gbv != (GeometricBoundingVolume *)NULL) {
     within_node_bounds = (into_node_gbv->contains(from_parent_gbv) != 0);
+    _gnode_volume_pcollector.add_level(1);
   }
 
   if (within_node_bounds) {
@@ -724,6 +731,9 @@ compare_collider_to_solid(CollisionEntry &entry,
   if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
       solid_gbv != (GeometricBoundingVolume *)NULL) {
     within_solid_bounds = (solid_gbv->contains(from_node_gbv) != 0);
+#ifdef DO_PSTATS
+    ((CollisionSolid *)entry.get_into())->get_volume_pcollector().add_level(1);
+#endif  // DO_PSTATS
   }
   if (within_solid_bounds) {
     Colliders::const_iterator ci;
@@ -746,6 +756,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
   if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
       geom_gbv != (GeometricBoundingVolume *)NULL) {
     within_geom_bounds = (geom_gbv->contains(from_node_gbv) != 0);
+    _geom_volume_pcollector.add_level(1);
   }
   if (within_geom_bounds) {
     Colliders::const_iterator ci;
@@ -765,18 +776,32 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
         nassertv((num_vertices % 3) == 0);
         
         for (int vi = 0; vi < num_vertices; vi += 3) {
+          Vertexf v[3];
+
           vertex.set_row(tris->get_vertex(vi));
-          Vertexf v0 = vertex.get_data3f();
+          v[0] = vertex.get_data3f();
           vertex.set_row(tris->get_vertex(vi + 1));
-          Vertexf v1 = vertex.get_data3f();
+          v[1] = vertex.get_data3f();
           vertex.set_row(tris->get_vertex(vi + 2));
-          Vertexf v2 = vertex.get_data3f();
+          v[2] = vertex.get_data3f();
           
-          // Generate a temporary CollisionPolygon on the fly for
-          // each triangle in the Geom.
-          if (CollisionPolygon::verify_points(v0, v1, v2)) {
-            entry._into = new CollisionPolygon(v0, v1, v2);
-            entry.test_intersection((*ci).second, this);
+          // Generate a temporary CollisionGeom on the fly for each
+          // triangle in the Geom.
+          if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
+            bool within_solid_bounds = true;
+            if (from_node_gbv != (GeometricBoundingVolume *)NULL) {
+              PT(BoundingSphere) sphere = new BoundingSphere;
+              sphere->around(v, v + 3);
+              within_solid_bounds = (sphere->contains(from_node_gbv) != 0);
+#ifdef DO_PSTATS
+              CollisionGeom::_volume_pcollector.add_level(1);
+#endif  // DO_PSTATS
+            }
+            if (within_solid_bounds) {
+              PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
+              entry._into = cgeom;
+              entry.test_intersection((*ci).second, this);
+            }
           }
         }
       }

@@ -135,6 +135,11 @@ private:
   // Statistics
   static PStatCollector _collisions_pcollector;
   static PStatCollector _reset_prev_pcollector;
+
+  static PStatCollector _cnode_volume_pcollector;
+  static PStatCollector _gnode_volume_pcollector;
+  static PStatCollector _geom_volume_pcollector;
+
   PStatCollector _this_pcollector;
   typedef pvector<PStatCollector> PassCollectors;
   PassCollectors _pass_collectors;

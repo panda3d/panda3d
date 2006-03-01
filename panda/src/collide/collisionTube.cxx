@@ -38,8 +38,9 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 
+PStatCollector CollisionTube::_volume_pcollector("Collision Volumes:CollisionTube");
+PStatCollector CollisionTube::_test_pcollector("Collision Tests:CollisionTube");
 TypeHandle CollisionTube::_type_handle;
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTube::make_copy
@@ -81,6 +82,30 @@ xform(const LMatrix4f &mat) {
 LPoint3f CollisionTube::
 get_collision_origin() const {
   return get_point_a();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTube::get_volume_pcollector
+//       Access: Public, Virtual
+//  Description: Returns a PStatCollector that is used to count the
+//               number of bounding volume tests made against a solid
+//               of this type in a given frame.
+////////////////////////////////////////////////////////////////////
+PStatCollector CollisionTube::
+get_volume_pcollector() {
+  return _volume_pcollector;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTube::get_test_pcollector
+//       Access: Public, Virtual
+//  Description: Returns a PStatCollector that is used to count the
+//               number of intersection tests made against a solid
+//               of this type in a given frame.
+////////////////////////////////////////////////////////////////////
+PStatCollector CollisionTube::
+get_test_pcollector() {
+  return _test_pcollector;
 }
 
 ////////////////////////////////////////////////////////////////////

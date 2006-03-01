@@ -1,5 +1,6 @@
 #include "config_collide.cxx"
 #include "collisionEntry.cxx"
+#include "collisionGeom.cxx"
 #include "collisionHandler.cxx"
 #include "collisionHandlerEvent.cxx"
 #include "collisionHandlerFloor.cxx"

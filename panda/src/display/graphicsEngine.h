@@ -269,6 +269,25 @@ private:
   static PStatCollector _cyclers_pcollector;
   static PStatCollector _dirty_cyclers_pcollector;
 
+  static PStatCollector _cnode_volume_pcollector;
+  static PStatCollector _gnode_volume_pcollector;
+  static PStatCollector _geom_volume_pcollector;
+  static PStatCollector _node_volume_pcollector;
+  static PStatCollector _volume_pcollector;
+  static PStatCollector _test_pcollector;
+  static PStatCollector _volume_polygon_pcollector;
+  static PStatCollector _test_polygon_pcollector;
+  static PStatCollector _volume_plane_pcollector;
+  static PStatCollector _test_plane_pcollector;
+  static PStatCollector _volume_sphere_pcollector;
+  static PStatCollector _test_sphere_pcollector;
+  static PStatCollector _volume_tube_pcollector;
+  static PStatCollector _test_tube_pcollector;
+  static PStatCollector _volume_inv_sphere_pcollector;
+  static PStatCollector _test_inv_sphere_pcollector;
+  static PStatCollector _volume_geom_pcollector;
+  static PStatCollector _test_geom_pcollector;
+
   friend class WindowRenderer;
   friend class GraphicsOutput;
 };

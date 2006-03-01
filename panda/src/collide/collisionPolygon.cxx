@@ -44,9 +44,9 @@
 
 #include <algorithm>
 
+PStatCollector CollisionPolygon::_volume_pcollector("Collision Volumes:CollisionPolygon");
+PStatCollector CollisionPolygon::_test_pcollector("Collision Tests:CollisionPolygon");
 TypeHandle CollisionPolygon::_type_handle;
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: is_right
@@ -320,6 +320,30 @@ get_viz(const CullTraverser *trav, const CullTraverserData &data,
   } else {
     return viz_geom_node.p();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::get_volume_pcollector
+//       Access: Public, Virtual
+//  Description: Returns a PStatCollector that is used to count the
+//               number of bounding volume tests made against a solid
+//               of this type in a given frame.
+////////////////////////////////////////////////////////////////////
+PStatCollector CollisionPolygon::
+get_volume_pcollector() {
+  return _volume_pcollector;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::get_test_pcollector
+//       Access: Public, Virtual
+//  Description: Returns a PStatCollector that is used to count the
+//               number of intersection tests made against a solid
+//               of this type in a given frame.
+////////////////////////////////////////////////////////////////////
+PStatCollector CollisionPolygon::
+get_test_pcollector() {
+  return _test_pcollector;
 }
 
 ////////////////////////////////////////////////////////////////////

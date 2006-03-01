@@ -64,6 +64,27 @@ PStatCollector GraphicsEngine::_render_states_unused_pcollector("RenderStates:Un
 PStatCollector GraphicsEngine::_cyclers_pcollector("PipelineCyclers");
 PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("Dirty PipelineCyclers");
 
+// These are counted independently by the collision system; we
+// redefine them here so we can reset them at each frame.
+PStatCollector GraphicsEngine::_cnode_volume_pcollector("Collision Volumes:CollisionNode");
+PStatCollector GraphicsEngine::_gnode_volume_pcollector("Collision Volumes:GeomNode");
+PStatCollector GraphicsEngine::_geom_volume_pcollector("Collision Volumes:Geom");
+PStatCollector GraphicsEngine::_node_volume_pcollector("Collision Volumes:PandaNode");
+PStatCollector GraphicsEngine::_volume_pcollector("Collision Volumes:CollisionSolid");
+PStatCollector GraphicsEngine::_test_pcollector("Collision Tests:CollisionSolid");
+PStatCollector GraphicsEngine::_volume_polygon_pcollector("Collision Volumes:CollisionPolygon");
+PStatCollector GraphicsEngine::_test_polygon_pcollector("Collision Tests:CollisionPolygon");
+PStatCollector GraphicsEngine::_volume_plane_pcollector("Collision Volumes:CollisionPlane");
+PStatCollector GraphicsEngine::_test_plane_pcollector("Collision Tests:CollisionPlane");
+PStatCollector GraphicsEngine::_volume_sphere_pcollector("Collision Volumes:CollisionSphere");
+PStatCollector GraphicsEngine::_test_sphere_pcollector("Collision Tests:CollisionSphere");
+PStatCollector GraphicsEngine::_volume_tube_pcollector("Collision Volumes:CollisionTube");
+PStatCollector GraphicsEngine::_test_tube_pcollector("Collision Tests:CollisionTube");
+PStatCollector GraphicsEngine::_volume_inv_sphere_pcollector("Collision Volumes:CollisionInvSphere");
+PStatCollector GraphicsEngine::_test_inv_sphere_pcollector("Collision Tests:CollisionInvSphere");
+PStatCollector GraphicsEngine::_volume_geom_pcollector("Collision Volumes:CollisionGeom");
+PStatCollector GraphicsEngine::_test_geom_pcollector("Collision Tests:CollisionGeom");
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::Constructor
 //       Access: Published
@@ -568,6 +589,8 @@ render_frame() {
   if (global_clock->check_errors()) {
     throw_event("clock_error");
   }
+
+#ifdef DO_PSTATS
   PStatClient::main_tick();
 
   // Reset our pcollectors that track data across the frame.
@@ -585,6 +608,27 @@ render_frame() {
     _transform_states_unused_pcollector.set_level(TransformState::get_num_unused_states());
     _render_states_unused_pcollector.set_level(RenderState::get_num_unused_states());
   }
+
+  _cnode_volume_pcollector.clear_level();
+  _gnode_volume_pcollector.clear_level();
+  _geom_volume_pcollector.clear_level();
+  _node_volume_pcollector.clear_level();
+  _volume_pcollector.clear_level();
+  _test_pcollector.clear_level();
+  _volume_polygon_pcollector.clear_level();
+  _test_polygon_pcollector.clear_level();
+  _volume_plane_pcollector.clear_level();
+  _test_plane_pcollector.clear_level();
+  _volume_sphere_pcollector.clear_level();
+  _test_sphere_pcollector.clear_level();
+  _volume_tube_pcollector.clear_level();
+  _test_tube_pcollector.clear_level();
+  _volume_inv_sphere_pcollector.clear_level();
+  _test_inv_sphere_pcollector.clear_level();
+  _volume_geom_pcollector.clear_level();
+  _test_geom_pcollector.clear_level();
+
+#endif  // DO_PSTATS
 
   // Now signal all of our threads to begin their next frame.
   Threads::const_iterator ti;

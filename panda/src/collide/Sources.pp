@@ -11,6 +11,7 @@
 
   #define SOURCES \
     collisionEntry.I collisionEntry.h \
+    collisionGeom.I collisionGeom.h \
     collisionHandler.h  \
     collisionHandlerEvent.I collisionHandlerEvent.h  \
     collisionHandlerFloor.I collisionHandlerFloor.h  \
@@ -36,6 +37,7 @@
     
  #define INCLUDED_SOURCES \
     collisionEntry.cxx \
+    collisionGeom.cxx \
     collisionHandler.cxx \
     collisionHandlerEvent.cxx  \
     collisionHandlerFloor.cxx \
@@ -61,6 +63,7 @@
 
   #define INSTALL_HEADERS \
     collisionEntry.I collisionEntry.h \
+    collisionGeom.I collisionGeom.h \
     collisionHandler.h \
     collisionHandlerEvent.I collisionHandlerEvent.h \
     collisionHandlerFloor.I collisionHandlerFloor.h \

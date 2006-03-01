@@ -49,6 +49,9 @@ public:
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
 
+  virtual PStatCollector get_volume_pcollector();
+  virtual PStatCollector get_test_pcollector();
+
   virtual void output(ostream &out) const;
 
 PUBLISHED:
@@ -103,6 +106,9 @@ private:
   LMatrix4f _mat;
   LMatrix4f _inv_mat;
   float _length;
+
+  static PStatCollector _volume_pcollector;
+  static PStatCollector _test_pcollector;
 
 public:
   static void register_with_read_factory();

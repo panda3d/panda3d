@@ -1,0 +1,79 @@
+// Filename: collisionGeom.h
+// Created by:  drose (01Mar06)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef COLLISIONGEOM_H
+#define COLLISIONGEOM_H
+
+#include "pandabase.h"
+
+#include "collisionPolygon.h"
+
+////////////////////////////////////////////////////////////////////
+//       Class : CollisionGeom
+// Description : A special CollisionPolygon created just for the
+//               purpose of detecting collision against geometry.
+//               This kind of object does not have any persistance in
+//               the scene graph; it is created on-the-fly.
+//
+//               You should not attempt to create one of these
+//               directly; it is created only by the
+//               CollisionTraverser, as needed.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA CollisionGeom : public CollisionPolygon {
+private:
+  INLINE CollisionGeom(const LVecBase3f &a, const LVecBase3f &b,
+                       const LVecBase3f &c);
+  INLINE CollisionGeom(const CollisionGeom &copy);
+
+public:
+  virtual CollisionSolid *make_copy();
+
+  virtual PStatCollector get_volume_pcollector();
+  virtual PStatCollector get_test_pcollector();
+
+  virtual void output(ostream &out) const;
+
+private:
+  static PStatCollector _volume_pcollector;
+  static PStatCollector _test_pcollector;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    CollisionPolygon::init_type();
+    register_type(_type_handle, "CollisionGeom",
+                  CollisionPolygon::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
+
+  friend class CollisionTraverser;
+};
+
+#include "collisionGeom.I"
+
+#endif
+
+

@@ -65,6 +65,9 @@ public:
                                 const CullTraverserData &data,
                                 bool bounds_only) const;
 
+  virtual PStatCollector get_volume_pcollector();
+  virtual PStatCollector get_test_pcollector();
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
@@ -117,6 +120,9 @@ private:
 private:
   Points _points;
   LMatrix4f _to_2d_mat;
+
+  static PStatCollector _volume_pcollector;
+  static PStatCollector _test_pcollector;
 
 public:
   static void register_with_read_factory();

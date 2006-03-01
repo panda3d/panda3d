@@ -36,6 +36,8 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 
+PStatCollector CollisionSphere::_volume_pcollector("Collision Volumes:CollisionSphere");
+PStatCollector CollisionSphere::_test_pcollector("Collision Tests:CollisionSphere");
 TypeHandle CollisionSphere::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -86,6 +88,30 @@ xform(const LMatrix4f &mat) {
 LPoint3f CollisionSphere::
 get_collision_origin() const {
   return get_center();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSphere::get_volume_pcollector
+//       Access: Public, Virtual
+//  Description: Returns a PStatCollector that is used to count the
+//               number of bounding volume tests made against a solid
+//               of this type in a given frame.
+////////////////////////////////////////////////////////////////////
+PStatCollector CollisionSphere::
+get_volume_pcollector() {
+  return _volume_pcollector;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSphere::get_test_pcollector
+//       Access: Public, Virtual
+//  Description: Returns a PStatCollector that is used to count the
+//               number of intersection tests made against a solid
+//               of this type in a given frame.
+////////////////////////////////////////////////////////////////////
+PStatCollector CollisionSphere::
+get_test_pcollector() {
+  return _test_pcollector;
 }
 
 ////////////////////////////////////////////////////////////////////

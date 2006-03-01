@@ -20,6 +20,8 @@
 #include "collisionSolid.h"
 #include "dcast.h"
 
+PStatCollector CollisionLevelState::_node_volume_pcollector("Collision Volumes:PandaNode");
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::clear
 //       Access: Public
@@ -141,6 +143,7 @@ any_in_bounds() {
             get_local_bound(c);
           if (col_gbv != (GeometricBoundingVolume *)NULL) {
             is_in = (node_gbv->contains(col_gbv) != 0);
+            _node_volume_pcollector.add_level(1);
 
 #ifndef NDEBUG
             if (collide_cat.is_spam()) {

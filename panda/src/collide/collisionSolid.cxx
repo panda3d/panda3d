@@ -34,6 +34,8 @@
 #include "transparencyAttrib.h"
 #include "geomNode.h"
 
+PStatCollector CollisionSolid::_volume_pcollector("Collision Volumes:CollisionSolid");
+PStatCollector CollisionSolid::_test_pcollector("Collision Tests:CollisionSolid");
 TypeHandle CollisionSolid::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -143,6 +145,30 @@ get_viz(const CullTraverser *, const CullTraverserData &, bool bounds_only) cons
   } else {
     return _viz_geom.p();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::get_volume_pcollector
+//       Access: Public, Virtual
+//  Description: Returns a PStatCollector that is used to count the
+//               number of bounding volume tests made against a solid
+//               of this type in a given frame.
+////////////////////////////////////////////////////////////////////
+PStatCollector CollisionSolid::
+get_volume_pcollector() {
+  return _volume_pcollector;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::get_test_pcollector
+//       Access: Public, Virtual
+//  Description: Returns a PStatCollector that is used to count the
+//               number of intersection tests made against a solid
+//               of this type in a given frame.
+////////////////////////////////////////////////////////////////////
+PStatCollector CollisionSolid::
+get_test_pcollector() {
+  return _test_pcollector;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -38,6 +38,8 @@
 #include "geomLinestrips.h"
 #include "geomVertexWriter.h"
 
+PStatCollector CollisionPlane::_volume_pcollector("Collision Volumes:CollisionPlane");
+PStatCollector CollisionPlane::_test_pcollector("Collision Tests:CollisionPlane");
 TypeHandle CollisionPlane::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -75,6 +77,30 @@ get_collision_origin() const {
   // without even bothering to ensure that that point exists on the
   // plane.
   return LPoint3f::origin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::get_volume_pcollector
+//       Access: Public, Virtual
+//  Description: Returns a PStatCollector that is used to count the
+//               number of bounding volume tests made against a solid
+//               of this type in a given frame.
+////////////////////////////////////////////////////////////////////
+PStatCollector CollisionPlane::
+get_volume_pcollector() {
+  return _volume_pcollector;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::get_test_pcollector
+//       Access: Public, Virtual
+//  Description: Returns a PStatCollector that is used to count the
+//               number of intersection tests made against a solid
+//               of this type in a given frame.
+////////////////////////////////////////////////////////////////////
+PStatCollector CollisionPlane::
+get_test_pcollector() {
+  return _test_pcollector;
 }
 
 ////////////////////////////////////////////////////////////////////

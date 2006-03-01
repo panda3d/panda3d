@@ -29,6 +29,7 @@
 #include "geomNode.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
+#include "pStatCollector.h"
 
 class CollisionHandler;
 class CollisionEntry;
@@ -83,6 +84,9 @@ public:
                                 const CullTraverserData &data,
                                 bool bounds_only) const;
 
+  virtual PStatCollector get_volume_pcollector();
+  virtual PStatCollector get_test_pcollector();
+
 PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -133,6 +137,9 @@ private:
   int _flags;
 
   Mutex _lock;
+
+  static PStatCollector _volume_pcollector;
+  static PStatCollector _test_pcollector;
 
 public:
   virtual void write_datagram(BamWriter* manager, Datagram &me);

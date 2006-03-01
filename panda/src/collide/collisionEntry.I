@@ -338,6 +338,9 @@ test_intersection(CollisionHandler *record,
     }
   }
 #endif  // DO_COLLISION_RECORDING
+#ifdef DO_PSTATS
+  ((CollisionSolid *)get_into())->get_test_pcollector().add_level(1);
+#endif  // DO_PSTATS
   if (result != (CollisionEntry *)NULL) {
     record->add_entry(result);
   }

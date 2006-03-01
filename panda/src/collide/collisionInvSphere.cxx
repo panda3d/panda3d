@@ -34,6 +34,8 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 
+PStatCollector CollisionInvSphere::_volume_pcollector("Collision Volumes:CollisionInvSphere");
+PStatCollector CollisionInvSphere::_test_pcollector("Collision Tests:CollisionInvSphere");
 TypeHandle CollisionInvSphere::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -55,6 +57,30 @@ PT(CollisionEntry) CollisionInvSphere::
 test_intersection(const CollisionEntry &) const {
   report_undefined_from_intersection(get_type());
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionInvSphere::get_volume_pcollector
+//       Access: Public, Virtual
+//  Description: Returns a PStatCollector that is used to count the
+//               number of bounding volume tests made against a solid
+//               of this type in a given frame.
+////////////////////////////////////////////////////////////////////
+PStatCollector CollisionInvSphere::
+get_volume_pcollector() {
+  return _volume_pcollector;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionInvSphere::get_test_pcollector
+//       Access: Public, Virtual
+//  Description: Returns a PStatCollector that is used to count the
+//               number of intersection tests made against a solid
+//               of this type in a given frame.
+////////////////////////////////////////////////////////////////////
+PStatCollector CollisionInvSphere::
+get_test_pcollector() {
+  return _test_pcollector;
 }
 
 ////////////////////////////////////////////////////////////////////
