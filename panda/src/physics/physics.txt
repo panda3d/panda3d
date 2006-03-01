@@ -1,42 +1,43 @@
 // Panda Physics Documentation
 // Charles Nicholson, Intern-at-large. 7/17/00
+// Further changes by Dave Schuyler 2003, 2004, 2005, 2006.
 
 How to make physics go:
 -----------------------
 
-Physics lives mainly in the scene graph.  To put a physical object
-into the scene graph, use either an ActorNode or a PhysicalNode.
-If you want this node to react to outside input (i.e. Jesse banging
-on the arc above it), use an ActorNode.  ActorNodes will also update
-their own arcs according to their internal physics information.
-PhysicalNodes are pretty much the same, but they don't have the automatic
-graph response/update routines built-in, so for most cases, you'll probably
-want to use an ActorNode.
+Physics lives mainly in the scene graph.  To put a physical object into the
+scene graph, use either an ActorNode or a PhysicalNode.  If you want this 
+node to react to outside input (i.e. movement on the node above it), use an
+ActorNode.  ActorNodes will also update their own nodes according to their
+internal physics information.  PhysicalNodes are pretty much the same, but
+they don't have the automatic graph response/update routines built-in, so
+for most cases, you'll probably want to use an ActorNode.
 
 Forces (gravity, noise, jitter, friction) can act on these objects, and they
 live in the graph as well.  Forces come in two flavors: linear and angular,
 and ForceNodes can hold both.  When a force acts upon an object, the relative
-matrix between the ForceNode and the ActorNode is calculated and applied to the
-force vectors, which in turn get applied to the objects via integration.
+matrix between the ForceNode and the ActorNode is calculated and applied to
+the force vectors, which in turn get applied to the objects via integration.
 
 Integration occurs in the PhysicsManager, which has references to all of the
-forces and objects to be acted on.  Like forces, there are two types of integration:
-linear and angular.  Respective integrators must be plugged in to each for anything
-to happen.
+forces and objects to be acted on.  Like forces, there are two types of
+integration: linear and angular.  Respective integrators must be plugged in
+to each for anything to happen.
 
 What to do if nothing's moving/happening:
 -----------------------------------------
 
 1. Make sure you have a PhysicsManager.
-   Make sure that an integrator (LinearEulerIntegrator and/or AngularEulerIntegrator)
-     is plugged in to the manager.
+   Make sure that an integrator (LinearEulerIntegrator and/or
+     AngularEulerIntegrator) is plugged in to the manager.
 
-2. Make sure you have your Physicals (live inside the Actor/Physical Nodes) attached
-     to the manager.
+2. Make sure you have your Physicals (live inside the Actor/Physical
+     Nodes) attached to the manager.
 
-3. Make sure that your forces live in ForceNodes and are attached to either the
-     physical or the manager.
+3. Make sure that your forces live in ForceNodes and are attached
+     to either the physical or the manager.
 
 4. Make sure you're calling PhysicsManager::do_physics() once per frame.
 
-If none of these work, try slapping yourself.
+If none of these work, try a simpler test, or ask for help (a co-worker or
+the panda3d forums are good places to start).
