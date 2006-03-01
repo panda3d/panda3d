@@ -730,6 +730,8 @@
   #define USE_COMPILER GCC
 #elif $[eq $[PLATFORM], osx]
   #define USE_COMPILER GCC
+#elif $[eq $[PLATFORM], FreeBSD]
+  #define USE_COMPILER GCC
 #endif
 
 // Permission masks to install data and executable files,
@@ -854,6 +856,9 @@
 #if $[eq $[PLATFORM], osx]
   #defer STATIC_LIB_C libtool -static -o $[target] $[sources]
   #defer STATIC_LIB_C++ libtool -static -o $[target] $[sources]
+//#elif $[eq $[PLATFORM], FreeBSD]
+//  #defer STATIC_LIB_C libtool --mode=link -static -o $[target] $[sources]
+//  #defer STATIC_LIB_C++ libtool --mode=link -static -o $[target] $[sources]
 #else
   #defer STATIC_LIB_C ar cru $[target] $[sources]
   #defer STATIC_LIB_C++ ar cru $[target] $[sources]

@@ -1,7 +1,9 @@
 #begin lib_target
   #define TARGET dtoolutil
   #define LOCAL_LIBS dtoolbase
-  #define UNIX_SYS_LIBS dl
+  #if $[ne $[PLATFORM], FreeBSD]
+    #define UNIX_SYS_LIBS dl
+  #endif
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx
   
