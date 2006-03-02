@@ -2,81 +2,97 @@
 
 # Configrc for running the show
 # This uses the executable system now, not the configrc
-echo $DIRECT/src/leveleditor/Configrc
+echo $DIRECT/src/leveleditor/Config.prc
 echo $DIRECT/src/leveleditor/run.bat
 
 # Python files
-echo $WINTOOLS/bin/python.exe
-echo $WINTOOLS/sdk/python/Python-2.2.2/PCbuild/python22.dll
-echo $WINTOOLS/sdk/python/Python-2.2.2/PCbuild/_sre.pyd
-echo $WINTOOLS/sdk/python/Python-2.2.2/PCbuild/_tkinter.pyd
-echo $WINTOOLS/sdk/python/Python-2.2.2/PCbuild/_socket.pyd
-echo $WINTOOLS/sdk/python/Python-2.2.2/PCbuild/zlib.pyd
+echo $WINTOOLS/sdk/python/Python-2.4.1/PCbuild/python.exe
+echo $WINTOOLS/sdk/python/Python-2.4.1/PCbuild/python24.dll
+#echo $WINTOOLS/sdk/python/Python-2.4.1/PCbuild/_sre.pyd
+echo $WINTOOLS/sdk/python/Python-2.4.1/PCbuild/_tkinter_d.pyd
+echo $WINTOOLS/sdk/python/Python-2.4.1/PCbuild/_socket.pyd
+echo $WINTOOLS/sdk/python/Python-2.4.1/PCbuild/zlib.pyd
 
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/lib-tk
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/Pmw
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/linecache.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/traceback.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/__future__.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/whrandom.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/copy_reg.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/copy.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/fnmatch.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/re.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/sre.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/sre_parse.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/sre_constants.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/sre_compile.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/types.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/string.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/os.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/site.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/stat.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/UserDict.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/ntpath.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/random.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/getopt.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/fpformat.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/bisect.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/warnings.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/inspect.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/dis.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/tokenize.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/token.py
-echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/ihooks.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/PCbuild/_tkinter.pyd
+
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/lib-tk
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/site-packages/Pmw
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/linecache.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/traceback.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/__future__.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/whrandom.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/copy_reg.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/copy.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/fnmatch.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/re.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/sre.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/sre_parse.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/sre_constants.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/sre_compile.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/types.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/string.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/os.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/site.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/stat.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/UserDict.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/ntpath.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/random.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/getopt.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/fpformat.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/bisect.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/warnings.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/inspect.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/dis.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/tokenize.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/token.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/ihooks.py
+
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/opcode.py
+echo $WINTOOLS/sdk/python/Python-2.4.1/Lib/weakref.py
 
 # Libraries
 echo $WINTOOLS/lib
 echo $WINTOOLS/sdk/rad/Miles6/redist/win32/Mss32.dll
 echo $WINTOOLS/sdk/rad/Miles6/redist/win32/Mp3dec.asi
-echo $DTOOL/lib/libdtool.dll
-echo $DTOOL/lib/libdtoolconfig.dll
-echo $PANDA/lib/libpandaexpress.dll
-echo $PANDA/lib/libpanda.dll
-echo $PANDA/lib/libpandaphysics.dll
-echo $PANDA/lib/libwindisplay.dll
-echo $PANDA/lib/libpandadx7.dll
-echo $PANDA/lib/libpandadx8.dll
-echo $PANDA/lib/libpandagl.dll
-echo $PANDA/lib/libmiles_audio.dll
-echo $DIRECT/lib/libdirect.dll
-echo $OTP/lib/libotp.dll
-echo $TOONTOWN/lib/libtoontown.dll
+echo $DTOOL/built/lib/libdtool.dll
+echo $DTOOL/built/lib/libdtoolconfig.dll
+echo $PANDA/built/lib/libpandaexpress.dll
+echo $PANDA/built/lib/libpanda.dll
+echo $PANDA/built/lib/libpandaphysics.dll
+echo $PANDA/built/lib/libwindisplay.dll
+echo $PANDA/built/lib/libpandadx7.dll
+echo $PANDA/built/lib/libpandadx8.dll
+echo $PANDA/built/lib/libpandagl.dll
+echo $PANDA/built/lib/libpandafx.dll
+echo $PANDA/built/lib/libpandaegg.dll
+echo $PANDA/built/lib/libmiles_audio.dll
+echo $DIRECT/built/lib/libdirect.dll
+echo $DIRECT/built/lib/libheapq.dll
+echo $OTP/built/lib/libotp.dll
+echo $TOONTOWN/built/lib/libtoontown.dll
 
 # Generated code for libpanda
-printlib $DIRECT/lib/pandac libpanda
-printlib $DIRECT/lib/pandac libpandaphysics
-echo $DIRECT/lib/pandac/PandaModules.py
-echo $DIRECT/lib/pandac/PandaModules.pyz
+printlib $DIRECT/built/lib/pandac libpanda
+printlib $DIRECT/built/lib/pandac libpandaphysics
+echo $DIRECT/built/lib/pandac/PandaModules.py
+#echo $DIRECT/built/lib/pandac/PandaModules.pyz
 
 # Generated code for libdirect
-printlib $DIRECT/lib/pandac libdirect
+printlib $DIRECT/built/lib/pandac libdirect
 
 # Generated code for libotp
-printlib $DIRECT/lib/pandac libotp
+printlib $DIRECT/built/lib/pandac libotp
 
 # Generated code for libtoontown
-printlib $DIRECT/lib/pandac libtoontown
+printlib $DIRECT/built/lib/pandac libtoontown
+
+# Chris' new stuff
+printdir $DIRECT/built/lib/pandac .py
+echo $WINTOOLS/built/lib/nspr4.dll
+echo $WINTOOLS/built/lib/highgui096.dll
+echo $WINTOOLS/built/lib/cxcore096.dll
+echo $WINTOOLS/built/lib/tk84.dll
+echo $WINTOOLS/built/lib/tcl84.dll
 
 # DIRECT stuff
 printdir $DIRECT/src/actor .py
@@ -100,8 +116,10 @@ printdir $DIRECT/src/showbase .py
 printdir $DIRECT/src/tkpanels .py
 printdir $DIRECT/src/tkwidgets .py
 
+printdir $DIRECT/src/controls .py
+
 # Etc files
-echo $PANDA/etc/layout_db
-echo $PANDA/etc/setup_db
-echo $PANDA/etc/window_db
+#echo $PANDA/etc/layout_db
+#echo $PANDA/etc/setup_db
+#echo $PANDA/etc/window_db
 
