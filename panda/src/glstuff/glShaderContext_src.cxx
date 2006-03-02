@@ -442,13 +442,17 @@ unbind()
 //  Description: This function gets called whenever the RenderState
 //               or TransformState has changed, but the ShaderExpansion
 //               itself has not changed.  It loads new values into the
-//               shader's parameters.  The flag "all" is false if the
-//               only thing that has changed is the modelview matrix.
-//               In this case, only the transform-dependent parameters
-//               are reloaded.
+//               shader's parameters.
+//
+//               If "altered" is false, that means you promise that
+//               the parameters for this shader context have already
+//               been issued once, and that since the last time the
+//               parameters were issued, no part of the render
+//               state has changed except the external and internal
+//               transforms.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-issue_parameters(GSG *gsg, bool all)
+issue_parameters(GSG *gsg, bool altered)
 {
 #ifdef HAVE_CGGL
   if (_cg_context == 0) {
@@ -456,11 +460,11 @@ issue_parameters(GSG *gsg, bool all)
   }
   
   for (int i=0; i<(int)_mat_spec.size(); i++) {
-    if (all || _mat_spec[i]._trans_dependent) {
-      LMatrix4f result;
+    if (altered || _mat_spec[i]._trans_dependent) {
       CGparameter p = (CGparameter)(_mat_spec[i]._parameter);
-      if (gsg->fetch_specified_value(_mat_spec[i], result)) {
-        const float *data = result.get_data();
+      const LMatrix4f *val = gsg->fetch_specified_value(_mat_spec[i], altered);
+      if (val) {
+        const float *data = val->get_data();
         switch (_mat_spec[i]._piece) {
         case SMP_whole: cgGLSetMatrixParameterfc(p, data); break;
         case SMP_transpose: cgGLSetMatrixParameterfr(p, data); break;

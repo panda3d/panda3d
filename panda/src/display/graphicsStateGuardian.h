@@ -159,7 +159,8 @@ public:
 
   void clear(DrawableRegion *clearable);
 
-  bool fetch_specified_value(const ShaderContext::ShaderMatSpec &spec, LMatrix4f &result);
+  const LMatrix4f *fetch_specified_value(ShaderContext::ShaderMatSpec &spec, bool altered);
+  const LMatrix4f *fetch_specified_part(ShaderContext::ShaderMatInput input, InternalName *name, LMatrix4f &t);
   
   virtual void prepare_display_region(DisplayRegion *dr,
                                       Lens::StereoChannel stereo_channel);
@@ -295,8 +296,6 @@ protected:
   CPT(Lens) _current_lens;
   CPT(TransformState) _projection_mat;
   CPT(TransformState) _projection_mat_inv;
-  CPT(TransformState) _view_to_clip;
-  CPT(TransformState) _clip_to_view;
   
   CoordinateSystem _coordinate_system;
   CoordinateSystem _internal_coordinate_system;

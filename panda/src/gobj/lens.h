@@ -155,9 +155,6 @@ PUBLISHED:
   const LMatrix4f &get_projection_mat(StereoChannel channel = SC_mono) const;
   const LMatrix4f &get_projection_mat_inv(StereoChannel channel = SC_mono) const;
 
-  INLINE const LMatrix4f get_projection_mat(CoordinateSystem cs, StereoChannel channel) const;
-  INLINE const LMatrix4f get_projection_mat_inv(CoordinateSystem cs, StereoChannel channel) const;
-  
   const LMatrix4f &get_film_mat() const;
   const LMatrix4f &get_film_mat_inv() const;
 

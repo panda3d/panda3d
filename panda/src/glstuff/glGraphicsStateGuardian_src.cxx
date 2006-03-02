@@ -2763,8 +2763,9 @@ do_issue_transform() {
     do_auto_rescale_normal();
   }
 
-  if (_current_shader_context)
+  if (_current_shader_context) {
     _current_shader_context->issue_parameters(this, false);
+  }
 
   report_my_gl_errors();
 }

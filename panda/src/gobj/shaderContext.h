@@ -49,6 +49,44 @@ public:
     SHADER_type_both=2,
   };
 
+  enum ShaderMatInput {
+    SMO_identity,
+
+    SMO_window_size,
+    SMO_pixel_size,
+    SMO_card_center,
+    
+    SMO_mat_constant_x,
+    SMO_vec_constant_x,
+    
+    SMO_world_to_view,
+    SMO_view_to_world,
+
+    SMO_model_to_view,
+    SMO_view_to_model,
+
+    SMO_apiview_to_view,
+    SMO_view_to_apiview,
+
+    SMO_clip_to_view,
+    SMO_view_to_clip,
+
+    SMO_apiclip_to_view,
+    SMO_view_to_apiclip,
+    
+    SMO_view_x_to_view,
+    SMO_view_to_view_x,
+
+    SMO_apiview_x_to_view,
+    SMO_view_to_apiview_x,
+
+    SMO_clip_x_to_view,
+    SMO_view_to_clip_x,
+
+    SMO_apiclip_x_to_view,
+    SMO_view_to_apiclip_x,
+  };
+
   enum ShaderArgType {
     SAT_float1,
     SAT_float2,
@@ -69,51 +107,6 @@ public:
     SAD_unknown,
   };
 
-  enum ShaderMatOp {
-    SMO_identity,
-
-    SMO_modelview,
-    SMO_projection,
-    SMO_modelproj,
-    
-    SMO_window_size,
-    SMO_pixel_size,
-    SMO_card_center,
-    
-    SMO_mat_constant_x,
-    SMO_vec_constant_x,
-    
-    SMO_world_to_view,
-    SMO_view_to_world_C,
-
-    SMO_model_to_view,
-    SMO_view_to_model_C,
-
-    SMO_apiview_to_view,
-    SMO_view_to_apiview_C,
-
-    SMO_clip_to_view,
-    SMO_view_to_clip_C,
-
-    SMO_apiclip_to_view,
-    SMO_view_to_apiclip_C,
-    
-    SMO_view_x_to_view,
-    SMO_view_to_view_x_C,
-
-    SMO_apiview_x_to_view,
-    SMO_view_to_apiview_x_C,
-
-    SMO_clip_x_to_view,
-    SMO_view_to_clip_x_C,
-
-    SMO_apiclip_x_to_view,
-    SMO_view_to_apiclip_x_C,
-    
-    SMO_transpose,
-    SMO_noop,
-  };
-
   enum ShaderMatPiece {
     SMP_whole,
     SMP_transpose,
@@ -127,12 +120,21 @@ public:
     SMP_col3,
   };
 
+  enum ShaderMatFunc {
+    SMF_compose,
+    SMF_compose_cache_first,
+    SMF_compose_cache_second,
+    SMF_first,
+  };
+
   struct ShaderMatSpec {
-    pvector<ShaderMatOp>      _opcodes;
-    pvector<PT(InternalName)> _args;
-    ShaderMatPiece            _piece;
-    bool                      _trans_dependent;
-    void                     *_parameter;
+    ShaderMatFunc    _func;
+    ShaderMatInput   _part[2];
+    PT(InternalName) _arg[2];
+    LMatrix4f        _cache;
+    ShaderMatPiece   _piece;
+    bool             _trans_dependent;
+    void            *_parameter;
   };
 
   struct ShaderTexSpec {
@@ -174,10 +176,12 @@ private:
   bool cp_errchk_parameter_sampler(ShaderArgInfo &arg);
   bool cp_parse_trans_clause(ShaderArgInfo &arg,
                              ShaderMatSpec &spec,
+                             int part,
                              const vector_string &pieces,
                              int &next,
-                             ShaderMatOp ofop,
-                             ShaderMatOp op);
+                             ShaderMatInput ofop,
+                             ShaderMatInput op);
+  void cp_optimize_mat_spec(ShaderMatSpec &spec);
 
 protected:
   bool compile_parameter(void *reference,

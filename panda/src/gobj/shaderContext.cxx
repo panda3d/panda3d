@@ -171,35 +171,88 @@ cp_errchk_parameter_sampler(ShaderArgInfo &p)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::cp_parse_trans_clause
+//     Function: ShaderContext::cp_parse_trans_clause
 //       Access: Public
 //  Description: Parses a single clause of a "trans" parameter.
 ////////////////////////////////////////////////////////////////////
 bool ShaderContext::
-cp_parse_trans_clause(ShaderArgInfo &p, ShaderMatSpec &spec, const vector_string &pieces,
-                      int &next, ShaderMatOp ofop, ShaderMatOp op) {
+cp_parse_trans_clause(ShaderArgInfo &p, ShaderMatSpec &spec, 
+                      int part, const vector_string &pieces,
+                      int &next, ShaderMatInput ofop, ShaderMatInput op) {
   if (pieces[next+1]=="of") {
     if (pieces[next+2]=="") {
       cp_report_error(p, "'of' should be followed by a name");
       return false;
     }
-    if (ofop != SMO_noop) {
-      spec._opcodes.push_back(ofop);
-      spec._args.push_back(InternalName::make(pieces[next+2]));
-    }
+    spec._part[part] = ofop;
+    spec._arg[part] = InternalName::make(pieces[next+2]);
     next += 3;
     return true;
   } else {
-    if (op != SMO_noop) {
-      spec._opcodes.push_back(op);
-    }
+    spec._part[part] = op;
+    spec._arg[part] = NULL;
     next += 1;
     return true;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::compile_parameter
+//     Function: ShaderContext::cp_optimize_mat_spec
+//       Access: Public
+//  Description: Analyzes a ShaderMatSpec and decides what it should
+//               use its cache for.  It can cache the results of any
+//               one opcode, or, it can cache the entire result.  This
+//               routine needs to be smart enough to know which
+//               data items can be correctly cached, and which cannot.
+////////////////////////////////////////////////////////////////////
+void ShaderContext::
+cp_optimize_mat_spec(ShaderMatSpec &spec) {
+
+  // If we're composing with identity, simplify.
+  if (spec._func == SMF_compose) {
+    if (spec._part[1] == SMO_identity) {
+      spec._func = SMF_first;
+    }
+  }
+  if (spec._func == SMF_compose) {
+    if (spec._part[0] == SMO_identity) {
+      spec._func = SMF_first;
+      spec._part[0] = spec._part[1];
+      spec._arg[0] = spec._arg[1];
+    }
+  }
+
+  // See if either half can be cached.
+  bool can_cache_part0 = true;
+  bool can_cache_part1 = true;
+  if ((spec._part[0] == SMO_model_to_view)||
+      (spec._part[0] == SMO_view_to_model)) {
+    can_cache_part0 = false;
+  }
+  if ((spec._part[1] == SMO_model_to_view)||
+      (spec._part[1] == SMO_view_to_model)) {
+    can_cache_part1 = false;
+  }
+  
+  // See if we can use a compose-with-cache variant.
+  if (spec._func == SMF_compose) {
+    if (can_cache_part0) {
+      spec._func = SMF_compose_cache_first;
+    } else if (can_cache_part1) {
+      spec._func = SMF_compose_cache_second;
+    }
+  }
+  
+  // Determine transform-dependence.
+  if (can_cache_part0 && can_cache_part1) {
+    spec._trans_dependent = false;
+  } else {
+    spec._trans_dependent = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderContext::compile_parameter
 //       Access: Public
 //  Description: Analyzes a parameter and decides how to
 //               bind the parameter to some part of panda's
@@ -377,14 +430,14 @@ compile_parameter(void *reference,
     
     ShaderMatSpec bind;
     bind._parameter = reference;
-    bind._trans_dependent = false;
+    bind._func = SMF_compose;
 
     int next = 1;
     pieces.push_back("");
 
     // Decide whether this is a matrix or vector.
     if      (pieces[0]=="trans")   bind._piece = SMP_whole;
-    else if (pieces[0]=="tpose")   bind._piece = SMP_whole;
+    else if (pieces[0]=="tpose")   bind._piece = SMP_transpose;
     else if (pieces[0]=="row0")    bind._piece = SMP_row0;
     else if (pieces[0]=="row1")    bind._piece = SMP_row1;
     else if (pieces[0]=="row2")    bind._piece = SMP_row2;
@@ -393,7 +446,7 @@ compile_parameter(void *reference,
     else if (pieces[0]=="col1")    bind._piece = SMP_col1;
     else if (pieces[0]=="col2")    bind._piece = SMP_col2;
     else if (pieces[0]=="col3")    bind._piece = SMP_col3;
-    if (bind._piece == SMP_whole) {
+    if ((bind._piece == SMP_whole)||(bind._piece == SMP_transpose)) {
       if (!cp_errchk_parameter_float(p, 16, 16)) return false;
     } else {
       if (!cp_errchk_parameter_float(p, 4, 4)) return false;
@@ -405,32 +458,28 @@ compile_parameter(void *reference,
       cp_report_error(p, "argument missing");
       return false;
     } else if (pieces[next] == "world") {
-      bind._opcodes.push_back(SMO_world_to_view);
+      bind._part[0] = SMO_world_to_view;
+      bind._arg[0] = NULL;
       next += 1;
     } else if (pieces[next] == "model") {
-      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_x_to_view, SMO_model_to_view);
+      ok &= cp_parse_trans_clause(p, bind, 0, pieces, next, SMO_view_x_to_view, SMO_model_to_view);
     } else if (pieces[next] == "clip") {
-      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_clip_x_to_view, SMO_clip_to_view);
+      ok &= cp_parse_trans_clause(p, bind, 0, pieces, next, SMO_clip_x_to_view, SMO_clip_to_view);
     } else if (pieces[next] == "view") {
-      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_x_to_view, SMO_identity);
+      ok &= cp_parse_trans_clause(p, bind, 0, pieces, next, SMO_view_x_to_view, SMO_identity);
     } else if (pieces[next] == "apiview") {
-      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_apiview_x_to_view, SMO_apiview_to_view);
+      ok &= cp_parse_trans_clause(p, bind, 0, pieces, next, SMO_apiview_x_to_view, SMO_apiview_to_view);
     } else if (pieces[next] == "apiclip") {
-      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_apiclip_x_to_view, SMO_apiclip_to_view);
+      ok &= cp_parse_trans_clause(p, bind, 0, pieces, next, SMO_apiclip_x_to_view, SMO_apiclip_to_view);
     } else {
-      bind._opcodes.push_back(SMO_view_x_to_view);
-      bind._args.push_back(InternalName::make(pieces[next]));
+      bind._part[0] = SMO_view_x_to_view;
+      bind._arg[0] = InternalName::make(pieces[next]);
       next += 1;
     }
 
     // Check for errors in the first clause.
     if (!ok) {
       return false;
-    }
-
-    // Check for transform-dependence.
-    if (bind._opcodes.back() == SMO_model_to_view) {
-      bind._trans_dependent = true;
     }
 
     // Check for syntactic well-formed-ness.
@@ -446,21 +495,22 @@ compile_parameter(void *reference,
       cp_report_error(p, "argument missing");
       return false;
     } else if (pieces[next] == "world") {
-      bind._opcodes.push_back(SMO_view_to_world_C);
+      bind._part[1] = SMO_view_to_world;
+      bind._arg[1] = NULL;
       next += 1;
     } else if (pieces[next] == "model") {
-      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_to_view_x_C, SMO_view_to_model_C);
+      ok &= cp_parse_trans_clause(p, bind, 1, pieces, next, SMO_view_to_view_x, SMO_view_to_model);
     } else if (pieces[next] == "clip") {
-      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_to_clip_x_C, SMO_view_to_clip_C);
+      ok &= cp_parse_trans_clause(p, bind, 1, pieces, next, SMO_view_to_clip_x, SMO_view_to_clip);
     } else if (pieces[next] == "view") {
-      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_to_view_x_C, SMO_noop);
+      ok &= cp_parse_trans_clause(p, bind, 1, pieces, next, SMO_view_to_view_x, SMO_identity);
     } else if (pieces[next] == "apiview") {
-      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_to_apiview_x_C, SMO_view_to_apiview_C);
+      ok &= cp_parse_trans_clause(p, bind, 1, pieces, next, SMO_view_to_apiview_x, SMO_view_to_apiview);
     } else if (pieces[next] == "apiclip") {
-      ok &= cp_parse_trans_clause(p, bind, pieces, next, SMO_view_to_apiclip_x_C, SMO_view_to_apiclip_C);
+      ok &= cp_parse_trans_clause(p, bind, 1, pieces, next, SMO_view_to_apiclip_x, SMO_view_to_apiclip);
     } else {
-      bind._opcodes.push_back(SMO_view_to_view_x_C);
-      bind._args.push_back(InternalName::make(pieces[next]));
+      bind._part[1] = SMO_view_to_view_x;
+      bind._arg[1] = InternalName::make(pieces[next]);
       next += 1;
     }
     
@@ -469,17 +519,13 @@ compile_parameter(void *reference,
       return false;
     }
 
-    // Check for transform-dependence.
-    if (bind._opcodes.back() == SMO_view_to_model_C) {
-      bind._trans_dependent = true;
-    }
-    
     // Check for syntactic well-formed-ness.
     if (pieces[next] != "") {
       cp_report_error(p, "end of line expected");
       return false;
     }
     
+    cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
     return true;
   }
@@ -494,27 +540,34 @@ compile_parameter(void *reference,
     }
     ShaderMatSpec bind;
     bind._parameter = reference;
-    bind._trans_dependent = false;
     bind._piece = SMP_row3;
+    bind._func = SMF_first;
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = NULL;
     if (pieces[1] == "pixelsize") {
       if (!cp_errchk_parameter_float(p, 2, 2)) {
         return false;
       }
-      bind._opcodes.push_back(SMO_pixel_size);
+      bind._part[0] = SMO_pixel_size;
+      bind._arg[0] = NULL;
     } else if (pieces[1] == "windowsize") {
       if (!cp_errchk_parameter_float(p, 2, 2)) {
         return false;
       }
-      bind._opcodes.push_back(SMO_window_size);
+      bind._part[0] = SMO_window_size;
+      bind._arg[0] = NULL;
     } else if (pieces[1] == "cardcenter") {
       if (!cp_errchk_parameter_float(p, 2, 2)) {
         return false;
       }
-      bind._opcodes.push_back(SMO_card_center);
+      bind._part[0] = SMO_card_center;
+      bind._arg[0] = NULL;
     } else {
       cp_report_error(p,"unknown system parameter");
       return false;
     }
+    
+    cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
     return true;
   }
@@ -561,20 +614,26 @@ compile_parameter(void *reference,
     case SAT_float4: {
       ShaderMatSpec bind;
       bind._parameter = reference;
-      bind._trans_dependent = false;
       bind._piece = SMP_row3;
-      bind._opcodes.push_back(SMO_vec_constant_x);
-      bind._args.push_back(InternalName::make(pieces[1]));
+      bind._func = SMF_first;
+      bind._part[0] = SMO_vec_constant_x;
+      bind._arg[0] = InternalName::make(pieces[1]);
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = NULL;
+      cp_optimize_mat_spec(bind);
       _mat_spec.push_back(bind);
       break;
     }
     case SAT_float4x4: {
       ShaderMatSpec bind;
       bind._parameter = reference;
-      bind._trans_dependent = false;
       bind._piece = SMP_whole;
-      bind._opcodes.push_back(SMO_mat_constant_x);
-      bind._args.push_back(InternalName::make(pieces[1]));
+      bind._func = SMF_first;
+      bind._part[0] = SMO_vec_constant_x;
+      bind._arg[0] = InternalName::make(pieces[1]);
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = NULL;
+      cp_optimize_mat_spec(bind);
       _mat_spec.push_back(bind);
       break;
     }
