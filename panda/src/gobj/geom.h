@@ -38,6 +38,7 @@
 #include "indirectLess.h"
 #include "pset.h"
 #include "boundingVolume.h"
+#include "pStatCollector.h"
 
 class GeomContext;
 class PreparedGraphicsObjects;
@@ -256,6 +257,7 @@ private:
   Contexts _contexts;
 
   static UpdateSeq _next_modified;
+  static PStatCollector _draw_primitive_setup_pcollector;
 
 public:
   static void register_with_read_factory();

@@ -1373,6 +1373,7 @@ data = _vertex_data -> get_array (first_index);
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 draw_triangles(const GeomTriangles *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
 
 //  DBG_SH5 dxgsg9_cat.debug ( ) << "draw_triangles 1\n"; DBG_E
 
@@ -1444,6 +1445,7 @@ draw_triangles(const GeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 draw_tristrips(const GeomTristrips *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
 
   DBG_SH5 dxgsg9_cat.debug ( ) << "draw_tristrips\n"; DBG_E
 
@@ -1605,6 +1607,7 @@ draw_tristrips(const GeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 draw_trifans(const GeomTrifans *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
 
   DBG_SH5 dxgsg9_cat.debug ( ) << "draw_trifans\n"; DBG_E
 
@@ -1706,6 +1709,7 @@ draw_trifans(const GeomTrifans *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 draw_lines(const GeomLines *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
@@ -1764,6 +1768,7 @@ draw_lines(const GeomLines *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 draw_linestrips(const GeomLinestrips *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1773,6 +1778,7 @@ draw_linestrips(const GeomLinestrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 draw_points(const GeomPoints *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 

@@ -898,6 +898,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_triangles(const GeomTriangles *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_tri_pcollector.add_level(1);
   if (primitive->is_indexed()) {
@@ -954,6 +955,7 @@ draw_triangles(const GeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_tristrips(const GeomTristrips *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
   if (connect_triangle_strips && _current_fill_mode != RenderModeAttrib::M_wireframe) {
     // One long triangle strip, connected by the degenerate vertices
     // that have already been set up within the primitive.
@@ -1103,6 +1105,7 @@ draw_tristrips(const GeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_trifans(const GeomTrifans *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
   CPTA_int ends = primitive->get_ends();
   _primitive_batches_trifan_pcollector.add_level(ends.size());
 
@@ -1201,6 +1204,7 @@ draw_trifans(const GeomTrifans *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_lines(const GeomLines *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
@@ -1258,6 +1262,7 @@ draw_lines(const GeomLines *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_linestrips(const GeomLinestrips *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1267,6 +1272,7 @@ draw_linestrips(const GeomLinestrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_points(const GeomPoints *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(primitive->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 

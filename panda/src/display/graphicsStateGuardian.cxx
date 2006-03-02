@@ -75,7 +75,7 @@ PStatCollector GraphicsStateGuardian::_vertices_indexed_tristrip_pcollector("Ver
 PStatCollector GraphicsStateGuardian::_state_pcollector("State changes");
 PStatCollector GraphicsStateGuardian::_transform_state_pcollector("State changes:Transforms");
 PStatCollector GraphicsStateGuardian::_texture_state_pcollector("State changes:Textures");
-PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive");
+PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive:Draw");
 PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 

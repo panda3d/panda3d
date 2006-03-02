@@ -1642,6 +1642,8 @@ disable_standard_vertex_arrays()
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_triangles(const GeomTriangles *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
+
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_triangles: " << *primitive << "\n";
@@ -1684,6 +1686,7 @@ draw_triangles(const GeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_tristrips(const GeomTristrips *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
 
   report_my_gl_errors();
 
@@ -1766,6 +1769,7 @@ draw_tristrips(const GeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_trifans(const GeomTrifans *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_trifans: " << *primitive << "\n";
@@ -1822,6 +1826,7 @@ draw_trifans(const GeomTrifans *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_lines(const GeomLines *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_lines: " << *primitive << "\n";
@@ -1862,6 +1867,7 @@ draw_lines(const GeomLines *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_linestrips(const GeomLinestrips *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_linestrips: " << *primitive << "\n";
@@ -1877,6 +1883,7 @@ draw_linestrips(const GeomLinestrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_points(const GeomPoints *primitive) {
+  PStatTimer timer(_draw_primitive_pcollector);
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_points: " << *primitive << "\n";

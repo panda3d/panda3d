@@ -28,6 +28,8 @@
 #include "boundingSphere.h"
 
 UpdateSeq Geom::_next_modified;
+PStatCollector Geom::_draw_primitive_setup_pcollector("Draw:Primitive:Setup");
+
 TypeHandle Geom::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -1090,6 +1092,7 @@ check_will_be_valid(const GeomVertexData *vertex_data) const {
 void Geom::
 do_draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
 	const GeomVertexData *vertex_data, const Geom::CData *cdata) const {
+  PStatTimer timer(_draw_primitive_setup_pcollector);
   if (gsg->begin_draw_primitives(this, munger, vertex_data)) {
     Primitives::const_iterator pi;
     for (pi = cdata->_primitives.begin(); 
