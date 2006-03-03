@@ -89,7 +89,7 @@
    $[forscopes lwo_egg,$[patsubst %.lwo %.LWO,%$[EGG_SUFFIX].egg,$[SOURCES]]]
 
 #define build_maya_eggs \
-   $[forscopes maya_egg,$[patsubst %.ma %.mb,%$[EGG_SUFFIX].egg,$[SOURCES]]] \
+   $[forscopes maya_egg,$[patsubst %$[MODEL].ma %$[MODEL].mb ,$[EGG_PREFIX]%$[EGG_SUFFIX].egg,$[SOURCES]]] \
    $[forscopes maya_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%$[EGG_SUFFIX].egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%$[EGG_SUFFIX].egg]] \
    $[forscopes maya_char_egg,$[ANIMS:%=$[EGG_PREFIX]%$[CHAN_SUFFIX].egg]]
 
@@ -313,7 +313,7 @@ $[TAB]lwo2egg $[LWO2EGG_OPTS] -o $[target] $[source]
 // Egg file generation from Maya files (for unanimated models).
 #forscopes maya_egg
   #foreach maya $[SOURCES]
-    #define target $[or $[TARGET],$[patsubst %.ma %.mb,$[EGG_PREFIX]%$[EGG_SUFFIX].egg,$[maya]]]
+    #define target $[or $[TARGET],$[patsubst %$[MODEL].ma %$[MODEL].mb,$[EGG_PREFIX]%$[EGG_SUFFIX].egg,$[maya]]]
     #define source $[maya]
 $[target] : $[source]
 $[TAB]maya2egg $[MAYA2EGG_OPTS] -o $[target] $[source]
