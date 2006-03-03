@@ -13,8 +13,10 @@
      angularIntegrator.h angularVectorForce.I \
      angularVectorForce.h baseForce.I baseForce.h \
      baseIntegrator.I baseIntegrator.h config_physics.h \
-     forceNode.I forceNode.h linearCylinderVortexForce.I \
-     linearCylinderVortexForce.h linearDistanceForce.I \
+     forceNode.I forceNode.h \
+     linearControlForce.I linearControlForce.h \
+     linearCylinderVortexForce.I linearCylinderVortexForce.h \
+     linearDistanceForce.I \
      linearDistanceForce.h linearEulerIntegrator.h linearForce.I \
      linearForce.h linearFrictionForce.I linearFrictionForce.h \
      linearIntegrator.h linearJitterForce.h linearNoiseForce.I \
@@ -31,6 +33,7 @@
      actorNode.cxx angularEulerIntegrator.cxx angularForce.cxx \
      angularIntegrator.cxx angularVectorForce.cxx baseForce.cxx \
      baseIntegrator.cxx config_physics.cxx forceNode.cxx \
+     linearControlForce.cxx \
      linearCylinderVortexForce.cxx linearDistanceForce.cxx \
      linearEulerIntegrator.cxx linearForce.cxx \
      linearFrictionForce.cxx linearIntegrator.cxx \
@@ -45,6 +48,7 @@
     angularIntegrator.h angularVectorForce.I angularVectorForce.h \
     baseForce.I baseForce.h baseIntegrator.I baseIntegrator.h \
     config_physics.h forceNode.I forceNode.h forces.h \
+    linearControlForce.I linearControlForce.h \
     linearCylinderVortexForce.I linearCylinderVortexForce.h \
     linearDistanceForce.I linearDistanceForce.h linearEulerIntegrator.h \
     linearForce.I linearForce.h linearFrictionForce.I \

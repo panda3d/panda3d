@@ -1,5 +1,6 @@
 
 #include "config_physics.cxx"
+#include "linearControlForce.cxx"
 #include "linearCylinderVortexForce.cxx"
 #include "linearDistanceForce.cxx"
 #include "linearEulerIntegrator.cxx"
