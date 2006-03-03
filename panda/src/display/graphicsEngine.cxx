@@ -52,6 +52,8 @@ PStatCollector GraphicsEngine::_render_frame_pcollector("App:render_frame");
 PStatCollector GraphicsEngine::_do_frame_pcollector("*:do_frame");
 PStatCollector GraphicsEngine::_yield_pcollector("App:Yield");
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
+PStatCollector GraphicsEngine::_cull_setup_pcollector("Cull:Setup");
+PStatCollector GraphicsEngine::_cull_sort_pcollector("Cull:Sort");
 PStatCollector GraphicsEngine::_draw_pcollector("Draw");
 PStatCollector GraphicsEngine::_sync_pcollector("Draw:Sync");
 PStatCollector GraphicsEngine::_flip_pcollector("Draw:Flip");
@@ -580,10 +582,13 @@ render_frame() {
 #endif  // THREADED_PIPELINE && DO_PSTATS
 
   // Now cycle the pipeline and officially begin the next frame.
+#ifdef THREADED_PIPELINE
   {
     PStatTimer timer(_cycle_pcollector);
     _pipeline->cycle();
   }
+#endif  // THREADED_PIPELINE
+
   ClockObject *global_clock = ClockObject::get_global_clock();
   global_clock->tick();
   if (global_clock->check_errors()) {
@@ -815,6 +820,8 @@ set_window_sort(GraphicsOutput *window, int sort) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
+  PStatTimer timer(_cull_pcollector);
+
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
@@ -891,6 +898,8 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 cull_to_bins(const GraphicsEngine::Windows &wlist) {
+  PStatTimer timer(_cull_pcollector);
+
   // Keep track of the cameras we have already used in this thread to
   // render DisplayRegions.
   typedef pmap<NodePath, DisplayRegion *> AlreadyCulled;
@@ -941,22 +950,29 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr) {
   GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
-  PT(CullResult) cull_result = dr->get_cull_result();
-  if (cull_result != (CullResult *)NULL) {
-    cull_result = cull_result->make_next();
-  } else {
-    cull_result = new CullResult(gsg);
+  PT(CullResult) cull_result;
+  PT(SceneSetup) scene_setup;
+  {
+    PStatTimer timer(_cull_setup_pcollector);
+    cull_result = dr->get_cull_result();
+    if (cull_result != (CullResult *)NULL) {
+      cull_result = cull_result->make_next();
+    } else {
+      cull_result = new CullResult(gsg);
+    }
+    scene_setup = setup_scene(gsg, dr);
   }
 
-  PT(SceneSetup) scene_setup = setup_scene(gsg, dr);
   if (scene_setup != (SceneSetup *)NULL) {
     BinCullHandler cull_handler(cull_result);
     do_cull(&cull_handler, scene_setup, gsg);
-    
-    cull_result->finish_cull();
-    
-    // Save the results for next frame.
-    dr->set_cull_result(cull_result, scene_setup);
+
+    {
+      PStatTimer timer(_cull_sort_pcollector);
+      cull_result->finish_cull();
+      // Save the results for next frame.
+      dr->set_cull_result(cull_result, scene_setup);
+    }
   }
 }
 
@@ -1168,6 +1184,8 @@ do_flip_frame() {
 ////////////////////////////////////////////////////////////////////
 PT(SceneSetup) GraphicsEngine::
 setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
+  PStatTimer timer(_cull_setup_pcollector);
+
   GraphicsOutput *window = dr->get_window();
   // The window pointer shouldn't be NULL, since we presumably got to
   // this particular DisplayRegion by walking through a list on a
@@ -1250,9 +1268,6 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
 void GraphicsEngine::
 do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
         GraphicsStateGuardian *gsg) {
-  // Statistics
-  PStatTimer timer(_cull_pcollector);
-
   CullTraverser trav(gsg);
   trav.set_cull_handler(cull_handler);
   trav.set_depth_offset_decals(depth_offset_decals && gsg->depth_offset_decals());

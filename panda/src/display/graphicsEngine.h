@@ -257,6 +257,8 @@ private:
   static PStatCollector _do_frame_pcollector;
   static PStatCollector _yield_pcollector;
   static PStatCollector _cull_pcollector;
+  static PStatCollector _cull_setup_pcollector;
+  static PStatCollector _cull_sort_pcollector;
   static PStatCollector _draw_pcollector;
   static PStatCollector _sync_pcollector;
   static PStatCollector _flip_pcollector;
