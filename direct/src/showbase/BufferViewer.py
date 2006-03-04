@@ -191,12 +191,12 @@ class BufferViewer(DirectObject):
         be precise so that the frame exactly aligns to pixel
         boundaries, and so that it doesn't overlap the card at all."""
 
-	format=GeomVertexFormat.getV3cp()
-	vdata=GeomVertexData('card-frame', format, Geom.UHDynamic)
+        format=GeomVertexFormat.getV3cp()
+        vdata=GeomVertexData('card-frame', format, Geom.UHDynamic)
 
-	vwriter=GeomVertexWriter(vdata, 'vertex')
-	cwriter=GeomVertexWriter(vdata, 'color')
-	
+        vwriter=GeomVertexWriter(vdata, 'vertex')
+        cwriter=GeomVertexWriter(vdata, 'color')
+        
         ringoffset = [0,1,1,2]
         ringbright = [0,0,1,1]
         for ring in range(4):
@@ -204,15 +204,15 @@ class BufferViewer(DirectObject):
             offsety = (ringoffset[ring]*2.0) / float(sizey)            
             bright = ringbright[ring]
             vwriter.addData3f(-1-offsetx, 0, -1-offsety)
-            vwriter.addData3f( 1+offsetx, 0, -1-offsety)
-	    vwriter.addData3f( 1+offsetx, 0,  1+offsety)
-	    vwriter.addData3f(-1-offsetx, 0,  1+offsety)
+            vwriter.addData3f(1+offsetx, 0, -1-offsety)
+            vwriter.addData3f(1+offsetx, 0,  1+offsety)
+            vwriter.addData3f(-1-offsetx, 0,  1+offsety)
             cwriter.addData3f(bright,bright,bright)
             cwriter.addData3f(bright,bright,bright)
             cwriter.addData3f(bright,bright,bright)
             cwriter.addData3f(bright,bright,bright)
 
-	triangles=GeomTriangles(Geom.UHDynamic)
+        triangles=GeomTriangles(Geom.UHDynamic)
         for i in range(2):
             delta = i*8
             triangles.addVertices(0+delta,4+delta,1+delta)
@@ -225,11 +225,11 @@ class BufferViewer(DirectObject):
             triangles.addVertices(0+delta,7+delta,4+delta)
         triangles.closePrimitive()
 
-	geom=Geom(vdata)
-	geom.addPrimitive(triangles)
-	geomnode=GeomNode("card-frame")
+        geom=Geom(vdata)
+        geom.addPrimitive(triangles)
+        geomnode=GeomNode("card-frame")
         geomnode.addGeom(geom)
-	return NodePath(geomnode)
+        return NodePath(geomnode)
 
 
     def maintainReadout(self, task):
