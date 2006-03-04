@@ -358,10 +358,10 @@ def _getcode(f):
         else:
             return f.__name__, lambda: None
     codedict = { types.UnboundMethodType: method_get,
-                 types.MethodType       : method_get,
-                 types.FunctionType     : function_get,
-                 types.InstanceType     : instance_get,
-                 types.ClassType        : class_get,
+                 types.MethodType:        method_get,
+                 types.FunctionType:      function_get,
+                 types.InstanceType:      instance_get,
+                 types.ClassType:         class_get,
                  }
     try:
         return codedict[type(f)](f)
@@ -1657,7 +1657,7 @@ def weightedRand(valDict, rng=random.random):
     pass in a dictionary with a selection -> weight mapping.  Eg.
     {"Choice 1": 10,
      "Choice 2": 30,
-     "bear"     : 100}
+     "bear":     100}
 
     -Weights need not add up to any particular value.
     -The actual selection will be returned.
