@@ -1034,21 +1034,23 @@ class ShowBase(DirectObject.DirectObject):
             KeyboardButton.control())
 
     def addAngularIntegrator(self):
-        if (self.physicsMgrAngular == 0):
+        if not self.physicsMgrAngular:
             self.physicsMgrAngular = 1
             integrator = AngularEulerIntegrator()
             self.physicsMgr.attachAngularIntegrator(integrator)
 
     def enableParticles(self):
-        self.particleMgrEnabled = 1
-        self.physicsMgrEnabled = 1
-        self.taskMgr.remove('manager-update')
-        self.taskMgr.add(self.updateManagers, 'manager-update')
+        if not self.particleMgrEnabled:
+            self.particleMgrEnabled = 1
+            self.physicsMgrEnabled = 1
+            self.taskMgr.remove('manager-update')
+            self.taskMgr.add(self.updateManagers, 'manager-update')
 
     def disableParticles(self):
-        self.particleMgrEnabled = 0
-        self.physicsMgrEnabled = 0
-        self.taskMgr.remove('manager-update')
+        if self.particleMgrEnabled:
+            self.particleMgrEnabled = 0
+            self.physicsMgrEnabled = 0
+            self.taskMgr.remove('manager-update')
 
     def toggleParticles(self):
         if self.particleMgrEnabled == 0:
