@@ -20,12 +20,12 @@ import string
 # generalize to non cluster situations
 
 ClientConfigs = {
-    'single-server'       : [{'display name': 'display0',
+    'single-server':       [{'display name': 'display0',
                               'display mode': 'client',
                               'pos': Vec3(0),
                               'hpr': Vec3(0)}
                              ],
-    'two-server'          : [{'display name': 'master',
+    'two-server':          [{'display name': 'master',
                               'display mode': 'client',
                               'pos': Vec3(0),
                               #'hpr': Vec3(30,0,0)},
@@ -36,7 +36,7 @@ ClientConfigs = {
                               'hpr': Vec3(0,0,0)
                               }
                              ],
-    'mono-cave'   : [{'display name': 'la',
+    'mono-cave':   [{'display name': 'la',
                       'pos': Vec3(-0.105, -0.020, 5.000),
                       'hpr': Vec3(51.213, 0.000, 0.000),
                       'focal length': 0.809,
@@ -59,7 +59,7 @@ ClientConfigs = {
                       'film offset': (-0.000, 0.173),
                       },
                      ],
-    'seamless-cave'   : [{'display name': 'master',
+    'seamless-cave':   [{'display name': 'master',
                           'display mode': 'client',
                           'pos': Vec3(-0.105, -0.020, 5.000),
                           'hpr': Vec3(-0.370, 0.000, 0.000),
@@ -110,7 +110,7 @@ ClientConfigs = {
                           'film offset': (-0.000, 0.173),
                           },
                          ],
-    'nemo-cave'        : [{'display name': 'master',
+    'nemo-cave':        [{'display name': 'master',
                            'display mode': 'client',
                            'pos': Vec3(-0.105, -0.020, 5.000),
                            'hpr': Vec3(-0.370, 0.000, 0.000),
@@ -282,7 +282,7 @@ ClientConfigs = {
                            'film offset': (0.000, 0.173),
                            },
                           ],
-    'fourd-cave'        : [{'display name': 'master',
+    'fourd-cave':        [{'display name': 'master',
                             'display mode': 'client',
                             'pos': Vec3(-0.105, -0.020, 5.000),
                            'hpr': Vec3(-0.370, 0.000, 0.000),
@@ -361,7 +361,7 @@ ClientConfigs = {
                            'film offset': (0.000, 0.173),
                            },
                           ],
-    'parallax-cave'        : [{'display name': 'master',
+    'parallax-cave':        [{'display name': 'master',
                               'display mode': 'client',
                               'pos': Vec3(0),
                               'hpr': Vec3(0),
@@ -412,7 +412,7 @@ ClientConfigs = {
                               'film offset': (-0.000, 0.173),
                               },
                              ],
-    'carttest'            : [{'display name': 'master',
+    'carttest':            [{'display name': 'master',
                               'display mode': 'client',
                               'pos': Vec3(0),
                               'hpr': Vec3(0),
@@ -424,7 +424,7 @@ ClientConfigs = {
                               'pos': Vec3(.105,0,0),
                               'hpr': Vec3(0,0,0)}
                              ],
-    'ursula'              : [{'display name': 'master',
+    'ursula':              [{'display name': 'master',
                               'display mode': 'client',
                               'pos': Vec3(0),
                               'hpr': Vec3(0),
@@ -446,7 +446,7 @@ ClientConfigs = {
                               'film offset': (-0.105, -1),
                               }
                              ],
-    'composite'           : [{'display name': 'master',
+    'composite':           [{'display name': 'master',
                               'display mode': 'client',
                               'pos': Vec3(0),
                               },

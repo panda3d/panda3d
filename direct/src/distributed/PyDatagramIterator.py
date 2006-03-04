@@ -12,11 +12,11 @@ class PyDatagramIterator(DatagramIterator):
     # for trying to match up datagram subatomic types with add funtions
     # If Python had an O(1) "case" statement we would use that instead
     FuncDict = {
-        STInt8  : DatagramIterator.getInt8,
+        STInt8:  DatagramIterator.getInt8,
         STInt16: DatagramIterator.getInt16,
         STInt32: DatagramIterator.getInt32,
         STInt64: DatagramIterator.getInt64,
-        STUint8  : DatagramIterator.getUint8,
+        STUint8:  DatagramIterator.getUint8,
         STUint16: DatagramIterator.getUint16,
         STUint32: DatagramIterator.getUint32,
         STUint64: DatagramIterator.getUint64,

@@ -3505,14 +3505,14 @@ class LevelEditor(NodePath, DirectObject):
             print curveOuterSideSts
 
             # return an ordered list
-            for i in range(len(curvesInner) +1 ): #RAU don't forget, these curves are 1 based
+            for i in range(len(curvesInner) +1): #RAU don't forget, these curves are 1 based
                 curve = modelFile.find('**/*curve_inner_'+str(i))
                 if not curve.isEmpty():
                     # Mark whether it is a section of buildings or trees
                     curveType = curve.getName().split("_")[0]
                     curves['inner'].append([curve.node(),curveType])
                     
-            for i in range(len(curvesOuter) +1 ):
+            for i in range(len(curvesOuter) +1):
                 curve = modelFile.find('**/*curve_outer_'+str(i))
                 if not curve.isEmpty():
                     # Mark whether it is a section of buildings or trees
@@ -3530,7 +3530,7 @@ class LevelEditor(NodePath, DirectObject):
             # curveside_outer_28_2 (two side streets closest to main building track 28)
             for i in range(maxNum):
                 for barricade in ['innerbarricade','outerbarricade']:
-                    curve = modelFile.find('**/*curveside_inner_'+ barricade + '_' + str(i) )
+                    curve = modelFile.find('**/*curveside_inner_'+ barricade + '_' + str(i))
                     if not curve.isEmpty():
                         # Mark whether it is a section of buildings or trees
                         curveType = curve.getName().split("_")[0]
@@ -3539,7 +3539,7 @@ class LevelEditor(NodePath, DirectObject):
 
             for i in range(maxNum):
                 for barricade in ['innerbarricade','outerbarricade']:                
-                    curve = modelFile.find('**/*curveside_outer_'+ barricade + '_' + str(i) )
+                    curve = modelFile.find('**/*curveside_outer_'+ barricade + '_' + str(i))
                     if not curve.isEmpty():
                         # Mark whether it is a section of buildings or trees
                         curveType = curve.getName().split("_")[0]
@@ -3616,7 +3616,7 @@ class LevelEditor(NodePath, DirectObject):
         if barricadeDict[barricadeOrigNum][1] < curBldgGroupIndex:
             barricadeDict[barricadeOrigNum][1] = curBldgGroupIndex
         
-        print "---------- %s barricadeDict origNum=%d  data=(%d,%d)" %(side, barricadeOrigNum, barricadeDict[barricadeOrigNum][0], barricadeDict[barricadeOrigNum][1] )           
+        print "---------- %s barricadeDict origNum=%d  data=(%d,%d)" %(side, barricadeOrigNum, barricadeDict[barricadeOrigNum][0], barricadeDict[barricadeOrigNum][1])           
     
     def makeStreetAlongCurve(self):
         curves = self.loadStreetCurve()

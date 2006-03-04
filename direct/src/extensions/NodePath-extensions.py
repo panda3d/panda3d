@@ -135,8 +135,8 @@
             return (
                 "%s = {"%(self.getName()) +
                 otherString + 
-                "  'Pos'  : (%s),\n" % pos.pPrintValues() +
-                "  'Hpr'  : (%s),\n" % hpr.pPrintValues() +
+                "  'Pos':   (%s),\n" % pos.pPrintValues() +
+                "  'Hpr':   (%s),\n" % hpr.pPrintValues() +
                 "  'Scale': (%s),\n" % scale.pPrintValues() +
                 "  'Shear': (%s),\n" % shear.pPrintValues() +
                 "}")
