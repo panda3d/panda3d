@@ -2008,3 +2008,41 @@ operator >> (istream &in, Texture::FilterType &ft) {
   ft = Texture::string_filter_type(word);
   return in;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::WrapMode output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, Texture::WrapMode wm) {
+  switch (wm) {
+  case Texture::WM_clamp:
+    return out << "clamp";
+  case Texture::WM_repeat:
+    return out << "repeat";
+  case Texture::WM_mirror:
+    return out << "mirror";
+  case Texture::WM_mirror_once:
+    return out << "mirror_once";
+  case Texture::WM_border_color:
+    return out << "border_color";
+
+  case Texture::WM_invalid:
+    return out << "invalid";
+  }
+
+  return out << "(**invalid Texture::WrapMode(" << (int)wm << ")**)";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::WrapMode input operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+istream &
+operator >> (istream &in, Texture::WrapMode &wm) {
+  string word;
+  in >> word;
+
+  wm = Texture::string_wrap_mode(word);
+  return in;
+}

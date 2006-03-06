@@ -171,6 +171,9 @@ ConfigVariableEnum<Texture::FilterType> text_minfilter
 ConfigVariableEnum<Texture::FilterType> text_magfilter
 ("text-magfilter", Texture::FT_linear,
  PRC_DESC("The default texture magfilter type for dynamic text fonts"));
+ConfigVariableEnum<Texture::WrapMode> text_wrap_mode
+("text-wrap-mode", Texture::WM_border_color,
+ PRC_DESC("The default wrap mode for dynamic text fonts"));
 
 
 

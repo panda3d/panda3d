@@ -52,6 +52,7 @@ extern ConfigVariableInt text_max_never_break;
 
 extern ConfigVariableEnum<Texture::FilterType> text_minfilter;
 extern ConfigVariableEnum<Texture::FilterType> text_magfilter;
+extern ConfigVariableEnum<Texture::WrapMode> text_wrap_mode;
 
 extern EXPCL_PANDA void init_libtext();
 

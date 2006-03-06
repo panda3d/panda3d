@@ -53,8 +53,8 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
 
   // Clamp to an explicit invisible border, so we don't get bleeding
   // at the edges at all.
-  set_wrap_u(WM_border_color);
-  set_wrap_v(WM_border_color);
+  set_wrap_u(text_wrap_mode);
+  set_wrap_v(text_wrap_mode);
   set_border_color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
 }
 
