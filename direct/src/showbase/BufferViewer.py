@@ -35,6 +35,10 @@ class BufferViewer(DirectObject):
         window resize (and I ought to fix that)."""
         self.dirty = 1
 
+        # Call enabled again, mainly to ensure that the task has been
+        # started.
+        self.enable(self.enabled)
+
     def isValidTextureSet(self, list):
         """Access: private. Returns true if the parameter is a
         list of GraphicsOutput and Texture, or the keyword 'all'."""
@@ -57,9 +61,17 @@ class BufferViewer(DirectObject):
             return
         self.enabled = x
         self.dirty = 1
-        if (x) and (self.task == 0):
+        if self.task:
+            taskMgr.remove(self.task)
+            self.task = 0
+        if (x):
             self.task = taskMgr.add(self.maintainReadout, "buffer-viewer-maintain-readout",
                                     priority=1)
+        else:
+            # If we just disabled the viewer, remove all of the cards.
+            for card in self.cards:
+                card.removeNode()
+            self.cards = []
 
     def toggleEnable(self):
         """Toggle the buffer viewer on or off.  The initial state of the
@@ -271,7 +283,9 @@ class BufferViewer(DirectObject):
                     cards.append(card)
                     wins.append(win)
         self.cards = cards
-        if (len(cards)==0): return
+        if (len(cards)==0):
+            self.task = 0
+            return Task.done
         ncards = len(cards)
 
         # Decide how many rows and columns to use for the layout.
