@@ -291,3 +291,10 @@ class Loader:
             nodeCount += 1
             self.makeNodeNamesUnique(nodePath.getChild(i), nodeCount)
 
+    def loadShader (self, shaderPath):
+        shader = ShaderPool.loadShader (shaderPath)
+        if (shader == None):
+            Loader.notify.warning("Could not load shader file %s." % shaderPath)
+        return shader
+        
+        
