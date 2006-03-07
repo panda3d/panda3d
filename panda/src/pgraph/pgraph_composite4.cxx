@@ -12,6 +12,7 @@
 #include "shader.cxx"
 #include "shaderInput.cxx"
 #include "shaderAttrib.cxx"
+#include "shaderPool.cxx"
 #include "showBoundsEffect.cxx"
 #include "spotlight.cxx"
 #include "stateMunger.cxx"

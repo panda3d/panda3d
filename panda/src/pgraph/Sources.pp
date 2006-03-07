@@ -98,6 +98,7 @@
     shader.I shader.h \
     shaderAttrib.I shaderAttrib.h \
     shaderInput.I shaderInput.h \
+    shaderPool.I shaderPool.h \
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
     stateMunger.I stateMunger.h \
@@ -205,6 +206,7 @@
     shader.cxx \
     shaderAttrib.cxx \
     shaderInput.cxx \
+    shaderPool.cxx \
     showBoundsEffect.cxx \
     spotlight.cxx \
     stateMunger.cxx \
@@ -308,6 +310,7 @@
     shader.I shader.h \
     shaderAttrib.I shaderAttrib.h \
     shaderInput.I shaderInput.h \
+    shaderPool.I shaderPool.h \
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
     stateMunger.I stateMunger.h \
