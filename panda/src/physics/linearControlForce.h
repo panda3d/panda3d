@@ -73,6 +73,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "LinearControlForce.I"
+#include "linearControlForce.I"
 
 #endif // LINEARCONTROLFORCE_H
