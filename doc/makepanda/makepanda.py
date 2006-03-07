@@ -3626,6 +3626,35 @@ if (OMIT.count("PANDATOOL")==0):
                  'libdtool.dll',
                  'libpystub.dll',
     ])
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggRename.cxx', obj='egg-rename_eggRename.obj')
+    EnqueueLink(dll='egg-rename.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg-rename_eggRename.obj',
+                 'libconverter.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggRetargetAnim.cxx', obj='egg-retarget-anim_eggRetargetAnim.obj')
+    EnqueueLink(dll='egg-retarget-anim.exe', opts=['ADVAPI', 'NSPR'], obj=[
+                 'egg-retarget-anim_eggRetargetAnim.obj',
+                 'libeggcharbase.lib',
+                 'libconverter.lib',
+                 'libeggbase.lib',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpandaegg.dll',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtoolconfig.dll',
+                 'libdtool.dll',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandatool/src/flt/
