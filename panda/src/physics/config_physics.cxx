@@ -21,6 +21,7 @@
 #include "physicsObject.h"
 #include "physicalNode.h"
 #include "linearIntegrator.h"
+#include "linearControlForce.h"
 #include "angularIntegrator.h"
 #include "forceNode.h"
 #include "forces.h"
@@ -59,6 +60,7 @@ init_libphysics() {
   AngularVectorForce::init_type();
   BaseForce::init_type();
   ForceNode::init_type();
+  LinearControlForce::init_type();
   LinearCylinderVortexForce::init_type();
   LinearDistanceForce::init_type();
   LinearForce::init_type();
