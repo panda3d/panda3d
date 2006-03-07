@@ -106,6 +106,7 @@ write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearControlForce:\n";
   out.width(indent+2); out<<""; out<<"_fvec "<<_fvec<<"\n";
+  out.width(indent+2); out<<""; out<<"_physics_object "<<_physics_object<<"\n";
   LinearForce::write(out, indent+2);
   #endif //] NDEBUG
 }
