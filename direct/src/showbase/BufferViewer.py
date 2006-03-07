@@ -61,17 +61,9 @@ class BufferViewer(DirectObject):
             return
         self.enabled = x
         self.dirty = 1
-        if self.task:
-            taskMgr.remove(self.task)
-            self.task = 0
-        if (x):
+        if (x and self.task == 0):
             self.task = taskMgr.add(self.maintainReadout, "buffer-viewer-maintain-readout",
                                     priority=1)
-        else:
-            # If we just disabled the viewer, remove all of the cards.
-            for card in self.cards:
-                card.removeNode()
-            self.cards = []
 
     def toggleEnable(self):
         """Toggle the buffer viewer on or off.  The initial state of the
@@ -224,7 +216,7 @@ class BufferViewer(DirectObject):
             cwriter.addData3f(bright,bright,bright)
             cwriter.addData3f(bright,bright,bright)
 
-        triangles=GeomTriangles(Geom.UHDynamic)
+        triangles=GeomTriangles(Geom.UHStatic)
         for i in range(2):
             delta = i*8
             triangles.addVertices(0+delta,4+delta,1+delta)
