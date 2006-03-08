@@ -97,6 +97,7 @@ class Actor(DirectObject, NodePath):
         self.__controlJoints = {}
         
         self.__LODNode = None
+        self.switches = None
 
         if (other == None):
             # act like a normal constructor
@@ -190,21 +191,7 @@ class Actor(DirectObject, NodePath):
                         self.loadAnims(anims)
 
         else:
-            # act like a copy constructor
-            # copy the scene graph elements of other
-            otherCopy = other.copyTo(hidden)
-            otherCopy.detachNode()
-            # assign these elements to ourselve
-            self.gotName = other.gotName
-            self.assign(otherCopy)
-            self.setGeomNode(otherCopy.getChild(0))
-            
-            # copy the part dictionary from other
-            self.__copyPartBundles(other)
-            self.__subpartDict = copy_module.deepcopy(other.__subpartDict)
-            
-            # copy the anim dictionary from other
-            self.__copyAnimControls(other)
+            self.copyActor(other, True) # overwrite everything
 
         # For now, all Actors will by default set their top bounding
         # volume to be the "final" bounding volume: the bounding
@@ -228,6 +215,32 @@ class Actor(DirectObject, NodePath):
         except:
             self.Actor_deleted = 1
             self.cleanup()
+
+    def copyActor(self, other, overwrite=False):
+            # act like a copy constructor
+            self.gotName = other.gotName
+
+            # copy the scene graph elements of other
+            if (overwrite):
+                otherCopy = other.copyTo(hidden)
+                otherCopy.detachNode()
+                # assign these elements to ourselve (overwrite)
+                self.assign(otherCopy)
+            else:
+                # just copy these to ourselve
+                otherCopy = other.copyTo(self)
+            self.setGeomNode(otherCopy.getChild(0))
+                
+            # copy the part dictionary from other
+            self.__copyPartBundles(other)
+            self.__subpartDict = copy_module.deepcopy(other.__subpartDict)
+            
+            # copy the anim dictionary from other
+            self.__copyAnimControls(other)
+
+            # copy the switches for lods
+            self.switches = other.switches
+            self.__LODNode = self.find('**/+LODNode')
 
     def __cmp__(self, other):
         # Actor inherits from NodePath, which inherits a definition of
@@ -360,7 +373,7 @@ class Actor(DirectObject, NodePath):
         self.__animControlDict = {}
         self.__controlJoints = {}
 
-        if self.__LODNode:
+        if self.__LODNode and (not self.__LODNode.isEmpty()):
             self.__LODNode.removeNode()
             self.__LODNode = None
 
