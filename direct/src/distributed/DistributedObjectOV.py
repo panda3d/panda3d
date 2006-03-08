@@ -202,6 +202,9 @@ class DistributedObjectOV(DistributedObjectBase):
 
         dclass.receiveUpdateOther(self, di)
 
+    def getCacheable(self):
+        return False
+
     def sendUpdate(self, fieldName, args = [], sendToId = None):
         if self.cr:
             dg = self.dclass.clientFormatUpdate(
