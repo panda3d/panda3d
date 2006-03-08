@@ -413,7 +413,7 @@ class ClientRepositoryBase(ConnectionRepository):
             self._logFailedDisable(doId, ownerView)
 
     def _logFailedDisable(self, doId, ownerView):
-        ClientRepository.notify.warning(
+        self.notify.warning(
             "Disable failed. DistObj "
             + str(doId) +
             " is not in dictionary, ownerView=%s" % ownerView)
@@ -450,7 +450,7 @@ class ClientRepositoryBase(ConnectionRepository):
             # Let the dclass finish the job
             do.dclass.receiveUpdate(do, di)
         else:
-            ClientRepository.notify.warning(
+            self.notify.warning(
                 "Asked to update non-existent DistObj " + str(doId))
 
     def handleGoGetLost(self, di):
@@ -460,18 +460,18 @@ class ClientRepositoryBase(ConnectionRepository):
             self.bootedIndex = di.getUint16()
             self.bootedText = di.getString()
 
-            ClientRepository.notify.warning(
+            self.notify.warning(
                 "Server is booting us out (%d): %s" % (self.bootedIndex, self.bootedText))
         else:
             self.bootedIndex = None
             self.bootedText = None
-            ClientRepository.notify.warning(
+            self.notify.warning(
                 "Server is booting us out with no explanation.")
 
     def handleServerHeartbeat(self, di):
         # Got a heartbeat message from the server.
         if base.config.GetBool('server-heartbeat-info', 1):
-            ClientRepository.notify.info("Server heartbeat.")
+            self.notify.info("Server heartbeat.")
 
     def handleSystemMessage(self, di):
         # Got a system message from the server.
