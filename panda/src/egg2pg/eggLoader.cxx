@@ -410,7 +410,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_transform
-//       Access: Public, Static
+//       Access: Public
 //  Description: Creates a TransformState object corresponding to the
 //               indicated EggTransform.
 ////////////////////////////////////////////////////////////////////
@@ -525,7 +525,19 @@ make_transform(const EggTransform *egg_transform) {
     }
   }
 
-  return ts;
+  if (ts->components_given()) {
+    return ts;
+  }
+
+  // Finally, we uniquify all the matrix-based TransformStates we
+  // create by complete matrix value.  The TransformState class
+  // doesn't normally go this far, because of the cost of this
+  // additional uniquification step, but this is the egg loader so we
+  // don't mind spending a little bit of extra time here to get a more
+  // optimal result.
+  TransformStates::iterator tsi = _transform_states.insert(TransformStates::value_type(ts->get_mat(), ts)).first;
+  
+  return (*tsi).second;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -81,7 +81,7 @@ public:
                     const LMatrix4d *transform, bool is_dynamic,
                     CharacterMaker *character_maker);
 
-  static CPT(TransformState) make_transform(const EggTransform *egg_transform);
+  CPT(TransformState) make_transform(const EggTransform *egg_transform);
 
 private:
   class TextureDef {
@@ -227,6 +227,9 @@ private:
   };
   typedef pmap<VertexPoolTransform, PT(GeomVertexData) > VertexPoolData;
   VertexPoolData _vertex_pool_data;
+
+  typedef pmap<LMatrix4f, CPT(TransformState) > TransformStates;
+  TransformStates _transform_states;
 
   DeferredNodes _deferred_nodes;
 

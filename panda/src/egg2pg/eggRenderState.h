@@ -57,7 +57,7 @@ private:
                                         bool bface);
   static TexGenAttrib::Mode get_tex_gen(const EggTexture *egg_tex);
 
-  static CPT(RenderAttrib)
+  CPT(RenderAttrib)
   apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib, 
                 TextureStage *stage, const EggTexture *egg_tex);
 

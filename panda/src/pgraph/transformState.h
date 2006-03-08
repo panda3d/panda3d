@@ -30,6 +30,7 @@
 #include "pStatCollector.h"
 #include "geomEnums.h"
 #include "reMutex.h"
+#include "config_pgraph.h"
 
 class GraphicsStateGuardianBase;
 class FactoryParams;
@@ -68,7 +69,8 @@ public:
   virtual ~TransformState();
 
 PUBLISHED:
-  bool operator < (const TransformState &other) const;
+  INLINE bool operator < (const TransformState &other) const;
+  bool sorts_less(const TransformState &other, bool uniquify_matrix) const;
   size_t get_hash() const;
 
   static CPT(TransformState) make_identity();

@@ -110,14 +110,20 @@ TransformState::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformState::operator <
+//     Function: TransformState::sorts_less
 //       Access: Published
 //  Description: Provides an arbitrary ordering among all unique
 //               TransformStates, so we can store the essentially
 //               different ones in a big set and throw away the rest.
+//
+//               If uniquify_matrix is true, then matrix-defined
+//               TransformStates are also uniqified.  If
+//               uniquify_matrix is false, then only component-defined
+//               TransformStates are uniquified, which is less
+//               expensive.
 ////////////////////////////////////////////////////////////////////
 bool TransformState::
-operator < (const TransformState &other) const {
+sorts_less(const TransformState &other, bool uniquify_matrix) const {
   static const int significant_flags = 
     (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_quat_given | F_is_2d);
 

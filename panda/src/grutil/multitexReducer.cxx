@@ -328,7 +328,7 @@ flatten(GraphicsOutput *window) {
       // for the first texture layer to apply onto.
       
       CardMaker cm("background");
-      cm.set_frame(0.0f, 1.0f, 0.0f, 1.0f);
+      cm.set_frame(min_uv[0], max_uv[0], min_uv[1], max_uv[1]);
       if (bake_in_color) {
         cm.set_color(geom_color);
       }
@@ -348,7 +348,8 @@ flatten(GraphicsOutput *window) {
     for (si = stage_list.begin(); si != stage_list.end(); ++si) {
       const StageInfo &stage_info = (*si);
 
-      make_texture_layer(render, stage_info, geom_list, force_use_geom);
+      make_texture_layer(render, stage_info, geom_list, 
+			 min_uv, max_uv, force_use_geom);
     }
 
     // Now modify the geometry to apply the new texture, instead of
@@ -362,7 +363,8 @@ flatten(GraphicsOutput *window) {
       
       CPT(RenderState) geom_state = 
         geom_info._geom_node->get_geom_state(geom_info._index);
-      geom_state = geom_state->add_attrib(new_ta);
+      int override = geom_info._geom_net_state->get_override(TextureAttrib::get_class_type());
+      geom_state = geom_state->add_attrib(new_ta, override);
 
       if (bake_in_color) {
         // If we have baked the color into the texture, we have to be
@@ -475,8 +477,9 @@ scan_geom_node(GeomNode *node, const RenderState *state,
       // Just a single texture on the Geom; we don't really need to do
       // anything to flatten the textures, then.  But we should ensure
       // that the correct TextureAttrib is applied to the Geom.
+      int override = geom_net_state->get_override(TextureAttrib::get_class_type());
       CPT(RenderState) geom_state = node->get_geom_state(gi);
-      geom_state = geom_state->add_attrib(ta);
+      geom_state = geom_state->add_attrib(ta, override);
       node->set_geom_state(gi, geom_state);
 
     } else {
@@ -734,6 +737,7 @@ void MultitexReducer::
 make_texture_layer(const NodePath &render, 
                    const MultitexReducer::StageInfo &stage_info, 
                    const MultitexReducer::GeomList &geom_list,
+		   const TexCoordf &min_uv, const TexCoordf &max_uv,
                    bool force_use_geom) {
   CPT(RenderAttrib) cba;
 
@@ -768,11 +772,56 @@ make_texture_layer(const NodePath &render,
     break;
 
   case TextureStage::M_combine:
-    // We don't support the texture combiner here right now.  For now,
-    // this is the same as modulate.
-    cba = ColorBlendAttrib::make
-      (ColorBlendAttrib::M_add, ColorBlendAttrib::O_fbuffer_color,
-       ColorBlendAttrib::O_zero);
+    // We only support certain modes of M_combine.
+    switch (stage_info._stage->get_combine_rgb_mode()) {
+    case TextureStage::CM_modulate:
+      {
+	TextureStage::CombineSource source0 = stage_info._stage->get_combine_rgb_source0();
+	TextureStage::CombineOperand operand0 = stage_info._stage->get_combine_rgb_operand0();
+	TextureStage::CombineSource source1 = stage_info._stage->get_combine_rgb_source1();
+	TextureStage::CombineOperand operand1 = stage_info._stage->get_combine_rgb_operand1();
+	// Since modulate doesn't care about order, let's establish
+	// the convention that the lowest-numbered source 
+	// operand is in slot 0 (just for purposes of comparison).
+	if (source1 < source0) {
+	  source0 = stage_info._stage->get_combine_rgb_source1();
+	  operand0 = stage_info._stage->get_combine_rgb_operand1();
+	  source1 = stage_info._stage->get_combine_rgb_source0();
+	  operand1 = stage_info._stage->get_combine_rgb_operand0();
+	}
+
+	if (source0 == TextureStage::CS_primary_color &&
+	    source1 == TextureStage::CS_previous) {
+	  // This is just a trick to re-apply the vertex (lighting)
+	  // color on the top of the texture stack.  We can ignore it,
+	  // since the flattened texture will do this anyway.
+	  return;
+	  
+	} else if (source0 == TextureStage::CS_texture &&
+		   source1 == TextureStage::CS_constant) {
+	  // Scaling the texture by a flat color.
+	  cba = ColorBlendAttrib::make
+	    (ColorBlendAttrib::M_add, ColorBlendAttrib::O_constant_color,
+	     ColorBlendAttrib::O_zero, stage_info._stage->get_color());
+	  
+	} else if (source0 == TextureStage::CS_texture &&
+		   source1 == TextureStage::CS_previous) {
+	  // Just an ordinary modulate.
+	  cba = ColorBlendAttrib::make
+	    (ColorBlendAttrib::M_add, ColorBlendAttrib::O_fbuffer_color,
+	     ColorBlendAttrib::O_zero);
+	  
+	} else {
+	  // Some other kind of modulate; we don't support it.
+	  return;
+	}
+      }
+      break;
+
+    default:
+      // Ignore this stage; we don't support it.
+      return;
+    }
     break;
 
   case TextureStage::M_blend_color_scale:
@@ -790,9 +839,9 @@ make_texture_layer(const NodePath &render,
     // If this TextureStage uses the target texcoords, we can just
     // generate a simple card the fills the entire buffer.
     CardMaker cm(stage_info._tex->get_name());
-    cm.set_uv_range(TexCoordf(0.0f, 0.0f), TexCoordf(1.0f, 1.0f));
+    cm.set_uv_range(min_uv, max_uv);
     cm.set_has_uvs(true);
-    cm.set_frame(0.0f, 1.0f, 0.0f, 1.0f);
+    cm.set_frame(min_uv[0], max_uv[0], min_uv[1], max_uv[1]);
     
     geom = render.attach_new_node(cm.generate());
 

@@ -527,7 +527,7 @@ get_tex_gen(const EggTexture *egg_tex) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggRenderState::apply_tex_mat
-//       Access: Private, Static
+//       Access: Private
 //  Description: Applies the texture matrix from the indicated egg
 //               texture to the given TexMatrixAttrib, and returns the
 //               new attrib.
@@ -536,7 +536,7 @@ CPT(RenderAttrib) EggRenderState::
 apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib, 
               TextureStage *stage, const EggTexture *egg_tex) {
   if (egg_tex->has_transform()) {
-    CPT(TransformState) transform = EggLoader::make_transform(egg_tex);
+    CPT(TransformState) transform = _loader.make_transform(egg_tex);
   
     if (tex_mat_attrib == (const RenderAttrib *)NULL) {
       tex_mat_attrib = TexMatrixAttrib::make();

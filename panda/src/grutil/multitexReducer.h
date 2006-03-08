@@ -138,6 +138,7 @@ private:
   void make_texture_layer(const NodePath &render, 
                           const StageInfo &stage_info, 
                           const GeomList &geom_list,
+			  const TexCoordf &min_uv, const TexCoordf &max_uv,
                           bool force_use_geom);
   void transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
                      const GeomList &geom_list, bool preserve_color);

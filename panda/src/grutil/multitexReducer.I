@@ -79,7 +79,7 @@ operator < (const MultitexReducer::StageInfo &other) const {
     return _tex < other._tex;
   }
   if (_tex_mat != other._tex_mat) {
-    return _tex_mat < other._tex_mat;
+    return _tex_mat->sorts_less(*other._tex_mat, true);
   }
 
   return false;
