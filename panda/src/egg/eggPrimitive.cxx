@@ -547,9 +547,10 @@ cleanup() {
 //               checks that the first and last vertices are not the
 //               same.
 //
-//               This function identifies repeated vertices by pointer
-//               only; it does not remove consecutive equivalent but
-//               different vertices.
+//               This function identifies repeated vertices by
+//               position only; it does not consider any other
+//               properties, such as color or UV, significant in
+//               differentiating vertices.
 ////////////////////////////////////////////////////////////////////
 void EggPrimitive::
 remove_doubled_verts(bool closed) {
@@ -563,7 +564,7 @@ remove_doubled_verts(bool closed) {
     vlast = vi;
     ++vi;
     while (vi != _vertices.end()) {
-      if ((*vi) != (*vlast)) {
+      if ((*vi)->get_pos4() != (*vlast)->get_pos4()) {
         new_vertices.push_back(*vi);
       } else {
         prepare_remove_vertex(*vi, vi - _vertices.begin() - num_removed, 
@@ -580,7 +581,8 @@ remove_doubled_verts(bool closed) {
     // Then, if this is a polygon (which will be closed anyway),
     // remove the vertex from the end if it's a repeat of the
     // beginning.
-    while (_vertices.size() > 1 && _vertices.back() == _vertices.front()) {
+    while (_vertices.size() > 1 && 
+           _vertices.back()->get_pos4() == _vertices.front()->get_pos4()) {
       prepare_remove_vertex(_vertices.back(), _vertices.size() - 1, 
                             _vertices.size());
       _vertices.pop_back();
