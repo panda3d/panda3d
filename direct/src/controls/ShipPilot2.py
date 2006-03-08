@@ -24,7 +24,6 @@ import math
 from PhysicsWalker import PhysicsWalker
 
 class ShipPilot2(PhysicsWalker):
-
     notify = directNotify.newCategory("PhysicsWalker")
     wantDebugIndicator = base.config.GetBool(
         'want-avatar-physics-indicator', 0)
@@ -79,9 +78,11 @@ class ShipPilot2(PhysicsWalker):
 
     def setAvatar(self, ship):
         if ship is None:
+            base.controlForce.setPhysicsObject(None)
             self.takedownPhysics()
             self.ship = None
         else:
+            base.controlForce.setPhysicsObject(ship.node().getPhysicsObject())
             #self.setupShip()
             self.setupPhysics(ship)
             self.ship = ship
@@ -235,12 +236,13 @@ class ShipPilot2(PhysicsWalker):
             
     def takedownPhysics(self):
         assert self.debugPrint("takedownPhysics()")
-        if hasattr(self, "phys"):
-            for i in self.nodes:
-                i.removeNode()
-            del self.phys
-        if self.ship != None:
-            self.ship.worldVelocity = Vec3.zero()
+        if 0:
+            if hasattr(self, "phys"):
+                for i in self.nodes:
+                    i.removeNode()
+                del self.phys
+            if self.ship != None:
+                self.ship.worldVelocity = Vec3.zero()
             
     def setupPhysics(self, avatarNodePath):
         assert self.debugPrint("setupPhysics()")
@@ -248,159 +250,20 @@ class ShipPilot2(PhysicsWalker):
             return
         assert not avatarNodePath.isEmpty()
 
-        self.takedownPhysics()
         self.nodes = []
-        self.phys=PhysicsManager()
+        self.actorNode = avatarNodePath.node()
 
         if 0:
-            # Connect to Physics Manager:
-            self.actorNode=ActorNode("ship-physicsActor")
-            self.actorNode.getPhysicsObject().setOriented(1)
-            self.actorNode.getPhysical(0).setViscosity(0.1)
-            physicsActor=render.attachNewNode(self.actorNode)
-            physicsActor.setPos(avatarNodePath, Vec3(0))
-            physicsActor.setHpr(avatarNodePath, Vec3(0))
-            avatarNodePath.reparentTo(physicsActor)
-            avatarNodePath.setPos(Vec3(0))
-            avatarNodePath.setHpr(Vec3(0))
-            avatarNodePath.assign(physicsActor)
-        else:
-            physicsActor = avatarNodePath
-            self.actorNode = physicsActor.node()
-            self.actorNode.getPhysicsObject().setOriented(1)
-            self.actorNode.getPhysical(0).setViscosity(0.1)
-        
-        fn=ForceNode("ship gravity")
-        fnp=NodePath(fn)
-        #fnp.reparentTo(physicsActor)
-        fnp.reparentTo(render)
-        self.nodes.append(fnp)
-        gravity=LinearVectorForce(0.0, 0.0, self.__gravity)
-        fn.addForce(gravity)
-        self.phys.addLinearForce(gravity)
-        self.gravity = gravity
-
-        if 0:
-            fn=ForceNode("ship buoyancy")
-            fnp=NodePath(fn)
-            #fnp.reparentTo(physicsActor)
-            fnp.reparentTo(render)
-            self.nodes.append(fnp)
-            buoyancy=LinearVectorForce(0.0, 0.0, 0.0)
-            fn.addForce(buoyancy)
-            self.phys.addLinearForce(buoyancy)
-            self.buoyancy = buoyancy
-
-        if 1:
-            fn=ForceNode("ship buoyancy bow")
-            fnp=NodePath(fn)
-            #fnp.reparentTo(physicsActor)
-            fnp.reparentTo(render)
-            self.nodes.append(fnp)
-            buoyancy=LinearVectorForce(0.0, 0.0, 0.0)
-            fn.addForce(buoyancy)
-            self.phys.addLinearForce(buoyancy)
-            self.buoyancyBow = buoyancy
-
-            fn=ForceNode("ship buoyancy stern")
-            fnp=NodePath(fn)
-            #fnp.reparentTo(physicsActor)
-            fnp.reparentTo(render)
-            self.nodes.append(fnp)
-            buoyancy=LinearVectorForce(0.0, 0.0, 0.0)
-            fn.addForce(buoyancy)
-            self.phys.addLinearForce(buoyancy)
-            self.buoyancyStern = buoyancy
-
-            fn=ForceNode("ship buoyancy port")
-            fnp=NodePath(fn)
-            #fnp.reparentTo(physicsActor)
-            fnp.reparentTo(render)
-            self.nodes.append(fnp)
-            buoyancy=LinearVectorForce(0.0, 0.0, 0.0)
-            fn.addForce(buoyancy)
-            self.phys.addLinearForce(buoyancy)
-            self.buoyancyPort = buoyancy
-
-            fn=ForceNode("ship buoyancy starboard")
-            fnp=NodePath(fn)
-            #fnp.reparentTo(physicsActor)
-            fnp.reparentTo(render)
-            self.nodes.append(fnp)
-            buoyancy=LinearVectorForce(0.0, 0.0, 0.0)
-            fn.addForce(buoyancy)
-            self.phys.addLinearForce(buoyancy)
-            self.buoyancyStarboard = buoyancy
-        
-        if 1:
-            fn=ForceNode("ship keel")
-            fnp=NodePath(fn)
-            fnp.reparentTo(avatarNodePath)
-            self.nodes.append(fnp)
-            self.keel=AngularVectorForce(0.0, 0.0, 0.0)
-            fn.addForce(self.keel)
-            avatarNodePath.node().getPhysical(0).addAngularForce(self.keel)
-        else:
-            fn=ForceNode("ship keel")
+            fn=ForceNode("ship priorParent")
             fnp=NodePath(fn)
             fnp.reparentTo(render)
             self.nodes.append(fnp)
-            self.keel=AngularVectorForce(0.0, 0.0, 0.0)
-            fn.addForce(self.keel)
-            self.phys.addAngularForce(self.keel)
-        
-        fn=ForceNode("ship priorParent")
-        fnp=NodePath(fn)
-        fnp.reparentTo(render)
-        self.nodes.append(fnp)
-        priorParent=LinearVectorForce(0.0, 0.0, 0.0)
-        fn.addForce(priorParent)
-        self.phys.addLinearForce(priorParent)
-        self.priorParentNp = fnp
-        self.priorParent = priorParent
-        
-        if 1:
-            fn=ForceNode("ship viscosity")
-            fnp=NodePath(fn)
-            #fnp.reparentTo(physicsActor)
-            fnp.reparentTo(render)
-            self.nodes.append(fnp)
-            self.avatarViscosity=LinearFrictionForce(0.0, 1.0, 0)
-            self.avatarViscosity.setCoef(0.5)
-            self.avatarViscosity.setAmplitude(2)
-            fn.addForce(self.avatarViscosity)
-            self.phys.addLinearForce(self.avatarViscosity)
+            priorParent=LinearVectorForce(0.0, 0.0, 0.0)
+            fn.addForce(priorParent)
+            self.phys.addLinearForce(priorParent)
+            self.priorParentNp = fnp
+            self.priorParent = priorParent
 
-        self.phys.attachLinearIntegrator(LinearEulerIntegrator())
-        self.phys.attachAngularIntegrator(AngularEulerIntegrator())
-        self.phys.attachPhysicalnode(physicsActor.node())
-
-        if 0:
-            self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)
-            fn=ForceNode("ship momentum")
-            fnp=NodePath(fn)
-            fnp.reparentTo(render)
-            self.nodes.append(fnp)
-            fn.addForce(self.momentumForce)
-            self.phys.addLinearForce(self.momentumForce)
-            
-        self.acForce=LinearVectorForce(0.0, 0.0, 0.0)
-        self.acForce.setAmplitude(5)
-        fn=ForceNode("ship avatarControls")
-        fnp=NodePath(fn)
-        fnp.reparentTo(render)
-        self.nodes.append(fnp)
-        fn.addForce(self.acForce)
-        self.phys.addLinearForce(self.acForce)
-        #self.phys.removeLinearForce(self.acForce)
-        #fnp.remove()
-        
-        if 0 or self.useHeightRay:
-            #self.setupRay(self.floorBitmask, self.avatarRadius)
-            self.setupRay(self.floorBitmask, 0.0)
-            
-
-        #avatarNodePath.reparentTo(render)
         self.avatarNodePath = avatarNodePath
         #self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
         #self.actorNode.updateTransform()
@@ -596,8 +459,6 @@ class ShipPilot2(PhysicsWalker):
                     self.avatarNodePath,
                     self.avatarNodePath.getPosDelta(render)).pPrintValues())
         if 0:
-            onScreenDebug.add("w gravity",
-                self.gravity.getLocalVector().pPrintValues())
             onScreenDebug.add("w priorParent",
                 self.priorParent.getLocalVector().pPrintValues())
 
@@ -614,20 +475,8 @@ class ShipPilot2(PhysicsWalker):
             onScreenDebug.add("w physObject len",
                 "% 10.4f"%physObject.length())
 
-            acForce = self.acForce.getLocalVector()
-            onScreenDebug.add("w acForce vec",
-                acForce.pPrintValues())
-            onScreenDebug.add("w acForce len",
-                "% 10.4f"%acForce.length())
-
-            onScreenDebug.add("w avatarViscosity",
-                "% 10.4f"%(self.avatarViscosity.getCoef(),))
-
-            #onScreenDebug.add("physMgr",
-            #    self.phys.debugOutput())
             onScreenDebug.add("orientation",
                 self.actorNode.getPhysicsObject().getOrientation().pPrintValues())
-            #print "ship orientation:", self.actorNode.getPhysicsObject().getOrientation().pPrintValues()
 
         if 0:
             momentumForce = self.momentumForce.getLocalVector()
@@ -645,7 +494,7 @@ class ShipPilot2(PhysicsWalker):
                 self.priorParentNp.getRelativeVector(
                     render,
                     self.avatarNodePath.getPosDelta(render)).pPrintValues())
-        if 1:
+        if 0:
             onScreenDebug.add("w priorParent",
                 self.priorParent.getLocalVector().pPrintValues())
         if 0:
@@ -668,35 +517,9 @@ class ShipPilot2(PhysicsWalker):
                     base.localAvatar.getPos().pPrintValues(),))
                 onScreenDebug.append("localAvatar hpr = %s\n"%(
                     base.localAvatar.getHpr().pPrintValues(),))
-                #onScreenDebug.append("localAvatar anim = %s\n"%(
-                #    base.localAvatar.animFSM.getCurrentState().getName(),))
         #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
         physObject=self.actorNode.getPhysicsObject()
-        #rotAvatarToPhys=Mat3.rotateMatNormaxis(
-        #    -self.avatarNodePath.getH(), Vec3.up())
-        #rotPhysToAvatar=Mat3.rotateMatNormaxis(
-        #    self.avatarNodePath.getH(), Vec3.up())
         contact=self.actorNode.getContactVector()
-        
-        if 0:
-            depth=physObject.getPosition().getZ()
-            if depth < 0.0:
-                # self.buoyancy.setVector(Vec3.zero())
-                pass
-            else:
-                # self.buoyancy.setVector(Vec3.zero())
-                physObject.setPosition(Point3(
-                    physObject.getPosition().getX(),
-                    physObject.getPosition().getY(),
-                    0.0))
-                self.actorNode.updateTransform()
-                #self.buoyancy.setVector(Vec3(0, 0, -depth))
-        elif 0:
-            physObject.setPosition(Point3(
-                physObject.getPosition().getX(),
-                physObject.getPosition().getY(),
-                physObject.getPosition().getZ()))
-            self.actorNode.updateTransform()
 
         # get the button states:
         forward = inputState.isSet("forward")
@@ -804,7 +627,7 @@ class ShipPilot2(PhysicsWalker):
                         messenger.send("jumpHardLand")
                     else:
                         messenger.send("jumpLand")
-                    self.priorParent.setVector(Vec3.zero())
+                    #self.priorParent.setVector(Vec3.zero())
                     self.isAirborne = 0
                 elif jump:
                     #self.__jumpButton=0
@@ -856,6 +679,7 @@ class ShipPilot2(PhysicsWalker):
             self.__oldContact=Vec3(contact)
         self.__oldAirborneHeight=airborneHeight
 
+        #------------------------------
         #debugTempH=self.avatarNodePath.getH()
         if __debug__:
             q1=self.avatarNodePath.getQuat()
@@ -863,31 +687,9 @@ class ShipPilot2(PhysicsWalker):
             q1.normalize()
             q2.normalize()
             assert q1.isSameDirection(q2) or (q1.getHpr() == q2.getHpr())
-        assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
-
-        moveToGround = Vec3.zero()
-        if not self.useHeightRay or self.isAirborne: 
-            # ...the airborne check is a hack to stop sliding.
-            self.phys.doPhysics(dt)
-            if __debug__:
-                onScreenDebug.add("phys", "on")
-        else:
-            physObject.setVelocity(Vec3.zero())
-            #if airborneHeight>0.001 and contact==Vec3.zero():
-            #    moveToGround = Vec3(0.0, 0.0, -airborneHeight)
-            #moveToGround = Vec3(0.0, 0.0, -airborneHeight)
-            moveToGround = Vec3(0.0, 0.0, -self.determineHeight())
-            if __debug__:       
-                onScreenDebug.add("phys", "off")
-
-        #debugTempH=self.avatarNodePath.getH()
-        if __debug__:
-            q1=self.avatarNodePath.getQuat()
-            q2=physObject.getOrientation()
-            q1.normalize()
-            q2.normalize()
-            assert q1.isSameDirection(q2) or (q1.getHpr() == q2.getHpr())
-        assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
+        assert self.avatarNodePath.getPos().almostEqual(
+            physObject.getPosition(), 0.0001)
+        #------------------------------
 
         # Check to see if we're moving at all:
         physVel = physObject.getVelocity()
@@ -895,13 +697,11 @@ class ShipPilot2(PhysicsWalker):
         if (physVelLen!=0.
                 or self.__speed 
                 or self.__slideSpeed 
-                or self.__rotationSpeed 
-                or moveToGround!=Vec3.zero()):
+                or self.__rotationSpeed):
             distance = dt * self.__speed
             goForward = True
             if (distance < 0):
                 goForward = False
-                distance /= 5
             slideDistance = dt * self.__slideSpeed
             rotation = dt * self.__rotationSpeed
             
@@ -930,23 +730,21 @@ class ShipPilot2(PhysicsWalker):
                 newVector *= maxLen
 
 
-            newVector.normalize()
-            newVector *= maxLen
+            print "newVector", newVector
             if __debug__:
-                onScreenDebug.add("newVector",
-                                  newVector)
-                onScreenDebug.add("newVector length",
-                                  newVector.length())
-            self.acForce.setVector(Vec3(newVector))
+                onScreenDebug.add(
+                    "newVector", newVector)
+                onScreenDebug.add(
+                    "newVector length", newVector.length())
+            base.controlForce.setVector(newVector)
+            assert base.controlForce.getLocalVector() == newVector
+            assert base.controlForce.getPhysicsObject()
+            assert base.controlForce.getPhysicsObject() == physObject
             
             
             #momentum = self.momentumForce.getLocalVector()
             #momentum *= 0.9
             #self.momentumForce.setVector(momentum)
-
-            
-            #physObject.setPosition(Point3(
-            #    physObject.getPosition()+step+moveToGround))
 
             # update hpr:
             o=physObject.getOrientation()
@@ -961,7 +759,7 @@ class ShipPilot2(PhysicsWalker):
         else:
             # even if there are no active inputs, we still might be moving
             assert physObject.getVelocity().length() == 0.
-            self.__vel.set(0.0, 0.0, 0.0)
+            #base.controlForce.setVector(Vec3.zero())
             goForward = True
 
         
@@ -981,7 +779,7 @@ class ShipPilot2(PhysicsWalker):
         # modify based on sail damage
         speed *= self.ship.Sp
         speed /= self.ship.maxSp
-        physObject.setVelocity(speed)
+        ## physObject.setVelocity(speed)
 
         #rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
         #speed=rotMat.xform(speed)
@@ -997,7 +795,8 @@ class ShipPilot2(PhysicsWalker):
             q1.normalize()
             q2.normalize()
             assert q1.isSameDirection(q2) or q1.getHpr() == q2.getHpr()
-        assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
+        assert self.avatarNodePath.getPos().almostEqual(
+            physObject.getPosition(), 0.0001)
 
         # Clear the contact vector so we can
         # tell if we contact something next frame
