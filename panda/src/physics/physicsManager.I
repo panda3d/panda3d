@@ -51,10 +51,14 @@ add_linear_force(LinearForce *f) {
 ////////////////////////////////////////////////////////////////////
 //    Function : attach_physicalnode
 //      Access : Public
-// Description : Registers a physicalnode with the manager
+// Description : Please call attach_physical_node instead.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 attach_physicalnode(PhysicalNode *p) {
+  cerr<<"attach_physicalnode (aka attachPhysicalnode) has been"
+    <<"replaced with attach_physical_node (aka attachPhysicalNode)."
+    <<"  Please change the spelling of the function in your code."
+    <<endl;
   attach_physical_node(p);
 }
 

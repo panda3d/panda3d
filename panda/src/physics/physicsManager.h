@@ -60,7 +60,7 @@ PUBLISHED:
   INLINE void attach_linear_integrator(LinearIntegrator *i);
   INLINE void attach_angular_integrator(AngularIntegrator *i);
   INLINE void attach_physical(Physical *p);
-  INLINE void attach_physicalnode(PhysicalNode *p);
+  INLINE void attach_physicalnode(PhysicalNode *p); // use attach_physical_node instead.
   INLINE void attach_physical_node(PhysicalNode *p);
   INLINE void add_linear_force(LinearForce *f);
   INLINE void add_angular_force(AngularForce *f);
