@@ -250,6 +250,7 @@ class ShipPilot2(PhysicsWalker):
             return
         assert not avatarNodePath.isEmpty()
 
+        self.takedownPhysics()
         self.nodes = []
         self.actorNode = avatarNodePath.node()
 
@@ -730,7 +731,6 @@ class ShipPilot2(PhysicsWalker):
                 newVector *= maxLen
 
 
-            print "newVector", newVector
             if __debug__:
                 onScreenDebug.add(
                     "newVector", newVector)
