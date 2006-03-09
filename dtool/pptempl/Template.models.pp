@@ -162,8 +162,8 @@
   #define installed_language_dna $[sort $[forscopes install_dna,$[patsubst %,$[install_model_dir]/%,$[patsubst %_$[DEFAULT_LANGUAGE].dna,%.dna,%,,$[notdir $[SOURCES]]]]]]
 #endif
 
-#define install_other_dirs $[sort $[forscopes install_audio install_icons install_misc,$[install_model_dir]]]
-#define installed_other $[sort $[forscopes install_audio install_icons install_misc,$[SOURCES:%=$[install_model_dir]/%]]]
+#define install_other_dirs $[sort $[forscopes install_audio install_icons install_shader install_misc,$[install_model_dir]]]
+#define installed_other $[sort $[forscopes install_audio install_icons install_shader install_misc,$[SOURCES:%=$[install_model_dir]/%]]]
 
 
 #define pal_egg_targets $[sort $[patsubst %,$[pal_egg_dir]/%,$[notdir $[install_pal_eggs]]]]
@@ -603,7 +603,7 @@ $[TAB]rm -f $[files]
 
 
 // Miscellaneous file installation.
-#forscopes install_audio install_icons install_misc
+#forscopes install_audio install_icons install_shader install_misc
   #foreach file $[SOURCES]
     #define local $[file]
     #define remote $[notdir $[file]]
@@ -614,16 +614,16 @@ $[TAB]rm -f $[dest]/$[remote]
 $[TAB]cp $[local] $[dest]
 
   #end file
-#end install_audio install_icons install_misc
+#end install_audio install_icons install_shader install_misc
 
 // Miscellaneous file uninstallation.
 uninstall-other:
-#forscopes install_audio install_icons install_misc
+#forscopes install_audio install_icons install_shader install_misc
   #define files $[patsubst %,$[install_model_dir]/%,$[SOURCES]]
   #if $[files]
 $[TAB]rm -f $[files]
   #endif
-#end install_audio install_icons install_misc
+#end install_audio install_icons install_shader install_misc
 
 
 #end Makefile
