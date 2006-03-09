@@ -228,7 +228,10 @@ close_window() {
   _one_sided_reverse_enabled = false;
   _lighting_enabled = false;
 
-  _frame_rate_meter = (FrameRateMeter *)NULL;
+  if (_frame_rate_meter != (FrameRateMeter *)NULL) {
+    _frame_rate_meter->clear_window();
+    _frame_rate_meter = (FrameRateMeter *)NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

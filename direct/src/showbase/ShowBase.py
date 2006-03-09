@@ -478,7 +478,9 @@ class ShowBase(DirectObject.DirectObject):
 
         if win == self.win:
             self.win = None
-            self.frameRateMeter = None
+            if self.frameRateMeter:
+                self.frameRateMeter.clearWindow()
+                self.frameRateMeter = None
 
     def openDefaultWindow(self):
         # Creates the main window for the first time, without being
