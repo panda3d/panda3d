@@ -226,26 +226,119 @@ of the world, see INSTALL.txt in this directory.
       matches your Windows login as part of your HOME directory name.
 ---------------------------------------------------------------------
 
-  - Copy important startup files into your home directory:
-    > cd P:/win/install/wintools/panda
-    > cp .cshrc .emacs Config.prc Config.pp /<home root>/<login>
-    > cd $HOME
+*********************************************************************
+  Step 6: Set up access to the CVS repositories:
+*********************************************************************
+
+In order to set up the Cygwin environment, you will need to download a local
+copy of a couple of CVS repositories.  In order to do that, you will need
+access to the VR fileserver, mover, and SourceForge.
+
+  - For access to mover, contact Chris Brunner, James Healy, or Kirk Waingrow.
+
+  - Now for SourceForge choose either A (commit) or B (anonymous) access do one
+    of the following.  We recommend anonymous access unless you will be checking
+    code into one of the SourceForge trees (dtool, panda, direct, pandatool).
+
+    A. SOURCEFORGE DEVELOPER (WITH COMMIT) ACCESS
+
+      1. Setup an account with SourceForge at 
+        http://sourceforge.net/account/register.php
+        Try to use the same username used your cygwin setup.  If you are
+        unable to do so just make sure you edit your .cshrc file in
+        Step 7a to reflect this for the SFROOT variable.
+
+        Tell somebody like Dave Schuyler or David Rose to add your 
+        new SourceForge username to the list of Panda3D developers.
+
+      2. Setup ssh access cvs.sourceforge.net
+
+        - If you have not generated a key before on another machine,
+          generate a dsa key now by opening a shell window and entering:
+
+          > ssh-keygen -t dsa
+
+          Just press enter if prompted for password.
+
+          (If you have generated this key before, copy the id_dsa and
+          id_dsa.pub from ~/.ssh on your other machine.)
+
+          If the above does not put a file in ~/.ssh, check that
+          your /etc/passwd file has an entry for your username and that
+          it points to the correct home directory for you (e.g. /home/<username> ).
+
+        - Register your generated ssh public key (id_dsa.pub) at 
+          https://sourceforge.net/account/editsshkeys.php
+
+    B. ANONYMOUS CVS (READ-ONLY ACCESS) FROM SOURCEFORGE
+
+      1. In Step 7a, Check that your .cshrc file has the SFROOT variable set to be something like this
+
+          > setenv SFROOT :pserver:anonymous@cvs.sourceforge.net:/cvsroot/panda3d
+
+      2. Before running any of the "cvs -d $SFROOT" commands, do the following:
+
+          > cvs -d $SFROOT login
+
+         Just press Enter when asked for a password.
+
+*********************************************************************
+  Step 7a: Set up the Cygwin environment:
+*********************************************************************
+
+  - Open a new shell
+
+  - Create personal trees directory:
+    > cd ~
+    > mkdir player
+    > cd ~/player
+
+  - Grab a local copy of wintools
+
+    > cd ~/player
+    > cvs -d :ext:<your-unix-username>@mover:/cvs co wintools
+    
+  - Copy the config files from your personal wintools:
+    > cd ~/player/wintools/panda
+    > cp .cshrc .emacs Config.pp Config.prc ~
+    
+  - Close and re-open your shell.  The .cshrc file you just copied in should
+    load up some variables needed to check out more trees.
+    
+  - Check out a fresh dtool:
+    > cd ~/player
+    > wintools/built/bin/checkout_built.sh dtool
+
+  - Close and re-open your shell.  You should now be set up to reference your
+    personal dtool and personal wintools, that you just checked out above.
 
   - Make sure the contents of .cshrc are correct for your setup.  In 
     particular, make sure the definition for PANDA_ROOT matches the 
     directory you have installed Cygwin to (normally C:\Cygwin), 
     and that CVSROOT is correct for your CVS login (if $USERNAME 
     is not the same as your CVS/Unix account name, edit the 
-    variable as necessary).
+    variable as necessary).  Also, check the SFROOT variable.  It
+    should be either:
+    
+    COMMIT:
+      
+      :ext:<your-sf-username>@cvs.sourceforge.net:/cvsroot/panda3d
+    
+    or
+    
+    ANONYMOUS:
+    
+      :pserver:anonymous@cvs.sourceforge.net:/cvsroot/panda3d
+      
 
 *********************************************************************
-  Step 6: Set up the Cygwin environment:
+  Step 7b: Set up the Cygwin environment (automated part):
 *********************************************************************
 
   - All of the commands below have been collected in    
-    P:\win\install\wintools\etc\setup2.csh.  To do all the Cygwin 
+    $WINTOOLS\etc\setup2.csh.  To do all the Cygwin 
     steps below automatically, from the tcsh prompt do:
-    > cd P:/win/install/wintools/etc
+    > cd $WINTOOLS/etc
     > source setup2.csh
 
 ---------------------------------------------------------------------
@@ -333,7 +426,7 @@ of the world, see INSTALL.txt in this directory.
       > mount -s C:/Program\ Files/Intel/Compiler60/IA32 /ia32
 
 *********************************************************************
-  Step 7:  Testing VC7.1 environment in shell
+  Step 8:  Testing VC7.1 environment in shell
 *********************************************************************
 
   - After finishing this process, make sure you are using VC7.1 in your
@@ -361,7 +454,7 @@ of the world, see INSTALL.txt in this directory.
 
 
   - If it does not, try running 
-      > source ~/player/wintools/etc/setup2.csh
+      > source $WINTOOLS/etc/setup2.csh
     again to get it to do the cmd (ignore file-exists errors)
       > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio\ .NET\ 2003 /msvc7
     This should create the softlink mount, or you can just run the 
@@ -380,11 +473,11 @@ of the world, see INSTALL.txt in this directory.
 ------------------------------------------------------------------------------
 
 *********************************************************************
-  Step 8: Copy files needed by attach scripts
+  Step 9: Copy files needed by attach scripts
 *********************************************************************
 
   - Run script to copy vspec files from $WINTOOLS to /usr/local/etc
-    > cd /p/win/install/wintools
+    > cd $WINTOOLS
     > ./cp_vspec 
 
   To setup a new user in panda environment files:
@@ -397,7 +490,7 @@ of the world, see INSTALL.txt in this directory.
     (e.g. install, personal, or release)
 
 *********************************************************************
-  Step 9: Install Bison
+  Step 10: Install Bison
 *********************************************************************
 
     *** Skip this is you have bison 1.35 or greater installed. ***
@@ -408,7 +501,7 @@ of the world, see INSTALL.txt in this directory.
     > tar zxvf /p/Cygwin-1.3.5/bison-1.28-1.tar.gz
 
 *********************************************************************
-  Step 10: Install Emacs   
+  Step 11: Install Emacs   
 *********************************************************************
 
   - We use GNU emacs (21.3 currently) by default, other versions of 
@@ -423,9 +516,6 @@ of the world, see INSTALL.txt in this directory.
     > cd /c
     > gzip -d emacs-21.3-fullbin-i386.tar.gz
     > tar xvf emacs-21.3-fullbin-i386.tar
-    > cp P:/win/install/direct/src/directscripts/python-mode.el /c/emacs-21.3/lisp/progmodes
-    > cp P:/win/install/direct/src/directscripts/flashparen.el /c/emacs-21.3/lisp/progmodes
-    > cp P:/win/install/direct/src/directscripts/runPythonEmacs /usr/local/bin
   - Update environment variables (win2000/XP).  Note: You should only 
     need to do this if you intend to invoke Emacs from a non-Cygwin 
     prompt.  If you will always be using Cygwin, simply edit your 
@@ -441,98 +531,55 @@ of the world, see INSTALL.txt in this directory.
     - click ok - ok - ok to exit (you must exit for the change to take
       effect)
 
-
----------------------------------------------------------------------
- NOTE: 
-   THE FOLLOWING STEPS ARE ONLY REQUIRED IF YOU WANT YOUR OWN PERSONAL
-   COPY OF THE SOURCE TREES
----------------------------------------------------------------------
-
 *********************************************************************
-  Step 11: (Optional) Grab the cvs trees 
+  Step 12: Check out other trees
 *********************************************************************
 
-  - Open a new shell
+There are three methods of checking out CVS repositories: pre-built,
+source, and both.  Python and Python-hybrid trees like dtool, otp,
+toontown, and pirates always come with source, regardless.  Built
+trees are recommended in most cases, unless you will be doing development
+in those trees.  If you are using anonymous SourceForge access, first
+do the following:
 
-  - Create personal trees:
-    > mkdir ~/player
+    > cvs -d $SFROOT login
+    
+Press Enter when prompted for a password.
+
+  - To check out the built versions do the following. The otp, toontown,
+    and pirates trees will automatically come with source code.  If you
+    want source for panda, direct, pandatool, or any of the models trees,
+    use the -s parameter, e.g. checkout_built.sh -s panda.
+    
     > cd ~/player
+    > $WINTOOLS/built/bin/checkout_built.sh panda
+    > $WINTOOLS/built/bin/checkout_built.sh direct
+    > $WINTOOLS/built/bin/checkout_built.sh otp
+    > $WINTOOLS/built/bin/checkout_built.sh toontown
+    > $WINTOOLS/built/bin/checkout_built.sh pirates
+    > $WINTOOLS/built/bin/checkout_built.sh pandatool
+    > $WINTOOLS/built/bin/checkout_built.sh ttmodels
+    > $WINTOOLS/built/bin/checkout_built.sh pmockup
+    > $WINTOOLS/built/bin/checkout_built.sh pmodels
 
-  - Grab from local repository
-
-    Make sure your CVSROOT is set to the local repository, echo $CVSROOT
-    in your shell, it should return 
-
-      :ext:<username>@mover:/cvs 
-
-    where <username> is your Unix login name (not necessarily your
-    Windows login name), check your .cshrc for the environment
-    variable setting
-
-    > cvs co otp (only if local toontown will be built)
-    > cvs co toontown (only if local toontown will be built)
-    > cvs co wintools (only if local wintools will be used)     
-    > cvs co pandatool (only if local pandatool will be built)
-    > cvs co ttmodels (only if local ttmodels will be built)
-    > cvs co otp_servers_built (only if local otp_server will be run)     
+  - To check out just the source
+    > cd ~/player
+    > cvs -d $SFROOT co panda
+    > cvs -d $SFROOT co direct
+    > cvs co otp
+    > cvs co toontown
+    > cvs co pirates
+    > cvs co pandatool
+    > cvs co ttmodels
+    > cvs co pmockup
+    > cvs co pmodels
+    > cvs co otp_servers_built
 
 
-  - Now choose either A (commit) or B (anonymous) access:
+*********************************************************************
+  Step 13: Building notes
+*********************************************************************
 
-    A. SOURCEFORGE DEVELOPER (WITH COMMIT) ACCESS
-
-      1. setup an account with SourceForge at 
-        http://sourceforge.net/account/register.php
-        Try to use the same username used your cygwin setup.  If you are
-        unable to do so just make sure you edit your .cshrc file to 
-        reflect this for the SFROOT variable.
-
-        Tell somebody like David Rose or Dave Schuyler to add your 
-        new sourceforge username to the list of Panda3D developers.
-
-      2. setup ssh access cvs.sourceforge.net
-
-        - If you have not generated a key before on another machine,
-          generate a dsa key now with:
-
-          > ssh-keygen -t dsa
-
-          Just press enter if prompted for password.
-
-          (If you have generated this key before, copy the id_dsa and
-          id_dsa.pub from ~/.ssh on your other machine.)
-
-          If the above does not put a file in ~/.ssh, check that
-          your /etc/passwd file has an entry for your username and that
-          it points to the correct home directory for you (e.g. /home/<username> ).
-
-        - Register your generated ssh public key (id_dsa.pub) at 
-          https://sourceforge.net/account/editsshkeys.php
-
-      3. check that your .cshrc file has the SFROOT variable set to be something like this:
-
-          setenv SFROOT :ext:<your-sourceforge-username>@cvs.sourceforge.net:/cvsroot/panda3d
-
-    B. ANONYMOUS CVS (READ-ONLY ACCESS) FROM SOURCEFORGE
-
-    ---------------------------------------------------------------------
-     Anonymous access from SourceForge now appears to be reliable enough
-     for day-to-day use.  (In the past, this has been poor to intolerable,
-     but SourceForge has installed new hardware recently and claims to have
-     fixed their anonymous cvs access issues.  It appears to be true.)
-    ---------------------------------------------------------------------
-
-      1. Set handy environment variable to use in anonymous checkout
-          > setenv SFROOT :ext:anonymous@nit:/cvsroot/panda3d
-
-  
-  NOW FOR BOTH SOURCEFORGE DEVELOPERS AND ANONYMOUS USERS:
-   
-  - Check out these trees
-     > cvs -d $SFROOT co dtool (only if local dtool will be built)
-     > cvs -d $SFROOT co panda (only if local panda will be built)
-     > cvs -d $SFROOT co direct (only if local direct will be built)
-     
   - Choose which optimize level you want. This is set in Config.pp in
     your $HOME directory.  Look for #define OPTIMIZE and follow
     instructions above that.  You can only choose an arbitrary
@@ -541,52 +588,22 @@ of the world, see INSTALL.txt in this directory.
     the version of DTOOL/PANDA you intend to attach to (install is
     built OPTIMIZE 2, release is built OPTIMIZE 3).  
     A good choice is OPTIMIZE 3.
-
-  - Your normal, non-SourceForge CVSROOT should be set to the default:
-    > setenv CVSROOT :ext:<your-unix-username>@mover:/cvs
-
-*********************************************************************
-  Step 12: (Optional) Build $DTOOL
-*********************************************************************
-
-  - When you opened a new shell in step 6, it should have attached to 
-    DTOOL:install automatically, but you will need to attach to your 
-    own DTOOL if you want to build your own.
-    > cta dtool personal  
-    > cd $DTOOL
-    > ppremake
-    > make install
-
-  - Note: if you get an error stating that 'ppremake' cannot be found,
-    make sure that you are attached to WINTOOLS:install and try again.
-    You may need to check out a personal copy of WINTOOLS and attach
-    to that in your .cshrc file before this will work.
-
-  After the make is done successfully, modify your .cshrc file so the
-  following lines look like this:
-
-	# Generic settings
-	setenv DTOOL /home/cbrunner/player/dtool
-	source $DTOOL/built/etc/dtool.cshrc personal
-	cta wintools personal  
+    
+  - If you checked out source for any trees that need building, then
+    the following steps are for you!
   
-  Open another Cygwin window using your shortcut from before and make
-  sure everything starts up OK before killing the old window and proceding.
-
-  - Note all these "cta" attach commands can be placed in your .cshrc
 
 *********************************************************************
-  Step 13: (Optional) Build $PANDA 
+  Step 14: (Optional) Build $PANDA 
 *********************************************************************
 
   - Build panda
-    > cta dtool personal  
     > cta panda personal
     > cd $PANDA
     > ppremake
     > make install
 
-  - Again, after every make, kill and reopen the tcsh window.
+  - After every make, kill and reopen the tcsh window.
 
   - You can now run "pview" to test the install and build - you should
     see a window pop up with a triangle in it.  To see the triangle with
@@ -594,10 +611,9 @@ of the world, see INSTALL.txt in this directory.
     you run "pview".
 
 *********************************************************************
-  Step 14: (Optional) Build $DIRECT
+  Step 15: (Optional) Build $DIRECT
 *********************************************************************
 
-  > cta dtool personal  
   > cta panda personal
   > cta direct personal
   > cd $DIRECT
@@ -605,10 +621,9 @@ of the world, see INSTALL.txt in this directory.
   > make install
 
 *********************************************************************
-  Step 15: (Optional) Build $OTP
+  Step 16: (Optional) Build $OTP
 *********************************************************************
 
-  > cta dtool personal
   > cta panda personal
   > cta direct personal
   > cta otp personal
@@ -618,21 +633,20 @@ of the world, see INSTALL.txt in this directory.
   Exit the shell and create a new one
 
 *********************************************************************
-  Step 16: (Optional) Build $TOONTOWN
+  Step 17: (Optional) Build $TOONTOWN and/or $PIRATES
 *********************************************************************
 
-  > cta dtool personal  
   > cta panda personal
   > cta direct personal
   > cta otp personal
-  > cta toontown personal
-  > cd $TOONTOWN
+  > cta toontown (or pirates) personal
+  > cd $TOONTOWN (or $PIRATES)
   > ppremake
   > make install
   Exit the shell and create a new one
   
 *********************************************************************
-  Step 17: (Optional) Build $PANDATOOL
+  Step 18: (Optional) Build $PANDATOOL (needed for building models)
 *********************************************************************
 
   > cta dtool personal  
@@ -647,8 +661,14 @@ of the world, see INSTALL.txt in this directory.
   Exit the shell and create a new one
   
 *********************************************************************
-  Step 18: (Optional) Build $TTMODELS
+  Step 19: (Optional) Build $TTMODELS, $PMOCKUP, or $PMODELS
 *********************************************************************
+
+NOTE: You need to make sure you have a licensing solution for the various
+modeling apps involved in building Toontown models (e.g. C:\FlexLM).
+
+NOTE: It may be easier (and much less time consuming) to checkout a pre-built
+version of the model trees.
 
   > cta dtool personal  
   > cta panda personal
@@ -656,31 +676,31 @@ of the world, see INSTALL.txt in this directory.
   > cta otp personal
   > cta toontown personal
   > cta pandatool personal
+  
   > cta ttmodels personal
   > cd $TTMODELS
   > ppremake
   > make install
-  Exit the shell and create a new one
+  	or
+  > cta pmockup personal
+  > cd $PMOCKUP
+  > ppremake
+  > make install
+	or
+  > cta pmodels personal
+  > cd $PMODELS
+  > make-install.sh
   
-NOTE: You need to make sure you have a licensing solution for the various
-modeling apps involved in building Toontown models (e.g. C:\FlexLM).
-
-NOTE: It may be easier (and much less time consuming) to checkout a pre-built
-version of the model tree.  The checkout_built.sh script is in
-$WINTOOLS/built/bin.
-  > cd ~/player
-  > checkout_built.sh ttmodels
-This will create a ttmodels directory with all the models already built for you.
 
 *********************************************************************
-  Step 19: (Optional) Generate Python Code
+  Step 20: (Optional) Generate Python Code
 *********************************************************************
 
   > genPyCode
   > genPyCode -n (for publishes)
 
 *********************************************************************
-  Step 20: (Optional) Set up a local server
+  Step 21: (Optional) Set up a local server
 *********************************************************************
 
   - Copy local.par.example to local.par:
@@ -699,7 +719,7 @@ This will create a ttmodels directory with all the models already built for you.
     run this in its own window.
 
 *********************************************************************
-  Step 21: (Optional) Launch a local Toontown Server and Client
+  Step 22: (Optional/Example) Launch a local Toontown Server and Client
 *********************************************************************
 
   - Add the following lines to your Config.prc file in $HOME if they are
