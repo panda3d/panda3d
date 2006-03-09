@@ -61,6 +61,7 @@ public:
   bool is_joint_parent() const;
 
   bool is_tagged() const;
+  bool has_object_type(string object_type) const;
 
   MayaNodeTree *_tree;
   MayaNodeDesc *_parent;

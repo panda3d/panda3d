@@ -1744,7 +1744,8 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     }
   }
 
-  bool keep_all_uvsets = egg_group->has_object_type("keep-all-uvsets");
+  //bool keep_all_uvsets = egg_group->has_object_type("keep-all-uvsets");
+  bool keep_all_uvsets = node_desc->has_object_type("keep-all-uvsets");
   if (keep_all_uvsets)
     mayaegg_cat.info() << "will keep_all_uvsets" << endl;
 

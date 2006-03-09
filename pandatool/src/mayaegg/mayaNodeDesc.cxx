@@ -21,6 +21,7 @@
 #include "mayaBlendDesc.h"
 #include "mayaToEggConverter.h"
 #include "maya_funcs.h"
+#include "eggGroup.h"
 #include "config_mayaegg.h"
 
 #include "pre_maya_include.h"
@@ -242,6 +243,25 @@ is_tagged() const {
 void MayaNodeDesc::
 tag() {
   _tagged = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::has_object_type
+//       Access: Public
+//  Description: Returns true if this node or any of its parent
+//               has_object_type of object_type.
+////////////////////////////////////////////////////////////////////
+bool MayaNodeDesc::
+has_object_type(string object_type) const {
+  bool ret = false;
+  if ((_egg_group != (EggGroup*) NULL) 
+      && _egg_group->has_object_type(object_type)) {
+    return true;
+  }
+  if (_parent != (MayaNodeDesc *)NULL) {
+    ret |= _parent->has_object_type(object_type);
+  }
+  return ret;
 }
 
 ////////////////////////////////////////////////////////////////////
