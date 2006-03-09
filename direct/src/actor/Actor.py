@@ -241,6 +241,9 @@ class Actor(DirectObject, NodePath):
             # copy the switches for lods
             self.switches = other.switches
             self.__LODNode = self.find('**/+LODNode')
+            self.__hasLOD = 0
+            if (not self.__LODNode.isEmpty()):
+                self.__hasLOD = 1
 
     def __cmp__(self, other):
         # Actor inherits from NodePath, which inherits a definition of
