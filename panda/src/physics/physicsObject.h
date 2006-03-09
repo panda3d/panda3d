@@ -48,6 +48,7 @@ PUBLISHED:
   INLINE void set_mass(float);
   INLINE float get_mass() const;
 
+  //INLINE void set_center_of_mass(const LPoint3f &pos); use set_position.
   INLINE void set_position(const LPoint3f &pos);
   INLINE void set_position(float x, float y, float z);
   INLINE LPoint3f get_position() const;
@@ -62,7 +63,10 @@ PUBLISHED:
   INLINE LVector3f get_velocity() const;
   INLINE LVector3f get_implicit_velocity() const;
 
+  INLINE void add_torque(const LRotationf &torque);
   INLINE void add_impulse(const LVector3f &impulse);
+  virtual void add_impact(
+      const LPoint3f &offset_from_center_of_mass, const LVector3f &impulse);
 
   INLINE void set_terminal_velocity(float tv);
   INLINE float get_terminal_velocity() const;
@@ -96,13 +100,13 @@ PUBLISHED:
 
 private:
   // physical
-  LPoint3f _position;
+  LPoint3f _position; // aka _center_of_mass
   LPoint3f _last_position;
-  LVector3f _velocity;
+  LVector3f _velocity; // aka _linear_velocity
 
   // angular
   LOrientationf _orientation;
-  LRotationf _rotation;
+  LRotationf _rotation; // aka _angular_velocity
 
   float _terminal_velocity;
   float _mass;
