@@ -16,18 +16,11 @@ of the world, see INSTALL.txt in this directory.
 
   - Lines preceeded by ">" are instructions to be typed on the command 
     line.
-  - Make sure your system clock is not set to GMT (only worry about 
-    this if your makedepend seems out of sync, i.e. you constantly 
-    reinstall old files over more current ones).
-  - "Touch" doesn't quite work properly currently (is this still true?).
+  - Ensure your computer's date is set correctly, or else the 
+    compilation scripts may have problems later.
   - Make sure your machine has enough disk space - I'd start with the 
     largest open space on any of your partitions.
     You will have the fewest headaches if you choose C:\ for everything.
-    Also make sure that you're logged into your computer with the same
-    username as your unix account because Cygwin will get its USER 
-    variable from the windows username.
-  - Ensure your computer's date is set correctly, or else the 
-    compilation scripts may have problems later.
     
 *********************************************************************
   Step 1: Map network drive to build tools drive
@@ -48,14 +41,6 @@ of the world, see INSTALL.txt in this directory.
   Step 2: Update OS software
 *********************************************************************
 
-  - On Win2000, install ServicePack 3 and DX 8.1 by running (unless you
-    already have DX 8 or greater)
-    > P:\win2k-servicepack3.exe
-    > P:\dx8.1\DX81NTeng.exe
-
-    or download them from http://windowsupdate.microsoft.com/ 
-      (this will be MUCH slower).
-
   - On both WinXP and Win2000, I recommend you go to 
     http://windowsupdate.microsoft.com/, click on 'Product Updates' 
     (installing the Product Update ActiveX control), and install any
@@ -65,6 +50,14 @@ of the world, see INSTALL.txt in this directory.
     go to the manufacturer's website to check for win2000/winXP
     drivers, especially on win2000, since the original win2k CD drivers
     are most likely obsolete.
+
+  - Install the latest DX9 runtime (unless you know you already have a
+    more current DX9 runtime installed) by running:
+    > P:\dx9\directx_feb2006_redist.exe
+    This is a self-extracting archive; you must then run the install
+    program that it produces.
+
+
 
 *********************************************************************
   Step 3: Install Visual C++
@@ -103,12 +96,12 @@ of the world, see INSTALL.txt in this directory.
       MSDN docs if you get this.)
     
 *********************************************************************
-  Step 4: Install Cygwin (v1.3.5 or above should work)
+  Step 4: Install Cygwin (v1.5.10 or above should work)
 *********************************************************************
 
   - Latest version currently is 1.5.18-1 (as of Dec 20, 2005)
-  - As of 1.3.11, cygwin seems stable enough to install from the 
-    internet, go to http://cygwin.com and click on "install cygwin now"
+  - Go to http://cygwin.com and click on "install cygwin now".  Choose
+    "install from internet."
   - The most reliable download server is http://mirrors.rcn.net. 
     Another server is http://sigunix.cwrv.edu. 
   - Make sure that the following packages are selected for installation:
@@ -130,54 +123,12 @@ of the world, see INSTALL.txt in this directory.
     (e.g. Mail, Doc, Text, Games) that you can skip if you like.
   - Create a desktop shortcut or Start Menu item for
     c:\cygwin\bin\tcsh.exe and use it in the future.
-
----------------------------------------------------------------------
-  NOTE:
-    The known issues section pertains to older versions of Cygwin and 
-    versions of software it installs by default.  If you installed 
-    Cygwin version 1.5.10 (CYGWIN_NT-5.1) or newer you can probably 
-    ignore the following.
-
-    Type uname -a in your cygwin tcsh window to check version number.
----------------------------------------------------------------------
-
-    Known Problems with tcsh:
-      tcsh v6.09.00: (cygwin 1.0)   
-      - long paths result in 'Word too long' errors, especially during 
-        panda "attach" scripts
-
-      tcsh v.6.11 - 6.12.00
-      - TAB filename completion sometimes fails on second+ arguments in 
-        cmdline (e.g. "cp file.cxx file2[TAB]" fails to complete 
-        file2.cxx).
-        To fix this, go to /etc/profile.d/complete.tcsh and comment out 
-        the lines associated with "complete mv" and "complete cp"
-       
-      v6.09 and v6.11 should be stored on P:\cygwin-1.3.5, you can copy 
-        them to c:\cygwin\bin if you want to use them
-    
-    Known Problems with bash:
-      - None :)
-
-    Known Problems with perl version 5.8.0-2 installed by default w/ 
-      older Cygwin install, check perl version with "perl -V" in your 
-      cygwin shell:
-
-      This is not compatible with the current $DTOOL startup script 
-      $DTOOL/etc/dtool.cshrc install: specifically the 
-      "source $SETUP_SCRIPT" because cygwin Perl 5.8.0 leaves a ^M 
-      newline in the variable, screwing up the later source 
-      $SETUP_SCRIPT resulting in startup errors.  Stay
-      with earlier versions of Perl (5.6.x) or later versions of Perl,
-      starting with version 5.8.0-3
                
-    Next, you can run a bash shell by going to the "Start"
-    button at the bottom left of your screen, selecting "Programs",
-    "Cygwin" and "bash".  You can then run "tcsh" at the bash prompt 
-    to make things easier.  To make things really easy, edit 
-    C:\Cygwin\cygwin.bat, change "bash --login -i" to "tcsh -i", 
-    this will cause tcsh to be the default shell when you start 
-    Cygwin command prompt/shell.  
+    Our ctattach utilities require the use of "tcsh", rather than the
+    default "bash" shell.  To make things really easy, edit
+    C:\Cygwin\cygwin.bat, change "bash --login -i" to "tcsh -i", this
+    will cause tcsh to be the default shell when you start Cygwin
+    command prompt/shell.
 
 *********************************************************************
   Step 5: Create your HOME directory
@@ -199,12 +150,14 @@ of the world, see INSTALL.txt in this directory.
     in Step 4
     
   - Create a HOME directory:
-      > mkdir /<home root>/<login>
-    where <home root> can be either "usr" or "home", and <login> is
-    the name you use to login to your Windows machine.
+      > mkdir /home/<login>
+    Where <login> is the name you use to login to your Windows
+    machine.  Note that some people have created their home
+    directories under /usr/ instead of /home/; while this works, it is
+    not a standard Unix convention.
    
     Note: In Windows this directory will be the equivalent of:    
-      C:\cygwin\<home root>\<login>
+      C:\cygwin\home\<login>
 
   - Set the $HOME environment variable in the Registry:
     - Note: You must be logged into an account with Administrator access
@@ -212,7 +165,7 @@ of the world, see INSTALL.txt in this directory.
     - Select "System" icon.
     - Select "Advanced->Environment" button.
     - Create the variable "HOME" with the value:
-         "c:\cygwin\<home root>\<login>".
+         "c:\cygwin\home\<login>".
     - Click OK - OK - OK to exit (you must exit for the change to take 
       effect)
     - Now open a new shell so the registry is read by the shell to get 
@@ -244,39 +197,40 @@ access to the VR fileserver, mover, and SourceForge.
 
       1. Setup an account with SourceForge at 
         http://sourceforge.net/account/register.php
-        Try to use the same username used your cygwin setup.  If you are
-        unable to do so just make sure you edit your .cshrc file in
-        Step 7a to reflect this for the SFROOT variable.
+        Try to use the same username used your cygwin setup.  If you
+        are unable to do so just make sure you edit your .cshrc file
+        in Step 7a to reflect this for the SFROOT variable.
 
         Tell somebody like Dave Schuyler or David Rose to add your 
         new SourceForge username to the list of Panda3D developers.
 
       2. Setup ssh access cvs.sourceforge.net
 
-        - If you have not generated a key before on another machine,
-          generate a dsa key now by opening a shell window and entering:
+        - If you have not generated a key before on this machine,
+          generate a dsa key now by opening a Cygwin window and
+          entering:
 
           > ssh-keygen -t dsa
 
           Just press enter if prompted for password.
 
-          (If you have generated this key before, copy the id_dsa and
-          id_dsa.pub from ~/.ssh on your other machine.)
-
-          If the above does not put a file in ~/.ssh, check that
-          your /etc/passwd file has an entry for your username and that
-          it points to the correct home directory for you (e.g. /home/<username> ).
+          If the above does not put a file in ~/.ssh, check that your
+          /etc/passwd file has an entry for your username and that it
+          points to the correct home directory for you
+          (e.g. /home/<username> ).
 
         - Register your generated ssh public key (id_dsa.pub) at 
-          https://sourceforge.net/account/editsshkeys.php
+          https://sourceforge.net/account/editsshkeys.php.
 
     B. ANONYMOUS CVS (READ-ONLY ACCESS) FROM SOURCEFORGE
 
-      1. In Step 7a, Check that your .cshrc file has the SFROOT variable set to be something like this
+      1. In Step 7a (below), Check that your .cshrc file has the
+         SFROOT variable set to be something like this
 
           > setenv SFROOT :pserver:anonymous@cvs.sourceforge.net:/cvsroot/panda3d
 
-      2. Before running any of the "cvs -d $SFROOT" commands, do the following:
+      2. Before running any of the "cvs -d $SFROOT" commands, do the
+         following:
 
           > cvs -d $SFROOT login
 
@@ -296,7 +250,8 @@ access to the VR fileserver, mover, and SourceForge.
   - Grab a local copy of wintools
 
     > cd ~/player
-    > cvs -d :ext:<your-unix-username>@mover:/cvs co wintools
+    > cvs -d :pserver:<your-mover-username>@mover:/cvs login
+    > cvs -d :pserver:<your-mover-username>@mover:/cvs co wintools
     
   - Copy the config files from your personal wintools:
     > cd ~/player/wintools/panda
@@ -316,9 +271,9 @@ access to the VR fileserver, mover, and SourceForge.
     particular, make sure the definition for PANDA_ROOT matches the 
     directory you have installed Cygwin to (normally C:\Cygwin), 
     and that CVSROOT is correct for your CVS login (if $USERNAME 
-    is not the same as your CVS/Unix account name, edit the 
-    variable as necessary).  Also, check the SFROOT variable.  It
-    should be either:
+    is not the same as your mover account name, edit the variable as
+    necessary).  Also, check the SFROOT variable.  It should be
+    either:
     
     COMMIT:
       
@@ -493,12 +448,8 @@ access to the VR fileserver, mover, and SourceForge.
   Step 10: Install Bison
 *********************************************************************
 
-    *** Skip this is you have bison 1.35 or greater installed. ***
-
-    Versions of bison between 1.30-1.34 seem to have a bug, to 
-    avoid this you can install bison manually:
-    > cd /
-    > tar zxvf /p/Cygwin-1.3.5/bison-1.28-1.tar.gz
+    *** This step is no longer needed.  Bison is installed correctly
+        by Cygwin. ***
 
 *********************************************************************
   Step 11: Install Emacs   
@@ -546,10 +497,13 @@ do the following:
     
 Press Enter when prompted for a password.
 
-  - To check out the built versions do the following. The otp, toontown,
-    and pirates trees will automatically come with source code.  If you
-    want source for panda, direct, pandatool, or any of the models trees,
-    use the -s parameter, e.g. checkout_built.sh -s panda.
+  - Most programmers will want to check out the built versions of each
+    tree.  This saves you from having to constantly compile new code.
+    To check out the built versions do the following sequence of
+    commands.  The otp, toontown, and pirates trees will automatically
+    come with source code.  If you want source for panda, direct,
+    pandatool, or any of the models trees, use the -s parameter,
+    e.g. checkout_built.sh -s panda.
     
     > cd ~/player
     > $WINTOOLS/built/bin/checkout_built.sh panda
@@ -561,6 +515,11 @@ Press Enter when prompted for a password.
     > $WINTOOLS/built/bin/checkout_built.sh ttmodels
     > $WINTOOLS/built/bin/checkout_built.sh pmockup
     > $WINTOOLS/built/bin/checkout_built.sh pmodels
+
+    You can combine any or all of the above on one command, e.g.:
+
+    > cd ~/player
+    > $WINTOOLS/built/bin/checkout_built.sh panda direct otp toontown pirates pandatool ttmodels pmockup pmodels
 
   - To check out just the source
     > cd ~/player
@@ -580,30 +539,31 @@ Press Enter when prompted for a password.
   Step 13: Building notes
 *********************************************************************
 
-  - Choose which optimize level you want. This is set in Config.pp in
-    your $HOME directory.  Look for #define OPTIMIZE and follow
-    instructions above that.  You can only choose an arbitrary
-    optimize level if you are building your own DTOOL and PANDA;
-    otherwise, you must set it to the optimize level corresponding to
-    the version of DTOOL/PANDA you intend to attach to (install is
-    built OPTIMIZE 2, release is built OPTIMIZE 3).  
-    A good choice is OPTIMIZE 3.
+  - You need to initialize each tree after you have checked it out.
+    This requires running the cta command to attach to the tree, and
+    then cd-ing into the directory and running ppremake.
     
-  - If you checked out source for any trees that need building, then
-    the following steps are for you!
-  
+  - If you checked out just the source of any of these trees, you will
+    also need to make install within that tree (and this will take
+    from a few minutes to a few days, depending on the tree).  If you
+    used the checkout_built.sh script, then you won't need to do this.
 
 *********************************************************************
-  Step 14: (Optional) Build $PANDA 
+  Step 14: Initialize $PANDA 
 *********************************************************************
 
   - Build panda
     > cta panda personal
     > cd $PANDA
     > ppremake
+
+  - If you didn't use checkout_built.sh to get PANDA:
     > make install
 
-  - After every make, kill and reopen the tcsh window.
+      After every make (the first time a tree is built from scratch),
+      kill and reopen the tcsh window.  If you later rebuild the tree
+      in-place, you will not need to kill and reopen the window, unless
+      you first completely blew away your source tree.
 
   - You can now run "pview" to test the install and build - you should
     see a window pop up with a triangle in it.  To see the triangle with
@@ -611,17 +571,20 @@ Press Enter when prompted for a password.
     you run "pview".
 
 *********************************************************************
-  Step 15: (Optional) Build $DIRECT
+  Step 15: Initialize $DIRECT
 *********************************************************************
 
   > cta panda personal
   > cta direct personal
   > cd $DIRECT
   > ppremake
-  > make install
+
+  - If you didn't use checkout_built.sh to get DIRECT:
+    > make install
+    kill and reopen the tcsh window (the first time you build direct).
 
 *********************************************************************
-  Step 16: (Optional) Build $OTP
+  Step 16: Initialize $OTP
 *********************************************************************
 
   > cta panda personal
@@ -629,11 +592,13 @@ Press Enter when prompted for a password.
   > cta otp personal
   > cd $OTP
   > ppremake
-  > make install
-  Exit the shell and create a new one
+
+  - If you didn't use checkout_built.sh to get OTP:
+    > make install
+    kill and reopen the tcsh window (the first time you build otp).
 
 *********************************************************************
-  Step 17: (Optional) Build $TOONTOWN and/or $PIRATES
+  Step 17: Initialize $TOONTOWN and/or $PIRATES
 *********************************************************************
 
   > cta panda personal
@@ -642,23 +607,27 @@ Press Enter when prompted for a password.
   > cta toontown (or pirates) personal
   > cd $TOONTOWN (or $PIRATES)
   > ppremake
-  > make install
-  Exit the shell and create a new one
+
+  - If you didn't use checkout_built.sh to get TOONTOWN or PIRATES:
+    > make install
+    kill and reopen the tcsh window (the first time you build toontown
+    and/or pirates).
   
 *********************************************************************
-  Step 18: (Optional) Build $PANDATOOL (needed for building models)
+  Step 18: Initialize $PANDATOOL (needed for building models, running pstats, etc.)
 *********************************************************************
 
   > cta dtool personal  
   > cta panda personal
   > cta direct personal
-  > cta otp personal (optional)
-  > cta toontown personal (optional)
   > cta pandatool personal
   > cd $PANDATOOL
   > ppremake
-  > make install
-  Exit the shell and create a new one
+
+  - If you didn't use checkout_built.sh to get PANDATOOL:
+    > make install
+    kill and reopen the tcsh window (the first time you build
+    pandatool).
   
 *********************************************************************
   Step 19: (Optional) Build $TTMODELS, $PMOCKUP, or $PMODELS
@@ -667,37 +636,47 @@ Press Enter when prompted for a password.
 NOTE: You need to make sure you have a licensing solution for the various
 modeling apps involved in building Toontown models (e.g. C:\FlexLM).
 
-NOTE: It may be easier (and much less time consuming) to checkout a pre-built
-version of the model trees.
+Be warned!  Completely building one of these model trees from scratch
+can take one to three days.  We strongly recommend checking out the
+prebuilt version using the checkout_built.sh script, described above.
+However, if you will be responsible for adding new models to any of
+the model trees, you'll need to have your own source tree to test your
+additions.
 
   > cta dtool personal  
   > cta panda personal
   > cta direct personal
   > cta otp personal
-  > cta toontown personal
   > cta pandatool personal
   
+  > cta toontown personal
   > cta ttmodels personal
   > cd $TTMODELS
   > ppremake
   > make install
   	or
+  > cta pirates personal
   > cta pmockup personal
   > cd $PMOCKUP
   > ppremake
   > make install
 	or
+  > cta pirates personal
   > cta pmodels personal
   > cd $PMODELS
   > make-install.sh
   
 
 *********************************************************************
-  Step 20: (Optional) Generate Python Code
+  Step 20: Generate Python Code
 *********************************************************************
 
+  This program must be run at least once, after you build the C++
+  trees for the first time, or whenever you change your set of
+  attachments (for instance, changing from Toontown to Pirates).  It
+  makes the currently-attached C++ code available to Python.
+
   > genPyCode
-  > genPyCode -n (for publishes)
 
 *********************************************************************
   Step 21: (Optional) Set up a local server
