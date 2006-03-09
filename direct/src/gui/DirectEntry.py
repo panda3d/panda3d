@@ -11,6 +11,9 @@ class DirectEntry(DirectFrame):
     DirectEntry(parent) - Create a DirectGuiWidget which responds
     to keyboard buttons
     """
+
+    directWtext = ConfigVariableBool('direct-wtext', 1)
+    
     def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         # A Direct Frame can have:
@@ -156,6 +159,12 @@ class DirectEntry(DirectFrame):
             self.guiItem.setText(text)
 
     def get(self):
+        if not self.directWtext.getValue():
+            # If the user has configured wide-text off, then always
+            # return an 8-bit string.  This will be encoded if
+            # necessary, according to Panda's default encoding.
+            return self.guiItem.getText()
+            
         if self.unicodeText:
             return self.guiItem.getWtext()
         else:
