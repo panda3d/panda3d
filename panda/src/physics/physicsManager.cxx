@@ -111,7 +111,6 @@ remove_angular_force(AngularForce *f) {
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 remove_physical(Physical *p) {
-  nassertv(this);
   nassertv(p);
   pvector< Physical * >::iterator found;
 
@@ -119,11 +118,9 @@ remove_physical(Physical *p) {
   if (found == _physicals.end()) {
     return;
   }
-  nassertv(*found == p);
   nassertv(p->_physics_manager == this);
   p->_physics_manager = (PhysicsManager *) NULL;
   _physicals.erase(found);
-  nassertv(_physicals.end() == find(_physicals.begin(), _physicals.end(), p));
 }
 
 ////////////////////////////////////////////////////////////////////
