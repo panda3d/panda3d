@@ -1002,31 +1002,22 @@ end_frame(FrameMode mode) {
 void GraphicsOutput::
 prepare_for_deletion() {
 
-  // I'll remove this permanently in a few days. - Josh
-  // HOWEVER - it might be nice to add this functionality to the
-  // new module.  It's not in there yet.
+  _active = false;
+  _delete_flag = true;
+  
+  // We have to be sure to remove all of the display regions
+  // immediately, so that circular reference counts can be cleared
+  // up (each display region keeps a pointer to a CullResult,
+  // which can hold all sorts of pointers).
+  remove_all_display_regions();
 
-  // But when show-buffers mode is enabled, we want to keep the
-  // window around until the user has a chance to see the texture.
-  // So we don't do most of the following in show-buffers mode.
-  //  if (!show_buffers) {
-  //    _active = false;
-  //    _delete_flag = true;
-  //    
-  //    // We have to be sure to remove all of the display regions
-  //    // immediately, so that circular reference counts can be cleared
-  //    // up (each display region keeps a pointer to a CullResult,
-  //    // which can hold all sorts of pointers).
-  //    remove_all_display_regions();
-  //    
-  //    // If we were rendering directly to texture, we can't delete the
-  //    // buffer until the texture is gone too.
-  //    for (int i=0; i<count_textures(); i++) {
-  //      if (get_rtm_mode(i) == RTM_bind_or_copy) {
-  //        _hold_textures.push_back(get_texture(i));
-  //      }
-  //    }
-  //  }
+  // If we were rendering directly to texture, we can't delete the
+  // buffer until the texture is gone too.
+  for (int i=0; i<count_textures(); i++) {
+    if (get_rtm_mode(i) == RTM_bind_or_copy) {
+      _hold_textures.push_back(get_texture(i));
+    }
+  }
   
   // We have to be sure to clear the _textures pointers, though, or
   // we'll end up holding a reference to the textures forever.
