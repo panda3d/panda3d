@@ -324,7 +324,7 @@ class ShipPilot(PhysicsWalker):
 
         self.phys.attachLinearIntegrator(LinearEulerIntegrator())
         self.phys.attachAngularIntegrator(AngularEulerIntegrator())
-        self.phys.attachPhysicalnode(physicsActor.node())
+        self.phys.attachPhysicalNode(physicsActor.node())
 
         if 0:
             self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)

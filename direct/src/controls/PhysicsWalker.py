@@ -251,7 +251,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.phys.addLinearForce(self.avatarViscosity)
 
         self.phys.attachLinearIntegrator(LinearEulerIntegrator())
-        self.phys.attachPhysicalnode(physicsActor.node())
+        self.phys.attachPhysicalNode(physicsActor.node())
 
         self.acForce=LinearVectorForce(0.0, 0.0, 0.0)
         fn=ForceNode("avatarControls")

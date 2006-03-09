@@ -50,8 +50,8 @@ class FallTest(NodePath):
             self.phys.attachLinearIntegrator(LinearEulerIntegrator())
         if 0:
             self.phys.attachAngularIntegrator(AngularEulerIntegrator())
-        #self.phys.attachPhysicalnode(self.node())
-        self.phys.attachPhysicalnode(self.actorNode)
+        #self.phys.attachPhysicalNode(self.node())
+        self.phys.attachPhysicalNode(self.actorNode)
 
         if 0:
             self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)
