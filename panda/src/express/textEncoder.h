@@ -79,6 +79,7 @@ PUBLISHED:
   INLINE static bool unicode_ispunct(int character);
   INLINE static bool unicode_islower(int character);
   INLINE static bool unicode_isupper(int character);
+  INLINE static bool unicode_isspace(int character);
   INLINE static int unicode_toupper(int character);
   INLINE static int unicode_tolower(int character);
 

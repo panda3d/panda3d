@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "string_utils.h"
+#include "textEncoder.h"
 
 #include <ctype.h>
 
@@ -132,6 +133,40 @@ extract_words(const string &str, vector_string &words) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: extract_words
+//  Description: Divides the string into a number of words according
+//               to whitespace.  The words vector should be cleared by
+//               the user before calling; otherwise, the list of words
+//               in the string will be appended to the end of whatever
+//               was there before.
+//
+//               The return value is the number of words extracted.
+////////////////////////////////////////////////////////////////////
+int
+extract_words(const wstring &str, pvector<wstring> &words) {
+  int num_words = 0;
+
+  size_t pos = 0;
+  while (pos < str.length() && TextEncoder::unicode_isspace(str[pos])) {
+    pos++;
+  }
+  while (pos < str.length()) {
+    size_t word_start = pos;
+    while (pos < str.length() && !TextEncoder::unicode_isspace(str[pos])) {
+      pos++;
+    }
+    words.push_back(str.substr(word_start, pos - word_start));
+    num_words++;
+
+    while (pos < str.length() && TextEncoder::unicode_isspace(str[pos])) {
+      pos++;
+    }
+  }
+
+  return num_words;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: tokenize
 //  Description: Chops the source string up into pieces delimited by
 //               any of the characters specified in delimiters.
@@ -159,6 +194,33 @@ tokenize(const string &str, vector_string &words, const string &delimiters) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: tokenize
+//  Description: Chops the source string up into pieces delimited by
+//               any of the characters specified in delimiters.
+//               Repeated delimiter characters represent zero-length
+//               tokens.
+//
+//               It is the user's responsibility to ensure the output
+//               vector is cleared before calling this function; the
+//               results will simply be appended to the end of the
+//               vector.
+////////////////////////////////////////////////////////////////////
+void
+tokenize(const wstring &str, pvector<wstring> &words, const wstring &delimiters) {
+  size_t p = 0;
+  while (p < str.length()) {
+    size_t q = str.find_first_of(delimiters, p);
+    if (q == string::npos) {
+      words.push_back(str.substr(p));
+      return;
+    }
+    words.push_back(str.substr(p, q - p));
+    p = q + 1;
+  }
+  words.push_back(wstring());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: trim_left
 //  Description: Returns a new string representing the contents of the
 //               given string with the leading whitespace removed.
@@ -167,6 +229,21 @@ string
 trim_left(const string &str) {
   size_t begin = 0;
   while (begin < str.size() && isspace((unsigned int)str[begin])) {
+    begin++;
+  }
+
+  return str.substr(begin);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: trim_left
+//  Description: Returns a new string representing the contents of the
+//               given string with the leading whitespace removed.
+////////////////////////////////////////////////////////////////////
+wstring
+trim_left(const wstring &str) {
+  size_t begin = 0;
+  while (begin < str.size() && TextEncoder::unicode_isspace(str[begin])) {
     begin++;
   }
 
@@ -190,6 +267,22 @@ trim_right(const string &str) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: trim_right
+//  Description: Returns a new string representing the contents of the
+//               given string with the trailing whitespace removed.
+////////////////////////////////////////////////////////////////////
+wstring
+trim_right(const wstring &str) {
+  size_t begin = 0;
+  size_t end = str.size();
+  while (end > begin && TextEncoder::unicode_isspace(str[end - 1])) {
+    end--;
+  }
+
+  return str.substr(begin, end - begin);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: trim
 //  Description: Returns a new string representing the contents of the
 //               given string with both leading and trailing
@@ -204,6 +297,27 @@ trim(const string &str) {
 
   size_t end = str.size();
   while (end > begin && isspace((unsigned int)str[end - 1])) {
+    end--;
+  }
+
+  return str.substr(begin, end - begin);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: trim
+//  Description: Returns a new string representing the contents of the
+//               given string with both leading and trailing
+//               whitespace removed.
+////////////////////////////////////////////////////////////////////
+wstring
+trim(const wstring &str) {
+  size_t begin = 0;
+  while (begin < str.size() && TextEncoder::unicode_isspace(str[begin])) {
+    begin++;
+  }
+
+  size_t end = str.size();
+  while (end > begin && TextEncoder::unicode_isspace(str[end - 1])) {
     end--;
   }
 

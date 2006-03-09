@@ -39,15 +39,21 @@ EXPCL_PANDA string upcase(const string &s);
 
 // Separates the string into words according to whitespace.
 EXPCL_PANDA int extract_words(const string &str, vector_string &words);
+EXPCL_PANDA int extract_words(const wstring &str, pvector<wstring> &words);
 
 // Separates the string into words according to the indicated delimiters.
 EXPCL_PANDA void tokenize(const string &str, vector_string &words,
                           const string &delimiters);
+EXPCL_PANDA void tokenize(const wstring &str, pvector<wstring> &words,
+                          const wstring &delimiters);
 
 // Trims leading and/or trailing whitespace from the string.
 EXPCL_PANDA string trim_left(const string &str);
+EXPCL_PANDA wstring trim_left(const wstring &str);
 EXPCL_PANDA string trim_right(const string &str);
+EXPCL_PANDA wstring trim_right(const wstring &str);
 EXPCL_PANDA string trim(const string &str);
+EXPCL_PANDA wstring trim(const wstring &str);
 
 // Functions to parse numeric values out of a string.
 EXPCL_PANDA int string_to_int(const string &str, string &tail);

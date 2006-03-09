@@ -372,6 +372,26 @@ unicode_isupper(int character) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::unicode_isspace
+//       Access: Published, Static
+//  Description: Returns true if the indicated character is a
+//               whitespace letter, false otherwise.  This is akin to
+//               ctype's isspace(), extended to Unicode.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextEncoder::
+unicode_isspace(int character) {
+  switch (character) {
+  case ' ':
+  case '\t':
+  case '\n':
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::unicode_islower
 //       Access: Published, Static
 //  Description: Returns true if the indicated character is a
