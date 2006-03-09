@@ -74,9 +74,12 @@ PUBLISHED:
   INLINE float get_viscosity() const;
   
   virtual void output(ostream &out = cout) const;
-  virtual void write_physics_objects(ostream &out = cout, unsigned int indent=0) const;
-  virtual void write_linear_forces(ostream &out = cout, unsigned int indent=0) const;
-  virtual void write_angular_forces(ostream &out = cout, unsigned int indent=0) const;
+  virtual void write_physics_objects(
+    ostream &out = cout, unsigned int indent=0) const;
+  virtual void write_linear_forces(
+    ostream &out = cout, unsigned int indent=0) const;
+  virtual void write_angular_forces(
+    ostream &out = cout, unsigned int indent=0) const;
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
 
 public:
@@ -96,7 +99,7 @@ protected:
 
   // this pointer exists to make life easy.  If a physical exists
   // with only one element (i.e. NOT a particle system or set-physical),
-  // then this pointer points at the only physicsobject.  The object
+  // then this pointer points at the only PhysicsObject.  The object
   // is still of course contained in the _physics_objects vector, but
   // this is kind of a quicker way there.
   PhysicsObject *_phys_body;
