@@ -45,6 +45,11 @@ PhysicsManager() {
 ////////////////////////////////////////////////////////////////////
 PhysicsManager::
 ~PhysicsManager() {
+  PhysicalsVector::iterator pi;
+  for (pi = _physicals.begin(); pi != _physicals.end(); ++pi) {
+    nassertv((*pi)->_physics_manager == this);
+    (*pi)->_physics_manager = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,7 +120,7 @@ remove_physical(Physical *p) {
     return;
   }
   nassertv(*found == p);
-  nassertv(p->_physics_manager != (PhysicsManager *) NULL);
+  nassertv(p->_physics_manager == this);
   p->_physics_manager = (PhysicsManager *) NULL;
   _physicals.erase(found);
   nassertv(_physicals.end() == find(_physicals.begin(), _physicals.end(), p));
