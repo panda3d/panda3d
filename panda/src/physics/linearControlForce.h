@@ -37,6 +37,7 @@ PUBLISHED:
   LinearControlForce(const LinearControlForce &copy);
   virtual ~LinearControlForce();
 
+  INLINE void clear_physics_object();
   INLINE void set_physics_object(const PhysicsObject *po);
   INLINE CPT(PhysicsObject) get_physics_object() const;
 
