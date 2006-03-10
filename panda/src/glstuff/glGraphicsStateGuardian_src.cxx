@@ -2515,49 +2515,61 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
   GLenum target = get_texture_target(tex->get_texture_type());
   GLP(BindTexture)(target, gtc->_index);
+
   GLint internal_format = get_internal_image_format(tex->get_format());
-  GLenum imagetarget = (z >= 0) ? (GL_TEXTURE_CUBE_MAP_POSITIVE_X + z) : GL_TEXTURE_2D;
 
-  // If the texture has never been uploaded before, create it.
-  // We cannot use glCopyTexImage2D to create a texture that may be
-  // larger than the screen, so use glTexImage2D with arbitrary data.
+  if (z >= 0) {
+    // Copy to a cube map face.  This doesn't seem to work too well
+    // with CopyTexSubImage2D, so we always use CopyTexImage2D.
+    GLP(CopyTexImage2D)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + z, 0,
+                        get_internal_image_format(tex->get_format()),
+                        xo, yo, w, h, 0);
 
-  if ((gtc->_already_applied == false)||
-      (gtc->_internal_format != internal_format)||
-      (gtc->_width  != tex->get_x_size())||
-      (gtc->_height != tex->get_y_size())||
-      (gtc->_depth  != 1)) {
+  } else {
+    // If the texture has never been uploaded before, create it.  We
+    // cannot use glCopyTexImage2D to create a texture that may be
+    // larger than the screen, so use glTexImage2D with arbitrary
+    // data.
 
-    char *image = new char[tex->get_x_size() * tex->get_y_size()];
-    memset(image, 128, tex->get_x_size() * tex->get_y_size());
-    switch (tex->get_format()) {
-    case Texture::F_depth_component:
-      GLP(TexImage2D)(imagetarget, 0, internal_format,
-                      tex->get_x_size(), tex->get_y_size(), 0,
-                      GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, image);
-      break;
-    case Texture::F_stencil_index:
-      GLP(TexImage2D)(imagetarget, 0, internal_format,
-                      tex->get_x_size(), tex->get_y_size(), 0,
-                      GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, image);
-      break;
-    default:
-      GLP(TexImage2D)(imagetarget, 0, internal_format,
-                      tex->get_x_size(), tex->get_y_size(), 0,
-                      GL_LUMINANCE, GL_UNSIGNED_BYTE, image);
-      break;
+    if ((gtc->_already_applied == false)||
+        (gtc->_internal_format != internal_format)||
+        (gtc->_width  != tex->get_x_size())||
+        (gtc->_height != tex->get_y_size())||
+        (gtc->_depth  != 1)) {
+      
+      char *image = new char[tex->get_x_size() * tex->get_y_size()];
+      memset(image, 128, tex->get_x_size() * tex->get_y_size());
+      switch (tex->get_format()) {
+      case Texture::F_depth_component:
+        GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
+                        tex->get_x_size(), tex->get_y_size(), 0,
+                        GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, image);
+        break;
+        
+      case Texture::F_stencil_index:
+        GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
+                        tex->get_x_size(), tex->get_y_size(), 0,
+                        GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, image);
+        break;
+        
+      default:
+        GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
+                        tex->get_x_size(), tex->get_y_size(), 0,
+                        GL_LUMINANCE, GL_UNSIGNED_BYTE, image);
+        break;
+      }
+      delete image;
+      
+      gtc->_already_applied = true;
+      gtc->_internal_format = internal_format;
+      gtc->_width  = tex->get_x_size();
+      gtc->_height = tex->get_y_size();
+      gtc->_depth  = 1;
     }
-    delete image;
 
-    gtc->_already_applied = true;
-    gtc->_internal_format = internal_format;
-    gtc->_width  = tex->get_x_size();
-    gtc->_height = tex->get_y_size();
-    gtc->_depth  = 1;
+    // Copy the pixel data from the frame buffer.
+    GLP(CopyTexSubImage2D)(GL_TEXTURE_2D, 0, 0, 0, xo, yo, w, h);
   }
-
-  // Copy the pixel data from the frame buffer.
-  GLP(CopyTexSubImage2D)(imagetarget, 0, 0, 0, xo, yo, w, h);
 
   report_my_gl_errors();
 
