@@ -121,6 +121,9 @@
 // And $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:m,,%:c %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
 
+// And $[frameworks] is the set of OSX-style frameworks we will link with.
+#defer frameworks $[get_frameworks]
+
 // This is the set of files we might copy into *.prebuilt, if we have
 // bison and flex (or copy from *.prebuilt if we don't have them).
 #define bison_prebuilt $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]
