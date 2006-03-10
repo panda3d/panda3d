@@ -78,7 +78,7 @@ class ShipPilot2(PhysicsWalker):
 
     def setAvatar(self, ship):
         if ship is None:
-            base.controlForce.setPhysicsObject(None)
+            base.controlForce.clearPhysicsObject()
             self.takedownPhysics()
             self.ship = None
         else:
