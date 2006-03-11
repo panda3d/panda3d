@@ -47,24 +47,30 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LQuaternion)
   operator - (const FLOATNAME(LQuaternion) &other) const;
 
-  INLINE_LINMATH FLOATTYPE angle_rad(const FLOATNAME(LQuaternion) &other) const;
-  INLINE_LINMATH FLOATTYPE angle_deg(const FLOATNAME(LQuaternion) &other) const;
+  INLINE_LINMATH FLOATTYPE angle_rad(const FLOATNAME(
+      LQuaternion) &other) const;
+  INLINE_LINMATH FLOATTYPE angle_deg(const FLOATNAME(
+      LQuaternion) &other) const;
 
   INLINE_LINMATH FLOATNAME(LQuaternion) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LQuaternion) operator / (FLOATTYPE scalar) const;
 
-  INLINE_LINMATH FLOATNAME(LQuaternion) operator *(const FLOATNAME(LQuaternion) &) const;
-  INLINE_LINMATH FLOATNAME(LQuaternion)& operator *=(const FLOATNAME(LQuaternion) &);
+  INLINE_LINMATH FLOATNAME(LQuaternion) operator *(
+      const FLOATNAME(LQuaternion) &) const;
+  INLINE_LINMATH FLOATNAME(LQuaternion)& operator *=(
+      const FLOATNAME(LQuaternion) &);
 
   INLINE_LINMATH FLOATNAME(LMatrix3) operator *(const FLOATNAME(LMatrix3) &);
   INLINE_LINMATH FLOATNAME(LMatrix4) operator *(const FLOATNAME(LMatrix4) &);
 
-  INLINE_LINMATH bool almost_equal(const FLOATNAME(LQuaternion) &other) const;
-  INLINE_LINMATH bool almost_equal(const FLOATNAME(LQuaternion) &other,
-                                   FLOATTYPE threshold) const;
-  INLINE_LINMATH bool is_same_direction(const FLOATNAME(LQuaternion) &other) const;
-  INLINE_LINMATH bool almost_same_direction(const FLOATNAME(LQuaternion) &other,
-                                            FLOATTYPE threshold) const;
+  INLINE_LINMATH bool almost_equal(
+      const FLOATNAME(LQuaternion) &other) const;
+  INLINE_LINMATH bool almost_equal(
+      const FLOATNAME(LQuaternion) &other, FLOATTYPE threshold) const;
+  INLINE_LINMATH bool is_same_direction(
+      const FLOATNAME(LQuaternion) &other) const;
+  INLINE_LINMATH bool almost_same_direction(
+      const FLOATNAME(LQuaternion) &other, FLOATTYPE threshold) const;
 
   INLINE_LINMATH void output(ostream&) const;
 
@@ -77,7 +83,14 @@ PUBLISHED:
   FLOATNAME(LVecBase3) get_hpr(CoordinateSystem cs = CS_default) const;
 
   INLINE_LINMATH FLOATNAME(LVector3) get_axis() const;
+  INLINE_LINMATH FLOATNAME(LVector3) get_axis_normalized() const;
+  INLINE_LINMATH FLOATTYPE get_angle_rad() const;
   INLINE_LINMATH FLOATTYPE get_angle() const;
+
+  INLINE_LINMATH void set_from_axis_angle_rad(
+      FLOATTYPE angle_rad, const FLOATNAME(LVector3) &axis);
+  INLINE_LINMATH void set_from_axis_angle(
+      FLOATTYPE angle_deg, const FLOATNAME(LVector3) &axis);
 
   INLINE_LINMATH FLOATNAME(LVector3) get_up(CoordinateSystem cs = CS_default) const;
   INLINE_LINMATH FLOATNAME(LVector3) get_right(CoordinateSystem cs = CS_default) const;

@@ -107,12 +107,9 @@ add_local_impact(const LPoint3f &offset_from_center_of_mass,
     const LVector3f &force) {
   nassertv(!offset_from_center_of_mass.is_nan());
   nassertv(!force.is_nan());
-  LRotationf torque;
-  LVector3f impulse;
-  torque = LRotationf::ident_quat(); // place holder
-  impulse = LVector3f::zero(); // place holder
-  add_torque(torque);
-  add_impulse(impulse);
+  add_impact(
+      _orientation.xform(offset_from_center_of_mass),
+      _orientation.xform(force));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,10 +128,14 @@ add_impact(const LPoint3f &offset_from_center_of_mass,
     const LVector3f &force) {
   nassertv(!offset_from_center_of_mass.is_nan());
   nassertv(!force.is_nan());
+  LVector3f a = -offset_from_center_of_mass;
+  LVector3f b = force;
+  a.normalize();
+  b.normalize();
+  float theta = a.dot(b);
   LRotationf torque;
-  LVector3f impulse;
-  torque = LRotationf::ident_quat(); // place holder
-  impulse = LVector3f::zero(); // place holder
+  torque.set_from_axis_angle((1.0f - theta) * a.length(), b.cross(a).normalize());
+  LVector3f impulse = theta * force;
   add_torque(torque);
   add_impulse(impulse);
 }

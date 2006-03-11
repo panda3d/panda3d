@@ -316,6 +316,32 @@ get_axis() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::get_axis
+//       Access: Public
+//  Description: This, along with get_angle(), returns the rotation
+//               represented by the quaternion as an angle about an
+//               arbitrary axis.  This returns the normalized axis.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LQuaternion)::
+get_axis_normalized() const {
+  return FLOATNAME(LVector3)(
+      _v.data[1], _v.data[2], _v.data[3]).normalize();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::get_angle_rad
+//       Access: Public
+//  Description: This, along with get_axis(), returns the rotation
+//               represented by the quaternion as an angle about an
+//               arbitrary axis.  This returns the angle, in radians
+//               counterclockwise about the axis.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
+get_angle_rad() const {
+  return acos(_v.data[0]) * 2.0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::get_angle
 //       Access: Public
 //  Description: This, along with get_axis(), returns the rotation
@@ -325,7 +351,34 @@ get_axis() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_angle() const {
-  return rad_2_deg(acos(_v.data[0]) * 2.0);
+  return rad_2_deg(get_angle_rad());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::set_from_axis_angle_rad
+//       Access: Public
+//  Description: angle_rad is the angle about the axis in radians.
+//               axis must be normalized.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LQuaternion)::
+set_from_axis_angle_rad(FLOATTYPE angle_rad, const FLOATNAME(LVector3) &axis) {
+  nassertv(IS_THRESHOLD_EQUAL(axis.length(), 1.0f, 0.001f));
+  FLOATTYPE sinHalfAngle = sin(angle_rad * 0.5);
+  _v.data[0] = cos(angle_rad * 0.5);
+  _v.data[1] = axis[0] * sinHalfAngle;
+  _v.data[2] = axis[1] * sinHalfAngle;
+  _v.data[3] = axis[2] * sinHalfAngle;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::set_from_axis_angle_deg
+//       Access: Public
+//  Description: angle_deg is the angle about the axis in degrees.
+//               axis must be normalized.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LQuaternion)::
+set_from_axis_angle(FLOATTYPE angle_deg, const FLOATNAME(LVector3) &axis) {
+  set_from_axis_angle_rad(deg_2_rad(angle_deg), axis);
 }
 
 ////////////////////////////////////////////////////////////////////
