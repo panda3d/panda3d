@@ -283,7 +283,7 @@ class ShipPilot2(PhysicsWalker):
 
     def initializeCollisions(self, collisionTraverser,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0,
-            width = 3.0, length = 5.0, height = 2.5):
+            width = 30.0, length = 105.0, height = 45.0):
         """
         width is feet from port to starboard.
         length is feet from aft to bow.
@@ -297,8 +297,8 @@ class ShipPilot2(PhysicsWalker):
         self.floorOffset = floorOffset
         self.reach = reach
         if self.useBowSternSpheres:
-            self.frontSphereOffset = frontSphereOffset
-            self.backSphereOffset = backSphereOffset
+            self.frontSphereOffset = length * 0.3
+            self.backSphereOffset = -length * 0.7
         self.width = width
         self.length = length
         self.height = height
