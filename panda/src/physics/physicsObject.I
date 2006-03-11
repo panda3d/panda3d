@@ -110,6 +110,34 @@ set_velocity(float x, float y, float z) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : add_local_torque
+//      Access : Public
+// Description : Adds an torque force (i.e. an instantanious change
+//               in velocity).  This is a quicker way to get the 
+//               angular velocity, add a vector to it and set that
+//               value to be the new angular velocity.
+////////////////////////////////////////////////////////////////////
+INLINE void PhysicsObject::
+add_local_torque(const LRotationf &torque) {
+  nassertv(!torque.is_nan());
+  _rotation+=_orientation.xform(torque);
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : add_local_impulse
+//      Access : Public
+// Description : Adds an impulse force (i.e. an instantanious change
+//               in velocity).  This is a quicker way to get the 
+//               velocity, add a vector to it and set that value to
+//               be the new velocity.
+////////////////////////////////////////////////////////////////////
+INLINE void PhysicsObject::
+add_local_impulse(const LVector3f &impulse) {
+  nassertv(!impulse.is_nan());
+  _velocity+=_orientation.xform(impulse);
+}
+
+////////////////////////////////////////////////////////////////////
 //    Function : add_torque
 //      Access : Public
 // Description : Adds an torque force (i.e. an instantanious change

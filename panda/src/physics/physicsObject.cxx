@@ -92,6 +92,30 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : add_local_impact
+//      Access : Public
+// Description : Adds an impulse and/or torque (i.e. an instantanious
+//               change in velocity) based on how well the offset and
+//               impulse align with the center of mass (aka position).
+//               If you wanted to immitate this function you could
+//               work out the impulse and torque and call add_impulse
+//               and add_torque respectively.
+//               offset and force are in local coordinates.
+////////////////////////////////////////////////////////////////////
+void PhysicsObject::
+add_local_impact(const LPoint3f &offset_from_center_of_mass,
+    const LVector3f &force) {
+  nassertv(!offset_from_center_of_mass.is_nan());
+  nassertv(!force.is_nan());
+  LRotationf torque;
+  LVector3f impulse;
+  torque = LRotationf::ident_quat(); // place holder
+  impulse = LVector3f::zero(); // place holder
+  add_torque(torque);
+  add_impulse(impulse);
+}
+
+////////////////////////////////////////////////////////////////////
 //    Function : add_impact
 //      Access : Public
 // Description : Adds an impulse and/or torque (i.e. an instantanious
@@ -100,6 +124,7 @@ make_copy() const {
 //               If you wanted to immitate this function you could
 //               work out the impulse and torque and call add_impulse
 //               and add_torque respectively.
+//               offset and force are in global (or parent) coordinates.
 ////////////////////////////////////////////////////////////////////
 void PhysicsObject::
 add_impact(const LPoint3f &offset_from_center_of_mass,

@@ -63,9 +63,16 @@ PUBLISHED:
   INLINE LVector3f get_velocity() const;
   INLINE LVector3f get_implicit_velocity() const;
 
+  // Global instantanious forces
   INLINE void add_torque(const LRotationf &torque);
   INLINE void add_impulse(const LVector3f &impulse);
   virtual void add_impact(
+      const LPoint3f &offset_from_center_of_mass, const LVector3f &impulse);
+
+  // Local instantanious forces
+  INLINE void add_local_torque(const LRotationf &torque);
+  INLINE void add_local_impulse(const LVector3f &impulse);
+  virtual void add_local_impact(
       const LPoint3f &offset_from_center_of_mass, const LVector3f &impulse);
 
   INLINE void set_terminal_velocity(float tv);
