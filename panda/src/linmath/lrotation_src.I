@@ -36,6 +36,16 @@ FLOATNAME(LRotation)(const FLOATNAME(LQuaternion) &c) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LRotation::Copy Constructor
+//       Access: public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LRotation)::
+FLOATNAME(LRotation)(const FLOATNAME(LVecBase4) &copy) :
+  FLOATNAME(LQuaternion)(copy) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Constructor
 //       Access: public
 //  Description:
