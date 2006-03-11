@@ -60,7 +60,6 @@ osxGraphicsStateGuardian(const FrameBufferProperties &properties,
   _aglPixFmt(NULL),
   _aglcontext(NULL)
 {
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +101,8 @@ void osxGraphicsStateGuardian::reset()
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsStateGuardian::buildGL
 //       Access: Public, Virtual
-//  Description: 
+//  Description: This function will build up a context for a gsg..  
+//   rhh..  This does not respect the flags passed into it for context type ?? hmmm things to do things to do..
 //
 ////////////////////////////////////////////////////////////////////
 OSStatus osxGraphicsStateGuardian::buildGL (osxGraphicsWindow  &window)

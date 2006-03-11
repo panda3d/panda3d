@@ -1,10 +1,7 @@
-// Filename: config_glxdisplay.cxx
-// Created by:  cary (07Oct99)
-//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -55,8 +52,6 @@ init_libosxdisplay() {
   }
   initialized = true;
 
-  printf("****** In libosx  init \n");
-
   osxGraphicsStateGuardian::init_type();
   osxGraphicsPipe::init_type();
   osxGraphicsWindow::init_type();
@@ -69,8 +64,4 @@ init_libosxdisplay() {
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->set_system_tag("OpenGL", "window_system", "OSX");
-
-
-
-  printf("****** out libosx  init \n");
 }

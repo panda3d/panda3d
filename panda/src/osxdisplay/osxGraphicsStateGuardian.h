@@ -39,19 +39,15 @@ public:
   osxGraphicsStateGuardian(const FrameBufferProperties &properties, 
                            osxGraphicsStateGuardian *share_with,
                            int pfnum);
-  virtual ~osxGraphicsStateGuardian();
-
+   virtual ~osxGraphicsStateGuardian();
    virtual void reset();
-
-
-
-	AGLContext  get_context(void) { return _aglcontext; };
 	
-	OSStatus buildGL (osxGraphicsWindow  &window);
 protected:
   virtual void *get_extension_func(const char *prefix, const char *name);
   
 private:
+	OSStatus buildGL (osxGraphicsWindow  &window);
+	AGLContext  get_context(void) { return _aglcontext; };
 
   // We have to save a pointer to the GSG we intend to share texture
   // context with, since we don't create our own context in the

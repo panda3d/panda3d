@@ -26,14 +26,11 @@
 #include "graphicsBuffer.h"
 #include "glgsg.h"
 
-// This must be included after we have included glgsg.h (which
-// includes gl.h).
-//#include "wglext.h"
-
-//#include <windows.h>
-
 ////////////////////////////////////////////////////////////////////
 //       Class : OSXGraphicsBuffer
+//  rhh mar-2006
+//  Sorry ... this is not functional at all... I have no need for it yet ?
+// 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL osxGraphicsBuffer : public GraphicsBuffer {
 public:
@@ -42,20 +39,16 @@ public:
                     int x_size, int y_size);
   virtual ~osxGraphicsBuffer();
 
+
   virtual bool begin_frame(FrameMode mode);
   virtual void end_frame(FrameMode mode);
-
   virtual void release_gsg();
 
-//  virtual void begin_render_texture();
-//  virtual void end_render_texture();
-  
 
 protected:
   virtual void close_buffer();
   virtual bool open_buffer();
 
-private:
    
 public:
   static TypeHandle get_class_type() {

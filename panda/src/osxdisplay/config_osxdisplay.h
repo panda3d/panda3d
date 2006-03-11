@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -26,6 +26,5 @@ NotifyCategoryDecl( osxdisplay , EXPCL_PANDAGL, EXPTP_PANDAGL);
 extern EXPCL_PANDAGL void init_libosxdisplay();
 
 extern ConfigVariableString display_cfg;
-extern ConfigVariableBool osx_error_abort;
 
 #endif /* __CONFIG_OSXDISPLAY_H__ */

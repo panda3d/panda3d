@@ -38,8 +38,6 @@ osxGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   osxGraphicsPipe *osx_pipe;
   DCAST_INTO_V(osx_pipe, _pipe);
  
-  // Since the pbuffer never gets flipped, we get screenshots from the
-  // same buffer we draw into.
   _screenshot_buffer_type = _draw_buffer_type;
 }
 
@@ -74,13 +72,10 @@ begin_frame(FrameMode mode) {
   DCAST_INTO_R(osxgsg, _gsg, false);
 //  osxMakeCurrent(_display, _pbuffer, osxgsg->_context);
 
-  // Now that we have made the context current to a window, we can
-  // reset the GSG state if this is the first time it has been used.
-  // (We can't just call reset() when we construct the GSG, because
-  // reset() requires having a current context.)
   osxgsg->reset_if_new();
 
-  if (mode == FM_render) {
+  if (mode == FM_render) 
+  {
     // begin_render_texture();
     clear_cube_map_selection();
   }
@@ -99,7 +94,8 @@ end_frame(FrameMode mode) {
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
-  if (mode == FM_render) {
+  if (mode == FM_render) 
+  {
     // end_render_texture();
     copy_to_textures();
   }
@@ -138,7 +134,7 @@ release_gsg() {
 void osxGraphicsBuffer::
 close_buffer() {
  
- // _is_valid = false;
+  _is_valid = false;
 }
 
 ////////////////////////////////////////////////////////////////////

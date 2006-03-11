@@ -43,20 +43,19 @@ public:
                     const string &name);
   virtual ~osxGraphicsWindow();
 
-//  virtual bool move_pointer(int device, int x, int y);
+  virtual bool move_pointer(int device, int x, int y);
 
-  //virtual bool make_context();
   virtual void make_current();
   virtual void release_gsg();
-
   virtual bool begin_frame(FrameMode mode);
   virtual void end_frame(FrameMode mode);
-
   virtual void begin_flip();
-
   virtual void process_events();
 
 
+
+
+private:
   void   ReleaseSystemResources();
 
 
@@ -65,11 +64,19 @@ protected:
   virtual bool open_window();
 
 private:
+    //
+    // a singleton .. for the events to find the right pipe to push the event into
+    //
+    static osxGraphicsWindow  * FullScreenWindow; 
+
+    static osxGraphicsWindow * GetCurrentOSxWindow (WindowRef hint);
 
 public: // do not call direct ..
   OSStatus handleKeyInput (EventHandlerCallRef myHandler, EventRef event, Boolean keyDown);
   OSStatus handleTextInput (EventHandlerCallRef myHandler, EventRef event);
   OSStatus handleWindowMouseEvents (EventHandlerCallRef myHandler, EventRef event);
+  ButtonHandle OSX_TranslateKey( UInt32 key,  EventRef event );
+
   void     HandleModifireDeleta(UInt32 modifiers);
   void     DoResize(void);
 
@@ -92,10 +99,10 @@ public: // do not call direct ..
   }
 
 
-	inline bool IsAlive(void)
-	{
-	    return (_is_fullsreen || _osx_window != NULL);
-	}
+//	inline bool IsAlive(void)
+//	{
+//	    return (_is_fullsreen || _osx_window != NULL);
+//	}
 
 	WindowProperties & properties() { return _properties; };
 private:

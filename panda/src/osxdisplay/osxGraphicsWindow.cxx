@@ -27,20 +27,18 @@
 #include <AGL/agl.h>
 #include <ApplicationServices/ApplicationServices.h>
 
+////////////////////////// Global Objects .....
 TypeHandle osxGraphicsWindow::_type_handle;
+osxGraphicsWindow  * osxGraphicsWindow::FullScreenWindow = NULL;
 
-ButtonHandle OSX_TranslateKey( UInt32 key,  EventRef event );
 
-EventHandlerUPP gEvtHandler;			// main event handler
-EventHandlerUPP gWinEvtHandler;			// window event handler
-//AbsoluteTime gStartTime;
-
-char gErrorMessage[256] = ""; // buffer for error message output
-float gErrorTime = 0.0;
-
-static osxGraphicsWindow  * FullScreenWindow = NULL;
-
-osxGraphicsWindow * GetCurrentOSxWindow (WindowRef window)
+////////////////////////////////////////////////////////////////////
+//     Function: GetCurrentOSxWindow
+//       Access: Static,
+//  Description: How to find the active window for events  on osx..
+//
+////////////////////////////////////////////////////////////////////
+osxGraphicsWindow * osxGraphicsWindow::GetCurrentOSxWindow (WindowRef window)
 {
 	if(FullScreenWindow != NULL)
 	   return FullScreenWindow;
@@ -53,8 +51,12 @@ osxGraphicsWindow * GetCurrentOSxWindow (WindowRef window)
 		return NULL;
 }
 
-
-
+////////////////////////////////////////////////////////////////////
+//     Function: aglReportError
+//       Access: public
+//  Description: Helper function for AGL error message and Grabing error code if any
+//
+////////////////////////////////////////////////////////////////////
 OSStatus aglReportError (void)
 {
 	GLenum err = aglGetError();
@@ -66,8 +68,13 @@ OSStatus aglReportError (void)
 	else
 		return (OSStatus) err;
 }
-
-void InvertGLImage( char *imageData, size_t imageSize, size_t rowBytes )
+////////////////////////////////////////////////////////////////////
+//     Function: InvertGLImage
+//       Access: file scopre, static
+//  Description: Helper function invertiung a gl image
+//
+////////////////////////////////////////////////////////////////////
+static void InvertGLImage( char *imageData, size_t imageSize, size_t rowBytes )
 {
 	size_t i, j;
 	char *tBuffer = (char*) malloc (rowBytes);
@@ -82,8 +89,13 @@ void InvertGLImage( char *imageData, size_t imageSize, size_t rowBytes )
 	free(tBuffer);
 }
 
-
-void CompositeGLBufferIntoWindow (AGLContext ctx, Rect *bufferRect, GrafPtr out_port)
+////////////////////////////////////////////////////////////////////
+//     Function: CompositeGLBufferIntoWindow
+//       Access: file scopre, static
+//  Description: Drop a Gl overlay onto a carbon window.. 
+//
+////////////////////////////////////////////////////////////////////
+static void CompositeGLBufferIntoWindow (AGLContext ctx, Rect *bufferRect, GrafPtr out_port)
 {
 	GWorldPtr pGWorld;
 	QDErr err;
@@ -91,7 +103,6 @@ void CompositeGLBufferIntoWindow (AGLContext ctx, Rect *bufferRect, GrafPtr out_
 	// allocate buffer to hold pane image
 	long width  = (bufferRect->right - bufferRect->left);
 	long height  = (bufferRect->bottom - bufferRect->top);
-	
 	
 	
 	Rect src_rect = {0, 0, height, width};
@@ -103,9 +114,7 @@ void CompositeGLBufferIntoWindow (AGLContext ctx, Rect *bufferRect, GrafPtr out_
 		osxdisplay_cat.error() << "Out of memory in CompositeGLBufferIntoWindow()!\n";
 		return;		// no harm in continuing
 	}
-	
-//	printf(" Reading aa Conte Data %d %d\n",height,width);
-	
+		
 	// pull GL content down to our image buffer
 	aglSetCurrentContext( ctx );
 	glReadPixels (0, 0, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, image);
@@ -131,16 +140,26 @@ void CompositeGLBufferIntoWindow (AGLContext ctx, Rect *bufferRect, GrafPtr out_
 	DisposeGWorld( pGWorld );
 	DisposePtr ( image );
 }
-
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::SystemCloseWindow
+//       Access: private
+//  Description: The Windows is closed by a OS resource not by a internal request 
+//
+////////////////////////////////////////////////////////////////////
 void osxGraphicsWindow::SystemCloseWindow()
 {	
 	osxdisplay_cat.debug() << "System Closing Window \n";
 
-	ReleaseSystemResources();
-	
+	ReleaseSystemResources();	
 };
-
-// window event handler
+////////////////////////////////////////////////////////////////////
+//     Function: windowEvtHndlr
+//       Access: file scope static
+//  Description: The C callback for Window Events ..
+//
+//   We only hook this up for none fullscreen window... so we only handle system window events..
+//        
+////////////////////////////////////////////////////////////////////
 static pascal OSStatus windowEvtHndlr (EventHandlerCallRef myHandler, EventRef event, void* userData)
 {
 #pragma unused (userData)
@@ -187,33 +206,46 @@ static pascal OSStatus windowEvtHndlr (EventHandlerCallRef myHandler, EventRef e
 	}
     return result;
 }
-	
+///////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::DoResize
+//       Access: 
+//  Description: The C callback for Window Events ..
+//
+//   We only hook this up for none fullscreen window... so we only handle system window events..
+//        
+////////////////////////////////////////////////////////////////////
 void     osxGraphicsWindow::DoResize(void)
 {
+    // only in window mode .. not full screen
     if(_osx_window != NULL)
-	{
-	Rect				rectPort = {0,0,0,0};
-	CGRect 				viewRect = {{0.0f, 0.0f}, {0.0f, 0.0f}};
-	
-	GetWindowPortBounds (_osx_window, &rectPort); 
-	viewRect.size.width = (float) (rectPort.right - rectPort.left);
-	viewRect.size.height = (float) (rectPort.bottom - rectPort.top);
-	
-	  WindowProperties properties;
-	  properties.set_size((int)viewRect.size.width,(int)viewRect.size.height);
-	  properties.set_origin((int) rectPort.left,(int)rectPort.top);
-	  system_changed_properties(properties);
-	  osxdisplay_cat.debug() << " Resizing Window " << viewRect.size.width << " " << viewRect.size.height << "\n";
-	  
-	  aglUpdateContext (aglGetCurrentContext());
-	  aglReportError();
-	}						
-  
-	
-	//printf(" Setting Window Size to %d %d \n",(int)viewRect.size.width,(int)viewRect.size.height);
+    {
+        Rect				rectPort = {0,0,0,0};
+        CGRect 				viewRect = {{0.0f, 0.0f}, {0.0f, 0.0f}};
+
+        GetWindowPortBounds (_osx_window, &rectPort); 
+        viewRect.size.width = (float) (rectPort.right - rectPort.left);
+        viewRect.size.height = (float) (rectPort.bottom - rectPort.top);
+        // tell panda
+        WindowProperties properties;
+        properties.set_size((int)viewRect.size.width,(int)viewRect.size.height);
+        properties.set_origin((int) rectPort.left,(int)rectPort.top);
+        system_changed_properties(properties);
+        osxdisplay_cat.debug() << " Resizing Window " << viewRect.size.width << " " << viewRect.size.height << "\n";
+
+        // ping gl
+        aglUpdateContext (aglGetCurrentContext());
+        aglReportError();
+    }						
 };
 
-// application level event handler
+///////////////////////////////////////////////////////////////////
+//     Function: appEvtHndlr
+//       Access: 
+//  Description: The C callback for APlication Events..
+//
+//    Hooked  once for application
+//        
+////////////////////////////////////////////////////////////////////
 static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef event, void* userData)
 {
 #pragma unused (myHandler)
@@ -269,7 +301,13 @@ static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef even
     return result;
 }
 
-
+///////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::handleTextInput
+//       Access: 
+//  Description:  Trap Unicode  Input.
+//
+//        
+////////////////////////////////////////////////////////////////////
 OSStatus osxGraphicsWindow::handleTextInput (EventHandlerCallRef myHandler, EventRef theTextEvent)
 {
 	UniChar      *text = NULL;
@@ -288,17 +326,19 @@ OSStatus osxGraphicsWindow::handleTextInput (EventHandlerCallRef myHandler, Even
 			return ret;
 
 		for(unsigned int x = 0; x < actualSize/sizeof(UniChar); ++x)
-		{
-			printf(" Push KetStroke %x\n",(int)text[x]);
 			_input_devices[0].keystroke(text[x]);	
-		}
-		DisposePtr((char *)text);
+
+        DisposePtr((char *)text);
 	
 	}
 	
 	return ret;
 }
-
+///////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::handleTextInput
+//       Access: private..
+//  Description: Clean up the OS level messes..
+////////////////////////////////////////////////////////////////////
  void   osxGraphicsWindow::ReleaseSystemResources()
  {
 		
@@ -391,11 +431,11 @@ osxGraphicsWindow::~osxGraphicsWindow()
   cerr << " osxGraphicsWindow::~osxGraphicsWindow() \n";
 }
 
-void osxGraphicsWindow::make_current()
-{
-
-}
-
+///////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::get_context
+//       Access: private..
+//  Description:  Helper to Decide whitch context to use if any
+////////////////////////////////////////////////////////////////////
 AGLContext  osxGraphicsWindow::get_context(void)
 {
 	if(_aglcontext != NULL)
@@ -403,6 +443,11 @@ AGLContext  osxGraphicsWindow::get_context(void)
 
     return get_ggs_context();
  }
+///////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::get_ggs_context
+//       Access: private..
+//  Description:  
+////////////////////////////////////////////////////////////////////
 
 AGLContext  osxGraphicsWindow::get_ggs_context(void)
 {
@@ -415,7 +460,11 @@ AGLContext  osxGraphicsWindow::get_ggs_context(void)
 	return NULL;
  }
 
-
+///////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::buildGL
+//       Access: private..
+//  Description:  Code of the class.. used to control the GL context Allocation .. 
+////////////////////////////////////////////////////////////////////
 OSStatus osxGraphicsWindow::buildGL (void)
 {
 	// make sure the ggs is up and runnig..
@@ -479,20 +528,21 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode) {
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL || (_osx_window == NULL && _is_fullsreen != true)) 
   {
+        // not powered up .. just abort..
 		return false;
   }
-
 
   if(_is_fullsreen)
   {
 		if (!aglSetCurrentContext(get_context()))
 				aglReportError ();	
   
-//	  printf(" In Full Screen begin_frame\n");
-  
   }
   else
   {
+
+#ifndef HACK_SCREEN_HASH_CONTEXT
+      // if we do not have local contexts we need to do some wor
 	GrafPtr OtherWin = (GrafPtr)aglGetDrawable(get_context());
 	aglReportError();
 	WindowPtr other  = GetWindowFromPort(OtherWin);
@@ -504,7 +554,9 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode) {
 	 //   printf(" Doint Composite %d  %d\n",(int)OtherWin,(int)GetWindowPort (_osx_window));
 		CompositeGLBufferIntoWindow(get_context(),& r,OtherWin);
 	}
-
+        
+        
+        // uggly uggly uggly on a mac ... not a good thing..
 		aglSetDrawable (get_context(),GetWindowPort (_osx_window));
 		aglReportError();
 		
@@ -513,6 +565,13 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode) {
 				aglReportError ();	
   	
   }
+#else
+
+		if (!aglSetCurrentContext(get_context()))
+				aglReportError ();	
+
+#endif
+
  
  
 	
@@ -611,203 +670,216 @@ extern OSErr CPSSetFrontProcess( struct CPSProcessSerNum *psn);
 //               thread.  Returns true if the window is successfully
 //               opened, or false if there was a problem.
 ////////////////////////////////////////////////////////////////////
-bool osxGraphicsWindow::open_window() {
-OSErr err;
-	printf(" In Open Window \n");
-	
-	
-	static bool GlobalInits = false;
-	if(GlobalInits != true)
-	{
-		EventHandlerRef	ref1;
-		EventTypeSpec	list1[] = { 
-					           //{ kEventClassCommand,  kEventProcessCommand },
-							   //{ kEventClassCommand,  kEventCommandUpdateStatus },
-							   { kEventClassMouse, kEventMouseDown },// handle trackball functionality globaly because there is only a single user
-							   { kEventClassMouse, kEventMouseUp }, 
-							   { kEventClassMouse, kEventMouseMoved },
-							   { kEventClassMouse, kEventMouseDragged },
-							   { kEventClassMouse, kEventMouseWheelMoved } ,
-                               { kEventClassKeyboard, kEventRawKeyDown },
-                               { kEventClassKeyboard, kEventRawKeyUp } ,
-	  		 				   { kEventClassKeyboard, kEventRawKeyModifiersChanged }	,
-							   {kEventClassTextInput,	kEventTextInputUnicodeForKeyEvent},				   
-							   };
+bool osxGraphicsWindow::open_window() 
+{
+    OSErr err;
+
+    static bool GlobalInits = false;
+    if(GlobalInits != true)
+    {
+        EventHandlerRef	ref1;
+        EventTypeSpec	list1[] = { 
+            //{ kEventClassCommand,  kEventProcessCommand },
+            //{ kEventClassCommand,  kEventCommandUpdateStatus },
+            { kEventClassMouse, kEventMouseDown },// handle trackball functionality globaly because there is only a single user
+            { kEventClassMouse, kEventMouseUp }, 
+            { kEventClassMouse, kEventMouseMoved },
+            { kEventClassMouse, kEventMouseDragged },
+            { kEventClassMouse, kEventMouseWheelMoved } ,
+            { kEventClassKeyboard, kEventRawKeyDown },
+            { kEventClassKeyboard, kEventRawKeyUp } ,
+            { kEventClassKeyboard, kEventRawKeyModifiersChanged }	,
+            {kEventClassTextInput,	kEventTextInputUnicodeForKeyEvent},				   
+        };
+        EventHandlerUPP gEvtHandler;			// main event handler
 
 
-		gEvtHandler = NewEventHandlerUPP(appEvtHndlr);
-		err = InstallApplicationEventHandler (gEvtHandler, GetEventTypeCount (list1) , list1, this, &ref1 );
-		GlobalInits = true;
-		
-		struct CPSProcessSerNum PSN;
-		GetCurrentProcess((ProcessSerialNumber *)&PSN);
-		err = CPSGetCurrentProcess(&PSN);
-		
-		if(_properties.has_title())
-		{
-			err = CPSSetProcessName(&PSN,(char *)_properties.get_title().c_str());
-		}
-		else		
-			err = CPSSetProcessName(&PSN,"Panda3D");
-		
-		err = CPSEnableForegroundOperation(&PSN);
-		err = CPSSetFrontProcess(&PSN);
-		
-		
-		
-	}
+        gEvtHandler = NewEventHandlerUPP(appEvtHndlr);
+        err = InstallApplicationEventHandler (gEvtHandler, GetEventTypeCount (list1) , list1, this, &ref1 );
+        GlobalInits = true;
 
-  
+        struct CPSProcessSerNum PSN;
+        GetCurrentProcess((ProcessSerialNumber *)&PSN);
+        err = CPSGetCurrentProcess(&PSN);
+
+        if(_properties.has_title())
+        {
+            err = CPSSetProcessName(&PSN,(char *)_properties.get_title().c_str());
+        }
+        else		
+            err = CPSSetProcessName(&PSN,"Panda3D");
+
+        err = CPSEnableForegroundOperation(&PSN);
+        err = CPSSetFrontProcess(&PSN);
+
+
+
+    }
+
+
 
     EventHandlerRef		ref;
     EventTypeSpec list[] = { { kEventClassWindow, kEventWindowCollapsing },
-							 { kEventClassWindow, kEventWindowShown },
-                             { kEventClassWindow, kEventWindowActivated },
-                             { kEventClassWindow, kEventWindowClose },
-                             { kEventClassWindow, kEventWindowBoundsChanged },
-                             { kEventClassWindow, kEventWindowZoomed },
+    { kEventClassWindow, kEventWindowShown },
+    { kEventClassWindow, kEventWindowActivated },
+    { kEventClassWindow, kEventWindowClose },
+    { kEventClassWindow, kEventWindowBoundsChanged },
+    { kEventClassWindow, kEventWindowZoomed },
     //                         { kEventClassKeyboard, kEventRawKeyDown },
-      //                       { kEventClassKeyboard, kEventRawKeyUp } ,
-		//					 { kEventClassKeyboard, kEventRawKeyModifiersChanged }
-							 };
+    //                       { kEventClassKeyboard, kEventRawKeyUp } ,
+    //					 { kEventClassKeyboard, kEventRawKeyModifiersChanged }
+    };
 
 
-	Rect r;
-	if(_properties.has_origin())
-	{	
-		r.top = _properties.get_y_origin();
-		r.left =_properties.get_x_origin();
-	}
-	else
-	{
-	     r.top = 50;
-		 r.left = 10;
-	}
-		
-	if(_properties.has_size())
-	{
-		r.right = r.left + _properties.get_x_size();
-		r.bottom = r.top + _properties.get_y_size();
-	}
-	else
-	{			
-		r.right = r.left + 512;
-		r.bottom = r.top + 512;
-	}		
+    Rect r;
+    if(_properties.has_origin())
+    {	
+        r.top = _properties.get_y_origin();
+        r.left =_properties.get_x_origin();
+    }
+    else
+    {
+        r.top = 50;
+        r.left = 10;
+    }
 
-if(_properties.has_fullscreen() && _properties.get_fullscreen() == true)
-{
-	// capture the main display
-	CGDisplayCapture( kCGDirectMainDisplay );
-	// if sized try and switch it..
-	if(_properties.has_size())
-	{
-		_originalMode = CGDisplayCurrentMode( kCGDirectMainDisplay );	
-		CGDisplaySwitchToMode( kCGDirectMainDisplay,
+    if(_properties.has_size())
+    {
+        r.right = r.left + _properties.get_x_size();
+        r.bottom = r.top + _properties.get_y_size();
+    }
+    else
+    {			
+        r.right = r.left + 512;
+        r.bottom = r.top + 512;
+    }		
+
+    if(_properties.has_fullscreen() && _properties.get_fullscreen() == true)
+    {
+        // capture the main display
+        CGDisplayCapture( kCGDirectMainDisplay );
+        // if sized try and switch it..
+        if(_properties.has_size())
+        {
+            _originalMode = CGDisplayCurrentMode( kCGDirectMainDisplay );	
+            CGDisplaySwitchToMode( kCGDirectMainDisplay,
                 CGDisplayBestModeForParameters( kCGDirectMainDisplay, 32,  _properties.get_x_size(), _properties.get_y_size(), 0 ) );
-	}
+        }
 
-	buildGL();	
-		if (!aglSetCurrentContext(get_context()))
-			err = aglReportError ();
-	aglSetFullScreen(get_context(),0,0,0,0);
-	aglReportError ();
-		
-		// VBL SYNC
-		GLint swap = 1;	
-		if (!aglSetInteger (get_context(), AGL_SWAP_INTERVAL, &swap))
-			aglReportError ();
-	
-	
- 
-	
-// CreateNewWindow(//
-// kOverlayWindowClass,
-//	kWindowStandardHandlerAttribute, 
-//	&r, &_osx_window); 
-	_is_fullsreen	=true;	
-	FullScreenWindow = this;
+        buildGL();	
+        if (!aglSetCurrentContext(get_context()))
+            err = aglReportError ();
+        aglSetFullScreen(get_context(),0,0,0,0);
+        aglReportError ();
+
+        // VBL SYNC
+        GLint swap = 1;	
+        if (!aglSetInteger (get_context(), AGL_SWAP_INTERVAL, &swap))
+            aglReportError ();
+
+        _is_fullsreen	=true;	
+        FullScreenWindow = this;
+    }
+    else
+    {
+
+        CreateNewWindow(//
+            // kUtilityWindowClass,
+            kDocumentWindowClass,   
+            //	kWindowLiveResizeAttribute |
+            kWindowStandardDocumentAttributes |  
+            kWindowStandardHandlerAttribute, 
+            &r, &_osx_window);
+
+
+        if (_osx_window)
+        {
+            EventHandlerUPP gWinEvtHandler;			// window event handler
+            EventHandlerRef		ref;
+            EventTypeSpec list[] = { { kEventClassWindow, kEventWindowCollapsing },
+            { kEventClassWindow, kEventWindowShown },
+            { kEventClassWindow, kEventWindowActivated },
+            { kEventClassWindow, kEventWindowClose },
+            { kEventClassWindow, kEventWindowBoundsChanged },
+            { kEventClassWindow, kEventWindowZoomed },
+            //                         { kEventClassKeyboard, kEventRawKeyDown },
+            //                       { kEventClassKeyboard, kEventRawKeyUp } ,
+            //					 { kEventClassKeyboard, kEventRawKeyModifiersChanged }
+            };
+
+            SetWRefCon (_osx_window, (long) this); // point to the window record in the ref con of the window
+            gWinEvtHandler = NewEventHandlerUPP(windowEvtHndlr); 
+            InstallWindowEventHandler (_osx_window, gWinEvtHandler, GetEventTypeCount (list), list, (void*)this, &ref); // add event handler
+            ShowWindow (_osx_window);
+
+            buildGL();	
+
+            GrafPtr portSave = NULL;
+            GetPort (&portSave);
+            SetPort ((GrafPtr) GetWindowPort (_osx_window));
+
+            if(!aglSetDrawable(get_context(), GetWindowPort (_osx_window)))
+                err = aglReportError ();
+
+            if (!aglSetCurrentContext(get_context()))
+                err = aglReportError ();
+
+            // VBL SYNC
+            GLint swap = 1;	
+            if (!aglSetInteger (get_context(), AGL_SWAP_INTERVAL, &swap))
+                aglReportError ();
+
+            SetPort (portSave);		
+        }
+    }
+
+
+    //
+    // pull the size from the real window .. do not trust the requested values?
+    WindowProperties properties;
+
+    _properties.set_foreground(true);
+    _properties.set_minimized(false);
+    _properties.set_open(true);
+    Rect				rectPort = {0,0,0,0};
+    if(_is_fullsreen)
+    {
+        CGDirectDisplayID display =   CGMainDisplayID ();
+
+        osxdisplay_cat.debug() << "Full Screen Size ["<< 	CGDisplayPixelsWide (display) <<","<< CGDisplayPixelsHigh (display) << "\n";
+        //	  _properties.set_size((int)800,(int) 600);
+        _properties.set_size((int)CGDisplayPixelsWide (display),(int) CGDisplayPixelsHigh (display));
+        _properties.set_origin((int) 0,(int)0);
+    }
+    else
+    {
+        GetWindowPortBounds (_osx_window, &rectPort); 	
+        _properties.set_size((int)(rectPort.right - rectPort.left),(int) (rectPort.bottom - rectPort.top));
+        _properties.set_origin((int) rectPort.left,(int)rectPort.top);
+
+    }
+    return true;
 }
-else
-{
-
- CreateNewWindow(//
-// kUtilityWindowClass,
-	kDocumentWindowClass,   
-//	kWindowLiveResizeAttribute |
-	kWindowStandardDocumentAttributes |  
-	kWindowStandardHandlerAttribute, 
-	&r, &_osx_window);
-
-
-	if (_osx_window)
-	{
-	
-		SetWRefCon (_osx_window, (long) this); // point to the window record in the ref con of the window
-		gWinEvtHandler = NewEventHandlerUPP(windowEvtHndlr); 
-		InstallWindowEventHandler (_osx_window, gWinEvtHandler, GetEventTypeCount (list), list, (void*)this, &ref); // add event handler
-		ShowWindow (_osx_window);
-			
-		buildGL();	
-
-        GrafPtr portSave = NULL;
-        GetPort (&portSave);
-        SetPort ((GrafPtr) GetWindowPort (_osx_window));
-
-		if(!aglSetDrawable(get_context(), GetWindowPort (_osx_window)))
-			err = aglReportError ();
-			
-		if (!aglSetCurrentContext(get_context()))
-			err = aglReportError ();
-		
-		// VBL SYNC
-		GLint swap = 1;	
-		if (!aglSetInteger (get_context(), AGL_SWAP_INTERVAL, &swap))
-			aglReportError ();
-
-        SetPort (portSave);		
-	}
-}
-
-//RunApplicationEventLoop();
-   WindowProperties properties;
-   
-   _properties.set_foreground(true);
-   _properties.set_minimized(false);
-   _properties.set_open(true);
-   	Rect				rectPort = {0,0,0,0};
-	if(_is_fullsreen)
-	{
-		CGDirectDisplayID display =   CGMainDisplayID ();
-
-		osxdisplay_cat.debug() << "Full Screen Size ["<< 	CGDisplayPixelsWide (display) <<","<< CGDisplayPixelsHigh (display) << "\n";
-//	  _properties.set_size((int)800,(int) 600);
-	_properties.set_size((int)CGDisplayPixelsWide (display),(int) CGDisplayPixelsHigh (display));
-	  _properties.set_origin((int) 0,(int)0);
-	}
-	else
-	{
-		GetWindowPortBounds (_osx_window, &rectPort); 	
-	  _properties.set_size((int)(rectPort.right - rectPort.left),(int) (rectPort.bottom - rectPort.top));
-	  _properties.set_origin((int) rectPort.left,(int)rectPort.top);
-	
-	}
-	return true;
-}
-
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::process_events()
+//       Access: virtual, protected
+//  Description: Required Event upcall . Used to dispatch Window and Aplication Events 
+//               back into panda
+//               
+////////////////////////////////////////////////////////////////////
 void osxGraphicsWindow::process_events()
 {
-	GraphicsWindow::process_events();
-	EventRef theEvent;
-	EventTargetRef theTarget;
-	theTarget = GetEventDispatcherTarget();
- 
-//    while  (ReceiveNextEvent(0, NULL,kEventDurationForever,true, &theEvent)== noErr)
+    GraphicsWindow::process_events();
+    EventRef theEvent;
+    EventTargetRef theTarget;
+    theTarget = GetEventDispatcherTarget();
+
+    //    while  (ReceiveNextEvent(0, NULL,kEventDurationForever,true, &theEvent)== noErr)
     while  (ReceiveNextEvent(0, NULL,kEventDurationNoWait,true, &theEvent)== noErr)
-        {
-            SendEventToEventTarget (theEvent, theTarget);
-            ReleaseEvent(theEvent);
-        }
+    {
+        SendEventToEventTarget (theEvent, theTarget);
+        ReleaseEvent(theEvent);
+    }
 
 };
 // ---------------------------------
@@ -833,24 +905,13 @@ void handleWindowDMEvent (void *userData, short theMessage, void *notifyData)
 		}
 	}
 }
-/*
-	
-
-EventRef     theTextEvent;
-UniChar      *text;
-UInt32       actualSize; 
- 
-GetEventParameter (theTextEvent, kEventParamTextInputSendText,
-                typeUnicodeText, NULL, 0, &actualSize, NULL);
- 
-text = (UniChar*) NewPtr(actualSize);
- 
- 
-GetEventParameter (theTextEvent, kEventParamTextInputSendText,
-                typeUnicodeText, NULL, actualSize, NULL, text);
-
-*/
-
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::process_events()
+//       Access: virtual, protected
+//  Description: Required Event upcall . Used to dispatch Window and Aplication Events 
+//               back into panda
+//               
+////////////////////////////////////////////////////////////////////
 // key input handler
 OSStatus osxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, EventRef event, Boolean keyDown)
 {
@@ -879,14 +940,22 @@ OSStatus osxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, Event
 			
 	return result;
 }
-
-
+ ////////////////////////////////////////////////////////////////////
+ //     Function: 
+ //       Access: 
+ //  Description: 
+ ////////////////////////////////////////////////////////////////////
 void osxGraphicsWindow::SystemSetWindowForground(bool forground)
 {
 	  WindowProperties properties;
       properties.set_foreground(forground);
 	  system_changed_properties(properties);
 };		
+ ////////////////////////////////////////////////////////////////////
+ //     Function: 
+ //       Access: 
+ //  Description: 
+ ////////////////////////////////////////////////////////////////////
 	
  void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
  {
@@ -897,234 +966,224 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
     SetPort( savePort );				
  };
 	
-	
-OSStatus osxGraphicsWindow::handleWindowMouseEvents (EventHandlerCallRef myHandler, EventRef event)
-{
-    WindowRef			window = NULL;
- //   pRecContext 		pContextInfo = NULL;
-	OSStatus			result = eventNotHandledErr;
-    UInt32 				kind = GetEventKind (event);
-	EventMouseButton	button = 0;
-//	HIPoint				location = {0.0f, 0.0f};
-	Point qdGlobalPoint = {0, 0};
-	UInt32				modifiers = 0;	
-	long				wheelDelta = 0;		
-	Rect 				rectPort;
+ ////////////////////////////////////////////////////////////////////
+ //     Function: 
+ //       Access: 
+ //  Description: 
+ ////////////////////////////////////////////////////////////////////
 
-	// Mac OS X v10.1 and later
-	// should this be front window???
-	GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
-//	if (window)
-//		pContextInfo = GetCurrentContextInfo (window);
-//	if (!pContextInfo)
-//		return result; // not an application GLWindow so do not process (there is an exception)
-	GetWindowPortBounds (window, &rectPort);
-		
-	//printf(" Got Mouse Event \n");	
-		
-	result = CallNextEventHandler(myHandler, event);	
-	if (eventNotHandledErr == result) 
-	{ // only handle events not already handled (prevents wierd resize interaction)
-		switch (kind) {
-			// start trackball, pan, or dolly
-			case kEventMouseDown:
-			{
-				GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
-//				GetEventParameter(event, kEventParamMouseLocation, typeHIPoint, NULL, sizeof(HIPoint), NULL, &location);	// Mac OS X v10.1 and later
-				GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
-				GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
-				SystemPointToLocalPoint(qdGlobalPoint);
-    
-				ButtonHandle button_h = MouseButton::one();
-				if(kEventMouseButtonSecondary == button)
-					button_h = MouseButton::two();
-				if(kEventMouseButtonTertiary == button)
-					button_h = MouseButton::three();
-				 
-//					cerr << " Mouse Down "	 <<  location.x << " " << location.y << " "<<  button_h << "\n" ;
-//					cerr << " Mouse Down "	 <<  qdGlobalPoint.h << " " << qdGlobalPoint.v << " "<<  button_h << "\n" ;		
-//					cerr << " Window Port " << 	rectPort.top << " " << rectPort.bottom ;
-//				    _input_devices[0].set_pointer_in_window((int)location.x, (int)location.y);
-				    _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
- 	 		 	   _input_devices[0].button_down(button_h);
-			}
-				break;
-			// stop trackball, pan, or dolly
-			case kEventMouseUp:
-				{
-				GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
-//				GetEventParameter(event, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof(HIPoint), NULL, &location);	// Mac OS X v10.1 and later
-				GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
-				SystemPointToLocalPoint(qdGlobalPoint);
-				
-				ButtonHandle button_h = MouseButton::one();
-				if(kEventMouseButtonSecondary == button)
-					button_h = MouseButton::two();
-				if(kEventMouseButtonTertiary == button)
-					button_h = MouseButton::three();
-					
-//					cerr << " Mouse Up "	 <<  location.x << " " << location.y << " "<< button_h << "\n";
-//					cerr << " Mouse up "	 <<  qdGlobalPoint.h << " " << qdGlobalPoint.v << " "<<  button_h << "\n" ;
+ OSStatus osxGraphicsWindow::handleWindowMouseEvents (EventHandlerCallRef myHandler, EventRef event)
+ {
+     WindowRef			window = NULL;
+     OSStatus			result = eventNotHandledErr;
+     UInt32 				kind = GetEventKind (event);
+     EventMouseButton	button = 0;
+     Point qdGlobalPoint = {0, 0};
+     UInt32				modifiers = 0;	
+     long				wheelDelta = 0;		
+     Rect 				rectPort;
 
-				    _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
-				   _input_devices[0].button_up(button_h);
-				}
-				break;
-			case kEventMouseMoved:	
-			case kEventMouseDragged:
-//				GetEventParameter(event, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof(HIPoint), NULL, &location);	// Mac OS X v10.1 and later
-//				GetEventParameter(event, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof(HIPoint), NULL, &location);	// Mac OS X v10.1 and later
-//					_input_devices[0].set_pointer_in_window((int)location.x, (int)location.y);
-//				 _input_devices[0].set_pointer_in_window(event.xmotion.x, event.xmotion.y);
-				GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
-				SystemPointToLocalPoint(qdGlobalPoint);
+     // Mac OS X v10.1 and later
+     // should this be front window???
+     GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
+     GetWindowPortBounds (window, &rectPort);
 
-			    _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
-				 
-				break;
-			case kEventMouseWheelMoved: 
-				GetEventParameter(event, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof(long), NULL, &wheelDelta);
-				break;
-		}
-		result = noErr;
-	}	
-	return result;
-}
+     result = CallNextEventHandler(myHandler, event);	
+     if (eventNotHandledErr == result) 
+     { // only handle events not already handled (prevents wierd resize interaction)
+         switch (kind) {
+             // start trackball, pan, or dolly
+            case kEventMouseDown:
+                {
+                    GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
+                    GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
+                    GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
+                    SystemPointToLocalPoint(qdGlobalPoint);
+
+                    ButtonHandle button_h = MouseButton::one();
+                    if(kEventMouseButtonSecondary == button)
+                        button_h = MouseButton::two();
+                    if(kEventMouseButtonTertiary == button)
+                        button_h = MouseButton::three();
+                    _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+                    _input_devices[0].button_down(button_h);
+                }
+                break;
+                // stop trackball, pan, or dolly
+            case kEventMouseUp:
+                {
+                    GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
+                    //				GetEventParameter(event, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof(HIPoint), NULL, &location);	// Mac OS X v10.1 and later
+                    GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
+                    SystemPointToLocalPoint(qdGlobalPoint);
+
+                    ButtonHandle button_h = MouseButton::one();
+                    if(kEventMouseButtonSecondary == button)
+                        button_h = MouseButton::two();
+                    if(kEventMouseButtonTertiary == button)
+                        button_h = MouseButton::three();
+                    _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+                    _input_devices[0].button_up(button_h);
+                }
+                break;
+            case kEventMouseMoved:	
+            case kEventMouseDragged:
+                GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
+                SystemPointToLocalPoint(qdGlobalPoint);
+
+                _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+
+                break;
+            case kEventMouseWheelMoved: 
+                GetEventParameter(event, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof(long), NULL, &wheelDelta);
+                break;
+         }
+         result = noErr;
+     }	
+     return result;
+ }
+
+ ////////////////////////////////////////////////////////////////////
+ //     Function: osxGraphicsWindow::OSX_TranslateKey
+ //       Access: Private
+ //  Description: MAC Key Codes to Panda Key Codes
+ ////////////////////////////////////////////////////////////////////
+ ButtonHandle osxGraphicsWindow::OSX_TranslateKey( UInt32 key,   EventRef event)
+ {
 
 
-ButtonHandle OSX_TranslateKey( UInt32 key,   EventRef event)
-{
+     ButtonHandle nk = ButtonHandle::none();
+     switch ( key )
+     {
+     case 0:    nk = KeyboardButton::ascii_key('a');       break;
+     case 11:   nk = KeyboardButton::ascii_key('b');       break;
+     case 8:    nk = KeyboardButton::ascii_key('c');       break;
+     case 2:    nk = KeyboardButton::ascii_key('d');       break;
+     case 14:   nk = KeyboardButton::ascii_key('e');       break;
+     case 3:    nk = KeyboardButton::ascii_key('f');       break;
+     case 5:    nk = KeyboardButton::ascii_key('g');       break;
+     case 4:    nk = KeyboardButton::ascii_key('h');       break;
+     case 34:   nk = KeyboardButton::ascii_key('i');       break;
+     case 38:   nk = KeyboardButton::ascii_key('j');       break;
+     case 40:   nk = KeyboardButton::ascii_key('k');       break;
+     case 37:   nk = KeyboardButton::ascii_key('l');       break;
+     case 46:   nk = KeyboardButton::ascii_key('m');       break;
+     case 45:   nk = KeyboardButton::ascii_key('n');       break;
+     case 31:   nk = KeyboardButton::ascii_key('o');       break;
+     case 35:   nk = KeyboardButton::ascii_key('p');       break;
+     case 12:   nk = KeyboardButton::ascii_key('q');       break;
+     case 15:   nk = KeyboardButton::ascii_key('r');       break;
+     case 1:    nk = KeyboardButton::ascii_key('s');       break;
+     case 17:   nk = KeyboardButton::ascii_key('t');       break;
+     case 32:   nk = KeyboardButton::ascii_key('u');       break;
+     case 9:    nk = KeyboardButton::ascii_key('v');       break;
+     case 13:   nk = KeyboardButton::ascii_key('w');       break;
+     case 7:    nk = KeyboardButton::ascii_key('x');       break;
+     case 16:   nk = KeyboardButton::ascii_key('y');       break;
+     case 6:    nk = KeyboardButton::ascii_key('z');       break;
+
+         // top row numbers
+     case 29:   nk = KeyboardButton::ascii_key('0');       break;
+     case 18:   nk = KeyboardButton::ascii_key('1');       break;
+     case 19:   nk = KeyboardButton::ascii_key('2');       break;
+     case 20:   nk = KeyboardButton::ascii_key('3');       break;
+     case 21:   nk = KeyboardButton::ascii_key('4');       break;
+     case 23:   nk = KeyboardButton::ascii_key('5');       break;
+     case 22:   nk = KeyboardButton::ascii_key('6');       break;
+     case 26:   nk = KeyboardButton::ascii_key('7');       break;
+     case 28:   nk = KeyboardButton::ascii_key('8');       break;
+     case 25:   nk = KeyboardButton::ascii_key('9');       break;
+
+         // key pad ... do they really map to the top number in panda ?
+     case 82:   nk = KeyboardButton::ascii_key('0');       break;
+     case 83:   nk = KeyboardButton::ascii_key('1');       break;
+     case 84:   nk = KeyboardButton::ascii_key('2');       break;
+     case 85:   nk = KeyboardButton::ascii_key('3');       break;
+     case 86:   nk = KeyboardButton::ascii_key('4');       break;
+     case 87:   nk = KeyboardButton::ascii_key('5');       break;
+     case 88:   nk = KeyboardButton::ascii_key('6');       break;
+     case 89:   nk = KeyboardButton::ascii_key('7');       break;
+     case 91:   nk = KeyboardButton::ascii_key('8');       break;
+     case 92:   nk = KeyboardButton::ascii_key('9');       break;
 
 
-	ButtonHandle nk = ButtonHandle::none();
-	switch ( key )
-	{
-	case 0:    nk = KeyboardButton::ascii_key('a');       break;
-	case 11:   nk = KeyboardButton::ascii_key('b');       break;
-	case 8:    nk = KeyboardButton::ascii_key('c');       break;
-	case 2:    nk = KeyboardButton::ascii_key('d');       break;
-	case 14:   nk = KeyboardButton::ascii_key('e');       break;
-	case 3:    nk = KeyboardButton::ascii_key('f');       break;
-	case 5:    nk = KeyboardButton::ascii_key('g');       break;
-	case 4:    nk = KeyboardButton::ascii_key('h');       break;
-	case 34:   nk = KeyboardButton::ascii_key('i');       break;
-	case 38:   nk = KeyboardButton::ascii_key('j');       break;
-	case 40:   nk = KeyboardButton::ascii_key('k');       break;
-	case 37:   nk = KeyboardButton::ascii_key('l');       break;
-	case 46:   nk = KeyboardButton::ascii_key('m');       break;
-	case 45:   nk = KeyboardButton::ascii_key('n');       break;
-	case 31:   nk = KeyboardButton::ascii_key('o');       break;
-	case 35:   nk = KeyboardButton::ascii_key('p');       break;
-	case 12:   nk = KeyboardButton::ascii_key('q');       break;
-	case 15:   nk = KeyboardButton::ascii_key('r');       break;
-	case 1:    nk = KeyboardButton::ascii_key('s');       break;
-	case 17:   nk = KeyboardButton::ascii_key('t');       break;
-	case 32:   nk = KeyboardButton::ascii_key('u');       break;
-	case 9:    nk = KeyboardButton::ascii_key('v');       break;
-	case 13:   nk = KeyboardButton::ascii_key('w');       break;
-	case 7:    nk = KeyboardButton::ascii_key('x');       break;
-	case 16:   nk = KeyboardButton::ascii_key('y');       break;
-	case 6:    nk = KeyboardButton::ascii_key('z');       break;
+         //	case 36:   nk = KeyboardButton::ret();			  break;   // no return  in panda ???
+     case 49:   nk = KeyboardButton::space();		 	  break;
+     case 51:   nk = KeyboardButton::backspace();		  break;
+     case 48:   nk = KeyboardButton::tab();				  break;
+     case 53:   nk = KeyboardButton::escape();			  break;
+     case 76:   nk = KeyboardButton::enter();			  break;	
+     case 36:   nk = KeyboardButton::enter();			  break;	
 
-	// top row numbers
-	case 29:   nk = KeyboardButton::ascii_key('0');       break;
-	case 18:   nk = KeyboardButton::ascii_key('1');       break;
-	case 19:   nk = KeyboardButton::ascii_key('2');       break;
-	case 20:   nk = KeyboardButton::ascii_key('3');       break;
-	case 21:   nk = KeyboardButton::ascii_key('4');       break;
-	case 23:   nk = KeyboardButton::ascii_key('5');       break;
-	case 22:   nk = KeyboardButton::ascii_key('6');       break;
-	case 26:   nk = KeyboardButton::ascii_key('7');       break;
-	case 28:   nk = KeyboardButton::ascii_key('8');       break;
-	case 25:   nk = KeyboardButton::ascii_key('9');       break;
-	
-    // key pad ... do they really map to the top number in panda ?
-	case 82:   nk = KeyboardButton::ascii_key('0');       break;
-	case 83:   nk = KeyboardButton::ascii_key('1');       break;
-	case 84:   nk = KeyboardButton::ascii_key('2');       break;
-	case 85:   nk = KeyboardButton::ascii_key('3');       break;
-	case 86:   nk = KeyboardButton::ascii_key('4');       break;
-	case 87:   nk = KeyboardButton::ascii_key('5');       break;
-	case 88:   nk = KeyboardButton::ascii_key('6');       break;
-	case 89:   nk = KeyboardButton::ascii_key('7');       break;
-	case 91:   nk = KeyboardButton::ascii_key('8');       break;
-	case 92:   nk = KeyboardButton::ascii_key('9');       break;
+     case 123:  nk = KeyboardButton::left();				  break;
+     case 124:  nk = KeyboardButton::right();			  break;
+     case 125:  nk = KeyboardButton::down();				  break;
+     case 126:  nk = KeyboardButton::up();				  break;
+     case 116:  nk = KeyboardButton::page_up();				  break;
+     case 121:  nk = KeyboardButton::page_down();				  break;
+     case 115:  nk = KeyboardButton::home();				  break;
+     case 119:  nk = KeyboardButton::end();				  break;
+         //	case    :  nk = KeyboardButton::insert();			  break;			
+     case 117:  nk = KeyboardButton::del();			  break;			
 
+         //	case  71:  nk = KeyboardButton::num_lock()        break; 
 
-//	case 36:   nk = KeyboardButton::ret();			  break;   // no return  in panda ???
-	case 49:   nk = KeyboardButton::space();		 	  break;
-	case 51:   nk = KeyboardButton::backspace();		  break;
-	case 48:   nk = KeyboardButton::tab();				  break;
-	case 53:   nk = KeyboardButton::escape();			  break;
-	case 76:   nk = KeyboardButton::enter();			  break;	
-	case 36:   nk = KeyboardButton::enter();			  break;	
-	
-	case 123:  nk = KeyboardButton::left();				  break;
-	case 124:  nk = KeyboardButton::right();			  break;
-	case 125:  nk = KeyboardButton::down();				  break;
-	case 126:  nk = KeyboardButton::up();				  break;
-	case 116:  nk = KeyboardButton::page_up();				  break;
-	case 121:  nk = KeyboardButton::page_down();				  break;
-	case 115:  nk = KeyboardButton::home();				  break;
-	case 119:  nk = KeyboardButton::end();				  break;
-//	case    :  nk = KeyboardButton::insert();			  break;			
-	case 117:  nk = KeyboardButton::del();			  break;			
-	
-//	case  71:  nk = KeyboardButton::num_lock()        break; 
+     case 122:  nk = KeyboardButton::f1();				  break;
+     case 120:  nk = KeyboardButton::f2();				  break;
+     case  99:  nk = KeyboardButton::f3();				  break;
+     case 118:  nk = KeyboardButton::f4();				  break;
+     case  96:  nk = KeyboardButton::f5();				  break;
+     case  97:  nk = KeyboardButton::f6();				  break;
+     case  98:  nk = KeyboardButton::f7();				  break;
+     case 100:  nk = KeyboardButton::f8();				  break;
+         //	case    :  nk = KeyboardButton::f9();				  break;  // seem to be used by the systems..
+         //	case    :  nk = KeyboardButton::f10();				  break;
+         //	case    :  nk = KeyboardButton::f11();				  break;
+         //	case    :  nk = KeyboardButton::f12();				  break;
+         //	case 105:  nk = KeyboardButton::f13();				  break;  // panda does not have a 13
 
-	case 122:  nk = KeyboardButton::f1();				  break;
-	case 120:  nk = KeyboardButton::f2();				  break;
-	case  99:  nk = KeyboardButton::f3();				  break;
-	case 118:  nk = KeyboardButton::f4();				  break;
-	case  96:  nk = KeyboardButton::f5();				  break;
-	case  97:  nk = KeyboardButton::f6();				  break;
-	case  98:  nk = KeyboardButton::f7();				  break;
-	case 100:  nk = KeyboardButton::f8();				  break;
-//	case    :  nk = KeyboardButton::f9();				  break;  // seem to be used by the systems..
-//	case    :  nk = KeyboardButton::f10();				  break;
-//	case    :  nk = KeyboardButton::f11();				  break;
-//	case    :  nk = KeyboardButton::f12();				  break;
-//	case 105:  nk = KeyboardButton::f13();				  break;  // panda does not have a 13
-	
-	// shiftable chartablet 
-	case  50:  nk = KeyboardButton::ascii_key('`');				  break;
-	case  27:  nk = KeyboardButton::ascii_key('-');				  break;
-	case  24:  nk = KeyboardButton::ascii_key('=');				  break;
-	case  33:  nk = KeyboardButton::ascii_key('[');				  break;
-	case  30:  nk = KeyboardButton::ascii_key(']');				  break;
-	case  42:  nk = KeyboardButton::ascii_key('\\');			  break;
-	case  41:  nk = KeyboardButton::ascii_key(';');				  break;
-	case  39:  nk = KeyboardButton::ascii_key('\'');			  break;
-	case  43:  nk = KeyboardButton::ascii_key(',');				  break;
-	case  47:  nk = KeyboardButton::ascii_key('.');				  break;
-	case  44:  nk = KeyboardButton::ascii_key('/');				  break;
-	
-	default:
-//		 printf (" Untranslated KeyCode: %lu (0x%lX)\n", key, key);
-			// not sure this is right .. but no mapping for keypad and such
-			// this at least does a best gess..
-			
-        char charCode =  0;	
-        if(GetEventParameter( event, kEventParamKeyMacCharCodes, typeChar, nil, sizeof( charCode ), nil, &charCode ) == noErr)
-			nk = KeyboardButton::ascii_key(charCode);	
-	}
-	return nk;
-}
+         // shiftable chartablet 
+     case  50:  nk = KeyboardButton::ascii_key('`');				  break;
+     case  27:  nk = KeyboardButton::ascii_key('-');				  break;
+     case  24:  nk = KeyboardButton::ascii_key('=');				  break;
+     case  33:  nk = KeyboardButton::ascii_key('[');				  break;
+     case  30:  nk = KeyboardButton::ascii_key(']');				  break;
+     case  42:  nk = KeyboardButton::ascii_key('\\');			  break;
+     case  41:  nk = KeyboardButton::ascii_key(';');				  break;
+     case  39:  nk = KeyboardButton::ascii_key('\'');			  break;
+     case  43:  nk = KeyboardButton::ascii_key(',');				  break;
+     case  47:  nk = KeyboardButton::ascii_key('.');				  break;
+     case  44:  nk = KeyboardButton::ascii_key('/');				  break;
 
+     default:
+         //		 printf (" Untranslated KeyCode: %lu (0x%lX)\n", key, key);
+         // not sure this is right .. but no mapping for keypad and such
+         // this at least does a best gess..
 
+         char charCode =  0;	
+         if(GetEventParameter( event, kEventParamKeyMacCharCodes, typeChar, nil, sizeof( charCode ), nil, &charCode ) == noErr)
+             nk = KeyboardButton::ascii_key(charCode);	
+     }
+     return nk;
+ }
+ ////////////////////////////////////////////////////////////////////
+ //     Function: osxGraphicsWindow::HandleModifireDeleta
+ //       Access: Private
+ //  Description: Used to emulate key events for the MAC key Modifiers..
+ ////////////////////////////////////////////////////////////////////
  void     osxGraphicsWindow::HandleModifireDeleta(UInt32 newModifiers)
  {
-	 UInt32 changed = _last_key_modifiers ^ newModifiers;
-	 
-	
-    if ((changed & (shiftKey | rightShiftKey)) != 0)
-		SendKeyEvent(KeyboardButton::shift(),(newModifiers & (shiftKey | rightShiftKey)) != 0) ;
-		
-    if ((changed & (optionKey | rightOptionKey)) != 0) 
-		SendKeyEvent(KeyboardButton::alt(),(newModifiers & (optionKey | rightOptionKey)) != 0);
+     UInt32 changed = _last_key_modifiers ^ newModifiers;
 
-	
-	if ((changed & (controlKey | rightControlKey)) != 0) 
+
+     if ((changed & (shiftKey | rightShiftKey)) != 0)
+         SendKeyEvent(KeyboardButton::shift(),(newModifiers & (shiftKey | rightShiftKey)) != 0) ;
+
+     if ((changed & (optionKey | rightOptionKey)) != 0) 
+         SendKeyEvent(KeyboardButton::alt(),(newModifiers & (optionKey | rightOptionKey)) != 0);
+
+
+     if ((changed & (controlKey | rightControlKey)) != 0) 
 		SendKeyEvent(KeyboardButton::control(),(newModifiers & (controlKey | rightControlKey)) != 0);
 	
     if ((changed & alphaLock) != 0) 

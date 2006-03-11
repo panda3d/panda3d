@@ -19,7 +19,6 @@
 #include "osxGraphicsBuffer.h"
 #include "osxGraphicsStateGuardian.h"
 
-//typedef enum {Software, MCD, ICD} OGLDriverType;
 
 TypeHandle osxGraphicsPipe::_type_handle;
   

@@ -64,6 +64,4 @@ private:
   friend class osxGraphicsBuffer;
 };
 
-//#include "osxGraphicsPipe.I"
-
 #endif
