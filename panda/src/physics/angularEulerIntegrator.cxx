@@ -50,22 +50,13 @@ void AngularEulerIntegrator::
 child_integrate(Physical *physical,
                 AngularForceVector& forces,
                 float dt) {
-  // perform the precomputation.  Note that the vector returned by
-  // get_precomputed_matrices() has the matrices loaded in order of force
-  // type: first global, then local.  If you're using this as a guide to write
-  // another integrator, be sure to process your forces global, then local.
-  // otherwise your transforms will be VERY bad.  No good.
-  precompute_angular_matrices(physical, forces);
-  const pvector< LMatrix4f > &matrices = get_precomputed_angular_matrices();
-  assert(matrices.size() == (forces.size() + physical->get_angular_forces().size()));
-
-  // Loop through each object in the set.  This processing occurs in O(pf) time,
-  // where p is the number of physical objects and f is the number of
-  // forces.  Unfortunately, no precomputation of forces can occur, as
-  // each force is possibly contingent on such things as the position and
-  // velocity of each physicsobject in the set.  Accordingly, we have
-  // to grunt our way through each one.  wrt caching of the xform matrix
-  // should help.
+  // Loop through each object in the set.  This processing occurs in
+  // O(pf) time, where p is the number of physical objects and f is
+  // the number of forces.  Unfortunately, no precomputation of forces
+  // can occur, as each force is possibly contingent on such things as
+  // the position and velocity of each physicsobject in the set.
+  // Accordingly, we have to grunt our way through each one.  wrt
+  // caching of the xform matrix should help.
   PhysicsObject::Vector::const_iterator current_object_iter;
   current_object_iter = physical->get_object_vector().begin();
   for (; current_object_iter != physical->get_object_vector().end();
@@ -85,7 +76,6 @@ child_integrate(Physical *physical,
     LRotationf accum_quat(0, 0, 0, 0);
 
     // set up the traversal stuff.
-    //////////////////////ForceNode *force_node;
     AngularForceVector::const_iterator f_cur;
 
     LRotationf f;
@@ -101,14 +91,8 @@ child_integrate(Physical *physical,
         continue;
       }
 
-      /////////////////force_node = cur_force->get_force_node();
-
-      // now we go from force space to our object's space.
-      assert(index >= 0 && index < matrices.size());
-      //f = matrices[index++] * cur_force->get_quat(current_object);
-      f = cur_force->get_quat(current_object);
-
       // tally it into the accumulation quaternion
+      f = cur_force->get_quat(current_object);
       accum_quat += f;
     }
 
@@ -123,17 +107,12 @@ child_integrate(Physical *physical,
         continue;
       }
 
-      ///////////////force_node = cur_force->get_force_node();
-
-      // go from force space to object space
-      //assert(index >= 0 && index < matrices.size());
-      //f = matrices[index++] * cur_force->get_quat(current_object);
       f = cur_force->get_quat(current_object);
 
       // tally it into the accumulation quaternion
-      accum_quat += orientation.xform(f); // i.e. orientation * f * orientation.conjugate();
+      // i.e. orientation * f * orientation.conjugate()
+      accum_quat += orientation.xform(f);
     }
-    //assert(index == matrices.size());
 
     // apply the accumulated torque vector to the object's inertial tensor.
     // this matrix represents how much force the object 'wants' applied to it
