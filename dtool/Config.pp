@@ -881,9 +881,11 @@
 #if $[eq $[PLATFORM], osx]
   #defer SHARED_LIB_C $[cc_ld] -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
   #defer SHARED_LIB_C++ $[cxx_ld] -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+  #defer BUNDLE_LIB_C++ $[cxx_ld] -bundle -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
 #else
   #defer SHARED_LIB_C $[cc_ld] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
   #defer SHARED_LIB_C++ $[cxx_ld] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+  #define BUNDLE_LIB_C++
 #endif
 
 // How to install a data file or executable file.  $[local] is the

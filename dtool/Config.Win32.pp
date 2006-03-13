@@ -139,5 +139,6 @@
 
 // The dynamic library file extension (usually .so .dll or .dylib):
 #define DYNAMIC_LIB_EXT .dll
+#define BUNDLE_EXT
   
 

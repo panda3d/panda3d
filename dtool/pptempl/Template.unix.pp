@@ -41,6 +41,10 @@
   // list of binaries that are to be built only when specifically asked
   // for.
   #define lib_targets $[active_target(metalib_target lib_target ss_lib_target noinst_lib_target):%=$[ODIR]/lib%$[DYNAMIC_LIB_EXT]]
+  #define bundle_targets
+  #if $[BUNDLE_EXT]
+    #define bundle_targets $[active_target(metalib_target):%=$[ODIR]/lib%$[BUNDLE_EXT]]
+  #endif
 
   #define static_lib_targets $[active_target(static_lib_target):%=$[ODIR]/lib%.a]
   #define bin_targets $[active_target(bin_target noinst_bin_target sed_bin_target):%=$[ODIR]/%]
@@ -188,7 +192,7 @@
 #define all_targets \
     Makefile \
     $[if $[dep_sources],$[DEPENDENCY_CACHE_FILENAME]] \
-    $[sort $[lib_targets] $[static_lib_targets] $[bin_targets]]
+    $[sort $[lib_targets] $[bundle_targets] $[static_lib_targets] $[bin_targets]]
 all : $[all_targets]
 
 // The 'test' rule makes all the test_bin_targets.
@@ -200,8 +204,8 @@ clean : clean-igate
 $[TAB] rm -f $[patsubst %,$[%_obj],$[compile_sources]]
 #endif
 #end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
-#if $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
-$[TAB] rm -f $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
+#if $[lib_targets] $[bundle_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
+$[TAB] rm -f $[lib_targets] $[bundle_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
 #endif
 #if $[yxx_st_sources] $[lxx_st_sources]
 $[TAB] rm -f $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]
@@ -345,12 +349,20 @@ $[TAB] $[SHARED_LIB_C++]
 $[TAB] $[SHARED_LIB_C]
   #endif
 
+  #if $[BUNDLE_EXT]
+    // Also generate the bundles (on OSX only).
+    #define target $[ODIR]/lib$[TARGET]$[BUNDLE_EXT]
+
+$[target] : $[sources] $[static_lib_dependencies]
+$[TAB] $[BUNDLE_LIB_C++]
+  #endif  // BUNDLE_EXT
 #endif
 
 // Here are the rules to install and uninstall the library and
 // everything that goes along with it.
 #define installed_files \
     $[install_lib_dir]/lib$[TARGET]$[DYNAMIC_LIB_EXT] \
+    $[if $[BUNDLE_EXT],$[install_lib_dir]/lib$[TARGET]$[BUNDLE_EXT]] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
