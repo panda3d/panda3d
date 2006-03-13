@@ -524,9 +524,9 @@ init_geoms() {
 
         CPT(TransformState) ts = TransformState::make_pos_rotate_scale2d(ul, 0.0f, sc);
         state = state->add_attrib(TexMatrixAttrib::make(TextureStage::get_default(), ts));
-        
-        render_node->add_geom(_sprite_primitive[i][j], state);
       }
+
+      render_node->add_geom(_sprite_primitive[i][j], state);
     }
   }
 
