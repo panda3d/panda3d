@@ -5,11 +5,43 @@
 // platform.  It makes some initial guesses about compiler features,
 // etc.
 //
+//#define PYTHON_IPATH /Library/Frameworks/Python.framework/Headers
+//#define PYTHON_LPATH /Library/Frameworks/Python.framework/Headers
+
+#define PYTHON_IPATH /System/Library/Frameworks/Python.framework/Headers
+
+#define HAVE_PYTHON 1
+#define PYTHON_FRAMEWORK  Python
 
 // What additional flags should we pass to interrogate?
-#define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const
+#define SYSTEM_IGATE_FLAGS -D__ppc__ -D__const=const -Dvolatile -D__BIG_ENDIAN__ -D__inline__=inline
 #define HAVE_GL 1
 #define IS_OSX 1
+
+//#define ZLIB_IPATH /usr/include
+//#define ZLIB_LPATH /usr/lib/
+//#define ZLIB_LIBS  libz.dylib 
+
+#define HAVE_ZLIB 1
+#define HAVE_JPEG 1
+#define HAVE_FREETYPE 1
+
+
+
+#define PNG_IPATH /opt/local/include 
+#define PNG_LPATH /opt/local/lib
+#define PNG_LIBS png
+//#define HAVE_PNG 1
+
+
+#define HAVE_OPENSSL 1
+
+// Is libfftw installed, and where?
+#define FFTW_IPATH /opt/local/include
+#define FFTW_LPATH /opt/local/lib
+#define FFTW_LIBS drfftw dfftw
+//#define HAVE_FFTW 1
+
 
 // Is the platform big-endian (like an SGI workstation) or
 // little-endian (like a PC)?  Define this to the empty string to
@@ -144,5 +176,3 @@
 
 // The dynamic library file extension (usually .so .dll or .dylib):
 #define DYNAMIC_LIB_EXT .dylib
-  
-
