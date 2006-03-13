@@ -217,7 +217,7 @@ class FSM(DirectObject.DirectObject):
             return
 
         if not self.request(request, *args):
-            raise RequestDenied, request
+            raise RequestDenied, "%s (from state: %s)" % (request, self.state)
 
     def request(self, request, *args):
         """Requests a state transition (or other behavior).  The
@@ -323,7 +323,7 @@ class FSM(DirectObject.DirectObject):
             # request) not listed in defaultTransitions and not
             # handled by an earlier filter.
             if request[0] in string.uppercase:
-                raise RequestDenied, request
+                raise RequestDenied, "%s (from state: %s)" % (request, self.state)
 
         # In either case, we quietly ignore unhandled command
         # (lowercase) requests.
