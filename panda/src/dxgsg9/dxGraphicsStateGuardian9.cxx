@@ -2473,7 +2473,7 @@ reset() {
            maximum_memory = available_texture_memory;
 
            // need to warn user about low video memory
-           dxgsg9_cat.warning() << "Available video memory " << _available_texture_memory << " is below the minimum requirement of " << minimum_memory_requirement << "\n";
+           dxgsg9_cat.warning() << "Available video memory " << maximum_memory << " is below the minimum requirement of " << minimum_memory_requirement << "\n";
         }
       }
       else {
