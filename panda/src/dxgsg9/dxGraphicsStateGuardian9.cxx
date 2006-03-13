@@ -778,7 +778,7 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
 
   int l, u, w, h;
   _current_display_region->get_region_pixels_i(l, u, w, h);
-  
+
   DBG_S dxgsg9_cat.debug ( ) << "display_region " << l << " " << u << " "  << w << " "  << h << "\n"; DBG_E
 
   // Create the viewport
@@ -790,14 +790,14 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
     dxgsg9_cat.error()
       << "SetViewport(" << l << ", " << u << ", " << w << ", " << h
       << ") failed" << D3DERRORSTRING(hr);
-    
+
     D3DVIEWPORT9 vp_old;
     _d3d_device->GetViewport(&vp_old);
     dxgsg9_cat.error()
       << "GetViewport(" << vp_old.X << ", " << vp_old.Y << ", " << vp_old.Width << ", "
       << vp_old.Height << ") returned: Trying to set that vp---->\n";
     hr = _d3d_device->SetViewport(&vp_old);
-    
+
     if (FAILED(hr)) {
       dxgsg9_cat.error() << "Failed again\n";
       throw_event("panda3d-render-error");
@@ -844,13 +844,13 @@ calc_projection_mat(const Lens *lens) {
     LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel) *
     rescale_mat;
-  
+
   if (_scene_setup->get_inverted()) {
     // If the scene is supposed to be inverted, then invert the
     // projection matrix.
     result *= LMatrix4f::scale_mat(1.0f, -1.0f, 1.0f);
   }
-  
+
   return TransformState::make_mat(result);
 }
 
@@ -2356,6 +2356,7 @@ reset() {
   _vertex_shader_maximum_constants = d3d_caps.MaxVertexShaderConst;
 
   _supports_stream_offset = (d3d_caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET) != 0;
+  _screen->_supports_dynamic_textures = ((d3d_caps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) != 0);
 
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
@@ -2383,6 +2384,8 @@ reset() {
       << "\nPixelShaderVersion = " << _pixel_shader_version_major << "." << _pixel_shader_version_minor
       << "\nMaxVertexShaderConst = " << _vertex_shader_maximum_constants
       << "\nsupport stream offset = " << _supports_stream_offset
+      << "\nsupports dynamic textures = " << _screen->_supports_dynamic_textures
+      << "\nMaxAnisotropy = " << d3d_caps.MaxAnisotropy
       << "\n";
   }
 
@@ -2423,8 +2426,6 @@ reset() {
   } else {
     _constant_color_operand = D3DTA_TFACTOR;
   }
-
-  _screen->_supports_dynamic_textures = ((d3d_caps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) != 0);
 
   _screen->_managed_textures = _gsg_managed_textures;
   _screen->_managed_vertex_buffers = _gsg_managed_vertex_buffers;
@@ -3697,7 +3698,7 @@ do_issue_blending() {
   // all the other blending-related stuff doesn't matter.  If the
   // device doesn't support color-write, we use blending tricks
   // to effectively disable color write.
-  unsigned int color_channels = 
+  unsigned int color_channels =
     _target._color_write->get_channels() & _color_write_mask;
   if (color_channels == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
