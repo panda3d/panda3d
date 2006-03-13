@@ -45,7 +45,7 @@ public:
 
   virtual bool move_pointer(int device, int x, int y);
 
-  virtual void make_current();
+//  virtual void make_current();
   virtual void release_gsg();
   virtual bool begin_frame(FrameMode mode);
   virtual void end_frame(FrameMode mode);
@@ -69,13 +69,14 @@ private:
     //
     static osxGraphicsWindow  * FullScreenWindow; 
 
-    static osxGraphicsWindow * GetCurrentOSxWindow (WindowRef hint);
+//    static osxGraphicsWindow * GetCurrentOSxWindow (WindowRef hint);
 
 public: // do not call direct ..
   OSStatus handleKeyInput (EventHandlerCallRef myHandler, EventRef event, Boolean keyDown);
   OSStatus handleTextInput (EventHandlerCallRef myHandler, EventRef event);
   OSStatus handleWindowMouseEvents (EventHandlerCallRef myHandler, EventRef event);
   ButtonHandle OSX_TranslateKey( UInt32 key,  EventRef event );
+  static osxGraphicsWindow * GetCurrentOSxWindow (WindowRef hint);
 
   void     HandleModifireDeleta(UInt32 modifiers);
   void     DoResize(void);
@@ -85,7 +86,7 @@ public: // do not call direct ..
   void SystemSetWindowForground(bool forground);	
   void SystemPointToLocalPoint(Point &qdGlobalPoint);
 
-  AGLContext  osxGraphicsWindow::get_ggs_context(void);
+  AGLContext  get_ggs_context(void);
   AGLContext  get_context(void);
   OSStatus	  buildGL(void);
 	

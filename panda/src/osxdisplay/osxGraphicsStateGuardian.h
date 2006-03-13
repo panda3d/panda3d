@@ -45,7 +45,7 @@ public:
 protected:
   virtual void *get_extension_func(const char *prefix, const char *name);
   
-private:
+public:
 	OSStatus buildGL (osxGraphicsWindow  &window);
 	AGLContext  get_context(void) { return _aglcontext; };
 

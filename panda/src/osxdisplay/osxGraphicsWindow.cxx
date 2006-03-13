@@ -114,7 +114,6 @@ static void CompositeGLBufferIntoWindow (AGLContext ctx, Rect *bufferRect, GrafP
 		osxdisplay_cat.error() << "Out of memory in CompositeGLBufferIntoWindow()!\n";
 		return;		// no harm in continuing
 	}
-		
 	// pull GL content down to our image buffer
 	aglSetCurrentContext( ctx );
 	glReadPixels (0, 0, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, image);
@@ -149,7 +148,6 @@ static void CompositeGLBufferIntoWindow (AGLContext ctx, Rect *bufferRect, GrafP
 void osxGraphicsWindow::SystemCloseWindow()
 {	
 	osxdisplay_cat.debug() << "System Closing Window \n";
-
 	ReleaseSystemResources();	
 };
 ////////////////////////////////////////////////////////////////////
@@ -172,7 +170,7 @@ static pascal OSStatus windowEvtHndlr (EventHandlerCallRef myHandler, EventRef e
 		
 		    WindowRef window = NULL;		
 			GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
-			osxGraphicsWindow * osx_win = GetCurrentOSxWindow(window);
+			osxGraphicsWindow * osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);
 			if(osx_win == NULL)
 				return result;
 			 
@@ -259,7 +257,7 @@ static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef even
                         typeWindowRef, NULL, sizeof(WindowRef),
                         NULL, (void*) &window);
 
-     osx_win = GetCurrentOSxWindow(window);
+     osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);
 
     if(osx_win == NULL)
 	  return eventNotHandledErr;
@@ -276,7 +274,6 @@ static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef even
 			  break;
 		case kEventClassKeyboard:
 			switch (kind) {
-			   printf(" Key Event \n");
 				case kEventRawKeyDown:
 					result = osx_win->handleKeyInput  (myHandler, event, true);
 					break;
@@ -327,9 +324,7 @@ OSStatus osxGraphicsWindow::handleTextInput (EventHandlerCallRef myHandler, Even
 
 		for(unsigned int x = 0; x < actualSize/sizeof(UniChar); ++x)
 			_input_devices[0].keystroke(text[x]);	
-
-        DisposePtr((char *)text);
-	
+		DisposePtr((char *)text);
 	}
 	
 	return ret;
@@ -407,8 +402,6 @@ osxGraphicsWindow::osxGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *
 #endif  
 	_originalMode(NULL)
 {
-    printf("Create osxGraphicsWindow \n");
-
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
   _input_devices.push_back(device);
@@ -487,7 +480,6 @@ OSStatus osxGraphicsWindow::buildGL (void)
 		attrib [i++] = AGL_FULLSCREEN;
 		attrib [i++] = AGL_NONE;		
 		
-		printf(" Adding Full Screen To Pixel Format \n");
 	}
 	
 				
@@ -521,10 +513,10 @@ OSStatus osxGraphicsWindow::buildGL (void)
 //               if the frame should be rendered, or false if it
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
-bool osxGraphicsWindow::begin_frame(FrameMode mode) {
+bool osxGraphicsWindow::begin_frame(FrameMode mode)
+ {
   PStatTimer timer(_make_current_pcollector);
-   // printf("Do begin frame \n");
-
+ 
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL || (_osx_window == NULL && _is_fullsreen != true)) 
   {
@@ -536,7 +528,6 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode) {
   {
 		if (!aglSetCurrentContext(get_context()))
 				aglReportError ();	
-  
   }
   else
   {
@@ -551,7 +542,6 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode) {
 	{
 		Rect r;
 		GetWindowPortBounds (other, &r);
-	 //   printf(" Doint Composite %d  %d\n",(int)OtherWin,(int)GetWindowPort (_osx_window));
 		CompositeGLBufferIntoWindow(get_context(),& r,OtherWin);
 	}
         
@@ -563,19 +553,17 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode) {
 		
 		if (!aglSetCurrentContext(get_context()))
 				aglReportError ();	
-  	
-  }
 #else
 
 		if (!aglSetCurrentContext(get_context()))
 				aglReportError ();	
 
 #endif
-
+  }
  
  
 	
-_gsg->reset_if_new();
+		_gsg->reset_if_new();
 
   return _gsg->begin_frame();
 }
@@ -717,18 +705,17 @@ bool osxGraphicsWindow::open_window()
     }
 
 
-
-    EventHandlerRef		ref;
-    EventTypeSpec list[] = { { kEventClassWindow, kEventWindowCollapsing },
-    { kEventClassWindow, kEventWindowShown },
-    { kEventClassWindow, kEventWindowActivated },
-    { kEventClassWindow, kEventWindowClose },
-    { kEventClassWindow, kEventWindowBoundsChanged },
-    { kEventClassWindow, kEventWindowZoomed },
+//    EventHandlerRef		ref;
+//    EventTypeSpec list[] = { { kEventClassWindow, kEventWindowCollapsing },
+  //  { kEventClassWindow, kEventWindowShown },
+   // { kEventClassWindow, kEventWindowActivated },
+   // { kEventClassWindow, kEventWindowClose },
+   // { kEventClassWindow, kEventWindowBoundsChanged },
+   // { kEventClassWindow, kEventWindowZoomed },
     //                         { kEventClassKeyboard, kEventRawKeyDown },
     //                       { kEventClassKeyboard, kEventRawKeyUp } ,
     //					 { kEventClassKeyboard, kEventRawKeyModifiersChanged }
-    };
+    //};
 
 
     Rect r;
@@ -882,7 +869,6 @@ void osxGraphicsWindow::process_events()
     }
 
 };
-// ---------------------------------
 
 // handle display config changes meaing we need to update the GL context via the resize function and check for windwo dimension changes
 // also note we redraw the content here as it could be lost in a display config change
@@ -893,7 +879,7 @@ void handleWindowDMEvent (void *userData, short theMessage, void *notifyData)
 		osxGraphicsWindow * osxwin = NULL;
 		WindowRef window = (WindowRef) userData;
 		if (window)
-			osxwin = GetCurrentOSxWindow (window);
+			osxwin = osxGraphicsWindow::GetCurrentOSxWindow (window);
 		if (osxwin) { // have a valid OpenGl window
 			Rect rectPort;
 			CGRect viewRect = {{0.0f, 0.0f}, {0.0f, 0.0f}};
@@ -1175,7 +1161,6 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
  {
      UInt32 changed = _last_key_modifiers ^ newModifiers;
 
-
      if ((changed & (shiftKey | rightShiftKey)) != 0)
          SendKeyEvent(KeyboardButton::shift(),(newModifiers & (shiftKey | rightShiftKey)) != 0) ;
 
@@ -1193,4 +1178,19 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
     _last_key_modifiers = newModifiers;						   
 								
  };
+ ////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::move_pointer
+//       Access: Published, Virtual
+//  Description: Forces the pointer to the indicated position within
+//               the window, if possible.  
+//
+//               Returns true if successful, false on failure.  This
+//               may fail if the mouse is not currently within the
+//               window, or if the API doesn't support this operation.
+////////////////////////////////////////////////////////////////////
+bool osxGraphicsWindow::move_pointer(int device, int x, int y)
+{
+
+	return true;
+};
 
