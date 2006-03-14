@@ -28,7 +28,7 @@ class ShipPilot2(PhysicsWalker):
     wantDebugIndicator = base.config.GetBool(
         'want-avatar-physics-indicator', 0)
     
-    useBowSternSpheres = 0
+    useBowSternSpheres = 1
     useLifter = 0
     useHeightRay = 0
     
