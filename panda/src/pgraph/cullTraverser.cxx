@@ -208,6 +208,11 @@ traverse_below(CullTraverserData &data) {
     if (node->is_geom_node()) {
       _geom_nodes_pcollector.add_level(1);
       GeomNode *geom_node = DCAST(GeomNode, node);
+
+      if (pgraph_cat.is_spam()) {
+        pgraph_cat.spam()
+          << "Found " << *geom_node << " in state " << *data._state << "\n";
+      }
       
       // Get all the Geoms, with no decalling.
       int num_geoms = geom_node->get_num_geoms();

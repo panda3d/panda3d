@@ -136,13 +136,17 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 CPT(CullPlanes) CullPlanes::
 do_cull(int &result, CPT(RenderState) &state,
         const GeometricBoundingVolume *node_gbv) const {
-  // We should have a ClipPlaneAttrib in the state if we've called
-  // this method.
-  CPT(ClipPlaneAttrib) orig_cpa = state->get_clip_plane();
-  nassertr(orig_cpa != (ClipPlaneAttrib *)NULL, this);
-
   result = 
     BoundingVolume::IF_all | BoundingVolume::IF_possible | BoundingVolume::IF_some;
+
+  CPT(ClipPlaneAttrib) orig_cpa = state->get_clip_plane();
+  
+  // If there are no clip planes in the state, the node is completely
+  // in front of all zero of the clip planes.  (This can happen if
+  // someone directly changes the state during the traversal.)
+  if (orig_cpa == (ClipPlaneAttrib *)NULL) {
+    return new CullPlanes;
+  }
 
   CPT(CullPlanes) new_planes = this;
   CPT(ClipPlaneAttrib) new_cpa = orig_cpa;
