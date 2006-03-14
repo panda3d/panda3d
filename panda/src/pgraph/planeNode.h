@@ -24,6 +24,13 @@
 #include "plane.h"
 #include "pandaNode.h"
 #include "updateSeq.h"
+#include "geom.h"
+#include "cycleData.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "cycleDataStageReader.h"
+#include "cycleDataStageWriter.h"
+#include "pipelineCycler.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PlaneNode
@@ -40,20 +47,29 @@ protected:
   PlaneNode(const PlaneNode &copy);
 public:
   virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
 
   virtual PandaNode *make_copy() const;
   virtual void xform(const LMatrix4f &mat);
 
+  virtual bool has_cull_callback() const;
+  virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
+
 PUBLISHED:
   INLINE void set_plane(const Planef &plane);
   INLINE const Planef &get_plane() const;
+
+  INLINE void set_viz_scale(float viz_scale);
+  INLINE float get_viz_scale() const;
 
   INLINE void set_priority(int priority);
   INLINE int get_priority() const;
 
 public:
   INLINE static UpdateSeq get_sort_seq();
+
+protected:
+  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage) const;
+  PT(Geom) get_viz(CullTraverser *trav, CullTraverserData &data);
   
 private:
   // The priority is not cycled, because there's no real reason to do
@@ -75,11 +91,15 @@ private:
     }
 
     Planef _plane;
+    PT(Geom) _front_viz, _back_viz;
+    float _viz_scale;
   };
 
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
 public:
   static void register_with_read_factory();

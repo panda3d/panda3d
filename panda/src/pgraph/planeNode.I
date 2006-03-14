@@ -23,7 +23,9 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PlaneNode::CData::
-CData() {
+CData() :
+  _viz_scale(100.0f)
+{
   // The default plane (perpendicular to the Z-axis) is used until
   // another one is specified explicitly.
 }
@@ -35,12 +37,15 @@ CData() {
 ////////////////////////////////////////////////////////////////////
 INLINE PlaneNode::CData::
 CData(const PlaneNode::CData &copy) :
-  _plane(copy._plane)
+  _plane(copy._plane),
+  _front_viz(copy._front_viz),
+  _back_viz(copy._back_viz),
+  _viz_scale(copy._viz_scale)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_plane
+//     Function: PlaneNode::set_plane
 //       Access: Public
 //  Description: Sets the particular plane represented by the
 //               PlaneNode.
@@ -48,11 +53,15 @@ CData(const PlaneNode::CData &copy) :
 INLINE void PlaneNode::
 set_plane(const Planef &plane) {
   CDWriter cdata(_cycler);
-  cdata->_plane = plane;
+  if (cdata->_plane != plane) {
+    cdata->_plane = plane;
+    cdata->_front_viz = NULL;
+    cdata->_back_viz = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: get_plane
+//     Function: PlaneNode::get_plane
 //       Access: Public
 //  Description: Returns the plane represented by the PlaneNode.
 ////////////////////////////////////////////////////////////////////
@@ -60,6 +69,34 @@ INLINE const Planef &PlaneNode::
 get_plane() const {
   CDReader cdata(_cycler);
   return cdata->_plane;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PlaneNode::set_viz_scale
+//       Access: Public
+//  Description: Specifies the size of the visual representation of
+//               the plane that is drawn if the PlaneNode is shown.
+////////////////////////////////////////////////////////////////////
+INLINE void PlaneNode::
+set_viz_scale(float viz_scale) {
+  CDWriter cdata(_cycler);
+  if (cdata->_viz_scale != viz_scale) {
+    cdata->_viz_scale = viz_scale;
+    cdata->_front_viz = NULL;
+    cdata->_back_viz = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PlaneNode::get_viz_scale
+//       Access: Public
+//  Description: Returns the size of the visual representation of
+//               the plane that is drawn if the PlaneNode is shown.
+////////////////////////////////////////////////////////////////////
+INLINE float PlaneNode::
+get_viz_scale() const {
+  CDReader cdata(_cycler);
+  return cdata->_viz_scale;
 }
  
 ////////////////////////////////////////////////////////////////////

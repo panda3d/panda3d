@@ -22,6 +22,13 @@
 #include "bamReader.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "geomVertexWriter.h"
+#include "geomVertexData.h"
+#include "geomLines.h"
+#include "geom.h"
+#include "cullableObject.h"
+#include "cullHandler.h"
+#include "boundingPlane.h"
 
 UpdateSeq PlaneNode::_sort_seq;
 
@@ -70,6 +77,9 @@ PlaneNode(const string &name, const Planef &plane) :
   PandaNode(name),
   _priority(0)
 {
+  // PlaneNodes are hidden by default.
+  set_draw_mask(DrawMask::all_off());
+
   set_plane(plane);
 }
 
@@ -84,6 +94,17 @@ PlaneNode(const PlaneNode &copy) :
   _priority(copy._priority),
   _cycler(copy._cycler)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PlaneNode::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PlaneNode::
+output(ostream &out) const {
+  PandaNode::output(out);
+  out << " " << get_plane();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,28 +132,155 @@ xform(const LMatrix4f &mat) {
   PandaNode::xform(mat);
   CDWriter cdata(_cycler);
   cdata->_plane = cdata->_plane * mat;
+  cdata->_front_viz = NULL;
+  cdata->_back_viz = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::output
+//     Function: PlaneNode::has_cull_callback
 //       Access: Public, Virtual
-//  Description: 
+//  Description: Should be overridden by derived classes to return
+//               true if cull_callback() has been defined.  Otherwise,
+//               returns false to indicate cull_callback() does not
+//               need to be called for this node during the cull
+//               traversal.
 ////////////////////////////////////////////////////////////////////
-void PlaneNode::
-output(ostream &out) const {
-  PandaNode::output(out);
-  out << " " << get_plane();
+bool PlaneNode::
+has_cull_callback() const {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PlaneNode::write
+//     Function: PlaneNode::cull_callback
 //       Access: Public, Virtual
-//  Description: 
+//  Description: If has_cull_callback() returns true, this function
+//               will be called during the cull traversal to perform
+//               any additional operations that should be performed at
+//               cull time.  This may include additional manipulation
+//               of render state or additional visible/invisible
+//               decisions, or any other arbitrary operation.
+//
+//               By the time this function is called, the node has
+//               already passed the bounding-volume test for the
+//               viewing frustum, and the node's transform and state
+//               have already been applied to the indicated
+//               CullTraverserData object.
+//
+//               The return value is true if this node should be
+//               visible, or false if it should be culled.
 ////////////////////////////////////////////////////////////////////
-void PlaneNode::
-write(ostream &out, int indent_level) const {
-  PandaNode::write(out, indent_level);
-  get_plane().write(out, indent_level + 2);
+bool PlaneNode::
+cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  // Normally, a PlaneNode is invisible.  But if someone shows it, we
+  // will draw a visualization, a nice yellow wireframe.
+
+  CullableObject *plane_viz = 
+    new CullableObject(get_viz(trav, data), data._state, 
+                       data._modelview_transform);
+  trav->get_cull_handler()->record_object(plane_viz, trav);
+
+  // Now carry on to render our child nodes.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PlaneNode::compute_internal_bounds
+//       Access: Protected, Virtual
+//  Description: Returns a newly-allocated BoundingVolume that
+//               represents the internal contents of the node.  Should
+//               be overridden by PandaNode classes that contain
+//               something internally.
+////////////////////////////////////////////////////////////////////
+PT(BoundingVolume) PlaneNode::
+compute_internal_bounds(int pipeline_stage) const {
+  CDStageReader cdata(_cycler, pipeline_stage);
+  return new BoundingPlane(cdata->_plane);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PlaneNode::get_viz
+//       Access: Protected
+//  Description: Returns a Geom that represents the visualization of
+//               the PlaneNode.
+////////////////////////////////////////////////////////////////////
+PT(Geom) PlaneNode::
+get_viz(CullTraverser *trav, CullTraverserData &data) {
+  CDReader cdata(_cycler);
+  
+  // Figure out whether we are looking at the front or the back of the
+  // plane.
+  const Lens *lens = trav->get_scene()->get_lens();
+  Planef eye_plane = cdata->_plane * data._modelview_transform->get_mat();
+  bool front = (eye_plane.dist_to_plane(lens->get_nodal_point()) >= 0.0f);
+
+  if (cdata->_front_viz != (Geom *)NULL) {
+    return front ? cdata->_front_viz : cdata->_back_viz;
+  }
+
+  if (pgraph_cat.is_debug()) {
+    pgraph_cat.debug()
+      << "Recomputing viz for " << *this << "\n";
+  }
+
+  CDWriter cdataw(_cycler, cdata, false);
+  const Planef &plane = cdataw->_plane;
+
+  PT(GeomVertexData) vdata = new GeomVertexData
+    (get_name(), GeomVertexFormat::get_v3cp(), Geom::UH_static);
+
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  PT(GeomLines) lines = new GeomLines(Geom::UH_static);
+
+  LVector3f a, b;
+
+  if (fabs(plane[0]) > fabs(plane[1])) {
+    // X > Y
+    if (fabs(plane[0]) > fabs(plane[2])) {
+      // X > Y && X > Z.  X is the largest.
+      a.set(0, 1, 0);
+      b.set(0, 0, 1);
+    } else {
+      // X > Y && Z > X.  Z is the largest.
+      a.set(1, 0, 0);
+      b.set(0, 1, 0);
+    }
+  } else {
+    // Y > X
+    if (fabs(plane[1]) > fabs(plane[2])) {
+      // Y > X && Y > Z.  Y is the largest.
+      a.set(1, 0, 0);
+      b.set(0, 0, 1);
+    } else {
+      // Y > X && Z > Y.  Z is the largest.
+      a.set(1, 0, 0);
+      b.set(0, 1, 0);
+    }
+  }
+
+  static const int num_segs = 10;
+  a *= cdataw->_viz_scale / (num_segs * 2);
+  b *= cdataw->_viz_scale / (num_segs * 2);
+  
+  for (int x = -num_segs; x <= num_segs; ++x) {
+    vertex.add_data3f(plane.project(a * x - b * num_segs));
+    vertex.add_data3f(plane.project(a * x + b * num_segs));
+    lines->add_next_vertices(2);
+    lines->close_primitive();
+  }
+  for (int y = -num_segs; y <= num_segs; ++y) {
+    vertex.add_data3f(plane.project(b * y - a * num_segs));
+    vertex.add_data3f(plane.project(b * y + a * num_segs));
+    lines->add_next_vertices(2);
+    lines->close_primitive();
+  }
+
+  cdataw->_front_viz = new Geom(vdata->set_color(Colorf(1.0f, 1.0f, 0.0f, 1.0f)));
+  cdataw->_front_viz->add_primitive(lines);
+
+  cdataw->_back_viz = new Geom(vdata->set_color(Colorf(0.4f, 0.4f, 0.0f, 1.0f)));
+  cdataw->_back_viz->add_primitive(lines);
+
+  return front ? cdataw->_front_viz : cdataw->_back_viz;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -172,6 +172,17 @@ dist_to_plane(const FLOATNAME(LPoint3) &point) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Plane::project
+//       Access: Published
+//  Description: Returns the point within the plane nearest to the
+//               indicated point in space.
+////////////////////////////////////////////////////////////////////
+INLINE_MATHUTIL FLOATNAME(LPoint3) FLOATNAME(Plane)::
+project(const FLOATNAME(LPoint3) &point) const {
+  return point - get_normal() * dist_to_plane(point);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Plane::intersects_line
 //       Access: Published
 //  Description: Returns true if the plane intersects the infinite

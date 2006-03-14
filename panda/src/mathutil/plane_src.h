@@ -45,6 +45,9 @@ PUBLISHED:
   FLOATNAME(LPoint3) get_point() const;
 
   INLINE_MATHUTIL FLOATTYPE dist_to_plane(const FLOATNAME(LPoint3) &point) const;
+  INLINE_MATHUTIL FLOATNAME(LPoint3) project(const FLOATNAME(LPoint3) &point) const;
+
+
   INLINE_MATHUTIL bool intersects_line(FLOATNAME(LPoint3) &intersection_point,
                                        const FLOATNAME(LPoint3) &p1,
                                        const FLOATNAME(LPoint3) &p2) const;
