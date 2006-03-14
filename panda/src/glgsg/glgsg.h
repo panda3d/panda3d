@@ -44,6 +44,7 @@
 #endif
 
 #ifdef  IS_OSX
+#define __glext_h_
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #else
