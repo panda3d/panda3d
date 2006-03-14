@@ -40,12 +40,27 @@ class CartesianGridBase:
         return 2 * (sphereRadius // cellWidth)
         
     def getZoneCellOrigin(self, zoneId):
+        # It returns the origin of the zoneCell
+        # Origin is the top-left corner of zoneCell
         dx = self.cellWidth * self.gridSize * .5
         zone = zoneId - self.startingZone
         row = zone // self.gridSize
         col = zone % self.gridSize
         x = col * self.cellWidth - dx
         y = row * self.cellWidth - dx
+
+        return (x,y,0)
+    
+    def getZoneCellOriginCenter(self, zoneId):
+        # Variant of the getZoneCellOrigin. It
+        # returns the center of the zoneCell
+        dx = self.cellWidth * self.gridSize * .5
+        center = self.cellWidth * 0.5
+        zone = zoneId - self.startingZone
+        row = zone // self.gridSize
+        col = zone % self.gridSize
+        x = col * self.cellWidth - dx + center
+        y = row * self.cellWidth - dx + center
 
         return (x,y,0)
     
