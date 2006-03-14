@@ -124,19 +124,26 @@ add_local_impact(const LPoint3f &offset_from_center_of_mass,
 //               offset and force are in global (or parent) coordinates.
 ////////////////////////////////////////////////////////////////////
 void PhysicsObject::
-add_impact(const LPoint3f &offset_from_center_of_mass,
+add_impact(const LPoint3f &offset,
     const LVector3f &force) {
-  nassertv(!offset_from_center_of_mass.is_nan());
+  nassertv(!offset.is_nan());
   nassertv(!force.is_nan());
-  LVector3f a = -offset_from_center_of_mass;
+  LVector3f a = offset;
   LVector3f b = force;
   a.normalize();
   b.normalize();
-  float theta = a.dot(b);
-  LRotationf torque;
-  torque.set_from_axis_angle((1.0f - theta) * a.length(), b.cross(a).normalize());
-  LVector3f impulse = theta * force;
-  add_torque(torque);
+  a = a.cross(b);
+  float angle = a.length();
+  if (angle) {
+    LRotationf torque;
+    float spin = force.length()*0.1f; // todo: this should account for
+                                      // impact distance and mass.
+    a.normalize();
+    assert(IS_THRESHOLD_EQUAL(a.length(), 1.0f, 0.001f));
+    torque.set_from_axis_angle(spin, a);
+    add_torque(torque);
+  }
+  LVector3f impulse = (1.0f - angle) * force;
   add_impulse(impulse);
 }
 
