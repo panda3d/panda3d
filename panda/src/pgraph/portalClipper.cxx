@@ -497,7 +497,7 @@ clip_portal(const NodePath &node_path)
 //     Function: PortalClipper::get_reduced_frustum
 //       Access: Public
 //  Description: After clipping the portal, form the new sides and 
-//               fill in the new frustum. Return true if success
+//               fill in the new frustum. Return the new frustum
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) PortalClipper::
 get_reduced_frustum(const NodePath &node_path)

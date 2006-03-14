@@ -204,6 +204,29 @@ INLINE NodePath PortalNode::get_cell_out() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::set_clip_plane
+//       Access: Published
+//  Description: this is set if the portal will clip against its 
+//               left and right planes
+////////////////////////////////////////////////////////////////////
+INLINE void PortalNode::set_clip_plane(bool value) {
+  _clip_plane = value;
+  if (_clip_plane) {
+    enable_clipping_planes();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::is_clip_plane
+//       Access: Published
+//  Description: Is this portal clipping against its left-right planes
+////////////////////////////////////////////////////////////////////
+INLINE bool PortalNode::is_clip_plane() {
+  return _clip_plane;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: PortalNode::set_visible
 //       Access: Published
 //  Description: this is set if the portal is facing camera

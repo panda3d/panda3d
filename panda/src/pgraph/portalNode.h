@@ -23,9 +23,16 @@
 
 #include "portalMask.h"
 #include "pandaNode.h"
+#include "planeNode.h"
 #include "nodePath.h"
 #include "pvector.h"
 
+/*
+#ifndef CPPPARSER
+#include "../collide/collisionSolid.h"
+#include "../collide/collisionNode.h"
+#endif
+*/
 ////////////////////////////////////////////////////////////////////
 //       Class : PortalNode 
 //       Description : A node in the scene graph that can hold a 
@@ -48,6 +55,8 @@ public:
   virtual bool preserve_name() const;
   virtual void xform(const LMatrix4f &mat);
   virtual PandaNode *combine_with(PandaNode *other); 
+
+  virtual void enable_clipping_planes();
 
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
@@ -75,6 +84,9 @@ PUBLISHED:
 
   INLINE void set_cell_out(const NodePath &cell);
   INLINE NodePath get_cell_out() const;
+
+  INLINE void set_clip_plane(bool value);
+  INLINE bool is_clip_plane();
 
   INLINE void set_visible(bool value);
   INLINE bool is_visible();
@@ -107,6 +119,18 @@ private:
 
   NodePath _cell_in;  // This is the cell it resides in
   NodePath _cell_out;  // This is the cell it leads out to
+
+  // enable plane clipping on this portal
+  /*
+#ifndef CPPPARSER
+  PT(CollisionNode) _left_coll_node; // for debugging visualization
+  PT(CollisionNode) _right_coll_node;// for debugging visualization
+#endif  
+  */
+  bool _clip_plane;
+  PT(PlaneNode) _left_plane_node;
+  PT(PlaneNode) _right_plane_node;
+  CPT(RenderState) _clip_state;
 
   bool _visible;
   bool _open;

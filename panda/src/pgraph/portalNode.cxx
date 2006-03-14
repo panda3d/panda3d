@@ -31,6 +31,14 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+#include "plane.h"
+
+/*
+#ifndef CPPPARSER
+#include "../collide/collisionPlane.h"
+#endif
+*/
+
 TypeHandle PortalNode::_type_handle;
 
 
@@ -51,6 +59,7 @@ PortalNode(const string &name) :
 {
   _visible = false;
   _open = true;
+  _clip_plane = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,6 +82,7 @@ PortalNode(const string &name, LPoint3f pos, float scale) :
 
   _visible = false;
   _open = true;
+  _clip_plane = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,7 +100,8 @@ PortalNode(const PortalNode &copy) :
   _cell_in(copy._cell_in),
   _cell_out(copy._cell_out),
   _visible(copy._visible),
-  _open(copy._open)
+  _open(copy._open),
+  _clip_plane(copy._clip_plane)
 {
 }
 
@@ -126,6 +137,45 @@ make_copy() const {
 bool PortalNode::
 preserve_name() const {
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::enable_clipping_planes
+//       Access: Public, Virtual
+//  Description: initialize the clipping planes and renderstate
+////////////////////////////////////////////////////////////////////
+void PortalNode::
+enable_clipping_planes() {
+  _left_plane_node = new PlaneNode("left");
+  NodePath left_plane_np = NodePath(this).attach_new_node(_left_plane_node);
+
+  _right_plane_node = new PlaneNode("right");
+  NodePath right_plane_np = NodePath(this).attach_new_node(_right_plane_node);
+
+  /*
+  // for debugging visialization, attach a collsion plane to left and right each
+  _left_coll_node = new CollisionNode("left_coll");
+  _left_coll_node->set_into_collide_mask(CollideMask::all_off());
+  // prepare a collision plane to be set later 
+  PT(CollisionPlane) left_coll_plane = new CollisionPlane(Planef());
+  _left_coll_node->add_solid(left_coll_plane);
+  // attach it onto the _left_plane_np
+  left_plane_np.attach_new_node(_left_coll_node);
+
+  _right_coll_node = new CollisionNode("right_coll");
+  _right_coll_node->set_into_collide_mask(CollideMask::all_off());
+  // prepare a collision plane to be set later 
+  PT(CollisionPlane) right_coll_plane = new CollisionPlane(Planef());
+  _right_coll_node->add_solid(right_coll_plane);
+  // attach it onto the _left_plane_np
+  right_plane_np.attach_new_node(_right_coll_node);
+  */
+
+  CPT(RenderAttrib) plane_attrib = ClipPlaneAttrib::make();
+  plane_attrib = DCAST(ClipPlaneAttrib, plane_attrib)->add_on_plane(NodePath(left_plane_np));
+  plane_attrib = DCAST(ClipPlaneAttrib, plane_attrib)->add_on_plane(NodePath(right_plane_np));
+
+  _clip_state = RenderState::make(plane_attrib);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -223,16 +273,25 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // keep a copy of this reduced frustum
       PT(BoundingHexahedron) new_bh = DCAST(BoundingHexahedron, vf->make_copy());
       
-      // trasform it to cull_center space
-      //      CPT(TransformState) cull_center_transform = 
-      //portal_viewer->_scene_setup->get_cull_center().get_transform(_cell_out);
+      if (_clip_plane) {
+        // make a temp copy of this reduced frustum
+        PT(BoundingHexahedron) temp_bh = DCAST(BoundingHexahedron, vf->make_copy());
+        CPT(TransformState) ftransform = 
+          _cell_in.get_net_transform()->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
 
-      /*
-      CPT(TransformState) transform = portal_viewer->_scene_setup->get_cull_center().get_net_transform();
-      CPT(TransformState) portal_transform =
-        data._modelview_transform->compose(transform);
-      */
-    
+        temp_bh->xform(ftransform->get_mat());
+        
+        // set left/right clipping plane
+        _left_plane_node->set_plane(-temp_bh->get_plane(4)); // left plane of bh
+        _right_plane_node->set_plane(-temp_bh->get_plane(2));// right plane of bh
+
+        /*
+        // set this plane at the collision plane too for debugging
+        ((CollisionPlane*)_left_coll_node->get_solid(0))->set_plane(-temp_bh->get_plane(4));
+        ((CollisionPlane*)_right_coll_node->get_solid(0))->set_plane(-temp_bh->get_plane(2));
+        */
+      }
+
       // Get the net trasform of the _cell_out as seen from the camera.
       CPT(TransformState) cell_transform = 
         trav->get_camera_transform()->invert_compose(_cell_out.get_net_transform());
@@ -243,10 +302,18 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       new_bh->xform(frustum_transform->get_mat());
       
       portal_cat.spam() << "new_bh is " << *new_bh << "\n";
-      
+  
+      CPT(RenderState) next_state = data._state;
+
+      // attach clipping state if there is any
+      if (_clip_plane) {
+        next_state = next_state->compose(_clip_state);
+      }
+
       CullTraverserData next_data(_cell_out, 
                                   cell_transform,
-                                  data._state, new_bh, NULL);
+                                  next_state, new_bh, NULL);
+      //                                  data._state, new_bh, NULL);
 
       // Make this cell show with the reduced frustum
       //      _cell_out.show();
@@ -254,7 +321,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       PT(BoundingHexahedron) old_bh = portal_viewer->get_reduced_frustum();
       portal_viewer->set_reduced_frustum(new_bh);
       portal_cat.spam() << "cull_callback: before traversing " << _cell_out.get_name() << endl;
-      trav->traverse(next_data);
+      trav->traverse_below(next_data);
       portal_cat.spam() << "cull_callback: after traversing " << _cell_out.get_name() << endl;
       // make sure traverser is not drawing this node again
       //    _cell_out.hide();
