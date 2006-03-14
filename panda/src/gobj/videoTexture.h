@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "texture.h"
 #include "animInterface.h"
+#include "clockObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VideoTexture
