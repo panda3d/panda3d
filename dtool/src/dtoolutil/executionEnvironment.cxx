@@ -479,8 +479,6 @@ read_args() {
 
     ch = proc.get();
   }
-#else
-  cerr << "Warning: command line parameters unavailable to dconfig.\n";
 #endif
 
   if (_dtool_name.empty())
