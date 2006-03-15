@@ -79,6 +79,13 @@ ConfigVariableBool keep_texture_ram
           "texture image from disk; but it will consume memory somewhat "
           "wastefully."));
 
+ConfigVariableBool compressed_textures
+("compressed-textures", false,
+ PRC_DESC("Set this to true to compress textures as they are loaded into "
+	  "texture memory, if the driver supports this.  Specifically, this "
+	  "changes the meaning of set_compression(Texture::CM_default) to "
+	  "Texture::CM_on."));
+
 ConfigVariableBool vertex_buffers
 ("vertex-buffers", true,
  PRC_DESC("Set this true to allow the use of vertex buffers (or buffer "
@@ -166,11 +173,6 @@ ConfigVariableBool connect_triangle_strips
           "with no degenerate triangles.  On PC hardware, using one long "
           "triangle strip may help performance by reducing the number "
           "of separate graphics calls that have to be made."));
-
-ConfigVariableEnum<BamTextureMode> bam_texture_mode
-("bam-texture-mode", BTM_relative,
- PRC_DESC("Set this to specify how textures should be written into Bam files."
-          "See the panda source or documentation for available options."));
 
 ConfigVariableEnum<AutoTextureScale> textures_power_2
 ("textures-power-2", ATS_down,
@@ -298,52 +300,6 @@ ConfigureFn(config_gobj) {
   UserVertexSlider::register_with_read_factory();
   UserVertexTransform::register_with_read_factory();
   InternalName::register_with_read_factory();
-}
-
-ostream &
-operator << (ostream &out, BamTextureMode btm) {
-  switch (btm) {
-  case BTM_unchanged:
-    return out << "unchanged";
-   
-  case BTM_fullpath:
-    return out << "fullpath";
-    
-  case BTM_relative:
-    return out << "relative";
-    
-  case BTM_basename:
-    return out << "basename";
-
-  case BTM_rawdata:
-    return out << "rawdata";
-  }
-
-  return out << "**invalid BamTextureMode (" << (int)btm << ")**";
-}
-
-istream &
-operator >> (istream &in, BamTextureMode &btm) {
-  string word;
-  in >> word;
-
-  if (cmp_nocase(word, "unchanged") == 0) {
-    btm = BTM_unchanged;
-  } else if (cmp_nocase(word, "fullpath") == 0) {
-    btm = BTM_fullpath;
-  } else if (cmp_nocase(word, "relative") == 0) {
-    btm = BTM_relative;
-  } else if (cmp_nocase(word, "basename") == 0) {
-    btm = BTM_basename;
-  } else if (cmp_nocase(word, "rawdata") == 0) {
-    btm = BTM_rawdata;
-
-  } else {
-    gobj_cat->error() << "Invalid BamTextureMode value: " << word << "\n";
-    btm = BTM_relative;
-  }
-
-  return in;
 }
 
 ostream &

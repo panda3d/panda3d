@@ -78,6 +78,9 @@ PUBLISHED:
   int get_current_major_ver();
   int get_current_minor_ver();
 
+  BamReader *get_reader();
+  BamWriter *get_writer();
+
 private:
   bool continue_open_read(const string &bam_filename, bool report_errors);
   bool continue_open_write(const string &bam_filename, bool report_errors);

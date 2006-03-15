@@ -593,12 +593,19 @@ load_model(const NodePath &parent, Filename filename) {
     LoaderFileType *model_type =
       reg->get_type_from_extension(extension);
     if (model_type == (LoaderFileType *)NULL) {
-      // The extension isn't a known model file type, is it a known
-      // texture extension?
-      TexturePool *texture_pool = TexturePool::get_global_ptr();
-      if (texture_pool->get_texture_type(extension) != NULL) {
-        // It is a known texture extension.
-        is_image = true;
+      // The extension isn't a known model file type; is it a known
+      // image file extension?
+      if (extension == "txo") {
+	// A texture object.  Not exactly an image, but certainly a
+	// texture.
+	is_image = true;
+	
+      } else {
+	TexturePool *texture_pool = TexturePool::get_global_ptr();
+	if (texture_pool->get_texture_type(extension) != NULL) {
+	  // It is a known image file extension.
+	  is_image = true;
+	}
       }
     }
   }
@@ -1093,7 +1100,7 @@ load_image_as_model(const Filename &filename) {
 
   int x_size = tex->get_x_size();
   int y_size = tex->get_y_size();
-  bool has_alpha = false;
+  bool has_alpha = true;
   LVecBase2f tex_scale(1.0f, 1.0f);
 
   if (tex->is_of_type(VideoTexture::get_class_type())) {
@@ -1103,7 +1110,7 @@ load_image_as_model(const Filename &filename) {
     y_size = vtex->get_video_height();
     tex_scale = vtex->get_tex_scale();
 
-  } else {
+  } else if (!tex->get_loaded_from_txo()) {
     // Get the size from the original image (the texture may have
     // scaled it to make a power of 2).
     PNMImageHeader header;
@@ -1127,7 +1134,6 @@ load_image_as_model(const Filename &filename) {
   float top = y_size / 2.0;
 
   PT(GeomNode) card_node = new GeomNode("card");
-  card_node->set_attrib(ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 1.0f)));
   card_node->set_attrib(TextureAttrib::make(tex));
   if (has_alpha) {
     card_node->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));

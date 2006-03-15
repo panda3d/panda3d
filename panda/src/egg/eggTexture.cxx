@@ -37,6 +37,7 @@ EggTexture(const string &tref_name, const string &filename)
 {
   _texture_type = TT_unspecified;
   _format = F_unspecified;
+  _compression_mode = CM_default;
   _wrap_mode = WM_unspecified;
   _wrap_u = WM_unspecified;
   _wrap_v = WM_unspecified;
@@ -80,6 +81,7 @@ operator = (const EggTexture &copy) {
 
   _texture_type = copy._texture_type;
   _format = copy._format;
+  _compression_mode = copy._compression_mode;
   _wrap_mode = copy._wrap_mode;
   _wrap_u = copy._wrap_u;
   _wrap_v = copy._wrap_v;
@@ -150,6 +152,11 @@ write(ostream &out, int indent_level) const {
   if (get_format() != F_unspecified) {
     indent(out, indent_level + 2)
       << "<Scalar> format { " << get_format() << " }\n";
+  }
+
+  if (get_compression_mode() != CM_default) {
+    indent(out, indent_level + 2)
+      << "<Scalar> compression { " << get_compression_mode() << " }\n";
   }
 
   if (get_wrap_mode() != WM_unspecified) {
@@ -360,6 +367,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
     //cout << "compared by attributes" << endl;
     if (_texture_type != other._texture_type ||
         _format != other._format ||
+        _compression_mode != other._compression_mode ||
         _wrap_mode != other._wrap_mode ||
         _wrap_u != other._wrap_u ||
         _wrap_v != other._wrap_v ||
@@ -441,6 +449,9 @@ sorts_less_than(const EggTexture &other, int eq) const {
     }
     if (_format != other._format) {
       return (int)_format < (int)other._format;
+    }
+    if (_compression_mode != other._compression_mode) {
+      return (int)_compression_mode < (int)other._compression_mode;
     }
     if (_wrap_mode != other._wrap_mode) {
       return (int)_wrap_mode < (int)other._wrap_mode;
@@ -617,7 +628,7 @@ string_texture_type(const string &string) {
   } else if (cmp_nocase_uh(string, "3d") == 0 ||
              cmp_nocase_uh(string, "3dtexture") == 0 ||
              cmp_nocase_uh(string, "3d_texture") == 0) {
-    return TT_2d_texture;
+    return TT_3d_texture;
 
   } else if (cmp_nocase_uh(string, "cube") == 0 ||
              cmp_nocase_uh(string, "cubemap") == 0 ||
@@ -677,6 +688,36 @@ string_format(const string &string) {
     return F_luminance_alphamask;
   } else {
     return F_unspecified;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::string_compression_mode
+//       Access: Published, Static
+//  Description: Returns the CompressionMode value associated with the given
+//               string representation, or CM_default if the string
+//               does not match any known CompressionMode value.
+////////////////////////////////////////////////////////////////////
+EggTexture::CompressionMode EggTexture::
+string_compression_mode(const string &string) {
+  if (cmp_nocase_uh(string, "off") == 0) {
+    return CM_off;
+  } else if (cmp_nocase_uh(string, "on") == 0) {
+    return CM_on;
+  } else if (cmp_nocase_uh(string, "fxt1") == 0) {
+    return CM_fxt1;
+  } else if (cmp_nocase_uh(string, "dxt1") == 0) {
+    return CM_dxt1;
+  } else if (cmp_nocase_uh(string, "dxt2") == 0) {
+    return CM_dxt2;
+  } else if (cmp_nocase_uh(string, "dxt3") == 0) {
+    return CM_dxt3;
+  } else if (cmp_nocase_uh(string, "dxt4") == 0) {
+    return CM_dxt4;
+  } else if (cmp_nocase_uh(string, "dxt5") == 0) {
+    return CM_dxt5;
+  } else {
+    return CM_default;
   }
 }
 
@@ -1061,6 +1102,36 @@ ostream &operator << (ostream &out, EggTexture::Format format) {
     return out << "luminance_alpha";
   case EggTexture::F_luminance_alphamask:
     return out << "luminance_alphamask";
+  }
+
+  nassertr(false, out);
+  return out << "(**invalid**)";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CompressionMode output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &operator << (ostream &out, EggTexture::CompressionMode mode) {
+  switch (mode) {
+  case EggTexture::CM_default:
+    return out << "default";
+  case EggTexture::CM_off:
+    return out << "off";
+  case EggTexture::CM_on:
+    return out << "on";
+  case EggTexture::CM_fxt1:
+    return out << "fxt1";
+  case EggTexture::CM_dxt1:
+    return out << "dxt1";
+  case EggTexture::CM_dxt2:
+    return out << "dxt2";
+  case EggTexture::CM_dxt3:
+    return out << "dxt3";
+  case EggTexture::CM_dxt4:
+    return out << "dxt4";
+  case EggTexture::CM_dxt5:
+    return out << "dxt5";
   }
 
   nassertr(false, out);

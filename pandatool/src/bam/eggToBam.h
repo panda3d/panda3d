@@ -22,6 +22,15 @@
 #include "pandatoolbase.h"
 
 #include "eggToSomething.h"
+#include "pset.h"
+#include "graphicsPipe.h"
+
+class PandaNode;
+class RenderState;
+class Texture;
+class GraphicsEngine;
+class GraphicsStateGuardian;
+class GraphicsOutput;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggToBam
@@ -37,6 +46,16 @@ protected:
   virtual bool handle_args(Args &args);
 
 private:
+  void collect_textures(PandaNode *node);
+  void collect_textures(const RenderState *state);
+  void convert_txo(Texture *tex);
+
+  bool make_buffer();
+
+private:
+  typedef pset<Texture *> Textures;
+  Textures _textures;
+
   bool _has_egg_flatten;
   int _egg_flatten;
   bool _has_egg_combine_geoms;
@@ -47,6 +66,16 @@ private:
   int _compression_quality;
   bool _compression_off;
   bool _tex_rawdata;
+  bool _tex_txo;
+  bool _tex_txopz;
+  bool _tex_ctex;
+  string _load_display;
+
+  // The rest of this is required to support -ctex.
+  PT(GraphicsPipe) _pipe;
+  GraphicsStateGuardian *_gsg;
+  GraphicsEngine *_engine;
+  GraphicsOutput *_buffer;
 };
 
 #endif

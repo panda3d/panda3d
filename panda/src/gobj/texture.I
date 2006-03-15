@@ -399,12 +399,28 @@ get_border_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_compression
+//       Access: Published
+//  Description: Returns the compression mode requested for this
+//               particular texture, or CM_off if the texture is not
+//               to be compressed.
+//
+//               If a value other than CM_off is returned, this is
+//               not a guarantee that the texture is actually
+//               successfully compressed on the GSG.  It may be that
+//               the GSG does not support the requested compression
+//               mode, in which case the texture may actually be
+//               stored uncompressed in texture memory.
+////////////////////////////////////////////////////////////////////
+INLINE Texture::CompressionMode Texture::
+get_compression() const {
+  return _compression;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_render_to_texture
 //       Access: Published
-//  Description: Returns the solid color of the texture's border.
-//               Some OpenGL implementations use a border for tiling
-//               textures; in Panda, it is only used for specifying
-//               the clamp color.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 get_render_to_texture() const {
@@ -446,7 +462,24 @@ might_have_ram_image() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_ram_image_size() const {
-  return _image.size();
+  return _ram_image.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_ram_page_size
+//       Access: Published
+//  Description: Returns the number of bytes used by the in-memory
+//               image per page, or 0 if there is no in-memory image.
+//
+//               For a non-compressed texture, this is the same as
+//               get_expected_ram_page_size().  For a compressed
+//               texture, this may be a smaller value.  (We do assume
+//               that all pages will be the same size on a compressed
+//               texture).
+////////////////////////////////////////////////////////////////////
+INLINE size_t Texture::
+get_ram_page_size() const {
+  return _ram_image_compression != CM_off ? _ram_page_size : get_expected_ram_page_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -472,6 +505,21 @@ get_expected_ram_image_size() const {
 INLINE size_t Texture::
 get_expected_ram_page_size() const {
   return (size_t)(_x_size * _y_size * _num_components * _component_width);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_ram_image_compression
+//       Access: Published
+//  Description: Returns the compression mode in which the ram image
+//               is already stored pre-compressed.  If this is other
+//               than CM_off, you cannot rely on the contents of the
+//               ram image to be anything predicatable (it will not be
+//               an array of x by y pixels, and it probably won't have
+//               the same length as get_expected_ram_image_size()).
+////////////////////////////////////////////////////////////////////
+INLINE Texture::CompressionMode Texture::
+get_ram_image_compression() const {
+  return _ram_image_compression;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -679,6 +727,30 @@ get_loaded_from_disk() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_loaded_from_txo
+//       Access: Published
+//  Description: Sets the flag that indicates the texture has been
+//               loaded from a txo file.  You probably shouldn't be
+//               setting this directly; it is set automatically when a
+//               Texture is loaded.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_loaded_from_txo() {
+  _loaded_from_txo = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_loaded_from_txo
+//       Access: Published
+//  Description: Returns the flag that indicates the texture has been
+//               loaded from a txo file.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+get_loaded_from_txo() const {
+  return _loaded_from_txo;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_match_framebuffer_format
 //       Access: Public
 //  Description: Returns true if the special flag was set that
@@ -725,7 +797,7 @@ set_match_framebuffer_format(bool flag) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 store_unscaled_byte(int &index, int value) {
-  _image[index++] = (uchar)value;
+  _ram_image[index++] = (uchar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -744,8 +816,8 @@ store_unscaled_short(int &index, int value) {
     uchar uc[2];
   } v;
   v.us = (ushort)value;
-  _image[index++] = v.uc[0];
-  _image[index++] = v.uc[1];
+  _ram_image[index++] = v.uc[0];
+  _ram_image[index++] = v.uc[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -786,8 +858,8 @@ store_scaled_short(int &index, int value, double scale) {
 ////////////////////////////////////////////////////////////////////
 INLINE double Texture::
 get_unsigned_byte(int &index) const {
-  nassertr(index >= 0 && index < (int)_image.size(), 0.0);
-  return (double)_image[index++] / 255.0;
+  nassertr(index >= 0 && index < (int)_ram_image.size(), 0.0);
+  return (double)_ram_image[index++] / 255.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -800,12 +872,29 @@ get_unsigned_byte(int &index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE double Texture::
 get_unsigned_short(int &index) const {
-  nassertr(index >= 0 && index+1 < (int)_image.size(), 0.0);
+  nassertr(index >= 0 && index+1 < (int)_ram_image.size(), 0.0);
   union {
     ushort us;
     uchar uc[2];
   } v;
-  v.uc[0] = _image[index++];
-  v.uc[1] = _image[index++];
+  v.uc[0] = _ram_image[index++];
+  v.uc[1] = _ram_image[index++];
   return (double)v.us / 65535.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::is_txo_filename
+//       Access: Private, Static
+//  Description: Returns true if the indicated filename ends in .txo
+//               or .txo.pz, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+is_txo_filename(const Filename &fullpath) {
+  string extension = fullpath.get_extension();
+#ifdef HAVE_ZLIB
+  if (extension == "pz") {
+    extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
+  }
+#endif  // HAVE_ZLIB
+  return (extension == "txo");
 }

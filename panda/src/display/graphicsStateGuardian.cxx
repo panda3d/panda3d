@@ -136,6 +136,9 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _supports_3d_texture = false;
   _supports_cube_map = false;
   _supports_tex_non_pow2 = false;
+  _supports_compressed_texture = false;
+  _compressed_texture_formats.clear();
+  _compressed_texture_formats.set_bit(Texture::CM_off);
   
   // Assume no limits on number of lights or clip planes.
   _max_lights = -1;
@@ -413,6 +416,23 @@ prepare_texture(Texture *) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 release_texture(TextureContext *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::extract_texture_data
+//       Access: Public, Virtual
+//  Description: This method should only be called by the
+//               GraphicsEngine.  Do not call it directly; call
+//               GraphicsEngine::extract_texture_data() instead.
+//
+//               This method will be called in the draw thread to
+//               download the texture memory's image into its
+//               ram_image value.  It returns true on success, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+extract_texture_data(Texture *) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

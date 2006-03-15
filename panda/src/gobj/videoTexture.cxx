@@ -33,6 +33,9 @@ VideoTexture::
 VideoTexture(const string &name) : 
   Texture(name) 
 {
+  // We don't want to try to compress each frame as it's loaded.
+  _compression = CM_off;
+
   _video_width = 0;
   _video_height = 0;
 
@@ -69,7 +72,7 @@ has_ram_image() const {
   if (this_frame != _last_frame_update) {
     return false;
   }
-  return !_image.empty();
+  return !_ram_image.empty();
 }
 
 ////////////////////////////////////////////////////////////////////

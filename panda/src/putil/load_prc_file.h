@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef LOAD_EGG_FILE_H
-#define LOAD_EGG_FILE_H
+#ifndef LOAD_PRC_FILE_H
+#define LOAD_PRC_FILE_H
 
 #include "pandabase.h"
 

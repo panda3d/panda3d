@@ -122,6 +122,7 @@ private:
   void load_textures();
   bool load_texture(TextureDef &def, const EggTexture *egg_tex);
   void apply_texture_attributes(Texture *tex, const EggTexture *egg_tex);
+  Texture::CompressionMode convert_compression_mode(EggTexture::CompressionMode compression_mode) const;
   Texture::WrapMode convert_wrap_mode(EggTexture::WrapMode wrap_mode) const;
   PT(TextureStage) make_texture_stage(const EggTexture *egg_tex);
 

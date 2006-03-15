@@ -370,6 +370,30 @@ get_current_minor_ver() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamFile::get_reader
+//       Access: Public
+//  Description: Returns the BamReader in charge of performing the
+//               read operations.  This will return NULL unless
+//               open_read() was called.
+////////////////////////////////////////////////////////////////////
+BamReader *BamFile::
+get_reader() {
+  return _reader;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamFile::get_writer
+//       Access: Public
+//  Description: Returns the BamWriter in charge of performing the
+//               write operations.  This will return NULL unless
+//               open_write() was called.
+////////////////////////////////////////////////////////////////////
+BamWriter *BamFile::
+get_writer() {
+  return _writer;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamFile::continue_open_read
 //       Access: Private
 //  Description: Reads the header of the recently-opened bam stream

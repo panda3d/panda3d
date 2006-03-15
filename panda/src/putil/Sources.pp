@@ -12,7 +12,9 @@
     animInterface.h animInterface.I \
     bam.h bamEndian.h \
     bamReader.I bamReader.N bamReader.h bamReaderParam.I \
-    bamReaderParam.h bamWriter.I bamWriter.h \
+    bamReaderParam.h \
+    bamTextureMode.h \
+    bamWriter.I bamWriter.h \
     bitArray.I bitArray.h \
     bitMask.I bitMask.h \
     buttonHandle.I \
@@ -58,7 +60,9 @@
  #define INCLUDED_SOURCES \
     animInterface.cxx \
     bamEndian.cxx \
-    bamReader.cxx bamReaderParam.cxx bamWriter.cxx \
+    bamReader.cxx bamReaderParam.cxx \
+    bamTextureMode.cxx \
+    bamWriter.cxx \
     bitArray.cxx \
     bitMask.cxx \
     buttonHandle.cxx buttonRegistry.cxx \
@@ -91,6 +95,7 @@
     animInterface.h animInterface.I \
     bam.h bamEndian.h \
     bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \
+    bamTextureMode.h \
     bamWriter.I bamWriter.h \
     bitArray.I bitArray.h \
     bitMask.I bitMask.h \

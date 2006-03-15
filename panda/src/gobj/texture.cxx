@@ -29,6 +29,11 @@
 #include "preparedGraphicsObjects.h"
 #include "pnmImage.h"
 #include "virtualFileSystem.h"
+#include "datagramInputFile.h"
+#include "datagramOutputFile.h"
+#include "bam.h"
+#include "zStream.h"
+#include "indent.h"
 
 #include <stddef.h>
 
@@ -58,6 +63,9 @@ Texture(const string &name) :
   _keep_ram_image = true;
   _all_dirty_flags = 0;
   _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
+  _compression = CM_default;
+  _ram_image_compression = CM_off;
+  _ram_page_size = 0;
   _render_to_texture = false;
   _match_framebuffer_format = false;
 
@@ -69,6 +77,7 @@ Texture(const string &name) :
   set_component_type(T_unsigned_byte);
 
   _loaded_from_disk = false;
+  _loaded_from_txo = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,6 +104,7 @@ Texture(const Texture &copy) :
   _format(copy._format),
   _component_type(copy._component_type),
   _loaded_from_disk(copy._loaded_from_disk),
+  _loaded_from_txo(copy._loaded_from_txo),
   _wrap_u(copy._wrap_u),
   _wrap_v(copy._wrap_v),
   _wrap_w(copy._wrap_w),
@@ -103,10 +113,54 @@ Texture(const Texture &copy) :
   _anisotropic_degree(copy._anisotropic_degree),
   _keep_ram_image(copy._keep_ram_image),
   _border_color(copy._border_color),
+  _compression(copy._compression),
   _match_framebuffer_format(copy._match_framebuffer_format),
   _all_dirty_flags(0),
-  _image(copy._image)
+  _ram_image(copy._ram_image),
+  _ram_image_compression(copy._ram_image_compression),
+  _ram_page_size(copy._ram_page_size)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::Copy Assignment Operator
+//       Access: Protected
+//  Description: Use Texture::make_copy() to make a duplicate copy of
+//               an existing Texture.
+////////////////////////////////////////////////////////////////////
+void Texture::
+operator = (const Texture &copy) {
+  Namable::operator = (copy);
+  _filename = copy._filename;
+  _alpha_filename = copy._alpha_filename;
+  _fullpath = copy._fullpath;
+  _alpha_fullpath = copy._alpha_fullpath;
+  _primary_file_num_channels = copy._primary_file_num_channels;
+  _alpha_file_channel = copy._alpha_file_channel;
+  _x_size = copy._x_size;
+  _y_size = copy._y_size;
+  _z_size = copy._z_size;
+  _num_components = copy._num_components;
+  _component_width = copy._component_width;
+  _texture_type = copy._texture_type;
+  _format = copy._format;
+  _component_type = copy._component_type;
+  _loaded_from_disk = copy._loaded_from_disk;
+  _loaded_from_txo = copy._loaded_from_txo;
+  _wrap_u = copy._wrap_u;
+  _wrap_v = copy._wrap_v;
+  _wrap_w = copy._wrap_w;
+  _minfilter = copy._minfilter;
+  _magfilter = copy._magfilter;
+  _anisotropic_degree = copy._anisotropic_degree;
+  _keep_ram_image = copy._keep_ram_image;
+  _border_color = copy._border_color;
+  _compression = copy._compression;
+  _match_framebuffer_format = copy._match_framebuffer_format;
+  _all_dirty_flags = 0;
+  _ram_image = copy._ram_image;
+  _ram_image_compression = copy._ram_image_compression;
+  _ram_page_size = copy._ram_page_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -170,6 +224,7 @@ setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
 
   clear_ram_image();
   _loaded_from_disk = false;
+  _loaded_from_txo = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,7 +242,7 @@ setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
 void Texture::
 generate_normalization_cube_map(int size) {
   setup_cube_map(size, T_unsigned_byte, F_rgb);
-  PTA_uchar image = modify_ram_image();
+  PTA_uchar image = make_ram_image();
 
   float half_size = (float)size * 0.5f;
   float center = half_size - 0.5f;
@@ -284,9 +339,18 @@ generate_normalization_cube_map(int size) {
 //               than this number.
 //
 //               This also implicitly sets keep_ram_image to false.
+//
+//               If the filename has the extension .txo, this
+//               implicitly reads a texture object instead of a
+//               filename (which replaces all of the texture
+//               properties).
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 read(const Filename &fullpath, int z, int primary_file_num_channels) {
+  if (is_txo_filename(fullpath)) {
+    return read_txo_file(fullpath);
+  }
+
   PNMImage image;
 
   if (textures_header_only) {
@@ -461,11 +525,24 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::write
 //       Access: Published
-//  Description: Writes the texture to the indicated filename.
+//  Description: Writes the texture to the indicated filename.  If the
+//               filename ends in the extension .txo, this implicitly
+//               writes a Panda texture object (.txo) instead of an
+//               image file.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 write(const Filename &name, int z) const {
+  if (!has_ram_image()) {
+    ((Texture *)this)->get_ram_image();
+  }
   nassertr(has_ram_image(), false);
+
+  if (is_txo_filename(name)) {
+    return write_txo_file(name);
+  }
+
+  nassertr(get_ram_image_compression() == CM_off, false);
+
   PNMImage pnmimage;
   if (!store(pnmimage, z)) {
     return false;
@@ -476,6 +553,114 @@ write(const Filename &name, int z) const {
       << "Texture::write() - couldn't write: " << name << endl;
     return false;
   }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_txo
+//       Access: Published
+//  Description: Reads the texture from a Panda texture object.  This
+//               defines the complete Texture specification, including
+//               the image data as well as all texture properties.
+//
+//               The filename is just for reference.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_txo(istream &in, const string &filename) {
+  DatagramInputFile din;
+
+  if (!din.open(in)) {
+    gobj_cat.error()
+      << "Could not read texture object: " << filename << "\n";
+    return false;
+  }
+
+  string head;
+  if (!din.read_header(head, _bam_header.size())) {
+    gobj_cat.error()
+      << filename << " is not a texture object file.\n";
+    return false;
+  }
+
+  if (head != _bam_header) {
+    gobj_cat.error()
+      << filename << " is not a texture object file.\n";
+    return false;
+  }
+
+  BamReader reader(&din, filename);
+  if (!reader.init()) {
+    return false;
+  }
+
+  TypedWritable *object = reader.read_object();
+  if (object == (TypedWritable *)NULL) {
+    gobj_cat.error()
+      << "Texture object " << filename << " is empty.\n";
+    return false;
+
+  } else if (!object->is_of_type(Texture::get_class_type())) {
+    gobj_cat.error()
+      << "Texture object " << filename << "contains a "
+      << object->get_type() << ", not a Texture.\n";
+    return false;
+  }
+
+  PT(Texture) other = DCAST(Texture, object);
+  if (!reader.resolve()) {
+    gobj_cat.error()
+      << "Unable to fully resolve texture object file.\n";
+    return false;
+  }
+
+  (*this) = (*other);
+  _loaded_from_disk = true;
+  _loaded_from_txo = true;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::write_txo
+//       Access: Published
+//  Description: Writes the texture to a Panda texture object.  This
+//               defines the complete Texture specification, including
+//               the image data as well as all texture properties.
+//
+//               The filename is just for reference.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+write_txo(ostream &out, const string &filename) const {
+  DatagramOutputFile dout;
+
+  if (!dout.open(out)) {
+    gobj_cat.error()
+      << "Could not write texture object: " << filename << "\n";
+    return false;
+  }
+
+  if (!dout.write_header(_bam_header)) {
+    gobj_cat.error()
+      << "Unable to write to " << filename << "\n";
+    return false;
+  }
+
+  BamWriter writer(&dout, filename);
+  if (!writer.init()) {
+    return false;
+  }
+
+  writer.set_file_texture_mode(BTM_rawdata);
+
+  if (!writer.write_object(this)) {
+    return false;
+  }
+
+  if (!has_ram_image()) {
+    gobj_cat.error()
+      << get_name() << " does not have ram image\n";
+    return false;
+  }
+
   return true;
 }
 
@@ -497,6 +682,10 @@ write(const Filename &name, int z) const {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 read_pages(Filename fullpath_pattern, int z_size) {
+  if (is_txo_filename(fullpath_pattern)) {
+    return read_txo_file(fullpath_pattern);
+  }
+
   fullpath_pattern.set_pattern(true);
   if (!fullpath_pattern.has_hash()) {
     gobj_cat.error()
@@ -566,6 +755,10 @@ read_pages(Filename fullpath_pattern, int z_size) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 write_pages(Filename fullpath_pattern) {
+  if (is_txo_filename(fullpath_pattern)) {
+    return write_txo_file(fullpath_pattern);
+  }
+
   fullpath_pattern.set_pattern(true);
   if (!fullpath_pattern.has_hash()) {
     gobj_cat.error()
@@ -939,12 +1132,36 @@ set_border_color(const Colorf &color) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_compression
+//       Access: Published
+//  Description: Requests that this particular Texture be compressed
+//               when it is loaded into texture memory.  
+//
+//               This refers to the internal compression of the
+//               texture image within texture memory; it is not
+//               related to jpeg or png compression, which are disk
+//               file compression formats.  The actual disk file that
+//               generated this texture may be stored in a compressed
+//               or uncompressed format supported by Panda; it will be
+//               decompressed on load, and then recompressed by the
+//               graphics API if this parameter is not CM_off.
+//
+//               If the GSG does not support this texture compression
+//               mode, the texture will silently be loaded
+//               uncompressed.
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_compression(Texture::CompressionMode compression) {
+  if (_compression != compression) {
+    mark_dirty(DF_image);
+    _compression = compression;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_render_to_texture
 //       Access: Published
-//  Description: Specifies the solid color of the texture's border.
-//               Some OpenGL implementations use a border for tiling
-//               textures; in Panda, it is only used for specifying
-//               the clamp color.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_render_to_texture(bool render_to_texture) {
@@ -981,7 +1198,7 @@ set_render_to_texture(bool render_to_texture) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 has_ram_image() const {
-  return !_image.empty();
+  return !_ram_image.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1018,26 +1235,28 @@ get_ram_image() {
     reload_ram_image();
   }
 
-  return _image;
+  return _ram_image;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::modify_ram_image
 //       Access: Published
 //  Description: Returns a modifiable pointer to the system-RAM image.
-//               If the RAM image has been dumped, creates a new one.
+//               This assumes the RAM image should be uncompressed.
+//               If the RAM image has been dumped, or is stored
+//               compressed, creates a new one.
 //
 //               This also implicitly sets keep_ram_image to true.
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
 modify_ram_image() {
-  if (_image.empty()) {
+  if (_ram_image.empty() || _ram_image_compression != CM_off) {
     make_ram_image();
   }
 
   mark_dirty(DF_image);
   _keep_ram_image = true;
-  return _image;
+  return _ram_image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1051,25 +1270,35 @@ modify_ram_image() {
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
 make_ram_image() {
-  _image = PTA_uchar::empty_array(get_expected_ram_image_size());
+  _ram_image = PTA_uchar::empty_array(get_expected_ram_image_size());
+  _ram_image_compression = CM_off;
   mark_dirty(DF_image);
   _keep_ram_image = true;
-  return _image;
+  return _ram_image;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_ram_image
 //       Access: Published
 //  Description: Replaces the current system-RAM image with the new
-//               data.
+//               data.  If compression is not CM_off, it indicates
+//               that the new data is already pre-compressed in the
+//               indicated format.
 //
 //               This also implicitly sets keep_ram_image to true.
 ////////////////////////////////////////////////////////////////////
 void Texture::
-set_ram_image(PTA_uchar image) {
-  nassertv(image.size() == get_expected_ram_image_size());
-  if (_image != image) {
-    _image = image;
+set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
+	      size_t page_size) {
+  nassertv(compression != CM_default);
+  nassertv(compression != CM_off || image.size() == get_expected_ram_image_size());
+  if (_ram_image != image || _ram_image_compression != compression) {
+    _ram_image = image;
+    _ram_image_compression = compression;
+    _ram_page_size = page_size;
+    if (page_size == 0) {
+      _ram_page_size = image.size();
+    }
     mark_dirty(DF_image);
   }
   _keep_ram_image = true;
@@ -1082,7 +1311,8 @@ set_ram_image(PTA_uchar image) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 clear_ram_image() {
-  _image.clear();
+  _ram_image.clear();
+  _ram_image_compression = CM_off;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1170,6 +1400,169 @@ release_all() {
   _contexts.clear();
 
   return num_freed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::write
+//       Access: Published
+//  Description: Not to be confused with write(Filename), this method
+//               simply describes the texture properties.
+////////////////////////////////////////////////////////////////////
+void Texture::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level)
+    << get_type() << " " << get_name();
+  if (!get_filename().empty()) {
+    out << " (from " << get_filename() << ")";
+  }
+  out << "\n";
+
+  indent(out, indent_level + 2);
+  
+  switch (get_texture_type()) {
+  case TT_1d_texture:
+    out << "1-d, " << get_x_size();
+    break;
+
+  case TT_2d_texture:
+    out << "2-d, " << get_x_size() << " x " << get_y_size();
+    break;
+
+  case TT_3d_texture:
+    out << "3-d, " << get_x_size() << " x " << get_y_size()
+	<< " x " << get_z_size();
+    break;
+
+  case TT_cube_map:
+    out << "cube map, " << get_x_size() << " x " << get_y_size();
+    break;
+  }
+
+  out << " pixels, each " << get_num_components();
+
+  switch (get_component_type()) {
+  case T_unsigned_byte:
+    out << " bytes";
+    break;
+
+  case T_unsigned_short:
+    out << " shorts";
+    break;
+
+  case T_float:
+    out << " floats";
+    break;
+  }
+
+  out << ", ";
+  switch (get_format()) {
+  case F_color_index:
+    out << "color_index";
+    break;
+  case F_stencil_index:
+    out << "stencil_index";
+    break;
+  case F_depth_component:
+    out << "depth_component";
+    break;
+
+  case F_rgba:
+    out << "rgba";
+    break;
+  case F_rgbm:
+    out << "rgbm";
+    break;
+  case F_rgba12:
+    out << "rgba12";
+    break;
+  case F_rgba8:
+    out << "rgba8";
+    break;
+  case F_rgba4:
+    out << "rgba4";
+    break;
+
+  case F_rgb:
+    out << "rgb";
+    break;
+  case F_rgb12:
+    out << "rgb12";
+    break;
+  case F_rgb8:
+    out << "rgb8";
+    break;
+  case F_rgb5:
+    out << "rgb5";
+    break;
+  case F_rgba5:
+    out << "rgba5";
+    break;
+  case F_rgb332:
+    out << "rgb332";
+    break;
+
+  case F_red:
+    out << "red";
+    break;
+  case F_green:
+    out << "green";
+    break;
+  case F_blue:
+    out << "blue";
+    break;
+  case F_alpha:
+    out << "alpha";
+    break;
+  case F_luminance:
+    out << "luminance";
+    break;
+  case F_luminance_alpha:
+    out << "luminance_alpha";
+    break;
+  case F_luminance_alphamask:
+    out << "luminance_alphamask";
+    break;
+  }
+
+  if (get_compression() != CM_default) {
+    out << ", compression " << get_compression();
+  }
+  out << "\n";
+
+  indent(out, indent_level + 2);
+  
+  switch (get_texture_type()) {
+  case TT_1d_texture:
+    out << get_wrap_u() << ", ";
+    break;
+
+  case TT_2d_texture:
+    out << get_wrap_u() << " x " << get_wrap_v() << ", ";
+    break;
+
+  case TT_3d_texture:
+    out << get_wrap_u() << " x " << get_wrap_v() 
+	<< " x " << get_wrap_w() << ", ";
+    break;
+
+  case TT_cube_map:
+    break;
+  }
+
+  out << "min " << get_minfilter()
+      << ", mag " << get_magfilter()
+      << ", aniso " << get_anisotropic_degree()
+      << ", border " << get_border_color()
+      << "\n";
+
+  indent(out, indent_level + 2);
+  if (has_ram_image()) {
+    out << get_ram_image_size() << " bytes in ram, compression "
+	<< get_ram_image_compression() << "\n";
+
+  } else {
+    out << "no ram image\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1307,7 +1700,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
         gobj_cat.debug()
           << "Dumping RAM for texture " << get_name() << "\n";
       }
-      _image.clear();
+      _ram_image.clear();
     }
   }
   return tc;
@@ -1465,17 +1858,23 @@ reconsider_dirty() {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 reload_ram_image() {
-  if (_texture_type == TT_1d_texture || _texture_type == TT_2d_texture) {
-    gobj_cat.info()
-      << "Reloading texture " << get_name() << "\n";
+  gobj_cat.info()
+    << "Reloading texture " << get_name() << "\n";
 
-    make_ram_image();
+  make_ram_image();
+
+  if (_texture_type == TT_1d_texture || _texture_type == TT_2d_texture) {
+    // 1-d or 2-d texture.  Just one page.
     if (has_alpha_fullpath()) {
       read(get_fullpath(), get_alpha_fullpath(),
            0, _primary_file_num_channels, _alpha_file_channel);
     } else {
       read(get_fullpath(), 0, _primary_file_num_channels);
     }
+    
+  } else {
+    // 3-d texture or cube map.  Multiple pages.
+    read_pages(get_fullpath(), _z_size);
   }
 }
 
@@ -1511,6 +1910,50 @@ down_to_power_2(int value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::is_specific
+//       Access: Public, Static
+//  Description: Returns true if the indicated compression mode is one
+//               of the specific compression types, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+is_specific(Texture::CompressionMode compression) {
+  switch (compression) {
+  case CM_default:
+  case CM_off:
+  case CM_on:
+    return false;
+
+  default:
+    return true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_alpha
+//       Access: Public, Static
+//  Description: Returns true if the indicated format includes alpha,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+has_alpha(Format format) {
+  switch (format) {
+  case F_alpha:
+  case F_rgba:
+  case F_rgbm:
+  case F_rgba4:
+  case F_rgba5:
+  case F_rgba8:
+  case F_rgba12:
+  case F_luminance_alpha:
+  case F_luminance_alphamask:
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::reconsider_z_size
 //       Access: Protected
 //  Description: Considers whether the z_size should automatically be
@@ -1530,9 +1973,9 @@ reconsider_z_size(int z) {
     // Increase the size of the data buffer to make room for the new
     // texture level.
     size_t new_size = get_expected_ram_image_size();
-    if (!_image.is_null() && new_size > _image.size()) {
-      _image.insert(_image.end(), new_size - _image.size(), 0);
-      nassertr(_image.size() == new_size, false);
+    if (!_ram_image.is_null() && new_size > _ram_image.size()) {
+      _ram_image.insert(_ram_image.end(), new_size - _ram_image.size(), 0);
+      nassertr(_ram_image.size() == new_size, false);
     }
   }
 
@@ -1711,6 +2154,66 @@ consider_downgrade(PNMImage &pnmimage, int num_channels) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_txo_file
+//       Access: Private
+//  Description: Called internally when read() or read_pages() detects
+//               a txo file.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_txo_file(const Filename &fullpath) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  Filename filename = Filename::binary_filename(fullpath);
+  PT(VirtualFile) file = vfs->get_file(filename);
+  if (file == (VirtualFile *)NULL) {
+    // No such file.
+    gobj_cat.error()
+      << "Could not find " << fullpath << "\n";
+    return false;
+  }
+  
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Reading texture object " << filename << "\n";
+  }
+  
+  istream *in = file->open_read_file(true);
+  bool success = read_txo(*in, fullpath);
+  vfs->close_read_file(in);
+  
+  set_fullpath(fullpath);
+  clear_alpha_fullpath();
+  _keep_ram_image = false;
+  
+  return success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::write_txo_file
+//       Access: Private
+//  Description: Called internally when write() or write_pages() detects
+//               a txo file.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+write_txo_file(const Filename &fullpath) const {
+  Filename filename = Filename::binary_filename(fullpath);
+  ofstream out;
+  if (!filename.open_write(out)) {
+    gobj_cat.error()
+      << "Unable to open " << filename << "\n";
+    return false;
+  }
+  
+#ifdef HAVE_ZLIB
+  if (fullpath.get_extension() == "pz") {
+    OCompressStream compressor(&out, false);
+    return write_txo(compressor);
+  }
+#endif  // HAVE_ZLIB
+  return write_txo(out, fullpath);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::register_with_read_factory
 //       Access: Public, Static
 //  Description: Factory method to generate a Texture object
@@ -1752,7 +2255,12 @@ make_from_bam(const FactoryParams &params) {
   if (has_rawdata) {
     // If the raw image data is included, then just create a Texture
     // and don't load from the file.
-    me = new Texture("");
+    me = new Texture(name);
+    me->_filename = filename;
+    me->_alpha_filename = alpha_filename;
+    me->_primary_file_num_channels = primary_file_num_channels;
+    me->_alpha_file_channel = alpha_file_channel;
+    me->_texture_type = texture_type;
 
   } else {
     if (filename.empty()) {
@@ -1828,6 +2336,10 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
   _magfilter = (FilterType)scan.get_uint8();
   _anisotropic_degree = scan.get_int16();
   _border_color.read_datagram(scan);
+  _compression = CM_default;
+  if (manager->get_file_minor_ver() >= 1) {
+    _compression = (CompressionMode)scan.get_uint8();
+  }
 
   Format format = (Format)scan.get_uint8();
   int num_components = scan.get_uint8();
@@ -1849,15 +2361,21 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
     _z_size = scan.get_uint32();
     _component_type = (ComponentType)scan.get_uint8();
     _component_width = scan.get_uint8();
+    _ram_image_compression = CM_off;
+    _ram_page_size = 0;
+    if (manager->get_file_minor_ver() >= 1) {
+      _ram_image_compression = (CompressionMode)scan.get_uint8();
+      _ram_page_size = scan.get_uint32();
+    }
     _loaded_from_disk = false;
 
     PN_uint32 u_size = scan.get_uint32();
 
     // fill the _image buffer with image data
     string temp_buff = scan.extract_bytes(u_size);
-    _image = PTA_uchar::empty_array((int) u_size);
+    _ram_image = PTA_uchar::empty_array((int) u_size);
     for (PN_uint32 u_idx=0; u_idx < u_size; ++u_idx) {
-      _image[(int)u_idx] = (uchar) temp_buff[u_idx];
+      _ram_image[(int)u_idx] = (uchar) temp_buff[u_idx];
     }
   }
 }
@@ -1870,11 +2388,6 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 write_datagram(BamWriter *manager, Datagram &me) {
-  bool has_bam_dir = !manager->get_filename().empty();
-  Filename bam_dir = manager->get_filename().get_dirname();
-  Filename filename = get_filename();
-  Filename alpha_filename = get_alpha_filename();
-
   // Write out the texture's raw pixel data if (a) the current Bam
   // Texture Mode requires that, or (b) there's no filename, so the
   // file can't be loaded up from disk, but the raw pixel data is
@@ -1883,10 +2396,24 @@ write_datagram(BamWriter *manager, Datagram &me) {
   // Otherwise, we just write out the filename, and assume whoever
   // loads the bam file later will have access to the image file on
   // disk.
+  BamTextureMode file_texture_mode = manager->get_file_texture_mode();
   bool has_rawdata =
-    (bam_texture_mode == BTM_rawdata || (has_ram_image() && filename.empty()));
+    (file_texture_mode == BTM_rawdata || (has_ram_image() && get_filename().empty()));
+  if (has_rawdata && !has_ram_image()) {
+    get_ram_image();
+    if (!has_ram_image()) {
+      // No image data after all.
+      has_rawdata = false;
+    }
+  }
 
-  switch (bam_texture_mode) {
+  bool has_bam_dir = !manager->get_filename().empty();
+  Filename bam_dir = manager->get_filename().get_dirname();
+  Filename filename = get_filename();
+  Filename alpha_filename = get_alpha_filename();
+
+
+  switch (file_texture_mode) {
   case BTM_unchanged:
   case BTM_rawdata:
     break;
@@ -1928,7 +2455,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 
   default:
     gobj_cat.error()
-      << "Unsupported bam-texture-mode: " << (int)bam_texture_mode << "\n";
+      << "Unsupported bam-texture-mode: " << (int)file_texture_mode << "\n";
   }
 
   me.add_string(get_name());
@@ -1947,6 +2474,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
   me.add_uint8(_magfilter);
   me.add_int16(_anisotropic_degree);
   _border_color.write_datagram(me);
+  me.add_uint8(_compression);
 
   me.add_uint8(_format);
   me.add_uint8(_num_components);
@@ -1959,9 +2487,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
     me.add_uint32(_z_size);
     me.add_uint8(_component_type);
     me.add_uint8(_component_width);
+    me.add_uint8(_ram_image_compression);
+    me.add_uint32(_ram_page_size);
 
-    me.add_uint32(_image.size());
-    me.append_data(_image, _image.size());
+    me.add_uint32(_ram_image.size());
+    me.append_data(_ram_image, _ram_image.size());
   }
 }
 
@@ -2045,4 +2575,34 @@ operator >> (istream &in, Texture::WrapMode &wm) {
 
   wm = Texture::string_wrap_mode(word);
   return in;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::CompressionMode output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, Texture::CompressionMode cm) {
+  switch (cm) {
+  case Texture::CM_default:
+    return out << "default";
+  case Texture::CM_off:
+    return out << "off";
+  case Texture::CM_on:
+    return out << "on";
+  case Texture::CM_fxt1:
+    return out << "fxt1";
+  case Texture::CM_dxt1:
+    return out << "dxt1";
+  case Texture::CM_dxt2:
+    return out << "dxt2";
+  case Texture::CM_dxt3:
+    return out << "dxt3";
+  case Texture::CM_dxt4:
+    return out << "dxt4";
+  case Texture::CM_dxt5:
+    return out << "dxt5";
+  }
+
+  return out << "(**invalid Texture::CompressionMode(" << (int)cm << ")**)";
 }

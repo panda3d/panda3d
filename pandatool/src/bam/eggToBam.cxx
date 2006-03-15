@@ -24,6 +24,18 @@
 #include "config_egg2pg.h"
 #include "config_gobj.h"
 #include "config_chan.h"
+#include "pandaNode.h"
+#include "geomNode.h"
+#include "renderState.h"
+#include "textureAttrib.h"
+#include "dcast.h"
+#include "graphicsPipeSelection.h"
+#include "graphicsEngine.h"
+#include "graphicsBuffer.h"
+#include "graphicsStateGuardian.h"
+#include "load_prc_file.h"
+#include "windowProperties.h"
+#include "frameBufferProperties.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggToBam::Constructor
@@ -36,7 +48,10 @@ EggToBam() :
 {
   set_program_description
     ("This program reads Egg files and outputs Bam files, the binary format "
-     "suitable for direct loading of animation and models into Panda.");
+     "suitable for direct loading of animation and models into Panda.  Bam "
+     "files are tied to a particular version of Panda, so should not be "
+     "considered replacements for egg files, but they tend to be smaller and "
+     "load much faster than the equivalent egg files.");
 
   // -f is always in effect for egg2bam.  It doesn't make sense to
   // provide it as an option to the user.
@@ -107,6 +122,53 @@ EggToBam() :
      "way to ensure the bam file is completely self-contained.",
      &EggToBam::dispatch_none, &_tex_rawdata);
 
+  add_option
+    ("txo", "", 0,
+     "Rather than writing texture data directly into the bam file, as in "
+     "-rawtex, create a texture object for each referenced texture.  A "
+     "texture object is a kind of mini-bam file, with a .txo extension, "
+     "that contains all of the data needed to recreate a texture, including "
+     "its image contents, filter and wrap settings, and so on.  3-D textures "
+     "and cube maps can also be represented in a single .txo file.  Texture "
+     "object files, like bam files, are tied to a particular version of "
+     "Panda.",
+     &EggToBam::dispatch_none, &_tex_txo);
+
+#ifdef HAVE_ZLIB
+  add_option
+    ("txopz", "", 0,
+     "In addition to writing texture object files as above, compress each "
+     "one using pzip to a .txo.pz file.  In many cases, this will yield a "
+     "disk file size comparable to that achieved by png compression.  This "
+     "is an on-disk compression only, and does not affect the amount of "
+     "RAM or texture memory consumed by the texture when it is loaded.",
+     &EggToBam::dispatch_none, &_tex_txopz);
+#endif  // HAVE_ZLIB
+
+  add_option
+    ("ctex", "", 0,
+     "Asks the graphics card to pre-compress the texture images when using "
+     "-rawtex or -txo.  "
+#ifdef HAVE_ZLIB
+     "This is unrelated to the on-disk compression achieved "
+     "via -txopz (and it may be used in conjunction with that parameter).  "
+#endif  // HAVE_ZLIB
+     "This will result in a smaller RAM and texture memory footprint for "
+     "the texture images.  The same "
+     "effect can be achieved at load time by setting compressed-textures in "
+     "your Config.prc file; but -ctex pre-compresses the "
+     "textures so that they do not need to be compressed at load time.  "
+     "Note that using -ctex makes .txo files that are only guaranteed to load "
+     "on the particular graphics card that was used to generate them.",
+     &EggToBam::dispatch_none, &_tex_ctex);
+
+  add_option
+    ("load-display", "display name", 0,
+     "Specifies the particular display module to load to perform the texture "
+     "compression requested by -ctex.  If this is omitted, the default is "
+     "taken from the Config.prc file.",
+     &EggToBam::dispatch_string, NULL, &_load_display);
+
   redescribe_option
     ("cs",
      "Specify the coordinate system of the resulting " + _format_name +
@@ -118,6 +180,7 @@ EggToBam() :
   _egg_flatten = 0;
   _egg_combine_geoms = 0;
   _egg_suppress_hidden = 1;
+  _tex_txopz = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,6 +225,31 @@ run() {
     nout << "Unable to build scene graph from egg file.\n";
     exit(1);
   }
+
+  if (_tex_ctex) {
+    if (!make_buffer()) {
+      nout << "Unable to initialize graphics context; cannot compress textures.\n";
+      exit(1);
+    }
+  }
+
+  if (_tex_txo || _tex_txopz || (_tex_ctex && _tex_rawdata)) {
+    collect_textures(root);
+    Textures::iterator ti;
+    for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+      Texture *tex = (*ti);
+      if (_tex_ctex) {
+        tex->set_keep_ram_image(true);
+        tex->set_compression(Texture::CM_on);
+        if (!_engine->extract_texture_data(tex, _gsg)) {
+          nout << "  couldn't compress " << tex->get_name() << "\n";
+        }
+      }
+      if (_tex_txo || _tex_txopz) {
+        convert_txo(tex);
+      }
+    }
+  }
   
   if (_ls) {
     root->ls(nout, 0);
@@ -170,7 +258,7 @@ run() {
   // This should be guaranteed because we pass false to the
   // constructor, above.
   nassertv(has_output_filename());
-  
+
   Filename filename = get_output_filename();
   filename.make_dir();
   nout << "Writing " << filename << "\n";
@@ -212,6 +300,158 @@ handle_args(ProgramBase::Args &args) {
   }
 
   return EggToSomething::handle_args(args);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggToBam::collect_textures
+//       Access: Private
+//  Description: Recursively walks the scene graph, looking for
+//               Texture references.
+////////////////////////////////////////////////////////////////////
+void EggToBam::
+collect_textures(PandaNode *node) {
+  collect_textures(node->get_state());
+  if (node->is_geom_node()) {
+    GeomNode *geom_node = DCAST(GeomNode, node);
+    int num_geoms = geom_node->get_num_geoms();
+    for (int i = 0; i < num_geoms; ++i) {
+      collect_textures(geom_node->get_geom_state(i));
+    }
+  }
+
+  PandaNode::Children children = node->get_children();
+  int num_children = children.get_num_children();
+  for (int i = 0; i < num_children; ++i) {
+    collect_textures(children.get_child(i));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggToBam::collect_textures
+//       Access: Private
+//  Description: Recursively walks the scene graph, looking for
+//               Texture references.
+////////////////////////////////////////////////////////////////////
+void EggToBam::
+collect_textures(const RenderState *state) {
+  const TextureAttrib *tex_attrib = state->get_texture();
+  if (tex_attrib != (TextureAttrib *)NULL) {
+    int num_on_stages = tex_attrib->get_num_on_stages();
+    for (int i = 0; i < num_on_stages; ++i) {
+      _textures.insert(tex_attrib->get_on_texture(tex_attrib->get_on_stage(i)));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggToBam::convert_txo
+//       Access: Private
+//  Description: If the indicated Texture was not already loaded from
+//               a txo file, writes it to a txo file and updates the
+//               Texture object to reference the new file.
+////////////////////////////////////////////////////////////////////
+void EggToBam::
+convert_txo(Texture *tex) {
+  if (!tex->get_loaded_from_txo()) {
+    Filename fullpath = tex->get_fullpath().get_filename_index(0);
+    if (_tex_txopz) {
+      fullpath.set_extension("txo.pz");
+      // We use this clumsy syntax so that the new extension appears to be
+      // two separate extensions, .txo followed by .pz, which is what
+      // Texture::write() expects to find.
+      fullpath = Filename(fullpath.get_fullpath());
+    } else {
+      fullpath.set_extension("txo");
+    }
+
+    if (tex->write(fullpath)) {
+      nout << "  Writing " << fullpath;
+      if (tex->get_ram_image_compression() != Texture::CM_off) {
+        nout << " (compressed " << tex->get_ram_image_compression() << ")";
+      }
+      nout << "\n";
+      tex->set_loaded_from_txo();
+      tex->set_fullpath(fullpath);
+      tex->clear_alpha_fullpath();
+
+      Filename filename = tex->get_filename().get_filename_index(0);
+      if (_tex_txopz) {
+        filename.set_extension("txo.pz");
+        filename = Filename(filename.get_fullpath());
+      } else {
+        filename.set_extension("txo");
+      }
+
+      tex->set_filename(filename);
+      tex->clear_alpha_filename();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggToBam::make_buffer
+//       Access: Private
+//  Description: Creates a GraphicsBuffer for communicating with the
+//               graphics card.
+////////////////////////////////////////////////////////////////////
+bool EggToBam::
+make_buffer() {
+  if (!_load_display.empty()) {
+    // Override the user's config file with the command-line parameter.
+    string prc = "load-display " + _load_display;
+    load_prc_file_data("prc", prc);
+  }
+
+  GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
+  _pipe = selection->make_default_pipe();
+  if (_pipe == (GraphicsPipe *)NULL) {
+    nout << "Unable to create graphics pipe.\n";
+    return false;
+  }
+
+  _engine = new GraphicsEngine;
+
+  FrameBufferProperties fbprops = FrameBufferProperties::get_default();
+
+  // Some graphics drivers can only create single-buffered offscreen
+  // buffers.  So request that.
+  fbprops.set_frame_buffer_mode((fbprops.get_frame_buffer_mode() & ~FrameBufferProperties::FM_buffer) | FrameBufferProperties::FM_single_buffer);
+
+  PT(GraphicsStateGuardian) gsg = 
+    _engine->make_gsg(_pipe, fbprops);
+  if (gsg == (GraphicsStateGuardian *)NULL) {
+    nout << "Unable to create GraphicsStateGuardian.\n";
+    return false;
+  }
+  _gsg = gsg;
+
+  // We don't care how big the buffer is; we just need it to manifest
+  // the GSG.
+  _buffer = _engine->make_buffer(_gsg, "buffer", 0, 1, 1);
+  _engine->open_windows();
+  if (_buffer == (GraphicsOutput *)NULL || !_buffer->is_valid()) {
+    if (_buffer != (GraphicsOutput *)NULL) {
+      _engine->remove_window(_buffer);
+    }
+
+    // Couldn't create a buffer; try for a window instead.
+    GraphicsWindow *window = _engine->make_window(_gsg, "window", 0);
+    if (window == (GraphicsWindow *)NULL) {
+      nout << "Unable to create graphics window.\n";
+      return false;
+    }
+    WindowProperties props;
+    props.set_size(1, 1);
+    props.set_origin(0, 0);
+    props.set_undecorated(true);
+    props.set_open(true);
+    props.set_z_order(WindowProperties::Z_bottom);
+    window->request_properties(props);
+    _buffer = window;
+    _engine->open_windows();
+  }
+
+  return true;
 }
 
 

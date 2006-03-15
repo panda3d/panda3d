@@ -43,6 +43,8 @@
 #include "pvector.h"
 #include "attribSlots.h"
 #include "shaderContext.h"
+#include "bitMask.h"
+#include "texture.h"
 
 class DrawableRegion;
 class GraphicsEngine;
@@ -99,6 +101,9 @@ PUBLISHED:
   INLINE bool get_supports_cube_map() const;
   INLINE bool get_supports_tex_non_pow2() const;
 
+  INLINE bool get_supports_compressed_texture() const;
+  INLINE bool get_supports_compressed_texture_format(Texture::CompressionMode compression) const;
+
   INLINE int get_max_lights() const;
   INLINE int get_max_clip_planes() const;
 
@@ -132,6 +137,7 @@ public:
 
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual void release_texture(TextureContext *tc);
+  virtual bool extract_texture_data(Texture *tex);
 
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
@@ -347,6 +353,9 @@ protected:
   bool _supports_cube_map;
   bool _supports_tex_non_pow2;
 
+  bool _supports_compressed_texture;
+  BitMask32 _compressed_texture_formats;
+  
   int _max_lights;
   int _max_clip_planes;
 

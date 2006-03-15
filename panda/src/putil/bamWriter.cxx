@@ -78,6 +78,7 @@ init() {
   _long_pta_id = false;
 
   _file_endian = bam_endian;
+  _file_texture_mode = bam_texture_mode;
 
   // Write out the current major and minor BAM file version numbers.
   Datagram header;

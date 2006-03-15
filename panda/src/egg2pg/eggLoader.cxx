@@ -933,9 +933,23 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
-  tex->set_wrap_u(convert_wrap_mode(egg_tex->determine_wrap_u()));
-  tex->set_wrap_v(convert_wrap_mode(egg_tex->determine_wrap_v()));
-  tex->set_wrap_w(convert_wrap_mode(egg_tex->determine_wrap_w()));
+  if (egg_tex->get_compression_mode() != EggTexture::CM_default) {
+    tex->set_compression(convert_compression_mode(egg_tex->get_compression_mode()));
+  }
+
+  EggTexture::WrapMode wrap_u = egg_tex->determine_wrap_u();
+  EggTexture::WrapMode wrap_v = egg_tex->determine_wrap_v();
+  EggTexture::WrapMode wrap_w = egg_tex->determine_wrap_w();
+
+  if (wrap_u != EggTexture::WM_unspecified) {
+    tex->set_wrap_u(convert_wrap_mode(wrap_u));
+  }
+  if (wrap_v != EggTexture::WM_unspecified) {
+    tex->set_wrap_v(convert_wrap_mode(wrap_v));
+  }
+  if (wrap_w != EggTexture::WM_unspecified) {
+    tex->set_wrap_w(convert_wrap_mode(wrap_w));
+  }
 
   if (egg_tex->has_border_color()) {
     tex->set_border_color(egg_tex->get_border_color());
@@ -1013,12 +1027,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     break;
 
   case EggTexture::FT_unspecified:
-    // Default is bilinear, unless egg_ignore_filters is specified.
-    if (egg_ignore_filters) {
-      tex->set_minfilter(Texture::FT_nearest);
-    } else {
-      tex->set_minfilter(Texture::FT_linear);
-    }
+    break;
   }
 
   switch (egg_tex->get_magfilter()) {
@@ -1041,12 +1050,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     break;
 
   case EggTexture::FT_unspecified:
-    // Default is bilinear, unless egg_ignore_filters is specified.
-    if (egg_ignore_filters) {
-      tex->set_magfilter(Texture::FT_nearest);
-    } else {
-      tex->set_magfilter(Texture::FT_linear);
-    }
+    break;
   }
 
   if (egg_tex->has_anisotropic_degree()) {
@@ -1174,6 +1178,50 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
         << " for 4-component texture " << egg_tex->get_name() << "\n";
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::convert_compression_mode
+//       Access: Private
+//  Description: Returns the Texture::CompressionMode enum
+//               corresponding to the EggTexture::CompressionMode.
+//               Returns CM_default if the compression mode is
+//               unspecified.
+////////////////////////////////////////////////////////////////////
+Texture::CompressionMode EggLoader::
+convert_compression_mode(EggTexture::CompressionMode compression_mode) const {
+  switch (compression_mode) {
+  case EggTexture::CM_off:
+    return Texture::CM_off;
+
+  case EggTexture::CM_on:
+    return Texture::CM_on;
+
+  case EggTexture::CM_fxt1:
+    return Texture::CM_fxt1;
+
+  case EggTexture::CM_dxt1:
+    return Texture::CM_dxt1;
+
+  case EggTexture::CM_dxt2:
+    return Texture::CM_dxt2;
+
+  case EggTexture::CM_dxt3:
+    return Texture::CM_dxt3;
+
+  case EggTexture::CM_dxt4:
+    return Texture::CM_dxt4;
+
+  case EggTexture::CM_dxt5:
+    return Texture::CM_dxt5;
+
+  case EggTexture::CM_default:
+    return Texture::CM_default;
+  }
+
+  egg2pg_cat.warning()
+    << "Unexpected texture compression flag: " << (int)compression_mode << "\n";
+  return Texture::CM_default;
 }
 
 ////////////////////////////////////////////////////////////////////

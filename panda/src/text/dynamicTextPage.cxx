@@ -33,6 +33,10 @@ DynamicTextPage::
 DynamicTextPage(DynamicTextFont *font, int page_number) : 
   _font(font)
 {
+  // Since the texture might change frequently, don't try to compress
+  // it by default.
+  _compression = CM_off;
+
   _x_size = _font->get_page_x_size();
   _y_size = _font->get_page_y_size();
 

@@ -24,6 +24,7 @@
 #include "configVariableSearchPath.h"
 #include "configVariableEnum.h"
 #include "bamEndian.h"
+#include "bamTextureMode.h"
 #include "dconfig.h"
 
 class DSearchPath;
@@ -36,9 +37,10 @@ NotifyCategoryDecl(bam, EXPCL_PANDA, EXPTP_PANDA);
 // because we must be able to access it at static init time.  Instead
 // of declaring it a global constant, we'll make it a member of
 // MemoryUsage.
-
 //extern EXPCL_PANDA const bool track_memory_usage;
+
 extern EXPCL_PANDA ConfigVariableEnum<BamEndian> bam_endian;
+extern EXPCL_PANDA ConfigVariableEnum<BamTextureMode> bam_texture_mode;
 
 extern EXPCL_PANDA ConfigVariableSearchPath model_path;
 extern EXPCL_PANDA ConfigVariableSearchPath texture_path;

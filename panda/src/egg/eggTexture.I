@@ -64,6 +64,26 @@ get_format() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_compression_mode
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_compression_mode(CompressionMode mode) {
+  _compression_mode = mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_compression_mode
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE EggTexture::CompressionMode EggTexture::
+get_compression_mode() const {
+  return _compression_mode;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_wrap_mode
 //       Access: Published
 //  Description:

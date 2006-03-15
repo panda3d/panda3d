@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "notify.h"
 #include "bamEndian.h"
+#include "bamTextureMode.h"
 #include "typedWritable.h"
 #include "datagramSink.h"
 #include "pdeque.h"
@@ -88,6 +89,9 @@ public:
 
   INLINE BamEndian get_file_endian() const;
 
+  INLINE BamTextureMode get_file_texture_mode() const;
+  INLINE void set_file_texture_mode(BamTextureMode file_texture_mode);
+
 public:
   // Functions to support classes that write themselves to the Bam.
 
@@ -109,6 +113,7 @@ private:
   Filename _filename;
 
   BamEndian _file_endian;
+  BamTextureMode _file_texture_mode;
 
   // This is the set of all TypeHandles already written.
   pset<int, int_hash> _types_written;

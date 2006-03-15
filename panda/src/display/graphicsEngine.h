@@ -97,6 +97,8 @@ PUBLISHED:
   void sync_frame();
   void flip_frame();
 
+  bool extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg);
+
 public:
   enum ThreadState {
     TS_wait,

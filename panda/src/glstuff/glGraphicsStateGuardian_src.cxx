@@ -427,8 +427,7 @@ reset() {
     _glDrawRangeElements = null_glDrawRangeElements;
   }
 
-  _supports_3d_texture =
-    has_extension("GL_EXT_texture3D") || is_at_least_version(1, 2);
+  _supports_3d_texture = false;
 
   if (is_at_least_version(1, 2)) {
     _supports_3d_texture = true;
@@ -457,6 +456,72 @@ reset() {
 
   _supports_cube_map =
     has_extension("GL_ARB_texture_cube_map") || is_at_least_version(1, 3);
+
+  _supports_compressed_texture = false;
+  if (is_at_least_version(1, 3)) {
+    _supports_compressed_texture = true;
+
+    _glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexImage2D");
+    _glCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexSubImage2D");
+    _glGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)
+      get_extension_func(GLPREFIX_QUOTED, "GetCompressedTexImage");
+
+  } else if (has_extension("GL_ARB_texture_compression")) {
+    _supports_compressed_texture = true;
+
+    _glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexImage2DARB");
+    _glCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexSubImage2DARB");
+    _glGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)
+      get_extension_func(GLPREFIX_QUOTED, "GetCompressedTexImageARB");
+  }
+
+  if (_supports_compressed_texture) {
+    if (_glCompressedTexImage2D == NULL || 
+	_glCompressedTexSubImage2D == NULL || 
+	_glGetCompressedTexImage == NULL) {
+      GLCAT.warning()
+        << "Compressed textures advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+      _supports_compressed_texture = false;
+    }
+  }
+
+  if (_supports_compressed_texture) {
+    _compressed_texture_formats.set_bit(Texture::CM_on);
+
+    GLint num_compressed_formats;
+    GLP(GetIntegerv)(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &num_compressed_formats);
+    GLint *formats = new GLint[num_compressed_formats];
+    GLP(GetIntegerv)(GL_COMPRESSED_TEXTURE_FORMATS, formats);
+    for (int i = 0; i < num_compressed_formats; ++i) {
+      switch (formats[i]) {
+      case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+      case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+        _compressed_texture_formats.set_bit(Texture::CM_dxt1);
+        break;
+
+      case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+        _compressed_texture_formats.set_bit(Texture::CM_dxt3);
+        break;
+
+      case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+        _compressed_texture_formats.set_bit(Texture::CM_dxt5);
+        break;
+
+      case GL_COMPRESSED_RGB_FXT1_3DFX:
+      case GL_COMPRESSED_RGBA_FXT1_3DFX:
+        _compressed_texture_formats.set_bit(Texture::CM_fxt1);
+        break;
+
+      default:
+        break;
+      }
+    }
+    delete[] formats;
+  }
 
   _supports_bgr =
     has_extension("GL_EXT_bgra") || is_at_least_version(1, 2);
@@ -763,6 +828,57 @@ reset() {
     if (!vertex_arrays) {
       GLCAT.debug()
         << "immediate mode commands will be used instead of vertex arrays.\n";
+    }
+
+    if (!_supports_compressed_texture) {
+      GLCAT.debug()
+        << "Texture compression is not supported.\n";
+
+    } else {
+      GLint num_compressed_formats;
+      GLP(GetIntegerv)(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &num_compressed_formats);
+      if (num_compressed_formats == 0) {
+        GLCAT.debug()
+          << "No specific compressed texture formats are supported.\n";
+      } else {
+        GLCAT.debug()
+          << "Supported compressed texture formats:\n";
+        GLint *formats = new GLint[num_compressed_formats];
+        GLP(GetIntegerv)(GL_COMPRESSED_TEXTURE_FORMATS, formats);
+        for (int i = 0; i < num_compressed_formats; ++i) {
+          switch (formats[i]) {
+          case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_S3TC_DXT1_EXT\n";
+            break;
+            
+          case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT1_EXT\n";
+            break;
+            
+          case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT3_EXT\n";
+            break;
+            
+          case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT\n";
+            break;
+            
+          case GL_COMPRESSED_RGB_FXT1_3DFX:
+            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_FXT1_3DFX\n";
+            break;
+            
+          case GL_COMPRESSED_RGBA_FXT1_3DFX:
+            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_FXT1_3DFX\n";
+            break;
+            
+          default:
+            GLCAT.debug(false)
+              << "  Unknown compressed format 0x" << hex << formats[i]
+              << dec << "\n";
+          }
+        }
+        delete[] formats;
+      }
     }
   }
 
@@ -2029,6 +2145,302 @@ release_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::extract_texture_data
+//       Access: Public, Virtual
+//  Description: This method should only be called by the
+//               GraphicsEngine.  Do not call it directly; call
+//               GraphicsEngine::extract_texture_data() instead.
+//
+//               This method will be called in the draw thread to
+//               download the texture memory's image into its
+//               ram_image value.  It returns true on success, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+extract_texture_data(Texture *tex) {
+  // Make sure the error stack is cleared out before we begin.
+  report_my_gl_errors();
+
+  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  nassertr(tc != (TextureContext *)NULL, false);
+  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+  GLenum target = get_texture_target(tex->get_texture_type());
+  GLP(BindTexture)(target, gtc->_index);
+
+  report_my_gl_errors();
+
+  GLint wrap_u, wrap_v, wrap_w;
+  GLint minfilter, magfilter;
+  GLfloat border_color[4];
+
+  GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_S, &wrap_u);
+  GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_T, &wrap_v);
+  wrap_w = GL_REPEAT;
+  if (_supports_3d_texture) {
+    GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_R, &wrap_w);
+  }
+  GLP(GetTexParameteriv)(target, GL_TEXTURE_MIN_FILTER, &minfilter);
+
+  // Mesa has a bug querying this property.
+  magfilter = GL_LINEAR;
+  //  GLP(GetTexParameteriv)(target, GL_TEXTURE_MAG_FILTER, &magfilter);
+
+  GLP(GetTexParameterfv)(target, GL_TEXTURE_BORDER_COLOR, border_color);
+
+  GLenum page_target = target;
+  if (target == GL_TEXTURE_CUBE_MAP) {
+    // We need a particular page to get the level parameter from.
+    page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+  }
+
+  GLint width = 0, height = 0, depth = 0;
+  GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_WIDTH, &width);
+  GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_HEIGHT, &height);
+  if (_supports_3d_texture) {
+    GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_DEPTH, &depth);
+  }
+  report_my_gl_errors();
+
+  GLint internal_format;
+  GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+
+  // Make sure we were able to query those parameters properly.
+  GLenum error_code = GLP(GetError)();
+  if (error_code != GL_NO_ERROR) {
+    const GLubyte *error_string = GLUP(ErrorString)(error_code);
+    GLCAT.error()
+      << "Unable to query texture parameters for " << tex->get_name();
+    if (error_string != (const GLubyte *)NULL) {
+      GLCAT.error(false)
+        << " : " << error_string;
+    }
+    GLCAT.error(false)
+      << "\n";
+
+    return false;
+  }
+
+  Texture::ComponentType type = Texture::T_unsigned_byte;
+  Texture::Format format = Texture::F_rgb;
+  Texture::CompressionMode compression = Texture::CM_off;
+    
+  switch (internal_format) {
+  case GL_COLOR_INDEX:
+    format = Texture::F_color_index;
+    break;
+  case GL_STENCIL_INDEX:
+    format = Texture::F_stencil_index;
+    break;
+  case GL_DEPTH_COMPONENT:
+    type = Texture::T_float;
+    format = Texture::F_depth_component;
+    break;
+
+  case GL_RGBA:
+    format = Texture::F_rgba;
+    break;
+  case GL_RGBA4:
+    format = Texture::F_rgba4;
+    break;
+  case GL_RGBA8:
+    format = Texture::F_rgba8;
+    break;
+  case GL_RGBA12:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgba12;
+    break;
+
+  case GL_RGB:
+    format = Texture::F_rgb;
+    break;
+  case GL_RGB5:
+    format = Texture::F_rgb5;
+    break;
+  case GL_RGB5_A1:
+    format = Texture::F_rgba5;
+    break;
+  case GL_RGB8:
+    format = Texture::F_rgb8;
+    break;
+  case GL_RGB12:
+    format = Texture::F_rgb12;
+    break;
+  case GL_R3_G3_B2:
+    format = Texture::F_rgb332;
+
+  case GL_RED:
+    format = Texture::F_red;
+    break;
+  case GL_GREEN:
+    format = Texture::F_green;
+    break;
+  case GL_BLUE:
+    format = Texture::F_blue;
+    break;
+  case GL_ALPHA:
+    format = Texture::F_alpha;
+    break;
+  case GL_LUMINANCE:
+    format = Texture::F_luminance;
+    break;
+  case GL_LUMINANCE_ALPHA:
+    format = Texture::F_luminance_alpha;
+    break;
+
+  case GL_COMPRESSED_RGB:
+    format = Texture::F_rgb;
+    compression = Texture::CM_on;
+    break;
+  case GL_COMPRESSED_RGBA:
+    format = Texture::F_rgba;
+    compression = Texture::CM_on;
+    break;
+  case GL_COMPRESSED_ALPHA:
+    format = Texture::F_alpha;
+    compression = Texture::CM_on;
+    break;
+  case GL_COMPRESSED_LUMINANCE:
+    format = Texture::F_luminance;
+    compression = Texture::CM_on;
+    break;
+  case GL_COMPRESSED_LUMINANCE_ALPHA:
+    format = Texture::F_luminance_alpha;
+    compression = Texture::CM_on;
+    break;
+
+  case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+    format = Texture::F_rgb;
+    compression = Texture::CM_dxt1;
+    break;
+  case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+    format = Texture::F_rgbm;
+    compression = Texture::CM_dxt1;
+    break;
+  case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+    format = Texture::F_rgba;
+    compression = Texture::CM_dxt3;
+    break;
+  case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+    format = Texture::F_rgba;
+    compression = Texture::CM_dxt5;
+    break;
+  case GL_COMPRESSED_RGB_FXT1_3DFX:
+    format = Texture::F_rgb;
+    compression = Texture::CM_fxt1;
+    break;
+  case GL_COMPRESSED_RGBA_FXT1_3DFX:
+    format = Texture::F_rgba;
+    compression = Texture::CM_fxt1;
+    break;
+  }
+
+  /*
+  switch (target) {
+  case GL_TEXTURE_1D:
+    tex->setup_1d_texture(width, type, format);
+    break;
+
+  case GL_TEXTURE_2D:
+    tex->setup_2d_texture(width, height, type, format);
+    break;
+
+  case GL_TEXTURE_3D:
+    tex->setup_3d_texture(width, height, depth, type, format);
+    break;
+
+  case GL_TEXTURE_CUBE_MAP:
+    tex->setup_cube_map(width, type, format);
+    break;
+  }
+  */
+
+  tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
+  tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
+  tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
+  tex->set_border_color(Colorf(border_color[0], border_color[1], 
+			       border_color[2], border_color[3]));
+
+  tex->set_minfilter(get_panda_filter_type(minfilter));
+  //  tex->set_magfilter(get_panda_filter_type(magfilter));
+
+  PTA_uchar image;
+  size_t page_size = 0;
+
+  if (target == GL_TEXTURE_CUBE_MAP) {
+    // A cube map, compressed or uncompressed.  This we must extract
+    // one page at a time.
+
+    // If the cube map is compressed, we assume that all the
+    // compressed pages are exactly the same size.  OpenGL doesn't
+    // make this assumption, but it happens to be true for all
+    // currently extant compression schemes, and it makes things
+    // simpler for us.  (It also makes things much simpler for the
+    // graphics hardware, so it's likely to continue to be true for a
+    // while at least.)
+
+    GLenum external_format = get_external_image_format(tex);
+    GLenum pixel_type = get_component_type(type);
+    page_size = tex->get_expected_ram_page_size();
+
+    if (compression != Texture::CM_off) {
+      GLint image_size;
+      GLP(GetTexLevelParameteriv)(page_target, 0, 
+				  GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
+      nassertr(image_size <= (int)page_size, false);
+      page_size = image_size;
+    }
+
+    image = PTA_uchar::empty_array(page_size * 6);
+
+    for (int z = 0; z < 6; ++z) {
+      page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+      
+      if (compression == Texture::CM_off) {
+	GLP(GetTexImage)(page_target, 0, external_format, pixel_type, 
+			 image.p() + z * page_size);
+      } else {
+	_glGetCompressedTexImage(page_target, 0, image.p() + z * page_size);
+      }
+    }
+
+  } else if (compression == Texture::CM_off) {
+    // An uncompressed 1-d, 2-d, or 3-d texture.
+    image = PTA_uchar::empty_array(tex->get_expected_ram_image_size());
+    GLenum external_format = get_external_image_format(tex);
+    GLenum pixel_type = get_component_type(type);
+    GLP(GetTexImage)(target, 0, external_format, pixel_type, image.p());
+
+  } else {
+    // A compressed 1-d, 2-d, or 3-d texture.
+    GLint image_size;
+    GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
+    page_size = image_size / tex->get_z_size();
+    image = PTA_uchar::empty_array(image_size);
+    _glGetCompressedTexImage(target, 0, image.p());
+  }
+
+  // Now see if we were successful.
+  error_code = GLP(GetError)();
+  if (error_code != GL_NO_ERROR) {
+    const GLubyte *error_string = GLUP(ErrorString)(error_code);
+    GLCAT.error()
+      << "Unable to extract texture for " << tex->get_name();
+    if (error_string != (const GLubyte *)NULL) {
+      GLCAT.error(false)
+        << " : " << error_string;
+    }
+    GLCAT.error(false)
+      << "\n";
+
+    return false;
+  }
+  
+  tex->set_ram_image(image, compression, page_size);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::prepare_geom
 //       Access: Public, Virtual
 //  Description: Creates a new retained-mode representation of the
@@ -2516,13 +2928,13 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   GLenum target = get_texture_target(tex->get_texture_type());
   GLP(BindTexture)(target, gtc->_index);
 
-  GLint internal_format = get_internal_image_format(tex->get_format());
+  GLint internal_format = get_internal_image_format(tex);
 
   if (z >= 0) {
     // Copy to a cube map face.  This doesn't seem to work too well
     // with CopyTexSubImage2D, so we always use CopyTexImage2D.
     GLP(CopyTexImage2D)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + z, 0,
-                        get_internal_image_format(tex->get_format()),
+                        get_internal_image_format(tex),
                         xo, yo, w, h, 0);
 
   } else {
@@ -2658,7 +3070,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
                        component_type, format);
   }
 
-  GLenum external_format = get_external_image_format(format);
+  GLenum external_format = get_external_image_format(tex);
 
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -3909,12 +4321,12 @@ get_texture_target(Texture::TextureType texture_type) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_texture_wrap_mode
-//       Access: Protected, Static
+//       Access: Protected
 //  Description: Maps from the Texture's internal wrap mode symbols to
 //               GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_texture_wrap_mode(Texture::WrapMode wm) {
+get_texture_wrap_mode(Texture::WrapMode wm) const {
   if (CLP(ignore_clamp)) {
     return GL_REPEAT;
   }
@@ -3939,6 +4351,36 @@ get_texture_wrap_mode(Texture::WrapMode wm) {
   }
   GLCAT.error() << "Invalid Texture::WrapMode value!\n";
   return _edge_clamp;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_panda_wrap_mode
+//       Access: Protected, Static
+//  Description: Maps from the GL's internal wrap mode symbols to
+//               Panda's.
+////////////////////////////////////////////////////////////////////
+Texture::WrapMode CLP(GraphicsStateGuardian)::
+get_panda_wrap_mode(GLenum wm) {
+  switch (wm) {
+  case GL_CLAMP:
+  case GL_CLAMP_TO_EDGE:
+    return Texture::WM_clamp;
+
+  case GL_CLAMP_TO_BORDER:
+    return Texture::WM_border_color;
+
+  case GL_REPEAT:
+    return Texture::WM_repeat;
+
+  case GL_MIRROR_CLAMP_EXT:
+  case GL_MIRROR_CLAMP_TO_EDGE_EXT:
+    return Texture::WM_mirror;
+
+  case GL_MIRROR_CLAMP_TO_BORDER_EXT:
+    return Texture::WM_mirror_once;
+  }
+  GLCAT.error() << "Unexpected GL wrap mode " << (int)wm << "\n";
+  return Texture::WM_clamp;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3993,6 +4435,32 @@ get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_panda_filter_type
+//       Access: Protected, Static
+//  Description: Maps from the GL's internal filter type symbols
+//               to Panda's.
+////////////////////////////////////////////////////////////////////
+Texture::FilterType CLP(GraphicsStateGuardian)::
+get_panda_filter_type(GLenum ft) {
+  switch (ft) {
+  case GL_NEAREST:
+    return Texture::FT_nearest;
+  case GL_LINEAR:
+    return Texture::FT_linear;
+  case GL_NEAREST_MIPMAP_NEAREST:
+    return Texture::FT_nearest_mipmap_nearest;
+  case GL_LINEAR_MIPMAP_NEAREST:
+    return Texture::FT_linear_mipmap_nearest;
+  case GL_NEAREST_MIPMAP_LINEAR:
+    return Texture::FT_nearest_mipmap_linear;
+  case GL_LINEAR_MIPMAP_LINEAR:
+    return Texture::FT_linear_mipmap_linear;
+  }
+  GLCAT.error() << "Unexpected GL filter type " << (int)ft << "\n";
+  return Texture::FT_linear;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_component_type
 //       Access: Protected, Static
 //  Description: Maps from the Texture's internal ComponentType symbols
@@ -4021,8 +4489,81 @@ get_component_type(Texture::ComponentType component_type) {
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
-get_external_image_format(Texture::Format format) const {
-  switch (format) {
+get_external_image_format(Texture *tex) const {
+  Texture::CompressionMode compression = tex->get_ram_image_compression();
+  if (compression != Texture::CM_off &&
+      get_supports_compressed_texture_format(compression)) {
+    switch (compression) {
+    case Texture::CM_on:
+      switch (tex->get_format()) {
+      case Texture::F_color_index:
+      case Texture::F_stencil_index:
+      case Texture::F_depth_component:
+	// This shouldn't be possible.
+	nassertr(false, GL_RGB);
+	break;
+
+      case Texture::F_rgba:
+      case Texture::F_rgbm:
+      case Texture::F_rgba4:
+      case Texture::F_rgba8:
+      case Texture::F_rgba12:
+	return GL_COMPRESSED_RGBA;
+
+      case Texture::F_rgb:
+      case Texture::F_rgb5:
+      case Texture::F_rgba5:
+      case Texture::F_rgb8:
+      case Texture::F_rgb12:
+      case Texture::F_rgb332:
+	return GL_COMPRESSED_RGB;
+
+      case Texture::F_alpha:
+	return GL_COMPRESSED_ALPHA;
+
+      case Texture::F_red:
+      case Texture::F_green:
+      case Texture::F_blue:
+      case Texture::F_luminance:
+	return GL_COMPRESSED_LUMINANCE;
+
+      case Texture::F_luminance_alpha:
+      case Texture::F_luminance_alphamask:
+	return GL_COMPRESSED_LUMINANCE_ALPHA;
+      }
+      break;
+
+    case Texture::CM_dxt1:
+      if (Texture::has_alpha(tex->get_format())) {
+        return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+      } else {
+        return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+      }
+      
+    case Texture::CM_dxt3:
+      return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+      
+    case Texture::CM_dxt5:
+      return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+      
+    case Texture::CM_fxt1:
+      if (Texture::has_alpha(tex->get_format())) {
+        return GL_COMPRESSED_RGBA_FXT1_3DFX;
+      } else {
+        return GL_COMPRESSED_RGB_FXT1_3DFX;
+      }
+
+    case Texture::CM_default:
+    case Texture::CM_off:
+    case Texture::CM_dxt2:
+    case Texture::CM_dxt4:
+      // This shouldn't happen.
+      nassertr(false, GL_RGB);
+      break;
+    }
+  }
+
+  switch (tex->get_format()) {
   case Texture::F_color_index:
     return GL_COLOR_INDEX;
   case Texture::F_stencil_index:
@@ -4059,19 +4600,129 @@ get_external_image_format(Texture::Format format) const {
   }
   GLCAT.error()
     << "Invalid Texture::Format value in get_external_image_format(): "
-    << (int)format << "\n";
+    << (int)tex->get_format() << "\n";
   return GL_RGB;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_internal_image_format
-//       Access: Protected, Static
+//       Access: Protected
 //  Description: Maps from the Texture's Format symbols to a
 //               suitable internal format for GL textures.
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
-get_internal_image_format(Texture::Format format) {
-  switch (format) {
+get_internal_image_format(Texture *tex) const {
+  Texture::CompressionMode compression = tex->get_compression();
+  if (compression == Texture::CM_default) {
+    compression = (compressed_textures) ? Texture::CM_on : Texture::CM_off;
+  }
+  bool is_3d = (tex->get_texture_type() == Texture::TT_3d_texture);
+
+  if (get_supports_compressed_texture_format(compression)) {
+    switch (compression) {
+    case Texture::CM_on:
+      // The user asked for just generic compression.  OpenGL supports
+      // requesting just generic compression, but we'd like to go ahead
+      // and request a specific type (if we can figure out an
+      // appropriate choice), since that makes saving the result as a
+      // pre-compressed texture more dependable--this way, we will know
+      // which compression algorithm was applied.
+
+      switch (tex->get_format()) {
+      case Texture::F_color_index:
+      case Texture::F_stencil_index:
+      case Texture::F_depth_component:
+	// Unsupported; fall through to below.
+	break;
+
+      case Texture::F_rgbm:
+	if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
+	  return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+	} else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+	  return GL_COMPRESSED_RGBA_FXT1_3DFX;
+	} else {
+	  return GL_COMPRESSED_RGBA;
+	}
+
+      case Texture::F_rgba4:
+	if (get_supports_compressed_texture_format(Texture::CM_dxt3) && !is_3d) {
+	  return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+	} else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+	  return GL_COMPRESSED_RGBA_FXT1_3DFX;
+	} else {
+	  return GL_COMPRESSED_RGBA;
+	}
+
+      case Texture::F_rgba:
+      case Texture::F_rgba8:
+      case Texture::F_rgba12:
+	if (get_supports_compressed_texture_format(Texture::CM_dxt5) && !is_3d) {
+	  return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+	} else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+	  return GL_COMPRESSED_RGBA_FXT1_3DFX;
+	} else {
+	  return GL_COMPRESSED_RGBA;
+	}
+
+      case Texture::F_rgb:
+      case Texture::F_rgb5:
+      case Texture::F_rgba5:
+      case Texture::F_rgb8:
+      case Texture::F_rgb12:
+      case Texture::F_rgb332:
+	if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
+	  return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+	} else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+	  return GL_COMPRESSED_RGB_FXT1_3DFX;
+	} else {
+	  return GL_COMPRESSED_RGB;
+	}
+
+      case Texture::F_alpha:
+	return GL_COMPRESSED_ALPHA;
+
+      case Texture::F_red:
+      case Texture::F_green:
+      case Texture::F_blue:
+      case Texture::F_luminance:
+	return GL_COMPRESSED_LUMINANCE;
+
+      case Texture::F_luminance_alpha:
+      case Texture::F_luminance_alphamask:
+	return GL_COMPRESSED_LUMINANCE_ALPHA;
+      }
+      break;
+
+    case Texture::CM_dxt1:
+      if (Texture::has_alpha(tex->get_format())) {
+        return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+      } else {
+        return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+      }
+      
+    case Texture::CM_dxt3:
+      return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+      
+    case Texture::CM_dxt5:
+      return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+      
+    case Texture::CM_fxt1:
+      if (Texture::has_alpha(tex->get_format())) {
+        return GL_COMPRESSED_RGBA_FXT1_3DFX;
+      } else {
+        return GL_COMPRESSED_RGB_FXT1_3DFX;
+      }
+      
+    case Texture::CM_default:
+    case Texture::CM_off:
+    case Texture::CM_dxt2:
+    case Texture::CM_dxt4:
+      // No compression: fall through to below.
+      break;
+    }
+  }
+
+  switch (tex->get_format()) {
   case Texture::F_color_index:
     return GL_COLOR_INDEX;
   case Texture::F_stencil_index:
@@ -4117,78 +4768,37 @@ get_internal_image_format(Texture::Format format) {
   default:
     GLCAT.error()
       << "Invalid image format in get_internal_image_format(): "
-      << (int)format << "\n";
+      << (int)tex->get_format() << "\n";
     return GL_RGB;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_external_texture_bytes
+//     Function: GLGraphicsStateGuardian::is_compressed_format
 //       Access: Protected, Static
-//  Description: Computes the number of bytes that should be in the
-//               "external", or local, texture buffer before
-//               transferring to OpenGL.  This is just used for
-//               sending data to PStats.
+//  Description: Returns true if the indicated GL internal format
+//               represents a compressed texture format, false
+//               otherwise.
 ////////////////////////////////////////////////////////////////////
-int CLP(GraphicsStateGuardian)::
-get_external_texture_bytes(int width, int height, int depth,
-                           GLint external_format, GLenum component_type) {
-  int num_components;
-  switch (external_format) {
-  case GL_COLOR_INDEX:
-  case GL_STENCIL_INDEX:
-  case GL_DEPTH_COMPONENT:
-  case GL_RED:
-  case GL_GREEN:
-  case GL_BLUE:
-  case GL_ALPHA:
-  case GL_LUMINANCE:
-    num_components = 1;
-    break;
-
-  case GL_LUMINANCE_ALPHA:
-    num_components = 2;
-    break;
-
-  case GL_BGR:
-  case GL_RGB:
-    num_components = 3;
-    break;
-
-  case GL_BGRA:
-  case GL_RGBA:
-    num_components = 4;
-    break;
+bool CLP(GraphicsStateGuardian)::
+is_compressed_format(GLenum format) {
+  switch (format) {
+  case GL_COMPRESSED_RGB:
+  case GL_COMPRESSED_RGBA:
+  case GL_COMPRESSED_ALPHA:
+  case GL_COMPRESSED_LUMINANCE:
+  case GL_COMPRESSED_LUMINANCE_ALPHA:
+  case GL_COMPRESSED_RGB_FXT1_3DFX:
+  case GL_COMPRESSED_RGBA_FXT1_3DFX:
+  case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+  case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+  case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+  case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+    return true;
 
   default:
-    GLCAT.error()
-      << "Unexpected external_format in get_external_texture_bytes(): "
-      << hex << external_format << dec << "\n";
-    num_components = 3;
+    return false;
   }
-
-  int component_width;
-  switch (component_type) {
-  case GL_UNSIGNED_BYTE:
-    component_width = 1;
-    break;
-
-  case GL_UNSIGNED_SHORT:
-    component_width = 2;
-    break;
-
-  case GL_FLOAT:
-    component_width = 4;
-    break;
-
-  default:
-    GLCAT.error()
-      << "Unexpected component_type in get_external_texture_bytes(): "
-      << hex << component_type << dec << "\n";
-    component_width = 1;
-  }
-
-  return width * height * depth * num_components * component_width;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5488,6 +6098,7 @@ specify_texture(Texture *tex) {
   Texture::FilterType minfilter = tex->get_minfilter();
   Texture::FilterType magfilter = tex->get_magfilter();
   bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
+  Texture::CompressionMode image_compression = tex->get_ram_image_compression();
 
 #ifndef NDEBUG
   if (CLP(force_mipmaps)) {
@@ -5498,7 +6109,8 @@ specify_texture(Texture *tex) {
 #endif
 
   if (_supports_generate_mipmap &&
-      (auto_generate_mipmaps || !tex->might_have_ram_image())) {
+      (auto_generate_mipmaps || !tex->might_have_ram_image() ||
+       image_compression != Texture::CM_off)) {
     // If the hardware can automatically generate mipmaps, ask it to
     // do so now, but only if the texture requires them.
     GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, uses_mipmaps);
@@ -5645,13 +6257,14 @@ upload_texture(CLP(TextureContext) *gtc) {
   if (image.is_null()) {
     return false;
   }
+  Texture::CompressionMode image_compression = tex->get_ram_image_compression();
 
   int width = tex->get_x_size();
   int height = tex->get_y_size();
   int depth = tex->get_z_size();
 
-  GLint internal_format = get_internal_image_format(tex->get_format());
-  GLint external_format = get_external_image_format(tex->get_format());
+  GLint internal_format = get_internal_image_format(tex);
+  GLint external_format = get_external_image_format(tex);
   GLenum component_type = get_component_type(tex->get_component_type());
 
   // Ensure that the texture fits within the GL's specified limits.
@@ -5682,7 +6295,7 @@ upload_texture(CLP(TextureContext) *gtc) {
   // if the user had specified max-texture-dimension to reduce the
   // texture at load time instead.  Of course, the user doesn't always
   // know ahead of time what the hardware limits are.
-  if (max_dimension > 0) {
+  if (max_dimension > 0 && image_compression == Texture::CM_off) {
     if (width > max_dimension) {
       int byte_chunk = texel_size;
       int stride = 1;
@@ -5734,9 +6347,11 @@ upload_texture(CLP(TextureContext) *gtc) {
   }
 
 #ifndef NDEBUG
-  int wanted_size =
-    compute_gl_image_size(width, height, depth, external_format, component_type);
-  nassertr(wanted_size == (int)image.size(), false);
+  if (image_compression == Texture::CM_off) {
+    int wanted_size =
+      compute_gl_image_size(width, height, depth, external_format, component_type);
+    nassertr(wanted_size == (int)image.size(), false);
+  }
 #endif  // NDEBUG
 
   GLP(PixelStorei)(GL_UNPACK_ALIGNMENT, 1);
@@ -5759,43 +6374,43 @@ upload_texture(CLP(TextureContext) *gtc) {
       return false;
     }
 
-    size_t page_size = height * width * texel_size;
+    size_t page_size = tex->get_ram_page_size();
     const unsigned char *image_base = image;
 
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
        internal_format, width, height, depth, external_format, component_type,
-       image_base);
+       image_base, page_size, image_compression);
     image_base += page_size;
 
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
        internal_format, width, height, depth, external_format, component_type,
-       image_base);
+       image_base, page_size, image_compression);
     image_base += page_size;
 
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
        internal_format, width, height, depth, external_format, component_type,
-       image_base);
+       image_base, page_size, image_compression);
     image_base += page_size;
 
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
        internal_format, width, height, depth, external_format, component_type,
-       image_base);
+       image_base, page_size, image_compression);
     image_base += page_size;
 
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
        internal_format, width, height, depth, external_format, component_type,
-       image_base);
+       image_base, page_size, image_compression);
     image_base += page_size;
 
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
        internal_format, width, height, depth, external_format, component_type,
-       image_base);
+       image_base, page_size, image_compression);
     image_base += page_size;
 
     nassertr((size_t)(image_base - image) == image.size(), false);
@@ -5805,7 +6420,7 @@ upload_texture(CLP(TextureContext) *gtc) {
     success = upload_texture_image
       (gtc, uses_mipmaps, get_texture_target(tex->get_texture_type()),
        internal_format, width, height, depth, external_format, component_type,
-       image);
+       image, image.size(), image_compression);
   }
 
   if (success) {
@@ -5841,14 +6456,26 @@ upload_texture_image(CLP(TextureContext) *gtc,
                      GLenum target, GLint internal_format,
                      int width, int height, int depth,
                      GLint external_format, GLenum component_type,
-                     const unsigned char *image) {
+                     const unsigned char *image,
+		     size_t image_size,
+		     Texture::CompressionMode image_compression) {
+  // Make sure the error stack is cleared out before we begin.
+  report_my_gl_errors();
+
   if (target == GL_NONE) {
     // Unsupported target (e.g. 3-d texturing on GL 1.1).
     return false;
   }
+  if (image_compression != Texture::CM_off && !_supports_compressed_texture) {
+    return false;
+  }
+
   PStatTimer timer(_load_texture_pcollector);
 
   if (uses_mipmaps) {
+#ifdef DO_PSTATS
+    _data_transferred_pcollector.add_level(image_size * 4 / 3);
+#endif
 #ifndef NDEBUG
     if (CLP(show_mipmaps) && target == GL_TEXTURE_2D) {
       build_phony_mipmaps(gtc->_texture);
@@ -5857,13 +6484,15 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
     } else
 #endif
-      if (!_supports_generate_mipmap || !auto_generate_mipmaps) {
-        // We only need to build the mipmaps by hand if the GL
-        // doesn't support generating them automatically.
+      if (!_supports_generate_mipmap || 
+          (!auto_generate_mipmaps && image_compression == Texture::CM_off)) {
+        // We only need to build the mipmaps by hand if (a) the GL
+        // doesn't support generating them automatically, or (b) the
+        // user has specifically requested we don't use GL's
+        // auto-mipmap feature (but if the source texture image is
+        // compressed, we can't build mipmaps, so we ignore
+        // auto_generate_mipmaps in that case).
         bool success = true;
-#ifdef DO_PSTATS
-        _data_transferred_pcollector.add_level(get_external_texture_bytes(width, height, depth, external_format, component_type) * 4 / 3);
-#endif
         switch (target) {
         case GL_TEXTURE_1D:
           GLUP(Build1DMipmaps)(target, internal_format, width,
@@ -5896,6 +6525,16 @@ upload_texture_image(CLP(TextureContext) *gtc,
       }
   }
 
+  if (GLCAT.is_debug()) {
+    if (image_compression != Texture::CM_off) {
+      GLCAT.debug()
+	<< "loading pre-compressed texture " << gtc->_texture->get_name() << "\n";
+    } else if (is_compressed_format(internal_format)) {
+      GLCAT.debug()
+	<< "compressing texture " << gtc->_texture->get_name() << "\n";
+    }
+  }
+
   if (!gtc->_already_applied ||
       gtc->_internal_format != internal_format ||
       gtc->_width != width ||
@@ -5903,10 +6542,11 @@ upload_texture_image(CLP(TextureContext) *gtc,
       gtc->_depth != depth) {
     // We need to reload a new image.
 #ifdef DO_PSTATS
-    _data_transferred_pcollector.add_level(get_external_texture_bytes(width, height, depth, external_format, component_type));
+    _data_transferred_pcollector.add_level(image_size);
 #endif
     switch (target) {
     case GL_TEXTURE_1D:
+      nassertr(image_compression == Texture::CM_off, false);
       GLP(TexImage1D)(target, 0, internal_format,
                       width, 0,
                       external_format, component_type, image);
@@ -5914,6 +6554,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
     case GL_TEXTURE_3D:
       if (_supports_3d_texture) {
+	nassertr(image_compression == Texture::CM_off, false);
         _glTexImage3D(target, 0, internal_format,
                       width, height, depth, 0,
                       external_format, component_type, image);
@@ -5924,25 +6565,31 @@ upload_texture_image(CLP(TextureContext) *gtc,
       break;
 
     default:
-      GLP(TexImage2D)(target, 0, internal_format,
-                      width, height, 0,
-                      external_format, component_type, image);
+      if (image_compression == Texture::CM_off) {
+	GLP(TexImage2D)(target, 0, internal_format,
+			width, height, 0,
+			external_format, component_type, image);
+      } else {
+	_glCompressedTexImage2D(target, 0, external_format, width, height, 
+				0, image_size, image);
+      }
     }
-
   } else {
     // We can reload the image over the previous image, possibly
     // saving on texture memory fragmentation.
 #ifdef DO_PSTATS
-    _data_transferred_pcollector.add_level(get_external_texture_bytes(width, height, depth, external_format, component_type));
+    _data_transferred_pcollector.add_level(image_size);
 #endif
     switch (target) {
     case GL_TEXTURE_1D:
+      nassertr(image_compression == Texture::CM_off, false);
       GLP(TexSubImage1D)(target, 0, 0, width,
                          external_format, component_type, image);
       break;
 
     case GL_TEXTURE_3D:
       if (_supports_3d_texture) {
+	nassertr(image_compression == Texture::CM_off, false);
         _glTexSubImage3D(target, 0, 0, 0, 0, width, height, depth,
                          external_format, component_type, image);
       } else {
@@ -5952,8 +6599,13 @@ upload_texture_image(CLP(TextureContext) *gtc,
       break;
 
     default:
-      GLP(TexSubImage2D)(target, 0, 0, 0, width, height,
-                         external_format, component_type, image);
+      if (image_compression == Texture::CM_off) {
+	GLP(TexSubImage2D)(target, 0, 0, 0, width, height,
+			   external_format, component_type, image);
+      } else {
+	_glCompressedTexSubImage2D(target, 0, 0, 0, width, height,
+				   external_format, image_size, image);
+      }
       break;
     }
   }
@@ -5971,6 +6623,8 @@ upload_texture_image(CLP(TextureContext) *gtc,
     }
     GLCAT.error(false)
       << "\n";
+
+    return false;
   }
 
   return true;
@@ -6121,16 +6775,10 @@ build_phony_mipmap_level(int level, int x_size, int y_size) {
     GLCAT.warning()
       << "Unable to load phony mipmap image.\n";
   } else {
-    GLenum internal_format = get_internal_image_format(tex->get_format());
-    GLenum external_format = get_external_image_format(tex->get_format());
+    GLenum internal_format = get_internal_image_format(tex);
+    GLenum external_format = get_external_image_format(tex);
     GLenum component_type = get_component_type(tex->get_component_type());
 
-#ifdef DO_PSTATS
-    int num_bytes =
-      get_external_texture_bytes(tex->get_x_size(), tex->get_y_size(), 1,
-                                 external_format, component_type);
-    _data_transferred_pcollector.add_level(num_bytes);
-#endif
     GLP(TexImage2D)(GL_TEXTURE_2D, level, internal_format,
                     tex->get_x_size(), tex->get_y_size(), 0,
                     external_format, component_type, tex->get_ram_image());
@@ -6161,7 +6809,7 @@ save_mipmap_images(Texture *tex) {
     name = filename.get_basename_wo_extension();
   }
 
-  GLenum external_format = get_external_image_format(tex->get_format());
+  GLenum external_format = get_external_image_format(tex);
   GLenum type = get_component_type(tex->get_component_type());
 
   int x_size = tex->get_x_size();

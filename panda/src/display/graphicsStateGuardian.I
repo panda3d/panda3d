@@ -357,6 +357,29 @@ get_supports_tex_non_pow2() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_compressed_texture
+//       Access: Published
+//  Description: Returns true if this GSG can compress textures as it
+//               loads them into texture memory, and/or accept
+//               pre-compressed textures for storing.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_compressed_texture() const {
+  return _supports_compressed_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_compressed_texture_format
+//       Access: Published
+//  Description: Returns true if this GSG can accept textures
+//               pre-compressed in the indicated format.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_compressed_texture_format(Texture::CompressionMode compression) const {
+  return _compressed_texture_formats.get_bit(compression);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_max_lights
 //       Access: Published
 //  Description: Returns the maximum number of simultaneous lights

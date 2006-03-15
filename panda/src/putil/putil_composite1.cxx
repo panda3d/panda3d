@@ -2,6 +2,7 @@
 #include "bamEndian.cxx"
 #include "bamReader.cxx"
 #include "bamReaderParam.cxx"
+#include "bamTextureMode.cxx"
 #include "bamWriter.cxx"
 #include "bitArray.cxx"
 #include "bitMask.cxx"

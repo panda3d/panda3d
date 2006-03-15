@@ -69,6 +69,10 @@ PUBLISHED:
     F_red, F_green, F_blue, F_alpha, F_luminance,
     F_luminance_alpha, F_luminance_alphamask
   };
+  enum CompressionMode {
+    CM_default, CM_off, CM_on,
+    CM_fxt1, CM_dxt1, CM_dxt2, CM_dxt3, CM_dxt4, CM_dxt5,
+  };
   enum WrapMode {
     WM_unspecified, WM_clamp, WM_repeat,
     WM_mirror, WM_mirror_once, WM_border_color
@@ -156,6 +160,9 @@ PUBLISHED:
 
   INLINE void set_format(Format format);
   INLINE Format get_format() const;
+
+  INLINE void set_compression_mode(CompressionMode mode);
+  INLINE CompressionMode get_compression_mode() const;
 
   INLINE void set_wrap_mode(WrapMode mode);
   INLINE WrapMode get_wrap_mode() const;
@@ -253,6 +260,7 @@ PUBLISHED:
 
   static TextureType string_texture_type(const string &string);
   static Format string_format(const string &string);
+  static CompressionMode string_compression_mode(const string &string);
   static WrapMode string_wrap_mode(const string &string);
   static FilterType string_filter_type(const string &string);
   static EnvType string_env_type(const string &string);
@@ -286,6 +294,7 @@ private:
 
   TextureType _texture_type;
   Format _format;
+  CompressionMode _compression_mode;
   WrapMode _wrap_mode, _wrap_u, _wrap_v, _wrap_w;
   FilterType _minfilter, _magfilter;
   int _anisotropic_degree;
@@ -367,6 +376,7 @@ INLINE ostream &operator << (ostream &out, const EggTexture &n) {
 
 EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::TextureType texture_type);
 EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::Format format);
+EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::CompressionMode mode);
 EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::WrapMode mode);
 EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::FilterType type);
 EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::EnvType type);

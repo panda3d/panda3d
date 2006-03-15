@@ -65,6 +65,9 @@ typedef void (APIENTRYP PFNGLBUFFERSUBDATAPROC) (GLenum target, GLintptr offset,
 typedef void (APIENTRYP PFNGLDRAWBUFFERSARBPROC) (GLsizei n, const GLenum *bufs);
 typedef void (APIENTRYP PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage);
 typedef void (APIENTRYP PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
+typedef void (APIENTRYP PFNGLCOMPRESSEDTEXIMAGE2DPROC) (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid *data);
+typedef void (APIENTRYP PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid *data);
+typedef void (APIENTRYP PFNGLGETCOMPRESSEDTEXIMAGEPROC) (GLenum target, GLint level, GLvoid *img);
 
 class CLP(GeomContext);
 
@@ -106,6 +109,7 @@ public:
 
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual void release_texture(TextureContext *tc);
+  virtual bool extract_texture_data(Texture *tex);
 
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
@@ -236,14 +240,14 @@ protected:
 
   static GLenum get_numeric_type(Geom::NumericType numeric_type);
   GLenum get_texture_target(Texture::TextureType texture_type) const;
-  GLenum get_texture_wrap_mode(Texture::WrapMode wm);
+  GLenum get_texture_wrap_mode(Texture::WrapMode wm) const;
+  static Texture::WrapMode get_panda_wrap_mode(GLenum wm);
   static GLenum get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps);
+  static Texture::FilterType get_panda_filter_type(GLenum ft);
   static GLenum get_component_type(Texture::ComponentType component_type);
-  GLint get_external_image_format(Texture::Format format) const;
-  static GLint get_internal_image_format(Texture::Format format);
-  static int get_external_texture_bytes(int width, int height, int depth,
-                                        GLint external_format, 
-                                        GLenum component_type);
+  GLint get_external_image_format(Texture *tex) const;
+  GLint get_internal_image_format(Texture *tex) const;
+  static bool is_compressed_format(GLenum format);
   static GLint get_texture_apply_mode_type(TextureStage::Mode am);
   static GLint get_texture_combine_type(TextureStage::CombineMode cm);
   GLint get_texture_src_type(TextureStage::CombineSource cs,
@@ -268,7 +272,9 @@ protected:
                             GLenum target, GLint internal_format, 
                             int width, int height, int depth,
                             GLint external_format, GLenum component_type, 
-                            const unsigned char *image);
+                            const unsigned char *image,
+			    size_t image_size,
+			    Texture::CompressionMode image_compression);
 
   void do_point_size();
 
@@ -360,6 +366,10 @@ public:
 
   PFNGLTEXIMAGE3DPROC _glTexImage3D;
   PFNGLTEXSUBIMAGE3DPROC _glTexSubImage3D;
+
+  PFNGLCOMPRESSEDTEXIMAGE2DPROC _glCompressedTexImage2D;
+  PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC _glCompressedTexSubImage2D;
+  PFNGLGETCOMPRESSEDTEXIMAGEPROC _glGetCompressedTexImage;
 
   bool _supports_bgr;
   bool _supports_rescale_normal;

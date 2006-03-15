@@ -53,6 +53,11 @@ ConfigVariableEnum<BamEndian> bam_endian
           "may set it to \"littleendian\" or \"bigendian\" to target a "
           "particular platform."));
 
+ConfigVariableEnum<BamTextureMode> bam_texture_mode
+("bam-texture-mode", BTM_relative,
+ PRC_DESC("Set this to specify how textures should be written into Bam files."
+          "See the panda source or documentation for available options."));
+
 ConfigVariableSearchPath model_path
 ("model-path", 
  PRC_DESC("The default directories to search for all models and general "

@@ -144,10 +144,31 @@ PUBLISHED:
     WM_invalid
   };
 
+  enum CompressionMode {
+    // Generic compresssion modes.  Usually, you should choose one of
+    // these.
+    CM_default,  // on or off, according to compressed-textures
+    CM_off,      // uncompressed image
+    CM_on,       // whatever compression the driver supports
+
+    // Specific compression modes.  Use only when you really want to
+    // use a particular compression algorithm.  Use with caution; not
+    // all drivers support all compression modes.  You can use
+    // GSG::get_supports_compressed_texture_format() to query the
+    // available compression modes for a particular GSG.
+    CM_fxt1,
+    CM_dxt1,
+    CM_dxt2,
+    CM_dxt3,
+    CM_dxt4,
+    CM_dxt5,
+  };
+
 PUBLISHED:
   Texture(const string &name = string());
 protected:
   Texture(const Texture &copy);
+  void operator = (const Texture &copy);
 PUBLISHED:
   virtual ~Texture();
 
@@ -178,6 +199,9 @@ PUBLISHED:
         int z = 0,
         int primary_file_num_channels = 0, int alpha_file_channel = 0);
   bool write(const Filename &fullpath, int z = 0) const;
+
+  bool read_txo(istream &in, const string &filename = "stream");
+  bool write_txo(ostream &out, const string &filename = "stream") const;
 
   bool read_pages(Filename fullpath_pattern, int z_size = 0);
   bool write_pages(Filename fullpath_pattern);
@@ -213,6 +237,7 @@ PUBLISHED:
   void set_magfilter(FilterType filter);
   void set_anisotropic_degree(int anisotropic_degree);
   void set_border_color(const Colorf &color);
+  void set_compression(CompressionMode compression);
   void set_render_to_texture(bool render_to_texture);
 
   INLINE WrapMode get_wrap_u() const;
@@ -222,18 +247,22 @@ PUBLISHED:
   INLINE FilterType get_magfilter() const;
   INLINE int get_anisotropic_degree() const;
   INLINE Colorf get_border_color() const;
+  INLINE CompressionMode get_compression() const;
   INLINE bool get_render_to_texture() const;
   INLINE bool uses_mipmaps() const;
 
   virtual bool has_ram_image() const;
   INLINE bool might_have_ram_image() const;
   INLINE size_t get_ram_image_size() const;
+  INLINE size_t get_ram_page_size() const;
   INLINE size_t get_expected_ram_image_size() const;
   INLINE size_t get_expected_ram_page_size() const;
   CPTA_uchar get_ram_image();
+  INLINE CompressionMode get_ram_image_compression() const;
   PTA_uchar modify_ram_image();
   PTA_uchar make_ram_image();
-  void set_ram_image(PTA_uchar image);
+  void set_ram_image(PTA_uchar image, CompressionMode compression = CM_off,
+		     size_t page_size = 0);
   void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
@@ -241,6 +270,8 @@ PUBLISHED:
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
+
+  void write(ostream &out, int indent_level) const;
 
 PUBLISHED:
   // These are published, but in general, you shouldn't be mucking
@@ -263,6 +294,9 @@ PUBLISHED:
   void set_component_type(ComponentType component_type);
   INLINE void set_loaded_from_disk();
   INLINE bool get_loaded_from_disk() const;
+
+  INLINE void set_loaded_from_txo();
+  INLINE bool get_loaded_from_txo() const;
 
 public:
   INLINE bool get_match_framebuffer_format() const;
@@ -298,6 +332,9 @@ public:
   static int up_to_power_2(int value);
   static int down_to_power_2(int value);
 
+  static bool is_specific(CompressionMode compression);
+  static bool has_alpha(Format format);
+
 protected:
   virtual void reconsider_dirty();
   virtual void reload_ram_image();
@@ -318,6 +355,10 @@ private:
   INLINE void store_scaled_short(int &index, int value, double scale);
   INLINE double get_unsigned_byte(int &index) const;
   INLINE double get_unsigned_short(int &index) const;
+
+  INLINE static bool is_txo_filename(const Filename &fullpath);
+  bool read_txo_file(const Filename &fullpath);
+  bool write_txo_file(const Filename &fullpath) const;
 
 protected:
   Filename _filename;
@@ -344,6 +385,7 @@ protected:
   ComponentType _component_type;
 
   bool _loaded_from_disk;
+  bool _loaded_from_txo;
 
   WrapMode _wrap_u;
   WrapMode _wrap_v;
@@ -353,6 +395,7 @@ protected:
   int _anisotropic_degree;
   bool _keep_ram_image;
   Colorf _border_color;
+  CompressionMode _compression;
   bool _render_to_texture;
   bool _match_framebuffer_format;
 
@@ -377,7 +420,9 @@ protected:
   // texture.
   int _all_dirty_flags;
 
-  PTA_uchar _image;
+  PTA_uchar _ram_image;
+  CompressionMode _ram_image_compression;
+  size_t _ram_page_size;
 
 
   // Datagram stuff
@@ -416,6 +461,8 @@ EXPCL_PANDA istream &operator >> (istream &in, Texture::FilterType &ft);
 
 EXPCL_PANDA ostream &operator << (ostream &out, Texture::WrapMode wm);
 EXPCL_PANDA istream &operator >> (istream &in, Texture::WrapMode &wm);
+
+EXPCL_PANDA ostream &operator << (ostream &out, Texture::CompressionMode cm);
 
 #include "texture.I"
 

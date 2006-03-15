@@ -744,6 +744,63 @@ flip_frame() {
     do_flip_frame();
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::extract_texture_data
+//       Access: Published
+//  Description: Asks the indicated GraphicsStateGuardian to retrieve
+//               the texture memory image of the indicated texture and
+//               store it in the texture's ram_image field.  The image
+//               can then be written to disk via Texture::write(), or
+//               otherwise manipulated on the CPU.
+//
+//               This is useful for retrieving the contents of a
+//               texture that has been somehow generated on the
+//               graphics card, instead of having been loaded the
+//               normal way via Texture::read() or Texture::load().
+//               It is particularly useful for getting the data
+//               associated with a compressed texture image.
+//
+//               Since this requires a round-trip to the draw thread,
+//               it may require waiting for the current thread to
+//               finish rendering if it is called in a multithreaded
+//               environment.  However, you can call this several
+//               consecutive times on different textures for little
+//               additional cost.
+//
+//               If the texture has not yet been loaded to the GSG in
+//               question, it will be loaded immediately.
+//
+//               The return value is true if the operation is
+//               successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool GraphicsEngine::
+extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
+  MutexHolder holder(_lock);
+
+  string draw_name = gsg->get_threading_model().get_draw_name();
+  if (draw_name.empty()) {
+    // A single-threaded environment.  No problem.
+    return gsg->extract_texture_data(tex);
+
+  } else {
+    // A multi-threaded environment.  We have to wait until the draw
+    // thread has finished its current task.
+    WindowRenderer *wr = get_window_renderer(draw_name, 0);
+    RenderThread *thread = (RenderThread *)wr;
+    MutexHolder holder2(thread->_cv_mutex);
+      
+    while (thread->_thread_state != TS_wait) {
+      thread->_cv_done.wait();
+    }
+
+    // OK, now the draw thread is idle.  That's really good enough for
+    // our purposes; we don't *actually* need to make the draw thread
+    // do the work--it's sufficient that it's not doing anything else
+    // while we access the GSG.
+    return gsg->extract_texture_data(tex);
+  }
+}
  
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::add_callback

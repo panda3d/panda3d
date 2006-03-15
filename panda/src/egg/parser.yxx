@@ -360,6 +360,14 @@ texture_body:
       texture->set_format(f);
     }
 
+  } else if (cmp_nocase_uh(name, "compression") == 0) {
+    EggTexture::CompressionMode w = EggTexture::string_compression_mode(strval);
+    if (w == EggTexture::CM_default) {
+      eggyywarning("Unknown texture compression mode " + strval);
+    } else {
+      texture->set_compression_mode(w);
+    }
+
   } else if (cmp_nocase_uh(name, "wrap") == 0) {
     EggTexture::WrapMode w = EggTexture::string_wrap_mode(strval);
     if (w == EggTexture::WM_unspecified) {

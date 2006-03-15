@@ -148,6 +148,13 @@ DXGraphicsStateGuardian8::
 TextureContext *DXGraphicsStateGuardian8::
 prepare_texture(Texture *tex) {
   DXTextureContext8 *dtc = new DXTextureContext8(tex);
+
+  if (!get_supports_compressed_texture_format(tex->get_ram_image_compression())) {
+    dxgsg8_cat.error()
+      << *dtc->_texture << " is stored in an unsupported compressed format.\n";
+    return NULL;
+  }
+  
   if (!dtc->create_texture(*_screen)) {
     delete dtc;
     return NULL;
@@ -189,7 +196,14 @@ apply_texture(int i, TextureContext *tc) {
     // error or oversight.
     if ((dirty & Texture::DF_image) == 0) {
       dxgsg8_cat.warning()
-        << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
+        << *dtc->_texture << " has changed mipmap state.\n";
+    }
+
+    if (!get_supports_compressed_texture_format(tc->_texture->get_ram_image_compression())) {
+      dxgsg8_cat.error()
+        << *dtc->_texture << " is stored in an unsupported compressed format.\n";
+      _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
+      return;
     }
 
     if (!dtc->create_texture(*_screen)) {

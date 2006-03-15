@@ -21,6 +21,7 @@
 #include "bamFile.h"
 #include "pandaNode.h"
 #include "geomNode.h"
+#include "texture.h"
 #include "recorderHeader.h"
 #include "recorderFrame.h"
 #include "recorderTable.h"
@@ -145,6 +146,10 @@ get_info(const Filename &filename) {
       objects[0]->is_of_type(PandaNode::get_class_type())) {
     describe_scene_graph(DCAST(PandaNode, objects[0]));
 
+  } else if (objects.size() == 1 && 
+      objects[0]->is_of_type(Texture::get_class_type())) {
+    describe_texture(DCAST(Texture, objects[0]));
+
   } else if (!objects.empty() && objects[0]->is_of_type(RecorderHeader::get_class_type())) {
     describe_session(DCAST(RecorderHeader, objects[0]), objects);
 
@@ -187,6 +192,16 @@ describe_scene_graph(PandaNode *node) {
   if (_ls || _verbose_geoms || _verbose_transitions) {
     list_hierarchy(node, 0);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamInfo::describe_texture
+//       Access: Private
+//  Description: Called for Bam files that contain a Texture object.
+////////////////////////////////////////////////////////////////////
+void BamInfo::
+describe_texture(Texture *tex) {
+  tex->write(nout, 2);
 }
 
 ////////////////////////////////////////////////////////////////////

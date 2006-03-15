@@ -28,16 +28,6 @@
 
 NotifyCategoryDecl(gobj, EXPCL_PANDA, EXPTP_PANDA);
 
-enum BamTextureMode {
-  BTM_unchanged,
-  BTM_fullpath,
-  BTM_relative,
-  BTM_basename,
-  BTM_rawdata
-};
-EXPCL_PANDA ostream &operator << (ostream &out, BamTextureMode btm);
-EXPCL_PANDA istream &operator >> (istream &in, BamTextureMode &btm);
-
 enum AutoTextureScale {
   ATS_none,
   ATS_down,
@@ -49,6 +39,7 @@ EXPCL_PANDA istream &operator >> (istream &in, AutoTextureScale &ats);
 // Configure variables for gobj package.
 extern EXPCL_PANDA ConfigVariableInt max_texture_dimension;
 extern EXPCL_PANDA ConfigVariableBool keep_texture_ram;
+extern EXPCL_PANDA ConfigVariableBool compressed_textures;
 extern EXPCL_PANDA ConfigVariableBool vertex_buffers;
 extern EXPCL_PANDA ConfigVariableBool vertex_arrays;
 extern EXPCL_PANDA ConfigVariableBool display_lists;
@@ -58,7 +49,6 @@ extern EXPCL_PANDA ConfigVariableBool matrix_palette;
 extern EXPCL_PANDA ConfigVariableBool display_list_animation;
 extern EXPCL_PANDA ConfigVariableBool connect_triangle_strips;
 
-extern EXPCL_PANDA ConfigVariableEnum<BamTextureMode> bam_texture_mode;
 extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_power_2;
 extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_square;
 extern EXPCL_PANDA ConfigVariableBool textures_header_only;

@@ -43,3 +43,29 @@ INLINE BamEndian BamWriter::
 get_file_endian() const {
   return _file_endian;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::get_file_texture_mode
+//       Access: Public
+//  Description: Returns the BamTextureMode preference indicated by
+//               the Bam file currently being written.  Texture
+//               objects written to this Bam file will be encoded
+//               according to the specified mode.
+////////////////////////////////////////////////////////////////////
+INLINE BamTextureMode BamWriter::
+get_file_texture_mode() const {
+  return _file_texture_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::set_file_texture_mode
+//       Access: Public
+//  Description: Changes the BamTextureMode preference for
+//               the Bam file currently being written.  Texture
+//               objects written to this Bam file will be encoded
+//               according to the specified mode.
+////////////////////////////////////////////////////////////////////
+INLINE void BamWriter::
+set_file_texture_mode(BamTextureMode file_texture_mode) {
+  _file_texture_mode = file_texture_mode;
+}
