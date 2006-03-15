@@ -42,22 +42,13 @@ static void
 bind_anims(const PartNodes &parts, const AnimNodes &anims,
            AnimControlCollection &controls,
            int hierarchy_match_flags) {
-  if (chan_cat.is_debug()) {
-    chan_cat.debug() << "bind_anims\n";
-  }
   PartNodes::const_iterator pni;
 
   for (pni = parts.begin(); pni != parts.end(); ++pni) {
     PartBundle *part = (*pni)->get_bundle();
-    if (chan_cat.is_debug()) {
-      chan_cat.debug() << "got part " << *part << "\n";
-    }
     AnimNodes::const_iterator ani;
     for (ani = anims.begin(); ani != anims.end(); ++ani) {
       AnimBundle *anim = (*ani)->get_bundle();
-      if (chan_cat.is_debug()) {
-        chan_cat.debug() << "got anim " << *anim << "\n";
-      }
       if (chan_cat.is_info()) {
         chan_cat.info()
           << "Attempting to bind " << *part << " to " << *anim << "\n";
