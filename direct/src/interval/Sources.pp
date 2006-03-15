@@ -7,7 +7,8 @@
     chan:c event:c gobj:c pnmimage:c mathutil:c \
     pgraph:c putil:c panda:m express:c pandaexpress:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m
+    dtoolutil:c dtoolbase:c dtool:m \
+    pandabase:c prc:c gsgbase:c pstatclient:c
 
   #define SOURCES \
     config_interval.cxx config_interval.h \
