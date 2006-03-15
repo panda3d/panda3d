@@ -13,6 +13,11 @@
 
 #endif  // LINK_IN_GL
 
+
+#ifdef IS_OSX
+#include "config_osxdisplay.h"
+#endif
+
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to load libpandagl.so/.dll will fail if they inadvertently
 // link with the wrong version of libdtool.so/.dll.
@@ -35,4 +40,10 @@ init_libpandagl() {
   init_libwgldisplay();
 #endif  // HAVE_GL
 #endif  // LINK_IN_GL
+
+
+#ifdef IS_OSX
+  init_libosxdisplay();
+#endif
+
 }

@@ -13,7 +13,7 @@
   // directly into Panda.
   #define COMPONENT_LIBS \
       glgsg glxdisplay  \
-      wgldisplay
+      wgldisplay osxdisplay
 #endif
 
 #define LOCAL_LIBS gsgbase display express
