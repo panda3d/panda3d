@@ -4,7 +4,9 @@
   express:c pandaexpress:m \
   interrogatedb:c dconfig:c dtoolconfig:m \
   dtoolutil:c dtoolbase:c dtool:m \
-  pystub
+  pystub \
+  prc:c express:c 
+
 #define C++FLAGS -DWITHIN_PANDA
 
 #begin bin_target
