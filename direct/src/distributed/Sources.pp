@@ -10,7 +10,8 @@
   #define OTHER_LIBS \
     event:c downloader:c panda:m express:c pandaexpress:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m
+    dtoolutil:c dtoolbase:c dtool:m \
+    prc:c pstatclient:c pandabase:c linmath:c putil:c  
   #if $[and $[HAVE_NET],$[HAVE_NSPR]] \
     #define OTHER_LIBS net:c $[OTHER_LIBS]
   #endif

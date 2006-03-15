@@ -6,7 +6,9 @@
     display:c linmath:c event:c putil:c panda:m \
     express:c pandaexpress:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m
+    dtoolutil:c dtoolbase:c dtool:m \
+    pgraph:c gsgbase:c gobj:c mathutil:c pstatclient:c \
+    lerp:c downloader:c pandabase:c pnmimage:c prc:c 
 
   #define SOURCES \
     showBase.cxx showBase.h

@@ -2,7 +2,9 @@
     express:c pandaexpress:m \
     pstatclient:c panda:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m
+    dtoolutil:c dtoolbase:c dtool:m prc:c pandabase:c \
+    linmath:c putil:c
+
 #define LOCAL_LIBS \
     directbase
 #define YACC_PREFIX dcyy

@@ -5,7 +5,8 @@
   #define OTHER_LIBS \
     express:c linmath:c \
     interrogatedb:c dconfig:c \
-    dtoolutil:c dtoolbase:c dtool:m
+    dtoolutil:c dtoolbase:c dtool:m \
+    prc:c pandabase:c putil:c 
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
