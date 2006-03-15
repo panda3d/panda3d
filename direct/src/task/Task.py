@@ -16,6 +16,10 @@ import string
 import signal
 from libheapq import heappush, heappop, heapify
 
+if __debug__:
+    # For pstats
+    from pandac.PandaModules import PStatCollector
+
 # MRM: Need to make internal task variables like time, name, index
 # more unique (less likely to have name clashes)
 
@@ -138,7 +142,6 @@ class Task:
 
     def setupPStats(self, name):
         if __debug__ and TaskManager.taskTimerVerbose:
-            from pandac.PandaModules import PStatCollector
             self.pstats = PStatCollector("App:Show code:" + name)
 
     def finishTask(self, verbose):
