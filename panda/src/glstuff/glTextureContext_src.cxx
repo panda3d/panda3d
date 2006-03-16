@@ -31,6 +31,8 @@ TypeHandle CLP(TextureContext)::_type_handle;
 ////////////////////////////////////////////////////////////////////
 size_t CLP(TextureContext)::
 estimate_texture_memory() {
-  nassertr(_texture_memory_size != 0, TextureContext::estimate_texture_memory());
+  if (_texture_memory_size == 0) {
+    return TextureContext::estimate_texture_memory();
+  }
   return _texture_memory_size;
 }

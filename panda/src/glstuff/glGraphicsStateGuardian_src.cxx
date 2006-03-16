@@ -4774,6 +4774,26 @@ get_internal_image_format(Texture *tex) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::is_mipmap_filter
+//       Access: Protected, Static
+//  Description: Returns true if the indicated GL minfilter type
+//               represents a mipmap format, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+is_mipmap_filter(GLenum min_filter) {
+  switch (min_filter) {
+  case GL_NEAREST_MIPMAP_NEAREST:
+  case GL_LINEAR_MIPMAP_NEAREST:
+  case GL_NEAREST_MIPMAP_LINEAR:
+  case GL_LINEAR_MIPMAP_LINEAR:
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::is_compressed_format
 //       Access: Protected, Static
 //  Description: Returns true if the indicated GL internal format
@@ -6653,6 +6673,9 @@ get_texture_memory_size(Texture *tex) const {
     scale = 6;
   }
 
+  GLint minfilter;
+  GLP(GetTexParameteriv)(target, GL_TEXTURE_MIN_FILTER, &minfilter);
+
   GLint internal_format;
   GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
 
@@ -6706,7 +6729,12 @@ get_texture_memory_size(Texture *tex) const {
   size_t num_bits = (red_size + green_size + blue_size + alpha_size + luminance_size + depth_size + intensity_size);
   size_t num_bytes = (num_bits + 7) / 8;
 
-  return num_bytes * width * height * depth * scale;
+  size_t result = num_bytes * width * height * depth * scale;
+  if (is_mipmap_filter(minfilter)) {
+    result = (result * 4) / 3;
+  }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

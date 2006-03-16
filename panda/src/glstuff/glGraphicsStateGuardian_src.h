@@ -247,6 +247,7 @@ protected:
   static GLenum get_component_type(Texture::ComponentType component_type);
   GLint get_external_image_format(Texture *tex) const;
   GLint get_internal_image_format(Texture *tex) const;
+  static bool is_mipmap_filter(GLenum min_filter);
   static bool is_compressed_format(GLenum format);
   static GLint get_texture_apply_mode_type(TextureStage::Mode am);
   static GLint get_texture_combine_type(TextureStage::CombineMode cm);
