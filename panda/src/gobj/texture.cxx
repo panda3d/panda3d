@@ -61,7 +61,6 @@ Texture(const string &name) :
   _wrap_w = WM_repeat;
   _anisotropic_degree = 1;
   _keep_ram_image = true;
-  _all_dirty_flags = 0;
   _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _compression = CM_default;
   _ram_image_compression = CM_off;
@@ -115,7 +114,6 @@ Texture(const Texture &copy) :
   _border_color(copy._border_color),
   _compression(copy._compression),
   _match_framebuffer_format(copy._match_framebuffer_format),
-  _all_dirty_flags(0),
   _ram_image(copy._ram_image),
   _ram_image_compression(copy._ram_image_compression),
   _ram_page_size(copy._ram_page_size)
@@ -157,10 +155,10 @@ operator = (const Texture &copy) {
   _border_color = copy._border_color;
   _compression = copy._compression;
   _match_framebuffer_format = copy._match_framebuffer_format;
-  _all_dirty_flags = 0;
   _ram_image = copy._ram_image;
   _ram_image_compression = copy._ram_image_compression;
   _ram_page_size = copy._ram_page_size;
+  ++_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -915,7 +913,7 @@ load(const PNMImage &pnmimage, int z) {
     nassertr((size_t)idx == get_expected_ram_page_size() * (z + 1), false);
   }
 
-  mark_dirty(DF_image);
+  ++_modified;
 
   return true;
 }
@@ -1037,7 +1035,7 @@ load_related(const PT(InternalName) &suffix) const {
 void Texture::
 set_wrap_u(Texture::WrapMode wrap) {
   if (_wrap_u != wrap) {
-    mark_dirty(DF_wrap);
+    ++_modified;
     _wrap_u = wrap;
   }
 }
@@ -1050,7 +1048,7 @@ set_wrap_u(Texture::WrapMode wrap) {
 void Texture::
 set_wrap_v(Texture::WrapMode wrap) {
   if (_wrap_v != wrap) {
-    mark_dirty(DF_wrap);
+    ++_modified;
     _wrap_v = wrap;
   }
 }
@@ -1063,7 +1061,7 @@ set_wrap_v(Texture::WrapMode wrap) {
 void Texture::
 set_wrap_w(Texture::WrapMode wrap) {
   if (_wrap_w != wrap) {
-    mark_dirty(DF_wrap);
+    ++_modified;
     _wrap_w = wrap;
   }
 }
@@ -1076,11 +1074,7 @@ set_wrap_w(Texture::WrapMode wrap) {
 void Texture::
 set_minfilter(Texture::FilterType filter) {
   if (_minfilter != filter) {
-    if (is_mipmap(_minfilter) != is_mipmap(filter)) {
-      mark_dirty(DF_filter | DF_mipmap);
-    } else {
-      mark_dirty(DF_filter);
-    }
+    ++_modified;
     _minfilter = filter;
   }
 }
@@ -1093,7 +1087,7 @@ set_minfilter(Texture::FilterType filter) {
 void Texture::
 set_magfilter(Texture::FilterType filter) {
   if (_magfilter != filter) {
-    mark_dirty(DF_filter);
+    ++_modified;
     _magfilter = filter;
   }
 }
@@ -1110,7 +1104,7 @@ set_magfilter(Texture::FilterType filter) {
 void Texture::
 set_anisotropic_degree(int anisotropic_degree) {
   if (_anisotropic_degree != anisotropic_degree) {
-    mark_dirty(DF_filter);
+    ++_modified;
     _anisotropic_degree = anisotropic_degree;
   }
 }
@@ -1126,7 +1120,7 @@ set_anisotropic_degree(int anisotropic_degree) {
 void Texture::
 set_border_color(const Colorf &color) {
   if (_border_color != color) {
-    mark_dirty(DF_border);
+    ++_modified;
     _border_color = color;
   }
 }
@@ -1153,7 +1147,7 @@ set_border_color(const Colorf &color) {
 void Texture::
 set_compression(Texture::CompressionMode compression) {
   if (_compression != compression) {
-    mark_dirty(DF_image);
+    ++_modified;
     _compression = compression;
   }
 }
@@ -1254,7 +1248,7 @@ modify_ram_image() {
     make_ram_image();
   }
 
-  mark_dirty(DF_image);
+  ++_modified;
   _keep_ram_image = true;
   return _ram_image;
 }
@@ -1272,7 +1266,7 @@ PTA_uchar Texture::
 make_ram_image() {
   _ram_image = PTA_uchar::empty_array(get_expected_ram_image_size());
   _ram_image_compression = CM_off;
-  mark_dirty(DF_image);
+  ++_modified;
   _keep_ram_image = true;
   return _ram_image;
 }
@@ -1299,7 +1293,7 @@ set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
     if (page_size == 0) {
       _ram_page_size = image.size();
     }
-    mark_dirty(DF_image);
+    ++_modified;
   }
   _keep_ram_image = true;
 }
@@ -1685,12 +1679,6 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   _contexts[prepared_objects] = tc;
 
   if (tc != (TextureContext *)NULL) {
-    // Now that we have a new TextureContext with zero dirty flags, our
-    // intersection of all dirty flags must be zero.  This doesn't mean
-    // that some other contexts aren't still dirty, but at least one
-    // context isn't.
-    _all_dirty_flags = 0;
-
     if (!keep_texture_ram && !_keep_ram_image) {
       // Once we have prepared the texture, we can generally safely
       // remove the pixels from main RAM.  The GSG is now responsible
@@ -1704,41 +1692,6 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
     }
   }
   return tc;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::mark_dirty
-//       Access: Public
-//  Description: Sets the indicated dirty bits on for all texture
-//               contexts that share this Texture.  Does not change
-//               the bits that are not on.  This presumably will
-//               inform the GSG that the texture properties have
-//               changed.  See also TextureContext::mark_dirty().
-//
-//               Normally, this does not need to be called directly;
-//               changing the properties on the texture will
-//               automatically call this.  However, if you fiddle with
-//               the texture image directly, you may need to
-//               explicitly call mark_dirty(Texture::DF_image).
-////////////////////////////////////////////////////////////////////
-void Texture::
-mark_dirty(int flags_to_set) {
-  if ((_all_dirty_flags & flags_to_set) == flags_to_set) {
-    // If all the texture contexts already share these bits, no need
-    // to do anything else.
-    return;
-  }
-
-  // Otherwise, iterate through the contexts and mark them all dirty.
-  Contexts::iterator ci;
-  for (ci = _contexts.begin(); ci != _contexts.end(); ++ci) {
-    TextureContext *tc = (*ci).second;
-    if (tc != (TextureContext *)NULL) {
-      tc->mark_dirty(flags_to_set);
-    }
-  }
-
-  _all_dirty_flags |= flags_to_set;
 }
 
 ////////////////////////////////////////////////////////////////////

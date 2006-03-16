@@ -27,8 +27,7 @@
 #include "shaderExpansion.h"
 #include "reMutexHolder.h"
 
-PStatCollector PreparedGraphicsObjects::_total_texusage_pcollector("Texture usage");
-PStatCollector PreparedGraphicsObjects::_total_buffers_pcollector("Vertex buffer size");
+int PreparedGraphicsObjects::_name_index = 0;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::Constructor
@@ -36,7 +35,12 @@ PStatCollector PreparedGraphicsObjects::_total_buffers_pcollector("Vertex buffer
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 PreparedGraphicsObjects::
-PreparedGraphicsObjects() {
+PreparedGraphicsObjects() : 
+  _name(init_name()),
+  _texture_residency(_name, "texture"),
+  _vbuffer_residency(_name, "vbuffer"),
+  _ibuffer_residency(_name, "ibuffer")
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,8 +62,7 @@ PreparedGraphicsObjects::
        tci != _prepared_textures.end();
        ++tci) {
     TextureContext *tc = (*tci);
-    _total_texusage_pcollector.sub_level(tc->estimate_texture_memory());
-    tc->_texture->clear_prepared(this);
+    tc->get_texture()->clear_prepared(this);
   }
 
   _prepared_textures.clear();
@@ -95,7 +98,6 @@ PreparedGraphicsObjects::
        vbci != _prepared_vertex_buffers.end();
        ++vbci) {
     VertexBufferContext *vbc = (*vbci);
-    _total_buffers_pcollector.sub_level(vbc->get_data_size_bytes());
     vbc->_data->clear_prepared(this);
   }
 
@@ -108,7 +110,6 @@ PreparedGraphicsObjects::
        ibci != _prepared_index_buffers.end();
        ++ibci) {
     IndexBufferContext *ibc = (*ibci);
-    _total_buffers_pcollector.sub_level(ibc->get_data_size_bytes());
     ibc->_data->clear_prepared(this);
   }
 
@@ -175,8 +176,7 @@ void PreparedGraphicsObjects::
 release_texture(TextureContext *tc) {
   ReMutexHolder holder(_lock);
 
-  tc->_texture->clear_prepared(this);
-  _total_texusage_pcollector.sub_level(tc->estimate_texture_memory());
+  tc->get_texture()->clear_prepared(this);
 
   // We have to set the Texture pointer to NULL at this point, since
   // the Texture itself might destruct at any time after it has been
@@ -208,8 +208,7 @@ release_all_textures() {
        tci != _prepared_textures.end();
        ++tci) {
     TextureContext *tc = (*tci);
-    tc->_texture->clear_prepared(this);
-    _total_texusage_pcollector.sub_level(tc->estimate_texture_memory());
+    tc->get_texture()->clear_prepared(this);
     tc->_texture = (Texture *)NULL;
 
     _released_textures.insert(tc);
@@ -255,8 +254,6 @@ prepare_texture_now(Texture *tex, GraphicsStateGuardianBase *gsg) {
   if (tc != (TextureContext *)NULL) {
     bool prepared = _prepared_textures.insert(tc).second;
     nassertr(prepared, tc);
-
-    _total_texusage_pcollector.add_level(tc->estimate_texture_memory());
   }
 
   return tc;
@@ -600,7 +597,6 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   ReMutexHolder holder(_lock);
 
   vbc->_data->clear_prepared(this);
-  _total_buffers_pcollector.sub_level(vbc->get_data_size_bytes());
 
   // We have to set the Data pointer to NULL at this point, since
   // the Data itself might destruct at any time after it has been
@@ -633,7 +629,6 @@ release_all_vertex_buffers() {
        ++vbci) {
     VertexBufferContext *vbc = (*vbci);
     vbc->_data->clear_prepared(this);
-    _total_buffers_pcollector.sub_level(vbc->get_data_size_bytes());
     vbc->_data = (GeomVertexArrayData *)NULL;
 
     _released_vertex_buffers.insert(vbc);
@@ -679,11 +674,6 @@ prepare_vertex_buffer_now(GeomVertexArrayData *data, GraphicsStateGuardianBase *
   if (vbc != (VertexBufferContext *)NULL) {
     bool prepared = _prepared_vertex_buffers.insert(vbc).second;
     nassertr(prepared, vbc);
-
-    // The size has already been counted by
-    // GraphicsStateGuardian::add_to_vertex_buffer_record(); we don't need to
-    // count it again here.
-    //_total_buffers_pcollector.add_level(vbc->get_data_size_bytes());
   }
 
   return vbc;
@@ -747,7 +737,6 @@ release_index_buffer(IndexBufferContext *ibc) {
   ReMutexHolder holder(_lock);
 
   ibc->_data->clear_prepared(this);
-  _total_buffers_pcollector.sub_level(ibc->get_data_size_bytes());
 
   // We have to set the Data pointer to NULL at this point, since
   // the Data itself might destruct at any time after it has been
@@ -780,7 +769,6 @@ release_all_index_buffers() {
        ++ibci) {
     IndexBufferContext *ibc = (*ibci);
     ibc->_data->clear_prepared(this);
-    _total_buffers_pcollector.sub_level(ibc->get_data_size_bytes());
     ibc->_data = (GeomPrimitive *)NULL;
 
     _released_index_buffers.insert(ibc);
@@ -826,22 +814,17 @@ prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
   if (ibc != (IndexBufferContext *)NULL) {
     bool prepared = _prepared_index_buffers.insert(ibc).second;
     nassertr(prepared, ibc);
-
-    // The size has already been counted by
-    // GraphicsStateGuardian::add_to_index_buffer_record(); we don't need to
-    // count it again here.
-    //_total_buffers_pcollector.add_level(ibc->get_data_size_bytes());
   }
 
   return ibc;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::update
+//     Function: PreparedGraphicsObjects::begin_frame
 //       Access: Public
 //  Description: This is called by the GraphicsStateGuardian to
-//               indicate that it is in a state to load or release
-//               textures.
+//               indicate that it is about to begin processing of the
+//               frame.
 //
 //               Any texture contexts that were previously passed to
 //               release_texture() are actually passed to the GSG to
@@ -849,7 +832,7 @@ prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
 //               passed to prepare_texture are actually loaded.
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
-update(GraphicsStateGuardianBase *gsg) {
+begin_frame(GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
 
   // First, release all the textures, geoms, and buffers awaiting
@@ -904,6 +887,11 @@ update(GraphicsStateGuardianBase *gsg) {
 
   _released_index_buffers.clear();
 
+  // Reset the residency trackers.
+  _texture_residency.begin_frame();
+  _vbuffer_residency.begin_frame();
+  _ibuffer_residency.begin_frame();
+
   // Now prepare all the textures, geoms, and buffers awaiting
   // preparation.
   EnqueuedTextures::iterator qti;
@@ -955,4 +943,34 @@ update(GraphicsStateGuardianBase *gsg) {
   }
 
   _enqueued_index_buffers.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::end_frame
+//       Access: Public
+//  Description: This is called by the GraphicsStateGuardian to
+//               indicate that it has finished processing of the
+//               frame.
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+end_frame() {
+  ReMutexHolder holder(_lock);
+
+  _texture_residency.end_frame();
+  _vbuffer_residency.end_frame();
+  _ibuffer_residency.end_frame();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::init_name
+//       Access: Private, Static
+//  Description: Returns a new, unique name for a newly-constructed
+//               object.
+////////////////////////////////////////////////////////////////////
+string PreparedGraphicsObjects::
+init_name() {
+  ++_name_index;
+  ostringstream strm;
+  strm << "context" << _name_index;
+  return strm.str();
 }

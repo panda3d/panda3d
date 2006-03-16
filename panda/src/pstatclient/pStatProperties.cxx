@@ -154,21 +154,7 @@ static TimeCollectorProperties time_properties[] = {
 };
 
 static LevelCollectorProperties level_properties[] = {
-  { 1, "Texture usage",                    { 1.0, 0.0, 0.5 },  "MB", 12, 1048576 },
-  { 1, "Texture usage:Active",             { 0.5, 1.0, 0.8 } },
-  { 1, "Texture memory",                   { 0.0, 0.0, 1.0 },  "MB", 12, 1048576 },
-  { 1, "Texture memory:In use",            { 0.0, 1.0, 1.0 } },
-  { 1, "Texture manager",                  { 1.0, 0.0, 0.0 },  "MB", 12, 1048576 },
-  { 1, "Texture manager:Resident",         { 1.0, 1.0, 0.0 } },
-  { 1, "Prepared Textures",                { 0.6, 0.8, 0.0 },  "", 500 },
-  { 1, "Prepared Textures:Active",         { 0.0, 0.6, 0.8 } },
-  { 1, "Prepared Geoms",                   { 1.0, 0.0, 0.5 },  "", 500 },
-  { 1, "Prepared Geoms:Active",            { 0.5, 1.0, 0.8 } },
-  { 1, "Prepared GeomNodes",               { 1.0, 0.0, 0.5 },  "", 500 },
-  { 1, "Prepared GeomNodes:Active",        { 0.5, 1.0, 0.8 } },
-  { 1, "Vertex buffer size",               { 0.0, 0.0, 1.0 },  "MB", 12, 1048576 },
-  { 1, "Vertex buffer size:Active vertex", { 1.0, 0.0, 0.5 } },
-  { 1, "Vertex buffer size:Active index" , { 0.5, 0.6, 1.0 } },
+  { 1, "Graphics memory",                  { 0.0, 0.0, 1.0 },  "MB", 64, 1048576 },
   { 1, "Vertex buffer switch",             { 0.0, 0.6, 0.8 },  "", 500 },
   { 1, "Vertex buffer switch:Vertex",      { 0.8, 0.0, 0.6 } },
   { 1, "Vertex buffer switch:Index",       { 0.8, 0.6, 0.3 } },

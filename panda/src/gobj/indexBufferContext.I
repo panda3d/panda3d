@@ -23,11 +23,9 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IndexBufferContext::
-IndexBufferContext(GeomPrimitive *data) :
-  _data(data),
-  // Initially, the number of bytes is zero, until the data has been
-  // loaded (and mark_loaded() is called).
-  _data_size_bytes(0)
+IndexBufferContext(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
+  BufferContext(&pgo->_ibuffer_residency),
+  _data(data)
 {
 }
 
@@ -43,19 +41,6 @@ get_data() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: IndexBufferContext::get_data_size_bytes
-//       Access: Public
-//  Description: Returns the number of bytes previously reported for
-//               the data object.  This is used to track changes in
-//               the data object's allocated size; if it changes from
-//               this, we need to create a new buffer.
-////////////////////////////////////////////////////////////////////
-INLINE int IndexBufferContext::
-get_data_size_bytes() const {
-  return _data_size_bytes;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: IndexBufferContext::changed_size
 //       Access: Public
 //  Description: Returns true if the data has changed size since the
@@ -63,7 +48,7 @@ get_data_size_bytes() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool IndexBufferContext::
 changed_size() const {
-  return get_data_size_bytes() != _data->get_data_size_bytes();
+  return get_data_size_bytes() != (size_t)_data->get_data_size_bytes();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,18 +70,7 @@ changed_usage_hint() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool IndexBufferContext::
 was_modified() const {
-  return _modified != _data->get_modified();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: IndexBufferContext::get_modified
-//       Access: Public
-//  Description: Returns the UpdateSeq that was recorded the last time
-//               mark_loaded() was called.
-////////////////////////////////////////////////////////////////////
-INLINE UpdateSeq IndexBufferContext::
-get_modified() const {
-  return _modified;
+  return get_modified() != _data->get_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,7 +82,10 @@ get_modified() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void IndexBufferContext::
 mark_loaded() {
-  _data_size_bytes = _data->get_data_size_bytes();
+  update_data_size_bytes(_data->get_data_size_bytes());
+  update_modified(_data->get_modified());
   _usage_hint = _data->get_usage_hint();
-  _modified = _data->get_modified();
+
+  // Assume the buffer is now resident.
+  set_resident(true);
 }

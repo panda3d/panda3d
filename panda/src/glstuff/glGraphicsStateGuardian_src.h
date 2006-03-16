@@ -278,6 +278,7 @@ protected:
 			    Texture::CompressionMode image_compression);
 
   size_t get_texture_memory_size(Texture *tex) const;
+  void check_nonresident_texture(BufferContextChain &chain);
 
   void do_point_size();
 

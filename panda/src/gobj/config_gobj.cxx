@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "bufferContext.h"
 #include "config_util.h"
 #include "config_gobj.h"
 #include "geom.h"
@@ -238,6 +239,7 @@ ConfigVariableDouble default_keystone
 
 
 ConfigureFn(config_gobj) {
+  BufferContext::init_type();
   Geom::init_type();
   GeomMunger::init_type();
   GeomPrimitive::init_type();

@@ -20,7 +20,7 @@
 #ifdef THREADED_PIPELINE
 ////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerLinks::Constructor
-//       Access: Public
+//       Access: Protected
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PipelineCyclerLinks::
@@ -35,7 +35,7 @@ PipelineCyclerLinks() {
 #ifdef THREADED_PIPELINE
 ////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerLinks::Destructor
-//       Access: Public
+//       Access: Protected
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PipelineCyclerLinks::
@@ -47,7 +47,7 @@ INLINE PipelineCyclerLinks::
 #ifdef THREADED_PIPELINE
 ////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerLinks::remove_from_list
-//       Access: Private
+//       Access: Protected
 //  Description: Removes a PipelineCyclerLinks record from the
 //               doubly-linked list.
 ////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ remove_from_list() {
 #ifdef THREADED_PIPELINE
 ////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerLinks::insert_before
-//       Access: Private
+//       Access: Protected
 //  Description: Adds a PipelineCyclerLinks record before the indicated
 //               node in the doubly-linked list.
 ////////////////////////////////////////////////////////////////////

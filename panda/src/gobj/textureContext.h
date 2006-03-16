@@ -21,8 +21,9 @@
 
 #include "pandabase.h"
 
-#include "savedContext.h"
+#include "bufferContext.h"
 #include "texture.h"
+#include "preparedGraphicsObjects.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureContext
@@ -37,33 +38,31 @@
 //               texture and store it here.  The texture stores all of
 //               these handles internally.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextureContext : public SavedContext {
+class EXPCL_PANDA TextureContext : public BufferContext {
 public:
-  INLINE TextureContext(Texture *tex);
+  INLINE TextureContext(PreparedGraphicsObjects *pgo, Texture *tex);
+
+  INLINE Texture *get_texture() const;
+
+  INLINE bool was_modified() const;
+  INLINE void mark_loaded();
 
   virtual size_t estimate_texture_memory();
 
+private:
   // This cannot be a PT(Texture), because the texture and the GSG
   // both own their TextureContexts!  That would create a circular
   // reference count.
   Texture *_texture;
-
-  INLINE void mark_dirty(int flags_to_set);
-  INLINE void clear_dirty_flags(int flags_to_clear = ~0);
-  INLINE int get_dirty_flags() const;
-
-private:
-  int _dirty_flags;
-
-
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    SavedContext::init_type();
+    BufferContext::init_type();
     register_type(_type_handle, "TextureContext",
-                  SavedContext::get_class_type());
+                  BufferContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -72,6 +71,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class PreparedGraphicsObjects;
 };
 
 #include "textureContext.I"

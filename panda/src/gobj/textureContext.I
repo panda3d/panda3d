@@ -23,70 +23,49 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TextureContext::
-TextureContext(Texture *tex) :
+TextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
+  BufferContext(&pgo->_texture_residency),
   _texture(tex)
 {
-  _dirty_flags = ~0;
+#ifdef DO_PSTATS
+  update_data_size_bytes(estimate_texture_memory());
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureContext::mark_dirty
+//     Function: TextureContext::get_texture
 //       Access: Public
-//  Description: Marks the context "dirty", i.e. its properties are
-//               different from the last time the GSG has seen them.
-//               Presumably, the GSG will respond by updating the
-//               properties and clearing the dirty bits the next time
-//               it renders the texture.
-//
-//               The value is the union of all the bits that are to be
-//               set dirty; bits that are not set in this parameter
-//               are left unchanged.  See Texture::DirtyFlags for a
-//               list of available bits.
-//
-//               Usually this function is not called directly, but
-//               rather is called by Texture::mark_dirty() as a result
-//               of changing properties directly on the texture.
+//  Description: Returns the pointer to the associated Texture
+//               object.
+////////////////////////////////////////////////////////////////////
+INLINE Texture *TextureContext::
+get_texture() const {
+  return _texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::was_modified
+//       Access: Public
+//  Description: Returns true if the texture has been modified since the
+//               last time mark_loaded() was called.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureContext::
+was_modified() const {
+  return get_modified() != _texture->get_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::mark_loaded
+//       Access: Public
+//  Description: Should be called after the TextureContext has been
+//               loaded into graphics memory, this updates the
+//               internal flags for changed_size() and modified().
 ////////////////////////////////////////////////////////////////////
 INLINE void TextureContext::
-mark_dirty(int flags_to_set) {
-  _dirty_flags |= flags_to_set;
-}
+mark_loaded() {
+  //  _data_size_bytes = _data->get_texture_size_bytes();
+  update_modified(_texture->get_modified());
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureContext::clear_dirty_flags
-//       Access: Public
-//  Description: Removes the indicated flags from the "dirty" bits.
-//               See mark_dirty().
-//
-//               The value is the union of all the bits that are to be
-//               cleared; if a bit is set in the parameter, it will be
-//               removed from the dirty set.  Bits that are not set in
-//               this parameter are left unchanged.
-//
-//               This function is intended to be called by the GSG
-//               after it has updated the texture parameters.
-////////////////////////////////////////////////////////////////////
-INLINE void TextureContext::
-clear_dirty_flags(int flags_to_clear) {
-  _dirty_flags &= ~flags_to_clear;
-  _texture->_all_dirty_flags &= ~flags_to_clear;
+  // Assume the texture is now resident.
+  set_resident(true);
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureContext::get_dirty_flags
-//       Access: Public
-//  Description: Returns the current state of the dirty flags.  If
-//               this is non-zero, it represents the union of all
-//               properties that have been changed since the last call
-//               to clear_dirty_flags().
-//
-//               This function is intended to be called by the GSG to
-//               determine what properties need to be updated.  See
-//               Texture::DirtyFlags for a list of possible bits.
-////////////////////////////////////////////////////////////////////
-INLINE int TextureContext::
-get_dirty_flags() const {
-  _texture->reconsider_dirty();
-  return _dirty_flags;
-}
-

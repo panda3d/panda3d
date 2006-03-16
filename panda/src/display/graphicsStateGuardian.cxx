@@ -39,10 +39,6 @@
 #include <algorithm>
 #include <limits.h>
 
-PStatCollector GraphicsStateGuardian::_total_texusage_pcollector("Texture usage");
-PStatCollector GraphicsStateGuardian::_active_texusage_pcollector("Texture usage:Active");
-PStatCollector GraphicsStateGuardian::_texture_count_pcollector("Prepared Textures");
-PStatCollector GraphicsStateGuardian::_active_texture_count_pcollector("Prepared Textures:Active");
 PStatCollector GraphicsStateGuardian::_vertex_buffer_switch_pcollector("Vertex buffer switch:Vertex");
 PStatCollector GraphicsStateGuardian::_index_buffer_switch_pcollector("Vertex buffer switch:Index");
 PStatCollector GraphicsStateGuardian::_load_vertex_buffer_pcollector("Draw:Transfer data:Vertex buffer");
@@ -51,15 +47,6 @@ PStatCollector GraphicsStateGuardian::_create_vertex_buffer_pcollector("Draw:Tra
 PStatCollector GraphicsStateGuardian::_create_index_buffer_pcollector("Draw:Transfer data:Create Index buffer");
 PStatCollector GraphicsStateGuardian::_load_texture_pcollector("Draw:Transfer data:Texture");
 PStatCollector GraphicsStateGuardian::_data_transferred_pcollector("Data transferred");
-PStatCollector GraphicsStateGuardian::_total_geom_pcollector("Prepared Geoms");
-PStatCollector GraphicsStateGuardian::_active_geom_pcollector("Prepared Geoms:Active");
-PStatCollector GraphicsStateGuardian::_total_buffers_pcollector("Vertex buffer size");
-PStatCollector GraphicsStateGuardian::_active_vertex_buffers_pcollector("Vertex buffer size:Active vertex");
-PStatCollector GraphicsStateGuardian::_active_index_buffers_pcollector("Vertex buffer size:Active index");
-PStatCollector GraphicsStateGuardian::_total_geom_node_pcollector("Prepared GeomNodes");
-PStatCollector GraphicsStateGuardian::_active_geom_node_pcollector("Prepared GeomNodes:Active");
-PStatCollector GraphicsStateGuardian::_total_texmem_pcollector("Texture memory");
-PStatCollector GraphicsStateGuardian::_used_texmem_pcollector("Texture memory:In use");
 PStatCollector GraphicsStateGuardian::_texmgrmem_total_pcollector("Texture manager");
 PStatCollector GraphicsStateGuardian::_texmgrmem_resident_pcollector("Texture manager:Resident");
 PStatCollector GraphicsStateGuardian::_primitive_batches_pcollector("Primitive batches");
@@ -964,11 +951,7 @@ prepare_lens() {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 begin_frame() {
-  // Now we know the GSG is the currently active context, so this is a
-  // good time to release any textures or geoms that had been queued
-  // up to release in the past frame, and load up any newly requested
-  // textures.
-  _prepared_objects->update(this);
+  _prepared_objects->begin_frame(this);
 
 #ifdef DO_PSTATS
   // For Pstats to track our current texture memory usage, we have to
@@ -1005,6 +988,7 @@ begin_frame() {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 begin_scene() {
+  _prepared_objects->end_frame();
   return true;
 }
 
@@ -1879,7 +1863,6 @@ determine_light_color_scale() {
 }
 
 #ifdef DO_PSTATS
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::init_frame_pstats
 //       Access: Protected
@@ -1889,16 +1872,7 @@ determine_light_color_scale() {
 void GraphicsStateGuardian::
 init_frame_pstats() {
   if (PStatClient::is_connected()) {
-    _current_textures.clear();
-    _current_geoms.clear();
-    _current_vertex_buffers.clear();
-    _current_index_buffers.clear();
-    _active_texusage_pcollector.clear_level();
     _data_transferred_pcollector.clear_level();
-    _active_geom_pcollector.clear_level();
-    _active_geom_node_pcollector.clear_level();
-    _active_vertex_buffers_pcollector.clear_level();
-    _active_index_buffers_pcollector.clear_level();
     _vertex_buffer_switch_pcollector.clear_level();
     _index_buffer_switch_pcollector.clear_level();
     
@@ -1918,114 +1892,6 @@ init_frame_pstats() {
     _texture_state_pcollector.clear_level();
   }
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::add_to_texture_record
-//       Access: Protected
-//  Description: Records that the indicated texture has been applied
-//               this frame, and thus must be present in current
-//               texture memory.  This function is only used to update
-//               the PStats current_texmem collector; it gets compiled
-//               out if we aren't using PStats.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-add_to_texture_record(TextureContext *tc) {
-  if (PStatClient::is_connected()) {
-    if (_current_textures.insert(tc).second) {
-      _active_texusage_pcollector.add_level(tc->estimate_texture_memory());
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::add_to_geom_record
-//       Access: Protected
-//  Description: Records that the indicated Geom has been drawn this
-//               frame.  This function is only used to update the
-//               PStats active_geom collector; it gets compiled out
-//               if we aren't using PStats.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-add_to_geom_record(GeomContext *gc) {
-  if (PStatClient::is_connected()) {
-    if (gc != (GeomContext *)NULL && _current_geoms.insert(gc).second) {
-      _active_geom_pcollector.add_level(1);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::add_to_vertex_buffer_record
-//       Access: Protected
-//  Description: Records that the indicated data array has been drawn
-//               this frame.  This function is only used to update the
-//               PStats active_vertex_buffers collector; it gets
-//               compiled out if we aren't using PStats.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-add_to_vertex_buffer_record(VertexBufferContext *vbc) {
-  if (vbc != (VertexBufferContext *)NULL) {
-    if (PStatClient::is_connected()) {
-      _vertex_buffer_switch_pcollector.add_level(1);
-      if (_current_vertex_buffers.insert(vbc).second) {
-        _active_vertex_buffers_pcollector.add_level(vbc->get_data()->get_data_size_bytes());
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::add_to_index_buffer_record
-//       Access: Protected
-//  Description: Records that the indicated data array has been drawn
-//               this frame.  This function is only used to update the
-//               PStats active_index_buffers collector; it gets compiled out
-//               if we aren't using PStats.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-add_to_index_buffer_record(IndexBufferContext *ibc) {
-  if (ibc != (IndexBufferContext *)NULL) {
-    if (PStatClient::is_connected()) {
-      _index_buffer_switch_pcollector.add_level(1);
-      if (_current_index_buffers.insert(ibc).second) {
-        _active_index_buffers_pcollector.add_level(ibc->get_data()->get_data_size_bytes());
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::add_to_total_buffer_record
-//       Access: Protected
-//  Description: Records that the indicated data array has been loaded
-//               this frame.  This function is only used to update the
-//               PStats total_buffers collector; it gets
-//               compiled out if we aren't using PStats.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-add_to_total_buffer_record(VertexBufferContext *vbc) {
-  if (vbc != (VertexBufferContext *)NULL) {
-    int delta = vbc->get_data()->get_data_size_bytes() - vbc->get_data_size_bytes();
-    _total_buffers_pcollector.add_level(delta);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::add_to_total_buffer_record
-//       Access: Protected
-//  Description: Records that the indicated data array has been loaded
-//               this frame.  This function is only used to update the
-//               PStats total_buffers collector; it gets
-//               compiled out if we aren't using PStats.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-add_to_total_buffer_record(IndexBufferContext *ibc) {
-  if (ibc != (IndexBufferContext *)NULL) {
-    int delta = ibc->get_data()->get_data_size_bytes() - ibc->get_data_size_bytes();
-    _total_buffers_pcollector.add_level(delta);
-  }
-}
-
 #endif  // DO_PSTATS
 
 ////////////////////////////////////////////////////////////////////

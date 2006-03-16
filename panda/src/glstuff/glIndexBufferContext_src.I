@@ -23,8 +23,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(IndexBufferContext)::
-CLP(IndexBufferContext)(GeomPrimitive *data) :
-  IndexBufferContext(data)
+CLP(IndexBufferContext)(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
+  IndexBufferContext(pgo, data)
 {
   _index = 0;
 }

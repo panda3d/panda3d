@@ -37,8 +37,8 @@ static const DWORD g_LowByteMask = 0x000000FF;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DXTextureContext9::
-DXTextureContext9(Texture *tex) :
-  TextureContext(tex) {
+DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex) :
+  TextureContext(pgo, tex) {
 
   if (dxgsg9_cat.is_spam()) {
     dxgsg9_cat.spam()
@@ -63,7 +63,7 @@ DXTextureContext9::
 ~DXTextureContext9() {
   if (dxgsg9_cat.is_spam()) {
     dxgsg9_cat.spam()
-      << "Deleting texture context for " << _texture->get_name() << "\n";
+      << "Deleting texture context for " << get_texture()->get_name() << "\n";
   }
 
   if (_lru_page)
@@ -94,32 +94,31 @@ create_texture(DXScreenData &scrn) {
   D3DFORMAT target_pixel_format = D3DFMT_UNKNOWN;
   bool needs_luminance = false;
 
-  nassertr(IS_VALID_PTR(_texture), false);
+  nassertr(IS_VALID_PTR(get_texture()), false);
 
   delete_texture();
-
-  clear_dirty_flags(Texture::DF_image | Texture::DF_mipmap);
+  mark_loaded();
 
   // bpp indicates requested fmt, not texture fmt
-  DWORD target_bpp = get_bits_per_pixel(_texture->get_format(), &num_alpha_bits);
-  DWORD num_color_channels = _texture->get_num_components();
+  DWORD target_bpp = get_bits_per_pixel(get_texture()->get_format(), &num_alpha_bits);
+  DWORD num_color_channels = get_texture()->get_num_components();
 
   //PRINT_REFCNT(dxgsg9, scrn._d3d9);
 
-  DWORD orig_width = (DWORD)_texture->get_x_size();
-  DWORD orig_height = (DWORD)_texture->get_y_size();
-  DWORD orig_depth = (DWORD)_texture->get_z_size();
+  DWORD orig_width = (DWORD)get_texture()->get_x_size();
+  DWORD orig_height = (DWORD)get_texture()->get_y_size();
+  DWORD orig_depth = (DWORD)get_texture()->get_z_size();
 
-  if ((_texture->get_format() == Texture::F_luminance_alpha)||
-      (_texture->get_format() == Texture::F_luminance_alphamask) ||
-      (_texture->get_format() == Texture::F_luminance)) {
+  if ((get_texture()->get_format() == Texture::F_luminance_alpha)||
+      (get_texture()->get_format() == Texture::F_luminance_alphamask) ||
+      (get_texture()->get_format() == Texture::F_luminance)) {
     needs_luminance = true;
   }
 
   if (num_alpha_bits > 0) {
     if (num_color_channels == 3) {
       dxgsg9_cat.error()
-        << "texture " << _texture->get_name()
+        << "texture " << get_texture()->get_name()
         << " has no inherent alpha channel, but alpha format is requested!\n";
     }
   }
@@ -157,7 +156,7 @@ create_texture(DXScreenData &scrn) {
 
   DWORD filter_caps;
 
-  switch (_texture->get_texture_type()) {
+  switch (get_texture()->get_texture_type()) {
   case Texture::TT_1d_texture:
   case Texture::TT_2d_texture:
     filter_caps = scrn._d3dcaps.TextureFilterCaps;
@@ -251,15 +250,15 @@ create_texture(DXScreenData &scrn) {
 
   if (orig_width != target_width || orig_height != target_height ||
       orig_depth != target_depth) {
-    if (_texture->get_texture_type() == Texture::TT_3d_texture) {
+    if (get_texture()->get_texture_type() == Texture::TT_3d_texture) {
       dxgsg9_cat.info()
-        << "Reducing size of " << _texture->get_name()
+        << "Reducing size of " << get_texture()->get_name()
         << " from " << orig_width << "x" << orig_height << "x" << orig_depth
         << " to " << target_width << "x" << target_height
         << "x" << target_depth << "\n";
     } else {
       dxgsg9_cat.info()
-        << "Reducing size of " << _texture->get_name()
+        << "Reducing size of " << get_texture()->get_name()
         << " from " << orig_width << "x" << orig_height
         << " to " << target_width << "x" << target_height << "\n";
     }
@@ -469,7 +468,7 @@ create_texture(DXScreenData &scrn) {
 
   // if we've gotten here, haven't found a match
   dxgsg9_cat.error()
-    << error_message << ": " << _texture->get_name() << endl
+    << error_message << ": " << get_texture()->get_name() << endl
     << "NumColorChannels: " << num_color_channels << "; NumAlphaBits: "
     << num_alpha_bits << "; targetbpp: " <<target_bpp
     << "; _supported_tex_formats_mask: 0x"
@@ -482,7 +481,7 @@ create_texture(DXScreenData &scrn) {
  found_matching_format:
   // We found a suitable format that matches the texture's format.
 
-  if (_texture->get_match_framebuffer_format()) {
+  if (get_texture()->get_match_framebuffer_format()) {
     // Instead of creating a texture with the found format, we will
     // need to make one that exactly matches the framebuffer's
     // format.  Look up what that format is.
@@ -520,7 +519,7 @@ create_texture(DXScreenData &scrn) {
 
   Texture::FilterType ft;
 
-  ft = _texture->get_magfilter();
+  ft = get_texture()->get_magfilter();
   if ((ft != Texture::FT_linear) && ft != Texture::FT_nearest) {
     // mipmap settings make no sense for magfilter
     if (ft == Texture::FT_nearest_mipmap_nearest) {
@@ -534,10 +533,10 @@ create_texture(DXScreenData &scrn) {
       (filter_caps & D3DPTFILTERCAPS_MAGFLINEAR) == 0) {
     ft = Texture::FT_nearest;
   }
-  _texture->set_magfilter(ft);
+  get_texture()->set_magfilter(ft);
 
   // figure out if we are mipmapping this texture
-  ft = _texture->get_minfilter();
+  ft = get_texture()->get_minfilter();
   _has_mipmaps = false;
 
   if (!dx_ignore_mipmaps) {  // set if no HW mipmap capable
@@ -555,11 +554,11 @@ create_texture(DXScreenData &scrn) {
         if (ft != Texture::FT_linear_mipmap_linear) {
           dxgsg9_cat.spam()
             << "Forcing trilinear mipmapping on DX texture ["
-            << _texture->get_name() << "]\n";
+            << get_texture()->get_name() << "]\n";
         }
       }
       ft = Texture::FT_linear_mipmap_linear;
-      _texture->set_minfilter(ft);
+      get_texture()->set_minfilter(ft);
     }
 
   } else if ((ft == Texture::FT_nearest_mipmap_nearest) ||   // cvt to no-mipmap filter types
@@ -611,23 +610,23 @@ create_texture(DXScreenData &scrn) {
     break;
   }
 
-  _texture->set_minfilter(ft);
+  get_texture()->set_minfilter(ft);
 
   uint aniso_degree;
 
   aniso_degree = 1;
   if (scrn._d3dcaps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY) {
-    aniso_degree = _texture->get_anisotropic_degree();
+    aniso_degree = get_texture()->get_anisotropic_degree();
     if ((aniso_degree>scrn._d3dcaps.MaxAnisotropy) ||
         dx_force_anisotropic_filtering) {
       aniso_degree = scrn._d3dcaps.MaxAnisotropy;
     }
   }
-  _texture->set_anisotropic_degree(aniso_degree);
+  get_texture()->set_anisotropic_degree(aniso_degree);
 
 #ifdef _DEBUG
   dxgsg9_cat.spam()
-    << "create_texture: setting aniso degree for " << _texture->get_name()
+    << "create_texture: setting aniso degree for " << get_texture()->get_name()
     << " to: " << aniso_degree << endl;
 #endif
 
@@ -639,7 +638,7 @@ create_texture(DXScreenData &scrn) {
 
     if (dxgsg9_cat.is_debug()) {
       dxgsg9_cat.debug()
-        << "create_texture: generating mipmaps for " << _texture->get_name()
+        << "create_texture: generating mipmaps for " << get_texture()->get_name()
         << endl;
     }
   } else {
@@ -649,7 +648,7 @@ create_texture(DXScreenData &scrn) {
   DWORD usage;
   D3DPOOL pool;
 
-  if (_texture->get_render_to_texture ( )) {
+  if (get_texture()->get_render_to_texture ( )) {
     // REQUIRED PARAMETERS
     _managed = false;
     pool = D3DPOOL_DEFAULT;
@@ -752,7 +751,7 @@ create_texture(DXScreenData &scrn) {
   {
     data_size = (int) ((float) data_size * 1.3f);
   }
-  if (_texture->get_texture_type() == Texture::TT_cube_map)
+  if (get_texture()->get_texture_type() == Texture::TT_cube_map)
   {
     data_size *= 6;
   }
@@ -762,7 +761,7 @@ create_texture(DXScreenData &scrn) {
   attempts = 0;
   do
   {
-    switch (_texture->get_texture_type()) {
+    switch (get_texture()->get_texture_type()) {
     case Texture::TT_1d_texture:
     case Texture::TT_2d_texture:
       hr = scrn._d3d_device->CreateTexture
@@ -800,7 +799,7 @@ create_texture(DXScreenData &scrn) {
 
   if (DEBUG_TEXTURES && dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
-      << "create_texture: " << _texture->get_name()
+      << "create_texture: " << get_texture()->get_name()
       << " converting panda equivalent of " << D3DFormatStr(_d3d_format)
       << " => " << D3DFormatStr(target_pixel_format) << endl;
   }
@@ -814,7 +813,7 @@ create_texture(DXScreenData &scrn) {
 
 
   // must not put render to texture into LRU
-  if (_lru_page == 0 && _managed == false && _texture->get_render_to_texture ( ) == false)
+  if (_lru_page == 0 && _managed == false && get_texture()->get_render_to_texture ( ) == false)
   {
     Lru *lru;
 
@@ -1130,14 +1129,14 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
 ////////////////////////////////////////////////////////////////////
 HRESULT DXTextureContext9::
 fill_d3d_texture_pixels() {
-  if (_texture->get_texture_type() == Texture::TT_3d_texture) {
+  if (get_texture()->get_texture_type() == Texture::TT_3d_texture) {
     return fill_d3d_volume_texture_pixels();
   }
 
   HRESULT hr = E_FAIL;
-  nassertr(IS_VALID_PTR(_texture), E_FAIL);
+  nassertr(IS_VALID_PTR(get_texture()), E_FAIL);
 
-  CPTA_uchar image = _texture->get_ram_image();
+  CPTA_uchar image = get_texture()->get_ram_image();
   if (image.is_null()) {
     // The texture doesn't have an image to load.  That's ok; it
     // might be a texture we've rendered to by frame buffer
@@ -1149,13 +1148,13 @@ fill_d3d_texture_pixels() {
 
   nassertr(IS_VALID_PTR(_d3d_texture), E_FAIL);
 
-  DWORD orig_width  = (DWORD) _texture->get_x_size();
-  DWORD orig_height = (DWORD) _texture->get_y_size();
-  DWORD orig_depth = (DWORD) _texture->get_z_size();
-  DWORD num_color_channels = _texture->get_num_components();
+  DWORD orig_width  = (DWORD) get_texture()->get_x_size();
+  DWORD orig_height = (DWORD) get_texture()->get_y_size();
+  DWORD orig_depth = (DWORD) get_texture()->get_z_size();
+  DWORD num_color_channels = get_texture()->get_num_components();
   D3DFORMAT source_format = _d3d_format;
   BYTE *image_pixels = (BYTE*)image.p();
-  int component_width = _texture->get_component_width();
+  int component_width = get_texture()->get_component_width();
 
   nassertr(IS_VALID_PTR(image_pixels), E_FAIL);
 
@@ -1164,10 +1163,10 @@ fill_d3d_texture_pixels() {
   BYTE *pixels = NULL;
 
   for (unsigned int di = 0; di < orig_depth; di++) {
-    pixels = image_pixels + di * _texture->get_expected_ram_page_size();
+    pixels = image_pixels + di * get_texture()->get_expected_ram_page_size();
     mip_level_0 = NULL;
 
-    if (_texture->get_texture_type() == Texture::TT_cube_map) {
+    if (get_texture()->get_texture_type() == Texture::TT_cube_map) {
       nassertr(IS_VALID_PTR(_d3d_cube_texture), E_FAIL);
       hr = _d3d_cube_texture->GetCubeMapSurface((D3DCUBEMAP_FACES)di, 0, &mip_level_0);
     } else {
@@ -1177,7 +1176,7 @@ fill_d3d_texture_pixels() {
 
     if (FAILED(hr)) {
       dxgsg9_cat.error()
-        << "FillDDSurfaceTexturePixels failed for " << _texture->get_name()
+        << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
       << ", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
       return E_FAIL;
     }
@@ -1231,7 +1230,7 @@ fill_d3d_texture_pixels() {
       // original image, but dx8 doesn't support high-precision images
       // anyway.
 
-      int num_components = _texture->get_num_components();
+      int num_components = get_texture()->get_num_components();
       int num_pixels = orig_width * orig_height * num_components;
       BYTE *temp_buffer = new BYTE[num_pixels];
       if (!IS_VALID_PTR(temp_buffer)) {
@@ -1259,7 +1258,7 @@ fill_d3d_texture_pixels() {
        &source_size, level_0_filter, (D3DCOLOR)0x0);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
-        << "FillDDSurfaceTexturePixels failed for " << _texture->get_name()
+        << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
         << ", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
       goto exit_FillDDSurf;
     }
@@ -1277,7 +1276,7 @@ fill_d3d_texture_pixels() {
                              mip_filter_flags);
       if (FAILED(hr)) {
         dxgsg9_cat.error()
-          << "FillDDSurfaceTexturePixels failed for " << _texture->get_name()
+          << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
           << ", D3DXFilterTex failed" << D3DERRORSTRING(hr);
         goto exit_FillDDSurf;
       }
@@ -1308,9 +1307,9 @@ fill_d3d_texture_pixels() {
 HRESULT DXTextureContext9::
 fill_d3d_volume_texture_pixels() {
   HRESULT hr = E_FAIL;
-  nassertr(IS_VALID_PTR(_texture), E_FAIL);
+  nassertr(IS_VALID_PTR(get_texture()), E_FAIL);
 
-  CPTA_uchar image = _texture->get_ram_image();
+  CPTA_uchar image = get_texture()->get_ram_image();
   if (image.is_null()) {
     // The texture doesn't have an image to load.  That's ok; it
     // might be a texture we've rendered to by frame buffer
@@ -1321,15 +1320,15 @@ fill_d3d_volume_texture_pixels() {
   PStatTimer timer(GraphicsStateGuardian::_load_texture_pcollector);
 
   nassertr(IS_VALID_PTR(_d3d_texture), E_FAIL);
-  nassertr(_texture->get_texture_type() == Texture::TT_3d_texture, E_FAIL);
+  nassertr(get_texture()->get_texture_type() == Texture::TT_3d_texture, E_FAIL);
 
-  DWORD orig_width  = (DWORD) _texture->get_x_size();
-  DWORD orig_height = (DWORD) _texture->get_y_size();
-  DWORD orig_depth = (DWORD) _texture->get_z_size();
-  DWORD num_color_channels = _texture->get_num_components();
+  DWORD orig_width  = (DWORD) get_texture()->get_x_size();
+  DWORD orig_height = (DWORD) get_texture()->get_y_size();
+  DWORD orig_depth = (DWORD) get_texture()->get_z_size();
+  DWORD num_color_channels = get_texture()->get_num_components();
   D3DFORMAT source_format = _d3d_format;
   BYTE *image_pixels = (BYTE*)image.p();
-  int component_width = _texture->get_component_width();
+  int component_width = get_texture()->get_component_width();
 
   nassertr(IS_VALID_PTR(image_pixels), E_FAIL);
 
@@ -1342,7 +1341,7 @@ fill_d3d_volume_texture_pixels() {
 
   if (FAILED(hr)) {
     dxgsg9_cat.error()
-      << "FillDDSurfaceTexturePixels failed for " << _texture->get_name()
+      << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
       << ", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
     return E_FAIL;
   }
@@ -1401,7 +1400,7 @@ fill_d3d_volume_texture_pixels() {
     // original image, but dx8 doesn't support high-precision images
     // anyway.
 
-    int num_components = _texture->get_num_components();
+    int num_components = get_texture()->get_num_components();
     int num_pixels = orig_width * orig_height * orig_depth * num_components;
     BYTE *temp_buffer = new BYTE[num_pixels];
     if (!IS_VALID_PTR(temp_buffer)) {
@@ -1430,7 +1429,7 @@ fill_d3d_volume_texture_pixels() {
      &source_size, level_0_filter, (D3DCOLOR)0x0);
   if (FAILED(hr)) {
     dxgsg9_cat.error()
-      << "FillDDSurfaceTexturePixels failed for " << _texture->get_name()
+      << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
       << ", D3DXLoadVolumeFromMem failed" << D3DERRORSTRING(hr);
     goto exit_FillDDSurf;
   }
@@ -1448,7 +1447,7 @@ fill_d3d_volume_texture_pixels() {
                            mip_filter_flags);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
-        << "FillDDSurfaceTexturePixels failed for " << _texture->get_name()
+        << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
         << ", D3DXFilterTex failed" << D3DERRORSTRING(hr);
       goto exit_FillDDSurf;
     }

@@ -21,9 +21,9 @@
 
 #include "pandabase.h"
 
-#include "savedContext.h"
-#include "updateSeq.h"
+#include "bufferContext.h"
 #include "geomPrimitive.h"
+#include "preparedGraphicsObjects.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : IndexBufferContext
@@ -36,17 +36,15 @@
 //               allocate a vertex buffer for the array.  OpenGL can
 //               create a buffer object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA IndexBufferContext : public SavedContext {
+class EXPCL_PANDA IndexBufferContext : public BufferContext {
 public:
-  INLINE IndexBufferContext(GeomPrimitive *data);
+  INLINE IndexBufferContext(PreparedGraphicsObjects *pgo, GeomPrimitive *data);
 
   INLINE GeomPrimitive *get_data() const;
 
-  INLINE int get_data_size_bytes() const;
   INLINE bool changed_size() const;
   INLINE bool changed_usage_hint() const;
   INLINE bool was_modified() const;
-  INLINE UpdateSeq get_modified() const;
 
   INLINE void mark_loaded();
 
@@ -55,8 +53,6 @@ private:
   // the GSG both own their IndexBufferContexts!  That would create a
   // circular reference count.
   GeomPrimitive *_data;
-  UpdateSeq _modified;
-  int _data_size_bytes;
   GeomEnums::UsageHint _usage_hint;
 
 public:
@@ -64,9 +60,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    SavedContext::init_type();
+    BufferContext::init_type();
     register_type(_type_handle, "IndexBufferContext",
-                  SavedContext::get_class_type());
+                  BufferContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -1,5 +1,5 @@
-// Filename: glTextureContext.cxx
-// Created by:  drose (07Oct99)
+// Filename: linkedListNode.cxx
+// Created by:  drose (16Mar06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,6 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "notify.h"
-
-TypeHandle CLP(TextureContext)::_type_handle;
+#include "linkedListNode.h"

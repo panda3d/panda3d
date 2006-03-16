@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXTextureContext8 : public TextureContext {
 public:
-  DXTextureContext8(Texture *tex);
+  DXTextureContext8(PreparedGraphicsObjects *pgo, Texture *tex);
   virtual ~DXTextureContext8();
 
   bool create_texture(DXScreenData &scrn);

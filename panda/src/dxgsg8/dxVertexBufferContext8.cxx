@@ -33,8 +33,8 @@ TypeHandle DXVertexBufferContext8::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DXVertexBufferContext8::
-DXVertexBufferContext8(GeomVertexArrayData *data) :
-  VertexBufferContext(data),
+DXVertexBufferContext8(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data) :
+  VertexBufferContext(pgo, data),
   _vbuffer(NULL)
 {
   // Now fill in the FVF code.

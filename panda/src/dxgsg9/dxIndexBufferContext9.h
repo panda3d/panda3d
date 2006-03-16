@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXIndexBufferContext9 : public IndexBufferContext {
 public:
-  DXIndexBufferContext9(GeomPrimitive *data);
+  DXIndexBufferContext9(PreparedGraphicsObjects *pgo, GeomPrimitive *data);
   virtual ~DXIndexBufferContext9();
 
   void free_ibuffer(void);

@@ -11,6 +11,9 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
+    bufferContext.I bufferContext.h \
+    bufferContextChain.I bufferContextChain.h \
+    bufferResidencyTracker.I bufferResidencyTracker.h \
     config_gobj.h \
     geom.h geom.I \
     geomContext.I geomContext.h \
@@ -61,6 +64,9 @@
     videoTexture.I videoTexture.h
     
   #define INCLUDED_SOURCES \
+    bufferContext.cxx \
+    bufferContextChain.cxx \
+    bufferResidencyTracker.cxx \
     config_gobj.cxx \
     geomContext.cxx \
     geom.cxx \
@@ -108,6 +114,9 @@
     videoTexture.cxx
 
   #define INSTALL_HEADERS \
+    bufferContext.I bufferContext.h \
+    bufferContextChain.I bufferContextChain.h \
+    bufferResidencyTracker.I bufferResidencyTracker.h \
     config_gobj.h \
     geom.I geom.h \
     textureContext.I textureContext.h \

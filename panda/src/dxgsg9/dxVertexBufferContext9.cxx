@@ -34,8 +34,8 @@ TypeHandle DXVertexBufferContext9::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DXVertexBufferContext9::
-DXVertexBufferContext9(GeomVertexArrayData *data, DXScreenData &scrn) :
-  VertexBufferContext(data),
+DXVertexBufferContext9(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data, DXScreenData &scrn) :
+  VertexBufferContext(pgo, data),
   _vbuffer(NULL)
 {
   // Now fill in the FVF code.

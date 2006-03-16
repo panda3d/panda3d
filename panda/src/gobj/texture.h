@@ -26,6 +26,7 @@
 #include "namable.h"
 #include "internalName.h"
 #include "graphicsStateGuardianBase.h"
+#include "updateSeq.h"
 #include "pmap.h"
 
 class PNMImage;
@@ -267,6 +268,8 @@ PUBLISHED:
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
 
+  INLINE UpdateSeq get_modified() const;
+
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
@@ -306,19 +309,6 @@ public:
 
   TextureContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                               GraphicsStateGuardianBase *gsg);
-
-  // These bits are used as parameters to Texture::mark_dirty() and
-  // also TextureContext::mark_dirty() (and related functions in
-  // TextureContext).
-  enum DirtyFlags {
-    DF_image      = 0x001,  // The image pixels have changed.
-    DF_wrap       = 0x002,  // The wrap properties have changed.
-    DF_filter     = 0x004,  // The minfilter or magfilter have changed.
-    DF_mipmap     = 0x008,  // The use of mipmaps or not has changed.
-    DF_border     = 0x010,  // The border has changed.
-  };
-
-  void mark_dirty(int flags_to_set);
 
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
@@ -415,15 +405,11 @@ protected:
   typedef pmap<PT(InternalName), PT(Texture)> RelatedTextures;
   RelatedTextures _related_textures;
 
-  // This value represents the intersection of all the dirty flags of
-  // the various TextureContexts that might be associated with this
-  // texture.
-  int _all_dirty_flags;
-
   PTA_uchar _ram_image;
   CompressionMode _ram_image_compression;
   size_t _ram_page_size;
 
+  UpdateSeq _modified;
 
   // Datagram stuff
 public:

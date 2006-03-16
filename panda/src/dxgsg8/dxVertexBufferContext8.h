@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXVertexBufferContext8 : public VertexBufferContext {
 public:
-  DXVertexBufferContext8(GeomVertexArrayData *data);
+  DXVertexBufferContext8(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data);
   virtual ~DXVertexBufferContext8();
 
   void create_vbuffer(DXScreenData &scrn);

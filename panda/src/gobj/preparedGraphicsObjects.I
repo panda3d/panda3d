@@ -18,6 +18,18 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_name
+//       Access: Public
+//  Description: Returns the name of the PreparedGraphicsObjects
+//               structure.  This is an arbitrary name that serves
+//               mainly to uniquify the context for PStats reporting.
+////////////////////////////////////////////////////////////////////
+INLINE const string &PreparedGraphicsObjects::
+get_name() const {
+  return _name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::release_all
 //       Access: Public
 //  Description: Releases all prepared objects of all kinds at once.

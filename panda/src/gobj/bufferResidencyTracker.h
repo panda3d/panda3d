@@ -1,0 +1,92 @@
+// Filename: bufferResidencyTracker.h
+// Created by:  drose (16Mar06)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef BUFFERRESIDENCYTRACKER_H
+#define BUFFERRESIDENCYTRACKER_H
+
+#include "pandabase.h"
+#include "bufferContextChain.h"
+#include "pStatCollector.h"
+
+class BufferContext;
+
+////////////////////////////////////////////////////////////////////
+//       Class : BufferResidencyTracker
+// Description : This class is used to keep track of the current state
+//               of all the BufferContexts for a particular graphics
+//               context: whether each one is active (rendered this
+//               frame) or inactive (not rendered this frame), and
+//               whether it is resident or nonresident in video
+//               memory.
+//
+//               The primary purpose of this class is to facilitate
+//               PStats reporting of video card memory usage.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA BufferResidencyTracker {
+public:
+  BufferResidencyTracker(const string &pgo_name, const string &type_name);
+
+  void begin_frame();
+  void end_frame();
+
+  INLINE BufferContextChain &get_inactive_nonresident();
+  INLINE BufferContextChain &get_active_nonresident();
+  INLINE BufferContextChain &get_inactive_resident();
+  INLINE BufferContextChain &get_active_resident();
+
+private:
+  void move_inactive(BufferContextChain &inactive, BufferContextChain &active);
+
+private:
+  enum State {
+    // Individual bits.
+    S_active   = 0x01,
+    S_resident = 0x02,
+
+    // Aggregate bits: unions of the above.
+    S_inactive_nonresident = 0x00,
+    S_active_nonresident   = 0x01,
+    S_inactive_resident    = 0x02,
+    S_active_resident      = 0x03,
+
+    // The total number of different states.
+    S_num_states = 4,
+  };
+
+  // One chain for each of the possible states, ordered as above.
+  BufferContextChain _chains[S_num_states];
+
+  // A couple of PStatCollectors just to organize names.
+  static PStatCollector _gmem_collector;
+  PStatCollector _pgo_collector;
+
+  // One PStatCollector for each state.  These are ordered in reverse
+  // order that we would like them to appear in the PStats graph.
+  PStatCollector _active_resident_collector;
+  PStatCollector _active_nonresident_collector;
+  PStatCollector _inactive_resident_collector;
+  PStatCollector _inactive_nonresident_collector;
+
+  // The frame number currently considered "active".
+  int _active_frame;
+  friend class BufferContext;
+};
+
+#include "bufferResidencyTracker.I"
+
+#endif

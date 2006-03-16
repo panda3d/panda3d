@@ -1236,8 +1236,20 @@ end_frame() {
     GLP(Flush)();
   }
 
+#ifdef DO_PSTATS
+  // Check for textures, etc., that are no longer resident.
+  check_nonresident_texture(_prepared_objects->_texture_residency.get_inactive_resident());
+  check_nonresident_texture(_prepared_objects->_texture_residency.get_active_resident());
+
+  // OpenGL provides no methods for querying whether a buffer object
+  // (vertex buffer) is resident.  In fact, the API appears geared
+  // towards the assumption that such buffers are always resident.
+  // OK.
+#endif
+
   report_my_gl_errors();
 }
+    
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::begin_draw_primitives
@@ -2117,7 +2129,7 @@ prepare_texture(Texture *tex) {
     break;
   }
 
-  CLP(TextureContext) *gtc = new CLP(TextureContext)(tex);
+  CLP(TextureContext) *gtc = new CLP(TextureContext)(_prepared_objects, tex);
   GLP(GenTextures)(1, &gtc->_index);
   report_my_gl_errors();
 
@@ -2529,7 +2541,7 @@ record_deleted_display_list(GLuint index) {
 VertexBufferContext *CLP(GraphicsStateGuardian)::
 prepare_vertex_buffer(GeomVertexArrayData *data) {
   if (_supports_buffers) {
-    CLP(VertexBufferContext) *gvbc = new CLP(VertexBufferContext)(data);
+    CLP(VertexBufferContext) *gvbc = new CLP(VertexBufferContext)(_prepared_objects, data);
     _glGenBuffers(1, &gvbc->_index);
 
     if (GLCAT.is_debug()) {
@@ -2566,7 +2578,7 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     }
     _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
     _current_vbuffer_index = gvbc->_index;
-    add_to_vertex_buffer_record(gvbc);
+    gvbc->set_active(true);
   }
 
   if (gvbc->was_modified()) {
@@ -2589,7 +2601,7 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
       }
       _data_transferred_pcollector.add_level(num_bytes);
     }
-    add_to_total_buffer_record(gvbc);
+
     gvbc->mark_loaded();
   }
 
@@ -2696,7 +2708,7 @@ setup_array_data(const GeomVertexArrayData *data) {
 IndexBufferContext *CLP(GraphicsStateGuardian)::
 prepare_index_buffer(GeomPrimitive *data) {
   if (_supports_buffers) {
-    CLP(IndexBufferContext) *gibc = new CLP(IndexBufferContext)(data);
+    CLP(IndexBufferContext) *gibc = new CLP(IndexBufferContext)(_prepared_objects, data);
     _glGenBuffers(1, &gibc->_index);
 
     if (GLCAT.is_debug()) {
@@ -2734,7 +2746,7 @@ apply_index_buffer(IndexBufferContext *ibc) {
     }
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gibc->_index);
     _current_ibuffer_index = gibc->_index;
-    add_to_index_buffer_record(gibc);
+    gibc->set_active(true);
   }
 
   if (gibc->was_modified()) {
@@ -2757,7 +2769,6 @@ apply_index_buffer(IndexBufferContext *ibc) {
       }
       _data_transferred_pcollector.add_level(num_bytes);
     }
-    add_to_total_buffer_record(gibc);
     gibc->mark_loaded();
   }
 
@@ -6239,24 +6250,18 @@ void CLP(GraphicsStateGuardian)::
 apply_texture(TextureContext *tc) {
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
-  add_to_texture_record(gtc);
-  GLenum target = get_texture_target(gtc->_texture->get_texture_type());
+  gtc->set_active(true);
+  GLenum target = get_texture_target(gtc->get_texture()->get_texture_type());
   if (target == GL_NONE) {
     return;
   }
   GLP(BindTexture)(target, gtc->_index);
 
-  int dirty = gtc->get_dirty_flags();
-  if ((dirty & (Texture::DF_wrap | Texture::DF_filter | Texture::DF_border)) != 0) {
-    // We need to re-specify the texture properties.
-    specify_texture(gtc->_texture);
-  }
-  if ((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
-    // We need to re-upload the image.
+  if (gtc->was_modified()) {
+    specify_texture(gtc->get_texture());
     upload_texture(gtc);
+    gtc->mark_loaded();
   }
-
-  gtc->clear_dirty_flags();
 
   report_my_gl_errors();
 }
@@ -6272,7 +6277,7 @@ apply_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 upload_texture(CLP(TextureContext) *gtc) {
-  Texture *tex = gtc->_texture;
+  Texture *tex = gtc->get_texture();
   CPTA_uchar image = tex->get_ram_image();
   if (image.is_null()) {
     return false;
@@ -6451,7 +6456,7 @@ upload_texture(CLP(TextureContext) *gtc) {
     gtc->_depth = depth;
 
 #ifdef DO_PSTATS
-    gtc->_texture_memory_size = get_texture_memory_size(tex);
+    gtc->update_data_size_bytes(get_texture_memory_size(tex));
 #endif
 
 #ifndef NDEBUG
@@ -6502,7 +6507,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
 #endif
 #ifndef NDEBUG
     if (CLP(show_mipmaps) && target == GL_TEXTURE_2D) {
-      build_phony_mipmaps(gtc->_texture);
+      build_phony_mipmaps(gtc->get_texture());
       report_my_gl_errors();
       return true;
 
@@ -6552,10 +6557,10 @@ upload_texture_image(CLP(TextureContext) *gtc,
   if (GLCAT.is_debug()) {
     if (image_compression != Texture::CM_off) {
       GLCAT.debug()
-	<< "loading pre-compressed texture " << gtc->_texture->get_name() << "\n";
+	<< "loading pre-compressed texture " << gtc->get_texture()->get_name() << "\n";
     } else if (is_compressed_format(internal_format)) {
       GLCAT.debug()
-	<< "compressing texture " << gtc->_texture->get_name() << "\n";
+	<< "compressing texture " << gtc->get_texture()->get_name() << "\n";
     }
   }
 
@@ -6640,7 +6645,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
   if (error_code != GL_NO_ERROR) {
     const GLubyte *error_string = GLUP(ErrorString)(error_code);
     GLCAT.error()
-      << "GL texture creation failed for " << gtc->_texture->get_name();
+      << "GL texture creation failed for " << gtc->get_texture()->get_name();
     if (error_string != (const GLubyte *)NULL) {
       GLCAT.error(false)
         << " : " << error_string;
@@ -6735,6 +6740,42 @@ get_texture_memory_size(Texture *tex) const {
   }
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::check_nonresident_texture
+//       Access: Private
+//  Description: Checks the list of resident texture objects to see if
+//               any have recently been evicted.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+check_nonresident_texture(BufferContextChain &chain) {
+  size_t num_textures = chain.get_count();
+  CLP(TextureContext) **gtc_list = (CLP(TextureContext) **)alloca(num_textures * sizeof(CLP(TextureContext) *));
+  GLuint *texture_list = (GLuint *)alloca(num_textures * sizeof(GLuint));
+  size_t ti = 0;
+  BufferContext *node = chain.get_first();
+  while (node != (BufferContext *)NULL) {
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), node);
+    gtc_list[ti] = gtc;
+    texture_list[ti] = gtc->_index;
+    node = node->get_next();
+    ++ti;
+  }
+  nassertv(ti == num_textures);
+  GLboolean *results = (GLboolean *)alloca(num_textures * sizeof(GLboolean));
+  bool all_resident = (glAreTexturesResident(num_textures, texture_list, results) != 0);
+
+  report_my_gl_errors();
+
+  if (!all_resident) {
+    // Some are now nonresident.
+    for (ti = 0; ti < num_textures; ++ti) {
+      if (!results[ti]) {
+        gtc_list[ti]->set_resident(false);
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

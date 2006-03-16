@@ -23,8 +23,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(VertexBufferContext)::
-CLP(VertexBufferContext)(GeomVertexArrayData *data) :
-  VertexBufferContext(data)
+CLP(VertexBufferContext)(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data) :
+  VertexBufferContext(pgo, data)
 {
   _index = 0;
 }

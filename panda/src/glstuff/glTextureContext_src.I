@@ -23,10 +23,9 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(TextureContext)::
-CLP(TextureContext)(Texture *tex) :
-  TextureContext(tex)
+CLP(TextureContext)(PreparedGraphicsObjects *pgo, Texture *tex) :
+  TextureContext(pgo, tex)
 {
   _index = 0;
   _already_applied = false;
-  _texture_memory_size = 0;
 }

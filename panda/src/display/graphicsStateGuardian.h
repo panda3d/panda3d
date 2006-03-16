@@ -247,29 +247,7 @@ protected:
   INLINE void set_properties(const FrameBufferProperties &properties);
 
 #ifdef DO_PSTATS
-  // These functions are used to update the active texture memory
-  // usage record (and other frame-based measurements) in Pstats.
   void init_frame_pstats();
-  void add_to_texture_record(TextureContext *tc);
-  void add_to_geom_record(GeomContext *gc);
-  void add_to_vertex_buffer_record(VertexBufferContext *vbc);
-  void add_to_index_buffer_record(IndexBufferContext *ibc);
-  void add_to_total_buffer_record(VertexBufferContext *vbc);
-  void add_to_total_buffer_record(IndexBufferContext *ibc);
-
-  pset<TextureContext *> _current_textures;
-  pset<GeomContext *> _current_geoms;
-  pset<VertexBufferContext *> _current_vertex_buffers;
-  pset<IndexBufferContext *> _current_index_buffers;
-#else
-  INLINE void init_frame_pstats() { }
-  INLINE void add_to_texture_record(TextureContext *) { }
-  INLINE void add_to_geom_record(GeomContext *) { }
-  INLINE void record_state_change(TypeHandle) { }
-  INLINE void add_to_vertex_buffer_record(VertexBufferContext *) { }
-  INLINE void add_to_index_buffer_record(IndexBufferContext *) { }
-  INLINE void add_to_total_buffer_record(VertexBufferContext *) { };
-  INLINE void add_to_total_buffer_record(IndexBufferContext *) { };
 #endif
 
   static CPT(RenderState) get_unlit_state();
@@ -374,10 +352,6 @@ protected:
   
 public:
   // Statistics
-  static PStatCollector _total_texusage_pcollector;
-  static PStatCollector _active_texusage_pcollector;
-  static PStatCollector _texture_count_pcollector;
-  static PStatCollector _active_texture_count_pcollector;
   static PStatCollector _vertex_buffer_switch_pcollector;
   static PStatCollector _index_buffer_switch_pcollector;
   static PStatCollector _load_vertex_buffer_pcollector;
@@ -386,15 +360,6 @@ public:
   static PStatCollector _create_index_buffer_pcollector;
   static PStatCollector _load_texture_pcollector;
   static PStatCollector _data_transferred_pcollector;
-  static PStatCollector _total_geom_pcollector;
-  static PStatCollector _active_geom_pcollector;
-  static PStatCollector _total_buffers_pcollector;
-  static PStatCollector _active_vertex_buffers_pcollector;
-  static PStatCollector _active_index_buffers_pcollector;
-  static PStatCollector _total_geom_node_pcollector;
-  static PStatCollector _active_geom_node_pcollector;
-  static PStatCollector _total_texmem_pcollector;
-  static PStatCollector _used_texmem_pcollector;
   static PStatCollector _texmgrmem_total_pcollector;
   static PStatCollector _texmgrmem_resident_pcollector;
   static PStatCollector _primitive_batches_pcollector;

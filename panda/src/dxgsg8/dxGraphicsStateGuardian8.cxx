@@ -147,11 +147,11 @@ DXGraphicsStateGuardian8::
 ////////////////////////////////////////////////////////////////////
 TextureContext *DXGraphicsStateGuardian8::
 prepare_texture(Texture *tex) {
-  DXTextureContext8 *dtc = new DXTextureContext8(tex);
+  DXTextureContext8 *dtc = new DXTextureContext8(_prepared_objects, tex);
 
   if (!get_supports_compressed_texture_format(tex->get_ram_image_compression())) {
     dxgsg8_cat.error()
-      << *dtc->_texture << " is stored in an unsupported compressed format.\n";
+      << *dtc->get_texture() << " is stored in an unsupported compressed format.\n";
     return NULL;
   }
   
@@ -178,30 +178,17 @@ apply_texture(int i, TextureContext *tc) {
     return;
   }
 
-#ifdef DO_PSTATS
-  add_to_texture_record(tc);
-#endif
+  tc->set_active(true);
 
   DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
 
-  int dirty = dtc->get_dirty_flags();
-
   // If the texture image has changed, or if its use of mipmaps has
-  // changed, we need to re-create the image.  Ignore other types of
-  // changes, which aren't significant for DX.
+  // changed, we need to re-create the image.
 
-  if ((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
-    // If this is *only* because of a mipmap change, issue a
-    // warning--it is likely that this change is the result of an
-    // error or oversight.
-    if ((dirty & Texture::DF_image) == 0) {
-      dxgsg8_cat.warning()
-        << *dtc->_texture << " has changed mipmap state.\n";
-    }
-
-    if (!get_supports_compressed_texture_format(tc->_texture->get_ram_image_compression())) {
+  if (dtc->was_modified()) {
+    if (!get_supports_compressed_texture_format(tc->get_texture()->get_ram_image_compression())) {
       dxgsg8_cat.error()
-        << *dtc->_texture << " is stored in an unsupported compressed format.\n";
+        << *dtc->get_texture() << " is stored in an unsupported compressed format.\n";
       _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
       return;
     }
@@ -209,13 +196,13 @@ apply_texture(int i, TextureContext *tc) {
     if (!dtc->create_texture(*_screen)) {
       // Oops, we can't re-create the texture for some reason.
       dxgsg8_cat.error()
-        << "Unable to re-create texture " << *dtc->_texture << endl;
+        << "Unable to re-create texture " << *dtc->get_texture() << endl;
       _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
       return;
     }
   }
 
-  Texture *tex = tc->_texture;
+  Texture *tex = tc->get_texture();
   Texture::WrapMode wrap_u, wrap_v, wrap_w;
   wrap_u = tex->get_wrap_u();
   wrap_v = tex->get_wrap_v();
@@ -303,7 +290,7 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 VertexBufferContext *DXGraphicsStateGuardian8::
 prepare_vertex_buffer(GeomVertexArrayData *data) {
-  DXVertexBufferContext8 *dvbc = new DXVertexBufferContext8(data);
+  DXVertexBufferContext8 *dvbc = new DXVertexBufferContext8(_prepared_objects, data);
   return dvbc;
 }
 
@@ -327,14 +314,13 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     if (dvbc->_vbuffer != NULL) {
       dvbc->upload_data();
 
-      add_to_total_buffer_record(dvbc);
       dvbc->mark_loaded();
 
       _d3d_device->SetStreamSource
         (0, dvbc->_vbuffer, dvbc->get_data()->get_array_format()->get_stride());
       _active_vbuffer = dvbc;
       _active_ibuffer = NULL;
-      add_to_vertex_buffer_record(dvbc);
+      dvbc->set_active(true);
 
     } else {
       _active_vbuffer = NULL;
@@ -349,8 +335,6 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
       }
 
       dvbc->upload_data();
-
-      add_to_total_buffer_record(dvbc);
       dvbc->mark_loaded();
       _active_vbuffer = NULL;
     }
@@ -360,7 +344,7 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
         (0, dvbc->_vbuffer, dvbc->get_data()->get_array_format()->get_stride());
       _active_vbuffer = dvbc;
       _active_ibuffer = NULL;
-      add_to_vertex_buffer_record(dvbc);
+      dvbc->set_active(true);
     }
   }
 
@@ -403,7 +387,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 ////////////////////////////////////////////////////////////////////
 IndexBufferContext *DXGraphicsStateGuardian8::
 prepare_index_buffer(GeomPrimitive *data) {
-  DXIndexBufferContext8 *dibc = new DXIndexBufferContext8(data);
+  DXIndexBufferContext8 *dibc = new DXIndexBufferContext8(_prepared_objects, data);
   return dibc;
 }
 
@@ -423,12 +407,11 @@ apply_index_buffer(IndexBufferContext *ibc) {
 
     if (dibc->_ibuffer != NULL) {
       dibc->upload_data();
-      add_to_total_buffer_record(dibc);
       dibc->mark_loaded();
 
       _d3d_device->SetIndices(dibc->_ibuffer, 0);
       _active_ibuffer = dibc;
-      add_to_index_buffer_record(dibc);
+      dibc->set_active(true);
 
     } else {
       _d3d_device->SetIndices(NULL, 0);
@@ -445,7 +428,6 @@ apply_index_buffer(IndexBufferContext *ibc) {
 
       dibc->upload_data();
 
-      add_to_total_buffer_record(dibc);
       dibc->mark_loaded();
       _active_ibuffer = NULL;
     }
@@ -453,7 +435,7 @@ apply_index_buffer(IndexBufferContext *ibc) {
     if (_active_ibuffer != dibc) {
       _d3d_device->SetIndices(dibc->_ibuffer, 0);
       _active_ibuffer = dibc;
-      add_to_index_buffer_record(dibc);
+      dibc->set_active(true);
     }
   }
 }
@@ -1396,7 +1378,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
       if (!dtc->create_texture(*_screen)) {
         // Oops, we can't re-create the texture for some reason.
         dxgsg8_cat.error()
-          << "Unable to re-create texture " << *dtc->_texture << endl;
+          << "Unable to re-create texture " << *dtc->get_texture() << endl;
         return;
       }
       hr = dtc->get_d3d_2d_texture()->GetSurfaceLevel(0, &tex_level_0);
@@ -1415,7 +1397,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
       // If it's still the wrong size, it's because driver can't create size
       // that we want.  In that case, there's no helping it, we have to give up.
       dxgsg8_cat.error()
-        << "Unable to copy to texture, texture is wrong size: " << *dtc->_texture << endl;
+        << "Unable to copy to texture, texture is wrong size: " << *dtc->get_texture() << endl;
       SAFE_RELEASE(tex_level_0);
       return;
     }
@@ -3435,7 +3417,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     release_all_vertex_buffers();
     release_all_index_buffers();
 
-    _prepared_objects->update(this);
+    _prepared_objects->begin_frame(this);
 
     hr = _d3d_device->Reset(&_presentation_reset);
     if (FAILED(hr)) {
@@ -3493,7 +3475,7 @@ check_cooperative_level() {
     _dx_is_ready = false;
 
     // call this just in case
-    _prepared_objects->update (this);
+    _prepared_objects->begin_frame(this);
 
     hr = reset_d3d_device(&_screen->_presentation_params);
     if (FAILED(hr)) {

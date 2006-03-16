@@ -39,6 +39,7 @@
     ioPtaDatagramFloat.h ioPtaDatagramInt.h \
     ioPtaDatagramShort.h keyboardButton.h lineStream.I \
     lineStream.h lineStreamBuf.I lineStreamBuf.h \
+    linkedListNode.I linkedListNode.h \
     load_prc_file.h \
     modifierButtons.I modifierButtons.h mouseButton.h \
     mouseData.I mouseData.h nameUniquifier.I nameUniquifier.h \
@@ -75,6 +76,7 @@
     ioPtaDatagramFloat.cxx \
     ioPtaDatagramInt.cxx ioPtaDatagramShort.cxx \
     keyboardButton.cxx lineStream.cxx lineStreamBuf.cxx \
+    linkedListNode.cxx \
     load_prc_file.cxx \
     modifierButtons.cxx mouseButton.cxx mouseData.cxx \
     nameUniquifier.cxx \
@@ -119,6 +121,7 @@
     ioPtaDatagramFloat.h ioPtaDatagramInt.h \
     ioPtaDatagramShort.h iterator_types.h keyboardButton.h lineStream.I \
     lineStream.h lineStreamBuf.I lineStreamBuf.h \
+    linkedListNode.I linkedListNode.h \
     load_prc_file.h \
     modifierButtons.I \
     modifierButtons.h mouseButton.h mouseData.I mouseData.h \

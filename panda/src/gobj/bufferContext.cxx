@@ -1,5 +1,5 @@
-// Filename: glTextureContext.cxx
-// Created by:  drose (07Oct99)
+// Filename: bufferContext.cxx
+// Created by:  drose (16Mar06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,6 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "notify.h"
+#include "bufferContext.h"
 
-TypeHandle CLP(TextureContext)::_type_handle;
+TypeHandle BufferContext::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: BufferContext::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+BufferContext::
+~BufferContext() {
+#ifdef DO_PSTATS
+  --(_owning_chain->_count);
+  _owning_chain->adjust_bytes(-(int)_data_size_bytes);
+  remove_from_list();
+#endif  // DO_PSTATS
+  _owning_chain = NULL;
+}

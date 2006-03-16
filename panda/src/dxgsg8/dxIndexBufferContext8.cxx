@@ -31,8 +31,8 @@ TypeHandle DXIndexBufferContext8::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DXIndexBufferContext8::
-DXIndexBufferContext8(GeomPrimitive *data) :
-  IndexBufferContext(data),
+DXIndexBufferContext8(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
+  IndexBufferContext(pgo, data),
   _ibuffer(NULL)
 {
 }

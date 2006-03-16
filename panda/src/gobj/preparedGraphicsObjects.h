@@ -30,6 +30,7 @@
 #include "pStatCollector.h"
 #include "pset.h"
 #include "reMutex.h"
+#include "bufferResidencyTracker.h"
 
 class TextureContext;
 class GeomContext;
@@ -61,6 +62,8 @@ class EXPCL_PANDA PreparedGraphicsObjects : public ReferenceCount {
 public:
   PreparedGraphicsObjects();
   ~PreparedGraphicsObjects();
+
+  INLINE const string &get_name() const;
 
   INLINE void release_all();
 
@@ -103,7 +106,11 @@ public:
   prepare_index_buffer_now(GeomPrimitive *data,
                            GraphicsStateGuardianBase *gsg);
 
-  void update(GraphicsStateGuardianBase *gsg);
+  void begin_frame(GraphicsStateGuardianBase *gsg);
+  void end_frame();
+
+private:
+  static string init_name();
 
 private:
   typedef phash_set<TextureContext *, pointer_hash> Textures;
@@ -118,6 +125,7 @@ private:
   typedef phash_set< PT(GeomPrimitive) > EnqueuedIndexBuffers;
 
   ReMutex _lock;
+  string _name;
   Textures _prepared_textures, _released_textures;  
   EnqueuedTextures _enqueued_textures;
   Geoms _prepared_geoms, _released_geoms;  
@@ -129,8 +137,13 @@ private:
   IndexBuffers _prepared_index_buffers, _released_index_buffers;  
   EnqueuedIndexBuffers _enqueued_index_buffers;
 
-  static PStatCollector _total_texusage_pcollector;
-  static PStatCollector _total_buffers_pcollector;
+public:
+  BufferResidencyTracker _texture_residency;
+  BufferResidencyTracker _vbuffer_residency;
+  BufferResidencyTracker _ibuffer_residency;
+
+private:
+  static int _name_index;
 
   friend class GraphicsStateGuardian;
 };

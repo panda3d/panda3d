@@ -1,4 +1,6 @@
-
+#include "bufferContext.cxx"
+#include "bufferContextChain.cxx"
+#include "bufferResidencyTracker.cxx"
 #include "geom.cxx"
 #include "geomContext.cxx"
 #include "geomEnums.cxx"

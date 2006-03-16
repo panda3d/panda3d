@@ -26,7 +26,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_GL CLP(IndexBufferContext) : public IndexBufferContext {
 public:
-  INLINE CLP(IndexBufferContext)(GeomPrimitive *data);
+  INLINE CLP(IndexBufferContext)(PreparedGraphicsObjects *pgo, 
+                                 GeomPrimitive *data);
 
   // This is the GL "name" of the data object.
   GLuint _index;

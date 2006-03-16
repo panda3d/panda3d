@@ -543,6 +543,18 @@ set_keep_ram_image(bool keep_ram_image) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_modified
+//       Access: Published
+//  Description: Returns a sequence number which is guaranteed to
+//               change at least every time the texture data or
+//               properties are modified.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq Texture::
+get_modified() const {
+  return _modified;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_filename
 //       Access: Published
 //  Description: Sets the name of the file that contains the image's
