@@ -27,6 +27,6 @@ CLP(TextureContext)(Texture *tex) :
   TextureContext(tex)
 {
   _index = 0;
-
   _already_applied = false;
+  _texture_memory_size = 0;
 }

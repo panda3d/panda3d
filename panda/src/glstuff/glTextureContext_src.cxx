@@ -16,4 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "notify.h"
+
 TypeHandle CLP(TextureContext)::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLTextureContext::estimate_texture_memory
+//       Access: Public, Virtual
+//  Description: Estimates the amount of texture memory that will be
+//               consumed by loading this texture.  This is mainly
+//               useful for debugging and reporting purposes.
+//
+//               Returns a value in bytes.
+////////////////////////////////////////////////////////////////////
+size_t CLP(TextureContext)::
+estimate_texture_memory() {
+  nassertr(_texture_memory_size != 0, TextureContext::estimate_texture_memory());
+  return _texture_memory_size;
+}

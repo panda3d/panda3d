@@ -276,6 +276,8 @@ protected:
 			    size_t image_size,
 			    Texture::CompressionMode image_compression);
 
+  size_t get_texture_memory_size(Texture *tex) const;
+
   void do_point_size();
 
 #ifndef NDEBUG

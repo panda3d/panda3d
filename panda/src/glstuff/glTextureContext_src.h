@@ -27,6 +27,8 @@ class EXPCL_GL CLP(TextureContext) : public TextureContext {
 public:
   INLINE CLP(TextureContext)(Texture *tex);
 
+  virtual size_t estimate_texture_memory();
+
   // This is the GL "name" of the texture object.
   GLuint _index;
 
@@ -38,6 +40,8 @@ public:
   GLsizei _width;
   GLsizei _height;
   GLsizei _depth;
+
+  size_t _texture_memory_size;
 
 public:
   static TypeHandle get_class_type() {
