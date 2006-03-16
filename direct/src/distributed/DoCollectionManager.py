@@ -122,9 +122,10 @@ class DoCollectionManager:
             r = parent.get(zoneId, [])
         if classType is not None:
             a = []
-            for obj in r:
+            for doId in r:
+                obj = self.getDo(doId)
                 if isinstance(obj, classType):
-                    a.append(obj)
+                    a.append(doId)
             r = a
         return r
     
@@ -384,6 +385,5 @@ class DoCollectionManager:
         assert self.notify.debugStateCall(self)
         doDict = {}
         for doId in self.getDoIdList(parentId, zoneId, objClass):
-            if isinstance(do, objClass):
-                doDict[doId] = self.doId2do.get(do)
+            doDict[doId] = self.getDo(doId)
         return doDict
