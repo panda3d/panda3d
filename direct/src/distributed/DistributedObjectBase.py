@@ -20,14 +20,14 @@ class DistributedObjectBase(DirectObject):
     if __debug__:
         def status(self, indent=0):
             """
-            print out "doId(parentId,zoneId) className"
+            print out "doId(parentId, zoneId) className"
             """
             spaces=' '*(indent+2)
             try:
                 print "%s%s:"%(
                     ' '*indent, self.__class__.__name__)
                 print "%sfrom DistributedObject doId:%s, parent:%s, zone:%s"%(
-                    spaces, 
+                    spaces,
                     self.doId, self.parentId, self.zoneId),
             except Exception, e: print "%serror printing status"%(spaces,), e
 

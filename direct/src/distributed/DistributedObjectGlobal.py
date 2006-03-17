@@ -5,7 +5,7 @@ from direct.distributed.DistributedObject import DistributedObject
 
 class DistributedObjectGlobal(DistributedObject):
     """
-    The Distributed Object Global class is the base class for global 
+    The Distributed Object Global class is the base class for global
     network based (i.e. distributed) objects.
     """
     notify = directNotify.newCategory("DistributedObjectGlobal")

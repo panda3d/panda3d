@@ -24,20 +24,20 @@ verify() will also throw an AssertionError, but you can ignore that if you
 like (I don't suggest trying to catch it, it's just doing it so that it can
 replace assert more fully).
 
-Please do not use assert() for things that you want run on release builds.  
-That is a bad thing to do.  One of the main reasons that assert exists 
-is to stip out debug code from a release build.  The fact that it throws 
-an exception can get it mistaken for an error handler.  If your code 
-needs to handle an error or throw an exception, you should do that 
+Please do not use assert() for things that you want run on release builds.
+That is a bad thing to do.  One of the main reasons that assert exists
+is to stip out debug code from a release build.  The fact that it throws
+an exception can get it mistaken for an error handler.  If your code
+needs to handle an error or throw an exception, you should do that
 (and not just assert() for it).
 
 If you want to be a super keen software engineer then avoid using verify().
-If you want to be, or already are, a super keen software engineer, but 
-you don't always have the time to write proper error handling, go ahead 
+If you want to be, or already are, a super keen software engineer, but
+you don't always have the time to write proper error handling, go ahead
 and use verify() -- that's what it's for.
 
 Please use assert (properly) and do proper error handling; and use verify()
-only when debugging (i.e. when it won't be checked-in) or where it helps 
+only when debugging (i.e. when it won't be checked-in) or where it helps
 you resist using assert for error handling.
 """
 

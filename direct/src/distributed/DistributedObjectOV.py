@@ -17,7 +17,7 @@ ESGenerated    = 6
 
 class DistributedObjectOV(DistributedObjectBase):
     """
-    Implementation of the 'owner view' (OV) of a distributed object; 
+    Implementation of the 'owner view' (OV) of a distributed object;
     """
     notify = directNotify.newCategory("DistributedObjectOV")
 
@@ -44,7 +44,7 @@ class DistributedObjectOV(DistributedObjectBase):
     if __debug__:
         def status(self, indent=0):
             """
-            print out "doId(parentId,zoneId) className"
+            print out "doId(parentId, zoneId) className"
                 and conditionally show generated, disabled
             """
             spaces=' '*(indent+2)
@@ -52,7 +52,7 @@ class DistributedObjectOV(DistributedObjectBase):
                 print "%s%s:"%(
                     ' '*indent, self.__class__.__name__)
                 print "%sfrom DistributedObjectOV doId:%s, parent:%s, zone:%s"%(
-                    spaces, 
+                    spaces,
                     self.doId, self.parentId, self.zoneId),
                 flags=[]
                 if self.activeState == ESGenerated:

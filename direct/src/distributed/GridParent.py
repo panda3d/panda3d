@@ -12,7 +12,7 @@ from pandac.PandaModules import *
 # it lies in.
 
 class GridParent:
-    
+
     def __init__(self, av):
         # The object on the grid will need to broadcast his position relative to
         # his current grid cell in order to use 16 bit
@@ -36,7 +36,7 @@ class GridParent:
             self.av = None
         # Remove the gridNodes
         self.cellOrigin.removeNode()
-                
+
     def setGridParent(self, grid, zoneId, teleport=0):
         # If teleport=0, preserve the avatar's absolute position.  If teleport=1
         # the avatars previous world position is invalid, so don't wrtReparent,
@@ -57,8 +57,8 @@ class GridParent:
             self.grid = grid
             # Reparent the gridNodes under this grid
             self.cellOrigin.reparentTo(grid)
-            self.cellOrigin.setPosHpr(0,0,0,0,0,0)
-        
+            self.cellOrigin.setPosHpr(0, 0, 0, 0, 0, 0)
+
         # Get grid cell origin
         cellPos = self.grid.getZoneCellOrigin(zoneId)
 
@@ -72,8 +72,8 @@ class GridParent:
             self.av.wrtReparentTo(self.cellOrigin)
         else:
             self.av.reparentTo(self.cellOrigin)
-            
-        #print "gridParent: reparent to %s" % self.av
-        #print "gridParent: pos = %s,%s" % (self.av.getPos(), self.av.getParent().getPos())
 
-        
+        #print "gridParent: reparent to %s" % self.av
+        #print "gridParent: pos = %s, %s" % (self.av.getPos(), self.av.getParent().getPos())
+
+

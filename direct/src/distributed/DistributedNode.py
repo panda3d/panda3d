@@ -20,7 +20,7 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
 
             # initialize gridParent
             self.gridParent = None
-            
+
     def disable(self):
         if self.activeState != DistributedObject.ESDisabled:
             self.reparentTo(hidden)
@@ -56,12 +56,12 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
             else:
                 if self.gridParent:
                     self.gridParent.delete()
-                    self.gridParent = None                    
+                    self.gridParent = None
         else:
             if self.gridParent:
                 self.gridParent.delete()
                 self.gridParent = None
-            
+
     def __cmp__(self, other):
         # DistributedNode inherits from NodePath, which inherits a
         # definition of __cmp__ from FFIExternalObject that uses the
@@ -127,19 +127,19 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
     # setY provided by NodePath
     def d_setY(self, y):
         self.sendUpdate("setY", [y])
-    
+
     # setZ provided by NodePath
     def d_setZ(self, z):
         self.sendUpdate("setZ", [z])
-    
+
     # setH provided by NodePath
     def d_setH(self, h):
         self.sendUpdate("setH", [h])
-    
+
     # setP provided by NodePath
     def d_setP(self, p):
         self.sendUpdate("setP", [p])
-    
+
     # setR provided by NodePath
     def d_setR(self, r):
         self.sendUpdate("setR", [r])

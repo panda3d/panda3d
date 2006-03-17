@@ -14,7 +14,7 @@ class SampleObject(DistributedObject):
 #        self.blue = 0
 
     def setColor(self, red = 0, green = 0, blue = 0):
-        self.red = red                 
+        self.red = red
         self.green = green
         self.blue = blue
         self.announceGenerate()

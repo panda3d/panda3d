@@ -35,11 +35,11 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
 
     def generate(self):
         DistributedNode.DistributedNode.generate(self)
-        
+
     def disable(self):
         DistributedNode.DistributedNode.disable(self)
         self.stopProcessVisibility()
-        
+
     def delete(self):
         DistributedNode.DistributedNode.delete(self)
         # TODO: when teleporting off an island...
@@ -48,7 +48,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
     def isGridParent(self):
         # If this distributed object is a DistributedGrid return 1.  0 by default
         return 1
-        
+
     def setParentingRules(self, style, rule):
         assert self.notify.debug("setParentingRules: style: %s, rule: %s" % (style, rule))
         rules = rule.split(self.RuleSeparator)
@@ -76,7 +76,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
         self.gridVisContext = self.cr.addInterest(self.getDoId(), 0, self.uniqueName("visibility"))
         taskMgr.add(self.processVisibility, self.taskName("processVisibility"))
 
-    def stopProcessVisibility(self,clearAll=False):
+    def stopProcessVisibility(self, clearAll=False):
         taskMgr.remove(self.taskName("processVisibility"))
         if self.gridVisContext is not None:
             self.cr.removeInterest(self.gridVisContext)
@@ -97,7 +97,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
         y = pos[1] + dx
         col = x // self.cellWidth
         row = y // self.cellWidth
-        assert self.notify.debug("processVisibility: %s: avatar pos: %s %s" % (self.doId, x,y))
+        assert self.notify.debug("processVisibility: %s: avatar pos: %s %s" % (self.doId, x, y))
         if (row < 0) or (col < 0) or (row > self.gridSize) or (col > self.gridSize):
             assert self.notify.debug("processVisibility: %s: not on the grid" % (self.doId))
             # If we are viewingRadius away from this entire grid,
@@ -153,9 +153,9 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
         if (av.getParent().compareTo(self) == 0):
             # only detach if object is directly parented
             av.detachNode()
-        #av.b_setLocation(0,0)
+        #av.b_setLocation(0, 0)
 
-        
+
     def handleAvatarZoneChange(self, av, zoneId):
         assert self.notify.debug("handleAvatarZoneChange(%s, %s)" % (av.doId, zoneId))
         # This method can be overridden by derived classes that
@@ -165,7 +165,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
         if not self.isValidZone(zoneId):
             self.notify.warning("handleAvatarZoneChange: not a valid zone (%s)" % zoneId)
             return
-                
+
         # Set the location on the server
         av.b_setLocation(self.doId, zoneId)
 
@@ -185,7 +185,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
             # A Dark version of the grid color
             color = self.gridColor * 0.5
             color.setW(1)
-            
+
             self.lines = self.attachNewNode('gridLines')
             self.minorLines = LineNodePath(self.lines)
             self.minorLines.lineNode.setName('minorLines')
@@ -199,19 +199,19 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
 
             self.centerLines = LineNodePath(self.lines)
             self.centerLines.lineNode.setName('centerLines')
-            self.centerLines.setColor(VBase4(1,0,0,0))
+            self.centerLines.setColor(VBase4(1, 0, 0, 0))
             self.centerLines.setThickness(3)
 
             # Load up grid parts to initialize grid object
             # Polygon used to mark grid plane
             # self.gridBack = loader.loadModel('models/misc/gridBack')
             # self.gridBack.reparentTo(self)
-            # self.gridBack.setColor(0.2,0.2,0.2,0.5)
+            # self.gridBack.setColor(0.2, 0.2, 0.2, 0.5)
 
             self.cellLabelParent = None
             self.markerParent = None
             self.haveGridLines = 1
-            
+
         def updateGrid(self):
             # Update grid lines based upon current grid spacing and grid size
             # First reset existing grid lines
@@ -275,7 +275,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
                                                 (j * cw - dx) + (cw * 0.5), # y
                                                 3.0, # z
                                                 # Lay them down flat
-                                                0,-90,0, # hpr
+                                                0, -90, 0, # hpr
                                                 scale, scale, scale)
             self.cellLabelParent.flattenLight()
 

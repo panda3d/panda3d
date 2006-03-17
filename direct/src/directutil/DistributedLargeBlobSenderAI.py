@@ -59,7 +59,7 @@ class DistributedLargeBlobSenderAI(DistributedObjectAI.DistributedObjectAI):
 
     def getMode(self):
         return self.mode
-        
+
     def getTargetAvId(self):
         return self.targetAvId
 

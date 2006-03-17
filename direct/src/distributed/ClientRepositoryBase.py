@@ -62,7 +62,7 @@ class ClientRepositoryBase(ConnectionRepository):
         ## # Create a message
         ## datagram = PyDatagram()
         ## datagram.addServerHeader(
-            ## doID, localAvatar.getDoId(), 2020)           
+            ## doID, localAvatar.getDoId(), 2020)
         ## # A context that can be used to index the response if needed
         ## datagram.addUint32(context)
         ## self.send(datagram)
@@ -499,7 +499,7 @@ class ClientRepositoryBase(ConnectionRepository):
         return doDict
 
 
-    def sendSetLocation(self,doId,parentId,zoneId):
+    def sendSetLocation(self, doId, parentId, zoneId):
         datagram = PyDatagram()
         datagram.addUint16(CLIENT_OBJECT_LOCATION)
         datagram.addUint32(doId)
@@ -565,7 +565,7 @@ class ClientRepositoryBase(ConnectionRepository):
             elif worldNP.isEmpty():
                 return None
         return worldNP
-            
+
     def isLocalId(self, id):
         # By default, no ID's are local.  See also
         # ClientRepository.isLocalId().

@@ -21,7 +21,7 @@ class ServerRepository:
         self.qcm = QueuedConnectionManager()
         self.qcl = QueuedConnectionListener(self.qcm, 0)
         self.qcr = QueuedConnectionReader(self.qcm, 0)
-        self.cw = ConnectionWriter(self.qcm,0)
+        self.cw = ConnectionWriter(self.qcm, 0)
         self.tcpRendezvous = self.qcm.openTCPServerRendezvous(tcpPort, 10)
         print self.tcpRendezvous
         self.qcl.addConnection(self.tcpRendezvous)
@@ -326,7 +326,7 @@ class ServerRepository:
         datagram.addUint16(CLIENT_SET_DOID_RANGE)
         datagram.addUint32(id)
         datagram.addUint32(self.DOIDrange)
-        print "Sending DOID range: ",id,self.DOIDrange
+        print "Sending DOID range: ", id, self.DOIDrange
         self.cw.send(datagram, connection)
 
     # a client disconnected from us, we need to update our data, also tell other clients to remove
@@ -370,7 +370,7 @@ class ServerRepository:
             datagram.addUint16(CLIENT_REQUEST_GENERATES)
             datagram.addUint32(ZoneID)
             self.sendToAll(datagram)
-            print "SENDING REQUEST GENERATES (",ZoneID,") TO ALL"
+            print "SENDING REQUEST GENERATES (", ZoneID, ") TO ALL"
 
     # client has moved zones, need to update them
     def handleRemoveZone(self, dgi, connection):

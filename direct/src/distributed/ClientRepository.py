@@ -31,7 +31,7 @@ class ClientRepository(ClientRepositoryBase):
         # When new clients join the zone of an object, they need to hear
         # about it, so we send out all of our information about objects in
         # that particular zone.
-    
+
         assert self.DOIDnext < self.DOIDlast
         zone = di.getUint32()
         for obj in self.doId2do.values():
@@ -39,7 +39,7 @@ class ClientRepository(ClientRepositoryBase):
                 id = obj.doId
                 if (self.isLocalId(id)):
                     self.send(obj.dclass.clientFormatGenerate(obj, id, zone, []))
-                    
+
     def createWithRequired(self, className, zoneId = 0, optionalFields=None):
         if self.DOIDnext >= self.DOIDlast:
             self.notify.error(
@@ -115,9 +115,9 @@ class ClientRepository(ClientRepositoryBase):
                 datagram.addUint32(zone)
 
         # send the message
-        self.send(datagram)        
-    
-    def isLocalId(self,id):
+        self.send(datagram)
+
+    def isLocalId(self, id):
         return ((id >= self.DOIDbase) and (id < self.DOIDlast))
 
     def haveCreateAuthority(self):
@@ -204,4 +204,4 @@ dclass.getName()))
             distObj.generate()
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
-        return distObj               
+        return distObj

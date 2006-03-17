@@ -14,11 +14,11 @@ class WeightedChoice:
         self.total = t
         self.listOfLists = listOfLists
         self.weightIndex = weightIndex
-   
+
     def choose(self, rng=random):
         roll = rng.randrange(self.total)
         weight = self.weightIndex
         for i in self.listOfLists:
             roll -= i[weight]
             if roll <= 0:
-                return i                
+                return i

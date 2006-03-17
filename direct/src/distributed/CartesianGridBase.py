@@ -3,7 +3,7 @@
 
 class CartesianGridBase:
     def isValidZone(self, zoneId):
-        def checkBounds(self=self,zoneId=zoneId):
+        def checkBounds(self=self, zoneId=zoneId):
             if ((zoneId < self.startingZone) or
                 (zoneId > self.startingZone + self.gridSize * self.gridSize - 1)):
                 return 0
@@ -17,7 +17,7 @@ class CartesianGridBase:
                 return checkBounds()
         else:
             return 0
-    
+
     def getZoneFromXYZ(self, pos):
         # NOTE: pos should be relative to our own grid origin
         # Convert a 3d position to a zone
@@ -38,7 +38,7 @@ class CartesianGridBase:
         # on it.
         sphereRadius = max(sphereRadius, gridRadius*cellWidth)
         return 2 * (sphereRadius // cellWidth)
-        
+
     def getZoneCellOrigin(self, zoneId):
         # It returns the origin of the zoneCell
         # Origin is the top-left corner of zoneCell
@@ -49,8 +49,8 @@ class CartesianGridBase:
         x = col * self.cellWidth - dx
         y = row * self.cellWidth - dx
 
-        return (x,y,0)
-    
+        return (x, y, 0)
+
     def getZoneCellOriginCenter(self, zoneId):
         # Variant of the getZoneCellOrigin. It
         # returns the center of the zoneCell
@@ -62,5 +62,5 @@ class CartesianGridBase:
         x = col * self.cellWidth - dx + center
         y = row * self.cellWidth - dx + center
 
-        return (x,y,0)
-    
+        return (x, y, 0)
+

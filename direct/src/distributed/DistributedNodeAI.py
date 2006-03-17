@@ -78,19 +78,19 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
     # setY provided by NodePath
     def d_setY(self, y):
         self.sendUpdate("setY", [y])
-    
+
     # setZ provided by NodePath
     def d_setZ(self, z):
         self.sendUpdate("setZ", [z])
-    
+
     # setH provided by NodePath
     def d_setH(self, h):
         self.sendUpdate("setH", [h])
-    
+
     # setP provided by NodePath
     def d_setP(self, p):
         self.sendUpdate("setP", [p])
-    
+
     # setR provided by NodePath
     def d_setR(self, r):
         self.sendUpdate("setR", [r])
@@ -117,16 +117,16 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
         self.sendUpdate("setXYH", [x, y, h])
 
     def b_setXYZH(self, x, y, z, h):
-        self.setXYZH(x,y,z,h)
-        self.d_setXYZH(x,y,z,h)
+        self.setXYZH(x, y, z, h)
+        self.d_setXYZH(x, y, z, h)
     def setXYZH(self, x, y, z, h):
         self.setPos(x, y, z)
         self.setH(h)
     def getXYZH(self):
         pos = self.getPos()
         h = self.getH()
-        return pos[0],pos[1],pos[2],h
-    
+        return pos[0], pos[1], pos[2], h
+
     def d_setXYZH(self, x, y, z, h):
         self.sendUpdate("setXYZH", [x, y, z, h])
 

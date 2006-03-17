@@ -42,7 +42,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
     def addObjectToGrid(self, av, useZoneId=-1):
         self.notify.debug("setting parent to grid %s" % self)
         avId = av.doId
-        
+
         # Create a grid parent
         #gridParent = self.attachNewNode("gridParent-%s" % avId)
         #self.gridParents[avId] = gridParent
@@ -120,7 +120,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
                 "%s handleAvatarZoneChange %s: not a valid zone (%s) for pos %s" %
                 (self.doId, av.doId, zoneId, pos))
             return
-        
+
         # Set the location on the server.
         # setLocation will update the gridParent
         av.b_setLocation(self.doId, zoneId)

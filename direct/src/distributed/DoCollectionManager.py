@@ -13,7 +13,7 @@ class DoCollectionManager:
             # for 'owner' views of objects
             self.doId2ownerView = {}
         # Dict of {
-        #   parent DistributedObject id: 
+        #   parent DistributedObject id:
         #     { zoneIds: [child DistributedObject ids] }}
         self.__doHierarchy = {}
 
@@ -26,7 +26,7 @@ class DoCollectionManager:
             callback(do)
         else:
             relatedObjectMgr(doId, allCallback=callback)
-    
+
     def getOwnerView(self, doId):
         assert self.hasOwnerView()
         return self.doId2ownerView.get(doId)
@@ -85,12 +85,12 @@ class DoCollectionManager:
         """
         parentId is any distributed object id.
         zoneId is a uint32, defaults to None (all zones).  Try zone 2 if
-            you're not sure which zone to use (0 is a bad/null zone and 
+            you're not sure which zone to use (0 is a bad/null zone and
             1 has had reserved use in the past as a no messages zone, while
             2 has traditionally been a global, uber, misc stuff zone).
-        dclassType is a distributed class type filter, defaults 
+        dclassType is a distributed class type filter, defaults
             to None (no filter).
-        
+
         If dclassName is None then all objects in the zone are returned;
         otherwise the list is filtered to only include objects of that type.
         """
@@ -101,12 +101,12 @@ class DoCollectionManager:
         """
         parentId is any distributed object id.
         zoneId is a uint32, defaults to None (all zones).  Try zone 2 if
-            you're not sure which zone to use (0 is a bad/null zone and 
+            you're not sure which zone to use (0 is a bad/null zone and
             1 has had reserved use in the past as a no messages zone, while
             2 has traditionally been a global, uber, misc stuff zone).
-        dclassType is a distributed class type filter, defaults 
+        dclassType is a distributed class type filter, defaults
             to None (no filter).
-        
+
         If dclassName is None then all objects in the zone are returned;
         otherwise the list is filtered to only include objects of that type.
         """
@@ -128,7 +128,7 @@ class DoCollectionManager:
                     a.append(doId)
             r = a
         return r
-    
+
     def getOwnerViewDoList(self, classType):
         assert self.hasOwnerView()
         l = []
@@ -236,11 +236,11 @@ class DoCollectionManager:
             parentZoneDict = self.__doHierarchy.setdefault(parentId, {})
             zoneDoSet = parentZoneDict.setdefault(zoneId, set())
             zoneDoSet.add(doId)
-            
+
             # Set the new parent and zone on the object
             obj.parentId = parentId
             obj.zoneId = zoneId
-    
+
             if 1:
                 # Do we still need this
                 if oldParentId != parentId:
@@ -257,7 +257,7 @@ class DoCollectionManager:
             return
         if 1:
             # Do we still need this
-            
+
             # notify any existing parent that we're moving away
             oldParentObj = self.doId2do.get(parentId)
             obj = self.doId2do.get(doId)
@@ -281,7 +281,7 @@ class DoCollectionManager:
         else:
             self.notify.warning(
                 "deleteObjectLocation: parentId: %s not found"%(parentId,))
-    
+
     def addDOToTables(self, do, location=None, ownerView=False):
         assert self.notify.debugStateCall(self)
         #assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
@@ -306,7 +306,7 @@ class DoCollectionManager:
         if not ownerView:
             if self.isValidLocationTuple(location):
                 self.storeObjectLocation(do.doId, location[0], location[1])
-                ##assert do.doId not in self.zoneId2doIds.get(location,{})
+                ##assert do.doId not in self.zoneId2doIds.get(location, {})
                 ##self.zoneId2doIds.setdefault(location, {})
                 ##self.zoneId2doIds[location][do.doId]=do
 
@@ -346,7 +346,7 @@ class DoCollectionManager:
         ##             del self.zoneId2doIds[location]
         if do.doId in self.doId2do:
             del self.doId2do[do.doId]
-        
+
     ## def changeDOZoneInTables(self, do, newParentId, newZoneId, oldParentId, oldZoneId):
     ##     if 1:
     ##         self.storeObjectLocation(do.doId, newParentId, newZoneId)
@@ -354,13 +354,13 @@ class DoCollectionManager:
     ##         #assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
     ##         oldLocation = (oldParentId, oldZoneId)
     ##         newLocation = (newParentId, newZoneId)
-    ##         # HACK: DistributedGuildMemberUD starts in -1,-1, which isnt ever put in the
+    ##         # HACK: DistributedGuildMemberUD starts in -1, -1, which isnt ever put in the
     ##         # zoneId2doIds table
     ##         if self.isValidLocationTuple(oldLocation):
     ##             assert self.notify.debugStateCall(self)
     ##             assert oldLocation in self.zoneId2doIds
     ##             assert do.doId in self.zoneId2doIds[oldLocation]
-    ##             assert do.doId not in self.zoneId2doIds.get(newLocation,{})
+    ##             assert do.doId not in self.zoneId2doIds.get(newLocation, {})
     ##             # remove from old zone
     ##             del(self.zoneId2doIds[oldLocation][do.doId])
     ##             if len(self.zoneId2doIds[oldLocation]) == 0:

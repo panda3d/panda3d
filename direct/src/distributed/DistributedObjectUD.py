@@ -47,11 +47,11 @@ class DistributedObjectUD(DistributedObjectBase):
     #    For debugging purposes, this just prints out what got deleted
     #    """
     #    print ("Destructing: " + self.__class__.__name__)
-    
+
     if __debug__:
         def status(self, indent=0):
             """
-            print out doId(parentId,zoneId) className
+            print out doId(parentId, zoneId) className
                 and conditionally show generated, disabled, neverDisable,
                 or cachable"
             """
@@ -60,7 +60,7 @@ class DistributedObjectUD(DistributedObjectBase):
                 print "%s%s:"%(
                     ' '*indent, self.__class__.__name__)
                 print "%sfrom DistributedObject doId:%s, parent:%s, zone:%s"%(
-                    spaces, 
+                    spaces,
                     self.doId, self.parentId, self.zoneId),
                 flags=[]
                 if self.__generated:
@@ -315,7 +315,7 @@ class DistributedObjectUD(DistributedObjectBase):
         else:
             self.doId = doId
         # Put the new DO in the dictionaries
-        self.air.addDOToTables(self, location=(parentId,zoneId))
+        self.air.addDOToTables(self, location=(parentId, zoneId))
         # Send a generate message
         self.sendGenerateWithRequired(self.air, parentId, zoneId, optionalFields)
 

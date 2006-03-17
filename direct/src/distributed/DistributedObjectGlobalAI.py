@@ -16,11 +16,11 @@ class DistributedObjectGlobalAI(DistributedObjectAI):
 
     def __init__(self, air):
         DistributedObjectAI.__init__(self, air)
-    
+
     def announceGenerate(self):
         self.air.registerForChannel(self.doId)
         DistributedObjectAI.announceGenerate(self)
-    
+
     def delete(self):
         self.air.unregisterForChannel(self.doId)
         ## self.air.removeDOFromTables(self)

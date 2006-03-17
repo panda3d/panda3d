@@ -28,7 +28,7 @@ def getTkColorString(color):
     return "#" + r + g + b
 
 ## Background Color ##
-def lerpBackgroundColor(r,g,b,duration):
+def lerpBackgroundColor(r, g, b, duration):
     """
     Function to lerp background color to a new value
     """
@@ -43,14 +43,14 @@ def lerpBackgroundColor(r,g,b,duration):
             r = sf * state.ec[0] + (1 - sf) * state.sc[0]
             g = sf * state.ec[1] + (1 - sf) * state.sc[1]
             b = sf * state.ec[2] + (1 - sf) * state.sc[2]
-            base.setBackgroundColor(r,g,b)
+            base.setBackgroundColor(r, g, b)
             return Task.cont
     taskMgr.remove('lerpBackgroundColor')
     t = taskMgr.add(lerpColor, 'lerpBackgroundColor')
     t.time = 0.0
     t.duration = duration
     t.sc = base.getBackgroundColor()
-    t.ec = VBase4(r,g,b,1)
+    t.ec = VBase4(r, g, b, 1)
 
 # Set direct drawing style for an object
 # Never light object or draw in wireframe

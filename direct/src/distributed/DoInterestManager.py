@@ -223,7 +223,7 @@ class DoInterestManager(DirectObject.DirectObject):
         datagram.addUint16(CLIENT_REMOVE_INTEREST)
         datagram.addUint16(handle)
         if scopeId != 0:
-            datagram.addUint32(scopeId)            
+            datagram.addUint32(scopeId)
         self.send(datagram)
 
     def handleInterestDoneMessage(self, di):

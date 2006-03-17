@@ -153,7 +153,7 @@ class AsyncRequest(DirectObject):
                 context=self.air.allocateContext()
             self.air.contextToClassName[context]=dclassName
             self.acceptOnce(
-                "doFieldResponse-%s"%(context,), 
+                "doFieldResponse-%s"%(context,),
                 self._checkCompletion, [key])
             self.air.queryObjectField(dclassName, fieldName, doId, context)
 
@@ -173,7 +173,7 @@ class AsyncRequest(DirectObject):
             if context is None:
                 context=self.air.allocateContext()
             self.acceptOnce(
-                "doRequestResponse-%s"%(context,), 
+                "doRequestResponse-%s"%(context,),
                 self._checkCompletion, [None])
             self.air.queryObjectAll(doId, context)
 
@@ -192,7 +192,7 @@ class AsyncRequest(DirectObject):
     #        if context is None:
     #            context=self.air.allocateContext()
     #        self.accept(
-    #            "doRequestResponse-%s"%(context,), 
+    #            "doRequestResponse-%s"%(context,),
     #            self._checkCompletion, [None])
     #        self.air.queryObject(doId, context)
 
@@ -201,11 +201,11 @@ class AsyncRequest(DirectObject):
         """
         Create a new database object.  You can get the doId from within
         your self.finish() function.
-        
+
         This functions is different from createObjectId in that it does
         generate the object when the response comes back.  The object is
         added to the doId2do and so forth and treated as a full regular
-        object (which it is).  This is useful on the AI where we really 
+        object (which it is).  This is useful on the AI where we really
         do want the object on the AI.
         """
         assert self.notify.debugCall()
@@ -234,7 +234,7 @@ class AsyncRequest(DirectObject):
         """
         Create a new database object.  You can get the doId from within
         your self.finish() function.
-        
+
         This functions is different from createObject in that it does not
         generate the object when the response comes back.  It only tells you
         the doId.  This is useful on the UD where we don't really want the
@@ -252,7 +252,7 @@ class AsyncRequest(DirectObject):
             self.air.getDatabaseGenerateResponseEvent(context),
             self._checkCompletion, [name, None])
         self.air.requestDatabaseGenerate(className, context, values=values)
-    
+
     def _doCreateObject(self, name, className, values, doId):
         assert self.notify.debugCall()
         assert not self.__deleted
@@ -264,8 +264,8 @@ class AsyncRequest(DirectObject):
 
     def finish(self):
         """
-        This is the function that gets called when all of the needed objects 
-        are in (i.e. all the askForObject and createObject requests have 
+        This is the function that gets called when all of the needed objects
+        are in (i.e. all the askForObject and createObject requests have
         been satisfied).
         If the other requests timeout, finish will not be called.
         """

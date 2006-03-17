@@ -8,7 +8,7 @@ class DistributedLargeBlobSender(DistributedObject.DistributedObject):
     """DistributedLargeBlobSender: for sending large chunks of data through
     the DC system"""
     notify = DirectNotifyGlobal.directNotify.newCategory('DistributedLargeBlobSender')
-    
+
     def __init__(self, cr):
         DistributedObject.DistributedObject.__init__(self, cr)
 

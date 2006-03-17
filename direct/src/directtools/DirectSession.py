@@ -65,7 +65,7 @@ class DirectSession(DirectObject):
         self.activeParent = None
 
         self.selectedNPReadout = OnscreenText.OnscreenText(
-            pos = (-1.0, -0.9), bg=Vec4(1,1,1,1),
+            pos = (-1.0, -0.9), bg=Vec4(1, 1, 1, 1),
             scale = 0.05, align = TextNode.ALeft,
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
@@ -73,7 +73,7 @@ class DirectSession(DirectObject):
         self.selectedNPReadout.reparentTo(hidden)
 
         self.activeParentReadout = OnscreenText.OnscreenText(
-            pos = (-1.0, -0.975), bg=Vec4(1,1,1,1),
+            pos = (-1.0, -0.975), bg=Vec4(1, 1, 1, 1),
             scale = 0.05, align = TextNode.ALeft,
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
@@ -81,7 +81,7 @@ class DirectSession(DirectObject):
         self.activeParentReadout.reparentTo(hidden)
 
         self.directMessageReadout = OnscreenText.OnscreenText(
-            pos = (-1.0, 0.9), bg=Vec4(1,1,1,1),
+            pos = (-1.0, 0.9), bg=Vec4(1, 1, 1, 1),
             scale = 0.05, align = TextNode.ALeft,
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
@@ -112,8 +112,8 @@ class DirectSession(DirectObject):
                 fastrak = string.split(fastrak)
                 for i in range(len(fastrak))[1:]:
                     self.fastrak.append(DirectFastrak.DirectFastrak(fastrak[0] + ':' + fastrak[i]))
-                
-            
+
+
         self.fControl = 0
         self.fAlt = 0
         self.fShift = 0
@@ -127,7 +127,7 @@ class DirectSession(DirectObject):
         # Lists for managing undo/redo operations
         self.undoList = []
         self.redoList = []
-        
+
         # One run through the context task to init everything
         self.drList.updateContext()
         for dr in self.drList:
@@ -160,7 +160,7 @@ class DirectSession(DirectObject):
                               'shift', 'shift-up',
                               'alt', 'alt-up',
                               ]
-        self.keyEvents = ['escape', 'delete', 'page_up', 'page_down', 
+        self.keyEvents = ['escape', 'delete', 'page_up', 'page_down',
                           '[', '{', ']', '}',
                           'shift-a', 'b', 'control-f',
                           'l', 'shift-l', 'o', 'p', 'r',
@@ -197,7 +197,7 @@ class DirectSession(DirectObject):
         else:
             self.cluster = DummyClusterClient()
         __builtins__['cluster'] = self.cluster
-            
+
     def enable(self):
         # don't enable DIRECT if someone has posted DIRECTdisablePost
         if bboard.has(DirectSession.DIRECTdisablePost):
@@ -303,7 +303,7 @@ class DirectSession(DirectObject):
             base.cam.reparentTo(self.oobeCamera)
             # Position a target point to lerp the oobe camera to
             direct.cameraControl.camManipRef.setPos(
-                self.trueCamera, Vec3(-2,-20, 5))
+                self.trueCamera, Vec3(-2, -20, 5))
             direct.cameraControl.camManipRef.lookAt(self.trueCamera)
             t = self.oobeCamera.lerpPosHpr(
                 Point3(0), Vec3(0), 2.0,
@@ -447,8 +447,8 @@ class DirectSession(DirectObject):
         if self.clusterMode == 'client':
             if input in ('v','b','l','p', 'r', 'shift-r', 's', 't',
                          'shift-a', 'w'):
-                self.cluster('messenger.send("%s")' % input,0)
-        
+                self.cluster('messenger.send("%s")' % input, 0)
+
     def getModifiers(self, input, base):
         modifiers = DIRECT_NO_MOD
         modifierString = input[: input.find(base)]
@@ -493,7 +493,7 @@ class DirectSession(DirectObject):
             self.cameraControl.updateCoa(coa)
             # Adjust widgets size
             # This uses the additional scaling factor used to grow and
-            # shrink the widget            
+            # shrink the widget
             self.widget.setScalingFactor(dnp.getRadius())
             # Spawn task to have object handles follow the selected object
             taskMgr.remove('followSelectedNodePath')
@@ -506,9 +506,9 @@ class DirectSession(DirectObject):
     def followSelectedNodePathTask(self, state):
         mCoa2Render = state.dnp.mCoa2Dnp * state.dnp.getMat(render)
         decomposeMatrix(mCoa2Render,
-                        self.scale,self.hpr,self.pos,
+                        self.scale, self.hpr, self.pos,
                         CSDefault)
-        self.widget.setPosHpr(self.pos,self.hpr)
+        self.widget.setPosHpr(self.pos, self.hpr)
         return Task.cont
 
     def deselect(self, nodePath):
@@ -540,7 +540,7 @@ class DirectSession(DirectObject):
             'Active Reparent Target:' + nodePath.getName())
         # Alert everyone else
         messenger.send('DIRECT_activeParent', [self.activeParent])
-        
+
     def reparent(self, nodePath = None, fWrt = 0):
         if (nodePath and self.activeParent and
             self.isNotCycle(nodePath, self.activeParent)):
@@ -561,7 +561,7 @@ class DirectSession(DirectObject):
             return self.isNotCycle(nodePath, parent.getParent())
         else:
             return 1
-        
+
     def flash(self, nodePath = 'None Given'):
         """ Highlight an object by setting it red for a few seconds """
         # Clean up any existing task
@@ -577,7 +577,7 @@ class DirectSession(DirectObject):
                 flashColor.setW(1)
             else:
                 doneColor = None
-                flashColor = VBase4(1,0,0,1)
+                flashColor = VBase4(1, 0, 0, 1)
             # Temporarily set node path color
             nodePath.setColor(flashColor)
             # Clean up color in a few seconds
@@ -593,8 +593,8 @@ class DirectSession(DirectObject):
     def flashDummy(self, state):
         # Real work is done in upon death function
         return Task.done
-        
-    def flashDone(self,state):
+
+    def flashDone(self, state):
         # Return node Path to original state
         if state.nodePath.isEmpty():
             # Node path doesn't exist anymore, bail
@@ -714,7 +714,7 @@ class DirectSession(DirectObject):
             messenger.send('DIRECT_undoListEmpty')
         # Return last item
         return undoGroup
-        
+
     def pushRedo(self, nodePathList):
         # Assemble group of changes
         redoGroup = []
@@ -738,7 +738,7 @@ class DirectSession(DirectObject):
             messenger.send('DIRECT_redoListEmpty')
         # Return last item
         return redoGroup
-        
+
     def undo(self):
         if self.undoList:
             # Get last item off of redo list
@@ -843,7 +843,7 @@ class DisplayRegionContext(DirectObject):
         self.setOrientation()
         self.camUpdate()
 
-    def __getitem__(self,key):
+    def __getitem__(self, key):
         return self.__dict__[key]
 
     def setOrientation(self):
@@ -869,19 +869,19 @@ class DisplayRegionContext(DirectObject):
         else:
             return self.camLens.getVfov()
 
-    def setHfov(self,hfov):
+    def setHfov(self, hfov):
         if self.isSideways:
             self.camLens.setFov(self.camLens.getHfov(), hfov)
         else:
             self.camLens.setFov(hfov, self.camLens.getVfov())
 
-    def setVfov(self,vfov):
+    def setVfov(self, vfov):
         if self.isSideways:
             self.camLens.setFov(vfov, self.camLens.getVfov())
         else:
             self.camLens.setFov(self.camLens.getHfov(), vfov)
 
-    def setFov(self,hfov,vfov):
+    def setFov(self, hfov, vfov):
         if self.isSideways:
             self.camLens.setFov(vfov, hfov)
         else:
@@ -893,14 +893,14 @@ class DisplayRegionContext(DirectObject):
             return prop.getXSize()
         else:
             return 640
-            
+
     def getHeight(self):
         prop = base.win.getProperties()
         if prop.hasSize():
             return prop.getYSize()
         else:
             return 480
-            
+
     def camUpdate(self, lens = None):
         # Window Data
         self.near = self.camLens.getNear()
@@ -961,12 +961,12 @@ class DisplayRegionList(DirectObject):
                 drc = DisplayRegionContext(cam)
                 self.displayRegionList.append(drc)
 
-        self.accept("DIRECT-mouse1",self.mouseUpdate)
-        self.accept("DIRECT-mouse2",self.mouseUpdate)
-        self.accept("DIRECT-mouse3",self.mouseUpdate)
-        self.accept("DIRECT-mouse1Up",self.mouseUpdate)
-        self.accept("DIRECT-mouse2Up",self.mouseUpdate)
-        self.accept("DIRECT-mouse3Up",self.mouseUpdate)
+        self.accept("DIRECT-mouse1", self.mouseUpdate)
+        self.accept("DIRECT-mouse2", self.mouseUpdate)
+        self.accept("DIRECT-mouse3", self.mouseUpdate)
+        self.accept("DIRECT-mouse1Up", self.mouseUpdate)
+        self.accept("DIRECT-mouse2Up", self.mouseUpdate)
+        self.accept("DIRECT-mouse3Up", self.mouseUpdate)
 
     def __getitem__(self, index):
         return self.displayRegionList[index]
@@ -980,11 +980,11 @@ class DisplayRegionList(DirectObject):
     def setNearFar(self, near, far):
         for dr in self.displayRegionList:
             dr.camLens.setNearFar(near, far)
-    
+
     def setNear(self, near):
         for dr in self.displayRegionList:
             dr.camLens.setNear(near)
-    
+
     def setFar(self, far):
         for dr in self.displayRegionList:
             dr.camLens.setFar(far)

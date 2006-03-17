@@ -39,11 +39,11 @@ class CRCache:
         else:
             # Call disable on the distObj
             distObj.disableAndAnnounce()
-            
+
             # Put the distObj in the fifo and the dict
             self.fifo.append(distObj)
             self.dict[doId] = distObj
-            
+
             if len(self.fifo) > self.maxCacheItems:
                 # if the cache is full, pop the oldest item
                 oldestDistObj = self.fifo.pop(0)
@@ -51,7 +51,7 @@ class CRCache:
                 del(self.dict[oldestDistObj.getDoId()])
                 # and delete it
                 oldestDistObj.deleteOrDelay()
-                
+
         # Make sure that the fifo and the dictionary are sane
         assert len(self.dict) == len(self.fifo)
 
@@ -72,7 +72,7 @@ class CRCache:
 
     def contains(self, doId):
         return self.dict.has_key(doId)
-    
+
     def delete(self, doId):
         assert self.checkCache()
         assert self.dict.has_key(doId)
@@ -83,7 +83,7 @@ class CRCache:
         self.fifo.remove(distObj)
         # and delete it
         distObj.deleteOrDelay()
-        
+
     def checkCache(self):
         # For debugging; this verifies that the cache is sensible and
         # returns true if so.

@@ -4,7 +4,7 @@ import DistributedSmoothNodeBase
 
 class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
                               DistributedSmoothNodeBase.DistributedSmoothNodeBase):
-    
+
     def __init__(self, air, name=None):
         DistributedNodeAI.DistributedNodeAI.__init__(self, air, name)
         DistributedSmoothNodeBase.DistributedSmoothNodeBase.__init__(self)
@@ -27,36 +27,36 @@ class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
 
     def setSmZ(self, z, t):
         self.setZ(z)
-        
+
     def setSmXY(self, x, y, t):
         self.setX(x)
         self.setY(y)
-        
+
     def setSmXZ(self, x, z, t):
         self.setX(x)
         self.setZ(z)
-        
+
     def setSmPos(self, x, y, z, t):
-        self.setPos(x,y,z)
-        
+        self.setPos(x, y, z)
+
     def setSmHpr(self, h, p, r, t):
-        self.setHpr(h,p,r)
-        
+        self.setHpr(h, p, r)
+
     def setSmXYH(self, x, y, h, t):
         self.setX(x)
         self.setY(y)
         self.setH(h)
-        
+
     def setSmXYZH(self, x, y, z, h, t):
-        self.setPos(x,y,z)
+        self.setPos(x, y, z)
         self.setH(h)
-        
+
     def setSmPosHpr(self, x, y, z, h, p, r, t):
-        self.setPosHpr(x,y,z,h,p,r)
-        
+        self.setPosHpr(x, y, z, h, p, r)
+
     def clearSmoothing(self, bogus = None):
         pass
-    
+
 
     # Do we use these on the AIx?
     def setComponentX(self, x):

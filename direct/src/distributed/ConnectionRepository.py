@@ -81,7 +81,7 @@ class ConnectionRepository(
                         packer.beginPack(field)
                         packer.packDefaultValue()
                         packer.endPack()
-                        
+
                         unpacker = DCPacker()
                         unpacker.setUnpackData(packer.getString())
                         unpacker.beginUnpack(field)
@@ -94,7 +94,7 @@ class ConnectionRepository(
                         else:
                             self.notify.error("\n\n\nNot able to find %s.%s"%(
                                 distObj.__class__.__name__, field.getName()))
-            
+
         # Look up the dclass
         dclass = self.dclassesByName.get(dcname+self.dcSuffix)
         if dclass is None:
@@ -162,7 +162,7 @@ class ConnectionRepository(
                     names.append(td.getName())
             nameList = ', '.join(names)
             self.notify.error("Undefined types in DC file: " + nameList)
-            
+
         self.hashVal = dcFile.getHash()
 
         # Now import all of the modules required by the DC file.

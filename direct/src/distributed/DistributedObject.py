@@ -70,7 +70,7 @@ class DistributedObject(DistributedObjectBase):
     if __debug__:
         def status(self, indent=0):
             """
-            print out "doId(parentId,zoneId) className
+            print out "doId(parentId, zoneId) className
                 and conditionally show generated, disabled, neverDisable,
                 or cachable"
             """
@@ -79,7 +79,7 @@ class DistributedObject(DistributedObjectBase):
                 print "%s%s:"%(
                     ' '*indent, self.__class__.__name__)
                 print "%sfrom DistributedObject doId:%s, parent:%s, zone:%s"%(
-                    spaces, 
+                    spaces,
                     self.doId, self.parentId, self.zoneId),
                 flags=[]
                 if self.activeState == ESGenerated:

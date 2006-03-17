@@ -48,7 +48,7 @@
             tl = Toplevel()
             tl.title('Interval Controls')
         outerFrame = Frame(tl)
-        def entryScaleCommand(t,s=self):
+        def entryScaleCommand(t, s=self):
             s.setT(t)
             s.pause()
         self.es = es = EntryScale.EntryScale(
@@ -70,7 +70,7 @@
         # Stop/play buttons
         def doPlay(s=self, es=es):
             s.resume(es.get())
-                       
+
         stop = Button(bf, text = 'Stop',
                       command = lambda s=self: s.pause())
         play = Button(
@@ -84,7 +84,7 @@
         bf.pack(expand = 1, fill = X)
         outerFrame.pack(expand = 1, fill = X)
         # Add function to update slider during setT calls
-        def update(t,es=es):
+        def update(t, es=es):
             es.set(t, fCommand = 0)
         if not hasattr(self, "setTHooks"):
             self.setTHooks = []

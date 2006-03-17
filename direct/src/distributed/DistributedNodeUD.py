@@ -45,19 +45,19 @@ class DistributedNodeUD(DistributedObjectUD):
     # setY provided by NodePath
     def d_setY(self, y):
         self.sendUpdate("setY", [y])
-    
+
     # setZ provided by NodePath
     def d_setZ(self, z):
         self.sendUpdate("setZ", [z])
-    
+
     # setH provided by NodePath
     def d_setH(self, h):
         self.sendUpdate("setH", [h])
-    
+
     # setP provided by NodePath
     def d_setP(self, p):
         self.sendUpdate("setP", [p])
-    
+
     # setR provided by NodePath
     def d_setR(self, r):
         self.sendUpdate("setR", [r])
