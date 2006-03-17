@@ -555,6 +555,71 @@ write(const Filename &name, int z) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::estimate_texture_memory
+//       Access: Published
+//  Description: Estimates the amount of texture memory that will be
+//               consumed by loading this texture.  This returns a
+//               value that is not specific to any particular graphics
+//               card or driver; it tries to make a reasonable
+//               assumption about how a driver will load the texture.
+//               It does not account for texture compression or
+//               anything fancy.  This is mainly useful for debugging
+//               and reporting purposes.
+//
+//               Returns a value in bytes.
+////////////////////////////////////////////////////////////////////
+size_t Texture::
+estimate_texture_memory() const {
+  size_t pixels = get_x_size() * get_y_size();
+
+  size_t bpp = 4;
+  switch (get_format()) {
+  case Texture::F_rgb332:
+    bpp = 1;
+    break;
+
+  case Texture::F_alpha:
+  case Texture::F_red:
+  case Texture::F_green:
+  case Texture::F_blue:
+  case Texture::F_luminance:
+  case Texture::F_luminance_alpha:
+  case Texture::F_luminance_alphamask:
+    bpp = 4;
+    break;
+
+  case Texture::F_rgba:
+  case Texture::F_rgba4:
+  case Texture::F_rgbm:
+  case Texture::F_rgb:
+  case Texture::F_rgb5:
+  case Texture::F_rgba5:
+    bpp = 4;
+    break;
+
+  case Texture::F_color_index:
+  case Texture::F_stencil_index:
+  case Texture::F_depth_component:
+  case Texture::F_rgb8:
+  case Texture::F_rgba8:
+    bpp = 4;
+    break;
+
+  case Texture::F_rgba12:
+  case Texture::F_rgb12:
+    bpp = 6;
+    break;
+  }
+
+  size_t bytes = pixels * bpp;
+  if (is_mipmap(get_minfilter())) {
+    bytes = (bytes * 4) / 3;
+  }
+
+  return bytes;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::read_txo
 //       Access: Published
 //  Description: Reads the texture from a Panda texture object.  This

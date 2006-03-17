@@ -87,6 +87,10 @@ create_texture(DXScreenData &scrn) {
   delete_texture();
   mark_loaded();
 
+#ifdef DO_PSTATS
+  update_data_size_bytes(get_texture()->estimate_texture_memory());
+#endif  // DO_PSTATS
+
   // bpp indicates requested fmt, not texture fmt
   DWORD target_bpp = get_bits_per_pixel(get_texture()->get_format(), &num_alpha_bits);
   DWORD num_color_channels = get_texture()->get_num_components();

@@ -27,9 +27,6 @@ TextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
   BufferContext(&pgo->_texture_residency),
   _texture(tex)
 {
-#ifdef DO_PSTATS
-  update_data_size_bytes(estimate_texture_memory());
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////

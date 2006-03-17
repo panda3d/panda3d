@@ -276,6 +276,8 @@ PUBLISHED:
 
   void write(ostream &out, int indent_level) const;
 
+  size_t estimate_texture_memory() const;
+
 PUBLISHED:
   // These are published, but in general, you shouldn't be mucking
   // with these values; they are set automatically when a texture is

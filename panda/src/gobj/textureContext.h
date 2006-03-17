@@ -47,8 +47,6 @@ public:
   INLINE bool was_modified() const;
   INLINE void mark_loaded();
 
-  virtual size_t estimate_texture_memory();
-
 private:
   // This cannot be a PT(Texture), because the texture and the GSG
   // both own their TextureContexts!  That would create a circular
