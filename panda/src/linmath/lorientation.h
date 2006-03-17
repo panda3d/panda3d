@@ -20,7 +20,7 @@
 #define __LORIENTATION_H__
 
 #include "pandabase.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "lquaternion.h"
 
 #include "fltnames.h"

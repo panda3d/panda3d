@@ -19,7 +19,7 @@
 
 #include "datagram.h"
 
-#include "notify.h"
+#include "pnotify.h"
 
 // for sprintf().
 #include <stdio.h>

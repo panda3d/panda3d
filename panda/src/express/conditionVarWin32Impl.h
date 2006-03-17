@@ -25,7 +25,7 @@
 #ifdef THREAD_WIN32_IMPL
 
 #include "mutexWin32Impl.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include <prcvar.h>
 

@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 #include "typedObject.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "checksumHashGenerator.h"

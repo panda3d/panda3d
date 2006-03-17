@@ -18,7 +18,7 @@
 // 
 
 #include "pandabase.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include "uniqueIdAllocator.h"
 

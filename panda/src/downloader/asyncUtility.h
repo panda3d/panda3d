@@ -22,7 +22,7 @@
 // Includes
 ////////////////////////////////////////////////////////////////////
 #include "pandabase.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "typedef.h"
 
 #ifdef OLD_HAVE_IPC

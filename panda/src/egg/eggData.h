@@ -24,7 +24,7 @@
 #include "eggGroupNode.h"
 #include "filename.h"
 #include "coordinateSystem.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "dSearchPath.h"
 
 ////////////////////////////////////////////////////////////////////

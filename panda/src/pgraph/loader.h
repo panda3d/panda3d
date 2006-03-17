@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include "loaderOptions.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "pandaNode.h"
 #include "filename.h"
 #include "tokenBoard.h"

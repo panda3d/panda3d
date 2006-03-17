@@ -22,7 +22,7 @@
 #include "referenceCount.h"
 #include "dcast.h"
 
-#include "notify.h"
+#include "pnotify.h"
 
 class ThatThingie : public TypedObject, public ReferenceCount {
 public:

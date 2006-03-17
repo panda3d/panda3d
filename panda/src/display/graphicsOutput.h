@@ -29,7 +29,7 @@
 
 #include "typedWritableReferenceCount.h"
 #include "pStatCollector.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "pmutex.h"
 #include "filename.h"
 #include "drawMask.h"

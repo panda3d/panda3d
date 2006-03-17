@@ -25,7 +25,7 @@
 #include "config_net.h"
 #include "clockObject.h"
 
-#include "notify.h"
+#include "pnotify.h"
 #include <prerror.h>
 #include <pratom.h>
 #include <algorithm>

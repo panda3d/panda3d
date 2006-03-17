@@ -40,7 +40,7 @@
 #include "pointerTo.h"
 #include "nodePointerTo.h"
 #include "pointerToArray.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "updateSeq.h"
 
 #ifdef HAVE_PYTHON

@@ -25,7 +25,7 @@
 #include "config_net.h"
 #include "config_express.h" // for collect_tcp
 #include "clockObject.h"
-#include "notify.h"
+#include "pnotify.h"
 
 
 ////////////////////////////////////////////////////////////////////

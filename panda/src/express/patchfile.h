@@ -23,7 +23,7 @@
 #ifdef HAVE_OPENSSL
 
 #include "typedef.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "filename.h"
 #include "plist.h"
 #include "datagram.h"

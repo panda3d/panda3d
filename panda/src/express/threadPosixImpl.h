@@ -24,7 +24,7 @@
 
 #ifdef THREAD_POSIX_IMPL
 
-#include "notify.h"
+#include "pnotify.h"
 #include "threadPriority.h"
 #include "mutexPosixImpl.h"
 

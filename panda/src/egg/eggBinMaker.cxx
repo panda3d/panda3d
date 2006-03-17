@@ -22,7 +22,7 @@
 #include "eggBin.h"
 
 #include "dcast.h"
-#include "notify.h"
+#include "pnotify.h"
 
 TypeHandle EggBinMaker::_type_handle;
 

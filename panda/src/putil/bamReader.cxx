@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include "bam.h"
 #include "bamReader.h"

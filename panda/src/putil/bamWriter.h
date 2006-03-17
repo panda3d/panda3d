@@ -20,7 +20,7 @@
 #define __BAM_WRITER_
 
 #include "pandabase.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "bamEndian.h"
 #include "bamTextureMode.h"
 #include "typedWritable.h"

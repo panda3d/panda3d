@@ -19,7 +19,7 @@
 #define DOWNLOADDB_H
 
 #include "pandabase.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "filename.h"
 #include "multifile.h"
 #include "datagram.h"

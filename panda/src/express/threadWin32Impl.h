@@ -24,7 +24,7 @@
 
 #ifdef THREAD_WIN32_IMPL
 
-#include "notify.h"
+#include "pnotify.h"
 #include "threadPriority.h"
 #include "mutexWin32Impl.h"
 #include "conditionVarWin32Impl.h"

@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#include "notify.h"
+#include "pnotify.h"
 
 #include "pvector.h"
 

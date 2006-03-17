@@ -25,7 +25,7 @@
 
 #include "typedObject.h"
 #include "luse.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggAttributes

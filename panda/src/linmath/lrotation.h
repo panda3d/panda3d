@@ -23,7 +23,7 @@
 #include "lquaternion.h"
 #include "cmath.h"
 
-#include "notify.h"
+#include "pnotify.h"
 
 #include "fltnames.h"
 #include "lrotation_src.h"

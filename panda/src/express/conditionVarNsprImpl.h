@@ -25,7 +25,7 @@
 #ifdef THREAD_NSPR_IMPL
 
 #include "mutexNsprImpl.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include <prcvar.h>
 

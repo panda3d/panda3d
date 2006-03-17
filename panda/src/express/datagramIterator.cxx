@@ -18,7 +18,7 @@
 
 
 #include "datagramIterator.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramIterator::get_string

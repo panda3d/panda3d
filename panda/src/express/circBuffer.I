@@ -18,7 +18,7 @@
 
 #include "pandabase.h"
 #include "config_express.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CircBuffer::Constructor

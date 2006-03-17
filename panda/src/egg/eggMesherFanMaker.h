@@ -27,7 +27,7 @@
 #include "plist.h"
 #include "pvector.h"
 
-#include "notify.h"
+#include "pnotify.h"
 #include "mathNumbers.h"
 
 class EggMesher;

@@ -22,7 +22,7 @@
 #include "string_utils.h"
 
 #include "dconfig.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include <ctype.h>
 

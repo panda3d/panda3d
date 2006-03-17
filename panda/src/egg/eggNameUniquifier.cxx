@@ -22,7 +22,7 @@
 #include "config_egg.h"
 #include "dcast.h"
 
-#include "notify.h"
+#include "pnotify.h"
 
 TypeHandle EggNameUniquifier::_type_handle;
 

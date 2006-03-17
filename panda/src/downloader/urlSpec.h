@@ -20,7 +20,7 @@
 #define URLSPEC_H
 
 #include "pandabase.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : URLSpec

@@ -25,7 +25,7 @@
 #endif
 
 // We use real assert() instead of nassert(), because we're likely
-// to be invoked directly by notify here, and we don't want to
+// to be invoked directly by pnotify.here, and we don't want to
 // risk infinite recursion.
 #include <assert.h>
 

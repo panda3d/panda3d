@@ -18,7 +18,7 @@
 
 #include "modifierButtons.h"
 
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::Constructor

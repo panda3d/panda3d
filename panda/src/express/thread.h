@@ -24,7 +24,7 @@
 #include "pointerTo.h"
 #include "threadPriority.h"
 #include "threadImpl.h"
-#include "notify.h"
+#include "pnotify.h"
 
 class Mutex;
 class ReMutex;

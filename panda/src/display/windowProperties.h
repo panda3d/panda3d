@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 #include "filename.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WindowProperties

@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 #include "selectThreadImpl.h"  // for THREADED_PIPELINE definition
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PipelineCyclerLinks

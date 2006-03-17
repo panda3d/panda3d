@@ -21,7 +21,7 @@
 #include "geom.h"
 #include "transformState.h"
 #include "renderState.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullHandler::Destructor

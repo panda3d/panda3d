@@ -217,7 +217,7 @@
 #include "eggObject.h"
 
 #include "pointerTo.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include "pset.h"
 #include "pmap.h"

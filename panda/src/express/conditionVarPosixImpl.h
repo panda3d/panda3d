@@ -25,7 +25,7 @@
 #ifdef THREAD_POSIX_IMPL
 
 #include "mutexPosixImpl.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include <pthread.h>
 

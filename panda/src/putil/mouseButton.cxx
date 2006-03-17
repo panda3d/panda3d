@@ -18,7 +18,7 @@
 
 #include "mouseButton.h"
 #include "buttonRegistry.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include <stdio.h>
 

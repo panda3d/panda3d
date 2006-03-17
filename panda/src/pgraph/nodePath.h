@@ -29,7 +29,7 @@
 #include "nodePathComponent.h"
 #include "pointerTo.h"
 #include "referenceCount.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "typedObject.h"
 
 class NodePathCollection;

@@ -24,7 +24,7 @@
 #include "luse.h"
 #include "nodePath.h"
 #include "pmap.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "pandaNode.h"
 #include "colorAttrib.h"
 

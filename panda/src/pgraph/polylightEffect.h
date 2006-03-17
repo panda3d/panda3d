@@ -27,7 +27,7 @@
 #include "nodePath.h"
 #include "polylightNode.h"
 #include "pmap.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "sceneSetup.h"
 
 

@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 #include "typedef.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "ramfile.h"
 #include "datagram.h"
 #include "datagramIterator.h"

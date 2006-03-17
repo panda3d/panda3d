@@ -39,7 +39,7 @@
 #include "config_display.h"
 #include "geomMunger.h"
 #include "geomVertexData.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "pvector.h"
 #include "attribSlots.h"
 #include "shaderContext.h"

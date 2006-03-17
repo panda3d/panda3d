@@ -27,7 +27,7 @@
 #include "mouseData.h"
 #include "modifierButtons.h"
 #include "buttonEvent.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "pmutex.h"
 #include "reMutex.h"
 #include "pvector.h"

@@ -29,7 +29,7 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 #include "geomNode.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "transformState.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"

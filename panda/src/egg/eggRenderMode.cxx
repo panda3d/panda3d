@@ -19,7 +19,7 @@
 #include "eggRenderMode.h"
 #include "indent.h"
 #include "string_utils.h"
-#include "notify.h"
+#include "pnotify.h"
 
 TypeHandle EggRenderMode::_type_handle;
 

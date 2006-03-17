@@ -19,7 +19,7 @@
 #include "pandabase.h"
 #include <errno.h>
 #include <stdio.h>
-#include "notify.h"
+#include "pnotify.h"
 
 #include "clockObject.h"
 #include "config_express.h"

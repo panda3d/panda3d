@@ -18,7 +18,7 @@
 
 #include "filename.h"
 #include "encryptStream.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #ifndef HAVE_GETOPT
   #include "gnu_getopt.h"

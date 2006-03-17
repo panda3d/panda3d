@@ -20,7 +20,7 @@
 #define __BAM_READER_
 
 #include "pandabase.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include "typedWritable.h"
 #include "datagramGenerator.h"
