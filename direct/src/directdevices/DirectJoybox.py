@@ -77,7 +77,7 @@ class DirectJoybox(DirectObject):
         self.addButtonEvents()
         # Spawn update task
         self.enable()
-    
+
     def enable(self):
         # Kill existing task
         self.disable()
@@ -86,7 +86,7 @@ class DirectJoybox(DirectObject):
         self.acceptUprightCameraEvent()
         # Update task
         taskMgr.add(self.updateTask, self.name + '-updateTask')
-    
+
     def disable(self):
         taskMgr.remove(self.name + '-updateTask')
         # Ignore button events
@@ -105,7 +105,7 @@ class DirectJoybox(DirectObject):
                 i, self.breg.getButton(self.getEventName(i)))
         self.eventThrower = self.buttons.getNodePath().attachNewNode(
             ButtonThrower('JB Button Thrower'))
-    
+
     def setNodePath(self, nodePath):
         self.nodePath = nodePath
 
@@ -132,7 +132,7 @@ class DirectJoybox(DirectObject):
         self.updateVals()
         self.updateFunc()
         return Task.cont
-    
+
     def updateVals(self):
         # Update delta time
         cTime = globalClock.getFrameTime()
@@ -148,7 +148,7 @@ class DirectJoybox(DirectObject):
             except IndexError:
                 # That channel may not have been updated yet
                 self.bList[i] = 0
-    
+
     def updateValsUnrolled(self):
         # Update delta time
         cTime = globalClock.getFrameTime()
@@ -175,12 +175,12 @@ class DirectJoybox(DirectObject):
             except IndexError:
                 # That channel may not have been updated yet
                 self.bList[i] = 0
-    
+
     def acceptSwitchModeEvent(self, button = R_UPPER):
         self.accept(self.getEventName(button), self.switchMode)
     def ignoreSwitchModeEvent(self, button = R_UPPER):
         self.ignore(self.getEventName(button))
-        
+
     def switchMode(self):
         try:
             # Get current mode
@@ -214,7 +214,7 @@ class DirectJoybox(DirectObject):
         self.modeName = name
         self.showMode(self.modeName)
         self.enable()
-        
+
     def joyboxFly(self):
         # Do nothing if no nodePath selected
         if self.nodePath == None:
@@ -423,4 +423,4 @@ class DirectJoybox(DirectObject):
         except IndexError:
             return 0.0
 
-            
+

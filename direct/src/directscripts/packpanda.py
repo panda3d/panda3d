@@ -115,7 +115,7 @@ def PrintFileStatus(label, file):
     print "%-15s: %s"%(label, file)
   else:
     print "%-15s: %s (MISSING)"%(label, file)
-  
+
 PrintFileStatus("Game", GAME)
 print "%-15s: %s"%("Name", NAME)
 print "%-15s: %s"%("Start Menu", SMDIRECTORY)

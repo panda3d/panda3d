@@ -30,7 +30,7 @@ CLUSTER_DAEMON_PORT = 8001
 # Note, this startup string obviates the need to set any cluster related
 # config variables in the client Configrc files
 SERVER_STARTUP_STRING = (
-    '!bash ppython -c ' + 
+    '!bash ppython -c ' +
     '"import __builtin__; ' +
     '__builtin__.clusterMode = \'server\';' +
     '__builtin__.clusterServerPort = %s;' +
@@ -93,7 +93,7 @@ class ClusterMsgHandler:
         number = dgi.getUint32()
         type = dgi.getUint8()
         self.notify.debug("Packet %d type %d received" % (number, type))
-        return (dgi, type)        
+        return (dgi, type)
 
     def makeCamOffsetDatagram(self, xyz, hpr):
         datagram = PyDatagram()
@@ -211,7 +211,7 @@ class ClusterMsgHandler:
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_SWAP_NOW)
         return datagram
-         
+
     def makeSwapReadyDatagram(self):
         datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
@@ -225,7 +225,7 @@ class ClusterMsgHandler:
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_EXIT)
         return datagram
-        
+
     def makeTimeDataDatagram(self, frameCount, frameTime, dt):
         datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)

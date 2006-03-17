@@ -45,7 +45,7 @@
 #   for both interrogate databases and python parse trees.
 #
 # * The HTML generator.
-# 
+#
 ########################################################################
 
 import os, sys, parser, symbol, token, types, re
@@ -233,7 +233,7 @@ class InterrogateType:
         self.methods = parseInterrogateIntVec(tokzr)
         self.casts = parseInterrogateIntVec(tokzr)
         self.derivations = []
-        nderivations = tokzr.readint()        
+        nderivations = tokzr.readint()
         for i in range(nderivations):
             self.derivations.append(InterrogateDerivation(tokzr))
         self.enumvalues = []
@@ -400,7 +400,7 @@ class ParseTreeInfo:
         vars
             Dictionary of variables which have already been found.  If not
             provided, an empty dictionary is created.
-        
+
         The `pattern' value may contain variables of the form ['varname']
         which are allowed to parseTreeMatch anything.  The value that is
         parseTreeMatched is returned as part of a dictionary which maps
@@ -473,8 +473,8 @@ class ParseTreeInfo:
 #  - a list of InterrogateDatabase objects representing C++ modules.
 #  - a list of ParseTreeInfo objects representing python modules.
 #
-# Collectively, these make up all the data about all the code.  
-# 
+# Collectively, these make up all the data about all the code.
+#
 ########################################################################
 
 class CodeDatabase:
@@ -632,7 +632,7 @@ CLASS_RENAME_DICT = {
  "Planed":                    "PlaneD",
  "Frustum":                   "FrustumBase",
  "Frustumf":                  "Frustum",
- "Frustumd":                  "FrustumD" 
+ "Frustumd":                  "FrustumD"
 }
 
 

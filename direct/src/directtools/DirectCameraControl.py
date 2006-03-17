@@ -226,7 +226,7 @@ class DirectCameraControl(DirectObject):
         if (hasattr(direct.camera.node(), "getLens") and
             direct.camera.node().getLens().__class__.__name__ == "OrthographicLens"):
             return
-        
+
         if direct.fControl:
             moveDir = Vec3(self.coaMarker.getPos(direct.camera))
             # If marker is behind camera invert vector

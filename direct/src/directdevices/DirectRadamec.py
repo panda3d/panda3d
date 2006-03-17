@@ -20,7 +20,7 @@ RAD_FOCUS = 3
 class DirectRadamec(DirectObject):
     radamecCount = 0
     notify = DirectNotifyGlobal.directNotify.newCategory('DirectRadamec')
-    
+
     def __init__(self, device = 'Analog0', nodePath = direct.camera):
         # See if device manager has been initialized
         if direct.deviceManager == None:
@@ -33,7 +33,7 @@ class DirectRadamec(DirectObject):
         self.analogs = direct.deviceManager.createAnalogs(self.device)
         self.numAnalogs = len(self.analogs)
         self.aList = [0, 0, 0, 0, 0, 0, 0, 0]
-        # Radamec device max/mins 
+        # Radamec device max/mins
         # Note:  These values change quite often, i.e. everytime
         #        you unplug the radamec cords, or jostle them too
         #        much.  For best results, re-record these values often.
@@ -41,13 +41,13 @@ class DirectRadamec(DirectObject):
         self.maxRange = [180.0, 90, 547074.0, 533984.0]
         # Spawn update task
         self.enable()
-        
+
     def enable(self):
         # Kill existing task
         self.disable()
         # Update task
         taskMgr.add(self.updateTask, self.name + '-updateTask')
-    
+
     def disable(self):
         taskMgr.remove(self.name + '-updateTask')
 
@@ -59,7 +59,7 @@ class DirectRadamec(DirectObject):
         for i in range(len(self.analogs)):
             self.aList[i] = self.analogs.getControlState(i)
         return Task.cont
-    
+
     def radamecDebug(self):
         panVal = self.normalizeChannel(RAD_PAN, -180, 180)
         tiltVal = self.normalizeChannel(RAD_TILT, -90, 90)

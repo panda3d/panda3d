@@ -38,7 +38,7 @@ class DirectFastrak(DirectObject):
         # Spawn update task
         self.updateFunc = self.fastrakUpdate
         self.enable()
-        
+
     def enable(self):
         # Kill existing task
         self.disable()
@@ -46,7 +46,7 @@ class DirectFastrak(DirectObject):
         self.tracker = direct.deviceManager.createTracker(self.device)
         # Update task
         taskMgr.add(self.updateTask, self.name + '-updateTask')
-    
+
     def disable(self):
         taskMgr.remove(self.name + '-updateTask')
 
@@ -65,4 +65,4 @@ class DirectFastrak(DirectObject):
                                3.280839895013123 * pos[1],
                                3.280839895013123 * pos[0])
         self.notify.debug("Tracker(%d) Pos = %s" % (self.deviceNo, `self.trackerPos`))
-    
+
