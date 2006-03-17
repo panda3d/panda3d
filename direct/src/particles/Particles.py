@@ -332,11 +332,11 @@ class Particles(ParticleSystem):
             if(cbAttrib):
                 cbMode = cbAttrib.getMode()
                 if(cbMode > 0):
-                    if(cbMode in (ColorBlendAttrib.MAdd,ColorBlendAttrib.MSubtract,ColorBlendAttrib.MInvSubtract)):
+                    if(cbMode in (ColorBlendAttrib.MAdd, ColorBlendAttrib.MSubtract, ColorBlendAttrib.MInvSubtract)):
                         cboa = cbAttrib.getOperandA()
                         cbob = cbAttrib.getOperandB()
-                        file.write(targ+'.renderer.setColorBlendMode(ColorBlendAttrib.%s,ColorBlendAttrib.%s,ColorBlendAttrib.%s)\n' %
-                                (cbmLut[cbMode],cboLut[cboa],cboLut[cbob]))
+                        file.write(targ+'.renderer.setColorBlendMode(ColorBlendAttrib.%s, ColorBlendAttrib.%s, ColorBlendAttrib.%s)\n' %
+                                (cbmLut[cbMode], cboLut[cboa], cboLut[cbob]))
                     else:
                         file.write(targ+'.renderer.setColorBlendMode(ColorBlendAttrib.%s)\n' % cbmLut[cbMode])
             cim = self.renderer.getColorInterpolationManager()
@@ -366,7 +366,7 @@ class Particles(ParticleSystem):
                         file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+`t_b`+','+`t_e`+','+ \
                                    'Vec4('+`c_a[0]`+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
                                    'Vec4('+`c_b[0]`+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'),' + \
-                                   `w_a`+','+`w_b`+')\n')            
+                                   `w_a`+','+`w_b`+')\n')
                     elif typ == 'ColorInterpolationFunctionSinusoid':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
@@ -434,11 +434,11 @@ class Particles(ParticleSystem):
             if(cbAttrib):
                 cbMode = cbAttrib.getMode()
                 if(cbMode > 0):
-                    if(cbMode in (ColorBlendAttrib.MAdd,ColorBlendAttrib.MSubtract,ColorBlendAttrib.MInvSubtract)):
+                    if(cbMode in (ColorBlendAttrib.MAdd, ColorBlendAttrib.MSubtract, ColorBlendAttrib.MInvSubtract)):
                         cboa = cbAttrib.getOperandA()
                         cbob = cbAttrib.getOperandB()
-                        file.write(targ+'.renderer.setColorBlendMode(ColorBlendAttrib.%s,ColorBlendAttrib.%s,ColorBlendAttrib.%s)\n' %
-                                (cbmLut[cbMode],cboLut[cboa],cboLut[cbob]))
+                        file.write(targ+'.renderer.setColorBlendMode(ColorBlendAttrib.%s, ColorBlendAttrib.%s, ColorBlendAttrib.%s)\n' %
+                                (cbmLut[cbMode], cboLut[cboa], cboLut[cbob]))
                     else:
                         file.write(targ+'.renderer.setColorBlendMode(ColorBlendAttrib.%s)\n' % cbmLut[cbMode])
             cim = self.renderer.getColorInterpolationManager()
@@ -468,7 +468,7 @@ class Particles(ParticleSystem):
                         file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+`t_b`+','+`t_e`+','+ \
                                    'Vec4('+`c_a[0]`+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
                                    'Vec4('+`c_b[0]`+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'),' + \
-                                   `w_a`+','+`w_b`+')\n')            
+                                   `w_a`+','+`w_b`+')\n')
                     elif typ == 'ColorInterpolationFunctionSinusoid':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()

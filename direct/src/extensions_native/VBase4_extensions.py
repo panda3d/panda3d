@@ -10,6 +10,6 @@ def pPrintValues(self):
     """
     Pretty print
     """
-    return "% 10.4f, % 10.4f, % 10.4f, % 10.4f" % (self[0],self[1],self[2],self[3])
+    return "% 10.4f, % 10.4f, % 10.4f, % 10.4f" % (self[0], self[1], self[2], self[3])
 Dtool_funcToMethod(pPrintValues, VBase4)
 del pPrintValues

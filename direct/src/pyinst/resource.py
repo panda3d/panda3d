@@ -10,7 +10,7 @@ _cache = {}
 
 def makeresource(name, xtrapath=None):
     """Factory function that returns a resource subclass.
-    
+
        NAME is the logical or physical name of a resource.
        XTRAPTH is a path or list of paths to search first.
        return one of the resource subclasses.
@@ -44,7 +44,7 @@ def makeresource(name, xtrapath=None):
 
 class resource:
     """ Base class for all resources.
-    
+
         contents() returns of list of what's contained (eg files in dirs)
         dependencies() for Python resources returns a list of moduleresources
          and binaryresources """
@@ -60,13 +60,13 @@ class resource:
         return "(%(name)s, %(path)s, %(typ)s)" % self.__dict__
     def contents(self):
         """A list of resources within this resource.
-        
+
            Overridable.
            Base implementation returns [self]"""
         return [self]
     def dependencies(self):
         """A list of resources this resource requires.
-        
+
            Overridable.
            Base implementation returns []"""
         return []
@@ -76,30 +76,30 @@ class resource:
         return cmp((self.typ, self.name), (other.typ, other.name))
     def asFilter(self):
         """Create a tocfilter based on self.
-        
+
            Pure virtual"""
         raise NotImplementedError
     def asSource(self):
         """Return self in source form.
-        
+
            Base implementation returns self"""
         return self
     def asBinary(self):
         """Return self in binary form.
-        
+
            Base implementation returns self"""
         return self
 
 class pythonresource(resource):
     """An empty base class.
-    
+
        Used to classify resources."""
     pass
-         
-        
+
+
 class scriptresource(pythonresource):
     """ A top-level python resource.
-    
+
         Has (lazily computed) attributes, modules and binaries, which together
         are the scripts dependencies() """
     def __init__(self, name, fullname):
@@ -141,25 +141,25 @@ class scriptresource(pythonresource):
         return tocfilter.ModFilter([self.name])
     def asSource(self):
         """Return self as a dataresource (ie, a text file wrapper)."""
-        r = dataresource(self.path) 
+        r = dataresource(self.path)
         r.name = apply(os.path.join, string.split(self.name, '.')[:-1]+[r.name])
-        return r 
-               
+        return r
+
 class moduleresource(scriptresource):
-    """ A module resource (differs from script in that it will generally 
+    """ A module resource (differs from script in that it will generally
         be worked with as a .pyc instead of in source form) """
     def __init__(self, name, fullname):
         resource.__init__(self, name, fullname, 'm')
     def asBinary(self):
         """Return self as a dataresource (ie, a binary file wrapper)."""
-        r = dataresource(self.path) 
+        r = dataresource(self.path)
         r.name = os.path.basename(r.name)
         r.typ = 'b'
-        return r 
+        return r
     def asSource(self):
         """Return self as a scriptresource (ie, uncompiled form)."""
         return scriptresource(self.name, self.path[:-1]).asSource()
-        
+
 class binaryresource(resource):
     """A .dll or .pyd.
 
@@ -182,7 +182,7 @@ class binaryresource(resource):
     def asFilter(self):
         """Create a FileFilter from self."""
         return tocfilter.FileFilter([self.name])
-        
+
 class dataresource(resource):
     """A subclass for arbitrary files. """
     def __init__(self, name, fullname=None):
@@ -190,22 +190,22 @@ class dataresource(resource):
     def asFilter(self):
         """Create a FileFilter from self."""
         return tocfilter.FileFilter([self.name])
-        
+
 class archiveresource(dataresource):
     """A sublcass for CArchives. """
     def __init__(self, name, fullname=None):
         resource.__init__(self, name, fullname or name, 'a')
-        
+
 class zlibresource(dataresource):
     """A subclass for ZlibArchives. """
     def __init__(self, name, fullname=None):
         resource.__init__(self, name, fullname or name, 'z')
-        
+
 class dirresource(resource):
     """A sublcass for a directory.
 
-       Generally transformed to a list of files through 
-        contents() and filtered by file extensions or resource type. 
+       Generally transformed to a list of files through
+        contents() and filtered by file extensions or resource type.
         Note that contents() is smart enough to regard a .py and .pyc
         as the same resource. """
     RECURSIVE = 0
@@ -226,7 +226,7 @@ class dirresource(resource):
                 elif ext == '.pyo' and (bnm + '.pyc' in flist):
                     pass
                 else:
-                    rsrc = makeresource(os.path.join(self.path,fnm))
+                    rsrc = makeresource(os.path.join(self.path, fnm))
                     if isinstance(rsrc, pkgresource):
                         rsrc = self.__class__(rsrc.path)
                     if self.RECURSIVE:
@@ -241,22 +241,22 @@ class dirresource(resource):
                             self._contents.append(rsrc)
                     else:
                         self._contents.append(rsrc)
-            except ValueError,e:
+            except ValueError, e:
                 raise RuntimeError, "Can't make resource from %s\n ValueError: %s" \
                       % (os.path.join(self.path, fnm), `e.args`)
         return self._contents
     def asFilter(self):
         return tocfilter.DirFilter([self.path])
-         
+
 class treeresource(dirresource):
     """A subclass for a directory and subdirectories."""
     RECURSIVE = 1
     def __init__(self, name, fullname=None):
         dirresource.__init__(self, name, fullname)
-    
+
 class pkgresource(pythonresource):
     """A Python package.
-    
+
         Note that contents() can be fooled by fancy __path__ statements. """
     def __init__(self, nm, fullname):
         resource.__init__(self, nm, fullname, 'p')
@@ -303,15 +303,15 @@ class pkgresource(pythonresource):
     def asFilter(self):
         """Create a PkgFilter from self."""
         return tocfilter.PkgFilter([os.path.dirname(self.path)])
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
 if __name__ == '__main__':
     s = scriptresource('finder.py', './finder.py')
     print "s.modules:", s.modules
     print "s.binaries:", s.binaries
-    
+

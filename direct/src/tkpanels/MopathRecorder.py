@@ -48,7 +48,7 @@ class MopathRecorder(AppShell, DirectObject):
 
         # Call superclass initialization function
         AppShell.__init__(self)
-        
+
         self.initialiseoptions(MopathRecorder)
 
         self.selectNodePathNamed('camera')
@@ -82,15 +82,15 @@ class MopathRecorder(AppShell, DirectObject):
         self.tangentMarker = loader.loadModel('models/misc/sphere')
         self.tangentMarker.reparentTo(self.tangentGroup)
         self.tangentMarker.setScale(0.5)
-        self.tangentMarker.setColor(1,0,1,1)
+        self.tangentMarker.setColor(1, 0, 1, 1)
         self.tangentMarker.setName('Tangent Marker')
         self.tangentMarkerIds = self.getChildIds(
             self.tangentMarker.getChild(0))
         self.tangentLines = LineNodePath(self.tangentGroup)
-        self.tangentLines.setColor(VBase4(1,0,1,1))
+        self.tangentLines.setColor(VBase4(1, 0, 1, 1))
         self.tangentLines.setThickness(1)
-        self.tangentLines.moveTo(0,0,0)
-        self.tangentLines.drawTo(0,0,0)
+        self.tangentLines.moveTo(0, 0, 0)
+        self.tangentLines.drawTo(0, 0, 0)
         self.tangentLines.create()
         # Active node path dictionary
         self.nodePathDict = {}
@@ -259,7 +259,7 @@ class MopathRecorder(AppShell, DirectObject):
             frame, 'left',
             'Recording', 'New Curve',
             ('Next record session records a new path'),
-            self.recordingType, 'New Curve',expand = 0)
+            self.recordingType, 'New Curve', expand = 0)
         widget = self.createRadiobutton(
             frame, 'left',
             'Recording', 'Refine',
@@ -284,9 +284,9 @@ class MopathRecorder(AppShell, DirectObject):
                                    self.addKeyframe,
                                    side = LEFT, expand = 1)
         frame.pack(fill = X, expand = 1)
-        
+
         mainFrame.pack(expand = 1, fill = X, pady = 3)
-        
+
         # Playback controls
         playbackFrame = Frame(interior, relief = SUNKEN,
                               borderwidth = 2)
@@ -348,7 +348,7 @@ class MopathRecorder(AppShell, DirectObject):
             string.atof(s.speedVar.get())))
         self.speedEntry.pack(side = LEFT, expand = 0)
         frame.pack(fill = X, expand = 1)
-        
+
         playbackFrame.pack(fill = X, pady = 2)
 
         # Create notebook pages
@@ -365,7 +365,7 @@ class MopathRecorder(AppShell, DirectObject):
         label = Label(self.resamplePage, text = 'RESAMPLE CURVE',
                       font=('MSSansSerif', 12, 'bold'))
         label.pack(fill = X)
-        
+
         # Resample
         resampleFrame = Frame(
             self.resamplePage, relief = SUNKEN, borderwidth = 2)
@@ -389,7 +389,7 @@ class MopathRecorder(AppShell, DirectObject):
             self.faceForward, side = LEFT, fill = X, expand = 1)
         frame.pack(fill = X, expand = 0)
         resampleFrame.pack(fill = X, expand = 0, pady = 2)
-        
+
         # Desample
         desampleFrame = Frame(
             self.resamplePage, relief = SUNKEN, borderwidth = 2)
@@ -533,7 +533,7 @@ class MopathRecorder(AppShell, DirectObject):
             sfFrame, 'Style', 'Num Segs',
             'Set number of segments used to approximate each parametric unit',
             min = 1.0, max = 400, resolution = 1.0,
-            value = 40, 
+            value = 40,
             command = self.setNumSegs, side = TOP)
         widget.component('hull')['relief'] = RIDGE
         widget = self.createSlider(
@@ -554,27 +554,27 @@ class MopathRecorder(AppShell, DirectObject):
             sfFrame, 'Style', 'Path Color',
             'Color of curve',
             command = self.setPathColor,
-            value = [255.0,255.0,255.0,255.0])
+            value = [255.0, 255.0, 255.0, 255.0])
         self.createColorEntry(
             sfFrame, 'Style', 'Knot Color',
             'Color of knots',
             command = self.setKnotColor,
-            value = [0,0,255.0,255.0])
+            value = [0, 0, 255.0, 255.0])
         self.createColorEntry(
             sfFrame, 'Style', 'CV Color',
             'Color of CVs',
             command = self.setCvColor,
-            value = [255.0,0,0,255.0])
+            value = [255.0, 0, 0, 255.0])
         self.createColorEntry(
             sfFrame, 'Style', 'Tick Color',
             'Color of Ticks',
             command = self.setTickColor,
-            value = [255.0,0,0,255.0])
+            value = [255.0, 0, 0, 255.0])
         self.createColorEntry(
             sfFrame, 'Style', 'Hull Color',
             'Color of Hull',
             command = self.setHullColor,
-            value = [255.0,128.0,128.0,255.0])
+            value = [255.0, 128.0, 128.0, 255.0])
 
         #drawFrame.pack(fill = X)
 
@@ -622,8 +622,8 @@ class MopathRecorder(AppShell, DirectObject):
         # Pack record frame
         optionsFrame.pack(fill = X, pady = 2)
 
-        self.mainNotebook.setnaturalsize()        
-        
+        self.mainNotebook.setnaturalsize()
+
     def pushUndo(self, fResetRedo = 1):
         direct.pushUndo([self.nodePath])
 
@@ -641,7 +641,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def pushRedo(self):
         direct.pushRedo([self.nodePath])
-        
+
     def redoHook(self, nodePathList = []):
         # Reflect new changes
         pass
@@ -653,7 +653,7 @@ class MopathRecorder(AppShell, DirectObject):
     def redoListEmptyHook(self):
         # Make sure button is deactivated
         self.redoButton.configure(state = 'disabled')
-        
+
     def selectedNodePathHook(self, nodePath):
         """
         Hook called upon selection of a node path used to select playback
@@ -692,7 +692,7 @@ class MopathRecorder(AppShell, DirectObject):
             (nodePath.id() == self.tangentMarker.id())):
             self.tangentGroup.hide()
 
-    def curveEditTask(self,state):
+    def curveEditTask(self, state):
         if self.curveCollection != None:
             # Update curve position
             if self.manipulandumId == self.playbackMarker.id():
@@ -748,11 +748,11 @@ class MopathRecorder(AppShell, DirectObject):
                 self.manipulandumId = self.playbackMarker.id()
             elif direct.selected.last.id() == self.tangentMarker.id():
                 self.manipulandumId = self.tangentMarker.id()
-              
+
     def manipulateObjectCleanupHook(self, nodePathList = []):
         # Clear flag
         self.manipulandumId = None
-            
+
     def onDestroy(self, event):
         # Remove hooks
         for event, method in self.actionEvents:
@@ -824,7 +824,7 @@ class MopathRecorder(AppShell, DirectObject):
             self.curveNodePath.show()
         else:
             self.curveNodePath.hide()
-        
+
     def setKnotVis(self):
         self.nurbsCurveDrawer.setShowKnots(
             self.getVariable('Style', 'Knots').get())
@@ -832,11 +832,11 @@ class MopathRecorder(AppShell, DirectObject):
     def setCvVis(self):
         self.nurbsCurveDrawer.setShowCvs(
             self.getVariable('Style', 'CVs').get())
-        
+
     def setHullVis(self):
         self.nurbsCurveDrawer.setShowHull(
             self.getVariable('Style', 'Hull').get())
-        
+
     def setTraceVis(self):
         if self.getVariable('Style', 'Trace').get():
             self.trace.show()
@@ -852,33 +852,33 @@ class MopathRecorder(AppShell, DirectObject):
     def setNumSegs(self, value):
         self.numSegs = int(value)
         self.nurbsCurveDrawer.setNumSegs(self.numSegs)
-        
+
     def setNumTicks(self, value):
         self.nurbsCurveDrawer.setNumTicks(float(value))
-        
+
     def setTickScale(self, value):
         self.nurbsCurveDrawer.setTickScale(float(value))
 
     def setPathColor(self, color):
         self.nurbsCurveDrawer.setColor(
-            color[0]/255.0,color[1]/255.0,color[2]/255.0)
+            color[0]/255.0, color[1]/255.0, color[2]/255.0)
         self.nurbsCurveDrawer.draw()
 
     def setKnotColor(self, color):
         self.nurbsCurveDrawer.setKnotColor(
-            color[0]/255.0,color[1]/255.0,color[2]/255.0)
+            color[0]/255.0, color[1]/255.0, color[2]/255.0)
 
     def setCvColor(self, color):
         self.nurbsCurveDrawer.setCvColor(
-            color[0]/255.0,color[1]/255.0,color[2]/255.0)
+            color[0]/255.0, color[1]/255.0, color[2]/255.0)
 
     def setTickColor(self, color):
         self.nurbsCurveDrawer.setTickColor(
-            color[0]/255.0,color[1]/255.0,color[2]/255.0)
+            color[0]/255.0, color[1]/255.0, color[2]/255.0)
 
     def setHullColor(self, color):
         self.nurbsCurveDrawer.setHullColor(
-            color[0]/255.0,color[1]/255.0,color[2]/255.0)
+            color[0]/255.0, color[1]/255.0, color[2]/255.0)
 
     def setStartStopHook(self, event = None):
         # Clear out old hook
@@ -904,7 +904,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.curveCollection = None
         self.curveFitter.reset()
         self.nurbsCurveDrawer.hide()
-        
+
     def setSamplingMode(self, mode):
         self.samplingMode = mode
 
@@ -921,7 +921,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def setRefineMode(self):
         self.setRecordingType('Refine')
-        
+
     def setExtendMode(self):
         self.setRecordingType('Extend')
 
@@ -972,7 +972,7 @@ class MopathRecorder(AppShell, DirectObject):
                     # Parent record node path to temp
                     self.nodePath.reparentTo(self.playbackNodePath)
                     # Align with temp
-                    self.nodePath.setPosHpr(0,0,0,0,0,0)
+                    self.nodePath.setPosHpr(0, 0, 0, 0, 0, 0)
                     # Set playback start to self.recordStart
                     self.playbackGoTo(self.recordStart)
                     # start flying nodePath along path
@@ -1009,7 +1009,7 @@ class MopathRecorder(AppShell, DirectObject):
                 self.setNewCurveMode()
             # Compute curve
             self.computeCurves()
-            
+
     def recordTask(self, state):
         # Record raw data point
         time = self.recordStart + (
@@ -1201,7 +1201,7 @@ class MopathRecorder(AppShell, DirectObject):
             else:
                 if name == 'widget':
                     # Record relationship between selected nodes and widget
-                    direct.selected.getWrtAll()                    
+                    direct.selected.getWrtAll()
                 if name == 'marker':
                     self.playbackMarker.show()
                     # Initialize tangent marker position
@@ -1287,7 +1287,7 @@ class MopathRecorder(AppShell, DirectObject):
     def setPlaybackSF(self, value):
         self.playbackSF = pow(10.0, float(value))
         self.speedVar.set('%0.2f' % self.playbackSF)
-        
+
     def playbackTask(self, state):
         time = globalClock.getFrameTime()
         dTime = self.playbackSF * (time - state.lastTime)
@@ -1346,7 +1346,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def setDesampleFrequency(self, frequency):
         self.desampleFrequency = frequency
-        
+
     def desampleCurve(self):
         if (self.curveFitter.getNumSamples() == 0):
             print 'MopathRecorder.desampleCurve: Must define curve first'
@@ -1360,7 +1360,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def setNumSamples(self, numSamples):
         self.numSamples = int(numSamples)
-        
+
     def sampleCurve(self, fCompute = 1):
         if self.curveCollection == None:
             print 'MopathRecorder.sampleCurve: Must define curve first'
@@ -1390,7 +1390,7 @@ class MopathRecorder(AppShell, DirectObject):
     def setPathDuration(self, event):
         newMaxT = float(self.getWidget('Resample', 'Path Duration').get())
         self.setPathDurationTo(newMaxT)
-        
+
     def setPathDurationTo(self, newMaxT):
         # Compute scale factor
         sf = newMaxT/self.maxT
@@ -1415,7 +1415,7 @@ class MopathRecorder(AppShell, DirectObject):
         # Compute curve
         #self.computeCurves()
 
-    def setRecordStart(self,value):
+    def setRecordStart(self, value):
         self.recordStart = value
         # Someone else is adjusting values, let them take care of it
         if self.fAdjustingValues:
@@ -1550,7 +1550,7 @@ class MopathRecorder(AppShell, DirectObject):
             # Add it to the curve fitters
             self.curveFitter.addXyzHpr(adjustedTime, pos, hpr)
 
-    def setCropFrom(self,value):
+    def setCropFrom(self, value):
         self.cropFrom = value
         # Someone else is adjusting values, let them take care of it
         if self.fAdjustingValues:
@@ -1563,7 +1563,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.getWidget('Playback', 'Time').set(value)
         self.fAdjustingValues = 0
 
-    def setCropTo(self,value):
+    def setCropTo(self, value):
         self.cropTo = value
         # Someone else is adjusting values, let them take care of it
         if self.fAdjustingValues:
@@ -1685,7 +1685,7 @@ class MopathRecorder(AppShell, DirectObject):
     ## WIDGET UTILITY FUNCTIONS ##
     def addWidget(self, widget, category, text):
         self.widgetDict[category + '-' + text] = widget
-        
+
     def getWidget(self, category, text):
         return self.widgetDict[category + '-' + text]
 
@@ -1723,7 +1723,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.bind(widget, balloonHelp)
         self.widgetDict[category + '-' + text] = widget
         return widget
-        
+
     def createCheckbutton(self, parent, category, text,
                           balloonHelp, command, initialState,
                           side = 'top', fill = X, expand = 0):
@@ -1738,7 +1738,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.widgetDict[category + '-' + text] = widget
         self.variableDict[category + '-' + text] = bool
         return widget
-        
+
     def createRadiobutton(self, parent, side, category, text,
                           balloonHelp, variable, value,
                           command = None, fill = X, expand = 0):
@@ -1750,7 +1750,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.bind(widget, balloonHelp)
         self.widgetDict[category + '-' + text] = widget
         return widget
-        
+
     def createFloater(self, parent, category, text, balloonHelp,
                       command = None, min = 0.0, resolution = None,
                       maxVelocity = 10.0, **kw):
@@ -1769,7 +1769,7 @@ class MopathRecorder(AppShell, DirectObject):
     def createAngleDial(self, parent, category, text, balloonHelp,
                         command = None, **kw):
         kw['text'] = text
-        widget = apply(Dial.AngleDial,(parent,), kw)
+        widget = apply(Dial.AngleDial, (parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1839,7 +1839,7 @@ class MopathRecorder(AppShell, DirectObject):
                          command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(VectorWidgets.ColorEntry, (parent,),kw)
+        widget = apply(VectorWidgets.ColorEntry, (parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1903,12 +1903,12 @@ class MopathRecorder(AppShell, DirectObject):
         self.cCamera = render.attachNewNode('cCamera')
         self.cCamNode = Camera('cCam')
         self.cLens = PerspectiveLens()
-        self.cLens.setFov(40,40)
+        self.cLens.setFov(40, 40)
         self.cLens.setNear(0.1)
         self.cLens.setFar(100.0)
         self.cCamNode.setLens(self.cLens)
         self.cCamNode.setScene(render)
         self.cCam = self.cCamera.attachNewNode(self.cCamNode)
-        
+
         self.cDr.setCamera(self.cCam)
 

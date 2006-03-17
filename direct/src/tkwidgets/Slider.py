@@ -5,7 +5,7 @@ Slider Class: Velocity style controller for floating point values with
 from direct.showbase.TkGlobal import *
 from Valuator import *
 from direct.task import Task
-import math,sys,string
+import math, sys, string
 import operator
 from pandac.PandaModules import ClockObject
 
@@ -63,9 +63,9 @@ class Slider(Valuator):
             self.interior().columnconfigure(0, weight = 1)
         else:
             if self._label:
-                self._label.grid(row=0,column=0, sticky = EW)
-            self._entry.grid(row=0,column=1, sticky = EW)
-            self._valuator.grid(row=0,column=2, padx = 2, pady = 2)
+                self._label.grid(row=0, column=0, sticky = EW)
+            self._entry.grid(row=0, column=1, sticky = EW)
+            self._valuator.grid(row=0, column=2, padx = 2, pady = 2)
             self.interior().columnconfigure(0, weight = 1)
 
     def setMin(self):
@@ -207,7 +207,7 @@ class SliderWidget(Pmw.MegaWidget):
                 (), None,
                 Canvas, (interior,), borderwidth = 0,
                 relief = FLAT, width = 14, height = 14,
-                scrollregion = (-7,-7,7,7))
+                scrollregion = (-7, -7, 7, 7))
             self._arrowBtn.pack(expand = 1, fill = BOTH)
             self._arrowBtn.create_polygon(-5, -5, 5, -5, 0, 5,
                                           fill = 'grey50',
@@ -231,17 +231,17 @@ class SliderWidget(Pmw.MegaWidget):
             self._arrowBtn.bind('<1>', self._postSlider)
             self._arrowBtn.bind('<Enter>', self.highlightWidget)
             self._arrowBtn.bind('<Leave>', self.restoreWidget)
-            # Need to unpost the popup if the arrow Button is unmapped (eg: 
+            # Need to unpost the popup if the arrow Button is unmapped (eg:
             # its toplevel window is withdrawn) while the popup slider is
             # displayed.
             self._arrowBtn.bind('<Unmap>', self._unpostSlider)
-            
+
             # Bind events to the dropdown window.
             self._popup.bind('<Escape>', self._unpostSlider)
             self._popup.bind('<ButtonRelease-1>', self._widgetBtnRelease)
             self._popup.bind('<ButtonPress-1>', self._widgetBtnPress)
             self._popup.bind('<Motion>', self._widgetMove)
-            
+
             self._widget.bind('<Left>', self._decrementValue)
             self._widget.bind('<Right>', self._incrementValue)
             self._widget.bind('<Shift-Left>', self._bigDecrementValue)
@@ -253,7 +253,7 @@ class SliderWidget(Pmw.MegaWidget):
             self._widget['command'] = self._firstScaleCommand
             self._widget.bind('<ButtonRelease-1>', self._scaleBtnRelease)
             self._widget.bind('<ButtonPress-1>', self._scaleBtnPress)
-            
+
         # Check keywords and initialise options.
         self.initialiseoptions(SliderWidget)
 
@@ -303,7 +303,7 @@ class SliderWidget(Pmw.MegaWidget):
             # Update scale's variable, which update scale without
             # Calling scale's command
             self._widgetVar.set(value)
-    
+
     #======================================================================
 
     # Private methods for slider.
@@ -324,7 +324,7 @@ class SliderWidget(Pmw.MegaWidget):
         y = self._arrowBtn.winfo_rooty() + self._arrowBtn.winfo_height()
         # Popup border width
         bd = self._popup['bd']
-#        bd = string.atoi(self._popup['bd'])        
+#        bd = string.atoi(self._popup['bd'])
         # Get width of label
         minW = self._minLabel.winfo_width()
         # Width of canvas to adjust for
@@ -352,7 +352,7 @@ class SliderWidget(Pmw.MegaWidget):
         self._firstPress = 1
         self._fPressInsde = 0
 
-    def _updateValue(self,event):
+    def _updateValue(self, event):
         mouseX = self._widget.canvasx(
             event.x_root - self._widget.winfo_rootx())
         if mouseX < self.left:
@@ -381,7 +381,7 @@ class SliderWidget(Pmw.MegaWidget):
         else:
             self._fPressInside = 0
             self._fUpdate = 0
-            
+
     def _widgetMove(self, event):
         if self._firstPress and not self._fUpdate:
             canvasY = self._widget.canvasy(
@@ -397,7 +397,7 @@ class SliderWidget(Pmw.MegaWidget):
     def _scaleBtnPress(self, event):
         if self['preCallback']:
             apply(self['preCallback'], self['callbackData'])
-            
+
     def _scaleBtnRelease(self, event):
         # Do post callback if any
         if self['postCallback']:
@@ -460,7 +460,7 @@ class SliderWidget(Pmw.MegaWidget):
     def _scaleCommand(self, val):
         self.set(string.atof(val))
 
-    # Methods to modify floater characteristics    
+    # Methods to modify floater characteristics
     def setMin(self):
         self._minLabel['text'] = self.formatString % self['min']
         if self['style'] == VALUATOR_FULL:

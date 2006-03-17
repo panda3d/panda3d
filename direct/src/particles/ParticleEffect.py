@@ -6,7 +6,7 @@ from direct.directnotify import DirectNotifyGlobal
 
 class ParticleEffect(NodePath):
     notify = DirectNotifyGlobal.directNotify.newCategory('ParticleEffect')
-    pid = 1 
+    pid = 1
 
     def __init__(self, name=None, particles=None):
         if name == None:
@@ -53,7 +53,7 @@ class ParticleEffect(NodePath):
 
     def enable(self):
         # band-aid added for client crash - grw
-        if hasattr(self, 'forceGroupDict') and hasattr(self, 'particlesDict'): 
+        if hasattr(self, 'forceGroupDict') and hasattr(self, 'particlesDict'):
             if (self.renderParent != None):
                 for p in self.particlesDict.values():
                     p.setRenderParent(self.renderParent.node())
@@ -75,7 +75,7 @@ class ParticleEffect(NodePath):
 
     def isEnabled(self):
         """
-        Note: this may be misleading if enable(),disable() not used
+        Note: this may be misleading if enable(), disable() not used
         """
         return self.fEnabled
 
@@ -136,7 +136,7 @@ class ParticleEffect(NodePath):
 
     def getParticlesList(self):
         return self.particlesDict.values()
-    
+
     def getParticlesNamed(self, name):
         return self.particlesDict.get(name, None)
 
@@ -173,7 +173,7 @@ class ParticleEffect(NodePath):
         # Save all the particles to file
         num = 0
         for p in self.particlesDict.values():
-            target = 'p%d' % num 
+            target = 'p%d' % num
             num = num + 1
             f.write(target + ' = Particles.Particles(\'%s\')\n' % p.getName())
             p.printParams(f, target)

@@ -47,7 +47,7 @@ class VectorEntry(Pmw.MegaWidget):
         self._floaters = None
         self.entryFormat = '%.2f'
 
-        # Get a handle on the parent container        
+        # Get a handle on the parent container
         interior = self.interior()
 
         # This does double duty as a menu button
@@ -103,15 +103,15 @@ class VectorEntry(Pmw.MegaWidget):
         # if the user kills the floaterGroup and then tries to pop it open again
         self._floaters.userdeletefunc(self._floaters.withdraw)
         self._floaters.withdraw()
-                                             
+
 
         # Make sure entries are updated
         self.set(self['value'])
 
         # Record entry color
         self.entryBackground = self.cget('Entry_entry_background')
-        
-        # Make sure input variables processed 
+
+        # Make sure input variables processed
         self.initialiseoptions(VectorEntry)
 
     def menu(self):
@@ -131,7 +131,7 @@ class VectorEntry(Pmw.MegaWidget):
 
     def _clearFloaters(self):
         self._floaters.withdraw()
-        
+
     def _updateText(self):
         self._label['text'] = self['text']
 
@@ -139,7 +139,7 @@ class VectorEntry(Pmw.MegaWidget):
         self.interior()['relief'] = self['relief']
 
     def _updateBorderWidth(self):
-        self.interior()['bd'] = self['bd']        
+        self.interior()['bd'] = self['bd']
 
     def _updateEntryWidth(self):
         self['Entry_entry_width'] = self['entryWidth']
@@ -162,14 +162,14 @@ class VectorEntry(Pmw.MegaWidget):
             'maxstrict': 0})
         # Reflect changes in floaters
         self.configure(valuator_min = self['min'],
-                       valuator_max = self['max'])            
+                       valuator_max = self['max'])
 
     def get(self):
         return self._value
 
-    def getAt(self,index):
+    def getAt(self, index):
         return self._value[index]
-                                                                                      
+
     def set(self, value, fCommand = 1):
         if type(value) in (types.FloatType, types.IntType, types.LongType):
             value = [value] * self['dim']
@@ -182,15 +182,15 @@ class VectorEntry(Pmw.MegaWidget):
         self.variableList[index].set(self.entryFormat % value)
         self._value[index] = value
         self.action(fCommand)
-        
+
     def _entryUpdateAt(self, index):
         entryVar = self.variableList[index]
         # Did we get a valid float?
-        try: 
+        try:
             newVal = string.atof(entryVar.get())
         except ValueError:
             return
-        
+
         # Clamp value
         if self['min'] is not None:
             if newVal < self['min']:
@@ -208,19 +208,19 @@ class VectorEntry(Pmw.MegaWidget):
         # Update the floaters and call the command
         self.action()
 
-    def _refreshEntry(self,index):
+    def _refreshEntry(self, index):
         self.variableList[index].set(self.entryFormat % self._value[index])
         self.entryList[index].checkentry()
 
     def _refreshFloaters(self):
         if self._floaters:
             self._floaters.set(self._value, 0)
-        
+
     def action(self, fCommand = 1):
         self._refreshFloaters()
         if fCommand and (self['command'] != None):
-            self['command'](self._value)        
-        
+            self['command'](self._value)
+
     def reset(self):
         self.set(self['resetValue'])
 

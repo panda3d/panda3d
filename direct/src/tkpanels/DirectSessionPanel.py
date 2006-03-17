@@ -37,7 +37,7 @@ class DirectSessionPanel(AppShell):
 
         # Call superclass initialization function
         AppShell.__init__(self, parent)
-        
+
         # Active light
         if len(direct.lights) > 0:
             name = direct.lights.getNameList()[0]
@@ -75,7 +75,7 @@ class DirectSessionPanel(AppShell):
             ('DIRECT_redo', self.redoHook),
             ('DIRECT_pushRedo', self.pushRedoHook),
             ('DIRECT_redoListEmpty', self.redoListEmptyHook),
-            ('DIRECT_selectedNodePath',self.selectedNodePathHook),
+            ('DIRECT_selectedNodePath', self.selectedNodePathHook),
             ('DIRECT_addLight', self.addLight),
             ]
         for event, method in self.actionEvents:
@@ -86,7 +86,7 @@ class DirectSessionPanel(AppShell):
         interior = self.interior()
         # Add placer commands to menubar
         self.menuBar.addmenu('DIRECT', 'Direct Session Panel Operations')
-        
+
         self.directEnabled = BooleanVar()
         self.directEnabled.set(1)
         self.menuBar.addmenuitem('DIRECT', 'checkbutton',
@@ -94,7 +94,7 @@ class DirectSessionPanel(AppShell):
                                  label = 'Enable',
                                  variable = self.directEnabled,
                                  command = self.toggleDirect)
-        
+
         self.directGridEnabled = BooleanVar()
         self.directGridEnabled.set(direct.grid.isEnabled())
         self.menuBar.addmenuitem('DIRECT', 'checkbutton',
@@ -113,7 +113,7 @@ class DirectSessionPanel(AppShell):
             'Toggle Widget Move/COA Mode',
             label = 'Toggle Widget Mode',
             command = direct.manipulationControl.toggleObjectHandlesMode)
-        
+
         self.directWidgetOnTop = BooleanVar()
         self.directWidgetOnTop.set(0)
         self.menuBar.addmenuitem('DIRECT', 'checkbutton',
@@ -193,10 +193,10 @@ class DirectSessionPanel(AppShell):
         ## Environment page ##
         # Backgroud color
         bkgrdFrame = Frame(envPage, borderwidth = 2, relief = 'sunken')
-        
+
         Label(bkgrdFrame, text = 'Background',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
-        
+
         self.backgroundColor = VectorWidgets.ColorEntry(
             bkgrdFrame, text = 'Background Color')
         self.backgroundColor['command'] = self.setBackgroundColorVec
@@ -207,7 +207,7 @@ class DirectSessionPanel(AppShell):
         drFrame = Frame(envPage, borderwidth = 2, relief = 'sunken')
         Label(drFrame, text = 'Display Region',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
-        
+
         nameList = map(lambda x: 'Display Region ' + `x`,
                        range(len(direct.drList)))
         self.drMenu = Pmw.ComboBox(
@@ -217,7 +217,7 @@ class DirectSessionPanel(AppShell):
             scrolledlist_items = nameList)
         self.drMenu.pack(fill = X, expand = 0)
         self.bind(self.drMenu, 'Select display region to configure')
-        
+
         self.nearPlane = Floater.Floater(
             drFrame,
             text = 'Near Plane',
@@ -225,7 +225,7 @@ class DirectSessionPanel(AppShell):
         self.nearPlane['command'] = self.setNear
         self.nearPlane.pack(fill = X, expand = 0)
         self.bind(self.nearPlane, 'Set near plane distance')
-           
+
         self.farPlane = Floater.Floater(
             drFrame,
             text = 'Far Plane',
@@ -243,7 +243,7 @@ class DirectSessionPanel(AppShell):
         self.hFov['command'] = self.setHFov
         self.hFov.pack(fill = X, expand = 0)
         self.bind(self.hFov, 'Set horizontal field of view')
-           
+
         self.vFov = Slider.Slider(
             fovFloaterFrame,
             text = 'Vertical FOV',
@@ -270,8 +270,8 @@ class DirectSessionPanel(AppShell):
         self.resetFovButton.pack(fill = X, expand = 0)
         frame.pack(side = LEFT, fill = X, expand = 0)
         fovFrame.pack(fill = X, expand = 1)
-        
-        
+
+
         drFrame.pack(fill = BOTH, expand = 0)
 
         ## Render Style ##
@@ -283,7 +283,7 @@ class DirectSessionPanel(AppShell):
             text = 'Backface',
             command = base.toggleBackface)
         self.toggleBackfaceButton.pack(side = LEFT, fill = X, expand = 1)
-        
+
         self.toggleLightsButton = Button(
             toggleFrame,
             text = 'Lights',
@@ -295,7 +295,7 @@ class DirectSessionPanel(AppShell):
             text = 'Texture',
             command = base.toggleTexture)
         self.toggleTextureButton.pack(side = LEFT, fill = X, expand = 1)
-        
+
         self.toggleWireframeButton = Button(
             toggleFrame,
             text = 'Wireframe',
@@ -318,10 +318,10 @@ class DirectSessionPanel(AppShell):
                             command = self.addPoint)
         lightsMenu.add_command(label = 'Add Spotlight',
                             command = self.addSpot)
-            
+
         self.lightsButton.pack(expand = 0)
         self.lightsButton['menu'] = lightsMenu
-        
+
         # Notebook pages for light specific controls
         self.lightNotebook = Pmw.NoteBook(lightFrame, tabpos = None,
                                           borderwidth = 0)
@@ -344,11 +344,11 @@ class DirectSessionPanel(AppShell):
             command = self.toggleLights)
         self.enableLightsButton.pack(side = LEFT, fill = X, expand = 0)
         mainSwitchFrame.pack(fill = X, expand = 0)
-        
+
         # Widget to select a light to configure
         nameList = direct.lights.getNameList()
         lightMenuFrame = Frame(lightFrame)
-        
+
         self.lightMenu = Pmw.ComboBox(
             lightMenuFrame, labelpos = W, label_text = 'Light:',
             entry_width = 20,
@@ -356,7 +356,7 @@ class DirectSessionPanel(AppShell):
             scrolledlist_items = nameList)
         self.lightMenu.pack(side = LEFT, fill = X, expand = 0)
         self.bind(self.lightMenu, 'Select light to configure')
-        
+
         self.lightActive = BooleanVar()
         self.lightActiveButton = Checkbutton(
             lightMenuFrame,
@@ -398,7 +398,7 @@ class DirectSessionPanel(AppShell):
         self.pConstantAttenuation.pack(fill = X, expand = 0)
         self.bind(self.pConstantAttenuation,
                   'Set point light constant attenuation')
-           
+
         self.pLinearAttenuation = Slider.Slider(
             pointPage,
             text = 'Linear Attenuation',
@@ -407,7 +407,7 @@ class DirectSessionPanel(AppShell):
         self.pLinearAttenuation.pack(fill = X, expand = 0)
         self.bind(self.pLinearAttenuation,
                   'Set point light linear attenuation')
-           
+
         self.pQuadraticAttenuation = Slider.Slider(
             pointPage,
             text = 'Quadratic Attenuation',
@@ -416,7 +416,7 @@ class DirectSessionPanel(AppShell):
         self.pQuadraticAttenuation.pack(fill = X, expand = 0)
         self.bind(self.pQuadraticAttenuation,
                   'Set point light quadratic attenuation')
-           
+
         # Spot light controls
         self.sSpecularColor = VectorWidgets.ColorEntry(
             spotPage, text = 'Specular Color')
@@ -433,7 +433,7 @@ class DirectSessionPanel(AppShell):
         self.sConstantAttenuation.pack(fill = X, expand = 0)
         self.bind(self.sConstantAttenuation,
                   'Set spot light constant attenuation')
-           
+
         self.sLinearAttenuation = Slider.Slider(
             spotPage,
             text = 'Linear Attenuation',
@@ -442,7 +442,7 @@ class DirectSessionPanel(AppShell):
         self.sLinearAttenuation.pack(fill = X, expand = 0)
         self.bind(self.sLinearAttenuation,
                   'Set spot light linear attenuation')
-           
+
         self.sQuadraticAttenuation = Slider.Slider(
             spotPage,
             text = 'Quadratic Attenuation',
@@ -451,7 +451,7 @@ class DirectSessionPanel(AppShell):
         self.sQuadraticAttenuation.pack(fill = X, expand = 0)
         self.bind(self.sQuadraticAttenuation,
                   'Set spot light quadratic attenuation')
-           
+
         self.sExponent = Slider.Slider(
             spotPage,
             text = 'Exponent',
@@ -462,10 +462,10 @@ class DirectSessionPanel(AppShell):
                   'Set spot light exponent')
 
         # MRM: Add frustum controls
-           
+
         self.lightNotebook.setnaturalsize()
         self.lightNotebook.pack(expand = 1, fill = BOTH)
-        
+
         lightFrame.pack(expand = 1, fill = BOTH)
 
         ## GRID PAGE ##
@@ -505,7 +505,7 @@ class DirectSessionPanel(AppShell):
             value = direct.grid.getGridSpacing())
         self.gridSpacing['command'] = direct.grid.setGridSpacing
         self.gridSpacing.pack(fill = X, expand = 0)
-        
+
         self.gridSize = Floater.Floater(
             gridPage,
             text = 'Grid Size',
@@ -551,7 +551,7 @@ class DirectSessionPanel(AppShell):
                                       'HPRXYZ Mode'])
             self.jbModeMenu.selectitem('Joe Mode')
             self.jbModeMenu.pack(fill = X, expand = 1)
-            
+
             self.jbNodePathMenu = Pmw.ComboBox(
                 joyboxFrame, labelpos = W, label_text = 'Joybox Node Path:',
                 label_width = 16, entry_width = 20,
@@ -648,7 +648,7 @@ class DirectSessionPanel(AppShell):
         if (nodePath != None):
             # Yes, select it!
             direct.select(nodePath)
-        
+
     def addNodePath(self, nodePath):
         self.addNodePathToDict(nodePath, self.nodePathNames,
                                self.nodePathMenu, self.nodePathDict)
@@ -670,7 +670,7 @@ class DirectSessionPanel(AppShell):
             direct.joybox.demoMode()
         elif name == 'HPRXYZ Mode':
             direct.joybox.hprXyzMode()
-        
+
     def selectJBNodePathNamed(self, name):
         if name == 'selected':
             nodePath = direct.selected.last
@@ -701,7 +701,7 @@ class DirectSessionPanel(AppShell):
                 direct.joybox.setNodePath(None)
             else:
                 direct.joybox.setNodePath(nodePath)
-        
+
     def addJBNodePath(self, nodePath):
         self.addNodePathToDict(nodePath, self.jbNodePathNames,
                                self.jbNodePathMenu, self.jbNodePathDict)
@@ -726,7 +726,7 @@ class DirectSessionPanel(AppShell):
         menu.selectitem(dictName)
 
     ## ENVIRONMENT CONTROLS ##
-    # Background # 
+    # Background #
     def setBackgroundColor(self, r, g, b):
         self.setBackgroundColorVec((r, g, b))
     def setBackgroundColorVec(self, color):
@@ -787,7 +787,7 @@ class DirectSessionPanel(AppShell):
             dr.setFov(45.0, 33.75)
             self.hFov.set(45.0, 0)
             self.vFov.set(33.75, 0)
-            
+
     # Lights #
     def selectLightNamed(self, name):
         # See if light exists
@@ -826,7 +826,7 @@ class DirectSessionPanel(AppShell):
 
     def addSpot(self):
         return direct.lights.create('spot')
-        
+
     def addLight(self, light):
         # Make list reflect current list of lights
         listbox = self.lightMenu.component('scrolledlist')
@@ -870,7 +870,7 @@ class DirectSessionPanel(AppShell):
     def setLinearAttenuation(self, value):
         if self.activeLight:
             self.activeLight.getLight().setLinearAttenuation(value)
-            
+
     def setQuadraticAttenuation(self, value):
         if self.activeLight:
             self.activeLight.getLight().setQuadraticAttenuation(value)
@@ -907,7 +907,7 @@ class DirectSessionPanel(AppShell):
             self.updateLightInfo()
         elif page == 'Grid':
             self.updateGridInfo()
-            
+
     def updateEnvironmentInfo(self):
         bkgrdColor = base.getBackgroundColor() * 255.0
         self.backgroundColor.set([bkgrdColor[0],
@@ -927,7 +927,7 @@ class DirectSessionPanel(AppShell):
         # Set main lighting button
         self.enableLights.set(
             render.node().hasAttrib(LightAttrib.getClassType()))
-            
+
         # Set light specific info
         if self.activeLight:
             l = self.activeLight.getLight()
@@ -969,7 +969,7 @@ class DirectSessionPanel(AppShell):
         self.gridSpacing.set(direct.grid.getGridSpacing(), 0)
         self.gridSize.set(direct.grid.getGridSize(), 0)
         self.gridSnapAngle.set(direct.grid.getSnapAngle(), 0)
-            
+
     # UNDO/REDO
     def pushUndo(self, fResetRedo = 1):
         direct.pushUndo([self['nodePath']])
@@ -987,7 +987,7 @@ class DirectSessionPanel(AppShell):
 
     def pushRedo(self):
         direct.pushRedo([self['nodePath']])
-        
+
     def redoHook(self, nodePathList = []):
         pass
 
@@ -998,7 +998,7 @@ class DirectSessionPanel(AppShell):
     def redoListEmptyHook(self):
         # Make sure button is deactivated
         self.redoButton.configure(state = 'disabled')
-        
+
     def onDestroy(self, event):
         # Remove hooks
         for event, method in self.actionEvents:

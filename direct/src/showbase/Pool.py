@@ -8,7 +8,7 @@ or be the same type.
 
 Internally the pool is implemented with 2 lists, free items and used items.
 
-p = Pool([1,2,3,4,5])
+p = Pool([1, 2, 3, 4, 5])
 x = p.checkout()
 p.checkin(x)
 
@@ -20,7 +20,7 @@ from direct.directnotify import DirectNotifyGlobal
 class Pool:
 
     notify = DirectNotifyGlobal.directNotify.newCategory("Pool")
-    
+
     def __init__(self, free=None):
         if free:
             self.__free = free
@@ -107,8 +107,8 @@ class Pool:
                 cleanupFunc(item)
         del self.__free
         del self.__used
-    
-    def __repr__(self):        
+
+    def __repr__(self):
         return "free = %s\nused = %s" % (self.__free, self.__used)
 
 

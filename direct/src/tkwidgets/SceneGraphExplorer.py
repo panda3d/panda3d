@@ -6,7 +6,7 @@ from Tree import *
 DEFAULT_MENU_ITEMS = [
     'Update Explorer',
     'Separator',
-    'Select', 'Deselect', 
+    'Select', 'Deselect',
     'Separator',
     'Delete',
     'Separator',
@@ -25,19 +25,19 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
             ('menuItems',   [],   Pmw.INITOPT),
             )
         self.defineoptions(kw, optiondefs)
- 
+
         # Initialise superclass
         Pmw.MegaWidget.__init__(self, parent)
-        
+
         # Initialize some class variables
         self.nodePath = nodePath
 
         # Create the components.
-        
+
         # Setup up container
         interior = self.interior()
         interior.configure(relief = GROOVE, borderwidth = 2)
-        
+
         # Create a label and an entry
         self._scrolledCanvas = self.createcomponent(
             'scrolledCanvas',
@@ -49,14 +49,14 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         self._canvas['scrollregion'] = ('0i', '0i', '2i', '4i')
         self._scrolledCanvas.resizescrollregion()
         self._scrolledCanvas.pack(padx = 3, pady = 3, expand=1, fill = BOTH)
-        
+
         self._canvas.bind('<ButtonPress-2>', self.mouse2Down)
         self._canvas.bind('<B2-Motion>', self.mouse2Motion)
         self._canvas.bind('<Configure>',
                           lambda e, sc = self._scrolledCanvas:
                           sc.resizescrollregion())
         self.interior().bind('<Destroy>', self.onDestroy)
-        
+
         # Create the contents
         self._treeItem = SceneGraphExplorerItem(self.nodePath)
 
@@ -93,7 +93,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         self._width = 1.0 * self._canvas.winfo_width()
         self._height = 1.0 * self._canvas.winfo_height()
         xview = self._canvas.xview()
-        yview = self._canvas.yview()        
+        yview = self._canvas.yview()
         self._left = xview[0]
         self._top = yview[0]
         self._dxview = xview[1] - xview[0]
@@ -101,7 +101,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         self._2lx = event.x
         self._2ly = event.y
 
-    def mouse2Motion(self,event):
+    def mouse2Motion(self, event):
         newx = self._left - ((event.x - self._2lx)/self._width) * self._dxview
         self._canvas.xview_moveto(newx)
         newy = self._top - ((event.y - self._2ly)/self._height) * self._dyview

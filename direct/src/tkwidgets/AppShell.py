@@ -46,7 +46,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
     contactname     = 'Mark R. Mine'
     contactphone    = '(818) 544-2921'
     contactemail    = 'Mark.Mine@disney.com'
-          
+
     frameWidth      = 450
     frameHeight     = 320
     padx            = 5
@@ -55,7 +55,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
     usestatusarea   = 0
     balloonState    = 'none'
     panelCount      = 0
-    
+
     def __init__(self, parent = None, **kw):
         optiondefs = (
             ('title',          self.appname,        None),
@@ -96,7 +96,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         self.initialiseoptions(AppShell)
 
         self.pack(fill = BOTH, expand = 1)
-        
+
     def __createInterface(self):
         self.__createBalloon()
         self.__createMenuBar()
@@ -138,13 +138,13 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         spacer.pack(side = LEFT, expand = 0)
 
         self.menuFrame.pack(fill = X)
-                            
+
     def __createDataArea(self):
         # Create data area where data entry widgets are placed.
         self.dataArea = self.createcomponent('dataarea',
                                              (), None,
-                                             Frame, (self._hull,), 
-                                             relief=GROOVE, 
+                                             Frame, (self._hull,),
+                                             relief=GROOVE,
                                              bd=1)
         self.dataArea.pack(side=TOP, fill=BOTH, expand=YES,
                            padx=self['padx'], pady=self['pady'])
@@ -162,8 +162,8 @@ class AppShell(Pmw.MegaWidget, DirectObject):
                                                 padx=0, pady=0)
         self.__buttonBox.pack(side=TOP, expand=NO, fill=X)
         if self['usecommandarea']:
-            self.__commandFrame.pack(side=TOP, 
-                                     expand=NO, 
+            self.__commandFrame.pack(side=TOP,
+                                     expand=NO,
                                      fill=X,
                                      padx=self['padx'],
                                      pady=self['pady'])
@@ -172,10 +172,10 @@ class AppShell(Pmw.MegaWidget, DirectObject):
     def __createMessageBar(self):
         # Create the message bar area for help and status messages.
         frame = self.createcomponent('bottomtray', (), None,
-                                     Frame,(self._hull,), relief=SUNKEN)
+                                     Frame, (self._hull,), relief=SUNKEN)
         self.__messageBar = self.createcomponent('messagebar',
                                                   (), None,
-                                                 Pmw.MessageBar, 
+                                                 Pmw.MessageBar,
                                                  (frame,),
                                                  #entry_width = 40,
                                                  entry_relief=SUNKEN,
@@ -193,7 +193,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         self.updateProgress(0)
         if self['usestatusarea']:
             frame.pack(side=BOTTOM, expand=NO, fill=X)
-                   
+
         self.__balloon.configure(statuscommand = \
                                  self.__messageBar.helpmessage)
 
@@ -202,12 +202,12 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         Pmw.aboutcopyright(self.copyright)
         Pmw.aboutcontact(
           'For more information, contact:\n %s\n Phone: %s\n Email: %s' %\
-                      (self.contactname, self.contactphone, 
+                      (self.contactname, self.contactphone,
                        self.contactemail))
-        self.about = Pmw.AboutDialog(self._hull, 
+        self.about = Pmw.AboutDialog(self._hull,
                                      applicationname=self.appname)
         self.about.withdraw()
-       
+
     def toggleBalloon(self):
         if self.toggleBalloonVar.get():
             self.__balloon.configure(state = 'both')
@@ -218,7 +218,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         # Create the dialog to display about and contact information.
         self.about.show()
         self.about.focus_set()
-       
+
     def quit(self):
         self.parent.destroy()
 
@@ -227,7 +227,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
     def appInit(self):
         # Called before interface is created (should be overridden).
         pass
-        
+
     def createInterface(self):
         # Override this method to create the interface for the app.
         pass
@@ -240,7 +240,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         # Creates default menus.  Can be overridden or simply augmented
         # Using button Add below
         self.menuBar.addmenuitem('Help', 'command',
-                                 'Get information on application', 
+                                 'Get information on application',
                                  label='About...', command=self.showAbout)
         self.toggleBalloonVar = IntVar()
         if self.balloonState == 'none':
@@ -256,7 +256,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         self.menuBar.addmenuitem('File', 'command', 'Quit this application',
                                 label='Quit',
                                 command=self.quit)
-                                        
+
     # Getters
     def interior(self):
         # Retrieve the interior site where widgets should go.
@@ -299,13 +299,13 @@ class AppShell(Pmw.MegaWidget, DirectObject):
     ## WIDGET UTILITY FUNCTIONS ##
     def addWidget(self, category, text, widget):
         self.widgetDict[category + '-' + text] = widget
-        
+
     def getWidget(self, category, text):
         return self.widgetDict.get(category + '-' + text, None)
 
     def addVariable(self, category, text, variable):
         self.variableDict[category + '-' + text] = variable
-        
+
     def getVariable(self, category, text):
         return self.variableDict.get(category + '-' + text, None)
 
@@ -325,7 +325,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         self.addWidget(category, text, widget)
         return widget
 
-    def newCreateLabeledEntry(self, parent, category, text, help = '', 
+    def newCreateLabeledEntry(self, parent, category, text, help = '',
                               command = None, value = '',
                               width = 12, relief = SUNKEN,
                               side = LEFT, fill = X, expand = 0):
@@ -359,7 +359,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         widget = self.createWidget(parent, category, text, Button,
                                    help, command, side, fill, expand, kw)
         return widget
-        
+
     def newCreateCheckbutton(self, parent, category, text,
                              help = '', command = None,
                              initialState = 0, anchor = W,
@@ -375,9 +375,9 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         self.addVariable(category, text, variable)
         widget['variable'] = variable
         return widget
-        
-    def newCreateRadiobutton(self, parent, category, text, variable, value, 
-                             command = None, help = '', anchor = W, 
+
+    def newCreateRadiobutton(self, parent, category, text, variable, value,
+                             command = None, help = '', anchor = W,
                              side = LEFT, fill = X, expand = 0, **kw):
         """
         createRadiobutton(parent, category, text, variable, value, [options])
@@ -390,9 +390,9 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         widget['value'] = value
         widget['variable'] = variable
         return widget
-        
-    def newCreateFloater(self, parent, category, text, 
-                         help = '', command = None, 
+
+    def newCreateFloater(self, parent, category, text,
+                         help = '', command = None,
                          side = LEFT, fill = X, expand = 0, **kw):
         # Create the widget
         widget = self.createWidget(parent, category, text,
@@ -428,7 +428,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         return widget
 
     def newCreateVector2Entry(self, parent, category, text,
-                              help = '', command = None, 
+                              help = '', command = None,
                               side = LEFT, fill = X, expand = 0, **kw):
         # Create the widget
         widget = self.createWidget(parent, category, text,
@@ -436,7 +436,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
                                    help, command, side, fill, expand, kw)
 
     def newCreateVector3Entry(self, parent, category, text,
-                              help = '', command = None, 
+                              help = '', command = None,
                               side = LEFT, fill = X, expand = 0, **kw):
         # Create the widget
         widget = self.createWidget(parent, category, text,
@@ -445,7 +445,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         return widget
 
     def newCreateColorEntry(self, parent, category, text,
-                            help = '', command = None, 
+                            help = '', command = None,
                             side = LEFT, fill = X, expand = 0, **kw):
         # Create the widget
         widget = self.createWidget(parent, category, text,
@@ -486,7 +486,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
     def newCreateComboBox(self, parent, category, text,
                           help = '', command = None,
                           items = [], state = DISABLED, history = 0,
-                          labelpos = W, label_anchor = W, 
+                          labelpos = W, label_anchor = W,
                           label_width = 16, entry_width = 16,
                           side = LEFT, fill = X, expand = 0, **kw):
         # Update kw to reflect user inputs
@@ -532,13 +532,13 @@ class TestAppShell(AppShell):
         # Call superclass initialization function
         AppShell.__init__(self)
         self.initialiseoptions(TestAppShell)
-        
+
     def createButtons(self):
         self.buttonAdd('Ok',
                        helpMessage='Exit',
                        statusMessage='Exit',
                        command=self.quit)
-        
+
     def createMain(self):
         self.label = self.createcomponent('label', (), None,
                                           Label,
@@ -546,11 +546,11 @@ class TestAppShell(AppShell):
                                           text='Data Area')
         self.label.pack()
         self.bind(self.label, 'Space taker')
-                
+
     def createInterface(self):
         self.createButtons()
         self.createMain()
-        
+
 if __name__ == '__main__':
     test = TestAppShell(balloon_state='none')
 

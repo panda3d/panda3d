@@ -5,7 +5,7 @@ from libdirect import *
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 notify = directNotify.newCategory("Interval")
-Dtool_ObjectToDict(CInterval,"notify", notify)        
+Dtool_ObjectToDict(CInterval,"notify", notify)
 del notify
 #####################################################################
 def setT(self, t):
@@ -16,26 +16,26 @@ def setT(self, t):
     self.privPostEvent()
 
 Dtool_ObjectToDict(CInterval, "setT_Old", CInterval.setT)
-Dtool_funcToMethod(setT, CInterval)        
+Dtool_funcToMethod(setT, CInterval)
 del setT
 #####################################################################
-                       
+
 def play(self, t0 = 0.0, duration = None, scale = 1.0):
         self.notify.error("using deprecated CInterval.play() interface")
         if duration:  # None or 0 implies full length
             self.start(t0, t0 + duration, scale)
         else:
             self.start(t0, -1, scale)
-            
-Dtool_funcToMethod(play, CInterval)        
+
+Dtool_funcToMethod(play, CInterval)
 del play
 #####################################################################
 
 def stop(self):
         self.notify.error("using deprecated CInterval.stop() interface")
         self.finish()
-            
-Dtool_funcToMethod(stop, CInterval)        
+
+Dtool_funcToMethod(stop, CInterval)
 del stop
 #####################################################################
 
@@ -43,7 +43,7 @@ def setFinalT(self):
         self.notify.error("using deprecated CInterval.setFinalT() interface")
         self.finish()
 
-Dtool_funcToMethod(setFinalT, CInterval)        
+Dtool_funcToMethod(setFinalT, CInterval)
 del setFinalT
 #####################################################################
 
@@ -55,7 +55,7 @@ def privPostEvent(self):
             for func in self.setTHooks:
                 func(t)
 
-Dtool_funcToMethod(privPostEvent, CInterval)        
+Dtool_funcToMethod(privPostEvent, CInterval)
 del privPostEvent
 #####################################################################
 
@@ -70,7 +70,7 @@ def popupControls(self, tl = None):
             tl = Toplevel()
             tl.title('Interval Controls')
         outerFrame = Frame(tl)
-        def entryScaleCommand(t,s=self):
+        def entryScaleCommand(t, s=self):
             s.setT(t)
             s.pause()
         self.es = es = EntryScale.EntryScale(
@@ -91,7 +91,7 @@ def popupControls(self, tl = None):
         # Stop/play buttons
         def doPlay(s=self, es=es):
             s.resume(es.get())
-                       
+
         stop = Button(bf, text = 'Stop',
                       command = lambda s=self: s.pause())
         play = Button(
@@ -105,7 +105,7 @@ def popupControls(self, tl = None):
         bf.pack(expand = 1, fill = X)
         outerFrame.pack(expand = 1, fill = X)
         # Add function to update slider during setT calls
-        def update(t,es=es):
+        def update(t, es=es):
             es.set(t, fCommand = 0)
         if not hasattr(self, "setTHooks"):
             self.setTHooks = []
@@ -117,6 +117,6 @@ def popupControls(self, tl = None):
                 s.setTHooks.remove(u)
         tl.bind('<Destroy>', onDestroy)
 
-Dtool_funcToMethod(popupControls, CInterval)        
+Dtool_funcToMethod(popupControls, CInterval)
 del popupControls
 #####################################################################

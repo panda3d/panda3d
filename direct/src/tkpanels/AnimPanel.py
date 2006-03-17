@@ -99,7 +99,7 @@ class AnimPanel(AppShell):
             text = 'Toggle Enable',
             command = self.toggleAllControls)
         b.pack(side = RIGHT, expand = 0)
-            
+
         b = self.createcomponent(
             'showSecondsButton', (), None,
             Button, (self.menuFrame,),
@@ -126,7 +126,7 @@ class AnimPanel(AppShell):
             width = 8,
             command = self.resetAllToZero)
         self.toStartButton.pack(side = LEFT, expand = 1, fill = X)
-        
+
         self.playButton = self.createcomponent(
             'playButton', (), None,
             Button, (controlFrame,),
@@ -148,7 +148,7 @@ class AnimPanel(AppShell):
             width = 8,
             command = self.resetAllToEnd)
         self.toEndButton.pack(side = LEFT, expand = 1, fill = X)
-        
+
         self.loopVar = IntVar()
         self.loopVar.set(0)
         self.loopButton = self.createcomponent(
@@ -264,7 +264,7 @@ class AnimPanel(AppShell):
         getModelPath().prependDirectory(fileDirNameFN)
         for currActor in self['actorList']:
             # replace all currently loaded anims with specified one
-#            currActor.unloadAnims(None,None,None)
+#            currActor.unloadAnims(None, None, None)
             currActor.loadAnims({fileBaseNameBase:fileBaseNameBase})
         self.clearActorControls()
         self.createActorControls()
@@ -294,7 +294,7 @@ class AnimPanel(AppShell):
     def getActorControlAt(self, index):
         return self.actorControlList[index]
 
-    def enableActorControlAt(self,index):
+    def enableActorControlAt(self, index):
         self.getActorControlAt(index).enableControl()
 
     def toggleAllControls(self):
@@ -303,7 +303,7 @@ class AnimPanel(AppShell):
         else:
             self.enableActorControls()
         self.fToggleAll = 1 - self.fToggleAll
-        
+
     def enableActorControls(self):
         for actorControl in self.actorControlList:
             actorControl.enableControl()
@@ -312,7 +312,7 @@ class AnimPanel(AppShell):
         for actorControl in self.actorControlList:
             actorControl.disableControl()
 
-    def disableActorControlAt(self,index):
+    def disableActorControlAt(self, index):
         self.getActorControlAt(index).disableControl()
 
     def displayFrameCounts(self):
@@ -371,18 +371,18 @@ class ActorControl(Pmw.MegaWidget):
         # Create component widgets
         self._label = self.createcomponent(
             'label', (), None,
-            Menubutton, (interior,),            
+            Menubutton, (interior,),
             font=('MSSansSerif', 14, 'bold'),
             relief = RAISED, bd = 1,
             activebackground = '#909090',
             text = self['text'])
         # Top level menu
         labelMenu = Menu(self._label, tearoff = 0)
-        
+
         # Menu to select display mode
         self.unitsVar = IntVar()
         self.unitsVar.set(FRAMES)
-        displayMenu = Menu(labelMenu, tearoff = 0)        
+        displayMenu = Menu(labelMenu, tearoff = 0)
         displayMenu.add_radiobutton(label = 'Frame count',
                                     value = FRAMES,
                                     variable = self.unitsVar,
@@ -500,7 +500,7 @@ class ActorControl(Pmw.MegaWidget):
         else:
             self.minLabel['text'] = '0.0'
             self.maxLabel['text'] = "%.2f" % self.duration
-            self.frameControl.configure(from_ = 0.0, 
+            self.frameControl.configure(from_ = 0.0,
                                         to = self.duration,
                                         resolution = 0.01)
 
@@ -600,13 +600,13 @@ class ActorControl(Pmw.MegaWidget):
         # This flag forces self.currT to be updated to new value
         self.fOneShot = 1
         self.goToT(0)
-        
+
     def resetToEnd(self):
         # This flag forces self.currT to be updated to new value
         self.fOneShot = 1
         self.goToT(self.duration)
-        
-        
+
+
 """
 # EXAMPLE CODE
 from direct.actor import Actor

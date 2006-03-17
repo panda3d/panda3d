@@ -53,7 +53,7 @@ class WidgetPropertiesDialog(Toplevel):
                                   parent.winfo_rooty()+50))
         self.initial_focus.focus_set()
         self.wait_window(self)
-        
+
     def destroy(self):
         """Destroy the window"""
         self.propertyDict = {}
@@ -62,12 +62,12 @@ class WidgetPropertiesDialog(Toplevel):
         for balloon in self.balloonList:
             balloon.withdraw()
         Toplevel.destroy(self)
-        
+
     #
     # construction hooks
     def body(self, master):
         """create dialog body.
-        return entry that should have initial focus. 
+        return entry that should have initial focus.
         This method should be overridden, and is called
         by the __init__ method.
         """
@@ -132,8 +132,8 @@ class WidgetPropertiesDialog(Toplevel):
             balloon.bind(entry, helpString)
             # Create callback to execute whenever a value is changed
             modifiedCallback = (lambda f=self.modified, w=widget, e=entry,
-                                p=property, t=entryType,fn=fAllowNone:
-                                f(w,e,p,t, fn))
+                                p=property, t=entryType, fn=fAllowNone:
+                                f(w, e, p, t, fn))
             entry['modifiedcommand'] = modifiedCallback
             # Keep track of the entrys
             entryList.append(entry)
@@ -149,10 +149,10 @@ class WidgetPropertiesDialog(Toplevel):
             return self
 
     def modified(self, widget, entry, property, type, fNone):
-        self.modifiedDict[property] = (widget,entry,type,fNone)
-        
+        self.modifiedDict[property] = (widget, entry, type, fNone)
+
     def buttonbox(self):
-        """add standard button box buttons. 
+        """add standard button box buttons.
         """
         box = Frame(self)
         # Create buttons
@@ -193,7 +193,7 @@ class WidgetPropertiesDialog(Toplevel):
         self.validateChanges()
         self.apply()
         self.cancel()
-        
+
     def cancel(self, event=None):
         # put focus back to the parent window
         self.parent.focus_set()

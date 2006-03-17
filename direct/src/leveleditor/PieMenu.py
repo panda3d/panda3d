@@ -56,27 +56,27 @@ class PieMenu(NodePath, DirectObject):
 
         # Pop up menu
         self.reparentTo(render2d)
-        self.setPos(self.originX,0.0,self.originY)
+        self.setPos(self.originX, 0.0, self.originY)
         # Compensate for window aspect ratio
-        self.setScale(1.0, 1.0,1.0)
+        self.setScale(1.0, 1.0, 1.0)
         # Start drawing the selection line
         self.lines.reset()
-        self.lines.moveTo(0,0,0)
-        self.lines.drawTo(0,0,0)
+        self.lines.moveTo(0, 0, 0)
+        self.lines.drawTo(0, 0, 0)
         self.lines.create()
 
         # Spawn task to update line and select new texture
         self.currItem = -1
         taskMgr.add(self.pieMenuTask, 'pieMenuTask')
 
-    def pieMenuTask(self,state):
+    def pieMenuTask(self, state):
         mouseX = self.dr.mouseX
         mouseY = self.dr.mouseY
         deltaX = mouseX - self.originX
         deltaY = mouseY - self.originY
 
         # Update the line
-        #self.lines.setVertex(1,(deltaX/self.sfx),0.0,(deltaY/self.sfz))
+        #self.lines.setVertex(1, (deltaX/self.sfx), 0.0, (deltaY/self.sfz))
 
         # How far from starting point has user moved the cursor?
         if ((abs(deltaX) < 0.1) and (abs(deltaY) < 0.1)):
@@ -108,16 +108,16 @@ class PieMenu(NodePath, DirectObject):
         # Continue task
         return Task.cont
 
-    def setInitialState(self,state):
+    def setInitialState(self, state):
         self.initialState = state
 
     def getInitialState(self):
         return self.initialState
 
-    def setItemOffset(self,newOffset):
+    def setItemOffset(self, newOffset):
         self.itemOffset = newOffset
 
-    def setUpdateOnlyOnChange(self,flag):
+    def setUpdateOnlyOnChange(self, flag):
         self.fUpdateOnlyOnChange = flag
 
 
@@ -170,4 +170,4 @@ class TextPieMenu(PieMenu):
         self.removeNode()
 
 
-        
+

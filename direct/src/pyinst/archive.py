@@ -17,7 +17,7 @@ import struct
 
 class Archive:
   """ A base class for a repository of python code objects.
-  
+
       The get_code method is used by imputil.FuntionImporter
       to get code objects by name.
       Archives are flat namespaces, so conflict between module
@@ -47,7 +47,7 @@ class Archive:
   ####### Sub-methods of __init__ - override as needed #############
   def checkmagic(self):
     """Verify version and validity of file.
-    
+
         Overridable.
         Check to see if the file object self.lib actually has a file
         we understand.
@@ -61,7 +61,7 @@ class Archive:
 
   def loadtoc(self):
     """Load the table of contents.
-    
+
         Overridable.
         Default: After magic comes an int (4 byte native) giving the
         position of the TOC within self.lib.
@@ -77,7 +77,7 @@ class Archive:
 
   def get_code(self, parent, modname, fqname):
     """The import hook.
-    
+
        Called by imputil.FunctionImporter.
        Override extract to tune getting code from the Archive."""
     rslt = self.extract(fqname) # None if not found, (ispkg, code) otherwise
@@ -91,7 +91,7 @@ class Archive:
   ####### Core method - Override as needed  #########
   def extract(self, name):
     """ Get the object corresponding to name, or None.
-    
+
         NAME is the name as specified in an 'import name'.
         'import a.b' will become:
         extract('a') (return None because 'a' is not a code object)
@@ -102,7 +102,7 @@ class Archive:
           self.toc[name] is pos
           self.lib has the code object marshal-ed at pos
     """
-    ispkg, pos = self.toc.get(name, (0,None))
+    ispkg, pos = self.toc.get(name, (0, None))
     if pos is None:
       return None
     self.lib.seek(self.start + pos)
@@ -113,20 +113,20 @@ class Archive:
 
   def contents(self):
     """Return a list of the contents.
-    
+
        Default implementation assumes self.toc is a dict like object.
     """
     return self.toc.keys()
 
   ########################################################################
   # Building
-  
+
   ####### Top level method - shouldn't need overriding #######
   def build(self, path, lTOC):
     """Create an archive file of name PATH from LTOC.
-    
+
        lTOC is a 'logical TOC' - a list of (name, path, ...)
-       where name is the internal (import) name, 
+       where name is the internal (import) name,
        and path is a file to get the object from, eg './a.pyc'.
     """
     self.path = path
@@ -139,18 +139,18 @@ class Archive:
 
     if type(self.TOCTMPLT) == type({}):
       self.toc = {}
-    else:       # assume callable  
+    else:       # assume callable
       self.toc = self.TOCTMPLT()
 
     for tocentry in lTOC:
       self.add(tocentry)   # the guts of the archive
 
-    tocpos = self.lib.tell() 
+    tocpos = self.lib.tell()
     self.save_toc(tocpos)
     if self.TRLLEN:
       self.save_trailer(tocpos)
     if self.HDRLEN:
-      self.update_headers(tocpos) 
+      self.update_headers(tocpos)
     self.lib.close()
 
 
@@ -161,7 +161,7 @@ class Archive:
       Override this to influence the mechanics of the Archive.
        Assumes entry is a seq beginning with (nm, pth, ...) where
        nm is the key by which we'll be asked for the object.
-       pth is the name of where we find the object. 
+       pth is the name of where we find the object.
     """
     if self.os is None:
       import os
@@ -188,13 +188,13 @@ class Archive:
 
   def update_headers(self, tocpos):
     """Update any header data.
-    
+
        Default header is  MAGIC + Python's magic + tocpos"""
     self.lib.seek(self.start)
     self.lib.write(self.MAGIC)
     self.lib.write(self.pymagic)
     self.lib.write(struct.pack('=i', tocpos))
-   
+
 ##############################################################
 #
 # ZlibArchive - an archive with compressed entries
@@ -215,10 +215,10 @@ class ZlibArchive(Archive):
     # dynamic import so not imported if not needed
     global zlib
     import zlib
-   
+
   def extract(self, name):
     """Get the code object for NAME.
-    
+
        Return None if name is not in the table of contents.
        Otherwise, return a tuple (ispkg, code)"""
     (ispkg, pos, lngth) = self.toc.get(name, (0, None, 0))
@@ -229,7 +229,7 @@ class ZlibArchive(Archive):
 
   def add(self, entry):
     """Add an entry.
-    
+
        ENTRY is a sequence where entry[0] is name and entry[1] is full path name.
        zlib compress the code object, and build a toc entry"""
     if self.os is None:
@@ -243,4 +243,4 @@ class ZlibArchive(Archive):
     obj = zlib.compress(f.read(), self.LEVEL)
     self.toc[nm] = (ispkg, self.lib.tell(), len(obj))
     self.lib.write(obj)
- 
+

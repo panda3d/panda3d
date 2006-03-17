@@ -14,7 +14,7 @@ class Transitions:
     def __init__(self, loader,
                  model=None,
                  scale=3.0,
-                 pos=Vec3(0,0,0)):
+                 pos=Vec3(0, 0, 0)):
         self.transitionIval = None
         self.letterboxIval = None
         self.iris = None
@@ -24,15 +24,15 @@ class Transitions:
         self.imageScale = scale
         self.imagePos = pos
         if model:
-            self.alphaOff = Vec4(1,1,1,0)
-            self.alphaOn = Vec4(1,1,1,1)
+            self.alphaOff = Vec4(1, 1, 1, 0)
+            self.alphaOn = Vec4(1, 1, 1, 1)
             model.setTransparency(1)
             self.lerpFunc = LerpColorScaleInterval
         else:
-            self.alphaOff = Vec4(0,0,0,0)
-            self.alphaOn = Vec4(0,0,0,1)
+            self.alphaOff = Vec4(0, 0, 0, 0)
+            self.alphaOn = Vec4(0, 0, 0, 1)
             self.lerpFunc = LerpColorInterval
-            
+
         self.irisTaskName = "irisTask"
         self.fadeTaskName = "fadeTask"
         self.letterboxTaskName = "letterboxTask"
@@ -41,7 +41,7 @@ class Transitions:
         if self.fadeModel:
             self.fadeModel.removeNode()
             self.fadeModel = None
-            
+
     ##################################################
     # Fade
     ##################################################
@@ -51,18 +51,18 @@ class Transitions:
         self.fadeModel = model
         # We have to change some default parameters for a custom fadeModel
         self.imageScale = scale
-        self.alphaOn = Vec4(1,1,1,1)
+        self.alphaOn = Vec4(1, 1, 1, 1)
 
         # Reload fade if its already been created
         if self.fade:
             del self.fade
             self.fade = None
             self.loadFade()
-        
+
     def loadFade(self):
         if not self.fadeModel:
             self.fadeModel = loader.loadModel(self.FadeModelName)
-            
+
         if self.fade == None:
             # We create a DirectFrame for the fade polygon, instead of
             # simply loading the polygon model and using it directly,
@@ -75,14 +75,14 @@ class Transitions:
                 image = self.fadeModel,
                 image_scale = self.imageScale,
                 state = NORMAL,
-                )                                    
+                )
 
     def fadeIn(self, t=0.5, finishIval=None):
         """
         Play a fade in transition over t seconds.
         Places a polygon on the aspect2d plane then lerps the color
         from black to transparent. When the color lerp is finished, it
-        parents the fade polygon to hidden. 
+        parents the fade polygon to hidden.
         """
         self.noTransitions()
         self.loadFade()
@@ -102,7 +102,7 @@ class Transitions:
             if finishIval:
                 self.transitionIval.append(finishIval)
             self.transitionIval.start()
-            
+
     def fadeOut(self, t=0.5, finishIval=None):
         """
         Play a fade out transition over t seconds.
@@ -156,7 +156,7 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
         self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
-        self.fade.setColor(color)        
+        self.fade.setColor(color)
 
     def noFade(self):
         """
@@ -169,8 +169,8 @@ class Transitions:
             self.fade.detachNode()
 
     def setFadeColor(self, r, g, b):
-        self.alphaOn.set(r,g,b,1)
-        self.alphaOff.set(r,g,b,0)
+        self.alphaOn.set(r, g, b, 1)
+        self.alphaOff.set(r, g, b, 0)
 
 
     ##################################################
@@ -180,7 +180,7 @@ class Transitions:
     def loadIris(self):
         if self.iris == None:
             self.iris = loader.loadModel(self.IrisModelName)
-            self.iris.setPos(0,0,0)
+            self.iris.setPos(0, 0, 0)
 
     def irisIn(self, t=0.5, finishIval=None):
         """
@@ -205,7 +205,7 @@ class Transitions:
             if finishIval:
                 self.transitionIval.append(finishIval)
             self.transitionIval.start()
-            
+
     def irisOut(self, t=0.5, finishIval=None):
         """
         Play an iris out transition over t seconds.
@@ -275,22 +275,22 @@ class Transitions:
                 guiId = 'letterboxTop',
                 relief = FLAT,
                 state = NORMAL,
-                frameColor = (0,0,0,1),
-                borderWidth = (0,0),
+                frameColor = (0, 0, 0, 1),
+                borderWidth = (0, 0),
                 frameSize = (-1, 1, 0, 0.2),
-                pos = (0,0,0.8),
+                pos = (0, 0, 0.8),
                 )
             self.letterboxBottom = DirectFrame(
                 parent = self.letterbox,
                 guiId = 'letterboxBottom',
                 relief = FLAT,
                 state = NORMAL,
-                frameColor = (0,0,0,1),
-                borderWidth = (0,0),
+                frameColor = (0, 0, 0, 1),
+                borderWidth = (0, 0),
                 frameSize = (-1, 1, 0, 0.2),
-                pos = (0,0,-1),
+                pos = (0, 0, -1),
                 )
-                                    
+
     def noLetterbox(self):
         """
         Removes any current letterbox tasks and parents the letterbox polygon away
@@ -309,16 +309,16 @@ class Transitions:
         self.loadLetterbox()
         if (t == 0):
             self.letterbox.reparentTo(render2d, FADE_SORT_INDEX)
-            self.letterboxBottom.setPos(0,0,-1)
-            self.letterboxTop.setPos(0,0,0.8)
+            self.letterboxBottom.setPos(0, 0, -1)
+            self.letterboxTop.setPos(0, 0, 0.8)
         else:
             self.letterbox.reparentTo(render2d, FADE_SORT_INDEX)
             self.letterboxIval = Sequence(Parallel(LerpPosInterval(self.letterboxBottom, t,
-                                                          pos = Vec3(0,0,-1),
-                                                          startPos = Vec3(0,0,-1.2)),
+                                                          pos = Vec3(0, 0, -1),
+                                                          startPos = Vec3(0, 0, -1.2)),
                                           LerpPosInterval(self.letterboxTop, t,
-                                                          pos = Vec3(0,0,0.8),
-                                                          startPos = Vec3(0,0,1)),
+                                                          pos = Vec3(0, 0, 0.8),
+                                                          startPos = Vec3(0, 0, 1)),
                                           LerpColorInterval(self.letterbox, t,
                                                             color = self.alphaOn,
                                                             startColor = self.alphaOff),
@@ -328,7 +328,7 @@ class Transitions:
             if finishIval:
                 self.letterboxIval.append(finishIval)
             self.letterboxIval.start()
-            
+
     def letterboxOff(self, t=0.25, finishIval=None):
         """
         Move black bars away over t seconds.
@@ -340,11 +340,11 @@ class Transitions:
         else:
             self.letterbox.reparentTo(render2d, FADE_SORT_INDEX)
             self.letterboxIval = Sequence(Parallel(LerpPosInterval(self.letterboxBottom, t,
-                                                          pos = Vec3(0,0,-1.2),
-                                                          startPos = Vec3(0,0,-1)),
+                                                          pos = Vec3(0, 0, -1.2),
+                                                          startPos = Vec3(0, 0, -1)),
                                           LerpPosInterval(self.letterboxTop, t,
-                                                          pos = Vec3(0,0,1),
-                                                          startPos = Vec3(0,0,0.8)),
+                                                          pos = Vec3(0, 0, 1),
+                                                          startPos = Vec3(0, 0, 0.8)),
                                           LerpColorInterval(self.letterbox, t,
                                                             color = self.alphaOff,
                                                             startColor = self.alphaOn),

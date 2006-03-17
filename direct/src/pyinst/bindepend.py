@@ -21,8 +21,8 @@ import tempfile
 import finder
 
 seen = {}
-excludes = {'KERNEL32.DLL':1, 
-      'ADVAPI.DLL':1, 
+excludes = {'KERNEL32.DLL':1,
+      'ADVAPI.DLL':1,
       'MSVCRT.DLL':1,
       'ADVAPI32.DLL':1,
       'COMCTL32.DLL':1,
@@ -43,11 +43,11 @@ excludes = {'KERNEL32.DLL':1,
       'COMDLG32.DLL':1,
       'ZLIB.DLL':1,
       'ODBC32.DLL':1,
-      'VERSION.DLL':1}     
+      'VERSION.DLL':1}
 
 def getfullnameof(mod, xtrapath = None):
   """Return the full path name of MOD.
-  
+
       MOD is the basename of a dll or pyd.
       XTRAPATH is a path or list of paths to search first.
       Return the full path name of MOD.
@@ -65,10 +65,10 @@ def getfullnameof(mod, xtrapath = None):
     if os.path.exists(npth):
       return npth
   return ''
-  
+
 def getImports1(pth):
     """Find the binary dependencies of PTH.
-    
+
         This implementation (not used right now) uses the MSVC utility dumpbin"""
     rslt = []
     tmpf = tempfile.mktemp()
@@ -83,10 +83,10 @@ def getImports1(pth):
             rslt.append(string.strip(tokens[0]))
         i = i + 1
     return rslt
-    
+
 def getImports2(pth):
     """Find the binary dependencies of PTH.
-    
+
         This implementation walks through the PE header"""
     import struct
     rslt = []
@@ -127,43 +127,43 @@ def getImports2(pth):
     except struct.error:
       print "bindepend cannot analyze %s - error walking thru pehdr"
     return rslt
-    
+
 def Dependencies(lTOC):
   """Expand LTOC to include all the closure of binary dependencies.
-  
+
      LTOC is a logical table of contents, ie, a seq of tuples (name, path).
      Return LTOC expanded by all the binary dependencies of the entries
      in LTOC, except those listed in the module global EXCLUDES"""
   for (nm, pth) in lTOC:
     fullnm = string.upper(os.path.basename(pth))
-    if seen.get(string.upper(nm),0):
+    if seen.get(string.upper(nm), 0):
       continue
     print "analyzing", nm
     seen[string.upper(nm)] = 1
     dlls = getImports(pth)
     for lib in dlls:
         print " found", lib
-        if excludes.get(string.upper(lib),0):
+        if excludes.get(string.upper(lib), 0):
           continue
-        if seen.get(string.upper(lib),0):
+        if seen.get(string.upper(lib), 0):
           continue
         npth = getfullnameof(lib)
         if npth:
           lTOC.append((lib, npth))
         else:
-          print " lib not found:", lib, "dependency of", 
+          print " lib not found:", lib, "dependency of",
   return lTOC
-  
-        
+
+
 ##if getfullnameof('dumpbin.exe') == '':
 ##    def getImports(pth):
 ##        return getImports2(pth)
 ##else:
 ##    def getImports(pth):
 ##        return getImports1(pth)
-        
+
 def getImports(pth):
     """Forwards to either getImports1 or getImports2
     """
     return getImports2(pth)
- 
+

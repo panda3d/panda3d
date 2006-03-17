@@ -9,7 +9,7 @@ This is meant primarily as a demonstration of multipass and
 multitexture rendering techniques.  It's not a particularly great
 way to do shadows.
 """
-    
+
 from pandac.PandaModules import *
 from direct.task import Task
 
@@ -18,7 +18,7 @@ sc = None
 class ShadowCaster:
     texXSize = 128
     texYSize = 128
-    
+
     def __init__(self, lightPath, objectPath, filmX, filmY):
         self.lightPath = lightPath
         self.objectPath = objectPath
@@ -75,7 +75,7 @@ class ShadowCaster:
         """ Specifies the part of the world that is to be considered
         the ground: this is the part onto which the rendered texture
         will be applied. """
-        
+
         if self.groundPath:
             self.groundPath.clearProjectTexture(self.stage)
 
@@ -128,12 +128,12 @@ def avatarShadow():
         return Task.cont
 
     taskMgr.remove('shadowCamera')
-    taskMgr.add(shadowCameraRotate, 'shadowCamera')    
+    taskMgr.add(shadowCameraRotate, 'shadowCamera')
 
     global sc
     if sc != None:
         sc.clear()
-        
+
     sc = ShadowCaster(lightPath, objectPath, 4, 6)
 
     # Naively, just apply the shadow to everything in the world.  It
@@ -147,7 +147,7 @@ def piratesAvatarShadow():
     # Force the lod to be 0 at all times
     base.localAvatar.getGeomNode().getChild(0).node().forceSwitch(0)
     return a
-    
+
 def arbitraryShadow(node):
     # Turn off the existing drop shadow, if any
     if hasattr(node, "dropShadow"):
@@ -174,12 +174,12 @@ def arbitraryShadow(node):
         return Task.cont
 
     taskMgr.remove('shadowCamera')
-    taskMgr.add(shadowCameraRotate, 'shadowCamera')    
+    taskMgr.add(shadowCameraRotate, 'shadowCamera')
 
     global sc
     if sc != None:
         sc.clear()
-        
+
     sc = ShadowCaster(lightPath, objectPath, 100, 100)
 
     # Naively, just apply the shadow to everything in the world.  It
@@ -203,16 +203,16 @@ def arbitraryShadow(node):
 ##aNP = s.attachNewNode(a.upcastToPandaNode())
 ##b.setLight(aNP)
 ##d = DirectionalLight("chernabogDirectionalLight")
-##d.setDirection(Vec3(0,1,0))
+##d.setDirection(Vec3(0, 1, 0))
 ##d.setColor(Vec4(1))
 ###d.setColor(Vec4(0.9, 0.7, 0.7, 1.000))
 ##dNP = s.attachNewNode(d.upcastToPandaNode())
 ##b.setLight(dNP)
 ##
-##ival = Sequence(LerpPosInterval(bs.lightPath, 0.0, Vec3(-200,0,50)),
-##                LerpPosInterval(bs.lightPath, 10.0, Vec3(-200,0,200)),
-##                LerpPosInterval(bs.lightPath, 10.0, Vec3(200,0,200)),
-##                LerpPosInterval(bs.lightPath, 10.0, Vec3(200,0,50)),
+##ival = Sequence(LerpPosInterval(bs.lightPath, 0.0, Vec3(-200, 0, 50)),
+##                LerpPosInterval(bs.lightPath, 10.0, Vec3(-200, 0, 200)),
+##                LerpPosInterval(bs.lightPath, 10.0, Vec3(200, 0, 200)),
+##                LerpPosInterval(bs.lightPath, 10.0, Vec3(200, 0, 50)),
 ##)
 ##ival.loop()
 

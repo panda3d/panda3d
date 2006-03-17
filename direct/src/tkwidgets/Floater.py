@@ -5,7 +5,7 @@ Floater Class: Velocity style controller for floating point values with
 from direct.showbase.TkGlobal import *
 from Valuator import *
 from direct.task import Task
-import math,sys,string
+import math, sys, string
 
 FLOATER_WIDTH = 22
 FLOATER_HEIGHT = 18
@@ -20,7 +20,7 @@ class Floater(Valuator):
         # Initialize the superclass
         Valuator.__init__(self, parent)
         self.initialiseoptions(Floater)
-        
+
     def createValuator(self):
         self._valuator = self.createcomponent('valuator',
                                               (('floater', 'valuator'),),
@@ -34,9 +34,9 @@ class Floater(Valuator):
     def packValuator(self):
         # Position components
         if self._label:
-            self._label.grid(row=0,column=0, sticky = EW)
-        self._entry.grid(row=0,column=1, sticky = EW)
-        self._valuator.grid(row=0,column=2, padx = 2, pady = 2)
+            self._label.grid(row=0, column=0, sticky = EW)
+        self._entry.grid(row=0, column=1, sticky = EW)
+        self._valuator.grid(row=0, column=2, padx = 2, pady = 2)
         self.interior().columnconfigure(0, weight = 1)
 
 
@@ -70,7 +70,7 @@ class FloaterWidget(Pmw.MegaWidget):
         # Initialize the superclass
         Pmw.MegaWidget.__init__(self, parent)
 
-        # Set up some local and instance variables        
+        # Set up some local and instance variables
         # Create the components
         interior = self.interior()
 
@@ -109,7 +109,7 @@ class FloaterWidget(Pmw.MegaWidget):
         self._widget.bind('<Enter>', self.highlightWidget)
         self._widget.bind('<Leave>', self.restoreWidget)
 
-        # Make sure input variables processed 
+        # Make sure input variables processed
         self.initialiseoptions(FloaterWidget)
 
     def set(self, value, fCommand = 1):
@@ -126,7 +126,7 @@ class FloaterWidget(Pmw.MegaWidget):
     def updateIndicator(self, value):
         # Nothing visible to update on this type of widget
         pass
-    
+
     def get(self):
         """
         self.get()
@@ -136,7 +136,7 @@ class FloaterWidget(Pmw.MegaWidget):
 
     ## Canvas callback functions
     # Floater velocity controller
-    def mouseDown(self,event):
+    def mouseDown(self, event):
         """ Begin mouse interaction """
         # Exectute user redefinable callback function (if any)
         self['relief'] = SUNKEN
@@ -188,9 +188,9 @@ class FloaterWidget(Pmw.MegaWidget):
         upon the number of digits to be displayed in the result
         """
         self.minExp = math.floor(-self['numDigits']/
-                                 math.log10(Valuator.sfBase))        
+                                 math.log10(Valuator.sfBase))
 
-    # Methods to modify floater characteristics    
+    # Methods to modify floater characteristics
     def setRelief(self):
         self.interior()['relief'] = self['relief']
 
@@ -234,7 +234,7 @@ class FloaterGroup(Pmw.MegaToplevel):
 
         # Initialize the toplevel widget
         Pmw.MegaToplevel.__init__(self, parent)
-        
+
         # Create the components
         interior = self.interior()
         # Get a copy of the initial value (making sure its a list)
@@ -242,11 +242,11 @@ class FloaterGroup(Pmw.MegaToplevel):
 
         # The Menu Bar
         self.balloon = Pmw.Balloon()
-        menubar = self.createcomponent('menubar',(), None,
+        menubar = self.createcomponent('menubar', (), None,
                                        Pmw.MenuBar, (interior,),
                                        balloon = self.balloon)
         menubar.pack(fill=X)
-        
+
         # FloaterGroup Menu
         menubar.addmenu('Floater Group', 'Floater Group Operations')
         menubar.addmenuitem(
@@ -256,7 +256,7 @@ class FloaterGroup(Pmw.MegaToplevel):
         menubar.addmenuitem(
             'Floater Group', 'command', 'Dismiss Floater Group panel',
             label = 'Dismiss', command = self.withdraw)
-        
+
         menubar.addmenu('Help', 'Floater Group Help Operations')
         self.toggleBalloonVar = IntVar()
         self.toggleBalloonVar.set(0)
@@ -281,8 +281,8 @@ class FloaterGroup(Pmw.MegaToplevel):
 
         # Make sure floaters are initialized
         self.set(self['value'])
-        
-        # Make sure input variables processed 
+
+        # Make sure input variables processed
         self.initialiseoptions(FloaterGroup)
 
     def _updateLabels(self):
@@ -299,7 +299,7 @@ class FloaterGroup(Pmw.MegaToplevel):
     def get(self):
         return self._value
 
-    def getAt(self,index):
+    def getAt(self, index):
         return self._value[index]
 
     # This is the command is used to set the groups value
@@ -324,7 +324,7 @@ class FloaterGroup(Pmw.MegaToplevel):
     def reset(self):
         self.set(self['value'])
 
-  
+
 ## SAMPLE CODE
 if __name__ == '__main__':
     # Initialise Tkinter and Pmw.
@@ -334,14 +334,14 @@ if __name__ == '__main__':
     # Dummy command
     def printVal(val):
         print val
-    
+
     # Create and pack a Floater megawidget.
     mega1 = Floater(root, command = printVal)
     mega1.pack(side = 'left', expand = 1, fill = 'x')
 
     """
     # These are things you can set/configure
-    # Starting value for floater    
+    # Starting value for floater
     mega1['value'] = 123.456
     mega1['text'] = 'Drive delta X'
     # To change the color of the label:
@@ -361,6 +361,6 @@ if __name__ == '__main__':
                           Valuator_max = 255.0,
                           Valuator_resolution = 1.0,
                           command = printVal)
-    
+
     # Uncomment this if you aren't running in IDLE
     #root.mainloop()

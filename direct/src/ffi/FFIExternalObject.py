@@ -25,7 +25,7 @@ def registerInTypeMap(pythonClass):
         WrapperClassMap[typeIndex] = pythonClass
 
 
-def funcToMethod(func,clas,method_name=None):
+def funcToMethod(func, clas, method_name=None):
     """Adds func to class so it is an accessible method; use method_name to specify the name to be used for calling the method.
     The new method is accessible to any instance immediately."""
     func.im_class=clas
@@ -118,7 +118,7 @@ class FFIExternalObject:
         # type instead.
         if typeHandle.getNumParentClasses() == 0:
             # This type has no parents!  That shouldn't happen.
-            FFIConstants.notify.warning("Unknown class type: %s has no parents!" % (typeHandle.getName()))            
+            FFIConstants.notify.warning("Unknown class type: %s has no parents!" % (typeHandle.getName()))
             return None
 
         parentType = typeHandle.getParentTowards(rootType, self)
@@ -133,7 +133,7 @@ class FFIExternalObject:
             WrapperClassMap[typeHandle.getIndex()] = parentWrapperClass
 
         return parentWrapperClass
-        
+
     def setPointer(self):
         # See what type it really is and downcast to that type (if necessary)
         # Look up the TypeHandle in the dict. get() returns None if it is not there
@@ -143,7 +143,7 @@ class FFIExternalObject:
             # This is an unknown class type.  Perhaps it derives from
             # a class type we know.
             exactWrapperClass = self.lookUpNewType(self.getType(), self.getClassType())
-            
+
         # We do not need to downcast if we already have the same class
         if (exactWrapperClass and (exactWrapperClass != self.__class__)):
             # Create a new wrapper class instance
@@ -162,7 +162,7 @@ class FFIExternalObject:
             return exactObject
         else:
             return self
- 
+
     def downcast(self, toClass):
         fromClass = self.__class__
         #FFIConstants.notify.debug('downcast: downcasting from %s to %s' % \
@@ -223,7 +223,7 @@ class FFIExternalObject:
 
     def __str__(self):
         # This is a more complete version of printing which shows the object type
-        # and pointer, plus the output from write() or output() whichever is defined        
+        # and pointer, plus the output from write() or output() whichever is defined
         # Print this info for all objects
         baseRepr = ('[' + self.__class__.__name__ + ' at: ' + `self.this` + ']')
         # Lots of Panda classes have an write or output function defined that takes an Ostream
@@ -265,4 +265,4 @@ class FFIExternalObject:
 
 
 
-    
+

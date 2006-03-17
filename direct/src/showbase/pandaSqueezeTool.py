@@ -2,11 +2,11 @@
 #
 # SQUEEZE
 #
-# squeeze a python program 
+# squeeze a python program
 #
 # installation:
 # - use this script as is, or squeeze it using the following command:
-# 
+#
 # python squeezeTool.py -1su -o squeeze -b squeezeTool squeezeTool.py
 #
 # notes:
@@ -307,11 +307,11 @@ def squeeze(app, start, filelist, outputDir):
                 fp = open(bootstrap, "w")
                 fp.write('''\
 #%(localMagic)s %(archiveid)s
-import ihooks,zlib,base64,marshal
+import ihooks, zlib, base64, marshal
 s=base64.decodestring("""
 %(data)s""")
 exec marshal.loads(%(zbegin)ss[:%(loaderlen)d]%(zend)s)
-boot("%(app)s",s,%(size)d,%(loaderlen)d)
+boot("%(app)s", s, %(size)d, %(loaderlen)d)
 exec "import %(start)s"
 ''' % locals())
                 bytes = fp.tell()
@@ -334,7 +334,7 @@ exec "import %(start)s"
                 # Note: David Rose adjusted the following to be panda-specific.
                 fp.write("""\
 #%(localMagic)s %(archiveid)s
-import ihooks,zlib,marshal,os,sys
+import ihooks, zlib, marshal, os, sys
 
 import pandac
 
@@ -356,7 +356,7 @@ if archivePath == None:
 
 f=open(archivePath,"rb")
 exec marshal.loads(%(zbegin)sf.read(%(loaderlen)d)%(zend)s)
-boot("%(app)s",f,%(size)d)
+boot("%(app)s", f, %(size)d)
 exec "from %(start)s import *"
 #exec "run()"
 """ % locals())

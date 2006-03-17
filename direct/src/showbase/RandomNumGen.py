@@ -18,10 +18,10 @@ class RandomNumGen:
 
     def __init__(self, seed):
         """seed must be an integer or another RandomNumGen"""
-        if isinstance(seed,RandomNumGen):
+        if isinstance(seed, RandomNumGen):
             # seed this rng with the other rng
             rng = seed
-            seed = rng.randint(0,1L << 16)
+            seed = rng.randint(0, 1L << 16)
 
         self.notify.debug("seed: " + str(seed))
         seed = int(seed)
@@ -120,8 +120,8 @@ class RandomNumGen:
             raise ValueError, "empty range for randrange()"
         return istart + istep*int(self.__rand(n))
 
-    def randint(self, a,b):
-        """returns integer in [a,b]"""
+    def randint(self, a, b):
+        """returns integer in [a, b]"""
         assert a <= b
         range = b-a+1
         r = self.__rand(range)
@@ -131,5 +131,5 @@ class RandomNumGen:
     # this function for important decision points where remote
     # synchronicity is critical
     def random(self):
-        """returns random float in [0.0,1.0)"""
+        """returns random float in [0.0, 1.0)"""
         return float(self.__rng.getUint31()) / float(1L << 31)

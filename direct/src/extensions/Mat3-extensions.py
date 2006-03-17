@@ -6,7 +6,7 @@
 
     def __repr__(self):
         return '%s(\n%s,\n%s,\n%s)' % (
-            self.__class__.__name__,self.getRow(0).pPrintValues(), self.getRow(1).pPrintValues(), self.getRow(2).pPrintValues())
+            self.__class__.__name__, self.getRow(0).pPrintValues(), self.getRow(1).pPrintValues(), self.getRow(2).pPrintValues())
 
     def pPrintValues(self):
         """

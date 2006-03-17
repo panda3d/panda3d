@@ -1,4 +1,4 @@
-from direct.showbase.PythonUtil import *    
+from direct.showbase.PythonUtil import *
 from types import *
 import string
 import FFIConstants
@@ -53,14 +53,14 @@ def getTypeName(classTypeDesc, typeDesc):
     # Atomic C++ types are type checked against the builtin
     # Python types. This code sorts out the mapping
     if typeDesc.isAtomic():
-        
+
         # Ints, bools, and chars are treated as ints.
         # Enums are special and are not atomic, see below
         if ((typeDesc.atomicType == AT_int) or
             (typeDesc.atomicType == AT_bool) or
             (typeDesc.atomicType == AT_char)):
             return 'IntType'
-        
+
         # Floats and doubles are both floats in Python
         elif ((typeDesc.atomicType == AT_float) or
             (typeDesc.atomicType == AT_double)):
@@ -72,7 +72,7 @@ def getTypeName(classTypeDesc, typeDesc):
         # Strings are treated as Python strings
         elif ((typeDesc.atomicType == AT_string)):
             return 'StringType'
-        
+
         elif (typeDesc.atomicType == AT_void):
             # Convert the void type to None type... I guess...
             # So far we do not have any code that uses this
@@ -80,7 +80,7 @@ def getTypeName(classTypeDesc, typeDesc):
 
         else:
             FFIConstants.notify.error("Unknown atomicType: %s" % (typeDesc.atomicType))
-        
+
     # If the type is an enum, we really want to treat it like an int
     # To handle this, the type will have __enum__ in the name
     # Usually it will start the typeName, but some typeNames have the
@@ -91,7 +91,7 @@ def getTypeName(classTypeDesc, typeDesc):
 
     # If it was not atomic or enum, it must be a class which is a
     # bit trickier because we output different things depending on the
-    # scoping of the type. 
+    # scoping of the type.
     else:
 
         #   classTypeDesc  typeDesc fullNestedName Resulting TypeName
@@ -103,11 +103,11 @@ def getTypeName(classTypeDesc, typeDesc):
         # 6   Inner         Inner     Outer.Inner    Outer.Inner
         # 7   None          Other     Other          Other.Other
 
-        # CASES 1,4, and 7 are the only ones that are different from the full
+        # CASES 1, 4, and 7 are the only ones that are different from the full
         # nested name, returning Other.Other
 
         returnNestedTypeNames = string.split(typeName, '.')
-        returnModuleName = returnNestedTypeNames[0] 
+        returnModuleName = returnNestedTypeNames[0]
 
         if classTypeDesc:
             classTypeName = classTypeDesc.getFullNestedName()
@@ -145,7 +145,7 @@ def getInheritanceLevel(type, checkNested = 1):
         # A special case: PyObject * is always the most general
         # object.  Everything is a PyObject.
         return -1
-    
+
     # If this is a nested type, return the inheritance level of the outer type.
     if type.isNested:
         # Check the level of your outer class
@@ -212,7 +212,7 @@ class FFIMethodArgumentTreeCollection:
         self.methodSpecList = methodSpecList
         self.methodDict = {}
         self.treeDict = {}
-        
+
     def outputOverloadedMethodHeader(self, file, nesting):
         # If one is static, we assume they all are.
         # The current system does not support overloading static and non-static
@@ -221,7 +221,7 @@ class FFIMethodArgumentTreeCollection:
         # they are not really constructors, they are instance methods that fill
         # in the this pointer.
         # Global functions do not need static versions
-        if (self.methodSpecList[0].isStatic() and 
+        if (self.methodSpecList[0].isStatic() and
             (not self.methodSpecList[0].isConstructor())):
             indent(file, nesting, 'def ' +
                    self.methodSpecList[0].name + '(*_args):\n')
@@ -230,7 +230,7 @@ class FFIMethodArgumentTreeCollection:
                    self.methodSpecList[0].name + '(self, *_args):\n')
         self.methodSpecList[0].outputCFunctionComment(file, nesting+2)
         indent(file, nesting+2, 'numArgs = len(_args)\n')
-        
+
     def outputOverloadedMethodFooter(self, file, nesting):
         # If this is a static method, we need to output a static version
         # If one is static, we assume they all are.
@@ -250,7 +250,7 @@ class FFIMethodArgumentTreeCollection:
                 indent(file, nesting,   "FFIExternalObject.funcToMethod("+methodName+','+ self.classTypeDesc.foreignTypeName+ ",'"+methodName+"')\n")
                 indent(file, nesting,   'del '+methodName+'\n')
                 indent(file, nesting, ' \n')
-             
+
         indent(file, nesting+1, '\n')
 
     def outputOverloadedStaticFooter(self, file, nesting):
@@ -258,7 +258,7 @@ class FFIMethodArgumentTreeCollection:
         methodName = self.methodSpecList[0].name
         indent(file, nesting, self.classTypeDesc.foreignTypeName + '.' + methodName + ' = staticmethod(' + methodName + ')\n')
         indent(file, nesting,'del ' +methodName+' \n\n')
-    
+
     def setup(self):
         for method in self.methodSpecList:
             numArgs = len(method.typeDescriptor.thislessArgTypes())
@@ -298,7 +298,7 @@ class FFIMethodArgumentTreeCollection:
 
         self.outputOverloadedMethodFooter(file, nesting)
 
-    
+
 
 class FFIMethodArgumentTree:
     """
@@ -319,7 +319,7 @@ class FFIMethodArgumentTree:
         for methodSpec in self.methodSpecList:
             argTypes = methodSpec.typeDescriptor.thislessArgTypes()
             self.fillInArgTypes(argTypes, methodSpec)
-    
+
     def fillInArgTypes(self, argTypes, methodSpec):
         # If the method takes no arguments, we will assign a type index of 0
         if (len(argTypes) == 0):
@@ -327,11 +327,11 @@ class FFIMethodArgumentTree:
                 FFIMethodArgumentTree(self.classTypeDesc,
                                       self.methodSpecList),
                 methodSpec]
-        
+
         else:
             self.argSpec = argTypes[0]
             typeDesc = self.argSpec.typeDescriptor.recursiveTypeDescriptor()
-            
+
             if (len(argTypes) == 1):
                 # If this is the last parameter, we are a leaf node, so store the
                 # methodSpec in this dictionary
@@ -375,7 +375,7 @@ class FFIMethodArgumentTree:
                 # Ok, we branch, it was worth a try though
                 branches = 1
                 break
-            
+
             prevTree = subTree
             # Must only have one subtree, traverse it
             subTree = subTree.tree.values()[0][0]
@@ -439,9 +439,9 @@ class FFIMethodArgumentTree:
                     # Legal types for an int parameter include long.
                     elif (typeName == 'IntType'):
                         condition += (' or (isinstance(_args[' + `level` + '], LongType))')
-                    
+
                 indent(file, nesting+2, 'if ' + condition + ':\n')
-                    
+
                 if (self.tree[typeDesc][0] is not None):
                     self.tree[typeDesc][0].traverse(file, nesting+1, level+1)
                 else:

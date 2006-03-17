@@ -98,7 +98,7 @@ class Archive:
           self.toc[name] is pos
           self.lib has the code object marshal-ed at pos
     """
-    ispkg, pos = self.toc.get(name, (0,None))
+    ispkg, pos = self.toc.get(name, (0, None))
     if pos is None:
       return None
     self.lib.seek(self.start + pos)
@@ -116,7 +116,7 @@ class Archive:
 
   ########################################################################
   # Building
-  
+
   ####### Top level method - shouldn't need overriding #######
 ##  def build(self, path, lTOC):
 ##    """Create an archive file of name 'path'.
@@ -134,18 +134,18 @@ class Archive:
 ##
 ##    if type(self.TOCTMPLT) == type({}):
 ##      self.toc = {}
-##    else:       # assume callable  
+##    else:       # assume callable
 ##      self.toc = self.TOCTMPLT()
 ##
 ##    for tocentry in lTOC:
 ##      self.add(tocentry)   # the guts of the archive
 ##
-##    tocpos = self.lib.tell() 
+##    tocpos = self.lib.tell()
 ##    self.save_toc(tocpos)
 ##    if self.TRLLEN:
 ##      self.save_trailer(tocpos)
 ##    if self.HDRLEN:
-##      self.update_headers(tocpos) 
+##      self.update_headers(tocpos)
 ##    self.lib.close()
 ##
 ##
@@ -184,7 +184,7 @@ class Archive:
 ##    self.lib.write(self.MAGIC)
 ##    self.lib.write(self.pymagic)
 ##    self.lib.write(struct.pack('=i', tocpos))
-   
+
 ##############################################################
 #
 # ZlibArchive - an archive with compressed entries
@@ -203,7 +203,7 @@ class ZlibArchive(Archive):
     # dynamic import so not imported if not needed
     global zlib
     import zlib
-   
+
   def extract(self, name):
     (ispkg, pos, lngth) = self.toc.get(name, (0, None, 0))
     if pos is None:
@@ -223,4 +223,4 @@ class ZlibArchive(Archive):
 ##    obj = zlib.compress(f.read(), self.LEVEL)
 ##    self.toc[nm] = (ispkg, self.lib.tell(), len(obj))
 ##    self.lib.write(obj)
-## 
+##

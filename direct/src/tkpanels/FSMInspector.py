@@ -61,7 +61,7 @@ class FSMInspector(AppShell):
                                   'Print out ClassicFSM layout',
                                   label = 'Print ClassicFSM layout',
                                   command = self.printLayout)
-        
+
         # States Menu
         menuBar.addmenu('States', 'State Inspector Operations')
         menuBar.addcascademenu('States', 'Font Size',
@@ -107,7 +107,7 @@ class FSMInspector(AppShell):
 
     def canvas(self):
         return self._canvas
-    
+
     def setFontSize(self, size):
         self._canvas.itemconfigure('labels', font = ('MS Sans Serif', size))
 
@@ -115,7 +115,7 @@ class FSMInspector(AppShell):
         for key in self.stateInspectorDict.keys():
             self.stateInspectorDict[key].setRadius(size)
         self.drawConnections()
-        
+
     def drawConnections(self, event = None):
         # Get rid of existing arrows
         self._canvas.delete('arrow')
@@ -136,25 +136,25 @@ class FSMInspector(AppShell):
         fromCenter = fromState.center()
         toCenter = toState.center()
         angle = self.findAngle(fromCenter, toCenter)
-        
+
         # Compute offset fromState point
         newFromPt = map(operator.__add__,
                         fromCenter,
                         self.computePoint(fromState.radius,
                                            angle + DELTA))
-        
+
         # Compute offset toState point
         newToPt = map(operator.__sub__,
                       toCenter,
                       self.computePoint(toState.radius,
                                          angle - DELTA))
         return newFromPt + newToPt
-        
+
     def computePoint(self, radius, angle):
         x = radius * math.cos(angle)
         y = radius * math.sin(angle)
         return (x, y)
-                         
+
     def findAngle(self, fromPoint, toPoint):
         dx = toPoint[0] - fromPoint[0]
         dy = toPoint[1] - fromPoint[1]
@@ -164,7 +164,7 @@ class FSMInspector(AppShell):
         self._width = 1.0 * self._canvas.winfo_width()
         self._height = 1.0 * self._canvas.winfo_height()
         xview = self._canvas.xview()
-        yview = self._canvas.yview()        
+        yview = self._canvas.yview()
         self._left = xview[0]
         self._top = yview[0]
         self._dxview = xview[1] - xview[0]
@@ -172,7 +172,7 @@ class FSMInspector(AppShell):
         self._2lx = event.x
         self._2ly = event.y
 
-    def mouse2Motion(self,event):
+    def mouse2Motion(self, event):
         newx = self._left - ((event.x - self._2lx)/self._width) * self._dxview
         self._canvas.xview_moveto(newx)
         newy = self._top - ((event.y - self._2ly)/self._height) * self._dyview
@@ -219,19 +219,19 @@ class FSMInspector(AppShell):
         return si
 
     def enteredState(self, stateName):
-        si = self.stateInspectorDict.get(stateName,None)
+        si = self.stateInspectorDict.get(stateName, None)
         if si:
             si.enteredState()
 
     def exitedState(self, stateName):
-        si = self.stateInspectorDict.get(stateName,None)
+        si = self.stateInspectorDict.get(stateName, None)
         if si:
             si.exitedState()
-         
+
     def _setGridSize(self):
         self._gridSize = self['gridSize']
         self.setGridSize(self._gridSize)
-        
+
     def setGridSize(self, size):
         for key in self.stateInspectorDict.keys():
             self.stateInspectorDict[key].setGridSize(size)
@@ -279,14 +279,14 @@ class FSMInspector(AppShell):
             self.balloon.configure(state = 'balloon')
         else:
             self.balloon.configure(state = 'none')
-            
+
     def onDestroy(self, event):
         """ Called on ClassicFSM Panel shutdown """
         self.fsm.inspecting = 0
         for si in self.stateInspectorDict.values():
             self.ignore(self.name + '_' + si.getName() + '_entered')
             self.ignore(self.name + '_' + si.getName() + '_exited')
-            
+
 class StateInspector(Pmw.MegaArchetype):
     def __init__(self, inspector, state, **kw):
 
@@ -297,11 +297,11 @@ class StateInspector(Pmw.MegaArchetype):
         # and its corresponding text around together
         self.tag = state.getName()
         self.fsm = inspector.fsm
-        
+
         # Pointers to the inspector's components
         self.scrolledCanvas = inspector.component('scrolledCanvas')
         self._canvas = self.scrolledCanvas.component('canvas')
-        
+
         #define the megawidget options
         optiondefs = (
             ('radius', '0.375i', self._setRadius),
@@ -343,7 +343,7 @@ class StateInspector(Pmw.MegaArchetype):
             self._popupMenu.add_command(label = 'Inspect ' + state.getName() +
                                         ' submachine',
                                         command = self.inspectSubMachine)
-                    
+
         self.scrolledCanvas.resizescrollregion()
 
         # Add bindings
@@ -359,7 +359,7 @@ class StateInspector(Pmw.MegaArchetype):
     # Utility methods
     def _setRadius(self):
         self.setRadius(self['radius'])
-        
+
     def setRadius(self, size):
         half = self.radius = self._canvas.winfo_fpixels(size)
         c = self.center()
@@ -372,7 +372,7 @@ class StateInspector(Pmw.MegaArchetype):
 
     def _setGridSize(self):
         self.setGridSize(self['gridSize'])
-        
+
     def setGridSize(self, size):
         self.gridSize = self._canvas.winfo_fpixels(size)
         if self.gridSize == 0:
@@ -382,7 +382,7 @@ class StateInspector(Pmw.MegaArchetype):
 
     def setText(self, text = None):
         self._canvas.itemconfigure(self.text, text = text)
-        
+
     def setPos(self, x, y, snapToGrid = 0):
         if self.fGridSnap:
             self.x = round(x / self.gridSize) * self.gridSize
@@ -404,7 +404,7 @@ class StateInspector(Pmw.MegaArchetype):
     # Event Handlers
     def mouseEnter(self, event):
         self._canvas.itemconfig(self.marker, width = 2)
-        
+
     def mouseLeave(self, event):
         self._canvas.itemconfig(self.marker, width = 1)
 
@@ -413,14 +413,14 @@ class StateInspector(Pmw.MegaArchetype):
         self.startx, self.starty = self.center()
         self.lastx = self._canvas.canvasx(event.x)
         self.lasty = self._canvas.canvasy(event.y)
-            
+
     def mouseMotion(self, event):
         dx = self._canvas.canvasx(event.x) - self.lastx
         dy = self._canvas.canvasy(event.y) - self.lasty
-        newx, newy = map(operator.__add__,(self.startx, self.starty), (dx, dy))
+        newx, newy = map(operator.__add__, (self.startx, self.starty), (dx, dy))
         self.setPos(newx, newy)
 
-    def mouseRelease(self,event):
+    def mouseRelease(self, event):
         self.scrolledCanvas.resizescrollregion()
 
     def popupStateMenu(self, event):
@@ -531,7 +531,7 @@ from direct.showbase.ShowBaseGlobal import *
 # At this point everything will lock up and you won't get your prompt back
 
 # Hit a bunch of Control-C's in rapid succession, in most cases
-# this will break you out of whatever badness you were in and 
+# this will break you out of whatever badness you were in and
 # from that point on everything will behave normally
 
 

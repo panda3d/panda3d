@@ -43,7 +43,7 @@ class Valuator(Pmw.MegaWidget):
             ('callbackData',      [],             None),
             )
         self.defineoptions(kw, optiondefs)
-        
+
         # Initialize the superclass
         Pmw.MegaWidget.__init__(self, parent)
 
@@ -53,7 +53,7 @@ class Valuator(Pmw.MegaWidget):
         # Create the components
         interior = self.interior()
         interior.configure(relief = self['relief'], bd = self['borderwidth'])
-        
+
         # The Valuator
         self.createValuator()
         # Set valuator callbacks for mouse start/stop
@@ -65,7 +65,7 @@ class Valuator(Pmw.MegaWidget):
             self._label = self.createcomponent('label', (), None,
                                                Label, (interior,),
                                                text = self['text'],
-                                               font = ('MS Sans Serif',12),
+                                               font = ('MS Sans Serif', 12),
                                                anchor = CENTER)
         else:
             self._label = None
@@ -114,13 +114,13 @@ class Valuator(Pmw.MegaWidget):
                  'type': 'string',
                  'help': 'Enter state: normal or disabled.'
                  },
-                
+
                 'text':
                 {'widget': self,
                  'type': 'string',
                  'help': 'Enter label text.'
                  },
-                
+
                 'min':
                 { 'widget': self,
                   'type': 'real',
@@ -136,14 +136,14 @@ class Valuator(Pmw.MegaWidget):
                  'type': 'integer',
                  'help': 'Number of digits after decimal point.'
                  },
-                
+
                 'resolution':
                 {'widget': self,
                  'type': 'real',
                  'fNone': 1,
                  'help':'Widget resolution. Enter None for no resolution .'
                  },
-                
+
                 'resetValue':
                 { 'widget': self,
                   'type': 'real',
@@ -155,7 +155,7 @@ class Valuator(Pmw.MegaWidget):
                 'resolution', 'resetValue']
             # Add any valuator specific properties
             self.addValuatorPropertiesToDialog()
-            
+
         # Make sure input variables processed
         self.fInit = self['fCommandOnInit']
         self.initialiseoptions(Valuator)
@@ -173,7 +173,7 @@ class Valuator(Pmw.MegaWidget):
         # will result in command being executed, otherwise a set with
         # commandData == 0 will stick and commands will not be executed
         self._valuator['commandData'] = [1]
-        
+
     def get(self):
         """ Return current widget value """
         return self.adjustedValue
@@ -242,7 +242,7 @@ class Valuator(Pmw.MegaWidget):
         """ Function to execute at start of mouse interaction """
         # Execute pre interaction callback
         self._preCallback()
-        
+
     def _mouseUp(self):
         """ Function to execute at end of mouse interaction """
         # Execute post interaction callback
@@ -291,16 +291,16 @@ class Valuator(Pmw.MegaWidget):
         """
         self.set(self['resetValue'])
 
-    def mouseReset(self,event):
+    def mouseReset(self, event):
         """
         Reset valuator to resetValue
         """
         # If not over any canvas item
         #if not self._widget.find_withtag(CURRENT):
         self.reset()
-        
+
     # Popup dialog to adjust widget properties
-    def _popupValuatorMenu(self,event):
+    def _popupValuatorMenu(self, event):
         self._popupMenu.post(event.widget.winfo_pointerx(),
                              event.widget.winfo_pointery())
 
@@ -315,7 +315,7 @@ class Valuator(Pmw.MegaWidget):
     def addPropertyToDialog(self, property, pDict):
         self.propertyDict[property] = pDict
         self.propertyList.append(property)
-            
+
     # Virtual functions to be redefined by subclass
     def createValuator(self):
         """ Function used by subclass to create valuator geometry """
@@ -375,7 +375,7 @@ class ValuatorGroup(Pmw.MegaWidget):
 
         # Initialize the toplevel widget
         Pmw.MegaWidget.__init__(self, parent)
-        
+
         # Create the components
         interior = self.interior()
         # Get a copy of the initial value (making sure its a list)
@@ -414,8 +414,8 @@ class ValuatorGroup(Pmw.MegaWidget):
 
         # Make sure valuators are initialized
         self.set(self['value'], fCommand = 0)
-        
-        # Make sure input variables processed 
+
+        # Make sure input variables processed
         self.initialiseoptions(ValuatorGroup)
 
     # This is the command is used to set the groups value
@@ -440,7 +440,7 @@ class ValuatorGroup(Pmw.MegaWidget):
     def get(self):
         return self._value
 
-    def getAt(self,index):
+    def getAt(self, index):
         return self._value[index]
 
     def _setNumDigits(self):
@@ -456,7 +456,7 @@ class ValuatorGroup(Pmw.MegaWidget):
         # Execute pre callback
         if self['preCallback']:
             apply(self['preCallback'], valGroup.get())
-        
+
     def _postCallback(self, valGroup):
         # Execute post callback
         if self['postCallback']:
@@ -464,14 +464,14 @@ class ValuatorGroup(Pmw.MegaWidget):
 
     def __len__(self):
         return self['dim']
-    
+
     def __repr__(self):
         str = '[' + self.formatString % self._value[0]
         for val in self._value[1:]:
             str += ', ' + self.formatString % val
         str += ']'
         return str
-                
+
 
 
 class ValuatorGroupPanel(Pmw.MegaToplevel):
@@ -513,17 +513,17 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
 
         # Initialize the toplevel widget
         Pmw.MegaToplevel.__init__(self, parent)
-        
+
         # Create the components
         interior = self.interior()
 
         # The Menu Bar
         self.balloon = Pmw.Balloon()
-        menubar = self.createcomponent('menubar',(), None,
+        menubar = self.createcomponent('menubar', (), None,
                                        Pmw.MenuBar, (interior,),
                                        balloon = self.balloon)
         menubar.pack(fill=X)
-        
+
         # ValuatorGroup Menu
         menubar.addmenu('Valuator Group', 'Valuator Group Operations')
         menubar.addmenuitem(
@@ -539,7 +539,7 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
         menubar.addmenuitem(
             'Valuator Group', 'command', 'Dismiss Valuator Group panel',
             label = 'Dismiss', command = dismissCommand)
-        
+
         menubar.addmenu('Help', 'Valuator Group Help Operations')
         self.toggleBalloonVar = IntVar()
         self.toggleBalloonVar.set(0)
@@ -564,8 +564,8 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
             labels = self['labels'],
             command = self['command'])
         self.valuatorGroup.pack(expand = 1, fill = X)
-        
-        # Make sure input variables processed 
+
+        # Make sure input variables processed
         self.initialiseoptions(ValuatorGroupPanel)
 
     def toggleBalloon(self):
@@ -579,7 +579,7 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
 
     def _setNumDigits(self):
         self.valuatorGroup['numDigits'] = self['numDigits']
-        
+
     def _setCommand(self):
         self.valuatorGroup['command'] = self['command']
 
@@ -599,8 +599,8 @@ Pmw.forwardmethods(ValuatorGroupPanel, ValuatorGroup, 'valuatorGroup')
 
 
 def rgbPanel(nodePath, callback = None, style = 'mini'):
-    def onRelease(r,g,b,a, nodePath = nodePath):
-        messenger.send('RGBPanel_setColor', [nodePath, r,g,b,a])
+    def onRelease(r, g, b, a, nodePath = nodePath):
+        messenger.send('RGBPanel_setColor', [nodePath, r, g, b, a])
 
     def popupColorPicker():
         # Can pass in current color with: color = (255, 0, 0)
@@ -641,13 +641,13 @@ def rgbPanel(nodePath, callback = None, style = 'mini'):
 
     # Set callback
     vgp['postCallback'] = onRelease
-    
+
     # Add a print button which will also serve as a color tile
     pButton = Button(vgp.interior(), text = 'Print to Log',
                      bg = getTkColorString(initColor),
                      command = printToLog)
     pButton.pack(expand = 1, fill = BOTH)
-    
+
     # Update menu
     menu = vgp.component('menubar').component('Valuator Group-menu')
     # Some helper functions
@@ -678,7 +678,7 @@ def rgbPanel(nodePath, callback = None, style = 'mini'):
         if callback:
             callback(color)
     vgp['command'] = setNodePathColor
-    
+
     return vgp
 
 
@@ -696,7 +696,7 @@ def lightRGBPanel(light, style = 'mini'):
         n = light.getName()
         c=light.getColor()
         print n + (".setColor(Vec4(%.3f, %.3f, %.3f, %.3f))" %
-                   (c[0],c[1],c[2],c[3]))
+                   (c[0], c[1], c[2], c[3]))
     # Check init color
     initColor = light.getColor() * 255.0
     # Create entry scale group

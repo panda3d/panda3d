@@ -4,11 +4,11 @@ import strop
 import zlib
 import os
 import marshal
-    
+
 class MkImporter:
     def __init__(self, db, viewnm='pylib'):
         self.db = db
-        self.view = db.getas(viewnm+'[name:S,ispkg:I,code:M]') # an MkWrap view object
+        self.view = db.getas(viewnm+'[name:S, ispkg:I, code:M]') # an MkWrap view object
     def setImportHooks(self):
         imputil.FuncImporter(self.get_code).install()
     def get_code(self, parent, modname, fqname):

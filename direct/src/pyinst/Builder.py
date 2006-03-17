@@ -64,8 +64,8 @@ class Target:
             self.toc.addFilter(tocfilter.ExtFilter(self.extypes))
         if self.expatterns:
             self.toc.addFilter(tocfilter.PatternFilter(self.expatterns))
-        
-        ##------utilities------##                   
+
+        ##------utilities------##
     def dump(self):
         logfile.write("---- %s: %s -----\n" % (self.__class__.__name__, self.name))
         pprint.pprint(self.__dict__, logfile)
@@ -93,17 +93,17 @@ class Target:
         pass
     def assemble(self):
         pass
-        
+
 class PYZTarget(Target):
     def __init__(self, cfg, sectnm, cnvrts):
         Target.__init__(self, cfg, sectnm, cnvrts)
-        # to use a PYZTarget, you'll need imputil and archive 
+        # to use a PYZTarget, you'll need imputil and archive
         archivebuilder.GetCompiled([os.path.join(pyinsthome, 'imputil.py')])
         print "pyinsthome:", pyinsthome
         imputil = resource.makeresource('imputil.py', [pyinsthome])
         self._dependencies.append(imputil)
         archivebuilder.GetCompiled([os.path.join(pyinsthome, 'archive_rt.py')])
-        archmodule = resource.makeresource('archive_rt.py', [pyinsthome]) 
+        archmodule = resource.makeresource('archive_rt.py', [pyinsthome])
         self._dependencies.merge(archmodule.dependencies())
         self._dependencies.append(archmodule)
         self.toc.addFilter(archmodule)
@@ -113,7 +113,7 @@ class PYZTarget(Target):
     def edit(self):
         if self.extypes:
             print "PYZ target %s ignoring extypes = %s" % (self.__name__, self.extypes)
-            
+
     def gather(self):
         for script in self.dependencies:
             rsrc = resource.makeresource(script, self.pathprefix)
@@ -134,17 +134,17 @@ class PYZTarget(Target):
         logfile.write("Applying the following filters:\n")
         pprint.pprint(self.toc.filters, logfile)
         self.toc.filter()
-        
+
     def assemble(self):
         contents = self.toc.toList()
         if contents:
             lib = archive.ZlibArchive()
             lib.build(self.name, archivebuilder.GetCompiled(self.toc.toList()))
-        
+
 class CollectTarget(Target):
     def __init__(self, cfg, sectnm, cnvrts):
         Target.__init__(self, cfg, sectnm, cnvrts)
-        
+
     _rsrcdict = {'COLLECT': resource.dirresource, 'PYZ': resource.zlibresource, 'CARCHIVE': resource.archiveresource}
 
     def gather(self):
@@ -205,10 +205,10 @@ class CollectTarget(Target):
                 self.toc.merge(rsrc.contents())
         logfile.write('ltoc after trees:\n')
         pprint.pprint(self.toc.toList(), logfile)
-        self.toc.addFilter(tocfilter.TypeFilter(['d'])) 
+        self.toc.addFilter(tocfilter.TypeFilter(['d']))
         logfile.write("Applying the following filters:\n")
         pprint.pprint(self.toc.filters, logfile)
-        self.toc.filter() 
+        self.toc.filter()
         #don't dupe stuff in a zlib that's part of this target
         if self.zlib:
            ztoc = ltoc.lTOC()
@@ -220,7 +220,7 @@ class CollectTarget(Target):
                rsrc = self.toc[i]
                if isinstance(rsrc, resource.moduleresource) and rsrc in ztoc:
                    del self.toc[i]
-        
+
     def assemble(self):
         if os.path.exists(self.name):
             if os.path.isdir(self.name):
@@ -235,16 +235,16 @@ class CollectTarget(Target):
         for nm, path, typ in self.toc.toList():
             shutil.copy2(path, self.name)
             if typ == 'z':
-                mysite.append('imputil.FuncImporter(archive.ZlibArchive("%s",0).get_code).install()' % nm)
+                mysite.append('imputil.FuncImporter(archive.ZlibArchive("%s", 0).get_code).install()' % nm)
         if mysite:
             mysite.insert(0, 'import archive, imputil')
             open(os.path.join(self.name, 'site.py'),'w').write(string.join(mysite, '\n'))
-            
-            
+
+
 class ArchiveTarget(CollectTarget):
     usefullname = 1
     def __init__(self, cfg, sectnm, cnvrts):
-        CollectTarget.__init__(self, cfg, sectnm, cnvrts)  
+        CollectTarget.__init__(self, cfg, sectnm, cnvrts)
         archivebuilder.GetCompiled([os.path.join(pyinsthome, 'carchive_rt.py')])
         carchmodule = resource.makeresource('carchive_rt.py', [pyinsthome])
         self._dependencies.merge(carchmodule.dependencies())
@@ -253,12 +253,12 @@ class ArchiveTarget(CollectTarget):
     def edit(self):
         if self.destdir:
             print "Warning 'destdir = %s' ignored for %s" % (self.destdir, self.name)
-            
+
     def gather(self):
         CollectTarget.gather(self)
-    
+
     _cdict = {'s':2,'m':1,'b':1,'x':1,'a':0,'z':0, 'p':1}
-    
+
     def assemble(self, pkgnm=None):
         if pkgnm is None:
             pkgnm = self.name
@@ -276,7 +276,7 @@ class ArchiveTarget(CollectTarget):
         toc = toc + archivebuilder.GetCompiled(pytoc)
         arch.build(pkgnm, toc)
         return arch
-        
+
 class FullExeTarget(ArchiveTarget):
     usefullname = 0
     def __init__(self, cfg, sectnm, cnvrts):
@@ -289,13 +289,13 @@ class FullExeTarget(ArchiveTarget):
             rsrc = resource.scriptresource(rsrc.name, rsrc.path)
             #print " resource is", `rsrc`
             self.toc.merge(rsrc.binaries)
-        ArchiveTarget.gather(self)        
+        ArchiveTarget.gather(self)
         if not self.zlib:
             self.toc.merge(rsrc.modules)
         self._dependencies = ltoc.lTOC()
-        
+
     _cdict = {'s':2,'m':0,'b':1,'x':0,'a':0,'z':0}
-    _edict = { (1,1):'Runw_d.exe', (1,0):'Runw.exe', (0,1):'Run_d.exe', (0,0):'Run.exe'}
+    _edict = { (1, 1):'Runw_d.exe', (1, 0):'Runw.exe', (0, 1):'Run_d.exe', (0, 0):'Run.exe'}
 
     def assemble(self):
         pkgname = tempfile.mktemp()
@@ -333,11 +333,11 @@ class FullExeTarget(ArchiveTarget):
         else:
             copyFile([exe, pkgname], self.name)
         #os.remove(pkgname)
-        
+
 class ExeTarget(FullExeTarget):
     def __init__(self, cfg, sectnm, cnvrts):
         FullExeTarget.__init__(self, cfg, sectnm, cnvrts)
-        
+
     def edit(self):
         if not self.script:
             raise ValueError, "EXE target %s requires 'script= <script>'" % self.__name__
@@ -403,8 +403,8 @@ class InstallTarget(FullExeTarget):
                                    txt = open(s.path, 'r').read()
                                    f.write(txt)
             f.close()
-        
-dispatch = { 
+
+dispatch = {
                 'PYZ': PYZTarget,
                 'CARCHIVE': ArchiveTarget,
                 'COLLECT': CollectTarget,
@@ -413,7 +413,7 @@ dispatch = {
                 'FULLEXE': FullExeTarget,
 }
 
-        
+
 def makeTarget(cfg, section):
     return dispatch[cfg.get(section, 'type')](cfg, section, optcnvrts)
 
@@ -430,7 +430,7 @@ optdefaults = { 'type':'PYZ',
                 'expatterns': '',
                 'exstdlib': '0',
                 'extypes': '',
-                'includes':'',          # PYZ 
+                'includes':'',          # PYZ
                 'packages':'',          # PYZ
                 'destdir':'',           # COLLECT
                 'pathprefix': '',
@@ -438,13 +438,13 @@ optdefaults = { 'type':'PYZ',
                 'debug': '0',
                 'support': '1', # include python20.dll & exceptons.pyc at a minimum
                 'icon': '',
-}   
+}
 
 optcnvrts = {   'type':'',
-                'name': 'getstring',       
-                'exstdlib': 'getbool', 
+                'name': 'getstring',
+                'exstdlib': 'getbool',
                 'console': 'getbool',
-                'analyze': 'getbool', 
+                'analyze': 'getbool',
                 'debug': 'getbool',
                 'includetk': 'getbool',
                 'userunw': 'getbool',
@@ -492,10 +492,10 @@ def main(opts, args):
             names = map(lambda x: getattr(x, 'name'), targets)
             raise RuntimeError, "circular dependencies in %s" % `names`
         targets = filter(None, targets)
-        
+
 def run(file):
     main ([], file)
-    
+
 if __name__ == '__main__':
     import getopt
     (opts, args) = getopt.getopt(sys.argv[1:], 'dv')

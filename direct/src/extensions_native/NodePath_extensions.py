@@ -3,7 +3,7 @@ from extension_native_helpers import *
 from libpanda import *
 
 ####################################################################
-#Dtool_funcToMethod(func, class)        
+#Dtool_funcToMethod(func, class)
 #del func
 #####################################################################
 
@@ -17,7 +17,7 @@ def id(self):
         """Returns a unique id identifying the NodePath instance"""
         return self.getKey()
 
-Dtool_funcToMethod(id, NodePath)        
+Dtool_funcToMethod(id, NodePath)
 del id
 #####################################################################
 
@@ -30,7 +30,7 @@ def getChildrenAsList(self):
         """Converts a node path's child NodePathCollection into a list"""
         return self.getChildren().asList()
 
-Dtool_funcToMethod(getChildrenAsList, NodePath)        
+Dtool_funcToMethod(getChildrenAsList, NodePath)
 del getChildrenAsList
 #####################################################################
 
@@ -38,7 +38,7 @@ def printChildren(self):
         """Prints out the children of the bottom node of a node path"""
         for child in self.getChildrenAsList():
             print child.getName()
-Dtool_funcToMethod(printChildren, NodePath)        
+Dtool_funcToMethod(printChildren, NodePath)
 del printChildren
 #####################################################################
 
@@ -46,7 +46,7 @@ def removeChildren(self):
         """Deletes the children of the bottom node of a node path"""
         for child in self.getChildrenAsList():
             child.removeNode()
-Dtool_funcToMethod(removeChildren, NodePath)        
+Dtool_funcToMethod(removeChildren, NodePath)
 del removeChildren
 #####################################################################
 
@@ -58,16 +58,16 @@ def toggleVis(self):
         else:
             self.hide()
             return 0
-Dtool_funcToMethod(toggleVis, NodePath)        
+Dtool_funcToMethod(toggleVis, NodePath)
 del toggleVis
 #####################################################################
-            
+
 def showSiblings(self):
         """Show all the siblings of a node path"""
         for sib in self.getParent().getChildrenAsList():
             if sib.node() != self.node():
                 sib.show()
-Dtool_funcToMethod(showSiblings, NodePath)        
+Dtool_funcToMethod(showSiblings, NodePath)
 del showSiblings
 #####################################################################
 
@@ -76,7 +76,7 @@ def hideSiblings(self):
         for sib in self.getParent().getChildrenAsList():
             if sib.node() != self.node():
                 sib.hide()
-Dtool_funcToMethod(hideSiblings, NodePath)        
+Dtool_funcToMethod(hideSiblings, NodePath)
 del hideSiblings
 #####################################################################
 
@@ -85,7 +85,7 @@ def showAllDescendants(self):
         self.show()
         for child in self.getChildrenAsList():
             child.showAllDescendants()
-Dtool_funcToMethod(showAllDescendants, NodePath)        
+Dtool_funcToMethod(showAllDescendants, NodePath)
 del showAllDescendants
 #####################################################################
 
@@ -93,7 +93,7 @@ def isolate(self):
         """Show the node path and hide its siblings"""
         self.showAllDescendants()
         self.hideSiblings()
-Dtool_funcToMethod(isolate, NodePath)        
+Dtool_funcToMethod(isolate, NodePath)
 del isolate
 #####################################################################
 
@@ -104,7 +104,7 @@ def remove(self):
         messenger.send('preRemoveNodePath', [self])
         # Remove nodePath
         self.removeNode()
-Dtool_funcToMethod(remove, NodePath)        
+Dtool_funcToMethod(remove, NodePath)
 del remove
 #####################################################################
 
@@ -118,7 +118,7 @@ def lsNames(self):
             print type + "  " + name
             self.lsNamesRecurse()
 
-Dtool_funcToMethod(lsNames, NodePath)        
+Dtool_funcToMethod(lsNames, NodePath)
 del lsNames
 #####################################################################
 def lsNamesRecurse(self, indentString=' '):
@@ -129,7 +129,7 @@ def lsNamesRecurse(self, indentString=' '):
             print indentString + type + "  " + name
             nodePath.lsNamesRecurse(indentString + " ")
 
-Dtool_funcToMethod(lsNamesRecurse, NodePath)        
+Dtool_funcToMethod(lsNamesRecurse, NodePath)
 del lsNamesRecurse
 #####################################################################
 def reverseLsNames(self):
@@ -142,7 +142,7 @@ def reverseLsNames(self):
             print indentString + type + "  " + name
             indentString = indentString + " "
 
-Dtool_funcToMethod(reverseLsNames, NodePath)        
+Dtool_funcToMethod(reverseLsNames, NodePath)
 del reverseLsNames
 #####################################################################
 def getAncestry(self):
@@ -155,16 +155,16 @@ def getAncestry(self):
         else:
             return [self]
 
-Dtool_funcToMethod(getAncestry, NodePath)        
+Dtool_funcToMethod(getAncestry, NodePath)
 del getAncestry
 #####################################################################
 def getTightBounds(self):
         from pandac.PandaModules import Point3
         v1 = Point3.Point3(0)
         v2 = Point3.Point3(0)
-        self.calcTightBounds(v1,v2)
+        self.calcTightBounds(v1, v2)
         return v1, v2
-Dtool_funcToMethod(getTightBounds, NodePath)        
+Dtool_funcToMethod(getTightBounds, NodePath)
 del getTightBounds
 #####################################################################
 
@@ -191,13 +191,13 @@ def pPrintString(self, other = None):
                 otherString = '\n'
             return (
                 "%s = {"%(self.getName()) +
-                otherString + 
+                otherString +
                 "  'Pos':   (%s),\n" % pos.pPrintValues() +
                 "  'Hpr':   (%s),\n" % hpr.pPrintValues() +
                 "  'Scale': (%s),\n" % scale.pPrintValues() +
                 "  'Shear': (%s),\n" % shear.pPrintValues() +
                 "}")
-Dtool_funcToMethod(pPrintString, NodePath)        
+Dtool_funcToMethod(pPrintString, NodePath)
 del pPrintString
 #####################################################################
 
@@ -210,12 +210,12 @@ def printPos(self, other = None, sd = 2):
         else:
             pos = self.getPos()
             otherString = ''
-        print (self.getName() + '.setPos(' + otherString + 
+        print (self.getName() + '.setPos(' + otherString +
                formatString % pos[0] + ', ' +
                formatString % pos[1] + ', ' +
                formatString % pos[2] +
                ')\n')
-Dtool_funcToMethod(printPos, NodePath)        
+Dtool_funcToMethod(printPos, NodePath)
 del printPos
 #####################################################################
 
@@ -228,12 +228,12 @@ def printHpr(self, other = None, sd = 2):
         else:
             hpr = self.getHpr()
             otherString = ''
-        print (self.getName() + '.setHpr(' + otherString + 
+        print (self.getName() + '.setHpr(' + otherString +
                formatString % hpr[0] + ', ' +
                formatString % hpr[1] + ', ' +
                formatString % hpr[2] +
                ')\n')
-Dtool_funcToMethod(printHpr, NodePath)        
+Dtool_funcToMethod(printHpr, NodePath)
 del printHpr
 #####################################################################
 
@@ -246,13 +246,13 @@ def printScale(self, other = None, sd = 2):
         else:
             scale = self.getScale()
             otherString = ''
-        print (self.getName() + '.setScale(' + otherString + 
+        print (self.getName() + '.setScale(' + otherString +
                formatString % scale[0] + ', ' +
                formatString % scale[1] + ', ' +
                formatString % scale[2] +
                ')\n')
 
-Dtool_funcToMethod(printScale, NodePath)        
+Dtool_funcToMethod(printScale, NodePath)
 del printScale
 #####################################################################
 def printPosHpr(self, other = None, sd = 2):
@@ -266,7 +266,7 @@ def printPosHpr(self, other = None, sd = 2):
             pos = self.getPos()
             hpr = self.getHpr()
             otherString = ''
-        print (self.getName() + '.setPosHpr(' + otherString + 
+        print (self.getName() + '.setPosHpr(' + otherString +
                formatString % pos[0] + ', ' +
                formatString % pos[1] + ', ' +
                formatString % pos[2] + ', ' +
@@ -275,7 +275,7 @@ def printPosHpr(self, other = None, sd = 2):
                formatString % hpr[2] +
                ')\n')
 
-Dtool_funcToMethod(printPosHpr, NodePath)        
+Dtool_funcToMethod(printPosHpr, NodePath)
 del printPosHpr
 #####################################################################
 def printPosHprScale(self, other = None, sd = 2):
@@ -291,7 +291,7 @@ def printPosHprScale(self, other = None, sd = 2):
             hpr = self.getHpr()
             scale = self.getScale()
             otherString = ''
-        print (self.getName() + '.setPosHprScale(' + otherString + 
+        print (self.getName() + '.setPosHprScale(' + otherString +
                formatString % pos[0] + ', ' +
                formatString % pos[1] + ', ' +
                formatString % pos[2] + ', ' +
@@ -303,7 +303,7 @@ def printPosHprScale(self, other = None, sd = 2):
                formatString % scale[2] +
                ')\n')
 
-Dtool_funcToMethod(printPosHprScale, NodePath)        
+Dtool_funcToMethod(printPosHprScale, NodePath)
 del printPosHprScale
 #####################################################################
 
@@ -314,17 +314,17 @@ def printTransform(self, other = None, sd = 2, fRecursive = 0):
     if other == None:
         transform = self.getTransform()
     else:
-        transform = self.getTransform(other)            
+        transform = self.getTransform(other)
     if transform.hasPos():
         pos = transform.getPos()
         if not pos.almostEqual(Vec3(0)):
             outputString = '%s.setPos(%s, %s, %s)' % (name, fmtStr, fmtStr, fmtStr)
-            print outputString % (pos[0], pos[1], pos[2]) 
+            print outputString % (pos[0], pos[1], pos[2])
     if transform.hasHpr():
         hpr = transform.getHpr()
         if not hpr.almostEqual(Vec3(0)):
             outputString = '%s.setHpr(%s, %s, %s)' % (name, fmtStr, fmtStr, fmtStr)
-            print outputString % (hpr[0], hpr[1], hpr[2]) 
+            print outputString % (hpr[0], hpr[1], hpr[2])
     if transform.hasScale():
         if transform.hasUniformScale():
             scale = transform.getUniformScale()
@@ -340,63 +340,63 @@ def printTransform(self, other = None, sd = 2, fRecursive = 0):
         for child in self.getChildrenAsList():
             child.printTransform(other, sd, fRecursive)
 
-Dtool_funcToMethod(printTransform, NodePath)        
+Dtool_funcToMethod(printTransform, NodePath)
 del printTransform
 #####################################################################
 
 
 def iPos(self, other = None):
-        """ Set node path's pos to 0,0,0 """
+        """ Set node path's pos to 0, 0, 0 """
         if other:
-            self.setPos(other, 0,0,0)
+            self.setPos(other, 0, 0, 0)
         else:
-            self.setPos(0,0,0)
-Dtool_funcToMethod(iPos, NodePath)        
+            self.setPos(0, 0, 0)
+Dtool_funcToMethod(iPos, NodePath)
 del iPos
 #####################################################################
 
 def iHpr(self, other = None):
-        """ Set node path's hpr to 0,0,0 """
+        """ Set node path's hpr to 0, 0, 0 """
         if other:
-            self.setHpr(other, 0,0,0)
+            self.setHpr(other, 0, 0, 0)
         else:
-            self.setHpr(0,0,0)
+            self.setHpr(0, 0, 0)
 
-Dtool_funcToMethod(iHpr, NodePath)        
+Dtool_funcToMethod(iHpr, NodePath)
 del iHpr
 #####################################################################
 def iScale(self, other = None):
-        """ SEt node path's scale to 1,1,1 """
+        """ SEt node path's scale to 1, 1, 1 """
         if other:
-            self.setScale(other, 1,1,1)
+            self.setScale(other, 1, 1, 1)
         else:
-            self.setScale(1,1,1)
+            self.setScale(1, 1, 1)
 
-Dtool_funcToMethod(iScale, NodePath)        
+Dtool_funcToMethod(iScale, NodePath)
 del iScale
 #####################################################################
 def iPosHpr(self, other = None):
-        """ Set node path's pos and hpr to 0,0,0 """
+        """ Set node path's pos and hpr to 0, 0, 0 """
         if other:
-            self.setPosHpr(other,0,0,0,0,0,0)
+            self.setPosHpr(other, 0, 0, 0, 0, 0, 0)
         else:
-            self.setPosHpr(0,0,0,0,0,0)
+            self.setPosHpr(0, 0, 0, 0, 0, 0)
 
-Dtool_funcToMethod(iPosHpr, NodePath)        
+Dtool_funcToMethod(iPosHpr, NodePath)
 del iPosHpr
 #####################################################################
 def iPosHprScale(self, other = None):
-        """ Set node path's pos and hpr to 0,0,0 and scale to 1,1,1 """
+        """ Set node path's pos and hpr to 0, 0, 0 and scale to 1, 1, 1 """
         if other:
-            self.setPosHprScale(other, 0,0,0,0,0,0,1,1,1)
+            self.setPosHprScale(other, 0, 0, 0, 0, 0, 0, 1, 1, 1)
         else:
-            self.setPosHprScale(0,0,0,0,0,0,1,1,1)
+            self.setPosHprScale(0, 0, 0, 0, 0, 0, 1, 1, 1)
 
     # private methods
-Dtool_funcToMethod(iPosHprScale, NodePath)        
+Dtool_funcToMethod(iPosHprScale, NodePath)
 del iPosHprScale
 #####################################################################
-            
+
 def __lerp(self, functorFunc, duration, blendType, taskName=None):
         """
         __lerp(self, functorFunc, float, string, string)
@@ -409,7 +409,7 @@ def __lerp(self, functorFunc, duration, blendType, taskName=None):
         from direct.task import Task
         from direct.showbase import LerpBlendHelpers
         from direct.task.TaskManagerGlobal import taskMgr
-        
+
         # upon death remove the functorFunc
         def lerpUponDeath(task):
             # Try to break circular references
@@ -421,7 +421,7 @@ def __lerp(self, functorFunc, duration, blendType, taskName=None):
                 del task.lerp
             except:
                 pass
-        
+
         # make the task function
         def lerpTaskFunc(task):
             from pandac.PandaModules import Lerp
@@ -441,7 +441,7 @@ def __lerp(self, functorFunc, duration, blendType, taskName=None):
                 return(done)
             else:
                 return(cont)
-        
+
         # make the lerp task
         lerpTask = Task.Task(lerpTaskFunc)
         lerpTask.init = 1
@@ -449,7 +449,7 @@ def __lerp(self, functorFunc, duration, blendType, taskName=None):
         lerpTask.duration = duration
         lerpTask.blendType = LerpBlendHelpers.getBlend(blendType)
         lerpTask.uponDeath = lerpUponDeath
-        
+
         if (taskName == None):
             # don't spawn a task, return one instead
             return lerpTask
@@ -458,7 +458,7 @@ def __lerp(self, functorFunc, duration, blendType, taskName=None):
             taskMgr.add(lerpTask, taskName)
             return lerpTask
 
-Dtool_funcToMethod(__lerp, NodePath)        
+Dtool_funcToMethod(__lerp, NodePath)
 del __lerp
 #####################################################################
 def __autoLerp(self, functorFunc, time, blendType, taskName):
@@ -475,7 +475,7 @@ def __autoLerp(self, functorFunc, time, blendType, taskName):
         lerp.start()
         return lerp
 
-Dtool_funcToMethod(__autoLerp, NodePath)        
+Dtool_funcToMethod(__autoLerp, NodePath)
 del __autoLerp
 #####################################################################
 
@@ -496,10 +496,10 @@ def lerpColor(self, *posArgs, **keyArgs):
             # bad args
             raise Exception("Error: NodePath.lerpColor: bad number of args")
 
-Dtool_funcToMethod(lerpColor, NodePath)        
+Dtool_funcToMethod(lerpColor, NodePath)
 del lerpColor
 #####################################################################
-            
+
 def lerpColorRGBA(self, r, g, b, a, time,
                       blendType="noBlend", auto=None, task=None):
         """lerpColorRGBA(self, float, float, float, float, float,
@@ -523,7 +523,7 @@ def lerpColorRGBA(self, r, g, b, a, time,
         else:
             return self.__lerp(functorFunc, time, blendType)
 
-Dtool_funcToMethod(lerpColorRGBA, NodePath)        
+Dtool_funcToMethod(lerpColorRGBA, NodePath)
 del lerpColorRGBA
 #####################################################################
 def lerpColorRGBARGBA(self, sr, sg, sb, sa, er, eg, eb, ea, time,
@@ -546,7 +546,7 @@ def lerpColorRGBARGBA(self, sr, sg, sb, sa, er, eg, eb, ea, time,
         else:
             return self.__lerp(functorFunc, time, blendType)
 
-Dtool_funcToMethod(lerpColorRGBARGBA, NodePath)        
+Dtool_funcToMethod(lerpColorRGBARGBA, NodePath)
 del lerpColorRGBARGBA
 #####################################################################
 def lerpColorVBase4(self, endColor, time,
@@ -569,7 +569,7 @@ def lerpColorVBase4(self, endColor, time,
         else:
             return self.__lerp(functorFunc, time, blendType)
 
-Dtool_funcToMethod(lerpColorVBase4, NodePath)        
+Dtool_funcToMethod(lerpColorVBase4, NodePath)
 del lerpColorVBase4
 #####################################################################
 def lerpColorVBase4VBase4(self, startColor, endColor, time,
@@ -594,7 +594,7 @@ def lerpColorVBase4VBase4(self, startColor, endColor, time,
 
 
 
-Dtool_funcToMethod(lerpColorVBase4VBase4, NodePath)        
+Dtool_funcToMethod(lerpColorVBase4VBase4, NodePath)
 del lerpColorVBase4VBase4
 #####################################################################
     # user callable lerp methods
@@ -614,8 +614,8 @@ def lerpColorScale(self, *posArgs, **keyArgs):
             # bad args
             raise Exception("Error: NodePath.lerpColorScale: bad number of args")
 
-            
-Dtool_funcToMethod(lerpColorScale, NodePath)        
+
+Dtool_funcToMethod(lerpColorScale, NodePath)
 del lerpColorScale
 #####################################################################
 def lerpColorScaleRGBA(self, r, g, b, a, time,
@@ -641,7 +641,7 @@ def lerpColorScaleRGBA(self, r, g, b, a, time,
         else:
             return self.__lerp(functorFunc, time, blendType)
 
-Dtool_funcToMethod(lerpColorScaleRGBA, NodePath)        
+Dtool_funcToMethod(lerpColorScaleRGBA, NodePath)
 del lerpColorScaleRGBA
 #####################################################################
 def lerpColorScaleRGBARGBA(self, sr, sg, sb, sa, er, eg, eb, ea, time,
@@ -664,7 +664,7 @@ def lerpColorScaleRGBARGBA(self, sr, sg, sb, sa, er, eg, eb, ea, time,
         else:
             return self.__lerp(functorFunc, time, blendType)
 
-Dtool_funcToMethod(lerpColorScaleRGBARGBA, NodePath)        
+Dtool_funcToMethod(lerpColorScaleRGBARGBA, NodePath)
 del lerpColorScaleRGBARGBA
 #####################################################################
 def lerpColorScaleVBase4(self, endColor, time,
@@ -687,7 +687,7 @@ def lerpColorScaleVBase4(self, endColor, time,
         else:
             return self.__lerp(functorFunc, time, blendType)
 
-Dtool_funcToMethod(lerpColorScaleVBase4, NodePath)        
+Dtool_funcToMethod(lerpColorScaleVBase4, NodePath)
 del lerpColorScaleVBase4
 #####################################################################
 def lerpColorScaleVBase4VBase4(self, startColor, endColor, time,
@@ -710,9 +710,9 @@ def lerpColorScaleVBase4VBase4(self, startColor, endColor, time,
         else:
             return self.__lerp(functorFunc, time, blendType)
 
-            
 
-Dtool_funcToMethod(lerpColorScaleVBase4VBase4, NodePath)        
+
+Dtool_funcToMethod(lerpColorScaleVBase4VBase4, NodePath)
 del lerpColorScaleVBase4VBase4
 #####################################################################
 def lerpHpr(self, *posArgs, **keyArgs):
@@ -729,8 +729,8 @@ def lerpHpr(self, *posArgs, **keyArgs):
         else:
             # bad args
             raise Exception("Error: NodePath.lerpHpr: bad number of args")
-    
-Dtool_funcToMethod(lerpHpr, NodePath)        
+
+Dtool_funcToMethod(lerpHpr, NodePath)
 del lerpHpr
 #####################################################################
 def lerpHprHPR(self, h, p, r, time, other=None,
@@ -768,8 +768,8 @@ def lerpHprHPR(self, h, p, r, time, other=None,
             return self.__lerp(functorFunc, time, blendType, task)
         else:
             return self.__lerp(functorFunc, time, blendType)
-    
-Dtool_funcToMethod(lerpHprHPR, NodePath)        
+
+Dtool_funcToMethod(lerpHprHPR, NodePath)
 del lerpHprHPR
 #####################################################################
 def lerpHprVBase3(self, hpr, time, other=None,
@@ -801,9 +801,9 @@ def lerpHprVBase3(self, hpr, time, other=None,
             return self.__lerp(functorFunc, time, blendType, task)
         else:
             return self.__lerp(functorFunc, time, blendType)
-        
 
-Dtool_funcToMethod(lerpHprVBase3, NodePath)        
+
+Dtool_funcToMethod(lerpHprVBase3, NodePath)
 del lerpHprVBase3
 #####################################################################
 def lerpPos(self, *posArgs, **keyArgs):
@@ -821,7 +821,7 @@ def lerpPos(self, *posArgs, **keyArgs):
             # bad number off args
             raise Exception("Error: NodePath.lerpPos: bad number of args")
 
-Dtool_funcToMethod(lerpPos, NodePath)        
+Dtool_funcToMethod(lerpPos, NodePath)
 del lerpPos
 #####################################################################
 def lerpPosXYZ(self, x, y, z, time, other=None,
@@ -851,7 +851,7 @@ def lerpPosXYZ(self, x, y, z, time, other=None,
         else:
             return self.__lerp(functorFunc, time, blendType)
 
-Dtool_funcToMethod(lerpPosXYZ, NodePath)        
+Dtool_funcToMethod(lerpPosXYZ, NodePath)
 del lerpPosXYZ
 #####################################################################
 def lerpPosPoint3(self, pos, time, other=None,
@@ -879,7 +879,7 @@ def lerpPosPoint3(self, pos, time, other=None,
             return self.__lerp(functorFunc, time, blendType)
 
 
-Dtool_funcToMethod(lerpPosPoint3, NodePath)        
+Dtool_funcToMethod(lerpPosPoint3, NodePath)
 del lerpPosPoint3
 #####################################################################
 def lerpPosHpr(self, *posArgs, **keyArgs):
@@ -897,7 +897,7 @@ def lerpPosHpr(self, *posArgs, **keyArgs):
             # bad number off args
             raise Exception("Error: NodePath.lerpPosHpr: bad number of args")
 
-Dtool_funcToMethod(lerpPosHpr, NodePath)        
+Dtool_funcToMethod(lerpPosHpr, NodePath)
 del lerpPosHpr
 #####################################################################
 def lerpPosHprPoint3VBase3(self, pos, hpr, time, other=None,
@@ -934,7 +934,7 @@ def lerpPosHprPoint3VBase3(self, pos, hpr, time, other=None,
         else:
             return self.__lerp(functorFunc, time, blendType)
 
-Dtool_funcToMethod(lerpPosHprPoint3VBase3, NodePath)        
+Dtool_funcToMethod(lerpPosHprPoint3VBase3, NodePath)
 del lerpPosHprPoint3VBase3
 #####################################################################
 def lerpPosHprXYZHPR(self, x, y, z, h, p, r, time, other=None,
@@ -977,7 +977,7 @@ def lerpPosHprXYZHPR(self, x, y, z, h, p, r, time, other=None,
             return self.__lerp(functorFunc, time, blendType)
 
 
-Dtool_funcToMethod(lerpPosHprXYZHPR, NodePath)        
+Dtool_funcToMethod(lerpPosHprXYZHPR, NodePath)
 del lerpPosHprXYZHPR
 #####################################################################
 def lerpPosHprScale(self, pos, hpr, scale, time, other=None,
@@ -1021,7 +1021,7 @@ def lerpPosHprScale(self, pos, hpr, scale, time, other=None,
             return self.__lerp(functorFunc, time, blendType)
 
 
-Dtool_funcToMethod(lerpPosHprScale, NodePath)        
+Dtool_funcToMethod(lerpPosHprScale, NodePath)
 del lerpPosHprScale
 #####################################################################
 def lerpScale(self, *posArgs, **keyArgs):
@@ -1039,7 +1039,7 @@ def lerpScale(self, *posArgs, **keyArgs):
             # bad number off args
             raise Exception("Error: NodePath.lerpScale: bad number of args")
 
-Dtool_funcToMethod(lerpScale, NodePath)        
+Dtool_funcToMethod(lerpScale, NodePath)
 del lerpScale
 #####################################################################
 def lerpScaleVBase3(self, scale, time, other=None,
@@ -1067,7 +1067,7 @@ def lerpScaleVBase3(self, scale, time, other=None,
         else:
             return self.__lerp(functorFunc, time, blendType)
 
-Dtool_funcToMethod(lerpScaleVBase3, NodePath)        
+Dtool_funcToMethod(lerpScaleVBase3, NodePath)
 del lerpScaleVBase3
 #####################################################################
 def lerpScaleXYZ(self, sx, sy, sz, time, other=None,
@@ -1099,8 +1099,8 @@ def lerpScaleXYZ(self, sx, sy, sz, time, other=None,
 
 
 
-            
-Dtool_funcToMethod(lerpScaleXYZ, NodePath)        
+
+Dtool_funcToMethod(lerpScaleXYZ, NodePath)
 del lerpScaleXYZ
 #####################################################################
 def place(self):
@@ -1108,7 +1108,7 @@ def place(self):
         from direct.tkpanels import Placer
         return Placer.place(self)
 
-Dtool_funcToMethod(place, NodePath)        
+Dtool_funcToMethod(place, NodePath)
 del place
 #####################################################################
 def explore(self):
@@ -1116,7 +1116,7 @@ def explore(self):
         from direct.tkwidgets import SceneGraphExplorer
         return SceneGraphExplorer.explore(self)
 
-Dtool_funcToMethod(explore, NodePath)        
+Dtool_funcToMethod(explore, NodePath)
 del explore
 #####################################################################
 def rgbPanel(self, cb = None):
@@ -1124,21 +1124,21 @@ def rgbPanel(self, cb = None):
         from direct.tkwidgets import Slider
         return Slider.rgbPanel(self, cb)
 
-Dtool_funcToMethod(rgbPanel, NodePath)        
+Dtool_funcToMethod(rgbPanel, NodePath)
 del rgbPanel
 #####################################################################
 def select(self):
         base.startDirect(fWantTk = 0)
         direct.select(self)
 
-Dtool_funcToMethod(select, NodePath)        
+Dtool_funcToMethod(select, NodePath)
 del select
 #####################################################################
 def deselect(self):
         base.startDirect(fWantTk = 0)
         direct.deselect(self)
 
-Dtool_funcToMethod(deselect, NodePath)        
+Dtool_funcToMethod(deselect, NodePath)
 del deselect
 #####################################################################
 def showCS(self, mask = None):
@@ -1154,7 +1154,7 @@ def showCS(self, mask = None):
             if (mask == None or (np.node().getIntoCollideMask() & mask).getWord()):
                 np.show()
 
-Dtool_funcToMethod(showCS, NodePath)        
+Dtool_funcToMethod(showCS, NodePath)
 del showCS
 #####################################################################
 def hideCS(self, mask = None):
@@ -1170,118 +1170,118 @@ def hideCS(self, mask = None):
             if (mask == None or (np.node().getIntoCollideMask() & mask).getWord()):
                 np.hide()
 
-Dtool_funcToMethod(hideCS, NodePath)        
+Dtool_funcToMethod(hideCS, NodePath)
 del hideCS
 #####################################################################
 def posInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpPosInterval(self, *args, **kw)
-    
-Dtool_funcToMethod(posInterval, NodePath)        
+
+Dtool_funcToMethod(posInterval, NodePath)
 del posInterval
 #####################################################################
 def hprInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpHprInterval(self, *args, **kw)
-    
-Dtool_funcToMethod(hprInterval, NodePath)        
+
+Dtool_funcToMethod(hprInterval, NodePath)
 del hprInterval
 #####################################################################
 def quatInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpQuatInterval(self, *args, **kw)
 
-Dtool_funcToMethod(quatInterval, NodePath)        
+Dtool_funcToMethod(quatInterval, NodePath)
 del quatInterval
 #####################################################################
 def scaleInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpScaleInterval(self, *args, **kw)
 
-Dtool_funcToMethod(scaleInterval, NodePath)        
+Dtool_funcToMethod(scaleInterval, NodePath)
 del scaleInterval
 #####################################################################
 def shearInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpShearInterval(self, *args, **kw)
 
-Dtool_funcToMethod(shearInterval, NodePath)        
+Dtool_funcToMethod(shearInterval, NodePath)
 del shearInterval
 #####################################################################
 def posHprInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpPosHprInterval(self, *args, **kw)
 
-Dtool_funcToMethod(posHprInterval, NodePath)        
+Dtool_funcToMethod(posHprInterval, NodePath)
 del posHprInterval
 #####################################################################
 def posQuatInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpPosQuatInterval(self, *args, **kw)
 
-Dtool_funcToMethod(posQuatInterval, NodePath)        
+Dtool_funcToMethod(posQuatInterval, NodePath)
 del posQuatInterval
 #####################################################################
 def hprScaleInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpHprScaleInterval(self, *args, **kw)
 
-Dtool_funcToMethod(hprScaleInterval, NodePath)        
+Dtool_funcToMethod(hprScaleInterval, NodePath)
 del hprScaleInterval
 #####################################################################
 def quatScaleInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpQuatScaleInterval(self, *args, **kw)
 
-Dtool_funcToMethod(quatScaleInterval, NodePath)        
+Dtool_funcToMethod(quatScaleInterval, NodePath)
 del quatScaleInterval
 #####################################################################
 def posHprScaleInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpPosHprScaleInterval(self, *args, **kw)
 
-Dtool_funcToMethod(posHprScaleInterval, NodePath)        
+Dtool_funcToMethod(posHprScaleInterval, NodePath)
 del posHprScaleInterval
 #####################################################################
 def posQuatScaleInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpPosQuatScaleInterval(self, *args, **kw)
 
-Dtool_funcToMethod(posQuatScaleInterval, NodePath)        
+Dtool_funcToMethod(posQuatScaleInterval, NodePath)
 del posQuatScaleInterval
 #####################################################################
 def posHprScaleShearInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpPosHprScaleShearInterval(self, *args, **kw)
 
-Dtool_funcToMethod(posHprScaleShearInterval, NodePath)        
+Dtool_funcToMethod(posHprScaleShearInterval, NodePath)
 del posHprScaleShearInterval
 #####################################################################
 def posQuatScaleShearInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpPosQuatScaleShearInterval(self, *args, **kw)
 
-Dtool_funcToMethod(posQuatScaleShearInterval, NodePath)        
+Dtool_funcToMethod(posQuatScaleShearInterval, NodePath)
 del posQuatScaleShearInterval
 #####################################################################
 def colorInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpColorInterval(self, *args, **kw)
 
-Dtool_funcToMethod(colorInterval, NodePath)        
+Dtool_funcToMethod(colorInterval, NodePath)
 del colorInterval
 #####################################################################
 def colorScaleInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpColorScaleInterval(self, *args, **kw)
 
-Dtool_funcToMethod(colorScaleInterval, NodePath)        
+Dtool_funcToMethod(colorScaleInterval, NodePath)
 del colorScaleInterval
 #####################################################################
-def attachCollisionSphere(self, name, cx,cy,cz,r, fromCollide, intoCollide):
+def attachCollisionSphere(self, name, cx, cy, cz, r, fromCollide, intoCollide):
         from pandac.PandaModules import CollisionSphere
         from pandac.PandaModules import CollisionNode
-        coll = CollisionSphere.CollisionSphere(cx,cy,cz,r)
+        coll = CollisionSphere.CollisionSphere(cx, cy, cz, r)
         collNode = CollisionNode.CollisionNode(name)
         collNode.addSolid(coll)
         collNode.setFromCollideMask(fromCollide)
@@ -1289,13 +1289,13 @@ def attachCollisionSphere(self, name, cx,cy,cz,r, fromCollide, intoCollide):
         collNodePath = self.attachNewNode(collNode)
         return collNodePath
 
-Dtool_funcToMethod(attachCollisionSphere, NodePath)        
+Dtool_funcToMethod(attachCollisionSphere, NodePath)
 del attachCollisionSphere
 #####################################################################
-def attachCollisionSegment(self, name, ax,ay,az, bx,by,bz, fromCollide, intoCollide):
+def attachCollisionSegment(self, name, ax, ay, az, bx, by, bz, fromCollide, intoCollide):
         from pandac.PandaModules import CollisionSegment
         from pandac.PandaModules import CollisionNode
-        coll = CollisionSegment.CollisionSegment(ax,ay,az, bx,by,bz)
+        coll = CollisionSegment.CollisionSegment(ax, ay, az, bx, by, bz)
         collNode = CollisionNode.CollisionNode(name)
         collNode.addSolid(coll)
         collNode.setFromCollideMask(fromCollide)
@@ -1303,13 +1303,13 @@ def attachCollisionSegment(self, name, ax,ay,az, bx,by,bz, fromCollide, intoColl
         collNodePath = self.attachNewNode(collNode)
         return collNodePath
 
-Dtool_funcToMethod(attachCollisionSegment, NodePath)        
+Dtool_funcToMethod(attachCollisionSegment, NodePath)
 del attachCollisionSegment
 #####################################################################
-def attachCollisionRay(self, name, ox,oy,oz, dx,dy,dz, fromCollide, intoCollide):
+def attachCollisionRay(self, name, ox, oy, oz, dx, dy, dz, fromCollide, intoCollide):
         from pandac.PandaModules import CollisionRay
         from pandac.PandaModules import CollisionNode
-        coll = CollisionRay.CollisionRay(ox,oy,oz, dx,dy,dz)
+        coll = CollisionRay.CollisionRay(ox, oy, oz, dx, dy, dz)
         collNode = CollisionNode.CollisionNode(name)
         collNode.addSolid(coll)
         collNode.setFromCollideMask(fromCollide)
@@ -1317,7 +1317,7 @@ def attachCollisionRay(self, name, ox,oy,oz, dx,dy,dz, fromCollide, intoCollide)
         collNodePath = self.attachNewNode(collNode)
         return collNodePath
 
-Dtool_funcToMethod(attachCollisionRay, NodePath)        
+Dtool_funcToMethod(attachCollisionRay, NodePath)
 del attachCollisionRay
 #####################################################################
 def flattenMultitex(self, stateFrom = None, target = None,
@@ -1337,6 +1337,6 @@ def flattenMultitex(self, stateFrom = None, target = None,
         else:
             mr.scan(self, stateFrom)
         mr.flatten(win)
-Dtool_funcToMethod(flattenMultitex, NodePath)        
+Dtool_funcToMethod(flattenMultitex, NodePath)
 del flattenMultitex
 #####################################################################

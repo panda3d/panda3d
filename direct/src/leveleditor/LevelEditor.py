@@ -27,11 +27,11 @@ base.startDirect(fWantDirect = 1, fWantTk = 1)
 visualizeZones = base.config.GetBool("visualize-zones", 0)
 dnaDirectory = Filename.expandFrom(base.config.GetString("dna-directory", "$TTMODELS/src/dna"))
 fUseCVS = base.config.GetBool("level-editor-use-cvs", 1)
-useSnowTree = base.config.GetBool("use-snow-tree",0)
+useSnowTree = base.config.GetBool("use-snow-tree", 0)
 
 # Colors used by all color menus
 DEFAULT_COLORS = [
-    Vec4(1,1,1,1),
+    Vec4(1, 1, 1, 1),
     Vec4(0.75, 0.75, 0.75, 1.0),
     Vec4(0.5, 0.5, 0.5, 1.0),
     Vec4(0.25, 0.25, 0.25, 1.0)
@@ -46,124 +46,124 @@ DNA_TYPES = ['wall', 'window', 'sign', 'door_double', 'door_single', 'cornice', 
              'prop', 'street']
 BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
                   '4_21', '3_22', '4_13_8', '3_13_9', '10',
-                  '12_8', '13_9_8', '4_10_10',  '4_10', '4_20', 
+                  '12_8', '13_9_8', '4_10_10',  '4_10', '4_20',
                   ]
 BUILDING_HEIGHTS = [10, 14, 20, 24, 25, 30]
-NUM_WALLS = [1,2,3]
+NUM_WALLS = [1, 2, 3]
 LANDMARK_SPECIAL_TYPES = ['', 'hq', 'gagshop', 'clotheshop', 'petshop', 'kartshop']
 
 OBJECT_SNAP_POINTS = {
-    'street_5x20': [(Vec3(5.0,0,0), Vec3(0)),
+    'street_5x20': [(Vec3(5.0, 0, 0), Vec3(0)),
                     (Vec3(0), Vec3(0))],
-    'street_10x20': [(Vec3(10.0,0,0), Vec3(0)),
+    'street_10x20': [(Vec3(10.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_20x20': [(Vec3(20.0,0,0), Vec3(0)),
+    'street_20x20': [(Vec3(20.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_30x20': [(Vec3(30.0,0,0), Vec3(0)),
+    'street_30x20': [(Vec3(30.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_40x20': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_40x20': [(Vec3(40.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_80x20': [(Vec3(80.0,0,0), Vec3(0)),
+    'street_80x20': [(Vec3(80.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_5x40': [(Vec3(5.0,0,0), Vec3(0)),
+    'street_5x40': [(Vec3(5.0, 0, 0), Vec3(0)),
                     (Vec3(0), Vec3(0))],
-    'street_10x40': [(Vec3(10.0,0,0), Vec3(0)),
+    'street_10x40': [(Vec3(10.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_20x40': [(Vec3(20.0,0,0), Vec3(0)),
+    'street_20x40': [(Vec3(20.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_20x40_15': [(Vec3(20.0,0,0), Vec3(0)),
+    'street_20x40_15': [(Vec3(20.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_30x40': [(Vec3(30.0,0,0), Vec3(0)),
+    'street_30x40': [(Vec3(30.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_40x40': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_40x40': [(Vec3(40.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_20x60': [(Vec3(20.0,0,0), Vec3(0)),
+    'street_20x60': [(Vec3(20.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_40x60': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_40x60': [(Vec3(40.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_40x40_15': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_40x40_15': [(Vec3(40.0, 0, 0), Vec3(0)),
                         (Vec3(0), Vec3(0))],
-    'street_80x40': [(Vec3(80.0,0,0), Vec3(0)),
+    'street_80x40': [(Vec3(80.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_angle_30': [(Vec3(0), Vec3(-30,0,0)),
+    'street_angle_30': [(Vec3(0), Vec3(-30, 0, 0)),
                         (Vec3(0), Vec3(0))],
-    'street_angle_45': [(Vec3(0), Vec3(-45,0,0)),
+    'street_angle_45': [(Vec3(0), Vec3(-45, 0, 0)),
                         (Vec3(0), Vec3(0))],
-    'street_angle_60': [(Vec3(0), Vec3(-60,0,0)),
+    'street_angle_60': [(Vec3(0), Vec3(-60, 0, 0)),
                         (Vec3(0), Vec3(0))],
-    'street_inner_corner': [(Vec3(20.0,0,0), Vec3(0)),
+    'street_inner_corner': [(Vec3(20.0, 0, 0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
-    'street_outer_corner': [(Vec3(20.0,0,0), Vec3(0)),
+    'street_outer_corner': [(Vec3(20.0, 0, 0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
-    'street_full_corner': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_full_corner': [(Vec3(40.0, 0, 0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
-    'street_tight_corner': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_tight_corner': [(Vec3(40.0, 0, 0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
-    'street_tight_corner_mirror': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_tight_corner_mirror': [(Vec3(40.0, 0, 0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
-    'street_double_corner': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_double_corner': [(Vec3(40.0, 0, 0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
-    'street_curved_corner': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_curved_corner': [(Vec3(40.0, 0, 0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
-    'street_curved_corner_15': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_curved_corner_15': [(Vec3(40.0, 0, 0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
-    'street_t_intersection': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_t_intersection': [(Vec3(40.0, 0, 0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
-    'street_y_intersection': [(Vec3(30.0,0,0), Vec3(0)),
+    'street_y_intersection': [(Vec3(30.0, 0, 0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
-    'street_street_20x20': [(Vec3(20.0,0,0), Vec3(0)),
+    'street_street_20x20': [(Vec3(20.0, 0, 0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
-    'street_street_40x40': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_street_40x40': [(Vec3(40.0, 0, 0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
-    'street_sidewalk_20x20': [(Vec3(20.0,0,0), Vec3(0)),
+    'street_sidewalk_20x20': [(Vec3(20.0, 0, 0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
-    'street_sidewalk_40x40': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_sidewalk_40x40': [(Vec3(40.0, 0, 0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
-    'street_divided_transition': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_divided_transition': [(Vec3(40.0, 0, 0), Vec3(0)),
                                   (Vec3(0), Vec3(0))],
-    'street_divided_40x70': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_divided_40x70': [(Vec3(40.0, 0, 0), Vec3(0)),
                              (Vec3(0), Vec3(0))],
-    'street_divided_transition_15': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_divided_transition_15': [(Vec3(40.0, 0, 0), Vec3(0)),
                                   (Vec3(0), Vec3(0))],
-    'street_divided_40x70_15': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_divided_40x70_15': [(Vec3(40.0, 0, 0), Vec3(0)),
                              (Vec3(0), Vec3(0))],
-    'street_stairs_40x10x5': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_stairs_40x10x5': [(Vec3(40.0, 0, 0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
-    'street_4way_intersection': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_4way_intersection': [(Vec3(40.0, 0, 0), Vec3(0)),
                                  (Vec3(0), Vec3(0))],
-    'street_incline_40x40x5': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_incline_40x40x5': [(Vec3(40.0, 0, 0), Vec3(0)),
                                (Vec3(0), Vec3(0))],
-    'street_square_courtyard': [(Vec3(0.0,0,0), Vec3(0)),
+    'street_square_courtyard': [(Vec3(0.0, 0, 0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
-    'street_courtyard_70': [(Vec3(0.0,0,0), Vec3(0)),
+    'street_courtyard_70': [(Vec3(0.0, 0, 0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
-    'street_courtyard_70_exit': [(Vec3(0.0,0,0), Vec3(0)),
+    'street_courtyard_70_exit': [(Vec3(0.0, 0, 0), Vec3(0)),
                                  (Vec3(0), Vec3(0))],
-    'street_courtyard_90': [(Vec3(0.0,0,0), Vec3(0)),
+    'street_courtyard_90': [(Vec3(0.0, 0, 0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
-    'street_courtyard_90_exit': [(Vec3(0.0,0,0), Vec3(0)),
+    'street_courtyard_90_exit': [(Vec3(0.0, 0, 0), Vec3(0)),
                                  (Vec3(0), Vec3(0))],
-    'street_courtyard_70_15': [(Vec3(0.0,0,0), Vec3(0)),
+    'street_courtyard_70_15': [(Vec3(0.0, 0, 0), Vec3(0)),
                                (Vec3(0), Vec3(0))],
-    'street_courtyard_70_15_exit': [(Vec3(0.0,0,0), Vec3(0)),
+    'street_courtyard_70_15_exit': [(Vec3(0.0, 0, 0), Vec3(0)),
                                     (Vec3(0), Vec3(0))],
-    'street_courtyard_90_15': [(Vec3(0.0,0,0), Vec3(0)),
+    'street_courtyard_90_15': [(Vec3(0.0, 0, 0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
-    'street_courtyard_90_15_exit': [(Vec3(0.0,0,0), Vec3(0)),
+    'street_courtyard_90_15_exit': [(Vec3(0.0, 0, 0), Vec3(0)),
                                  (Vec3(0), Vec3(0))],
-    'street_50_transition': [(Vec3(10.0,0,0), Vec3(0)),
+    'street_50_transition': [(Vec3(10.0, 0, 0), Vec3(0)),
                              (Vec3(0), Vec3(0))],
-    'street_20x50': [(Vec3(20.0,0,0), Vec3(0)),
+    'street_20x50': [(Vec3(20.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_40x50': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_40x50': [(Vec3(40.0, 0, 0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
-    'street_keyboard_10x40': [(Vec3(10.0,0,0), Vec3(0)),
+    'street_keyboard_10x40': [(Vec3(10.0, 0, 0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
-    'street_keyboard_20x40': [(Vec3(20.0,0,0), Vec3(0)),
+    'street_keyboard_20x40': [(Vec3(20.0, 0, 0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
-    'street_keyboard_40x40': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_keyboard_40x40': [(Vec3(40.0, 0, 0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
-    'street_sunken_40x40': [(Vec3(40.0,0,0), Vec3(0)),
+    'street_sunken_40x40': [(Vec3(40.0, 0, 0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
     }
 
@@ -222,7 +222,7 @@ except NameError:
     # __builtins__["foo"] syntax, since this file runs at the top
     # level.
     __builtin__.DNASTORE = DNASTORE = DNAStorage()
-    
+
     # Load the generic storage files
     loadDNAFile(DNASTORE, 'dna/storage.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
@@ -348,7 +348,7 @@ def DNAGetChildRecursive(dnaObject, type = DNA_NODE, childNum = 0):
             child = DNAGetChildRecursive(child, type, childNum-childCount)
             if child:
                 return child
-            
+
     # Not found
     return None
 
@@ -443,12 +443,12 @@ class LevelEditor(NodePath, DirectObject):
 
         # Enable replaceSelected by default:
         self.replaceSelectedEnabled=1
-        
+
         self.removeHookList=[self.landmarkBlockRemove]
-        
+
         # Start block ID at 0 (it will be incremented before use (to 1)):
         self.landmarkBlock=0
-        
+
         # Create ancillary objects
         # Style manager for keeping track of styles/colors
         self.styleManager = LevelStyleManager()
@@ -471,14 +471,14 @@ class LevelEditor(NodePath, DirectObject):
 
         self.zoneLabels = []
 
-        
-        
+
+
         # Initialize LevelEditor variables DNAData, DNAToplevel, NPToplevel
         # DNAParent, NPParent, groupNum, lastAngle
         # Pass in the new toplevel group and don't clear out the old
         # toplevel group (since it doesn't exist yet)
         self.reset(fDeleteToplevel = 0, fCreateToplevel = 1)
-        
+
         # The list of events the level editor responds to
         self.actionEvents = [
             # Node path events
@@ -550,7 +550,7 @@ class LevelEditor(NodePath, DirectObject):
             ('shift-k', self.toggleShowLandmarkBlock),
             ('%', self.pdbBreak),
             ]
-                
+
         # Initialize state
         # Make sure direct is running
         direct.enable()
@@ -561,7 +561,7 @@ class LevelEditor(NodePath, DirectObject):
         # Initialize camera
         base.camLens.setNear(1.0)
         base.camLens.setFar(3000)
-        direct.camera.setPos(0,-10,10)
+        direct.camera.setPos(0, -10, 10)
         # Initialize drive mode
         self.configureDriveModeCollisionData()
         # Init visibility variables
@@ -662,24 +662,24 @@ class LevelEditor(NodePath, DirectObject):
         if fDeleteToplevel:
             # First destroy existing scene-graph/DNA hierarchy
             self.deleteToplevel()
-        
+
         # Clear DNASTORE
         DNASTORE.resetDNAGroups()
         # Reset DNA VIS Groups
         DNASTORE.resetDNAVisGroups()
         DNASTORE.resetSuitPoints()
         DNASTORE.resetBattleCells()
-        
+
         # Create fresh DNA DATA
         self.DNAData = DNAData('level_data')
-        
+
         # Create new toplevel node path and DNA
         if fCreateToplevel:
             self.createToplevel(DNANode('level'))
-        
+
         # Initialize variables
         # Reset grid
-        direct.grid.setPosHprScale(0,0,0,0,0,0,1,1,1)
+        direct.grid.setPosHprScale(0, 0, 0, 0, 0, 0, 1, 1, 1)
         # The selected DNA Object/NodePath
         self.selectedDNARoot = None
         self.selectedNPRoot = None
@@ -707,8 +707,8 @@ class LevelEditor(NodePath, DirectObject):
         # Update scene graph explorer
         if fUpdateExplorer:
             self.panel.sceneGraphExplorer.update()
-            
-        self.outputFile = None        
+
+        self.outputFile = None
         self.panel["title"] = 'Level Editor: No file loaded'
 
     def deleteToplevel(self):
@@ -771,7 +771,7 @@ class LevelEditor(NodePath, DirectObject):
         # Note, if this dies an unatural death, this could screw things up
         # t.uponDeath = self.switchToDriveMode
 
-    def switchToDriveMode(self,state):
+    def switchToDriveMode(self, state):
         """ Disable direct camera manipulation and enable player drive mode """
         direct.minimumConfiguration()
         direct.manipulationControl.disableManipulation()
@@ -780,7 +780,7 @@ class LevelEditor(NodePath, DirectObject):
         # Switch to drive mode
         base.useDrive()
         # Move cam up and back
-        base.cam.setPos(0,-5,4)
+        base.cam.setPos(0, -5, 4)
         # And move down and forward to compensate
         base.camera.setPos(base.camera, 0, 5, -4)
         # Make sure we're where we want to be
@@ -905,7 +905,7 @@ class LevelEditor(NodePath, DirectObject):
             zoneId = int(groupName)
             self.nodeDict[zoneId] = []
             self.zoneDict[zoneId] = self.NPToplevel.find("**/" + groupName)
-            
+
             # TODO: we only need to look from the top of the hood
             # down one level to find the vis groups as an optimization
             groupNode = self.NPToplevel.find("**/" + groupFullName)
@@ -931,7 +931,7 @@ class LevelEditor(NodePath, DirectObject):
         # idea is that there are colon separated flags after the initial
         # zone name.
         return(string.split(groupFullName, ":", 1)[0])
-    
+
     def renameFloorPolys(self, nodeList):
         for i in nodeList:
             # Get all the collision nodes in the vis group
@@ -1017,15 +1017,15 @@ class LevelEditor(NodePath, DirectObject):
                 if newZoneId != None:
                     self.zoneDict[newZoneId].setColor(0, 0, 1, 1, 100)
             # The new zone is now old
-            self.__zoneId = newZoneId        
-        
+            self.__zoneId = newZoneId
+
     def enableMouse(self):
         """ Enable Pie Menu interaction (and disable player camera control) """
         # Turn off player camera control
         base.disableMouse()
         # Handle mouse events for pie menus
-        self.accept('DIRECT-mouse3',self.levelHandleMouse3)
-        self.accept('DIRECT-mouse3Up',self.levelHandleMouse3Up)
+        self.accept('DIRECT-mouse3', self.levelHandleMouse3)
+        self.accept('DIRECT-mouse3Up', self.levelHandleMouse3Up)
 
     def disableMouse(self):
         """ Disable Pie Menu interaction """
@@ -1177,7 +1177,7 @@ class LevelEditor(NodePath, DirectObject):
                         self.updatePose(dnaNode, nodePath)
         elif newParent:
             # See if this node path is a suit edge
-            suitEdge, oldVisGroup = self.np2EdgeDict.get(nodePath.id(), (None,None))
+            suitEdge, oldVisGroup = self.np2EdgeDict.get(nodePath.id(), (None, None))
             # And see if the new parent is a vis group
             newVisGroupNP, newVisGroupDNA = self.findParentVisGroup(newParent)
             if suitEdge and DNAClassEqual(newVisGroupDNA, DNA_VIS_GROUP):
@@ -1279,8 +1279,8 @@ class LevelEditor(NodePath, DirectObject):
         # Set DNA's pos, hpr, and scale
         dnaObject.setPos(nodePath.getPos())
         dnaObject.setHpr(nodePath.getHpr())
-        dnaObject.setScale(nodePath.getScale())        
-                
+        dnaObject.setScale(nodePath.getScale())
+
     # LEVEL OBJECT CREATION FUNCTIONS
     def initDNANode(self, dnaNode):
         """
@@ -1331,7 +1331,7 @@ class LevelEditor(NodePath, DirectObject):
         except KeyError:
             # Nope
             dict = {}
-            
+
         # No specific dict or empty dict, try to pick a dict
         # based on number of walls
         if not dict:
@@ -1340,7 +1340,7 @@ class LevelEditor(NodePath, DirectObject):
             # Get the building_style attribute dictionary for
             # this number of walls
             dict = self.getDict(`numWalls` + '_wall_styles')
-            
+
         if not dict:
             # Still no dict, create new random style using height list
             styleList = []
@@ -1354,7 +1354,7 @@ class LevelEditor(NodePath, DirectObject):
         else:
             # Pick a style
             style = self.getRandomDictionaryEntry(dict)
-            
+
         # Set style....finally
         self.styleManager.setDNAFlatBuildingStyle(
             dnaNode, style, width = self.getRandomWallWidth(),
@@ -1363,13 +1363,13 @@ class LevelEditor(NodePath, DirectObject):
     def getRandomHeightList(self, buildingHeight):
         # Select a list of wall heights
         heightLists = self.getList(`buildingHeight` + '_ft_wall_heights')
-        l = len(heightLists) 
+        l = len(heightLists)
         if l > 0:
             # If a list exists for this building height, pick randomly
-            return heightLists[randint(0,l - 1)]
+            return heightLists[randint(0, l - 1)]
         else:
             # No height lists exists for this building height, generate
-            chance = randint(0,100)
+            chance = randint(0, 100)
             if buildingHeight <= 10:
                 return [buildingHeight]
             elif buildingHeight <= 14:
@@ -1406,7 +1406,7 @@ class LevelEditor(NodePath, DirectObject):
                     return [13, 9, 8]
 
     def getRandomWallWidth(self):
-        chance = randint(0,100)
+        chance = randint(0, 100)
         if chance <= 15:
             return 5.0
         elif chance <= 30:
@@ -1442,7 +1442,7 @@ class LevelEditor(NodePath, DirectObject):
                     self.setCurrent('building_width',
                                     self.getRandomWallWidth())
                 dnaNode.setWidth(self.getCurrent('building_width'))
-        
+
         # Position it
         # First kill autoposition task so grid can jump to its final
         # destination (part of cleanup
@@ -1465,7 +1465,7 @@ class LevelEditor(NodePath, DirectObject):
             dnaNode.setPos(direct.grid.getPos())
         # Initialize angle to match last object
         dnaNode.setHpr(Vec3(self.getLastAngle(), 0, 0))
-        
+
         # Add the DNA to the active parent
         self.DNAParent.add(dnaNode)
         # And create the geometry
@@ -1483,7 +1483,7 @@ class LevelEditor(NodePath, DirectObject):
         self.autoPositionGrid()
 
     def getSnapPoint(self, code):
-        return OBJECT_SNAP_POINTS.get(code, [(Vec3(0.0,0,0), Vec3(0)), (Vec3(0), Vec3(0))])
+        return OBJECT_SNAP_POINTS.get(code, [(Vec3(0.0, 0, 0), Vec3(0)), (Vec3(0), Vec3(0))])
 
     def addGroup(self, nodePath):
         """ Add a new DNA Node Group to the specified Node Path """
@@ -1531,7 +1531,7 @@ class LevelEditor(NodePath, DirectObject):
     def getNextLandmarkBlock(self):
         self.landmarkBlock=self.landmarkBlock+1
         return str(self.landmarkBlock)
-    
+
     def addLandmark(self, landmarkType, specialType):
         # Record new landmark type
         self.setCurrent('toon_landmark_texture', landmarkType)
@@ -1628,14 +1628,14 @@ class LevelEditor(NodePath, DirectObject):
         #baseline.setHeight(16.0)
         baseline.setScale(VBase3(0.7, 1.0, 0.7))
         newDNASign.add(baseline)
-        
+
         #graphic = DNASignGraphic('graphic')
         #graphic.setCode("sign_general1")
         #graphic.setColor(VBase4(1.0, 1.0, 0.0, 0.5))
         #graphic.setScale(VBase3(.2, 1.0, .2))
         #graphic.setHpr(VBase3(0.0, 0.0, 90.0))
         #baseline.add(graphic)
-        
+
         DNASetBaselineString(baseline, "Toon Shop")
 
         return newDNASign
@@ -1673,17 +1673,17 @@ class LevelEditor(NodePath, DirectObject):
     def levelHandleMouse3(self, modifiers):
         # Initialize dna target
         self.DNATarget = None
-        
+
         # If nothing selected, just return
         if not self.selectedNPRoot:
             return
-        
+
         # Next check to see if the selected object is a DNA object
         dnaObject = self.findDNANode(self.selectedNPRoot)
         # Nope, not a DNA object, just return
         if not dnaObject:
             return
-        
+
         # Pick a menu based upon object type
         if DNAClassEqual(dnaObject, DNA_FLAT_BUILDING):
             # FLAT BUILDING OPERATIONS
@@ -1739,11 +1739,11 @@ class LevelEditor(NodePath, DirectObject):
             # STREET OPERATIONS
             self.DNATarget = dnaObject
             menuMode = 'street_texture'
-        
+
         # No valid menu mode, get the hell out of here!
         if menuMode == None:
             return
-        
+
         # Now spawn apropriate menu task if menu selected
         self.activeMenu = self.getMenu(menuMode)
         # Set initial state
@@ -1772,7 +1772,7 @@ class LevelEditor(NodePath, DirectObject):
                 # Extract the wall style from the current wall
                 state = DNAWallStyle(wall = self.DNATarget)
         self.activeMenu.setInitialState(state)
-        
+
         # Spawn active menu's task
         self.activeMenu.spawnPieMenuTask()
 
@@ -1873,12 +1873,12 @@ class LevelEditor(NodePath, DirectObject):
                 (objClass.eq(DNA_PROP))
                 ):
                 self.panel.setCurrentColor(self.DNATarget.getColor())
-            
+
     def setDNATargetColor(self, color):
         if self.DNATarget:
             self.DNATarget.setColor(color)
             self.replaceSelected()
-            
+
     def setDNATargetCode(self, type, code):
         if (self.DNATarget != None) and (code != None):
             # Update code
@@ -1921,7 +1921,7 @@ class LevelEditor(NodePath, DirectObject):
                 self.DNATargetParent.add(self.DNATarget)
         # Update visible representation
         self.replaceSelected()
-        
+
     def setDNATargetOrientation(self, orientation):
         if (self.DNATarget != None) and (orientation != None):
             oldCode = self.DNATarget.getCode()[:-2]
@@ -1930,26 +1930,26 @@ class LevelEditor(NodePath, DirectObject):
                 orientation = 'u' + orientation[1]
             self.DNATarget.setCode(oldCode+orientation)
             self.replaceSelected()
-            
+
     def setBuildingStyle(self, style):
         if (self.DNATarget != None) and (style != None):
             self.styleManager.setDNAFlatBuildingStyle(
-                self.DNATarget, style, 
+                self.DNATarget, style,
                 width = self.DNATarget.getWidth(),
                 name = self.DNATarget.getName())
             # MRM: Need to disable dna store warning
             self.replaceSelected()
             # Re-add replication hooks so we get right kind of copy
             self.addReplicationHooks(self.DNATarget)
-            
+
     def setBuildingType(self, type):
         print 'setBuildingType: ', `type`
-        
+
     def setBuildingWidth(self, width):
         if self.DNATarget:
             self.DNATarget.setWidth(width)
             self.replaceSelected()
-            
+
     def setWindowCount(self, count):
         if (self.DNATarget != None) and (count != 0):
             self.DNATarget.setWindowCount(count)
@@ -1961,15 +1961,15 @@ class LevelEditor(NodePath, DirectObject):
             self.DNATarget = self.createWindows()
             self.DNATargetParent.add(self.DNATarget)
         self.replaceSelected()
-            
+
     def setWallStyle(self, style):
         if (self.DNATarget != None) and (style != None):
             self.styleManager.setDNAWallStyle(
                 self.DNATarget, style,
                 self.DNATarget.getHeight())
             self.replaceSelected()
-    
-    def setColor(self, nodePath, r,g,b,a):
+
+    def setColor(self, nodePath, r, g, b, a):
         """ This is used to set color of dnaNode subparts """
         dnaNode = self.findDNANode(nodePath)
         if dnaNode:
@@ -1987,7 +1987,7 @@ class LevelEditor(NodePath, DirectObject):
                 ):
                 # Update dna information
                 dnaNode.setColor(VBase4(r/255.0, g/255.0, b/255.0, a/255.0))
-    
+
     # SELECTION FUNCTIONS
     def selectedNodePathHook(self, nodePath):
         """
@@ -2142,7 +2142,7 @@ class LevelEditor(NodePath, DirectObject):
             self.setLastAngle(self.getLastAngle() + snapAngle)
         else:
             self.setLastAngle(self.getLastAngle() - snapAngle)
-        
+
         if (self.getLastAngle() < -180.0):
             self.setLastAngle(self.getLastAngle() + 360.0)
         elif (self.getLastAngle() > 180.0):
@@ -2221,7 +2221,7 @@ class LevelEditor(NodePath, DirectObject):
             self.vgpanel = VisGroupsEditor(self, visGroups)
         else:
             showinfo('Vis Groups Editor','No DNA Vis Groups Found!')
-        
+
     def getDNAVisGroups(self, nodePath):
         """ Find the highest level vis groups in the scene graph """
         dnaNode = self.findDNANode(nodePath)
@@ -2244,8 +2244,8 @@ class LevelEditor(NodePath, DirectObject):
             return self.findParentVisGroup(nodePath.getParent())
         # Fall through
         return None, None
-    
-    def showGrid(self,flag):
+
+    def showGrid(self, flag):
         """ toggle direct grid """
         if flag:
             direct.grid.enable()
@@ -2271,7 +2271,7 @@ class LevelEditor(NodePath, DirectObject):
                                '_layout')
         if map:
             map.setTransparency(1)
-            map.setColor(Vec4(1,1,1,.4))
+            map.setColor(Vec4(1, 1, 1, .4))
             self.mapDictionary[neighborhood] = map
             # Make sure this item isn't pickable
             direct.addUnpickable(neighborhood + '_layout')
@@ -2292,32 +2292,32 @@ class LevelEditor(NodePath, DirectObject):
     def createInsertionMarker(self):
         self.insertionMarker = LineNodePath(self)
         self.insertionMarker.lineNode.setName('insertionMarker')
-        self.insertionMarker.setColor(VBase4(0.785, 0.785, 0.5,1))
+        self.insertionMarker.setColor(VBase4(0.785, 0.785, 0.5, 1))
         self.insertionMarker.setThickness(1)
         self.insertionMarker.reset()
-        self.insertionMarker.moveTo(-75,0,0)
-        self.insertionMarker.drawTo(75,0,0)
-        self.insertionMarker.moveTo(0,-75,0)
-        self.insertionMarker.drawTo(0,75,0)
-        self.insertionMarker.moveTo(0,0,-75)
-        self.insertionMarker.drawTo(0,0,75)
+        self.insertionMarker.moveTo(-75, 0, 0)
+        self.insertionMarker.drawTo(75, 0, 0)
+        self.insertionMarker.moveTo(0, -75, 0)
+        self.insertionMarker.drawTo(0, 75, 0)
+        self.insertionMarker.moveTo(0, 0, -75)
+        self.insertionMarker.drawTo(0, 0, 75)
         self.insertionMarker.create()
 
     def spawnInsertionMarkerTask(self):
         taskMgr.add(self.insertionMarkerTask, 'insertionMarkerTask')
 
     def insertionMarkerTask(self, state):
-        self.insertionMarker.setPosHpr(direct.grid, 0,0,0, 0,0,0)
+        self.insertionMarker.setPosHpr(direct.grid, 0, 0, 0, 0, 0, 0)
         # MRM: Why is this necessary?
-        self.insertionMarker.setScale(1,1,1)
+        self.insertionMarker.setScale(1, 1, 1)
         return Task.cont
 
     # UTILITY FUNCTIONS
-    def getRandomDictionaryEntry(self,dict):
+    def getRandomDictionaryEntry(self, dict):
         numKeys = len(dict)
         if numKeys > 0:
             keys = dict.keys()
-            key = keys[randint(0,numKeys - 1)]
+            key = keys[randint(0, numKeys - 1)]
             return dict[key]
         else:
             return None
@@ -2332,10 +2332,10 @@ class LevelEditor(NodePath, DirectObject):
                 return 1
             elif h == 10:
                 # All other 10 ft high bldgs can have 1 or 2
-                return randint(1,2)
+                return randint(1, 2)
             else:
                 # All others can have 1 - 4
-                return randint(1,4)
+                return randint(1, 4)
         else:
             return 1
 
@@ -2348,7 +2348,7 @@ class LevelEditor(NodePath, DirectObject):
             if dnaNode == None:
                 return
             nodeClass = DNAGetClassType(dnaNode)
-            deltaPos = Point3(20,0,0)
+            deltaPos = Point3(20, 0, 0)
             deltaHpr = VBase3(0)
             if nodeClass.eq(DNA_FLAT_BUILDING):
                 deltaPos.setX(dnaNode.getWidth())
@@ -2380,7 +2380,7 @@ class LevelEditor(NodePath, DirectObject):
                 t.uponDeath = self.autoPositionCleanup
             else:
                 direct.grid.setPosHpr(selectedNode, deltaPos, deltaHpr)
-            
+
         # Also move the camera
         taskMgr.remove('autoMoveDelay')
         handlesToCam = direct.widget.getPos(direct.camera)
@@ -2390,7 +2390,7 @@ class LevelEditor(NodePath, DirectObject):
             taskMgr.remove('manipulateCamera')
             direct.cameraControl.centerCamIn(0.5)
 
-    def autoPositionCleanup(self,state):
+    def autoPositionCleanup(self, state):
         direct.grid.setPosHpr(state.selectedNode, state.deltaPos,
                               state.deltaHpr)
         if direct.grid.getHprSnap():
@@ -2411,7 +2411,7 @@ class LevelEditor(NodePath, DirectObject):
     def getWallIntersectionPoint(self, selectedNode):
         """
         Return point of intersection between building's wall and line from cam
-        through mouse. 
+        through mouse.
         """
         # Find mouse point on near plane
         mouseX = direct.dr.mouseX
@@ -2467,7 +2467,7 @@ class LevelEditor(NodePath, DirectObject):
             dnaNode = self.findDNANode(selectedNode)
             if dnaNode:
                 # Place the new node path at the current grid origin
-                selectedNode.setPos(direct.grid,0,0,0)
+                selectedNode.setPos(direct.grid, 0, 0, 0)
                 # Initialize angle to match last object
                 selectedNode.setHpr(self.getLastAngle(), 0, 0)
                 # Now update DNA pos and hpr to reflect final pose
@@ -2542,7 +2542,7 @@ class LevelEditor(NodePath, DirectObject):
             path = '.'
         dnaFilename = askopenfilename(
             defaultextension = '.dna',
-            filetypes = (('DNA Files', '*.dna'),('All files', '*')),
+            filetypes = (('DNA Files', '*.dna'), ('All files', '*')),
             initialdir = path,
             title = 'Load DNA File',
             parent = self.panel.component('hull'))
@@ -2559,7 +2559,7 @@ class LevelEditor(NodePath, DirectObject):
             path = '.'
         dnaFilename = asksaveasfilename(
             defaultextension = '.dna',
-            filetypes = (('DNA Files', '*.dna'),('All files', '*')),
+            filetypes = (('DNA Files', '*.dna'), ('All files', '*')),
             initialdir = path,
             title = 'Save DNA File as',
             parent = self.panel.component('hull'))
@@ -2587,7 +2587,7 @@ class LevelEditor(NodePath, DirectObject):
 
         # Make sure the topmost file DNA object gets put under DNARoot
         newDNAToplevel = self.findDNANode(newNPToplevel)
-        
+
         # reset the landmark block number:
         (self.landmarkBlock, needTraverse)=self.findHighestLandmarkBlock(
             newDNAToplevel, newNPToplevel)
@@ -2614,13 +2614,13 @@ class LevelEditor(NodePath, DirectObject):
             outputFile = self.neighborhood + '_working.dna'
         file = os.path.join(dnaDirectory.toOsSpecific(), outputFile)
         self.outputDNA(file)
-        
+
     def outputDNA(self, filename):
         print 'Saving DNA to: ', filename
         binaryFilename = Filename(filename)
         binaryFilename.setBinary()
-        self.DNAData.writeDna(binaryFilename, Notify.out(),DNASTORE)
-        
+        self.DNAData.writeDna(binaryFilename, Notify.out(), DNASTORE)
+
     def saveColor(self):
         self.appendColorToColorPaletteFile(self.panel.colorEntry.get())
 
@@ -2760,15 +2760,15 @@ class LevelEditor(NodePath, DirectObject):
         self.styleManager.setEditMode(neighborhood)
         self.panel.updateHeightList(self.getCurrent('building_height'))
         self.selectMap(neighborhood)
-        
+
     def getEditMode(self):
         return self.styleManager.getEditMode()
-    
+
     # Level Style Attributes
-    def __getitem__(self,attribute):
+    def __getitem__(self, attribute):
         """ Return top level entry in attribute dictionary """
         return self.styleManager.attributeDictionary[attribute]
-    
+
     def getAttribute(self, attribute):
         """ Return specified attribute for current neighborhood """
         return self.styleManager.getAttribute(attribute)
@@ -2780,54 +2780,54 @@ class LevelEditor(NodePath, DirectObject):
     def getCurrent(self, attribute):
         """ Return neighborhood's current selection for specified attribute """
         return self.getAttribute(attribute).getCurrent()
-    
+
     def setCurrent(self, attribute, newCurrent):
         """ Set neighborhood's current selection for specified attribute """
         self.getAttribute(attribute).setCurrent(newCurrent, fEvent = 0)
-    
+
     def getMenu(self, attribute):
         """ Return neighborhood's Pie Menu object for specified attribute """
         return self.getAttribute(attribute).getMenu()
-    
+
     def getDict(self, attribute):
         """ Return neighborhood's Dictionary for specified attribute """
         return self.getAttribute(attribute).getDict()
-    
+
     def getList(self, attribute):
         """ Return neighborhood's List for specified attribute """
         return self.getAttribute(attribute).getList()
-    
+
     # DNA variables
     def getDNAData(self):
         return self.DNAData
-    
+
     def getDNAToplevel(self):
         return self.DNAToplevel
-    
+
     def getDNAParent(self):
         return self.DNAParent
-    
+
     def getDNATarget(self):
         return self.DNATarget
-    
+
     # Node Path variables
     def getNPToplevel(self):
         return self.NPToplevel
-    
+
     def getNPParent(self):
         return self.NPParent
-    
+
     # Count of groups added to level
-    def setGroupNum(self,num):
+    def setGroupNum(self, num):
         self.groupNum = num
-    
+
     def getGroupNum(self):
         return self.groupNum
-    
+
     # Angle of last object added to level
     def setLastAngle(self, angle):
         self.lastAngle = angle
-    
+
     def getLastAngle(self):
         return self.lastAngle
 
@@ -2835,7 +2835,7 @@ class LevelEditor(NodePath, DirectObject):
         # Draw a line from start to end
         edgeLine = LineNodePath(parent)
         edgeLine.lineNode.setName('suitEdge')
-        edgeLine.setColor(VBase4(0.0, 0.0, 0.5,1))
+        edgeLine.setColor(VBase4(0.0, 0.0, 0.5, 1))
         edgeLine.setThickness(1)
         edgeLine.reset()
         # We need to draw the arrow relative to the parent, but the
@@ -2871,7 +2871,7 @@ class LevelEditor(NodePath, DirectObject):
         marker.setPos(midPos)
         # Adjust color of highlighted lines
         if edge in self.visitedEdges:
-            NodePath.setColor(edgeLine,1,0,0,1)
+            NodePath.setColor(edgeLine, 1, 0, 0, 1)
         # Clean up:
         tempNode.removeNode()
         return edgeLine
@@ -2881,17 +2881,17 @@ class LevelEditor(NodePath, DirectObject):
         marker.setName("suitPointMarker")
         marker.setPos(pos)
         if (type == DNASuitPoint.STREETPOINT):
-            marker.setColor(0,0,0.6)
+            marker.setColor(0, 0, 0.6)
             marker.setScale(0.4)
         elif (type == DNASuitPoint.FRONTDOORPOINT):
-            marker.setColor(0,0,1)
+            marker.setColor(0, 0, 1)
             marker.setScale(0.5)
         elif (type == DNASuitPoint.SIDEDOORPOINT):
-            marker.setColor(0,0.6,0.2)
+            marker.setColor(0, 0.6, 0.2)
             marker.setScale(0.5)
         # Highlight if necessary
         if suitPoint in self.visitedPoints:
-            marker.setColor(1,0,0,1)
+            marker.setColor(1, 0, 0, 1)
         return marker
 
     def placeSuitPoint(self):
@@ -2942,7 +2942,7 @@ class LevelEditor(NodePath, DirectObject):
                 # so just make the other edge automatically
                 if ((self.startSuitPoint.getPointType() == DNASuitPoint.FRONTDOORPOINT)
                     or (self.startSuitPoint.getPointType() == DNASuitPoint.SIDEDOORPOINT)):
-                    
+
                     suitEdge = DNASuitEdge(
                         self.endSuitPoint, self.startSuitPoint, zoneId)
                     DNASTORE.storeSuitEdge(suitEdge)
@@ -2983,7 +2983,7 @@ class LevelEditor(NodePath, DirectObject):
         nodePath = self.pointDict.get(suitPoint, None)
         if nodePath:
             # highlight marker
-            nodePath.setColor(1,0,0,1)
+            nodePath.setColor(1, 0, 0, 1)
             # Add point to visited points
             self.visitedPoints.append(suitPoint)
             # highlight connected edges
@@ -2992,7 +2992,7 @@ class LevelEditor(NodePath, DirectObject):
                     (edge not in self.visitedEdges)):
                     edgeLine = self.edgeDict[edge]
                     # Call node path not LineNodePath setColor
-                    NodePath.setColor(edgeLine,1,0,0,1)
+                    NodePath.setColor(edgeLine, 1, 0, 0, 1)
                     # Add edge to visited edges
                     self.visitedEdges.append(edge)
                     # Color components connected to the edge
@@ -3013,11 +3013,11 @@ class LevelEditor(NodePath, DirectObject):
             type = point.getPointType()
             marker = self.pointDict[point]
             if (type == DNASuitPoint.STREETPOINT):
-                marker.setColor(0,0,0.6)
+                marker.setColor(0, 0, 0.6)
             elif (type == DNASuitPoint.FRONTDOORPOINT):
-                marker.setColor(0,0,1)
+                marker.setColor(0, 0, 1)
             elif (type == DNASuitPoint.SIDEDOORPOINT):
-                marker.setColor(0,0.6,0.2)
+                marker.setColor(0, 0.6, 0.2)
         for edge in self.edgeDict.values():
             edge.clearColor()
         self.visitedPoints = []
@@ -3026,7 +3026,7 @@ class LevelEditor(NodePath, DirectObject):
     def drawBattleCell(self, cell, parent):
         marker = self.battleCellMarker.copyTo(parent)
         # Greenish
-        marker.setColor(0.25,0.75,0.25,0.5)
+        marker.setColor(0.25, 0.75, 0.25, 0.5)
         marker.setTransparency(1)
         marker.setPos(cell.getPos())
         # scale to radius which is width/2
@@ -3092,7 +3092,7 @@ class LevelEditor(NodePath, DirectObject):
 
     def getSuitPointFromNodePath(self, nodePath):
         """
-        Given a node path, attempt to find the point,nodePath pair
+        Given a node path, attempt to find the point, nodePath pair
         in the pointDict. If it is there, return the point. If we
         cannot find it, return None.
         TODO: a reverse lookup pointDict would speed this up quite a bit
@@ -3113,7 +3113,7 @@ class LevelEditor(NodePath, DirectObject):
             if not marker.isEmpty():
                 marker.removeNode()
         self.pointDict = {}
-                
+
     def hideSuitPaths(self):
         for edge, edgeLine in self.edgeDict.items():
             edgeLine.hide()
@@ -3151,7 +3151,7 @@ class LevelEditor(NodePath, DirectObject):
     def showBattleCells(self):
         for cell, marker in self.cellDict.items():
             marker.show()
-    
+
     def getBattleCellFromNodePath(self, nodePath):
         """
         Given a node path, attempt to find the battle cell, nodePath pair
@@ -3210,7 +3210,7 @@ class LevelEditor(NodePath, DirectObject):
     def getBlockFromName(self, name):
         block=name[2:name.find(':')]
         return block
-    
+
     def addToLandmarkBlock(self):
         dnaRoot=self.selectedDNARoot
         if dnaRoot and self.lastLandmarkBuildingDNA:
@@ -3226,14 +3226,14 @@ class LevelEditor(NodePath, DirectObject):
                     # then highlight this one:
                     np=self.selectedNPRoot
                     self.showLandmarkBlockToggleGroup.append(np)
-                    np.setColor(1,0,0,1)
+                    np.setColor(1, 0, 0, 1)
         elif self.selectedSuitPoint and self.lastLandmarkBuildingDNA:
             block=self.lastLandmarkBuildingDNA.getName()
             block=block[2:block.find(':')]
             print ("associate point with building: " + str(block))
             self.selectedSuitPoint.setLandmarkBuildingIndex(int(block))
             marker = self.pointDict[self.selectedSuitPoint]
-            marker.setColor(1,0,0,1)
+            marker.setColor(1, 0, 0, 1)
             marker.setScale(1.0)
 
     def findHighestLandmarkBlock(self, dnaRoot, npRoot):
@@ -3253,13 +3253,13 @@ class LevelEditor(NodePath, DirectObject):
         newHighest=self.convertToLandmarkBlocks(highest, dnaRoot)
         # Get rid of the list of flat building names:
         del self.flatNames
-        
+
         needToTraverse = (highest!=newHighest)
         return (newHighest, needToTraverse)
 
     def convertToLandmarkBlocks(self, block, dnaRoot):
         """
-        Find all the buildings without landmark blocks and 
+        Find all the buildings without landmark blocks and
         assign them one.
         """
         for i in range(dnaRoot.getNumChildren()):
@@ -3285,7 +3285,7 @@ class LevelEditor(NodePath, DirectObject):
         """
         npc=self.NPToplevel.findAllMatches("**/tb"+block+":*_DNARoot")
         for i in range(npc.getNumPaths()):
-            nodePath=npc.getPath(i)            
+            nodePath=npc.getPath(i)
             name=nodePath.getName()
             if name[name.find(':'):][:15] != ':toon_landmark_':
                 name='tb0'+name[name.find(':'):]
@@ -3296,8 +3296,8 @@ class LevelEditor(NodePath, DirectObject):
                 if self.showLandmarkBlockToggleGroup:
                     # then highlight this one:
                     self.showLandmarkBlockToggleGroup.append(nodePath)
-                    nodePath.setColor(0,1,0,1)
-    
+                    nodePath.setColor(0, 1, 0, 1)
+
     def landmarkBlockRemove(self, dna, nodePath):
         if dna:
             name=dna.getName()
@@ -3307,7 +3307,7 @@ class LevelEditor(NodePath, DirectObject):
                 block=name[2:usIndex]
                 self.lastLandmarkBuildingDNA=None
                 self.revertLandmarkBlock(block)
-    
+
     def toggleShowLandmarkBlock(self):
         dna=self.lastLandmarkBuildingDNA
         if dna:
@@ -3321,14 +3321,14 @@ class LevelEditor(NodePath, DirectObject):
                 for i in range(npc.getNumPaths()):
                     nodePath=npc.getPath(i)
                     group.append(nodePath)
-                    nodePath.setColor(1,0,0,1)
+                    nodePath.setColor(1, 0, 0, 1)
 
                 # Get block zero buildings (i.e. non-blocked):
                 npc=self.NPToplevel.findAllMatches("**/tb0:*_DNARoot")
                 for i in range(npc.getNumPaths()):
                     nodePath=npc.getPath(i)
                     group.append(nodePath)
-                    nodePath.setColor(0,1,0,1)
+                    nodePath.setColor(0, 1, 0, 1)
 
                 # Get the suit point for this lb
                 for point, marker in self.pointDict.items():
@@ -3336,26 +3336,26 @@ class LevelEditor(NodePath, DirectObject):
                         or (point.getPointType() == DNASuitPoint.SIDEDOORPOINT)):
                         lbIndex = point.getLandmarkBuildingIndex()
                         if (lbIndex == int(block)):
-                            marker.setColor(1,0,0,1)
+                            marker.setColor(1, 0, 0, 1)
                             marker.setScale(1.0)
                             # There should only be one, so break now
                         elif (lbIndex == -1):
                             # This point belongs to no block
-                            marker.setColor(0,1,0,1)
-                
+                            marker.setColor(0, 1, 0, 1)
+
                 self.showLandmarkBlockToggleGroup=group
             else:
                 for i in self.showLandmarkBlockToggleGroup:
                     i.clearColor()
                 for point, marker in self.pointDict.items():
                     if (point.getPointType() == DNASuitPoint.FRONTDOORPOINT):
-                        marker.setColor(0,0,1,1)
+                        marker.setColor(0, 0, 1, 1)
                         marker.setScale(0.5)
                     elif (point.getPointType() == DNASuitPoint.SIDEDOORPOINT):
-                        marker.setColor(0,0.6,0.2,1)
+                        marker.setColor(0, 0.6, 0.2, 1)
                         marker.setScale(0.5)
                 self.showLandmarkBlockToggleGroup=None
-    
+
     def pdbBreak(self):
         pdb.set_trace()
 
@@ -3397,14 +3397,14 @@ class LevelEditor(NodePath, DirectObject):
         groupName = ''
         #if curveName == "urban_curveside_inner_1_1":
         #    import pdb; pdb.set_trace()
-        
+
         if 'curveside' in curveName:
             #we want to preserve which group the side street is closest to
             print "special casing %s" % curveName
             parts = curveName.split('_')
             groupName = 'Buildings_' + side + "-" + parts[3] + "_" + parts[4]
             print "groupname = %s" % groupName
-        else:        
+        else:
             groupName = 'Buildings_' + side + "-" + str(sequenceNum)
         newGroup.setName(groupName)
         self.setName(newGroup, groupName)
@@ -3446,7 +3446,7 @@ class LevelEditor(NodePath, DirectObject):
         return streetLength
 
     def addStreetUnits(self, streetLength):
-        direct.grid.setPosHpr(0,-40,0,0,0,0)
+        direct.grid.setPosHpr(0, -40, 0, 0, 0, 0)
         currLength = 0
         while (currLength < streetLength):
             self.addStreet('street_80x40')
@@ -3499,7 +3499,7 @@ class LevelEditor(NodePath, DirectObject):
             curveInnerSideSts = modelFile.findAllMatches('**/*curveside_inner*').asList()
             print("--------- curveInnerSideSts----------")
             print curveInnerSideSts
-            
+
             curveOuterSideSts = modelFile.findAllMatches('**/*curveside_outer*').asList()
             print("----------- curveOuterSideSits ----------")
             print curveOuterSideSts
@@ -3510,19 +3510,19 @@ class LevelEditor(NodePath, DirectObject):
                 if not curve.isEmpty():
                     # Mark whether it is a section of buildings or trees
                     curveType = curve.getName().split("_")[0]
-                    curves['inner'].append([curve.node(),curveType])
-                    
+                    curves['inner'].append([curve.node(), curveType])
+
             for i in range(len(curvesOuter) +1):
                 curve = modelFile.find('**/*curve_outer_'+str(i))
                 if not curve.isEmpty():
                     # Mark whether it is a section of buildings or trees
                     curveType = curve.getName().split("_")[0]
-                    curves['outer'].append([curve.node(),curveType])
+                    curves['outer'].append([curve.node(), curveType])
 
             maxNum = len(curvesInner)
             if len(curvesOuter) > maxNum:
                 maxNum = len(curvesOuter)
-            
+
             maxNum += 2; #track ends in a barricade, and add 1 since 1 based
             #RAU also do special processing for the side streets
             # side streets are numbered differently and could be non consecutive
@@ -3534,19 +3534,19 @@ class LevelEditor(NodePath, DirectObject):
                     if not curve.isEmpty():
                         # Mark whether it is a section of buildings or trees
                         curveType = curve.getName().split("_")[0]
-                        curves['innersidest'].append([curve.node(),curveType])
+                        curves['innersidest'].append([curve.node(), curveType])
                         print "adding innersidest %s" % curve.getName()
 
             for i in range(maxNum):
-                for barricade in ['innerbarricade','outerbarricade']:                
+                for barricade in ['innerbarricade','outerbarricade']:
                     curve = modelFile.find('**/*curveside_outer_'+ barricade + '_' + str(i))
                     if not curve.isEmpty():
                         # Mark whether it is a section of buildings or trees
                         curveType = curve.getName().split("_")[0]
-                        curves['outersidest'].append([curve.node(),curveType])
-                        print "adding outersidest %s" % curve.getName()                        
-            
-            
+                        curves['outersidest'].append([curve.node(), curveType])
+                        print "adding outersidest %s" % curve.getName()
+
+
             print "loaded curves: %s" % curves
             return curves
         else:
@@ -3615,9 +3615,9 @@ class LevelEditor(NodePath, DirectObject):
 
         if barricadeDict[barricadeOrigNum][1] < curBldgGroupIndex:
             barricadeDict[barricadeOrigNum][1] = curBldgGroupIndex
-        
-        print "---------- %s barricadeDict origNum=%d  data=(%d,%d)" %(side, barricadeOrigNum, barricadeDict[barricadeOrigNum][0], barricadeDict[barricadeOrigNum][1])           
-    
+
+        print "---------- %s barricadeDict origNum=%d  data=(%d, %d)" %(side, barricadeOrigNum, barricadeDict[barricadeOrigNum][0], barricadeDict[barricadeOrigNum][1])
+
     def makeStreetAlongCurve(self):
         curves = self.loadStreetCurve()
         if curves == None:
@@ -3625,7 +3625,7 @@ class LevelEditor(NodePath, DirectObject):
 
         self.outerBarricadeDict = {}
         self.innerBarricadeDict = {}
-        
+
 
         direct.grid.fXyzSnap = 0
         direct.grid.fHprSnap = 0
@@ -3646,7 +3646,7 @@ class LevelEditor(NodePath, DirectObject):
         maxGroupWidth = 500
         for side in sides:
             print "Building street for %s side" % side
-            # Subdivide the curve into different groups.  
+            # Subdivide the curve into different groups.
             bldgGroupIndex = 0
             curGroupWidth = 0
             curveName = '';
@@ -3655,12 +3655,12 @@ class LevelEditor(NodePath, DirectObject):
                 if initialCurve:
                     curveName = initialCurve.getName()
             self.makeNewBuildingGroup(bldgGroupIndex, side, curveName)
-            
+
             for curve, curveType in curves[side]:
-                print "----------------- curve(%s,%s): %s --------------- " % (side,curve.getName(), curve)
+                print "----------------- curve(%s, %s): %s --------------- " % (side, curve.getName(), curve)
                 #import pdb; pdb.set_trace()
                 currT = 0
-                endT = curve.getMaxT()             
+                endT = curve.getMaxT()
 
                 while currT < endT:
                     if curveType == 'urban':
@@ -3692,11 +3692,11 @@ class LevelEditor(NodePath, DirectObject):
                     elif curveType == 'trees':
                         curve.getPoint(currT, currPoint)
                         # trees are spaced anywhere from 40-80 ft apart
-                        treeWidth = whrandom.randint(40,80)
+                        treeWidth = whrandom.randint(40, 80)
                         curGroupWidth += treeWidth
                         # Adjust grid orientation based upon next point along curve
                         currT, currPoint = self.findBldgEndPoint(treeWidth, curve, currT, currPoint, rd = 0)
-                        
+
                         # Add some trees
                         tree = whrandom.choice(["prop_tree_small_ul",
                                                 "prop_tree_small_ur",
@@ -3710,8 +3710,8 @@ class LevelEditor(NodePath, DirectObject):
                                                     "prop_snow_tree_small_ur",
                                                     "prop_snow_tree_large_ur",
                                                     "prop_snow_tree_large_ul"])
-                            
-                        
+
+
                         self.addProp(tree)
                         for selectedNode in direct.selected:
                             # Move it
@@ -3739,7 +3739,7 @@ class LevelEditor(NodePath, DirectObject):
                         # force move to next curve
                         currT = endT + 1
                     elif curveType == 'barricade':
-                        print "adding barricade (%s) %s, curT = %d" % (side,curve.getName(),currT)
+                        print "adding barricade (%s) %s, curT = %d" % (side, curve.getName(), currT)
                         barricadeWidth = curve.calcLength()
                         print "barricade width = %f" % barricadeWidth
 
@@ -3748,16 +3748,16 @@ class LevelEditor(NodePath, DirectObject):
                             curGroupWidth += barricadeWidth
                             # force move to next curve
                             currT = endT + 1
-                        else:                                              
+                        else:
                             #add a prop_tree to force it to be shown
                             curve.getPoint(currT, currPoint)
                             #trees are spaced anywhere from 40-80 ft apart
-                            #treeWidth = whrandom.randint(40,80)
+                            #treeWidth = whrandom.randint(40, 80)
                             treeWidth = barricadeWidth
                             curGroupWidth += treeWidth
                             # Adjust grid orientation based upon next point along curve
                             currT, currPoint = self.findBldgEndPoint(treeWidth, curve, currT, currPoint, rd = 0)
-                        
+
                             # Add some trees
                             tree = whrandom.choice(["prop_snow_tree_small_ul",
                                                 "prop_snow_tree_small_ur",
@@ -3769,11 +3769,11 @@ class LevelEditor(NodePath, DirectObject):
                                 selectedNode.setPos(currPoint)
                                 # Snap objects to grid and update DNA if necessary
                                 self.updateSelectedPose(direct.selected.getSelectedAsList())
-                        
 
-                      
-                    
-                    
+
+
+
+
                     # Check if we need a new group yet
                     if curGroupWidth > maxGroupWidth:
                         print "curGroupWidth %s > %s" % (curGroupWidth, maxGroupWidth)
@@ -3809,13 +3809,13 @@ class LevelEditor(NodePath, DirectObject):
         maxGroupWidth = 50000
         for side in sides:
             print "Building street for %s side" % side
-            # Subdivide the curve into different groups.  
+            # Subdivide the curve into different groups.
             bldgGroupIndex = 0
             curGroupWidth = 0
 
-            
+
             for curve, curveType in curves[side]:
-                print "----------------- curve(%s,%s): %s --------------- " % (side,curve.getName(), curve)
+                print "----------------- curve(%s, %s): %s --------------- " % (side, curve.getName(), curve)
                 #import pdb; pdb.set_trace()
                 currT = 0
                 endT = curve.getMaxT()
@@ -3826,11 +3826,11 @@ class LevelEditor(NodePath, DirectObject):
                 print ("endT = %f" % endT)
                 #if (maxGroupWidth < endT):
                 #    self.notify.debug("changing endT from %f to %f" % (endT, maxGroupWidth))
-                #    endT = maxGroupWidth                    
-                
+                #    endT = maxGroupWidth
+
 
                 currGroupWidth = 0
-                self.makeNewBuildingGroup(bldgGroupIndex,side, curve.getName())
+                self.makeNewBuildingGroup(bldgGroupIndex, side, curve.getName())
 
                 while currT < endT:
                     if curveType == 'urban':
@@ -3862,7 +3862,7 @@ class LevelEditor(NodePath, DirectObject):
                     elif curveType == 'trees':
                         curve.getPoint(currT, currPoint)
                         # trees are spaced anywhere from 40-80 ft apart
-                        treeWidth = whrandom.randint(40,80)
+                        treeWidth = whrandom.randint(40, 80)
                         curGroupWidth += treeWidth
                         # Adjust grid orientation based upon next point along curve
                         currT, currPoint = self.findBldgEndPoint(treeWidth, curve, currT, currPoint, rd = 0)
@@ -3879,7 +3879,7 @@ class LevelEditor(NodePath, DirectObject):
                                                     "prop_snow_tree_small_ur",
                                                     "prop_snow_tree_large_ur",
                                                     "prop_snow_tree_large_ul"])
-                            
+
 
                         self.addProp(tree)
                         for selectedNode in direct.selected:
@@ -3908,7 +3908,7 @@ class LevelEditor(NodePath, DirectObject):
                         # force move to next curve
                         currT = endT + 1
                     elif curveType == 'barricade':
-                        print "adding barricade (%s) %s, curT = %d" % (side,curve.getName(),currT)
+                        print "adding barricade (%s) %s, curT = %d" % (side, curve.getName(), currT)
                         barricadeWidth = curve.calcLength()
                         print "barricade width = %f" % barricadeWidth
 
@@ -3917,16 +3917,16 @@ class LevelEditor(NodePath, DirectObject):
                             curGroupWidth += barricadeWidth
                             # force move to next curve
                             currT = endT + 1
-                        else:                                              
+                        else:
                             #add a prop_tree to force it to be shown
                             curve.getPoint(currT, currPoint)
                             #trees are spaced anywhere from 40-80 ft apart
-                            #treeWidth = whrandom.randint(40,80)
+                            #treeWidth = whrandom.randint(40, 80)
                             treeWidth = barricadeWidth
                             curGroupWidth += treeWidth
                             # Adjust grid orientation based upon next point along curve
                             currT, currPoint = self.findBldgEndPoint(treeWidth, curve, currT, currPoint, rd = 0)
-                        
+
                             # Add some trees
                             tree = whrandom.choice(["prop_snow_tree_small_ul",
                                                 "prop_snow_tree_small_ur",
@@ -3940,8 +3940,8 @@ class LevelEditor(NodePath, DirectObject):
                                 self.updateSelectedPose(direct.selected.getSelectedAsList())
 
                 #done with for loop, increment bldgGroupIndex
-                bldgGroupIndex += 1    
- 
+                bldgGroupIndex += 1
+
     def findBldgEndPoint(self, bldgWidth, curve, currT, currPoint,
                          startT = None, endT = None, tolerance = 0.1, rd = 0):
         if startT == None:
@@ -3986,7 +3986,7 @@ class LevelStyleManager:
         self.createBuildingStyleAttributes()
         self.createColorAttributes()
         self.createDNAAttributes()
-        self.createMiscAttributes()    
+        self.createMiscAttributes()
 
     # BASELINE STYLE FUNCTIONS
     def createBaselineStyleAttributes(self):
@@ -4006,7 +4006,7 @@ class LevelStyleManager:
             attribute.setMenu(
                 self.createBaselineStyleMenu(neighborhood, attribute.getDict()))
             dict[neighborhood] = attribute
-    
+
     def createBaselineStyleDictionary(self, neighborhood):
         """
         Create a dictionary of baseline styles for a neighborhood
@@ -4014,8 +4014,8 @@ class LevelStyleManager:
         filename = neighborhood + '_baseline_styles.txt'
         print 'Loading baseline styles from: ' + filename
         styleData = self.getStyleFileData(filename)
-        return self.initializeBaselineStyleDictionary(styleData, neighborhood)    
-    
+        return self.initializeBaselineStyleDictionary(styleData, neighborhood)
+
     def initializeBaselineStyleDictionary(self, styleData, neighborhood):
         """
         Fill in the baseline style dictionary with data from the style file
@@ -4077,7 +4077,7 @@ class LevelStyleManager:
             styleData = styleData[1:]
         # No end of style found, return style data as is
         return style, None
-        
+
     def createBaselineStyleMenu(self, neighborhood, dictionary):
         """
         Create a baseline style pie menu
@@ -4110,7 +4110,7 @@ class LevelStyleManager:
         newStyleMenu.setScale(0.5)
         # Create and return a pie menu
         return PieMenu(newStyleMenu, styles)
-    
+
     def createBaselineStyleSample(self, baselineStyle):
         """
         Create a style sample using the DNA info in the style
@@ -4139,7 +4139,7 @@ class LevelStyleManager:
             attribute.setMenu(
                 self.createWallStyleMenu(neighborhood, attribute.getDict()))
             dict[neighborhood] = attribute
-    
+
     def createWallStyleDictionary(self, neighborhood):
         """
         Create a dictionary of wall styles for a neighborhood
@@ -4147,8 +4147,8 @@ class LevelStyleManager:
         filename = neighborhood + '_wall_styles.txt'
         print 'Loading wall styles from: ' + filename
         styleData = self.getStyleFileData(filename)
-        return self.initializeWallStyleDictionary(styleData, neighborhood)    
-    
+        return self.initializeWallStyleDictionary(styleData, neighborhood)
+
     def initializeWallStyleDictionary(self, styleData, neighborhood):
         """
         Fill in the wall style dictionary with data from the style file
@@ -4200,7 +4200,7 @@ class LevelStyleManager:
             styleData = styleData[1:]
         # No end of style found, return style data as is
         return style, None
-        
+
     def createWallStyleMenu(self, neighborhood, dictionary):
         """
         Create a wall style pie menu
@@ -4233,7 +4233,7 @@ class LevelStyleManager:
         newStyleMenu.setScale(0.5)
         # Create and return a pie menu
         return PieMenu(newStyleMenu, styles)
-    
+
     def createWallStyleSample(self, wallStyle):
         """
         Create a style sample using the DNA info in the style
@@ -4243,7 +4243,7 @@ class LevelStyleManager:
         self.setDNAFlatBuildingStyle(bldg, bldgStyle, width = 12.0,
                                      name = 'wall_style_sample')
         return bldg.traverse(hidden, DNASTORE, 1)
-    
+
     # BUILDING STYLE FUNCTIONS
     def createBuildingStyleAttributes(self):
         """
@@ -4295,7 +4295,7 @@ class LevelStyleManager:
             self.attributeDictionary[heightKey] = {}
         # Now distribute data for each neighborhood
         for neighborhood in NEIGHBORHOODS:
-            # Create temp dicts to accumulate styles and heights for that 
+            # Create temp dicts to accumulate styles and heights for that
             # neighborhood
             typeAttributes = {}
             numWallsAttributes = {}
@@ -4344,7 +4344,7 @@ class LevelStyleManager:
                 heightKey = `i` + '_ft_wall_heights'
                 self.attributeDictionary[heightKey][neighborhood] = (
                     heightAttributes[i])
-        
+
     def createBuildingStyleDictionary(self, neighborhood):
         """
         Create a dictionary of wall styles for a neighborhood
@@ -4382,13 +4382,13 @@ class LevelStyleManager:
                 styleCount = styleCount + 1
                 # Reset wall counter to zero
                 wallCount = 0
-                
+
             elif l == 'endBuildingStyle':
                 # Done, add new style to dictionary
                 bldgStyleDictionary[bldgStyle.name] = bldgStyle
-                
+
             elif l[:9] == 'wallStyle':
-                # Beginning of next wall style  
+                # Beginning of next wall style
                 wallStyle, styleData = self.extractWallStyle(styleData)
                 wallStyle.name = bldgStyle.name + '_wall_' + `wallCount`
                 try:
@@ -4402,7 +4402,7 @@ class LevelStyleManager:
             # Move to next line
             styleData = styleData[1:]
         return bldgStyleDictionary
-        
+
     def createBuildingStyleMenu(self, neighborhood, dictionary):
         """
         Create a wall style pie menu
@@ -4435,7 +4435,7 @@ class LevelStyleManager:
         newStyleMenu.setScale(0.5)
         # Create and return a pie menu
         return PieMenu(newStyleMenu, styles)
-    
+
     def createBuildingStyleSample(self, bldgStyle):
         """
         Create a style sample using the DNA info in the style
@@ -4444,7 +4444,7 @@ class LevelStyleManager:
         self.setDNAFlatBuildingStyle(bldg, bldgStyle, width = 10.0,
                                      name = 'building_style_sample')
         return bldg.traverse(hidden, DNASTORE, 1)
-    
+
     def setDNAFlatBuildingStyle(self, fb, bldgStyle, width = 10.0,
                                 heightList = None, name = 'building'):
         """ Set DNAFlatBuilding style. """
@@ -4534,7 +4534,7 @@ class LevelStyleManager:
             child = building.at(i)
             if DNAClassEqual(child, DNA_WALL):
                 self.printWallStyle(child)
-                
+
     def printWallStyle(self, wall):
         print 'wall_texture: ' + wall.getCode()
         color = wall.getColor()
@@ -4591,18 +4591,18 @@ class LevelStyleManager:
                 attribute.setMenu(
                     colorMenuDictionary[neighborhood][colorType])
                 neighborhoodDict[neighborhood] = attribute
-    
+
     def createColorDictionary(self, neighborhood):
         filename = neighborhood + '_colors.txt'
         print 'Loading Color Palettes from: ' + filename
         colorData = self.getStyleFileData(filename)
         return self.getColorDictionary(colorData)
-    
+
     def getColorDictionary(self, colorData):
         # Initialze neighborhod color dictionary
         dict = {}
         for colorType in COLOR_TYPES:
-            dict[colorType] = DEFAULT_COLORS[:] 
+            dict[colorType] = DEFAULT_COLORS[:]
         # Add color information to appropriate sub-list
         for line in colorData:
             pair = map(string.strip, line.split(':'))
@@ -4612,7 +4612,7 @@ class LevelStyleManager:
             else:
                 print 'LevelStyleManager.getColorDictionary key not found'
         return dict
-    
+
     def createColorMenus(self, neighborhood, dictionary):
         menuDict = {}
         keys = dictionary.keys()
@@ -4620,7 +4620,7 @@ class LevelStyleManager:
             menuDict[key] = (
                 self.createColorMenu(neighborhood + key, dictionary[key]))
         return menuDict
-    
+
     def createColorMenu(self, menuName, colorList, radius = 0.7, sf = 2.0):
         # Create color chips for each color
         numItems = len(colorList)
@@ -4652,7 +4652,7 @@ class LevelStyleManager:
         newColorMenu.setScale(0.5)
         # Create and return resulting pie menu
         return PieMenu(newColorMenu, colorList)
-    
+
     # DNA ATTRIBUTES
     def createDNAAttributes(self):
         # Create the DNA Attribute entries
@@ -4707,9 +4707,9 @@ class LevelStyleManager:
                 print 'unknown attribute'
             # Add it to the attributeDictionary
             self.attributeDictionary[dnaType + '_texture'] = attribute
-    
+
     def createDNAPieMenu(self, dnaType, dnaList, radius = 0.7, sf = 1.0):
-        # Get the currently available window options    
+        # Get the currently available window options
         numItems = len(dnaList)
         # Create a top level node to hold the menu
         newMenu = hidden.attachNewNode(dnaType + 'Menu')
@@ -4784,27 +4784,27 @@ class LevelStyleManager:
     # MISCELLANEOUS MENUS
     def createMiscAttributes(self):
         # Num windows menu
-        self.createMiscAttribute('window_count',[0,1,2,3,4])
+        self.createMiscAttribute('window_count', [0, 1, 2, 3, 4])
         # Building width menu
-        self.createMiscAttribute('building_width',[5,10,15,15.6,20,20.7,25])
+        self.createMiscAttribute('building_width', [5, 10, 15, 15.6, 20, 20.7, 25])
         # Building types
         self.createMiscAttribute('building_type', BUILDING_TYPES)
         # Building heights
-        self.createMiscAttribute('building_height', [10,14,20,24,25,30])
+        self.createMiscAttribute('building_height', [10, 14, 20, 24, 25, 30])
         # MRM: Need offset on these menus
         # Wall orientation menu
         self.createMiscAttribute('wall_orientation', ['ur','ul','dl','dr'])
         # Wall height menu
         self.createMiscAttribute('wall_height', [10, 20])
         # Window orientation menu
-        self.createMiscAttribute('window_orientation', ['ur','ul',None,None])
+        self.createMiscAttribute('window_orientation', ['ur','ul', None, None])
         # Sign orientation menu
-        self.createMiscAttribute('sign_orientation', ['ur','ul',None,None])
+        self.createMiscAttribute('sign_orientation', ['ur','ul', None, None])
         # Door orientation menu
-        self.createMiscAttribute('door_orientation', ['ur','ul',None,None])
+        self.createMiscAttribute('door_orientation', ['ur','ul', None, None])
         # Cornice orientation menu
-        self.createMiscAttribute('cornice_orientation', ['ur','ul',None,None])
-        
+        self.createMiscAttribute('cornice_orientation', ['ur','ul', None, None])
+
     def createMiscAttribute(self, miscType, miscList, sf = 3.0):
         # Create a dictionary from miscList
         dict = {}
@@ -4814,7 +4814,7 @@ class LevelStyleManager:
         # Create the miscellaneous Attribute entries
         attribute = LevelAttribute(miscType)
         attribute.setDict(dict)
-        # Now create a pie menu 
+        # Now create a pie menu
         attribute.setMenu(self.createTextPieMenu(miscType, miscList,
                                                   sf = sf))
         # Add it to the attributeDictionary
@@ -4865,7 +4865,7 @@ class LevelStyleManager:
 
     def getCatalogCode(self, category, i):
         return DNASTORE.getCatalogCode(category, i)
-    
+
     def getCatalogCodes(self, category):
         numCodes = DNASTORE.getNumCatalogCodes(category)
         codes = []
@@ -4884,7 +4884,7 @@ class LevelStyleManager:
     def setEditMode(self, mode):
         """Set current neighborhood editing mode"""
         self._editMode = mode
-    
+
     def getEditMode(self):
         """Get current neighborhood editing mode"""
         return self._editMode
@@ -4907,10 +4907,10 @@ class LevelAttribute:
         # Send event if specified
         if fEvent:
             messenger.send('select_' + self.name, [self._current])
-    def setMenu(self,menu):
+    def setMenu(self, menu):
         self._menu = menu
         self._menu.action = self.setCurrent
-    def setDict(self,dict):
+    def setDict(self, dict):
         self._dict = dict
         # Create a list from the dictionary
         self._list = dict.values()
@@ -4919,7 +4919,7 @@ class LevelAttribute:
         # Initialize current to first item
         if (len(self._list) > 0):
             self._current = self._list[0]
-    def setList(self,list):
+    def setList(self, list):
         self._list = list
         # Create a dictionary from the list
         self._dict = {}
@@ -4930,7 +4930,7 @@ class LevelAttribute:
         # Initialize current to first item
         if (self.count > 0):
             self._current = self._list[0]
-    def add(self,item):
+    def add(self, item):
         self._dict[self.count] = item
         self._list.append(item)
         self.count += 1
@@ -4969,7 +4969,7 @@ class DNAFlatBuildingStyle:
         self.styleList.append(style)
         self.heightList.append(height)
         self.numWalls += 1
-            
+
     def copy(self, building):
         self.styleList = []
         self.heightList = DNAGetWallHeights(building)[0]
@@ -4988,7 +4988,7 @@ class DNAFlatBuildingStyle:
         file.write('endBuildingStyle\n')
 
 def createHeightCode(heightList):
-    def joinHeights(h1,h2):
+    def joinHeights(h1, h2):
         return '%s_%s' % (h1, h2)
     hl = map(ROUND_INT, heightList)
     if len(hl) == 1:
@@ -5113,17 +5113,17 @@ class DNABaselineStyle:
         if self.flags != None:
             file.write('flags: %s\n' % self.flags)
         if self.color != None:
-            file.write('color: Vec4(%.2f, %.2f, %.2f, 1.0)\n' 
+            file.write('color: Vec4(%.2f, %.2f, %.2f, 1.0)\n'
                 % (self.color[0], self.color[1], self.color[2]))
         file.write('endBaselineStyle\n')
 
     # Convience functions to facilitate class use
     def __setitem__(self, index, item):
         self.__dict__[index] = item
-    
+
     def __getitem__(self, index):
         return self.__dict__[index]
-    
+
     def __repr__(self):
         return(
             'name: %s\n' % self.name +
@@ -5210,10 +5210,10 @@ class DNAWallStyle:
     # Convience functions to facilitate class use
     def __setitem__(self, index, item):
         self.__dict__[index] = item
-    
+
     def __getitem__(self, index):
         return self.__dict__[index]
-    
+
     def __repr__(self):
         return(
             'Name: %s\n' % self.name +
@@ -5251,11 +5251,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         # Handle to the toplevels hull
         hull = self.component('hull')
         hull.geometry('400x625')
-        
+
         balloon = self.balloon = Pmw.Balloon(hull)
         # Start with balloon help disabled
         self.balloon.configure(state = 'none')
-        
+
         menuFrame = Frame(hull, relief = GROOVE, bd = 2)
         menuFrame.pack(fill = X)
 
@@ -5353,7 +5353,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             scrolledlist_items = NEIGHBORHOODS)
         self.editMenu.selectitem(NEIGHBORHOODS[0])
         self.editMenu.pack(side = LEFT, expand = 0)
-                                     
+
 
         # Create the notebook pages
         self.notebook = Pmw.NoteBook(hull)
@@ -5393,7 +5393,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             selectioncommand = self.setStreetModuleType,
             scrolledlist_items = streets
             )
-        self.streetModuleType = self.styleManager.getCatalogCode('street',0)
+        self.streetModuleType = self.styleManager.getCatalogCode('street', 0)
         self.streetSelector.selectitem(self.streetModuleType[7:])
         self.streetSelector.pack(expand = 1, fill = BOTH)
 
@@ -5464,11 +5464,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             command = self.setFlatBuildingHeight)
         self.thirtyFootButton.pack(side = LEFT, expand = 1, fill = X)
         bf.pack(fill = X)
-        
+
         self.toonBuildingType = 'random'
         self.toonBuildingSelector.selectitem(self.toonBuildingType)
         self.toonBuildingSelector.pack(expand = 1, fill = BOTH)
-        
+
         # LANDMARK BUILDINGS
         Label(landmarkBuildingsPage, text = 'Landmark Buildings',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
@@ -5506,9 +5506,9 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             scrolledlist_items = bldgs
             )
         self.landmarkType = self.styleManager.getCatalogCode(
-            'toon_landmark',0)
+            'toon_landmark', 0)
         self.landmarkBuildingSelector.selectitem(
-            self.styleManager.getCatalogCode('toon_landmark',0)[14:])
+            self.styleManager.getCatalogCode('toon_landmark', 0)[14:])
         self.landmarkBuildingSelector.pack(expand = 1, fill = BOTH)
 
         self.landmarkBuildingSpecialSelector = Pmw.ComboBox(
@@ -5527,7 +5527,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.landmarkBuildingSpecialSelector.selectitem(
             LANDMARK_SPECIAL_TYPES[0])
         self.landmarkBuildingSpecialSelector.pack(expand = 0)
-        
+
         # SIGNS
         Label(signPage, text = 'Signs',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
@@ -5540,7 +5540,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
         self.currentBaselineIndex=0
         self.baselineMenu = Pmw.ComboBox(
-            signSelectedFrame, 
+            signSelectedFrame,
             labelpos = W,
             label_text = 'Selected:', entry_width = 24,
             selectioncommand = self.selectSignBaseline,
@@ -5550,12 +5550,12 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.baselineMenu.pack(side = LEFT, expand = 1, fill = X)
 
         self.baselineAddButton = Button(
-            signSelectedFrame, 
+            signSelectedFrame,
             text="Add Baseline", command=self.addBaseline)
         self.baselineAddButton.pack(side = LEFT, expand = 1, fill = X)
 
         self.baselineDeleteButton = Button(
-            signSelectedFrame, 
+            signSelectedFrame,
             text="Del", command=self.deleteSignItem)
         self.baselineDeleteButton.pack(side = LEFT, expand = 1, fill = X)
 
@@ -5587,7 +5587,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.graphicMenu.grid(row=2, column=0, columnspan=4)
 
         signButtonFrame = Frame(gridFrame)
-        
+
         self.bigFirstLetterIntVar = IntVar()
         self.bigFirstLetterCheckbutton = Checkbutton(
             signButtonFrame,
@@ -5609,74 +5609,74 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             text = 'Drop Shadow',
             variable=self.dropShadowIntVar, command=self.setDropShadow)
         self.dropShadowCheckbutton.pack(side = LEFT, expand = 1, fill = X)
-        
+
         signButtonFrame.grid(row=3, column=0, columnspan=6)
 
         self.addKernFloater = Floater.Floater(
-            gridFrame, 
+            gridFrame,
             text='Kern',
             #maxVelocity=1.0,
             command=self.setSignBaselineKern)
         self.addKernFloater.grid(row=4, column=0, rowspan=2, columnspan=3,
                                  sticky = EW)
         self.addWiggleFloater = Floater.Floater(
-            gridFrame, 
+            gridFrame,
             text='Wiggle',
             #maxVelocity=10.0,
             command=self.setSignBaselineWiggle)
         self.addWiggleFloater.grid(row=6, column=0, rowspan=2, columnspan=3,
                                  sticky = EW)
         self.addStumbleFloater = Floater.Floater(
-            gridFrame, 
+            gridFrame,
             text='Stumble',
             #maxVelocity=1.0,
             command=self.setSignBaselineStumble)
         self.addStumbleFloater.grid(row=8, column=0, rowspan=2, columnspan=3,
                                  sticky = EW)
         self.addStompFloater = Floater.Floater(
-            gridFrame, 
+            gridFrame,
             text='Stomp',
             #maxVelocity=1.0,
             command=self.setSignBaselineStomp)
         self.addStompFloater.grid(row=10, column=0, rowspan=2, columnspan=3,
                                  sticky = EW)
         self.addCurveFloater = Floater.Floater(
-            gridFrame, 
+            gridFrame,
             text='Curve',
             #maxVelocity = 1.0,
             command=self.setSignBaselineCurve)
         self.addCurveFloater.grid(row=12, column=0, rowspan=2, columnspan=3,
                                  sticky = EW)
         self.addXFloater = Floater.Floater(
-            gridFrame, 
+            gridFrame,
             text='X',
             #maxVelocity=1.0,
             command=self.setDNATargetX)
         self.addXFloater.grid(row=4, column=3, rowspan=2, columnspan=3,
                                  sticky = EW)
         self.addZFloater = Floater.Floater(
-            gridFrame, 
+            gridFrame,
             text='Z',
             #maxVelocity=1.0,
             command=self.setDNATargetZ)
         self.addZFloater.grid(row=6, column=3, rowspan=2, columnspan=3,
                                  sticky = EW)
         self.addScaleXFloater = Floater.Floater(
-            gridFrame, 
+            gridFrame,
             text='Scale X',
             #maxVelocity=1.0,
             command=self.setDNATargetScaleX)
         self.addScaleXFloater.grid(row=8, column=3, rowspan=2, columnspan=3,
                                  sticky = EW)
         self.addScaleZFloater = Floater.Floater(
-            gridFrame, 
+            gridFrame,
             text='Scale Z',
             #maxVelocity=1.0,
             command=self.setDNATargetScaleZ)
         self.addScaleZFloater.grid(row=10, column=3, rowspan=2, columnspan=3,
                                  sticky = EW)
         self.addRollFloater = Floater.Floater(
-            gridFrame, 
+            gridFrame,
             text='Roll',
             #maxVelocity=10.0,
             command=self.setDNATargetRoll)
@@ -5708,9 +5708,9 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             selectioncommand = self.setPropType,
             scrolledlist_items = codes
             )
-        self.propType = self.styleManager.getCatalogCode('prop',0)
+        self.propType = self.styleManager.getCatalogCode('prop', 0)
         self.propSelector.selectitem(
-            self.styleManager.getCatalogCode('prop',0))
+            self.styleManager.getCatalogCode('prop', 0))
         self.propSelector.pack(expand = 1, fill = BOTH)
 
         # SUIT PATHS
@@ -5760,7 +5760,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             command = self.levelEditor.clearPathHighlights)
         self.clearHighlightButton.pack(side = LEFT, expand = 1, fill = X)
         spButtons.pack(fill = X, pady = 4)
-        
+
         self.suitPointSelector = Pmw.ComboBox(
             suitPathPage,
             dropdown = 0,
@@ -5902,7 +5902,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             variable = self.driveMode,
             command = self.levelEditor.useDriveMode)
         self.driveModeButton.pack(side = LEFT, fill = X, expand = 1)
-        
+
         self.fColl = IntVar()
         self.fColl.set(1)
         direct.collButton = Checkbutton(
@@ -5930,7 +5930,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         direct.visZonesButton.pack(side = LEFT, expand = 1, fill = X)
 
         buttonFrame4.pack(fill = X, padx = 5)
-        
+
         buttonFrame = Frame(hull)
         self.fLabel = IntVar()
         self.fLabel.set(0)
@@ -5949,13 +5949,13 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.selectButton.pack(side = LEFT, expand = 1, fill = X)
         buttonFrame.pack(fill = X)
 
-        # Make sure input variables processed 
+        # Make sure input variables processed
         self.initialiseoptions(LevelEditorPanel)
 
     def updateInfo(self, page):
         if page == 'Signs':
             self.updateSignPage()
-    
+
     def toggleGrid(self):
         if self.fGrid.get():
             direct.grid.enable()
@@ -5985,21 +5985,21 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
     def toggleHprSnap(self):
         direct.grid.setHprSnap(self.fXyzSnap.get())
-        
+
     def toggleMapVis(self):
         self.levelEditor.toggleMapVis(self.fMapVis.get())
 
-    def setStreetModuleType(self,name):
+    def setStreetModuleType(self, name):
         self.streetModuleType = 'street_' + name
         self.levelEditor.setCurrent('street_texture', self.streetModuleType)
 
     def addStreet(self):
         self.levelEditor.addStreet(self.streetModuleType)
 
-    def setFlatBuildingType(self,name):
+    def setFlatBuildingType(self, name):
         self.toonBuildingType = name
         self.levelEditor.setCurrent('building_type', self.toonBuildingType)
-        
+
     def setFlatBuildingHeight(self):
         height = self.heightMode.get()
         self.levelEditor.setCurrent('building_height', height)
@@ -6009,14 +6009,14 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         # Update combo box
         heightList = self.levelEditor.getList(`height` + '_ft_wall_heights')
         self.toonBuildingSelector.setlist(
-            ['random'] + map(createHeightCode,heightList))
+            ['random'] + map(createHeightCode, heightList))
         self.toonBuildingSelector.selectitem(0)
         self.toonBuildingSelector.invoke()
-        
+
     def addFlatBuilding(self):
         self.levelEditor.addFlatBuilding(self.toonBuildingType)
 
-    def setLandmarkType(self,name):
+    def setLandmarkType(self, name):
         self.landmarkType = 'toon_landmark_' + name
         self.levelEditor.setCurrent('toon_landmark_texture', self.landmarkType)
 
@@ -6031,7 +6031,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.baselineMenu.insert(END, s)
         self.baselineMenu.selectitem(0)
         self.selectSignBaseline(0)
-     
+
     def updateSignPage(self):
         if (self.notebook.getcurselection() == 'Signs'):
             sign=self.findSignFromDNARoot()
@@ -6049,11 +6049,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                 or objClass.eq(DNA_PROP)):
             target=DNAGetChildRecursive(dnaRoot, DNA_SIGN)
             return target
-        
+
     def selectSignBaseline(self, val):
         if not self.currentSignDNA:
             return
-        # Temporarily undefine DNATarget (this will speed 
+        # Temporarily undefine DNATarget (this will speed
         # up setting the values, because the callbacks won't
         # call self.levelEditor.replaceSelected() with each
         # setting):
@@ -6139,7 +6139,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
     def addSignGraphic(self, code):
         """
-        Create a new baseline with a graphic and 
+        Create a new baseline with a graphic and
         add it to the current sign
         """
         sign=self.findSignFromDNARoot()
@@ -6171,10 +6171,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.baselineMenu.selectitem(current)
             self.selectSignBaseline(current)
             self.levelEditor.replaceSelected()
-    
+
     def addBaselineItem(self):
         pass
-    
+
     def selectSignBaselineItem(self, val):
         baseline=self.currentBaselineDNA
         if baseline:
@@ -6197,7 +6197,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.currentBaselineDNA=baseline
             settings=val
             self.levelEditor.replaceSelectedEnabled=0
-            
+
             # Don't set string: self.baselineString.set('')
             if settings['curve'] != None:
                 self.addCurveFloater.set(settings['curve'])
@@ -6214,10 +6214,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             if flags != None:
                 self.bigFirstLetterIntVar.set('b' in flags)
                 self.setBigFirstLetter()
-                
+
                 self.allCapsIntVar.set('c' in flags)
                 self.setAllCaps()
-                
+
                 self.dropShadowIntVar.set('d' in flags)
                 self.setDropShadow()
 
@@ -6225,7 +6225,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             if code != None:
                 self.fontMenu.selectitem(code)
                 self.setSignBaslineFont(code)
-            
+
             if settings['x'] != None:
                 self.addXFloater.set(settings['x'])
             if settings['z'] != None:
@@ -6236,7 +6236,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                 self.addScaleZFloater.set(settings['scaleZ'])
             if settings['roll'] != None:
                 self.addRollFloater.set(settings['roll'])
-                
+
             color = settings['color']
             if color != None:
                 #self.updateSelectedObjColor(settings['color'])
@@ -6246,7 +6246,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
             self.levelEditor.replaceSelectedEnabled=1
             self.levelEditor.replaceSelected()
-                
+
 
     def setBaselineString(self, val):
         baseline=self.currentBaselineDNA
@@ -6275,16 +6275,16 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.landmarkSpecialType = type
         if self.levelEditor.lastLandmarkBuildingDNA:
             self.levelEditor.lastLandmarkBuildingDNA.setBuildingType(self.landmarkSpecialType)
-    
+
     def setBigFirstLetter(self):
         self.adjustBaselineFlag(self.bigFirstLetterIntVar.get(), 'b')
-    
+
     def setAllCaps(self):
         self.adjustBaselineFlag(self.allCapsIntVar.get(), 'c')
-    
+
     def setDropShadow(self):
         self.adjustBaselineFlag(self.dropShadowIntVar.get(), 'd')
-        
+
     def setSignBaslineFont(self, val):
         target=self.levelEditor.DNATarget
         if target and (DNAGetClassType(target).eq(DNA_SIGN_BASELINE)
@@ -6298,7 +6298,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             try:
                 val=1.0/val
             except ZeroDivisionError:
-                val=0.0    
+                val=0.0
             baseline.setWidth(val)
             baseline.setHeight(val)
             self.levelEditor.replaceSelected()
@@ -6370,10 +6370,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
     def addLandmark(self):
         self.levelEditor.addLandmark(self.landmarkType, self.landmarkSpecialType)
 
-    def setPropType(self,name):
+    def setPropType(self, name):
         self.propType = name
         self.levelEditor.setCurrent('prop_texture', self.propType)
-        
+
     def addProp(self):
         self.levelEditor.addProp(self.propType)
 
@@ -6387,7 +6387,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                              int(colorVec[1] * 255.0),
                              int(colorVec[2] * 255.0),
                              255])
-        
+
     def setResetColor(self, colorVec):
         self.colorEntry['resetValue'] = (
             [int(colorVec[0] * 255.0),
@@ -6395,7 +6395,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
              int(colorVec[2] * 255.0),
              255])
 
-    def setSuitPointType(self,name):
+    def setSuitPointType(self, name):
         if (name == "street"):
             self.levelEditor.currentSuitPointType = DNASuitPoint.STREETPOINT
         elif (name == "front door"):
@@ -6404,7 +6404,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.levelEditor.currentSuitPointType = DNASuitPoint.SIDEDOORPOINT
         print self.levelEditor.currentSuitPointType
 
-    def setBattleCellType(self,name):
+    def setBattleCellType(self, name):
         self.levelEditor.currentBattleCellType = name
 
     def updateSelectedObjColor(self, color):
@@ -6468,7 +6468,7 @@ class VisGroupsEditor(Pmw.MegaToplevel):
         balloon = self.balloon = Pmw.Balloon(hull)
         # Start with balloon help disabled
         self.balloon.configure(state = 'none')
-        
+
         menuFrame = Frame(hull, relief = GROOVE, bd = 2)
         menuFrame.pack(fill = X, expand = 1)
 
@@ -6542,9 +6542,9 @@ class VisGroupsEditor(Pmw.MegaToplevel):
                                             command = self.refreshVisibility)
         self.showActiveButton.pack(side = LEFT, fill = X, expand = 1)
 
-        # Make sure input variables processed 
+        # Make sure input variables processed
         self.initialiseoptions(VisGroupsEditor)
-        
+
         # Switch to current target's list
         self.selectVisGroup(self.visGroupNames[0])
 
@@ -6585,7 +6585,7 @@ class VisGroupsEditor(Pmw.MegaToplevel):
                     target.addVisible(groupName)
                     # Update vis and color
                     groupNP.show()
-                    groupNP.setColor(1,0,0,1)
+                    groupNP.setColor(1, 0, 0, 1)
             else:
                 print 'Vis Group:', self.target, 'removing group:', groupName
                 if groupName in visList:
@@ -6605,9 +6605,9 @@ class VisGroupsEditor(Pmw.MegaToplevel):
             if key in visList:
                 groupNP.show()
                 if key == self.target:
-                    groupNP.setColor(0,1,0,1)
+                    groupNP.setColor(0, 1, 0, 1)
                 else:
-                    groupNP.setColor(1,0,0,1)
+                    groupNP.setColor(1, 0, 0, 1)
             else:
                 if self.showMode.get() == 0:
                     groupNP.show()
@@ -6626,7 +6626,7 @@ class VisGroupsEditor(Pmw.MegaToplevel):
         else:
             self.balloon.configure(state = 'none')
 
-        
+
 l = LevelEditor()
 run()
 

@@ -65,7 +65,7 @@ def print_exc_plus():
             #We have to be careful not to cause a new error in our error
             #printer! Calling str() on an unknown object could cause an
             #error we don't want.
-            try:                   
+            try:
                 print value
             except:
                 print "<ERROR WHILE PRINTING VALUE>"
@@ -209,8 +209,8 @@ def make_sequence(taskList):
                 # TaskManager.notify.debug('sequence done: ' + self.name)
                 frameFinished = 1
                 taskDoneStatus = done
-                
-        return taskDoneStatus 
+
+        return taskDoneStatus
 
     task = Task(func)
     task.name = 'sequence'
@@ -309,7 +309,7 @@ class TaskManager:
     # TODO: there is a bit of a bug when you default this to 0. The first
     # task we make, the doLaterProcessor, needs to have this set to 1 or
     # else we get an error.
-    taskTimerVerbose = 1 
+    taskTimerVerbose = 1
     extendedExceptions = 0
     pStatsTasks = 0
 
@@ -642,7 +642,7 @@ class TaskManager:
                 task.avgDt = 0
         return ret
 
-    def __repeatDoMethod(self,task):
+    def __repeatDoMethod(self, task):
         """
         Called when a task execute function returns Task.again because
         it wants the task to execute again after the same or a modified
@@ -721,7 +721,7 @@ class TaskManager:
                     # assert TaskManager.notify.debug('step: moving %s from pending to taskList' % (task.name))
                     self.__addNewTask(task)
         self.pendingTaskDict.clear()
-    
+
     def step(self):
         # assert TaskManager.notify.debug('step: begin')
         self.currentTime, self.currentFrame = self.__getTimeFrame()
@@ -766,7 +766,7 @@ class TaskManager:
 
         # Add new pending tasks
         self.__addPendingTasksToTaskList()
-        
+
         # Restore default interrupt handler
         signal.signal(signal.SIGINT, signal.default_int_handler)
         if self.fKeyboardInterrupt:
@@ -783,7 +783,7 @@ class TaskManager:
 
         if self.resumeFunc != None:
             self.resumeFunc()
-        
+
         if self.stepping:
             self.step()
         else:
@@ -906,7 +906,7 @@ class TaskManager:
         # The priority heap is not actually in order - it is a tree
         # Make a shallow copy so we can sort it
         sortedDoLaterList = self.__doLaterList[:]
-        sortedDoLaterList.sort(lambda a,b: cmp(a.wakeTime, b.wakeTime))
+        sortedDoLaterList.sort(lambda a, b: cmp(a.wakeTime, b.wakeTime))
         sortedDoLaterList.reverse()
         for task in sortedDoLaterList:
             remainingTime = ((task.wakeTime) - self.currentTime)
@@ -954,7 +954,7 @@ class TaskManager:
 
     def __getTimeFrame(self):
         # WARNING: If you are testing tasks without an igLoop,
-        # you must manually tick the clock        
+        # you must manually tick the clock
         # Ask for the time last frame
         return globalClock.getFrameTime(), globalClock.getFrameCount()
 
