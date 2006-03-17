@@ -1207,6 +1207,24 @@ begin_frame() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 end_frame() {
+#ifdef DO_PSTATS
+  // Check for textures, etc., that are no longer resident.  These
+  // calls might be measurably expensive, and they don't have any
+  // benefit unless we are actually viewing PStats, so don't do them
+  // unless we're connected.  That will just mean that we'll count
+  // everything as resident until the user connects PStats, at which
+  // point it will then correct the assessment.  No harm done.
+  if (PStatClient::is_connected()) {
+    check_nonresident_texture(_prepared_objects->_texture_residency.get_inactive_resident());
+    check_nonresident_texture(_prepared_objects->_texture_residency.get_active_resident());
+    
+    // OpenGL provides no methods for querying whether a buffer object
+    // (vertex buffer) is resident.  In fact, the API appears geared
+    // towards the assumption that such buffers are always resident.
+    // OK.
+  }
+#endif
+
   GraphicsStateGuardian::end_frame();
 
   // Now is a good time to delete any pending display lists.
@@ -1235,17 +1253,6 @@ end_frame() {
     // It's not clear what effect this has on our total frame time.
     GLP(Flush)();
   }
-
-#ifdef DO_PSTATS
-  // Check for textures, etc., that are no longer resident.
-  check_nonresident_texture(_prepared_objects->_texture_residency.get_inactive_resident());
-  check_nonresident_texture(_prepared_objects->_texture_residency.get_active_resident());
-
-  // OpenGL provides no methods for querying whether a buffer object
-  // (vertex buffer) is resident.  In fact, the API appears geared
-  // towards the assumption that such buffers are always resident.
-  // OK.
-#endif
 
   report_my_gl_errors();
 }
@@ -6751,6 +6758,10 @@ get_texture_memory_size(Texture *tex) const {
 void CLP(GraphicsStateGuardian)::
 check_nonresident_texture(BufferContextChain &chain) {
   size_t num_textures = chain.get_count();
+  if (num_textures == 0) {
+    return;
+  }
+
   CLP(TextureContext) **gtc_list = (CLP(TextureContext) **)alloca(num_textures * sizeof(CLP(TextureContext) *));
   GLuint *texture_list = (GLuint *)alloca(num_textures * sizeof(GLuint));
   size_t ti = 0;
