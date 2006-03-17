@@ -755,6 +755,7 @@ create_texture(DXScreenData &scrn) {
   {
     data_size *= 6;
   }
+  update_data_size_bytes(data_size);
 
   int attempts;
 

@@ -2181,6 +2181,7 @@ bool vertex_buffer_page_in_function (LruPage *lru_page)
 
   // update vertex buffer
   vertex_buffer -> upload_data ( );
+  vertex_buffer -> set_resident(true);
 
   if (DEBUG_LRU && dxgsg9_cat.is_debug())
   {
@@ -2196,6 +2197,7 @@ bool vertex_buffer_page_out_function (LruPage *lru_page)
 
   vertex_buffer = (DXVertexBufferContext9 *) lru_page -> _m.lru_page_type.pointer;
   vertex_buffer -> free_vbuffer ( );
+  vertex_buffer -> set_resident(false);
 
   if (DEBUG_LRU && dxgsg9_cat.is_debug())
   {
@@ -2218,6 +2220,7 @@ bool index_buffer_page_in_function (LruPage *lru_page)
 
   // update vertex buffer
   index_buffer -> upload_data ( );
+  index_buffer -> set_resident(true);
 
   if (DEBUG_LRU && dxgsg9_cat.is_debug())
   {
@@ -2233,6 +2236,7 @@ bool index_buffer_page_out_function (LruPage *lru_page)
 
   index_buffer = (DXIndexBufferContext9 *) lru_page -> _m.lru_page_type.pointer;
   index_buffer -> free_ibuffer ( );
+  index_buffer -> set_resident(false);
 
   if (DEBUG_LRU && dxgsg9_cat.is_debug())
   {
@@ -2251,6 +2255,7 @@ bool texture_page_in_function (LruPage *lru_page)
   texture = (DXTextureContext9 *) lru_page -> _m.lru_page_type.pointer;
 
   texture -> create_texture (*(gsg->_screen));
+  texture -> set_resident(true);
 
   if (DEBUG_LRU && dxgsg9_cat.is_debug())
   {
@@ -2266,6 +2271,7 @@ bool texture_page_out_function (LruPage *lru_page)
 
   texture = (DXTextureContext9 *) lru_page -> _m.lru_page_type.pointer;
   texture -> delete_texture ( );
+  texture -> set_resident(false);
 
   if (DEBUG_LRU && dxgsg9_cat.is_debug())
   {
