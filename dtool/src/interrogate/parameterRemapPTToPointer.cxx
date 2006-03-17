@@ -24,7 +24,7 @@
 #include "cppType.h"
 #include "cppStructType.h"
 #include "cppDeclaration.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParameterRemapPTToPointer::Constructor

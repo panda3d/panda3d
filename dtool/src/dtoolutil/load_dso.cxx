@@ -115,16 +115,10 @@ load_dso_error() {
 
 void * load_dso(const Filename &filename) 
 {
- cerr << "_dyld_present() = " << _dyld_present() << endl;
-  cerr << "_dyld_image_count() = " << _dyld_image_count() << endl;
 
 	std::string fname = filename.to_os_specific();
-	printf("----- Trying To Load %s \n",fname.c_str());
-
 	void * answer = dlopen(fname.c_str(),RTLD_NOW| RTLD_LOCAL);
- cerr << "_dyld_present() = " << _dyld_present() << endl;
-  cerr << "_dyld_image_count() = " << _dyld_image_count() << endl;
-
+	//void * answer = dlopen(fname.c_str(),RTLD_NOW);
 
 	return answer;
 
@@ -132,7 +126,8 @@ void * load_dso(const Filename &filename)
 
 string
 load_dso_error() {
-  return "No DSO loading yet!";
+  return std::string(dlerror());
+  //return "No DSO loading yet!";
 }
 
 #else

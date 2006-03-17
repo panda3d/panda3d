@@ -39,7 +39,7 @@
 #include "interrogateElement.h"
 #include "cppFunctionType.h"
 #include "cppParameterList.h"
-#include "notify.h"
+#include "pnotify.h"
 
  InterrogateType dummy_type;
 

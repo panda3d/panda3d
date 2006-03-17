@@ -21,7 +21,7 @@
 
 #include "dtoolbase.h"
 #include "typeRegistry.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include <set>
 

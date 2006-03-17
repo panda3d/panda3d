@@ -23,7 +23,7 @@
 
 #include "notifyCategory.h"
 #include "notifySeverity.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NotifyCategoryProxy

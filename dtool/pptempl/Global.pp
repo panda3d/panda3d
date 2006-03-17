@@ -475,13 +475,17 @@
 // target claims to require.  This returns a space-separated set of
 // framework names only; the -framework switch is not included here.
 #defun get_frameworks
-  #define alt_framework $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_framework] $[nspr_framework] $[python_framework]]
+  #define alt_frameworks $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_framework] $[nspr_framework] $[python_framework]]
+
+  #if $[OSX_PLATFORM]
+    #set alt_frameworks $[alt_frameworks] $[OSX_SYS_FRAMEWORKS]
+  #endif
 
   #foreach package $[use_packages]
-    #set alt_framework $[alt_framework] $[$[package]_framework]
+    #set alt_frameworks $[alt_frameworks] $[$[package]_framework]
   #end package
 
-  $[alt_framework]
+  $[alt_frameworks]
 #end get_frameworks
 
 // This function returns the appropriate set of library names to link

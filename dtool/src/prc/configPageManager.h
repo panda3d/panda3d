@@ -23,7 +23,7 @@
 #include "pvector.h"
 #include "dSearchPath.h"
 #include "globPattern.h"
-#include "notify.h"
+#include "pnotify.h"
 
 class ConfigPage;
 

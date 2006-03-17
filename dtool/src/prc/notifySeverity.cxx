@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "notifySeverity.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ostream &
 operator << (ostream &out, NotifySeverity severity) {

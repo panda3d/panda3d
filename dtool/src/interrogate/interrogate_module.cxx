@@ -25,7 +25,7 @@
 #include "interrogate_request.h"
 #include "load_dso.h"
 #include "pystub.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include "set"
 

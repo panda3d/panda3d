@@ -21,7 +21,7 @@
 
 #include "interrogateDatabase.h"
 #include "cppGlobals.h"
-#include "notify.h"
+#include "pnotify.h"
 #include <time.h>
 
 // If our system getopt() doesn't come with getopt_long_only(), then use

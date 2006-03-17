@@ -8,13 +8,13 @@
 //#define PYTHON_IPATH /Library/Frameworks/Python.framework/Headers
 //#define PYTHON_LPATH /Library/Frameworks/Python.framework/Headers
 
-#define PYTHON_IPATH /System/Library/Frameworks/Python.framework/Headers
+#define PYTHON_IPATH /Library/Frameworks/Python.framework/Headers
 
 #define HAVE_PYTHON 1
 #define PYTHON_FRAMEWORK  Python
 
 // What additional flags should we pass to interrogate?
-#define SYSTEM_IGATE_FLAGS -D__ppc__ -D__const=const -Dvolatile -D__BIG_ENDIAN__ -D__inline__=inline
+#define SYSTEM_IGATE_FLAGS -D__ppc__ -D__const=const -Dvolatile -D__BIG_ENDIAN__ -D__inline__=inline -D__GNUC__
 #define HAVE_GL 1
 #define IS_OSX 1
 
@@ -42,6 +42,9 @@
 #define FFTW_LIBS drfftw dfftw
 //#define HAVE_FFTW 1
 
+
+#define TIFF_IPATH /opt/local/include 
+#define TIFF_LPATH /opt/local/lib
 
 // Is the platform big-endian (like an SGI workstation) or
 // little-endian (like a PC)?  Define this to the empty string to
@@ -100,12 +103,12 @@
 // static init time?  Should we prototype them?  What are they called?
 #define HAVE_GLOBAL_ARGV
 #define PROTOTYPE_GLOBAL_ARGV
-#define GLOBAL_ARGV
-#define GLOBAL_ARGC
+#define GLOBAL_ARGV __Argv
+#define GLOBAL_ARGC __Argc
 
 // Can we read the file /proc/self/cmdline to determine our
 // command-line arguments at static init time?
-#define HAVE_PROC_SELF_CMDLINE 1
+#define HAVE_PROC_SELF_CMDLINE 
 
 // Should we include <iostream> or <iostream.h>?  Define HAVE_IOSTREAM
 // to nonempty if we should use <iostream>, or empty if we should use

@@ -20,7 +20,7 @@
 #include "configDeclaration.h"
 #include "configPage.h"
 #include "pset.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "config_prc.h"
 
 #include <algorithm>

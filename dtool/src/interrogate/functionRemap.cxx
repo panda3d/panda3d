@@ -30,7 +30,7 @@
 #include "cppParameterList.h"
 #include "cppReferenceType.h"
 #include "interrogateType.h"
-#include "notify.h"
+#include "pnotify.h"
 
 extern bool inside_python_native;
 

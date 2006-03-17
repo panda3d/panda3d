@@ -476,17 +476,14 @@
 
 // Is OpenGL installed, and where?  This should include libGL as well
 // as libGLU, if they are in different places.
+#defer GL_IPATH
+#defer GL_LPATH
+#defer GL_LIBS
 #if $[WINDOWS_PLATFORM]
-  #defer GL_IPATH
-  #defer GL_LPATH
   #define GL_LIBS opengl32.lib glu32.lib
 #elif $[OSX_PLATFORM]
-  #defer GL_IPATH
-  #defer GL_LPATH /System/Library/Frameworks/OpenGL.framework/Libraries/
   #defer GL_FRAMEWORK OpenGL
-  #defer GL_LIBS GL GLU
 #else
-  #defer GL_IPATH
   #defer GL_LPATH /usr/X11R6/lib
   #defer GL_LIBS GL GLU
 #endif
@@ -843,12 +840,12 @@
 // list of dependent libraries, and $[lpath] is a space-separated list
 // of directories in which those libraries can be found.
 #defer LINK_BIN_C $[cc_ld] -o $[target] $[sources] $[flags] $[lpath:%=-L%] $[libs:%=-l%]\
- $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[frameworks]]
+ $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[bin_frameworks]]
 #defer LINK_BIN_C++ $[cxx_ld]\
  -o $[target] $[sources]\
  $[flags]\
  $[lpath:%=-L%] $[libs:%=-l%]\
- $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[frameworks]]
+ $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[bin_frameworks]]
 
 // How to generate a static C or C++ library.  $[target] is the
 // name of the library to generate, and $[sources] is the list of .o
@@ -880,8 +877,8 @@
 // which those libraries can be found.
 #if $[eq $[PLATFORM], osx]
   #defer SHARED_LIB_C $[cc_ld] -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
-  #defer SHARED_LIB_C++ $[cxx_ld] -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
-  #defer BUNDLE_LIB_C++ $[cxx_ld] -bundle -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+  #defer SHARED_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+  #defer BUNDLE_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -bundle -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
 #else
   #defer SHARED_LIB_C $[cc_ld] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
   #defer SHARED_LIB_C++ $[cxx_ld] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]

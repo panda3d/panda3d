@@ -24,7 +24,7 @@
 
 #ifdef THREAD_DUMMY_IMPL
 
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexDummyImpl

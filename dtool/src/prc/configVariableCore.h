@@ -22,7 +22,7 @@
 #include "dtoolbase.h"
 #include "configFlags.h"
 #include "configPageManager.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "pvector.h"
 #include "pmap.h"
 

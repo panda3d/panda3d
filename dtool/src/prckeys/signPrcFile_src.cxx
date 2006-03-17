@@ -238,7 +238,12 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
   static const size_t row_width = 32;
   for (size_t p = 0; p < sig_size; p += row_width) {
     out << "##!sig ";
-    size_t end = min(sig_size, p + row_width);
+
+//    size_t end = min(sig_size, p + row_width);
+    size_t end = sig_size;
+    if(end > p+row_width)
+       end = p+row_width;
+
     for (size_t q = p; q < end; q++) {
       out << setw(2) << (unsigned int)sig_data[q];
     }

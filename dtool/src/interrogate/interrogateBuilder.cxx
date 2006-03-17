@@ -48,7 +48,7 @@
 #include "cppTypeDeclaration.h"
 #include "cppEnumType.h"
 #include "cppCommentBlock.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -358,7 +358,7 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
   ostringstream declaration_bodies;
 
   if (watch_asserts) {
-    declaration_bodies << "#include \"notify.h\"\n";
+    declaration_bodies << "#include \"pnotify.h\"\n";
   }
 
   declaration_bodies << "#include <sstream>\n";

@@ -381,6 +381,13 @@ $[install_lib_dir]/lib$[TARGET]$[DYNAMIC_LIB_EXT] : $[ODIR]/lib$[TARGET]$[DYNAMI
 #define dest $[install_lib_dir]
 $[TAB] $[INSTALL]
 
+#if $[BUNDLE_EXT]
+$[install_lib_dir]/lib$[TARGET]$[BUNDLE_EXT] : $[ODIR]/lib$[TARGET]$[BUNDLE_EXT]
+#define local $[ODIR]/lib$[TARGET]$[BUNDLE_EXT]
+#define dest $[install_lib_dir]
+$[TAB] $[INSTALL]
+#endif  // BUNDLE_EXT
+
 #if $[igatescan]
 // Now, some additional rules to generate and compile the interrogate
 // data, if needed.

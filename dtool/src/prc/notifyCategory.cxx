@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "notifyCategory.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "configPageManager.h"
 #include "configVariableString.h"
 #include "configVariableBool.h"

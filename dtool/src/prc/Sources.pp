@@ -25,7 +25,7 @@
     configVariableSearchPath.I configVariableSearchPath.h \
     configVariableString.I configVariableString.h \
     globPattern.I globPattern.h \
-    notify.I notify.h \
+    pnotify.I pnotify.h \
     notifyCategory.I notifyCategory.h \
     notifyCategoryProxy.I notifyCategoryProxy.h \
     notifySeverity.h \
@@ -74,7 +74,7 @@
     configVariableSearchPath.I configVariableSearchPath.h \
     configVariableString.I configVariableString.h \
     globPattern.I globPattern.h \
-    notify.I notify.h \
+    pnotify.I pnotify.h \
     notifyCategory.I notifyCategory.h \
     notifyCategoryProxy.I notifyCategoryProxy.h \
     notifySeverity.h \
