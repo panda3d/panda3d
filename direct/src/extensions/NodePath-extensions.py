@@ -34,7 +34,7 @@
         else:
             self.hide()
             return 0
-            
+
     def showSiblings(self):
         """Show all the siblings of a node path"""
         for sib in self.getParent().getChildrenAsList():
@@ -108,7 +108,7 @@
         from pandac import Point3
         v1 = Point3.Point3(0)
         v2 = Point3.Point3(0)
-        self.calcTightBounds(v1,v2)
+        self.calcTightBounds(v1, v2)
         return v1, v2
 
     def pPrintString(self, other = None):
@@ -134,7 +134,7 @@
                 otherString = '\n'
             return (
                 "%s = {"%(self.getName()) +
-                otherString + 
+                otherString +
                 "  'Pos':   (%s),\n" % pos.pPrintValues() +
                 "  'Hpr':   (%s),\n" % hpr.pPrintValues() +
                 "  'Scale': (%s),\n" % scale.pPrintValues() +
@@ -150,7 +150,7 @@
         else:
             pos = self.getPos()
             otherString = ''
-        print (self.getName() + '.setPos(' + otherString + 
+        print (self.getName() + '.setPos(' + otherString +
                formatString % pos[0] + ', ' +
                formatString % pos[1] + ', ' +
                formatString % pos[2] +
@@ -165,7 +165,7 @@
         else:
             hpr = self.getHpr()
             otherString = ''
-        print (self.getName() + '.setHpr(' + otherString + 
+        print (self.getName() + '.setHpr(' + otherString +
                formatString % hpr[0] + ', ' +
                formatString % hpr[1] + ', ' +
                formatString % hpr[2] +
@@ -180,7 +180,7 @@
         else:
             scale = self.getScale()
             otherString = ''
-        print (self.getName() + '.setScale(' + otherString + 
+        print (self.getName() + '.setScale(' + otherString +
                formatString % scale[0] + ', ' +
                formatString % scale[1] + ', ' +
                formatString % scale[2] +
@@ -197,7 +197,7 @@
             pos = self.getPos()
             hpr = self.getHpr()
             otherString = ''
-        print (self.getName() + '.setPosHpr(' + otherString + 
+        print (self.getName() + '.setPosHpr(' + otherString +
                formatString % pos[0] + ', ' +
                formatString % pos[1] + ', ' +
                formatString % pos[2] + ', ' +
@@ -219,7 +219,7 @@
             hpr = self.getHpr()
             scale = self.getScale()
             otherString = ''
-        print (self.getName() + '.setPosHprScale(' + otherString + 
+        print (self.getName() + '.setPosHprScale(' + otherString +
                formatString % pos[0] + ', ' +
                formatString % pos[1] + ', ' +
                formatString % pos[2] + ', ' +
@@ -238,17 +238,17 @@
         if other == None:
             transform = self.getTransform()
         else:
-            transform = self.getTransform(other)            
+            transform = self.getTransform(other)
         if transform.hasPos():
             pos = transform.getPos()
             if not pos.almostEqual(Vec3(0)):
                 outputString = '%s.setPos(%s, %s, %s)' % (name, fmtStr, fmtStr, fmtStr)
-                print outputString % (pos[0], pos[1], pos[2]) 
+                print outputString % (pos[0], pos[1], pos[2])
         if transform.hasHpr():
             hpr = transform.getHpr()
             if not hpr.almostEqual(Vec3(0)):
                 outputString = '%s.setHpr(%s, %s, %s)' % (name, fmtStr, fmtStr, fmtStr)
-                print outputString % (hpr[0], hpr[1], hpr[2]) 
+                print outputString % (hpr[0], hpr[1], hpr[2])
         if transform.hasScale():
             if transform.hasUniformScale():
                 scale = transform.getUniformScale()
@@ -265,42 +265,42 @@
                 child.printTransform(other, sd, fRecursive)
 
     def iPos(self, other = None):
-        """ Set node path's pos to 0,0,0 """
+        """ Set node path's pos to 0, 0, 0 """
         if other:
-            self.setPos(other, 0,0,0)
+            self.setPos(other, 0, 0, 0)
         else:
-            self.setPos(0,0,0)
+            self.setPos(0, 0, 0)
 
     def iHpr(self, other = None):
-        """ Set node path's hpr to 0,0,0 """
+        """ Set node path's hpr to 0, 0, 0 """
         if other:
-            self.setHpr(other, 0,0,0)
+            self.setHpr(other, 0, 0, 0)
         else:
-            self.setHpr(0,0,0)
+            self.setHpr(0, 0, 0)
 
     def iScale(self, other = None):
-        """ SEt node path's scale to 1,1,1 """
+        """ SEt node path's scale to 1, 1, 1 """
         if other:
-            self.setScale(other, 1,1,1)
+            self.setScale(other, 1, 1, 1)
         else:
-            self.setScale(1,1,1)
+            self.setScale(1, 1, 1)
 
     def iPosHpr(self, other = None):
-        """ Set node path's pos and hpr to 0,0,0 """
+        """ Set node path's pos and hpr to 0, 0, 0 """
         if other:
-            self.setPosHpr(other,0,0,0,0,0,0)
+            self.setPosHpr(other, 0, 0, 0, 0, 0, 0)
         else:
-            self.setPosHpr(0,0,0,0,0,0)
+            self.setPosHpr(0, 0, 0, 0, 0, 0)
 
     def iPosHprScale(self, other = None):
-        """ Set node path's pos and hpr to 0,0,0 and scale to 1,1,1 """
+        """ Set node path's pos and hpr to 0, 0, 0 and scale to 1, 1, 1 """
         if other:
-            self.setPosHprScale(other, 0,0,0,0,0,0,1,1,1)
+            self.setPosHprScale(other, 0, 0, 0, 0, 0, 0, 1, 1, 1)
         else:
-            self.setPosHprScale(0,0,0,0,0,0,1,1,1)
+            self.setPosHprScale(0, 0, 0, 0, 0, 0, 1, 1, 1)
 
     # private methods
-            
+
     def __lerp(self, functorFunc, duration, blendType, taskName=None):
         """
         __lerp(self, functorFunc, float, string, string)
@@ -313,7 +313,7 @@
         from direct.task import Task
         from direct.showbase import LerpBlendHelpers
         from direct.task.TaskManagerGlobal import taskMgr
-        
+
         # upon death remove the functorFunc
         def lerpUponDeath(task):
             # Try to break circular references
@@ -325,7 +325,7 @@
                 del task.lerp
             except:
                 pass
-        
+
         # make the task function
         def lerpTaskFunc(task):
             from pandac.Lerp import Lerp
@@ -345,7 +345,7 @@
                 return(done)
             else:
                 return(cont)
-        
+
         # make the lerp task
         lerpTask = Task.Task(lerpTaskFunc)
         lerpTask.init = 1
@@ -353,7 +353,7 @@
         lerpTask.duration = duration
         lerpTask.blendType = LerpBlendHelpers.getBlend(blendType)
         lerpTask.uponDeath = lerpUponDeath
-        
+
         if (taskName == None):
             # don't spawn a task, return one instead
             return lerpTask
@@ -394,7 +394,7 @@
             # bad args
             raise Exception("Error: NodePath.lerpColor: bad number of args")
 
-            
+
     def lerpColorRGBA(self, r, g, b, a, time,
                       blendType="noBlend", auto=None, task=None):
         """lerpColorRGBA(self, float, float, float, float, float,
@@ -497,7 +497,7 @@
             # bad args
             raise Exception("Error: NodePath.lerpColorScale: bad number of args")
 
-            
+
     def lerpColorScaleRGBA(self, r, g, b, a, time,
                       blendType="noBlend", auto=None, task=None):
         """lerpColorScaleRGBA(self, float, float, float, float, float,
@@ -581,7 +581,7 @@
         else:
             return self.__lerp(functorFunc, time, blendType)
 
-            
+
 
     def lerpHpr(self, *posArgs, **keyArgs):
         """lerpHpr(self, *positionArgs, **keywordArgs)
@@ -597,7 +597,7 @@
         else:
             # bad args
             raise Exception("Error: NodePath.lerpHpr: bad number of args")
-    
+
     def lerpHprHPR(self, h, p, r, time, other=None,
                    blendType="noBlend", auto=None, task=None, shortest=1):
         """lerpHprHPR(self, float, float, float, float, string="noBlend",
@@ -633,7 +633,7 @@
             return self.__lerp(functorFunc, time, blendType, task)
         else:
             return self.__lerp(functorFunc, time, blendType)
-    
+
     def lerpHprVBase3(self, hpr, time, other=None,
                       blendType="noBlend", auto=None, task=None, shortest=1):
         """lerpHprVBase3(self, VBase3, float, string="noBlend", string=none,
@@ -663,7 +663,7 @@
             return self.__lerp(functorFunc, time, blendType, task)
         else:
             return self.__lerp(functorFunc, time, blendType)
-        
+
 
     def lerpPos(self, *posArgs, **keyArgs):
         """lerpPos(self, *positionArgs, **keywordArgs)
@@ -931,7 +931,7 @@
 
 
 
-            
+
     def place(self):
         base.startDirect(fWantTk = 1)
         from direct.tkpanels import Placer
@@ -984,11 +984,11 @@
     def posInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpPosInterval(self, *args, **kw)
-    
+
     def hprInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpHprInterval(self, *args, **kw)
-    
+
     def quatInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpQuatInterval(self, *args, **kw)
@@ -1041,10 +1041,10 @@
         from direct.interval import LerpInterval
         return LerpInterval.LerpColorScaleInterval(self, *args, **kw)
 
-    def attachCollisionSphere(self, name, cx,cy,cz,r, fromCollide, intoCollide):
+    def attachCollisionSphere(self, name, cx, cy, cz, r, fromCollide, intoCollide):
         from pandac import CollisionSphere
         from pandac import CollisionNode
-        coll = CollisionSphere.CollisionSphere(cx,cy,cz,r)
+        coll = CollisionSphere.CollisionSphere(cx, cy, cz, r)
         collNode = CollisionNode.CollisionNode(name)
         collNode.addSolid(coll)
         collNode.setFromCollideMask(fromCollide)
@@ -1052,10 +1052,10 @@
         collNodePath = self.attachNewNode(collNode)
         return collNodePath
 
-    def attachCollisionSegment(self, name, ax,ay,az, bx,by,bz, fromCollide, intoCollide):
+    def attachCollisionSegment(self, name, ax, ay, az, bx, by, bz, fromCollide, intoCollide):
         from pandac import CollisionSegment
         from pandac import CollisionNode
-        coll = CollisionSegment.CollisionSegment(ax,ay,az, bx,by,bz)
+        coll = CollisionSegment.CollisionSegment(ax, ay, az, bx, by, bz)
         collNode = CollisionNode.CollisionNode(name)
         collNode.addSolid(coll)
         collNode.setFromCollideMask(fromCollide)
@@ -1063,10 +1063,10 @@
         collNodePath = self.attachNewNode(collNode)
         return collNodePath
 
-    def attachCollisionRay(self, name, ox,oy,oz, dx,dy,dz, fromCollide, intoCollide):
+    def attachCollisionRay(self, name, ox, oy, oz, dx, dy, dz, fromCollide, intoCollide):
         from pandac import CollisionRay
         from pandac import CollisionNode
-        coll = CollisionRay.CollisionRay(ox,oy,oz, dx,dy,dz)
+        coll = CollisionRay.CollisionRay(ox, oy, oz, dx, dy, dz)
         collNode = CollisionNode.CollisionNode(name)
         collNode.addSolid(coll)
         collNode.setFromCollideMask(fromCollide)
