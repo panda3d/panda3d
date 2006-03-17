@@ -277,7 +277,7 @@ protected:
 			    size_t image_size,
 			    Texture::CompressionMode image_compression);
 
-  size_t get_texture_memory_size(Texture *tex) const;
+  size_t get_texture_memory_size(Texture *tex);
   void check_nonresident_texture(BufferContextChain &chain);
 
   void do_point_size();
@@ -367,6 +367,8 @@ public:
 
   bool _supports_draw_range_elements;
   PFNGLDRAWRANGEELEMENTSPROC _glDrawRangeElements;
+
+  bool _supports_depth_texture;
 
   PFNGLTEXIMAGE3DPROC _glTexImage3D;
   PFNGLTEXSUBIMAGE3DPROC _glTexSubImage3D;

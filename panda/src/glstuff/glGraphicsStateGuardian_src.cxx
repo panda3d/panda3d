@@ -427,6 +427,9 @@ reset() {
     _glDrawRangeElements = null_glDrawRangeElements;
   }
 
+  _supports_depth_texture = 
+    has_extension("GL_ARB_depth_texture") || is_at_least_version(1, 4);
+
   _supports_3d_texture = false;
 
   if (is_at_least_version(1, 2)) {
@@ -6674,7 +6677,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
 //               currently-selected texture).
 ////////////////////////////////////////////////////////////////////
 size_t CLP(GraphicsStateGuardian)::
-get_texture_memory_size(Texture *tex) const {
+get_texture_memory_size(Texture *tex) {
   GLenum target = get_texture_target(tex->get_texture_type());
 
   GLenum page_target = target;
@@ -6691,6 +6694,8 @@ get_texture_memory_size(Texture *tex) const {
   GLint internal_format;
   GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
 
+  report_my_gl_errors();
+
   if (is_compressed_format(internal_format)) {
     // Try to get the compressed size.
     GLint image_size;
@@ -6699,23 +6704,27 @@ get_texture_memory_size(Texture *tex) const {
     
     GLenum error_code = GLP(GetError)();
     if (error_code != GL_NO_ERROR) {
-      const GLubyte *error_string = GLUP(ErrorString)(error_code);
-      GLCAT.debug()
-        << "Couldn't get compressed size for " << tex->get_name();
-      if (error_string != (const GLubyte *)NULL) {
-        GLCAT.error(false)
-          << " : " << error_string;
+      if (GLCAT.is_debug()) {
+	const GLubyte *error_string = GLUP(ErrorString)(error_code);
+	GLCAT.debug()
+	  << "Couldn't get compressed size for " << tex->get_name();
+	if (error_string != (const GLubyte *)NULL) {
+	  GLCAT.debug(false)
+	    << " : " << error_string;
+	}
+	GLCAT.debug(false)
+	  << "\n";
       }
-      GLCAT.debug(false)
-        << "\n";
+      // Fall through to the noncompressed case.
     } else {
       return image_size * scale;
     }
   }
 
   // OK, get the noncompressed size.
-  GLint red_size, green_size, blue_size, alpha_size, luminance_size, 
-    depth_size, intensity_size;
+  GLint red_size, green_size, blue_size, alpha_size, 
+    luminance_size, intensity_size;
+  GLint depth_size = 0;
   GLP(GetTexLevelParameteriv)(page_target, 0, 
                               GL_TEXTURE_RED_SIZE, &red_size);
   GLP(GetTexLevelParameteriv)(page_target, 0, 
@@ -6727,9 +6736,11 @@ get_texture_memory_size(Texture *tex) const {
   GLP(GetTexLevelParameteriv)(page_target, 0, 
                               GL_TEXTURE_LUMINANCE_SIZE, &luminance_size);
   GLP(GetTexLevelParameteriv)(page_target, 0, 
-                              GL_TEXTURE_DEPTH_SIZE, &depth_size);
-  GLP(GetTexLevelParameteriv)(page_target, 0, 
                               GL_TEXTURE_INTENSITY_SIZE, &intensity_size);
+  if (_supports_depth_texture) {
+    GLP(GetTexLevelParameteriv)(page_target, 0, 
+				GL_TEXTURE_DEPTH_SIZE, &depth_size);
+  }
 
   GLint width = 1, height = 1, depth = 1;
   GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_WIDTH, &width);
@@ -6738,7 +6749,9 @@ get_texture_memory_size(Texture *tex) const {
     GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_DEPTH, &depth);
   }
 
-  size_t num_bits = (red_size + green_size + blue_size + alpha_size + luminance_size + depth_size + intensity_size);
+  report_my_gl_errors();
+
+  size_t num_bits = (red_size + green_size + blue_size + alpha_size + luminance_size + intensity_size + depth_size);
   size_t num_bytes = (num_bits + 7) / 8;
 
   size_t result = num_bytes * width * height * depth * scale;
