@@ -19,16 +19,16 @@ class IntervalManager(CIntervalManager):
             # "constructing" a Python wrapper around the global
             # CIntervalManager object.
             ##self.cObj = CIntervalManager.getGlobalPtr()
-            ##Dtool_BarrowThisRefrence(self,self.cObj)
-            ##self.dd = self        
+            ##Dtool_BarrowThisRefrence(self, self.cObj)
+            ##self.dd = self
             if globalPtr:
                 self.cObj = CIntervalManager.getGlobalPtr()
-                Dtool_BarrowThisRefrence(self,self.cObj)
+                Dtool_BarrowThisRefrence(self, self.cObj)
                 self.dd = self
             else:
-                CIntervalManager.__init__(self)           
+                CIntervalManager.__init__(self)
             self.eventQueue = EventQueue()
-            self.MyEventmanager = EventManager.EventManager(self.eventQueue)        
+            self.MyEventmanager = EventManager.EventManager(self.eventQueue)
             self.setEventQueue(self.eventQueue)
             self.ivals = []
             self.removedIvals = {}
@@ -50,14 +50,14 @@ class IntervalManager(CIntervalManager):
             self.MyEventmanager = EventManager.EventManager(self.eventQueue)
             self.setEventQueue(self.eventQueue)
             self.ivals = []
-            self.removedIvals = {}     
-    
-                
+            self.removedIvals = {}
+
+
 
     def addInterval(self, interval):
         index = self.addCInterval(interval, 1)
         self.__storeInterval(interval, index)
-        
+
     def removeInterval(self, interval):
         index = self.findCInterval(interval.getName())
         if index >= 0:
@@ -73,7 +73,7 @@ class IntervalManager(CIntervalManager):
         return None
 
     def finishIntervalsMatching(self, pattern):
-        count = 0       
+        count = 0
         maxIndex = self.getMaxIndex()
         for index in range(maxIndex):
             ival = self.getCInterval(index)
@@ -90,7 +90,7 @@ class IntervalManager(CIntervalManager):
                     ival.finish()
 
         return count
-            
+
 
     def step(self):
         # This method should be called once per frame to perform all
@@ -134,8 +134,8 @@ class IntervalManager(CIntervalManager):
         # these immediately, rather than waiting for the global event
         # queue to be serviced (which might not be till next frame).
         self.MyEventmanager.doEvents()
-        
-        
+
+
     def __storeInterval(self, interval, index):
         while index >= len(self.ivals):
             self.ivals.append(None)

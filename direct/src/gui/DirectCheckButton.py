@@ -19,7 +19,7 @@ class DirectCheckButton(DirectButton):
         # state can have a different text/geom/image
         # State transitions happen automatically based upon mouse interaction
         # Responds to click event and calls command if None
-        
+
         self.colors = None
         optiondefs = (
             ('indicatorValue', 0, self.setIndicatorValue),
@@ -46,25 +46,25 @@ class DirectCheckButton(DirectButton):
                                               text = ('X', 'X'),
                                               relief = self['boxRelief'],
                                               )
-       
+
         # Call option initialization functions
         self.initialiseoptions(DirectCheckButton)
-        # After initialization with X giving it the correct size, put back space 
+        # After initialization with X giving it the correct size, put back space
         if self['boxImage'] ==  None:
             self.indicator['text'] = (' ', '*')
-            self.indicator['text_pos'] = (0,-.2)
+            self.indicator['text_pos'] = (0, -.2)
         else:
             self.indicator['text'] = (' ', ' ')
         if self['boxImageColor'] != None and self['boxImage'] !=  None:
-            self.colors = [VBase4(0,0,0,0), self['boxImageColor']]
-            self.component('indicator')['image_color'] = VBase4(0,0,0,0)
-            
+            self.colors = [VBase4(0, 0, 0, 0), self['boxImageColor']]
+            self.component('indicator')['image_color'] = VBase4(0, 0, 0, 0)
+
     # Override the resetFrameSize of DirectGuiWidget inorder to provide space for label
     def resetFrameSize(self):
         self.setFrameSize(fClearFrame = 1)
-        
+
     def setFrameSize(self, fClearFrame = 0):
-        
+
         if self['frameSize']:
             # Use user specified bounds
             self.bounds = self['frameSize']
@@ -125,7 +125,7 @@ class DirectCheckButton(DirectButton):
             (frameType != PGFrameStyle.TFlat)):
             bw = self['borderWidth']
         else:
-            bw = (0,0)
+            bw = (0, 0)
         # Set frame to new dimensions
         self.guiItem.setFrame(
             self.bounds[0] - bw[0],
@@ -137,7 +137,7 @@ class DirectCheckButton(DirectButton):
         if not self.indicator['pos']:
             bbounds = self.bounds
             lbounds = self.indicator.bounds
-            newpos = [0,0,0]
+            newpos = [0, 0, 0]
 
             if self['boxPlacement'] == 'left':            #left
                 newpos[0] += bbounds[0]-lbounds[0] + self['boxBorder'] + ibw[0]
@@ -154,18 +154,18 @@ class DirectCheckButton(DirectButton):
             else:                                      #below
                 newpos[2] += bbounds[2]-lbounds[2] + self['boxBorder'] + ibw[1]
 
-            self.indicator.setPos(newpos[0],newpos[1],newpos[2])
+            self.indicator.setPos(newpos[0], newpos[1], newpos[2])
 
-        
+
     def commandFunc(self, event):
         self['indicatorValue'] = 1 - self['indicatorValue']
         if self.colors != None:
             self.component('indicator')['image_color'] = self.colors[self['indicatorValue']]
-            
+
         if self['command']:
             # Pass any extra args to command
             apply(self['command'], [self['indicatorValue']] + self['extraArgs'])
-            
+
     def setIndicatorValue(self):
         self.component('indicator').guiItem.setState(self['indicatorValue'])
         if self.colors != None:

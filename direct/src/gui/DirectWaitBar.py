@@ -2,7 +2,7 @@ from DirectFrame import *
 
 """
 import DirectWaitBar
-d = DirectWaitBar(borderWidth=(0,0))
+d = DirectWaitBar(borderWidth=(0, 0))
 
 """
 
@@ -20,18 +20,18 @@ class DirectWaitBar(DirectFrame):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('pgFunc',         PGWaitBar,          None),
-            ('frameSize',      (-1,1,-0.08,0.08),  None),
-            ('borderWidth',    (0,0),              None),
+            ('frameSize',      (-1, 1, -0.08, 0.08),  None),
+            ('borderWidth',    (0, 0),              None),
             ('range',          100,                self.setRange),
             ('value',          0,                  self.setValue),
-            ('barBorderWidth', (0,0),              self.setBarBorderWidth),
-            ('barColor',       (1,0,0,1),          self.setBarColor),
+            ('barBorderWidth', (0, 0),              self.setBarBorderWidth),
+            ('barColor',       (1, 0, 0, 1),          self.setBarColor),
             ('barRelief',      FLAT,               self.setBarRelief),
             ('sortOrder',      NO_FADE_SORT_INDEX, None),
             )
         if kw.has_key('text'):
             textoptiondefs = (
-                ('text_pos',    (0,-0.025),          None),
+                ('text_pos',    (0, -0.025),          None),
                 ('text_scale',  0.1,                 None)
                 )
         else:
@@ -48,7 +48,7 @@ class DirectWaitBar(DirectFrame):
     def destroy(self):
         del self.barStyle
         DirectFrame.destroy(self)
-        
+
     def setRange(self):
         self.guiItem.setRange(self['range'])
 
@@ -60,7 +60,7 @@ class DirectWaitBar(DirectFrame):
 
     def updateBarStyle(self):
         if not self.fInit:
-            self.guiItem.setBarStyle(self.barStyle)            
+            self.guiItem.setBarStyle(self.barStyle)
 
     def setBarRelief(self):
         self.barStyle.setType(self['barRelief'])
@@ -95,4 +95,4 @@ class DirectWaitBar(DirectFrame):
                 if count > self['range']:
                     count = self['range']
                 self.update(count)
-        
+

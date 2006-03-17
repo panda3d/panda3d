@@ -33,7 +33,7 @@ class FunctionInterval(Interval.Interval):
             del kw['openEnded']
         if kw.has_key('extraArgs'):
             del kw['extraArgs']
-        
+
         # Record instance variables
         self.function = function
         # Create a unique name for the interval if necessary
@@ -50,7 +50,7 @@ class FunctionInterval(Interval.Interval):
         # Event, Accept, Ignore intervals default to openEnded = 0
         # Parent, Pos, Hpr, etc intervals default to openEnded = 1
         Interval.Interval.__init__(self, name, duration = 0.0, openEnded = openEnded)
-    
+
     def privInstant(self):
         # Evaluate the function
         self.function(*self.extraArgs, **self.kw)
@@ -231,7 +231,7 @@ class HprScaleInterval(FunctionInterval):
             if other:
                 np.setHprScale(other, hpr, scale)
             else:
-                np.setHprScale(hpr, scale)                
+                np.setHprScale(hpr, scale)
         # Determine name
         if (name == None):
             name = ('HprScale-%d' %
@@ -254,7 +254,7 @@ class PosHprScaleInterval(FunctionInterval):
             if other:
                 np.setPosHprScale(other, pos, hpr, scale)
             else:
-                np.setPosHprScale(pos, hpr, scale)                
+                np.setPosHprScale(pos, hpr, scale)
         # Determine name
         if (name == None):
             name = ('PosHprScale-%d' %
@@ -354,11 +354,11 @@ def printTrackStart():
 
 i1 = Func(printStart)
 # Just to take time
-i2 = LerpPosInterval(camera, 2.0, Point3(0,10,5))
+i2 = LerpPosInterval(camera, 2.0, Point3(0, 10, 5))
 # This will be relative to end of camera move
 i3 = FunctionInterval(printPreviousEnd)
 # Just to take time
-i4 = LerpPosInterval(camera, 2.0, Point3(0,0,5))
+i4 = LerpPosInterval(camera, 2.0, Point3(0, 0, 5))
 # This will be relative to the start of the camera move
 i5 = FunctionInterval(printPreviousStart)
 # This will be relative to track start
@@ -385,23 +385,23 @@ donald.loadAnims({"steer":"phase_6/models/char/donald-wheel-wheel"})
 donald.reparentTo(render)
 
 
-seq = Sequence(Func(donald.setPos, 0,0,0),
+seq = Sequence(Func(donald.setPos, 0, 0, 0),
                donald.actorInterval('steer', duration=1.0),
-               donald.posInterval(1, Point3(0,0,1)),
+               donald.posInterval(1, Point3(0, 0, 1)),
                Parallel(donald.actorInterval('steer', duration=1.0),
-                        donald.posInterval(1, Point3(0,0,0)),
+                        donald.posInterval(1, Point3(0, 0, 0)),
                         ),
                Wait(1.0),
                Func(base.toggleWireframe),
                Wait(1.0),
                Parallel(donald.actorInterval('steer', duration=1.0),
-                        donald.posInterval(1, Point3(0,0,-1)),
-                        Sequence(donald.hprInterval(1, Vec3(180,0,0)),
-                                 donald.hprInterval(1, Vec3(0,0,0)),
+                        donald.posInterval(1, Point3(0, 0, -1)),
+                        Sequence(donald.hprInterval(1, Vec3(180, 0, 0)),
+                                 donald.hprInterval(1, Vec3(0, 0, 0)),
                                  ),
                         ),
-               Func(base.toggleWireframe),               
-               Func(messenger.send, 'hello'),               
+               Func(base.toggleWireframe),
+               Func(messenger.send, 'hello'),
                )
 
 

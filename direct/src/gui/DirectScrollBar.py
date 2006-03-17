@@ -4,7 +4,7 @@ from DirectGuiBase import _OPT_VALUE
 
 """
 import DirectScrollBar
-d = DirectScrollBar(borderWidth=(0,0))
+d = DirectScrollBar(borderWidth=(0, 0))
 
 """
 
@@ -18,7 +18,7 @@ class DirectScrollBar(DirectFrame):
             # Define type of DirectGuiWidget
             ('pgFunc',         PGSliderBar,        None),
             ('state',          NORMAL,             None),
-            ('frameColor',     (0.6,0.6,0.6,1),    None),
+            ('frameColor',     (0.6, 0.6, 0.6, 1),    None),
 
             ('range',          (0, 1),             self.setRange),
             ('value',          0,                  self.__setValue),
@@ -36,12 +36,12 @@ class DirectScrollBar(DirectFrame):
         if kw.get('orientation') == VERTICAL:
             # These are the default options for a vertical layout.
             optiondefs += (
-                ('frameSize',      (-0.04,0.04,-0.5,0.5),   None),
+                ('frameSize',      (-0.04, 0.04, -0.5, 0.5),   None),
                 )
         else:
             # These are the default options for a horizontal layout.
             optiondefs += (
-                ('frameSize',      (-0.5,0.5,-0.04,0.04),  None),
+                ('frameSize',      (-0.5, 0.5, -0.04, 0.04),  None),
                 )
 
         # Merge keyword options with default options
@@ -72,7 +72,7 @@ class DirectScrollBar(DirectFrame):
 
         # Call option initialization functions
         self.initialiseoptions(DirectScrollBar)
-        
+
     def setRange(self):
         # Try to preserve the value across a setRange call.
         v = self['value']
@@ -126,4 +126,4 @@ class DirectScrollBar(DirectFrame):
 
         if self['command']:
             apply(self['command'], self['extraArgs'])
-            
+

@@ -35,7 +35,7 @@ Code Overview:
     a dictionary of the keyword options specified as part of the constructor
     keywords can be of the form 'component_option', where component is
     the name of a widget's component, a component group or a component alias
-    
+
     self._dynamicGroups, a list of group names for which it is permissible
     to specify options before components of that group are created.
     If a widget is a derived class the order of execution would be:
@@ -156,7 +156,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         # to call when the value is changed.  If any option created by
         # base classes has the same name as one in <optionDefs>, the
         # base class's value and function will be overriden.
-        
+
         # keywords is a dictionary of keyword/value pairs from the constructor
         # optionDefs is a dictionary of default options for the widget
         # dynamicGroups is a tuple of component groups for which you can
@@ -178,20 +178,20 @@ class DirectGuiBase(DirectObject.DirectObject):
         self._dynamicGroups = self._dynamicGroups + tuple(dynamicGroups)
         # Reconcile command line and default options
         self.addoptions(optionDefs)
-        
+
     def addoptions(self, optionDefs):
         """ addoptions(optionDefs) - add option def to option info """
         # Add additional options, providing the default value and the
         # method to call when the value is changed.  See
         # "defineoptions" for more details
-        
+
         # optimisations:
         optionInfo = self._optionInfo
         optionInfo_has_key = optionInfo.has_key
         keywords = self._constructorKeywords
         keywords_has_key = keywords.has_key
         FUNCTION = _OPT_FUNCTION
-        
+
         for name, default, function in optionDefs:
             if '_' not in name:
                 # The option will already exist if it has been defined
@@ -218,10 +218,10 @@ class DirectGuiBase(DirectObject.DirectObject):
                 # of an option of a component of a base class.
                 if not keywords_has_key(name):
                     keywords[name] = [default, 0]
-                
+
     def initialiseoptions(self, myClass):
         """
-        Call all initialisation functions to initialize widget 
+        Call all initialisation functions to initialize widget
         options to default of keyword value
         """
         # This is to make sure this method class is only called by
@@ -262,13 +262,13 @@ class DirectGuiBase(DirectObject.DirectObject):
     def postInitialiseFunc(self):
         for func in self.postInitialiseFuncList:
             func()
-                    
+
     def isinitoption(self, option):
         """
         Is this opition one that can only be specified at construction?
         """
         return self._optionInfo[option][_OPT_FUNCTION] is INITOPT
-    
+
     def options(self):
         """
         Print out a list of available widget options.
@@ -282,7 +282,7 @@ class DirectGuiBase(DirectObject.DirectObject):
                 options.append((option, default, isinit))
             options.sort()
         return options
-    
+
     def configure(self, option=None, **kw):
         """
         configure(option = None)
@@ -301,7 +301,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         #
         # If *option* is a string, return the 3 element tuple for the
         # given configuration option.
-        
+
         # First, deal with the option queries.
         if len(kw) == 0:
             # This configure call is querying the values of one or all options.
@@ -317,7 +317,7 @@ class DirectGuiBase(DirectObject.DirectObject):
             else:
                 config = self._optionInfo[option]
                 return (option, config[_OPT_DEFAULT], config[_OPT_VALUE])
-            
+
         # optimizations:
         optionInfo = self._optionInfo
         optionInfo_has_key = optionInfo.has_key
@@ -327,11 +327,11 @@ class DirectGuiBase(DirectObject.DirectObject):
         componentAliases_has_key = componentAliases.has_key
         VALUE = _OPT_VALUE
         FUNCTION = _OPT_FUNCTION
-        
+
         # This will contain a list of options in *kw* which
         # are known to this gui item.
         directOptions = []
-        
+
         # This will contain information about the options in
         # *kw* of the form <component>_<option>, where
         # <component> is a component of this megawidget.  It is a
@@ -343,7 +343,7 @@ class DirectGuiBase(DirectObject.DirectObject):
 
         for option, value in kw.items():
             if optionInfo_has_key(option):
-                # This is one of the options of this gui item. 
+                # This is one of the options of this gui item.
                 # Check it is an initialisation option.
                 if optionInfo[option][FUNCTION] is INITOPT:
                     print 'Cannot configure initialisation option "' \
@@ -416,23 +416,23 @@ class DirectGuiBase(DirectObject.DirectObject):
         # Pass in the dictionary of keyword/values created above
         map(apply, indirectOptions.keys(),
                 ((),) * len(indirectOptions), indirectOptions.values())
-            
+
         # Call the configuration callback function for each option.
         for option in directOptions:
             info = optionInfo[option]
             func = info[_OPT_FUNCTION]
             if func is not None:
               func()
-              
+
     # Allow index style references
     def __setitem__(self, key, value):
         apply(self.configure, (), {key: value})
-        
+
     def cget(self, option):
         """
         Get current configuration setting for this option
         """
-        # Return the value of an option, for example myWidget['font']. 
+        # Return the value of an option, for example myWidget['font'].
         if self._optionInfo.has_key(option):
             return self._optionInfo[option][_OPT_VALUE]
         else:
@@ -466,10 +466,10 @@ class DirectGuiBase(DirectObject.DirectObject):
         # Option not found
         raise KeyError, 'Unknown option "' + option + \
                 '" for ' + self.__class__.__name__
-    
+
     # Allow index style refererences
     __getitem__ = cget
-    
+
     def createcomponent(self, componentName, componentAliases, componentGroup,
                         widgetClass, *widgetArgs, **kw):
         """
@@ -479,7 +479,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         if '_' in componentName:
             raise ValueError, \
                     'Component name "%s" must not contain "_"' % componentName
-        
+
         # Get construction keywords
         if hasattr(self, '_constructorKeywords'):
             keywords = self._constructorKeywords
@@ -515,7 +515,7 @@ class DirectGuiBase(DirectObject.DirectObject):
 
         # First, walk through the option list looking for arguments
         # than refer to this component's group.
-        
+
         for option in keywords.keys():
             # Check if this keyword argument refers to the group
             # of this component.  If so, add this to the options
@@ -534,7 +534,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         # this component specifically by name.  These are more
         # specific than the group arguments, above; we walk through
         # the list afterwards so they will override.
-        
+
         for option in keywords.keys():
             if len(option) > nameLen and option[:nameLen] == componentPrefix:
                 # The keyword argument refers to this component, so add
@@ -617,7 +617,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         del self._optionInfo
         del self.__componentInfo
         del self.postInitialiseFuncList
-        
+
     def bind(self, event, command, extraArgs = []):
         """
         Bind the command (which should expect one arg) to the specified
@@ -627,7 +627,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
         self.accept(gEvent, command, extraArgs = extraArgs)
-        
+
     def unbind(self, event):
         """
         Unbind the specified event
@@ -681,12 +681,12 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             ('state',          NORMAL,       self.setState),
             # Widget's frame characteristics
             ('relief',         FLAT,         self.setRelief),
-            ('borderWidth',    (.1,.1),      self.setBorderWidth),
+            ('borderWidth',    (.1, .1),      self.setBorderWidth),
             ('frameSize',      None,         self.setFrameSize),
-            ('frameColor',     (.8,.8,.8,1), self.setFrameColor),
+            ('frameColor',     (.8, .8, .8, 1), self.setFrameColor),
             ('frameTexture',   None,         self.setFrameTexture),
-            ('frameVisibleScale', (1,1),     self.setFrameVisibleScale),
-            ('pad',            (0,0),        self.resetFrameSize),
+            ('frameVisibleScale', (1, 1),     self.setFrameVisibleScale),
+            ('pad',            (0, 0),        self.resetFrameSize),
             # Override button id (beware! your name may not be unique!)
             ('guiId',          None,         INITOPT),
             # Initial pos/scale of the widget
@@ -779,7 +779,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
 
         # Update frame when everything has been initialized
         self.postInitialiseFuncList.append(self.frameInitialiseFunc)
-            
+
         # Call option initialization functions
         self.initialiseoptions(DirectGuiWidget)
 
@@ -806,7 +806,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         #mb = base.mouseWatcherNode.getModifierButtons()
         #mb.removeButton(KeyboardButton.control())
         #base.mouseWatcherNode.setModifierButtons(mb)
-        
+
     def editStart(self, event):
         taskMgr.remove('guiEditTask')
         vWidget2render2d = self.getPos(render2d)
@@ -859,15 +859,15 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def resetFrameSize(self):
         if not self.fInit:
             self.setFrameSize(fClearFrame = 1)
-        
+
     def setFrameSize(self, fClearFrame = 0):
         # Use ready state to determine frame Type
         frameType = self.getFrameType()
         if self['frameSize']:
             # Use user specified bounds
             self.bounds = self['frameSize']
-            #print "%s bounds = %s" % (self.getName(),self.bounds)            
-            bw = (0,0)
+            #print "%s bounds = %s" % (self.getName(), self.bounds)
+            bw = (0, 0)
 
         else:
             if fClearFrame and (frameType != PGFrameStyle.TNone):
@@ -886,7 +886,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
                 (frameType != PGFrameStyle.TFlat)):
                 bw = self['borderWidth']
             else:
-                bw = (0,0)
+                bw = (0, 0)
 
         # Set frame to new dimensions
         self.guiItem.setFrame(
@@ -906,19 +906,19 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         return self.bounds
 
     def getWidth(self):
-        return self.bounds[1] - self.bounds[0] 
-    
+        return self.bounds[1] - self.bounds[0]
+
     def getHeight(self):
         return self.bounds[3] - self.bounds[2]
 
     def getCenter(self):
         x = self.bounds[0] + (self.bounds[1] - self.bounds[0])/2.0
         y = self.bounds[2] + (self.bounds[3] - self.bounds[2])/2.0
-        return (x,y)
+        return (x, y)
 
     def getFrameType(self, state = 0):
         return self.frameStyle[state].getType()
-    
+
     def updateFrameStyle(self):
         if not self.fInit:
             for i in range(self['numStates']):
@@ -1011,7 +1011,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         del self.guiItem
         # Call superclass destruction method (clears out hooks)
         DirectGuiBase.destroy(self)
-        
+
     def printConfig(self, indent = 0):
         space = ' ' * indent
         print space + self.guiId, '-', self.__class__.__name__

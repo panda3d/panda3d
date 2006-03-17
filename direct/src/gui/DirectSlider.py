@@ -4,7 +4,7 @@ from DirectGuiBase import _OPT_VALUE
 
 """
 import DirectSlider
-d = DirectSlider(borderWidth=(0,0))
+d = DirectSlider(borderWidth=(0, 0))
 
 """
 
@@ -18,7 +18,7 @@ class DirectSlider(DirectFrame):
             # Define type of DirectGuiWidget
             ('pgFunc',         PGSliderBar,        None),
             ('state',          NORMAL,             None),
-            ('frameColor',     (0.6,0.6,0.6,1),    None),
+            ('frameColor',     (0.6, 0.6, 0.6, 1),    None),
 
             ('range',          (0, 1),             self.setRange),
             ('value',          0,                  self.__setValue),
@@ -33,14 +33,14 @@ class DirectSlider(DirectFrame):
         if kw.get('orientation') == VERTICAL:
             # These are the default options for a vertical layout.
             optiondefs += (
-                ('frameSize',      (-0.08,0.08,-1,1),   None),
-                ('frameVisibleScale', (0.25,1),         None),
+                ('frameSize',      (-0.08, 0.08, -1, 1),   None),
+                ('frameVisibleScale', (0.25, 1),         None),
                 )
         else:
             # These are the default options for a horizontal layout.
             optiondefs += (
-                ('frameSize',      (-1,1,-0.08,0.08),  None),
-                ('frameVisibleScale', (1,0.25),        None),
+                ('frameSize',      (-1, 1, -0.08, 0.08),  None),
+                ('frameVisibleScale', (1, 0.25),        None),
                 )
 
         # Merge keyword options with default options
@@ -57,9 +57,9 @@ class DirectSlider(DirectFrame):
             # Compute a default frameSize for the thumb.
             f = self['frameSize']
             if self['orientation'] == HORIZONTAL:
-                self.thumb['frameSize'] = (f[0]*0.05,f[1]*0.05,f[2],f[3])
+                self.thumb['frameSize'] = (f[0]*0.05, f[1]*0.05, f[2], f[3])
             else:
-                self.thumb['frameSize'] = (f[0],f[1],f[2]*0.05,f[3]*0.05)
+                self.thumb['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
 
         self.guiItem.setThumbButton(self.thumb.guiItem)
 
@@ -68,7 +68,7 @@ class DirectSlider(DirectFrame):
 
         # Call option initialization functions
         self.initialiseoptions(DirectSlider)
-        
+
     def setRange(self):
         # Try to preserve the value across a setRange call.
         v = self['value']
@@ -110,6 +110,6 @@ class DirectSlider(DirectFrame):
     def commandFunc(self):
         # Store the updated value in self['value']
         self._optionInfo['value'][_OPT_VALUE] = self.guiItem.getValue()
-        
+
         if self['command']:
             apply(self['command'], self['extraArgs'])

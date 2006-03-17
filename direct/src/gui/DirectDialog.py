@@ -4,7 +4,7 @@ from DirectButton import *
 
 def findDialog(uniqueName):
     """findPanel(string uniqueName)
-    
+
     Returns the panel whose uniqueName is given.  This is mainly
     useful for debugging, to get a pointer to the current onscreen
     panel of a particular type.
@@ -48,7 +48,7 @@ class DirectDialog(DirectFrame):
             buttonImageList      List of images to show on each button
             buttonValueList      List of values sent to dialog command for
                                  each button.  If value is [] then the
-                                 ordinal rank of the button is used as 
+                                 ordinal rank of the button is used as
                                  its value
             buttonHotKeyList     List of hotkeys to bind to each button.
                                  Typing hotkey is equivalent to pressing
@@ -64,7 +64,7 @@ class DirectDialog(DirectFrame):
             midPad               Extra space added between text/buttons
             sidePad              Extra space added to either side of
                                  text/buttons
-            buttonPadSF          Scale factor used to expand/contract 
+            buttonPadSF          Scale factor used to expand/contract
                                  button horizontal spacing
             command              Callback command used when a button is
                                  pressed.  Value supplied to command
@@ -75,7 +75,7 @@ class DirectDialog(DirectFrame):
                Values of None are substituted for lists that are shorter
                than the max length
          """
-            
+
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -95,8 +95,8 @@ class DirectDialog(DirectFrame):
             ('buttonImageList',   [],            INITOPT),
             ('buttonValueList',   [],            INITOPT),
             ('buttonHotKeyList',  [],            INITOPT),
-            ('button_borderWidth',(.01,.01),     None),
-            ('button_pad',        (.01,.01),     None),
+            ('button_borderWidth', (.01, .01),     None),
+            ('button_pad',        (.01, .01),     None),
             ('button_relief',     RAISED,        None),
             ('button_text_scale', 0.06,        None),
             ('buttonSize',        None,          INITOPT),
@@ -126,7 +126,7 @@ class DirectDialog(DirectFrame):
         # Store this panel in our map of all open panels.
         DirectDialog.AllDialogs[self['dialogName']] = self
         DirectDialog.PanelIndex += 1
-        
+
         # Determine number of buttons
         self.numButtons = max(len(self['buttonTextList']),
                               len(self['buttonGeomList']),
@@ -186,9 +186,9 @@ class DirectDialog(DirectFrame):
                                 extraArgs = [value])
                     self.bind('press-' + key + '-', self.buttonCommand,
                               extraArgs = [value])
-                    
+
             else:
-                button.bind('press-' + hotKey + '-',self.buttonCommand,
+                button.bind('press-' + hotKey + '-', self.buttonCommand,
                             extraArgs = [value])
                 self.bind('press-' + hotKey + '-', self.buttonCommand,
                           extraArgs = [value])
@@ -247,7 +247,7 @@ class DirectDialog(DirectFrame):
                 bt += bpad[1]
                 # Now resize buttons to match largest
                 for button in self.buttonList:
-                    button['frameSize'] = (bl,br,bb,bt)
+                    button['frameSize'] = (bl, br, bb, bt)
             # Must compensate for scale
             scale = self['button_scale']
             # Can either be a Vec3 or a tuple of 3 values
@@ -283,7 +283,7 @@ class DirectDialog(DirectFrame):
             bl = br = bb = bt = 0
             bPos = 0
             bMax = 0
-            bpad = (0,0)
+            bpad = (0, 0)
             bHeight = bWidth = 0
         # Resize frame to fit text and buttons
         l = min(bPos + bl, l) - pad[0]
@@ -296,7 +296,7 @@ class DirectDialog(DirectFrame):
         t = t + self['topPad'] + pad[1]
         self['image_scale'] = (r - l, 1, t - b)
         # Center frame about text and buttons
-        self['image_pos'] = ((l+r)*0.5, 0.0,(b+t)*0.5)
+        self['image_pos'] = ((l+r)*0.5, 0.0, (b+t)*0.5)
         self.resetFrameSize()
 
     def show(self):
@@ -316,7 +316,7 @@ class DirectDialog(DirectFrame):
     def setMessage(self, message):
         self['text'] = message
         self.configureDialog()
-        
+
     def cleanup(self):
         # Remove this panel out of the AllDialogs list
         uniqueName = self['dialogName']
@@ -348,7 +348,7 @@ class OkCancelDialog(DirectDialog):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('buttonTextList',  ['OK','Cancel'],       INITOPT),
-            ('buttonValueList', [DIALOG_OK,DIALOG_CANCEL], INITOPT),
+            ('buttonValueList', [DIALOG_OK, DIALOG_CANCEL], INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -361,7 +361,7 @@ class YesNoDialog(DirectDialog):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('buttonTextList',  ['Yes', 'No'],       INITOPT),
-            ('buttonValueList', [DIALOG_YES,DIALOG_NO], INITOPT),
+            ('buttonValueList', [DIALOG_YES, DIALOG_NO], INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -374,7 +374,7 @@ class YesNoCancelDialog(DirectDialog):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('buttonTextList',  ['Yes', 'No', 'Cancel'],  INITOPT),
-            ('buttonValueList', [DIALOG_YES,DIALOG_NO,DIALOG_CANCEL],
+            ('buttonValueList', [DIALOG_YES, DIALOG_NO, DIALOG_CANCEL],
              INITOPT),
             )
         # Merge keyword options with default options
@@ -388,7 +388,7 @@ class RetryCancelDialog(DirectDialog):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('buttonTextList',  ['Retry','Cancel'],   INITOPT),
-            ('buttonValueList', [DIALOG_RETRY,DIALOG_CANCEL], INITOPT),
+            ('buttonValueList', [DIALOG_RETRY, DIALOG_CANCEL], INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)

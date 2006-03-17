@@ -3,7 +3,7 @@ from DirectScrollBar import *
 
 """
 import DirectScrolledFrame
-d = DirectScrolledFrame(borderWidth=(0,0))
+d = DirectScrolledFrame(borderWidth=(0, 0))
 
 """
 
@@ -23,9 +23,9 @@ class DirectScrolledFrame(DirectFrame):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('pgFunc',         PGScrollFrame,      None),
-            ('frameSize',      (-0.5,0.5,-0.5,0.5), None),
-             
-            ('canvasSize',     (-1,1,-1,1),        self.setCanvasSize),
+            ('frameSize',      (-0.5, 0.5, -0.5, 0.5), None),
+
+            ('canvasSize',     (-1, 1, -1, 1),        self.setCanvasSize),
             ('manageScrollBars', 1,                self.setManageScrollBars),
             ('autoHideScrollBars', 1,              self.setAutoHideScrollBars),
             ('scrollBarWidth', 0.08,               None),
@@ -82,11 +82,11 @@ class DirectScrolledFrame(DirectFrame):
     def commandFunc(self):
         if self['command']:
             apply(self['command'], self['extraArgs'])
-            
+
     def destroy(self):
         # Destroy children of the canvas
         for child in self.canvas.getChildrenAsList():
             childGui = self.guiDict.get(child.getName())
             if childGui: childGui.destroy()
         DirectFrame.destroy(self)
-        
+

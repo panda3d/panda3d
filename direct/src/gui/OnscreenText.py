@@ -26,7 +26,7 @@ class OnscreenText(DirectObject, NodePath):
                  fg = None,
                  bg = None,
                  shadow = None,
-                 shadowOffset = (0.04,0.04),
+                 shadowOffset = (0.04, 0.04),
                  frame = None,
                  align = None,
                  wordwrap = None,
@@ -152,7 +152,7 @@ class OnscreenText(DirectObject, NodePath):
             raise ValueError
 
         if not isinstance(scale, types.TupleType):
-            # If the scale is already a tuple, it's a 2-d (x,y) scale.
+            # If the scale is already a tuple, it's a 2-d (x, y) scale.
             # Otherwise, it's a uniform scale--make it a tuple.
             scale = (scale, scale)
 
@@ -166,7 +166,7 @@ class OnscreenText(DirectObject, NodePath):
 
         if font == None:
             font = DirectGuiGlobals.getDefaultFont()
-        
+
         textNode.setFont(font)
         textNode.setTextColor(fg[0], fg[1], fg[2], fg[3])
         textNode.setAlign(align)
@@ -213,12 +213,12 @@ class OnscreenText(DirectObject, NodePath):
             # If we aren't going to change the text later, we can
             # throw away the TextNode.
             self.textNode = textNode.generate()
-        
+
         self.isClean = 0
 
         # Set ourselves up as the NodePath that points to this node.
         self.assign(parent.attachNewNode(self.textNode, sort))
-    
+
     def cleanup(self):
         self.textNode = None
         if self.isClean == 0:
@@ -282,7 +282,7 @@ class OnscreenText(DirectObject, NodePath):
 
     def setY(self, y):
         self.setPos(self.pos[0], y)
-        
+
     def setPos(self, x, y):
         """setPos(self, float, float)
         Position the onscreen text in 2d screen space
@@ -302,7 +302,7 @@ class OnscreenText(DirectObject, NodePath):
 
     def getRoll(self):
         return self.roll
-        
+
     def setScale(self, sx, sy = None):
         """setScale(self, float, float)
         Scale the text in 2d space.  You may specify either a single
@@ -320,21 +320,21 @@ class OnscreenText(DirectObject, NodePath):
 
     def updateTransformMat(self):
         mat = (
-            Mat4.scaleMat(self.scale[0],1,self.scale[1]) *
-            Mat4.rotateMat(self.roll, Vec3(0,-1,0)) *
+            Mat4.scaleMat(self.scale[0], 1, self.scale[1]) *
+            Mat4.rotateMat(self.roll, Vec3(0, -1, 0)) *
             Mat4.translateMat(self.pos[0], 0, self.pos[1])
             )
         self.textNode.setTransform(mat)
 
     def getScale(self):
         return self.scale
-        
+
     def setWordwrap(self, wordwrap):
         if wordwrap:
             self.textNode.setWordwrap(wordwrap)
         else:
             self.textNode.clearWordwrap()
-        
+
     def setFg(self, fg):
         self.textNode.setTextColor(fg[0], fg[1], fg[2], fg[3])
 
@@ -385,7 +385,7 @@ class OnscreenText(DirectObject, NodePath):
     # Allow index style references
     def __setitem__(self, key, value):
         apply(self.configure, (), {key: value})
-        
+
     def cget(self, option):
         # Get current configuration setting.
         # This is for compatability with DirectGui functions
@@ -397,4 +397,4 @@ class OnscreenText(DirectObject, NodePath):
 
     # Allow index style refererences
     __getitem__ = cget
-    
+

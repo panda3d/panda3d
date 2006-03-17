@@ -20,11 +20,11 @@ class DirectOptionMenu(DirectButton):
             # Amount of padding to place around popup button indicator
             ('popupMarkerBorder', (.1, .1), None),
             # Background color to use to highlight popup menu items
-            ('highlightColor', (.5,.5,.5,1),None),
+            ('highlightColor', (.5, .5, .5, 1), None),
             # Alignment to use for text on popup menu button
             # Changing this breaks button layout
             ('text_align',  TextNode.ALeft, None),
-            # Remove press effect because it looks a bit funny 
+            # Remove press effect because it looks a bit funny
             ('pressEffect',     0,          INITOPT),
            )
         # Merge keyword options with default options
@@ -47,7 +47,7 @@ class DirectOptionMenu(DirectButton):
         self.popupMarker.bind(B1RELEASE, self.selectHighlightedIndex)
         # Make popup marker have the same click sound
         self.popupMarker.guiItem.setSound(
-            B1PRESS + self.popupMarker.guiId,self['clickSound'])
+            B1PRESS + self.popupMarker.guiId, self['clickSound'])
         # This is created when you set the menu's items
         self.popupMenu = None
         self.selectedIndex = None
@@ -56,7 +56,7 @@ class DirectOptionMenu(DirectButton):
         self.cancelFrame = self.createcomponent(
             'cancelframe', (), None,
             DirectFrame, (self,),
-            frameSize = (-1,1,-1,1),
+            frameSize = (-1, 1, -1, 1),
             relief = None,
             state = 'normal')
         # Make sure this is on top of all the other widgets
@@ -130,11 +130,11 @@ class DirectOptionMenu(DirectButton):
             item.bind(B1RELEASE, self.hidePopupMenu)
             # Highlight background when mouse is in item
             item.bind(WITHIN,
-                      lambda x,i=i,item=item:self._highlightItem(item, i))
+                      lambda x, i=i, item=item:self._highlightItem(item, i))
             # Restore specified color upon exiting
             fc = item['frameColor']
             item.bind(WITHOUT,
-                      lambda x,item=item,fc=fc: self._unhighlightItem(item,fc))
+                      lambda x, item=item, fc=fc: self._unhighlightItem(item, fc))
         # Set popup menu frame size to encompass all items
         f = self.component('popupMenu')
         f['frameSize'] = (0, self.maxWidth, -self.maxHeight * itemIndex, 0)
@@ -145,7 +145,7 @@ class DirectOptionMenu(DirectButton):
         else:
             # No initial item specified, just use first item
             self.set(0, fCommand = 0)
-            
+
         # Position popup Marker to the right of the button
         pm = self.popupMarker
         pmw = (pm.getWidth() * pm.getScale()[0] +
@@ -175,7 +175,7 @@ class DirectOptionMenu(DirectButton):
         # Show the menu
         self.popupMenu.show()
         # Make sure its at the right scale
-        self.popupMenu.setScale(self, VBase3(1))       
+        self.popupMenu.setScale(self, VBase3(1))
         # Compute bounds
         b = self.getBounds()
         fb = self.popupMenu.getBounds()
@@ -205,8 +205,8 @@ class DirectOptionMenu(DirectButton):
         # Also display cancel frame to catch clicks outside of the popup
         self.cancelFrame.show()
         # Position and scale cancel frame to fill entire window
-        self.cancelFrame.setPos(render2d,0,0,0)
-        self.cancelFrame.setScale(render2d,1,1,1)
+        self.cancelFrame.setPos(render2d, 0, 0, 0)
+        self.cancelFrame.setScale(render2d, 1, 1, 1)
 
     def hidePopupMenu(self, event = None):
         """ Put away popup and cancel frame """
@@ -259,7 +259,7 @@ class DirectOptionMenu(DirectButton):
     def get(self):
         """ Get currently selected item """
         return self['items'][self.selectedIndex]
-        
+
     def commandFunc(self, event):
         """
         Override popup menu button's command func

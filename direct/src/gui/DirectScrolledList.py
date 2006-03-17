@@ -63,7 +63,7 @@ class DirectScrolledList(DirectFrame):
                 kw['items'] = kw['items'][:]
 
         self.nextItemID = 10
-        
+
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -100,13 +100,13 @@ class DirectScrolledList(DirectFrame):
         for item in self["items"]:
             if item.__class__.__name__ != 'str':
                 item.reparentTo(self.itemFrame)
-            
+
         self.initialiseoptions(DirectScrolledList)
         self.recordMaxHeight()
         #if len(self["items"]) > 0:
         #    self.scrollTo(0)
         self.scrollTo(0)
-        
+
     def setForceHeight(self):
         assert self.notify.debugStateCall(self)
         self.forceHeight = self["forceHeight"]
@@ -120,7 +120,7 @@ class DirectScrolledList(DirectFrame):
             for item in self["items"]:
                 if item.__class__.__name__ != 'str':
                     self.maxHeight = max(self.maxHeight, item.getHeight())
-        
+
     def setScrollSpeed(self):
         assert self.notify.debugStateCall(self)
         # Items per second to move
@@ -149,13 +149,13 @@ class DirectScrolledList(DirectFrame):
 
     def scrollBy(self, delta):
         assert self.notify.debugStateCall(self)
-        # print "scrollBy[",delta,"]"
+        # print "scrollBy[", delta,"]"
         return self.scrollTo(self.index + delta)
 
     def getItemIndexForItemID(self, itemID):
         assert self.notify.debugStateCall(self)
         #for i in range(len(self["items"])):
-        #    print "buttontext[",i,"]",self["items"][i]["text"]
+        #    print "buttontext[", i,"]", self["items"][i]["text"]
 
         if(len(self["items"])==0):
             return 0
@@ -177,7 +177,7 @@ class DirectScrolledList(DirectFrame):
     def scrollTo(self, index, centered=0):
         """ scrolls list so selected index is at top, or centered in box"""
         assert self.notify.debugStateCall(self)
-        # print "scrollTo[",index,"] called, len(self[items])=",len(self["items"])," self[numItemsVisible]=",self["numItemsVisible"]
+        # print "scrollTo[", index,"] called, len(self[items])=", len(self["items"])," self[numItemsVisible]=", self["numItemsVisible"]
 
         numItemsVisible=self["numItemsVisible"]
         numItemsTotal = len(self["items"])
@@ -202,7 +202,7 @@ class DirectScrolledList(DirectFrame):
                 ret = 0
             elif (self.index >= (numItemsTotal - numItemsVisible)):
                 self.index = numItemsTotal - numItemsVisible
-                # print "at list end, ",len(self["items"]),"  ",self["numItemsVisible"]
+                # print "at list end, ", len(self["items"]),"  ", self["numItemsVisible"]
                 self.incButton['state'] = DISABLED
                 self.decButton['state'] = NORMAL
                 ret = 0
@@ -211,18 +211,18 @@ class DirectScrolledList(DirectFrame):
                 self.decButton['state'] = NORMAL
                 ret = 1
 
-        # print "self.index set to ",self.index
+        # print "self.index set to ", self.index
 
         # Hide them all
         for item in self["items"]:
             if item.__class__.__name__ != 'str':
                 item.hide()
-                
-        # Then show the ones in range, and stack their positions 
+
+        # Then show the ones in range, and stack their positions
         upperRange = min(numItemsTotal, numItemsVisible)
         for i in range(self.index, self.index + upperRange):
             item = self["items"][i]
-            #print "stacking buttontext[",i,"]",self["items"][i]["text"]
+            #print "stacking buttontext[", i,"]", self["items"][i]["text"]
             # If the item is a 'str', then it has not been created (scrolled list is 'as needed')
             #  Therefore, use the the function given to make it or just make it a frame
             if item.__class__.__name__ == 'str':
@@ -234,15 +234,15 @@ class DirectScrolledList(DirectFrame):
                                        text_align = self['itemsAlign'],
                                        text_wordwrap = self['itemsWordwrap'],
                                        relief = None)
-                #print "str stacking buttontext[",i,"]",self["items"][i]["text"]
+                #print "str stacking buttontext[", i,"]", self["items"][i]["text"]
                 # Then add the newly formed item back into the normal item list
                 self["items"][i] = item
                 item.reparentTo(self.itemFrame)
                 self.recordMaxHeight()
-                
+
             item.show()
-            item.setPos(0,0,  -(i-self.index) * self.maxHeight)
-       
+            item.setPos(0, 0,  -(i-self.index) * self.maxHeight)
+
         if self['command']:
             # Pass any extra args to command
             apply(self['command'], self['extraArgs'])
@@ -282,7 +282,7 @@ class DirectScrolledList(DirectFrame):
                 return Task.cont
             else:
                 return Task.done
-            
+
     def __incButtonDown(self, event):
         assert self.notify.debugStateCall(self)
         task = Task.Task(self.__scrollByTask)
@@ -291,7 +291,7 @@ class DirectScrolledList(DirectFrame):
         task.delta = 1
         self.scrollBy(task.delta)
         taskMgr.add(task, self.taskName("scroll"))
-        
+
 
     def __decButtonDown(self, event):
         assert self.notify.debugStateCall(self)
@@ -341,7 +341,7 @@ class DirectScrolledList(DirectFrame):
             return 1
         else:
             return 0
-        
+
     def refresh(self):
         """
         Update the list - useful when adding or deleting items
@@ -351,7 +351,7 @@ class DirectScrolledList(DirectFrame):
         self.recordMaxHeight()
         #print "refresh called"
         self.scrollTo(self.index)
-        
+
     def getSelectedIndex(self):
         assert self.notify.debugStateCall(self)
         return self.index
@@ -359,7 +359,7 @@ class DirectScrolledList(DirectFrame):
     def getSelectedText(self):
         assert self.notify.debugStateCall(self)
         return self['items'][self.index]['text']
-    
+
 
 
 """
@@ -370,7 +370,7 @@ def makeButton(itemName, itemNum, *extraArgs):
         print itemName, itemNum
     return DirectButton(text = itemName,
                         relief = RAISED,
-                        frameSize = (-3.5,3.5,-0.2,0.8),
+                        frameSize = (-3.5, 3.5, -0.2, 0.8),
                         scale = 0.85,
                         command = buttonCommand)
 
@@ -380,13 +380,13 @@ s = scrollList = DirectScrolledList(
     # Use the default dialog box image as the background
     image = getDefaultDialogGeom(),
     # Scale it to fit around everyting
-    image_scale = (0.7,1,.8),
+    image_scale = (0.7, 1, .8),
     # Give it a label
     text = "Scrolled List Example",
     text_scale = 0.06,
     text_align = TextNode.ACenter,
-    text_pos = (0,0.3),
-    text_fg = (0,0,0,1),
+    text_pos = (0, 0.3),
+    text_fg = (0, 0, 0, 1),
     # inc and dec are DirectButtons
     # They can contain a combination of text, geometry and images
     # Just a simple text one for now
@@ -401,7 +401,7 @@ s = scrollList = DirectScrolledList(
     decButton_scale = 0.1,
     # each item is a button with text on it
     numItemsVisible = 4,
-    itemMakeFunction = makeButton, 
+    itemMakeFunction = makeButton,
     items = ['Able', 'Baker', 'Charlie', 'Delta', 'Echo', 'Foxtrot',
              'Golf', 'Hotel', 'India', 'Juliet', 'Kilo', 'Lima'],
     # itemFrame is a DirectFrame
@@ -409,7 +409,7 @@ s = scrollList = DirectScrolledList(
     # to eveything else
     itemFrame_pos = (0, 0, 0.06),
     itemFrame_scale = 0.1,
-    itemFrame_frameSize = (-3.1,3.1,-3.3,0.8),
+    itemFrame_frameSize = (-3.1, 3.1, -3.3, 0.8),
     itemFrame_relief = GROOVE,
     )
 """

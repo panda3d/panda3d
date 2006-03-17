@@ -66,7 +66,7 @@ class Interval(DirectObject):
         # breaks looping intervals.  The interval code should properly
         # handle t values outside the proper range.
         #t = min(max(t, 0.0), self.getDuration())
-        
+
         state = self.getState()
         if state == CInterval.SInitial:
             self.privInitialize(t)
@@ -98,7 +98,7 @@ class Interval(DirectObject):
         else:
             self.notify.error("Invalid state: %s" % (state))
         self.privPostEvent()
-        
+
     def getT(self):
         return self.currT
 
@@ -126,7 +126,7 @@ class Interval(DirectObject):
 
     def resumeUntil(self, endT):
         duration = self.getDuration()
-        
+
         if endT < 0 or endT >= duration:
             self.__endT = duration
             self.__endTAtEnd = 1
@@ -137,7 +137,7 @@ class Interval(DirectObject):
         self.setupResume()
         if not self.isPlaying():
             self.__spawnTask()
-        
+
     def finish(self):
         state = self.getState()
         if state == CInterval.SInitial:
@@ -146,7 +146,7 @@ class Interval(DirectObject):
             self.privFinalize()
         self.privPostEvent()
         self.__removeTask()
-        
+
     def clearToInitial(self):
         # This method resets the interval's internal state to the
         # initial state, abandoning any parts of the interval that
@@ -237,7 +237,7 @@ class Interval(DirectObject):
 
     def setupPlay(self, startT, endT, playRate, doLoop):
         duration = self.getDuration()
-        
+
         if startT <= 0:
             self.__startT = 0
             self.__startTAtStart = 1
@@ -247,7 +247,7 @@ class Interval(DirectObject):
         else:
             self.__startT = startT
             self.__startTAtStart = 0
-            
+
         if endT < 0 or endT >= duration:
             self.__endT = duration
             self.__endTAtEnd = 1
@@ -275,7 +275,7 @@ class Interval(DirectObject):
 
             if self.__endTAtEnd:
                 self.__endT = self.getDuration()
-                
+
             if t < self.__endT:
                 # In the middle of the interval, not a problem.
                 if self.isStopped():
@@ -386,7 +386,7 @@ class Interval(DirectObject):
             tl = Toplevel()
             tl.title('Interval Controls')
         outerFrame = Frame(tl)
-        def entryScaleCommand(t,s=self):
+        def entryScaleCommand(t, s=self):
             s.setT(t)
             s.pause()
         self.es = es = EntryScale.EntryScale(
@@ -409,7 +409,7 @@ class Interval(DirectObject):
         # Stop/play buttons
         def doPlay(s=self, es=es):
             s.resume(es.get())
-                       
+
         stop = Button(bf, text = 'Stop',
                       command = lambda s=self: s.pause())
         play = Button(
@@ -423,7 +423,7 @@ class Interval(DirectObject):
         bf.pack(expand = 1, fill = X)
         outerFrame.pack(expand = 1, fill = X)
         # Add function to update slider during setT calls
-        def update(t,es=es):
+        def update(t, es=es):
             es.set(t, fCommand = 0)
         if not hasattr(self, "setTHooks"):
             self.setTHooks = []

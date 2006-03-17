@@ -20,7 +20,7 @@ if __name__ == "__main__":
         # Get a handle on the geometry for the rollover state
         rolloverSmiley = db.component('geom2')
         rolloverSmiley.setScale(db.component('geom0').getScale()[0])
-        rolloverSmiley.lerpScale(.1,.1,.1, 1.0, blendType = 'easeInOut',
+        rolloverSmiley.lerpScale(.1, .1, .1, 1.0, blendType = 'easeInOut',
                                  task = 'shrink')
 
     def expand(db):
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         taskMgr.remove('shrink')
         taskMgr.remove('expand')
         db.component('geom0').setScale(db.component('geom2').getScale()[0])
-        db.component('geom0').lerpScale(1,1,1, 1, blendType = 'easeInOut',
+        db.component('geom0').lerpScale(1, 1, 1, 1, blendType = 'easeInOut',
                                  task = 'expand')
         db.component('geom2').clearColor()
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
         db.component('geom0').setScale(db.component('geom2').getScale()[0])
         db.component('geom1').setScale(db.component('geom2').getScale()[0])
         db['text2_text'] = 'Ouch!'
-        db['geom2_color'] = Vec4(1,0,0,1)
+        db['geom2_color'] = Vec4(1, 0, 0, 1)
         newX = -1.0 + random() * 2.0
         newZ = -1.0 + random() * 2.0
         db.lerpPos(Point3(newX, 0, newZ), 1.0, task = 'runAway',
@@ -59,7 +59,7 @@ if __name__ == "__main__":
                           text = ('Hi!', 'Ouch!', 'Bye!', 'ZZZZ!'),
                           scale = .15, relief = 'raised',
                           # Here we set an option for a component of the button
-                          geom1_color = Vec4(1,0,0,1),
+                          geom1_color = Vec4(1, 0, 0, 1),
                           # Here is an example of a component group option
                           text_pos = (.6, -.8),
                           # Set audio characteristics
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         db.bind(B3PRESS, lambda x, db = db: db.place())
 
         dbArray.append(db)
-    
+
         # To get rid of button and clear out hooks call:
         # db.destroy()
 
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     fancyDialog = YesNoDialog(text = 'Testing Direct Dialog',
                               geom = smiley,
                               geom_scale = .1,
-                              geom_pos = (-0.3,0,0),
+                              geom_pos = (-0.3, 0, 0),
                               command = printDialogValue)
 
     customDialog = DirectDialog(text = 'Pick a number',

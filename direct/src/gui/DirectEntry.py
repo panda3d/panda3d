@@ -13,7 +13,7 @@ class DirectEntry(DirectFrame):
     """
 
     directWtext = ConfigVariableBool('direct-wtext', 1)
-    
+
     def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         # A Direct Frame can have:
@@ -48,9 +48,9 @@ class DirectEntry(DirectFrame):
             ('extraArgs',      [],                None),
             # commands to be called when focus is gained or lost
             ('focusInCommand', None,              None),
-            ('focusInExtraArgs',[],              None),
-            ('focusOutCommand',None,              None),
-            ('focusOutExtraArgs',[],              None),
+            ('focusInExtraArgs', [],              None),
+            ('focusOutCommand', None,              None),
+            ('focusOutExtraArgs', [],              None),
             # Sounds to be used for button events
             ('rolloverSound',   getDefaultRolloverSound(), self.setRolloverSound),
             ('clickSound',    getDefaultClickSound(),    self.setClickSound),
@@ -64,7 +64,7 @@ class DirectEntry(DirectFrame):
         if self['entryFont'] == None:
             font = getDefaultFont()
         else:
-            font = self['entryFont'] 
+            font = self['entryFont']
 
         # Create Text Node Component
         self.onscreenText = self.createcomponent(
@@ -146,11 +146,11 @@ class DirectEntry(DirectFrame):
     def focusInCommandFunc(self):
         if self['focusInCommand']:
             apply(self['focusInCommand'], self['focusInExtraArgs'])
-            
+
     def focusOutCommandFunc(self):
         if self['focusOutCommand']:
             apply(self['focusOutCommand'], self['focusOutExtraArgs'])
-            
+
     def set(self, text):
         self.unicodeText = isinstance(text, types.UnicodeType)
         if self.unicodeText:
@@ -164,7 +164,7 @@ class DirectEntry(DirectFrame):
             # return an 8-bit string.  This will be encoded if
             # necessary, according to Panda's default encoding.
             return self.guiItem.getText()
-            
+
         if self.unicodeText:
             return self.guiItem.getWtext()
         else:
@@ -187,7 +187,7 @@ class DirectEntry(DirectFrame):
             self.guiItem.setCursorPosition(len(self.get()) + pos)
         else:
             self.guiItem.setCursorPosition(pos)
-            
+
     def enterText(self, text):
         """ sets the entry's text, and moves the cursor to the end """
         self.set(text)
@@ -215,7 +215,7 @@ class DirectEntry(DirectFrame):
 
         bottom = -0.3 * lineHeight - (lineHeight * (numLines - 1))
         top = lineHeight
-        
+
         self.ll.set(left, 0.0, bottom)
         self.ur.set(right, 0.0, top)
         self.ll = mat.xformPoint(self.ll)

@@ -27,7 +27,7 @@ class OnscreenGeom(DirectObject, NodePath):
                This maybe a 3-tuple of floats or a vector.
                y should be zero
 
-          hpr: the h,p,r of the geometry on the screen.
+          hpr: the h, p, r of the geometry on the screen.
                This maybe a 3-tuple of floats or a vector.
 
           scale: the size of the geometry.  This may either be a single
@@ -106,7 +106,7 @@ class OnscreenGeom(DirectObject, NodePath):
 
     def getGeom(self):
         return self
-    
+
     def configure(self, option=None, **kw):
         for option, value in kw.items():
             # Use option string to access setter function
@@ -118,7 +118,7 @@ class OnscreenGeom(DirectObject, NodePath):
                      (setter == self.setScale)) and
                     (isinstance(value, types.TupleType) or
                      isinstance(value, types.ListType))):
-                    apply(setter,value)
+                    apply(setter, value)
                 else:
                     setter(value)
             except AttributeError:
@@ -127,7 +127,7 @@ class OnscreenGeom(DirectObject, NodePath):
     # Allow index style references
     def __setitem__(self, key, value):
         apply(self.configure, (), {key: value})
-        
+
     def cget(self, option):
         # Get current configuration setting.
         # This is for compatability with DirectGui functions
@@ -136,6 +136,6 @@ class OnscreenGeom(DirectObject, NodePath):
 
     # Allow index style refererences
     __getitem__ = cget
-    
+
     def destroy(self):
         self.removeNode()
