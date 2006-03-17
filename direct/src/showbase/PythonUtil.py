@@ -33,7 +33,7 @@ if not hasattr(__builtin__, 'enumerate'):
 
 def unique(L1, L2):
     """Return a list containing all items in 'L1' that are not in 'L2'"""
-    L2 = dict([(k,None) for k in L2])
+    L2 = dict([(k, None) for k in L2])
     return [item for item in L1 if item not in L2]
 
 def indent(stream, numIndents, str):
@@ -44,7 +44,7 @@ def indent(stream, numIndents, str):
     stream.write('    ' * numIndents + str)
 
 
-def nonRepeatingRandomList(vals,max):
+def nonRepeatingRandomList(vals, max):
     random.seed(time.time())
     #first generate a set of random values
     valueList=range(max)
@@ -241,7 +241,7 @@ def _pdir(obj, str = None, width = None,
         length = len(name)
         if length < 70:
             padBefore = int((70 - length)/2.0)
-            padAfter = max(0,70 - length - padBefore)
+            padAfter = max(0, 70 - length - padBefore)
             header = '*' * padBefore + name + '*' * padAfter
         print header
         print
@@ -313,7 +313,7 @@ def _pdir(obj, str = None, width = None,
             strvalue = `value`
         if fTruncate:
             # Cut off line (keeping at least 1 char)
-            strvalue = strvalue[:max(1,lineWidth - maxWidth)]
+            strvalue = strvalue[:max(1, lineWidth - maxWidth)]
         print (format % key)[:maxWidth] + '\t' + strvalue
 
 # Magic numbers: These are the bit masks in func_code.co_flags that
@@ -467,7 +467,7 @@ def adjust(command = None, dim = 1, parent = None, **kw):
     if not parent:
         vg = apply(Valuator.ValuatorGroupPanel, (parent,), kw)
     else:
-        vg = apply(Valuator.ValuatorGroup,(parent,), kw)
+        vg = apply(Valuator.ValuatorGroup, (parent,), kw)
         vg.pack(expand = 1, fill = 'x')
     return vg
 
@@ -543,7 +543,7 @@ def makeTuple(x):
 
 def list2dict(L, value=None):
     """creates dict using elements of list, all assigned to same value"""
-    return dict([(k,value) for k in L])
+    return dict([(k, value) for k in L])
 
 def invertDict(D):
     """creates a dictionary by 'inverting' D; keys are placed in the new
@@ -579,7 +579,7 @@ def uniqueElements(L):
 
 def disjoint(L1, L2):
     """returns non-zero if L1 and L2 have no common elements"""
-    used = dict([(k,None) for k in L1])
+    used = dict([(k, None) for k in L1])
     for k in L2:
         if k in used:
             return 0
@@ -631,11 +631,11 @@ def fitSrcAngle2Dest(src, dest):
     given a src and destination angle, returns an equivalent src angle
     that is within [-180..180) of dest
     examples:
-    fitSrcAngle2Dest(30,60) == 30
-    fitSrcAngle2Dest(60,30) == 60
-    fitSrcAngle2Dest(0,180) == 0
-    fitSrcAngle2Dest(-1,180) == 359
-    fitSrcAngle2Dest(-180,180) == 180
+    fitSrcAngle2Dest(30, 60) == 30
+    fitSrcAngle2Dest(60, 30) == 60
+    fitSrcAngle2Dest(0, 180) == 0
+    fitSrcAngle2Dest(-1, 180) == 359
+    fitSrcAngle2Dest(-180, 180) == 180
     """
     return dest + reduceAngle(src - dest)
 
@@ -644,10 +644,10 @@ def fitDestAngle2Src(src, dest):
     given a src and destination angle, returns an equivalent dest angle
     that is within [-180..180) of src
     examples:
-    fitDestAngle2Src(30,60) == 60
-    fitDestAngle2Src(60,30) == 30
-    fitDestAngle2Src(0,180) == -180
-    fitDestAngle2Src(1,180) == 180
+    fitDestAngle2Src(30, 60) == 60
+    fitDestAngle2Src(60, 30) == 30
+    fitDestAngle2Src(0, 180) == -180
+    fitDestAngle2Src(1, 180) == 180
     """
     return src + (reduceAngle(dest - src))
 
@@ -762,7 +762,7 @@ class Functor:
         _args.extend(args)
         _kargs = self._kargs.copy()
         _kargs.update(kargs)
-        return apply(self._function,_args,_kargs)
+        return apply(self._function, _args, _kargs)
 
 class Stack:
     def __init__(self):
@@ -1021,7 +1021,7 @@ class ParamObj:
                     cls._Params.update(c.Params)
         _compileDefaultParams = classmethod(_compileDefaultParams)
     # END PARAMSET SUBCLASS
-    
+
     def __init__(self, *args, **kwArgs):
         assert issubclass(self.ParamSet, ParamObj.ParamSet)
         # If you pass in a ParamSet obj, its values will be applied to this
@@ -1034,7 +1034,7 @@ class ParamObj:
             assert len(args) == 0
             # if we've got keyword arguments, make a ParamSet out of them
             params = self.ParamSet(**kwArgs)
-            
+
         self._paramLockRefCount = 0
         # this holds dictionaries of parameter values prior to the set that we
         # are performing
@@ -1528,7 +1528,7 @@ def describeException(backTrace = 4):
         lnotab = array.array('B', code.co_lnotab)
 
         line   = code.co_firstlineno
-        for i in range(0, len(lnotab),2):
+        for i in range(0, len(lnotab), 2):
             byte -= lnotab[i]
             if byte <= 0:
                 return line
@@ -1569,14 +1569,14 @@ def describeException(backTrace = 4):
 def mostDerivedLast(classList):
     """pass in list of classes. sorts list in-place, with derived classes
     appearing after their bases"""
-    def compare(a,b):
-        if issubclass(a,b):
+    def compare(a, b):
+        if issubclass(a, b):
             result=1
-        elif issubclass(b,a):
+        elif issubclass(b, a):
             result=-1
         else:
             result=0
-        #print a,b,result
+        #print a, b, result
         return result
     classList.sort(compare)
 
@@ -1598,7 +1598,7 @@ def clampScalar(value, a, b):
             return value
 
 def weightedChoice(choiceList, rng=random.random, sum=None):
-    """given a list of (weight,item) pairs, chooses an item based on the
+    """given a list of (weight, item) pairs, chooses an item based on the
     weights. rng must return 0..1. if you happen to have the sum of the
     weights, pass it in 'sum'."""
     # TODO: add support for dicts
@@ -1619,17 +1619,17 @@ def weightedChoice(choiceList, rng=random.random, sum=None):
     return item
 
 def randFloat(a, b=0., rng=random.random):
-    """returns a random float in [a,b]
+    """returns a random float in [a, b]
     call with single argument to generate random float between arg and zero
     """
-    return lerp(a,b,rng())
+    return lerp(a, b, rng())
 
 def normalDistrib(a, b, gauss=random.gauss):
     """
     NOTE: assumes a < b
 
     Returns random number between a and b, using gaussian distribution, with
-    mean=avg(a,b), and a standard deviation that fits ~99.7% of the curve
+    mean=avg(a, b), and a standard deviation that fits ~99.7% of the curve
     between a and b. Outlying results are clipped to a and b.
 
     ------------------------------------------------------------------------
@@ -1789,7 +1789,7 @@ class Enum:
 #
 # Example: class mySingleton:
 #              __metaclass__ = PythonUtil.Singleton
-#              def __init__(self,...):
+#              def __init__(self, ...):
 #                  ...
 #
 # Note: This class is based on Python's New-Style Class
@@ -1819,12 +1819,12 @@ class Enum:
 #           IE: class myNewClassX(object, myClassX):
 ############################################################
 class Singleton(type):
-    def __init__(cls,name,bases,dic):
-        super(Singleton,cls).__init__(name,bases,dic)
+    def __init__(cls, name, bases, dic):
+        super(Singleton, cls).__init__(name, bases, dic)
         cls.instance=None
-    def __call__(cls,*args,**kw):
+    def __call__(cls, *args, **kw):
         if cls.instance is None:
-            cls.instance=super(Singleton,cls).__call__(*args,**kw)
+            cls.instance=super(Singleton, cls).__call__(*args, **kw)
         return cls.instance
 
 class SingletonError(ValueError):

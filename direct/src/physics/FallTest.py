@@ -8,14 +8,14 @@ class FallTest(NodePath):
         self.actorNode=ActorNode("FallTestActorNode")
         #self.actorNode.getPhysicsObject().setOriented(1)
         #self.actorNode.getPhysical(0).setViscosity(0.1)
-        
+
         actorNodePath=self.attachNewNode(self.actorNode)
         #self.setPos(avatarNodePath, Vec3(0))
         #self.setHpr(avatarNodePath, Vec3(0))
 
         avatarNodePath=loader.loadModelCopy("models/misc/smiley")
         assert not avatarNodePath.isEmpty()
-        
+
         camLL=render.find("**/camLL")
         camLL.reparentTo(avatarNodePath)
         camLL.setPosHpr(0, -10, 0, 0, 0, 0)

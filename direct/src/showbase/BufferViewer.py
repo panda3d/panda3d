@@ -28,7 +28,7 @@ class BufferViewer(DirectObject):
             self.enable(1)
 
     def refreshReadout(self):
-        """Force the readout to be refreshed.  This is usually invoked 
+        """Force the readout to be refreshed.  This is usually invoked
         by GraphicsOutput::add_render_texture (via an event handler).
         However, it is also possible to invoke it manually.  Currently,
         the only time I know of that this is necessary is after a
@@ -42,12 +42,12 @@ class BufferViewer(DirectObject):
     def isValidTextureSet(self, list):
         """Access: private. Returns true if the parameter is a
         list of GraphicsOutput and Texture, or the keyword 'all'."""
-        if (isinstance(x,list)):
+        if (isinstance(x, list)):
             for elt in x:
                 if (self.isValidTextureSet(x)==0):
                     return 0
         else:
-            return (x=="all") or (isinstance(x,Texture)) or (isinstance(x,GraphicsOutput))
+            return (x=="all") or (isinstance(x, Texture)) or (isinstance(x, GraphicsOutput))
 
     def isEnabled(self):
         """Returns true if the buffer viewer is currently enabled."""
@@ -78,14 +78,14 @@ class BufferViewer(DirectObject):
         of the card matches the aspect ratio of the source-window.
         If both dimensions are zero, the viewer uses a heuristic
         to choose a reasonable size for the card.  The initial
-        value is (0,0)."""
+        value is (0, 0)."""
         if (x < 0) or (y < 0):
             BufferViewer.notify.error('invalid parameter to BufferViewer.setCardSize')
             return
         self.sizex = x
         self.sizey = y
         self.dirty = 1
-    
+
     def setPosition(self, pos):
         """Set the position of the cards.  The valid values are:
         * llcorner - put them in the lower-left  corner of the window
@@ -122,7 +122,7 @@ class BufferViewer(DirectObject):
         self.dirty = 1
 
     def selectCard(self, i):
-        """Only useful when using setLayout('cycle').  Sets the index 
+        """Only useful when using setLayout('cycle').  Sets the index
         that selects which card to display.  The index is taken modulo
         the actual number of cards."""
         self.cardindex = i
@@ -134,7 +134,7 @@ class BufferViewer(DirectObject):
         the actual number of cards."""
         self.cardindex += 1
         self.dirty = 1
-    
+
     def setInclude(self, x):
         """Set the include-set for the buffer viewer.  The include-set
         specifies which of the render-to-texture targets to display.
@@ -170,7 +170,7 @@ class BufferViewer(DirectObject):
         """Access: private.  Converts a list of GraphicsObject,
         GraphicsEngine, and Texture into a table of Textures."""
 
-        if (isinstance(x,list)):
+        if (isinstance(x, list)):
             for elt in x:
                 self.analyzeTextureSet(elt, set)
         elif (isinstance(x, Texture)):
@@ -200,33 +200,33 @@ class BufferViewer(DirectObject):
 
         vwriter=GeomVertexWriter(vdata, 'vertex')
         cwriter=GeomVertexWriter(vdata, 'color')
-        
-        ringoffset = [0,1,1,2]
-        ringbright = [0,0,1,1]
+
+        ringoffset = [0, 1, 1, 2]
+        ringbright = [0, 0, 1, 1]
         for ring in range(4):
             offsetx = (ringoffset[ring]*2.0) / float(sizex)
-            offsety = (ringoffset[ring]*2.0) / float(sizey)            
+            offsety = (ringoffset[ring]*2.0) / float(sizey)
             bright = ringbright[ring]
             vwriter.addData3f(-1-offsetx, 0, -1-offsety)
             vwriter.addData3f(1+offsetx, 0, -1-offsety)
             vwriter.addData3f(1+offsetx, 0,  1+offsety)
             vwriter.addData3f(-1-offsetx, 0,  1+offsety)
-            cwriter.addData3f(bright,bright,bright)
-            cwriter.addData3f(bright,bright,bright)
-            cwriter.addData3f(bright,bright,bright)
-            cwriter.addData3f(bright,bright,bright)
+            cwriter.addData3f(bright, bright, bright)
+            cwriter.addData3f(bright, bright, bright)
+            cwriter.addData3f(bright, bright, bright)
+            cwriter.addData3f(bright, bright, bright)
 
         triangles=GeomTriangles(Geom.UHStatic)
         for i in range(2):
             delta = i*8
-            triangles.addVertices(0+delta,4+delta,1+delta)
-            triangles.addVertices(1+delta,4+delta,5+delta)
-            triangles.addVertices(1+delta,5+delta,2+delta)
-            triangles.addVertices(2+delta,5+delta,6+delta)
-            triangles.addVertices(2+delta,6+delta,3+delta)
-            triangles.addVertices(3+delta,6+delta,7+delta)
-            triangles.addVertices(3+delta,7+delta,0+delta)
-            triangles.addVertices(0+delta,7+delta,4+delta)
+            triangles.addVertices(0+delta, 4+delta, 1+delta)
+            triangles.addVertices(1+delta, 4+delta, 5+delta)
+            triangles.addVertices(1+delta, 5+delta, 2+delta)
+            triangles.addVertices(2+delta, 5+delta, 6+delta)
+            triangles.addVertices(2+delta, 6+delta, 3+delta)
+            triangles.addVertices(3+delta, 6+delta, 7+delta)
+            triangles.addVertices(3+delta, 7+delta, 0+delta)
+            triangles.addVertices(0+delta, 7+delta, 4+delta)
         triangles.closePrimitive()
 
         geom=Geom(vdata)
@@ -255,13 +255,13 @@ class BufferViewer(DirectObject):
         if (self.enabled == 0):
             self.task = 0
             return Task.done
-        
-        # Generate the include and exclude sets.        
+
+        # Generate the include and exclude sets.
         exclude = {}
         include = {}
-        self.analyzeTextureSet(self.exclude,exclude)
-        self.analyzeTextureSet(self.include,include)
-        
+        self.analyzeTextureSet(self.exclude, exclude)
+        self.analyzeTextureSet(self.include, include)
+
         # Generate a list of cards and the corresponding windows.
         cards = []
         wins = []
@@ -300,7 +300,7 @@ class BufferViewer(DirectObject):
         elif (self.layout == "cycle"):
             rows = 1
             cols = 1
-        else: 
+        else:
             BufferViewer.notify.error('shouldnt ever get here in BufferViewer.maintainReadout')
 
         # Choose an aspect ratio for the cards.  All card size
@@ -321,7 +321,7 @@ class BufferViewer(DirectObject):
         # the screen vertically, which comes to 256 pixels on
         # an 800x600 display.  Then, it double checks that the
         # readout will fit on the screen, and if not, it shrinks it.
-        
+
         if (float(self.sizex)==0.0) and (float(self.sizey)==0.0):
 
             sizey = int(0.4266666667 * base.win.getYSize())
@@ -366,13 +366,13 @@ class BufferViewer(DirectObject):
             diry =  1.0
         else:
             BufferViewer.notify.error('window mode not implemented yet')
-        
+
         # Create the frame
-        frame = self.makeFrame(sizex,sizey)
+        frame = self.makeFrame(sizex, sizey)
 
         # Now, position the cards on the screen.
         # For each card, create a frame consisting of eight quads.
-        
+
         for r in range(rows):
             for c in range(cols):
                 index = c + r*cols
@@ -381,8 +381,8 @@ class BufferViewer(DirectObject):
                     posx = dirx * (1.0 - fsizex*0.5 - 3*fpixelx - (c*(fsizex+6*fpixelx)))
                     posy = diry * (1.0 - fsizey*0.5 - 3*fpixely - (r*(fsizey+6*fpixely)))
                     placer = NodePath("card-structure")
-                    placer.setPos(posx,0,posy)
-                    placer.setScale(fsizex*0.5,1.0,fsizey*0.5)
+                    placer.setPos(posx, 0, posy)
+                    placer.setScale(fsizex*0.5, 1.0, fsizey*0.5)
                     placer.setBin(self.cullbin, self.cullsort)
                     placer.reparentTo(render2d)
                     frame.instanceTo(placer)
