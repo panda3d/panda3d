@@ -11,13 +11,13 @@ def ToggleStrafe():
 def SetStrafe(status):
     global BattleStrafe
     BattleStrafe = status
-    
+
 class BattleWalker(GravityWalker.GravityWalker):
     def __init__(self):
         GravityWalker.GravityWalker.__init__(self)
         self.slideSpeed = 0
         self.advanceSpeed = 0
-        
+
     def getSpeeds(self):
         return (self.speed, self.rotationSpeed, self.slideSpeed, self.advanceSpeed)
 
@@ -37,7 +37,7 @@ class BattleWalker(GravityWalker.GravityWalker):
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or
                     reverse and -self.avatarControlReverseSpeed)
-        # Slide speed is a scaled down version of forward speed        
+        # Slide speed is a scaled down version of forward speed
         self.slideSpeed=(slideLeft and -self.avatarControlForwardSpeed or
                          slideRight and self.avatarControlForwardSpeed) * 0.5
         self.rotationSpeed=not (slideLeft or slideRight) and (
@@ -108,7 +108,7 @@ class BattleWalker(GravityWalker.GravityWalker):
                     # Consider commenting out this normalize.  If you do so
                     # then going up and down slops is a touch slower and
                     # steeper terrain can cut the movement in half.  Without
-                    # the normalize the movement is slowed by the cosine of 
+                    # the normalize the movement is slowed by the cosine of
                     # the slope (i.e. it is multiplied by the sign as a
                     # side effect of the cross product above).
                     forward.normalize()
@@ -151,12 +151,12 @@ class BattleWalker(GravityWalker.GravityWalker):
             slide = inputState.isSet("slide")
             jump = inputState.isSet("jump")
             # Determine what the speeds are based on the buttons:
-            self.advanceSpeed=(forward and self.avatarControlForwardSpeed or 
+            self.advanceSpeed=(forward and self.avatarControlForwardSpeed or
                                reverse and -self.avatarControlReverseSpeed)
             if run and self.advanceSpeed>0.0:
                 self.advanceSpeed*=2.0 #*#
             # Should fSlide be renamed slideButton?
-            self.slideSpeed=.15*(turnLeft and -self.avatarControlForwardSpeed or 
+            self.slideSpeed=.15*(turnLeft and -self.avatarControlForwardSpeed or
                                  turnRight and self.avatarControlForwardSpeed)
             print 'slideSpeed: ', self.slideSpeed
             self.rotationSpeed=0
@@ -261,7 +261,7 @@ class BattleWalker(GravityWalker.GravityWalker):
                     distance = 0
 
                 # Take a step in the direction of our previous heading.
-                self.vel=Vec3(Vec3.forward() * distance + 
+                self.vel=Vec3(Vec3.forward() * distance +
                               Vec3.right() * slideDistance)
                 if self.vel != Vec3.zero() or self.priorParent != Vec3.zero():
                     # rotMat is the rotation matrix corresponding to

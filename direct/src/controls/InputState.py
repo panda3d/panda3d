@@ -13,7 +13,7 @@ class InputState(DirectObject.DirectObject):
     to use it:)  If in doubt, don't use this class and listen for
     events instead.
     """
-    
+
     notify = DirectNotifyGlobal.directNotify.newCategory("InputState")
 
     def __init__(self):
@@ -21,10 +21,10 @@ class InputState(DirectObject.DirectObject):
         assert self.debugPrint("InputState()")
         self.watching = {}
         self.forcing = {}
-    
+
     def delete(self):
         self.ignoreAll()
-    
+
     def watch(self, name, eventOn, eventOff, default = 0):
         """
         name is any string (or actually any valid dictionary key).
@@ -57,21 +57,21 @@ class InputState(DirectObject.DirectObject):
                     'control-alt-%s', 'shift-%s',)
         for pattern in patterns:
             self.watch(name, pattern % event, '%s-up' % event, default)
-    
+
     def force(self, name, value):
         """
         Force isSet(name) to return value.
         See Also: unforce()
         """
         self.forcing[name] = value
-    
+
     def unforce(self, name):
         """
         Stop forcing a value.
         See Also: force()
         """
         del self.forcing[name]
-    
+
     def ignore(self, name):
         """
         The opposite of watch(name, ...)
@@ -83,7 +83,7 @@ class InputState(DirectObject.DirectObject):
             DirectObject.DirectObject.ignore(self, eventOff)
         del self.watching[name]
         del self.state[name]
-    
+
     def set(self, name, isSet):
         assert self.debugPrint("set(name=%s, isSet=%s)"%(name, isSet))
         self.state[name] = isSet
@@ -91,7 +91,7 @@ class InputState(DirectObject.DirectObject):
         # be the same name that messenger used to call InputState.set()
         # this avoids running in circles:
         messenger.send("InputState-%s"%(name,), [isSet])
-    
+
     def isSet(self, name):
         """
         returns 0, 1
@@ -101,7 +101,7 @@ class InputState(DirectObject.DirectObject):
         if r is not None:
             return r
         return self.state.get(name, 0)
-    
+
     def debugPrint(self, message):
         """for debugging"""
         return self.notify.debug(

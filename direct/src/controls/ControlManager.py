@@ -29,10 +29,10 @@ class ControlManager:
         self.isEnabled = 1
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
         inputState.watch("run", "running-on", "running-off")
-        
+
         inputState.watchWithModifiers("forward", "arrow_up")
         inputState.watch("forward", "force-forward", "force-forward-stop")
-        
+
         inputState.watchWithModifiers("reverse", "arrow_down")
         inputState.watchWithModifiers("reverse", "mouse4")
 
@@ -65,9 +65,9 @@ class ControlManager:
         controls is an avatar control system.
         name is any key that you want to use to refer to the
             the controls later (e.g. using the use(<name>) call).
-        
+
         Add a control instance to the list of available control systems.
-        
+
         See also: use().
         """
         assert self.notify.debugCall(id(self))
@@ -85,11 +85,11 @@ class ControlManager:
     def remove(self, name):
         """
         name is any key that was used to refer to the
-            the controls when they were added (e.g. 
+            the controls when they were added (e.g.
             using the add(<controls>, <name>) call).
-        
+
         Remove a control instance from the list of available control systems.
-        
+
         See also: add().
         """
         assert self.notify.debugCall(id(self))
@@ -108,13 +108,13 @@ class ControlManager:
         def unlockControls(self):
             if hasattr(self, "ignoreUse"):
                 del self.ignoreUse
-    
+
     def use(self, name, avatar):
         """
         name is a key (string) that was previously passed to add().
-        
+
         Use a previously added control system.
-        
+
         See also: add().
         """
         assert self.notify.debugCall(id(self))
@@ -162,9 +162,9 @@ class ControlManager:
         if self.wantWASD:
             inputState.ignore("slideLeft")
             inputState.ignore("slideRight")
-        
+
         #self.monitorTask.remove()
-    
+
     def getSpeeds(self):
         return self.currentControls.getSpeeds()
 
@@ -194,7 +194,7 @@ class ControlManager:
         assert self.notify.debugCall(id(self))
         self.isEnabled = 1
         self.currentControls.enableAvatarControls()
-    
+
     def disable(self):
         assert self.notify.debugCall(id(self))
         self.isEnabled = 0
@@ -219,7 +219,7 @@ class ControlManager:
         self.enableJumpCounter-=1
         if self.enableJumpCounter <= 0:
             inputState.force("jump", 0)
-    
+
     def monitor(self, foo):
         #assert(self.debugPrint("monitor()"))
         #if 1:

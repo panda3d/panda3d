@@ -54,7 +54,7 @@ class Notifier:
         # from Python-level notify messages.
         from pandac.PandaModules import NotifyCategory
         NotifyCategory.setServerDelta(self.serverDelta)
-         
+
         self.info("Notify clock adjusted by %s (and timezone adjusted by %s hours) to synchronize with server." % (PythonUtil.formatElapsedSeconds(delta), (time.timezone - timezone) / 3600))
 
     def getTime(self):
@@ -216,11 +216,11 @@ class Notifier:
             self.streamWriter.appendData(string + '\n')
         else:
             print string
-        
+
     def debugStateCall(self, obj=None, fsmMemberName='fsm',
             secondaryFsm='secondaryFSM'):
         """
-        If this notify is in debug mode, print the time of the 
+        If this notify is in debug mode, print the time of the
         call followed by the [fsm state] notifier category and
         the function call (with parameters).
         """
@@ -229,14 +229,14 @@ class Notifier:
             state = ''
             doId = ''
             if obj is not None:
-                
+
                 fsm=obj.__dict__.get(fsmMemberName)
                 if fsm is not None:
                     stateObj = fsm.getCurrentState()
                     if stateObj is not None:
                         #state = "%s=%s"%(fsmMemberName, stateObj.getName())
                         state = stateObj.getName()
-                
+
                 fsm=obj.__dict__.get(secondaryFsm)
                 if fsm is not None:
                     stateObj = fsm.getCurrentState()
@@ -261,7 +261,7 @@ class Notifier:
 
     def debugCall(self, debugString=''):
         """
-        If this notify is in debug mode, print the time of the 
+        If this notify is in debug mode, print the time of the
         call followed by the notifier category and
         the function call (with parameters).
         """

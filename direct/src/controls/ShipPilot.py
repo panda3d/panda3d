@@ -28,11 +28,11 @@ class ShipPilot(PhysicsWalker):
     notify = directNotify.newCategory("PhysicsWalker")
     wantDebugIndicator = base.config.GetBool(
         'want-avatar-physics-indicator', 0)
-    
+
     useBowSternSpheres = 1
     useLifter = 0
     useHeightRay = 0
-    
+
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
             hardLandingForce=16.0):
@@ -44,7 +44,7 @@ class ShipPilot(PhysicsWalker):
         self.__gravity=gravity
         self.__standableGround=standableGround
         self.__hardLandingForce=hardLandingForce
-        
+
         self.needToDeltaPos = 0
         self.physVelocityIndicator=None
         self.avatarControlForwardSpeed=0
@@ -61,7 +61,7 @@ class ShipPilot(PhysicsWalker):
         self.__slideSpeed=0.0
         self.__vel=Vec3(0.0)
         self.collisionsActive = 0
-        
+
         self.isAirborne = 0
         self.highMark = 0
         self.ship = None
@@ -85,7 +85,7 @@ class ShipPilot(PhysicsWalker):
             #self.setupShip()
             self.setupPhysics(ship)
             self.ship = ship
-            
+
             #*# Debug:
             if not hasattr(ship, "acceleration"):
                 self.ship.acceleration = 60
@@ -211,7 +211,7 @@ class ShipPilot(PhysicsWalker):
 
             self.pusher.addCollider(
                 self.cBowSphereNodePath, self.avatarNodePath)
-            
+
             # Back sphere:
             self.cSternSphere = CollisionSphere(
                 0.0, self.backSphereOffset, -5.0, avatarRadius)
@@ -232,7 +232,7 @@ class ShipPilot(PhysicsWalker):
             shipCollWall = self.avatarNodePath.hull.find("**/collision_hull")
             if not shipCollWall.isEmpty():
                 shipCollWall.stash()
-            
+
     def takedownPhysics(self):
         assert self.debugPrint("takedownPhysics()")
         if hasattr(self, "phys"):
@@ -241,7 +241,7 @@ class ShipPilot(PhysicsWalker):
             del self.phys
         if self.ship != None:
             self.ship.worldVelocity = Vec3.zero()
-            
+
     def setupPhysics(self, avatarNodePath):
         assert self.debugPrint("setupPhysics()")
         if avatarNodePath is None:
@@ -269,7 +269,7 @@ class ShipPilot(PhysicsWalker):
             self.actorNode = physicsActor.node()
             self.actorNode.getPhysicsObject().setOriented(1)
             self.actorNode.getPhysical(0).setViscosity(0.1)
-        
+
         fn=ForceNode("ship gravity")
         fnp=NodePath(fn)
         #fnp.reparentTo(physicsActor)
@@ -290,7 +290,7 @@ class ShipPilot(PhysicsWalker):
             fn.addForce(buoyancy)
             self.phys.addLinearForce(buoyancy)
             self.buoyancy = buoyancy
-        
+
         fn=ForceNode("ship keel")
         fnp=NodePath(fn)
         #fnp.reparentTo(physicsActor)
@@ -299,7 +299,7 @@ class ShipPilot(PhysicsWalker):
         self.keel=AngularVectorForce(0.0, 0.0, 0.0)
         fn.addForce(self.keel)
         self.phys.addAngularForce(self.keel)
-        
+
         fn=ForceNode("ship priorParent")
         fnp=NodePath(fn)
         fnp.reparentTo(render)
@@ -309,7 +309,7 @@ class ShipPilot(PhysicsWalker):
         self.phys.addLinearForce(priorParent)
         self.priorParentNp = fnp
         self.priorParent = priorParent
-        
+
         if 1:
             fn=ForceNode("ship viscosity")
             fnp=NodePath(fn)
@@ -334,7 +334,7 @@ class ShipPilot(PhysicsWalker):
             self.nodes.append(fnp)
             fn.addForce(self.momentumForce)
             self.phys.addLinearForce(self.momentumForce)
-            
+
         self.acForce=LinearVectorForce(0.0, 0.0, 0.0)
         self.acForce.setAmplitude(5)
         fn=ForceNode("ship avatarControls")
@@ -345,11 +345,11 @@ class ShipPilot(PhysicsWalker):
         self.phys.addLinearForce(self.acForce)
         #self.phys.removeLinearForce(self.acForce)
         #fnp.remove()
-        
+
         if 0 or self.useHeightRay:
             #self.setupRay(self.floorBitmask, self.avatarRadius)
             self.setupRay(self.floorBitmask, 0.0)
-            
+
 
         #avatarNodePath.reparentTo(render)
         self.avatarNodePath = avatarNodePath
@@ -398,7 +398,7 @@ class ShipPilot(PhysicsWalker):
             del self.cSphereNodePath
 
             del self.pusher
-        
+
         self.getAirborneHeight = None
 
     def setTag(self, key, value):
@@ -493,11 +493,11 @@ class ShipPilot(PhysicsWalker):
         assert self.debugPrint(
             "getCollisionsActive() returning=%s"%(self.collisionsActive,))
         return self.collisionsActive
-    
+
     def placeOnFloor(self):
         """
         Make a reasonable effort to place the avatar on the ground.
-        For example, this is useful when switching away from the 
+        For example, this is useful when switching away from the
         current walker.
         """
         self.oneTimeCollide()
@@ -585,7 +585,7 @@ class ShipPilot(PhysicsWalker):
             ## onScreenDebug.add("w keel vec",
             ##    keel.pPrintValues())
         if 0:
-            onScreenDebug.add("posDelta4", 
+            onScreenDebug.add("posDelta4",
                 self.priorParentNp.getRelativeVector(
                     render,
                     self.avatarNodePath.getPosDelta(render)).pPrintValues())
@@ -621,7 +621,7 @@ class ShipPilot(PhysicsWalker):
         #rotPhysToAvatar=Mat3.rotateMatNormaxis(
         #    self.avatarNodePath.getH(), Vec3.up())
         contact=self.actorNode.getContactVector()
-        
+
         depth=physObject.getPosition().getZ()
         if depth < 0.0:
             # self.buoyancy.setVector(Vec3.zero())
@@ -664,14 +664,14 @@ class ShipPilot(PhysicsWalker):
                     self.sailsDeployed = -1.0
             self.__speed = self.ship.acceleration * self.sailsDeployed
         else:
-            self.__speed=(forward and self.ship.acceleration or 
+            self.__speed=(forward and self.ship.acceleration or
                     reverse and -self.ship.reverseAcceleration)
         avatarSlideSpeed=self.ship.acceleration*0.5
         #self.__slideSpeed=slide and (
-        #        (turnLeft and -avatarSlideSpeed) or 
+        #        (turnLeft and -avatarSlideSpeed) or
         #        (turnRight and avatarSlideSpeed))
         self.__slideSpeed=(forward or reverse) and (
-                (slideLeft and -avatarSlideSpeed) or 
+                (slideLeft and -avatarSlideSpeed) or
                 (slideRight and avatarSlideSpeed))
         self.__rotationSpeed=not slide and (
                 (turnLeft and self.ship.turnRate) or
@@ -803,7 +803,7 @@ class ShipPilot(PhysicsWalker):
         assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
 
         moveToGround = Vec3.zero()
-        if not self.useHeightRay or self.isAirborne: 
+        if not self.useHeightRay or self.isAirborne:
             # ...the airborne check is a hack to stop sliding.
             self.phys.doPhysics(dt)
             if __debug__:
@@ -814,7 +814,7 @@ class ShipPilot(PhysicsWalker):
             #    moveToGround = Vec3(0.0, 0.0, -airborneHeight)
             #moveToGround = Vec3(0.0, 0.0, -airborneHeight)
             moveToGround = Vec3(0.0, 0.0, -self.determineHeight())
-            if __debug__:       
+            if __debug__:
                 onScreenDebug.add("phys", "off")
 
         #debugTempH=self.avatarNodePath.getH()
@@ -830,9 +830,9 @@ class ShipPilot(PhysicsWalker):
         physVel = physObject.getVelocity()
         physVelLen = physVel.length()
         if (physVelLen!=0.
-                or self.__speed 
-                or self.__slideSpeed 
-                or self.__rotationSpeed 
+                or self.__speed
+                or self.__slideSpeed
+                or self.__rotationSpeed
                 or moveToGround!=Vec3.zero()):
             distance = dt * self.__speed
             goForward = True
@@ -841,11 +841,11 @@ class ShipPilot(PhysicsWalker):
                 distance /= 5
             slideDistance = dt * self.__slideSpeed
             rotation = dt * self.__rotationSpeed
-            
+
             # update pos:
             # Take a step in the direction of our previous heading.
             self.__vel=Vec3(
-                Vec3.forward() * distance + 
+                Vec3.forward() * distance +
                 Vec3.right() * slideDistance)
 
             # rotMat is the rotation matrix corresponding to
@@ -875,13 +875,13 @@ class ShipPilot(PhysicsWalker):
                 onScreenDebug.add("newVector length",
                                   newVector.length())
             self.acForce.setVector(Vec3(newVector))
-            
-            
+
+
             #momentum = self.momentumForce.getLocalVector()
             #momentum *= 0.9
             #self.momentumForce.setVector(momentum)
 
-            
+
             #physObject.setPosition(Point3(
             #    physObject.getPosition()+step+moveToGround))
 
@@ -901,7 +901,7 @@ class ShipPilot(PhysicsWalker):
             self.__vel.set(0.0, 0.0, 0.0)
             goForward = True
 
-        
+
         #*#
         speed = physVel
         if (goForward):
@@ -955,28 +955,28 @@ class ShipPilot(PhysicsWalker):
                 self.ship.worldVelocity.pPrintValues())
             onScreenDebug.add("w worldVelocity len",
                 "% 10.4f"%self.ship.worldVelocity.length())
-            
+
         # if hasattr(self.ship, 'sailBillow'):
         #     self.ship.sailBillow = self.sailsDeployed
 
         if hasattr(self.ship, 'currentTurning'):
             self.ship.currentTurning = self.currentTurning
-        
+
         return Task.cont
-    
+
     def doDeltaPos(self):
         assert self.debugPrint("doDeltaPos()")
         self.needToDeltaPos = 1
-    
+
     def setPriorParentVector(self):
         assert self.debugPrint("doDeltaPos()")
-        
+
         #print "self.__oldDt", self.__oldDt, "self.__oldPosDelta", self.__oldPosDelta
         if __debug__:
             onScreenDebug.add("__oldDt", "% 10.4f"%self.__oldDt)
             onScreenDebug.add("self.__oldPosDelta",
                               self.__oldPosDelta.pPrintValues())
-        
+
         velocity = self.__oldPosDelta*(1/self.__oldDt)*4.0 # *4.0 is a hack
         assert self.debugPrint("  __oldPosDelta=%s"%(self.__oldPosDelta,))
         assert self.debugPrint("  velocity=%s"%(velocity,))
@@ -984,7 +984,7 @@ class ShipPilot(PhysicsWalker):
         if __debug__:
             if self.wantDebugIndicator:
                 onScreenDebug.add("velocity", velocity.pPrintValues())
-    
+
     def reset(self):
         assert self.debugPrint("reset()")
         self.actorNode.getPhysicsObject().resetPosition(

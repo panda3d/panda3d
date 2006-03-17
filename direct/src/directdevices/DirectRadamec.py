@@ -32,7 +32,7 @@ class DirectRadamec(DirectObject):
         self.device = device
         self.analogs = direct.deviceManager.createAnalogs(self.device)
         self.numAnalogs = len(self.analogs)
-        self.aList = [0,0,0,0,0,0,0,0]
+        self.aList = [0, 0, 0, 0, 0, 0, 0, 0]
         # Radamec device max/mins 
         # Note:  These values change quite often, i.e. everytime
         #        you unplug the radamec cords, or jostle them too
@@ -61,8 +61,8 @@ class DirectRadamec(DirectObject):
         return Task.cont
     
     def radamecDebug(self):
-        panVal = self.normalizeChannel(RAD_PAN,-180,180)
-        tiltVal = self.normalizeChannel(RAD_TILT,-90,90)
+        panVal = self.normalizeChannel(RAD_PAN, -180, 180)
+        tiltVal = self.normalizeChannel(RAD_TILT, -90, 90)
 
         self.notify.debug("PAN = %s" % self.aList[RAD_PAN])
         self.notify.debug("TILT = %s" % self.aList[RAD_TILT])
@@ -70,7 +70,7 @@ class DirectRadamec(DirectObject):
         self.notify.debug("FOCUS = %s" % self.aList[RAD_FOCUS])
         self.notify.debug("Normalized: panVal: %s  tiltVal: %s" % (panVal, tiltVal))
 
-    # Normalize to the range [-minVal,maxVal] based on some hard-coded
+    # Normalize to the range [-minVal, maxVal] based on some hard-coded
     # max/min numbers of the Radamec device
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1):
         try:

@@ -10,7 +10,7 @@ class DirectNotify:
     DirectNotify class: this class contains methods for creating
     mulitple notify categories via a dictionary of Notifiers.
     """
-    
+
     def __init__(self):
         """
         DirectNotify class keeps a dictionary of Notfiers
@@ -70,7 +70,7 @@ class DirectNotify:
             config
         except:
             return 0
-        
+
         dconfigParam = ("notify-level-" + categoryName)
         level = config.GetString(dconfigParam, "")
 
@@ -103,7 +103,7 @@ class DirectNotify:
             else:
                 print ("DirectNotify: unknown notify level: " + str(level)
                        + " for category: " + str(categoryName))
-            
+
     def setDconfigLevels(self):
         for categoryName in self.getCategories():
             self.setDconfigLevel(categoryName)

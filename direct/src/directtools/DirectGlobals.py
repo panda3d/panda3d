@@ -4,12 +4,12 @@ UNPICKABLE = ['x-disc-visible', 'y-disc-visible', 'z-disc-visible',
               'GridBack', 'unpickable']
 
 # For linmath operations
-X_AXIS = Vec3(1,0,0)
-Y_AXIS = Vec3(0,1,0)
-Z_AXIS = Vec3(0,0,1)
-NEG_X_AXIS = Vec3(-1,0,0)
-NEG_Y_AXIS = Vec3(0,-1,0)
-NEG_Z_AXIS = Vec3(0,0,-1)
+X_AXIS = Vec3(1, 0, 0)
+Y_AXIS = Vec3(0, 1, 0)
+Z_AXIS = Vec3(0, 0, 1)
+NEG_X_AXIS = Vec3(-1, 0, 0)
+NEG_Y_AXIS = Vec3(0, -1, 0)
+NEG_Z_AXIS = Vec3(0, 0, -1)
 ZERO_VEC = ORIGIN = Vec3(0)
 UNIT_VEC = Vec3(1)
 ZERO_POINT = Point3(0)

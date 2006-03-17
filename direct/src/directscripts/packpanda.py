@@ -12,7 +12,7 @@
 #
 ##############################################################################
 
-import sys,os,getopt,string,shutil,py_compile
+import sys, os, getopt, string, shutil, py_compile
 
 OPTIONLIST = [
 ("game",      1, "Name of directory containing game"),
@@ -30,9 +30,9 @@ def ParseFailure():
   print ""
   for (opt, hasval, explanation) in OPTIONLIST:
     if (hasval):
-      print "  --%-10s    %s"%(opt+" x",explanation)
+      print "  --%-10s    %s"%(opt+" x", explanation)
     else:
-      print "  --%-10s    %s"%(opt+"  ",explanation)
+      print "  --%-10s    %s"%(opt+"  ", explanation)
   sys.exit(1)
 
 def ParseOptions(args):
@@ -50,7 +50,7 @@ def ParseOptions(args):
         longopts.append(opt)
         options[opt] = 0
     opts, extras = getopt.getopt(args, "", longopts)
-    for option,value in opts:
+    for option, value in opts:
       for (opt, hasval, explanation) in OPTIONLIST:
         if (option == "--"+opt):
           if (hasval==2): options[opt].append(value)
@@ -97,8 +97,8 @@ GAME=os.path.abspath(GAME)
 NAME=os.path.basename(GAME)
 SMDIRECTORY=os.path.basename(GAME)
 if (VER!=""): SMDIRECTORY=SMDIRECTORY+" "+VER
-ICON=os.path.join(GAME,NAME+".ico")
-BITMAP=os.path.join(GAME,NAME+".bmp")
+ICON=os.path.join(GAME, NAME+".ico")
+BITMAP=os.path.join(GAME, NAME+".bmp")
 LICENSE=os.path.join(GAME,"LICENSE.TXT")
 OUTFILE=os.path.basename(GAME)
 if (VER!=""): OUTFILE=OUTFILE+"-"+VER
@@ -112,24 +112,24 @@ else: MAIN=NAME+".py"
 
 def PrintFileStatus(label, file):
   if (os.path.exists(file)):
-    print "%-15s: %s"%(label,file)
+    print "%-15s: %s"%(label, file)
   else:
-    print "%-15s: %s (MISSING)"%(label,file)
+    print "%-15s: %s (MISSING)"%(label, file)
   
-PrintFileStatus("Game",GAME)
-print "%-15s: %s"%("Name",NAME)
-print "%-15s: %s"%("Start Menu",SMDIRECTORY)
-PrintFileStatus("Main",os.path.join(GAME,MAIN))
-PrintFileStatus("Icon",ICON)
-PrintFileStatus("Bitmap",BITMAP)
-PrintFileStatus("License",LICENSE)
-print "%-15s: %s"%("Output",OUTFILE)
-print "%-15s: %s"%("Install Dir",INSTALLDIR)
+PrintFileStatus("Game", GAME)
+print "%-15s: %s"%("Name", NAME)
+print "%-15s: %s"%("Start Menu", SMDIRECTORY)
+PrintFileStatus("Main", os.path.join(GAME, MAIN))
+PrintFileStatus("Icon", ICON)
+PrintFileStatus("Bitmap", BITMAP)
+PrintFileStatus("License", LICENSE)
+print "%-15s: %s"%("Output", OUTFILE)
+print "%-15s: %s"%("Install Dir", INSTALLDIR)
 
 if (os.path.isdir(GAME)==0):
   sys.exit("Difficulty reading "+GAME+". Cannot continue.")
 
-if (os.path.isfile(os.path.join(GAME,NAME+".py"))==0):
+if (os.path.isfile(os.path.join(GAME, NAME+".py"))==0):
   sys.exit("Difficulty reading "+NAME+".py. Cannot continue.")
 
 if (os.path.isfile(LICENSE)==0):
@@ -198,7 +198,7 @@ def CompileFiles(file):
         else: pass
     elif (os.path.isdir(file)):
         for x in os.listdir(file):
-            CompileFiles(os.path.join(file,x))
+            CompileFiles(os.path.join(file, x))
 
 def DeleteFiles(file):
     base = string.lower(os.path.basename(file))
@@ -209,7 +209,7 @@ def DeleteFiles(file):
                 shutil.rmtree(file)
                 return
         for x in os.listdir(file):
-            DeleteFiles(os.path.join(file,x))
+            DeleteFiles(os.path.join(file, x))
     else:
         for ext in OPTIONS["rmext"]:
             if (base[-(len(ext)+1):] == string.lower("."+ext)):

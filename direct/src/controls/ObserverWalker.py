@@ -52,16 +52,16 @@ class ObserverWalker(NonPhysicsWalker.NonPhysicsWalker):
         self.pusher = CollisionHandlerPusher()
         self.pusher.setInPattern("enter%in")
         self.pusher.setOutPattern("exit%in")
-        
+
         self.pusher.addCollider(self.cSphereNodePath, avatarNodePath)
 
         # activate the collider with the traverser and pusher
         self.setCollisionsActive(1)
-        
+
         class Foo:
             def hasContact(self):
                 return 1
-        
+
         self.lifter = Foo()
 
     def deleteCollisions(self):

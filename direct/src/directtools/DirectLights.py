@@ -20,7 +20,7 @@ class DirectLight(NodePath):
 
     def getName(self):
         return self.light.getName()
-    
+
     def getLight(self):
         return self.light
 
@@ -61,13 +61,13 @@ class DirectLights(NodePath):
         nameList = map(lambda x: x.getName(), self.lightDict.values())
         nameList.sort()
         return nameList
-    
+
     def create(self, type):
         type = type.lower()
         if type == 'ambient':
             self.ambientCount += 1
             light = AmbientLight('ambient-' + `self.ambientCount`)
-            light.setColor(VBase4(.3,.3,.3,1))
+            light.setColor(VBase4(.3, .3, .3, 1))
         elif type == 'directional':
             self.directionalCount += 1
             light = DirectionalLight('directional-' + `self.directionalCount`)
@@ -85,7 +85,7 @@ class DirectLights(NodePath):
             print 'Invalid light type'
             return None
         # Add the new light
-        directLight = DirectLight(light,self)
+        directLight = DirectLight(light, self)
         self.lightDict[directLight.getName()] = directLight
         # Turn it on as a default
         self.setOn(directLight)
@@ -128,7 +128,7 @@ class DirectLights(NodePath):
         Turn on the given directLight
         """
         render.setLight(directLight)
-            
+
     def setOff(self, directLight):
         """
         Turn off the given directLight

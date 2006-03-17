@@ -28,12 +28,12 @@ ClientConfigs = {
     'two-server':          [{'display name': 'master',
                               'display mode': 'client',
                               'pos': Vec3(0),
-                              #'hpr': Vec3(30,0,0)},
-                              'hpr': Vec3(0,0,0)},
+                              #'hpr': Vec3(30, 0, 0)},
+                              'hpr': Vec3(0, 0, 0)},
                              {'display name': 'la',
                               'pos': Vec3(0),
-                              #'hpr': Vec3(-30,0,0)
-                              'hpr': Vec3(0,0,0)
+                              #'hpr': Vec3(-30, 0, 0)
+                              'hpr': Vec3(0, 0, 0)
                               }
                              ],
     'mono-cave':   [{'display name': 'la',
@@ -418,11 +418,11 @@ ClientConfigs = {
                               'hpr': Vec3(0),
                               },
                              {'display name': 'left',
-                              'pos': Vec3(-.105,0,0),
-                              'hpr': Vec3(0,0,0)},
+                              'pos': Vec3(-.105, 0, 0),
+                              'hpr': Vec3(0, 0, 0)},
                              {'display name': 'right',
-                              'pos': Vec3(.105,0,0),
-                              'hpr': Vec3(0,0,0)}
+                              'pos': Vec3(.105, 0, 0),
+                              'hpr': Vec3(0, 0, 0)}
                              ],
     'ursula':              [{'display name': 'master',
                               'display mode': 'client',
@@ -430,16 +430,16 @@ ClientConfigs = {
                               'hpr': Vec3(0),
                               },
                              {'display name': 'l',
-                              'pos': Vec3(-.105,0,0),
-                              'hpr': Vec3(0,0,0),
+                              'pos': Vec3(-.105, 0, 0),
+                              'hpr': Vec3(0, 0, 0),
                               'focal length': 15,
                               'film size': (13.33, 10),
                               #'film offset': (0.105, -2),
                               'film offset': (0.105, -1),
                               },
                              {'display name': 'r',
-                              'pos': Vec3(.105,0,0),
-                              'hpr': Vec3(0,0,0),
+                              'pos': Vec3(.105, 0, 0),
+                              'hpr': Vec3(0, 0, 0),
                               'focal length': 15,
                               'film size': (13.33, 10),
                               #'film offset': (-0.105, -2),

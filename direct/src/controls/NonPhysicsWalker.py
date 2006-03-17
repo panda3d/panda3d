@@ -112,7 +112,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         # and float above them as we go down. I increased this
         # from 8.0 to 16.0 to prevent this
         self.lifter.setMaxVelocity(16.0)
-        
+
         self.pusher.addCollider(self.cSphereNodePath, avatarNodePath)
         self.lifter.addCollider(self.cRayNodePath, avatarNodePath)
 
@@ -150,11 +150,11 @@ class NonPhysicsWalker(DirectObject.DirectObject):
                 # Now that we have disabled collisions, make one more pass
                 # right now to ensure we aren't standing in a wall.
                 self.oneTimeCollide()
-    
+
     def placeOnFloor(self):
         """
         Make a reasonable effor to place the avatar on the ground.
-        For example, this is useful when switching away from the 
+        For example, this is useful when switching away from the
         current walker.
         """
         # With these on, getAirborneHeight is not returning the correct value so
@@ -193,11 +193,11 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         slide = inputState.isSet(self.slideName) or 0
         #jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
-        self.speed=(forward and self.avatarControlForwardSpeed or 
+        self.speed=(forward and self.avatarControlForwardSpeed or
                     reverse and -self.avatarControlReverseSpeed)
         # Should fSlide be renamed slideButton?
         self.slideSpeed=slide and (
-                (turnLeft and -self.avatarControlForwardSpeed) or 
+                (turnLeft and -self.avatarControlForwardSpeed) or
                 (turnRight and self.avatarControlForwardSpeed))
         self.rotationSpeed=not slide and (
                 (turnLeft and self.avatarControlRotateSpeed) or
@@ -212,7 +212,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
             messenger.send("walkerIsOutOfWorld", [self.avatarNodePath])
 
         self._calcSpeeds()
-            
+
         if __debug__:
             debugRunning = inputState.isSet("debugRunning")
             if debugRunning:
@@ -237,7 +237,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
                 rotation = dt * self.rotationSpeed
 
             # Take a step in the direction of our previous heading.
-            self.vel=Vec3(Vec3.forward() * distance + 
+            self.vel=Vec3(Vec3.forward() * distance +
                           Vec3.right() * slideDistance)
             if self.vel != Vec3.zero():
                 # rotMat is the rotation matrix corresponding to
@@ -249,16 +249,16 @@ class NonPhysicsWalker(DirectObject.DirectObject):
             messenger.send("avatarMoving")
         else:
             self.vel.set(0.0, 0.0, 0.0)
-        
+
         self.__oldPosDelta = self.avatarNodePath.getPosDelta(render)
         self.__oldDt = dt
         self.worldVelocity = self.__oldPosDelta*(1/self.__oldDt)
-        
+
         return Task.cont
-    
+
     def doDeltaPos(self):
         assert self.debugPrint("doDeltaPos()")
-    
+
     def reset(self):
         assert self.debugPrint("reset()")
 
@@ -285,7 +285,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         assert self.debugPrint("disableAvatarControls")
         taskName = "AvatarControls-%s"%(id(self),)
         taskMgr.remove(taskName)
-    
+
     if __debug__:
         def debugPrint(self, message):
             """for debugging"""

@@ -47,13 +47,13 @@ class DirectJoybox(DirectObject):
         self.device = device
         self.analogs = direct.deviceManager.createAnalogs(self.device)
         self.buttons = direct.deviceManager.createButtons(self.device)
-        self.aList = [0,0,0,0,0,0,0,0]
-        self.bList = [0,0,0,0,0,0,0,0,0,0,0,0]
+        self.aList = [0, 0, 0, 0, 0, 0, 0, 0]
+        self.bList = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         # For joybox fly mode
         # Default is joe mode
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
                         R_TWIST, L_TWIST, NULL_AXIS]
-        self.modifier = [1,1,1,-1,-1,0]
+        self.modifier = [1, 1, 1, -1, -1, 0]
         # Initialize time
         self.lastTime = globalClock.getFrameTime()
         # Record node path
@@ -232,67 +232,67 @@ class DirectJoybox(DirectObject):
         x = getAxisVal(0) * self.modifier[0]
         y = getAxisVal(1) * self.modifier[1]
         z = getAxisVal(2) * self.modifier[2]
-        pos = Vec3(x,y,z) * (posScale * self.deltaTime)
+        pos = Vec3(x, y, z) * (posScale * self.deltaTime)
 
         h = getAxisVal(3) * self.modifier[3]
         p = getAxisVal(4) * self.modifier[4]
         r = getAxisVal(5) * self.modifier[5]
-        hpr = Vec3(h,p,r) * (hprScale * self.deltaTime)
+        hpr = Vec3(h, p, r) * (hprScale * self.deltaTime)
         # Move node path
         self.nodePath.setPosHpr(self.nodePath, pos, hpr)
 
     def joeMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
                         R_TWIST, L_TWIST, NULL_AXIS]
-        self.modifier = [1,1,1,-1,-1,0]
+        self.modifier = [1, 1, 1, -1, -1, 0]
         self.setMode(self.joyboxFly, 'Joe Mode')
 
     def lucMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
                         R_TWIST, L_TWIST, L_LEFT_RIGHT]
-        self.modifier = [1,1,1,-1,-1,0]
+        self.modifier = [1, 1, 1, -1, -1, 0]
         self.setMode(self.joyboxFly, 'Luc Mode')
 
     def driveMode(self):
         self.mapping = [L_LEFT_RIGHT, R_FWD_BACK, R_TWIST,
                         R_LEFT_RIGHT, L_FWD_BACK, NULL_AXIS]
-        self.modifier = [1,1,-1,-1,-1,0]
+        self.modifier = [1, 1, -1, -1, -1, 0]
         self.setMode(self.joyboxFly, 'Drive Mode')
 
     def lookAtMode(self):
         self.mapping = [R_LEFT_RIGHT, R_TWIST, R_FWD_BACK,
                         L_LEFT_RIGHT, L_FWD_BACK, NULL_AXIS]
-        self.modifier = [1,1,1,-1,1,0]
+        self.modifier = [1, 1, 1, -1, 1, 0]
         self.setMode(self.joyboxFly, 'Look At Mode')
 
     def lookAroundMode(self):
         self.mapping = [NULL_AXIS, NULL_AXIS, NULL_AXIS,
                         R_LEFT_RIGHT, R_FWD_BACK, NULL_AXIS]
-        self.modifier = [0,0,0,-1,-1,0]
+        self.modifier = [0, 0, 0, -1, -1, 0]
         self.setMode(self.joyboxFly, 'Lookaround Mode')
 
     def demoMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
                         R_TWIST, NULL_AXIS, NULL_AXIS]
-        self.modifier = [1,1,1,-1,0,0]
+        self.modifier = [1, 1, 1, -1, 0, 0]
         self.setMode(self.joyboxFly, 'Demo Mode')
 
     def hprXyzMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, R_TWIST,
                         L_TWIST, L_FWD_BACK, L_LEFT_RIGHT]
-        self.modifier = [1,1,-1,-1,-1,1]
+        self.modifier = [1, 1, -1, -1, -1, 1]
         self.setMode(self.joyboxFly, 'HprXyz Mode')
 
     def mopathMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, R_TWIST,
                         L_LEFT_RIGHT, L_FWD_BACK, L_LEFT_RIGHT]
-        self.modifier = [1,1,-1,-1,1,0]
+        self.modifier = [1, 1, -1, -1, 1, 0]
         self.setMode(self.joyboxFly, 'Mopath Mode')
 
     def walkthruMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_TWIST,
                         R_TWIST, L_FWD_BACK, L_LEFT_RIGHT]
-        self.modifier = [1,1,-1,-1,-1, 1]
+        self.modifier = [1, 1, -1, -1, -1, 1]
         self.setMode(self.joyboxFly, 'Walkthru Mode')
 
     def spaceMode(self):
@@ -330,7 +330,7 @@ class DirectJoybox(DirectObject):
         dh = -1 * hprScale * self.aList[R_LEFT_RIGHT] * self.deltaTime
         self.nodePath.setHpr(self.nodePath, dh, dp, dr)
         dy = posScale * self.aList[L_FWD_BACK] * self.deltaTime
-        dPos = VBase3(0,dy,0)
+        dPos = VBase3(0, dy, 0)
         for planet, radius in self.auxData:
             # Are we within min radius?
             # How far above planet are we?
@@ -389,7 +389,7 @@ class DirectJoybox(DirectObject):
         self.orbitNode(rx, ry, 0)
         pos = self.nodePath.getPos(self.refCS)
         if Vec3(pos).length() < 0.005:
-            pos.set(0,-0.01, 0)
+            pos.set(0, -0.01, 0)
         # Now move on out
         pos.assign(pos * (1 + r))
         self.nodePath.setPos(self.refCS, pos)

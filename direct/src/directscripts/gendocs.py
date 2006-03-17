@@ -48,7 +48,7 @@
 # 
 ########################################################################
 
-import os,sys,parser,symbol,token,types,re
+import os, sys, parser, symbol, token, types, re
 
 ########################################################################
 #
@@ -68,7 +68,7 @@ def readFile(fn):
     except:
         sys.exit("Cannot read "+fn)
 
-def writeFile(wfile,data):
+def writeFile(wfile, data):
     try:
         dsthandle = open(wfile, "wb")
         dsthandle.write(data)
@@ -89,7 +89,7 @@ def findFiles(dirlist, ext, ign, list):
                 elif (os.path.isdir(full)):
                     findFiles(full, ext, ign, list)
 
-def textToHTML(comment,sep,delsection=None):
+def textToHTML(comment, sep, delsection=None):
     sections = [""]
     included = {}
     for line in comment.split("\n"):
@@ -143,7 +143,7 @@ class InterrogateTokenizer:
     used by interrogate databases.
     """
 
-    def __init__(self,fn):
+    def __init__(self, fn):
         self.fn = fn
         self.pos = 0
         self.data = readFile(fn)
@@ -299,9 +299,9 @@ class InterrogateDatabase:
 #
 ########################################################################
 
-def printTree(tree,indent):
+def printTree(tree, indent):
     spacing = "                                                        "[:indent]
-    if isinstance(tree,types.TupleType) and isinstance(tree[0], types.IntType):
+    if isinstance(tree, types.TupleType) and isinstance(tree[0], types.IntType):
         if symbol.sym_name.has_key(tree[0]):
             for i in range(len(tree)):
                 if (i==0):
@@ -446,7 +446,7 @@ class ParseTreeInfo:
                 elif cstmt[0] == symbol.classdef:
                     name = cstmt[2][1]
                     self.class_info[name] = ParseTreeInfo(cstmt and cstmt[-1] or None, name)
-                    self.extract_derivs(self.class_info[name],cstmt)
+                    self.extract_derivs(self.class_info[name], cstmt)
 
     def extract_derivs(self, classinfo, tree):
         if (len(tree)==8):
@@ -667,9 +667,9 @@ def generateLinkTable(link, text, cols, urlprefix, urlsuffix):
             if (slot < len(link)): linkval = link[slot]
             if (slot < len(text)): textval = text[slot]
             if (i==0):
-                line = line + '<td width="' + str(percent) + '%">' + linkTo(urlprefix+linkval+urlsuffix,textval) + "</td>"
+                line = line + '<td width="' + str(percent) + '%">' + linkTo(urlprefix+linkval+urlsuffix, textval) + "</td>"
             else:
-                line = line + '<td>' + linkTo(urlprefix+linkval+urlsuffix,textval) + "</td>"
+                line = line + '<td>' + linkTo(urlprefix+linkval+urlsuffix, textval) + "</td>"
         result = result + "<tr>" + line + "</tr>\n"
     result = result + "</table>\n"
     return result
@@ -702,9 +702,9 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
         inheritance = code.getInheritance(type)
         body = body + "<h2>Inheritance:</h2>\n<ul>\n"
         for inh in inheritance:
-            line = "  " + linkTo(urlprefix+inh+urlsuffix,inh) + ": "
+            line = "  " + linkTo(urlprefix+inh+urlsuffix, inh) + ": "
             for parent in code.getClassParents(inh):
-                line = line + linkTo(urlprefix+parent+urlsuffix,parent) + " "
+                line = line + linkTo(urlprefix+parent+urlsuffix, parent) + " "
             body = body + line + "<br>\n"
         body = body + "</ul>\n"
         for sclass in inheritance:
@@ -731,7 +731,7 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
     xclasses.sort()
 
     index = "<h1>List of Classes - Panda " + pversion + "</h1>\n"
-    index = index + generateLinkTable(xclasses,xclasses,3,urlprefix,urlsuffix)
+    index = index + generateLinkTable(xclasses, xclasses, 3, urlprefix, urlsuffix)
     fnlist = code.getGlobalFunctionList()[:]
     fnlist.sort()
     fnnames = []
@@ -741,7 +741,7 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
     writeFile(docdir + "/classes.html", index)
 
     index = "<h1>List of Global Functions - Panda " + pversion + "</h1>\n"
-    index = index + generateLinkTable(fnnames,fnnames,3,"#","")
+    index = index + generateLinkTable(fnnames, fnnames, 3,"#","")
     for func in fnlist:
         index = index + generateFunctionDocs(code, func)
     index = header + index + footer

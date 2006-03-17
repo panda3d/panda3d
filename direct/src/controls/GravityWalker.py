@@ -526,7 +526,7 @@ class GravityWalker(DirectObject.DirectObject):
                     # Consider commenting out this normalize.  If you do so
                     # then going up and down slops is a touch slower and
                     # steeper terrain can cut the movement in half.  Without
-                    # the normalize the movement is slowed by the cosine of 
+                    # the normalize the movement is slowed by the cosine of
                     # the slope (i.e. it is multiplied by the sign as a
                     # side effect of the cross product above).
                     forward.normalize()

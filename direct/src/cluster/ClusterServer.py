@@ -18,7 +18,7 @@ class ClusterServer(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClusterServer")
     MSG_NUM = 2000000
 
-    def __init__(self,cameraJig,camera):
+    def __init__(self, cameraJig, camera):
         global clusterServerPort, clusterSyncFlag
         global clusterDaemonClient, clusterDaemonPort
         # Store information about the cluster's camera
@@ -31,7 +31,7 @@ class ClusterServer(DirectObject.DirectObject):
         self.qcm = QueuedConnectionManager()
         self.qcl = QueuedConnectionListener(self.qcm, 0)
         self.qcr = QueuedConnectionReader(self.qcm, 0)
-        self.cw = ConnectionWriter(self.qcm,0)
+        self.cw = ConnectionWriter(self.qcm, 0)
         try:
             port = clusterServerPort
         except NameError:
@@ -68,7 +68,7 @@ class ClusterServer(DirectObject.DirectObject):
 
     def startListenerPollTask(self):
         # Run this task near the start of frame, sometime after the dataLoop
-        taskMgr.add(self.listenerPollTask, "serverListenerPollTask",-40)
+        taskMgr.add(self.listenerPollTask, "serverListenerPollTask", -40)
 
     def listenerPollTask(self, task):
         """ Task to listen for a new connection from the client """
@@ -78,7 +78,7 @@ class ClusterServer(DirectObject.DirectObject):
             rendezvous = PointerToConnection()
             netAddress = NetAddress()
             newConnection = PointerToConnection()
-            if self.qcl.getNewConnection(rendezvous,netAddress,newConnection):
+            if self.qcl.getNewConnection(rendezvous, netAddress, newConnection):
                 # Crazy dereferencing
                 newConnection=newConnection.p()
                 self.qcr.addConnection(newConnection)
@@ -101,7 +101,7 @@ class ClusterServer(DirectObject.DirectObject):
     def _readerPollTask(self, state):
         """ Non blocking task to read all available datagrams """
         while 1:
-            (datagram, dgi,type) = self.msgHandler.nonBlockingRead(self.qcr)
+            (datagram, dgi, type) = self.msgHandler.nonBlockingRead(self.qcr)
             # Queue is empty, done for now
             if type is CLUSTER_NONE:
                 break
@@ -118,9 +118,9 @@ class ClusterServer(DirectObject.DirectObject):
             type = CLUSTER_NONE
             while type != CLUSTER_CAM_MOVEMENT:
                 # Block until you get a new datagram
-                (datagram,dgi,type) = self.msgHandler.blockingRead(self.qcr)
+                (datagram, dgi, type) = self.msgHandler.blockingRead(self.qcr)
                 # Process datagram
-                self.handleDatagram(dgi,type)
+                self.handleDatagram(dgi, type)
         return Task.cont
 
     def startSwapCoordinator(self):
@@ -133,8 +133,8 @@ class ClusterServer(DirectObject.DirectObject):
             self.sendSwapReady()
             # Wait for swap command (processing any intermediate datagrams)
             while 1:
-                (datagram,dgi,type) = self.msgHandler.blockingRead(self.qcr)
-                self.handleDatagram(dgi,type)
+                (datagram, dgi, type) = self.msgHandler.blockingRead(self.qcr)
+                self.handleDatagram(dgi, type)
                 if type == CLUSTER_SWAP_NOW:
                     break
         return Task.cont
@@ -176,35 +176,35 @@ class ClusterServer(DirectObject.DirectObject):
         return type
 
     # Server specific tasks
-    def handleCamOffset(self,dgi):
+    def handleCamOffset(self, dgi):
         """ Set offset of camera from cameraJig """
-        (x,y,z,h,p,r) = self.msgHandler.parseCamOffsetDatagram(dgi)
+        (x, y, z, h, p, r) = self.msgHandler.parseCamOffsetDatagram(dgi)
         self.lens.setIodOffset(x)
-        self.lens.setViewHpr(h,p,r)
+        self.lens.setViewHpr(h, p, r)
 
-    def handleCamFrustum(self,dgi):
+    def handleCamFrustum(self, dgi):
         """ Adjust camera frustum based on parameters sent by client """
-        (fl,fs,fo) = self.msgHandler.parseCamFrustumDatagram(dgi)
+        (fl, fs, fo) = self.msgHandler.parseCamFrustumDatagram(dgi)
         self.lens.setFocalLength(fl)
         self.lens.setFilmSize(fs[0], fs[1])
         self.lens.setFilmOffset(fo[0], fo[1])
 
-    def handleCamMovement(self,dgi):
+    def handleCamMovement(self, dgi):
         """ Update cameraJig position to reflect latest position """
-        (x,y,z,h,p,r) = self.msgHandler.parseCamMovementDatagram(dgi)
-        self.cameraJig.setPosHpr(render,x,y,z,h,p,r)
+        (x, y, z, h, p, r) = self.msgHandler.parseCamMovementDatagram(dgi)
+        self.cameraJig.setPosHpr(render, x, y, z, h, p, r)
         self.fPosReceived = 1
 
-    def handleSelectedMovement(self,dgi):
+    def handleSelectedMovement(self, dgi):
         """ Update cameraJig position to reflect latest position """
-        (x,y,z,h,p,r,sx,sy,sz) = self.msgHandler.parseSelectedMovementDatagram(
+        (x, y, z, h, p, r, sx, sy, sz) = self.msgHandler.parseSelectedMovementDatagram(
             dgi)
         if last:
-            last.setPosHprScale(x,y,z,h,p,r,sx,sy,sz)
+            last.setPosHprScale(x, y, z, h, p, r, sx, sy, sz)
 
-    def handleTimeData(self,dgi):
+    def handleTimeData(self, dgi):
         """ Update cameraJig position to reflect latest position """
-        (frameCount,frameTime,dt) = self.msgHandler.parseTimeDataDatagram(dgi)
+        (frameCount, frameTime, dt) = self.msgHandler.parseTimeDataDatagram(dgi)
         # Use frame time from client for both real and frame time
         globalClock.setFrameCount(frameCount)
         globalClock.setFrameTime(frameTime)

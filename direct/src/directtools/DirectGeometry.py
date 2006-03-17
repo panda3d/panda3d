@@ -154,7 +154,7 @@ def getScreenXY(nodePath):
     percentX = (nearX - direct.dr.left)/direct.dr.nearWidth
     percentY = (nearY - direct.dr.bottom)/direct.dr.nearHeight
     # Map this percentage to the same -1 to 1 space as the mouse
-    screenXY = Vec3((2 * percentX) - 1.0,nearVec[1],(2 * percentY) - 1.0)
+    screenXY = Vec3((2 * percentX) - 1.0, nearVec[1], (2 * percentY) - 1.0)
     # Return the resulting value
     return screenXY
 
@@ -163,7 +163,7 @@ def getCrankAngle(center):
     # origin) in screen space
     x = direct.dr.mouseX - center[0]
     y = direct.dr.mouseY - center[2]
-    return (180 + rad2Deg(math.atan2(y,x)))
+    return (180 + rad2Deg(math.atan2(y, x)))
 
 def relHpr(nodePath, base, h, p, r):
     # Compute nodePath2newNodePath relative to base coordinate system
@@ -171,7 +171,7 @@ def relHpr(nodePath, base, h, p, r):
     mNodePath2Base = nodePath.getMat(base)
     # delta scale, orientation, and position matrix
     mBase2NewBase = Mat4()
-    composeMatrix(mBase2NewBase, UNIT_VEC, VBase3(h,p,r), ZERO_VEC,
+    composeMatrix(mBase2NewBase, UNIT_VEC, VBase3(h, p, r), ZERO_VEC,
                   CSDefault)
     # base2nodePath
     mBase2NodePath = base.getMat(nodePath)

@@ -56,11 +56,11 @@ class DevWalker(DirectObject.DirectObject):
 
     def setWallBitMask(self, bitMask):
         pass
-    
+
     def setFloorBitMask(self, bitMask):
         pass
 
-    def initializeCollisions(self, collisionTraverser, avatarNodePath, 
+    def initializeCollisions(self, collisionTraverser, avatarNodePath,
             wallCollideMask, floorCollideMask,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         assert not avatarNodePath.isEmpty()
@@ -79,7 +79,7 @@ class DevWalker(DirectObject.DirectObject):
 
     def setCollisionsActive(self, active = 1):
         pass
-    
+
     def placeOnFloor(self):
         pass
 
@@ -111,21 +111,21 @@ class DevWalker(DirectObject.DirectObject):
         run = inputState.isSet("run") and self.runMultiplier or 1.0
         # Determine what the speeds are based on the buttons:
         self.speed=(
-                (forward and self.avatarControlForwardSpeed or 
+                (forward and self.avatarControlForwardSpeed or
                 reverse and -self.avatarControlReverseSpeed))
         self.liftSpeed=(
-                (levitateUp and self.avatarControlForwardSpeed or 
+                (levitateUp and self.avatarControlForwardSpeed or
                 levitateDown and -self.avatarControlReverseSpeed))
         self.slideSpeed=(
-                (slideLeft and -self.avatarControlForwardSpeed) or 
+                (slideLeft and -self.avatarControlForwardSpeed) or
                 (slideRight and self.avatarControlForwardSpeed))
         self.rotationSpeed=(
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
-           
+
         if self.wantDebugIndicator:
             self.displayDebugInfo()
-            
+
         # Check to see if we're moving at all:
         if self.speed or self.liftSpeed or self.slideSpeed or self.rotationSpeed:
             # How far did we move based on the amount of time elapsed?
@@ -136,8 +136,8 @@ class DevWalker(DirectObject.DirectObject):
             rotation = dt * self.rotationSpeed
 
             # Take a step in the direction of our previous heading.
-            self.vel=Vec3(Vec3.forward() * distance + 
-                          Vec3.up() * lift + 
+            self.vel=Vec3(Vec3.forward() * distance +
+                          Vec3.up() * lift +
                           Vec3.right() * slideDistance)
             if self.vel != Vec3.zero():
                 # rotMat is the rotation matrix corresponding to
@@ -172,7 +172,7 @@ class DevWalker(DirectObject.DirectObject):
         if self.task:
             self.task.remove()
             self.task = None
-    
+
     if __debug__:
         def debugPrint(self, message):
             """for debugging"""

@@ -7,7 +7,7 @@ from direct.task import Task
 
 CAM_MOVE_DURATION = 1.2
 COA_MARKER_SF = 0.0075
-Y_AXIS = Vec3(0,1,0)
+Y_AXIS = Vec3(0, 1, 0)
 
 class DirectCameraControl(DirectObject):
     def __init__(self):
@@ -16,12 +16,12 @@ class DirectCameraControl(DirectObject):
         self.startF = 0
         self.orthoViewRoll = 0.0
         self.lastView = 0
-        self.coa = Point3(0,100,0)
+        self.coa = Point3(0, 100, 0)
         self.coaMarker = loader.loadModel('models/misc/sphere')
         self.coaMarker.setName('DirectCameraCOAMarker')
         self.coaMarker.setTransparency(1)
-        self.coaMarker.setColor(1,0,0,0)
-        self.coaMarker.setPos(0,100,0)
+        self.coaMarker.setColor(1, 0, 0, 0)
+        self.coaMarker.setPos(0, 100, 0)
         useDirectRenderStyle(self.coaMarker)
         self.coaMarkerPos = Point3(0)
         self.coaMarkerColorIval = None
@@ -208,7 +208,7 @@ class DirectCameraControl(DirectObject):
             # Translation action
             return self.XZTranslateTask(state)
 
-    def XZTranslateTask(self,state):
+    def XZTranslateTask(self, state):
         coaDist = Vec3(self.coaMarker.getPos(direct.camera)).length()
         xlateSF = (coaDist / direct.dr.near)
         direct.camera.setPos(direct.camera,
@@ -221,7 +221,7 @@ class DirectCameraControl(DirectObject):
                               xlateSF))
         return Task.cont
 
-    def HPanYZoomTask(self,state):
+    def HPanYZoomTask(self, state):
         # If the cam is orthogonal, don't rotate or zoom.
         if (hasattr(direct.camera.node(), "getLens") and
             direct.camera.node().getLens().__class__.__name__ == "OrthographicLens"):
@@ -400,11 +400,11 @@ class DirectCameraControl(DirectObject):
             # At least display it
             dist = pow(10.0, self.nullHitPointCount)
             direct.message('COA Distance: ' + `dist`)
-            coa.set(0,dist,0)
+            coa.set(0, dist, 0)
         # Compute COA Dist
         coaDist = Vec3(coa - ZERO_POINT).length()
         if coaDist < (1.1 * dr.near):
-            coa.set(0,100,0)
+            coa.set(0, 100, 0)
             coaDist = 100
         # Update coa and marker
         self.updateCoa(coa, coaDist = coaDist)
@@ -444,8 +444,8 @@ class DirectCameraControl(DirectObject):
             self.coaMarkerColorIval.finish()
         self.coaMarkerColorIval = Sequence(
             Func(self.coaMarker.unstash),
-            self.coaMarker.colorInterval(1.5, Vec4(1,0,0,0),
-                                         startColor = Vec4(1,0,0,1),
+            self.coaMarker.colorInterval(1.5, Vec4(1, 0, 0, 0),
+                                         startColor = Vec4(1, 0, 0, 1),
                                          blendType = 'easeInOut'),
             Func(self.coaMarker.stash)
             )
@@ -481,7 +481,7 @@ class DirectCameraControl(DirectObject):
         zAxis = Vec3(mCam2Render.xformVec(Z_AXIS))
         zAxis.normalize()
         # Compute rotation angle needed to upright cam
-        orbitAngle = rad2Deg(math.acos(CLAMP(zAxis.dot(Z_AXIS),-1,1)))
+        orbitAngle = rad2Deg(math.acos(CLAMP(zAxis.dot(Z_AXIS), -1, 1)))
         # Check angle
         if orbitAngle < 0.1:
             # Already upright
@@ -490,7 +490,7 @@ class DirectCameraControl(DirectObject):
         rotAxis = Vec3(zAxis.cross(Z_AXIS))
         rotAxis.normalize()
         # Find angle between rot Axis and render X_AXIS
-        rotAngle = rad2Deg(math.acos(CLAMP(rotAxis.dot(X_AXIS),-1,1)))
+        rotAngle = rad2Deg(math.acos(CLAMP(rotAxis.dot(X_AXIS), -1, 1)))
         # Determine sign or rotation angle
         if rotAxis[1] < 0:
             rotAngle *= -1
@@ -593,7 +593,7 @@ class DirectCameraControl(DirectObject):
         # Record view for next time around
         self.lastView = view
         t = direct.camera.lerpPosHpr(ZERO_POINT,
-                                     VBase3(0,0,self.orthoViewRoll),
+                                     VBase3(0, 0, self.orthoViewRoll),
                                      CAM_MOVE_DURATION,
                                      other = self.camManipRef,
                                      blendType = 'easeInOut',
@@ -616,7 +616,7 @@ class DirectCameraControl(DirectObject):
         parent = direct.camera.getParent()
         direct.camera.wrtReparentTo(self.camManipRef)
 
-        manipTask = self.camManipRef.lerpHpr(VBase3(degrees,0,0),
+        manipTask = self.camManipRef.lerpHpr(VBase3(degrees, 0, 0),
                                              CAM_MOVE_DURATION,
                                              blendType = 'easeInOut',
                                              task = 'manipulateCamera')
@@ -634,7 +634,7 @@ class DirectCameraControl(DirectObject):
         taskMgr.remove('manipulateCamera')
         # How big is the node?
         nodeScale = direct.widget.scalingNode.getScale(render)
-        maxScale = max(nodeScale[0],nodeScale[1],nodeScale[2])
+        maxScale = max(nodeScale[0], nodeScale[1], nodeScale[2])
         maxDim = min(direct.dr.nearWidth, direct.dr.nearHeight)
 
         # At what distance does the object fill 30% of the screen?
@@ -655,7 +655,7 @@ class DirectCameraControl(DirectObject):
 
         parent = direct.camera.getParent()
         direct.camera.wrtReparentTo(self.camManipRef)
-        fitTask = direct.camera.lerpPos(Point3(0,0,0),
+        fitTask = direct.camera.lerpPos(Point3(0, 0, 0),
                                         CAM_MOVE_DURATION,
                                         blendType = 'easeInOut',
                                         task = 'manipulateCamera')

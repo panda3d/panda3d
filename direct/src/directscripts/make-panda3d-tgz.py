@@ -9,7 +9,7 @@ Options:
         Specifies the CVSROOT string to use to tag and export the
         tree.  The default is $SFROOT if it is defined, or $CVSROOT
         otherwise.
- 
+
     -r tag
         Specifies the tag to export from.  If this parameter is
         specified, the tree is not tagged again; otherwise, the
@@ -17,7 +17,7 @@ Options:
         name.
 
     -m module
-        Specifies the module to check out and build.  The default is 
+        Specifies the module to check out and build.  The default is
         panda3d.
 """
 

@@ -395,14 +395,14 @@ class Actor(DirectObject, NodePath):
         # and sort them every time somebody asks for the list
         self.__sortedLODNames = self.__partBundleDict.keys()
         # Reverse sort the doing a string->int
-        def sortFunc(x,y):
+        def sortFunc(x, y):
             if not str(x).isdigit():
                 smap = {'h':2,
                         'm':1,
                         'l':0}
-                return cmp(smap[y[0]],smap[x[0]])
+                return cmp(smap[y[0]], smap[x[0]])
             else:
-                return cmp (int(y),int(x))
+                return cmp (int(y), int(x))
                 
         self.__sortedLODNames.sort(sortFunc)
 

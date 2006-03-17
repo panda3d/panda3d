@@ -28,10 +28,10 @@ class PhysicsWalker(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("PhysicsWalker")
     wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
-    
+
     useLifter = 0
     useHeightRay = 0
-    
+
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
             hardLandingForce=16.0):
@@ -41,7 +41,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.__gravity=gravity
         self.__standableGround=standableGround
         self.__hardLandingForce=hardLandingForce
-        
+
         self.needToDeltaPos = 0
         self.physVelocityIndicator=None
         self.avatarControlForwardSpeed=0
@@ -58,7 +58,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.__slideSpeed=0.0
         self.__vel=Vec3(0.0)
         self.collisionsActive = 0
-        
+
         self.isAirborne = 0
         self.highMark = 0
 
@@ -70,14 +70,14 @@ class PhysicsWalker(DirectObject.DirectObject):
         from pandac.PandaModules import *
         from direct.interval.IntervalGlobal import *
         from toontown.coghq import MovingPlatform
-        
+
         if hasattr(self, "platform"):
             # Remove the prior instantiation:
             self.moveIval.pause()
             del self.moveIval
             self.platform.destroy()
             del self.platform
-        
+
         model = loader.loadModelCopy('phase_9/models/cogHQ/platform1')
         fakeId = id(self)
         self.platform = MovingPlatform.MovingPlatform()
@@ -263,16 +263,16 @@ class PhysicsWalker(DirectObject.DirectObject):
         #fnp.remove()
         return avatarNodePath
 
-    def initializeCollisions(self, collisionTraverser, avatarNodePath, 
-            wallBitmask, floorBitmask, 
+    def initializeCollisions(self, collisionTraverser, avatarNodePath,
+            wallBitmask, floorBitmask,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         """
         Set up the avatar collisions
         """
         assert self.debugPrint("initializeCollisions()")
-        
+
         assert not avatarNodePath.isEmpty()
-        
+
         self.cTrav = collisionTraverser
         self.floorOffset = floorOffset = 7.0
 
@@ -356,7 +356,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         del self.cSphereNodePath
 
         del self.pusher
-        
+
         del self.getAirborneHeight
 
     def setCollisionsActive(self, active = 1):
@@ -382,11 +382,11 @@ class PhysicsWalker(DirectObject.DirectObject):
         assert(self.debugPrint("getCollisionsActive() returning=%s"%(
             self.collisionsActive,)))
         return self.collisionsActive
-    
+
     def placeOnFloor(self):
         """
         Make a reasonable effort to place the avatar on the ground.
-        For example, this is useful when switching away from the 
+        For example, this is useful when switching away from the
         current walker.
         """
         self.oneTimeCollide()
@@ -415,7 +415,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         For debug use.
         """
         onScreenDebug.add("w controls", "PhysicsWalker")
-        
+
         if self.useLifter:
             onScreenDebug.add("w airborneHeight", self.lifter.getAirborneHeight())
             onScreenDebug.add("w isOnGround", self.lifter.isOnGround())
@@ -443,14 +443,14 @@ class PhysicsWalker(DirectObject.DirectObject):
         #rotAvatarToPhys=Mat3.rotateMatNormaxis(-self.avatarNodePath.getH(), Vec3.up())
         #rotPhysToAvatar=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
         contact=self.actorNode.getContactVector()
-        
+
         # hack fix for falling through the floor:
         if contact==Vec3.zero() and self.avatarNodePath.getZ()<-50.0:
             # DCR: don't reset X and Y; allow player to move
             self.reset()
             self.avatarNodePath.setZ(50.0)
             messenger.send("walkerIsOutOfWorld", [self.avatarNodePath])
-           
+
         if self.wantDebugIndicator:
             self.displayDebugInfo()
 
@@ -464,14 +464,14 @@ class PhysicsWalker(DirectObject.DirectObject):
         slideRight = 0#inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
-        self.__speed=(forward and self.avatarControlForwardSpeed or 
+        self.__speed=(forward and self.avatarControlForwardSpeed or
                 reverse and -self.avatarControlReverseSpeed)
         avatarSlideSpeed=self.avatarControlForwardSpeed*0.5
         #self.__slideSpeed=slide and (
-        #        (turnLeft and -avatarSlideSpeed) or 
+        #        (turnLeft and -avatarSlideSpeed) or
         #        (turnRight and avatarSlideSpeed))
         self.__slideSpeed=(
-                (slideLeft and -avatarSlideSpeed) or 
+                (slideLeft and -avatarSlideSpeed) or
                 (slideRight and avatarSlideSpeed))
         self.__rotationSpeed=not slide and (
                 (turnLeft and self.avatarControlRotateSpeed) or
@@ -502,13 +502,13 @@ class PhysicsWalker(DirectObject.DirectObject):
             if self.wantDebugIndicator:
                 onScreenDebug.add("posDelta1",
                     self.avatarNodePath.getPosDelta(render).pPrintValues())
-                
+
                 if 0:
                     onScreenDebug.add("posDelta3",
                         render.getRelativeVector(
                             self.avatarNodePath,
                             self.avatarNodePath.getPosDelta(render)).pPrintValues())
-                
+
                 if 0:
                     onScreenDebug.add("gravity",
                         self.gravity.getLocalVector().pPrintValues())
@@ -516,7 +516,7 @@ class PhysicsWalker(DirectObject.DirectObject):
                         self.priorParent.getLocalVector().pPrintValues())
                     onScreenDebug.add("avatarViscosity",
                         "% 10.4f"%(self.avatarViscosity.getCoef(),))
-                    
+
                     onScreenDebug.add("physObject pos",
                         physObject.getPosition().pPrintValues())
                     onScreenDebug.add("physObject hpr",
@@ -531,7 +531,7 @@ class PhysicsWalker(DirectObject.DirectObject):
                         "% 10.4f"%physObject.getVelocity().length())
 
                 if 0:
-                    onScreenDebug.add("posDelta4", 
+                    onScreenDebug.add("posDelta4",
                         self.priorParentNp.getRelativeVector(
                             render,
                             self.avatarNodePath.getPosDelta(render)).pPrintValues())
@@ -636,7 +636,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.__oldAirborneHeight=airborneHeight
 
         moveToGround = Vec3.zero()
-        if not self.useHeightRay or self.isAirborne: 
+        if not self.useHeightRay or self.isAirborne:
             # ...the airborne check is a hack to stop sliding.
             self.phys.doPhysics(dt)
             if __debug__:
@@ -662,9 +662,9 @@ class PhysicsWalker(DirectObject.DirectObject):
             # update pos:
             # Take a step in the direction of our previous heading.
             self.__vel=Vec3(
-                Vec3.forward() * distance + 
+                Vec3.forward() * distance +
                 Vec3.right() * slideDistance)
-            
+
             # rotMat is the rotation matrix corresponding to
             # our previous heading.
             rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
@@ -690,20 +690,20 @@ class PhysicsWalker(DirectObject.DirectObject):
         # Clear the contact vector so we can tell if we contact something next frame:
         self.actorNode.setContactVector(Vec3.zero())
         return Task.cont
-    
+
     def doDeltaPos(self):
         assert self.debugPrint("doDeltaPos()")
         self.needToDeltaPos = 1
-    
+
     def setPriorParentVector(self):
         assert self.debugPrint("doDeltaPos()")
-        
+
         print "self.__oldDt", self.__oldDt, "self.__oldPosDelta", self.__oldPosDelta
         if __debug__:
             onScreenDebug.add("__oldDt", "% 10.4f"%self.__oldDt)
             onScreenDebug.add("self.__oldPosDelta",
                               self.__oldPosDelta.pPrintValues())
-        
+
         velocity = self.__oldPosDelta*(1/self.__oldDt)*4.0 # *4.0 is a hack
         assert self.debugPrint("  __oldPosDelta=%s"%(self.__oldPosDelta,))
         assert self.debugPrint("  velocity=%s"%(velocity,))
@@ -711,7 +711,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         if __debug__:
             if self.wantDebugIndicator:
                 onScreenDebug.add("velocity", velocity.pPrintValues())
-    
+
     def reset(self):
         assert self.debugPrint("reset()")
         self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
@@ -763,7 +763,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             self.ignore("control-f3") #*#
             self.ignore("f3")
 
-    
+
     if __debug__:
         def setupAvatarPhysicsIndicator(self):
             if self.wantDebugIndicator:

@@ -59,7 +59,7 @@ class DirectFastrak(DirectObject):
         return Task.cont
 
     def fastrakUpdate(self):
-        # Get tracker position in feet.  Flip x,z axes.
+        # Get tracker position in feet.  Flip x, z axes.
         pos = direct.fastrak[self.deviceNo].tracker.getPos()
         self.trackerPos = Vec3(3.280839895013123 * pos[2],
                                3.280839895013123 * pos[1],

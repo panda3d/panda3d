@@ -52,8 +52,8 @@ class ClusterClient(DirectObject.DirectObject):
         self.serverList = []
         self.msgHandler = ClusterMsgHandler(ClusterClient.MGR_NUM, self.notify)
         for serverConfig in configList:
-            server = DisplayConnection(self.qcm,serverConfig.serverName,
-                                       serverConfig.serverPort,self.msgHandler)
+            server = DisplayConnection(self.qcm, serverConfig.serverName,
+                                       serverConfig.serverPort, self.msgHandler)
             if server == None:
                 self.notify.error('Could not open %s on %s port %d' %
                                   (serverConfig.serverConfigName,
@@ -63,7 +63,7 @@ class ClusterClient(DirectObject.DirectObject):
                 self.notify.debug('send cam pos')
                 #server.sendMoveCam(Point3(0), Vec3(0))
                 self.notify.debug('send cam offset')
-                server.sendCamOffset(serverConfig.xyz,serverConfig.hpr)
+                server.sendCamOffset(serverConfig.xyz, serverConfig.hpr)
                 if serverConfig.fFrustum:
                     self.notify.debug('send cam frustum')
                     server.sendCamFrustum(serverConfig.focalLength,
@@ -81,7 +81,7 @@ class ClusterClient(DirectObject.DirectObject):
         self.notify.debug('broadcasting frame time')
         taskMgr.add(self.synchronizeTimeTask, "synchronizeTimeTask", -40)
 
-    def synchronizeTimeTask(self,task):
+    def synchronizeTimeTask(self, task):
         frameCount = globalClock.getFrameCount()
         frameTime = globalClock.getFrameTime()
         dt = globalClock.getDt()
@@ -93,7 +93,7 @@ class ClusterClient(DirectObject.DirectObject):
         self.notify.debug('adding move cam')
         taskMgr.add(self.moveCameraTask, "moveCamTask", 49)
 
-    def moveCameraTask(self,task):
+    def moveCameraTask(self, task):
         self.moveCamera(
             base.camera.getPos(render),
             base.camera.getHpr(render))
@@ -102,7 +102,7 @@ class ClusterClient(DirectObject.DirectObject):
     def moveCamera(self, xyz, hpr):
         self.notify.debug('moving unsynced camera')
         for server in self.serverList:
-            server.sendMoveCam(xyz,hpr)
+            server.sendMoveCam(xyz, hpr)
 
     def startMoveSelectedTask(self):
         taskMgr.add(self.moveSelectedTask, "moveSelectedTask", 48)
@@ -116,7 +116,7 @@ class ClusterClient(DirectObject.DirectObject):
             scale = VBase3(1)
             decomposeMatrix(last.getMat(), scale, hpr, xyz)
             for server in self.serverList:
-                server.sendMoveSelected(xyz,hpr,scale)
+                server.sendMoveSelected(xyz, hpr, scale)
         return Task.cont
 
     def getNodePathFindCmd(self, nodePath):
@@ -182,7 +182,7 @@ class ClusterClientSync(ClusterClient):
     def startSwapCoordinatorTask(self):
         taskMgr.add(self.swapCoordinator, "clientSwapCoordinator", 51)
 
-    def swapCoordinator(self,task):
+    def swapCoordinator(self, task):
         self.ready = 1
         if self.waitForSwap:
             self.waitForSwap=0
@@ -201,15 +201,15 @@ class ClusterClientSync(ClusterClient):
                 "------------------------------------------END swap")
         return Task.cont
 
-    def moveCamera(self,xyz,hpr):
+    def moveCamera(self, xyz, hpr):
         if self.ready:
             self.notify.debug('moving synced camera')
-            ClusterClient.moveCamera(self,xyz,hpr)
+            ClusterClient.moveCamera(self, xyz, hpr)
             self.waitForSwap=1
 
 
 class DisplayConnection:
-    def __init__(self,qcm,serverName,port,msgHandler):
+    def __init__(self, qcm, serverName, port, msgHandler):
         self.msgHandler = msgHandler
         gameServerTimeoutMs = base.config.GetInt(
             "cluster-server-timeout-ms", 300000)
@@ -225,15 +225,15 @@ class DisplayConnection:
             self.qcr.addConnection(self.tcpConn)
             self.cw=ConnectionWriter(qcm, 0)
 
-    def sendCamOffset(self,xyz,hpr):
+    def sendCamOffset(self, xyz, hpr):
         ClusterClient.notify.debug("send cam offset...")
-        ClusterClient.notify.debug(("packet %d xyz,hpr=%f %f %f %f %f %f" %
-             (self.msgHandler.packetNumber,xyz[0],xyz[1],xyz[2],
-             hpr[0],hpr[1],hpr[2])))
+        ClusterClient.notify.debug(("packet %d xyz, hpr=%f %f %f %f %f %f" %
+             (self.msgHandler.packetNumber, xyz[0], xyz[1], xyz[2],
+             hpr[0], hpr[1], hpr[2])))
         datagram = self.msgHandler.makeCamOffsetDatagram(xyz, hpr)
         self.cw.send(datagram, self.tcpConn)
 
-    def sendCamFrustum(self,focalLength, filmSize, filmOffset):
+    def sendCamFrustum(self, focalLength, filmSize, filmOffset):
         ClusterClient.notify.info("send cam frustum...")
         ClusterClient.notify.info(
             (("packet %d" % self.msgHandler.packetNumber) +
@@ -245,23 +245,23 @@ class DisplayConnection:
             focalLength, filmSize, filmOffset)
         self.cw.send(datagram, self.tcpConn)
 
-    def sendMoveCam(self,xyz,hpr):
+    def sendMoveCam(self, xyz, hpr):
         ClusterClient.notify.debug("send cam move...")
-        ClusterClient.notify.debug(("packet %d xyz,hpr=%f %f %f %f %f %f" %
-             (self.msgHandler.packetNumber,xyz[0],xyz[1],xyz[2],
-             hpr[0],hpr[1],hpr[2])))
+        ClusterClient.notify.debug(("packet %d xyz, hpr=%f %f %f %f %f %f" %
+             (self.msgHandler.packetNumber, xyz[0], xyz[1], xyz[2],
+             hpr[0], hpr[1], hpr[2])))
         datagram = self.msgHandler.makeCamMovementDatagram(xyz, hpr)
         self.cw.send(datagram, self.tcpConn)
 
-    def sendMoveSelected(self,xyz,hpr,scale):
+    def sendMoveSelected(self, xyz, hpr, scale):
         ClusterClient.notify.debug("send move selected...")
         ClusterClient.notify.debug(
-            "packet %d xyz,hpr=%f %f %f %f %f %f %f %f %f" %
+            "packet %d xyz, hpr=%f %f %f %f %f %f %f %f %f" %
             (self.msgHandler.packetNumber,
-             xyz[0],xyz[1],xyz[2],
-             hpr[0],hpr[1],hpr[2],
-             scale[0],scale[1],scale[2]))
-        datagram = self.msgHandler.makeSelectedMovementDatagram(xyz, hpr,scale)
+             xyz[0], xyz[1], xyz[2],
+             hpr[0], hpr[1], hpr[2],
+             scale[0], scale[1], scale[2]))
+        datagram = self.msgHandler.makeSelectedMovementDatagram(xyz, hpr, scale)
         self.cw.send(datagram, self.tcpConn)
 
     # the following should only be called by a synchronized cluster manger
@@ -293,7 +293,7 @@ class DisplayConnection:
         datagram = self.msgHandler.makeExitDatagram()
         self.cw.send(datagram, self.tcpConn)
 
-    def sendTimeData(self,frameCount, frameTime, dt):
+    def sendTimeData(self, frameCount, frameTime, dt):
         ClusterClient.notify.debug("send time data...")
         datagram = self.msgHandler.makeTimeDataDatagram(
             frameCount, frameTime, dt)
@@ -362,7 +362,7 @@ def createClusterClient():
             if serverName == '':
                 base.notify.warning(
                     '%s undefined in Configrc: expected by %s display client.'%
-                    (serverConfigName,clusterConfig))
+                    (serverConfigName, clusterConfig))
                 base.notify.warning('%s will not be used.' % serverConfigName)
             else:
                 # Server port

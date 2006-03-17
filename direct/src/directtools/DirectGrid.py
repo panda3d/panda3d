@@ -16,30 +16,30 @@ class DirectGrid(NodePath, DirectObject):
         # Polygon used to mark grid plane
         self.gridBack = loader.loadModel('models/misc/gridBack')
         self.gridBack.reparentTo(self)
-        self.gridBack.setColor(0.5,0.5,0.5,0.5)
+        self.gridBack.setColor(0.5, 0.5, 0.5, 0.5)
 
         # Grid Lines
         self.lines = self.attachNewNode('gridLines')
         self.minorLines = LineNodePath(self.lines)
         self.minorLines.lineNode.setName('minorLines')
-        self.minorLines.setColor(VBase4(0.3,0.55,1,1))
+        self.minorLines.setColor(VBase4(0.3, 0.55, 1, 1))
         self.minorLines.setThickness(1)
 
         self.majorLines = LineNodePath(self.lines)
         self.majorLines.lineNode.setName('majorLines')
-        self.majorLines.setColor(VBase4(0.3,0.55,1,1))
+        self.majorLines.setColor(VBase4(0.3, 0.55, 1, 1))
         self.majorLines.setThickness(5)
 
         self.centerLines = LineNodePath(self.lines)
         self.centerLines.lineNode.setName('centerLines')
-        self.centerLines.setColor(VBase4(1,0,0,0))
+        self.centerLines.setColor(VBase4(1, 0, 0, 0))
         self.centerLines.setThickness(3)
 
         # Small marker to hilight snap-to-grid point
         self.snapMarker = loader.loadModel('models/misc/sphere')
         self.snapMarker.node().setName('gridSnapMarker')
         self.snapMarker.reparentTo(self)
-        self.snapMarker.setColor(1,0,0,1)
+        self.snapMarker.setColor(1, 0, 0, 1)
         self.snapMarker.setScale(0.3)
         self.snapPos = Point3(0)
 
@@ -79,11 +79,11 @@ class DirectGrid(NodePath, DirectObject):
         # Now redraw lines
         numLines = int(math.ceil(self.gridSize/self.gridSpacing))
         scaledSize = numLines * self.gridSpacing
- 
+
         center = self.centerLines
         minor = self.minorLines
         major = self.majorLines
-        for i in range(-numLines,numLines + 1):
+        for i in range(-numLines, numLines + 1):
             if i == 0:
                 center.moveTo(i * self.gridSpacing, -scaledSize, 0)
                 center.drawTo(i * self.gridSpacing, scaledSize, 0)
@@ -105,7 +105,7 @@ class DirectGrid(NodePath, DirectObject):
         minor.create()
         major.create()
         self.gridBack.setScale(scaledSize)
-        
+
     def setXyzSnap(self, fSnap):
         self.fXyzSnap = fSnap
 
@@ -127,7 +127,7 @@ class DirectGrid(NodePath, DirectObject):
                 ROUND_TO(self.snapPos[0], self.gridSpacing),
                 ROUND_TO(self.snapPos[1], self.gridSpacing),
                 ROUND_TO(self.snapPos[2], self.gridSpacing))
-            
+
         # Move snap marker to this point
         self.snapMarker.setPos(self.snapPos)
 
@@ -146,7 +146,7 @@ class DirectGrid(NodePath, DirectObject):
     def setGridSpacing(self, spacing):
         self.gridSpacing = spacing
         self.updateGrid()
-        
+
     def getGridSpacing(self):
         return self.gridSpacing
 

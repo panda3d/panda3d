@@ -39,7 +39,7 @@ class DirectManipulationControl(DirectObject):
         self.defaultSkipFlags = SKIP_HIDDEN | SKIP_BACKFACE
         self.optionalSkipFlags = 0
         self.unmovableTagList = []
-        
+
     def manipulationStart(self, modifiers):
         # Start out in select mode
         self.mode = 'select'
@@ -55,7 +55,7 @@ class DirectManipulationControl(DirectObject):
         else:
             # Nope, off the widget, no constraint
             self.constraint = None
-            
+
         if not direct.gotAlt(modifiers):
             # Check to see if we are moving the object
             # We are moving the object if we either wait long enough
@@ -183,7 +183,7 @@ class DirectManipulationControl(DirectObject):
     # Changes:    none
     # Returns:    list of edit types
     #--------------------------------------------------------------------------
-    def getEditTypes(self,objects):
+    def getEditTypes(self, objects):
         # See if any of the selected in the don't manipulate tag list
         editTypes = 0
         for tag in self.unmovableTagList:
@@ -218,7 +218,7 @@ class DirectManipulationControl(DirectObject):
             self.objectHandles.hideAllHandles()
             self.objectHandles.showHandle(self.constraint)
             if direct.clusterMode == 'client':
-                oh = 'direct.manipulationControl.objectHandles' 
+                oh = 'direct.manipulationControl.objectHandles'
                 cluster(oh + '.showGuides()', 0)
                 cluster(oh + '.hideAllHandles()', 0)
                 cluster(oh + ('.showHandle("%s")'% self.constraint), 0)
@@ -229,7 +229,7 @@ class DirectManipulationControl(DirectObject):
             # Send event to signal start of manipulation
             messenger.send('DIRECT_manipulateObjectStart')
             # Manipulate the real object with the constraint
-            # The constraint is passed as the name of the node 
+            # The constraint is passed as the name of the node
             self.spawnManipulateObjectTask()
 
     def spawnManipulateObjectTask(self):
@@ -338,7 +338,7 @@ class DirectManipulationControl(DirectObject):
             direct.widget.setPos(direct.widget, offset)
 
     def rotate1D(self, state):
-        # Constrained 1D rotation about the widget's main axis (X,Y, or Z)
+        # Constrained 1D rotation about the widget's main axis (X, Y, or Z)
         # Rotation depends upon circular motion of the mouse about the
         # projection of the widget's origin on the image plane
         # A complete circle about the widget results in a change in
@@ -351,7 +351,7 @@ class DirectManipulationControl(DirectObject):
             self.fWidgetTop = self.widgetCheck('top?')
             self.rotationCenter = getScreenXY(direct.widget)
             self.lastCrankAngle = getCrankAngle(self.rotationCenter)
-            
+
         # Rotate widget based on how far cursor has swung around origin
         newAngle = getCrankAngle(self.rotationCenter)
         deltaAngle = self.lastCrankAngle - newAngle
@@ -366,7 +366,7 @@ class DirectManipulationControl(DirectObject):
         # Record crank angle for next time around
         self.lastCrankAngle = newAngle
 
-    def widgetCheck(self,type):
+    def widgetCheck(self, type):
         # Utility to see if we are looking at the top or bottom of
         # a 2D planar widget or if we are looking at a 2D planar widget
         # edge on
@@ -530,7 +530,7 @@ class DirectManipulationControl(DirectObject):
             direct.selected.getWrtAll()
             # Move selected
             direct.widget.setPos(
-                direct.camera,entry.getSurfacePoint(entry.getFromNodePath()))
+                direct.camera, entry.getSurfacePoint(entry.getFromNodePath()))
             # Move all the selected objects with widget
             # Move the objects with the widget
             direct.selected.moveWrtWidgetAll()
@@ -538,7 +538,7 @@ class DirectManipulationControl(DirectObject):
             messenger.send('DIRECT_manipulateObjectCleanup',
                            [direct.selected.getSelectedAsList()])
 
-class ObjectHandles(NodePath,DirectObject):
+class ObjectHandles(NodePath, DirectObject):
     def __init__(self):
         # Initialize the superclass
         NodePath.__init__(self)
@@ -560,7 +560,7 @@ class ObjectHandles(NodePath,DirectObject):
         self.xDiscGroup = self.xHandles.find('**/x-disc-group')
         self.xDisc = self.xHandles.find('**/x-disc-visible')
         self.xDiscCollision = self.xHandles.find('**/x-disc')
-        
+
         self.yHandles = self.find('**/Y')
         self.yPostGroup = self.yHandles.find('**/y-post-group')
         self.yPostCollision = self.yHandles.find('**/y-post')
@@ -569,7 +569,7 @@ class ObjectHandles(NodePath,DirectObject):
         self.yDiscGroup = self.yHandles.find('**/y-disc-group')
         self.yDisc = self.yHandles.find('**/y-disc-visible')
         self.yDiscCollision = self.yHandles.find('**/y-disc')
-        
+
         self.zHandles = self.find('**/Z')
         self.zPostGroup = self.zHandles.find('**/z-post-group')
         self.zPostCollision = self.zHandles.find('**/z-post')
@@ -582,13 +582,13 @@ class ObjectHandles(NodePath,DirectObject):
         # Adjust visiblity, colors, and transparency
         self.xPostCollision.hide()
         self.xRingCollision.hide()
-        self.xDisc.setColor(1,0,0,.2)
+        self.xDisc.setColor(1, 0, 0, .2)
         self.yPostCollision.hide()
         self.yRingCollision.hide()
-        self.yDisc.setColor(0,1,0,.2)
+        self.yDisc.setColor(0, 1, 0, .2)
         self.zPostCollision.hide()
         self.zRingCollision.hide()
-        self.zDisc.setColor(0,0,1,.2)
+        self.zDisc.setColor(0, 0, 1, .2)
         # Augment geometry with lines
         self.createObjectHandleLines()
         # Create long markers to help line up in world
@@ -603,7 +603,7 @@ class ObjectHandles(NodePath,DirectObject):
         useDirectRenderStyle(self)
 
     def coaModeColor(self):
-        self.setColor(.5,.5,.5,1)
+        self.setColor(.5, .5, .5, 1)
 
     def manipModeColor(self):
         self.clearColor()
@@ -783,7 +783,7 @@ class ObjectHandles(NodePath,DirectObject):
     def multiplyScalingFactorBy(self, factor):
         taskMgr.remove('resizeObjectHandles')
         sf = self.ohScalingFactor = self.ohScalingFactor * factor
-        self.scalingNode.lerpScale(sf,sf,sf, 0.5,
+        self.scalingNode.lerpScale(sf, sf, sf, 0.5,
                                    blendType = 'easeInOut',
                                    task = 'resizeObjectHandles')
 
@@ -794,7 +794,7 @@ class ObjectHandles(NodePath,DirectObject):
         minDim = min(direct.dr.nearWidth, direct.dr.nearHeight)
         sf = 0.15 * minDim * (pos[1]/direct.dr.near)
         self.ohScalingFactor = sf
-        self.scalingNode.lerpScale(sf,sf,sf, 0.5,
+        self.scalingNode.lerpScale(sf, sf, sf, 0.5,
                                    blendType = 'easeInOut',
                                    task = 'resizeObjectHandles')
 
@@ -802,51 +802,51 @@ class ObjectHandles(NodePath,DirectObject):
         # X post
         self.xPost = self.xPostGroup.attachNewNode('x-post-visible')
         lines = LineNodePath(self.xPost)
-        lines.setColor(VBase4(1,0,0,1))
+        lines.setColor(VBase4(1, 0, 0, 1))
         lines.setThickness(5)
-        lines.moveTo(0,0,0)
-        lines.drawTo(1.5,0,0)
+        lines.moveTo(0, 0, 0)
+        lines.drawTo(1.5, 0, 0)
         lines.create()
         lines = LineNodePath(self.xPost)
-        lines.setColor(VBase4(1,0,0,1))
+        lines.setColor(VBase4(1, 0, 0, 1))
         lines.setThickness(1.5)
-        lines.moveTo(0,0,0)
-        lines.drawTo(-1.5,0,0)
+        lines.moveTo(0, 0, 0)
+        lines.drawTo(-1.5, 0, 0)
         lines.create()
-        
+
         # X ring
         self.xRing = self.xRingGroup.attachNewNode('x-ring-visible')
         lines = LineNodePath(self.xRing)
-        lines.setColor(VBase4(1,0,0,1))
+        lines.setColor(VBase4(1, 0, 0, 1))
         lines.setThickness(3)
-        lines.moveTo(0,1,0)
+        lines.moveTo(0, 1, 0)
         for ang in range(15, 370, 15):
             lines.drawTo(0,
                           math.cos(deg2Rad(ang)),
                           math.sin(deg2Rad(ang)))
         lines.create()
-        
+
         # Y post
         self.yPost = self.yPostGroup.attachNewNode('y-post-visible')
         lines = LineNodePath(self.yPost)
-        lines.setColor(VBase4(0,1,0,1))
+        lines.setColor(VBase4(0, 1, 0, 1))
         lines.setThickness(5)
-        lines.moveTo(0,0,0)
-        lines.drawTo(0,1.5,0)
+        lines.moveTo(0, 0, 0)
+        lines.drawTo(0, 1.5, 0)
         lines.create()
         lines = LineNodePath(self.yPost)
-        lines.setColor(VBase4(0,1,0,1))
+        lines.setColor(VBase4(0, 1, 0, 1))
         lines.setThickness(1.5)
-        lines.moveTo(0,0,0)
-        lines.drawTo(0,-1.5,0)
+        lines.moveTo(0, 0, 0)
+        lines.drawTo(0, -1.5, 0)
         lines.create()
-        
+
         # Y ring
         self.yRing = self.yRingGroup.attachNewNode('y-ring-visible')
         lines = LineNodePath(self.yRing)
-        lines.setColor(VBase4(0,1,0,1))
+        lines.setColor(VBase4(0, 1, 0, 1))
         lines.setThickness(3)
-        lines.moveTo(1,0,0)
+        lines.moveTo(1, 0, 0)
         for ang in range(15, 370, 15):
             lines.drawTo(math.cos(deg2Rad(ang)),
                           0,
@@ -856,24 +856,24 @@ class ObjectHandles(NodePath,DirectObject):
         # Z post
         self.zPost = self.zPostGroup.attachNewNode('z-post-visible')
         lines = LineNodePath(self.zPost)
-        lines.setColor(VBase4(0,0,1,1))
+        lines.setColor(VBase4(0, 0, 1, 1))
         lines.setThickness(5)
-        lines.moveTo(0,0,0)
-        lines.drawTo(0,0,1.5)
+        lines.moveTo(0, 0, 0)
+        lines.drawTo(0, 0, 1.5)
         lines.create()
         lines = LineNodePath(self.zPost)
-        lines.setColor(VBase4(0,0,1,1))
+        lines.setColor(VBase4(0, 0, 1, 1))
         lines.setThickness(1.5)
-        lines.moveTo(0,0,0)
-        lines.drawTo(0,0,-1.5)
+        lines.moveTo(0, 0, 0)
+        lines.drawTo(0, 0, -1.5)
         lines.create()
-        
+
         # Z ring
         self.zRing = self.zRingGroup.attachNewNode('z-ring-visible')
         lines = LineNodePath(self.zRing)
-        lines.setColor(VBase4(0,0,1,1))
+        lines.setColor(VBase4(0, 0, 1, 1))
         lines.setThickness(3)
-        lines.moveTo(1,0,0)
+        lines.moveTo(1, 0, 0)
         for ang in range(15, 370, 15):
             lines.drawTo(math.cos(deg2Rad(ang)),
                           math.sin(deg2Rad(ang)),
@@ -884,28 +884,28 @@ class ObjectHandles(NodePath,DirectObject):
         self.guideLines = self.attachNewNode('guideLines')
         # X guide lines
         lines = LineNodePath(self.guideLines)
-        lines.setColor(VBase4(1,0,0,1))
+        lines.setColor(VBase4(1, 0, 0, 1))
         lines.setThickness(0.5)
-        lines.moveTo(-500,0,0)
-        lines.drawTo(500,0,0)
+        lines.moveTo(-500, 0, 0)
+        lines.drawTo(500, 0, 0)
         lines.create()
         lines.setName('x-guide')
 
         # Y guide lines
         lines = LineNodePath(self.guideLines)
-        lines.setColor(VBase4(0,1,0,1))
+        lines.setColor(VBase4(0, 1, 0, 1))
         lines.setThickness(0.5)
-        lines.moveTo(0,-500,0)
-        lines.drawTo(0,500,0)
+        lines.moveTo(0, -500, 0)
+        lines.drawTo(0, 500, 0)
         lines.create()
         lines.setName('y-guide')
 
         # Z guide lines
         lines = LineNodePath(self.guideLines)
-        lines.setColor(VBase4(0,0,1,1))
+        lines.setColor(VBase4(0, 0, 1, 1))
         lines.setThickness(0.5)
-        lines.moveTo(0,0,-500)
-        lines.drawTo(0,0,500)
+        lines.moveTo(0, 0, -500)
+        lines.drawTo(0, 0, 500)
         lines.create()
         lines.setName('z-guide')
 
@@ -960,12 +960,12 @@ class ObjectHandles(NodePath,DirectObject):
 
         # Calc the xfrom from camera to the nodePath
         mCam2NodePath = direct.camera.getMat(nodePath)
-    
+
         # And determine where the viewpoint is relative to widget
         lineOrigin = VBase3(0)
         decomposeMatrix(mCam2NodePath, VBase3(0), VBase3(0), lineOrigin,
                         CSDefault)
-        
+
         # Next we find the vector from viewpoint to the widget through
         # the mouse's position on near plane.
         # This defines the intersection ray

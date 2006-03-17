@@ -9,12 +9,12 @@ class Logger:
     def __init__(self, fileName="log"):
         """
         Logger constructor
-        """    
+        """
         self.__timeStamp = 1
         self.__startTime = 0.0
         self.__logFile = None
         self.__logFileName = fileName
-    
+
     def setTimeStamp(self, bool):
         """
         Toggle time stamp printing with log entries on and off
@@ -29,7 +29,7 @@ class Logger:
 
 
     # logging control
-   
+
     def resetStartTime(self):
         """
         Reset the start time of the log file for time stamps
@@ -45,9 +45,9 @@ class Logger:
             self.__logFile.write(self.__getTimeStamp())
         self.__logFile.write(entryString + '\n')
 
- 
+
     # logging functions
-    
+
     def __openLogFile(self):
         """
         Open a file for logging error/warning messages

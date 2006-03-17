@@ -41,13 +41,13 @@ SERVER_STARTUP_STRING = (
 
 class ClusterMsgHandler:
     """ClusterMsgHandler: wrapper for PC clusters/multi-piping networking"""
-    def __init__(self,packetStart, notify):
+    def __init__(self, packetStart, notify):
         # packetStart can be used to distinguish which ClusterMsgHandler
         # sends a given packet.
         self.packetNumber = packetStart
         self.notify = notify
 
-    def nonBlockingRead(self,qcr):
+    def nonBlockingRead(self, qcr):
         """
         Return a datagram iterator and type if data is available on the
         queued connection reader
@@ -65,9 +65,9 @@ class ClusterMsgHandler:
             dgi = None
             type = CLUSTER_NONE
         # Note, return datagram to keep a handle on the data
-        return (datagram, dgi,type)
+        return (datagram, dgi, type)
 
-    def blockingRead(self,qcr):
+    def blockingRead(self, qcr):
         """
         Block until data is available on the queued connection reader.
         Returns a datagram iterator and type
@@ -88,14 +88,14 @@ class ClusterMsgHandler:
         # Note, return datagram to keep a handle on the data
         return (datagram, dgi, type)
 
-    def readHeader(self,datagram):
+    def readHeader(self, datagram):
         dgi = PyDatagramIterator(datagram)
         number = dgi.getUint32()
         type = dgi.getUint8()
-        self.notify.debug("Packet %d type %d received" % (number,type))
-        return (dgi,type)        
+        self.notify.debug("Packet %d type %d received" % (number, type))
+        return (dgi, type)        
 
-    def makeCamOffsetDatagram(self,xyz,hpr):
+    def makeCamOffsetDatagram(self, xyz, hpr):
         datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
@@ -115,10 +115,10 @@ class ClusterMsgHandler:
         h=dgi.getFloat32()
         p=dgi.getFloat32()
         r=dgi.getFloat32()
-        self.notify.debug('new offset=%f %f %f  %f %f %f' % (x,y,z,h,p,r))
-        return (x,y,z,h,p,r)
+        self.notify.debug('new offset=%f %f %f  %f %f %f' % (x, y, z, h, p, r))
+        return (x, y, z, h, p, r)
 
-    def makeCamFrustumDatagram(self,focalLength, filmSize, filmOffset):
+    def makeCamFrustumDatagram(self, focalLength, filmSize, filmOffset):
         datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
@@ -133,13 +133,13 @@ class ClusterMsgHandler:
     def parseCamFrustumDatagram(self, dgi):
         focalLength = dgi.getFloat32()
         filmSize    = (dgi.getFloat32(), dgi.getFloat32())
-        filmOffset  = (dgi.getFloat32(),dgi.getFloat32())
+        filmOffset  = (dgi.getFloat32(), dgi.getFloat32())
         self.notify.debug('fl, fs, fo=%f, (%f, %f), (%f, %f)' %
                           (focalLength, filmSize[0], filmSize[1],
                            filmOffset[0], filmOffset[1]))
         return (focalLength, filmSize, filmOffset)
 
-    def makeCamMovementDatagram(self,xyz,hpr):
+    def makeCamMovementDatagram(self, xyz, hpr):
         datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
@@ -160,10 +160,10 @@ class ClusterMsgHandler:
         p=dgi.getFloat32()
         r=dgi.getFloat32()
         self.notify.debug(('  new position=%f %f %f  %f %f %f' %
-                           (x,y,z,h,p,r)))
-        return (x,y,z,h,p,r)
+                           (x, y, z, h, p, r)))
+        return (x, y, z, h, p, r)
 
-    def makeSelectedMovementDatagram(self,xyz,hpr,scale):
+    def makeSelectedMovementDatagram(self, xyz, hpr, scale):
         datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
@@ -190,8 +190,8 @@ class ClusterMsgHandler:
         sy=dgi.getFloat32()
         sz=dgi.getFloat32()
         self.notify.debug('  new position=%f %f %f  %f %f %f %f %f %f' %
-                          (x,y,z,h,p,r,sx,sy,sz))
-        return (x,y,z,h,p,r,sx,sy,sz)
+                          (x, y, z, h, p, r, sx, sy, sz))
+        return (x, y, z, h, p, r, sx, sy, sz)
 
     def makeCommandStringDatagram(self, commandString):
         datagram = PyDatagram()
@@ -226,7 +226,7 @@ class ClusterMsgHandler:
         datagram.addUint8(CLUSTER_EXIT)
         return datagram
         
-    def makeTimeDataDatagram(self,frameCount, frameTime, dt):
+    def makeTimeDataDatagram(self, frameCount, frameTime, dt):
         datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
