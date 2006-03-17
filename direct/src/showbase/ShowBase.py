@@ -1622,7 +1622,8 @@ class ShowBase(DirectObject.DirectObject):
                     camera = None, size = 128,
                     cameraMask = BitMask32.allOn()):
 
-        """ Similar to screenshot(), this sets up a temporary cube map
+        """
+        Similar to screenshot(), this sets up a temporary cube map
         Texture which it uses to take a series of six snapshots of the
         current scene, one in each of the six cube map directions.
         This requires rendering a new frame.
