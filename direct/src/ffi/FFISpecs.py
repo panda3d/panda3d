@@ -76,7 +76,7 @@ class FunctionSpecification:
 
             indent(file, 0, '\n')
             indent(file, nesting, '"""\n')
-        
+
     def getFinalName(self):
         """
         Return the name of the function given that it might be overloaded
@@ -92,7 +92,7 @@ class FunctionSpecification:
             return name
         else:
             return self.name
-            
+
     def outputOverloadedCall(self, file, classTypeDesc, numArgs):
         """
         Write the function call to call this overloaded method
@@ -104,7 +104,7 @@ class FunctionSpecification:
         Constructors are not treated as static. They are special because
         they are not really constructors, they are instance methods that fill
         in the this pointer.
-          
+
         These do not get indented because they are not the beginning of the line
 
         If classTypeDesc is None, then this is a global function and should
@@ -127,7 +127,7 @@ class FunctionSpecification:
                 indent(file, 0, self.getFinalName() + '(*_args)\n')
             else:
                 indent(file, 0, self.getFinalName() + '()\n')
-            
+
 
 class GlobalFunctionSpecification(FunctionSpecification):
     def __init__(self):
@@ -162,7 +162,7 @@ class GlobalFunctionSpecification(FunctionSpecification):
             if (i < (len(argTypes)-1)):
                 file.write(', ')
         file.write('):\n')
-        
+
     def outputBody(self, file, needsDowncast=1, typeChecking=1):
         # The method body will look something like
         #     returnValue = PandaGlobal.method(arg)
@@ -186,16 +186,16 @@ class GlobalFunctionSpecification(FunctionSpecification):
             if (i < (len(argTypes)-1)):
                 file.write(', ')
         file.write(')\n')
-        #indent(file,1, 'if returnValue is None:\n')
-        #indent(file,2, 'return None\n')
+        #indent(file, 1, 'if returnValue is None:\n')
+        #indent(file, 2, 'return None\n')
         returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
         returnType.generateReturnValueWrapper(None, file,
                                               self.typeDescriptor.userManagesMemory,
                                               needsDowncast, 1)
-        
+
     def outputFooter(self, file):
         indent(file, 0, '\n')
-        
+
     ##################################################
     ## Class Method Code Generation
     ##################################################
@@ -211,7 +211,7 @@ class GlobalFunctionSpecification(FunctionSpecification):
             if (i < (len(argTypes)-1)):
                 file.write(', ')
         file.write('):\n')
-        
+
     def outputMethodBody(self, methodClass, file, nesting):
         # The method body will look something like
         #     returnValue = PandaGlobal.method(self.this, arg)
@@ -231,14 +231,14 @@ class GlobalFunctionSpecification(FunctionSpecification):
             if (i < (len(argTypes)-1)):
                 file.write(', ')
         file.write(')\n')
-        indent(file,1, 'if returnValue is None:\n')
-        indent(file,2, 'return None\n')
-        
+        indent(file, 1, 'if returnValue is None:\n')
+        indent(file, 2, 'return None\n')
+
         returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
         returnType.generateReturnValueWrapper(methodClass, file,
                                               self.typeDescriptor.userManagesMemory,
                                               1, nesting+2)
-        
+
     def outputMethodFooter(self, methodClass, file, nesting):
         indent(file, nesting+1, '\n')
 
@@ -271,7 +271,7 @@ class MethodSpecification(FunctionSpecification):
         self.outputInheritedMethodHeader(methodClass, parentList, file, nesting, needsDowncast)
         self.outputInheritedMethodBody(methodClass, parentList, file, nesting, needsDowncast)
         self.outputInheritedMethodFooter(methodClass, parentList, file, nesting, needsDowncast)
-        
+
     def generateUpcastMethodCode(self, methodClass, file, nesting):
         # The upcast method code is just like regular code, but the
         # return value wrapper does not have downcasting instructions
@@ -294,7 +294,7 @@ class MethodSpecification(FunctionSpecification):
                     file.write(', ')
         file.write('):\n')
         self.outputCFunctionComment(file, nesting+2)
-        
+
 
     def outputConstructorBody(self, methodClass, file, nesting):
         # The method body will look something like
@@ -310,7 +310,7 @@ class MethodSpecification(FunctionSpecification):
             file.write(thislessArgTypes[i].passName())
             if (i < (len(thislessArgTypes)-1)):
                 file.write(', ')
-        file.write(')\n')       
+        file.write(')\n')
         indent(file, nesting+2, 'assert self.this != 0\n')
         if self.typeDescriptor.userManagesMemory:
             indent(file, nesting+2, 'self.userManagesMemory = 1\n')
@@ -333,7 +333,7 @@ class MethodSpecification(FunctionSpecification):
                 if (i < (len(thislessArgTypes)-1)):
                     file.write(', ')
         file.write('):\n')
-        self.outputCFunctionComment(file, nesting+2)    
+        self.outputCFunctionComment(file, nesting+2)
 
     def outputDestructorBody(self, methodClass, file, nesting):
         # The method body will look something like
@@ -382,7 +382,7 @@ class MethodSpecification(FunctionSpecification):
                 file.write(thislessArgTypes[i].passName())
                 if (i < (len(thislessArgTypes)-1)):
                     file.write(', ')
-        file.write(')\n')       
+        file.write(')\n')
         # If this is an augmented assignment operator like +=, we have special rules
         # In this case we simply call the C++ function, make sure we got the same
         # return value back, then return self. Otherwise if you let it go through the
@@ -396,16 +396,16 @@ class MethodSpecification(FunctionSpecification):
             returnType.generateReturnValueWrapper(methodClass, file,
                                                   self.typeDescriptor.userManagesMemory,
                                                   needsDowncast, nesting+2)
- 
+
     def outputMethodFooter(self, methodClass, file, nesting):
         indent(file, nesting,  'FFIExternalObject.funcToMethod(' +self.getFinalName()+ ',' + methodClass.foreignTypeName + ",'" +self.getFinalName() +"')\n")
         indent(file, nesting,  'del ' + self.getFinalName()+' \n')
-        indent(file, nesting+1,'\n')   
-        #indent(file, nesting,methodClass.foreignTypeName +'.'+  self.getFinalName() + ' = staticmethod(' + self.getFinalName() + ')\n')
+        indent(file, nesting+1,'\n')
+        #indent(file, nesting, methodClass.foreignTypeName +'.'+  self.getFinalName() + ' = staticmethod(' + self.getFinalName() + ')\n')
         #indent(file, nesting,'del ' + self.getFinalName()+' \n')
-        #indent(file, nesting+1, '\n')    
+        #indent(file, nesting+1, '\n')
         indent(file, nesting+1, '\n')
-        
+
 
     ##################################################
     ## Static Method Code Generation
@@ -417,8 +417,8 @@ class MethodSpecification(FunctionSpecification):
             file.write(argTypes[i].name)
             if (i < (len(argTypes)-1)):
                     file.write(', ')
-        file.write('):\n')        
-        
+        file.write('):\n')
+
 
     def outputStaticBody(self, methodClass, file, nesting):
         # The method body will look something like
@@ -444,7 +444,7 @@ class MethodSpecification(FunctionSpecification):
                                               1, nesting+2)
 
     def outputStaticFooter(self, methodClass, file, nesting):
-        indent(file, nesting,methodClass.foreignTypeName +'.'+  self.getFinalName() + ' = staticmethod(' + self.getFinalName() + ')\n')
+        indent(file, nesting, methodClass.foreignTypeName +'.'+  self.getFinalName() + ' = staticmethod(' + self.getFinalName() + ')\n')
         indent(file, nesting,'del ' + self.getFinalName()+' \n')
         indent(file, nesting+1, '\n')
 
@@ -489,7 +489,7 @@ class MethodSpecification(FunctionSpecification):
                     indent(file, nesting+2, 'upcastSelf = upcastSelf.' + methodName + '()\n')
                 else:
                     indent(file, nesting+2, '# upcastSelf = upcastSelf.' + methodName + '()\n')
-                    
+
         indent(file, nesting+2, 'returnValue = ' + self.typeDescriptor.moduleName
                + '.' + self.typeDescriptor.wrapperName + '(upcastSelf.this')
         if (len(thislessArgTypes) > 0):
@@ -521,7 +521,7 @@ class GlobalValueSpecification:
         self.getter = None
         # To be filled in with a GlobalFunctionSpecification
         self.setter = None
-        
+
     def generateGlobalCode(self, file):
         indent(file, 0, '# Global value: ' + self.name + '\n')
         if self.getter:
@@ -535,7 +535,7 @@ class GlobalValueSpecification:
 class ManifestSpecification:
     def __init__(self):
         self.name = ''
-        
+
         # We are not currently using the type descriptor
         self.typeDescriptor = None
 
@@ -549,7 +549,7 @@ class ManifestSpecification:
 
         # The string definition of this manifest
         self.definition = None
-        
+
     def generateGlobalCode(self, file):
         # Note, if the manifest has no value and no getter we do not output anything
         # even though they may be defined in the C++ sense. Without any values
@@ -569,7 +569,7 @@ class ManifestSpecification:
             if self.getter:
                 self.getter.generateGlobalCode(file)
             indent(file, 0, '\n')
-            
+
 
 class MethodArgumentSpecification:
     def __init__(self):
@@ -577,7 +577,7 @@ class MethodArgumentSpecification:
         self.typeDescriptor = None
         # By default it is not the this pointer
         self.isThis = 0
-        
+
     def passName(self):
         if (self.typeDescriptor.recursiveTypeDescriptor().__class__ == \
             FFITypes.ClassTypeDescriptor):
