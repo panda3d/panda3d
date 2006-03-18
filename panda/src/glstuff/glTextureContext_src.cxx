@@ -16,6 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "notify.h"
+#include "pnotify.h"
 
 TypeHandle CLP(TextureContext)::_type_handle;
