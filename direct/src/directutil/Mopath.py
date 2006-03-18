@@ -25,23 +25,27 @@ class Mopath(DirectObject):
         return self.maxT * self.timeScale
 
     def loadFile(self, filename, fReset = 1):
-        if fReset:
-            self.reset()
         nodePath = loader.loadModel(filename)
         if nodePath:
-            self.__extractCurves(nodePath)
-            if (self.tNurbsCurve != []):
-                self.maxT = self.tNurbsCurve[-1].getMaxT()
-            elif (self.xyzNurbsCurve != None):
-                self.maxT = self.xyzNurbsCurve.getMaxT()
-            elif (self.hprNurbsCurve != None):
-                self.maxT = self.hprNurbsCurve.getMaxT()
-            else:
-                print 'Mopath: no valid curves in file: %s' % filename
-
+            self.loadNodePath(nodePath)
             nodePath.removeNode()
         else:
             print 'Mopath: no data in file: %s' % filename
+
+
+    def loadNodePath(self, nodePath, fReset = 1):
+        if fReset:
+            self.reset()
+
+        self.__extractCurves(nodePath)
+        if (self.tNurbsCurve != []):
+            self.maxT = self.tNurbsCurve[-1].getMaxT()
+        elif (self.xyzNurbsCurve != None):
+            self.maxT = self.xyzNurbsCurve.getMaxT()
+        elif (self.hprNurbsCurve != None):
+            self.maxT = self.hprNurbsCurve.getMaxT()
+        else:
+            print 'Mopath: no valid curves in file: %s' % filename
 
 
     def reset(self):
