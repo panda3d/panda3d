@@ -14,7 +14,7 @@
 #
 ##############################################################
 
-import sys,os
+import sys, os
 
 ##############################################################
 #
@@ -40,8 +40,8 @@ if (PANDAC is None):
 
 ##############################################################
 #
-# Locate direct/src/extensions. 
-# 
+# Locate direct/src/extensions.
+#
 # It could be inside the direct tree.  It may be underneath
 # a 'src' subdirectory.  Or, the direct tree may actually be
 # a stub that points to the source tree.
@@ -83,13 +83,13 @@ DoGenPyCode.etcPath = [os.path.join(PANDAC,"input")]
 DoGenPyCode.pythonSourcePath = [DIRECT]
 DoGenPyCode.native = 1
 
-#print "outputDir = ",DoGenPyCode.outputDir
-#print "directDir = ",DoGenPyCode.directDir
-#print "extensionsDir = ",DoGenPyCode.extensionsDir
-#print "interrogateLib = ",DoGenPyCode.interrogateLib
-#print "codeLibs = ",DoGenPyCode.codeLibs
-#print "etcPath = ",DoGenPyCode.etcPath
-#print "native = ",DoGenPyCode.native
+#print "outputDir = ", DoGenPyCode.outputDir
+#print "directDir = ", DoGenPyCode.directDir
+#print "extensionsDir = ", DoGenPyCode.extensionsDir
+#print "interrogateLib = ", DoGenPyCode.interrogateLib
+#print "codeLibs = ", DoGenPyCode.codeLibs
+#print "etcPath = ", DoGenPyCode.etcPath
+#print "native = ", DoGenPyCode.native
 
 DoGenPyCode.run()
 

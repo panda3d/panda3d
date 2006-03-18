@@ -46,7 +46,7 @@ class BaseTypeDescriptor:
 
         # The type descriptors for the types we derive from
         self.parentTypes = []
-        
+
         # atomicType may be one of the following
         # AT_not_atomic = 0
         # AT_int = 1
@@ -65,7 +65,7 @@ class BaseTypeDescriptor:
 
     def isAtomic(self):
         return (self.atomicType != 0)
-        
+
     def generateGlobalCode(self, dir, extensionsDir):
         # By default generate no code
         pass
@@ -100,7 +100,7 @@ class PrimitiveTypeDescriptor(BaseTypeDescriptor):
     """
     def __init__(self):
         BaseTypeDescriptor.__init__(self)
-                
+
     def generateReturnValueWrapper(self, classTypeDesc, file, userManagesMemory,
                                    needsDowncast, nesting):
         """
@@ -117,7 +117,7 @@ class PyObjectTypeDescriptor(BaseTypeDescriptor):
     """
     def __init__(self):
         BaseTypeDescriptor.__init__(self)
-                
+
     def generateReturnValueWrapper(self, classTypeDesc, file, userManagesMemory,
                                    needsDowncast, nesting):
         indent(file, nesting, 'return returnValue\n')
@@ -154,7 +154,7 @@ class EnumTypeDescriptor(PrimitiveTypeDescriptor):
         indent(file, nesting, '# CMODULE [' + self.moduleName + ']\n')
         self.outputComment(file, nesting)
         self.outputValues(file, nesting)
-        
+
 
     def outputComment(self, file, nesting):
         indent(file, nesting, '\n')
@@ -172,7 +172,7 @@ class EnumTypeDescriptor(PrimitiveTypeDescriptor):
         """
         for key in self.values.keys():
             indent(file, nesting, key + ' = ' + `self.values[key]` + '\n')
-            
+
 
 class DerivedTypeDescriptor(BaseTypeDescriptor):
     """
@@ -182,7 +182,7 @@ class DerivedTypeDescriptor(BaseTypeDescriptor):
     def __init__(self):
         BaseTypeDescriptor.__init__(self)
         self.typeDescriptor = None
-        
+
     def recursiveTypeDescriptor(self):
         """
         Attempt to get to the bottom of a type descriptor by
@@ -213,26 +213,26 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
     """
     def __init__(self):
         BaseTypeDescriptor.__init__(self)
-        
+
         # Methods interrogate told us were constructors
         self.constructors = []
-        
+
         # A method interrogate told us is the destructor
         self.destructor = None
-        
+
         # Methods interrogate told us were instance methods
         # Note: the methods without the this pointer get moved into staticMethods
         self.instanceMethods = []
-        
+
         # Methods interrogate told us were upcast methods
         self.upcastMethods = []
-        
+
         # Methods interrogate told us were downcast methods
         self.downcastMethods = []
-        
+
         # Instance methods that had no this pointer are moved into here
         self.staticMethods = []
-        
+
         # These are dictionaries used to temporarily hold methods for
         # overloading while generating code
         self.overloadedClassMethods = {}
@@ -305,7 +305,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
                     for method in parentType.upcastMethods:
                         upcastMethods.append(method)
             for method in (self.constructors + [self.destructor] + self.instanceMethods
-                           + self.upcastMethods + self.downcastMethods 
+                           + self.upcastMethods + self.downcastMethods
                            + self.staticMethods + upcastMethods):
                 if method:
                     # Get the real return type (not derived)
@@ -345,7 +345,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         """
         methodList = self.overloadedClassMethods.setdefault(methodSpec.name, [])
         methodList.append(methodSpec)
-    
+
 
     def recordInstanceMethod(self, methodSpec):
         """
@@ -437,7 +437,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             if parentList[pi].hasMethodNamed(methodName):
                 return 1
         return 0
-        
+
     def copyParentMethodsRecursively(self, parentList, file, nesting):
         """
         Copy all the parents instance methods
@@ -464,13 +464,13 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             if not self.inheritsMethodNamed(parentList, methodSpecList[0].name):
                 treeColl = FFIOverload.FFIMethodArgumentTreeCollection(self, methodSpecList)
                 treeColl.generateCode(file, nesting)
-                
+
         # Copy all the parents upcast methods so we transitively pick them up
         for method in parent.upcastMethods:
             if not self.inheritsMethodNamed(parentList, method.name):
                 # no downcast for all instance methods that are themselves upcasts
                 # that would cause an infinite loop
-                method.generateInheritedMethodCode(self, parentList, file, nesting, 0) 
+                method.generateInheritedMethodCode(self, parentList, file, nesting, 0)
 
         # Now recurse up the hierarchy until we get to a node that is itself
         # a multiple inheritance node and stop there because he will have already
@@ -511,16 +511,16 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         file = open(os.path.join(dir, fileName), 'w')
         indent(file, 0, FFIConstants.generatedHeader)
         self.outputBaseImports(file)
-        self.generateCode1(file, 0,extensionsDir)
+        self.generateCode1(file, 0, extensionsDir)
         file.close()
-        
+
         file = open(os.path.join(dir, fileName1), 'w')
         indent(file, 0, FFIConstants.generatedHeader)
         #self.outputBaseImports(file)
-        self.generateCode2(file, 0,extensionsDir,self.foreignTypeName)
+        self.generateCode2(file, 0, extensionsDir, self.foreignTypeName)
         file.close()
 
-        
+
         # Copy in any extensions we may have
         #self.copyExtensions(extensionsDir, file, 0)
         #self.outputClassFooter(file)
@@ -530,7 +530,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
     def generateCode(self, file, nesting, extensionsDir=None):
 
         self.recordOverloadedMethods()
-        self.cullOverloadedMethods()        
+        self.cullOverloadedMethods()
         self.outputImports(file, nesting)
         self.outputClassHeader(file, nesting)
         self.outputClassComment(file, nesting)
@@ -559,22 +559,22 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         if self.destructor:
             self.destructor.generateDestructorCode(self, file, nesting)
         # If you have no destructor, inherit one
-            
+
         ##########################
         ## Extension methods moved up locally
         if extensionsDir:
-            self.copyExtensions(extensionsDir, file, 0)                    
-            
+            self.copyExtensions(extensionsDir, file, 0)
+
         ##########################
         ## import return types
         returnTypeModules = self.getReturnTypeModules()
         if len(returnTypeModules):
             for moduleName in returnTypeModules:
-                indent(file, nesting, 'import ' + moduleName + '\n')       
-        
+                indent(file, nesting, 'import ' + moduleName + '\n')
+
         ################################
-        
-            
+
+
         if len(self.staticMethods):
             indent(file, nesting+1, '\n')
             indent(file, nesting+1, '##################################################\n')
@@ -613,13 +613,13 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
 
         # Copy in all our parent nodes (only does work if we are an MI node)
         self.copyParentMethods(file, nesting)
-        
+
         self.generateOverloadedMethods(file, nesting)
 
     def generateCode1(self, file, nesting, extensionsDir=None):
 
         self.recordOverloadedMethods()
-        self.cullOverloadedMethods()        
+        self.cullOverloadedMethods()
         self.outputImports(file, nesting)
         self.outputClassHeader(file, nesting)
         self.outputClassComment(file, nesting)
@@ -647,28 +647,28 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         self.outputBaseDestructor(file, nesting)
         if self.destructor:
             self.destructor.generateDestructorCode(self, file, nesting)
-        # If you have no destructor, inherit one            
+        # If you have no destructor, inherit one
         ##########################
         ## Extension methods moved up locally
         if extensionsDir:
-            self.copyExtensions(extensionsDir, file, 0)                    
-            
+            self.copyExtensions(extensionsDir, file, 0)
+
 
 
     def generateCode2(self, file, nesting, extensionsDir, file1module):
-    
-        indent(file, nesting, 'from  ' + file1module + ' import *\n')               
+
+        indent(file, nesting, 'from  ' + file1module + ' import *\n')
 
         ##########################
         ## import return types
         returnTypeModules = self.getReturnTypeModules()
         if len(returnTypeModules):
             for moduleName in returnTypeModules:
-                indent(file, nesting, 'import ' + moduleName + '\n')       
-        
+                indent(file, nesting, 'import ' + moduleName + '\n')
+
         ################################
-        
-            
+
+
         if len(self.staticMethods):
             indent(file, nesting+1, '\n')
             indent(file, nesting+1, '##################################################\n')
@@ -707,7 +707,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
 
         # Copy in all our parent nodes (only does work if we are an MI node)
         self.copyParentMethods(file, nesting)
-        
+
         self.generateOverloadedMethods(file, nesting)
 
 
@@ -744,7 +744,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         else:
             # No extensions for this class
             pass
-        
+
 
     def outputBaseImports(self, file):
         indent(file, 0, '# CMODULE [' + self.moduleName + ']\n')
@@ -756,11 +756,11 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         indent(file, 0, '# Import all the C modules this class uses\n')
         for moduleName in self.getCModules():
             if moduleName:
-                indent(file, 0, 'import ' + moduleName + '\n')            
+                indent(file, 0, 'import ' + moduleName + '\n')
                 indent(file, 0, 'import ' + moduleName + 'Downcasts\n')
         indent(file, 0, '\n')
         indent(file, 0, 'from direct.ffi import FFIExternalObject\n')
-        
+
 
 
     def outputImportsRecursively(self, parent, file, nesting):
@@ -771,7 +771,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         parentTypeName = parent.foreignTypeName
         fullNestedName = parent.getFullNestedName()
         if (fullNestedName != parentTypeName):
-            nestedChain = fullNestedName.split(".") 
+            nestedChain = fullNestedName.split(".")
             moduleName = nestedChain[0]
             indent(file, nesting, 'import ' + moduleName + '\n')
         else:
@@ -781,7 +781,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         #if len(returnTypeModules):
         #    for moduleName in returnTypeModules:
         #        indent(file, nesting, 'import ' + moduleName + '\n')
-        
+
 
     def outputImports(self, file, nesting):
         """
@@ -795,7 +795,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         #if len(returnTypeModules):
         #    for moduleName in returnTypeModules:
         #        indent(file, nesting, 'import ' + moduleName + '\n')
-       
+
         for parentType in self.parentTypes:
             self.outputImportsRecursively(parentType, file, nesting)
         indent(file, nesting, '\n')
@@ -815,7 +815,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
                 indent(file, nesting+1, comment)
                 file.write('\n')
                 indent(file, nesting+1, ('"' * 3) + '\n\n')
-    
+
     def outputClassHeader(self, file, nesting):
         """
         Output the class definition to the file
@@ -824,7 +824,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         if (self.foreignTypeName == ''):
             FFIConstants.notify.warning('Class with no name')
 
-        
+
 #          # If this is the toplevel, we need to delay the generation of this
 #          # class to avoid circular imports, so put the entire class in a function
 #          # that we will call later
@@ -858,7 +858,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             #     parentClassModule.parentClass.nestedClass
             fullNestedName = self.parentTypes[i].getFullNestedName()
             if (fullNestedName != parentTypeName):
-                nestedChain = fullNestedName.split(".") 
+                nestedChain = fullNestedName.split(".")
                 moduleName = nestedChain[0]
                 parentTypeName = fullNestedName
             file.write(moduleName + '.' + parentTypeName)
@@ -888,7 +888,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         #indent(file, 0, " globals()['" + self.foreignTypeName + "'] = " + self.foreignTypeName + '\n')
         pass
 
-    
+
     def outputBaseConstructor(self, file, nesting):
         """
         Output the __init__ constructor for this class.
@@ -930,7 +930,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         Python object is garbage collected. We are going to overwrite
         it with special cleanup for Panda.
         """
-        if self.destructor:        
+        if self.destructor:
             indent(file, nesting+1, 'def __del__(self):\n')
 
             # Reference counting is now handled in the C++ code
@@ -943,10 +943,10 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             # we need to call the C++ destructor when Python frees the
             # shadow object, but only if the userManagesMemory flag is set.
             # Also make sure we are not destructing a null pointer
-            indent(file, nesting+2, 'if (self.userManagesMemory and (self.this != 0)):\n')       
+            indent(file, nesting+2, 'if (self.userManagesMemory and (self.this != 0)):\n')
             self.destructor.outputDestructorBody(self, file, nesting+1)
-            indent(file, nesting, '\n')            
-        
+            indent(file, nesting, '\n')
+
             #indent(file, nesting+3, 'self.destructor()\n')
 
 
@@ -969,18 +969,18 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         """
         #if classTypeDesc != self:
         #    indent(file, nesting, 'import ' + self.foreignTypeName + '\n')
-        indent(file,nesting, 'if returnValue == 0: return None\n')       
+        indent(file, nesting, 'if returnValue == 0: return None\n')
         # Do not put Class.Class if this file is the file that defines Class
         # Also check for nested classes. They do not need the module name either
         typeName = FFIOverload.getTypeName(classTypeDesc, self)
-        #file.write(typeName + '(None)\n')        
+        #file.write(typeName + '(None)\n')
         ### inline the old constructers
-        
+
         #indent(file, nesting, 'returnObject = ')
-        #file.write('FFIExternalObject.FFIInstance('+ typeName + ',returnValue,'+str(userManagesMemory)+')\n')
-        #indent(file,nesting, 'returnObject.this = 0\n')
-        #indent(file,nesting, 'returnObject.userManagesMemory = 0\n');        
-        
+        #file.write('FFIExternalObject.FFIInstance('+ typeName + ', returnValue,'+str(userManagesMemory)+')\n')
+        #indent(file, nesting, 'returnObject.this = 0\n')
+        #indent(file, nesting, 'returnObject.userManagesMemory = 0\n');
+
         ##
         #indent(file, nesting, 'returnObject.this = returnValue\n')
         # Zero this pointers get returned as the Python None object
@@ -989,20 +989,20 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         #    indent(file, nesting, 'returnObject.userManagesMemory = 1\n')
         #else:
         #    indent(file, nesting, 'returnObject.userManagesMemory = 0\n')
-                    
+
         if needsDowncast:
-            #indent(file, nesting, 'returnObject = FFIExternalObject.FFIInstance('+ typeName + ',returnValue,'+str(userManagesMemory)+')\n')
+            #indent(file, nesting, 'returnObject = FFIExternalObject.FFIInstance('+ typeName + ', returnValue,'+str(userManagesMemory)+')\n')
             if (FFIOverload.inheritsFrom(self, TypedObjectDescriptor) or
                 self == TypedObjectDescriptor):
                 #indent(file, nesting, 'return returnObject.setPointer()\n')
-                indent(file, nesting, 'return FFIExternalObject.FFIInstance('+ typeName + ',returnValue,'+str(userManagesMemory)+').setPointer()\n')              
+                indent(file, nesting, 'return FFIExternalObject.FFIInstance('+ typeName + ', returnValue,'+str(userManagesMemory)+').setPointer()\n')
             else:
-                indent(file, nesting,'return FFIExternalObject.FFIInstance('+ typeName + ',returnValue,'+str(userManagesMemory)+')\n')        
+                indent(file, nesting,'return FFIExternalObject.FFIInstance('+ typeName + ', returnValue,'+str(userManagesMemory)+')\n')
                 #indent(file, nesting, 'return returnObject\n')
         else:
-            indent(file, nesting,'return FFIExternalObject.FFIInstance('+ typeName + ',returnValue,'+str(userManagesMemory)+')\n')        
+            indent(file, nesting,'return FFIExternalObject.FFIInstance('+ typeName + ', returnValue,'+str(userManagesMemory)+')\n')
             #indent(file, nesting, 'return returnObject\n')
-            
+
 
 
 class FunctionTypeDescriptor(BaseTypeDescriptor):

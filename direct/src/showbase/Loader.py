@@ -14,7 +14,7 @@ class Loader:
     """
     notify = directNotify.newCategory("Loader")
     modelCount = 0
-    
+
     # special methods
     def __init__(self, base):
         self.base = base
@@ -23,7 +23,7 @@ class Loader:
     def destroy(self):
         del self.base
         del self.loader
-        
+
     # model loading funcs
     def loadModel(self, modelPath, fMakeNodeNamesUnique = 0,
                   loaderOptions = None):
@@ -79,7 +79,8 @@ class Loader:
         want to load a model and immediately set a transform on it.
         But also consider loadModelCopy().
         """
-        assert Loader.notify.debug("Loading model once: %s under %s" % (modelPath, underNode))
+        assert Loader.notify.debug(
+            "Loading model once: %s under %s" % (modelPath, underNode))
         if phaseChecker:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
@@ -89,7 +90,7 @@ class Loader:
         else:
             nodePath = None
         return nodePath
-    
+
     def loadModelCopy(self, modelPath):
         """loadModelCopy(self, string)
         Attempt to load a model from modelPool, if not present
@@ -108,7 +109,7 @@ class Loader:
     def loadModelNode(self, modelPath):
         """
         modelPath is a string.
-        
+
         This is like loadModelOnce in that it loads a model from the
         modelPool, but it does not then instance it to hidden and it
         returns a Node instead of a NodePath.  This is particularly
@@ -296,5 +297,3 @@ class Loader:
         if (shader == None):
             Loader.notify.warning("Could not load shader file %s." % shaderPath)
         return shader
-        
-        

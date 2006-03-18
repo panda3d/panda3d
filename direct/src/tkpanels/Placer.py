@@ -31,7 +31,7 @@ class Placer(AppShell):
 
         # Call superclass initialization function
         AppShell.__init__(self)
-        
+
         self.initialiseoptions(Placer)
 
     def appInit(self):
@@ -41,7 +41,7 @@ class Placer(AppShell):
             'placerOrbitFromCS')
         self.orbitToCS = direct.group.attachNewNode('placerOrbitToCS')
         self.refCS = self.tempCS
-        
+
         # Dictionary keeping track of all node paths manipulated so far
         self.nodePathDict = {}
         self.nodePathDict['camera'] = direct.camera
@@ -106,7 +106,7 @@ class Placer(AppShell):
             'Toggle widget manipulation mode',
             label = 'Toggle Widget Mode',
             command = direct.manipulationControl.toggleObjectHandlesMode)
-        
+
         # Get a handle to the menu frame
         menuFrame = self.menuFrame
         self.nodePathMenu = Pmw.ComboBox(
@@ -130,7 +130,7 @@ class Placer(AppShell):
                                   menubutton_width = 8)
         modeMenu.pack(side = 'left', expand = 0)
         self.bind(modeMenu, 'Select manipulation mode')
-        
+
         self.refNodePathMenu = Pmw.ComboBox(
             menuFrame, entry_width = 16,
             selectioncommand = self.selectRefNodePathNamed,
@@ -186,8 +186,8 @@ class Placer(AppShell):
         self.posX['preCallback'] = self.xformStart
         self.posX['postCallback'] = self.xformStop
         self.posX['callbackData'] = ['x']
-        self.posX.pack(expand=1,fill='both')
-        
+        self.posX.pack(expand=1, fill='both')
+
         self.posY = self.createcomponent('posY', (), None,
                                          Floater.Floater, (posInterior,),
                                          text = 'Y', relief = FLAT,
@@ -197,8 +197,8 @@ class Placer(AppShell):
         self.posY['preCallback'] = self.xformStart
         self.posY['postCallback'] = self.xformStop
         self.posY['callbackData'] = ['y']
-        self.posY.pack(expand=1,fill='both')
-        
+        self.posY.pack(expand=1, fill='both')
+
         self.posZ = self.createcomponent('posZ', (), None,
                                          Floater.Floater, (posInterior,),
                                          text = 'Z', relief = FLAT,
@@ -208,7 +208,7 @@ class Placer(AppShell):
         self.posZ['preCallback'] = self.xformStart
         self.posZ['postCallback'] = self.xformStop
         self.posZ['callbackData'] = ['z']
-        self.posZ.pack(expand=1,fill='both')
+        self.posZ.pack(expand=1, fill='both')
 
         # Create and pack the Hpr Controls
         hprGroup = Pmw.Group(interior,
@@ -223,9 +223,9 @@ class Placer(AppShell):
         hprMenu.add_command(label = 'Set to zero', command = self.zeroHpr)
         hprMenu.add_command(label = 'Reset initial', command = self.resetHpr)
         hprMenubutton['menu'] = hprMenu
-        hprGroup.pack(side='left',fill = 'both', expand = 1)
+        hprGroup.pack(side='left', fill = 'both', expand = 1)
         hprInterior = hprGroup.interior()
-        
+
         # Create the dials
         self.hprH = self.createcomponent('hprH', (), None,
                                          Dial.AngleDial, (hprInterior,),
@@ -237,8 +237,8 @@ class Placer(AppShell):
         self.hprH['preCallback'] = self.xformStart
         self.hprH['postCallback'] = self.xformStop
         self.hprH['callbackData'] = ['h']
-        self.hprH.pack(expand=1,fill='both')
-        
+        self.hprH.pack(expand=1, fill='both')
+
         self.hprP = self.createcomponent('hprP', (), None,
                                          Dial.AngleDial, (hprInterior,),
                                          style = 'mini',
@@ -249,8 +249,8 @@ class Placer(AppShell):
         self.hprP['preCallback'] = self.xformStart
         self.hprP['postCallback'] = self.xformStop
         self.hprP['callbackData'] = ['p']
-        self.hprP.pack(expand=1,fill='both')
-        
+        self.hprP.pack(expand=1, fill='both')
+
         self.hprR = self.createcomponent('hprR', (), None,
                                          Dial.AngleDial, (hprInterior,),
                                          style = 'mini',
@@ -261,7 +261,7 @@ class Placer(AppShell):
         self.hprR['preCallback'] = self.xformStart
         self.hprR['postCallback'] = self.xformStop
         self.hprR['callbackData'] = ['r']
-        self.hprR.pack(expand=1,fill='both')
+        self.hprR.pack(expand=1, fill='both')
 
         # Create and pack the Scale Controls
         # The available scaling modes
@@ -292,9 +292,9 @@ class Placer(AppShell):
                                       variable = self.scalingMode)
         self.scaleMenubutton['menu'] = scaleMenu
         # Pack group widgets
-        scaleGroup.pack(side='left',fill = 'both', expand = 1)
+        scaleGroup.pack(side='left', fill = 'both', expand = 1)
         scaleInterior = scaleGroup.interior()
-        
+
         # Create the dials
         self.scaleX = self.createcomponent('scaleX', (), None,
                                            Floater.Floater, (scaleInterior,),
@@ -307,8 +307,8 @@ class Placer(AppShell):
         self.scaleX['callbackData'] = ['sx']
         self.scaleX['preCallback'] = self.xformStart
         self.scaleX['postCallback'] = self.xformStop
-        self.scaleX.pack(expand=1,fill='both')
-        
+        self.scaleX.pack(expand=1, fill='both')
+
         self.scaleY = self.createcomponent('scaleY', (), None,
                                            Floater.Floater, (scaleInterior,),
                                            text = 'Y Scale',
@@ -320,8 +320,8 @@ class Placer(AppShell):
         self.scaleY['callbackData'] = ['sy']
         self.scaleY['preCallback'] = self.xformStart
         self.scaleY['postCallback'] = self.xformStop
-        self.scaleY.pack(expand=1,fill='both')
-        
+        self.scaleY.pack(expand=1, fill='both')
+
         self.scaleZ = self.createcomponent('scaleZ', (), None,
                                            Floater.Floater, (scaleInterior,),
                                            text = 'Z Scale',
@@ -333,7 +333,7 @@ class Placer(AppShell):
         self.scaleZ['callbackData'] = ['sz']
         self.scaleZ['preCallback'] = self.xformStart
         self.scaleZ['postCallback'] = self.xformStop
-        self.scaleZ.pack(expand=1,fill='both')
+        self.scaleZ.pack(expand=1, fill='both')
 
         # Make sure appropriate labels are showing
         self.setMovementMode('Relative To:')
@@ -414,7 +414,7 @@ class Placer(AppShell):
             else:
                 if name == 'widget':
                     # Record relationship between selected nodes and widget
-                    direct.selected.getWrtAll()                    
+                    direct.selected.getWrtAll()
         # Update active node path
         self.setActiveNodePath(nodePath)
 
@@ -487,7 +487,7 @@ class Placer(AppShell):
         else:
             # Flash entry
             self.refNodePathMenuEntry.configure(background = 'Pink')
-        
+
     def addNodePath(self, nodePath):
         self.addNodePathToDict(nodePath, self.nodePathNames,
                                self.nodePathMenu, self.nodePathDict)
@@ -538,21 +538,21 @@ class Placer(AppShell):
 
     def updateAuxiliaryCoordinateSystems(self):
         # Temp CS
-        self.tempCS.setPosHpr(self['nodePath'], 0,0,0,0,0,0)
+        self.tempCS.setPosHpr(self['nodePath'], 0, 0, 0, 0, 0, 0)
         # Orbit CS
         # At reference
-        self.orbitFromCS.setPos(self.refCS, 0,0,0)
+        self.orbitFromCS.setPos(self.refCS, 0, 0, 0)
         # But aligned with target
-        self.orbitFromCS.setHpr(self['nodePath'], 0,0,0)
+        self.orbitFromCS.setHpr(self['nodePath'], 0, 0, 0)
         # Also update to CS
-        self.orbitToCS.setPosHpr(self.orbitFromCS, 0,0,0,0,0,0)
+        self.orbitToCS.setPosHpr(self.orbitFromCS, 0, 0, 0, 0, 0, 0)
         # Get offset from origin
         self.posOffset.assign(self['nodePath'].getPos(self.orbitFromCS))
 
     ### NODE PATH TRANSFORMATION OPERATIONS ###
     def xform(self, value, axis):
         if axis in ['sx', 'sy', 'sz']:
-            self.xformScale(value,axis)
+            self.xformScale(value, axis)
         elif self.movementMode == 'Relative To:':
             self.xformRelative(value, axis)
         elif self.movementMode == 'Orbit:':
@@ -565,7 +565,7 @@ class Placer(AppShell):
             else:
                 # Move the objects with the widget
                 direct.selected.moveWrtWidgetAll()
-    
+
     def xformStart(self, data):
         # Record undo point
         self.pushUndo()
@@ -578,7 +578,7 @@ class Placer(AppShell):
         self.deltaHpr = self['nodePath'].getHpr(self.refCS)
         # Update placer to reflect new state
         self.updatePlacer()
-        
+
     def xformStop(self, data):
         # Throw event to signal manipulation done
         # Send nodepath as a list
@@ -639,7 +639,7 @@ class Placer(AppShell):
                 elif axis == 'sz':
                     scale.setZ(value)
             elif mode == 'Scale Uniform':
-                scale.set(value,value,value)
+                scale.set(value, value, value)
             elif mode == 'Scale Proportional':
                 if axis == 'sx':
                     sf = value/scale[0]
@@ -743,7 +743,7 @@ class Placer(AppShell):
 
     def pushRedo(self):
         direct.pushRedo([self['nodePath']])
-        
+
     def redoHook(self, nodePathList = []):
         # Reflect new changes
         self.updatePlacer()
@@ -755,7 +755,7 @@ class Placer(AppShell):
     def redoListEmptyHook(self):
         # Make sure button is deactivated
         self.redoButton.configure(state = 'disabled')
-        
+
     def printNodePathInfo(self):
         np = self['nodePath']
         if np:
@@ -780,7 +780,7 @@ class Placer(AppShell):
         self.tempCS.removeNode()
         self.orbitFromCS.removeNode()
         self.orbitToCS.removeNode()
-        
+
 def place(nodePath):
     return Placer(nodePath = nodePath)
 
@@ -790,4 +790,3 @@ def place(nodePath):
 if __name__ == '__main__':
     root = Pmw.initialise()
     widget = Placer()
-
