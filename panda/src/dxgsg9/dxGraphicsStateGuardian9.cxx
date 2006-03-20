@@ -63,6 +63,11 @@
 
 #include <mmsystem.h>
 
+#include <dxsdkver.h>
+
+#define tostring(x) #x
+#define SDK_VERSION(major,minor) tostring(major) << "." << tostring(minor)
+#define DIRECTX_SDK_VERSION  SDK_VERSION (_DXSDK_PRODUCT_MAJOR, _DXSDK_PRODUCT_MINOR) << "." << SDK_VERSION (_DXSDK_BUILD_MAJOR, _DXSDK_BUILD_MINOR)
 
 #define DEBUG_LRU false
 
@@ -2360,6 +2365,7 @@ reset() {
 
   _supports_stream_offset = (d3d_caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET) != 0;
   _screen->_supports_dynamic_textures = ((d3d_caps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) != 0);
+  _screen->_supports_automatic_mipmap_generation = ((d3d_caps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP) != 0);
 
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
@@ -2386,11 +2392,16 @@ reset() {
       << "\nVertexShaderVersion = " << _vertex_shader_version_major << "." << _vertex_shader_version_minor
       << "\nPixelShaderVersion = " << _pixel_shader_version_major << "." << _pixel_shader_version_minor
       << "\nMaxVertexShaderConst = " << _vertex_shader_maximum_constants
-      << "\nsupport stream offset = " << _supports_stream_offset
-      << "\nsupports dynamic textures = " << _screen->_supports_dynamic_textures
+      << "\nsupports_stream_offset = " << _supports_stream_offset
+      << "\nsupports_dynamic_textures = " << _screen->_supports_dynamic_textures
+      << "\nsupports_automatic_mipmap_generation = " << _screen->_supports_automatic_mipmap_generation
       << "\nMaxAnisotropy = " << d3d_caps.MaxAnisotropy
+      << "\nDirectX SDK version " DIRECTX_SDK_VERSION
       << "\n";
   }
+
+  // OVERRIDE SUPPORT SINCE IT DOES NOT WORK WELL
+  _screen->_supports_automatic_mipmap_generation = false;
 
   this -> reset_render_states ( );
 

@@ -208,6 +208,7 @@ struct DXScreenData {
   int _managed_index_buffers;
 
   bool _supports_dynamic_textures;
+  bool _supports_automatic_mipmap_generation;
 
   DXGraphicsStateGuardian9 *_dxgsg9;
 };
