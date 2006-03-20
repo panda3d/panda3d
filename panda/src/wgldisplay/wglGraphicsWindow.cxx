@@ -131,9 +131,12 @@ GetAvailVidMem() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wglGraphicsWindow::
-wglGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                  const string &name) :
-  WinGraphicsWindow(pipe, gsg, name) 
+wglGraphicsWindow(GraphicsPipe *pipe, 
+                  const string &name,
+                  int x_size, int y_size, int flags,
+                  GraphicsStateGuardian *gsg,
+                  GraphicsOutput *host) :
+  WinGraphicsWindow(pipe, name, x_size, y_size, flags, gsg, host)
 {
   _hdc = (HDC)0;
 }

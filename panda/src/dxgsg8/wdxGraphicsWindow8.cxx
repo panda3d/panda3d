@@ -39,9 +39,12 @@ TypeHandle wdxGraphicsWindow8::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow8::
-wdxGraphicsWindow8(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                   const string &name) :
-  WinGraphicsWindow(pipe, gsg, name)
+wdxGraphicsWindow8(GraphicsPipe *pipe,
+                   const string &name,
+                   int x_size, int y_size, int flags,
+                   GraphicsStateGuardian *gsg,
+                   GraphicsOutput *host):
+  WinGraphicsWindow(pipe, name, x_size, y_size, flags, gsg, host)
 {
   // dont actually create the window in the constructor.  reason:
   // multi-threading requires panda C++ window object to exist in

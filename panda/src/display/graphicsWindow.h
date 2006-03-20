@@ -40,8 +40,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsWindow : public GraphicsOutput {
 protected:
-  GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg, 
-                 const string &name);
+  GraphicsWindow(GraphicsPipe *pipe, 
+                 const string &name,
+                 int x_size, int y_size, int flags,
+                 GraphicsStateGuardian *gsg,
+                 GraphicsOutput *host);
 
 PUBLISHED:
   virtual ~GraphicsWindow();

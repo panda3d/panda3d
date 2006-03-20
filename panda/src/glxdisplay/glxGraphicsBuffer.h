@@ -35,10 +35,11 @@
 ////////////////////////////////////////////////////////////////////
 class glxGraphicsBuffer : public GraphicsBuffer {
 public:
-  glxGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+  glxGraphicsBuffer(GraphicsPipe *pipe, 
                     const string &name,
-                    int x_size, int y_size);
-
+                    int x_size, int y_size, int flags,
+                    GraphicsStateGuardian *gsg,
+                    GraphicsOutput *host);
   virtual ~glxGraphicsBuffer();
 
   virtual bool begin_frame(FrameMode mode);

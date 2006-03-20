@@ -34,8 +34,11 @@ class wdxGraphicsPipe8;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX wdxGraphicsWindow8 : public WinGraphicsWindow {
 public:
-  wdxGraphicsWindow8(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                     const string &name);
+  wdxGraphicsWindow8(GraphicsPipe *pipe,
+                     const string &name,
+                     int x_size, int y_size, int flags,
+                     GraphicsStateGuardian *gsg,
+                     GraphicsOutput *host);
   virtual ~wdxGraphicsWindow8();
 
   virtual bool begin_frame(FrameMode mode);

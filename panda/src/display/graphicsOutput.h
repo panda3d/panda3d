@@ -61,8 +61,11 @@ class PNMImage;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsOutput : public TypedWritableReferenceCount, public DrawableRegion {
 protected:
-  GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                 const string &name);
+  GraphicsOutput(GraphicsPipe *pipe, 
+                 const string &name,
+                 int x_size, int y_size, int flags,
+                 GraphicsStateGuardian *gsg,
+                 GraphicsOutput *host);
 
 private:
   GraphicsOutput(const GraphicsOutput &copy);
@@ -221,6 +224,7 @@ protected:
   };
   PT(GraphicsStateGuardian) _gsg;
   PT(GraphicsPipe) _pipe;
+  PT(GraphicsOutput) _host;
   string _name;
   pvector<RenderTexture> _textures;
   bool _flip_ready;
@@ -268,6 +272,7 @@ protected:
   bool _display_regions_stale;
 
 protected:
+  int _creation_flags;
   int _x_size;
   int _y_size;
   bool _has_size;

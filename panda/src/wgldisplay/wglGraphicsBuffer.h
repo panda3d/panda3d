@@ -41,9 +41,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL wglGraphicsBuffer : public GraphicsBuffer {
 public:
-  wglGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+  wglGraphicsBuffer(GraphicsPipe *pipe, 
                     const string &name,
-                    int x_size, int y_size);
+                    int x_size, int y_size, int flags,
+                    GraphicsStateGuardian *gsg,
+                    GraphicsOutput *host);
   virtual ~wglGraphicsBuffer();
 
   virtual bool begin_frame(FrameMode mode);

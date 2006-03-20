@@ -28,9 +28,12 @@ TypeHandle GraphicsBuffer::_type_handle;
 //               GraphicsEngine::make_buffer() function.
 ////////////////////////////////////////////////////////////////////
 GraphicsBuffer::
-GraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-               const string &name, int x_size, int y_size) :
-  GraphicsOutput(pipe, gsg, name)
+GraphicsBuffer(GraphicsPipe *pipe,
+               const string &name,
+               int x_size, int y_size, int flags,
+               GraphicsStateGuardian *gsg,
+               GraphicsOutput *host) :
+  GraphicsOutput(pipe, name, x_size, y_size, flags, gsg, host)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -38,13 +41,9 @@ GraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 
   if (display_cat.is_debug()) {
     display_cat.debug()
-      << "Creating new offscreen buffer " << get_name()
-      << " using GSG " << (void *)gsg << "\n";
+      << "Creating new offscreen buffer " << get_name() << "\n";
   }
 
-  _x_size = x_size;
-  _y_size = y_size;
-  _has_size = true;
   _default_display_region->compute_pixels(_x_size, _y_size);
   _open_request = OR_none;
 }

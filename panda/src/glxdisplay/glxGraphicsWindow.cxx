@@ -44,9 +44,12 @@ TypeHandle glxGraphicsWindow::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 glxGraphicsWindow::
-glxGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                  const string &name) :
-  GraphicsWindow(pipe, gsg, name) 
+glxGraphicsWindow(GraphicsPipe *pipe, 
+                  const string &name,
+                  int x_size, int y_size, int flags,
+                  GraphicsStateGuardian *gsg,
+                  GraphicsOutput *host) :
+  GraphicsWindow(pipe, name, x_size, y_size, flags, gsg, host)
 {
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_V(glx_pipe, _pipe);

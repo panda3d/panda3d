@@ -36,9 +36,12 @@ TypeHandle GraphicsWindow::_type_handle;
 //               GraphicsEngine::make_window() function.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
-GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg, 
-               const string &name) :
-  GraphicsOutput(pipe, gsg, name)
+GraphicsWindow(GraphicsPipe *pipe,
+               const string &name,
+               int x_size, int y_size, int flags,
+               GraphicsStateGuardian *gsg,
+               GraphicsOutput *host) :
+  GraphicsOutput(pipe, name, x_size, y_size, flags, gsg, host)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -46,14 +49,7 @@ GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 
   if (display_cat.is_debug()) {
     display_cat.debug()
-      << "Creating new window " << get_name()
-      << " using GSG " << (void *)gsg << "\n";
-  }
-
-  _red_blue_stereo = red_blue_stereo && !_gsg->get_properties().is_stereo();
-  if (_red_blue_stereo) {
-    _left_eye_color_mask = parse_color_mask(red_blue_stereo_colors.get_word(0));
-    _right_eye_color_mask = parse_color_mask(red_blue_stereo_colors.get_word(1));
+      << "Creating new window " << get_name() << "\n";
   }
 
   _properties.set_open(false);
@@ -770,3 +766,4 @@ parse_color_mask(const string &word) {
 
   return result;
 }
+

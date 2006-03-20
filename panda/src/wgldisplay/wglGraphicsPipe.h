@@ -39,14 +39,17 @@ public:
   static PT(GraphicsPipe) pipe_constructor();
 
 protected:
-  virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties,
+  virtual PT(GraphicsOutput) make_output(const string &name,
+                                         int x_size, int y_size, int flags,
+                                         GraphicsStateGuardian *gsg,
+                                         GraphicsOutput *host,
+                                         int retry,
+                                         bool precertify);
+  virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties, 
                                              GraphicsStateGuardian *share_with);
-  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg,
-                                         const string &name);
-  virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, 
-                                         const string &name,
-                                         int x_size, int y_size);
+
 private:
+  
   static int choose_pfnum(const FrameBufferProperties &properties, HDC hdc);
   static int try_for_pfnum(HDC hdc, bool hardware, bool software, 
                            int frame_buffer_mode,
@@ -88,6 +91,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class wglGraphicsBuffer;
+  friend class wglGraphicsWindow;
 };
 
 #include "wglGraphicsPipe.I"

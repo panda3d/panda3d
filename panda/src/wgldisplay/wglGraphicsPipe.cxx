@@ -73,7 +73,7 @@ pipe_constructor() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsPipe::make_gsg
-//       Access: Protected, Virtual
+//       Access: Private
 //  Description: Creates a new GSG to use the pipe (but no windows
 //               have been created yet for the GSG).  This method will
 //               be called in the draw thread for the GSG.
@@ -190,25 +190,83 @@ make_gsg(const FrameBufferProperties &properties,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::make_window
+//     Function: wglGraphicsPipe::make_output
 //       Access: Protected, Virtual
-//  Description: Creates a new window on the pipe, if possible.
+//  Description: Creates a new window or buffer on the pipe, if possible.
+//               This routine is only called from GraphicsEngine::make_output.
 ////////////////////////////////////////////////////////////////////
-PT(GraphicsWindow) wglGraphicsPipe::
-make_window(GraphicsStateGuardian *gsg, const string &name) {
-  return new wglGraphicsWindow(this, gsg, name);
+PT(GraphicsOutput) wglGraphicsPipe::
+make_output(const string &name,
+            int x_size, int y_size, int flags,
+            GraphicsStateGuardian *gsg,
+            GraphicsOutput *host,
+            int retry,
+            bool precertify) {
+  
+  if (!_is_valid) {
+    return NULL;
+  }
+
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_R(wglgsg, gsg, NULL);
+
+  // First thing to try: a wglGraphicsWindow
+
+  if (retry == 0) {
+    if (((flags&BF_require_parasite)!=0)||
+        ((flags&BF_refuse_window)!=0)||
+        ((flags&BF_need_aux_rgba_MASK)!=0)||
+        ((flags&BF_need_aux_hrgba_MASK)!=0)||
+        ((flags&BF_need_aux_float_MASK)!=0)||
+        ((flags&BF_size_track_host)!=0)||
+        ((flags&BF_can_bind_color)!=0)||
+        ((flags&BF_can_bind_every)!=0)) {
+      return NULL;
+    }
+    return new wglGraphicsWindow(this, name, x_size, y_size, flags, gsg, host);
+  }
+  
+  //  // Second thing to try: a glGraphicsBuffer
+  //  
+  //  if (retry == 1) {
+  //    if ((!support_render_texture)||
+  //        ((flags&BF_require_parasite)!=0)||
+  //        ((flags&BF_require_window)!=0)) {
+  //      return NULL;
+  //    }
+  //    if (precertify) {
+  //      if (!wglgsg->_supports_framebuffer_object) {
+  //        return NULL;
+  //      }
+  //    }
+  //    return new glGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+  //  }
+  
+  // Third thing to try: a wglGraphicsBuffer
+  
+  if (retry == 2) {
+    if ((!support_render_texture)||
+        ((flags&BF_require_parasite)!=0)||
+        ((flags&BF_require_window)!=0)||
+        ((flags&BF_need_aux_rgba_MASK)!=0)||
+        ((flags&BF_need_aux_hrgba_MASK)!=0)||
+        ((flags&BF_need_aux_float_MASK)!=0)||
+        ((flags&BF_size_track_host)!=0)||
+        ((flags&BF_can_bind_every)!=0)) {
+      return NULL;
+    }
+    if (precertify) {
+      if (!wglgsg->_supports_pbuffer) {
+        return NULL;
+      }
+    }
+    return new wglGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+  }
+  
+  // Nothing else left to try.
+  return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::make_buffer
-//       Access: Protected, Virtual
-//  Description: Creates a new offscreen buffer on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
-PT(GraphicsBuffer) wglGraphicsPipe::
-make_buffer(GraphicsStateGuardian *gsg, const string &name,
-            int x_size, int y_size) {
-  return new wglGraphicsBuffer(this, gsg, name, x_size, y_size);
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsPipe::choose_pfnum

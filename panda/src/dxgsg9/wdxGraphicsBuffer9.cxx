@@ -38,10 +38,12 @@ TypeHandle wdxGraphicsBuffer9::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsBuffer9::
-wdxGraphicsBuffer9(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                  const string &name,
-                  int x_size, int y_size) :
-  GraphicsBuffer(pipe, gsg, name, x_size, y_size)
+wdxGraphicsBuffer9(GraphicsPipe *pipe,
+                   const string &name,
+                   int x_size, int y_size, int flags,
+                   GraphicsStateGuardian *gsg,
+                   GraphicsOutput *host):
+  GraphicsBuffer(pipe, name, x_size, y_size, flags, gsg, host)
 {
   // initialize all class members
   _cube_map_index = -1;

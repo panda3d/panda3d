@@ -33,8 +33,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsBuffer : public GraphicsOutput {
 protected:
-  GraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                 const string &name, int x_size, int y_size);
+  GraphicsBuffer(GraphicsPipe *pipe, 
+                 const string &name,
+                 int x_size, int y_size, int flags,
+                 GraphicsStateGuardian *gsg,
+                 GraphicsOutput *host);
 
 PUBLISHED:
   virtual ~GraphicsBuffer();

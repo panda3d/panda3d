@@ -48,9 +48,12 @@ public:
 protected:
   virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties,
                                              GraphicsStateGuardian *share_with);
-  virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, 
-                                         const string &name,
-                                         int x_size, int y_size);
+  virtual PT(GraphicsOutput) make_output(const string &name,
+                                         int x_size, int y_size, int flags,
+                                         GraphicsStateGuardian *gsg,
+                                         GraphicsOutput *host,
+                                         int retry,
+                                         bool precertify);
 
 private:
 

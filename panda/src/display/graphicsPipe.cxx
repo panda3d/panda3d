@@ -186,25 +186,19 @@ close_gsg(GraphicsStateGuardian *gsg) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipe::make_window
+//     Function: GraphicsPipe::make_output
 //       Access: Protected, Virtual
 //  Description: Creates a new window on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
-PT(GraphicsWindow) GraphicsPipe::
-make_window(GraphicsStateGuardian *, const string &) {
+PT(GraphicsOutput) GraphicsPipe::
+make_output(const string &name,
+            int x_size, int y_size, int flags,
+            GraphicsStateGuardian *gsg,
+            GraphicsOutput *host,
+            int retry,
+            bool precertify) {
   display_cat.error()
-    << get_type() << " cannot create onscreen windows.\n";
+    << get_type() << " cannot create buffers or windows.\n";
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipe::make_buffer
-//       Access: Protected, Virtual
-//  Description: Creates a new offscreen buffer on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
-PT(GraphicsBuffer) GraphicsPipe::
-make_buffer(GraphicsStateGuardian *, const string &, int, int) {
-  display_cat.error()
-    << get_type() << " cannot create offscreen buffers.\n";
-  return NULL;
-}

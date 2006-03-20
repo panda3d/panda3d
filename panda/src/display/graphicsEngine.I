@@ -79,6 +79,19 @@ get_portal_cull() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::close_gsg
+//       Access: Published
+//  Description: Calls GraphicsPipe::close_gsg() on the indicated pipe
+//               and GSG.  This function mainly exists to allow
+//               GraphicsEngine::WindowRenderer to call the protected
+//               method GraphicsPipe::close_gsg().
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsEngine::
+close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
+  pipe->close_gsg(gsg);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::make_gsg
 //       Access: Published
 //  Description: Creates a new gsg using the indicated GraphicsPipe
@@ -103,20 +116,50 @@ make_gsg(GraphicsPipe *pipe) {
   return make_gsg(pipe, get_frame_buffer_properties(), NULL);
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::close_gsg
+//     Function: GraphicsEngine::make_window
 //       Access: Published
-//  Description: Calls GraphicsPipe::close_gsg() on the indicated pipe
-//               and GSG.  This function mainly exists to allow
-//               GraphicsEngine::WindowRenderer to call the protected
-//               method GraphicsPipe::close_gsg().
+//  Description: Syntactic shorthand for make_output
 ////////////////////////////////////////////////////////////////////
-INLINE void GraphicsEngine::
-close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
-  pipe->close_gsg(gsg);
+INLINE GraphicsWindow *GraphicsEngine::
+make_window(GraphicsStateGuardian *gsg, const string &name, int sort) {
+  // The hardwired size here is never used.
+  GraphicsOutput *result = make_output(gsg->get_pipe(), name, sort,
+                                       gsg->get_properties(), 50, 50,
+                                       GraphicsPipe::BF_require_window,
+                                       gsg, NULL);
+  return DCAST(GraphicsWindow, result);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::make_buffer
+//       Access: Published
+//  Description: Syntactic shorthand for make_output
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsOutput *GraphicsEngine::
+make_buffer(GraphicsStateGuardian *gsg, const string &name,
+            int sort, int x_size, int y_size) {
+   GraphicsOutput *result = make_output(gsg->get_pipe(), name, sort,
+                                        gsg->get_properties(), x_size, y_size,
+                                        GraphicsPipe::BF_refuse_window,
+                                        gsg, NULL);
+   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::make_parasite
+//       Access: Published
+//  Description: Syntactic shorthand for make_buffer.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsOutput *GraphicsEngine::
+make_parasite(GraphicsOutput *host, const string &name, 
+              int sort, int x_size, int y_size) {
+  GraphicsOutput *result = make_output(host->get_gsg()->get_pipe(), name, sort,
+                                       host->get_gsg()->get_properties(), x_size, y_size,
+                                       GraphicsPipe::BF_require_parasite,
+                                       host->get_gsg(), host);
+   return result;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::Callback::Constructor
@@ -152,3 +195,4 @@ INLINE void GraphicsEngine::Callback::
 do_callback() const {
   (*_func)(_data);
 }
+

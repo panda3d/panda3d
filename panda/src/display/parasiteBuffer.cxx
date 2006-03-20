@@ -30,9 +30,9 @@ TypeHandle ParasiteBuffer::_type_handle;
 ////////////////////////////////////////////////////////////////////
 ParasiteBuffer::
 ParasiteBuffer(GraphicsOutput *host, const string &name,
-               int x_size, int y_size) :
-  GraphicsOutput(host->get_pipe(), host->get_gsg(), name),
-  _host(host)
+               int x_size, int y_size, int flags) :
+  GraphicsOutput(host->get_pipe(), name, 
+                 x_size, y_size, flags, host->get_gsg(), host)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -44,12 +44,11 @@ ParasiteBuffer(GraphicsOutput *host, const string &name,
       << " on " << _host->get_name() << "\n";
   }
 
-  if ((x_size == 0)&&(y_size == 0)) {
-    _track_host_size = true;
+  _creation_flags = flags;
+  
+  if (flags & GraphicsPipe::BF_size_track_host) {
     x_size = host->get_x_size();
     y_size = host->get_y_size();
-  } else {
-    _track_host_size = false;
   }
   
   _x_size = x_size;
@@ -113,14 +112,14 @@ begin_frame(FrameMode mode) {
     return false;
   }
 
-  if (_track_host_size) {
+  if (_creation_flags & GraphicsPipe::BF_size_track_host) {
     if ((_host->get_x_size() != _x_size)||
         (_host->get_y_size() != _y_size)) {
       set_size_and_recalc(_host->get_x_size(),
                           _host->get_y_size());
     }
   }
-
+  
   clear_cube_map_selection();
   return true;
 }
@@ -145,6 +144,11 @@ end_frame(FrameMode mode) {
   _host->end_frame(FM_parasite);
   
   if (mode == FM_render) {
+    for (int i=0; i<count_textures(); i++) {
+      if (get_rtm_mode(i) == RTM_bind_or_copy) {
+        _textures[i]._rtm_mode = RTM_copy_texture;
+      }
+    }
     copy_to_textures();
     if (_one_shot) {
       prepare_for_deletion();

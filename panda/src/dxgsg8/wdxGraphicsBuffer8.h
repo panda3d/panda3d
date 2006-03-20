@@ -36,9 +36,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX wdxGraphicsBuffer8 : public GraphicsBuffer {
 public:
-  wdxGraphicsBuffer8(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                    const string &name,
-                    int x_size, int y_size);
+  wdxGraphicsBuffer8(GraphicsPipe *pipe,
+                     const string &name,
+                     int x_size, int y_size, int flags,
+                     GraphicsStateGuardian *gsg,
+                     GraphicsOutput *host);
   virtual ~wdxGraphicsBuffer8();
 
   virtual bool begin_frame(FrameMode mode);

@@ -69,17 +69,22 @@ static CubeFaceDef cube_faces[6] = {
 //               GraphicsEngine::make_window() function.
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput::
-GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-               const string &name) {
+GraphicsOutput(GraphicsPipe *pipe,
+               const string &name,
+               int x_size, int y_size, int flags,
+               GraphicsStateGuardian *gsg,
+               GraphicsOutput *host) {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
   _pipe = pipe;
   _gsg = gsg;
+  _host = host;
   _name = name;
-  _x_size = 0;
-  _y_size = 0;
-  _has_size = false;
+  _creation_flags = flags;
+  _x_size = x_size;
+  _y_size = y_size;
+  _has_size = false; // Need to look into what this does.
   _is_valid = false;
   _flip_ready = false;
   _cube_map_index = -1;
@@ -99,8 +104,10 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   if (gsg->get_properties().is_single_buffered()) {
     // Single buffered; we must draw into the front buffer.
     _draw_buffer_type = RenderBuffer::T_front;
+  } else {
+    _draw_buffer_type = RenderBuffer::T_back;
   }
-
+  
   // We start out with one DisplayRegion that covers the whole window,
   // which we may use internally for full-window operations like
   // clear() and get_screenshot().
@@ -242,6 +249,10 @@ add_render_texture(Texture *tex, RenderTextureMode mode) {
   tex->set_x_size(get_x_size());
   tex->set_y_size(get_y_size());
 
+  if ((mode == RTM_bind_or_copy)&&(support_render_texture==0)) {
+    mode = RTM_copy_texture;
+  }
+  
   RenderTexture result;
   result._texture = tex;
   result._rtm_mode = mode;
@@ -670,122 +681,19 @@ get_texture_card() {
 GraphicsOutput *GraphicsOutput::
 make_texture_buffer(const string &name, int x_size, int y_size,
                     Texture *tex, bool to_ram) {
-  GraphicsStateGuardian *gsg = get_gsg();
-  GraphicsEngine *engine = gsg->get_engine();
-  GraphicsOutput *host = get_host();
 
-  // The new buffer should be drawn before this buffer is drawn.  If
-  // the user requires more control than this, he can set the sort
-  // value himself.
-  int sort = get_sort() - 1;
-
-  GraphicsOutput *buffer = NULL;
-
-  if ((x_size == 0) && (y_size == 0)) {
-    // Currently, only parasite buffers support the tracking of the
-    // host window size.  If the user requests this, we have to use a
-    // parasite buffer.
-    buffer = engine->make_parasite(host, name, sort, x_size, y_size);
-    buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
-    return buffer;
-  }
-
-  // I'll remove this permanently in a few days. - Josh
-  //  if (show_buffers) {
-  //    // If show_buffers is true, just go ahead and call make_buffer(),
-  //    // since it all amounts to the same thing anyway--this will
-  //    // actually create a new GraphicsWindow.
-  //    buffer = engine->make_buffer(gsg, name, sort, x_size, y_size);
-  //    buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
-  //    return buffer;
-  //  }
-
-  bool allow_bind =
-    (prefer_texture_buffer && support_render_texture &&
-     gsg->get_supports_render_texture() && !to_ram);
-
-  // If the user so indicated in the Config.prc file, try to create a
-  // parasite buffer first.  We can only do this if the requested size
-  // fits within the available framebuffer size.  Also, don't do this
-  // if we want to try using render-to-a-texture mode, since using a
-  // ParasiteButter will preclude that.
-  if (prefer_parasite_buffer && !allow_bind &&
-      (x_size <= host->get_x_size() && y_size <= host->get_y_size())) {
-    buffer = engine->make_parasite(host, name, sort, x_size, y_size);
-    if (buffer != (GraphicsOutput *)NULL) {
-      buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
-      return buffer;
-    }
-  }
-
-  // Attempt to create a single-buffered offscreen buffer.
-  if (prefer_single_buffer) {
-    FrameBufferProperties sb_props = gsg->get_properties();
-    int orig_mode = sb_props.get_frame_buffer_mode();
-    int sb_mode = (orig_mode & ~FrameBufferProperties::FM_buffer) | FrameBufferProperties::FM_single_buffer;
-    sb_props.set_frame_buffer_mode(sb_mode);
-
-    if (sb_mode != orig_mode) {
-      PT(GraphicsStateGuardian) sb_gsg =
-        engine->make_gsg(gsg->get_pipe(), sb_props, gsg);
-      if (sb_gsg != (GraphicsStateGuardian *)NULL) {
-        buffer = engine->make_buffer(sb_gsg, name, sort, x_size, y_size);
-        if (buffer != (GraphicsOutput *)NULL) {
-          // Check the buffer for goodness.
-          if (allow_bind) {
-            buffer->add_render_texture(tex, RTM_bind_or_copy);
-          } else {
-            buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
-          }
-          engine->open_windows();
-          if (buffer->is_valid()) {
-            return buffer;
-          }
-
-          // No good; delete the buffer and keep trying.
-          bool removed = engine->remove_window(buffer);
-          nassertr(removed, NULL);
-          buffer = (GraphicsOutput *)NULL;
-        }
-      }
-    }
-  }
-
-  // All right, attempt to create an offscreen buffer, using the same
-  // GSG.  This will be a double-buffered offscreen buffer, if the
-  // source window is double-buffered.
-  buffer = engine->make_buffer(gsg, name, sort, x_size, y_size);
+  GraphicsOutput *buffer = get_gsg()->get_engine()->
+    make_output(get_gsg()->get_pipe(),
+                name, get_sort()-1,
+                get_gsg()->get_properties(),
+                x_size, y_size, GraphicsPipe::BF_refuse_window,
+                get_gsg(), get_host());
+  
   if (buffer != (GraphicsOutput *)NULL) {
-    if (allow_bind) {
-      buffer->add_render_texture(tex, RTM_bind_or_copy);
-    } else {
-      buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
-    }
-    engine->open_windows();
-    if (buffer->is_valid()) {
-      return buffer;
-    }
-
-    bool removed = engine->remove_window(buffer);
-    nassertr(removed, NULL);
-    buffer = (GraphicsOutput *)NULL;
-  }
-
-  // Looks like we have to settle for a parasite buffer.
-
-  // make sure the size is not bigger than the display buffer by 
-  // continually halving the requested buffer size
-  while (!(x_size <= host->get_x_size() && y_size <= host->get_y_size())) {
-    x_size >>= 1;
-    y_size >>= 1;
-  }
-
-  if (x_size <= host->get_x_size() && y_size <= host->get_y_size()) {
-    buffer = engine->make_parasite(host, name, sort, x_size, y_size);
-    buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_copy_texture);
+    buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_bind_or_copy);
     return buffer;
   }
-
+  
   return NULL;
 }
 
@@ -1271,3 +1179,4 @@ do_determine_display_regions() {
 
   stable_sort(_active_display_regions.begin(), _active_display_regions.end(), IndirectLess<DisplayRegion>());
 }
+

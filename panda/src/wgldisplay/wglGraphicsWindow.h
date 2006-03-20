@@ -29,8 +29,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL wglGraphicsWindow : public WinGraphicsWindow {
 public:
-  wglGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                    const string &name);
+  wglGraphicsWindow(GraphicsPipe *pipe, 
+                    const string &name,
+                    int x_size, int y_size, int flags,
+                    GraphicsStateGuardian *gsg,
+                    GraphicsOutput *host);
   virtual ~wglGraphicsWindow();
 
   virtual bool begin_frame(FrameMode mode);

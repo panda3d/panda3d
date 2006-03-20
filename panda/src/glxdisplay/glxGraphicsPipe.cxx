@@ -269,37 +269,79 @@ make_gsg(const FrameBufferProperties &properties,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::make_window
+//     Function: glxGraphicsPipe::make_output
 //       Access: Protected, Virtual
 //  Description: Creates a new window on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
-PT(GraphicsWindow) glxGraphicsPipe::
-make_window(GraphicsStateGuardian *gsg, const string &name) {
+PT(GraphicsOutput) glxGraphicsPipe::
+make_output(const string &name,
+            int x_size, int y_size, int flags,
+            GraphicsStateGuardian *gsg,
+            GraphicsOutput *host,
+            int retry,
+            bool precertify) {
+  
   if (!_is_valid) {
     return NULL;
   }
 
-  return new glxGraphicsWindow(this, gsg, name);
-}
+  glxGraphicsStateGuardian *glxgsg;
+  DCAST_INTO_R(glxgsg, gsg, NULL);
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::make_buffer
-//       Access: Protected, Virtual
-//  Description: Creates a new offscreen buffer on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
-PT(GraphicsBuffer) glxGraphicsPipe::
-make_buffer(GraphicsStateGuardian *gsg, const string &name,
-            int x_size, int y_size) {
-  if (!_is_valid) {
-    return NULL;
+  // First thing to try: a glxGraphicsWindow
+
+  if (retry == 0) {
+    if (((flags&BF_require_parasite)!=0)||
+        ((flags&BF_refuse_window)!=0)||
+        ((flags&BF_need_aux_rgba_MASK)!=0)||
+        ((flags&BF_need_aux_hrgba_MASK)!=0)||
+        ((flags&BF_need_aux_float_MASK)!=0)||
+        ((flags&BF_size_track_host)!=0)||
+        ((flags&BF_can_bind_color)!=0)||
+        ((flags&BF_can_bind_every)!=0)) {
+      return NULL;
+    }
+    return new glxGraphicsWindow(this, name, x_size, y_size, flags, gsg, host);
   }
-
+  
+  //  // Second thing to try: a glGraphicsBuffer
+  //  
+  //  if (retry == 1) {
+  //    if ((!support_render_texture)||
+  //        ((flags&BF_require_parasite)!=0)||
+  //        ((flags&BF_require_window)!=0)) {
+  //      return NULL;
+  //    }
+  //    if (precertify) {
+  //      if (!glxgsg->_supports_framebuffer_object) {
+  //        return NULL;
+  //      }
+  //    }
+  //    return new glGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+  //  }
+  
 #ifdef HAVE_GLXFBCONFIG
-  return new glxGraphicsBuffer(this, gsg, name, x_size, y_size);
-#else
-  return NULL;
+  // Third thing to try: a glxGraphicsBuffer
+  
+  if (retry == 2) {
+    if ((!support_render_texture)||
+        ((flags&BF_require_parasite)!=0)||
+        ((flags&BF_require_window)!=0)||
+        ((flags&BF_need_aux_rgba_MASK)!=0)||
+        ((flags&BF_need_aux_hrgba_MASK)!=0)||
+        ((flags&BF_need_aux_float_MASK)!=0)||
+        ((flags&BF_size_track_host)!=0)||
+        ((flags&BF_can_bind_every)!=0)) {
+      return NULL;
+    }
+    return new glxGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+  }
 #endif  // HAVE_GLXFBCONFIG
+  
+  // Nothing else left to try.
+  return NULL;
 }
+
 
 #ifdef HAVE_GLXFBCONFIG
 ////////////////////////////////////////////////////////////////////

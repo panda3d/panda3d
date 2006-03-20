@@ -238,120 +238,160 @@ make_gsg(GraphicsPipe *pipe, const FrameBufferProperties &properties,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::make_window
+//     Function: GraphicsEngine::make_output
 //       Access: Published
-//  Description: Creates a new window using the indicated
-//               GraphicsStateGuardian and returns it.  The
-//               GraphicsEngine becomes the owner of the window; it
-//               will persist at least until remove_window() is called
-//               later.
-////////////////////////////////////////////////////////////////////
-GraphicsWindow *GraphicsEngine::
-make_window(GraphicsStateGuardian *gsg, const string &name, int sort) {
-  GraphicsThreadingModel threading_model = get_threading_model();
-
-  nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
-  nassertr(this == gsg->get_engine(), NULL);
-  nassertr(threading_model.get_draw_name() ==
-           gsg->get_threading_model().get_draw_name(), NULL);
-
-  // TODO: ask the window thread to make the window.
-  PT(GraphicsWindow) window = gsg->get_pipe()->make_window(gsg, name);
-  if (window != (GraphicsWindow *)NULL) {
-    window->_sort = sort;
-    do_add_window(window, gsg, threading_model);
-  }
-  return window;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::make_buffer
-//       Access: Published
-//  Description: Creates a new offscreen buffer using the indicated
-//               GraphicsStateGuardian and returns it.  The
-//               GraphicsEngine becomes the owner of the buffer; it
-//               will persist at least until remove_window() is called
-//               later.
+//  Description: Creates a new window (or buffer) and returns it.
+//               The GraphicsEngine becomes the owner of the window,
+//               it will persist at least until remove_window() is
+//               called later.
 //
-//               This usually returns a GraphicsBuffer object, but it
-//               may actually return a GraphicsWindow if show-buffers
-//               is configured true.
+//               If a null pointer is supplied for the gsg, then this
+//               routine will create a new gsg.
+//               
+//               This routine is only called from the app thread.
 ////////////////////////////////////////////////////////////////////
+
 GraphicsOutput *GraphicsEngine::
-make_buffer(GraphicsStateGuardian *gsg, const string &name, 
-            int sort, int x_size, int y_size) {
-  // I'll remove this permanently in a few days. - Josh
-  //  if (show_buffers) {
-  //    GraphicsWindow *window = make_window(gsg, name, sort);
-  //    if (window != (GraphicsWindow *)NULL) {
-  //      WindowProperties props;
-  //      props.set_size(x_size, y_size);
-  //      props.set_fixed_size(true);
-  //      props.set_title(name);
-  //      window->request_properties(props);
-  //      return window;
-  //    }
-  //  }
+make_output(GraphicsPipe *pipe,
+            const string &name, int sort,
+            const FrameBufferProperties &prop,
+            int x_size, int y_size, int flags,
+            GraphicsStateGuardian *gsg,
+            GraphicsOutput *host) {
+  
+  //  The code here is tricky because the gsg that is passed in
+  //  might be in the uninitialized state.  As a result,
+  //  pipe::make_output may not be able to tell which DirectX
+  //  capabilities or OpenGL extensions are supported and which
+  //  are not.  Worse yet, it can't query the API, because that
+  //  can only be done from the draw thread, and this is the app
+  //  thread.
+  //
+  //  So here's the workaround: this routine calls pipe::make_output,
+  //  which returns a "non-certified" window.  That means that
+  //  the pipe doesn't promise that the draw thread will actually
+  //  succeed in initializing the window.  This routine then calls
+  //  open_windows, which attempts to initialize the window.
+  //
+  //  If open_windows fails to initialize the window, then
+  //  this routine will ask pipe::make_output to try again, this
+  //  time using a different set of OpenGL extensions or DirectX
+  //  capabilities.   This is what the "retry" parameter to
+  //  pipe::make_output is for - it specifies, in an abstract
+  //  manner, which set of capabilties/extensions to try.
+  //
+  //  The only problem with this design is that it requires the
+  //  engine to call open_windows, which is slow.  To make
+  //  things faster, we can ask pipe::make_output to "precertify"
+  //  its creations.  If we ask it to precertify, then it guarantees
+  //  that the windows it returns will not fail in open_windows.
+  //  However, we can only ask for precertification if we are
+  //  passing it an already-initialized gsg.  Long story short,
+  //  if you want make_output to be fast, use an
+  //  already-initialized gsg.
+
+  // Simplify the input parameters.
+  
+  if ((x_size==0) || (y_size == 0)) {
+    flags |= GraphicsPipe::BF_size_track_host;
+  }
+  if (host != 0) {
+    host = host->get_host();
+  }
+
+  // Sanity check everything.
 
   GraphicsThreadingModel threading_model = get_threading_model();
-  nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
-  nassertr(this == gsg->get_engine(), NULL);
-  nassertr(threading_model.get_draw_name() ==
-           gsg->get_threading_model().get_draw_name(), NULL);
+  nassertr(pipe != (GraphicsPipe *)NULL, NULL);
+  if (gsg != (GraphicsStateGuardian *)NULL) {
+    nassertr(pipe == gsg->get_pipe(), NULL);
+    nassertr(this == gsg->get_engine(), NULL);
+    nassertr(prop == gsg->get_properties(), NULL);
+    nassertr(threading_model.get_draw_name() ==
+             gsg->get_threading_model().get_draw_name(), NULL);
+  }
+  if (host != (GraphicsOutput *)NULL) {
+    nassertr(gsg == host->get_gsg(), NULL);
+  }
+  
+  // If the gsg is null, then create one.
+  
+  if (gsg == (GraphicsStateGuardian *)NULL) {
+    gsg = make_gsg(pipe, prop);
+  }
+  
+  // A thread could modify these flags while we create the
+  // buffer.  So we do a single atomic fetch here.
+  
+  bool precertify = gsg->_is_valid && (!gsg->_needs_reset);
+  
+  // Determine if a parasite buffer meets the user's specs.
 
-  // TODO: ask the window thread to make the buffer.
-  PT(GraphicsBuffer) buffer = 
-    gsg->get_pipe()->make_buffer(gsg, name, x_size, y_size);
-  if (buffer != (GraphicsBuffer *)NULL) {
+  bool can_use_parasite = false;
+  if ((host != 0)&&
+      ((flags&GraphicsPipe::BF_require_window)==0)&&
+      ((flags&GraphicsPipe::BF_refuse_parasite)==0)&&
+      ((flags&GraphicsPipe::BF_need_aux_rgba_MASK)==0)&&
+      ((flags&GraphicsPipe::BF_need_aux_hrgba_MASK)==0)&&
+      ((flags&GraphicsPipe::BF_need_aux_float_MASK)==0)&&
+      ((flags&GraphicsPipe::BF_can_bind_color)==0)&&
+      ((flags&GraphicsPipe::BF_can_bind_every)==0)) {
+    can_use_parasite = true;
+  }
+  
+  // If parasite buffers are preferred, then try a parasite first.
+  
+  if ((prefer_parasite_buffer) &&
+      (can_use_parasite) &&
+      (x_size <= host->get_x_size())&&
+      (y_size <= host->get_y_size())) {
+    ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size, flags);
     buffer->_sort = sort;
     do_add_window(buffer, gsg, threading_model);
+    return buffer;
   }
-  return buffer;
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::make_parasite
-//       Access: Published
-//  Description: Creates a new offscreen parasite buffer based on the
-//               indicated host.  See parasiteBuffer.h.  The
-//               GraphicsEngine becomes the owner of the buffer; it
-//               will persist at least until remove_window() is called
-//               later.
-//
-//               This usually returns a ParasiteBuffer object, but it
-//               may actually return a GraphicsWindow if show-buffers
-//               is configured true.
-////////////////////////////////////////////////////////////////////
-GraphicsOutput *GraphicsEngine::
-make_parasite(GraphicsOutput *host, const string &name, 
-              int sort, int x_size, int y_size) {
-  GraphicsStateGuardian *gsg = host->get_gsg();
+  // Ask the pipe to create a window.
+  
+  for (int retry=0; retry<10; retry++) {
+    PT(GraphicsOutput) window = 
+      pipe->make_output(name, x_size, y_size, flags, gsg, host, retry, precertify);
+    if (window != (GraphicsOutput *)NULL) {
+      window->_sort = sort;
+      do_add_window(window, gsg, threading_model);
+      if (precertify) {
+        return window;
+      }
+      open_windows();
+      if (window->is_valid()) {
+        return window;
+      }
+      // No good; delete the window and keep trying.
+      bool removed = remove_window(window);
+      nassertr(removed, NULL);
+    }
+  }
+  
+  // Parasite buffers were not preferred, but the pipe could not
+  // create a window to the user's specs.  Try a parasite as a
+  // last hope.
+  
+  if (can_use_parasite) {
+    if (x_size > host->get_x_size()) {
+      x_size = Texture::down_to_power_2(host->get_x_size());
+    }
+    if (y_size > host->get_y_size()) {
+      y_size = Texture::down_to_power_2(host->get_y_size());
+    }
+    ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size, flags);
+    buffer->_sort = sort;
+    do_add_window(buffer, gsg, threading_model);
+    return buffer;
+  }
 
-  // I'll remove this permanently in a few days. - Josh
-  //  if (show_buffers) {
-  //    GraphicsWindow *window = make_window(gsg, name, sort);
-  //    if (window != (GraphicsWindow *)NULL) {
-  //      WindowProperties props;
-  //      props.set_size(x_size, y_size);
-  //      props.set_fixed_size(true);
-  //      props.set_title(name);
-  //      window->request_properties(props);
-  //
-  //      return window;
-  //    }
-  //  }
-
-  GraphicsThreadingModel threading_model = get_threading_model();
-  nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
-  nassertr(this == gsg->get_engine(), NULL);
-  nassertr(threading_model.get_draw_name() ==
-           gsg->get_threading_model().get_draw_name(), NULL);
-
-  ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size);
-  buffer->_sort = sort;
-  do_add_window(buffer, gsg, threading_model);
-
-  return buffer;
+  // Could not create a window to the user's specs.
+  
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1100,8 +1140,8 @@ draw_bins(GraphicsOutput *win, DisplayRegion *dr) {
 //     Function: GraphicsEngine::make_contexts
 //       Access: Private
 //  Description: Called in the draw thread, this calls make_context()
-//               on each window on the list to guarantee its graphics
-//               context gets created.
+//               on each window on the list to guarantee its gsg and
+//               graphics context both get created.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 make_contexts(const GraphicsEngine::Windows &wlist) {
@@ -1429,7 +1469,8 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
 //  Description: An internal function called by make_window() and
 //               make_buffer() and similar functions to add the
 //               newly-created GraphicsOutput object to the engine's
-//               tables.
+//               list of windows, and to request that the window be
+//               opened.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
@@ -1476,6 +1517,7 @@ do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
   // By default, try to open each window as it is added.
   window->request_open();
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::do_remove_window

@@ -73,6 +73,44 @@ PUBLISHED:
     OT_texture_buffer    = 0x0008,
   };
 
+  enum BufferCreationFlags {
+
+    // How many RGBA aux bitplanes do you need?
+    BF_need_aux_rgba_MASK  = 0x00000003,
+    BF_need_0_aux_rgba     = 0x00000000,
+    BF_need_1_aux_rgba     = 0x00000001,
+    BF_need_2_aux_rgba     = 0x00000002,
+    BF_need_3_aux_rgba     = 0x00000003,
+
+    // How many half-float rgba aux bitplanes do you need?
+    // This is not currently implemented.
+    BF_need_aux_hrgba_MASK = 0x0000000C,
+    BF_need_0_aux_hrgba    = 0x00000000,
+    BF_need_1_aux_hrgba    = 0x00000004,
+    BF_need_2_aux_hrgba    = 0x00000008,
+    BF_need_3_aux_hrgba    = 0x0000000C,
+
+    // How many full-float single-channel bitplanes do you need?
+    // This is not currently implemented.
+    BF_need_aux_float_MASK = 0x00000030,
+    BF_need_0_aux_float    = 0x00000000,
+    BF_need_1_aux_float    = 0x00000010,
+    BF_need_2_aux_float    = 0x00000020,
+    BF_need_3_aux_float    = 0x00000040,
+
+    // Flags that control what type of output is returned.
+    BF_refuse_parasite     = 0x00000100,
+    BF_require_parasite    = 0x00000200,
+    BF_refuse_window       = 0x00000400,
+    BF_require_window      = 0x00000800,
+
+    // Miscellaneous control flags.
+    BF_can_bind_color      = 0x00010000, // Need capability: bind the color bitplane to a tex.
+    BF_can_bind_every      = 0x00020000, // Need capability: bind all bitplanes to a tex.
+    BF_size_track_host     = 0x00040000, // Buffer should track the host size.
+    BF_no_new_gsg          = 0x00080000, // Do not create a new gsg, no matter what.
+  };
+
   INLINE bool is_valid() const;
   INLINE int get_supported_types() const;
   INLINE bool supports_type(int flags) const;
@@ -90,18 +128,20 @@ public:
   virtual PT(GraphicsDevice) make_device(void *scrn = NULL);
 
 protected:
-  // The make_window() and make_gsg() interfaces on GraphicsPipe are
+  // The make_output() and make_gsg() interfaces on GraphicsPipe are
   // protected; don't try to call them directly.  Instead, use
-  // the interface on GraphicsEngine to make a new window or gsg.
+  // the interface on GraphicsEngine to make a new window or buffer.
   virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties,
                                              GraphicsStateGuardian *share_with);
   virtual void close_gsg(GraphicsStateGuardian *gsg);
-  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg, 
-                                         const string &name);
-  virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, 
-                                         const string &name,
-                                         int x_size, int y_size);
-
+  
+  virtual PT(GraphicsOutput) make_output(const string &name,
+                                         int x_size, int y_size, int flags,
+                                         GraphicsStateGuardian *gsg,
+                                         GraphicsOutput *host,
+                                         int retry,
+                                         bool precertify);
+  
   Mutex _lock;
 
   bool _is_valid;

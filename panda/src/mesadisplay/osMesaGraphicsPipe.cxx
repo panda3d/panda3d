@@ -119,12 +119,38 @@ make_gsg(const FrameBufferProperties &properties,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OsMesaGraphicsPipe::make_buffer
+//     Function: OsMesaGraphicsPipe::make_output
 //       Access: Protected, Virtual
-//  Description: Creates a new offscreen buffer on the pipe, if possible.
+//  Description: Creates a new window on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
-PT(GraphicsBuffer) OsMesaGraphicsPipe::
-make_buffer(GraphicsStateGuardian *gsg, const string &name,
-            int x_size, int y_size) {
-  return new OsMesaGraphicsBuffer(this, gsg, name, x_size, y_size);
+PT(GraphicsOutput) OsMesaGraphicsPipe::
+make_output(const string &name,
+            int x_size, int y_size, int flags,
+            GraphicsStateGuardian *gsg,
+            GraphicsOutput *host,
+            int retry,
+            bool precertify) {
+  
+  if (!_is_valid) {
+    return NULL;
+  }
+  
+  // First thing to try: an OsMesaGraphicsBuffer
+
+  if (retry == 0) {
+    if ((!support_render_texture)||
+        ((flags&BF_require_parasite)!=0)||
+        ((flags&BF_require_window)!=0)||
+        ((flags&BF_need_aux_rgba_MASK)!=0)||
+        ((flags&BF_need_aux_hrgba_MASK)!=0)||
+        ((flags&BF_need_aux_float_MASK)!=0)||
+        ((flags&BF_size_track_host)!=0)||
+        ((flags&BF_can_bind_every)!=0)) {
+      return NULL;
+    }
+    return new OsMesaGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+  }
+  
+  // Nothing else left to try.
+  return NULL;
 }

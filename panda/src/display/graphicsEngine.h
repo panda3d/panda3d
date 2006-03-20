@@ -72,18 +72,29 @@ PUBLISHED:
   INLINE void set_portal_cull(bool value);
   INLINE bool get_portal_cull() const;
 
+
   INLINE PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe);
   PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe,
                                      const FrameBufferProperties &properties,
                                      GraphicsStateGuardian *share_with = NULL);
-
-  GraphicsWindow *make_window(GraphicsStateGuardian *gsg, const string &name,
-                              int sort);
-  GraphicsOutput *make_buffer(GraphicsStateGuardian *gsg, const string &name,
-                              int sort, int x_size, int y_size);
-  GraphicsOutput *make_parasite(GraphicsOutput *host, const string &name,
-                                int sort, int x_size, int y_size);
-
+  
+  GraphicsOutput *make_output(GraphicsPipe *pipe,
+                              const string &name, int sort,
+                              const FrameBufferProperties &prop,
+                              int x_size, int y_size, int flags,
+                              GraphicsStateGuardian *gsg = 0,
+                              GraphicsOutput *host = 0);
+  
+  // Syntactic shorthand versions of make_output
+  INLINE GraphicsWindow *make_window(GraphicsStateGuardian *gsg,
+                                     const string &name, int sort);
+  INLINE GraphicsOutput *make_buffer(GraphicsStateGuardian *gsg,
+                                     const string &name, int sort,
+                                     int x_size, int y_size);
+  INLINE GraphicsOutput *make_parasite(GraphicsOutput *host,
+                                       const string &name, int sort,
+                                       int x_size, int y_size);
+  
   bool remove_window(GraphicsOutput *window);
   void remove_all_windows();
   void reset_all_windows(bool swapchain);
@@ -282,9 +293,9 @@ private:
     Windows _draw;    // draw stage
     Windows _window;  // window stage, i.e. process windowing events 
 
-    // These two are not kept sorted.
-    Windows _pending_release; // moved from _draw, pending release_gsg.
-    Windows _pending_close;   // moved from _window, pending close.
+    // These are not kept sorted.
+    Windows _pending_release;  // moved from _draw, pending release_gsg.
+    Windows _pending_close;    // moved from _window, pending close.
 
     GSGs _gsgs;       // draw stage
 

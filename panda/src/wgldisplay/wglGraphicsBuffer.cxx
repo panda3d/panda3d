@@ -33,10 +33,12 @@ TypeHandle wglGraphicsBuffer::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wglGraphicsBuffer::
-wglGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+wglGraphicsBuffer(GraphicsPipe *pipe,
                   const string &name,
-                  int x_size, int y_size) :
-  GraphicsBuffer(pipe, gsg, name, x_size, y_size) 
+                  int x_size, int y_size, int flags,
+                  GraphicsStateGuardian *gsg,
+                  GraphicsOutput *host) :
+  GraphicsBuffer(pipe, name, x_size, y_size, flags, gsg, host)
 {
   _pbuffer = (HPBUFFERARB)0;
   _pbuffer_dc = (HDC)0;

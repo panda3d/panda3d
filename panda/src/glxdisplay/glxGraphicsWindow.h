@@ -32,8 +32,11 @@
 ////////////////////////////////////////////////////////////////////
 class glxGraphicsWindow : public GraphicsWindow {
 public:
-  glxGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                    const string &name);
+  glxGraphicsWindow(GraphicsPipe *pipe, 
+                    const string &name,
+                    int x_size, int y_size, int flags,
+                    GraphicsStateGuardian *gsg,
+                    GraphicsOutput *host);
   virtual ~glxGraphicsWindow();
 
   virtual bool move_pointer(int device, int x, int y);
