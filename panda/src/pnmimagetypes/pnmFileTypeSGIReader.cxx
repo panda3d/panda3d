@@ -23,7 +23,7 @@
 #include "pnmImage.h"
 #include "pnmReader.h"
 
-#include "notify.h"
+#include "pnotify.h"
 
 // Much code in this file is borrowed from Netpbm, specifically sgitopnm.c.
 
