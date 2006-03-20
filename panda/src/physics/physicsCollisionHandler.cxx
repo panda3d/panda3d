@@ -54,7 +54,8 @@ PhysicsCollisionHandler::
 //               account for friction.
 ////////////////////////////////////////////////////////////////////
 void PhysicsCollisionHandler::
-apply_friction(ColliderDef &def, LVector3f& vel, const LVector3f& force, float angle) {
+apply_friction(ColliderDef &def, LVector3f& vel, const LVector3f& force,
+    float angle) {
   if (vel!=LVector3f::zero()) {
     float friction_coefficient=0.0f;
     // Determine the friction:
@@ -97,7 +98,8 @@ apply_linear_force(ColliderDef &def, const LVector3f &force) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysicsCollisionHandler::
-apply_net_shove(ColliderDef &def, const LVector3f& net_shove, const LVector3f &force) {
+apply_net_shove(ColliderDef &def, const LVector3f& net_shove,
+    const LVector3f &force) {
   CollisionHandlerPusher::apply_net_shove(def, net_shove, force);
   if (force == LVector3f::zero()) {
     return;
@@ -140,6 +142,12 @@ apply_net_shove(ColliderDef &def, const LVector3f& net_shove, const LVector3f &f
   // Are we in contact with something:
   if (angle>0.0f) {
     physics_debug("  positive contact");
+    #if 0
+    cerr<<"vel "<<vel<<endl;
+    cerr<<"net_shove "<<net_shove<<endl;
+    cerr<<"-force "<<-force<<endl;
+    actor->get_physics_object()->add_impact(-force, -vel);
+    #else
     adjustment*=adjustmentLength;
     physics_debug("  adjustment mul "<<adjustment<<" len "<<adjustment.length());
     
@@ -149,6 +157,7 @@ apply_net_shove(ColliderDef &def, const LVector3f& net_shove, const LVector3f &f
     physics_debug("  vel+adj "<<vel<<" len "<<vel.length());
     
     apply_friction(def, vel, force, angle);
+    #endif
   } else if (adjustmentLength==0.0f) {
     physics_debug("  brushing contact");
   } else {
@@ -163,7 +172,7 @@ apply_net_shove(ColliderDef &def, const LVector3f& net_shove, const LVector3f &f
     // This is a check to avoid adding engergy:
     physics_debug("  vel got larger  "<<vel.length()<<" > "<<old_vel.length());
   } else {
-    // This is a check to avoid loosing engergy:
+    // This is a check to avoid losing engergy:
     physics_debug("  vel got smaller  "<<vel.length()<<" < "<<old_vel.length());
   }
   if (vel.length() > 10.0f) {
