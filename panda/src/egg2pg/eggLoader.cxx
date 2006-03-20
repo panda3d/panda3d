@@ -1596,10 +1596,6 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     }
 
     node = create_group_arc(egg_group, parent, node);
-
-    if (!egg_show_collision_solids) {
-      node->set_draw_mask(DrawMask::all_off());
-    }
     return node;
 
   } else if (egg_group->get_portal_flag()) {

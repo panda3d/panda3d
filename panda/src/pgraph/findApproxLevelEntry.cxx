@@ -149,8 +149,7 @@ consider_node(NodePathCollection &result, FindApproxLevelEntry *&next_level,
 void FindApproxLevelEntry::
 consider_next_step(PandaNode *child_node, FindApproxLevelEntry *&next_level, 
                    int increment) const {
-  if (!_approx_path.return_hidden() &&
-      child_node->get_draw_mask().is_zero()) {
+  if (!_approx_path.return_hidden() && child_node->is_overall_hidden()) {
     // If the approx path does not allow us to return hidden nodes,
     // and this node has indeed been completely hidden, then stop
     // here.

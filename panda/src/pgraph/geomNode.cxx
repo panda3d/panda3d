@@ -364,6 +364,21 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::is_renderable
+//       Access: Public, Virtual
+//  Description: Returns true if there is some value to visiting this
+//               particular node during the cull traversal for any
+//               camera, false otherwise.  This will be used to
+//               optimize the result of get_net_draw_show_mask(), so
+//               that any subtrees that contain only nodes for which
+//               is_renderable() is false need not be visited.
+////////////////////////////////////////////////////////////////////
+bool GeomNode::
+is_renderable() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::get_legal_collide_mask
 //       Access: Published, Virtual
 //  Description: Returns the subset of CollideMask bits that may be

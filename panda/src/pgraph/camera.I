@@ -107,6 +107,9 @@ get_display_region(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Camera::
 set_camera_mask(DrawMask mask) {
+  // You shouldn't attempt to use Panda's reserved "overall" bit as a
+  // camera mask.
+  nassertv((mask & PandaNode::get_overall_bit()).is_zero());
   _camera_mask = mask;
 }
 

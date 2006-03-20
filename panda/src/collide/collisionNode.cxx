@@ -47,7 +47,7 @@ CollisionNode(const string &name) :
   _collide_geom(false)
 {
   // CollisionNodes are hidden by default.
-  set_draw_mask(DrawMask::all_off());
+  set_overall_hidden(true);
 
   // CollisionNodes have a certain set of bits on by default.
   set_into_collide_mask(get_default_collide_mask());
@@ -259,6 +259,21 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   }
 
   // Now carry on to render our child nodes.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::is_renderable
+//       Access: Public, Virtual
+//  Description: Returns true if there is some value to visiting this
+//               particular node during the cull traversal for any
+//               camera, false otherwise.  This will be used to
+//               optimize the result of get_net_draw_show_mask(), so
+//               that any subtrees that contain only nodes for which
+//               is_renderable() is false need not be visited.
+////////////////////////////////////////////////////////////////////
+bool CollisionNode::
+is_renderable() const {
   return true;
 }
 

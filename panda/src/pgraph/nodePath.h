@@ -738,10 +738,12 @@ PUBLISHED:
   // Variants on show and hide
   INLINE void show();
   INLINE void show(DrawMask camera_mask);
+  INLINE void show_through();
+  INLINE void show_through(DrawMask camera_mask);
   INLINE void hide();
   INLINE void hide(DrawMask camera_mask);
-  INLINE bool is_hidden(DrawMask camera_mask = DrawMask::all_on()) const;
-  NodePath get_hidden_ancestor(DrawMask camera_mask = DrawMask::all_on()) const;
+  INLINE bool is_hidden(DrawMask camera_mask = PandaNode::get_overall_bit()) const;
+  NodePath get_hidden_ancestor(DrawMask camera_mask = PandaNode::get_overall_bit()) const;
 
   void stash(int sort = 0);
   void unstash(int sort = 0);

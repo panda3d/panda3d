@@ -62,6 +62,7 @@ apply_transform_and_state(CullTraverser *trav) {
     string tag_state = node->get_tag(trav->get_tag_state_key());
     node_state = node_state->compose(camera->get_tag_state(tag_state));
   }
+  node->compose_draw_mask(_draw_mask);
 
   apply_transform_and_state(trav, node->get_transform(),
                             node_state, node->get_effects(),

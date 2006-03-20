@@ -61,9 +61,10 @@ BitMask(const BitMask<WType, nbits> &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WType, int nbits>
-INLINE void BitMask<WType, nbits>::
+INLINE BitMask<WType, nbits> &BitMask<WType, nbits>::
 operator = (const BitMask<WType, nbits> &copy) {
   _word = copy._word;
+  return *this;
 }
 
 ////////////////////////////////////////////////////////////////////

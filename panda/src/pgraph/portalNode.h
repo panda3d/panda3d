@@ -60,6 +60,7 @@ public:
 
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
+  virtual bool is_renderable() const;
 
   virtual void output(ostream &out) const;
 

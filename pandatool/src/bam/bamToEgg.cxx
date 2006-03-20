@@ -396,7 +396,7 @@ bool BamToEgg::
 apply_node_properties(EggGroup *egg_group, PandaNode *node) {
   bool any_applied = false;
 
-  if (node->get_draw_mask().is_zero()) {
+  if (node->is_overall_hidden()) {
     // This node is hidden.  We'll go ahead and convert it, but we'll
     // put in the "backstage" flag to mean it's not real geometry.
     egg_group->add_object_type("backstage");

@@ -5154,7 +5154,8 @@ get_hidden_ancestor(DrawMask camera_mask) const {
        comp != (NodePathComponent *)NULL; 
        comp = comp->get_next(pipeline_stage)) {
     PandaNode *node = comp->get_node();
-    if ((node->get_draw_mask() & camera_mask).is_zero()) {
+    if (node->is_overall_hidden() ||
+        ((node->get_draw_show_mask() | ~node->get_draw_control_mask()) & camera_mask).is_zero()) {
       NodePath result;
       result._head = comp;
       return result;

@@ -253,6 +253,21 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::is_renderable
+//       Access: Public, Virtual
+//  Description: Returns true if there is some value to visiting this
+//               particular node during the cull traversal for any
+//               camera, false otherwise.  This will be used to
+//               optimize the result of get_net_draw_show_mask(), so
+//               that any subtrees that contain only nodes for which
+//               is_renderable() is false need not be visited.
+////////////////////////////////////////////////////////////////////
+bool PGItem::
+is_renderable() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description: Called when needed to recompute the node's
@@ -1025,7 +1040,7 @@ play_sound(const string &event) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 reduce_region(LVecBase4f &frame, PGItem *obscurer) const {
-  if (obscurer != (PGItem *)NULL && !obscurer->get_draw_mask().is_zero()) {
+  if (obscurer != (PGItem *)NULL && !obscurer->is_overall_hidden()) {
     LVecBase4f oframe = get_relative_frame(obscurer);
 
     // Determine the four rectangular regions on the four sides of the

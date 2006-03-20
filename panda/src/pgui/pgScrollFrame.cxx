@@ -267,18 +267,18 @@ remanage() {
     // Now show or hide the sliders appropriately.
     if (_horizontal_slider != (PGSliderBar *)NULL) {
       if (got_horizontal) {
-        _horizontal_slider->set_draw_mask(DrawMask::all_on());
+        _horizontal_slider->set_overall_hidden(false);
       } else {
-        _horizontal_slider->set_draw_mask(DrawMask::all_off());
+        _horizontal_slider->set_overall_hidden(true);
         _horizontal_slider->set_ratio(0.0f);
         horizontal_width = 0.0f;
       }
     }
     if (_vertical_slider != (PGSliderBar *)NULL) {
       if (got_vertical) {
-        _vertical_slider->set_draw_mask(DrawMask::all_on());
+        _vertical_slider->set_overall_hidden(false);
       } else {
-        _vertical_slider->set_draw_mask(DrawMask::all_off());
+        _vertical_slider->set_overall_hidden(true);
         _vertical_slider->set_ratio(0.0f);
         vertical_width = 0.0f;
       }
@@ -288,14 +288,14 @@ remanage() {
     // flag again indirectly; we clear it again to avoid a feedback
     // loop.
     _needs_remanage = false;
-  }
+}
 
   // Are either or both of the scroll bars hidden?
-  if (got_horizontal && _horizontal_slider->get_draw_mask().is_zero()) {
+  if (got_horizontal && _horizontal_slider->is_overall_hidden()) {
     got_horizontal = false;
     horizontal_width = 0.0f;
   }
-  if (got_vertical && _vertical_slider->get_draw_mask().is_zero()) {
+  if (got_vertical && _vertical_slider->is_overall_hidden()) {
     got_vertical = false;
     vertical_width = 0.0f;
   }

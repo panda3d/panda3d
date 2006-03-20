@@ -1884,11 +1884,14 @@ adjust_all_priorities(int adjustment) {
 //  Description: Undoes the effect of a previous hide() on this node:
 //               makes the referenced node (and the entire subgraph
 //               below this node) visible to all cameras.
+//
+//               This will not reveal the node if a parent node has
+//               been hidden.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 show() {
   nassertv_always(!is_empty());
-  node()->set_draw_mask(DrawMask::all_on());
+  node()->adjust_draw_mask(DrawMask::all_off(), DrawMask::all_off(), PandaNode::get_overall_bit());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1896,13 +1899,52 @@ show() {
 //       Access: Published
 //  Description: Makes the referenced node visible just to the
 //               cameras whose camera_mask shares the indicated bits.
-//               That is, this sets the indicated bits in the
-//               node's draw mask.
+//
+//               This undoes the effect of a previous hide() call.  It
+//               will not reveal the node if a parent node has been
+//               hidden.  However, see show_through().
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 show(DrawMask camera_mask) {
   nassertv_always(!is_empty());
-  node()->set_draw_mask(node()->get_draw_mask() | camera_mask);
+  camera_mask &= ~PandaNode::get_overall_bit();
+  node()->adjust_draw_mask(DrawMask::all_off(), DrawMask::all_off(), camera_mask);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::show_through
+//       Access: Published
+//  Description: Makes the referenced node visible just to the
+//               cameras whose camera_mask shares the indicated bits.
+//
+//               Unlike show(), this will reveal the node even if a
+//               parent node has been hidden, thus "showing through" a
+//               parent's hide().
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+show_through() {
+  nassertv_always(!is_empty());
+  node()->adjust_draw_mask(PandaNode::get_overall_bit(), DrawMask::all_off(), DrawMask::all_off());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::show_through
+//       Access: Published
+//  Description: Makes the referenced node visible just to the
+//               cameras whose camera_mask shares the indicated bits.
+//
+//               Unlike show(), this will reveal the node even if a
+//               parent node has been hidden via the one-parameter
+//               hide() method, thus "showing through" a parent's
+//               hide().  (However, it will not show through a
+//               parent's hide() call if the no-parameter form of
+//               hide() was used.)
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+show_through(DrawMask camera_mask) {
+  nassertv_always(!is_empty());
+  camera_mask &= ~PandaNode::get_overall_bit();
+  node()->adjust_draw_mask(camera_mask, DrawMask::all_off(), DrawMask::all_off());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1917,7 +1959,7 @@ show(DrawMask camera_mask) {
 INLINE void NodePath::
 hide() {
   nassertv_always(!is_empty());
-  node()->set_draw_mask(DrawMask::all_off());
+  node()->adjust_draw_mask(DrawMask::all_off(), PandaNode::get_overall_bit(), DrawMask::all_off());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1925,13 +1967,17 @@ hide() {
 //       Access: Published
 //  Description: Makes the referenced node invisible just to the
 //               cameras whose camera_mask shares the indicated bits.
-//               That is, this clears the indicated bits from the
-//               node's draw mask.
+//
+//               This will also hide any nodes below this node in the
+//               scene graph, including those nodes for which show()
+//               has been called, but it will not hide descendent
+//               nodes for which show_through() has been called.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 hide(DrawMask camera_mask) {
   nassertv_always(!is_empty());
-  node()->set_draw_mask(node()->get_draw_mask() & ~camera_mask);
+  camera_mask &= ~PandaNode::get_overall_bit();
+  node()->adjust_draw_mask(DrawMask::all_off(), camera_mask, DrawMask::all_off());
 }
 
 ////////////////////////////////////////////////////////////////////

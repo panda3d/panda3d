@@ -36,8 +36,9 @@ static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 5 on 5/6/05 for new Geom implementation.
 // Bumped to major version 6 on 2/11/06 to factor out PandaNode::CData.
 
-static const unsigned short _bam_minor_ver = 1;
+static const unsigned short _bam_minor_ver = 2;
 // Bumped to minor version 1 on 3/12/06 to add Texture::_compression.
+// Bumped to minor version 2 on 3/17/06 to add PandaNode::_draw_control_mask.
 
 
 #endif

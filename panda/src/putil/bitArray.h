@@ -47,7 +47,7 @@ PUBLISHED:
   INLINE BitArray();
   INLINE BitArray(WordType init_value);
   INLINE BitArray(const BitArray &copy);
-  INLINE void operator = (const BitArray &copy);
+  INLINE BitArray &operator = (const BitArray &copy);
 
   INLINE static BitArray all_on();
   INLINE static BitArray all_off();

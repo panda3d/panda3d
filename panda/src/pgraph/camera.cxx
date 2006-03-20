@@ -32,7 +32,7 @@ Camera::
 Camera(const string &name) :
   LensNode(name),
   _active(true),
-  _camera_mask(DrawMask::all_on()),
+  _camera_mask(~PandaNode::get_overall_bit()),
   _initial_state(RenderState::make_empty())
 {
 }

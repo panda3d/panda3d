@@ -18,6 +18,63 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::compose_draw_mask
+//       Access: Public
+//  Description: Computes the result of applying this node's draw
+//               masks to a running draw mask, as during a traversal.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+compose_draw_mask(DrawMask &running_draw_mask) const {
+  CDHeavyReader cdata(_cycler_heavy);
+  running_draw_mask = (running_draw_mask & ~cdata->_draw_control_mask) |
+    (cdata->_draw_show_mask & cdata->_draw_control_mask);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::compare_draw_mask
+//       Access: Public
+//  Description: Compares the running draw mask computed during a
+//               traversal with this node's net draw masks.  Returns
+//               true if the node should be traversed into, or false
+//               if there is nothing at this level or below that will
+//               be visible to the indicated camera_mask.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaNode::
+compare_draw_mask(DrawMask running_draw_mask, DrawMask camera_mask) const {
+  DrawMask net_draw_control_mask, net_draw_show_mask;
+
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage);
+  if (cdata->_last_update != cdata->_next_update) {
+    // The cache is stale; it needs to be rebuilt.
+    CDBoundsStageWriter cdataw = 
+      ((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
+    net_draw_control_mask = cdataw->_net_draw_control_mask;
+    net_draw_show_mask = cdataw->_net_draw_show_mask;
+  } else {
+    net_draw_control_mask = cdata->_net_draw_control_mask;
+    net_draw_show_mask = cdata->_net_draw_show_mask;
+  }
+
+  // Now the bits that are not in net_draw_control_mask--that is,
+  // those bits that are not changed by any of the nodes at this level
+  // and below--are taken from running_draw_mask, which is inherited
+  // from above.  On the other hand, the bits that *are* in
+  // net_draw_control_mask--those bits that are changed by any of the
+  // nodes at this level and below--are taken from net_draw_show_mask,
+  // which is propagated upwards from below.
+
+  // This way, we will traverse into this node if it has any children
+  // which want to be visited by the traversal, but we will avoid
+  // traversing into it if all of its children are hidden to this
+  // camera.
+  DrawMask compare_mask = (running_draw_mask & ~net_draw_control_mask) | (net_draw_show_mask & net_draw_control_mask);
+
+  return !((compare_mask & _overall_bit).is_zero()) && !((compare_mask & camera_mask).is_zero());
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_num_parents
 //       Access: Published
 //  Description: Returns the number of parent nodes this node has.  If
@@ -431,15 +488,75 @@ ls(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_draw_mask
-//       Access: Published
-//  Description: Returns the hide/show bits of this particular node.
-//               See set_draw_mask().
+//     Function: PandaNode::get_overall_bit
+//       Access: Published, Static
+//  Description: Returns the special bit that, when specifically
+//               cleared in the node's DrawMask, indicates that the
+//               node is hidden to all cameras, regardless of the
+//               remaining DrawMask bits.
 ////////////////////////////////////////////////////////////////////
 INLINE DrawMask PandaNode::
-get_draw_mask() const {
+get_overall_bit() {
+  return _overall_bit;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::is_overall_hidden
+//       Access: Published, Static
+//  Description: Returns true if the node has been hidden to all
+//               cameras by clearing its overall bit.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaNode::
+is_overall_hidden() const {
   CDHeavyReader cdata(_cycler_heavy);
-  return cdata->_draw_mask;
+  return ((cdata->_draw_show_mask | ~cdata->_draw_control_mask) & _overall_bit).is_zero();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_overall_hidden
+//       Access: Published
+//  Description: Sets or clears the hidden flag.  When the hidden flag
+//               is true, the node and all of its children are
+//               invisible to all cameras, regardless of the setting
+//               of any draw masks.  Setting the hidden flag to false
+//               restores the previous visibility as established by
+//               the draw masks.
+//
+//               This actually works by twiddling the reserved
+//               _overall_bit in the node's draw mask, which has
+//               special meaning.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+set_overall_hidden(bool hidden) {
+  if (hidden) {
+    adjust_draw_mask(DrawMask::all_off(), _overall_bit, DrawMask::all_off());
+  } else {
+    adjust_draw_mask(DrawMask::all_off(), DrawMask::all_off(), _overall_bit);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_draw_control_mask
+//       Access: Published
+//  Description: Returns the set of bits in draw_show_mask that are
+//               considered meaningful.  See adjust_draw_mask().
+////////////////////////////////////////////////////////////////////
+INLINE DrawMask PandaNode::
+get_draw_control_mask() const {
+  CDHeavyReader cdata(_cycler_heavy);
+  return cdata->_draw_control_mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_draw_show_mask
+//       Access: Published
+//  Description: Returns the hide/show bits of this particular node.
+//               See adjust_draw_mask().
+////////////////////////////////////////////////////////////////////
+INLINE DrawMask PandaNode::
+get_draw_show_mask() const {
+  CDHeavyReader cdata(_cycler_heavy);
+  return cdata->_draw_show_mask;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -791,7 +908,8 @@ CDataLight() {
 INLINE PandaNode::CDataHeavy::
 CDataHeavy() {
   _effects = RenderEffects::make_empty();
-  _draw_mask = DrawMask::all_on();
+  _draw_control_mask = DrawMask::all_off();
+  _draw_show_mask = DrawMask::all_on();
   _into_collide_mask = CollideMask::all_off();
   _user_bounds = NULL;
   _internal_bounds = NULL;
@@ -807,6 +925,8 @@ CDataHeavy() {
 INLINE PandaNode::CDataBounds::
 CDataBounds() {
   _net_collide_mask = CollideMask::all_off();
+  _net_draw_control_mask = DrawMask::all_off();
+  _net_draw_show_mask = DrawMask::all_off();
   ++_next_update;
 }
 

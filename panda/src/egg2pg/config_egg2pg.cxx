@@ -82,9 +82,6 @@ ConfigVariableBool egg_rigid_geometry
           "geometry has to be vertex-animated, but there will tend to be "
           "more separate pieces."));
 
-ConfigVariableBool egg_show_collision_solids
-("egg-show-collision-solids", false);
-
 ConfigVariableBool egg_load_old_curves
 ("egg-load-old-curves", true,
  PRC_DESC("When this is true, a <NurbsCurve> entry appearing in an egg file "

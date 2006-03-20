@@ -64,7 +64,6 @@ public:
   CPT(TransformState) get_net_transform(const CullTraverser *trav) const;
 
   INLINE bool is_in_view(const DrawMask &camera_mask);
-  INLINE int test_within_clip_planes(const CullTraverser *trav) const;
 
   void apply_transform_and_state(CullTraverser *trav);
   void apply_transform_and_state(CullTraverser *trav, 
@@ -79,6 +78,7 @@ public:
   PT(GeometricBoundingVolume) _view_frustum;
   PT(GeometricBoundingVolume) _guard_band;
   CPT(CullPlanes) _cull_planes;
+  DrawMask _draw_mask;
 
 private:
   bool is_in_view_impl();

@@ -57,10 +57,11 @@ BitArray(const BitArray &copy) :
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void BitArray::
+INLINE BitArray &BitArray::
 operator = (const BitArray &copy) {
   _array = copy._array;
   _highest_bits = copy._highest_bits;
+  return *this;
 }
 
 ////////////////////////////////////////////////////////////////////

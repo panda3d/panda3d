@@ -44,7 +44,7 @@ PUBLISHED:
   INLINE BitMask();
   INLINE BitMask(WordType init_value);
   INLINE BitMask(const BitMask<WType, nbits> &copy);
-  INLINE void operator = (const BitMask<WType, nbits> &copy);
+  INLINE BitMask<WType, nbits> &operator = (const BitMask<WType, nbits> &copy);
 
   INLINE static BitMask<WType, nbits> all_on();
   INLINE static BitMask<WType, nbits> all_off();

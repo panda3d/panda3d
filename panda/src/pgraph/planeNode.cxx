@@ -78,7 +78,7 @@ PlaneNode(const string &name, const Planef &plane) :
   _priority(0)
 {
   // PlaneNodes are hidden by default.
-  set_draw_mask(DrawMask::all_off());
+  set_overall_hidden(true);
 
   set_plane(plane);
 }
@@ -180,6 +180,21 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   trav->get_cull_handler()->record_object(plane_viz, trav);
 
   // Now carry on to render our child nodes.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PlaneNode::is_renderable
+//       Access: Public, Virtual
+//  Description: Returns true if there is some value to visiting this
+//               particular node during the cull traversal for any
+//               camera, false otherwise.  This will be used to
+//               optimize the result of get_net_draw_show_mask(), so
+//               that any subtrees that contain only nodes for which
+//               is_renderable() is false need not be visited.
+////////////////////////////////////////////////////////////////////
+bool PlaneNode::
+is_renderable() const {
   return true;
 }
 

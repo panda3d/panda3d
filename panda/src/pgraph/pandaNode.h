@@ -103,6 +103,11 @@ public:
   virtual int get_next_visible_child(int n) const;
   virtual bool has_single_child_visibility() const;
   virtual int get_visible_child() const;
+  virtual bool is_renderable() const;
+
+  INLINE void compose_draw_mask(DrawMask &running_draw_mask) const;
+  INLINE bool compare_draw_mask(DrawMask running_draw_mask,
+                                DrawMask camera_mask) const;
 
 PUBLISHED:
   PT(PandaNode) copy_subgraph() const;
@@ -180,8 +185,18 @@ PUBLISHED:
   void copy_tags(PandaNode *other);
   void list_tags(ostream &out, const string &separator = "\n") const;
 
-  void set_draw_mask(DrawMask mask);
-  INLINE DrawMask get_draw_mask() const;
+  INLINE static DrawMask get_overall_bit();
+  INLINE bool is_overall_hidden() const;
+  INLINE void set_overall_hidden(bool overall_hidden);
+
+  void adjust_draw_mask(DrawMask show_mask,
+                        DrawMask hide_mask,
+                        DrawMask clear_mask);
+  INLINE DrawMask get_draw_control_mask() const;
+  INLINE DrawMask get_draw_show_mask() const;
+
+  CollideMask get_net_draw_control_mask() const;
+  CollideMask get_net_draw_show_mask() const;
 
   void set_into_collide_mask(CollideMask mask);
   INLINE CollideMask get_into_collide_mask() const;
@@ -406,8 +421,9 @@ private:
     PythonTagData _python_tag_data;
 #endif  // HAVE_PYTHON
 
-    // This is the draw_mask of this particular node.
-    DrawMask _draw_mask;
+    // These two together determine the per-camera visibility of this
+    // node.  See adjust_draw_mask() for details.
+    DrawMask _draw_control_mask, _draw_show_mask;
 
     // This is the mask that indicates which CollisionNodes may detect
     // a collision with this particular node.  By default it is zero
@@ -453,14 +469,15 @@ private:
     }
 
     // This is the union of all into_collide_mask bits for any nodes
-    // at and below this level.  It's updated automatically whenever
-    // _stale_bounds is true.
+    // at and below this level.
     CollideMask _net_collide_mask;
 
+    // These are similar, for the draw mask.
+    DrawMask _net_draw_control_mask, _net_draw_show_mask;
+
     // This is a ClipPlaneAttrib that represents the union of all clip
-    // planes that have been turned *off* at and below this level.  We
-    // piggyback this automatic update on _stale_bounds.  TODO:
-    // fix the circular reference counts involved here.
+    // planes that have been turned *off* at and below this level.
+    // TODO: fix the circular reference counts involved here.
     CPT(RenderAttrib) _off_clip_planes;
 
     // This is the bounding volume around the _user_bounds, the
@@ -520,6 +537,8 @@ private:
 
   CDBoundsStageWriter update_bounds(int pipeline_stage, 
 				    CDBoundsStageReader &cdata);
+
+  static DrawMask _overall_bit;
 
 public:
   // This class is returned from get_children_copy().  Use it to walk

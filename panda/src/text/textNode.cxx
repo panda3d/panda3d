@@ -194,24 +194,10 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "TextNode " << get_name() << "\n";
   TextProperties::write(out, indent_level + 2);
-
-  out << "\n";
-  LVecBase3f scale, shear, hpr, trans;
-  if (decompose_matrix(_transform, scale, shear, hpr, trans, _coordinate_system)) {
   indent(out, indent_level + 2)
-    << "transform is:\n"
-    << "  scale: " << scale << "\n"
-    << "  shear: " << shear << "\n"
-    << "    hpr: " << hpr << "\n"
-    << "  trans: " << hpr << "\n";
-  } else {
-    indent(out, indent_level + 2)
-      << "transform is:\n" << _transform;
-  }
+    << "transform is: " << *TransformState::make_mat(_transform) << "\n";
   indent(out, indent_level + 2)
     << "in coordinate system " << _coordinate_system << "\n";
-
-  out << "\n";
   indent(out, indent_level + 2)
     << "text is " << get_text() << "\n";
 }
@@ -566,6 +552,21 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   }
 
   // Now continue to render everything else below this node.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::is_renderable
+//       Access: Public, Virtual
+//  Description: Returns true if there is some value to visiting this
+//               particular node during the cull traversal for any
+//               camera, false otherwise.  This will be used to
+//               optimize the result of get_net_draw_show_mask(), so
+//               that any subtrees that contain only nodes for which
+//               is_renderable() is false need not be visited.
+////////////////////////////////////////////////////////////////////
+bool TextNode::
+is_renderable() const {
   return true;
 }
 

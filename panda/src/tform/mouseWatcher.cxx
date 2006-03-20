@@ -1029,7 +1029,7 @@ set_no_mouse() {
   if (_has_mouse) {
     // Hide the mouse pointer.
     if (!_geometry.is_null()) {
-      _geometry->set_draw_mask(DrawMask::all_off());
+      _geometry->set_overall_hidden(true);
     }
   }
   
@@ -1053,7 +1053,7 @@ set_mouse(const LVecBase2f &xy, const LVecBase2f &pixel_xy) {
     _geometry->set_transform(TransformState::make_pos(LVecBase3f(xy[0], 0, xy[1])));
     if (!_has_mouse) {
       // Show the mouse pointer.
-      _geometry->set_draw_mask(DrawMask::all_on());
+      _geometry->set_overall_hidden(false);
     }
   }
   

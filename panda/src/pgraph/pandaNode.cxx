@@ -28,6 +28,11 @@
 #include "clipPlaneAttrib.h"
 #include "boundingSphere.h"
 
+// This category is just temporary for debugging convenience.
+NotifyCategoryDecl(drawmask, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDef(drawmask, "");
+
+DrawMask PandaNode::_overall_bit = DrawMask::bit(31);
 TypeHandle PandaNode::_type_handle;
 
 //
@@ -132,7 +137,8 @@ PandaNode(const PandaNode &copy) :
     CDHeavyWriter cdata(_cycler_heavy);
     cdata->_effects = copy_cdata->_effects;
     cdata->_tag_data = copy_cdata->_tag_data;
-    cdata->_draw_mask = copy_cdata->_draw_mask;
+    cdata->_draw_control_mask = copy_cdata->_draw_control_mask;
+    cdata->_draw_show_mask = copy_cdata->_draw_show_mask;
     cdata->_into_collide_mask = copy_cdata->_into_collide_mask;
     cdata->_user_bounds = copy_cdata->_user_bounds;
     cdata->_internal_bounds = NULL;
@@ -505,6 +511,21 @@ has_single_child_visibility() const {
 int PandaNode::
 get_visible_child() const {
   return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::is_renderable
+//       Access: Public, Virtual
+//  Description: Returns true if there is some value to visiting this
+//               particular node during the cull traversal for any
+//               camera, false otherwise.  This will be used to
+//               optimize the result of get_net_draw_show_mask(), so
+//               that any subtrees that contain only nodes for which
+//               is_renderable() is false need not be visited.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+is_renderable() const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1380,34 +1401,122 @@ list_tags(ostream &out, const string &separator) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_draw_mask
+//     Function: PandaNode::adjust_draw_mask
 //       Access: Published
-//  Description: Sets the hide/show bits of this particular node.
+//  Description: Adjusts the hide/show bits of this particular node.
 //
-//               During the cull traversal, a node is not visited if
-//               none of its draw mask bits intersect with the
-//               camera's draw mask bits.  These masks can be used to
-//               selectively hide and show different parts of the
-//               scene graph from different cameras that are otherwise
-//               viewing the same scene.  See
-//               Camera::set_camera_mask().
+//               These three parameters can be used to adjust the
+//               _draw_control_mask and _draw_show_mask independently,
+//               which work together to provide per-camera visibility
+//               for the node and its descendents.
+//
+//               _draw_control_mask indicates the bits in
+//               _draw_show_mask that are significant.  Each different
+//               bit corresponds to a different camera (and these bits
+//               are assigned via Camera::set_camera_mask()).
+//
+//               Where _draw_control_mask has a 1 bit, a 1 bit in
+//               _draw_show_mask indicates the node is visible to that
+//               camera, and a 0 bit indicates the node is hidden to
+//               that camera.  Where _draw_control_mask is 0, the node
+//               is hidden only if a parent node is hidden.
+//
+//               The meaning of the three parameters is as follows:
+//
+//               * Wherever show_mask is 1, _draw_show_mask and
+//               _draw_control_mask will be set 1.  Thus, show_mask
+//               indicates the set of cameras to which the node should
+//               be shown.
+//
+//               * Wherever hide_mask is 1, _draw_show_mask will be
+//               set 0 and _draw_control_mask will be set 1.  Thus,
+//               hide_mask indicates the set of cameras from which the
+//               node should be hidden.
+//
+//               * Wherever clear_mask is 1, _draw_control_mask will
+//               be set 0.  Thus, clear_mask indicates the set of
+//               cameras from which the hidden state should be
+//               inherited from a parent.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-set_draw_mask(DrawMask mask) {
+adjust_draw_mask(DrawMask show_mask, DrawMask hide_mask, DrawMask clear_mask) {
   bool any_changed = false;
 
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy) {
     CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage);
-    if (cdata->_draw_mask != mask) {
-      cdata->_draw_mask = mask;
+    
+    DrawMask draw_control_mask = (cdata->_draw_control_mask | show_mask | hide_mask) & ~clear_mask;
+    DrawMask draw_show_mask = (cdata->_draw_show_mask | show_mask) & ~hide_mask;
+    // The uncontrolled bits are implicitly on.
+    draw_show_mask |= ~draw_control_mask;
+
+    if (cdata->_draw_control_mask != draw_control_mask ||
+        cdata->_draw_show_mask != draw_show_mask) {
+      cdata->_draw_control_mask = draw_control_mask;
+      cdata->_draw_show_mask = draw_show_mask;
       any_changed = true;
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
 
   if (any_changed) {
+    mark_bounds_stale();
     draw_mask_changed();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_net_draw_control_mask
+//       Access: Published
+//  Description: Returns the set of bits in get_net_draw_show_mask()
+//               that have been explicitly set via adjust_draw_mask(),
+//               rather than implicitly inherited.
+//
+//               A 1 bit in any position of this mask indicates that
+//               (a) this node has renderable children, and (b) some
+//               child of this node has made an explicit hide() or
+//               show_through() call for the corresponding bit.
+////////////////////////////////////////////////////////////////////
+DrawMask PandaNode::
+get_net_draw_control_mask() const {
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage);
+  if (cdata->_last_update != cdata->_next_update) {
+    // The cache is stale; it needs to be rebuilt.
+    CDBoundsStageWriter cdataw = 
+      ((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
+    return cdataw->_net_draw_control_mask;
+  }
+  return cdata->_net_draw_control_mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_net_draw_show_mask
+//       Access: Published
+//  Description: Returns the union of all draw_show_mask values--of
+//               renderable nodes only--at this level and below.  If
+//               any bit in this mask is 0, there is no reason to
+//               traverse below this node for a camera with the
+//               corresponding camera_mask.
+//
+//               The bits in this mask that do not correspond to a 1
+//               bit in the net_draw_control_mask are meaningless (and
+//               will be set to 1).  For bits that *do* correspond to
+//               a 1 bit in the net_draw_control_mask, a 1 bit
+//               indicates that at least one child should be visible,
+//               while a 0 bit indicates that all children are hidden.
+////////////////////////////////////////////////////////////////////
+DrawMask PandaNode::
+get_net_draw_show_mask() const {
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage);
+  if (cdata->_last_update != cdata->_next_update) {
+    // The cache is stale; it needs to be rebuilt.
+    CDBoundsStageWriter cdataw = 
+      ((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
+    return cdataw->_net_draw_show_mask;
+  }
+  return cdata->_net_draw_show_mask;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1535,6 +1644,26 @@ write(ostream &out, int indent_level) const {
   CPT(RenderEffects) effects = get_effects();
   if (!effects->is_empty()) {
     out << " " << *effects;
+  }
+  DrawMask draw_control_mask = get_draw_control_mask();
+  if (!draw_control_mask.is_zero()) {
+    DrawMask draw_show_mask = get_draw_show_mask();
+    if (!(draw_control_mask & _overall_bit).is_zero()) {
+      if (!(draw_show_mask & _overall_bit).is_zero()) {
+        out << " (show_through)";
+      } else {
+        out << " (hidden)";
+      }
+    }
+    if (!(draw_control_mask & ~_overall_bit).is_zero()) {
+      draw_control_mask &= ~_overall_bit;
+      if (!(draw_show_mask & draw_control_mask).is_zero()) {
+        out << " (per-camera show_through)";
+      }
+      if (!(~draw_show_mask & draw_control_mask).is_zero()) {
+        out << " (per-camera hidden)";
+      }
+    }
   }
   out << "\n";
 }
@@ -2633,6 +2762,10 @@ PandaNode::CDBoundsStageWriter PandaNode::
 update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
   // We might need to try this a couple of times, in case someone else
   // steps on our result.
+  if (drawmask_cat.is_debug()) {
+    drawmask_cat.debug(false) 
+      << *this << "::update_bounds() {\n";
+  }
   do {
     // Grab the last_update counter, then release the lock.
     UpdateSeq last_update = cdata->_last_update;
@@ -2643,9 +2776,32 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
     // Start with a clean slate, or at least with the contents of the
     // node itself.
     CollideMask net_collide_mask;
+    DrawMask net_draw_control_mask, net_draw_show_mask;
+    DrawMask draw_control_mask, draw_show_mask;
+    bool renderable = is_renderable();
     {
       CDHeavyStageReader cdata(_cycler_heavy, pipeline_stage);
       net_collide_mask = cdata->_into_collide_mask;
+      draw_control_mask = net_draw_control_mask = cdata->_draw_control_mask;
+      draw_show_mask = net_draw_show_mask = cdata->_draw_show_mask;
+    }
+    if (!renderable) {
+      // This is not a "renderable" node.  This means that this node
+      // does not itself contribute any bits to net_draw_show_mask or
+      // net_draw_control_mask, but it may contribute some bits to any
+      // renderable nodes from below.
+      net_draw_show_mask = DrawMask::all_off();
+      net_draw_control_mask = DrawMask::all_off();
+    }
+    draw_show_mask |= ~draw_control_mask;
+
+    if (drawmask_cat.is_debug()) {
+      drawmask_cat.debug(false)
+        << "net_draw_control_mask = " << net_draw_control_mask
+        << "\nnet_draw_show_mask = " << net_draw_show_mask
+        << "\ndraw_control_mask = " << draw_control_mask
+        << "\ndraw_show_mask = " << draw_show_mask
+        << "\n";
     }
     CPT(RenderAttrib) off_clip_planes;
     {
@@ -2683,6 +2839,37 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
 	CDBoundsStageWriter child_cdataw = child->update_bounds(pipeline_stage, child_cdata);
       
 	net_collide_mask |= child_cdataw->_net_collide_mask;
+
+        DrawMask child_control_mask = child_cdataw->_net_draw_control_mask;
+        DrawMask child_show_mask = child_cdataw->_net_draw_show_mask;
+        if (child_control_mask != DrawMask::all_off() ||
+            child_show_mask != DrawMask::all_off()) {
+          // This child includes a renderable node or subtree.  Thus,
+          // we should propagate its draw masks.
+          renderable = true;
+
+          // Compute the set of control bits that are defined on this
+          // node, but not on the child node.
+          DrawMask new_control_mask = draw_control_mask & ~child_control_mask;
+          // Anywhere we have a control bit that our child does not,
+          // the child inherits our show bit.
+          DrawMask new_child_show_mask = (child_show_mask & ~new_control_mask) | (draw_show_mask & new_control_mask);
+          DrawMask new_child_control_mask = child_control_mask | new_control_mask;
+          // Now merge that result with our accumulated draw masks.
+          net_draw_control_mask |= new_child_control_mask;
+          net_draw_show_mask |= new_child_show_mask;
+        }
+
+        if (drawmask_cat.is_debug()) {
+          drawmask_cat.debug(false)
+            << "\nchild update " << *child << ":\n"
+            << "child_control_mask = " << child_control_mask
+            << "\nchild_show_mask = " << child_show_mask
+            << "\nnet_draw_control_mask = " << net_draw_control_mask
+            << "\nnet_draw_show_mask = " << net_draw_show_mask
+            << "\n";
+        }
+            
 	off_clip_planes = orig_cp->compose_off(child_cdataw->_off_clip_planes);
 	child_volumes_ref.push_back(child_cdataw->_external_bounds);
 	child_volumes.push_back(child_cdataw->_external_bounds);
@@ -2690,10 +2877,41 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
       } else {
 	// Child is good.
 	net_collide_mask |= child_cdata->_net_collide_mask;
+
+        // See comments in similar block above.
+        DrawMask child_control_mask = child_cdata->_net_draw_control_mask;
+        DrawMask child_show_mask = child_cdata->_net_draw_show_mask;
+        if (child_control_mask != DrawMask::all_off() ||
+            child_show_mask != DrawMask::all_off()) {
+          renderable = true;
+          DrawMask new_control_mask = draw_control_mask & ~child_control_mask;
+          DrawMask new_child_show_mask = (child_show_mask & ~new_control_mask) | (draw_show_mask & new_control_mask);
+          DrawMask new_child_control_mask = child_control_mask | new_control_mask;
+          net_draw_control_mask |= new_child_control_mask;
+          net_draw_show_mask |= new_child_show_mask;
+        }
+
+        if (drawmask_cat.is_debug()) {
+          drawmask_cat.debug(false)
+            << "\nchild fresh " << *child << ":\n"
+            << "child_control_mask = " << child_control_mask
+            << "\nchild_show_mask = " << child_show_mask
+            << "\nnet_draw_control_mask = " << net_draw_control_mask
+            << "\nnet_draw_show_mask = " << net_draw_show_mask
+            << "\n";
+        }
+
 	off_clip_planes = orig_cp->compose_off(child_cdata->_off_clip_planes);
 	child_volumes_ref.push_back(child_cdata->_external_bounds);
 	child_volumes.push_back(child_cdata->_external_bounds);
       }
+    }
+
+    if (renderable) {
+      // This is a "renderable" node.  That means all draw_show_mask
+      // bits, not specifically set on or off, should be assumed to be
+      // on.
+      net_draw_show_mask |= ~net_draw_control_mask;
     }
 
     {
@@ -2704,6 +2922,27 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
 	// Great, no one has monkeyed with these while we were computing
 	// the cache.  Safe to store the computed values and return.
 	cdataw->_net_collide_mask = net_collide_mask;
+
+        if (renderable) {
+          // There are renderable nodes below, so the implicit draw
+          // bits are all on.
+          cdataw->_net_draw_control_mask = net_draw_control_mask;
+          cdataw->_net_draw_show_mask = net_draw_show_mask | ~net_draw_control_mask;
+          if (drawmask_cat.is_debug()) {
+            drawmask_cat.debug(false)
+              << "renderable, set mask " << cdataw->_net_draw_show_mask << "\n";
+          }
+        } else {
+          // There are no renderable nodes below, so the implicit draw
+          // bits are all off.
+          cdataw->_net_draw_control_mask = net_draw_control_mask;
+          cdataw->_net_draw_show_mask = net_draw_show_mask;
+          if (drawmask_cat.is_debug()) {
+            drawmask_cat.debug(false)
+              << "not renderable, set mask " << cdataw->_net_draw_show_mask << "\n";
+          }
+        }
+
 	cdataw->_off_clip_planes = off_clip_planes;
 
 	// Compute the bounding sphere around all of our child
@@ -2722,6 +2961,11 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
 
 	cdataw->_external_bounds = gbv;
 	cdataw->_last_update = next_update;
+
+        if (drawmask_cat.is_debug()) {
+          drawmask_cat.debug(false)
+            << "} " << *this << "::update_bounds();\n";
+        }
 	return cdataw;
       }
       
@@ -2946,7 +3190,8 @@ PandaNode::CDataHeavy::
 CDataHeavy(const PandaNode::CDataHeavy &copy) :
   _effects(copy._effects),
   _tag_data(copy._tag_data),
-  _draw_mask(copy._draw_mask),
+  _draw_control_mask(copy._draw_control_mask),
+  _draw_show_mask(copy._draw_show_mask),
   _into_collide_mask(copy._into_collide_mask),
   _user_bounds(copy._user_bounds),
   _internal_bounds(copy._internal_bounds),
@@ -2998,7 +3243,8 @@ void PandaNode::CDataHeavy::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   manager->write_pointer(dg, _effects);
 
-  dg.add_uint32(_draw_mask.get_word());
+  dg.add_uint32(_draw_control_mask.get_word());
+  dg.add_uint32(_draw_show_mask.get_word());
   dg.add_uint32(_into_collide_mask.get_word());
 
   dg.add_uint32(_tag_data.size());
@@ -3048,7 +3294,32 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   // Read the effects pointer.
   manager->read_pointer(scan);
 
-  _draw_mask.set_word(scan.get_uint32());
+  if (manager->get_file_minor_ver() < 2) {
+    DrawMask draw_mask;
+    draw_mask.set_word(scan.get_uint32());
+
+    if (draw_mask == DrawMask::all_off()) {
+      // Hidden.
+      _draw_control_mask = _overall_bit;
+      _draw_show_mask = ~_overall_bit;
+
+    } else if (draw_mask == DrawMask::all_on()) {
+      // Normally visible.
+      _draw_control_mask = DrawMask::all_off();
+      _draw_show_mask = DrawMask::all_on();
+
+    } else {
+      // Some per-camera combination.
+      draw_mask &= ~_overall_bit;
+      _draw_control_mask = ~draw_mask;
+      _draw_show_mask = draw_mask;
+    }
+
+  } else {
+    _draw_control_mask.set_word(scan.get_uint32());
+    _draw_show_mask.set_word(scan.get_uint32());
+  }
+
   _into_collide_mask.set_word(scan.get_uint32());
 
   // Read in the tag list.
@@ -3106,6 +3377,8 @@ dec_py_refs() {
 PandaNode::CDataBounds::
 CDataBounds(const PandaNode::CDataBounds &copy) :
   _net_collide_mask(copy._net_collide_mask),
+  _net_draw_control_mask(copy._net_draw_control_mask),
+  _net_draw_show_mask(copy._net_draw_show_mask),
   _off_clip_planes(copy._off_clip_planes),
   _external_bounds(copy._external_bounds),
   _last_update(copy._last_update),

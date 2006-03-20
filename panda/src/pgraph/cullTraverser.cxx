@@ -152,7 +152,9 @@ traverse(CullTraverserData &data) {
   
   if (data.is_in_view(_camera_mask)) {
     if (pgraph_cat.is_spam()) {
-      pgraph_cat.spam() << "\n" << data._node_path << "\n";
+      pgraph_cat.spam() 
+        << "\n" << data._node_path
+        << " " << data._draw_mask << "\n";
     }
 
     PandaNode *node = data.node();
@@ -189,29 +191,33 @@ traverse(CullTraverserData &data) {
 //     Function: CullTraverser::traverse_below
 //       Access: Public
 //  Description: Traverses all the children of the indicated node,
-//               with the given data, which been converted into the
-//               node's space.
+//               with the given data, which has been converted into
+//               the node's space.
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 traverse_below(CullTraverserData &data) {
   _nodes_pcollector.add_level(1);
   PandaNode *node = data.node();
 
+  bool visible = !(data._draw_mask & PandaNode::get_overall_bit()).is_zero() &&
+    !(data._draw_mask & _camera_mask).is_zero();
+
   const RenderEffects *node_effects = node->get_effects();
-  bool has_decal = node_effects->has_decal();
+  bool has_decal = visible && node_effects->has_decal();
   if (has_decal && !_depth_offset_decals) {
     // Start the three-pass decal rendering if we're not using
     // DepthOffsetAttribs to implement decals.
     start_decal(data);
     
   } else {
-    if (node->is_geom_node()) {
+    if (visible && node->is_geom_node()) {
       _geom_nodes_pcollector.add_level(1);
       GeomNode *geom_node = DCAST(GeomNode, node);
 
       if (pgraph_cat.is_spam()) {
         pgraph_cat.spam()
-          << "Found " << *geom_node << " in state " << *data._state << "\n";
+          << "Found " << *geom_node << " in state " << *data._state 
+          << " draw_mask = " << data._draw_mask << "\n";
       }
       
       // Get all the Geoms, with no decalling.
