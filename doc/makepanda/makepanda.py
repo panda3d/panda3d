@@ -447,8 +447,8 @@ os.chdir(PANDASOURCE)
 ########################################################################
 
 if (os.path.isdir("sdks")):
-#    DIRECTXSDK["DX8"] = "sdks/directx8"
-#    DIRECTXSDK["DX9"] = "sdks/directx9"
+    DIRECTXSDK["DX8"] = "sdks/directx"
+    DIRECTXSDK["DX9"] = "sdks/directx"
     MAXSDKCS["MAX6"] = "sdks/maxsdk6"
     MAXSDKCS["MAX7"] = "sdks/maxsdk7"
     MAXSDKCS["MAX8"] = "sdks/maxsdk8"
@@ -484,12 +484,13 @@ if sys.platform == "win32":
                         (os.path.isfile(dir+"\\Lib\\x86\\d3dx"+ver+".lib"))):
                         DIRECTXSDK["DX"+ver] = dir.replace("\\", "/").rstrip("/")
     for ver in DXVERSIONS:
-        if (DIRECTXSDK.has_key("DX"+ver)==0) and (OMIT.count("DX"+ver)==0):
-            WARNINGS.append("I cannot locate SDK for DX"+ver)
-            WARNINGS.append("I have automatically added this command-line option: --no-dx"+ver)
-            OMIT.append("DX"+ver)
-        else:
-            WARNINGS.append("Using DX"+ver+" sdk: "+DIRECTXSDK["DX"+ver])
+        if (OMIT.count("DX"+ver)==0):
+            if (DIRECTXSDK.has_key("DX"+ver)==0):
+                WARNINGS.append("I cannot locate SDK for DX"+ver)
+                WARNINGS.append("I have automatically added this command-line option: --no-dx"+ver)
+                OMIT.append("DX"+ver)
+            else:
+                WARNINGS.append("Using DX"+ver+" sdk: "+DIRECTXSDK["DX"+ver])
 
 ########################################################################
 ##
@@ -887,7 +888,8 @@ def CxxCalcDependencies(srcfile, ipath, ignore):
                     hdeps = CxxCalcDependencies(header, ipath, [srcfile]+ignore)
                     for x in hdeps: dep[x] = 1
             else:
-                print "CAUTION: header file "+include+" cannot be found in "+srcfile+" IPATH="+str(ipath)
+                # print "CAUTION: header file "+include+" cannot be found in "+srcfile+" IPATH="+str(ipath)
+                pass
     result = dep.keys()
     CxxDependencyCache[srcfile] = result
     return result
@@ -2316,7 +2318,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpstatclient.in', obj='libpstatclie
 #
 
 IPATH=['panda/src/gobj']
-OPTS=['BUILDING_PANDA', 'NSPR']
+OPTS=['BUILDING_PANDA', 'NSPR', 'ZLIB']
 CopyAllHeaders('panda/src/gobj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gobj_composite1.cxx', obj='gobj_composite1.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gobj_composite2.cxx', obj='gobj_composite2.obj')
