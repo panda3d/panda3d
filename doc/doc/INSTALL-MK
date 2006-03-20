@@ -107,15 +107,19 @@ to continue with the installation process.
 
 INSTALLING PANDA
 
-The first step is to copy 'models' and 'samples' into the built
-subdirectory, and 'direct/src' into 'built/direct/src'.  Then, move
-the built directory anywhere you like on your system.  For example,
-Linux users might want to move it to /usr/local:
+The first step is to copy 'samples' into the built subdirectory, and
+'direct/src' into 'built/direct/src'.  Then, move the built directory
+anywhere you like on your system.  For example, Linux users might want
+to do this:
 
+  cp --recursive samples built/samples
+  cp --recursive direct/src built/direct/src
   mv built /usr/local/panda3d
 
-Windows users might want to move it to C:\Panda3D
+Windows users might want to do this:
 
+  xcopy /IE samples built\samples
+  xcopy /IE direct\src built\direct\src
   move built c:\Panda3D
 
 Then, add the panda bin directory to your PATH.  Under Linux, it is
