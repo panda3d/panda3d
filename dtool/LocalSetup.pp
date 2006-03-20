@@ -496,8 +496,8 @@ $[cdefine USE_MEMORY_NOWRAPPERS]
 #define VC6_STYLE_ALLOCATOR
 #define MODERN_STYLE_ALLOCATOR
 #define NO_STYLE_ALLOCATOR
-#if $[eq $[OPTIMIZE], 4]
-  // In optimize level 4, we never try to use custom allocators.
+#if $[not $[DO_MEMORY_USAGE]]
+  // Without DO_MEMORY_USAGE, we never try to use custom allocators.
   #set NO_STYLE_ALLOCATOR 1
 #elif $[eq $[STL_ALLOCATOR], OLD]
   // "OLD": Irix 6.2-era STL.
