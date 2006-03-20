@@ -39,8 +39,11 @@ OSStatus aglReportError (void);
 ////////////////////////////////////////////////////////////////////
 class osxGraphicsWindow : public GraphicsWindow {
 public:
-  osxGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                    const string &name);
+  osxGraphicsWindow(GraphicsPipe *pipe, 
+                    const string &name,
+                    int x_size, int y_size, int flags,
+                    GraphicsStateGuardian *gsg,
+                    GraphicsOutput *host);
   virtual ~osxGraphicsWindow();
 
   virtual bool move_pointer(int device, int x, int y);

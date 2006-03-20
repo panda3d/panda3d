@@ -34,9 +34,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL osxGraphicsBuffer : public GraphicsBuffer {
 public:
-  osxGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+  osxGraphicsBuffer(GraphicsPipe *pipe, 
                     const string &name,
-                    int x_size, int y_size);
+                    int x_size, int y_size, int flags,
+                    GraphicsStateGuardian *gsg,
+                    GraphicsOutput *host);
   virtual ~osxGraphicsBuffer();
 
 

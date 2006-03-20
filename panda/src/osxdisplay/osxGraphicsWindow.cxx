@@ -391,9 +391,13 @@ OSStatus osxGraphicsWindow::handleTextInput (EventHandlerCallRef myHandler, Even
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-osxGraphicsWindow::osxGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                  const string &name) :
-  GraphicsWindow(pipe, gsg, name) ,
+osxGraphicsWindow::
+osxGraphicsWindow(GraphicsPipe *pipe, 
+                  const string &name,
+                  int x_size, int y_size, int flags,
+                  GraphicsStateGuardian *gsg,
+                  GraphicsOutput *host) :
+  GraphicsWindow(pipe, name, x_size, y_size, flags, gsg, host),
   _osx_window(NULL),
   _is_fullsreen(false),
 #ifdef HACK_SCREEN_HASH_CONTEXT  

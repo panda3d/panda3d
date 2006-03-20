@@ -109,24 +109,74 @@ make_gsg(const FrameBufferProperties &properties,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsPipe::make_window
+//     Function: osxGraphicsPipe::make_output
 //       Access: Protected, Virtual
 //  Description: Creates a new window on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
-PT(GraphicsWindow) osxGraphicsPipe::
-make_window(GraphicsStateGuardian *gsg, const string &name) {
-  return new osxGraphicsWindow(this, gsg, name);
-}
+PT(GraphicsOutput) osxGraphicsPipe::
+make_output(const string &name,
+            int x_size, int y_size, int flags,
+            GraphicsStateGuardian *gsg,
+            GraphicsOutput *host,
+            int retry,
+            bool precertify) {
+  
+  if (!_is_valid) {
+    return NULL;
+  }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsPipe::make_buffer
-//       Access: Protected, Virtual
-//  Description: Creates a new offscreen buffer on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
-PT(GraphicsBuffer) osxGraphicsPipe::
-make_buffer(GraphicsStateGuardian *gsg, const string &name,
-            int x_size, int y_size) {
-  return new osxGraphicsBuffer(this, gsg, name, x_size, y_size);
-}
+  osxGraphicsStateGuardian *osxgsg;
+  DCAST_INTO_R(osxgsg, gsg, NULL);
 
+  // First thing to try: a osxGraphicsWindow
+
+  if (retry == 0) {
+    if (((flags&BF_require_parasite)!=0)||
+        ((flags&BF_refuse_window)!=0)||
+        ((flags&BF_need_aux_rgba_MASK)!=0)||
+        ((flags&BF_need_aux_hrgba_MASK)!=0)||
+        ((flags&BF_need_aux_float_MASK)!=0)||
+        ((flags&BF_size_track_host)!=0)||
+        ((flags&BF_can_bind_color)!=0)||
+        ((flags&BF_can_bind_every)!=0)) {
+      return NULL;
+    }
+    return new osxGraphicsWindow(this, name, x_size, y_size, flags, gsg, host);
+  }
+  
+  //  // Second thing to try: a glGraphicsBuffer
+  //  
+  //  if (retry == 1) {
+  //    if ((!support_render_texture)||
+  //        ((flags&BF_require_parasite)!=0)||
+  //        ((flags&BF_require_window)!=0)) {
+  //      return NULL;
+  //    }
+  //    if (precertify) {
+  //      if (!osxgsg->_supports_framebuffer_object) {
+  //        return NULL;
+  //      }
+  //    }
+  //    return new glGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+  //  }
+  
+  // Third thing to try: an osxGraphicsBuffer
+  
+  if (retry == 2) {
+    if ((!support_render_texture)||
+        ((flags&BF_require_parasite)!=0)||
+        ((flags&BF_require_window)!=0)||
+        ((flags&BF_need_aux_rgba_MASK)!=0)||
+        ((flags&BF_need_aux_hrgba_MASK)!=0)||
+        ((flags&BF_need_aux_float_MASK)!=0)||
+        ((flags&BF_size_track_host)!=0)||
+        ((flags&BF_can_bind_every)!=0)) {
+      return NULL;
+    }
+    return new osxGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+  }
+  
+  // Nothing else left to try.
+  return NULL;
+}
 
