@@ -289,6 +289,7 @@ get_num_inherited_fields() const {
     if (_inherited_fields.empty()) {
       ((DCClass *)this)->rebuild_inherited_fields();
     }
+    nassertr(!_inherited_fields.empty(), 0);
     return (int)_inherited_fields.size();
 
   } else {
