@@ -132,7 +132,7 @@ ConfigVariableBool link_tristrips
 // true = use DirectX management of video memory
 // false = see dx_lru_management config variable below
 ConfigVariableBool dx_management
-("dx-management", false);
+("dx-management", true);
 
 // valid only if dx_management == false
 // true = enable LRU management of video memory
@@ -174,6 +174,9 @@ ConfigVariableBool dx_lru_debug
 // number of frames to wait until printing out the LRU status
 ConfigVariableInt dx_lru_debug_frames_til_output
 ("dx-lru-debug-frames-til-output", 500);
+
+ConfigVariableBool dx_use_dynamic_textures
+("dx-use-dynamic-textures", true);
 
 ConfigureFn(config_dxgsg9) {
   init_libdxgsg9();
