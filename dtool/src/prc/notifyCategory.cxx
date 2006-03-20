@@ -107,6 +107,23 @@ out(NotifySeverity severity, bool prefix) const {
     } else {
       return nout;
     }
+
+  } else if (severity <= NS_debug && get_check_debug_notify_protect()) {
+    // Someone issued a debug Notify output statement without
+    // protecting it within an if statement.  This can cause a
+    // significant runtime performance hit, since it forces the
+    // iostream library to fully format its output, and then discards
+    // the output.
+    nout << " **Not protected!** ";
+    if (prefix) {
+      nout << *this << "(" << severity << "): ";
+    }
+    if (assert_abort) {
+      nassertr(false, nout);
+    }
+
+    return nout;
+
   } else {
     return Notify::null();
   }
@@ -185,4 +202,25 @@ get_notify_timestamp() {
        "Set true to output the date & time with each notify message.");
   }
   return *notify_timestamp;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NotifyCategory::get_check_debug_notify_protect
+//       Access: Private, Static
+//  Description: Returns the value of the check-debug-notify-protect
+//               ConfigVariable.  This is defined using a method
+//               accessor rather than a static ConfigVariableBool, to
+//               protect against the variable needing to be accessed
+//               at static init time.
+////////////////////////////////////////////////////////////////////
+bool NotifyCategory::
+get_check_debug_notify_protect() {
+  static ConfigVariableBool *check_debug_notify_protect = NULL;
+  if (check_debug_notify_protect == (ConfigVariableBool *)NULL) {
+    check_debug_notify_protect = new ConfigVariableBool
+      ("check-debug-notify-protect", false,
+       "Set true to issue a warning message if a debug or spam "
+       "notify output is not protected within an if statement.");
+  }
+  return *check_debug_notify_protect;
 }

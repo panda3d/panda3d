@@ -81,6 +81,7 @@ PUBLISHED:
 private:
   string get_config_name() const;
   static bool get_notify_timestamp();
+  static bool get_check_debug_notify_protect();
 
   string _fullname;
   string _basename;

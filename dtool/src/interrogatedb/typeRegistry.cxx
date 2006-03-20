@@ -594,8 +594,10 @@ init_global_pointer() {
 void TypeRegistry::
 rebuild_derivations() {
 #ifdef NOTIFY_DEBUG
-  interrogatedb_cat->debug()
-    << "Rebuilding derivation tree.\n";
+  if (interrogatedb_cat->is_debug()) {
+    interrogatedb_cat->debug()
+      << "Rebuilding derivation tree.\n";
+  }
 #endif
 
   // First, remove all of the old data from the last type
