@@ -485,10 +485,10 @@ create_texture(DXScreenData &scrn) {
     // Instead of creating a texture with the found format, we will
     // need to make one that exactly matches the framebuffer's
     // format.  Look up what that format is.
-  DWORD render_target_index;
+    DWORD render_target_index;
     IDirect3DSurface9 *render_target;
 
-  render_target_index = 0;
+    render_target_index = 0;
     hr = scrn._d3d_device->GetRenderTarget(render_target_index, &render_target);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
@@ -657,25 +657,30 @@ create_texture(DXScreenData &scrn) {
   }
   else {
     _managed = scrn._managed_textures;
-    if (_managed)
-    {
+    if (_managed) {
       pool = D3DPOOL_MANAGED;
-      usage = 0;
     }
-    else
-    {
-      if (scrn._supports_dynamic_textures)
-      {
+    else {
+      if (scrn._supports_automatic_mipmap_generation) {
         pool = D3DPOOL_DEFAULT;
-        usage = D3DUSAGE_DYNAMIC;
+        usage = D3DUSAGE_AUTOGENMIPMAP;
       }
-      else
-      {
-        // can't lock textures so go back to managed for now
-        // need to use UpdateTexture or UpdateSurface
-        _managed = true;
-        pool = D3DPOOL_MANAGED;
-        usage = 0;
+      else {
+        if (dx_use_dynamic_textures) {
+          if (scrn._supports_dynamic_textures) {
+            pool = D3DPOOL_DEFAULT;
+            usage = D3DUSAGE_DYNAMIC;
+          }
+          else {
+            // can't lock textures so go back to managed for now
+            // need to use UpdateTexture or UpdateSurface
+            _managed = true;
+            pool = D3DPOOL_MANAGED;
+          }
+        }
+        else {
+          pool = D3DPOOL_DEFAULT;
+        }
       }
     }
   }
@@ -805,7 +810,7 @@ create_texture(DXScreenData &scrn) {
       << " => " << D3DFormatStr(target_pixel_format) << endl;
   }
 
-  hr = fill_d3d_texture_pixels();
+  hr = fill_d3d_texture_pixels(scrn._supports_automatic_mipmap_generation);
   if (FAILED(hr)) {
     goto error_exit;
   }
@@ -814,18 +819,15 @@ create_texture(DXScreenData &scrn) {
 
 
   // must not put render to texture into LRU
-  if (_lru_page == 0 && _managed == false && get_texture()->get_render_to_texture ( ) == false)
-  {
+  if (_lru_page == 0 && _managed == false && get_texture()->get_render_to_texture ( ) == false) {
     Lru *lru;
 
     lru = scrn._dxgsg9 -> _lru;
-    if (lru)
-    {
+    if (lru) {
       LruPage *lru_page;
 
       lru_page = lru -> allocate_page (data_size);
-      if (lru_page)
-      {
+      if (lru_page) {
         lru_page -> _m.type = GPT_Texture;
         lru_page -> _m.lru_page_type.pointer = this;
 
@@ -975,7 +977,7 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
         source_word = ((DWORD*)surface_bytes) + x_window_offset;
         memcpy(dest_line, source_word, byte_pitch);
         dest_line += byte_pitch;
-  surface_bytes += byte_pitch;
+        surface_bytes += byte_pitch;
       }
     } else {
       // 24bpp texture case (numComponents == 3)
@@ -1016,9 +1018,9 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
           r = *source_byte++;
 
           *dest_word = 0xFF000000 | (r << 16) | (g << 8) | b;
-    dest_word++;
+          dest_word++;
         }
-  surface_bytes += byte_pitch;
+        surface_bytes += byte_pitch;
       }
     } else {
       // 24bpp texture case (numComponents == 3)
@@ -1026,7 +1028,7 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
         source_byte = surface_bytes + x_window_offset * 3 * sizeof(BYTE);
         memcpy(dest_byte, source_byte, byte_pitch);
         dest_byte += byte_pitch;
-  surface_bytes += byte_pitch;
+        surface_bytes += byte_pitch;
       }
     }
     break;
@@ -1106,9 +1108,9 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
           *dest_byte++ = g;
           *dest_byte++ = r;
 
-    source_word++;
+          source_word++;
         }
-  surface_bytes += byte_pitch;
+        surface_bytes += byte_pitch;
       }
     }
     break;
@@ -1129,7 +1131,7 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 HRESULT DXTextureContext9::
-fill_d3d_texture_pixels() {
+fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation) {
   if (get_texture()->get_texture_type() == Texture::TT_3d_texture) {
     return fill_d3d_volume_texture_pixels();
   }
@@ -1265,21 +1267,36 @@ fill_d3d_texture_pixels() {
     }
 
     if (_has_mipmaps) {
-      if (!dx_use_triangle_mipgen_filter) {
-        mip_filter_flags = D3DX_FILTER_BOX;
-      } else {
-        mip_filter_flags = D3DX_FILTER_TRIANGLE;
+      if (_managed == false && supports_automatic_mipmap_generation) {
+        if (false)
+        {
+//        hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_PYRAMIDALQUAD);
+//        hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_GAUSSIANQUAD);
+//        hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_ANISOTROPIC);
+          hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_LINEAR);
+          if (FAILED(hr)) {
+            dxgsg9_cat.error() << "SetAutoGenFilterType failed " << D3DERRORSTRING(hr);
+          }
+
+          _d3d_texture -> GenerateMipSubLevels ( );
+        }
       }
+      else {
+        if (!dx_use_triangle_mipgen_filter) {
+          mip_filter_flags = D3DX_FILTER_BOX;
+        } else {
+          mip_filter_flags = D3DX_FILTER_TRIANGLE;
+        }
 
-      //    mip_filter_flags| = D3DX_FILTER_DITHER;
-
-      hr = D3DXFilterTexture(_d3d_texture, (PALETTEENTRY*)NULL, 0,
-                             mip_filter_flags);
-      if (FAILED(hr)) {
-        dxgsg9_cat.error()
-          << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
-          << ", D3DXFilterTex failed" << D3DERRORSTRING(hr);
-        goto exit_FillDDSurf;
+        // mip_filter_flags |= D3DX_FILTER_DITHER;
+        hr = D3DXFilterTexture(_d3d_texture, (PALETTEENTRY*)NULL, 0,
+                               mip_filter_flags);
+        if (FAILED(hr)) {
+          dxgsg9_cat.error()
+            << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
+            << ", D3DXFilterTex failed" << D3DERRORSTRING(hr);
+          goto exit_FillDDSurf;
+        }
       }
     }
     if (using_temp_buffer) {
