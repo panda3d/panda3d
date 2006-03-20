@@ -31,7 +31,7 @@
 // within the Panda environment.
 
 #include "directbase.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "filename.h"
 #include "numeric_types.h"
 #include "pvector.h"

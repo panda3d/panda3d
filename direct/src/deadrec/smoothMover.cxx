@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "smoothMover.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "compose_matrix.h"
 
 SmoothMover::SmoothMode SmoothMover::_smooth_mode = SmoothMover::SM_off;
