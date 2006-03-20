@@ -18,7 +18,7 @@
 
 #include "indexify.h"
 #include "rollDirectory.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "pnmTextMaker.h"
 #include "default_font.h"
 #include "default_index_icons.h"

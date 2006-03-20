@@ -16,7 +16,7 @@
 #include "vrmlParser.h"
 
 #include "indent.h"
-#include "notify.h"
+#include "pnotify.h"
 
 VrmlNode::
 VrmlNode(const VrmlNodeType *type) {

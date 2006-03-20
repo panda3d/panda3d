@@ -43,7 +43,7 @@
 #include "vrmlLexerDefs.h"
 #include "vrmlNodeType.h"
 #include "vrmlNode.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "plist.h"
 
 #include <stack>

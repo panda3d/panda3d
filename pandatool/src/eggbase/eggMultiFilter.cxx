@@ -18,7 +18,7 @@
 
 #include "eggMultiFilter.h"
 
-#include "notify.h"
+#include "pnotify.h"
 #include "eggData.h"
 
 ////////////////////////////////////////////////////////////////////

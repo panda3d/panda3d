@@ -18,7 +18,7 @@
 
 #include "winStatsLabelStack.h"
 #include "winStatsLabel.h"
-#include "notify.h"
+#include "pnotify.h"
 
 bool WinStatsLabelStack::_window_class_registered = false;
 const char * const WinStatsLabelStack::_window_class_name = "stack";

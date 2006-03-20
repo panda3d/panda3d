@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "windowsGuid.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include <stdio.h>  // for sscanf, sprintf
 

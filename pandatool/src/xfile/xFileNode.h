@@ -24,7 +24,7 @@
 #include "referenceCount.h"
 #include "pointerTo.h"
 #include "namable.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "pvector.h"
 #include "pmap.h"
 #include "luse.h"

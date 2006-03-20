@@ -20,7 +20,7 @@
 #include "executionEnvironment.h"
 #include "zStream.h"
 
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WithOutputFile::Constructor

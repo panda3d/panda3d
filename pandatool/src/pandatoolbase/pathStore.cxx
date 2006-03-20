@@ -19,7 +19,7 @@
 #include "pathStore.h"
 
 #include "string_utils.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: format_path_store

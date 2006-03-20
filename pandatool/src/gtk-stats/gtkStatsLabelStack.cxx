@@ -18,7 +18,7 @@
 
 #include "gtkStatsLabelStack.h"
 #include "gtkStatsLabel.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsLabelStack::Constructor

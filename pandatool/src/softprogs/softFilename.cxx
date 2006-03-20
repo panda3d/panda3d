@@ -18,7 +18,7 @@
 
 #include "softFilename.h"
 
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftFilename::Constructor

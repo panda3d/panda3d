@@ -20,7 +20,7 @@
 #include "pnmTextMaker.h"
 #include "default_font.h"
 #include "pnmImage.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include <stdio.h>
 

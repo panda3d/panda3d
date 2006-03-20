@@ -21,7 +21,7 @@
 #include "xFileMaterial.h"
 #include "config_xfile.h"
 
-#include "notify.h"
+#include "pnotify.h"
 #include "eggGroupNode.h"
 #include "eggGroup.h"
 #include "eggBin.h"

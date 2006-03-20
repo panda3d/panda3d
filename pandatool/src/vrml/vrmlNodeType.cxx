@@ -15,7 +15,7 @@
 #include "vrmlNodeType.h"
 #include "vrmlNode.h"
 #include "vrmlParser.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "indent.h"
 
 #include <stdio.h>  // for sprintf()

@@ -25,7 +25,7 @@
 #include "dcast.h"
 #include "eggData.h"
 #include "bamFile.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "notifyCategory.h"
 #include "notifySeverity.h"
 

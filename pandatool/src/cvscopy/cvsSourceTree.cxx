@@ -21,7 +21,7 @@
 
 #include "filename.h"
 #include "executionEnvironment.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "string_utils.h"
 
 #include <algorithm>

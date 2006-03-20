@@ -20,7 +20,7 @@
 #include "pStatClientData.h"
 
 #include "pStatCollectorDef.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include <algorithm>
 

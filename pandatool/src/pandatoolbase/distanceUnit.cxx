@@ -19,7 +19,7 @@
 #include "distanceUnit.h"
 #include "config_pandatoolbase.h"
 #include "string_utils.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: format_abbrev_unit

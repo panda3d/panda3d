@@ -20,7 +20,7 @@
 #include "wordWrapStream.h"
 #include "programBase.h"
 
-#include "notify.h"
+#include "pnotify.h"
 
 #ifndef HAVE_STREAMSIZE
 // Some compilers--notably SGI--don't define this for us.

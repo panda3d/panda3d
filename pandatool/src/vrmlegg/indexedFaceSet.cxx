@@ -16,7 +16,7 @@
 #include "vrmlAppearance.h"
 #include "vrmlNodeType.h"
 #include "vrmlNode.h"
-#include "notify.h"
+#include "pnotify.h"
 
 #include "eggGroup.h"
 #include "eggVertex.h"

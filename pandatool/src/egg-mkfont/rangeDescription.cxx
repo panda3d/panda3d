@@ -18,7 +18,7 @@
 
 #include "rangeDescription.h"
 #include "string_utils.h"
-#include "notify.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RangeDescription::Constructor

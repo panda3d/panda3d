@@ -18,7 +18,7 @@
 
 #include "softCVS.h"
 
-#include "notify.h"
+#include "pnotify.h"
 #include "multifile.h"
 
 #include <algorithm>

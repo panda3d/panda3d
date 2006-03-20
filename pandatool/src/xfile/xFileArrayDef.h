@@ -20,7 +20,7 @@
 #define XFILEARRAYDEF_H
 
 #include "pandatoolbase.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "xFileNode.h"
 
 class XFileDataDef;

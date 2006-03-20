@@ -20,7 +20,7 @@
 #include "photo.h"
 #include "indexImage.h"
 #include "indent.h"
-#include "notify.h"
+#include "pnotify.h"
 #include "string_utils.h"
 #include "indexParameters.h"
 

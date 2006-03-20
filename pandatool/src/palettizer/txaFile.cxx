@@ -22,7 +22,7 @@
 #include "paletteGroup.h"
 #include "textureImage.h"
 
-#include "notify.h"
+#include "pnotify.h"
 #include "pnmFileTypeRegistry.h"
 
 ////////////////////////////////////////////////////////////////////

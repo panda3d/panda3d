@@ -32,7 +32,7 @@
 #include "vrmlNode.h"
 #include "vrmlParser.h"
 #include "indent.h"
-#include "notify.h"
+#include "pnotify.h"
 
 static int yyinput(void);        // declared by flex.
 extern "C" int vrmlyywrap();

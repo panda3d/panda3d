@@ -18,7 +18,7 @@
 
 #include "programBase.h"
 
-#include "notify.h"
+#include "pnotify.h"
 
 class TestProgram : public ProgramBase {
 public:
