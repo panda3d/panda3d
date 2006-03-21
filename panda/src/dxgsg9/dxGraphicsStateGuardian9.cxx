@@ -202,7 +202,7 @@ prepare_texture(Texture *tex) {
       << *dtc->get_texture() << " is stored in an unsupported compressed format.\n";
     return NULL;
   }
-  
+
   if (!dtc->create_texture(*_screen)) {
     delete dtc;
     return NULL;
@@ -2531,9 +2531,8 @@ reset() {
   D3DDEVICE_CREATION_PARAMETERS creation_parameters;
 
   _supports_render_texture = false;
-
-  // default render to texture format
-  _screen->_render_to_texture_d3d_format = D3DFMT_A8R8G8B8;
+  _screen->_render_to_texture_d3d_format = D3DFMT_UNKNOWN;
+  _screen->_framebuffer_d3d_format = D3DFMT_UNKNOWN;
 
   #define TOTAL_RENDER_TO_TEXTURE_FORMATS 3
 
@@ -2541,13 +2540,15 @@ reset() {
   {
     D3DFMT_A8R8G8B8,  // check for this format first
     D3DFMT_X8R8G8B8,
-    (D3DFORMAT) 0,    // place holder for _screen->_display_mode.Format
+    D3DFMT_UNKNOWN,   // place holder for _screen->_display_mode.Format
   };
 
   render_to_texture_formats [TOTAL_RENDER_TO_TEXTURE_FORMATS - 1] = _screen->_display_mode.Format;
 
   hr = _d3d_device->GetCreationParameters (&creation_parameters);
   if (SUCCEEDED (hr)) {
+    _screen->_framebuffer_d3d_format = _screen->_display_mode.Format;
+
     int index;
     for (index = 0; index < TOTAL_RENDER_TO_TEXTURE_FORMATS; index++) {
       hr = _screen->_d3d9->CheckDeviceFormat (

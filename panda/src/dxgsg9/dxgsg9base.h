@@ -202,6 +202,9 @@ struct DXScreenData {
   D3DPRESENT_PARAMETERS _presentation_params;  // not redundant with _display_mode since width/height must be 0 for windowed mode
   D3DADAPTER_IDENTIFIER9 _dx_device_id;
   D3DFORMAT _render_to_texture_d3d_format;
+  D3DFORMAT _framebuffer_d3d_format;
+
+  DXGraphicsStateGuardian9 *_dxgsg9;
 
   int _managed_textures;
   int _managed_vertex_buffers;
@@ -209,8 +212,6 @@ struct DXScreenData {
 
   bool _supports_dynamic_textures;
   bool _supports_automatic_mipmap_generation;
-
-  DXGraphicsStateGuardian9 *_dxgsg9;
 };
 
 
