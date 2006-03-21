@@ -357,8 +357,10 @@ reset() {
     GLint max_vertex_units;
     GLP(GetIntegerv)(GL_MAX_VERTEX_UNITS_ARB, &max_vertex_units);
     _max_vertex_transforms = max_vertex_units;
-    GLCAT.debug()
-      << "max vertex transforms = " << _max_vertex_transforms << "\n";
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max vertex transforms = " << _max_vertex_transforms << "\n";
+    }
   }
 
   _supports_matrix_palette = has_extension("GL_ARB_matrix_palette");
@@ -391,7 +393,9 @@ reset() {
     code. */
   if (!ConfigVariableBool("gl-matrix-palette", false, PRC_DESC("Temporary hack variable protecting untested code.  See glGraphicsStateGuardian_src.cxx."))) {
     if (_supports_matrix_palette) {
-      GLCAT.debug() << "Forcing off matrix palette support.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Forcing off matrix palette support.\n";
+      }
     }
     _supports_matrix_palette = false;
   }
@@ -400,8 +404,10 @@ reset() {
     GLint max_palette_matrices;
     GLP(GetIntegerv)(GL_MAX_PALETTE_MATRICES_ARB, &max_palette_matrices);
     _max_vertex_transform_indices = max_palette_matrices;
-    GLCAT.debug()
-      << "max vertex transform indices = " << _max_vertex_transform_indices << "\n";
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max vertex transform indices = " << _max_vertex_transform_indices << "\n";
+    }
   }
 
   _supports_draw_range_elements = false;
@@ -4057,10 +4063,12 @@ query_gl_version() {
       string_to_int(components[2], _gl_version_release);
     }
 
-    GLCAT.debug()
-      << "GL_VERSION = " << (const char *)text << ", decoded to "
-      << _gl_version_major << "." << _gl_version_minor
-      << "." << _gl_version_release << "\n";
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "GL_VERSION = " << (const char *)text << ", decoded to "
+        << _gl_version_major << "." << _gl_version_minor
+        << "." << _gl_version_release << "\n";
+    }
   }
 }
 
