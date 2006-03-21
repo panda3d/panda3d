@@ -107,7 +107,7 @@ GraphicsOutput(GraphicsPipe *pipe,
   } else {
     _draw_buffer_type = RenderBuffer::T_back;
   }
-  
+
   // We start out with one DisplayRegion that covers the whole window,
   // which we may use internally for full-window operations like
   // clear() and get_screenshot().
@@ -242,6 +242,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode) {
     tex->clear_ram_image();
   }
   tex->set_match_framebuffer_format(true);
+  tex->set_render_to_texture (true);
 
   // Go ahead and tell the texture our anticipated size, even if it
   // might be inaccurate (particularly if this is a GraphicsWindow,
@@ -252,7 +253,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode) {
   if ((mode == RTM_bind_or_copy)&&(support_render_texture==0)) {
     mode = RTM_copy_texture;
   }
-  
+
   RenderTexture result;
   result._texture = tex;
   result._rtm_mode = mode;
@@ -539,7 +540,7 @@ create_texture_card_vdata(int x, int y)
     xhi = (x * 1.0f) / xru;
     yhi = (y * 1.0f) / yru;
   }
-  
+
   CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3n3t2();
 
   PT(GeomVertexData) vdata = new GeomVertexData
@@ -688,12 +689,12 @@ make_texture_buffer(const string &name, int x_size, int y_size,
                 get_gsg()->get_properties(),
                 x_size, y_size, GraphicsPipe::BF_refuse_window,
                 get_gsg(), get_host());
-  
+
   if (buffer != (GraphicsOutput *)NULL) {
     buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_bind_or_copy);
     return buffer;
   }
-  
+
   return NULL;
 }
 
@@ -904,7 +905,7 @@ end_frame(FrameMode mode) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::prepare_for_deletion
 //       Access: Protected
-//  Description: Set the delete flag, and do the usual cleanup 
+//  Description: Set the delete flag, and do the usual cleanup
 //               activities associated with that.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
@@ -912,7 +913,7 @@ prepare_for_deletion() {
 
   _active = false;
   _delete_flag = true;
-  
+
   // We have to be sure to remove all of the display regions
   // immediately, so that circular reference counts can be cleared
   // up (each display region keeps a pointer to a CullResult,
@@ -926,7 +927,7 @@ prepare_for_deletion() {
       _hold_textures.push_back(get_texture(i));
     }
   }
-  
+
   // We have to be sure to clear the _textures pointers, though, or
   // we'll end up holding a reference to the textures forever.
   clear_render_textures();
