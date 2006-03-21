@@ -154,7 +154,7 @@ prepare_texture(Texture *tex) {
       << *dtc->get_texture() << " is stored in an unsupported compressed format.\n";
     return NULL;
   }
-  
+
   if (!dtc->create_texture(*_screen)) {
     delete dtc;
     return NULL;
@@ -560,7 +560,7 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
 
   int l, u, w, h;
   _current_display_region->get_region_pixels_i(l, u, w, h);
-  
+
   // Create the viewport
   D3DVIEWPORT8 vp = { l, u, w, h, 0.0f, 1.0f };
   HRESULT hr = _d3d_device->SetViewport(&vp);
@@ -570,14 +570,14 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
     dxgsg8_cat.error()
       << "SetViewport(" << l << ", " << u << ", " << w << ", " << h
       << ") failed" << D3DERRORSTRING(hr);
-    
+
     D3DVIEWPORT8 vp_old;
     _d3d_device->GetViewport(&vp_old);
     dxgsg8_cat.error()
       << "GetViewport(" << vp_old.X << ", " << vp_old.Y << ", " << vp_old.Width << ", "
       << vp_old.Height << ") returned: Trying to set that vp---->\n";
     hr = _d3d_device->SetViewport(&vp_old);
-    
+
     if (FAILED(hr)) {
       dxgsg8_cat.error() << "Failed again\n";
       throw_event("panda3d-render-error");
@@ -625,13 +625,13 @@ calc_projection_mat(const Lens *lens) {
     LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel) *
     rescale_mat;
-  
+
   if (_scene_setup->get_inverted()) {
     // If the scene is supposed to be inverted, then invert the
     // projection matrix.
     result *= LMatrix4f::scale_mat(1.0f, -1.0f, 1.0f);
   }
-  
+
   return TransformState::make_mat(result);
 }
 
@@ -1661,14 +1661,12 @@ reset() {
   _supports_texture_saved_result = ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0);
   _supports_texture_dot3 = true;
 
-
   // check for render to texture support
   D3DDEVICE_CREATION_PARAMETERS creation_parameters;
 
   _supports_render_texture = false;
-
-  // default render to texture format
-  _screen->_render_to_texture_d3d_format = D3DFMT_A8R8G8B8;
+  _screen->_render_to_texture_d3d_format = D3DFMT_UNKNOWN;
+  _screen->_framebuffer_d3d_format = D3DFMT_UNKNOWN;
 
   #define TOTAL_RENDER_TO_TEXTURE_FORMATS 3
 
@@ -1676,13 +1674,15 @@ reset() {
   {
     D3DFMT_A8R8G8B8,  // check for this format first
     D3DFMT_X8R8G8B8,
-    (D3DFORMAT) 0,    // place holder for _screen->_display_mode.Format
+    D3DFMT_UNKNOWN,   // place holder for _screen->_display_mode.Format
   };
 
   render_to_texture_formats [TOTAL_RENDER_TO_TEXTURE_FORMATS - 1] = _screen->_display_mode.Format;
 
   hr = _d3d_device->GetCreationParameters (&creation_parameters);
   if (SUCCEEDED (hr)) {
+    _screen->_framebuffer_d3d_format = _screen->_display_mode.Format;
+
     int index;
     for (index = 0; index < TOTAL_RENDER_TO_TEXTURE_FORMATS; index++) {
       hr = _screen->_d3d8->CheckDeviceFormat (
@@ -2795,7 +2795,7 @@ do_issue_blending() {
   // all the other blending-related stuff doesn't matter.  If the
   // device doesn't support color-write, we use blending tricks
   // to effectively disable color write.
-  unsigned int color_channels = 
+  unsigned int color_channels =
     _target._color_write->get_channels() & _color_write_mask;
   if (color_channels == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
@@ -3136,6 +3136,8 @@ set_context(DXScreenData *new_context) {
   _screen = new_context;
   _d3d_device = _screen->_d3d_device;   //copy this one field for speed of deref
   _swap_chain = _screen->_swap_chain;   //copy this one field for speed of deref
+
+  _screen->_dxgsg8 = this;
 }
 
 ////////////////////////////////////////////////////////////////////

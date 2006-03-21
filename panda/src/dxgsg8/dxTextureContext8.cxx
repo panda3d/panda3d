@@ -637,16 +637,20 @@ create_texture(DXScreenData &scrn) {
   DWORD usage;
   D3DPOOL pool;
 
+  usage = 0;
   if (get_texture()->get_render_to_texture ()) {
     // REQUIRED
     pool = D3DPOOL_DEFAULT;
-    usage = D3DUSAGE_RENDERTARGET;
-    target_pixel_format = scrn._render_to_texture_d3d_format;
+    if (support_render_texture && scrn._dxgsg8 -> get_supports_render_texture ( )) {
+      target_pixel_format = scrn._render_to_texture_d3d_format;
+      usage |= D3DUSAGE_RENDERTARGET;
+    }
+    else {
+      target_pixel_format = scrn._framebuffer_d3d_format;
+    }
   }
   else {
     pool = D3DPOOL_MANAGED;
-//    pool = D3DPOOL_DEFAULT;
-    usage = 0;
   }
 
   switch (get_texture()->get_texture_type()) {

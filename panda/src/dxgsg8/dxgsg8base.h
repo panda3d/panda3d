@@ -173,6 +173,8 @@ typedef enum {
 #define RECT_XSIZE(REC) (REC.right-REC.left)
 #define RECT_YSIZE(REC) (REC.bottom-REC.top)
 
+class DXGraphicsStateGuardian8;
+
 struct DXScreenData {
   LPDIRECT3DDEVICE8 _d3d_device;
   IDirect3DSwapChain8 *_swap_chain;
@@ -195,6 +197,9 @@ struct DXScreenData {
   D3DPRESENT_PARAMETERS _presentation_params;  // not redundant with _display_mode since width/height must be 0 for windowed mode
   D3DADAPTER_IDENTIFIER8 _dx_device_id;
   D3DFORMAT _render_to_texture_d3d_format;
+  D3DFORMAT _framebuffer_d3d_format;
+
+  DXGraphicsStateGuardian8 *_dxgsg8;
 };
 
 
