@@ -24,6 +24,7 @@
 #include "dcbase.h"
 #include "dcPacker.h"
 #include "dcPython.h"  // to pick up Python.h
+#include "clockObject.h"
 
 class DCClass;
 class CConnectionRepository;
