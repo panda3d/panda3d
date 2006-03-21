@@ -39,7 +39,6 @@
 
 // This forces the stuff in panda_glext.h to be reloaded,
 // if it was already loaded.
-
 #if defined(GL_GLEXT_VERSION) && GL_GLEXT_VERSION < 29
   #undef GL_GLEXT_VERSION
   #undef GL_GLEXT_PROTOTYPES
@@ -49,6 +48,11 @@
   #undef GL_VERSION_1_4
   #undef GL_VERSION_1_5
 #endif
+#endif
+
+#ifdef IS_OSX
+  #undef GL_GLEXT_VERSION
+  #undef GL_GLEXT_PROTOTYPES
 #endif
 
 #include "panda_glext.h"
