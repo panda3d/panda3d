@@ -832,21 +832,23 @@ load_client_certificate() {
         sev = NS_info;
         source = _client_certificate_filename;
       }
-      
-      if (_client_certificate_priv != (EVP_PKEY *)NULL &&
-          _client_certificate_pub != (X509 *)NULL) {
-        downloader_cat.out(sev) 
-          << "Read client certificate from " << source << "\n";
-        
-      } else {
-        if (_client_certificate_priv == (EVP_PKEY *)NULL) {
-          downloader_cat.out(sev)
-            << "Could not read private key from " << source << "\n";
-        }
-        
-        if (_client_certificate_pub == (X509 *)NULL) {
-          downloader_cat.out(sev)
-            << "Could not read public key from " << source << "\n";
+
+      if (downloader_cat.is_on(sev)) {
+        if (_client_certificate_priv != (EVP_PKEY *)NULL &&
+            _client_certificate_pub != (X509 *)NULL) {
+          downloader_cat.out(sev) 
+            << "Read client certificate from " << source << "\n";
+          
+        } else {
+          if (_client_certificate_priv == (EVP_PKEY *)NULL) {
+            downloader_cat.out(sev)
+              << "Could not read private key from " << source << "\n";
+          }
+          
+          if (_client_certificate_pub == (X509 *)NULL) {
+            downloader_cat.out(sev)
+              << "Could not read public key from " << source << "\n";
+          }
         }
       }
     }

@@ -533,8 +533,10 @@ try_for_fbconfig(int framebuffer_mode,
   int attrib_list[max_attrib_list];
   int n=0;
 
-  glxdisplay_cat.debug()
-    << "Trying for fbconfig with: RGB(" << want_color_bits << ")";
+  if (glxdisplay_cat.is_debug()) {
+    glxdisplay_cat.debug()
+      << "Trying for fbconfig with: RGB(" << want_color_bits << ")";
+  }
 
   int want_color_component_bits = max(want_color_bits / 3, 1);
 
@@ -546,28 +548,36 @@ try_for_fbconfig(int framebuffer_mode,
   attrib_list[n++] = want_color_component_bits;
 
   if (framebuffer_mode & FrameBufferProperties::FM_alpha) {
-    glxdisplay_cat.debug(false) << " ALPHA(" << want_alpha_bits << ")";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " ALPHA(" << want_alpha_bits << ")";
+    }
     attrib_list[n++] = GLX_ALPHA_SIZE;
     attrib_list[n++] = want_alpha_bits;
   }
 
   switch (framebuffer_mode & FrameBufferProperties::FM_buffer) {
   case FrameBufferProperties::FM_single_buffer:
-    glxdisplay_cat.debug(false) << " SINGLEBUFFER";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " SINGLEBUFFER";
+    }
     attrib_list[n++] = GLX_DOUBLEBUFFER;
     attrib_list[n++] = false;
     break;
 
   case FrameBufferProperties::FM_double_buffer:
   case FrameBufferProperties::FM_triple_buffer:
-    glxdisplay_cat.debug(false) << " DOUBLEBUFFER";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " DOUBLEBUFFER";
+    }
     attrib_list[n++] = GLX_DOUBLEBUFFER;
     attrib_list[n++] = true;
     break;
   }
 
   if (framebuffer_mode & FrameBufferProperties::FM_stereo) {
-    glxdisplay_cat.debug(false) << " STEREO";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " STEREO";
+    }
     attrib_list[n++] = GLX_STEREO;
     attrib_list[n++] = true;
   } else {
@@ -576,19 +586,25 @@ try_for_fbconfig(int framebuffer_mode,
   }
 
   if (framebuffer_mode & FrameBufferProperties::FM_depth) {
-    glxdisplay_cat.debug(false) << " DEPTH(" << want_depth_bits << ")";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " DEPTH(" << want_depth_bits << ")";
+    }
     attrib_list[n++] = GLX_DEPTH_SIZE;
     attrib_list[n++] = want_depth_bits;
   }
 
   if (framebuffer_mode & FrameBufferProperties::FM_stencil) {
-    glxdisplay_cat.debug(false) << " STENCIL(" << want_stencil_bits << ")";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " STENCIL(" << want_stencil_bits << ")";
+    }
     attrib_list[n++] = GLX_STENCIL_SIZE;
     attrib_list[n++] = want_stencil_bits;
   }
 
   if (framebuffer_mode & FrameBufferProperties::FM_accum) {
-    glxdisplay_cat.debug(false) << " ACCUM";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " ACCUM";
+    }
     attrib_list[n++] = GLX_ACCUM_RED_SIZE;
     attrib_list[n++] = want_color_component_bits;
     attrib_list[n++] = GLX_ACCUM_GREEN_SIZE;
@@ -602,7 +618,9 @@ try_for_fbconfig(int framebuffer_mode,
   }
 
   if (framebuffer_mode & FrameBufferProperties::FM_multisample) {
-    glxdisplay_cat.debug(false) << " MULTISAMPLE(" << want_multisamples << ")";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " MULTISAMPLE(" << want_multisamples << ")";
+    }
     attrib_list[n++] = GLX_SAMPLE_BUFFERS;
     attrib_list[n++] = 1;
     attrib_list[n++] = GLX_SAMPLES;
@@ -838,8 +856,10 @@ try_for_visual(int framebuffer_mode,
   int attrib_list[max_attrib_list];
   int n=0;
 
-  glxdisplay_cat.debug()
-    << "Trying for visual with: RGB(" << want_color_bits << ")";
+  if (glxdisplay_cat.is_debug()) {
+    glxdisplay_cat.debug()
+      << "Trying for visual with: RGB(" << want_color_bits << ")";
+  }
 
   int want_color_component_bits = max(want_color_bits / 3, 1);
 
@@ -852,30 +872,42 @@ try_for_visual(int framebuffer_mode,
   attrib_list[n++] = want_color_component_bits;
 
   if (framebuffer_mode & FrameBufferProperties::FM_alpha) {
-    glxdisplay_cat.debug(false) << " ALPHA(" << want_alpha_bits << ")";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " ALPHA(" << want_alpha_bits << ")";
+    }
     attrib_list[n++] = GLX_ALPHA_SIZE;
     attrib_list[n++] = want_alpha_bits;
   }
   if (framebuffer_mode & FrameBufferProperties::FM_double_buffer) {
-    glxdisplay_cat.debug(false) << " DOUBLEBUFFER";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " DOUBLEBUFFER";
+    }
     attrib_list[n++] = GLX_DOUBLEBUFFER;
   }
   if (framebuffer_mode & FrameBufferProperties::FM_stereo) {
-    glxdisplay_cat.debug(false) << " STEREO";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " STEREO";
+    }
     attrib_list[n++] = GLX_STEREO;
   }
   if (framebuffer_mode & FrameBufferProperties::FM_depth) {
-    glxdisplay_cat.debug(false) << " DEPTH(" << want_depth_bits << ")";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " DEPTH(" << want_depth_bits << ")";
+    }
     attrib_list[n++] = GLX_DEPTH_SIZE;
     attrib_list[n++] = want_depth_bits;
   }
   if (framebuffer_mode & FrameBufferProperties::FM_stencil) {
-    glxdisplay_cat.debug(false) << " STENCIL(" << want_stencil_bits << ")";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " STENCIL(" << want_stencil_bits << ")";
+    }
     attrib_list[n++] = GLX_STENCIL_SIZE;
     attrib_list[n++] = want_stencil_bits;
   }
   if (framebuffer_mode & FrameBufferProperties::FM_accum) {
-    glxdisplay_cat.debug(false) << " ACCUM";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " ACCUM";
+    }
     attrib_list[n++] = GLX_ACCUM_RED_SIZE;
     attrib_list[n++] = want_color_component_bits;
     attrib_list[n++] = GLX_ACCUM_GREEN_SIZE;
@@ -888,7 +920,9 @@ try_for_visual(int framebuffer_mode,
     }
   }
   if (framebuffer_mode & FrameBufferProperties::FM_multisample) {
-    glxdisplay_cat.debug(false) << " MULTISAMPLE(" << want_multisamples << ")";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug(false) << " MULTISAMPLE(" << want_multisamples << ")";
+    }
     attrib_list[n++] = GLX_SAMPLES;
     attrib_list[n++] = want_multisamples;
   }

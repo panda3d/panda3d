@@ -192,9 +192,11 @@ query_gl_version() {
   // We output to glgsg_cat instead of glxdisplay_cat, since this is
   // where the GL version has been output, and it's nice to see the
   // two of these together.
-  glgsg_cat.debug()
-    << "GLX_VERSION = " << _glx_version_major << "." << _glx_version_minor 
-    << "\n";
+  if (glgsg_cat.is_debug()) {
+    glgsg_cat.debug()
+      << "GLX_VERSION = " << _glx_version_major << "." << _glx_version_minor 
+      << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
