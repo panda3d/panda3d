@@ -242,7 +242,6 @@ add_render_texture(Texture *tex, RenderTextureMode mode) {
     tex->clear_ram_image();
   }
   tex->set_match_framebuffer_format(true);
-  tex->set_render_to_texture (true);
 
   // Go ahead and tell the texture our anticipated size, even if it
   // might be inaccurate (particularly if this is a GraphicsWindow,
@@ -252,6 +251,11 @@ add_render_texture(Texture *tex, RenderTextureMode mode) {
 
   if ((mode == RTM_bind_or_copy)&&(support_render_texture==0)) {
     mode = RTM_copy_texture;
+  }
+  else {
+    if (_gsg -> get_supports_render_texture ( )) {
+      tex->set_render_to_texture (true);
+    }
   }
 
   RenderTexture result;
