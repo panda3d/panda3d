@@ -201,7 +201,6 @@ Writer(PNMFileType *type, ostream *file, bool owns_file) :
 {
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeJPG::Writer::write_data
 //       Access: Public, Virtual
@@ -296,6 +295,12 @@ write_data(xel *array, xelval *) {
    * Pass TRUE unless you are very sure of what you're doing.
    */
   jpeg_start_compress(&cinfo, TRUE);
+
+  /* Write the user comment, if any */
+  if (_comment.size()) {
+    jpeg_write_marker(
+      &cinfo, JPEG_COM, (JOCTET *)_comment.c_str(), strlen(_comment.c_str()));
+  }
 
   /* Step 5: while (scan lines remain to be written) */
   /*           jpeg_write_scanlines(...); */

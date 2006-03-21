@@ -56,6 +56,7 @@ operator = (const PNMImageHeader &copy) {
   _y_size = copy._y_size;
   _num_channels = copy._num_channels;
   _maxval = copy._maxval;
+  _comment = copy._comment;
   _type = copy._type;
 }
 
@@ -178,6 +179,26 @@ get_x_size() const {
 INLINE int PNMImageHeader::
 get_y_size() const {
   return _y_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::get_comment
+//       Access: Published
+//  Description: Gets the user comment from the file.
+////////////////////////////////////////////////////////////////////
+INLINE string PNMImageHeader::
+get_comment() const {
+  return _comment;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::set_comment
+//       Access: Published
+//  Description: Writes a user comment string to the image (header).
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImageHeader::
+set_comment(const string& comment) {
+  _comment = comment;
 }
 
 ////////////////////////////////////////////////////////////////////

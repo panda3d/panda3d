@@ -72,6 +72,9 @@ PUBLISHED:
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
 
+  INLINE string get_comment() const;
+  INLINE void set_comment(const string &comment);
+
   INLINE bool has_type() const;
   INLINE PNMFileType *get_type() const;
   INLINE void set_type(PNMFileType *type);
@@ -128,6 +131,7 @@ protected:
   int _x_size, _y_size;
   int _num_channels;
   xelval _maxval;
+  string _comment;
   PNMFileType *_type;
 };
 

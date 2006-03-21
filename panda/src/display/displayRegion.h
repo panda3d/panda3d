@@ -111,13 +111,16 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
-  static Filename make_screenshot_filename(const string &prefix = "screenshot");
+  static Filename make_screenshot_filename(
+    const string &prefix = "screenshot");
   Filename save_screenshot_default(const string &prefix = "screenshot");
-  bool save_screenshot(const Filename &filename);
+  bool save_screenshot(
+    const Filename &filename, const string &image_comment = "");
   bool get_screenshot(PNMImage &image);
 
 public:
-  INLINE void set_cull_result(CullResult *cull_result, SceneSetup *scene_setup);
+  INLINE void set_cull_result(
+    CullResult *cull_result, SceneSetup *scene_setup);
   INLINE CullResult *get_cull_result() const;
   INLINE SceneSetup *get_scene_setup() const;
 

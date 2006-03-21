@@ -55,7 +55,7 @@ output_screenshot(Filename &fn)
   framework.do_frame();
 
   WindowFramework *wf = framework.get_window(0);
-  bool ok = wf->get_graphics_window()->save_screenshot(fn);
+  bool ok = wf->get_graphics_window()->save_screenshot(fn, "from pview");
   if (!ok) {
     cerr << "Could not generate screenshot " << fn << "\n";
   }

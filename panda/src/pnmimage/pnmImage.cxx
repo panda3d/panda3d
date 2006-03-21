@@ -41,6 +41,7 @@ clear() {
   _y_size = 0;
   _num_channels = 0;
   _maxval = 255;
+  _comment.clear();
   _type = (PNMFileType *)NULL;
 }
 
@@ -60,6 +61,7 @@ clear(int x_size, int y_size, int num_channels,
   _y_size = y_size;
   _num_channels = num_channels;
   _maxval = maxval;
+  _comment.clear();
   _type = type;
 
   if (has_alpha()) {

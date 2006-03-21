@@ -1574,7 +1574,8 @@ class ShowBase(DirectObject.DirectObject):
             self.camFrustumVis.removeNode()
 
     def screenshot(self, namePrefix = 'screenshot',
-                   defaultFilename = 1, source = None):
+                   defaultFilename = 1, source = None,
+                   imageComment=""):
         """ Captures a screenshot from the main window or from the
         specified window or Texture and writes it to a filename in the
         current directory (or to a specified directory).
@@ -1610,7 +1611,7 @@ class ShowBase(DirectObject.DirectObject):
             else:
                 saved = source.write(filename)
         else:
-            saved = source.saveScreenshot(filename)
+            saved = source.saveScreenshot(filename, imageComment)
 
         # Announce to anybody that a screenshot has been taken
         messenger.send('screenshot', [filename])

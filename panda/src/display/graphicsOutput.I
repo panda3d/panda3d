@@ -423,11 +423,15 @@ save_screenshot_default(const string &prefix) {
 //     Function: GraphicsOutput::save_screenshot
 //       Access: Published
 //  Description: Saves a screenshot of the region to the indicated
-//               filename.  Returns true on success, false on failure.
+//               filename.  The image comment is an optional user
+//               readable string that will be saved with the header
+//               of the image (if the file format supports embedded
+//               data; for example jpg allows comments).  Returns
+//               true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
-save_screenshot(const Filename &filename) {
-  return _default_display_region->save_screenshot(filename);
+save_screenshot(const Filename &filename, const string &image_comment) {
+  return _default_display_region->save_screenshot(filename, image_comment);
 }
 
 ////////////////////////////////////////////////////////////////////

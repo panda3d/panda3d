@@ -262,7 +262,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   // Hope we can putback() more than one character.
   for (string::reverse_iterator mi = magic_number.rbegin();
        mi != magic_number.rend();
-       mi++) {
+       ++mi) {
     _file->putback(*mi);
   }
   if (_file->fail()) {
@@ -284,8 +284,10 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   /* Step 2: specify data source (eg, a file) */
   jpeg_istream_src(&_cinfo, file);
 
-  /* Step 3: read file parameters with jpeg_read_header() */
+  /* Step 3: let lib jpeg know that we want to read the comment field */
+  jpeg_save_markers(&_cinfo, JPEG_COM, 0xffff);
 
+  /* Step 4: read file parameters with jpeg_read_header() */
   jpeg_read_header(&_cinfo, TRUE);
   /* We can ignore the return value from jpeg_read_header since
    *   (a) suspension is not possible with the stdio data source, and
@@ -293,11 +295,11 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
    * See libjpeg.doc for more info.
    */
 
-  /* Step 4: set parameters for decompression */
+  /* Step 6: set parameters for decompression */
   _cinfo.scale_num = jpeg_scale_num;
   _cinfo.scale_denom = jpeg_scale_denom;
 
-  /* Step 5: Start decompressor */
+  /* Step 7: Start decompressor */
 
   jpeg_start_decompress(&_cinfo);
   /* We can ignore the return value since suspension is not possible

@@ -611,12 +611,13 @@ save_screenshot_default(const string &prefix) {
 //               filename.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DisplayRegion::
-save_screenshot(const Filename &filename) {
+save_screenshot(const Filename &filename, const string &image_comment) {
   PNMImage image;
   if (!get_screenshot(image)) {
     return false;
   }
 
+  image.set_comment(image_comment);
   if (!image.write(filename)) {
     return false;
   }
