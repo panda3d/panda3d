@@ -648,6 +648,8 @@ create_texture(DXScreenData &scrn) {
   DWORD usage;
   D3DPOOL pool;
 
+  usage = 0;
+//  if (get_texture()->get_render_to_texture ( )) {
   if (get_texture()->get_render_to_texture ( )) {
     // REQUIRED PARAMETERS
     _managed = false;
