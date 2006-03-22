@@ -149,7 +149,7 @@ set_film_size(float width) {
 
   if (_fov_seq == 0) {
     // Throw out fov if it's oldest.
-    adjust_user_flags(UF_hfov | UF_vfov | UF_film_height,
+    adjust_user_flags(UF_hfov | UF_vfov | UF_min_fov | UF_film_height,
                       UF_film_width);
   } else {
     // Otherwise, throw out focal length.
@@ -193,7 +193,7 @@ set_film_size(const LVecBase2f &film_size) {
 
   if (_fov_seq == 0) {
     // Throw out fov if it's oldest.
-    adjust_user_flags(UF_hfov | UF_vfov | UF_aspect_ratio,
+    adjust_user_flags(UF_hfov | UF_vfov | UF_min_fov | UF_aspect_ratio,
                       UF_film_width | UF_film_height);
   } else {
     // Otherwise, throw out focal length.
@@ -254,7 +254,7 @@ set_focal_length(float focal_length) {
   } else {
     // Otherwise, throw out the fov.
     nassertv(_fov_seq == 0);
-    adjust_user_flags(UF_hfov | UF_vfov,
+    adjust_user_flags(UF_hfov | UF_vfov | UF_min_fov,
                       UF_focal_length);
   }
 
@@ -281,6 +281,47 @@ get_focal_length() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_min_fov
+//       Access: Published
+//  Description: Sets the field of view of the smallest dimension of
+//               the window.  If the window is wider than it is tall,
+//               this specifies the vertical field of view; if it is
+//               taller than it is wide, this specifies the horizontal
+//               field of view.
+//
+//               In many cases, this is preferable to setting either
+//               the horizontal or vertical field of view explicitly.
+//               Setting this parameter means that pulling the window
+//               wider will widen the field of view, which is usually
+//               what you expect to happen.
+////////////////////////////////////////////////////////////////////
+void Lens::
+set_min_fov(float min_fov) {
+  _min_fov = min_fov;
+
+  // We can't specify all three of focal length, fov, and film size.
+  // Throw out the oldest one.
+  resequence_fov_triad(_fov_seq, _focal_length_seq, _film_size_seq);
+
+  if (_focal_length_seq == 0) {
+    // Throw out focal length if it's oldest.
+    adjust_user_flags(UF_focal_length | UF_vfov | UF_hfov,
+                      UF_min_fov);
+  } else {
+    // Otherwise, throw out film size.
+    nassertv(_film_size_seq == 0);
+    adjust_user_flags(UF_film_width | UF_film_height | UF_vfov | UF_hfov,
+                      UF_min_fov);
+  }
+  adjust_comp_flags(CF_mat | CF_focal_length | CF_fov | CF_film_size,
+                    0);
+  // We leave CF_fov off of comp_flags, because we will still need to
+  // recompute the vertical fov.  It's not exactly the same as hfov *
+  // get_aspect_ratio().
+  throw_change_event();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::set_fov
 //       Access: Published
 //  Description: Sets the horizontal field of view of the lens without
@@ -297,12 +338,12 @@ set_fov(float hfov) {
 
   if (_focal_length_seq == 0) {
     // Throw out focal length if it's oldest.
-    adjust_user_flags(UF_focal_length | UF_vfov,
+    adjust_user_flags(UF_focal_length | UF_vfov | UF_min_fov,
                       UF_hfov);
   } else {
     // Otherwise, throw out film size.
     nassertv(_film_size_seq == 0);
-    adjust_user_flags(UF_film_width | UF_film_height | UF_vfov,
+    adjust_user_flags(UF_film_width | UF_film_height | UF_vfov | UF_min_fov,
                       UF_hfov);
   }
   adjust_comp_flags(CF_mat | CF_focal_length | CF_fov | CF_film_size,
@@ -336,12 +377,12 @@ set_fov(const LVecBase2f &fov) {
   if (_focal_length_seq == 0) {
     // Throw out focal length if it's oldest.
     adjust_user_flags(UF_focal_length | UF_film_height | UF_aspect_ratio,
-                      UF_hfov | UF_vfov);
+                      UF_hfov | UF_vfov | UF_min_fov);
   } else {
     // Otherwise, throw out film size.
     nassertv(_film_size_seq == 0);
     adjust_user_flags(UF_film_width | UF_film_height | UF_aspect_ratio,
-                      UF_hfov | UF_vfov);
+                      UF_hfov | UF_vfov | UF_min_fov);
   }
   adjust_comp_flags(CF_mat | CF_focal_length | CF_film_size | CF_aspect_ratio,
                     CF_fov);
@@ -367,6 +408,20 @@ get_fov() const {
   }
   return _fov;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_min_fov
+//       Access: Published
+//  Description: Returns the field of view of the narrowest dimension
+//               of the window.  See set_min_fov().
+////////////////////////////////////////////////////////////////////
+float Lens::
+get_min_fov() const {
+  if ((_comp_flags & CF_fov) == 0) {
+    ((Lens *)this)->compute_fov();
+  }
+  return _min_fov;
+}
                 
 
 ////////////////////////////////////////////////////////////////////
@@ -382,7 +437,7 @@ set_aspect_ratio(float aspect_ratio) {
   _aspect_ratio = aspect_ratio;
   adjust_user_flags(UF_film_height | UF_vfov,
                     UF_aspect_ratio);
-  adjust_comp_flags(CF_mat | CF_film_size | CF_fov,
+  adjust_comp_flags(CF_mat | CF_film_size | CF_fov | CF_focal_length,
                     CF_aspect_ratio);
   throw_change_event();
 }
@@ -1426,25 +1481,71 @@ void Lens::
 compute_fov() {
   const LVecBase2f &film_size = get_film_size();
 
-  if ((_user_flags & UF_hfov) == 0) {
+  bool got_hfov = ((_user_flags & UF_hfov) != 0);
+  bool got_vfov = ((_user_flags & UF_vfov) != 0);
+  bool got_min_fov = ((_user_flags & UF_min_fov) != 0);
+
+  if (!got_hfov && !got_vfov && !got_min_fov) {
+    // If the user hasn't specified any FOV, we have to compute it.
     if ((_user_flags & UF_focal_length) != 0) {
+      // The FOV is determined from the film size and focal length.
       _fov[0] = film_to_fov(film_size[0], _focal_length, true);
+      _fov[1] = film_to_fov(film_size[1], _focal_length, true);
+      got_hfov = true;
+      got_vfov = true;
+
     } else {
-      _fov[0] = default_fov;
+      // We can't compute the FOV; take the default.
+      _min_fov = default_fov;
+      got_min_fov = true;
     }
   }
 
-  if ((_user_flags & UF_vfov) == 0) {
+  if (got_min_fov) {
+    // If we have just a min_fov, use it to derive whichever fov is
+    // smaller.
+    if (film_size[0] < film_size[1]) {
+      _fov[0] = _min_fov;
+      got_hfov = true;
+    } else {
+      _fov[1] = _min_fov;
+      got_vfov = true;
+    }
+  }
+
+  // Now compute whichever fov is remaining.
+  if (!got_hfov) {
     if ((_user_flags & UF_focal_length) == 0 &&
         (_comp_flags & CF_focal_length) == 0) {
       // If we don't have an explicit focal length, we can infer it
       // from the above.
+      nassertv(got_vfov);
+      _focal_length = fov_to_focal_length(_fov[1], film_size[1], true);
+      adjust_comp_flags(0, CF_focal_length);
+    }
+    _fov[0] = film_to_fov(film_size[0], _focal_length, false);
+    got_hfov = true;
+  }
+  
+  if (!got_vfov) {
+    if ((_user_flags & UF_focal_length) == 0 &&
+        (_comp_flags & CF_focal_length) == 0) {
+      // If we don't have an explicit focal length, we can infer it
+      // from the above.
+      nassertv(got_hfov);
       _focal_length = fov_to_focal_length(_fov[0], film_size[0], true);
       adjust_comp_flags(0, CF_focal_length);
     }
     _fov[1] = film_to_fov(film_size[1], _focal_length, false);
+    got_vfov = true;
   }
 
+  if (!got_min_fov) {
+    _min_fov = film_size[0] < film_size[1] ? _fov[0] : _fov[1];
+    got_min_fov = true;
+  }
+
+  nassertv(got_hfov && got_vfov && got_min_fov);
   adjust_comp_flags(0, CF_fov);
 }
 

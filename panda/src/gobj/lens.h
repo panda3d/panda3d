@@ -87,12 +87,14 @@ PUBLISHED:
   void set_focal_length(float focal_length);
   float get_focal_length() const;
 
+  void set_min_fov(float min_fov);
   void set_fov(float fov);
   INLINE void set_fov(float hfov, float vfov);
   void set_fov(const LVecBase2f &fov);
   const LVecBase2f &get_fov() const;
   INLINE float get_hfov() const;
   INLINE float get_vfov() const;
+  float get_min_fov() const;
 
   void set_aspect_ratio(float aspect_ratio);
   float get_aspect_ratio() const;
@@ -210,6 +212,7 @@ protected:
   LVector2f _film_offset;
   float _focal_length;
   LVecBase2f _fov;
+  float _min_fov;
   float _aspect_ratio;
   float _near_distance, _far_distance;
 
@@ -239,6 +242,7 @@ protected:
     UF_convergence_distance = 0x0200,
     UF_view_mat             = 0x0400,
     UF_keystone             = 0x0800,
+    UF_min_fov              = 0x1000,
   };
 
   enum CompFlags {
