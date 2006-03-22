@@ -90,7 +90,11 @@ class ShowBase(DirectObject.DirectObject):
 
         # If the aspect ratio is 0 or None, it means to infer the
         # aspect ratio from the window size.
-        self.aspectRatio = ConfigVariableDouble('aspect-ratio', 0).getValue()
+        # If you need to know the actual aspect ratio call base.getAspectRatio()
+        self.__configAspectRatio = ConfigVariableDouble('aspect-ratio', 0).getValue()
+        # This variable is used to see if the aspect ratio has changed when
+        # we get a window-event.
+        self.__oldAspectRatio = None
 
         self.windowType = self.config.GetString('window-type', 'onscreen')
         self.requireWindow = self.config.GetBool('require-window', 1)
@@ -682,6 +686,27 @@ class ShowBase(DirectObject.DirectObject):
         self.a2dLeft = -aspectRatio
         self.a2dRight = aspectRatio
 
+        self.a2dTopCenter = self.aspect2d.attachNewNode("a2dTopCenter")
+        self.a2dBottomCenter = self.aspect2d.attachNewNode("a2dBottomCenter")
+        self.a2dLeftCenter = self.aspect2d.attachNewNode("a2dLeftCenter")
+        self.a2dRightCenter = self.aspect2d.attachNewNode("a2dRightCenter")
+
+        self.a2dTopLeft = self.aspect2d.attachNewNode("a2dTopLeft")
+        self.a2dTopRight = self.aspect2d.attachNewNode("a2dTopRight")
+        self.a2dBottomLeft = self.aspect2d.attachNewNode("a2dBottomLeft")
+        self.a2dBottomRight = self.aspect2d.attachNewNode("a2dBottomRight")
+
+        # Put the nodes in their places
+        self.a2dTopCenter.setPos(0, 0, self.a2dTop)
+        self.a2dBottomCenter.setPos(0, 0, self.a2dBottom)
+        self.a2dLeftCenter.setPos(self.a2dLeft, 0, 0)
+        self.a2dRightCenter.setPos(self.a2dRight, 0, 0)
+
+        self.a2dTopLeft.setPos(self.a2dLeft, 0, self.a2dTop)
+        self.a2dTopRight.setPos(self.a2dRight, 0, self.a2dTop)
+        self.a2dBottomLeft.setPos(self.a2dLeft, 0, self.a2dBottom)
+        self.a2dBottomRight.setPos(self.a2dRight, 0, self.a2dBottom)
+
     def setupRender2dp(self):
         """
         Creates a render2d scene graph, the secondary scene graph for
@@ -723,13 +748,37 @@ class ShowBase(DirectObject.DirectObject):
         self.a2dpLeft = -aspectRatio
         self.a2dpRight = aspectRatio
 
+
+        self.a2dpTopCenter = self.aspect2dp.attachNewNode("a2dpTopCenter")
+        self.a2dpBottomCenter = self.aspect2dp.attachNewNode("a2dpBottomCenter")
+        self.a2dpLeftCenter = self.aspect2dp.attachNewNode("a2dpLeftCenter")
+        self.a2dpRightCenter = self.aspect2dp.attachNewNode("a2dpRightCenter")
+
+        self.a2dpTopLeft = self.aspect2dp.attachNewNode("a2dpTopLeft")
+        self.a2dpTopRight = self.aspect2dp.attachNewNode("a2dpTopRight")
+        self.a2dpBottomLeft = self.aspect2dp.attachNewNode("a2dpBottomLeft")
+        self.a2dpBottomRight = self.aspect2dp.attachNewNode("a2dpBottomRight")
+
+        # Put the nodes in their places
+        self.a2dpTopCenter.setPos(0, 0, self.a2dpTop)
+        self.a2dpBottomCenter.setPos(0, 0, self.a2dpBottom)
+        self.a2dpLeftCenter.setPos(self.a2dpLeft, 0, 0)
+        self.a2dpRightCenter.setPos(self.a2dpRight, 0, 0)
+
+        self.a2dpTopLeft.setPos(self.a2dpLeft, 0, self.a2dpTop)
+        self.a2dpTopRight.setPos(self.a2dpRight, 0, self.a2dpTop)
+        self.a2dpBottomLeft.setPos(self.a2dpLeft, 0, self.a2dpBottom)
+        self.a2dpBottomRight.setPos(self.a2dpRight, 0, self.a2dpBottom)
+
+
     def getAspectRatio(self, win = None):
         # Returns the actual aspect ratio of the indicated (or main
         # window), or the default aspect ratio if there is not yet a
         # main window.
 
-        if self.aspectRatio:
-            return self.aspectRatio
+        # If the config it set, we return that
+        if self.__configAspectRatio:
+            return self.__configAspectRatio
 
         aspectRatio = 1
 
@@ -1808,6 +1857,65 @@ class ShowBase(DirectObject.DirectObject):
                 # restart the music.
                 self.mainWinMinimized = 0
                 messenger.send('PandaRestarted')
+
+            # If we have not forced the aspect ratio, let's see if it has
+            # changed and update the camera lenses and aspect2d parameters
+            if not self.__configAspectRatio:
+                aspectRatio = self.getAspectRatio()
+                if aspectRatio != self.__oldAspectRatio:
+                    self.__oldAspectRatio = aspectRatio
+                    # Fix up some anything that depends on the aspectRatio
+                    self.camLens.setAspectRatio(aspectRatio)
+                    if aspectRatio < 1:
+                        # If the window is TALL, lets expand the top and bottom
+                        self.aspect2d.setScale(1.0, 1.0, aspectRatio)
+                        self.a2dTop = 1.0 / aspectRatio
+                        self.a2dBottom = - 1.0 / aspectRatio
+                        self.a2dLeft = -1
+                        self.a2dRight = 1.0
+                        # Don't forget 2dp
+                        self.aspect2dp.setScale(1.0, 1.0, aspectRatio)
+                        self.a2dpTop = 1.0 / aspectRatio
+                        self.a2dpBottom = - 1.0 / aspectRatio
+                        self.a2dpLeft = -1
+                        self.a2dpRight = 1.0
+
+                    else:
+                        # If the window is WIDE, lets expand the left and right
+                        self.aspect2d.setScale(1.0 / aspectRatio, 1.0, 1.0)
+                        self.a2dTop = 1.0
+                        self.a2dBottom = -1.0
+                        self.a2dLeft = -aspectRatio
+                        self.a2dRight = aspectRatio
+                        # Don't forget 2dp
+                        self.aspect2dp.setScale(1.0 / aspectRatio, 1.0, 1.0)
+                        self.a2dpTop = 1.0
+                        self.a2dpBottom = -1.0
+                        self.a2dpLeft = -aspectRatio
+                        self.a2dpRight = aspectRatio                        
+
+                    # Reposition the aspect2d marker nodes
+                    self.a2dTopCenter.setPos(0, 0, self.a2dTop)
+                    self.a2dBottomCenter.setPos(0, 0, self.a2dBottom)
+                    self.a2dLeftCenter.setPos(self.a2dLeft, 0, 0)
+                    self.a2dRightCenter.setPos(self.a2dRight, 0, 0)                    
+                    self.a2dTopLeft.setPos(self.a2dLeft, 0, self.a2dTop)
+                    self.a2dTopRight.setPos(self.a2dRight, 0, self.a2dTop)
+                    self.a2dBottomLeft.setPos(self.a2dLeft, 0, self.a2dBottom)
+                    self.a2dBottomRight.setPos(self.a2dRight, 0, self.a2dBottom)
+
+                    # Reposition the aspect2dp marker nodes
+                    self.a2dpTopCenter.setPos(0, 0, self.a2dpTop)
+                    self.a2dpBottomCenter.setPos(0, 0, self.a2dpBottom)
+                    self.a2dpLeftCenter.setPos(self.a2dpLeft, 0, 0)
+                    self.a2dpRightCenter.setPos(self.a2dpRight, 0, 0)                  
+                    self.a2dpTopLeft.setPos(self.a2dpLeft, 0, self.a2dpTop)
+                    self.a2dpTopRight.setPos(self.a2dpRight, 0, self.a2dpTop)
+                    self.a2dpBottomLeft.setPos(self.a2dpLeft, 0, self.a2dpBottom)
+                    self.a2dpBottomRight.setPos(self.a2dpRight, 0, self.a2dpBottom)
+                    
+                    # If anybody needs to update their GUI, put a callback on this event
+                    messenger.send("aspectRatioChanged")
 
     def userExit(self):
         # The user has requested we exit the program.  Deal with this.

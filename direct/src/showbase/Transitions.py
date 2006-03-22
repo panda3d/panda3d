@@ -21,7 +21,6 @@ class Transitions:
         self.fade = None
         self.letterbox = None
         self.fadeModel = model
-        self.imageScale = scale
         self.imagePos = pos
         if model:
             self.alphaOff = Vec4(1, 1, 1, 0)
@@ -50,7 +49,6 @@ class Transitions:
     def setFadeModel(self, model, scale=1.0):
         self.fadeModel = model
         # We have to change some default parameters for a custom fadeModel
-        self.imageScale = scale
         self.alphaOn = Vec4(1, 1, 1, 1)
 
         # Reload fade if its already been created
@@ -73,9 +71,14 @@ class Transitions:
                 guiId = 'fade',
                 relief = None,
                 image = self.fadeModel,
-                image_scale = self.imageScale,
+                image_scale = 2 * base.getAspectRatio(),
                 state = NORMAL,
                 )
+
+            def rescaleFade():
+                self.fade['image_scale'] = 2 * base.getAspectRatio()
+            
+            self.fade.accept('aspectRatioChanged', rescaleFade)
 
     def fadeIn(self, t=0.5, finishIval=None):
         """
