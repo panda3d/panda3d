@@ -930,6 +930,39 @@ get_alpha_file_channel() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_read_mipmaps
+//       Access: Published
+//  Description: Sets the read_mipmaps flag.
+//
+//               If read_mipmaps is true, the filename should contain
+//               a hash mark ('#'), which will be filled in with the
+//               mipmap level number; and the texture will be defined
+//               with a series of images, one for each mipmap level.
+//
+//               If the filename is of a time that already requires a
+//               hash mark, such as a cube map or a 3-d texture, then
+//               the filename should now require two hash marks, and
+//               the first one indicates the mipmap level number,
+//               while the second indicates the face number or 3-d
+//               level number.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_read_mipmaps(bool read_mipmaps) {
+  _read_mipmaps = read_mipmaps;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_read_mipmaps
+//       Access: Published
+//  Description: Returns the current setting of the read_mipmaps flag.
+//               See set_read_mipmaps().
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+get_read_mipmaps() const {
+  return _read_mipmaps;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::get_multitexture_sort
 //       Access: Published
 //  Description: Returns an integer that represents the depth to which

@@ -51,10 +51,17 @@ verify_texture(const string &filename) {
 //               If a texture with the same filename was previously
 //               loaded, returns that one instead.  If the texture
 //               file cannot be found, returns NULL.
+//
+//               If read_mipmaps is true, the filename should contain
+//               a hash mark ('#'), which will be filled in with the
+//               mipmap level number; and the texture will be defined
+//               with a series of images, one for each mipmap level.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_texture(const string &filename, int primary_file_num_channels) {
-  return get_global_ptr()->ns_load_texture(filename, primary_file_num_channels);
+load_texture(const string &filename, int primary_file_num_channels,
+	     bool read_mipmaps) {
+  return get_global_ptr()->ns_load_texture(filename, primary_file_num_channels,
+					   read_mipmaps);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,13 +72,21 @@ load_texture(const string &filename, int primary_file_num_channels) {
 //               If a texture with the same filename was previously
 //               loaded, returns that one instead.  If the texture
 //               file cannot be found, returns NULL.
+//
+//               If read_mipmaps is true, both filenames should
+//               contain a hash mark ('#'), which will be filled in
+//               with the mipmap level number; and the texture will be
+//               defined with a series of images, two for each mipmap
+//               level.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
 load_texture(const string &filename, const string &alpha_filename,
-             int primary_file_num_channels, int alpha_file_channel) {
+             int primary_file_num_channels, int alpha_file_channel,
+	     bool read_mipmaps) {
   return get_global_ptr()->ns_load_texture(filename, alpha_filename, 
-                                    primary_file_num_channels,
-                                    alpha_file_channel);
+					   primary_file_num_channels,
+					   alpha_file_channel,
+					   read_mipmaps);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,10 +97,15 @@ load_texture(const string &filename, const string &alpha_filename,
 //               with index 0.  The filename should include a sequence
 //               of one or more hash characters ("#") which will be
 //               filled in with the index number of each level.
+//
+//               If read_mipmaps is true, the filename should contain
+//               an additional hash mark.  The first hash mark will be
+//               filled in with the mipmap level number, and the
+//               second with the index number of each 3-d level.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_3d_texture(const string &filename_pattern) {
-  return get_global_ptr()->ns_load_3d_texture(filename_pattern);
+load_3d_texture(const string &filename_pattern, bool read_mipmaps) {
+  return get_global_ptr()->ns_load_3d_texture(filename_pattern, read_mipmaps);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -96,10 +116,15 @@ load_3d_texture(const string &filename_pattern) {
 //               filename should include a sequence of one or more
 //               hash characters ("#") which will be filled in with
 //               the index number of each pagee.
+//
+//               If read_mipmaps is true, the filename should contain
+//               an additional hash mark.  The first hash mark will be
+//               filled in with the mipmap level number, and the
+//               second with the face number, 0 through 5.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_cube_map(const string &filename_pattern) {
-  return get_global_ptr()->ns_load_cube_map(filename_pattern);
+load_cube_map(const string &filename_pattern, bool read_mipmaps) {
+  return get_global_ptr()->ns_load_cube_map(filename_pattern, read_mipmaps);
 }
 
 ////////////////////////////////////////////////////////////////////

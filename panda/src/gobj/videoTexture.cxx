@@ -72,7 +72,7 @@ has_ram_image() const {
   if (this_frame != _last_frame_update) {
     return false;
   }
-  return !_ram_image.empty();
+  return !_ram_images.empty() && !_ram_images[0]._image.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ has_ram_image() const {
 ////////////////////////////////////////////////////////////////////
 bool VideoTexture::
 get_keep_ram_image() const {
-  // An VideoTexture should never dump its RAM image.
+  // A VideoTexture should never dump its RAM image.
   return true;
 }
 

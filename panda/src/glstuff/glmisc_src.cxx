@@ -56,16 +56,6 @@ ConfigVariableBool CLP(force_mipmaps)
    PRC_DESC("Configure this true to enable full trilinear mipmapping on every "
             "texture, whether it asks for it or not."));
 
-ConfigVariableBool CLP(show_mipmaps)
-  ("gl-show-mipmaps", false,
-   PRC_DESC("Configure this true to cause mipmaps to be rendered with phony "
-            "colors, using mipmap_level_*.rgb if they are available."));
-
-ConfigVariableBool CLP(save_mipmaps)
-  ("gl-save-mipmaps", false,
-   PRC_DESC("Configure this true to cause the generated mipmap images to be "
-            "written out to image files on the disk as they are generated."));
-
 ConfigVariableBool CLP(color_mask)
   ("gl-color-mask", true,
    PRC_DESC("Configure this false if your GL's implementation of glColorMask() "

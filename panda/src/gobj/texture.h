@@ -146,7 +146,7 @@ PUBLISHED:
   };
 
   enum CompressionMode {
-    // Generic compresssion modes.  Usually, you should choose one of
+    // Generic compression modes.  Usually, you should choose one of
     // these.
     CM_default,  // on or off, according to compressed-textures
     CM_off,      // uncompressed image
@@ -174,6 +174,7 @@ PUBLISHED:
   virtual ~Texture();
 
   virtual PT(Texture) make_copy();
+  virtual void clear();
 
   void setup_texture(TextureType texture_type,
                      int x_size, int y_size, int z_size,
@@ -194,21 +195,26 @@ PUBLISHED:
 
   void generate_normalization_cube_map(int size);
 
-  virtual bool read(const Filename &fullpath, int z = 0,
-        int primary_file_num_channels = 0);
-  virtual bool read(const Filename &fullpath, const Filename &alpha_fullpath,
-        int z = 0,
-        int primary_file_num_channels = 0, int alpha_file_channel = 0);
-  bool write(const Filename &fullpath, int z = 0) const;
+  INLINE bool read(const Filename &fullpath);
+  INLINE bool read(const Filename &fullpath, const Filename &alpha_fullpath,
+		   int primary_file_num_channels, int alpha_file_channel);
+  INLINE bool read(const Filename &fullpath, int z, int n, 
+		   bool read_pages, bool read_mipmaps);
+  INLINE bool read(const Filename &fullpath, const Filename &alpha_fullpath,
+		   int primary_file_num_channels, int alpha_file_channel,
+		   int z, int n, bool read_pages, bool read_mipmaps);
+
+  INLINE bool write(const Filename &fullpath);
+  INLINE bool write(const Filename &fullpath, int z, int n, 
+		    bool write_pages, bool write_mipmaps);
 
   bool read_txo(istream &in, const string &filename = "stream");
   bool write_txo(ostream &out, const string &filename = "stream") const;
 
-  bool read_pages(Filename fullpath_pattern, int z_size = 0);
-  bool write_pages(Filename fullpath_pattern);
-
-  virtual bool load(const PNMImage &pnmimage, int z = 0);
-  bool store(PNMImage &pnmimage, int z = 0) const;
+  INLINE bool load(const PNMImage &pnmimage);
+  INLINE bool load(const PNMImage &pnmimage, int z, int n);
+  INLINE bool store(PNMImage &pnmimage) const;
+  INLINE bool store(PNMImage &pnmimage, int z, int n) const;
 
   Texture *load_related(const PT(InternalName) &suffix) const;
 
@@ -252,6 +258,11 @@ PUBLISHED:
   INLINE bool get_render_to_texture() const;
   INLINE bool uses_mipmaps() const;
 
+  int get_expected_num_mipmap_levels() const;
+  int get_expected_mipmap_x_size(int n) const;
+  int get_expected_mipmap_y_size(int n) const;
+  int get_expected_mipmap_z_size(int n) const;
+
   virtual bool has_ram_image() const;
   INLINE bool might_have_ram_image() const;
   INLINE size_t get_ram_image_size() const;
@@ -267,6 +278,21 @@ PUBLISHED:
   void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
+
+  INLINE int get_num_ram_mipmap_images() const;
+  INLINE bool has_ram_mipmap_image(int n) const;
+  bool has_all_ram_mipmap_images() const;
+  INLINE size_t get_ram_mipmap_image_size(int n) const;
+  INLINE size_t get_ram_mipmap_page_size(int n) const;
+  INLINE size_t get_expected_ram_mipmap_image_size(int n) const;
+  INLINE size_t get_expected_ram_mipmap_page_size(int n) const;
+  CPTA_uchar get_ram_mipmap_image(int n);
+  PTA_uchar modify_ram_mipmap_image(int n);
+  PTA_uchar make_ram_mipmap_image(int n);
+  void set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size = 0);
+  void clear_ram_mipmap_image(int n);
+  void clear_ram_mipmap_images();
+  void generate_ram_mipmap_images();
 
   INLINE UpdateSeq get_modified() const;
 
@@ -297,17 +323,17 @@ PUBLISHED:
   INLINE void set_z_size(int z_size);
   void set_format(Format format);
   void set_component_type(ComponentType component_type);
-  INLINE void set_loaded_from_disk();
-  INLINE bool get_loaded_from_disk() const;
+  INLINE void set_loaded_from_image();
+  INLINE bool get_loaded_from_image() const;
 
   INLINE void set_loaded_from_txo();
   INLINE bool get_loaded_from_txo() const;
 
+  static bool is_mipmap(FilterType type);
+
 public:
   INLINE bool get_match_framebuffer_format() const;
   INLINE void set_match_framebuffer_format(bool flag);
-
-  static bool is_mipmap(FilterType type);
 
   TextureContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                               GraphicsStateGuardianBase *gsg);
@@ -328,6 +354,18 @@ public:
   static bool has_alpha(Format format);
 
 protected:
+  virtual bool do_read(const Filename &fullpath, const Filename &alpha_fullpath,
+		       int primary_file_num_channels, int alpha_file_channel,
+		       int z, int n, bool read_pages, bool read_mipmaps);
+  virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
+			   int z, int n, int primary_file_num_channels, int alpha_file_channel);
+  bool do_write(const Filename &fullpath, int z, int n, 
+		bool write_pages, bool write_mipmaps) const;
+  bool do_write_one(const Filename &fullpath, int z, int n) const;
+
+  virtual bool do_load_one(const PNMImage &pnmimage, int z, int n);
+  bool do_store_one(PNMImage &pnmimage, int z, int n) const;
+
   virtual void reconsider_dirty();
   virtual void reload_ram_image();
 
@@ -335,22 +373,64 @@ protected:
   bool reconsider_image_properties(int x_size, int y_size, int num_components,
            ComponentType component_type, int z);
 
+  // This nested class declaration is used below.
+  class RamImage {
+  public:
+    PTA_uchar _image;
+    size_t _page_size;
+  };
+
 private:
+  void convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
+                             const PNMImage &pnmimage);
+  bool convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
+                           CPTA_uchar image, size_t page_size, int z) const;
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
   void consider_rescale(PNMImage &pnmimage);
   void consider_downgrade(PNMImage &pnmimage, int num_channels);
 
-  INLINE void store_unscaled_byte(int &index, int value);
-  INLINE void store_unscaled_short(int &index, int value);
-  INLINE void store_scaled_byte(int &index, int value, double scale);
-  INLINE void store_scaled_short(int &index, int value, double scale);
-  INLINE double get_unsigned_byte(int &index) const;
-  INLINE double get_unsigned_short(int &index) const;
+  INLINE static void store_unscaled_byte(unsigned char *&p, int value);
+  INLINE static void store_unscaled_short(unsigned char *&p, int value);
+  INLINE static void store_scaled_byte(unsigned char *&p, int value, double scale);
+  INLINE static void store_scaled_short(unsigned char *&p, int value, double scale);
+  INLINE static double get_unsigned_byte(const unsigned char *&p);
+  INLINE static double get_unsigned_short(const unsigned char *&p);
 
   INLINE static bool is_txo_filename(const Filename &fullpath);
   bool read_txo_file(const Filename &fullpath);
   bool write_txo_file(const Filename &fullpath) const;
+
+  void filter_2d_mipmap_pages(RamImage &to, const RamImage &from,
+                              int x_size, int y_size);
+
+  void filter_3d_mipmap_level(RamImage &to, const RamImage &from,
+                              int x_size, int y_size, int z_size);
+
+  typedef void Filter2DComponent(unsigned char *&p, 
+                                 const unsigned char *&q,
+                                 size_t pixel_size, size_t row_size);
+
+  typedef void Filter3DComponent(unsigned char *&p, 
+                                 const unsigned char *&q,
+                                 size_t pixel_size, size_t row_size,
+                                 size_t page_size);
+
+  static void filter_2d_unsigned_byte(unsigned char *&p, 
+                                      const unsigned char *&q,
+                                      size_t pixel_size, size_t row_size);
+  static void filter_2d_unsigned_short(unsigned char *&p, 
+                                       const unsigned char *&q,
+                                       size_t pixel_size, size_t row_size);
+
+  static void filter_3d_unsigned_byte(unsigned char *&p, 
+                                      const unsigned char *&q,
+                                      size_t pixel_size, size_t row_size,
+                                      size_t page_size);
+  static void filter_3d_unsigned_short(unsigned char *&p, 
+                                       const unsigned char *&q,
+                                       size_t pixel_size, size_t row_size,
+                                       size_t page_size);
 
 protected:
   Filename _filename;
@@ -376,8 +456,11 @@ protected:
   Format _format;
   ComponentType _component_type;
 
-  bool _loaded_from_disk;
+  bool _loaded_from_image;
   bool _loaded_from_txo;
+  bool _has_read_pages;
+  bool _has_read_mipmaps;
+  int _num_mipmap_levels_read;
 
   WrapMode _wrap_u;
   WrapMode _wrap_v;
@@ -407,9 +490,13 @@ protected:
   typedef pmap<PT(InternalName), PT(Texture)> RelatedTextures;
   RelatedTextures _related_textures;
 
-  PTA_uchar _ram_image;
   CompressionMode _ram_image_compression;
-  size_t _ram_page_size;
+
+  // There is usually one RamImage for the mipmap level 0 (the base
+  // image).  There may or may not also be additional images for the
+  // additional mipmap levels.
+  typedef pvector<RamImage> RamImages;
+  RamImages _ram_images;
 
   UpdateSeq _modified;
 

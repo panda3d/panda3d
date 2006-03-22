@@ -654,6 +654,9 @@ texture_body:
   } else if (cmp_nocase_uh(name, "alpha_file_channel") == 0) {
     texture->set_alpha_file_channel((int)value);
 
+  } else if (cmp_nocase_uh(name, "read_mipmaps") == 0) {
+    texture->set_read_mipmaps(((int)value) != 0);
+
   } else {
     eggyywarning("Unsupported texture scalar: " + name);
   }

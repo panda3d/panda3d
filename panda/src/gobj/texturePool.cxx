@@ -206,7 +206,8 @@ ns_has_texture(const Filename &orig_filename) {
 //  Description: The nonstatic implementation of load_texture().
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
-ns_load_texture(const Filename &orig_filename, int primary_file_num_channels) {
+ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
+		bool read_mipmaps) {
   Filename filename(orig_filename);
 
   if (!_fake_texture_image.empty()) {
@@ -227,7 +228,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels) {
   gobj_cat.info()
     << "Loading texture " << filename << "\n";
   PT(Texture) tex = make_texture(filename.get_extension());
-  if (!tex->read(filename, 0, primary_file_num_channels)) {
+  if (!tex->read(filename, 0, primary_file_num_channels, false, read_mipmaps)) {
     // This texture was not found or could not be read.
     report_texture_unreadable(filename);
     return NULL;
@@ -249,12 +250,14 @@ Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, 
                 const Filename &orig_alpha_filename,
                 int primary_file_num_channels,
-                int alpha_file_channel) {
+                int alpha_file_channel,
+		bool read_mipmaps) {
   Filename filename(orig_filename);
   Filename alpha_filename(orig_alpha_filename);
 
   if (!_fake_texture_image.empty()) {
-    return ns_load_texture(_fake_texture_image, primary_file_num_channels);
+    return ns_load_texture(_fake_texture_image, primary_file_num_channels,
+			   read_mipmaps);
   }
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -275,8 +278,8 @@ ns_load_texture(const Filename &orig_filename,
     << "Loading texture " << filename << " and alpha component "
     << alpha_filename << endl;
   PT(Texture) tex = make_texture(filename.get_extension());
-  if (!tex->read(filename, alpha_filename, 0, primary_file_num_channels,
-                 alpha_file_channel)) {
+  if (!tex->read(filename, alpha_filename, primary_file_num_channels,
+                 alpha_file_channel, 0, 0, false, read_mipmaps)) {
     // This texture was not found or could not be read.
     report_texture_unreadable(filename);
     return NULL;
@@ -296,7 +299,8 @@ ns_load_texture(const Filename &orig_filename,
 //  Description: The nonstatic implementation of load_3d_texture().
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
-ns_load_3d_texture(const Filename &filename_pattern) {
+ns_load_3d_texture(const Filename &filename_pattern,
+		   bool read_mipmaps) {
   Filename filename(filename_pattern);
   filename.set_pattern(true);
 
@@ -315,7 +319,7 @@ ns_load_3d_texture(const Filename &filename_pattern) {
     << "Loading 3-d texture " << filename << "\n";
   PT(Texture) tex = make_texture(filename.get_extension());
   tex->setup_3d_texture();
-  if (!tex->read_pages(filename)) {
+  if (!tex->read(filename, 0, 0, true, read_mipmaps)) {
     // This texture was not found or could not be read.
     report_texture_unreadable(filename);
     return NULL;
@@ -334,7 +338,7 @@ ns_load_3d_texture(const Filename &filename_pattern) {
 //  Description: The nonstatic implementation of load_cube_map().
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
-ns_load_cube_map(const Filename &filename_pattern) {
+ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps) {
   Filename filename(filename_pattern);
   filename.set_pattern(true);
 
@@ -353,7 +357,7 @@ ns_load_cube_map(const Filename &filename_pattern) {
     << "Loading cube map texture " << filename << "\n";
   PT(Texture) tex = make_texture(filename.get_extension());
   tex->setup_cube_map();
-  if (!tex->read_pages(filename)) {
+  if (!tex->read(filename, 0, 0, true, read_mipmaps)) {
     // This texture was not found or could not be read.
     report_texture_unreadable(filename);
     return NULL;

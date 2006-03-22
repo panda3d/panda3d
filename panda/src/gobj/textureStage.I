@@ -263,13 +263,10 @@ get_alpha_scale() const {
 //     Function: TextureStage::set_saved_result
 //       Access: Published
 //  Description: Sets the saved_result flag.  When this is true, the
-//               output of this stage is not part of the normal
-//               pipeline--that is, it will not be supplied as the
-//               "previous" source for the next texture stage--but it
-//               will instead be supplied as the "last_saved_result"
-//               source for any future stages, until the next
-//               TextureStage with a saved_result set true is
-//               encountered.
+//               output of this stage will be supplied as the
+//               "last_saved_result" source for any future stages,
+//               until the next TextureStage with a saved_result set
+//               true is encountered.
 //
 //               This can be used to reuse the results of this texture
 //               stage as input to more than one stage later in the

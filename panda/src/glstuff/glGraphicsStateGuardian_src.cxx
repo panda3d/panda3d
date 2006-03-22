@@ -470,27 +470,47 @@ reset() {
   if (is_at_least_version(1, 3)) {
     _supports_compressed_texture = true;
 
+    _glCompressedTexImage1D = (PFNGLCOMPRESSEDTEXIMAGE1DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexImage1D");
     _glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)
       get_extension_func(GLPREFIX_QUOTED, "CompressedTexImage2D");
+    _glCompressedTexImage3D = (PFNGLCOMPRESSEDTEXIMAGE3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexImage3D");
+    _glCompressedTexSubImage1D = (PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexSubImage1D");
     _glCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)
       get_extension_func(GLPREFIX_QUOTED, "CompressedTexSubImage2D");
+    _glCompressedTexSubImage3D = (PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexSubImage3D");
     _glGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)
       get_extension_func(GLPREFIX_QUOTED, "GetCompressedTexImage");
 
   } else if (has_extension("GL_ARB_texture_compression")) {
     _supports_compressed_texture = true;
 
+    _glCompressedTexImage1D = (PFNGLCOMPRESSEDTEXIMAGE1DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexImage1DARB");
     _glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)
       get_extension_func(GLPREFIX_QUOTED, "CompressedTexImage2DARB");
+    _glCompressedTexImage3D = (PFNGLCOMPRESSEDTEXIMAGE3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexImage3DARB");
+    _glCompressedTexSubImage1D = (PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexSubImage1DARB");
     _glCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)
       get_extension_func(GLPREFIX_QUOTED, "CompressedTexSubImage2DARB");
+    _glCompressedTexSubImage3D = (PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CompressedTexSubImage3DARB");
     _glGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)
       get_extension_func(GLPREFIX_QUOTED, "GetCompressedTexImageARB");
   }
 
   if (_supports_compressed_texture) {
-    if (_glCompressedTexImage2D == NULL || 
+    if (_glCompressedTexImage1D == NULL || 
+        _glCompressedTexImage2D == NULL || 
+        _glCompressedTexImage3D == NULL || 
+	_glCompressedTexSubImage1D == NULL || 
 	_glCompressedTexSubImage2D == NULL || 
+	_glCompressedTexSubImage3D == NULL || 
 	_glGetCompressedTexImage == NULL) {
       GLCAT.warning()
         << "Compressed textures advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
@@ -2394,76 +2414,27 @@ extract_texture_data(Texture *tex) {
   PTA_uchar image;
   size_t page_size = 0;
 
-  if (target == GL_TEXTURE_CUBE_MAP) {
-    // A cube map, compressed or uncompressed.  This we must extract
-    // one page at a time.
-
-    // If the cube map is compressed, we assume that all the
-    // compressed pages are exactly the same size.  OpenGL doesn't
-    // make this assumption, but it happens to be true for all
-    // currently extant compression schemes, and it makes things
-    // simpler for us.  (It also makes things much simpler for the
-    // graphics hardware, so it's likely to continue to be true for a
-    // while at least.)
-
-    GLenum external_format = get_external_image_format(tex);
-    GLenum pixel_type = get_component_type(type);
-    page_size = tex->get_expected_ram_page_size();
-
-    if (compression != Texture::CM_off) {
-      GLint image_size;
-      GLP(GetTexLevelParameteriv)(page_target, 0, 
-				  GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
-      nassertr(image_size <= (int)page_size, false);
-      page_size = image_size;
-    }
-
-    image = PTA_uchar::empty_array(page_size * 6);
-
-    for (int z = 0; z < 6; ++z) {
-      page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
-      
-      if (compression == Texture::CM_off) {
-	GLP(GetTexImage)(page_target, 0, external_format, pixel_type, 
-			 image.p() + z * page_size);
-      } else {
-	_glGetCompressedTexImage(page_target, 0, image.p() + z * page_size);
-      }
-    }
-
-  } else if (compression == Texture::CM_off) {
-    // An uncompressed 1-d, 2-d, or 3-d texture.
-    image = PTA_uchar::empty_array(tex->get_expected_ram_image_size());
-    GLenum external_format = get_external_image_format(tex);
-    GLenum pixel_type = get_component_type(type);
-    GLP(GetTexImage)(target, 0, external_format, pixel_type, image.p());
-
-  } else {
-    // A compressed 1-d, 2-d, or 3-d texture.
-    GLint image_size;
-    GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
-    page_size = image_size / tex->get_z_size();
-    image = PTA_uchar::empty_array(image_size);
-    _glGetCompressedTexImage(target, 0, image.p());
-  }
-
-  // Now see if we were successful.
-  error_code = GLP(GetError)();
-  if (error_code != GL_NO_ERROR) {
-    const GLubyte *error_string = GLUP(ErrorString)(error_code);
-    GLCAT.error()
-      << "Unable to extract texture for " << tex->get_name();
-    if (error_string != (const GLubyte *)NULL) {
-      GLCAT.error(false)
-        << " : " << error_string;
-    }
-    GLCAT.error(false)
-      << "\n";
-
+  if (!extract_texture_image(image, page_size, tex, target, page_target,
+			     type, compression, 0)) {
     return false;
   }
   
   tex->set_ram_image(image, compression, page_size);
+
+  if (tex->uses_mipmaps()) {
+    // Also get the mipmap levels.
+    GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
+    GLint highest_level = num_expected_levels;
+    GLP(GetTexParameteriv)(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
+    highest_level = min(highest_level, num_expected_levels);
+    for (int n = 1; n <= highest_level; ++n) {
+      if (!extract_texture_image(image, page_size, tex, target, page_target,
+				 type, compression, n)) {
+	return false;
+      }
+      tex->set_ram_mipmap_image(n, image, page_size);
+    }
+  }
 
   return true;
 }
@@ -5619,8 +5590,7 @@ do_issue_texture() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-update_standard_texture_bindings()
-{
+update_standard_texture_bindings() {
   int num_stages = _target._texture->get_num_on_stages();
   int num_old_stages = _max_texture_stages;
   if (_state._texture != (TextureAttrib *)NULL) {
@@ -6147,7 +6117,6 @@ specify_texture(Texture *tex) {
   Texture::FilterType minfilter = tex->get_minfilter();
   Texture::FilterType magfilter = tex->get_magfilter();
   bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
-  Texture::CompressionMode image_compression = tex->get_ram_image_compression();
 
 #ifndef NDEBUG
   if (CLP(force_mipmaps)) {
@@ -6157,20 +6126,17 @@ specify_texture(Texture *tex) {
   }
 #endif
 
-  if (_supports_generate_mipmap &&
-      (auto_generate_mipmaps || !tex->might_have_ram_image() ||
-       image_compression != Texture::CM_off)) {
-    // If the hardware can automatically generate mipmaps, ask it to
-    // do so now, but only if the texture requires them.
-    GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, uses_mipmaps);
+  if (!tex->might_have_ram_image()) {
+    // If it's a dynamically generated texture (that is, the RAM image
+    // isn't available so it didn't pass through the CPU), we should
+    // enable GL-generated mipmaps here if we can.
+    if (_supports_generate_mipmap) {
+      GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, uses_mipmaps);
 
-  } else if (!tex->might_have_ram_image()) {
-    // If the hardware can't automatically generate mipmaps, but it's
-    // a dynamically generated texture (that is, the RAM image isn't
-    // available so it didn't pass through the CPU), then we'd better
-    // not try to enable mipmap filtering, since we can't generate
-    // mipmaps.
-    uses_mipmaps = false;
+    } else {
+      // Otherwise, don't try to use mipmaps.
+      uses_mipmaps = false;
+    }
   }
 
   GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER,
@@ -6417,53 +6383,42 @@ upload_texture(CLP(TextureContext) *gtc) {
       return false;
     }
 
-    size_t page_size = tex->get_ram_page_size();
-    const unsigned char *image_base = image;
-
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
        internal_format, width, height, depth, external_format, component_type,
-       image_base, page_size, image_compression);
-    image_base += page_size;
+       true, 0, image_compression);
 
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
        internal_format, width, height, depth, external_format, component_type,
-       image_base, page_size, image_compression);
-    image_base += page_size;
+       true, 1, image_compression);
 
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
        internal_format, width, height, depth, external_format, component_type,
-       image_base, page_size, image_compression);
-    image_base += page_size;
+       true, 2, image_compression);
 
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
        internal_format, width, height, depth, external_format, component_type,
-       image_base, page_size, image_compression);
-    image_base += page_size;
+       true, 3, image_compression);
 
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
        internal_format, width, height, depth, external_format, component_type,
-       image_base, page_size, image_compression);
-    image_base += page_size;
+       true, 4, image_compression);
 
     success = success && upload_texture_image
       (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
        internal_format, width, height, depth, external_format, component_type,
-       image_base, page_size, image_compression);
-    image_base += page_size;
-
-    nassertr((size_t)(image_base - image) == image.size(), false);
+       true, 5, image_compression);
 
   } else {
     // Any other kind of texture can be loaded all at once.
     success = upload_texture_image
       (gtc, uses_mipmaps, get_texture_target(tex->get_texture_type()),
        internal_format, width, height, depth, external_format, component_type,
-       image, image.size(), image_compression);
+       false, 0, image_compression);
   }
 
   if (success) {
@@ -6475,12 +6430,6 @@ upload_texture(CLP(TextureContext) *gtc) {
 
 #ifdef DO_PSTATS
     gtc->update_data_size_bytes(get_texture_memory_size(tex));
-#endif
-
-#ifndef NDEBUG
-    if (uses_mipmaps && CLP(save_mipmaps)) {
-      save_mipmap_images(tex);
-    }
 #endif
 
     report_my_gl_errors();
@@ -6503,8 +6452,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
                      GLenum target, GLint internal_format,
                      int width, int height, int depth,
                      GLint external_format, GLenum component_type,
-                     const unsigned char *image,
-		     size_t image_size,
+                     bool one_page_only, int z,
 		     Texture::CompressionMode image_compression) {
   // Make sure the error stack is cleared out before we begin.
   report_my_gl_errors();
@@ -6518,69 +6466,56 @@ upload_texture_image(CLP(TextureContext) *gtc,
   }
 
   PStatTimer timer(_load_texture_pcollector);
-
-  if (uses_mipmaps) {
-#ifdef DO_PSTATS
-    _data_transferred_pcollector.add_level(image_size * 4 / 3);
-#endif
-#ifndef NDEBUG
-    if (CLP(show_mipmaps) && target == GL_TEXTURE_2D) {
-      build_phony_mipmaps(gtc->get_texture());
-      report_my_gl_errors();
-      return true;
-
-    } else
-#endif
-      if (!_supports_generate_mipmap || 
-          (!auto_generate_mipmaps && image_compression == Texture::CM_off)) {
-        // We only need to build the mipmaps by hand if (a) the GL
-        // doesn't support generating them automatically, or (b) the
-        // user has specifically requested we don't use GL's
-        // auto-mipmap feature (but if the source texture image is
-        // compressed, we can't build mipmaps, so we ignore
-        // auto_generate_mipmaps in that case).
-        bool success = true;
-        switch (target) {
-        case GL_TEXTURE_1D:
-          GLUP(Build1DMipmaps)(target, internal_format, width,
-                               external_format, component_type, image);
-          break;
-
-        case GL_TEXTURE_3D:
-#ifdef GLU_VERSION_1_3
-          GLUP(Build3DMipmaps)(target, internal_format,
-                               width, height, depth,
-                               external_format, component_type, image);
-#else  // GLU_VERSION_1_3
-          // Prior to GLU 1.3, there was no gluBuild3DMipmaps() call.
-          // Just fall through and load the texture without mipmaps.
-          GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-          success = false;
-#endif  // GLU_VERSION_1_3
-          break;
-
-        default:
-          GLUP(Build2DMipmaps)(target, internal_format,
-                               width, height,
-                               external_format, component_type, image);
-        }
-
-        report_my_gl_errors();
-        if (success) {
-          return true;
-        }
-      }
-  }
+  Texture *tex = gtc->get_texture();
 
   if (GLCAT.is_debug()) {
     if (image_compression != Texture::CM_off) {
       GLCAT.debug()
-	<< "loading pre-compressed texture " << gtc->get_texture()->get_name() << "\n";
+	<< "loading pre-compressed texture " << tex->get_name() << "\n";
     } else if (is_compressed_format(internal_format)) {
       GLCAT.debug()
-	<< "compressing texture " << gtc->get_texture()->get_name() << "\n";
+	<< "compressing texture " << tex->get_name() << "\n";
     }
   }
+
+  int num_ram_mipmap_levels = 1;
+  bool load_ram_mipmaps = false;
+
+  if (uses_mipmaps) {
+    num_ram_mipmap_levels = tex->get_num_ram_mipmap_images();
+
+    if (num_ram_mipmap_levels == 1) {
+      // No RAM mipmap levels available.  Should we generate some?
+      if (!_supports_generate_mipmap || 
+          (!auto_generate_mipmaps && image_compression == Texture::CM_off)) {
+        // Yes, the GL won't generate them, so we need to.
+        tex->generate_ram_mipmap_images();
+        num_ram_mipmap_levels = tex->get_num_ram_mipmap_images();
+      }
+    }
+
+    if (num_ram_mipmap_levels != 1) {
+      // We will load the mipmap levels from RAM.  Don't ask the GL to
+      // generate them.
+      if (_supports_generate_mipmap) {
+        GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, false);
+      }
+      load_ram_mipmaps = true;
+
+    } else {
+      // We don't have mipmap levels in RAM.  Ask the GL to generate
+      // them if it can.
+      if (_supports_generate_mipmap) {
+        GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, true);
+      } else {
+        // If it can't, do without mipmaps.
+        GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        uses_mipmaps = false;
+      }
+    }
+  }
+
+  int highest_level = 0;
 
   if (!gtc->_already_applied ||
       gtc->_internal_format != internal_format ||
@@ -6588,73 +6523,149 @@ upload_texture_image(CLP(TextureContext) *gtc,
       gtc->_height != height ||
       gtc->_depth != depth) {
     // We need to reload a new image.
+
+    for (int n = 0; n < num_ram_mipmap_levels; ++n) {
+      const unsigned char *image = tex->get_ram_mipmap_image(n);
+      if (image == (const unsigned char *)NULL) {
+        GLCAT.warning()
+          << "No mipmap level " << n << " defined for " << tex->get_name()
+          << "\n";
+        // No mipmap level n; stop here.
+        break;
+      }
+      size_t image_size = tex->get_ram_mipmap_image_size(n);
+      if (one_page_only) {
+        image_size = tex->get_ram_mipmap_page_size(n);
+        image += image_size * z;
+      }
+
 #ifdef DO_PSTATS
-    _data_transferred_pcollector.add_level(image_size);
+      _data_transferred_pcollector.add_level(image_size);
 #endif
-    switch (target) {
-    case GL_TEXTURE_1D:
-      nassertr(image_compression == Texture::CM_off, false);
-      GLP(TexImage1D)(target, 0, internal_format,
-                      width, 0,
-                      external_format, component_type, image);
-      break;
-
-    case GL_TEXTURE_3D:
-      if (_supports_3d_texture) {
-	nassertr(image_compression == Texture::CM_off, false);
-        _glTexImage3D(target, 0, internal_format,
-                      width, height, depth, 0,
-                      external_format, component_type, image);
-      } else {
-        report_my_gl_errors();
-        return false;
+      switch (target) {
+      case GL_TEXTURE_1D:
+        if (image_compression == Texture::CM_off) {
+          GLP(TexImage1D)(target, n, internal_format,
+                          width, 0,
+                          external_format, component_type, image);
+        } else {
+          _glCompressedTexImage1D(target, n, external_format, width,
+                                  0, image_size, image);
+        }
+        break;
+        
+      case GL_TEXTURE_3D:
+        if (_supports_3d_texture) {
+          if (image_compression == Texture::CM_off) {
+            _glTexImage3D(target, n, internal_format,
+                          width, height, depth, 0,
+                          external_format, component_type, image);
+          } else {
+            _glCompressedTexImage3D(target, n, external_format, width, 
+                                    height, depth,
+                                    0, image_size, image);
+          }
+        } else {
+          report_my_gl_errors();
+          return false;
+        }
+        break;
+        
+      default:
+        if (image_compression == Texture::CM_off) {
+          GLP(TexImage2D)(target, n, internal_format,
+                          width, height, 0,
+                          external_format, component_type, image);
+        } else {
+          _glCompressedTexImage2D(target, n, external_format, width, height, 
+                                  0, image_size, image);
+        }
       }
-      break;
 
-    default:
-      if (image_compression == Texture::CM_off) {
-	GLP(TexImage2D)(target, 0, internal_format,
-			width, height, 0,
-			external_format, component_type, image);
-      } else {
-	_glCompressedTexImage2D(target, 0, external_format, width, height, 
-				0, image_size, image);
-      }
+      highest_level = n;
+
+      width = max(width >> 1, 1);
+      height = max(height >> 1, 1);
+      depth = max(depth >> 1, 1);
     }
   } else {
     // We can reload the image over the previous image, possibly
     // saving on texture memory fragmentation.
+    for (int n = 0; n < num_ram_mipmap_levels; ++n) {
+      const unsigned char *image = tex->get_ram_mipmap_image(n);
+      if (image == (const unsigned char *)NULL) {
+        GLCAT.warning()
+          << "No mipmap level " << n << " defined for " << tex->get_name()
+          << "\n";
+        // No mipmap level n; stop here.
+        break;
+      }
+      size_t image_size = tex->get_ram_mipmap_image_size(n);
+      if (one_page_only) {
+        image_size = tex->get_ram_mipmap_page_size(n);
+        image += image_size * z;
+      }
+
 #ifdef DO_PSTATS
-    _data_transferred_pcollector.add_level(image_size);
+      _data_transferred_pcollector.add_level(image_size);
 #endif
-    switch (target) {
-    case GL_TEXTURE_1D:
-      nassertr(image_compression == Texture::CM_off, false);
-      GLP(TexSubImage1D)(target, 0, 0, width,
-                         external_format, component_type, image);
-      break;
+      switch (target) {
+      case GL_TEXTURE_1D:
+        if (image_compression == Texture::CM_off) {
+          GLP(TexSubImage1D)(target, n, 0, width,
+                             external_format, component_type, image);
+        } else {
+          _glCompressedTexSubImage1D(target, n, 0, width,
+                                     external_format, image_size, image);
+        }
+        break;
 
-    case GL_TEXTURE_3D:
-      if (_supports_3d_texture) {
-	nassertr(image_compression == Texture::CM_off, false);
-        _glTexSubImage3D(target, 0, 0, 0, 0, width, height, depth,
-                         external_format, component_type, image);
-      } else {
-        report_my_gl_errors();
-        return false;
+      case GL_TEXTURE_3D:
+        if (_supports_3d_texture) {
+          if (image_compression == Texture::CM_off) {
+            _glTexSubImage3D(target, n, 0, 0, 0, width, height, depth,
+                             external_format, component_type, image);
+          } else {
+            _glCompressedTexSubImage3D(target, n, 0, 0, 0, width, height, depth,
+                                       external_format, image_size, image);
+          }
+        } else {
+          report_my_gl_errors();
+          return false;
+        }
+        break;
+        
+      default:
+        if (image_compression == Texture::CM_off) {
+          GLP(TexSubImage2D)(target, n, 0, 0, width, height,
+                             external_format, component_type, image);
+        } else {
+          _glCompressedTexSubImage2D(target, n, 0, 0, width, height,
+                                     external_format, image_size, image);
+        }
+        break;
       }
-      break;
 
-    default:
-      if (image_compression == Texture::CM_off) {
-	GLP(TexSubImage2D)(target, 0, 0, 0, width, height,
-			   external_format, component_type, image);
-      } else {
-	_glCompressedTexSubImage2D(target, 0, 0, 0, width, height,
-				   external_format, image_size, image);
-      }
-      break;
+      highest_level = n;
+
+      width = max(width >> 1, 1);
+      height = max(height >> 1, 1);
+      depth = max(depth >> 1, 1);
     }
+  }
+
+  if (load_ram_mipmaps) {
+    // By the time we get here, we have successfully loaded a certain
+    // number of mipmap levels.  Tell the GL that's all it's going to
+    // get.
+    GLP(TexParameteri)(target, GL_TEXTURE_MAX_LEVEL, highest_level);
+
+  } else if (uses_mipmaps) {
+    // Since the mipmap levels were auto-generated and are therefore
+    // complete, make sure the GL doesn't remember some previous value
+    // for GL_TEXTURE_MAX_LEVEL from the above call--set it to the
+    // full count of mipmap levels.
+    GLP(TexParameteri)(target, GL_TEXTURE_MAX_LEVEL, tex->get_expected_num_mipmap_levels() - 1);
   }
 
   // Report the error message explicitly if the GL texture creation
@@ -6663,7 +6674,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
   if (error_code != GL_NO_ERROR) {
     const GLubyte *error_string = GLUP(ErrorString)(error_code);
     GLCAT.error()
-      << "GL texture creation failed for " << gtc->get_texture()->get_name();
+      << "GL texture creation failed for " << tex->get_name();
     if (error_string != (const GLubyte *)NULL) {
       GLCAT.error(false)
         << " : " << error_string;
@@ -6811,6 +6822,91 @@ check_nonresident_texture(BufferContextChain &chain) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::extract_texture_image
+//       Access: Protected
+//  Description: Called from extract_texture_data(), this gets just
+//               the image array for a particular mipmap level (or for
+//               the base image).
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+extract_texture_image(PTA_uchar &image, size_t &page_size,
+		      Texture *tex, GLenum target, GLenum page_target,
+		      Texture::ComponentType type, 
+		      Texture::CompressionMode compression, int n) {
+  if (target == GL_TEXTURE_CUBE_MAP) {
+    // A cube map, compressed or uncompressed.  This we must extract
+    // one page at a time.
+
+    // If the cube map is compressed, we assume that all the
+    // compressed pages are exactly the same size.  OpenGL doesn't
+    // make this assumption, but it happens to be true for all
+    // currently extant compression schemes, and it makes things
+    // simpler for us.  (It also makes things much simpler for the
+    // graphics hardware, so it's likely to continue to be true for a
+    // while at least.)
+
+    GLenum external_format = get_external_image_format(tex);
+    GLenum pixel_type = get_component_type(type);
+    page_size = tex->get_expected_ram_mipmap_page_size(n);
+
+    if (compression != Texture::CM_off) {
+      GLint image_size;
+      GLP(GetTexLevelParameteriv)(page_target, n, 
+				  GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
+      nassertr(image_size <= (int)page_size, false);
+      page_size = image_size;
+    }
+
+    image = PTA_uchar::empty_array(page_size * 6);
+
+    for (int z = 0; z < 6; ++z) {
+      page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+      
+      if (compression == Texture::CM_off) {
+	GLP(GetTexImage)(page_target, n, external_format, pixel_type, 
+			 image.p() + z * page_size);
+      } else {
+	_glGetCompressedTexImage(page_target, 0, image.p() + z * page_size);
+      }
+    }
+
+  } else if (compression == Texture::CM_off) {
+    // An uncompressed 1-d, 2-d, or 3-d texture.
+    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_image_size(n));
+    GLenum external_format = get_external_image_format(tex);
+    GLenum pixel_type = get_component_type(type);
+    GLP(GetTexImage)(target, n, external_format, pixel_type, image.p());
+
+  } else {
+    // A compressed 1-d, 2-d, or 3-d texture.
+    GLint image_size;
+    GLP(GetTexLevelParameteriv)(target, n, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
+    page_size = image_size / tex->get_z_size();
+    image = PTA_uchar::empty_array(image_size);
+    _glGetCompressedTexImage(target, n, image.p());
+  }
+
+  // Now see if we were successful.
+  GLenum error_code = GLP(GetError)();
+  if (error_code != GL_NO_ERROR) {
+    const GLubyte *error_string = GLUP(ErrorString)(error_code);
+    GLCAT.error()
+      << "Unable to extract texture for " << *tex
+      << ", mipmap level " << n << ": ";
+    if (error_string != (const GLubyte *)NULL) {
+      GLCAT.error(false)
+        << " : " << error_string;
+    }
+    GLCAT.error(false)
+      << "\n";
+
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_point_size
 //       Access: Protected
 //  Description: Internally sets the point size parameters after any
@@ -6850,173 +6946,3 @@ do_point_size() {
 
   report_my_gl_errors();
 }
-
-#ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::build_phony_mipmaps
-//       Access: Protected
-//  Description: Generates a series of colored mipmap levels to aid in
-//               visualizing the mipmap levels as the hardware applies
-//               them.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-build_phony_mipmaps(Texture *tex) {
-  int x_size = tex->get_x_size();
-  int y_size = tex->get_y_size();
-
-  GLCAT.info()
-    << "Building phony mipmap levels for " << tex->get_name() << "\n";
-  int level = 0;
-  while (x_size > 0 && y_size > 0) {
-    GLCAT.info(false)
-      << "  level " << level << " is " << x_size << " by " << y_size << "\n";
-    build_phony_mipmap_level(level, x_size, y_size);
-
-    x_size >>= 1;
-    y_size >>= 1;
-    level++;
-  }
-
-  while (x_size > 0) {
-    GLCAT.info(false)
-      << "  level " << level << " is " << x_size << " by 1\n";
-    build_phony_mipmap_level(level, x_size, 1);
-
-    x_size >>= 1;
-    level++;
-  }
-
-  while (y_size > 0) {
-    GLCAT.info(false)
-      << "  level " << level << " is 1 by " << y_size << "\n";
-    build_phony_mipmap_level(level, 1, y_size);
-
-    y_size >>= 1;
-    level++;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::build_phony_mipmap_level
-//       Access: Protected
-//  Description: Generates a single colored mipmap level.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-build_phony_mipmap_level(int level, int x_size, int y_size) {
-  static const int num_levels = 10;
-  static const char *level_filenames[num_levels] = {
-    "mipmap_level_0.rgb",
-    "mipmap_level_1.rgb",
-    "mipmap_level_2.rgb",
-    "mipmap_level_3.rgb",
-    "mipmap_level_4.rgb",
-    "mipmap_level_5.rgb",
-    "mipmap_level_6.rgb",
-    "mipmap_level_7.rgb",
-    "mipmap_level_8.rgb",
-    "mipmap_level_9.rgb"
-  };
-  static const RGBColorf level_colors[num_levels] = {
-    RGBColorf(1.0f, 1.0f, 1.0f),
-    RGBColorf(1.0f, 0.0f, 0.0f),
-    RGBColorf(0.0f, 1.0f, 0.0f),
-    RGBColorf(0.0f, 0.0f, 1.0f),
-    RGBColorf(1.0f, 1.0f, 0.0f),
-    RGBColorf(0.0f, 1.0f, 1.0f),
-    RGBColorf(1.0f, 0.0f, 1.0f),
-    RGBColorf(1.0f, 0.5, 0.0f),
-    RGBColorf(0.0f, 1.0f, 0.5),
-    RGBColorf(0.83, 0.71, 1.0f)
-  };
-
-  level = level % num_levels;
-  Filename filename(level_filenames[level]);
-
-  PNMImage image_sized(x_size, y_size);
-  PNMImage image_source;
-  if (filename.resolve_filename(get_texture_path()) ||
-      filename.resolve_filename(get_model_path())) {
-    image_source.read(filename);
-  }
-
-  if (image_source.is_valid()) {
-    image_sized.quick_filter_from(image_source);
-
-  } else {
-    GLCAT.info(false)
-      << "    " << filename << " cannot be read, making solid color mipmap.\n";
-    image_sized.fill(level_colors[level][0],
-                     level_colors[level][1],
-                     level_colors[level][2]);
-  }
-
-  PT(Texture) tex = new Texture;
-  if (!tex->load(image_sized)) {
-    GLCAT.warning()
-      << "Unable to load phony mipmap image.\n";
-  } else {
-    GLenum internal_format = get_internal_image_format(tex);
-    GLenum external_format = get_external_image_format(tex);
-    GLenum component_type = get_component_type(tex->get_component_type());
-
-    GLP(TexImage2D)(GL_TEXTURE_2D, level, internal_format,
-                    tex->get_x_size(), tex->get_y_size(), 0,
-                    external_format, component_type, tex->get_ram_image());
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::save_mipmap_images
-//       Access: Protected
-//  Description: Saves out each mipmap level of the indicated texture
-//               (which must also be the currently active texture in
-//               the GL state) as a separate image file to disk.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-save_mipmap_images(Texture *tex) {
-  if (tex->get_texture_type() != Texture::TT_2d_texture) {
-    // Never mind on unusual texture formats.
-    return;
-  }
-
-  Filename filename = tex->get_name();
-  string name;
-  if (filename.empty()) {
-    static int index = 0;
-    name = "texture" + format_string(index);
-    index++;
-  } else {
-    name = filename.get_basename_wo_extension();
-  }
-
-  GLenum external_format = get_external_image_format(tex);
-  GLenum type = get_component_type(tex->get_component_type());
-
-  int x_size = tex->get_x_size();
-  int y_size = tex->get_y_size();
-
-  // Specify byte-alignment for the pixels on output.
-  GLP(PixelStorei)(GL_PACK_ALIGNMENT, 1);
-
-  int mipmap_level = 0;
-  do {
-    x_size = max(x_size, 1);
-    y_size = max(y_size, 1);
-
-    PT(Texture) mtex = new Texture;
-    mtex->setup_2d_texture(x_size, y_size, tex->get_component_type(),
-                           tex->get_format());
-    GLP(GetTexImage)(GL_TEXTURE_2D, mipmap_level, external_format,
-                     type, mtex->make_ram_image());
-    Filename mipmap_filename = name + "_" + format_string(mipmap_level) + ".rgb";
-    nout << "Writing mipmap level " << mipmap_level
-         << " (" << x_size << " by " << y_size << ") "
-         << mipmap_filename << "\n";
-    mtex->write(mipmap_filename);
-
-    x_size >>= 1;
-    y_size >>= 1;
-    mipmap_level++;
-  } while (x_size > 0 || y_size > 0);
-}
-#endif  // NDEBUG

@@ -103,134 +103,10 @@ from_camera(int camera_index, int z) {
     return false;
   }
 
-  set_loaded_from_disk();
+  set_loaded_from_image();
   clear_current_frame();
 
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::read
-//       Access: Published, Virtual
-//  Description: Takes the video image from the indicated filename.
-//               If the filename is not a video file, attempts to read
-//               it as a still image instead.
-////////////////////////////////////////////////////////////////////
-bool OpenCVTexture::
-read(const Filename &fullpath, int z, int) {
-  if (!reconsider_z_size(z)) {
-    return false;
-  }
-  nassertr(z >= 0 && z < get_z_size(), false);
-
-  VideoPage &page = modify_page(z);
-  page._alpha.clear();
-  if (!page._color.read(fullpath)) {
-    grutil_cat.error()
-      << "OpenCV couldn't read " << fullpath << " as video.\n";
-    return false;
-  }
-
-  if (!has_name()) {
-    set_name(fullpath.get_basename_wo_extension());
-  }
-  if (!has_filename()) {
-    set_filename(fullpath);
-    clear_alpha_filename();
-  }
-
-  set_fullpath(fullpath);
-  clear_alpha_fullpath();
-
-  _primary_file_num_channels = 3;
-  _alpha_file_channel = 0;
-
-  if (!reconsider_video_properties(page._color, 3, z)) {
-    page._color.clear();
-    return false;
-  }
-
-  set_loaded_from_disk();
-  clear_current_frame();
-  
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::read
-//       Access: Published, Virtual
-//  Description: Combines a color and alpha video image from the two
-//               indicated filenames.  Both must be the same kind of
-//               video with similar properties.
-////////////////////////////////////////////////////////////////////
-bool OpenCVTexture::
-read(const Filename &fullpath, const Filename &alpha_fullpath,
-     int z, int, int alpha_file_channel) {
-  if (!reconsider_z_size(z)) {
-    return false;
-  }
-  nassertr(z >= 0 && z < get_z_size(), false);
-
-  VideoPage &page = modify_page(z);
-  if (!page._color.read(fullpath)) {
-    grutil_cat.error()
-      << "OpenCV couldn't read " << fullpath << " as video.\n";
-    return false;
-  }
-  if (!page._alpha.read(alpha_fullpath)) {
-    grutil_cat.error()
-      << "OpenCV couldn't read " << alpha_fullpath << " as video.\n";
-    page._color.clear();
-    return false;
-  }
-
-  if (!has_name()) {
-    set_name(fullpath.get_basename_wo_extension());
-  }
-  if (!has_filename()) {
-    set_filename(fullpath);
-    set_alpha_filename(alpha_fullpath);
-  }
-
-  set_fullpath(fullpath);
-  set_alpha_fullpath(alpha_fullpath);
-
-  _primary_file_num_channels = 3;
-  _alpha_file_channel = alpha_file_channel;
-
-  if (!reconsider_video_properties(page._color, 4, z)) {
-    page._color.clear();
-    page._alpha.clear();
-    return false;
-  }
-
-  if (!reconsider_video_properties(page._alpha, 4, z)) {
-    page._color.clear();
-    page._alpha.clear();
-    return false;
-  }
-
-  set_loaded_from_disk();
-  clear_current_frame();
-  
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::load
-//       Access: Published, Virtual
-//  Description: Resets the texture (or the particular level of the
-//               texture) to the indicated static image.
-////////////////////////////////////////////////////////////////////
-bool OpenCVTexture::
-load(const PNMImage &pnmimage, int z) {
-  if (z <= (int)_pages.size()) {
-    VideoPage &page = modify_page(z);
-    page._color.clear();
-    page._alpha.clear();
-  }
-
-  return Texture::load(pnmimage, z);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -295,7 +171,7 @@ reconsider_video_properties(const OpenCVTexture::VideoStream &stream,
     return false;
   }
 
-  if (_loaded_from_disk && 
+  if (_loaded_from_image && 
       (get_video_width() != width || get_video_height() != height ||
        get_num_frames() != num_frames || get_frame_rate() != frame_rate)) {
     grutil_cat.error()
@@ -334,6 +210,7 @@ make_texture() {
 ////////////////////////////////////////////////////////////////////
 void OpenCVTexture::
 update_frame(int frame) {
+  nassertv(has_ram_image());
   int max_z = max(_z_size, (int)_pages.size());
   for (int z = 0; z < max_z; ++z) {
     VideoPage &page = _pages[z];
@@ -346,7 +223,7 @@ update_frame(int frame) {
       const unsigned char *source = page._color.get_frame_data(frame);
       if (source != NULL) {
         nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
-        unsigned char *dest = _ram_image.p() + get_expected_ram_page_size() * z;
+        unsigned char *dest = _ram_images[0]._image.p() + get_expected_ram_page_size() * z;
 
         int dest_row_width = (_x_size * _num_components * _component_width);
         int source_row_width = get_video_width() * 3;
@@ -385,7 +262,7 @@ update_frame(int frame) {
       const unsigned char *source = page._alpha.get_frame_data(frame);
       if (source != NULL) {
         nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
-        unsigned char *dest = _ram_image.p() + get_expected_ram_page_size() * z;
+        unsigned char *dest = _ram_images[0]._image.p() + get_expected_ram_page_size() * z;
 
         int dest_row_width = (_x_size * _num_components * _component_width);
         int source_row_width = get_video_width() * 3;
@@ -407,6 +284,97 @@ update_frame(int frame) {
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenCVTexture::do_read_one
+//       Access: Protected, Virtual
+//  Description: Combines a color and alpha video image from the two
+//               indicated filenames.  Both must be the same kind of
+//               video with similar properties.
+////////////////////////////////////////////////////////////////////
+bool OpenCVTexture::
+do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
+	    int z, int n, int primary_file_num_channels, int alpha_file_channel) {
+  nassertr(n == 0, false);
+  nassertr(z >= 0 && z < get_z_size(), false);
+
+  VideoPage &page = modify_page(z);
+  if (!page._color.read(fullpath)) {
+    grutil_cat.error()
+      << "OpenCV couldn't read " << fullpath << " as video.\n";
+    return false;
+  }
+  if (!alpha_fullpath.empty()) {
+    if (!page._alpha.read(alpha_fullpath)) {
+      grutil_cat.error()
+	<< "OpenCV couldn't read " << alpha_fullpath << " as video.\n";
+      page._color.clear();
+      return false;
+    }
+  }
+
+  if (z == 0) {
+    if (!has_name()) {
+      set_name(fullpath.get_basename_wo_extension());
+    }
+    if (!has_filename()) {
+      set_filename(fullpath);
+      set_alpha_filename(alpha_fullpath);
+    }
+
+    set_fullpath(fullpath);
+    set_alpha_fullpath(alpha_fullpath);
+  }
+
+  _primary_file_num_channels = 3;
+  _alpha_file_channel = 0;
+
+  if (alpha_fullpath.empty()) {
+    // Only one RGB movie.
+    if (!reconsider_video_properties(page._color, 3, z)) {
+      page._color.clear();
+      return false;
+    }
+
+  } else {
+    // An RGB movie combined with an alpha movie.
+    _alpha_file_channel = alpha_file_channel;
+
+    if (!reconsider_video_properties(page._color, 4, z)) {
+      page._color.clear();
+      page._alpha.clear();
+      return false;
+    }
+    
+    if (!reconsider_video_properties(page._alpha, 4, z)) {
+      page._color.clear();
+      page._alpha.clear();
+      return false;
+    }
+  }
+
+  set_loaded_from_image();
+  clear_current_frame();
+  
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenCVTexture::do_load_one
+//       Access: Protected, Virtual
+//  Description: Resets the texture (or the particular level of the
+//               texture) to the indicated static image.
+////////////////////////////////////////////////////////////////////
+bool OpenCVTexture::
+do_load_one(const PNMImage &pnmimage, int z, int n) {
+  if (z <= (int)_pages.size()) {
+    VideoPage &page = modify_page(z);
+    page._color.clear();
+    page._alpha.clear();
+  }
+
+  return Texture::do_load_one(pnmimage, z, n);
 }
 
 ////////////////////////////////////////////////////////////////////

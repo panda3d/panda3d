@@ -42,13 +42,17 @@ PUBLISHED:
   INLINE static bool has_texture(const string &filename);
   INLINE static bool verify_texture(const string &filename);
   INLINE static Texture *load_texture(const string &filename, 
-                                      int primary_file_num_channels = 0);
+                                      int primary_file_num_channels = 0,
+				      bool read_mipmaps = false);
   INLINE static Texture *load_texture(const string &filename,
                                       const string &alpha_filename, 
                                       int primary_file_num_channels = 0,
-                                      int alpha_file_channel = 0);
-  INLINE static Texture *load_3d_texture(const string &filename_pattern);
-  INLINE static Texture *load_cube_map(const string &filename_pattern);
+                                      int alpha_file_channel = 0,
+				      bool read_mipmaps = false);
+  INLINE static Texture *load_3d_texture(const string &filename_pattern,
+					 bool read_mipmaps = false);
+  INLINE static Texture *load_cube_map(const string &filename_pattern,
+				       bool read_mipmaps = false);
 
   INLINE static Texture *get_normalization_cube_map(int size);
 
@@ -81,13 +85,18 @@ private:
   TexturePool();
 
   bool ns_has_texture(const Filename &orig_filename);
-  Texture *ns_load_texture(const Filename &orig_filename, int primary_file_num_channels);
+  Texture *ns_load_texture(const Filename &orig_filename, 
+			   int primary_file_num_channels,
+			   bool read_mipmaps);
   Texture *ns_load_texture(const Filename &orig_filename, 
                            const Filename &orig_alpha_filename, 
                            int primary_file_num_channels,
-                           int alpha_file_channel);
-  Texture *ns_load_3d_texture(const Filename &filename_pattern);
-  Texture *ns_load_cube_map(const Filename &filename_pattern);
+                           int alpha_file_channel,
+			   bool read_mipmaps);
+  Texture *ns_load_3d_texture(const Filename &filename_pattern,
+			      bool read_mipmaps);
+  Texture *ns_load_cube_map(const Filename &filename_pattern,
+			    bool read_mipmaps);
   Texture *ns_get_normalization_cube_map(int size);
 
   void ns_add_texture(Texture *texture);

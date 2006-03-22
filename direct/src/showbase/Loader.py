@@ -192,7 +192,8 @@ class Loader:
         return font
 
     # texture loading funcs
-    def loadTexture(self, texturePath, alphaPath = None):
+    def loadTexture(self, texturePath, alphaPath = None,
+                    readMipmaps = False):
         """
         texturePath is a string.
 
@@ -203,15 +204,15 @@ class Loader:
             assert Loader.notify.debug("Loading texture: %s" % (texturePath))
             if phaseChecker:
                 phaseChecker(texturePath)
-            texture = TexturePool.loadTexture(texturePath)
+            texture = TexturePool.loadTexture(texturePath, 0, readMipmaps)
         else:
             assert Loader.notify.debug("Loading texture: %s %s" % (texturePath, alphaPath))
             if phaseChecker:
                 phaseChecker(texturePath)
-            texture = TexturePool.loadTexture(texturePath, alphaPath)
+            texture = TexturePool.loadTexture(texturePath, alphaPath, 0, 0, readMipmaps)
         return texture
 
-    def load3DTexture(self, texturePattern):
+    def load3DTexture(self, texturePattern, readMipmaps = False):
         """
         texturePattern is a string that contains a sequence of one or
         more '#' characters, which will be filled in with the sequence
@@ -223,10 +224,10 @@ class Loader:
         assert Loader.notify.debug("Loading 3-D texture: %s" % (texturePattern))
         if phaseChecker:
             phaseChecker(texturePattern)
-        texture = TexturePool.load3dTexture(texturePattern)
+        texture = TexturePool.load3dTexture(texturePattern, readMipmaps)
         return texture
 
-    def loadCubeMap(self, texturePattern):
+    def loadCubeMap(self, texturePattern, readMipmaps = False):
         """
         texturePattern is a string that contains a sequence of one or
         more '#' characters, which will be filled in with the sequence
@@ -239,7 +240,7 @@ class Loader:
         assert Loader.notify.debug("Loading cube map: %s" % (texturePattern))
         if phaseChecker:
             phaseChecker(texturePattern)
-        texture = TexturePool.loadCubeMap(texturePattern)
+        texture = TexturePool.loadCubeMap(texturePattern, readMipmaps)
         return texture
 
     def unloadTexture(self, texture):

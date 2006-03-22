@@ -254,6 +254,10 @@ PUBLISHED:
   INLINE bool has_alpha_file_channel() const;
   INLINE int get_alpha_file_channel() const;
 
+  INLINE void set_read_mipmaps(bool read_mipmaps);
+  INLINE bool get_read_mipmaps() const;
+
+
   void clear_multitexture();
   bool multitexture_over(EggTexture *other);
   INLINE int get_multitexture_sort() const;
@@ -312,6 +316,7 @@ private:
   Filename _alpha_filename;
   Filename _alpha_fullpath;
   int _alpha_file_channel;
+  bool _read_mipmaps;
   int _multitexture_sort;
 
   class SourceAndOperand {

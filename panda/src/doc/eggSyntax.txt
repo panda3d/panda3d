@@ -139,6 +139,16 @@ appear before they are referenced.
     alpha channels along with image file formats like JPEG that don't
     traditionally support alpha channels.
 
+  <Scalar> alpha-file-channel { channel }
+
+    This defines the channel that should be extracted from the file
+    named by alpha-file to determine the alpha channel for the
+    resulting channel.  The default is 0, which means the grayscale
+    combination of r, g, b.  Otherwise, this should be the 1-based
+    channel number, for instance 1, 2, or 3 for r, g, or b,
+    respectively, or 4 for the alpha channel of a four-component
+    image.
+
   <Scalar> format { format-definition }
 
     This defines the load format of the image file.  The
@@ -222,6 +232,22 @@ appear before they are referenced.
     separate alpha-file designation is ignored; the alpha channel, if
     present, must be included in the same image with the color
     channel(s).
+
+  <Scalar> read-mipmaps { flag }
+
+    If this flag is nonzero, then pre-generated mipmap levels will be
+    loaded along with the texture.  In this case, the filename should
+    contain a sequence of one or more hash mark ("#") characters,
+    which will be filled in with the mipmap level number; the texture
+    filename thus determines a series of images, one for each mipmap
+    level.  The base texture image is mipmap level 0.
+
+    If this flag is specified in conjunction with a 3D or cube map
+    texture (as specified above), then the filename should contain two
+    hash mark sequences, separated by a character such as an
+    underscore, hyphen, or dot.  The first sequence will be filled in
+    with the mipmap level index, and the second sequence will be
+    filled in with the 3D sequence or cube map face.
 
   <Scalar> minfilter { filter-type }
   <Scalar> magfilter { filter-type }
@@ -326,6 +352,12 @@ appear before they are referenced.
       <Scalar> combine-alpha-operand1 { src-alpha }
       <Scalar> combine-alpha-source2 { constant }
       <Scalar> combine-alpha-operand2 { src-alpha }
+
+  <Scalar> saved-result { flag }
+ 
+    If flag is nonzero, then it indicates that this particular texture
+    stage will be supplied as the "last_saved_result" source for any
+    future texture stages.
 
   <Scalar> tex-gen { mode }
 

@@ -27,8 +27,6 @@ extern ConfigVariableBool CLP(support_clamp_to_border);
 extern ConfigVariableBool CLP(ignore_filters);
 extern ConfigVariableBool CLP(ignore_mipmaps);
 extern ConfigVariableBool CLP(force_mipmaps);
-extern ConfigVariableBool CLP(show_mipmaps);
-extern ConfigVariableBool CLP(save_mipmaps);
 extern ConfigVariableBool CLP(color_mask);
 extern ConfigVariableBool CLP(compile_and_execute);
 

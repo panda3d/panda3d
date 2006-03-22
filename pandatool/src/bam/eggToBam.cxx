@@ -118,7 +118,7 @@ EggToBam() :
      "stored uncompressed.  A particular texture that is encoded into "
      "multiple different bam files in this way cannot be unified into "
      "the same part of texture memory if the different bam files are loaded "
-     "together.  All that being said, this can sometimes be a convenient "
+     "together.  That being said, this can sometimes be a convenient "
      "way to ensure the bam file is completely self-contained.",
      &EggToBam::dispatch_none, &_tex_rawdata);
 
@@ -161,6 +161,16 @@ EggToBam() :
      "Note that using -ctex makes .txo files that are only guaranteed to load "
      "on the particular graphics card that was used to generate them.",
      &EggToBam::dispatch_none, &_tex_ctex);
+
+  add_option
+    ("mipmap", "", 0,
+     "Records the pre-generated mipmap levels in the texture object file "
+     "when using -rawtex or -txo, for textures that use mipmapping.  This "
+     "will increase the size of the texture object file by about 33%, but "
+     "it prevents the need to compute the mipmaps at runtime.  The default "
+     "is to record mipmap levels only when the texture was specifically "
+     "loaded with them.",
+     &EggToBam::dispatch_none, &_tex_mipmap);
 
   add_option
     ("load-display", "display name", 0,
@@ -241,10 +251,20 @@ run() {
       if (_tex_ctex) {
         tex->set_keep_ram_image(true);
         tex->set_compression(Texture::CM_on);
+	bool has_mipmap_levels = (tex->get_num_ram_mipmap_images() > 1);
         if (!_engine->extract_texture_data(tex, _gsg)) {
           nout << "  couldn't compress " << tex->get_name() << "\n";
         }
+	if (!has_mipmap_levels && !_tex_mipmap) {
+	  // Make sure we didn't accidentally introduce mipmap levels
+	  // by rendezvousing through the graphics card.
+	  tex->clear_ram_mipmap_images();
+	}
+      } else if (_tex_mipmap && tex->uses_mipmaps()) {
+	// Generate mipmap levels.
+	tex->generate_ram_mipmap_images();
       }
+
       if (_tex_txo || _tex_txopz) {
         convert_txo(tex);
       }

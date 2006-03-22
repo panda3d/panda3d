@@ -47,18 +47,16 @@ PUBLISHED:
 
   bool from_camera(int camera_index = -1, int z = 0);
 
-  virtual bool read(const Filename &fullpath, int z = 0,
-                    int primary_file_num_channels = 0);
-  virtual bool read(const Filename &fullpath, const Filename &alpha_fullpath, 
-                    int z = 0,
-                    int primary_file_num_channels = 0, int alpha_file_channel = 0);
-  virtual bool load(const PNMImage &pnmimage, int z = 0);
-
 public:
   static PT(Texture) make_texture();
 
 protected:
   virtual void update_frame(int frame);
+
+  virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
+			   int z, int n, int primary_file_num_channels, int alpha_file_channel);
+
+  virtual bool do_load_one(const PNMImage &pnmimage, int z, int n);
 
 private:    
   class VideoPage;

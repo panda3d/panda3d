@@ -127,6 +127,240 @@ setup_cube_map(int size, ComponentType component_type,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::read
+//       Access: Published
+//  Description: Reads the named filename into the texture.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+read(const Filename &fullpath) {
+  return do_read(fullpath, Filename(), 0, 0, 0, 0, false, false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read
+//       Access: Published
+//  Description: Combine a 3-component image with a grayscale image
+//               to get a 4-component image.
+//
+//               See the description of the full-parameter read()
+//               method for the meaning of the
+//               primary_file_num_channels and alpha_file_channel
+//               parameters.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+read(const Filename &fullpath, const Filename &alpha_fullpath,
+     int primary_file_num_channels, int alpha_file_channel) {
+  return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
+		 alpha_file_channel, 0, 0, false, false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read
+//       Access: Published
+//  Description: Reads a single file into a single page or mipmap
+//               level, or automatically reads a series of files into
+//               a series of pages and/or mipmap levels.
+//
+//               See the description of the full-parameter read()
+//               method for the meaning of the various parameters.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+read(const Filename &fullpath, int z, int n, 
+     bool read_pages, bool read_mipmaps) {
+  return do_read(fullpath, Filename(), 0, 0, z, n, read_pages, read_mipmaps);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read
+//       Access: Published
+//  Description: Reads the texture from the indicated filename.  If
+//               primary_file_num_channels is not 0, it specifies the
+//               number of components to downgrade the image to if it
+//               is greater than this number.
+//
+//               If the filename has the extension .txo, this
+//               implicitly reads a texture object instead of a
+//               filename (which replaces all of the texture
+//               properties).  In this case, all the rest of the
+//               parameters are ignored, and the filename should not
+//               contain any hash marks; just the one named file will
+//               be read, since a single .txo file can contain all
+//               pages and mipmaps necessary to define a texture.
+//
+//               If alpha_fullpath is not empty, it specifies the name
+//               of a file from which to retrieve the alpha.  In this
+//               case, alpha_file_channel represents the numeric
+//               channel of this image file to use as the resulting
+//               texture's alpha channel; usually, this is 0 to
+//               indicate the grayscale combination of r, g, b; or it
+//               may be a one-based channel number, e.g. 1 for the red
+//               channel, 2 for the green channel, and so on.
+//
+//               If read pages is false, then z indicates the page
+//               number into which this image will be assigned.
+//               Normally this is 0 for the first (or only) page of
+//               the texture.  3-D textures have one page for each
+//               level of depth, and cube map textures always have six
+//               pages.
+//
+//               If read_pages is true, multiple images will be read
+//               at once, one for each page of a cube map or a 3-D
+//               texture.  In this case, the filename should contain a
+//               sequence of one or more hash marks ("#") which will
+//               be filled in with the z value of each page,
+//               zero-based.  In this case, the z parameter indicates
+//               the maximum z value that will be loaded, or 0 to load
+//               all filenames that exist.
+//
+//               If read_mipmaps is false, then n indicates the mipmap
+//               level to which this image will be assigned.  Normally
+//               this is 0 for the base texture image, but it is
+//               possible to load custom mipmap levels into the later
+//               images.  After the base texture image is loaded (thus
+//               defining the size of the texture), you can call
+//               get_expected_num_mipmap_levels() to determine the
+//               maximum sensible value for n.
+//
+//               If read_mipmaps is true, multiple images will be read
+//               as above, but this time the images represent the
+//               different mipmap levels of the texture image.  In
+//               this case, the n parameter indicates the maximum n
+//               value that will be loaded, or 0 to load all filenames
+//               that exist (up to the expected number of mipmap
+//               levels).
+//
+//               If both read_pages and read_mipmaps is true, then
+//               both sequences will be read; the filename should
+//               contain two sequences of hash marks, separated by
+//               some character such as a hyphen, underscore, or dot.
+//               The first hash mark sequence will be filled in with
+//               the mipmap level, while the second hash mark sequence
+//               will be the page index.
+//
+//               This method implicitly sets keep_ram_image to false.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+read(const Filename &fullpath, const Filename &alpha_fullpath,
+     int primary_file_num_channels, int alpha_file_channel,
+     int z, int n, bool read_pages, bool read_mipmaps) {
+  return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
+		 alpha_file_channel, z, n, read_pages, read_mipmaps);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::write
+//       Access: Published
+//  Description: Writes the texture to the named filename.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+write(const Filename &fullpath) {
+  return do_write(fullpath, 0, 0, false, false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::write
+//       Access: Published
+//  Description: Writes a single page or mipmap level to a single
+//               file, or automatically writes a series of pages
+//               and/or mipmap levels to a numbered series of files.
+//
+//               If the filename ends in the extension .txo, this
+//               implicitly writes a Panda texture object (.txo)
+//               instead of an image file.  In this case, the
+//               remaining parameters are ignored, and only one file
+//               is written, which will contain all of the pages and
+//               resident mipmap levels in the texture.
+//
+//               If write_pages is false, then z indicates the page
+//               number to write.  3-D textures have one page number
+//               for each level of depth; cube maps have six pages
+//               number 0 through 5.  Other kinds of textures have
+//               only one page, numbered 0.
+//
+//               If write_pages is true, then all pages of the texture
+//               will be written.  In this case z is ignored, and the
+//               filename should contain a sequence of hash marks
+//               ("#") which will be filled in with the page index
+//               number.
+//
+//               If write_mipmaps is false, then n indicates the
+//               mipmap level number to write.  Normally, this is 0,
+//               for the base texture image.  Normally, the mipmap
+//               levels of a texture are not available in RAM (they
+//               are generated automatically by the graphics card).
+//               However, if you have the mipmap levels available, for
+//               instance because you called
+//               generate_ram_mipmap_images() to generate them
+//               internally, or you called
+//               GraphicsEngine::extract_texture_data() to retrieve
+//               them from the graphics card, then you may write out
+//               each mipmap level with this parameter.
+//
+//               If write_mipmaps is true, then all mipmap levels of
+//               the texture will be written.  In this case n is
+//               ignored, and the filename should contain a sequence
+//               of hash marks ("#") which will be filled in with the
+//               mipmap level number.
+//
+//               If both write_pages and write_mipmaps is true, then
+//               all pages and all mipmap levels will be written.  In
+//               this case, the filename should contain two different
+//               sequences of hash marks, separated by a character
+//               such as a hyphen, underscore, or dot.  The first hash
+//               mark sequence will be filled in with the mipmap
+//               level, while the second hash mark sequence will be
+//               the page index.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+write(const Filename &fullpath, int z, int n, 
+      bool write_pages, bool write_mipmaps) {
+  return do_write(fullpath, z, n, write_pages, write_mipmaps);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::load
+//       Access: Published
+//  Description: Replaces the texture with the indicated image.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+load(const PNMImage &pnmimage) {
+  return do_load_one(pnmimage, 0, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::load
+//       Access: Published
+//  Description: Stores the indicated image in the given page and
+//               mipmap level.  See read().
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+load(const PNMImage &pnmimage, int z, int n) {
+  return do_load_one(pnmimage, z, n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::store
+//       Access: Published
+//  Description: Saves the texture to the indicated PNMImage, but does
+//               not write it to disk.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+store(PNMImage &pnmimage) const {
+  return do_store_one(pnmimage, 0, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::store
+//       Access: Published
+//  Description: Saves the indicated page and mipmap level of the
+//               texture to the PNMImage.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+store(PNMImage &pnmimage, int z, int n) const {
+  return do_store_one(pnmimage, z, n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::has_filename
 //       Access: Published
 //  Description: Returns true if the filename has been set and
@@ -462,7 +696,10 @@ might_have_ram_image() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_ram_image_size() const {
-  return _ram_image.size();
+  if (_ram_images.empty()) {
+    return 0;
+  }
+  return _ram_images[0]._image.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -479,7 +716,11 @@ get_ram_image_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_ram_page_size() const {
-  return _ram_image_compression != CM_off ? _ram_page_size : get_expected_ram_page_size();
+  if (_ram_image_compression == CM_off || _ram_images.empty()) {
+    return get_expected_ram_page_size();
+  } else {
+    return _ram_images[0]._page_size;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -540,6 +781,99 @@ get_ram_image_compression() const {
 INLINE void Texture::
 set_keep_ram_image(bool keep_ram_image) {
   _keep_ram_image = keep_ram_image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_num_ram_mipmap_images
+//       Access: Published
+//  Description: Returns the maximum number of mipmap level images
+//               available in system memory.  The actual number may be
+//               less than this; use has_ram_mipmap_image() to verify
+//               each level.
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_num_ram_mipmap_images() const {
+  return _ram_images.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_ram_mipmap_image
+//       Access: Published
+//  Description: Returns true if the Texture has the nth mipmap level
+//               available in system memory, false otherwise.  If the
+//               texture's minfilter mode requires mipmapping (see
+//               uses_mipmaps()), and all the texture's mipmap levels
+//               are not available when the texture is rendered, they
+//               will be generated automatically.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+has_ram_mipmap_image(int n) const {
+  return (n >= 0 && n < (int)_ram_images.size() && !_ram_images[n]._image.empty());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_ram_mipmap_image_size
+//       Access: Published
+//  Description: Returns the number of bytes used by the in-memory
+//               image for mipmap level n, or 0 if there is no
+//               in-memory image for this mipmap level.
+////////////////////////////////////////////////////////////////////
+INLINE size_t Texture::
+get_ram_mipmap_image_size(int n) const {
+  if (n >= 0 && n < (int)_ram_images.size()) {
+    return _ram_images[n]._image.size();
+  }
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_ram_mipmap_page_size
+//       Access: Published
+//  Description: Returns the number of bytes used by the in-memory
+//               image per page for mipmap level n, or 0 if there is
+//               no in-memory image for this mipmap level.
+//
+//               For a non-compressed texture, this is the same as
+//               get_expected_ram_mipmap_page_size().  For a compressed
+//               texture, this may be a smaller value.  (We do assume
+//               that all pages will be the same size on a compressed
+//               texture).
+////////////////////////////////////////////////////////////////////
+INLINE size_t Texture::
+get_ram_mipmap_page_size(int n) const {
+  if (_ram_image_compression != CM_off) {
+    if (n >= 0 && n < (int)_ram_images.size()) {
+      return _ram_images[n]._page_size;
+    }
+    return 0;
+  } else {
+    return get_expected_ram_mipmap_page_size(n);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_expected_ram_mipmap_image_size
+//       Access: Published
+//  Description: Returns the number of bytes that *ought* to be used
+//               by the in-memory image for mipmap level n, based on
+//               the texture parameters.
+////////////////////////////////////////////////////////////////////
+INLINE size_t Texture::
+get_expected_ram_mipmap_image_size(int n) const {
+  return get_expected_ram_mipmap_page_size(n) * (size_t)get_expected_mipmap_z_size(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_expected_ram_mipmap_page_size
+//       Access: Published
+//  Description: Returns the number of bytes that should be used per
+//               each Z page of the 3-d texture, for mipmap level n.
+//               For a 2-d or 1-d texture, this is the same as
+//               get_expected_ram_mipmap_image_size(n).
+////////////////////////////////////////////////////////////////////
+INLINE size_t Texture::
+get_expected_ram_mipmap_page_size(int n) const {
+  return (size_t)(get_expected_mipmap_x_size(n) * get_expected_mipmap_y_size(n) * _num_components * _component_width);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -714,28 +1048,29 @@ set_z_size(int z_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_loaded_from_disk
+//     Function: Texture::set_loaded_from_image
 //       Access: Published
 //  Description: Sets the flag that indicates the texture has been
-//               loaded from a disk file.  You should also ensure the
-//               filename has been set correctly.  When this flag is
-//               true, the texture may be automatically reloaded when
-//               its ram image needs to be replaced.
+//               loaded from a disk file or PNMImage.  You should also
+//               ensure the filename has been set correctly.  When
+//               this flag is true, the texture may be automatically
+//               reloaded when its ram image needs to be replaced.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
-set_loaded_from_disk() {
-  _loaded_from_disk = true;
+set_loaded_from_image() {
+  _loaded_from_image = true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::get_loaded_from_disk
+//     Function: Texture::get_loaded_from_image
 //       Access: Published
 //  Description: Returns the flag that indicates the texture has been
-//               loaded from a disk file.  See set_loaded_from_disk().
+//               loaded from a disk file or PNMImage.  See
+//               set_loaded_from_image().
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
-get_loaded_from_disk() const {
-  return _loaded_from_disk;
+get_loaded_from_image() const {
+  return _loaded_from_image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -800,7 +1135,7 @@ set_match_framebuffer_format(bool flag) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::store_unscaled_byte
-//       Access: Private
+//       Access: Private, Static
 //  Description: This is used by load() to store the next consecutive
 //               component value into the indicated element of the
 //               array, which is taken to be an array of unsigned
@@ -808,13 +1143,13 @@ set_match_framebuffer_format(bool flag) {
 //               0-255.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
-store_unscaled_byte(int &index, int value) {
-  _ram_image[index++] = (uchar)value;
+store_unscaled_byte(unsigned char *&p, int value) {
+  (*p++) = (uchar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::store_unscaled_short
-//       Access: Private
+//       Access: Private, Static
 //  Description: This is used by load() to store the next consecutive
 //               component value into the indicated element of the
 //               array, which is taken to be an array of unsigned
@@ -822,19 +1157,19 @@ store_unscaled_byte(int &index, int value) {
 //               0-65535.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
-store_unscaled_short(int &index, int value) {
+store_unscaled_short(unsigned char *&p, int value) {
   union {
     ushort us;
     uchar uc[2];
   } v;
   v.us = (ushort)value;
-  _ram_image[index++] = v.uc[0];
-  _ram_image[index++] = v.uc[1];
+  (*p++) = v.uc[0];
+  (*p++) = v.uc[1];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::store_scaled_byte
-//       Access: Private
+//       Access: Private, Static
 //  Description: This is used by load() to store the next consecutive
 //               component value into the indicated element of the
 //               array, which is taken to be an array of unsigned
@@ -842,13 +1177,13 @@ store_unscaled_short(int &index, int value) {
 //               factor before storing it.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
-store_scaled_byte(int &index, int value, double scale) {
-  store_unscaled_byte(index, (int)(value * scale));
+store_scaled_byte(unsigned char *&p, int value, double scale) {
+  store_unscaled_byte(p, (int)(value * scale));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::store_scaled_short
-//       Access: Private
+//       Access: Private, Static
 //  Description: This is used by load() to store the next consecutive
 //               component value into the indicated element of the
 //               array, which is taken to be an array of unsigned
@@ -856,41 +1191,39 @@ store_scaled_byte(int &index, int value, double scale) {
 //               factor before storing it.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
-store_scaled_short(int &index, int value, double scale) {
-  store_unscaled_short(index, (int)(value * scale));
+store_scaled_short(unsigned char *&p, int value, double scale) {
+  store_unscaled_short(p, (int)(value * scale));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_unsigned_byte
-//       Access: Private
-//  Description: This is used by store() to retieve the next
+//       Access: Private, Static
+//  Description: This is used by store() to retrieve the next
 //               consecutive component value from the indicated
 //               element of the array, which is taken to be an array
 //               of unsigned bytes.
 ////////////////////////////////////////////////////////////////////
 INLINE double Texture::
-get_unsigned_byte(int &index) const {
-  nassertr(index >= 0 && index < (int)_ram_image.size(), 0.0);
-  return (double)_ram_image[index++] / 255.0;
+get_unsigned_byte(const unsigned char *&p) {
+  return (double)(*p++) / 255.0;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_unsigned_short
-//       Access: Private
-//  Description: This is used by store() to retieve the next
+//       Access: Private, Static
+//  Description: This is used by store() to retrieve the next
 //               consecutive component value from the indicated
 //               element of the array, which is taken to be an array
 //               of unsigned shorts.
 ////////////////////////////////////////////////////////////////////
 INLINE double Texture::
-get_unsigned_short(int &index) const {
-  nassertr(index >= 0 && index+1 < (int)_ram_image.size(), 0.0);
+get_unsigned_short(const unsigned char *&p) {
   union {
     ushort us;
     uchar uc[2];
   } v;
-  v.uc[0] = _ram_image[index++];
-  v.uc[1] = _ram_image[index++];
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
   return (double)v.us / 65535.0;
 }
 

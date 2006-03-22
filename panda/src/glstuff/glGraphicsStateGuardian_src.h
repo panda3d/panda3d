@@ -65,11 +65,12 @@ typedef void (APIENTRYP PFNGLBUFFERSUBDATAPROC) (GLenum target, GLintptr offset,
 typedef void (APIENTRYP PFNGLDRAWBUFFERSARBPROC) (GLsizei n, const GLenum *bufs);
 typedef void (APIENTRYP PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage);
 typedef void (APIENTRYP PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
+typedef void (APIENTRYP PFNGLCOMPRESSEDTEXIMAGE3DPROC) (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid *data);
 typedef void (APIENTRYP PFNGLCOMPRESSEDTEXIMAGE2DPROC) (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid *data);
+typedef void (APIENTRYP PFNGLCOMPRESSEDTEXIMAGE1DPROC) (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLint border, GLsizei imageSize, const GLvoid *data);
 typedef void (APIENTRYP PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid *data);
-typedef void (APIENTRYP PFNGLGETCOMPRESSEDTEXIMAGEPROC) (GLenum target, GLint level, GLvoid *img);
 typedef void (APIENTRYP PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid *data);
-class CLP(GeomContext);
+typedef void (APIENTRYP PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC) (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const GLvoid *data);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLGraphicsStateGuardian
@@ -274,20 +275,17 @@ protected:
                             GLenum target, GLint internal_format, 
                             int width, int height, int depth,
                             GLint external_format, GLenum component_type, 
-                            const unsigned char *image,
-			    size_t image_size,
+                            bool one_page_only, int z,
 			    Texture::CompressionMode image_compression);
 
   size_t get_texture_memory_size(Texture *tex);
   void check_nonresident_texture(BufferContextChain &chain);
+  bool extract_texture_image(PTA_uchar &image, size_t &page_size,
+			     Texture *tex, GLenum target, GLenum page_target,
+			     Texture::ComponentType type, 
+			     Texture::CompressionMode compression, int n);
 
   void do_point_size();
-
-#ifndef NDEBUG
-  void build_phony_mipmaps(Texture *tex);
-  void build_phony_mipmap_level(int level, int x_size, int y_size);
-  void save_mipmap_images(Texture *tex);
-#endif
 
   enum AutoAntialiasMode {
     AA_poly,
@@ -374,8 +372,12 @@ public:
   PFNGLTEXIMAGE3DPROC _glTexImage3D;
   PFNGLTEXSUBIMAGE3DPROC _glTexSubImage3D;
 
+  PFNGLCOMPRESSEDTEXIMAGE1DPROC _glCompressedTexImage1D;
   PFNGLCOMPRESSEDTEXIMAGE2DPROC _glCompressedTexImage2D;
+  PFNGLCOMPRESSEDTEXIMAGE3DPROC _glCompressedTexImage3D;
+  PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC _glCompressedTexSubImage1D;
   PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC _glCompressedTexSubImage2D;
+  PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC _glCompressedTexSubImage3D;
   PFNGLGETCOMPRESSEDTEXIMAGEPROC _glGetCompressedTexImage;
 
   bool _supports_bgr;

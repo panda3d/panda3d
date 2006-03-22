@@ -69,6 +69,7 @@ private:
   bool _tex_txo;
   bool _tex_txopz;
   bool _tex_ctex;
+  bool _tex_mipmap;
   string _load_display;
 
   // The rest of this is required to support -ctex.

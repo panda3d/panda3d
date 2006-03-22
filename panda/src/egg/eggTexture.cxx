@@ -53,6 +53,7 @@ EggTexture(const string &tref_name, const string &filename)
   _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _flags = 0;
   _alpha_file_channel = 0;
+  _read_mipmaps = false;
   _multitexture_sort = 0;
 }
 
@@ -103,6 +104,7 @@ operator = (const EggTexture &copy) {
   _alpha_filename = copy._alpha_filename;
   _alpha_fullpath = copy._alpha_fullpath;
   _alpha_file_channel = copy._alpha_file_channel;
+  _read_mipmaps = copy._read_mipmaps;
   _multitexture_sort = 0;
   _combiner[0] = copy._combiner[0];
   _combiner[1] = copy._combiner[1];
@@ -142,6 +144,11 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level + 2)
       << "<Scalar> alpha-file-channel { " 
       << get_alpha_file_channel() << " }\n";
+  }
+
+  if (get_read_mipmaps()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> read-mipmaps { 1 }\n";
   }
 
   if (get_texture_type() != TT_unspecified) {
