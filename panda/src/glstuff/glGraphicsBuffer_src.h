@@ -18,7 +18,6 @@
 
 #include "pandabase.h"
 #include "graphicsBuffer.h"
-#include "glgsg.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : glGraphicsBuffer
