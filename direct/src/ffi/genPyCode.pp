@@ -42,7 +42,7 @@ $[python] -u $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 
-#if $[CTPROJS]
+#if $[and $[CTPROJS],$[not $[OSX_PLATFORM]]]
 # This script was generated while the user was using the ctattach
 # tools.  That had better still be the case.
 #if $[WINDOWS_PLATFORM]
@@ -66,7 +66,7 @@ import os
 import sys
 import glob
 
-#if $[CTPROJS]
+#if $[and $[CTPROJS],$[not $[OSX_PLATFORM]]]
 # This script was generated while the user was using the ctattach
 # tools.  That had better still be the case.
 
@@ -128,7 +128,7 @@ DoGenPyCode.interrogateLib = r'libdtoolconfig'
 DoGenPyCode.codeLibs = r'$[GENPYCODE_LIBS]'.split()
 DoGenPyCode.native = $[if $[PYTHON_NATIVE],1,0]
 
-#if $[not $[CTPROJS]]
+#if $[not $[and $[CTPROJS],$[not $[OSX_PLATFORM]]]]
 // Since the user is not using ctattach, bake these variables in too.
 DoGenPyCode.directDir = r'$[osfilename $[TOPDIR]]'
 DoGenPyCode.outputCodeDir = r'$[osfilename $[install_lib_dir]/pandac]'
