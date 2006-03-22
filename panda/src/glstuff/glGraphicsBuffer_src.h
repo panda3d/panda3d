@@ -24,38 +24,38 @@
 //       Class : glGraphicsBuffer
 // Description : An offscreen render buffer.
 //
-//               The glGraphicsBuffer can export its color buffer as a
-//               texture.  It can also export its depth buffer as a depth
-//               texture and its stencil buffer as a stencil texture.
-//               Finally, it can have auxiliary buffers (additional 
-//               bitplanes above and beyond the usual set), which can
-//               also be exported as textures.  This is the key advantage
-//               of the glGraphicsBuffer: it can render to many textures
-//               at the same time.
+//               The glGraphicsBuffer is based on the OpenGL
+//               EXT_framebuffer_object and ARB_draw_buffers extensions.
+//               This design has three significant advantages over the
+//               wglGraphicsBuffer and glxGraphicsBuffer.
 //
-//               The glGraphicsBuffer shares a gsg with a host window.
-//               If the host window is destroyed, the glGraphicsBuffer is
-//               lost as well.  If desired, the glGraphicsBuffer can
-//               track the size of the host window.
+//               As you might expect, this type of buffer can export
+//               its color buffer as a texture.  But it can also export
+//               its depth buffer, its stencil buffer, and any number
+//               of auxiliary buffers.  This is the biggest advantage:
+//               it can render to many textures at the same time.
 //
-//               The glGraphicsBuffer is implemented using the following
-//               OpenGL extensions:
-//               
-//               EXT_framebuffer_object
-//               ARB_draw_buffers
+//               There is also a speed advantage.  When using a
+//               glGraphicsBuffer, it is not necessary to call the
+//               extremely expensive wglMakeCurrent on buffer switches.
 //
-//               If any of these extensions is missing, then
-//               glGraphicsBuffer is not available (although it may
-//               still be possible to create a wglGraphicsBuffer or
-//               glxGraphicsBuffer).
+//               The glGraphicsBuffer can also track the size of a host
+//               window, and automatically resize itself to match.
+//
+//               If either of the necessary OpenGL extensions is not
+//               available, then the glGraphicsBuffer will not be
+//               available (although it may still be possible to
+//               create a wglGraphicsBuffer or glxGraphicsBuffer).
 //
 ////////////////////////////////////////////////////////////////////
 
 class EXPCL_GL CLP(GraphicsBuffer) : public GraphicsBuffer {
 public:
-  CLP(GraphicsBuffer)(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+  CLP(GraphicsBuffer)(GraphicsPipe *pipe,
                       const string &name,
-                      int x_size, int y_size);
+                      int x_size, int y_size, int flags,
+                      GraphicsStateGuardian *gsg,
+                      GraphicsOutput *host);
   virtual ~CLP(GraphicsBuffer)();
 
   virtual bool begin_frame(FrameMode mode);
@@ -68,20 +68,25 @@ protected:
   virtual bool open_buffer();
 
 private:
-  PT(GraphicsOutput) _host;
-  bool _track_host_size;
   
-  int _fbo;
-  int _fbo_size_x;
-  int _fbo_size_y;
-  int _attached_cube_face;
-  Texture *_attached_color;
-  Texture *_attached_depth;
-  Texture *_attached_stencil;
-  int _attached_color_rb;
-  int _attached_depth_rb;
-  int _attached_stencil_rb;
+  void generate_mipmaps();
+  void rebuild_bitplanes();
   
+  enum {
+    SLOT_color,
+    SLOT_depth,
+    SLOT_stencil,
+    SLOT_COUNT
+  };
+
+  GLuint      _fbo;
+  int         _rb_size_x;
+  int         _rb_size_y;
+  GLuint      _rb[SLOT_COUNT];
+  PT(Texture) _tex[SLOT_COUNT];
+  GLenum      _attach_point[SLOT_COUNT];
+  GLenum      _slot_format[SLOT_COUNT];
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
