@@ -41,7 +41,7 @@ CLP(GraphicsBuffer)(GraphicsPipe *pipe,
   _rb_size_y = 0;
   for (int i=0; i<SLOT_COUNT; i++) {
     _rb[i] = 0;
-    _attached[i] = 0;
+    _tex[i] = 0;
   }
   _attach_point[SLOT_depth]   = GL_DEPTH_ATTACHMENT_EXT;
   _attach_point[SLOT_stencil] = GL_STENCIL_ATTACHMENT_EXT;
@@ -70,9 +70,8 @@ CLP(GraphicsBuffer)::
 //               if the frame should be rendered, or false if it
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
-bool glGraphicsBuffer::
+bool CLP(GraphicsBuffer)::
 begin_frame(FrameMode mode) {
-  PStatTimer timer(_make_current_pcollector);
   if (!_is_valid) {
     return false;
   }
@@ -86,6 +85,7 @@ begin_frame(FrameMode mode) {
     rebuild_bitplanes();
     clear_cube_map_selection();
   }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,26 +95,26 @@ begin_frame(FrameMode mode) {
 //               to allocate/reallocate the fbo and all the associated
 //               renderbuffers, just before rendering a frame.
 ////////////////////////////////////////////////////////////////////
-void glGraphicsBuffer::
+void CLP(GraphicsBuffer)::
 rebuild_bitplanes() {
 
-  glGraphicsStateGuardian *glgsg;
-  DCAST_INTO_R(glgsg, _gsg, false);
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_V(glgsg, _gsg);
 
   // Bind the FBO
 
   if (_fbo == 0) {
-    glgsg->_glGenFramebuffersEXT(1, &_fbo);
+    glgsg->_glGenFramebuffers(1, &_fbo);
     if (_fbo == 0) {
       glgsg->report_my_gl_errors();
       return;
     }
   }
-  glgsg->_glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _fbo);
+  glgsg->_glBindFramebuffer(GL_FRAMEBUFFER_EXT, _fbo);
 
   // Calculate bitplane size.  This can be larger than the buffer.
 
-  if (_creation_flags & GraphicsPipe::BF_track_host_size) {
+  if (_creation_flags & GraphicsPipe::BF_size_track_host) {
     if ((_host->get_x_size() != _x_size)||
         (_host->get_y_size() != _y_size)) {
       set_size_and_recalc(_host->get_x_size(),
@@ -144,7 +144,7 @@ rebuild_bitplanes() {
     // If it's a not a 2D texture or a cube map, punt it.
     if ((tex->get_texture_type() != Texture::TT_2d_texture)&&
         (tex->get_texture_type() != Texture::TT_cube_map)) {
-      _rtm_mode[i] = RTM_copy_texture;
+      _textures[i]._rtm_mode = RTM_copy_texture;
       continue;
     }
     
@@ -158,14 +158,14 @@ rebuild_bitplanes() {
     } else if (fmt == Texture::F_rgba) {
       slot = SLOT_color;
     } else {
-      _rtm_mode[i] = RTM_copy_texture;
+      _textures[i]._rtm_mode = RTM_copy_texture;
       continue;
     }
     
     // If there's already a texture bound to this slot,
     // then punt this texture.  
     if (attach[slot]) {
-      _rtm_mode[i] = RTM_copy_texture;
+      _textures[i]._rtm_mode = RTM_copy_texture;
       continue;
     }
     
@@ -190,7 +190,7 @@ rebuild_bitplanes() {
       // Bind the texture to the slot.
       tex->set_x_size(desired_x);
       tex->set_y_size(desired_y);
-      TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+      TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
       
@@ -226,8 +226,8 @@ rebuild_bitplanes() {
       
       // Resize the renderbuffer appropriately.
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rb[slot]);
-      glgsg->_glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, _slot_format[slot],
-                                       desired_x, desired_y);
+      glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, _slot_format[slot],
+                                    desired_x, desired_y);
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
       
       // Bind the renderbuffer to the slot.
@@ -253,19 +253,19 @@ rebuild_bitplanes() {
 //               texture, then all subsequent mipmap levels will now
 //               be calculated.
 ////////////////////////////////////////////////////////////////////
-void glGraphicsBuffer::
+void CLP(GraphicsBuffer)::
 generate_mipmaps() {
-  glGraphicsStateGuardian *glgsg;
-  DCAST_INTO_R(glgsg, _gsg, false);
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_V(glgsg, _gsg);
 
   for (int slot=0; slot<SLOT_COUNT; slot++) {
     Texture *tex = _tex[slot];
     if ((tex != 0) && (tex->uses_mipmaps())) {
       glgsg->_state._texture = 0;
-      TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
-      nassert(tc != (TextureContext *)NULL);
+      TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
+      nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-      GLenum target = get_texture_target(tex->get_texture_type());
+      GLenum target = glgsg->get_texture_target(tex->get_texture_type());
       GLP(BindTexture)(target, gtc->_index);
       glgsg->_glGenerateMipmap(target);
       GLP(BindTexture)(target, 0);
@@ -280,7 +280,7 @@ generate_mipmaps() {
 //               after rendering is completed for a given frame.  It
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
-void glGraphicsBuffer::
+void CLP(GraphicsBuffer)::
 end_frame(FrameMode mode) {
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
@@ -290,6 +290,8 @@ end_frame(FrameMode mode) {
   }
 
   // Unbind the FBO
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_V(glgsg, _gsg);
   glgsg->_glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
   
   if (mode == FM_render) {
@@ -328,11 +330,11 @@ select_cube_map(int cube_map_index) {
 //               thread.  Returns true if the window is successfully
 //               opened, or false if there was a problem.
 ////////////////////////////////////////////////////////////////////
-bool glGraphicsBuffer::
+bool CLP(GraphicsBuffer)::
 open_buffer() {
 
   // Check for support of relevant extensions.
-  glGraphicsStateGuardian *glgsg;
+  CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_R(glgsg, _gsg, false);
   if ((!glgsg->_supports_framebuffer_object)||
       (glgsg->_glDrawBuffers == 0)) {
@@ -349,17 +351,17 @@ open_buffer() {
 //  Description: Closes the buffer right now.  Called from the window
 //               thread.
 ////////////////////////////////////////////////////////////////////
-void glGraphicsBuffer::
+void CLP(GraphicsBuffer)::
 close_buffer() {
 
   // Get the glgsg.
-  glGraphicsStateGuardian *glgsg;
-  DCAST_INTO_R(glgsg, _gsg, false);
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_V(glgsg, _gsg);
   
   // Delete the renderbuffers.
   for (int i=0; i<SLOT_COUNT; i++) {
     if (_rb[i] != 0) {
-      glgsg->_glDeleteRenderbuffersEXT(1, &(_rb[i]));
+      glgsg->_glDeleteRenderbuffers(1, &(_rb[i]));
       _rb[i] = 0;
     }
     _tex[i] = 0;
@@ -368,21 +370,7 @@ close_buffer() {
   _rb_size_y = 0;
   
   // Delete the FBO itself.
-  nassertv(_fbo != 0, false);
-  glgsg->_glDeleteFramebuffersEXT(1, &_fbo);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::release_gsg
-//       Access: Public, Virtual
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  The window will be
-//               permanently unable to render; this is normally called
-//               only just before destroying the window.  This should
-//               only be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsBuffer)::
-release_gsg() {
-  GraphicsBuffer::release_gsg();
+  nassertv(_fbo != 0);
+  glgsg->_glDeleteFramebuffers(1, &_fbo);
 }
 

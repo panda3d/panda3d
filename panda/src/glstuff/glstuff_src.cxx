@@ -29,6 +29,7 @@
 #include "glGeomMunger_src.cxx"
 #include "glShaderContext_src.cxx"
 #include "glImmediateModeSender_src.cxx"
+#include "glGraphicsBuffer_src.cxx"
 #include "glGraphicsStateGuardian_src.cxx"
 
 

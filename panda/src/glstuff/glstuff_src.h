@@ -65,5 +65,6 @@
 #include "glGeomMunger_src.h"
 #include "glShaderContext_src.h"
 #include "glImmediateModeSender_src.h"
+#include "glGraphicsBuffer_src.h"
 #include "glGraphicsStateGuardian_src.h"
 

@@ -82,7 +82,8 @@ public:
   CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties);
   virtual ~CLP(GraphicsStateGuardian)();
   friend class CLP(ShaderContext);
-
+  friend class CLP(GraphicsBuffer);
+  
   virtual void reset();
 
   virtual void do_clear(const RenderBuffer &buffer);
