@@ -199,18 +199,17 @@ traverse_below(CullTraverserData &data) {
   _nodes_pcollector.add_level(1);
   PandaNode *node = data.node();
 
-  bool visible = !(data._draw_mask & PandaNode::get_overall_bit()).is_zero() &&
-    !(data._draw_mask & _camera_mask).is_zero();
+  bool this_node_hidden = data.is_this_node_hidden(this);
 
   const RenderEffects *node_effects = node->get_effects();
-  bool has_decal = visible && node_effects->has_decal();
+  bool has_decal = !this_node_hidden && node_effects->has_decal();
   if (has_decal && !_depth_offset_decals) {
     // Start the three-pass decal rendering if we're not using
     // DepthOffsetAttribs to implement decals.
     start_decal(data);
     
   } else {
-    if (visible && node->is_geom_node()) {
+    if (!this_node_hidden && node->is_geom_node()) {
       _geom_nodes_pcollector.add_level(1);
       GeomNode *geom_node = DCAST(GeomNode, node);
 

@@ -184,7 +184,8 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 bool PGItem::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  if (has_frame() && get_active()) {
+  bool this_node_hidden = data.is_this_node_hidden(trav);
+  if (!this_node_hidden && has_frame() && get_active()) {
     // The item has a frame, so we want to generate a region for it
     // and update the MouseWatcher.
 

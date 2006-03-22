@@ -150,3 +150,18 @@ is_in_view(const DrawMask &camera_mask) {
   // Otherwise, compare the bounding volume to the frustum.
   return is_in_view_impl();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::is_this_node_hidden
+//       Access: Public
+//  Description: Returns true if this particular node is hidden, even
+//               though we might be traversing past this node to find
+//               a child node that has had show_through() called for
+//               it.  If this returns true, the node should not be
+//               rendered.
+////////////////////////////////////////////////////////////////////
+INLINE bool CullTraverserData::
+is_this_node_hidden(const CullTraverser *trav) const {
+  return (_draw_mask & PandaNode::get_overall_bit()).is_zero() ||
+    (_draw_mask & trav->get_camera_mask()).is_zero();
+}
