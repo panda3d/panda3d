@@ -29,8 +29,8 @@ class Messenger:
         self.__objectEvents = {}
 
         if __debug__:
-            self.isWatching=0
-            self.watching={}
+            self.__isWatching=0
+            self.__watching={}
         # I'd like this to be in the __debug__, but I fear that someone will
         # want this in a release build.  If you're sure that that will not be
         # then please remove this comment and put the quiet/verbose stuff
@@ -49,18 +49,22 @@ class Messenger:
         to this event, otherwise it will respond only once.
         """
         if Messenger.notify.getDebug():
-            Messenger.notify.debug('object: ' + `object`
-                                   + '\n now accepting: ' + `event`
-                                   + '\n method: ' + `method`
-                                   + '\n extraArgs: ' + `extraArgs`
-                                   + '\n persistent: ' + `persistent`)
-        if not callable(method):
-            self.notify.warning(
-                "method not callable in accept (ignoring): %s %s"%
-                (method, extraArgs))
-            return
+            Messenger.notify.debug("object: %s\n accepting: %s\n method: %s\n extraArgs: %s\n persistent: %s" %
+                                   (object, event, method, extraArgs, persistent))
+
+        # Make the the method is callable
+        assert callable(method), ("method not callable in accept (ignoring): %s %s"%
+                                  (method, extraArgs))
 
         acceptorDict = self.__callbacks.setdefault(event, {})
+
+        # Make sure we are not inadvertently overwriting an existing event
+        # on this particular object.
+        # assert (not acceptorDict.has_key(object)), ("object already accepting %s" %
+        #                                             (event))
+        if acceptorDict.has_key(object):
+            self.notify.warning("object: %s already accepting: %s" % (object.__class__.__name__, event))
+        
         acceptorDict[object] = [method, extraArgs, persistent]
 
         # Remember that this object is listening for this event
@@ -150,8 +154,8 @@ class Messenger:
             Messenger.notify.debug('sent event: ' + event + ' sentArgs: ' + `sentArgs`)
         if __debug__:
             foundWatch=0
-            if self.isWatching:
-                for i in self.watching.keys():
+            if self.__isWatching:
+                for i in self.__watching.keys():
                     if str(event).find(i) >= 0:
                         foundWatch=1
                         break
@@ -205,12 +209,8 @@ class Messenger:
                 # we have cleaned up the accept hook, because the
                 # method itself might call accept() or acceptOnce()
                 # again.
-                if callable(method):
-                    apply(method, (extraArgs + sentArgs))
-                else:
-                    self.notify.warning(
-                        "method not callable in send: %s %s %s"%
-                        (method, extraArgs, sentArgs))
+                assert callable(method)
+                apply(method, (extraArgs + sentArgs))
 
     def clear(self):
         """
@@ -272,9 +272,9 @@ class Messenger:
             
             See Also: unwatch
             """
-            if not self.watching.get(needle):
-                self.isWatching += 1
-                self.watching[needle]=1
+            if not self.__watching.get(needle):
+                self.__isWatching += 1
+                self.__watching[needle]=1
 
         def unwatch(self, needle):
             """
@@ -286,9 +286,9 @@ class Messenger:
             
             See Also: watch
             """
-            if self.watching.get(needle):
-                self.isWatching -= 1
-                del self.watching[needle]
+            if self.__watching.get(needle):
+                self.__isWatching -= 1
+                del self.__watching[needle]
 
         def quiet(self, message):
             """
