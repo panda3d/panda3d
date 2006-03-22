@@ -49,8 +49,11 @@ protected:
   float _static_friction_coef;
   float _dynamic_friction_coef;
 
-  void apply_friction(ColliderDef &def, LVector3f &vel, const LVector3f& force, float angle);
-  virtual void apply_net_shove(ColliderDef &def, const LVector3f &net_shove, const LVector3f &force_normal);
+  void apply_friction(
+      ColliderDef &def, LVector3f &vel, const LVector3f& force, float angle);
+  virtual void apply_net_shove(
+      ColliderDef &def, const LVector3f &net_shove,
+      const LVector3f &force_normal);
   virtual void apply_linear_force(ColliderDef &def, const LVector3f &force);
 
 public:
