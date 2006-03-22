@@ -1854,6 +1854,14 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   tex->set_x_size(Texture::up_to_power_2(w));
   tex->set_y_size(Texture::up_to_power_2(h));
 
+  bool use_stretch_rect;
+
+  use_stretch_rect = true;
+  if (use_stretch_rect) {
+    // must use a render target type texture for StretchRect
+    tex -> set_render_to_texture (true);
+  }
+
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {
     return;
@@ -1940,50 +1948,66 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 //  THE DX8 WAY
 //  hr = _d3d_device->CopyRects(render_target, &src_rect, 1, tex_level_0, 0);
 
-//  THE DX9 WAY, this is not efficient since it copies the entire render
-//    target to system memory and then copies the rectangle to the texture
+//  DX9
+  if (use_stretch_rect) {
+    D3DTEXTUREFILTERTYPE filter;
 
-  // create a surface in system memory that is a duplicate of the render target
-  D3DPOOL pool;
-  IDirect3DSurface9 *temp_surface = NULL;
-  D3DSURFACE_DESC surface_description;
+    filter = D3DTEXF_POINT;
 
-  render_target -> GetDesc (&surface_description);
+//    dxgsg9_cat.debug () << "framebuffer_copy_to_texture\n";
 
-  pool = D3DPOOL_SYSTEMMEM;
-  hr = _d3d_device->CreateOffscreenPlainSurface(
-         surface_description.Width,
-         surface_description.Height,
-         surface_description.Format,
-         pool,
-         &temp_surface,
-         NULL);
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "CreateOffscreenPlainSurface failed in framebuffer_copy_to_texture"
-      << D3DERRORSTRING(hr);
-    return;
+    hr = _d3d_device->StretchRect (
+      render_target,
+      &src_rect,
+      tex_level_0,
+      &src_rect,
+      filter);
+    if (FAILED(hr)) {
+      dxgsg9_cat.error()
+        << "StretchRect failed in framebuffer_copy_to_texture"
+        << D3DERRORSTRING(hr);
+      return;
+    }
   }
+  else {
+    //  this is not efficient since it copies the entire render
+    //  target to system memory and then copies the rectangle to the texture
+    // create a surface in system memory that is a duplicate of the render target
+    D3DPOOL pool;
+    IDirect3DSurface9 *temp_surface = NULL;
+    D3DSURFACE_DESC surface_description;
 
-  // this copies the entire render target into system memory
-  hr = _d3d_device -> GetRenderTargetData (render_target, temp_surface);
+    render_target -> GetDesc (&surface_description);
 
-  if (FAILED(hr)) {
-    dxgsg9_cat.error() << "GetRenderTargetData failed" << D3DERRORSTRING(hr);
+    pool = D3DPOOL_SYSTEMMEM;
+    hr = _d3d_device->CreateOffscreenPlainSurface(
+           surface_description.Width,
+           surface_description.Height,
+           surface_description.Format,
+           pool,
+           &temp_surface,
+           NULL);
+    if (FAILED(hr)) {
+      dxgsg9_cat.error()
+        << "CreateOffscreenPlainSurface failed in framebuffer_copy_to_texture"
+        << D3DERRORSTRING(hr);
+      return;
+    }
+
+    // this copies the entire render target into system memory
+    hr = _d3d_device -> GetRenderTargetData (render_target, temp_surface);
+
+    if (FAILED(hr)) {
+      dxgsg9_cat.error() << "GetRenderTargetData failed" << D3DERRORSTRING(hr);
+      RELEASE(temp_surface, dxgsg9, "temp_surface", RELEASE_ONCE);
+      return;
+    }
+
+    // copy system memory version to texture
+    DXTextureContext9::d3d_surface_to_texture(src_rect, temp_surface,
+                false, tex, z);
+
     RELEASE(temp_surface, dxgsg9, "temp_surface", RELEASE_ONCE);
-    return;
-  }
-
-  // copy system memory version to texture
-  DXTextureContext9::d3d_surface_to_texture(src_rect, temp_surface,
-              false, tex, z);
-
-  RELEASE(temp_surface, dxgsg9, "temp_surface", RELEASE_ONCE);
-
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "CopyRects failed in framebuffer_copy_to_texture"
-      << D3DERRORSTRING(hr);
   }
 
   SAFE_RELEASE(render_target);
