@@ -221,8 +221,13 @@ ConfigVariableDouble default_far
  PRC_DESC("The default far clipping distance for all cameras."));
 
 ConfigVariableDouble default_fov
-("default-fov", 40.0,
- PRC_DESC("The default field of view in degrees for all cameras."));
+("default-fov", 30.0,
+ PRC_DESC("The default field of view in degrees for all cameras.  This is "
+          "defined as a min_fov; that is, it is the field-of-view for the "
+          "smallest of the X and Y sizes of the window, which is usually "
+          "the vertical field of view (windows are usually wider than they "
+          "are tall).  For a 4x3 window, 30 degrees vertical is roughly "
+          "40 degrees horizontal."));
 
 ConfigVariableDouble default_iod
 ("default-iod", 0.2,
