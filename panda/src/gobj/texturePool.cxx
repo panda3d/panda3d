@@ -228,7 +228,8 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   gobj_cat.info()
     << "Loading texture " << filename << "\n";
   PT(Texture) tex = make_texture(filename.get_extension());
-  if (!tex->read(filename, 0, primary_file_num_channels, false, read_mipmaps)) {
+  if (!tex->read(filename, Filename(), primary_file_num_channels, 0,
+                 0, 0, false, read_mipmaps)) {
     // This texture was not found or could not be read.
     report_texture_unreadable(filename);
     return NULL;
