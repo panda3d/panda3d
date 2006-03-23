@@ -1,3 +1,7 @@
+DOUBLE-SECRET-WARNING: This document is depreciated as of Mar 22, 2006. All
+further updates will be at the following wiki:
+http://aspen.online.disney.com/mediawiki/index.php/How_to_install_Panda_on_Windows
+
 WARNING: This document is an internal VR Studio document describing
 how to set up Panda on a new PC using our internal development
 environment.  It is not useful for programmers who are not within the
