@@ -838,6 +838,10 @@ get_ram_image() {
     reload_ram_image();
   }
 
+  if (_ram_images.empty()) {
+    return CPTA_uchar();
+  }
+
   return _ram_images[0]._image;
 }
 
