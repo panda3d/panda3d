@@ -280,7 +280,7 @@ make_output(const string &name,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
             int retry,
-            bool precertify) {
+            bool &precertify) {
   
   if (!_is_valid) {
     return NULL;

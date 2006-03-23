@@ -144,7 +144,7 @@ make_output(const string &name,
         ((flags&BF_require_window)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_every)!=0)||
-        (properties != gsg->get_default_properties()) {
+        (properties != gsg->get_default_properties())) {
       return NULL;
     }
     return new OsMesaGraphicsBuffer(this, name, properties,

@@ -120,7 +120,8 @@ reset() {
     software = true;
   }
 
-  FrameBufferProperties properties = get_properties();
+  // FIXME: should these properties be taken from the window?
+  FrameBufferProperties properties = get_default_properties();
   int frame_buffer_mode = properties.get_frame_buffer_mode();
 
   // If "Mesa" is present, assume software.  However, if "Mesa DRI" is
@@ -150,10 +151,13 @@ reset() {
     frame_buffer_mode = (frame_buffer_mode | FrameBufferProperties::FM_hardware) & ~FrameBufferProperties::FM_software;
   }
 
+  // FIXME: we need a place to store this now.
+  /*
   // Update the GSG's record to indicate whether we believe it is a
   // hardware or software renderer.
   properties.set_frame_buffer_mode(frame_buffer_mode);
   set_properties(properties);
+  */
 }
 
 ////////////////////////////////////////////////////////////////////

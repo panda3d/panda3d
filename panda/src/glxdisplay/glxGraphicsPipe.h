@@ -119,7 +119,7 @@ protected:
                                          GraphicsStateGuardian *gsg,
                                          GraphicsOutput *host,
                                          int retry,
-                                         bool precertify);
+                                         bool &precertify);
 
 private:
 #ifdef HAVE_GLXFBCONFIG

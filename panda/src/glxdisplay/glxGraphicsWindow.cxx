@@ -50,7 +50,7 @@ glxGraphicsWindow(GraphicsPipe *pipe,
                   int x_size, int y_size, int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  GraphicsWindow(pipe, name, x_size, y_size, flags, gsg, host)
+  GraphicsWindow(pipe, name, properties, x_size, y_size, flags, gsg, host)
 {
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_V(glx_pipe, _pipe);
