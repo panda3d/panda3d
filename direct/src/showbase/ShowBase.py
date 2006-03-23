@@ -1510,7 +1510,7 @@ class ShowBase(DirectObject.DirectObject):
             self.oobeLens = PerspectiveLens()
             self.oobeLens.setAspectRatio(self.getAspectRatio())
             self.oobeLens.setNearFar(0.1, 10000.0)
-            self.oobeLens.setFov(52.0)
+            self.oobeLens.setMinFov(40)
 
             self.oobeTrackball = self.dataUnused.attachNewNode(Trackball('oobeTrackball'), 1)
             self.oobe2cam = self.oobeTrackball.attachNewNode(Transform2SG('oobe2cam'))
