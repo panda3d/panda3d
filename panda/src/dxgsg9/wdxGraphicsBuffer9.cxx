@@ -40,10 +40,11 @@ TypeHandle wdxGraphicsBuffer9::_type_handle;
 wdxGraphicsBuffer9::
 wdxGraphicsBuffer9(GraphicsPipe *pipe,
                    const string &name,
+                   const FrameBufferProperties &prop,
                    int x_size, int y_size, int flags,
                    GraphicsStateGuardian *gsg,
                    GraphicsOutput *host):
-  GraphicsBuffer(pipe, name, x_size, y_size, flags, gsg, host)
+  GraphicsBuffer(pipe, name, prop, x_size, y_size, flags, gsg, host)
 {
   // initialize all class members
   _cube_map_index = -1;
@@ -53,7 +54,7 @@ wdxGraphicsBuffer9(GraphicsPipe *pipe,
   _dx_texture_context9 = NULL;
   _new_z_stencil_surface = NULL;
 
-// is this correct ???
+  // is this correct ???
   // Since the pbuffer never gets flipped, we get screenshots from the
   // same buffer we draw into.
   _screenshot_buffer_type = _draw_buffer_type;

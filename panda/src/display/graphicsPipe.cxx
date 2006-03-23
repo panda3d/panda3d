@@ -192,11 +192,12 @@ close_gsg(GraphicsStateGuardian *gsg) {
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsOutput) GraphicsPipe::
 make_output(const string &name,
+            const FrameBufferProperties &properties,
             int x_size, int y_size, int flags,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
             int retry,
-            bool precertify) {
+            bool &precertify) {
   display_cat.error()
     << get_type() << " cannot create buffers or windows.\n";
   return NULL;

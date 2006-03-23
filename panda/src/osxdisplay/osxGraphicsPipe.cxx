@@ -115,16 +115,17 @@ make_gsg(const FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsOutput) osxGraphicsPipe::
 make_output(const string &name,
+            const FrameBufferProperties &properties,
             int x_size, int y_size, int flags,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
             int retry,
-            bool precertify) {
+            bool &precertify) {
   
   if (!_is_valid) {
     return NULL;
   }
-
+  
   osxGraphicsStateGuardian *osxgsg;
   DCAST_INTO_R(osxgsg, gsg, NULL);
 
@@ -133,15 +134,14 @@ make_output(const string &name,
   if (retry == 0) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_refuse_window)!=0)||
-        ((flags&BF_need_aux_rgba_MASK)!=0)||
-        ((flags&BF_need_aux_hrgba_MASK)!=0)||
-        ((flags&BF_need_aux_float_MASK)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_color)!=0)||
-        ((flags&BF_can_bind_every)!=0)) {
+        ((flags&BF_can_bind_every)!=0)||
+        (properties != gsg->get_default_properties())) {
       return NULL;
     }
-    return new osxGraphicsWindow(this, name, x_size, y_size, flags, gsg, host);
+    return new osxGraphicsWindow(this, name, properties,
+                                 x_size, y_size, flags, gsg, host);
   }
   
   //  // Second thing to try: a glGraphicsBuffer
@@ -166,14 +166,13 @@ make_output(const string &name,
     if ((!support_render_texture)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
-        ((flags&BF_need_aux_rgba_MASK)!=0)||
-        ((flags&BF_need_aux_hrgba_MASK)!=0)||
-        ((flags&BF_need_aux_float_MASK)!=0)||
         ((flags&BF_size_track_host)!=0)||
-        ((flags&BF_can_bind_every)!=0)) {
+        ((flags&BF_can_bind_every)!=0)||
+        (properties != gsg->get_default_properties())) {
       return NULL;
     }
-    return new osxGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+    return new osxGraphicsBuffer(this, name, properties,
+                                 x_size, y_size, flags, gsg, host);
   }
   
   // Nothing else left to try.

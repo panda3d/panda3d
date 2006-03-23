@@ -18,7 +18,7 @@
 
 #include "frameBufferProperties.h"
 #include "string_utils.h"
-
+#include "renderBuffer.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::Constructor
@@ -45,6 +45,10 @@ operator = (const FrameBufferProperties &copy) {
   _alpha_bits = copy._alpha_bits;
   _stencil_bits = copy._stencil_bits;
   _multisamples = copy._multisamples;
+  _aux_rgba = copy._aux_rgba;
+  _aux_hrgba = copy._aux_hrgba;
+  _aux_float = copy._aux_float;
+  _buffer_mask = copy._buffer_mask;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -139,6 +143,8 @@ get_default() {
   props.set_stencil_bits(stencil_bits);
   props.set_multisamples(multisamples);
 
+  props.recalc_buffer_mask();
+
   return props;
 }
 
@@ -156,7 +162,11 @@ operator == (const FrameBufferProperties &other) const {
           _color_bits == other._color_bits &&
           _alpha_bits == other._alpha_bits &&
           _stencil_bits == other._stencil_bits &&
-          _multisamples == other._multisamples);
+          _multisamples == other._multisamples &&
+          _aux_rgba == other._aux_rgba &&
+          _aux_hrgba == other._aux_hrgba &&
+          _aux_float == other._aux_float &&
+          _buffer_mask == other._buffer_mask);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -176,6 +186,10 @@ clear() {
   _alpha_bits = 1;
   _stencil_bits = 1;
   _multisamples = 1;
+  _aux_rgba = 0;
+  _aux_hrgba = 0;
+  _aux_float = 0;
+  recalc_buffer_mask();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,6 +218,15 @@ add_properties(const FrameBufferProperties &other) {
   }
   if (other.has_multisamples()) {
     set_multisamples(other.get_multisamples());
+  }
+  if (other.has_aux_rgba()) {
+    set_aux_rgba(other.get_aux_rgba());
+  }
+  if (other.has_aux_hrgba()) {
+    set_aux_hrgba(other.get_aux_hrgba());
+  }
+  if (other.has_aux_float()) {
+    set_aux_float(other.get_aux_float());
   }
 }
 
@@ -273,5 +296,44 @@ output(ostream &out) const {
   }
   if (has_multisamples()) {
     out << "multisamples=" << get_multisamples() << " ";
+  }
+  if (has_aux_rgba()) {
+    out << "aux_rgba=" << get_aux_rgba() << " ";
+  }
+  if (has_aux_hrgba()) {
+    out << "aux_hrgba=" << get_aux_hrgba() << " ";
+  }
+  if (has_aux_float()) {
+    out << "aux_float=" << get_aux_float() << " ";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::recalc_buffer_mask
+//       Access: Private
+//  Description: Calculates the buffer mask based on the mode
+//               and aux bitplanes.
+////////////////////////////////////////////////////////////////////
+void FrameBufferProperties::
+recalc_buffer_mask() {
+  if ((_frame_buffer_mode & FM_buffer) == FM_single_buffer) {
+    _buffer_mask = RenderBuffer::T_front;
+  } else {
+    _buffer_mask = RenderBuffer::T_front | RenderBuffer::T_back;
+  }
+  if (_frame_buffer_mode & FM_depth) {
+    _buffer_mask |= RenderBuffer::T_depth;
+  }
+  if (_frame_buffer_mode & FM_stencil) {
+    _buffer_mask |= RenderBuffer::T_stencil;
+  }
+  for (int aux_rgba=0; aux_rgba < _aux_rgba; ++aux_rgba) {
+    _buffer_mask |= (RenderBuffer::T_aux_rgba_0 << aux_rgba);
+  }
+  for (int aux_hrgba=0; aux_hrgba < _aux_hrgba; ++aux_hrgba) {
+    _buffer_mask |= (RenderBuffer::T_aux_hrgba_0 << aux_hrgba);
+  }
+  for (int aux_float=0; aux_float < _aux_float; ++aux_float) {
+    _buffer_mask |= (RenderBuffer::T_aux_float_0 << aux_float);
   }
 }

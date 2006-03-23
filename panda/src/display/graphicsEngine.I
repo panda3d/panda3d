@@ -125,7 +125,7 @@ INLINE GraphicsWindow *GraphicsEngine::
 make_window(GraphicsStateGuardian *gsg, const string &name, int sort) {
   // The hardwired size here is never used.
   GraphicsOutput *result = make_output(gsg->get_pipe(), name, sort,
-                                       gsg->get_properties(), 50, 50,
+                                       gsg->get_default_properties(), 50, 50,
                                        GraphicsPipe::BF_require_window,
                                        gsg, NULL);
   return DCAST(GraphicsWindow, result);
@@ -140,7 +140,7 @@ INLINE GraphicsOutput *GraphicsEngine::
 make_buffer(GraphicsStateGuardian *gsg, const string &name,
             int sort, int x_size, int y_size) {
    GraphicsOutput *result = make_output(gsg->get_pipe(), name, sort,
-                                        gsg->get_properties(), x_size, y_size,
+                                        gsg->get_default_properties(), x_size, y_size,
                                         GraphicsPipe::BF_refuse_window,
                                         gsg, NULL);
    return result;
@@ -154,8 +154,8 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
 INLINE GraphicsOutput *GraphicsEngine::
 make_parasite(GraphicsOutput *host, const string &name, 
               int sort, int x_size, int y_size) {
-  GraphicsOutput *result = make_output(host->get_gsg()->get_pipe(), name, sort,
-                                       host->get_gsg()->get_properties(), x_size, y_size,
+  GraphicsOutput *result = make_output(host->get_pipe(), name, sort,
+                                       host->get_fb_properties(), x_size, y_size,
                                        GraphicsPipe::BF_require_parasite,
                                        host->get_gsg(), host);
    return result;

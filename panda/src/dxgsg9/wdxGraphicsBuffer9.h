@@ -38,6 +38,7 @@ class EXPCL_PANDADX wdxGraphicsBuffer9 : public GraphicsBuffer {
 public:
   wdxGraphicsBuffer9(GraphicsPipe *pipe,
                      const string &name,
+                     const FrameBufferProperties &prop,
                      int x_size, int y_size, int flags,
                      GraphicsStateGuardian *gsg,
                      GraphicsOutput *host);

@@ -71,6 +71,7 @@ static CubeFaceDef cube_faces[6] = {
 GraphicsOutput::
 GraphicsOutput(GraphicsPipe *pipe,
                const string &name,
+               const FrameBufferProperties &properties,
                int x_size, int y_size, int flags,
                GraphicsStateGuardian *gsg,
                GraphicsOutput *host) {
@@ -80,6 +81,7 @@ GraphicsOutput(GraphicsPipe *pipe,
   _pipe = pipe;
   _gsg = gsg;
   _host = host;
+  _fb_properties = properties;
   _name = name;
   _creation_flags = flags;
   _x_size = x_size;
@@ -101,8 +103,7 @@ GraphicsOutput(GraphicsPipe *pipe,
   _texture_card = 0;
   _trigger_copy = false;
 
-  if (gsg->get_properties().is_single_buffered()) {
-    // Single buffered; we must draw into the front buffer.
+  if (_fb_properties.is_single_buffered()) {
     _draw_buffer_type = RenderBuffer::T_front;
   } else {
     _draw_buffer_type = RenderBuffer::T_back;
@@ -690,7 +691,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   GraphicsOutput *buffer = get_gsg()->get_engine()->
     make_output(get_gsg()->get_pipe(),
                 name, get_sort()-1,
-                get_gsg()->get_properties(),
+                get_host()->get_fb_properties(),
                 x_size, y_size, GraphicsPipe::BF_refuse_window,
                 get_gsg(), get_host());
 
@@ -992,7 +993,8 @@ copy_to_textures() {
         display_cat.debug()
           << "cube_map_index = " << _cube_map_index << "\n";
       }
-      RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
+      RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type(),
+                                                    get_fb_properties());
       if (_cube_map_dr != (DisplayRegion *)NULL) {
         if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
           _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
@@ -1055,7 +1057,8 @@ change_scenes(DisplayRegion *new_dr) {
             display_cat.debug()
               << "cube_map_index = " << old_cube_map_index << "\n";
           }
-          RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
+          RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type(),
+                                                        get_fb_properties());
           if (rtm_mode == RTM_copy_ram) {
             _gsg->framebuffer_copy_to_ram(texture, old_cube_map_index,
                                           old_cube_map_dr, buffer);

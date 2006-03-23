@@ -26,14 +26,15 @@ TypeHandle CLP(GraphicsBuffer)::_type_handle;
 CLP(GraphicsBuffer)::
 CLP(GraphicsBuffer)(GraphicsPipe *pipe,
                     const string &name,
+                    const FrameBufferProperties &properties,
                     int x_size, int y_size, int flags,
                     GraphicsStateGuardian *gsg,
                     GraphicsOutput *host) :
-  GraphicsBuffer(pipe, name, x_size, y_size, flags, gsg, host)
+  GraphicsBuffer(pipe, name, properties, x_size, y_size, flags, gsg, host)
 {
-  // Since the FBO never gets flipped, we get screenshots from the
-  // same buffer we draw into.
-  _screenshot_buffer_type = _draw_buffer_type;
+  // An FBO doesn't have a back buffer.
+  _draw_buffer_type       = RenderBuffer::T_front;
+  _screenshot_buffer_type = RenderBuffer::T_front;
 
   // Initialize these.
   _fbo = 0;
@@ -76,6 +77,9 @@ begin_frame(FrameMode mode) {
     return false;
   }
 
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_R(glgsg, _gsg, false);
+
   if (!_host->begin_frame(FM_parasite)) {
     return false;
   }
@@ -84,6 +88,32 @@ begin_frame(FrameMode mode) {
   if (mode == FM_render) {
     rebuild_bitplanes();
     clear_cube_map_selection();
+
+    // Verify that the frame buffer is ready for rendering.
+    GLenum status = glgsg->_glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT);
+    if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
+      GLCAT.error() << "EXT_framebuffer_object reports non-framebuffer-completeness.\n";
+      switch(status) {
+      case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+        GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT\n"; break;
+      case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+        GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT\n"; break;
+      case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+        GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n"; break;
+      case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+        GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n"; break;
+      case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+        GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT\n"; break;
+      case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+        GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT\n"; break;
+      case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+        GLCAT.error() << "FRAMEBUFFER_UNSUPPORTED_EXT\n"; break;
+      default:
+        GLCAT.error() << "OTHER PROBLEM\n"; break;
+      }
+      glgsg->_glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+      return false;
+    }
   }
   return true;
 }
@@ -177,6 +207,7 @@ rebuild_bitplanes() {
   // For all slots, update the slot.
     
   for (int slot=0; slot<SLOT_COUNT; slot++) {
+    if (slot == SLOT_stencil) continue;
     Texture *tex = attach[slot];
     if (tex) {
       // If the texture is already bound to the slot, and it's
@@ -242,6 +273,8 @@ rebuild_bitplanes() {
   // These record the size of all nonzero renderbuffers.
   _rb_size_x = desired_x;
   _rb_size_y = desired_y;
+  
+  glgsg->report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -271,6 +304,7 @@ generate_mipmaps() {
       GLP(BindTexture)(target, 0);
     }
   }
+  glgsg->report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -307,6 +341,7 @@ end_frame(FrameMode mode) {
     }
     clear_cube_map_selection();
   }
+  glgsg->report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////

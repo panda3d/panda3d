@@ -114,6 +114,7 @@ protected:
   virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties,
                                              GraphicsStateGuardian *share_with);
   virtual PT(GraphicsOutput) make_output(const string &name,
+                                         const FrameBufferProperties &properties,
                                          int x_size, int y_size, int flags,
                                          GraphicsStateGuardian *gsg,
                                          GraphicsOutput *host,

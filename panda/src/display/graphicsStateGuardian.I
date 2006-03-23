@@ -135,13 +135,14 @@ is_valid() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_properties
 //       Access: Published
-//  Description: Returns the frame buffer properties requested for
-//               this GSG.  All windows created for this GSG must be
-//               created with the same properties.
+//  Description: Returns the default frame buffer properties for
+//               this GSG.  All windows created for this GSG will be
+//               created with these properties, unless explicitly
+//               overridden.
 ////////////////////////////////////////////////////////////////////
 INLINE const FrameBufferProperties &GraphicsStateGuardian::
-get_properties() const {
-  return _properties;
+get_default_properties() const {
+  return _default_properties;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -631,6 +632,17 @@ mark_new() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::needs_reset
+//       Access: Public
+//  Description: Returns true if the gsg is marked as needing a
+//               reset.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+needs_reset() const {
+  return _needs_reset;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_transform
 //       Access: Public
 //  Description: Fetches the external net transform.  This
@@ -729,15 +741,13 @@ get_clip_plane(int plane_id) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_properties
+//     Function: GraphicsStateGuardian::set_current_properties
 //       Access: Protected
-//  Description: Changes the frame buffer properties structure
-//               representing this GSG's capabilities.  Normally, this
-//               should only be called by a derived class wishing to
-//               indicate that the originally-requested capabilities
-//               could not be granted.
+//  Description: Notifies the gsg that it is about to render into a
+//               window/buffer with the given FrameBufferProperties
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsStateGuardian::
-set_properties(const FrameBufferProperties &properties) {
-  _properties = properties;
+set_current_properties(FrameBufferProperties *prop) {
+  _current_properties = prop;
 }
+

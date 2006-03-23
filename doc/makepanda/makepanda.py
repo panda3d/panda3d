@@ -375,7 +375,7 @@ def parseopts(args):
     global COMPILER,OPTIMIZE,OMIT,INSTALLER,GENMAN,SLAVEBUILD
     global VERSION,COMPRESSOR,VERBOSE,SLAVEFILE,THREADCOUNT
     longopts = [
-        "help","package-info","compiler=","directx-sdk=","slavebuild=",
+        "help","package-info","compiler=","slavebuild=",
         "optimize=","everything","nothing","installer","quiet","verbose",
         "version=","lzma","no-python","slaves=","threads="]
     anything = 0
@@ -447,8 +447,8 @@ os.chdir(PANDASOURCE)
 ########################################################################
 
 if (os.path.isdir("sdks")):
-    DIRECTXSDK["DX8"] = "sdks/directx"
-    DIRECTXSDK["DX9"] = "sdks/directx"
+    DIRECTXSDK["DX8"] = "sdks/directx8"
+    DIRECTXSDK["DX9"] = "sdks/directx9"
     MAXSDKCS["MAX6"] = "sdks/maxsdk6"
     MAXSDKCS["MAX7"] = "sdks/maxsdk7"
     MAXSDKCS["MAX8"] = "sdks/maxsdk8"
@@ -476,13 +476,19 @@ if sys.platform == "win32":
         if (subdir[0]=="{"):
             dir = GetRegistryKey(uninstaller+"\\"+subdir, "InstallLocation")
             if (dir != 0):
-                for ver in DXVERSIONS:
-                    if ((DIRECTXSDK.has_key("DX"+ver)==0) and
-                        (os.path.isfile(dir+"\\Include\\d3d"+ver+".h")) and
-                        (os.path.isfile(dir+"\\Include\\d3dx"+ver+".h")) and
-                        (os.path.isfile(dir+"\\Lib\\x86\\d3d"+ver+".lib")) and
-                        (os.path.isfile(dir+"\\Lib\\x86\\d3dx"+ver+".lib"))):
-                        DIRECTXSDK["DX"+ver] = dir.replace("\\", "/").rstrip("/")
+                if ((DIRECTXSDK.has_key("DX8")==0) and
+                    (os.path.isfile(dir+"\\Include\\d3d8.h")) and
+                    (os.path.isfile(dir+"\\Include\\d3dx8.h")) and
+                    (os.path.isfile(dir+"\\Lib\\d3d8.lib")) and
+                    (os.path.isfile(dir+"\\Lib\\d3dx8.lib"))):
+                   DIRECTXSDK["DX8"] = dir.replace("\\", "/").rstrip("/")
+                if ((DIRECTXSDK.has_key("DX9")==0) and
+                    (os.path.isfile(dir+"\\Include\\d3d9.h")) and
+                    (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
+                    (os.path.isfile(dir+"\\Include\\dxsdkver.h")) and
+                    (os.path.isfile(dir+"\\Lib\\x86\\d3d9.lib")) and
+                    (os.path.isfile(dir+"\\Lib\\x86\\d3dx9.lib"))):
+                   DIRECTXSDK["DX9"] = dir.replace("\\", "/").rstrip("/")
     for ver in DXVERSIONS:
         if (OMIT.count("DX"+ver)==0):
             if (DIRECTXSDK.has_key("DX"+ver)==0):

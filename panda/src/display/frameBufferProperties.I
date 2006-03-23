@@ -69,6 +69,7 @@ INLINE void FrameBufferProperties::
 set_frame_buffer_mode(int frameBuffer_mode) {
   _frame_buffer_mode = frameBuffer_mode;
   _specified |= S_frame_buffer_mode;
+  recalc_buffer_mask();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,6 +106,7 @@ INLINE void FrameBufferProperties::
 clear_frame_buffer_mode() {
   _specified &= ~S_frame_buffer_mode;
   _frame_buffer_mode = 0;
+  recalc_buffer_mask();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -365,6 +367,191 @@ INLINE void FrameBufferProperties::
 clear_multisamples() {
   _specified &= ~S_multisamples;
   _multisamples = 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_aux_rgba
+//       Access: Published
+//  Description: Specifies the exact number of auxiliary RGBA
+//               bitplanes that are required.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_aux_rgba(int aux_rgba) {
+  _aux_rgba = aux_rgba;
+  _specified |= S_aux_rgba;
+  recalc_buffer_mask();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_aux_rgba
+//       Access: Published
+//  Description: Returns the exact number of auxiliary RGBA
+//               bitplanes that are required.
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_aux_rgba() const {
+  return _aux_rgba;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::has_aux_rgba
+//       Access: Published
+//  Description: Returns true if the number auxiliary RGBA
+//               bitplanes has been specified, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+has_aux_rgba() const {
+  return ((_specified & S_aux_rgba) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::clear_aux_rgba
+//       Access: Published
+//  Description: Removes the aux_rgba specification from the
+//               properties.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+clear_aux_rgba() {
+  _specified &= ~S_aux_rgba;
+  _aux_rgba = 0;
+  recalc_buffer_mask();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_aux_hrgba
+//       Access: Published
+//  Description: Specifies the exact number of auxiliary half-float
+//               RGBA bitplanes that are required.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_aux_hrgba(int aux_hrgba) {
+  _aux_hrgba = aux_hrgba;
+  _specified |= S_aux_hrgba;
+  recalc_buffer_mask();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_aux_hrgba
+//       Access: Published
+//  Description: Returns the exact number of auxiliary half-float
+//               RGBA bitplanes that are required.
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_aux_hrgba() const {
+  return _aux_hrgba;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::has_aux_hrgba
+//       Access: Published
+//  Description: Returns true if the number of auxiliary half-float
+//               RGBA bitplanes has been specified, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+has_aux_hrgba() const {
+  return ((_specified & S_aux_hrgba) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::clear_aux_hrgba
+//       Access: Published
+//  Description: Removes the aux_hrgba specification from the
+//               properties.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+clear_aux_hrgba() {
+  _specified &= ~S_aux_hrgba;
+  _aux_hrgba = 0;
+  recalc_buffer_mask();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_aux_float
+//       Access: Published
+//  Description: Specifies the exact number of auxiliary float
+//               single-channel bitplanes that are required.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_aux_float(int aux_float) {
+  _aux_float = aux_float;
+  _specified |= S_aux_float;
+  recalc_buffer_mask();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_aux_float
+//       Access: Published
+//  Description: Returns the exact number of auxiliary float
+//               single-channel bitplanes that are required.
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_aux_float() const {
+  return _aux_float;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::has_aux_float
+//       Access: Published
+//  Description: Returns true if the number of auxiliary float
+//               single-channel bitplanes has been specified, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+has_aux_float() const {
+  return ((_specified & S_aux_float) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::clear_aux_float
+//       Access: Published
+//  Description: Removes the aux_float specification from the
+//               properties.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+clear_aux_float() {
+  _specified &= ~S_aux_float;
+  _aux_float = 0;
+  recalc_buffer_mask();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_buffer_mask
+//       Access: Public
+//  Description: Returns the buffer mask for the bitplanes
+//               in the frame buffer.
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_buffer_mask() const {
+  return _buffer_mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::buffer_mask_remove
+//       Access: Public
+//  Description: Removes one or more bits from the buffer mask.
+//               This is generally called by the gsg when one of the
+//               bitplanes is failing for some implementation-
+//               dependent reason.  Changing the properties will
+//               cause the _buffer_mask information to be lost.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+buffer_mask_remove(int bits) {
+  _buffer_mask &= (~bits);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::buffer_mask_add
+//       Access: Public
+//  Description: Adds one or more bits to the buffer mask.
+//               This is generally called by the gsg when the
+//               implementation supplies a bitplane that was not
+//               specifically requested (say, a freebie stencil
+//               buffer). Changing the properties will
+//               cause the _buffer_mask information to be lost.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+buffer_mask_add(int bits) {
+  _buffer_mask |= bits;
 }
 
 INLINE ostream &

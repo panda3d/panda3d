@@ -42,6 +42,7 @@ class EXPCL_PANDA GraphicsWindow : public GraphicsOutput {
 protected:
   GraphicsWindow(GraphicsPipe *pipe, 
                  const string &name,
+                 const FrameBufferProperties &properties,
                  int x_size, int y_size, int flags,
                  GraphicsStateGuardian *gsg,
                  GraphicsOutput *host);

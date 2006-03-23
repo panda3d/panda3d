@@ -58,6 +58,7 @@ PUBLISHED:
   };
 
   void clear();
+  INLINE int get_buffer_mask() const;
   INLINE bool is_any_specified() const;
 
   INLINE void set_frame_buffer_mode(int frameBuffer_mode);
@@ -92,10 +93,31 @@ PUBLISHED:
   INLINE bool has_multisamples() const;
   INLINE void clear_multisamples();
 
-  void add_properties(const FrameBufferProperties &other);
-
-  void output(ostream &out) const;
+  INLINE void set_aux_rgba(int naux);
+  INLINE int get_aux_rgba() const;
+  INLINE bool has_aux_rgba() const;
+  INLINE void clear_aux_rgba();
   
+  INLINE void set_aux_hrgba(int naux);
+  INLINE int get_aux_hrgba() const;
+  INLINE bool has_aux_hrgba() const;
+  INLINE void clear_aux_hrgba();
+
+  INLINE void set_aux_float(int naux);
+  INLINE int get_aux_float() const;
+  INLINE bool has_aux_float() const;
+  INLINE void clear_aux_float();
+
+  void add_properties(const FrameBufferProperties &other);
+  void output(ostream &out) const;
+
+public:
+  INLINE void buffer_mask_add(int bits);
+  INLINE void buffer_mask_remove(int bits);
+
+private:
+  void recalc_buffer_mask();
+
 private:
   // This bitmask indicates which of the parameters in the properties
   // structure have been filled in by the user, and which remain
@@ -107,6 +129,9 @@ private:
     S_alpha_bits        = 0x0008,
     S_stencil_bits      = 0x0010,
     S_multisamples      = 0x0020,
+    S_aux_rgba          = 0x0040,
+    S_aux_hrgba         = 0x0080,
+    S_aux_float         = 0x0100,
   };
 
   int _specified;
@@ -117,6 +142,10 @@ private:
   int _alpha_bits;
   int _stencil_bits;
   int _multisamples;
+  int _aux_rgba;
+  int _aux_hrgba;
+  int _aux_float;
+  int _buffer_mask;
 };
 
 INLINE ostream &operator << (ostream &out, const FrameBufferProperties &properties);

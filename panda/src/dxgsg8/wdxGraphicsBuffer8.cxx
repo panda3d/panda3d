@@ -43,10 +43,11 @@ TypeHandle wdxGraphicsBuffer8::_type_handle;
 wdxGraphicsBuffer8::
 wdxGraphicsBuffer8(GraphicsPipe *pipe,
                    const string &name,
+                   const FrameBufferProperties &properties,
                    int x_size, int y_size, int flags,
                    GraphicsStateGuardian *gsg,
                    GraphicsOutput *host):
-  GraphicsBuffer(pipe, name, x_size, y_size, flags, gsg, host)
+  GraphicsBuffer(pipe, name, properties, x_size, y_size, flags, gsg, host)
 {
   // initialize all class members
   _cube_map_index = -1;

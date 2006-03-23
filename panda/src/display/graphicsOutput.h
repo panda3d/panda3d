@@ -63,6 +63,7 @@ class EXPCL_PANDA GraphicsOutput : public TypedWritableReferenceCount, public Dr
 protected:
   GraphicsOutput(GraphicsPipe *pipe, 
                  const string &name,
+                 const FrameBufferProperties &properties,
                  int x_size, int y_size, int flags,
                  GraphicsStateGuardian *gsg,
                  GraphicsOutput *host);
@@ -123,6 +124,7 @@ PUBLISHED:
   INLINE unsigned int get_left_eye_color_mask() const;
   INLINE unsigned int get_right_eye_color_mask() const;
 
+  INLINE FrameBufferProperties &get_fb_properties();
   INLINE bool is_stereo() const;
 
   INLINE void clear_delete_flag();
@@ -229,6 +231,8 @@ protected:
   PT(GraphicsStateGuardian) _gsg;
   PT(GraphicsPipe) _pipe;
   PT(GraphicsOutput) _host;
+  FrameBufferProperties _fb_properties;
+  bool _stereo;
   string _name;
   pvector<RenderTexture> _textures;
   bool _flip_ready;

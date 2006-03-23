@@ -75,8 +75,7 @@ pipe_constructor() {
 //     Function: wglGraphicsPipe::make_gsg
 //       Access: Private
 //  Description: Creates a new GSG to use the pipe (but no windows
-//               have been created yet for the GSG).  This method will
-//               be called in the draw thread for the GSG.
+//               have been created yet for the GSG).
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsStateGuardian) wglGraphicsPipe::
 make_gsg(const FrameBufferProperties &properties, 
@@ -85,6 +84,11 @@ make_gsg(const FrameBufferProperties &properties,
     return NULL;
   }
 
+  // THIS CODE IS INCORRECT.  THIS ROUTINE IS NOT CALLED IN THE
+  // DRAW THREAD.  THE FIX IS THAT PIXEL FORMAT SELECTION NEEDS TO
+  // BE DONE ON A PER-WINDOW BASIS, AND IT NEEDS TO BE DONE IN
+  // OPEN_WINDOW, NOT HERE.
+  
   wglGraphicsStateGuardian *share_gsg = NULL;
 
   if (share_with != (GraphicsStateGuardian *)NULL) {
@@ -197,11 +201,12 @@ make_gsg(const FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsOutput) wglGraphicsPipe::
 make_output(const string &name,
+            const FrameBufferProperties &properties,
             int x_size, int y_size, int flags,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
             int retry,
-            bool precertify) {
+            bool &precertify) {
   
   if (!_is_valid) {
     return NULL;
@@ -215,31 +220,32 @@ make_output(const string &name,
   if (retry == 0) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_refuse_window)!=0)||
-        ((flags&BF_need_aux_rgba_MASK)!=0)||
-        ((flags&BF_need_aux_hrgba_MASK)!=0)||
-        ((flags&BF_need_aux_float_MASK)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new wglGraphicsWindow(this, name, x_size, y_size, flags, gsg, host);
+    return new wglGraphicsWindow(this, name, properties,
+                                 x_size, y_size, flags, gsg, host);
   }
   
-  //  // Second thing to try: a glGraphicsBuffer
-  //  
+  // Second thing to try: a GLGraphicsBuffer
+  
   //  if (retry == 1) {
   //    if ((!support_render_texture)||
   //        ((flags&BF_require_parasite)!=0)||
   //        ((flags&BF_require_window)!=0)) {
   //      return NULL;
   //    }
-  //    if (precertify) {
-  //      if (!wglgsg->_supports_framebuffer_object) {
-  //        return NULL;
-  //      }
+  //    if ((wglgsg != 0) &&
+  //        (wglgsg->is_valid()) &&
+  //        (!wglgsg->needs_reset()) &&
+  //        (wglgsg->_supports_framebuffer_object) &&
+  //        (wglgsg->_glDrawBuffers != 0)) {
+  //      precertify = true;
   //    }
-  //    return new glGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+  //    return new GLGraphicsBuffer(this, name, properties,
+  //                                x_size, y_size, flags, gsg, host);
   //  }
   
   // Third thing to try: a wglGraphicsBuffer
@@ -248,19 +254,18 @@ make_output(const string &name,
     if ((!support_render_texture)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
-        ((flags&BF_need_aux_rgba_MASK)!=0)||
-        ((flags&BF_need_aux_hrgba_MASK)!=0)||
-        ((flags&BF_need_aux_float_MASK)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    if (precertify) {
-      if (!wglgsg->_supports_pbuffer) {
-        return NULL;
-      }
+    if ((wglgsg != 0) &&
+        (wglgsg->is_valid()) &&
+        (!wglgsg->needs_reset()) &&
+        (wglgsg->_supports_pbuffer)) {
+      precertify = true;
     }
-    return new wglGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+    return new wglGraphicsBuffer(this, name, properties,
+                                 x_size, y_size, flags, gsg, host);
   }
   
   // Nothing else left to try.

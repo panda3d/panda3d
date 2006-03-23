@@ -78,8 +78,9 @@ PUBLISHED:
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
   INLINE bool is_valid() const;
+  INLINE bool needs_reset() const;
 
-  INLINE const FrameBufferProperties &get_properties() const;
+  INLINE const FrameBufferProperties &get_default_properties() const;
   INLINE GraphicsPipe *get_pipe() const;
   INLINE GraphicsEngine *get_engine() const;
   INLINE const GraphicsThreadingModel &get_threading_model() const;
@@ -202,8 +203,8 @@ public:
 
   INLINE CPT(TransformState) get_transform();
   
-  RenderBuffer get_render_buffer(int buffer_type);
-
+  RenderBuffer get_render_buffer(int buffer_type, const FrameBufferProperties &prop);
+  
   INLINE const DisplayRegion *get_current_display_region() const;
   INLINE Lens::StereoChannel get_current_stereo_channel() const;
   INLINE const Lens *get_current_lens() const;
@@ -238,13 +239,13 @@ protected:
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
   virtual void end_bind_clip_planes();
 
+  void set_current_properties(FrameBufferProperties *properties);
+  
   virtual void free_pointers();
   virtual void close_gsg();
   void panic_deactivate();
 
   void determine_light_color_scale();
-
-  INLINE void set_properties(const FrameBufferProperties &properties);
 
 #ifdef DO_PSTATS
   void init_frame_pstats();
@@ -267,8 +268,6 @@ protected:
   CPT(GeomMunger) _munger;
   CPT(GeomVertexData) _vertex_data;
 
-  int _buffer_mask;
-  int _stereo_buffer_mask;
   unsigned int _color_write_mask;
   Colorf _color_clear_value;
   float _depth_clear_value;
@@ -280,13 +279,12 @@ protected:
   CPT(Lens) _current_lens;
   CPT(TransformState) _projection_mat;
   CPT(TransformState) _projection_mat_inv;
+  FrameBufferProperties *_current_properties;
   
   CoordinateSystem _coordinate_system;
   CoordinateSystem _internal_coordinate_system;
   CPT(TransformState) _cs_transform;
   CPT(TransformState) _inv_cs_transform;
-
-  bool _is_stereo;
 
   Colorf _scene_graph_color;
   bool _has_scene_graph_color;
@@ -349,7 +347,9 @@ protected:
   bool _supports_basic_shaders;
   int _supported_geom_rendering;
   bool _color_scale_via_lighting;
-  
+
+  int _stereo_buffer_mask;
+
 public:
   // Statistics
   static PStatCollector _vertex_buffer_switch_pcollector;
@@ -402,7 +402,7 @@ private:
   pvector<ClipPlaneInfo> _clip_plane_info;
   bool _clip_planes_enabled_this_frame;
 
-  FrameBufferProperties _properties;
+  FrameBufferProperties _default_properties;
   PT(GraphicsPipe) _pipe;
   GraphicsEngine *_engine;
   GraphicsThreadingModel _threading_model;

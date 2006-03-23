@@ -275,6 +275,7 @@ make_gsg(const FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsOutput) glxGraphicsPipe::
 make_output(const string &name,
+            const FrameBufferProperties &properties,
             int x_size, int y_size, int flags,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
@@ -282,6 +283,11 @@ make_output(const string &name,
             bool precertify) {
   
   if (!_is_valid) {
+    return NULL;
+  }
+
+  // This pipe is not yet capable of creating nonhomogeneous windows.
+  if (properties != gsg->get_default_properties()) {
     return NULL;
   }
 
@@ -293,15 +299,13 @@ make_output(const string &name,
   if (retry == 0) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_refuse_window)!=0)||
-        ((flags&BF_need_aux_rgba_MASK)!=0)||
-        ((flags&BF_need_aux_hrgba_MASK)!=0)||
-        ((flags&BF_need_aux_float_MASK)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new glxGraphicsWindow(this, name, x_size, y_size, flags, gsg, host);
+    return new glxGraphicsWindow(this, name, properties,
+                                 x_size, y_size, flags, gsg, host);
   }
   
   //  // Second thing to try: a glGraphicsBuffer
@@ -317,7 +321,8 @@ make_output(const string &name,
   //        return NULL;
   //      }
   //    }
-  //    return new glGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+  //    return new glGraphicsBuffer(this, name, properties,
+  //                                x_size, y_size, flags, gsg, host);
   //  }
   
 #ifdef HAVE_GLXFBCONFIG
@@ -327,14 +332,12 @@ make_output(const string &name,
     if ((!support_render_texture)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
-        ((flags&BF_need_aux_rgba_MASK)!=0)||
-        ((flags&BF_need_aux_hrgba_MASK)!=0)||
-        ((flags&BF_need_aux_float_MASK)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new glxGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+    return new glxGraphicsBuffer(this, name, properties,
+                                 x_size, y_size, flags, gsg, host);
   }
 #endif  // HAVE_GLXFBCONFIG
   

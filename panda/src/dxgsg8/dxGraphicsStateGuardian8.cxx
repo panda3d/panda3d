@@ -524,7 +524,7 @@ do_clear(const RenderBuffer &buffer) {
           if (FAILED(hr2)) {
             dxgsg8_cat.error()
               << "Unable to clear depth buffer; removing.\n";
-            _buffer_mask &= ~RenderBuffer::T_depth;
+            _current_properties->buffer_mask_remove(RenderBuffer::T_depth);
           }
         }
         if (buffer_type & RenderBuffer::T_stencil) {
@@ -534,7 +534,7 @@ do_clear(const RenderBuffer &buffer) {
           if (FAILED(hr2)) {
             dxgsg8_cat.error()
               << "Unable to clear stencil buffer; removing.\n";
-            _buffer_mask &= ~RenderBuffer::T_stencil;
+            _current_properties->buffer_mask_remove(RenderBuffer::T_stencil);
           }
         }
       }
@@ -1604,10 +1604,6 @@ reset() {
   _auto_rescale_normal = false;
 
   // overwrite gsg defaults with these values
-
-  // We always have at least a color buffer (the depth and/or stencil
-  // buffer flags will be filled in by the window).
-  _buffer_mask = RenderBuffer::T_color;
 
   HRESULT hr;
 

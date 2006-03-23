@@ -35,10 +35,11 @@ TypeHandle wglGraphicsBuffer::_type_handle;
 wglGraphicsBuffer::
 wglGraphicsBuffer(GraphicsPipe *pipe,
                   const string &name,
+                  const FrameBufferProperties &properties,
                   int x_size, int y_size, int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  GraphicsBuffer(pipe, name, x_size, y_size, flags, gsg, host)
+  GraphicsBuffer(pipe, name, properties, x_size, y_size, flags, gsg, host)
 {
   _pbuffer = (HPBUFFERARB)0;
   _pbuffer_dc = (HDC)0;
@@ -142,7 +143,7 @@ begin_render_texture() {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
   
-  if (_gsg->get_properties().is_single_buffered()) {
+  if (_fb_properties.is_single_buffered()) {
     wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
   } else {
     wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_BACK_LEFT_ARB);
@@ -189,7 +190,7 @@ end_render_texture() {
       return;
     }
     GLP(BindTexture)(target, gtc->_index);
-    if (_gsg->get_properties().is_single_buffered()) {
+    if (_fb_properties.is_single_buffered()) {
       wglgsg->_wglBindTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
     } else {
       wglgsg->_wglBindTexImageARB(_pbuffer, WGL_BACK_LEFT_ARB);
@@ -413,7 +414,7 @@ make_pbuffer(HDC twindow_dc) {
   
   if (bindtexture != 0) {
 
-    if (_gsg->get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) {
+    if (_fb_properties.get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) {
       iattrib_list[ni++] = WGL_TEXTURE_FORMAT_ARB;
       iattrib_list[ni++] = WGL_TEXTURE_RGBA_ARB;
     } else {
@@ -536,7 +537,7 @@ choose_pbuffer_format(HDC twindow_dc, bool draw_to_texture) {
 
   if (draw_to_texture) {
     // If we want to be able to render-to-texture, request that.
-    if (_gsg->get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) {
+    if (_fb_properties.get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) {
       iattrib_list[ni++] = WGL_BIND_TO_TEXTURE_RGBA_ARB;
       iattrib_list[ni++] = true;
     } else {

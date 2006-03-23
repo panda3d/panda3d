@@ -36,6 +36,7 @@ class EXPCL_PANDADX wdxGraphicsWindow9 : public WinGraphicsWindow {
 public:
   wdxGraphicsWindow9(GraphicsPipe *pipe,
                      const string &name,
+                     const FrameBufferProperties &prop,
                      int x_size, int y_size, int flags,
                      GraphicsStateGuardian *gsg,
                      GraphicsOutput *host);

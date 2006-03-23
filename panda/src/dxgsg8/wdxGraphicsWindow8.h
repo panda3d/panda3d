@@ -36,6 +36,7 @@ class EXPCL_PANDADX wdxGraphicsWindow8 : public WinGraphicsWindow {
 public:
   wdxGraphicsWindow8(GraphicsPipe *pipe,
                      const string &name,
+                     const FrameBufferProperties &properties,
                      int x_size, int y_size, int flags,
                      GraphicsStateGuardian *gsg,
                      GraphicsOutput *host);
@@ -82,7 +83,6 @@ private:
   DXGraphicsStateGuardian8 *_dxgsg;
   DXScreenData _wcontext;
 
-  int _buffer_mask;
   int _depth_buffer_bpp;
   bool _awaiting_restore;
 

@@ -294,6 +294,16 @@ get_right_eye_color_mask() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_fb_properties
+//       Access: Published
+//  Description: Returns the framebuffer properties of the window.
+////////////////////////////////////////////////////////////////////
+INLINE FrameBufferProperties &GraphicsOutput::
+get_fb_properties() {
+  return _fb_properties;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::is_stereo
 //       Access: Published
 //  Description: Returns Returns true if this window can render stereo
@@ -303,7 +313,7 @@ get_right_eye_color_mask() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
 is_stereo() const {
-  return _red_blue_stereo || _gsg->get_properties().is_stereo();
+  return _red_blue_stereo || _fb_properties.is_stereo();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -547,7 +557,7 @@ clear_cube_map_selection() {
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsOutput::
 trigger_flip() {
-  if (!_gsg->get_properties().is_single_buffered()) {
+  if (!_fb_properties.is_single_buffered()) {
     _flip_ready = true;
   }
 }

@@ -30,11 +30,12 @@ TypeHandle OsMesaGraphicsBuffer::_type_handle;
 ////////////////////////////////////////////////////////////////////
 OsMesaGraphicsBuffer::
 OsMesaGraphicsBuffer(GraphicsPipe *pipe,
-                  const string &name,
-                  int x_size, int y_size, int flags,
-                  GraphicsStateGuardian *gsg,
-                  GraphicsOutput *host) :
-  GraphicsBuffer(pipe, name, x_size, y_size, flags, gsg, host)
+                     const string &name,
+                     const FrameBufferProperties &properties,
+                     int x_size, int y_size, int flags,
+                     GraphicsStateGuardian *gsg,
+                     GraphicsOutput *host) :
+  GraphicsBuffer(pipe, name, properties, x_size, y_size, flags, gsg, host)
 {
   _type = GL_UNSIGNED_BYTE;
 }

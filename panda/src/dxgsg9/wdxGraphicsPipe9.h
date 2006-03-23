@@ -59,11 +59,12 @@ public:
 
 protected:
   virtual PT(GraphicsOutput) make_output(const string &name,
+                                         const FrameBufferProperties &prop,
                                          int x_size, int y_size, int flags,
                                          GraphicsStateGuardian *gsg,
                                          GraphicsOutput *host,
                                          int retry,
-                                         bool precertify);
+                                         bool &precertify);
 
 private:
   bool init();

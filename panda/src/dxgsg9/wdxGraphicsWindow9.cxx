@@ -41,17 +41,17 @@ TypeHandle wdxGraphicsWindow9::_type_handle;
 wdxGraphicsWindow9::
 wdxGraphicsWindow9(GraphicsPipe *pipe,
                    const string &name,
+                   const FrameBufferProperties &prop,
                    int x_size, int y_size, int flags,
                    GraphicsStateGuardian *gsg,
                    GraphicsOutput *host):
-  WinGraphicsWindow(pipe, name, x_size, y_size, flags, gsg, host)
+  WinGraphicsWindow(pipe, name, prop, x_size, y_size, flags, gsg, host)
 {
   // dont actually create the window in the constructor.  reason:
   // multi-threading requires panda C++ window object to exist in
   // separate thread from actual API window
 
   _dxgsg = DCAST(DXGraphicsStateGuardian9, gsg);
-  _buffer_mask = 0;
   _depth_buffer_bpp = 0;
   _awaiting_restore = false;
   ZeroMemory(&_wcontext, sizeof(_wcontext));
@@ -83,13 +83,7 @@ make_current() {
   // reset the GSG state if this is the first time it has been used.
   // (We can't just call reset() when we construct the GSG, because
   // reset() requires having a current context.)
-  if (dxgsg->reset_if_new()) {
-    // We should also fill in the buffer mask at this time, which adds
-    // support for depth buffer or stencil buffer if the window
-    // supports it.  This assumes that the gsg will not be shared by
-    // other windows with a different buffer mask.
-    dxgsg->_buffer_mask |= _buffer_mask;
-  }
+  dxgsg->reset_if_new();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -531,7 +525,8 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   wdxdisplay9_cat.debug() << "Display Width " << dwRenderWidth << " and PresParam Width " << _wcontext._presentation_params.BackBufferWidth << "\n";
 
   // BUGBUG: need to change panda to put frame buffer properties with GraphicsWindow, not GSG!!
-  int frame_buffer_mode = _gsg->get_properties().get_frame_buffer_mode();
+  // Update: Did I fix the bug? - Josh
+  int frame_buffer_mode = _fb_properties.get_frame_buffer_mode();
   bool bWantStencil = ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0);
 
   PRINT_REFCNT(wdxdisplay9, _d3d9);
@@ -726,10 +721,15 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   PRINT_REFCNT(wdxdisplay9, _wcontext._d3d_device);
 
   if (presentation_params->EnableAutoDepthStencil) {
-    _buffer_mask |= RenderBuffer::T_depth;
+    _fb_properties.buffer_mask_add(RenderBuffer::T_depth);
     if (IS_STENCIL_FORMAT(presentation_params->AutoDepthStencilFormat)) {
-      _buffer_mask |= RenderBuffer::T_stencil;
+      _fb_properties.buffer_mask_add(RenderBuffer::T_stencil);
+    } else {
+      _fb_properties.buffer_mask_remove(RenderBuffer::T_stencil);
     }
+  } else {
+    _fb_properties.buffer_mask_remove(RenderBuffer::T_depth);
+    _fb_properties.buffer_mask_remove(RenderBuffer::T_stencil);
   }
 
   init_resized_window();
@@ -893,7 +893,7 @@ search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
   _wcontext._is_dx9_1 = dxpipe->__is_dx9_1;
   _wcontext._card_id = device_info->cardID;  // could this change by end?
 
-  int frame_buffer_mode = _gsg->get_properties().get_frame_buffer_mode();
+  int frame_buffer_mode = _fb_properties.get_frame_buffer_mode();
   bool bWantStencil = ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0);
 
   hr = _d3d9->GetAdapterIdentifier(device_info->cardID, 0,

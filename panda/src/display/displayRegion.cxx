@@ -646,7 +646,8 @@ get_screenshot(PNMImage &image) {
   // Create a temporary texture to receive the framebuffer image.
   PT(Texture) tex = new Texture;
   
-  RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type());
+  RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type(),
+                                               _window->get_fb_properties());
   if (!gsg->framebuffer_copy_to_ram(tex, -1, this, buffer)) {
     return false;
   }

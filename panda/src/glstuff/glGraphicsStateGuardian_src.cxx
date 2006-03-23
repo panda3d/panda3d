@@ -915,19 +915,16 @@ reset() {
 
   _auto_rescale_normal = false;
 
-  // All GL implementations have the following buffers.
-  _buffer_mask = (RenderBuffer::T_color |
-                  RenderBuffer::T_depth |
-                  RenderBuffer::T_stencil |
-                  RenderBuffer::T_accum);
-
   // If we don't have double-buffering, don't attempt to write to the
   // back buffer.
-  GLboolean has_back;
-  GLP(GetBooleanv)(GL_DOUBLEBUFFER, &has_back);
-  if (!has_back) {
-    _buffer_mask &= ~RenderBuffer::T_back;
-  }
+  // Update: this code has been disabled.  Instead, the code that
+  // creates the window needs to make sure it created a back buffer
+  // in those cases where a back buffer was requested. - Josh
+  // GLboolean has_back;
+  // GLP(GetBooleanv)(GL_DOUBLEBUFFER, &has_back);
+  // if (!has_back) {
+  //   _buffer_mask &= ~RenderBuffer::T_back;
+  // }
 
   // Ensure the initial state is what we say it should be (in some
   // cases, we don't want the GL default settings; in others, we have
@@ -1120,7 +1117,8 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
   GLsizei width = GLsizei(w);
   GLsizei height = GLsizei(h);
 
-  set_draw_buffer(get_render_buffer(_current_display_region->get_draw_buffer_type()));
+  set_draw_buffer(get_render_buffer(_current_display_region->get_draw_buffer_type(),
+                                    *_current_properties));
   enable_scissor(true);
   GLP(Scissor)(x, y, width, height);
   GLP(Viewport)(x, y, width, height);
@@ -2901,8 +2899,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   // Match framebuffer format if necessary.
   if (tex->get_match_framebuffer_format()) {
-    const FrameBufferProperties &properties = get_properties();
-    int mode = properties.get_frame_buffer_mode();
+    int mode = _current_properties->get_frame_buffer_mode();
 
     switch (tex->get_format()) {
     case Texture::F_depth_component:
@@ -3014,8 +3011,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
 
-  const FrameBufferProperties &properties = get_properties();
-  int mode = properties.get_frame_buffer_mode();
+  int mode = _current_properties->get_frame_buffer_mode();
 
   Texture::Format format = tex->get_format();
   Texture::ComponentType component_type = tex->get_component_type();
@@ -3023,7 +3019,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 
   switch (format) {
   case Texture::F_depth_component:
-    if (properties.get_depth_bits() <= 8) {
+    if (_current_properties->get_depth_bits() <= 8) {
       component_type = Texture::T_unsigned_byte;
     } else {
       component_type = Texture::T_unsigned_short;
@@ -3031,7 +3027,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
     break;
 
   case Texture::F_stencil_index:
-    if (properties.get_stencil_bits() <= 8) {
+    if (_current_properties->get_stencil_bits() <= 8) {
       component_type = Texture::T_unsigned_byte;
     } else {
       component_type = Texture::T_unsigned_short;
@@ -3045,7 +3041,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
     } else {
       format = Texture::F_rgb;
     }
-    if (properties.get_color_bits() <= 24) {
+    if (_current_properties->get_color_bits() <= 24) {
       component_type = Texture::T_unsigned_byte;
     } else {
       component_type = Texture::T_unsigned_short;
@@ -4159,39 +4155,39 @@ set_draw_buffer(const RenderBuffer &rb) {
   case RenderBuffer::T_front:
     GLP(DrawBuffer)(GL_FRONT);
     break;
-
+    
   case RenderBuffer::T_back:
     GLP(DrawBuffer)(GL_BACK);
     break;
-
+    
   case RenderBuffer::T_right:
     GLP(DrawBuffer)(GL_RIGHT);
     break;
-
+    
   case RenderBuffer::T_left:
     GLP(DrawBuffer)(GL_LEFT);
     break;
-
+    
   case RenderBuffer::T_front_right:
-    nassertv(_is_stereo);
+    nassertv(_current_properties->is_stereo());
     GLP(DrawBuffer)(GL_FRONT_RIGHT);
     break;
-
+    
   case RenderBuffer::T_front_left:
-    nassertv(_is_stereo);
+    nassertv(_current_properties->is_stereo());
     GLP(DrawBuffer)(GL_FRONT_LEFT);
     break;
-
+    
   case RenderBuffer::T_back_right:
-    nassertv(_is_stereo);
+    nassertv(_current_properties->is_stereo());
     GLP(DrawBuffer)(GL_BACK_RIGHT);
     break;
-
+    
   case RenderBuffer::T_back_left:
-    nassertv(_is_stereo);
+    nassertv(_current_properties->is_stereo());
     GLP(DrawBuffer)(GL_BACK_LEFT);
     break;
-
+    
   default:
     GLP(DrawBuffer)(GL_FRONT_AND_BACK);
   }
@@ -4219,38 +4215,39 @@ set_read_buffer(const RenderBuffer &rb) {
   case RenderBuffer::T_front:
     GLP(ReadBuffer)(GL_FRONT);
     break;
-
+    
   case RenderBuffer::T_back:
     GLP(ReadBuffer)(GL_BACK);
     break;
-
+    
   case RenderBuffer::T_right:
     GLP(ReadBuffer)(GL_RIGHT);
     break;
-
+    
   case RenderBuffer::T_left:
     GLP(ReadBuffer)(GL_LEFT);
     break;
-
+    
   case RenderBuffer::T_front_right:
     GLP(ReadBuffer)(GL_FRONT_RIGHT);
     break;
-
+    
   case RenderBuffer::T_front_left:
     GLP(ReadBuffer)(GL_FRONT_LEFT);
     break;
-
+    
   case RenderBuffer::T_back_right:
     GLP(ReadBuffer)(GL_BACK_RIGHT);
     break;
-
+    
   case RenderBuffer::T_back_left:
     GLP(ReadBuffer)(GL_BACK_LEFT);
     break;
-
+    
   default:
     GLP(ReadBuffer)(GL_FRONT_AND_BACK);
   }
+  
   report_my_gl_errors();
 }
 

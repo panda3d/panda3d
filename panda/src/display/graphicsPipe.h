@@ -74,30 +74,6 @@ PUBLISHED:
   };
 
   enum BufferCreationFlags {
-
-    // How many RGBA aux bitplanes do you need?
-    BF_need_aux_rgba_MASK  = 0x00000003,
-    BF_need_0_aux_rgba     = 0x00000000,
-    BF_need_1_aux_rgba     = 0x00000001,
-    BF_need_2_aux_rgba     = 0x00000002,
-    BF_need_3_aux_rgba     = 0x00000003,
-
-    // How many half-float rgba aux bitplanes do you need?
-    // This is not currently implemented.
-    BF_need_aux_hrgba_MASK = 0x0000000C,
-    BF_need_0_aux_hrgba    = 0x00000000,
-    BF_need_1_aux_hrgba    = 0x00000004,
-    BF_need_2_aux_hrgba    = 0x00000008,
-    BF_need_3_aux_hrgba    = 0x0000000C,
-
-    // How many full-float single-channel bitplanes do you need?
-    // This is not currently implemented.
-    BF_need_aux_float_MASK = 0x00000030,
-    BF_need_0_aux_float    = 0x00000000,
-    BF_need_1_aux_float    = 0x00000010,
-    BF_need_2_aux_float    = 0x00000020,
-    BF_need_3_aux_float    = 0x00000040,
-
     // Flags that control what type of output is returned.
     BF_refuse_parasite     = 0x00000100,
     BF_require_parasite    = 0x00000200,
@@ -136,11 +112,12 @@ protected:
   virtual void close_gsg(GraphicsStateGuardian *gsg);
   
   virtual PT(GraphicsOutput) make_output(const string &name,
+                                         const FrameBufferProperties &properties,
                                          int x_size, int y_size, int flags,
                                          GraphicsStateGuardian *gsg,
                                          GraphicsOutput *host,
                                          int retry,
-                                         bool precertify);
+                                         bool &precertify);
   
   Mutex _lock;
 

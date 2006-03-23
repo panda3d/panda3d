@@ -32,10 +32,11 @@ TypeHandle osxGraphicsBuffer::_type_handle;
 osxGraphicsBuffer::
 osxGraphicsBuffer(GraphicsPipe *pipe,
                   const string &name,
+                  const FrameBufferProperties &properties,
                   int x_size, int y_size, int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  GraphicsBuffer(pipe, name, x_size, y_size, flags, gsg, host)
+  GraphicsBuffer(pipe, name, properties, x_size, y_size, flags, gsg, host)
 {
   osxGraphicsPipe *osx_pipe;
   DCAST_INTO_V(osx_pipe, _pipe);

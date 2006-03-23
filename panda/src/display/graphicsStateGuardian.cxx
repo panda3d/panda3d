@@ -79,7 +79,7 @@ GraphicsStateGuardian::
 GraphicsStateGuardian(const FrameBufferProperties &properties,
                       CoordinateSystem internal_coordinate_system) :
   _internal_coordinate_system(internal_coordinate_system),
-  _properties(properties)
+  _default_properties(properties)
 {
   _coordinate_system = CS_invalid;
   _external_transform = TransformState::make_identity();
@@ -95,9 +95,11 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   
   _needs_reset = true;
   _is_valid = false;
+  _current_properties = NULL;
   _closing_gsg = false;
   _active = true;
   _prepared_objects = new PreparedGraphicsObjects;
+  _stereo_buffer_mask = ~0;
 
   _prefers_triangle_strips = false;
   _max_vertices_per_array = INT_MAX;
@@ -274,15 +276,11 @@ reset() {
   _scene_null = new SceneSetup;
   _scene_setup = _scene_null;
   
-  _buffer_mask = 0;
-  _stereo_buffer_mask = ~0;
   _color_write_mask = ColorWriteAttrib::C_all;
   _color_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
   _depth_clear_value = 1.0f;
   _stencil_clear_value = 0.0f;
   _accum_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
-
-  _is_stereo = get_properties().is_stereo();
 
   _has_scene_graph_color = false;
   _transform_stale = true;
@@ -336,8 +334,8 @@ set_state_and_transform(const RenderState *state,
 //               union of all the desired RenderBuffer::Type values.
 ////////////////////////////////////////////////////////////////////
 RenderBuffer GraphicsStateGuardian::
-get_render_buffer(int buffer_type) {
-  return RenderBuffer(this, buffer_type & _buffer_mask & _stereo_buffer_mask);
+get_render_buffer(int buffer_type, const FrameBufferProperties &prop) {
+  return RenderBuffer(this, buffer_type & prop.get_buffer_mask() & _stereo_buffer_mask);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -647,7 +645,8 @@ clear(DrawableRegion *clearable) {
   }
 
   if (clear_buffer_type != 0) {
-    do_clear(get_render_buffer(clear_buffer_type));
+    do_clear(get_render_buffer(clear_buffer_type,
+                               *_current_properties));
   }
 }
 
@@ -901,14 +900,14 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
   switch (stereo_channel) {
   case Lens::SC_left:
     _color_write_mask = dr->get_window()->get_left_eye_color_mask();
-    if (_is_stereo) {
+    if (_current_properties->is_stereo()) {
       _stereo_buffer_mask = ~(RenderBuffer::T_front_right | RenderBuffer::T_back_right);
     }
     break;
 
   case Lens::SC_right:
     _color_write_mask = dr->get_window()->get_right_eye_color_mask();
-    if (_is_stereo) {
+    if (_current_properties->is_stereo()) {
       _stereo_buffer_mask = ~(RenderBuffer::T_front_left | RenderBuffer::T_back_left);
     }
     break;

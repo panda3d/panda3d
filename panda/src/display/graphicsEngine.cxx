@@ -282,11 +282,11 @@ make_output(GraphicsPipe *pipe,
   //
   //  The only problem with this design is that it requires the
   //  engine to call open_windows, which is slow.  To make
-  //  things faster, we can ask pipe::make_output to "precertify"
-  //  its creations.  If we ask it to precertify, then it guarantees
+  //  things faster, the pipe can choose to "precertify"
+  //  its creations.  If it chooses to do so, this is a guarantee
   //  that the windows it returns will not fail in open_windows.
-  //  However, we can only ask for precertification if we are
-  //  passing it an already-initialized gsg.  Long story short,
+  //  However, most graphics pipes will only precertify if you
+  //  pass them an already-initialized gsg.  Long story short,
   //  if you want make_output to be fast, use an
   //  already-initialized gsg.
 
@@ -306,7 +306,6 @@ make_output(GraphicsPipe *pipe,
   if (gsg != (GraphicsStateGuardian *)NULL) {
     nassertr(pipe == gsg->get_pipe(), NULL);
     nassertr(this == gsg->get_engine(), NULL);
-    nassertr(prop == gsg->get_properties(), NULL);
     nassertr(threading_model.get_draw_name() ==
              gsg->get_threading_model().get_draw_name(), NULL);
   }
@@ -320,20 +319,12 @@ make_output(GraphicsPipe *pipe,
     gsg = make_gsg(pipe, prop);
   }
   
-  // A thread could modify these flags while we create the
-  // buffer.  So we do a single atomic fetch here.
-  
-  bool precertify = gsg->_is_valid && (!gsg->_needs_reset);
-  
   // Determine if a parasite buffer meets the user's specs.
 
   bool can_use_parasite = false;
   if ((host != 0)&&
       ((flags&GraphicsPipe::BF_require_window)==0)&&
       ((flags&GraphicsPipe::BF_refuse_parasite)==0)&&
-      ((flags&GraphicsPipe::BF_need_aux_rgba_MASK)==0)&&
-      ((flags&GraphicsPipe::BF_need_aux_hrgba_MASK)==0)&&
-      ((flags&GraphicsPipe::BF_need_aux_float_MASK)==0)&&
       ((flags&GraphicsPipe::BF_can_bind_color)==0)&&
       ((flags&GraphicsPipe::BF_can_bind_every)==0)) {
     can_use_parasite = true;
@@ -354,8 +345,9 @@ make_output(GraphicsPipe *pipe,
   // Ask the pipe to create a window.
   
   for (int retry=0; retry<10; retry++) {
+    bool precertify = false;
     PT(GraphicsOutput) window = 
-      pipe->make_output(name, x_size, y_size, flags, gsg, host, retry, precertify);
+      pipe->make_output(name, prop, x_size, y_size, flags, gsg, host, retry, precertify);
     if (window != (GraphicsOutput *)NULL) {
       window->_sort = sort;
       do_add_window(window, gsg, threading_model);
@@ -923,6 +915,7 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
+      win->get_gsg()->set_current_properties(&win->get_fb_properties());
       if (win->begin_frame(GraphicsOutput::FM_render)) {
         win->clear();
       
@@ -1088,6 +1081,7 @@ draw_bins(const GraphicsEngine::Windows &wlist) {
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
+      win->get_gsg()->set_current_properties(&win->get_fb_properties());
       if (win->begin_frame(GraphicsOutput::FM_render)) {
         win->clear();
       
@@ -1148,6 +1142,7 @@ make_contexts(const GraphicsEngine::Windows &wlist) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
+    win->get_gsg()->set_current_properties(&win->get_fb_properties());
     if (win->begin_frame(GraphicsOutput::FM_refresh)) {
       win->end_frame(GraphicsOutput::FM_refresh);
     }
