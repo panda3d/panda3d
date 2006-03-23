@@ -3228,7 +3228,7 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
     _ram_images.reserve(num_ram_images);
     for (int n = 0; n < num_ram_images; ++n) {
       _ram_images.push_back(RamImage());
-      _ram_images[n]._page_size = 0;
+      _ram_images[n]._page_size = get_expected_ram_page_size();
       if (manager->get_file_minor_ver() >= 1) {
 	_ram_images[n]._page_size = scan.get_uint32();
       }
@@ -3244,6 +3244,7 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
     }
     _loaded_from_image = true;
   }
+  ++_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
