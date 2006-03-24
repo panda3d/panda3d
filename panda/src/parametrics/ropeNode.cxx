@@ -362,7 +362,8 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
   CPT(RenderState) state = data._state->add_attrib(thick);
   
   CullableObject *object = new CullableObject(geom, state,
-                                              data._modelview_transform);
+                                              data.get_net_transform(trav),
+                                              data.get_modelview_transform(trav));
   trav->get_cull_handler()->record_object(object, trav);
 }
 
@@ -404,7 +405,8 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
   geom->add_primitive(strip);
   
   CullableObject *object = new CullableObject(geom, data._state,
-                                              data._modelview_transform);
+                                              data.get_net_transform(trav),
+                                              data.get_modelview_transform(trav));
   trav->get_cull_handler()->record_object(object, trav);
 }
 
@@ -421,11 +423,11 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
 void RopeNode::
 render_billboard(CullTraverser *trav, CullTraverserData &data, 
                  NurbsCurveResult *result) const {
-  const TransformState *net_transform = data._modelview_transform;
+  const TransformState *modelview_transform = data.get_modelview_transform(trav);
   const TransformState *camera_transform = trav->get_camera_transform();
 
   CPT(TransformState) rel_transform =
-    net_transform->invert_compose(camera_transform);
+    modelview_transform->invert_compose(camera_transform);
   LVector3f camera_vec = LVector3f::forward() * rel_transform->get_mat();
 
   CurveSegments curve_segments;
@@ -453,7 +455,8 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   geom->add_primitive(strip);
   
   CullableObject *object = new CullableObject(geom, data._state,
-                                              data._modelview_transform);
+                                              data.get_net_transform(trav),
+                                              data.get_modelview_transform(trav));
   trav->get_cull_handler()->record_object(object, trav);
 }
 
@@ -509,7 +512,8 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
   geom->add_primitive(strip);
   
   CullableObject *object = new CullableObject(geom, data._state,
-                                              data._modelview_transform);
+                                              data.get_net_transform(trav),
+                                              data.get_modelview_transform(trav));
   trav->get_cull_handler()->record_object(object, trav);
 }
 

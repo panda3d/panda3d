@@ -110,7 +110,7 @@ traverse(const NodePath &root, bool python_cull_control) {
     // store this pointer in this
     set_portal_clipper(&portal_viewer);
 
-    CullTraverserData data(root, get_world_transform(),
+    CullTraverserData data(root, TransformState::make_identity(),
                            _initial_state, _view_frustum, 
                            _guard_band);
     
@@ -124,11 +124,11 @@ traverse(const NodePath &root, bool python_cull_control) {
     CPT(TransformState) transform = cull_center.get_transform(root);
     
     CullTraverserData my_data(data, portal_viewer._previous);
-    my_data._modelview_transform = my_data._modelview_transform->compose(transform);
+    my_data._net_transform = my_data._net_transform->compose(transform);
     traverse(my_data);
 
   } else {
-    CullTraverserData data(root, get_world_transform(),
+    CullTraverserData data(root, TransformState::make_identity(),
                            _initial_state, _view_frustum, 
                            _guard_band);
     
@@ -223,7 +223,7 @@ traverse_below(CullTraverserData &data) {
       int num_geoms = geom_node->get_num_geoms();
       _geoms_pcollector.add_level(num_geoms);
       for (int i = 0; i < num_geoms; i++) {
-        CullableObject *object = new CullableObject(data, geom_node, i);
+        CullableObject *object = new CullableObject(this, data, geom_node, i);
         if (object->_state->has_cull_callback() &&
             !object->_state->cull_callback(this, data)) {
           delete object;
@@ -286,7 +286,8 @@ show_bounds(CullTraverserData &data, bool tight) {
       _geoms_pcollector.add_level(1);
       CullableObject *outer_viz = 
         new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
-                           data._modelview_transform);
+                           data.get_net_transform(this),
+                           data.get_modelview_transform(this));
       _cull_handler->record_object(outer_viz, this);
     }
     
@@ -297,12 +298,14 @@ show_bounds(CullTraverserData &data, bool tight) {
       _geoms_pcollector.add_level(2);
       CullableObject *outer_viz = 
         new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
-                           data._modelview_transform);
+                           data.get_net_transform(this),
+                           data.get_modelview_transform(this));
       _cull_handler->record_object(outer_viz, this);
       
       CullableObject *inner_viz = 
         new CullableObject(bounds_viz, get_bounds_inner_viz_state(), 
-                           data._modelview_transform);
+                           data.get_net_transform(this),
+                           data.get_modelview_transform(this));
       _cull_handler->record_object(inner_viz, this);
     }
   }
@@ -549,7 +552,7 @@ start_decal(const CullTraverserData &data) {
   _geoms_pcollector.add_level(num_geoms);
   for (int i = num_geoms - 1; i >= 0; i--) {
     CullableObject *next_object = 
-      new CullableObject(data, geom_node, i, object);
+      new CullableObject(this, data, geom_node, i, object);
     if (next_object->_state->has_cull_callback() &&
         !next_object->_state->cull_callback(this, data)) {
       next_object->_next = NULL;
@@ -618,7 +621,7 @@ r_get_decals(CullTraverserData &data, CullableObject *decals) {
       _geoms_pcollector.add_level(num_geoms);
       for (int i = num_geoms - 1; i >= 0; i--) {
         CullableObject *next_decals = 
-          new CullableObject(data, geom_node, i, decals);
+          new CullableObject(this, data, geom_node, i, decals);
         if (next_decals->_state->has_cull_callback() &&
             !next_decals->_state->cull_callback(this, data)) {
           next_decals->_next = NULL;

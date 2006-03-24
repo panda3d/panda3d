@@ -45,10 +45,12 @@ class CullTraverser;
 class EXPCL_PANDA CullableObject {
 public:
   INLINE CullableObject(CullableObject *next = NULL);
-  INLINE CullableObject(const CullTraverserData &data,
+  INLINE CullableObject(const CullTraverser *trav,
+                        const CullTraverserData &data,
                         GeomNode *geom_node, int i,
                         CullableObject *next = NULL);
   INLINE CullableObject(const Geom *geom, const RenderState *state,
+                        const TransformState *net_transform,
                         const TransformState *modelview_transform,
                         CullableObject *next = NULL);
     
@@ -80,6 +82,7 @@ public:
   PT(GeomMunger) _munger;
   CPT(GeomVertexData) _munged_data;
   CPT(RenderState) _state;
+  CPT(TransformState) _net_transform;
   CPT(TransformState) _modelview_transform;
   CullableObject *_next;
 

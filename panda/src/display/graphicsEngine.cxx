@@ -529,6 +529,13 @@ render_frame() {
   }
 #endif
 
+  ClockObject *global_clock = ClockObject::get_global_clock();
+
+  if (display_cat.is_spam()) {
+    display_cat.spam()
+      << "render_frame() - frame " << global_clock->get_frame_count() << "\n";
+  }
+
   // We hold the GraphicsEngine mutex while we wait for all of the
   // threads.  Doing this puts us at risk for deadlock if any of the
   // threads tries to call any methods on the GraphicsEngine.  So
@@ -621,7 +628,6 @@ render_frame() {
   }
 #endif  // THREADED_PIPELINE
 
-  ClockObject *global_clock = ClockObject::get_global_clock();
   global_clock->tick();
   if (global_clock->check_errors()) {
     throw_event("clock_error");

@@ -479,13 +479,15 @@ void CullableObject::
 munge_texcoord_light_vector(const CullTraverser *traverser) {
   PStatTimer timer(_munge_light_vector_pcollector);
 
-  if (_modelview_transform->is_singular()) {
+  if (_net_transform->is_singular()) {
     // If we're under a singular transform, never mind.
     return;
   }
 
+  /*
   CPT(TransformState) net_transform =
     traverser->get_camera_transform()->compose(_modelview_transform);
+  */
 
   if (!_munged_data->has_column(InternalName::get_vertex()) || 
       !_munged_data->has_column(InternalName::get_normal())) {
@@ -544,7 +546,7 @@ munge_texcoord_light_vector(const CullTraverser *traverser) {
 
         // Get the transform from the light to the object.
         CPT(TransformState) light_transform =
-          net_transform->invert_compose(light.get_net_transform());
+          _net_transform->invert_compose(light.get_net_transform());
         const LMatrix4f &light_mat = light_transform->get_mat();
 
         GeomVertexWriter texcoord(new_data, texcoord_name);

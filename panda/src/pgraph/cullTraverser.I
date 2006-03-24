@@ -97,9 +97,9 @@ get_camera_transform() const {
 //
 //               Note that this value is always the position of the
 //               starting node, not the current node, even if it is
-//               sampled during a traversal.  To get the world
-//               transform of the current node use
-//               CullTraverserData::_net_transform.
+//               sampled during a traversal.  To get the transform of
+//               the current node use
+//               CullTraverserData::get_modelview_transform().
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *CullTraverser::
 get_world_transform() const {

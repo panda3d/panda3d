@@ -135,7 +135,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // whatever transforms were above the CollisionVisualizer node; it
     // always renders its objects according to their appropriate net
     // transform.
-    xform_data._modelview_transform = trav->get_world_transform();
+    xform_data._net_transform = TransformState::make_identity();
     xform_data.apply_transform_and_state(trav, net_transform, 
                                          RenderState::make_empty(),
                                          RenderEffects::make_empty(),
@@ -212,7 +212,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           geom->add_primitive(points);
             
           CullableObject *object = 
-            new CullableObject(geom, point_state, xform_data._modelview_transform);
+            new CullableObject(geom, point_state, 
+                               xform_data.get_net_transform(trav),
+                               xform_data.get_modelview_transform(trav));
           
           trav->get_cull_handler()->record_object(object, trav);
         }
@@ -240,7 +242,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           geom->add_primitive(lines);
           
           CullableObject *object = 
-            new CullableObject(geom, empty_state, xform_data._modelview_transform);
+            new CullableObject(geom, empty_state, 
+                               xform_data.get_net_transform(trav),
+                               xform_data.get_modelview_transform(trav));
           
           trav->get_cull_handler()->record_object(object, trav);
         }

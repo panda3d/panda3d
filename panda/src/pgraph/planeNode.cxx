@@ -176,7 +176,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
   CullableObject *plane_viz = 
     new CullableObject(get_viz(trav, data), data._state, 
-                       data._modelview_transform);
+                       data.get_net_transform(trav),
+                       data.get_modelview_transform(trav));
   trav->get_cull_handler()->record_object(plane_viz, trav);
 
   // Now carry on to render our child nodes.
@@ -225,7 +226,7 @@ get_viz(CullTraverser *trav, CullTraverserData &data) {
   // Figure out whether we are looking at the front or the back of the
   // plane.
   const Lens *lens = trav->get_scene()->get_lens();
-  Planef eye_plane = cdata->_plane * data._modelview_transform->get_mat();
+  Planef eye_plane = cdata->_plane * data.get_modelview_transform(trav)->get_mat();
   bool front = (eye_plane.dist_to_plane(lens->get_nodal_point()) >= 0.0f);
 
   if (cdata->_front_viz != (Geom *)NULL) {

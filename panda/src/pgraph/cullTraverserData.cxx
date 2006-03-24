@@ -32,14 +32,14 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::get_net_transform
+//     Function: CullTraverserData::get_modelview_transform
 //       Access: Public
-//  Description: Returns the net transform: the relative
-//               transform from the root of the scene to the model.
+//  Description: Returns the modelview transform: the relative
+//               transform from the camera to the model.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) CullTraverserData::
-get_net_transform(const CullTraverser *trav) const {
-  return trav->get_camera_transform()->compose(_modelview_transform);
+get_modelview_transform(const CullTraverser *trav) const {
+  return trav->get_world_transform()->compose(_net_transform);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ apply_transform_and_state(CullTraverser *trav,
   }
 
   if (!node_transform->is_identity()) {
-    _modelview_transform = _modelview_transform->compose(node_transform);
+    _net_transform = _net_transform->compose(node_transform);
 
     if ((_view_frustum != (GeometricBoundingVolume *)NULL) ||
         (_guard_band != (GeometricBoundingVolume *)NULL) ||

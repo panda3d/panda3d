@@ -147,13 +147,13 @@ void BillboardEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
               CPT(RenderState) &) const {
-  CPT(TransformState) net_transform = data._modelview_transform;
-  if (net_transform->is_singular()) {
+  CPT(TransformState) modelview_transform = data.get_modelview_transform(trav);
+  if (modelview_transform->is_singular()) {
     // If we're under a singular transform, never mind.
     return;
   }
 
-  // Since the "net" transform from the cull traverser already
+  // Since the "modelview" transform from the cull traverser already
   // includes the inverse camera transform, the camera transform is
   // identity.
   CPT(TransformState) camera_transform = TransformState::make_identity();
@@ -164,7 +164,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
     camera_transform = trav->get_camera_transform()->invert_compose(_look_at.get_net_transform());
   }
 
-  compute_billboard(node_transform, net_transform, camera_transform);
+  compute_billboard(node_transform, modelview_transform, camera_transform);
 }
 
 ////////////////////////////////////////////////////////////////////

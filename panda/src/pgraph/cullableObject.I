@@ -36,12 +36,13 @@ CullableObject(CullableObject *next) :
 //               the indicated CullTraverserData.
 ////////////////////////////////////////////////////////////////////
 INLINE CullableObject::
-CullableObject(const CullTraverserData &data,
+CullableObject(const CullTraverser *trav, const CullTraverserData &data,
                GeomNode *geom_node, int i,
                CullableObject *next) :
   _geom(geom_node->get_geom(i)),
   _state(data._state->compose(geom_node->get_geom_state(i))),
-  _modelview_transform(data._modelview_transform),
+  _net_transform(data.get_net_transform(trav)),
+  _modelview_transform(data.get_modelview_transform(trav)),
   _next(next)
 {
 }
@@ -54,10 +55,12 @@ CullableObject(const CullTraverserData &data,
 ////////////////////////////////////////////////////////////////////
 INLINE CullableObject::
 CullableObject(const Geom *geom, const RenderState *state,
+               const TransformState *net_transform,
                const TransformState *modelview_transform,
                CullableObject *next) :
   _geom(geom),
   _state(state),
+  _net_transform(net_transform),
   _modelview_transform(modelview_transform),
   _next(next)
 {
@@ -74,6 +77,7 @@ INLINE CullableObject::
 CullableObject(const CullableObject &copy) :
   _geom(copy._geom),
   _state(copy._state),
+  _net_transform(copy._net_transform),
   _modelview_transform(copy._modelview_transform),
   _next((CullableObject *)NULL)
 {
@@ -89,6 +93,7 @@ INLINE void CullableObject::
 operator = (const CullableObject &copy) {
   _geom = copy._geom;
   _state = copy._state;
+  _net_transform = copy._net_transform;
   _modelview_transform = copy._modelview_transform;
 }
 
