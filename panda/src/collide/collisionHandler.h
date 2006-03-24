@@ -39,7 +39,6 @@ public:
   virtual void add_entry(CollisionEntry *entry);
   virtual bool end_group();
 
-
 PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;

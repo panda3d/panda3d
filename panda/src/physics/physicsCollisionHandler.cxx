@@ -92,6 +92,7 @@ apply_friction(ColliderDef &def, LVector3f& vel, const LVector3f& force,
 void PhysicsCollisionHandler::
 apply_linear_force(ColliderDef &def, const LVector3f &force) {
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysicsCollisionHandler::apply_net_shove
 //       Access: Protected, Virtual
@@ -122,18 +123,22 @@ apply_net_shove(ColliderDef &def, const LVector3f& net_shove,
   // Copy the force vector while translating it 
   // into the physics object coordinate system:
   LVector3f adjustment=force;
-  physics_debug("  adjustment set "<<adjustment<<" len "<<adjustment.length());
+  physics_debug(
+      "  adjustment set "<<adjustment<<" len "<<adjustment.length());
 
   //NodePath np(def._node);
   //CPT(TransformState) trans = np.get_net_transform();
   //adjustment=adjustment*trans->get_mat();
-  //physics_debug("  adjustment trn "<<adjustment<<" len "<<adjustment.length());
+  //physics_debug(
+  //    "  adjustment trn "<<adjustment<<" len "<<adjustment.length());
 
   adjustment=adjustment*actor->get_physics_object()->get_lcs();
-  physics_debug("  adjustment lcs "<<adjustment<<" len "<<adjustment.length());
+  physics_debug(
+      "  adjustment lcs "<<adjustment<<" len "<<adjustment.length());
 
   adjustment.normalize();
-  physics_debug("  adjustment nrm "<<adjustment<<" len "<<adjustment.length());
+  physics_debug(
+      "  adjustment nrm "<<adjustment<<" len "<<adjustment.length());
 
   float adjustmentLength=-(adjustment.dot(vel));
   physics_debug("  adjustmentLength "<<adjustmentLength);
@@ -145,11 +150,12 @@ apply_net_shove(ColliderDef &def, const LVector3f& net_shove,
     #if 0
     cerr<<"vel "<<vel<<endl;
     cerr<<"net_shove "<<net_shove<<endl;
-    cerr<<"-force "<<-force<<endl;
-    actor->get_physics_object()->add_impact(-force, -vel);
+    cerr<<"force "<<force<<endl;
+    actor->get_physics_object()->add_impact(force, -vel);
     #else
     adjustment*=adjustmentLength;
-    physics_debug("  adjustment mul "<<adjustment<<" len "<<adjustment.length());
+    physics_debug(
+        "  adjustment mul "<<adjustment<<" len "<<adjustment.length());
     
     // This adjustment to our velocity will not reflect us off the surface,
     // but will deflect us parallel (or tangent) to the surface:
@@ -167,13 +173,17 @@ apply_net_shove(ColliderDef &def, const LVector3f& net_shove,
   #ifndef NDEBUG //[
   if (IS_THRESHOLD_EQUAL(vel.length(), old_vel.length(), 0.0001f)) {
     // This is a check to see if vel is staying the same:
-    physics_debug("  vel is about the same length:  "<<vel.length()<<" ~ "<<old_vel.length());
+    physics_debug(
+        "  vel is about the same length:  "
+        <<vel.length()<<" ~ "<<old_vel.length());
   } else if (vel.length() > old_vel.length()) {
     // This is a check to avoid adding engergy:
-    physics_debug("  vel got larger  "<<vel.length()<<" > "<<old_vel.length());
+    physics_debug(
+        "  vel got larger  "<<vel.length()<<" > "<<old_vel.length());
   } else {
     // This is a check to avoid losing engergy:
-    physics_debug("  vel got smaller  "<<vel.length()<<" < "<<old_vel.length());
+    physics_debug(
+        "  vel got smaller  "<<vel.length()<<" < "<<old_vel.length());
   }
   if (vel.length() > 10.0f) {
     // This is a check to see if the velocity is higher than I expect it

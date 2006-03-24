@@ -96,7 +96,8 @@ class ClockDelta(DirectObject.DirectObject):
         timeDelta is equal to the amount of time, in seconds,
         that has been added to the global clock
         """
-        assert self.notify.debug("adjusting timebase by %f seconds" % timeDelta)
+        assert self.notify.debug(
+            "adjusting timebase by %f seconds" % timeDelta)
         # adjust our timebase by the same amount
         self.delta += timeDelta
 
@@ -119,8 +120,9 @@ class ClockDelta(DirectObject.DirectObject):
         delta accordingly.
         """
         newDelta = (float(localTime) -
-                    (float(networkTime) / NetworkTimePrecision))
-        self.newDelta(localTime, newDelta, newUncertainty, trustNew = trustNew)
+            (float(networkTime) / NetworkTimePrecision))
+        self.newDelta(
+            localTime, newDelta, newUncertainty, trustNew = trustNew)
 
     def peerToPeerResync(self, avId, timestamp, serverTime, uncertainty):
         """
@@ -142,7 +144,9 @@ class ClockDelta(DirectObject.DirectObject):
             # of some other request, and our local timestamp may have
             # been resynced since then: ergo, the timestamp in this
             # request is meaningless.
-            assert self.notify.debug("Ignoring request for resync from %s within %.3f s." % (avId, now - self.lastResync))
+            assert self.notify.debug(
+                "Ignoring request for resync from %s within %.3f s." %
+                (avId, now - self.lastResync))
             return -1
 
         # The timestamp value will be a timestamp that we sent out
@@ -160,13 +164,16 @@ class ClockDelta(DirectObject.DirectObject):
             # P2PResyncDelay.  If it does not meet these requirements,
             # it must be very old indeed, or someone is playing tricks
             # on us.
-            self.notify.info("Ignoring old request for resync from %s." % (avId))
+            self.notify.info(
+                "Ignoring old request for resync from %s." % (avId))
         else:
             # Now the other client has told us his delta and uncertainty
             # information, which was generated somewhere in the range
             # [-elapsed, 0] seconds ago.  That means our complete window
             # is wider by that amount.
-            self.notify.info("Got sync +/- %.3f s, elapsed %.3f s, from %s." % (uncertainty, elapsed, avId))
+            self.notify.info(
+                "Got sync +/- %.3f s, elapsed %.3f s, from %s." %
+                (uncertainty, elapsed, avId))
             delta -= elapsed / 2.0
             uncertainty += elapsed / 2.0
 
@@ -184,8 +191,12 @@ class ClockDelta(DirectObject.DirectObject):
         """
         oldUncertainty = self.getUncertainty()
         if oldUncertainty != None:
-            self.notify.info('previous delta at %.3f s, +/- %.3f s.' % (self.delta, oldUncertainty))
-            self.notify.info('new delta at %.3f s, +/- %.3f s.' % (newDelta, newUncertainty))
+            self.notify.info(
+                'previous delta at %.3f s, +/- %.3f s.' % 
+                (self.delta, oldUncertainty))
+            self.notify.info(
+                'new delta at %.3f s, +/- %.3f s.' %
+                (newDelta, newUncertainty))
             # Our previous measurement was self.delta +/- oldUncertainty;
             # our new measurement is newDelta +/- newUncertainty.  Take
             # the intersection of both.
@@ -209,7 +220,9 @@ class ClockDelta(DirectObject.DirectObject):
             else:
                 newDelta = (low + high) / 2.0
                 newUncertainty = (high - low) / 2.0
-                self.notify.info('intersection at %.3f s, +/- %.3f s.' % (newDelta, newUncertainty))
+                self.notify.info(
+                    'intersection at %.3f s, +/- %.3f s.' %
+                    (newDelta, newUncertainty))
 
         self.delta = newDelta
         self.uncertainty = newUncertainty
@@ -261,7 +274,6 @@ class ClockDelta(DirectObject.DirectObject):
         ntime = int(math.floor(((localTime - self.delta) * ticksPerSec) + 0.5))
         if bits == 16:
             return self.__signExtend(ntime)
-
         else:
             # Assume the bits is either 16 or 32.  If it's 32, no need
             # to sign-extend.  32 bits gives us about 227 days of

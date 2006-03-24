@@ -54,9 +54,9 @@ CollisionTraverser(const string &name) :
   _this_pcollector(_collisions_pcollector, name)
 {
   _respect_prev_transform = respect_prev_transform;
-#ifdef DO_COLLISION_RECORDING
+  #ifdef DO_COLLISION_RECORDING
   _recorder = (CollisionRecorder *)NULL;
-#endif
+  #endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,9 +66,9 @@ CollisionTraverser(const string &name) :
 ////////////////////////////////////////////////////////////////////
 CollisionTraverser::
 ~CollisionTraverser() {
-#ifdef DO_COLLISION_RECORDING
+  #ifdef DO_COLLISION_RECORDING
   clear_recorder();
-#endif
+  #endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -256,11 +256,11 @@ void CollisionTraverser::
 traverse(const NodePath &root) {
   PStatTimer timer(_this_pcollector);
 
-#ifdef DO_COLLISION_RECORDING
+  #ifdef DO_COLLISION_RECORDING
   if (has_recorder()) {
     get_recorder()->begin_traversal();
   }
-#endif  // DO_COLLISION_RECORDING
+  #endif  // DO_COLLISION_RECORDING
 
   LevelStates level_states;
   prepare_colliders(level_states, root);
@@ -273,9 +273,9 @@ traverse(const NodePath &root) {
   // Make a number of passes, one for each group of 32 Colliders (or
   // whatever number of bits we have available in CurrentMask).
   for (size_t pass = 0; pass < level_states.size(); ++pass) {
-#ifdef DO_PSTATS
+    #ifdef DO_PSTATS
     PStatTimer pass_timer(get_pass_collector(pass));
-#endif
+    #endif
     r_traverse(level_states[pass]);
   }
 
@@ -289,11 +289,11 @@ traverse(const NodePath &root) {
     }
   }
 
-#ifdef DO_COLLISION_RECORDING
+  #ifdef DO_COLLISION_RECORDING
   if (has_recorder()) {
     get_recorder()->end_traversal();
   }
-#endif  // DO_COLLISION_RECORDING
+  #endif  // DO_COLLISION_RECORDING
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -436,7 +436,8 @@ write(ostream &out, int indent_level) const {
       out << " ignored\n";
     }
 
-    if (!cnode_path.is_empty() && cnode_path.node()->is_of_type(CollisionNode::get_class_type())) {
+    if (!cnode_path.is_empty() && cnode_path.node()->is_of_type(
+        CollisionNode::get_class_type())) {
       CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
       
       int num_solids = cnode->get_num_solids();
@@ -547,21 +548,22 @@ r_traverse(CollisionLevelState &level_state) {
           entry._from_node_path = level_state.get_collider_node_path(c);
           entry._from = level_state.get_collider(c);
 
-          compare_collider_to_node(entry, 
-                                   level_state.get_parent_bound(c),
-                                   level_state.get_local_bound(c),
-                                   node_gbv);
+          compare_collider_to_node(
+              entry, 
+              level_state.get_parent_bound(c),
+              level_state.get_local_bound(c),
+              node_gbv);
         }
       }
     }
 
   } else if (node->is_geom_node()) {
-#ifndef NDEBUG
+    #ifndef NDEBUG
     if (collide_cat.is_spam()) {
       collide_cat.spam()
         << "Reached " << *node << "\n";
     }
-#endif
+    #endif
     
     GeomNode *gnode;
     DCAST_INTO_V(gnode, node);
@@ -588,10 +590,11 @@ r_traverse(CollisionLevelState &level_state) {
           entry._from_node_path = level_state.get_collider_node_path(c);
           entry._from = level_state.get_collider(c);
 
-          compare_collider_to_geom_node(entry, 
-                                        level_state.get_parent_bound(c),
-                                        level_state.get_local_bound(c),
-                                        node_gbv);
+          compare_collider_to_geom_node(
+              entry, 
+              level_state.get_parent_bound(c),
+              level_state.get_local_bound(c),
+              node_gbv);
         }
       }
     }
@@ -618,7 +621,8 @@ r_traverse(CollisionLevelState &level_state) {
     for (int i = 0; i < num_children; ++i) {
       CollisionLevelState next_state(level_state, node->get_child(i));
       if (i != index) {
-        next_state.set_include_mask(next_state.get_include_mask() & ~GeomNode::get_default_collide_mask());
+        next_state.set_include_mask(next_state.get_include_mask() &
+          ~GeomNode::get_default_collide_mask());
       }
       r_traverse(next_state);
     }
@@ -731,9 +735,9 @@ compare_collider_to_solid(CollisionEntry &entry,
   if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
       solid_gbv != (GeometricBoundingVolume *)NULL) {
     within_solid_bounds = (solid_gbv->contains(from_node_gbv) != 0);
-#ifdef DO_PSTATS
+    #ifdef DO_PSTATS
     ((CollisionSolid *)entry.get_into())->get_volume_pcollector().add_level(1);
-#endif  // DO_PSTATS
+    #endif  // DO_PSTATS
   }
   if (within_solid_bounds) {
     Colliders::const_iterator ci;
@@ -793,9 +797,9 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
               PT(BoundingSphere) sphere = new BoundingSphere;
               sphere->around(v, v + 3);
               within_solid_bounds = (sphere->contains(from_node_gbv) != 0);
-#ifdef DO_PSTATS
+              #ifdef DO_PSTATS
               CollisionGeom::_volume_pcollector.add_level(1);
-#endif  // DO_PSTATS
+              #endif  // DO_PSTATS
             }
             if (within_solid_bounds) {
               PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
