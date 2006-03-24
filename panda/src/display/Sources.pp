@@ -5,7 +5,7 @@
 #begin lib_target
   #define TARGET display
   #define LOCAL_LIBS \
-    pgraph putil gsgbase gobj linmath mathutil \
+    pgraph cull putil gsgbase gobj linmath mathutil \
     pstatclient
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
