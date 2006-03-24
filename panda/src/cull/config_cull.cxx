@@ -56,8 +56,6 @@ init_libcull() {
   CullBinStateSorted::init_type();
   CullBinUnsorted::init_type();
 
-  cerr << "init_libcull\n";
-
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
   bin_manager->register_bin_type(CullBinManager::BT_unsorted,
                                  CullBinUnsorted::make_bin);
