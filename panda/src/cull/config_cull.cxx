@@ -67,23 +67,4 @@ init_libcull() {
                                  CullBinFrontToBack::make_bin);
   bin_manager->register_bin_type(CullBinManager::BT_fixed,
                                  CullBinFixed::make_bin);
-  /*
-  switch () {
-  case BT_back_to_front:
-    return new CullBinBackToFront(name, gsg);
-
-  case BT_front_to_back:
-    return new CullBinFrontToBack(name, gsg);
-
-  case BT_fixed:
-    return new CullBinFixed(name, gsg);
-
-  case BT_state_sorted:
-    return new CullBinStateSorted(name, gsg);
-
-  default:
-    return new CullBinUnsorted(name, gsg);
-  }
-  */
-
 }
