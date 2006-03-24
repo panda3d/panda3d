@@ -17,7 +17,6 @@
     auxSceneData.I auxSceneData.h \
     bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
-    binCullHandler.I binCullHandler.h \
     camera.I camera.h \
     clipPlaneAttrib.I clipPlaneAttrib.h \
     colorAttrib.I colorAttrib.h \
@@ -28,12 +27,7 @@
     config_pgraph.h \
     cullBin.I cullBin.h \
     cullBinAttrib.I cullBinAttrib.h \
-    cullBinBackToFront.I cullBinBackToFront.h \
-    cullBinFixed.I cullBinFixed.h \
-    cullBinFrontToBack.I cullBinFrontToBack.h \
     cullBinManager.I cullBinManager.h \
-    cullBinStateSorted.I cullBinStateSorted.h \
-    cullBinUnsorted.I cullBinUnsorted.h \
     cullFaceAttrib.I cullFaceAttrib.h \
     cullHandler.I cullHandler.h \
     cullPlanes.I cullPlanes.h \
@@ -46,7 +40,6 @@
     depthTestAttrib.I depthTestAttrib.h \
     depthWriteAttrib.I depthWriteAttrib.h \
     directionalLight.I directionalLight.h \
-    drawCullHandler.I drawCullHandler.h \
     drawMaskAttrib.I drawMaskAttrib.h \
     fadeLodNode.I fadeLodNode.h fadeLodNodeData.h \
     findApproxLevelEntry.I findApproxLevelEntry.h \
@@ -126,7 +119,6 @@
     auxSceneData.cxx \
     bamFile.cxx \
     billboardEffect.cxx \
-    binCullHandler.cxx \
     camera.cxx \
     clipPlaneAttrib.cxx \
     colorAttrib.cxx \
@@ -137,12 +129,7 @@
     config_pgraph.cxx \
     cullBin.cxx \
     cullBinAttrib.cxx \
-    cullBinBackToFront.cxx \
-    cullBinFixed.cxx \
-    cullBinFrontToBack.cxx \
     cullBinManager.cxx \
-    cullBinStateSorted.cxx \
-    cullBinUnsorted.cxx \
     cullFaceAttrib.cxx \
     cullHandler.cxx \
     cullPlanes.cxx \
@@ -155,7 +142,6 @@
     depthTestAttrib.cxx \
     depthWriteAttrib.cxx \
     directionalLight.cxx \
-    drawCullHandler.cxx \
     drawMaskAttrib.cxx \
     fadeLodNode.cxx fadeLodNodeData.cxx \
     findApproxLevelEntry.cxx \
@@ -231,7 +217,6 @@
     auxSceneData.I auxSceneData.h \
     bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
-    binCullHandler.I binCullHandler.h \
     camera.I camera.h \
     clipPlaneAttrib.I clipPlaneAttrib.h \
     colorAttrib.I colorAttrib.h \
@@ -242,12 +227,7 @@
     config_pgraph.h \
     cullBin.I cullBin.h \
     cullBinAttrib.I cullBinAttrib.h \
-    cullBinBackToFront.I cullBinBackToFront.h \
-    cullBinFixed.I cullBinFixed.h \
-    cullBinFrontToBack.I cullBinFrontToBack.h \
     cullBinManager.I cullBinManager.h \
-    cullBinStateSorted.I cullBinStateSorted.h \
-    cullBinUnsorted.I cullBinUnsorted.h \
     cullFaceAttrib.I cullFaceAttrib.h \
     cullHandler.I cullHandler.h \
     cullPlanes.I cullPlanes.h \
@@ -260,7 +240,6 @@
     depthTestAttrib.I depthTestAttrib.h \
     depthWriteAttrib.I depthWriteAttrib.h \
     directionalLight.I directionalLight.h \
-    drawCullHandler.I drawCullHandler.h \
     drawMaskAttrib.I drawMaskAttrib.h \
     fadeLodNode.I fadeLodNode.h fadeLodNodeData.h \
     fog.I fog.h \

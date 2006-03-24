@@ -17,11 +17,13 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullBinManager.h"
+/*
 #include "cullBinBackToFront.h"
 #include "cullBinFrontToBack.h"
 #include "cullBinFixed.h"
 #include "cullBinStateSorted.h"
 #include "cullBinUnsorted.h"
+*/
 #include "renderState.h"
 #include "cullResult.h"
 #include "config_pgraph.h"
@@ -49,7 +51,7 @@ CullBinManager() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullBinManager::Destructor
-//       Access: Protected
+//       Access: Protected, Virtual
 //  Description: Don't call the destructor.
 ////////////////////////////////////////////////////////////////////
 CullBinManager::
@@ -221,22 +223,28 @@ make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg) {
   nassertr(_bin_definitions[bin_index]._in_use, NULL);
   string name = get_bin_name(bin_index);
 
-  switch (_bin_definitions[bin_index]._type) {
-  case BT_back_to_front:
-    return new CullBinBackToFront(name, gsg);
-
-  case BT_front_to_back:
-    return new CullBinFrontToBack(name, gsg);
-
-  case BT_fixed:
-    return new CullBinFixed(name, gsg);
-
-  case BT_state_sorted:
-    return new CullBinStateSorted(name, gsg);
-
-  default:
-    return new CullBinUnsorted(name, gsg);
+  BinType type = _bin_definitions[bin_index]._type;
+  BinConstructors::const_iterator ci = _bin_constructors.find(type);
+  if (ci != _bin_constructors.end()) {
+    BinConstructor *constructor = (*ci).second;
+    return constructor(name, gsg);
   }
+
+  // Hmm, unknown (or unregistered) bin type.
+  nassertr(false, NULL);
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::register_bin_type
+//       Access: Public
+//  Description: Intended to be called at startup type by each CullBin
+//               type, to register the constructor for each type.
+////////////////////////////////////////////////////////////////////
+void CullBinManager::
+register_bin_type(BinType type, CullBinManager::BinConstructor *constructor) {
+  bool inserted = _bin_constructors.insert(BinConstructors::value_type(type, constructor)).second;
+  nassertv(inserted);
 }
 
 ////////////////////////////////////////////////////////////////////

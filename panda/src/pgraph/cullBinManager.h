@@ -70,6 +70,13 @@ public:
   // This interface is only intended to be used by CullResult.
   PT(CullBin) make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg);
 
+  // This defines the factory interface for defining constructors to
+  // bin types (the implementations are in the cull directory, not
+  // here in pgraph, so we can't call the constructors directly).
+  typedef CullBin *BinConstructor(const string &name, GraphicsStateGuardianBase *gsg);
+
+  void register_bin_type(BinType type, BinConstructor *constructor);
+
 private:
   void do_sort_bins();
   void setup_initial_bins();
@@ -99,6 +106,9 @@ private:
   SortedBins _sorted_bins;
   bool _bins_are_sorted;
   bool _unused_bin_index;
+
+  typedef pmap<BinType, BinConstructor *> BinConstructors;
+  BinConstructors _bin_constructors;
 
   static CullBinManager *_global_ptr;
   friend class SortBins;
