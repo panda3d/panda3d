@@ -6754,8 +6754,10 @@ get_texture_memory_size(Texture *tex) {
   GLP(GetTexLevelParameteriv)(page_target, 0, 
                               GL_TEXTURE_INTENSITY_SIZE, &intensity_size);
   if (_supports_depth_texture) {
-    GLP(GetTexLevelParameteriv)(page_target, 0, 
-				GL_TEXTURE_DEPTH_SIZE, &depth_size);
+    // Actually, this seems to cause problems on some Mesa versions,
+    // even though they advertise GL_ARB_depth_texture.  Who needs it.
+    //    GLP(GetTexLevelParameteriv)(page_target, 0, 
+    //				GL_TEXTURE_DEPTH_SIZE, &depth_size);
   }
 
   GLint width = 1, height = 1, depth = 1;
