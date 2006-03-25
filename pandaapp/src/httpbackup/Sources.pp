@@ -1,4 +1,4 @@
-#define BUILD_DIRECTORY $[HAVE_SSL]
+#define BUILD_DIRECTORY $[HAVE_OPENSSL]
 
 #begin bin_target
   #define TARGET httpbackup
