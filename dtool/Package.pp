@@ -33,7 +33,7 @@
 // Where should we install DTOOL, specifically?
 #if $[DTOOL_INSTALL]
   #define DTOOL_INSTALL $[unixfilename $[DTOOL_INSTALL]]
-#elif $[or $[CTPROJS],$[DTOOL]]
+#elif $[CTPROJS]
   // If we are presently attached, use the environment variable.
   // We define two variables: one for ourselves, which burns in the
   // current value of the DTOOL environment variable (so that any

@@ -35,7 +35,9 @@
 #endif
 
 // Where should we install PANDATOOL?
-#if $[or $[CTPROJS],$[PANDATOOL]]
+#if $[PANDATOOL_INSTALL]
+  #define PANDATOOL_INSTALL $[unixfilename $[PANDATOOL_INSTALL]]
+#elif $[CTPROJS]
   #set PANDATOOL $[unixfilename $[PANDATOOL]]
   #define PANDATOOL_INSTALL $[PANDATOOL]/built
   #if $[eq $[PANDATOOL],]

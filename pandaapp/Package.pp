@@ -35,15 +35,15 @@
 #endif
 
 // Where should we install PANDAAPP?
-#if $[or $[CTPROJS],$[PANDAAPP]]
+#if $[PANDAAPP_INSTALL]
+  #define PANDAAPP_INSTALL $[unixfilename $[PANDAAPP_INSTALL]]
+#elif $[CTPROJS]
   #define PANDAAPP_INSTALL $[PANDAAPP]/built
-  #define PANDAAPP_INSTALL_OTHER $(PANDAAPP)
   #if $[eq $[PANDAAPP],]
     #error You seem to be attached to some trees, but not PANDAAPP!
   #endif
 #else
   #defer PANDAAPP_INSTALL $[unixfilename $[INSTALL_DIR]]
-  #defer PANDAAPP_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]
 #endif
 
 // Also get the PANDATOOL Package file and everything that includes.

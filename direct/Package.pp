@@ -37,7 +37,7 @@
 // Where should we install DIRECT?
 #if $[DIRECT_INSTALL]
   #define DIRECT_INSTALL $[unixfilename $[DIRECT_INSTALL]]
-#elif $[or $[CTPROJS],$[DIRECT]]
+#elif $[CTPROJS]
   #set DIRECT $[unixfilename $[DIRECT]]
   #define DIRECT_INSTALL $[DIRECT]/built
   #if $[eq $[DIRECT],]

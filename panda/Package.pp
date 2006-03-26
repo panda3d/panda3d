@@ -37,7 +37,7 @@
 // Where should we install PANDA?
 #if $[PANDA_INSTALL]
   #define PANDA_INSTALL $[unixfilename $[PANDA_INSTALL]]
-#elif $[or $[CTPROJS],$[PANDA]]
+#elif $[CTPROJS]
   #set PANDA $[unixfilename $[PANDA]]
   #define PANDA_INSTALL $[PANDA]/built
   #if $[eq $[PANDA],]
