@@ -391,14 +391,14 @@ apply_state(GeomNode *node, const RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 int GeomTransformer::
 collect_vertex_data(Geom *geom, int collect_bits) {
-  const GeomVertexData *vdata = geom->get_vertex_data();
+  CPT(GeomVertexData) vdata = geom->get_vertex_data();
 
   if (vdata->get_num_rows() > _max_collect_vertices) {
     // Don't even bother.
     return 0;
   }
 
-  const GeomVertexFormat *format = vdata->get_format();
+  CPT(GeomVertexFormat) format = vdata->get_format();
 
   NewCollectedKey key;
   if ((collect_bits & SceneGraphReducer::CVD_name) != 0) {
@@ -456,6 +456,12 @@ collect_vertex_data(Geom *geom, int collect_bits) {
     CPT(GeomVertexFormat) new_format = format->get_union_format(new_data->get_format());
     new_data->set_format(new_format);
     nassertr(offset == new_data->get_num_rows(), 0);
+
+    // Also, convert (non-destructively) the current Geom's vertex
+    // data to the new format, so we can just blindly append the
+    // vertices to new_data, in the lines below.
+    vdata = vdata->convert_to(new_format);
+    format = new_format;
   }
 
   new_data->set_num_rows(new_num_vertices);
