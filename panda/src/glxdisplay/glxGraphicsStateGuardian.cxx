@@ -228,39 +228,45 @@ get_extra_extensions() {
 ////////////////////////////////////////////////////////////////////
 void *glxGraphicsStateGuardian::
 get_extension_func(const char *prefix, const char *name) {
-  if (!_checked_get_proc_address) {
-    // First, check if we have glxGetProcAddress available.  This will
-    // be superior if we can get it.
-    const char *funcName = NULL;
-
-    if (glx_is_at_least_version(1, 4)) {
-      funcName = "glXGetProcAddress";
-
-    } else if (has_extension("GLX_ARB_get_proc_address")) {
-      funcName = "glXGetProcAddressARB";
-    }
-
-    if (funcName != NULL) {
-      _glxGetProcAddress = (PFNGLXGETPROCADDRESSPROC)get_system_func(funcName);
-      if (_glxGetProcAddress == NULL) {
-        glxdisplay_cat.warning()
-          << "Couldn't load function " << funcName
-          << ", GL extensions may be unavailable.\n";
-      }
-    }
-
-    _checked_get_proc_address = true;
-  }
-
   string fullname = string(prefix) + string(name);
 
-  // Use glxGetProcAddress() if we've got it; it should be more robust.
-  if (_glxGetProcAddress != NULL) {
-    return (void *)_glxGetProcAddress((const GLubyte *)fullname.c_str());
+  if (glx_get_proc_address) {
+    if (!_checked_get_proc_address) {
+      // First, check if we have glxGetProcAddress available.  This will
+      // be superior if we can get it.
+      const char *funcName = NULL;
+      
+      if (glx_is_at_least_version(1, 4)) {
+	funcName = "glXGetProcAddress";
+	
+      } else if (has_extension("GLX_ARB_get_proc_address")) {
+	funcName = "glXGetProcAddressARB";
+      }
+      
+      if (funcName != NULL) {
+	_glxGetProcAddress = (PFNGLXGETPROCADDRESSPROC)get_system_func(funcName);
+	if (_glxGetProcAddress == NULL) {
+	  glxdisplay_cat.warning()
+	    << "Couldn't load function " << funcName
+	    << ", GL extensions may be unavailable.\n";
+	}
+      }
+      
+      _checked_get_proc_address = true;
+    }
+    
+    // Use glxGetProcAddress() if we've got it; it should be more robust.
+    if (_glxGetProcAddress != NULL) {
+      return (void *)_glxGetProcAddress((const GLubyte *)fullname.c_str());
+    }
   }
 
-  // Otherwise, fall back to the OS-provided calls.
-  return get_system_func(fullname.c_str());
+  if (glx_get_os_address) {
+    // Otherwise, fall back to the OS-provided calls.
+    return get_system_func(fullname.c_str());
+  }
+
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

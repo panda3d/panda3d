@@ -30,5 +30,7 @@ extern EXPCL_PANDAGL void init_libglxdisplay();
 
 extern ConfigVariableString display_cfg;
 extern ConfigVariableBool glx_error_abort;
+extern ConfigVariableBool glx_get_proc_address;
+extern ConfigVariableBool glx_get_os_address;
 
 #endif /* __CONFIG_GLXDISPLAY_H__ */

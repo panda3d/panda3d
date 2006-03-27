@@ -38,6 +38,21 @@ ConfigVariableString display_cfg
 ConfigVariableBool glx_error_abort
 ("glx-error-abort", false);
 
+ConfigVariableBool glx_get_proc_address
+("glx-get-proc-address", true,
+ PRC_DESC("Set this to true to allow the use of glxGetProcAddress(), if "
+	  "it is available, to query the OpenGL extension functions.  This "
+	  "is the standard way to query extension functions."));
+
+
+ConfigVariableBool glx_get_os_address
+("glx-get-os-address", true,
+ PRC_DESC("Set this to true to allow Panda to query the OpenGL library "
+	  "directly using standard operating system calls to locate "
+	  "addresses of extension functions.  This will be done only "
+	  "if glxGetProcAddress() cannot be used for some reason."));
+	  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libglxdisplay
 //  Description: Initializes the library.  This must be called at
