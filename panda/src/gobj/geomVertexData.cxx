@@ -200,6 +200,53 @@ set_name(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::set_format
+//       Access: Published
+//  Description: Changes the format of the vertex data.  If the data
+//               is not empty, this will implicitly change every row
+//               to match the new format.
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+set_format(const GeomVertexFormat *format) {
+  nassertv(format->is_registered());
+  if (format == _format) {
+    // Trivially no-op.
+    return;
+  }
+
+  CDWriter cdata(_cycler, true);
+
+  // Put the current data aside, so we can copy it back in below.
+  CPT(GeomVertexData) orig_data = new GeomVertexData(*this);
+
+  // Assign the new format.  This means clearing out all of our
+  // current arrays and replacing them with new, empty arrays.
+  _format = format;
+
+  UsageHint usage_hint = cdata->_usage_hint;
+  cdata->_arrays.clear();
+  int num_arrays = _format->get_num_arrays();
+  for (int i = 0; i < num_arrays; i++) {
+    PT(GeomVertexArrayData) array = new GeomVertexArrayData
+      (_format->get_array(i), usage_hint);
+    cdata->_arrays.push_back(array);
+  }
+
+  // Now copy the original data back in.  This will automatically
+  // convert it to the new format.
+  copy_from(orig_data, false);
+
+  clear_cache_stage();
+  cdata->_modified = Geom::get_next_modified();
+  cdata->_animated_vertices.clear();
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::set_usage_hint
 //       Access: Published
 //  Description: Changes the UsageHint hint for this vertex data, and

@@ -150,7 +150,8 @@ PUBLISHED:
   void clear_connected_shading();
   void get_connected_shading();
   void rebuild_vertex_pool(EggVertexPool *vertex_pool, bool recurse);
-  void unify_attributes(bool use_connected_shading, bool recurse);
+  void unify_attributes(bool use_connected_shading, bool allow_per_primitive,
+			bool recurse);
   void apply_last_attribute(bool recurse);
   void apply_first_attribute(bool recurse);
   void post_apply_flat_attribute(bool recurse);

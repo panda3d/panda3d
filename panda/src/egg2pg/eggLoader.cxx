@@ -173,7 +173,7 @@ build_graph() {
   _data->clear_connected_shading();
   _data->remove_unused_vertices(true);
   _data->get_connected_shading();
-  _data->unify_attributes(true, true);
+  _data->unify_attributes(true, egg_flat_shading, true);
 
   // Now we need to get the connected shading again, since in unifying
   // the attributes we may have made vertices suddenly become

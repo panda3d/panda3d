@@ -344,7 +344,8 @@ fill_state(EggPrimitive *egg_prim) {
   }
 
   _flat_shaded = 
-    (egg_prim->get_connected_shading() == EggPrimitive::S_per_face);
+    (egg_flat_shading &&
+     egg_prim->get_connected_shading() == EggPrimitive::S_per_face);
 
   if (_flat_shaded) {
     add_attrib(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));

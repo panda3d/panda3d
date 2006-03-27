@@ -101,6 +101,7 @@ GeomVertexFormat::
 //               CPU-animation data elements removed.
 //
 //               This may only be called after the format has been
+//               registered.  The return value will have been already
 //               registered.
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexFormat) GeomVertexFormat::
@@ -132,6 +133,61 @@ get_post_animated_format() const {
   _post_animated_format->test_ref_count_integrity();
 
   return _post_animated_format;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexFormat::get_union_format
+//       Access: Published
+//  Description: Returns a new GeomVertexFormat that includes all of
+//               the columns defined in either this GeomVertexFormat
+//               or the other one.  If any column is defined in both
+//               formats with different sizes (for instance, texcoord2
+//               vs. texcoord3), the new format will include the
+//               larger of the two definitions.
+//
+//               This may only be called after both source formats
+//               have been registered.  The return value will also
+//               have been already registered.
+////////////////////////////////////////////////////////////////////
+CPT(GeomVertexFormat) GeomVertexFormat::
+get_union_format(const GeomVertexFormat *other) const {
+  nassertr(is_registered() && other->is_registered(), NULL);
+
+  PT(GeomVertexArrayFormat) new_array = new GeomVertexArrayFormat;
+
+  // First, ensure that it has all of the columns in the first format.
+  Arrays::const_iterator ai;
+  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
+    GeomVertexArrayFormat *array_format = (*ai);
+    int num_columns = array_format->get_num_columns();
+    for (int i = 0; i < num_columns; ++i) {
+      const GeomVertexColumn *column = array_format->get_column(i);
+      const GeomVertexColumn *other_column = other->get_column(column->get_name());
+      if (other_column != (GeomVertexColumn *)NULL &&
+	  other_column->get_total_bytes() > column->get_total_bytes()) {
+	// The other column is larger.  Keep it.
+	new_array->add_column(*other_column);
+      } else {
+	// Our column is larger.  Keep it.
+	new_array->add_column(*column);
+      }
+    }
+  }
+
+  // Now pick up any remaining columns in the second format.
+  for (ai = other->_arrays.begin(); ai != other->_arrays.end(); ++ai) {
+    GeomVertexArrayFormat *other_array_format = (*ai);
+    int num_columns = other_array_format->get_num_columns();
+    for (int i = 0; i < num_columns; ++i) {
+      const GeomVertexColumn *other_column = other_array_format->get_column(i);
+      if (!new_array->has_column(other_column->get_name())) {
+	new_array->add_column(*other_column);
+      }
+    }
+  }
+
+  // Finally, create a format for the thing.
+  return GeomVertexFormat::register_format(new_array);
 }
 
 ////////////////////////////////////////////////////////////////////

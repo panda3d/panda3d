@@ -404,7 +404,9 @@ collect_vertex_data(Geom *geom, int collect_bits) {
   if ((collect_bits & SceneGraphReducer::CVD_name) != 0) {
     key._name = vdata->get_name();
   }
-  key._format = format;
+  if ((collect_bits & SceneGraphReducer::CVD_format) != 0) {
+    key._format = format;
+  }
   key._usage_hint = vdata->get_usage_hint();
 
   AlreadyCollected::const_iterator ai;
@@ -424,9 +426,12 @@ collect_vertex_data(Geom *geom, int collect_bits) {
   PT(GeomVertexData) new_data;
   if (ni != _new_collected_data.end()) {
     new_data = (*ni).second;
+
   } else {
+    // We haven't encountered a compatible GeomVertexData before.
+    // Create a new one.
     new_data = new GeomVertexData(vdata->get_name(), format, 
-                                    vdata->get_usage_hint());
+				  vdata->get_usage_hint());
     _new_collected_data[key] = new_data;
     ++num_created;
   }
@@ -437,11 +442,20 @@ collect_vertex_data(Geom *geom, int collect_bits) {
     // Whoa, hold the phone!  Too many vertices going into this one
     // GeomVertexData object; we'd better start over.
     new_data = new GeomVertexData(vdata->get_name(), format, 
-                                    vdata->get_usage_hint());
+				  vdata->get_usage_hint());
     _new_collected_data[key] = new_data;
     offset = 0;
     new_num_vertices = vdata->get_num_rows();
     ++num_created;
+  }
+
+  if (new_data->get_format() != format) {
+    // We're combining two GeomVertexDatas of different formats.
+    // Therefore, we need to expand the format to include the union of
+    // both sets of columns.
+    CPT(GeomVertexFormat) new_format = format->get_union_format(new_data->get_format());
+    new_data->set_format(new_format);
+    nassertr(offset == new_data->get_num_rows(), 0);
   }
 
   new_data->set_num_rows(new_num_vertices);

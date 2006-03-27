@@ -87,6 +87,12 @@ PUBLISHED:
     // If set, only those GeomVertexDatas within the same node might
     // be collected together.
     CVD_one_node_only  = 0x010,
+
+    // If set, two GeomVertexDatas with different formats will not be
+    // collected together.  If not set, GeomVertexDatas of different
+    // formats may be combined by expanding all GeomVertexDatas to the
+    // union of all defined columns.
+    CVD_format         = 0x020,
   };
 
   enum MakeNonindexed {

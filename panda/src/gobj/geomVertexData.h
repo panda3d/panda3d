@@ -90,6 +90,8 @@ PUBLISHED:
   void set_name(const string &name);
 
   INLINE const GeomVertexFormat *get_format() const;
+  void set_format(const GeomVertexFormat *format);
+
   INLINE UsageHint get_usage_hint() const;
   void set_usage_hint(UsageHint usage_hint);
 

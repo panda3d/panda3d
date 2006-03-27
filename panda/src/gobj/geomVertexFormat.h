@@ -78,6 +78,7 @@ PUBLISHED:
   INLINE void set_animation(const GeomVertexAnimationSpec &animation);
 
   CPT(GeomVertexFormat) get_post_animated_format() const;
+  CPT(GeomVertexFormat) get_union_format(const GeomVertexFormat *other) const;
 
   INLINE int get_num_arrays() const;
   INLINE const GeomVertexArrayFormat *get_array(int array) const;

@@ -114,7 +114,9 @@ apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
 //               have compatible formats at this node and below into a
 //               single, unified block (or at least multiple larger
 //               blocks).  This is intended to reduce rendering
-//               overhead incurred by switching vertex buffers.
+//               overhead incurred by switching vertex buffers.  It
+//               can also make a subsequent call to unify() much more
+//               effective than it would have been otherwise.
 //
 //               The set of bits passed in collect_bits indicates
 //               which properties are used to differentiate
@@ -147,7 +149,10 @@ make_nonindexed(PandaNode *root, int nonindexed_bits) {
 //     Function: SceneGraphReducer::unify
 //       Access: Published
 //  Description: Calls unify() on every GeomNode at this level and
-//               below.
+//               below.  This attempts to reduce the total number of
+//               individual Geoms and GeomPrimitives by combining
+//               these objects wherever possible.  See
+//               GeomNode::unify().
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneGraphReducer::
 unify(PandaNode *root) {
