@@ -160,7 +160,7 @@ PUBLISHED:
   INLINE Filename save_screenshot_default(
       const string &prefix = "screenshot");
   INLINE bool save_screenshot(
-      const Filename &filename, const string &image_comment);
+      const Filename &filename, const string &image_comment = "");
   INLINE bool get_screenshot(PNMImage &image);
 
   NodePath get_texture_card();
