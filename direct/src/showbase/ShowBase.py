@@ -789,7 +789,7 @@ class ShowBase(DirectObject.DirectObject):
             aspectRatio = float(win.getXSize()) / float(win.getYSize())
 
         else:
-            if win == None:
+            if win == None or not hasattr(win, "getRequestedProperties"):
                 props = WindowProperties.getDefault()
             else:
                 props = win.getRequestedProperties()
@@ -1531,9 +1531,10 @@ class ShowBase(DirectObject.DirectObject):
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.hidden)
 
-            # Restore the mouse interface node.
-            #self.mouseInterface.reparentTo(self.mouseWatcher)
-            self.oobeTrackball.reparentTo(self.dataUnused)
+            # Restore the mouse interface node, and remove the oobe
+            # trackball from the data path.
+            self.mouseInterfaceNode.clearButton(KeyboardButton.control())
+            self.oobeTrackball.detachNode()
 
             self.cam.reparentTo(self.camera)
             self.camNode.setLens(self.camLens)
@@ -1550,9 +1551,12 @@ class ShowBase(DirectObject.DirectObject):
             self.oobeCamera.reparentTo(cameraParent)
             self.oobeCamera.clearMat()
 
-            # Move aside the current mouse interface node and put the
-            # oobeTrackball in its place.
-            #self.mouseInterface.reparentTo(self.dataUnused)
+            # Make the regular MouseInterface node respond only when
+            # the control button is pressed.  And the oobe node will
+            # respond only when control is *not* pressed.
+
+            self.mouseInterfaceNode.requireButton(KeyboardButton.control(), True)
+            self.oobeTrackball.node().requireButton(KeyboardButton.control(), False)
             self.oobeTrackball.reparentTo(self.mouseWatcher)
 
             # Set our initial OOB position to be just behind the camera.
