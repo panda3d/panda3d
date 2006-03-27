@@ -75,11 +75,11 @@ def getFileData(filename, separator = ','):
     fileData = []
     for line in rawData:
         # First strip whitespace from both ends of line
-        l = string.strip(line)
+        l = line.strip()
         if l:
             # If its a valid line, split on separator and
             # strip leading/trailing whitespace from each element
-            data = map(string.strip, l.split(separator))
+            data = map(lambda s : s.strip(), l.split(separator))
             fileData.append(data)
     return fileData
 
