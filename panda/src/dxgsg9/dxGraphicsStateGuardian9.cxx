@@ -813,7 +813,7 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::calc_projection_mat
+//     Function: DXGraphicsStateGuardian9::calc_projection_mat
 //       Access: Public, Virtual
 //  Description: Given a lens, calculates the appropriate projection
 //               matrix for use with this gsg.  Note that the
@@ -2784,7 +2784,8 @@ do_issue_transform() {
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
 
   if (_current_shader_context) {
-    _current_shader_context->issue_transform(this);
+//    _current_shader_context->issue_transform(this);
+    _current_shader_context->issue_parameters(this, false);
 
 // ??? NO NEED TO SET THE D3D TRANSFORM VIA SetTransform SINCE THE TRANSFORM IS ONLY USED IN THE SHADER
     const D3DMATRIX *d3d_mat = (const D3DMATRIX *)transform->get_mat().get_data();
@@ -2885,7 +2886,7 @@ do_issue_shader() {
     }
   } else {
     // Use the same shader as before, but with new input arguments.
-    context->issue_parameters(this);
+    context->issue_parameters(this, true);
   }
 }
 
@@ -4972,7 +4973,3 @@ check_dx_allocation (HRESULT result, int allocation_size, int attempts)
 
   return retry;
 }
-
-
-
-
