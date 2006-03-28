@@ -85,7 +85,7 @@ ConfigVariableBool egg_mesh
           "everything into independent triangles."));
 
 ConfigVariableBool egg_retesselate_coplanar
-("egg-retesselate-coplanar", true,
+("egg-retesselate-coplanar", false,
  PRC_DESC("If this is true, the egg loader may reverse the "
           "tesselation direction of a single pair of planar triangles that "
           "share the same properties, if that will help get a better "
