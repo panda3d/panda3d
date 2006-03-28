@@ -62,11 +62,14 @@ ConfigVariableString threading_model
           "EXPERIMENTAL and incomplete, do not use this!"));
 
 ConfigVariableBool auto_flip
-("auto-flip", true,
+("auto-flip", false,
  PRC_DESC("This indicates the initial setting of the auto-flip flag.  Set it "
-          "true (the default) to cause render_frame() to flip all the windows "
+          "true to cause render_frame() to flip all the windows "
           "before it returns (in single-threaded mode only), or false to wait "
-          "until an explicit call to flip_frame() or the next render_frame()."));
+          "until an explicit call to flip_frame() or the next "
+          "render_frame().  Setting it true gets more immediate response "
+          "time, while setting it false can get a better frame rate as more "
+          "is achieved in parallel with the graphics card."));
 
 ConfigVariableBool yield_timeslice
 ("yield-timeslice", false,
