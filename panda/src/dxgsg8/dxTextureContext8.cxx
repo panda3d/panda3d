@@ -62,7 +62,6 @@ DXTextureContext8::
       << "Deleting texture context for " << get_texture()->get_name() << "\n";
   }
   delete_texture();
-  TextureContext::~TextureContext();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -74,7 +74,6 @@ DXTextureContext9::
   }
 
   delete_texture();
-  TextureContext::~TextureContext();
 }
 
 ////////////////////////////////////////////////////////////////////
