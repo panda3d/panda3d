@@ -79,7 +79,7 @@ def getFileData(filename, separator = ','):
         if l:
             # If its a valid line, split on separator and
             # strip leading/trailing whitespace from each element
-            data = map(lambda s : s.strip(), l.split(separator))
+            data = map(lambda s: s.strip(), l.split(separator))
             fileData.append(data)
     return fileData
 
