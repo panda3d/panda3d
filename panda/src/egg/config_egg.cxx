@@ -126,7 +126,7 @@ ConfigVariableBool egg_subdivide_polys
           "Geom implementation, this happens anyway."));
 
 ConfigVariableBool egg_consider_fans
-("egg-consider-fans", true,
+("egg-consider-fans", false,
  PRC_DESC("Set this true to enable the egg mesher to consider making "
           "triangle fans out of triangles that are connected at a common "
           "vertex.  This may help if your scene involves lots of such "
