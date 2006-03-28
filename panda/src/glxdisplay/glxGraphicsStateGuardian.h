@@ -26,6 +26,21 @@
 
 #include <GL/glx.h>
 
+#if defined(GLX_VERSION_1_4)
+// If the system header files give us version 1.4, we can assume it's
+// safe to compile in a reference to glxGetProcAddress().
+#define HAVE_GLXGETPROCADDRESS 1
+
+#elif defined(GLX_ARB_get_proc_address)
+// Maybe the system header files give us the corresponding ARB call.
+#define HAVE_GLXGETPROCADDRESSARB 1
+
+// Sometimes the system header files don't define this prototype for
+// some reason.
+extern "C" void (*glXGetProcAddressARB(const GLubyte *procName))( void );
+
+#endif
+
 // This must be included after we have included glgsg.h (which
 // includes gl.h).
 #include "glxext.h"
@@ -101,7 +116,7 @@ private:
 
   void *_libgl_handle;
   bool _checked_get_proc_address;
-  PFNGLXGETPROCADDRESSPROC _glxGetProcAddress;
+  PFNGLXGETPROCADDRESSPROC _glXGetProcAddress;
 
 public:
   static TypeHandle get_class_type() {
