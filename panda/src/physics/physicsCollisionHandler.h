@@ -29,7 +29,8 @@
 //               pushes back on things that attempt to move into solid
 //               walls.  This also puts forces onto the physics objects
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSICS PhysicsCollisionHandler : public CollisionHandlerPusher {
+class EXPCL_PANDAPHYSICS PhysicsCollisionHandler : 
+    public CollisionHandlerPusher {
 PUBLISHED:
   PhysicsCollisionHandler();
   virtual ~PhysicsCollisionHandler();

@@ -31,16 +31,19 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATNAME(LMatrix3)();
   INLINE_LINMATH FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &other);
-  INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (
+      const FLOATNAME(LMatrix3) &other);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (FLOATTYPE fill_value);
-  INLINE_LINMATH FLOATNAME(LMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
-                                     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
-                                     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
+  INLINE_LINMATH FLOATNAME(LMatrix3)(
+    FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
+    FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
+    FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
 
   void fill(FLOATTYPE fill_value);
-  INLINE_LINMATH void set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
-                          FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
-                          FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
+  INLINE_LINMATH void set(
+    FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
+    FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
+    FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
 
   INLINE_LINMATH void set_row(int row, const FLOATNAME(LVecBase3) &v);
   INLINE_LINMATH void set_col(int col, const FLOATNAME(LVecBase3) &v);
@@ -55,7 +58,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase2) get_col2(int col) const;
 
   // these versions inline better
-  INLINE_LINMATH void get_row(FLOATNAME(LVecBase3) &result_vec, int row) const;
+  INLINE_LINMATH void get_row(
+      FLOATNAME(LVecBase3) &result_vec, int row) const;
 
   INLINE_LINMATH FLOATTYPE &operator () (int row, int col);
   INLINE_LINMATH FLOATTYPE operator () (int row, int col) const;
@@ -97,16 +101,21 @@ PUBLISHED:
   xform_vec(const FLOATNAME(LVecBase2) &v) const;
 
   // this = other1 * other2
-  INLINE_LINMATH void multiply(const FLOATNAME(LMatrix3) &other1, const FLOATNAME(LMatrix3) &other2);
+  INLINE_LINMATH void multiply(
+    const FLOATNAME(LMatrix3) &other1, const FLOATNAME(LMatrix3) &other2);
 
-  INLINE_LINMATH FLOATNAME(LMatrix3) operator * (const FLOATNAME(LMatrix3) &other) const;
+  INLINE_LINMATH FLOATNAME(LMatrix3) operator * (
+    const FLOATNAME(LMatrix3) &other) const;
   INLINE_LINMATH FLOATNAME(LMatrix3) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LMatrix3) operator / (FLOATTYPE scalar) const;
 
-  INLINE_LINMATH FLOATNAME(LMatrix3) &operator += (const FLOATNAME(LMatrix3) &other);
-  INLINE_LINMATH FLOATNAME(LMatrix3) &operator -= (const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix3) &operator += (
+    const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix3) &operator -= (
+    const FLOATNAME(LMatrix3) &other);
 
-  INLINE_LINMATH FLOATNAME(LMatrix3) &operator *= (const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix3) &operator *= (
+    const FLOATNAME(LMatrix3) &other);
 
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator *= (FLOATTYPE scalar);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator /= (FLOATTYPE scalar);
@@ -194,7 +203,8 @@ PUBLISHED:
 
 public:
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;
-  void generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const;
+  void generate_hash(
+    ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const;
 
 public:
   union {
@@ -208,8 +218,10 @@ public:
   } _m;
 
 private:
-  INLINE_LINMATH FLOATTYPE mult_cel(const FLOATNAME(LMatrix3) &other, int x, int y) const;
-  INLINE_LINMATH FLOATTYPE det2(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e10, FLOATTYPE e11) const;
+  INLINE_LINMATH FLOATTYPE mult_cel(
+    const FLOATNAME(LMatrix3) &other, int x, int y) const;
+  INLINE_LINMATH FLOATTYPE det2(
+    FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e10, FLOATTYPE e11) const;
 
   static const FLOATNAME(LMatrix3) _ident_mat;
   static const FLOATNAME(LMatrix3) _y_to_z_up_mat;
@@ -235,7 +247,8 @@ private:
 };
 
 
-INLINE_LINMATH ostream &operator << (ostream &out, const FLOATNAME(LMatrix3) &mat) {
+INLINE_LINMATH ostream &operator << (
+    ostream &out, const FLOATNAME(LMatrix3) &mat) {
   mat.output(out);
   return out;
 }
