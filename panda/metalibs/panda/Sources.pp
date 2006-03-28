@@ -9,7 +9,7 @@
 #define USE_PACKAGES net
 
 #define COMPONENT_LIBS \
-    recorder pgraph \
+    recorder pgraph pipeline \
     pvrpn grutil chan pstatclient \
     char chat collide cull device \
     dgraph display event gobj graph gsgbase \

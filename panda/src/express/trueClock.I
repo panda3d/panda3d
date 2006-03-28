@@ -17,22 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::get_ptr
-//       Access: Public
-//  Description: Returns a pointer to the one TrueClock object in
-//               the world.
-////////////////////////////////////////////////////////////////////
-INLINE TrueClock *TrueClock::
-get_ptr() {
-  if (_global_ptr == (TrueClock *)NULL) {
-    _global_ptr = new TrueClock;
-  }
-  return _global_ptr;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TrueClock::get_error_count
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of clock errors that have
 //               been detected.  Each time a clock error is detected,
 //               in which the value returned by either of the above
@@ -44,6 +30,20 @@ get_ptr() {
 INLINE int TrueClock::
 get_error_count() const {
   return _error_count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::get_global_ptr
+//       Access: Published, Static
+//  Description: Returns a pointer to the one TrueClock object in
+//               the world.
+////////////////////////////////////////////////////////////////////
+INLINE TrueClock *TrueClock::
+get_global_ptr() {
+  if (_global_ptr == (TrueClock *)NULL) {
+    _global_ptr = new TrueClock;
+  }
+  return _global_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////

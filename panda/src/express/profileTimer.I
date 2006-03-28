@@ -18,13 +18,13 @@
 
 INLINE void ProfileTimer::
 on() {
-  _on = TrueClock::get_ptr()->get_short_time();
+  _on = TrueClock::get_global_ptr()->get_short_time();
 }
 
 
 INLINE double ProfileTimer::
 getTime() {
-  double time = TrueClock::get_ptr()->get_short_time();
+  double time = TrueClock::get_global_ptr()->get_short_time();
   double et=_elapsedTime+=time-_on;
   _on=time;
   _elapsedTime=0.0;
@@ -51,14 +51,14 @@ mark(const char* tag) {
 
 INLINE void ProfileTimer::
 off() {
-  double time = TrueClock::get_ptr()->get_short_time();
+  double time = TrueClock::get_global_ptr()->get_short_time();
   _elapsedTime+=time-_on;
 }
 
 
 INLINE void ProfileTimer::
 off(const char* tag) {
-  double time = TrueClock::get_ptr()->get_short_time();
+  double time = TrueClock::get_global_ptr()->get_short_time();
   _elapsedTime+=time-_on;
   mark(tag);
 }

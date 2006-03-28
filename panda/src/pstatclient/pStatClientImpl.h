@@ -31,7 +31,6 @@
 #include "netAddress.h"
 
 #include "clockObject.h"
-#include "luse.h"
 #include "pmap.h"
 
 class PStatClient;

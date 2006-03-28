@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                   dtoolutil:c dtoolbase:c dtool:m prc:c
-#define LOCAL_LIBS express pandabase
+#define LOCAL_LIBS pipeline express pandabase
 #define USE_PACKAGES zlib
 
 #begin lib_target
@@ -20,6 +20,7 @@
     buttonHandle.I \
     buttonHandle.h buttonRegistry.I buttonRegistry.h \
     cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
+    clockObject.h clockObject.I \
     collideMask.h \
     portalMask.h \
     compareTo.I compareTo.h \
@@ -68,6 +69,7 @@
     bitMask.cxx \
     buttonHandle.cxx buttonRegistry.cxx \
     cachedTypedWritableReferenceCount.cxx \
+    clockObject.cxx \
     config_util.cxx configurable.cxx \
     datagramInputFile.cxx datagramOutputFile.cxx \
     factoryBase.cxx \
@@ -104,6 +106,7 @@
     buttonHandle.I buttonHandle.h buttonRegistry.I \
     buttonRegistry.h \
     cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
+    clockObject.h clockObject.I \
     collideMask.h portalMask.h \
     compareTo.I compareTo.h \
     config_util.h configurable.h factory.I factory.h \

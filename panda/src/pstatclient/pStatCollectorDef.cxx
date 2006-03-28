@@ -31,7 +31,9 @@ PStatCollectorDef::
 PStatCollectorDef() {
   _index = 0;
   _parent_index = 0;
-  _suggested_color.set(0.0, 0.0, 0.0);
+  _suggested_color.r = 0.0;
+  _suggested_color.g = 0.0;
+  _suggested_color.b = 0.0;
   _sort = -1;
   _suggested_scale = 0.0;
   _factor = 1.0;
@@ -50,7 +52,9 @@ PStatCollectorDef(int index, const string &name) :
   _name(name)
 {
   _parent_index = 0;
-  _suggested_color.set(0.0, 0.0, 0.0);
+  _suggested_color.r = 0.0;
+  _suggested_color.g = 0.0;
+  _suggested_color.b = 0.0;
   _sort = -1;
   _suggested_scale = 0.0;
   _factor = 1.0;
@@ -87,7 +91,9 @@ write_datagram(Datagram &destination) const {
   destination.add_int16(_index);
   destination.add_string(_name);
   destination.add_int16(_parent_index);
-  _suggested_color.write_datagram(destination);
+  destination.add_float32(_suggested_color.r);
+  destination.add_float32(_suggested_color.g);
+  destination.add_float32(_suggested_color.b);
   destination.add_int16(_sort);
   destination.add_string(_level_units);
   destination.add_float32(_suggested_scale);
@@ -104,7 +110,9 @@ read_datagram(DatagramIterator &source, PStatClientVersion *) {
   _index = source.get_int16();
   _name = source.get_string();
   _parent_index = source.get_int16();
-  _suggested_color.read_datagram(source);
+  _suggested_color.r = source.get_float32();
+  _suggested_color.g = source.get_float32();
+  _suggested_color.b = source.get_float32();
   _sort = source.get_int16();
   _level_units = source.get_string();
   _suggested_scale = source.get_float32();

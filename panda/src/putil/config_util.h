@@ -54,4 +54,9 @@ EXPCL_PANDA ConfigVariableSearchPath &get_texture_path();
 EXPCL_PANDA ConfigVariableSearchPath &get_sound_path();
 END_PUBLISH
 
+extern ConfigVariableDouble clock_frame_rate;
+extern ConfigVariableDouble clock_degrade_factor;
+extern ConfigVariableDouble max_dt;
+extern ConfigVariableDouble sleep_precision;
+
 #endif /* __CONFIG_UTIL_H__ */

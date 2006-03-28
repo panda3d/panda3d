@@ -20,7 +20,6 @@
 #include "pStatClient.h"
 #include "pStatCollector.h"
 
-#include "luse.h"
 #include "queuedConnectionManager.h"
 #include "queuedConnectionReader.h"
 #include "connectionWriter.h"

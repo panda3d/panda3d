@@ -21,8 +21,6 @@
 
 #include "pandabase.h"
 
-#include "luse.h"
-
 class Datagram;
 class DatagramIterator;
 class PStatClient;
@@ -42,10 +40,14 @@ public:
   void write_datagram(Datagram &destination) const;
   void read_datagram(DatagramIterator &source, PStatClientVersion *version);
 
+  struct ColorDef {
+    float r, g, b;
+  };
+
   int _index;
   string _name;
   int _parent_index;
-  RGBColorf _suggested_color;
+  ColorDef _suggested_color;
   int _sort;
   string _level_units;
   float _suggested_scale;

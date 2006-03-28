@@ -474,13 +474,13 @@ ns_record_pointer(ReferenceCount *ptr) {
     info._ref_ptr = ptr;
     info._static_type = ReferenceCount::get_class_type();
     info._dynamic_type = ReferenceCount::get_class_type();
-    info._time = TrueClock::get_ptr()->get_long_time();
+    info._time = TrueClock::get_global_ptr()->get_long_time();
     info._freeze_index = _freeze_index;
     info._flags |= (MemoryInfo::F_reconsider_dynamic_type | MemoryInfo::F_got_ref);
 
     // We close the recursion_protect flag all the way down here, so
     // that we also protect ourselves against a possible recursive
-    // call in TrueClock::get_ptr().
+    // call in TrueClock::get_global_ptr().
     _recursion_protect = false;
   }
 }
@@ -582,7 +582,7 @@ ns_remove_pointer(ReferenceCount *ptr) {
     info._typed_ptr = (TypedObject *)NULL;
 
     if (info._freeze_index == _freeze_index) {
-      double now = TrueClock::get_ptr()->get_long_time();
+      double now = TrueClock::get_global_ptr()->get_long_time();
 
       // We have to protect modifications to the table from recursive
       // calls by toggling _recursion_protect while we adjust it.
@@ -654,13 +654,13 @@ ns_record_void_pointer(void *ptr, size_t size) {
 
     info._void_ptr = ptr;
     info._size = size;
-    info._time = TrueClock::get_ptr()->get_long_time();
+    info._time = TrueClock::get_global_ptr()->get_long_time();
     info._freeze_index = _freeze_index;
     info._flags |= (MemoryInfo::F_got_void | MemoryInfo::F_size_known);
 
     // We close the recursion_protect flag all the way down here, so
     // that we also protect ourselves against a possible recursive
-    // call in TrueClock::get_ptr().
+    // call in TrueClock::get_global_ptr().
     _recursion_protect = false;
   }
 }
@@ -806,7 +806,7 @@ ns_get_pointers(MemoryUsagePointers &result) {
   nassertv(_track_memory_usage);
   result.clear();
 
-  double now = TrueClock::get_ptr()->get_long_time();
+  double now = TrueClock::get_global_ptr()->get_long_time();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
@@ -830,7 +830,7 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
   nassertv(_track_memory_usage);
   result.clear();
 
-  double now = TrueClock::get_ptr()->get_long_time();
+  double now = TrueClock::get_global_ptr()->get_long_time();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
@@ -859,7 +859,7 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
   nassertv(_track_memory_usage);
   result.clear();
 
-  double now = TrueClock::get_ptr()->get_long_time();
+  double now = TrueClock::get_global_ptr()->get_long_time();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
@@ -902,7 +902,7 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
   nassertv(_track_memory_usage);
   result.clear();
 
-  double now = TrueClock::get_ptr()->get_long_time();
+  double now = TrueClock::get_global_ptr()->get_long_time();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
@@ -990,7 +990,7 @@ ns_show_current_ages() {
   _recursion_protect = true;
 
   AgeHistogram hist;
-  double now = TrueClock::get_ptr()->get_long_time();
+  double now = TrueClock::get_global_ptr()->get_long_time();
 
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {

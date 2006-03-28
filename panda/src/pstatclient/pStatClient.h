@@ -26,7 +26,6 @@
 #include "pStatCollectorDef.h"
 #include "reMutex.h"
 #include "reMutexHolder.h"
-#include "luse.h"
 #include "pmap.h"
 #include "thread.h"
 #include "weakPointerTo.h"
@@ -108,7 +107,9 @@ private:
 
   PStatCollector make_collector_with_relname(int parent_index, string relname);
   PStatCollector make_collector_with_name(int parent_index, const string &name);
+  PStatThread do_get_current_thread() const;
   PStatThread make_thread(Thread *thread);
+  PStatThread do_make_thread(Thread *thread);
 
   bool is_active(int collector_index, int thread_index) const;
   bool is_started(int collector_index, int thread_index) const;
@@ -122,6 +123,9 @@ private:
   void set_level(int collector_index, int thread_index, float level);
   void add_level(int collector_index, int thread_index, float increment);
   float get_level(int collector_index, int thread_index) const;
+
+  static void mutex_wait_start();
+  static void mutex_wait_stop();
 
 private:
   // This mutex protects everything in this class.
@@ -196,6 +200,7 @@ private:
   static PStatCollector _cpp_size_pcollector;
   static PStatCollector _interpreter_size_pcollector;
   static PStatCollector _pstats_pcollector;
+  static PStatCollector _mutex_wait_pcollector;
 
   static PStatClient *_global_pstats;
 

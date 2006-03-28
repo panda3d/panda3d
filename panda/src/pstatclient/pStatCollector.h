@@ -24,8 +24,6 @@
 #include "pStatThread.h"
 #include "pStatClient.h"
 
-#include "luse.h"
-
 ////////////////////////////////////////////////////////////////////
 //       Class : PStatCollector
 // Description : A lightweight class that represents a single element

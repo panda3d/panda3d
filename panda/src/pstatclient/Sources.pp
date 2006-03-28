@@ -3,7 +3,7 @@
 
 #begin lib_target
   #define LOCAL_LIBS \
-    net linmath putil express
+    net putil express
 
   #define TARGET pstatclient
   

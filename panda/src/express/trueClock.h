@@ -38,9 +38,7 @@
 //               and subtracting.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS TrueClock {
-public:
-  INLINE static TrueClock *get_ptr();
-
+PUBLISHED:
   // get_long_time() returns the most accurate timer we have over a
   // long interval.  It may not be very precise for measuring short
   // intervals, but it should not drift substantially over the long
@@ -54,6 +52,8 @@ public:
   double get_short_time();
 
   INLINE int get_error_count() const;
+
+  INLINE static TrueClock *get_global_ptr();
 
 protected:
   TrueClock();

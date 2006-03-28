@@ -30,11 +30,13 @@
 #include "config_pstats.h"
 #include "pStatProperties.h"
 #include "thread.h"
+#include "mutexDebug.h"
 
 PStatCollector PStatClient::_total_size_pcollector("Memory usage");
 PStatCollector PStatClient::_cpp_size_pcollector("Memory usage:C++");
 PStatCollector PStatClient::_interpreter_size_pcollector("Memory usage:Interpreter");
 PStatCollector PStatClient::_pstats_pcollector("*:PStats");
+PStatCollector PStatClient::_mutex_wait_pcollector("Wait:Mutex block");
 
 PStatClient *PStatClient::_global_pstats = NULL;
 
@@ -71,6 +73,11 @@ PStatClient() :
 
   // The main thread is always at index 0.
   make_thread(Thread::get_main_thread());
+
+  // Assign the hacky callback pointers into MutexDebug.
+#ifdef DEBUG_THREADS
+  MutexDebug::set_pstats_callbacks(&mutex_wait_start, &mutex_wait_stop);
+#endif  // DEBUG_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -412,6 +419,25 @@ make_collector_with_name(int parent_index, const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::do_get_current_thread
+//       Access: Private
+//  Description: Similar to get_current_thread, but does not grab the
+//               lock.
+////////////////////////////////////////////////////////////////////
+PStatThread PStatClient::
+do_get_current_thread() const {
+  Thread *thread = Thread::get_current_thread();
+  int thread_index = thread->get_pstats_index();
+  if (thread_index != -1) {
+    return PStatThread((PStatClient *)this, thread_index);
+  }
+
+  // This is the first time we have encountered this current Thread.
+  // Make a new PStatThread object for it.
+  return ((PStatClient *)this)->do_make_thread(thread);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::make_thread
 //       Access: Private
 //  Description: Returns a PStatThread for the indicated Panda Thread
@@ -421,7 +447,16 @@ make_collector_with_name(int parent_index, const string &name) {
 PStatThread PStatClient::
 make_thread(Thread *thread) {
   ReMutexHolder holder(_lock);
+  return do_make_thread(thread);
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::do_make_thread
+//       Access: Private
+//  Description: As above, but assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+PStatThread PStatClient::
+do_make_thread(Thread *thread) {
   int thread_index = thread->get_pstats_index();
   if (thread_index != -1) {
     return PStatThread((PStatClient *)this, thread_index);
@@ -729,6 +764,95 @@ get_level(int collector_index, int thread_index) const {
 
   return _collectors[collector_index]._per_thread[thread_index]._level /
     get_collector_def(collector_index)->_factor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::mutex_wait_start
+//       Access: Private, Static
+//  Description: A special-purpose callback function we use to hack a
+//               PStatTimer into the MutexDebug system.  This will be
+//               called (when DEBUG_THREADS is set) when the thread
+//               goes to sleep on a mutex.
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+mutex_wait_start() {
+#ifdef DEBUG_THREADS
+  // We replicate the code from start(), except we do not grab the
+  // mutex.  We can't, because that would be recursive (this function
+  // is called from deep with Mutex::lock()).  However, we don't need
+  // to, because this code is only called when the global mutex is
+  // held (the global mutex only exists in the case of MUTEX_DEBUG).
+  PStatClient *self = get_global_pstats();
+  int collector_index = _mutex_wait_pcollector._index;
+  int thread_index = self->do_get_current_thread()._index;
+
+#ifdef _DEBUG
+  nassertv(collector_index >= 0 && collector_index < (int)self->_collectors.size());
+  nassertv(thread_index >= 0 && thread_index < (int)self->_threads.size());
+#endif
+
+  bool is_connected = self->has_impl() && self->_impl->client_is_connected();
+  if (is_connected && 
+      self->_collectors[collector_index].is_active() &&
+      self->_threads[thread_index]._is_active) {
+    if (self->_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
+      // This collector wasn't already started in this thread; record
+      // a new data point.
+      self->_threads[thread_index]._frame_data.add_start(collector_index, 
+                                                         self->_impl->get_clock().get_real_time());
+    }
+    self->_collectors[collector_index]._per_thread[thread_index]._nested_count++;
+  }
+#endif  // DEBUG_THREADS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::mutex_wait_stop
+//       Access: Private, Static
+//  Description: A special-purpose callback function we use to hack a
+//               PStatTimer into the MutexDebug system.  This will be
+//               called (when DEBUG_THREADS is set) when the thread
+//               wakes up after blocking on a mutex.
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+mutex_wait_stop() {
+#ifdef DEBUG_THREADS
+  // As above, we replicate the code from stop(), except we do not
+  // grab the mutex.
+
+  PStatClient *self = get_global_pstats();
+  int collector_index = _mutex_wait_pcollector._index;
+  int thread_index = self->do_get_current_thread()._index;
+
+#ifdef _DEBUG
+  nassertv(collector_index >= 0 && collector_index < (int)self->_collectors.size());
+  nassertv(thread_index >= 0 && thread_index < (int)self->_threads.size());
+#endif
+
+  bool is_connected = self->has_impl() && self->_impl->client_is_connected();
+  if (is_connected && 
+      self->_collectors[collector_index].is_active() &&
+      self->_threads[thread_index]._is_active) {
+    if (self->_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
+      if (pstats_cat.is_debug()) {
+        pstats_cat.debug()
+          << "Collector " << self->get_collector_fullname(collector_index)
+          << " was already stopped in thread " << self->get_thread_name(thread_index)
+          << "!\n";
+      }
+      return;
+    }
+
+    self->_collectors[collector_index]._per_thread[thread_index]._nested_count--;
+    if (self->_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
+      // This collector has now been completely stopped; record a new
+      // data point.
+      self->_threads[thread_index]._frame_data.add_stop(collector_index,
+                                                        self->_impl->get_clock().get_real_time());
+    }
+  }
+
+#endif // DEBUG_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////

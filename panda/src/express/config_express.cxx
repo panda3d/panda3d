@@ -1,5 +1,5 @@
 // Filename: config_express.cxx
-// Created by:  cary (04Jan00)
+// Created by:  drose (28Mar06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,15 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #include "config_express.h"
-#include "clockObject.h"
 #include "datagram.h"
-#include "mainThread.h"
-#include "externalThread.h"
 #include "referenceCount.h"
 #include "textEncoder.h"
-#include "thread.h"
 #include "typedObject.h"
 #include "typedReferenceCount.h"
 #include "virtualFile.h"
@@ -39,7 +34,6 @@
 
 ConfigureDef(config_express);
 NotifyCategoryDef(express, "");
-NotifyCategoryDef(thread, "");
 
 ConfigureFn(config_express) {
   init_libexpress();
@@ -66,20 +60,6 @@ ConfigVariableBool keep_temporary_files
 
 ConfigVariableDouble average_frame_rate_interval
 ("average-frame-rate-interval", 1.0);
-
-ConfigVariableDouble clock_frame_rate
-("clock-frame-rate", 1.0);
-ConfigVariableDouble clock_degrade_factor
-("clock-degrade-factor", 1.0);
-ConfigVariableDouble max_dt
-("max-dt", -1.0);
-
-ConfigVariableDouble sleep_precision
-("sleep-precision", 0.01,
- PRC_DESC("This is the accuracy within which we can expect select() to "
-          "return precisely.  That is, if we use select() to request a "
-          "timeout of 1.0 seconds, we can expect to actually sleep for "
-          "somewhere between 1.0 and 1.0 + sleep-precision seconds."));
 
 ConfigVariableString encryption_algorithm
 ("encryption-algorithm", "bf-cbc",
@@ -169,13 +149,9 @@ init_libexpress() {
   }
   initialized = true;
 
-  ClockObject::init_type();
   Datagram::init_type();
-  MainThread::init_type();
-  ExternalThread::init_type();
   ReferenceCount::init_type();
   TextEncoder::init_type();
-  Thread::init_type();
   TypedObject::init_type();
   TypedReferenceCount::init_type();
   VirtualFile::init_type();
@@ -192,13 +168,6 @@ init_libexpress() {
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("zlib");
  }
-#endif
-
-#ifdef HAVE_THREADS
- {
-  PandaSystem *ps = PandaSystem::get_global_ptr();
-  ps->add_system("threads");
-  }
 #endif
 }
 

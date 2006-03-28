@@ -88,9 +88,7 @@ get_current_pstat_minor_version() {
 //
 ////////////////////////////////////////////////////////////////////
 
-struct ColorDef {
-  float r, g, b;
-};
+typedef PStatCollectorDef::ColorDef ColorDef;
 
 struct TimeCollectorProperties {
   bool is_active;
@@ -110,6 +108,7 @@ struct LevelCollectorProperties {
 
 static TimeCollectorProperties time_properties[] = {
   { 1, "Wait",                             { 0.6, 0.6, 0.6 } },
+  { 0, "Wait:Mutex block",                 { 1.0, 0.0, 0.0 } },
   { 1, "App",                              { 0.0, 0.8, 0.4 },  1.0 / 30.0 },
   { 1, "App:Collisions",                   { 1.0, 0.5, 0.0 } },
   { 1, "App:Collisions:Reset",             { 0.0, 0.0, 0.5 } },
@@ -226,7 +225,7 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
       if (!def->_active_explicitly_set) {
         def->_is_active = tp.is_active;
       }
-      def->_suggested_color.set(tp.color.r, tp.color.g, tp.color.b);
+      def->_suggested_color = tp.color;
       if (tp.suggested_scale != 0.0) {
         def->_suggested_scale = tp.suggested_scale;
       }
@@ -243,7 +242,7 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
       if (!def->_active_explicitly_set) {
         def->_is_active = lp.is_active;
       }
-      def->_suggested_color.set(lp.color.r, lp.color.g, lp.color.b);
+      def->_suggested_color = lp.color;
       if (lp.suggested_scale != 0.0) {
         def->_suggested_scale = lp.suggested_scale;
       }
@@ -330,9 +329,9 @@ initialize_collector_def(const PStatClient *client, PStatCollectorDef *def) {
   }
 
   if (pstats_color.has_value()) {
-    def->_suggested_color[0] = pstats_color[0];
-    def->_suggested_color[1] = pstats_color[1];
-    def->_suggested_color[2] = pstats_color[2];
+    def->_suggested_color.r = pstats_color[0];
+    def->_suggested_color.g = pstats_color[1];
+    def->_suggested_color.b = pstats_color[2];
   }
 }
 
