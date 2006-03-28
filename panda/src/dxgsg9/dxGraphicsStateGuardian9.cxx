@@ -2432,13 +2432,11 @@ reset() {
   }
 
 #ifdef HAVE_CGDX9
-  if (_cg_context) {
-    cgD3D9SetDevice (NULL);
-    cgDestroyContext (_cg_context);
-    _cg_context = 0;
-  }
   if (_cg_context == 0) {
     _cg_context = cgCreateContext ( );
+    cgD3D9SetDevice (_d3d_device);
+  }
+  else {
     cgD3D9SetDevice (_d3d_device);
   }
 #endif
