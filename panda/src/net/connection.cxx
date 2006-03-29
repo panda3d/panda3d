@@ -24,7 +24,7 @@
 #include "pprerror.h"
 #include "config_net.h"
 #include "config_express.h" // for collect_tcp
-#include "clockObject.h"
+#include "trueClock.h"
 #include "pnotify.h"
 
 
@@ -189,7 +189,7 @@ consider_flush() {
 
   } else {
     double elapsed = 
-      ClockObject::get_global_clock()->get_real_time() - _queued_data_start;
+      TrueClock::get_global_ptr()->get_short_time() - _queued_data_start;
     // If the elapsed time is negative, someone must have reset the
     // clock back, so just go ahead and flush.
     if (elapsed < 0.0 || elapsed >= _collect_tcp_interval) {
@@ -413,7 +413,7 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
   }
 
   if (!_collect_tcp || 
-      ClockObject::get_global_clock()->get_real_time() - _queued_data_start >= _collect_tcp_interval) {
+      TrueClock::get_global_ptr()->get_short_time() - _queued_data_start >= _collect_tcp_interval) {
     return do_flush();
   }
 
@@ -464,7 +464,7 @@ send_raw_datagram(const NetDatagram &datagram) {
   _queued_count++;
 
   if (!_collect_tcp || 
-      ClockObject::get_global_clock()->get_real_time() - _queued_data_start >= _collect_tcp_interval) {
+      TrueClock::get_global_ptr()->get_short_time() - _queued_data_start >= _collect_tcp_interval) {
     return do_flush();
   }
 
@@ -484,7 +484,7 @@ do_flush() {
   PRInt32 bytes_to_send = _queued_data.length();
   if (bytes_to_send == 0) {
     _queued_count = 0;
-    _queued_data_start = ClockObject::get_global_clock()->get_real_time();
+    _queued_data_start = TrueClock::get_global_ptr()->get_short_time();
     PR_Unlock(_write_mutex);
     return true;
   }
@@ -504,7 +504,7 @@ do_flush() {
 
   _queued_data = string();
   _queued_count = 0;
-  _queued_data_start = ClockObject::get_global_clock()->get_real_time();
+  _queued_data_start = TrueClock::get_global_ptr()->get_short_time();
 
   PR_Unlock(_write_mutex);
 
