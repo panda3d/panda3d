@@ -1,4 +1,3 @@
-
 #include "config_gobj.cxx"
 #include "indexBufferContext.cxx"
 #include "internalName.cxx"
@@ -6,9 +5,11 @@
 #include "material.cxx"
 #include "materialPool.cxx"
 #include "matrixLens.cxx"
+#include "occlusionQueryContext.cxx"
 #include "orthographicLens.cxx"
 #include "perspectiveLens.cxx"
 #include "preparedGraphicsObjects.cxx"
+#include "queryContext.cxx"
 #include "savedContext.cxx"
 #include "sliderTable.cxx"
 #include "texture.cxx"

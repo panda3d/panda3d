@@ -9,13 +9,15 @@
   #define TARGET cull
 
   #define SOURCES \
-    binCullHandler.h \
+    binCullHandler.h binCullHandler.I \
     config_cull.h \
-    cullBinBackToFront.h cullBinFixed.h \
-    cullBinFrontToBack.h cullBinStateSorted.h cullBinUnsorted.h \
-    drawCullHandler.h binCullHandler.I cullBinBackToFront.I \
-    cullBinFixed.I cullBinFrontToBack.I cullBinStateSorted.I \
-    cullBinUnsorted.I drawCullHandler.I
+    cullBinBackToFront.h cullBinBackToFront.I \
+    cullBinFixed.h cullBinFixed.I \
+    cullBinFrontToBack.h cullBinFrontToBack.I \
+    cullBinHierarchicalZBuffer.h cullBinHierarchicalZBuffer.I \
+    cullBinStateSorted.h cullBinStateSorted.I \
+    cullBinUnsorted.h cullBinUnsorted.I \
+    drawCullHandler.h drawCullHandler.I
 
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
@@ -26,18 +28,21 @@
     cullBinBackToFront.cxx \
     cullBinFixed.cxx \
     cullBinFrontToBack.cxx \
+    cullBinHierarchicalZBuffer.cxx \
     cullBinStateSorted.cxx \
     cullBinUnsorted.cxx \
     drawCullHandler.cxx
 
   #define INSTALL_HEADERS \
-    binCullHandler.h \
+    binCullHandler.h binCullHandler.I \
     config_cull.h \
-    cullBinBackToFront.h cullBinFixed.h \
-    cullBinFrontToBack.h cullBinStateSorted.h cullBinUnsorted.h \
-    drawCullHandler.h binCullHandler.I cullBinBackToFront.I \
-    cullBinFixed.I cullBinFrontToBack.I cullBinStateSorted.I \
-    cullBinUnsorted.I drawCullHandler.I
+    cullBinBackToFront.h cullBinBackToFront.I \
+    cullBinFixed.h cullBinFixed.I \
+    cullBinFrontToBack.h cullBinFrontToBack.I \
+    cullBinHierarchicalZBuffer.h cullBinHierarchicalZBuffer.I \
+    cullBinStateSorted.h cullBinStateSorted.I \
+    cullBinUnsorted.h cullBinUnsorted.I \
+    drawCullHandler.h drawCullHandler.I
 
   #define IGATESCAN all
 

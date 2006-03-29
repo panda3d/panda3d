@@ -45,6 +45,7 @@
 #include "shaderContext.h"
 #include "bitMask.h"
 #include "texture.h"
+#include "occlusionQueryContext.h"
 
 class DrawableRegion;
 class GraphicsEngine;
@@ -132,7 +133,7 @@ PUBLISHED:
 
 public:
   bool set_scene(SceneSetup *scene_setup);
-  INLINE SceneSetup *get_scene() const;
+  virtual SceneSetup *get_scene() const;
 
   virtual PreparedGraphicsObjects *get_prepared_objects();
 
@@ -151,6 +152,10 @@ public:
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   virtual void release_index_buffer(IndexBufferContext *ibc);
+
+  virtual bool get_supports_occlusion_query() const;
+  virtual void begin_occlusion_query();
+  virtual PT(OcclusionQueryContext) end_occlusion_query();
 
   PT(GeomMunger) get_geom_munger(const RenderState *state);
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state);
@@ -337,6 +342,9 @@ protected:
 
   int _max_vertex_transforms;
   int _max_vertex_transform_indices;
+
+  bool _supports_occlusion_query;
+  PT(OcclusionQueryContext) _current_occlusion_query;
 
   bool _copy_texture_inverted;
   bool _supports_multisample;

@@ -1,4 +1,5 @@
 #include "cullBinFrontToBack.cxx"
+#include "cullBinHierarchicalZBuffer.cxx"
 #include "cullBinStateSorted.cxx"
 #include "cullBinUnsorted.cxx"
 #include "drawCullHandler.cxx"

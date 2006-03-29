@@ -593,17 +593,6 @@ get_global_gsg() {
   return _global_gsg;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_scene
-//       Access: Public
-//  Description: Returns the SceneSetup object.
-////////////////////////////////////////////////////////////////////
-INLINE SceneSetup *GraphicsStateGuardian::
-get_scene() const {
-  return _scene_setup;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::reset_if_new
 //       Access: Public

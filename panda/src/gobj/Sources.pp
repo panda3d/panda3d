@@ -41,10 +41,12 @@
     internalName.I internalName.h \
     material.I material.h materialPool.I materialPool.h  \
     matrixLens.I matrixLens.h \
+    occlusionQueryContext.I occlusionQueryContext.h \
     orthographicLens.I orthographicLens.h perspectiveLens.I  \
     perspectiveLens.h \
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     lens.h lens.I \
+    queryContext.I queryContext.h \
     savedContext.I savedContext.h \
     shaderContext.h shaderContext.I \
     shaderExpansion.h shaderExpansion.I \
@@ -93,10 +95,13 @@
     indexBufferContext.cxx \
     material.cxx  \
     internalName.cxx \
-    materialPool.cxx matrixLens.cxx orthographicLens.cxx  \
+    materialPool.cxx matrixLens.cxx \
+    occlusionQuery.cxx \
+    orthographicLens.cxx  \
     perspectiveLens.cxx \
     preparedGraphicsObjects.cxx \
     lens.cxx  \
+    queryContext.cxx \
     savedContext.cxx \
     shaderContext.cxx \
     shaderExpansion.cxx \
@@ -146,10 +151,12 @@
     internalName.I internalName.h \
     material.I material.h \
     materialPool.I materialPool.h matrixLens.I matrixLens.h \
+    occlusionQueryContext.I occlusionQueryContext.h \
     orthographicLens.I orthographicLens.h perspectiveLens.I \
     perspectiveLens.h \
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     lens.h lens.I \
+    queryContext.I queryContext.h \
     savedContext.I savedContext.h \
     shaderContext.h shaderContext.I \
     shaderExpansion.h shaderExpansion.I \

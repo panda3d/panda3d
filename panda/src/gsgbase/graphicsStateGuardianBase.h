@@ -32,6 +32,7 @@ class NodePath;
 
 class VertexBufferContext;
 class IndexBufferContext;
+class OcclusionQueryContext;
 class GeomContext;
 class GeomNode;
 class Geom;
@@ -57,6 +58,7 @@ class GeomLinestrips;
 class GeomPoints;
 class GeomMunger;
 
+class SceneSetup;
 class PreparedGraphicsObjects;
 class GraphicsOutput;
 class Texture;
@@ -118,11 +120,13 @@ class EXPCL_PANDA GraphicsStateGuardianBase : public TypedWritableReferenceCount
 PUBLISHED:
   virtual bool get_supports_multisample() const=0;
   virtual int get_supported_geom_rendering() const=0;
+  virtual bool get_supports_occlusion_query() const=0;
 
 public:
   // These are some general interface functions; they're defined here
   // mainly to make it easy to call these from code in some directory
   // that display depends on.
+  virtual SceneSetup *get_scene() const=0;
   virtual PreparedGraphicsObjects *get_prepared_objects()=0;
 
   virtual TextureContext *prepare_texture(Texture *tex)=0;
@@ -139,6 +143,9 @@ public:
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data)=0;
   virtual void release_index_buffer(IndexBufferContext *ibc)=0;
+
+  virtual void begin_occlusion_query()=0;
+  virtual PT(OcclusionQueryContext) end_occlusion_query()=0;
 
   virtual PT(GeomMunger) get_geom_munger(const RenderState *state)=0;
 

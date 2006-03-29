@@ -338,23 +338,17 @@ parse_bin_type(const string &bin_type) {
   } else if (cmp_nocase_uh(bin_type, "state_sorted") == 0) {
     return BT_state_sorted;
 
-  } else if (cmp_nocase_uh(bin_type, "statesorted") == 0) {
-    return BT_state_sorted;
-
   } else if (cmp_nocase_uh(bin_type, "fixed") == 0) {
     return BT_fixed;
 
   } else if (cmp_nocase_uh(bin_type, "back_to_front") == 0) {
     return BT_back_to_front;
 
-  } else if (cmp_nocase_uh(bin_type, "backtofront") == 0) {
-    return BT_back_to_front;
-
   } else if (cmp_nocase_uh(bin_type, "front_to_back") == 0) {
     return BT_front_to_back;
 
-  } else if (cmp_nocase_uh(bin_type, "fronttoback") == 0) {
-    return BT_front_to_back;
+  } else if (cmp_nocase_uh(bin_type, "hierarchical_z") == 0) {
+    return BT_hierarchical_z;
 
   } else {
     return BT_invalid;
@@ -385,6 +379,9 @@ operator << (ostream &out, CullBinManager::BinType bin_type) {
     
   case CullBinManager::BT_fixed:
     return out << "fixed";
+    
+  case CullBinManager::BT_hierarchical_z:
+    return out << "hierarchical_z";
   }
 
   return out << "**invalid BinType(" << (int)bin_type << ")**";

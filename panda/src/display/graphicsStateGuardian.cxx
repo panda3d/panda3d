@@ -35,6 +35,7 @@
 #include "geomLinestrips.h"
 #include "colorWriteAttrib.h"
 #include "shader.h"
+#include "pnotify.h"
 
 #include <algorithm>
 #include <limits.h>
@@ -136,6 +137,8 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   // Assume no vertex blending capability.
   _max_vertex_transforms = 0;
   _max_vertex_transform_indices = 0;
+
+  _supports_occlusion_query = false;
 
   // Initially, we set this to false; a GSG that knows it has this
   // property should set it to true.
@@ -363,6 +366,16 @@ set_scene(SceneSetup *scene_setup) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_scene
+//       Access: Public, Virtual
+//  Description: Returns the current SceneSetup object.
+////////////////////////////////////////////////////////////////////
+SceneSetup *GraphicsStateGuardian::
+get_scene() const {
+  return _scene_setup;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_prepared_objects
 //       Access: Public, Virtual
 //  Description: Returns the set of texture and geom objects that have
@@ -509,6 +522,58 @@ prepare_index_buffer(GeomPrimitive *) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 release_index_buffer(IndexBufferContext *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_occlusion_query
+//       Access: Public, Virtual
+//  Description: Returns true if this GSG supports an occlusion query.
+//               If this is true, then begin_occlusion_query() and
+//               end_occlusion_query() may be called to bracket a
+//               sequence of draw_triangles() (or whatever) calls to
+//               measure pixels that pass the depth test.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+get_supports_occlusion_query() const {
+  return _supports_occlusion_query;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::begin_occlusion_query
+//       Access: Public, Virtual
+//  Description: Begins a new occlusion query.  After this call, you
+//               may call begin_draw_primitives() and
+//               draw_triangles()/draw_whatever() repeatedly.
+//               Eventually, you should call end_occlusion_query()
+//               before the end of the frame; that will return a new
+//               OcclusionQueryContext object that will tell you how
+//               many pixels represented by the bracketed geometry
+//               passed the depth test.
+//
+//               It is not valid to call begin_occlusion_query()
+//               between another begin_occlusion_query()
+//               .. end_occlusion_query() sequence.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+begin_occlusion_query() {
+  nassertv(_current_occlusion_query == (OcclusionQueryContext *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::end_occlusion_query
+//       Access: Public, Virtual
+//  Description: Ends a previous call to begin_occlusion_query().
+//               This call returns the OcclusionQueryContext object
+//               that will (eventually) report the number of pixels
+//               that passed the depth test between the call to
+//               begin_occlusion_query() and end_occlusion_query().
+////////////////////////////////////////////////////////////////////
+PT(OcclusionQueryContext) GraphicsStateGuardian::
+end_occlusion_query() {
+  nassertr(_current_occlusion_query != (OcclusionQueryContext *)NULL, NULL);
+  PT(OcclusionQueryContext) result = _current_occlusion_query;
+  _current_occlusion_query = NULL;
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

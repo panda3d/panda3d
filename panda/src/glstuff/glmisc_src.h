@@ -28,6 +28,7 @@ extern ConfigVariableBool CLP(ignore_filters);
 extern ConfigVariableBool CLP(ignore_mipmaps);
 extern ConfigVariableBool CLP(force_mipmaps);
 extern ConfigVariableBool CLP(color_mask);
+extern ConfigVariableBool CLP(support_occlusion_query);
 extern ConfigVariableBool CLP(compile_and_execute);
 
 extern EXPCL_GL void CLP(init_classes)();

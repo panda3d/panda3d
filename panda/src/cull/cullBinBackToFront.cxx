@@ -63,8 +63,7 @@ add_object(CullableObject *object) {
   // Determine the center of the bounding volume.
   CPT(BoundingVolume) volume = object->_geom->get_bounds();
 
-  if (!volume->is_empty() &&
-      volume->is_of_type(GeometricBoundingVolume::get_class_type())) {
+  if (!volume->is_empty()) {
     const GeometricBoundingVolume *gbv;
     DCAST_INTO_V(gbv, volume);
     

@@ -41,6 +41,7 @@ PUBLISHED:
     C_red    = 0x001,
     C_green  = 0x002,
     C_blue   = 0x004,
+    C_rgb    = 0x007,  // == C_red | C_green | C_blue
     C_alpha  = 0x008,
     C_all    = 0x00f,
   };

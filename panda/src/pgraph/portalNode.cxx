@@ -99,9 +99,9 @@ PortalNode(const PortalNode &copy) :
   _vertices(copy._vertices),
   _cell_in(copy._cell_in),
   _cell_out(copy._cell_out),
+  _clip_plane(copy._clip_plane),
   _visible(copy._visible),
-  _open(copy._open),
-  _clip_plane(copy._clip_plane)
+  _open(copy._open)
 {
 }
 

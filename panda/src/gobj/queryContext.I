@@ -1,5 +1,5 @@
-// Filename: config_cull.h
-// Created by:  drose (23Mar06)
+// Filename: queryContext.I
+// Created by:  drose (27Mar06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,23 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_CULL_H
-#define CONFIG_CULL_H
 
-#include "pandabase.h"
-#include "notifyCategoryProxy.h"
-#include "dconfig.h"
-#include "configVariableInt.h"
-#include "configVariableDouble.h"
-
-class DSearchPath;
-
-ConfigureDecl(config_cull, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(cull, EXPCL_PANDA, EXPTP_PANDA);
-
-extern ConfigVariableInt max_objects_per_octree_node;
-extern ConfigVariableDouble octree_multiassign_ratio;
-
-extern EXPCL_PANDA void init_libcull();
-
-#endif
+////////////////////////////////////////////////////////////////////
+//     Function: QueryContext::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE QueryContext::
+QueryContext() {
+}

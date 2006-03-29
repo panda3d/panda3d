@@ -33,10 +33,12 @@
 #include "geomVertexData.h"
 #include "geomVertexFormat.h"
 #include "material.h"
+#include "occlusionQueryContext.h"
 #include "orthographicLens.h"
 #include "matrixLens.h"
 #include "perspectiveLens.h"
 #include "lens.h"
+#include "queryContext.h"
 #include "sliderTable.h"
 #include "texture.h"
 #include "textureStage.h"
@@ -263,10 +265,12 @@ ConfigureFn(config_gobj) {
   VertexBufferContext::init_type();
   IndexBufferContext::init_type();
   Material::init_type();
+  OcclusionQueryContext::init_type();
   OrthographicLens::init_type();
   MatrixLens::init_type();
   PerspectiveLens::init_type();
   Lens::init_type();
+  QueryContext::init_type();
   SliderTable::init_type();
   Texture::init_type();
   TextureStage::init_type();

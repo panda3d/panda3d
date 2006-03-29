@@ -18,7 +18,6 @@
 
 #include "cullBinStateSorted.h"
 #include "graphicsStateGuardianBase.h"
-#include "geometricBoundingVolume.h"
 #include "cullableObject.h"
 #include "cullHandler.h"
 #include "pStatTimer.h"

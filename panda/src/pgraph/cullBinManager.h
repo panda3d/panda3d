@@ -47,6 +47,7 @@ PUBLISHED:
     BT_back_to_front,
     BT_front_to_back,
     BT_fixed,
+    BT_hierarchical_z,
   };
 
   int add_bin(const string &name, BinType type, int sort);

@@ -62,6 +62,13 @@ ConfigVariableBool CLP(color_mask)
             "is broken (some are).  This will force the use of a (presumably) "
             "more expensive blending operation instead."));
 
+ConfigVariableBool CLP(support_occlusion_query)
+  ("gl-support-occlusion-query", true,
+   PRC_DESC("Configure this true to enable the use of the occlusion_query "
+            "extension if the GL claims to support it, or false not to "
+            "use it even if it appears to be available.  (On some OpenGL "
+            "drivers, enabling this mode can force software rendering.)"));
+
 ConfigVariableBool CLP(compile_and_execute)
   ("gl-compile-and-execute", false,
    PRC_DESC("Configure this true if you know your GL's implementation of "
@@ -73,13 +80,14 @@ ConfigVariableBool CLP(compile_and_execute)
             "rendered at the same time it is being compiled."));
 
 void CLP(init_classes)() {
-  CLP(GraphicsStateGuardian)::init_type();
-  CLP(TextureContext)::init_type();
   CLP(GeomContext)::init_type();
-  CLP(VertexBufferContext)::init_type();
-  CLP(IndexBufferContext)::init_type();
   CLP(GeomMunger)::init_type();
+  CLP(GraphicsStateGuardian)::init_type();
+  CLP(IndexBufferContext)::init_type();
+  CLP(OcclusionQueryContext)::init_type();
   CLP(ShaderContext)::init_type();
+  CLP(TextureContext)::init_type();
+  CLP(VertexBufferContext)::init_type();
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system(GLSYSTEM_NAME);

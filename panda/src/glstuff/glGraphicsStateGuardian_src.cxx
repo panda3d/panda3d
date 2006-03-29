@@ -721,9 +721,50 @@ reset() {
   }
 
   _glDrawBuffers = NULL;
-  if (has_extension("GL_ARB_draw_buffers")) {
-    _glDrawBuffers = (PFNGLDRAWBUFFERSARBPROC)
+  if (is_at_least_version(2, 0)) {
+    _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DrawBuffers");
+  } else if (has_extension("GL_ARB_draw_buffers")) {
+    _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func(GLPREFIX_QUOTED, "DrawBuffersARB");
+  }
+
+  _supports_occlusion_query = false;
+  if (CLP(support_occlusion_query)) {
+    if (is_at_least_version(1, 5)) {
+      _supports_occlusion_query = true;
+      _glGenQueries = (PFNGLGENQUERIESPROC)
+        get_extension_func(GLPREFIX_QUOTED, "GenQueries");
+      _glBeginQuery = (PFNGLBEGINQUERYPROC)
+        get_extension_func(GLPREFIX_QUOTED, "BeginQuery");
+      _glEndQuery = (PFNGLENDQUERYPROC)
+        get_extension_func(GLPREFIX_QUOTED, "EndQuery");
+      _glDeleteQueries = (PFNGLDELETEQUERIESPROC)
+        get_extension_func(GLPREFIX_QUOTED, "DeleteQueries");
+      _glGetQueryObjectuiv = (PFNGLGETQUERYOBJECTUIVPROC)
+        get_extension_func(GLPREFIX_QUOTED, "GetQueryObjectuiv");
+    } else if (has_extension("GL_ARB_occlusion_query")) {
+      _supports_occlusion_query = true;
+      _glGenQueries = (PFNGLGENQUERIESPROC)
+        get_extension_func(GLPREFIX_QUOTED, "GenQueriesARB");
+      _glBeginQuery = (PFNGLBEGINQUERYPROC)
+        get_extension_func(GLPREFIX_QUOTED, "BeginQueryARB");
+      _glEndQuery = (PFNGLENDQUERYPROC)
+        get_extension_func(GLPREFIX_QUOTED, "EndQueryARB");
+      _glDeleteQueries = (PFNGLDELETEQUERIESPROC)
+        get_extension_func(GLPREFIX_QUOTED, "DeleteQueriesARB");
+      _glGetQueryObjectuiv = (PFNGLGETQUERYOBJECTUIVPROC)
+        get_extension_func(GLPREFIX_QUOTED, "GetQueryObjectuivARB");
+    }
+  }
+
+  if (_supports_occlusion_query && 
+      (_glGenQueries == NULL || _glBeginQuery == NULL || 
+       _glEndQuery == NULL || _glDeleteQueries == NULL ||
+       _glGetQueryObjectuiv == NULL)) {
+    GLCAT.warning()
+      << "Occlusion queries advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+    _supports_occlusion_query = false;
   }
 
   _glBlendEquation = NULL;
@@ -1265,11 +1306,26 @@ end_frame() {
            ++ddli) {
         if (GLCAT.is_debug()) {
           GLCAT.debug()
-            << "releasing index " << (*ddli) << "\n";
+            << "releasing display list index " << (*ddli) << "\n";
         }
         GLP(DeleteLists)((*ddli), 1);
       }
       _deleted_display_lists.clear();
+    }
+
+    // And deleted occlusion queries, too.
+    if (!_deleted_queries.empty()) {
+      DeletedDisplayLists::iterator ddli;
+      for (ddli = _deleted_queries.begin();
+           ddli != _deleted_queries.end();
+           ++ddli) {
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "releasing query index " << (*ddli) << "\n";
+        }
+        _glDeleteQueries(1, &(*ddli));
+      }
+      _deleted_queries.clear();
     }
   }
 
@@ -2843,6 +2899,53 @@ setup_primitive(const GeomPrimitive *data) {
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::begin_occlusion_query
+//       Access: Public, Virtual
+//  Description: Begins a new occlusion query.  After this call, you
+//               may call begin_draw_primitives() and
+//               draw_triangles()/draw_whatever() repeatedly.
+//               Eventually, you should call end_occlusion_query()
+//               before the end of the frame; that will return a new
+//               OcclusionQueryContext object that will tell you how
+//               many pixels represented by the bracketed geometry
+//               passed the depth test.
+//
+//               It is not valid to call begin_occlusion_query()
+//               between another begin_occlusion_query()
+//               .. end_occlusion_query() sequence.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+begin_occlusion_query() {
+  nassertv(_supports_occlusion_query);
+  nassertv(_current_occlusion_query == (OcclusionQueryContext *)NULL);
+  PT(CLP(OcclusionQueryContext)) query = new CLP(OcclusionQueryContext)(this);
+
+  _glGenQueries(1, &query->_index);
+  _glBeginQuery(GL_SAMPLES_PASSED, query->_index);
+
+  _current_occlusion_query = query;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::end_occlusion_query
+//       Access: Public, Virtual
+//  Description: Ends a previous call to begin_occlusion_query().
+//               This call returns the OcclusionQueryContext object
+//               that will (eventually) report the number of pixels
+//               that passed the depth test between the call to
+//               begin_occlusion_query() and end_occlusion_query().
+////////////////////////////////////////////////////////////////////
+PT(OcclusionQueryContext) CLP(GraphicsStateGuardian)::
+end_occlusion_query() {
+  nassertr(_current_occlusion_query != (OcclusionQueryContext *)NULL, NULL);
+  PT(OcclusionQueryContext) result = _current_occlusion_query;
+  _current_occlusion_query = NULL;
+  _glEndQuery(GL_SAMPLES_PASSED);
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

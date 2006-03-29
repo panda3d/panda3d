@@ -62,7 +62,7 @@ typedef void (APIENTRYP PFNGLCLIENTACTIVETEXTUREPROC) (GLenum texture);
 typedef void (APIENTRYP PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
 typedef void (APIENTRYP PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
 typedef void (APIENTRYP PFNGLBUFFERSUBDATAPROC) (GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid *data);
-typedef void (APIENTRYP PFNGLDRAWBUFFERSARBPROC) (GLsizei n, const GLenum *bufs);
+typedef void (APIENTRYP PFNGLDRAWBUFFERSPROC) (GLsizei n, const GLenum *bufs);
 typedef void (APIENTRYP PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage);
 typedef void (APIENTRYP PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 typedef void (APIENTRYP PFNGLCOMPRESSEDTEXIMAGE3DPROC) (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid *data);
@@ -82,8 +82,6 @@ class EXPCL_GL CLP(GraphicsStateGuardian) : public GraphicsStateGuardian {
 public:
   CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties);
   virtual ~CLP(GraphicsStateGuardian)();
-  friend class CLP(ShaderContext);
-  friend class CLP(GraphicsBuffer);
   
   virtual void reset();
 
@@ -130,6 +128,9 @@ public:
   void apply_index_buffer(IndexBufferContext *ibc);
   virtual void release_index_buffer(IndexBufferContext *ibc);
   const unsigned char *setup_primitive(const GeomPrimitive *data);
+
+  virtual void begin_occlusion_query();
+  virtual PT(OcclusionQueryContext) end_occlusion_query();
 
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state);
 
@@ -424,7 +425,13 @@ public:
   PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC _glGetFramebufferAttachmentParameteriv;
   PFNGLGENERATEMIPMAPEXTPROC _glGenerateMipmap;
   
-  PFNGLDRAWBUFFERSARBPROC _glDrawBuffers;
+  PFNGLDRAWBUFFERSPROC _glDrawBuffers;
+
+  PFNGLGENQUERIESPROC _glGenQueries;
+  PFNGLBEGINQUERYPROC _glBeginQuery;
+  PFNGLENDQUERYPROC _glEndQuery;
+  PFNGLDELETEQUERIESPROC _glDeleteQueries;
+  PFNGLGETQUERYOBJECTUIVPROC _glGetQueryObjectuiv;
 
   GLenum _edge_clamp;
   GLenum _border_clamp;
@@ -436,6 +443,7 @@ public:
   Mutex _lock;
   typedef pvector<GLuint> DeletedDisplayLists;
   DeletedDisplayLists _deleted_display_lists;
+  DeletedDisplayLists _deleted_queries;
 
   static PStatCollector _load_display_list_pcollector;
   static PStatCollector _primitive_batches_display_list_pcollector;
@@ -461,6 +469,10 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class CLP(ShaderContext);
+  friend class CLP(GraphicsBuffer);
+  friend class CLP(OcclusionQueryContext);
 };
 
 #include "glGraphicsStateGuardian_src.I"
