@@ -1,9 +1,9 @@
 
 from pandac.PandaModules import *
-
-from direct.distributed import DistributedNode
-from direct.task import Task
 from direct.interval.IntervalGlobal import *
+
+from direct.distributed.DistributedNode import DistributedNode
+from direct.task import Task
 from direct.gui import DirectGuiGlobals
 
 if __debug__:
@@ -11,12 +11,10 @@ if __debug__:
     from direct.directtools.DirectGeometry import *
     from direct.showbase.PythonUtil import randFloat
 
-import CartesianGridBase
+from CartesianGridBase import CartesianGridBase
 
 
-class DistributedCartesianGrid(DistributedNode.DistributedNode,
-                               CartesianGridBase.CartesianGridBase):
-
+class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
     notify = directNotify.newCategory("DistributedCartesianGrid")
     notify.setDebug(0)
 
@@ -25,7 +23,7 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
     RuleSeparator = ":"
 
     def __init__(self, cr):
-        DistributedNode.DistributedNode.__init__(self, cr)
+        DistributedNode.__init__(self, cr)
         # Let the derived classes instantiate the NodePath
         self.visAvatar = None
         self.gridVisContext = None
@@ -34,14 +32,14 @@ class DistributedCartesianGrid(DistributedNode.DistributedNode,
             self.haveGridLines = 0
 
     def generate(self):
-        DistributedNode.DistributedNode.generate(self)
+        DistributedNode.generate(self)
 
     def disable(self):
-        DistributedNode.DistributedNode.disable(self)
+        DistributedNode.disable(self)
         self.stopProcessVisibility()
 
     def delete(self):
-        DistributedNode.DistributedNode.delete(self)
+        DistributedNode.delete(self)
         # TODO: when teleporting off an island...
         taskMgr.remove(self.taskName("processVisibility"))
 

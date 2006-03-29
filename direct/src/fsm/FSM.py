@@ -3,7 +3,7 @@ The new Finite State Machine module.  This replaces the modules
 previously called FSM.py (now called ClassicFSM.py).
 """
 
-from direct.showbase import DirectObject
+from direct.showbase.DirectObject import DirectObject
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import PythonUtil
 import types
@@ -18,7 +18,7 @@ class AlreadyInTransition(FSMException):
 class RequestDenied(FSMException):
     pass
 
-class FSM(DirectObject.DirectObject):
+class FSM(DirectObject):
     """
     A Finite State Machine.  This is intended to be the base class
     of any number of specific machines, which consist of a collection
@@ -157,6 +157,7 @@ class FSM(DirectObject.DirectObject):
 
     def __del__(self):
         self.cleanup()
+        DirectObject.__del__(self)
 
     def cleanup(self):
         # A convenience function to force the FSM to clean itself up
@@ -188,11 +189,13 @@ class FSM(DirectObject.DirectObject):
         exitState() followed by enterState()."""
 
         assert isinstance(request, types.StringTypes)
-        self.notify.debug("%s.forceTransition(%s, %s" % (self.name, request, str(args)[1:]))
+        self.notify.debug("%s.forceTransition(%s, %s" % (
+            self.name, request, str(args)[1:]))
 
         if not self.state:
             # Queue up the request.
-            self.__requestQueue.append(PythonUtil.Functor(self.forceTransition, request, *args))
+            self.__requestQueue.append(PythonUtil.Functor(
+                self.forceTransition, request, *args))
             return
 
         self.__setState(request, *args)
@@ -210,10 +213,12 @@ class FSM(DirectObject.DirectObject):
         """
 
         assert isinstance(request, types.StringTypes)
-        self.notify.debug("%s.demand(%s, %s" % (self.name, request, str(args)[1:]))
+        self.notify.debug("%s.demand(%s, %s" % (
+            self.name, request, str(args)[1:]))
         if not self.state:
             # Queue up the request.
-            self.__requestQueue.append(PythonUtil.Functor(self.demand, request, *args))
+            self.__requestQueue.append(PythonUtil.Functor(
+                self.demand, request, *args))
             return
 
         if not self.request(request, *args):
@@ -243,7 +248,8 @@ class FSM(DirectObject.DirectObject):
         transition is complete)."""
 
         assert isinstance(request, types.StringTypes)
-        self.notify.debug("%s.request(%s, %s" % (self.name, request, str(args)[1:]))
+        self.notify.debug("%s.request(%s, %s" % (
+            self.name, request, str(args)[1:]))
 
         if not self.state:
             error = "requested %s while FSM is in transition from %s to %s." % (request, self.oldState, self.newState)
