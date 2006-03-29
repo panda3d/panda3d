@@ -64,7 +64,6 @@ extern ConfigVariableInt patchfile_buffer_size;
 extern ConfigVariableInt patchfile_zone_size;
 
 extern ConfigVariableBool keep_temporary_files;
-extern ConfigVariableDouble average_frame_rate_interval;
 
 extern ConfigVariableString encryption_algorithm;
 extern ConfigVariableInt encryption_key_length;

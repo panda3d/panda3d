@@ -58,9 +58,6 @@ ConfigVariableBool keep_temporary_files
           "default) to delete these.  Mainly useful for debugging "
           "when the process goes wrong."));
 
-ConfigVariableDouble average_frame_rate_interval
-("average-frame-rate-interval", 1.0);
-
 ConfigVariableString encryption_algorithm
 ("encryption-algorithm", "bf-cbc",
  PRC_DESC("This defines the OpenSSL encryption algorithm which is used to "

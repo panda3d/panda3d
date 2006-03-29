@@ -58,5 +58,6 @@ extern ConfigVariableDouble clock_frame_rate;
 extern ConfigVariableDouble clock_degrade_factor;
 extern ConfigVariableDouble max_dt;
 extern ConfigVariableDouble sleep_precision;
+extern ConfigVariableDouble average_frame_rate_interval;
 
 #endif /* __CONFIG_UTIL_H__ */

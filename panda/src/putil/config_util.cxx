@@ -142,3 +142,6 @@ ConfigVariableDouble sleep_precision
           "return precisely.  That is, if we use select() to request a "
           "timeout of 1.0 seconds, we can expect to actually sleep for "
           "somewhere between 1.0 and 1.0 + sleep-precision seconds."));
+
+ConfigVariableDouble average_frame_rate_interval
+("average-frame-rate-interval", 1.0);
