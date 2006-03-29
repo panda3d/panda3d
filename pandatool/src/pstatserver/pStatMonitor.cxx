@@ -137,8 +137,11 @@ get_collector_color(int collector_index) {
     const PStatCollectorDef &def =
       _client_data->get_collector_def(collector_index);
 
-    if (def._suggested_color != RGBColorf::zero()) {
-      ci = _colors.insert(Colors::value_type(collector_index, def._suggested_color)).first;
+    RGBColorf sc(def._suggested_color.r,
+                 def._suggested_color.b,
+                 def._suggested_color.g);
+    if (sc != RGBColorf::zero()) {
+      ci = _colors.insert(Colors::value_type(collector_index, sc)).first;
       return (*ci).second;
     }
   }
