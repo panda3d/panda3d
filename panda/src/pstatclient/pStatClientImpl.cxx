@@ -29,7 +29,6 @@
 #include "config_pstats.h"
 #include "pStatProperties.h"
 #include "cmath.h"
-#include "mathNumbers.h"
 
 #include <algorithm>
 
@@ -73,7 +72,7 @@ PStatClientImpl(PStatClient *client) :
     _udp_count_factor = 0.0f;
 
   } else {
-    csincos(pstats_tcp_ratio * MathNumbers::pi_f / 2.0f,
+    csincos(pstats_tcp_ratio * (3.14159265f / 2.0f),
             &_udp_count_factor,
             &_tcp_count_factor);
   }
