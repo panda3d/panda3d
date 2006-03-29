@@ -1,0 +1,92 @@
+// Filename: glOcclusionQueryContext_src.cxx
+// Created by:  drose (27Mar06)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#include "pnotify.h"
+#include "dcast.h"
+#include "mutexHolder.h"
+
+TypeHandle CLP(OcclusionQueryContext)::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLOcclusionQueryContext::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CLP(OcclusionQueryContext)::
+~CLP(OcclusionQueryContext)() {
+  if (_index != 0) {
+    // Tell the GSG to recycle this index when it gets around to it.
+    CLP(GraphicsStateGuardian) *glgsg;
+    DCAST_INTO_V(glgsg, _gsg);
+    MutexHolder holder(glgsg->_lock);
+    glgsg->_deleted_queries.push_back(_index);
+
+    _index = 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLOcclusionQueryContext::is_answer_ready
+//       Access: Public, Virtual
+//  Description: Returns true if the query's answer is ready, false
+//               otherwise.  If this returns false, the application
+//               must continue to poll until it returns true.
+//
+//               It is only valid to call this from the draw thread.
+////////////////////////////////////////////////////////////////////
+bool CLP(OcclusionQueryContext)::
+is_answer_ready() const {
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_R(glgsg, _gsg, false);
+  GLuint result;
+  glgsg->_glGetQueryObjectuiv(_index, GL_QUERY_RESULT_AVAILABLE, &result);
+  return (result != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLOcclusionQueryContext::waiting_for_answer
+//       Access: Public, Virtual
+//  Description: Requests the graphics engine to expedite the pending
+//               answer--the application is now waiting until the
+//               answer is ready.
+//
+//               It is only valid to call this from the draw thread.
+////////////////////////////////////////////////////////////////////
+void CLP(OcclusionQueryContext)::
+waiting_for_answer() {
+  GLP(Flush)();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLOcclusionQueryContext::get_num_fragments
+//       Access: Public, Virtual
+//  Description: Returns the number of fragments (pixels) of the
+//               specified geometry that passed the depth test.
+//               If is_answer_ready() did not return true, this
+//               function may block before it returns.
+//
+//               It is only valid to call this from the draw thread.
+////////////////////////////////////////////////////////////////////
+int CLP(OcclusionQueryContext)::
+get_num_fragments() const {
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_R(glgsg, _gsg, 0);
+  GLuint result;
+  glgsg->_glGetQueryObjectuiv(_index, GL_QUERY_RESULT, &result);
+  return result;
+}
