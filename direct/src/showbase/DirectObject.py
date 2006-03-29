@@ -8,10 +8,10 @@ class DirectObject:
     def __init__(self):
         pass
 
-    # This destructor is useful for debugging leaks
-    #def __del__(self):
-    #    print "Destructing: ", self.__class__.__name__
-
+    def __del__(self):
+        self.ignoreAll()
+        # This next line is useful for debugging leaks
+        #print "Destructing: ", self.__class__.__name__
 
     # Wrapper functions to have a cleaner, more object oriented approach to
     # the messenger functionality.
