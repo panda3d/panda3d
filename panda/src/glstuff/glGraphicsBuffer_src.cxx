@@ -111,7 +111,7 @@ begin_frame(FrameMode mode) {
       default:
         GLCAT.error() << "OTHER PROBLEM\n"; break;
       }
-      glgsg->_glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+      glgsg->bind_fbo(0);
       return false;
     }
   }
@@ -140,7 +140,7 @@ rebuild_bitplanes() {
       return;
     }
   }
-  glgsg->_glBindFramebuffer(GL_FRAMEBUFFER_EXT, _fbo);
+  glgsg->bind_fbo(_fbo);
 
   // Calculate bitplane size.  This can be larger than the buffer.
 
@@ -185,7 +185,7 @@ rebuild_bitplanes() {
       slot = SLOT_depth;
     } else if (fmt == Texture::F_stencil_index) {
       slot = SLOT_stencil;
-    } else if (fmt == Texture::F_rgba) {
+    } else if ((fmt == Texture::F_rgba)||(fmt == Texture::F_rgb)) {
       slot = SLOT_color;
     } else {
       _textures[i]._rtm_mode = RTM_copy_texture;
@@ -226,6 +226,7 @@ rebuild_bitplanes() {
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
       
       if (tex->get_texture_type() == Texture::TT_2d_texture) {
+        glgsg->upload_blank_image(tex, gtc);
         glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, _attach_point[slot],
                                        GL_TEXTURE_2D, gtc->_index, 0);
       } else {
@@ -326,7 +327,7 @@ end_frame(FrameMode mode) {
   // Unbind the FBO
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
-  glgsg->_glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+  glgsg->bind_fbo(0);
   
   if (mode == FM_render) {
     generate_mipmaps();

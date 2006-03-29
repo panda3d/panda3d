@@ -33,6 +33,22 @@ get_pfnum() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::get_pfnum_properties
+//       Access: Public
+//  Description: Returns the properties of the pixel format that
+//               was chosen for this gsg.  In OpenGL under Microsoft
+//               Windows, the window must be created first and then
+//               the GL context is created from the window, and the
+//               context inherits the pixel format of the window.
+//               Therefore, all windows that share a particular
+//               context must also share the same pixel format.
+////////////////////////////////////////////////////////////////////
+INLINE const FrameBufferProperties &wglGraphicsStateGuardian::
+get_pfnum_properties() const {
+  return _pfnum_properties;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsStateGuardian::made_context
 //       Access: Public
 //  Description: Returns true if the GSG has had a context made for it

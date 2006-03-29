@@ -172,6 +172,8 @@ public:
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
 
+  void bind_fbo(GLuint fbo);
+  
 protected:
   void do_issue_transform();
   void do_issue_render_mode();
@@ -271,6 +273,7 @@ protected:
   void specify_texture(Texture *tex);
   void apply_texture(TextureContext *tc);
   bool upload_texture(CLP(TextureContext) *gtc);
+  bool upload_blank_image(Texture *tex, CLP(TextureContext) *gtc);
   bool upload_texture_image(CLP(TextureContext) *gtc, bool uses_mipmaps, 
                             GLenum target, GLint internal_format, 
                             int width, int height, int depth,
@@ -340,6 +343,7 @@ protected:
   GLuint _geom_display_list;
   GLuint _current_vbuffer_index;
   GLuint _current_ibuffer_index;
+  GLuint _current_fbo;
   
   int _error_count;
 

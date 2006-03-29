@@ -34,7 +34,7 @@
 // Description : Uses Windows native calls to implement atomic
 //               adjustments.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AtomicAdjustWin32Impl {
+class EXPCL_PANDAEXPRESS AtomicAdjustWin32Impl {
 public:
   INLINE static PN_int32 inc(PN_int32 &var);
   INLINE static PN_int32 dec(PN_int32 &var);

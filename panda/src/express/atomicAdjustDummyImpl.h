@@ -33,7 +33,7 @@
 //               systems that don't require multiprogramming, and
 //               therefore don't require special atomic operations.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AtomicAdjustDummyImpl {
+class EXPCL_PANDAEXPRESS AtomicAdjustDummyImpl {
 public:
   INLINE static PN_int32 inc(PN_int32 &var);
   INLINE static PN_int32 dec(PN_int32 &var);

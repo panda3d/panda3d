@@ -139,11 +139,20 @@ make_window(GraphicsStateGuardian *gsg, const string &name, int sort) {
 INLINE GraphicsOutput *GraphicsEngine::
 make_buffer(GraphicsStateGuardian *gsg, const string &name,
             int sort, int x_size, int y_size) {
-   GraphicsOutput *result = make_output(gsg->get_pipe(), name, sort,
-                                        gsg->get_default_properties(), x_size, y_size,
-                                        GraphicsPipe::BF_refuse_window,
-                                        gsg, NULL);
-   return result;
+  FrameBufferProperties props = gsg->get_default_properties();
+  int clear =
+        FrameBufferProperties::FM_buffer |
+        FrameBufferProperties::FM_stereo |
+        FrameBufferProperties::FM_accum |
+        FrameBufferProperties::FM_multisample |
+        FrameBufferProperties::FM_hardware |
+        FrameBufferProperties::FM_software;
+  props.set_frame_buffer_mode(props.get_frame_buffer_mode() & (~clear));
+  GraphicsOutput *result = make_output(gsg->get_pipe(), name, sort,
+                                       gsg->get_default_properties(), x_size, y_size,
+                                       GraphicsPipe::BF_refuse_window,
+                                       gsg, NULL);
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,11 +163,12 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
 INLINE GraphicsOutput *GraphicsEngine::
 make_parasite(GraphicsOutput *host, const string &name, 
               int sort, int x_size, int y_size) {
+  FrameBufferProperties props;
   GraphicsOutput *result = make_output(host->get_pipe(), name, sort,
-                                       host->get_fb_properties(), x_size, y_size,
+                                       props, x_size, y_size,
                                        GraphicsPipe::BF_require_parasite,
                                        host->get_gsg(), host);
-   return result;
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

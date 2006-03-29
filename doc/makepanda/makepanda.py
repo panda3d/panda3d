@@ -2345,6 +2345,18 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='liblerp.in', obj='liblerp_igate.obj',
             skip=["lerp_headers.h","lerpchans.h"], also=["lerp_composite.cxx"])
 
 #
+# DIRECTORY: panda/src/cull/
+#
+
+IPATH=['panda/src/cull']
+OPTS=['BUILDING_PANDA', 'NSPR']
+CopyAllHeaders('panda/src/cull')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='cull_composite.cxx', obj='cull_composite.obj')
+EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libcull.in', obj='libcull_igate.obj',
+            src='panda/src/cull',  module='panda', library='libcull',
+            skip=[], also=["cull_composite.cxx"])
+
+#
 # DIRECTORY: panda/src/pgraph/
 #
 
@@ -2424,6 +2436,18 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='display_composite.cxx', obj='display_com
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdisplay.in', obj='libdisplay_igate.obj',
             src='panda/src/display',  module='panda', library='libdisplay',
             skip=['renderBuffer.h'], also=["display_composite.cxx"])
+
+#
+# DIRECTORY: panda/src/display/
+#
+
+IPATH=['panda/src/pipeline']
+OPTS=['BUILDING_PANDA', 'NSPR']
+CopyAllHeaders('panda/src/pipeline')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='pipeline_composite.cxx', obj='pipeline_composite.obj')
+EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpipeline.in', obj='libpipeline_igate.obj',
+            src='panda/src/pipeline',  module='panda', library='libpipeline',
+            skip=[], also=["pipeline_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/device/
@@ -2601,8 +2625,8 @@ CopyAllHeaders('panda/src/particlesystem')
 IPATH=['panda/metalibs/panda']
 OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'NSPR', 'FREETYPE', 'HELIX', 'FFTW', 'OPENCV',
       'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
-INFILES=['librecorder.in', 'libpgraph.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
-         'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libevent.in',
+INFILES=['librecorder.in', 'libpgraph.in', 'libcull.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
+         'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libpipeline.in', 'libevent.in',
          'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libparametrics.in',
          'libpnmimage.in', 'libtext.in', 'libtform.in', 'liblerp.in', 'libputil.in', 'libaudio.in',
          'libpgui.in']
@@ -2610,6 +2634,7 @@ OBJFILES=['panda_panda.obj', 'libpanda_module.obj',
           'recorder_composite.obj', 'librecorder_igate.obj',
           'pgraph_nodePath.obj', 
           'pgraph_composite1.obj', 'pgraph_composite2.obj', 'pgraph_composite3.obj', 'pgraph_composite4.obj', 'libpgraph_igate.obj',
+          'cull_composite.obj',
           'grutil_multitexReducer.obj', 'grutil_composite.obj', 'libgrutil_igate.obj',
           'chan_composite.obj', 'libchan_igate.obj',
           'pstatclient_composite.obj', 'libpstatclient_igate.obj',
@@ -2618,6 +2643,7 @@ OBJFILES=['panda_panda.obj', 'libpanda_module.obj',
           'device_composite.obj', 'libdevice_igate.obj',
           'dgraph_composite.obj', 'libdgraph_igate.obj',
           'display_composite.obj', 'libdisplay_igate.obj',
+          'pipeline_composite.obj', 'libpipeline_igate.obj',
           'event_composite.obj', 'libevent_igate.obj',
           'gobj_composite1.obj', 'gobj_composite2.obj', 'libgobj_igate.obj',
           'gsgbase_composite.obj', 'libgsgbase_igate.obj',

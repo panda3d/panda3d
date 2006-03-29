@@ -78,17 +78,12 @@ pipe_constructor() {
 //               have been created yet for the GSG).
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsStateGuardian) wglGraphicsPipe::
-make_gsg(const FrameBufferProperties &properties, 
+make_gsg(const FrameBufferProperties &properties,
          GraphicsStateGuardian *share_with) {
   if (!_is_valid) {
     return NULL;
   }
 
-  // THIS CODE IS INCORRECT.  THIS ROUTINE IS NOT CALLED IN THE
-  // DRAW THREAD.  THE FIX IS THAT PIXEL FORMAT SELECTION NEEDS TO
-  // BE DONE ON A PER-WINDOW BASIS, AND IT NEEDS TO BE DONE IN
-  // OPEN_WINDOW, NOT HERE.
-  
   wglGraphicsStateGuardian *share_gsg = NULL;
 
   if (share_with != (GraphicsStateGuardian *)NULL) {
@@ -102,95 +97,7 @@ make_gsg(const FrameBufferProperties &properties,
     DCAST_INTO_R(share_gsg, share_with, NULL);
   }
 
-  int frame_buffer_mode = 0;
-  if (properties.has_frame_buffer_mode()) {
-    frame_buffer_mode = properties.get_frame_buffer_mode();
-  }
-
-  // We need a DC to examine the available pixel formats.  We'll use
-  // the screen DC.
-  HDC hdc = GetDC(NULL);
-  int temp_pfnum;
-
-  if (!gl_force_pixfmt.has_value()) {
-    temp_pfnum = choose_pfnum(properties, hdc);
-    if (temp_pfnum == 0) {
-      return NULL;
-    }
-
-  } else {
-    wgldisplay_cat.info()
-      << "overriding pixfmt choice with gl-force-pixfmt(" 
-      << gl_force_pixfmt << ")\n";
-    temp_pfnum = gl_force_pixfmt;
-  }
-
-  FrameBufferProperties temp_properties;
-  get_properties(temp_properties, hdc, temp_pfnum);
-
-  // We're done with hdc now.
-  ReleaseDC(NULL, hdc);
-
-  if (wgldisplay_cat.is_debug()) {
-    wgldisplay_cat.debug()
-      << "Preliminary pixfmt #" << temp_pfnum << " = " 
-      << temp_properties << "\n";
-  }
-
-  // Now we need to create a temporary GSG to query the WGL
-  // extensions, so we can look for more advanced properties like
-  // multisampling.
-  PT(wglGraphicsStateGuardian) temp_gsg = 
-    new wglGraphicsStateGuardian(temp_properties, share_gsg, temp_pfnum);
-
-  int pfnum = temp_pfnum;
-  FrameBufferProperties new_properties = temp_properties;
-
-  // Actually, don't bother with the advanced stuff unless the
-  // requested frame buffer requires multisample, since at the moment
-  // that's the only reason we'd need to use the advanced query.
-  if (frame_buffer_mode & (FrameBufferProperties::FM_multisample)) {
-    HDC twindow_dc = temp_gsg->get_twindow_dc();
-    if (twindow_dc != 0) {
-      wglMakeCurrent(twindow_dc, temp_gsg->get_context(twindow_dc));
-      temp_gsg->reset_if_new();
-      
-      if (temp_gsg->_supports_pixel_format) {
-        pfnum = choose_pfnum_advanced(properties, temp_gsg, twindow_dc, 
-                                      temp_pfnum);
-        if (!get_properties_advanced(new_properties, temp_gsg, twindow_dc, 
-                                     pfnum)) {
-          wgldisplay_cat.debug()
-            << "Unable to query properties using extension interface.\n";
-          
-          get_properties(new_properties, twindow_dc, pfnum);
-        }
-      }
-    }
-  }
-
-  if (wgldisplay_cat.is_debug()) {
-    wgldisplay_cat.debug()
-      << "Picking pixfmt #" << pfnum << " = " 
-      << new_properties << "\n";
-  }
-
-  // Now create the actual GSG.  If we happen to have ended up with
-  // the same pfnum that we had the first time around, we can just
-  // keep our initial, temporary GSG.
-  PT(wglGraphicsStateGuardian) gsg = temp_gsg;
-  if (pfnum != temp_pfnum) {
-    gsg = new wglGraphicsStateGuardian(new_properties, share_gsg, pfnum);
-  }
-
-  // Ideally, we should be able to detect whether the share_gsg will
-  // be successful, and return NULL if it won't work.  But we can't do
-  // that yet, because we can't try to actually share the gsg until we
-  // create the context, for which we need to have a window.  That
-  // means the app will just have to trust it will work; if it doesn't
-  // work, too bad.
-
-  return gsg.p();
+  return new wglGraphicsStateGuardian(properties, share_gsg, -1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -231,22 +138,29 @@ make_output(const string &name,
   
   // Second thing to try: a GLGraphicsBuffer
   
-  //  if (retry == 1) {
-  //    if ((!support_render_texture)||
-  //        ((flags&BF_require_parasite)!=0)||
-  //        ((flags&BF_require_window)!=0)) {
-  //      return NULL;
-  //    }
-  //    if ((wglgsg != 0) &&
-  //        (wglgsg->is_valid()) &&
-  //        (!wglgsg->needs_reset()) &&
-  //        (wglgsg->_supports_framebuffer_object) &&
-  //        (wglgsg->_glDrawBuffers != 0)) {
-  //      precertify = true;
-  //    }
-  //    return new GLGraphicsBuffer(this, name, properties,
-  //                                x_size, y_size, flags, gsg, host);
-  //  }
+  if (retry == 1) {
+    if ((!support_render_texture)||
+        (!gl_support_fbo)||
+        (host==0)||
+        ((flags&BF_require_parasite)!=0)||
+        ((flags&BF_require_window)!=0)||
+        (properties.has_mode(FrameBufferProperties::FM_index))||
+        (properties.has_mode(FrameBufferProperties::FM_buffer))||
+        (properties.has_mode(FrameBufferProperties::FM_accum))||
+        (properties.has_mode(FrameBufferProperties::FM_stencil))||
+        (properties.has_mode(FrameBufferProperties::FM_multisample))) {
+      return NULL;
+    }
+    if ((wglgsg != 0) &&
+        (wglgsg->is_valid()) &&
+        (!wglgsg->needs_reset()) &&
+        (wglgsg->_supports_framebuffer_object) &&
+        (wglgsg->_glDrawBuffers != 0)) {
+      precertify = true;
+    }
+    return new GLGraphicsBuffer(this, name, properties,
+                                x_size, y_size, flags, gsg, host);
+  }
   
   // Third thing to try: a wglGraphicsBuffer
   

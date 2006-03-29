@@ -303,6 +303,12 @@ open_buffer() {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_R(wglgsg, _gsg, false);
 
+  // Make sure a pixel format is chosen, and take its properties.
+  if (wglgsg->get_pfnum() < 0) {
+    wglgsg->choose_pixel_format(_fb_properties);
+  }
+  _fb_properties = wglgsg->get_pfnum_properties();
+
   HDC twindow_dc = wglgsg->get_twindow_dc();
   if (twindow_dc == 0) {
     // If we couldn't make a window, we can't get a GL context.

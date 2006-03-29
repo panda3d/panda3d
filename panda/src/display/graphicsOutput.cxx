@@ -687,12 +687,20 @@ get_texture_card() {
 GraphicsOutput *GraphicsOutput::
 make_texture_buffer(const string &name, int x_size, int y_size,
                     Texture *tex, bool to_ram) {
-
+  FrameBufferProperties props = get_gsg()->get_default_properties();
+  int clear =
+    FrameBufferProperties::FM_buffer |
+    FrameBufferProperties::FM_stereo |
+    FrameBufferProperties::FM_accum |
+    FrameBufferProperties::FM_multisample |
+    FrameBufferProperties::FM_hardware |
+    FrameBufferProperties::FM_software;
+  props.set_frame_buffer_mode(props.get_frame_buffer_mode() & (~clear));  
+  
   GraphicsOutput *buffer = get_gsg()->get_engine()->
     make_output(get_gsg()->get_pipe(),
                 name, get_sort()-1,
-                get_host()->get_fb_properties(),
-                x_size, y_size, GraphicsPipe::BF_refuse_window,
+                props, x_size, y_size, GraphicsPipe::BF_refuse_window,
                 get_gsg(), get_host());
 
   if (buffer != (GraphicsOutput *)NULL) {

@@ -56,18 +56,21 @@ PUBLISHED:
     FM_software       = 0x0200,
     FM_hardware       = 0x0400,
   };
-
+  
   void clear();
+  INLINE void set_specified();
   INLINE int get_buffer_mask() const;
   INLINE bool is_any_specified() const;
-
+  INLINE bool has_mode(int bit) const;
+  INLINE bool is_single_buffered() const;
+  INLINE bool is_stereo() const;
+  bool subsumes(const FrameBufferProperties &prop) const;
+  
   INLINE void set_frame_buffer_mode(int frameBuffer_mode);
   INLINE int get_frame_buffer_mode() const;
   INLINE bool has_frame_buffer_mode() const;
   INLINE void clear_frame_buffer_mode();
 
-  INLINE bool is_single_buffered() const;
-  INLINE bool is_stereo() const;
   INLINE void set_depth_bits(int depth_bits);
   INLINE int get_depth_bits() const;
   INLINE bool has_depth_bits() const;
@@ -132,6 +135,7 @@ private:
     S_aux_rgba          = 0x0040,
     S_aux_hrgba         = 0x0080,
     S_aux_float         = 0x0100,
+    S_ALL_SPECIFIED     = 0x01FF,
   };
 
   int _specified;

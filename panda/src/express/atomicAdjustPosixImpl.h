@@ -33,7 +33,7 @@
 //       Class : AtomicAdjustPosixImpl
 // Description : Uses POSIX to implement atomic adjustments.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AtomicAdjustPosixImpl {
+class EXPCL_PANDAEXPRESS AtomicAdjustPosixImpl {
 public:
   INLINE static PN_int32 inc(PN_int32 &var);
   INLINE static PN_int32 dec(PN_int32 &var);

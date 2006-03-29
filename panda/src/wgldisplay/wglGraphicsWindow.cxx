@@ -291,6 +291,12 @@ open_window() {
 
   _hdc = GetDC(_hWnd);
 
+  // Make sure a pixel format is chosen, and take its properties.
+  if (wglgsg->get_pfnum() < 0) {
+    wglgsg->choose_pixel_format(_fb_properties);
+  }
+  _fb_properties = wglgsg->get_pfnum_properties();
+
   // Set up the pixel format of the window appropriately for GL.
   int pfnum = wglgsg->get_pfnum();
   PIXELFORMATDESCRIPTOR pixelformat;

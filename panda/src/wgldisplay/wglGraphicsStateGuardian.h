@@ -40,9 +40,10 @@ public:
   virtual ~wglGraphicsStateGuardian();
 
   INLINE int get_pfnum() const;
+  INLINE const FrameBufferProperties &get_pfnum_properties() const;
   INLINE bool made_context() const;
   INLINE HGLRC get_context(HDC hdc);
-
+  bool choose_pixel_format(const FrameBufferProperties &properties);
   virtual void reset();
 
   INLINE HDC get_twindow_dc();
@@ -68,7 +69,8 @@ private:
 
   // All windows that share a particular GL context must also share
   // the same pixel format; therefore, we store the pixel format
-  // number in the GSG.
+  // number and the actual properties in the GSG.
+  FrameBufferProperties _pfnum_properties;
   int _pfnum;
 
   bool _made_context;

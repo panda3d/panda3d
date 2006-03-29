@@ -43,7 +43,7 @@ wglGraphicsStateGuardian(const FrameBufferProperties &properties,
 
   _twindow = (HWND)0;
   _twindow_dc = (HDC)0;
-
+  
   _supports_pbuffer = false;
   _supports_pixel_format = false;
   _supports_wgl_multisample = false;
@@ -61,6 +61,91 @@ wglGraphicsStateGuardian::
     wglDeleteContext(_context);
     _context = (HGLRC)NULL;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::choose_pixel_format
+//       Access: Private
+//  Description: Selects a pixel format.
+////////////////////////////////////////////////////////////////////
+bool wglGraphicsStateGuardian::
+choose_pixel_format(const FrameBufferProperties &properties) {
+  
+  int frame_buffer_mode = 0;
+  if (properties.has_frame_buffer_mode()) {
+    frame_buffer_mode = properties.get_frame_buffer_mode();
+  }
+
+  wglGraphicsPipe *pipe;
+  DCAST_INTO_R(pipe, get_pipe(), false);
+
+  // We need a DC to examine the available pixel formats.  We'll use
+  // the screen DC.
+  HDC hdc = GetDC(NULL);
+
+  if (!gl_force_pixfmt.has_value()) {
+    _pfnum = pipe->choose_pfnum(properties, hdc);
+    if (_pfnum == 0) {
+      ReleaseDC(NULL, hdc);
+      return false;
+    }
+  } else {
+    wgldisplay_cat.info()
+      << "overriding pixfmt choice with gl-force-pixfmt(" 
+      << gl_force_pixfmt << ")\n";
+    _pfnum = gl_force_pixfmt;
+  }
+
+  // Query the properties of the pixel format we chose.
+  pipe->get_properties(_pfnum_properties, hdc, _pfnum);
+  
+  // We're done with hdc now.
+  ReleaseDC(NULL, hdc);
+
+  if (wgldisplay_cat.is_debug()) {
+    wgldisplay_cat.debug()
+      << "Preliminary pixfmt #" << _pfnum << " = " 
+      << _pfnum_properties << "\n";
+  }
+
+  // We need to create a temporary GSG to query the WGL
+  // extensions, so we can look for more advanced properties like
+  // multisampling.
+  //
+  // Don't bother with the advanced stuff unless the
+  // requested frame buffer requires multisample, since at the moment
+  // that's the only reason we'd need to use the advanced query.
+  //
+  // Now that this is in the draw thread, it's probably possible
+  // to write this code in a more elegant manner.
+
+  if (frame_buffer_mode & (FrameBufferProperties::FM_multisample)) {
+
+    PT(wglGraphicsStateGuardian) temp_gsg = 
+      new wglGraphicsStateGuardian(_pfnum_properties, _share_with, _pfnum);
+
+    FrameBufferProperties adv_properties = _pfnum_properties;
+
+    HDC twindow_dc = temp_gsg->get_twindow_dc();
+    if (twindow_dc != 0) {
+      wglMakeCurrent(twindow_dc, temp_gsg->get_context(twindow_dc));
+      temp_gsg->reset_if_new();
+      
+      if (temp_gsg->_supports_pixel_format) {
+        int adv_pfnum = pipe->
+          choose_pfnum_advanced(properties, temp_gsg, twindow_dc, _pfnum);
+        if (pipe->get_properties_advanced
+            (adv_properties, temp_gsg, twindow_dc, adv_pfnum)) {
+          _pfnum_properties = adv_properties;
+          _pfnum = adv_pfnum;
+        } else {
+          wgldisplay_cat.debug()
+            << "Unable to query properties using extension interface.\n";
+        }
+      }
+    }
+  }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

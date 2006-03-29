@@ -72,7 +72,6 @@ ConfigVariableBool CLP(compile_and_execute)
             "for the first time, by allowing the display list to be "
             "rendered at the same time it is being compiled."));
 
-
 void CLP(init_classes)() {
   CLP(GraphicsStateGuardian)::init_type();
   CLP(TextureContext)::init_type();

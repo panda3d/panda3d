@@ -50,7 +50,7 @@ protected:
                                              GraphicsStateGuardian *share_with);
 
 private:
-  
+
   static int choose_pfnum(const FrameBufferProperties &properties, HDC hdc);
   static int try_for_pfnum(HDC hdc, bool hardware, bool software, 
                            int frame_buffer_mode,
@@ -93,6 +93,7 @@ private:
 
   friend class wglGraphicsBuffer;
   friend class wglGraphicsWindow;
+  friend class wglGraphicsStateGuardian;
 };
 
 #include "wglGraphicsPipe.I"

@@ -999,6 +999,7 @@ reset() {
   }
   _current_vbuffer_index = 0;
   _current_ibuffer_index = 0;
+  _current_fbo = 0;
   _auto_antialias_mode = false;
   _render_mode = RenderModeAttrib::M_filled;
   _point_size = 1.0f;
@@ -1122,7 +1123,7 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
   enable_scissor(true);
   GLP(Scissor)(x, y, width, height);
   GLP(Viewport)(x, y, width, height);
-
+  
   report_my_gl_errors();
   do_point_size();
 }
@@ -2920,14 +2921,11 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertv(tc != (TextureContext *)NULL);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-  GLenum target = get_texture_target(tex->get_texture_type());
-  GLP(BindTexture)(target, gtc->_index);
-
-  GLint internal_format = get_internal_image_format(tex);
 
   if (z >= 0) {
     // Copy to a cube map face.  This doesn't seem to work too well
     // with CopyTexSubImage2D, so we always use CopyTexImage2D.
+    GLP(BindTexture)(GL_TEXTURE_CUBE_MAP_ARB, gtc->_index);
     GLP(CopyTexImage2D)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + z, 0,
                         get_internal_image_format(tex),
                         xo, yo, w, h, 0);
@@ -2937,42 +2935,8 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
     // cannot use glCopyTexImage2D to create a texture that may be
     // larger than the screen, so use glTexImage2D with arbitrary
     // data.
-
-    if ((gtc->_already_applied == false)||
-        (gtc->_internal_format != internal_format)||
-        (gtc->_width  != tex->get_x_size())||
-        (gtc->_height != tex->get_y_size())||
-        (gtc->_depth  != 1)) {
-      
-      char *image = new char[tex->get_x_size() * tex->get_y_size()];
-      memset(image, 128, tex->get_x_size() * tex->get_y_size());
-      switch (tex->get_format()) {
-      case Texture::F_depth_component:
-        GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
-                        tex->get_x_size(), tex->get_y_size(), 0,
-                        GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, image);
-        break;
-        
-      case Texture::F_stencil_index:
-        GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
-                        tex->get_x_size(), tex->get_y_size(), 0,
-                        GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, image);
-        break;
-        
-      default:
-        GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
-                        tex->get_x_size(), tex->get_y_size(), 0,
-                        GL_LUMINANCE, GL_UNSIGNED_BYTE, image);
-        break;
-      }
-      delete image;
-      
-      gtc->_already_applied = true;
-      gtc->_internal_format = internal_format;
-      gtc->_width  = tex->get_x_size();
-      gtc->_height = tex->get_y_size();
-      gtc->_depth  = 1;
-    }
+    GLP(BindTexture)(GL_TEXTURE_2D, gtc->_index);
+    upload_blank_image(tex, gtc);
 
     // Copy the pixel data from the frame buffer.
     GLP(CopyTexSubImage2D)(GL_TEXTURE_2D, 0, 0, 0, xo, yo, w, h);
@@ -2984,6 +2948,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   _state_rs = 0;
   _state._texture = 0;
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::framebuffer_copy_to_ram
@@ -4151,45 +4116,64 @@ get_extension_func(const char *, const char *) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 set_draw_buffer(const RenderBuffer &rb) {
-  switch (rb._buffer_type & RenderBuffer::T_color) {
-  case RenderBuffer::T_front:
-    GLP(DrawBuffer)(GL_FRONT);
-    break;
-    
-  case RenderBuffer::T_back:
-    GLP(DrawBuffer)(GL_BACK);
-    break;
-    
-  case RenderBuffer::T_right:
-    GLP(DrawBuffer)(GL_RIGHT);
-    break;
-    
-  case RenderBuffer::T_left:
-    GLP(DrawBuffer)(GL_LEFT);
-    break;
-    
-  case RenderBuffer::T_front_right:
-    nassertv(_current_properties->is_stereo());
-    GLP(DrawBuffer)(GL_FRONT_RIGHT);
-    break;
-    
-  case RenderBuffer::T_front_left:
-    nassertv(_current_properties->is_stereo());
-    GLP(DrawBuffer)(GL_FRONT_LEFT);
-    break;
-    
-  case RenderBuffer::T_back_right:
-    nassertv(_current_properties->is_stereo());
-    GLP(DrawBuffer)(GL_BACK_RIGHT);
-    break;
-    
-  case RenderBuffer::T_back_left:
-    nassertv(_current_properties->is_stereo());
-    GLP(DrawBuffer)(GL_BACK_LEFT);
-    break;
-    
-  default:
-    GLP(DrawBuffer)(GL_FRONT_AND_BACK);
+
+  if (_current_fbo) {
+
+    GLuint buffers[16];
+    int nbuffers = 0;
+    if (rb._buffer_type & RenderBuffer::T_front) {
+      nbuffers += 1;
+    }
+    nbuffers += _current_properties->get_aux_rgba();
+    nbuffers += _current_properties->get_aux_hrgba();
+    nbuffers += _current_properties->get_aux_float();
+    for (int i=0; i<nbuffers; i++) {
+      buffers[i] = GL_COLOR_ATTACHMENT0_EXT + i;
+    }
+    _glDrawBuffers(nbuffers, buffers);
+
+  } else {
+
+    switch (rb._buffer_type & RenderBuffer::T_color) {
+    case RenderBuffer::T_front:
+      GLP(DrawBuffer)(GL_FRONT);
+      break;
+      
+    case RenderBuffer::T_back:
+      GLP(DrawBuffer)(GL_BACK);
+      break;
+      
+    case RenderBuffer::T_right:
+      GLP(DrawBuffer)(GL_RIGHT);
+      break;
+      
+    case RenderBuffer::T_left:
+      GLP(DrawBuffer)(GL_LEFT);
+      break;
+      
+    case RenderBuffer::T_front_right:
+      nassertv(_current_properties->is_stereo());
+      GLP(DrawBuffer)(GL_FRONT_RIGHT);
+      break;
+      
+    case RenderBuffer::T_front_left:
+      nassertv(_current_properties->is_stereo());
+      GLP(DrawBuffer)(GL_FRONT_LEFT);
+      break;
+      
+    case RenderBuffer::T_back_right:
+      nassertv(_current_properties->is_stereo());
+      GLP(DrawBuffer)(GL_BACK_RIGHT);
+      break;
+      
+    case RenderBuffer::T_back_left:
+      nassertv(_current_properties->is_stereo());
+      GLP(DrawBuffer)(GL_BACK_LEFT);
+      break;
+      
+    default:
+      GLP(DrawBuffer)(GL_FRONT_AND_BACK);
+    }
   }
 
   // Also ensure that any global color channels are masked out.
@@ -4211,41 +4195,69 @@ set_draw_buffer(const RenderBuffer &rb) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 set_read_buffer(const RenderBuffer &rb) {
-  switch (rb._buffer_type & RenderBuffer::T_color) {
-  case RenderBuffer::T_front:
-    GLP(ReadBuffer)(GL_FRONT);
-    break;
-    
-  case RenderBuffer::T_back:
-    GLP(ReadBuffer)(GL_BACK);
-    break;
-    
-  case RenderBuffer::T_right:
-    GLP(ReadBuffer)(GL_RIGHT);
-    break;
-    
-  case RenderBuffer::T_left:
-    GLP(ReadBuffer)(GL_LEFT);
-    break;
-    
-  case RenderBuffer::T_front_right:
-    GLP(ReadBuffer)(GL_FRONT_RIGHT);
-    break;
-    
-  case RenderBuffer::T_front_left:
-    GLP(ReadBuffer)(GL_FRONT_LEFT);
-    break;
-    
-  case RenderBuffer::T_back_right:
-    GLP(ReadBuffer)(GL_BACK_RIGHT);
-    break;
-    
-  case RenderBuffer::T_back_left:
-    GLP(ReadBuffer)(GL_BACK_LEFT);
-    break;
-    
-  default:
-    GLP(ReadBuffer)(GL_FRONT_AND_BACK);
+
+  if (_current_fbo) {
+
+    GLuint buffer = GL_COLOR_ATTACHMENT0_EXT;
+    int index = 1;
+    for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
+      if (rb._buffer_type & (RenderBuffer::T_aux_rgba_0 << i)) {
+        buffer = GL_COLOR_ATTACHMENT0_EXT + index;
+      }
+      index += 1;
+    }
+    for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
+      if (rb._buffer_type & (RenderBuffer::T_aux_hrgba_0 << i)) {
+        buffer = GL_COLOR_ATTACHMENT0_EXT + index;
+      }
+      index += 1;
+    }
+    for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
+      if (rb._buffer_type & (RenderBuffer::T_aux_float_0 << i)) {
+        buffer = GL_COLOR_ATTACHMENT0_EXT + index;
+      }
+      index += 1;
+    }
+    GLP(ReadBuffer)(buffer);
+
+  } else {
+
+    switch (rb._buffer_type & RenderBuffer::T_color) {
+    case RenderBuffer::T_front:
+      GLP(ReadBuffer)(GL_FRONT);
+      break;
+      
+    case RenderBuffer::T_back:
+      GLP(ReadBuffer)(GL_BACK);
+      break;
+      
+    case RenderBuffer::T_right:
+      GLP(ReadBuffer)(GL_RIGHT);
+      break;
+      
+    case RenderBuffer::T_left:
+      GLP(ReadBuffer)(GL_LEFT);
+      break;
+      
+    case RenderBuffer::T_front_right:
+      GLP(ReadBuffer)(GL_FRONT_RIGHT);
+      break;
+      
+    case RenderBuffer::T_front_left:
+      GLP(ReadBuffer)(GL_FRONT_LEFT);
+      break;
+      
+    case RenderBuffer::T_back_right:
+      GLP(ReadBuffer)(GL_BACK_RIGHT);
+      break;
+      
+    case RenderBuffer::T_back_left:
+      GLP(ReadBuffer)(GL_BACK_LEFT);
+      break;
+      
+    default:
+      GLP(ReadBuffer)(GL_FRONT_AND_BACK);
+    }
   }
   
   report_my_gl_errors();
@@ -6438,6 +6450,60 @@ upload_texture(CLP(TextureContext) *gtc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::upload_blank_image
+//       Access: Private
+//  Description: Uploads a blank, non-mipmapped image to the specified
+//               texture object.  This is usually used to prepare the
+//               texture for render-to-texture operations.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+upload_blank_image(Texture *tex, CLP(TextureContext) *gtc)
+
+{
+  GLint internal_format = get_internal_image_format(tex);
+  
+  if ((gtc->_already_applied == false)||
+      (gtc->_internal_format != internal_format)||
+      (gtc->_width  != tex->get_x_size())||
+      (gtc->_height != tex->get_y_size())||
+      (gtc->_depth  != 1)) {
+    
+    GLP(BindTexture)(GL_TEXTURE_2D, gtc->_index);
+    
+    char *image = new char[tex->get_x_size() * tex->get_y_size()];
+    memset(image, 128, tex->get_x_size() * tex->get_y_size());
+
+    switch (tex->get_format()) {
+    case Texture::F_depth_component:
+      GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
+                      tex->get_x_size(), tex->get_y_size(), 0,
+                      GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, image);
+      break;
+    case Texture::F_stencil_index:
+      GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
+                      tex->get_x_size(), tex->get_y_size(), 0,
+                      GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, image);
+      break;
+    default:
+      GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
+                      tex->get_x_size(), tex->get_y_size(), 0,
+                      GL_LUMINANCE, GL_UNSIGNED_BYTE, image);
+      break;
+    }
+
+    delete image;
+    
+    gtc->_already_applied = true;
+    gtc->_internal_format = internal_format;
+    gtc->_width  = tex->get_x_size();
+    gtc->_height = tex->get_y_size();
+    gtc->_depth  = 1;
+  }
+  
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::upload_texture_image
 //       Access: Protected
 //  Description: Loads a texture image, or one page of a cube map
@@ -6945,3 +7011,16 @@ do_point_size() {
 
   report_my_gl_errors();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::bind_fbo
+//       Access: Protected
+//  Description: Binds an FBO object.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+bind_fbo(GLuint fbo) {
+  nassertv(_glBindFramebuffer != 0);
+  _glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
+  _current_fbo = fbo;
+}
+

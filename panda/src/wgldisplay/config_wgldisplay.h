@@ -29,6 +29,7 @@ NotifyCategoryDecl(wgldisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
 extern ConfigVariableInt gl_force_pixfmt;
 extern ConfigVariableBool gl_force_invalid;
 extern ConfigVariableBool gl_do_vidmemsize_check;
+extern ConfigVariableBool gl_support_fbo;
 
 extern EXPCL_PANDAGL void init_libwgldisplay();
 

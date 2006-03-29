@@ -124,6 +124,20 @@ is_single_buffered() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::has_mode
+//       Access: Published
+//  Description: Returns true if the frame buffer mode, logically
+//               anded with the given mask, is nonzero.  This is a
+//               convenience function to access this useful tidbit of
+//               data.
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+has_mode(int bits) const {
+  nassertr(has_frame_buffer_mode(), false);
+  return (_frame_buffer_mode & bits) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::is_stereo
 //       Access: Published
 //  Description: Returns true if the frame buffer indicates a
@@ -511,6 +525,19 @@ INLINE void FrameBufferProperties::
 clear_aux_float() {
   _specified &= ~S_aux_float;
   _aux_float = 0;
+  recalc_buffer_mask();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_specified
+//       Access: Published
+//  Description: Sets all the specified bits.  Effectively, this
+//               causes the default values to be specified for all
+//               not-yet-specified fields.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_specified() {
+  _specified = S_ALL_SPECIFIED;
   recalc_buffer_mask();
 }
 

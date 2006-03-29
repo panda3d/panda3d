@@ -52,6 +52,19 @@ operator = (const FrameBufferProperties &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::subsumes
+//       Access: Public
+//  Description: Returns true if this set of properties makes
+//               strictly greater or equal demands of the framebuffer
+//               than the other set of framebuffer properties.
+////////////////////////////////////////////////////////////////////
+bool FrameBufferProperties::
+subsumes(const FrameBufferProperties &other) const {
+  // NOT IMPLEMENTED YET
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::get_default
 //       Access: Published, Static
 //  Description: Returns a FrameBufferProperties structure with all of
