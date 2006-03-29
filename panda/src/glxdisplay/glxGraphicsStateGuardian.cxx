@@ -234,13 +234,15 @@ get_extension_func(const char *prefix, const char *name) {
     // First, check if we have glXGetProcAddress available.  This will
     // be superior if we can get it.
     
-#if defined(HAVE_GLXGETPROCADDRESS)
+#if defined(LINK_IN_GLXGETPROCADDRESS) && defined(HAVE_GLXGETPROCADDRESS)
       // If we are confident the system headers defined it, we can
       // call it directly.  This is more reliable than trying to
-      // determine its address dynamically.
+      // determine its address dynamically, but it may make
+      // libpandagl.so fail to load if the symbol isn't in the runtime
+      // library.
     return (void *)glXGetProcAddress((const GLubyte *)fullname.c_str());
       
-#elif defined(HAVE_GLXGETPROCADDRESSARB)
+#elif defined(LINK_IN_GLXGETPROCADDRESS) && defined(HAVE_GLXGETPROCADDRESSARB)
     // The ARB extension version is OK too.  Sometimes the prototype
     // isn't supplied for some reason.
     return (void *)glXGetProcAddressARB((const GLubyte *)fullname.c_str());

@@ -533,6 +533,17 @@
 #define GLX_LPATH
 #defer HAVE_GLX $[and $[HAVE_GL],$[UNIX_PLATFORM]]
 
+// glXGetProcAddress() is the function used to query OpenGL extensions
+// under X.  However, this function is itself an extension function,
+// leading to a chicken-and-egg problem.  One approach is to compile
+// in a hard reference to the function, another is to pull the
+// function address from the dynamic runtime.  Each has its share of
+// problems.  Panda's default behavior is to pull it from the dynamic
+// runtime; define this to compile in a reference to the function.
+// This is only relevant from platforms using OpenGL under X (for
+// instance, Linux).
+#define LINK_IN_GLXGETPROCADDRESS
+
 // Should we try to build the WGL interface?
 #defer HAVE_WGL $[and $[HAVE_GL],$[WINDOWS_PLATFORM]]
 
