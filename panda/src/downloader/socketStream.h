@@ -20,7 +20,7 @@
 #define SOCKETSTREAM_H
 
 #include "pandabase.h"
-#include "clockObject.h"
+#include "trueClock.h"
 #include "config_express.h" // for collect_tcp
 #include "datagram.h"
 #include "pdeque.h"

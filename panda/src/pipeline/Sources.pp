@@ -8,11 +8,6 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES \
-    atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I atomicAdjust.h \
-    atomicAdjust.I atomicAdjustImpl.h \
-    atomicAdjustNsprImpl.h atomicAdjustNsprImpl.I \
-    atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I \
-    atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
     conditionVar.h conditionVar.I \
     conditionVarDebug.h conditionVarDebug.I \
     conditionVarDirect.h conditionVarDirect.I \
@@ -51,10 +46,6 @@
     threadPriority.h
 
   #define INCLUDED_SOURCES  \
-    atomicAdjust.cxx atomicAdjustDummyImpl.cxx \
-    atomicAdjustNsprImpl.cxx \
-    atomicAdjustPosixImpl.cxx \
-    atomicAdjustWin32Impl.cxx \
     conditionVar.cxx \
     conditionVarDebug.cxx \
     conditionVarDirect.cxx \
@@ -89,11 +80,6 @@
     threadWin32Impl.cxx
 
   #define INSTALL_HEADERS  \
-    atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I atomicAdjust.h \
-    atomicAdjust.I atomicAdjustImpl.h \
-    atomicAdjustNsprImpl.h atomicAdjustNsprImpl.I \
-    atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I \
-    atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
     conditionVar.h conditionVar.I \
     conditionVarDebug.h conditionVarDebug.I \
     conditionVarDirect.h conditionVarDirect.I \

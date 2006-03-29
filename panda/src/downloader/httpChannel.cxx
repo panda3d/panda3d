@@ -24,7 +24,6 @@
 #include "chunkedStream.h"
 #include "identityStream.h"
 #include "config_downloader.h"
-#include "clockObject.h"
 #include "ramfile.h"
 
 #ifdef HAVE_OPENSSL
@@ -348,7 +347,7 @@ run() {
 
   if (_started_download) {
     if (_nonblocking && _download_throttle) {
-      double now = ClockObject::get_global_clock()->get_real_time();
+      double now = TrueClock::get_global_ptr()->get_short_time();
       double elapsed = now - _last_run_time;
       if (elapsed < _seconds_per_update) {
         // Come back later.
@@ -427,7 +426,7 @@ run() {
       
       _state = S_connecting;
       _started_connecting_time = 
-        ClockObject::get_global_clock()->get_real_time();
+        TrueClock::get_global_ptr()->get_short_time();
       _connect_count++;
     }
 
@@ -829,7 +828,7 @@ reached_done_state() {
         _body_stream = NULL;
       }
       _started_download = true;
-      _last_run_time = ClockObject::get_global_clock()->get_real_time();
+      _last_run_time = TrueClock::get_global_ptr()->get_short_time();
       return true;
     }
   }
@@ -962,7 +961,7 @@ run_connecting_wait() {
   if (errcode == 0) {
     // Nothing's happened so far; come back later.
     if (get_blocking_connect() ||
-        (ClockObject::get_global_clock()->get_real_time() - 
+        (TrueClock::get_global_ptr()->get_short_time() - 
          _started_connecting_time > get_connect_timeout())) {
       // Time to give up.
       downloader_cat.info()
@@ -998,7 +997,7 @@ run_http_proxy_ready() {
     
   // All done sending request.
   _state = S_http_proxy_request_sent;
-  _sent_request_time = ClockObject::get_global_clock()->get_real_time();
+  _sent_request_time = TrueClock::get_global_ptr()->get_short_time();
   return false;
 }
 
@@ -1116,7 +1115,7 @@ run_socks_proxy_greet() {
   if (!server_send(string(socks_greeting, socks_greeting_len), true)) {
     return true;
   }
-  _sent_request_time = ClockObject::get_global_clock()->get_real_time();
+  _sent_request_time = TrueClock::get_global_ptr()->get_short_time();
     
   // All done sending request.
   _state = S_socks_proxy_greet_reply;
@@ -1206,7 +1205,7 @@ run_socks_proxy_connect() {
   if (!server_send(connect, true)) {
     return true;
   }
-  _sent_request_time = ClockObject::get_global_clock()->get_real_time();
+  _sent_request_time = TrueClock::get_global_ptr()->get_short_time();
     
   _state = S_socks_proxy_connect_reply;
   return false;
@@ -1410,7 +1409,7 @@ run_setup_ssl() {
   // We start the connect timer over again when we reach the SSL
   // handshake.
   _started_connecting_time = 
-    ClockObject::get_global_clock()->get_real_time();
+    TrueClock::get_global_ptr()->get_short_time();
 
   return false;
 }
@@ -1427,7 +1426,7 @@ run_ssl_handshake() {
   if (BIO_do_handshake(_sbio) <= 0) {
     if (BIO_should_retry(_sbio)) {
       double elapsed =
-        ClockObject::get_global_clock()->get_real_time() -
+        TrueClock::get_global_ptr()->get_short_time() -
         _started_connecting_time;
       if (elapsed <= get_connect_timeout()) {
         // Keep trying.
@@ -1577,7 +1576,7 @@ run_ready() {
     
   // All done sending request.
   _state = S_request_sent;
-  _sent_request_time = ClockObject::get_global_clock()->get_real_time();
+  _sent_request_time = TrueClock::get_global_ptr()->get_short_time();
   return false;
 }
 
@@ -1635,7 +1634,7 @@ run_reading_header() {
 
     } else {
       double elapsed =
-        ClockObject::get_global_clock()->get_real_time() -
+        TrueClock::get_global_ptr()->get_short_time() -
         _sent_request_time;
       if (elapsed > get_http_timeout()) {
         // Time to give up.
@@ -2429,7 +2428,7 @@ server_getline_failsafe(string &str) {
 
     } else {
       double elapsed =
-        ClockObject::get_global_clock()->get_real_time() -
+        TrueClock::get_global_ptr()->get_short_time() -
         _sent_request_time;
       if (elapsed > get_http_timeout()) {
         // Time to give up.
@@ -2502,7 +2501,7 @@ server_get_failsafe(string &str, size_t num_bytes) {
       
     } else {
       double elapsed =
-        ClockObject::get_global_clock()->get_real_time() -
+        TrueClock::get_global_ptr()->get_short_time() -
         _sent_request_time;
       if (elapsed > get_http_timeout()) {
         // Time to give up.

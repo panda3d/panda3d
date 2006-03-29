@@ -153,7 +153,7 @@ consider_flush() {
 
   } else {
     double elapsed = 
-      ClockObject::get_global_clock()->get_real_time() - _queued_data_start;
+      TrueClock::get_global_ptr()->get_short_time() - _queued_data_start;
     // If the elapsed time is negative, someone must have reset the
     // clock back, so just go ahead and flush.
     if (elapsed < 0.0 || elapsed >= _collect_tcp_interval) {
@@ -174,7 +174,7 @@ consider_flush() {
 INLINE bool SSWriter::
 flush() {
   _ostream->flush();
-  _queued_data_start = ClockObject::get_global_clock()->get_real_time();
+  _queued_data_start = TrueClock::get_global_ptr()->get_short_time();
   return !is_closed();
 }
 

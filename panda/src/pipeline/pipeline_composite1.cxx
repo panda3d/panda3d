@@ -1,8 +1,3 @@
-#include "atomicAdjust.cxx"
-#include "atomicAdjustDummyImpl.cxx"
-#include "atomicAdjustNsprImpl.cxx"
-#include "atomicAdjustPosixImpl.cxx"
-#include "atomicAdjustWin32Impl.cxx"
 #include "conditionVar.cxx"
 #include "conditionVarDebug.cxx"
 #include "conditionVarDirect.cxx"

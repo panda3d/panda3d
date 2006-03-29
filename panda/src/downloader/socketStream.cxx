@@ -132,7 +132,7 @@ void SSReader::
 delay_datagram(const Datagram &datagram) {
   nassertv(_delay_active);
 
-  double now = ClockObject::get_global_clock()->get_frame_time();
+  double now = TrueClock::get_global_ptr()->get_short_time();
   double reveal_time = now + _min_delay;
   
   if (_delay_variance > 0.0) {
@@ -160,7 +160,7 @@ get_delayed(Datagram &datagram) {
   }
   const DelayedDatagram &dd = _delayed.front();
   if (_delay_active) {
-    double now = ClockObject::get_global_clock()->get_frame_time();
+    double now = TrueClock::get_global_ptr()->get_short_time();
     if (dd._reveal_time > now) {
       // Not yet.
       return false;
