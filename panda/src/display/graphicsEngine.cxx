@@ -45,7 +45,7 @@
   #include <sys/time.h>
 #endif
 
-PStatCollector GraphicsEngine::_wait_pcollector("Wait");
+PStatCollector GraphicsEngine::_wait_pcollector("Wait:Thread sync");
 PStatCollector GraphicsEngine::_cycle_pcollector("App:Cycle");
 PStatCollector GraphicsEngine::_app_pcollector("App:Show code");
 PStatCollector GraphicsEngine::_render_frame_pcollector("App:render_frame");
@@ -640,6 +640,7 @@ render_frame() {
   CullTraverser::_nodes_pcollector.clear_level();
   CullTraverser::_geom_nodes_pcollector.clear_level();
   CullTraverser::_geoms_pcollector.clear_level();
+  CullTraverser::_geoms_occluded_pcollector.clear_level();
   GeomCacheManager::_geom_cache_active_pcollector.clear_level();
   GeomCacheManager::_geom_cache_record_pcollector.clear_level();
   GeomCacheManager::_geom_cache_erase_pcollector.clear_level();

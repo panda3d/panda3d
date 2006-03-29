@@ -59,7 +59,8 @@ operator = (const CullBinHierarchicalZBuffer::ObjectData &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE CullBinHierarchicalZBuffer::
 CullBinHierarchicalZBuffer(const string &name, GraphicsStateGuardianBase *gsg) :
-  CullBin(name, gsg)
+  CullBin(name, gsg),
+  _draw_occlusion_pcollector(_draw_this_pcollector, "Occlusion")
 {
   nassertv(_gsg->get_supports_occlusion_query());
 }
@@ -76,6 +77,17 @@ initial_assign(const CullBinHierarchicalZBuffer::ObjectData &object_data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullBinHierarchicalZBuffer::OctreeNode::get_total_num_objects
+//       Access: Public
+//  Description: Returns the total number of objects in this node and
+//               all nested nodes.
+////////////////////////////////////////////////////////////////////
+INLINE int CullBinHierarchicalZBuffer::OctreeNode::
+get_total_num_objects() const {
+  return _total_num_objects;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullBinHierarchicalZBuffer::OctreeNode::reassign
 //       Access: Public
 //  Description: After determining that the object bisects one of the
@@ -84,6 +96,7 @@ initial_assign(const CullBinHierarchicalZBuffer::ObjectData &object_data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CullBinHierarchicalZBuffer::OctreeNode::
 reassign(const CullBinHierarchicalZBuffer::ObjectData &object_data) {
+  ++_total_num_objects;
   if (object_data._bounds->get_radius() / _half_side >= octree_multiassign_ratio) {
     // The object is large enough to keep in this node.
     //cerr << "    reassigning.\n";

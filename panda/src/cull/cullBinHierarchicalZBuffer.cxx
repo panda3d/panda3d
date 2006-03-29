@@ -32,6 +32,7 @@
 #include "thread.h"
 
 PStatCollector CullBinHierarchicalZBuffer::_wait_occlusion_pcollector("Wait:Occlusion test");
+PStatCollector CullBinHierarchicalZBuffer::_geoms_occluded_pcollector("Geoms:Occluded");
 
 PT(Geom) CullBinHierarchicalZBuffer::_octree_solid_test;
 PT(Geom) CullBinHierarchicalZBuffer::_octree_wireframe_viz;
@@ -160,8 +161,13 @@ draw() {
       // The octree cell is at least partially visible.  Draw it, and
       // continue recursion.
       pending._octree_node->draw(*this);
+      if (show_octree) {
+        pending._octree_node->draw_wireframe(*this);
+      }
     } else {
-      pending._octree_node->draw_wireframe(*this);
+      // The octree cell is completely occluded.  Don't draw any of
+      // it, and don't recurse into it.
+      _geoms_occluded_pcollector.add_level(pending._octree_node->get_total_num_objects());
     }
     _pending_nodes.pop_front();
   }
@@ -175,6 +181,7 @@ draw() {
 ////////////////////////////////////////////////////////////////////
 CullBinHierarchicalZBuffer::OctreeNode::
 OctreeNode() {
+  _total_num_objects = 0;
   for (int i = 0; i < 8; ++i) {
     _corners[i] = (OctreeNode *)NULL;
   }
@@ -190,6 +197,7 @@ OctreeNode(float mid_x, float mid_y, float mid_z, float half_side) :
   _mid(mid_x, mid_y, mid_z),
   _half_side(half_side)
 {
+  _total_num_objects = 0;
   for (int i = 0; i < 8; ++i) {
     _corners[i] = (OctreeNode *)NULL;
   }
@@ -254,10 +262,9 @@ make_initial_bounds() {
 ////////////////////////////////////////////////////////////////////
 void CullBinHierarchicalZBuffer::OctreeNode::
 group_objects() {
-  //cerr << "group_objects, " << _objects.size() << " objects.\n";
   if ((int)_objects.size() <= max_objects_per_octree_node) {
     // No need to do any more subdividing.
-    //cerr << "  small enough.\n";
+    _total_num_objects += (int)_objects.size();
     return;
   }
 
@@ -268,7 +275,6 @@ group_objects() {
 
   Objects::const_iterator oi;
   for (oi = old_objects.begin(); oi != old_objects.end(); ++oi) {
-    //cerr << "  object " << (oi - old_objects.begin()) << "\n";
     const ObjectData &object_data = (*oi);
     const LPoint3f &c = object_data._bounds->get_center();
     float r = object_data._bounds->get_radius();
@@ -354,7 +360,7 @@ group_objects() {
 //               occlusion query object representing this test.
 ////////////////////////////////////////////////////////////////////
 PT(OcclusionQueryContext) CullBinHierarchicalZBuffer::OctreeNode::
-occlusion_test(GraphicsStateGuardianBase *gsg) {
+occlusion_test(CullBinHierarchicalZBuffer &bin) {
   // Draw the bounding volume for visualization.  This is
   // complicated because we're doing this at such a low level, here
   // in the middle of the draw task--we've already completed the
@@ -364,21 +370,22 @@ occlusion_test(GraphicsStateGuardianBase *gsg) {
   CPT(TransformState) net_transform = TransformState::make_pos_hpr_scale
     (_mid, LVecBase3f(0.0f, 0.0f, 0.0f), 
      LVecBase3f(_half_side, _half_side, _half_side));
-  CPT(TransformState) world_transform = gsg->get_scene()->get_world_transform();
+  CPT(TransformState) world_transform = bin._gsg->get_scene()->get_world_transform();
   CPT(TransformState) modelview_transform = world_transform->compose(net_transform);
   
   CPT(RenderState) state = get_octree_solid_test_state();
-  PT(GeomMunger) munger = gsg->get_geom_munger(state);
+  PT(GeomMunger) munger = bin._gsg->get_geom_munger(state);
   
   CPT(Geom) viz = get_octree_solid_test();
   CPT(GeomVertexData) munged_data = viz->get_vertex_data();
   munger->munge_geom(viz, munged_data);
   
-  gsg->set_state_and_transform(state, modelview_transform);
+  bin._gsg->set_state_and_transform(state, modelview_transform);
 
-  gsg->begin_occlusion_query();
-  viz->draw(gsg, munger, munged_data);
-  return gsg->end_occlusion_query();
+  PStatTimer timer(bin._draw_occlusion_pcollector);
+  bin._gsg->begin_occlusion_query();
+  viz->draw(bin._gsg, munger, munged_data);
+  return bin._gsg->end_occlusion_query();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -395,10 +402,7 @@ draw(CullBinHierarchicalZBuffer &bin) {
     Objects::const_iterator oi;
     for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
       CullableObject *object = (*oi)._object;
-      if (object->_already_drawn) {
-        //cerr << "skipping object.\n";
-      } else {
-        //cerr << "drawing object.\n";
+      if (!object->_already_drawn) {
         CullHandler::draw(object, bin._gsg);
         object->_already_drawn = true;
       }
@@ -409,7 +413,7 @@ draw(CullBinHierarchicalZBuffer &bin) {
     if (_corners[i] != (OctreeNode *)NULL) {
       PendingNode pending;
       pending._octree_node = _corners[i];
-      pending._query = _corners[i]->occlusion_test(bin._gsg);
+      pending._query = _corners[i]->occlusion_test(bin);
       bin._pending_nodes.push_back(pending);
     }
   }
@@ -560,8 +564,6 @@ multi_assign(const CullBinHierarchicalZBuffer::ObjectData &object_data) {
   const LPoint3f &c = object_data._bounds->get_center();
   float r = object_data._bounds->get_radius();
 
-  //cerr << "multi_assigning " << c << " vs. " << _mid << "\n";
-  
   if (c[0] + r <= _mid[0]) {
     // -X
     if (c[1] + r <= _mid[1]) {
@@ -726,7 +728,6 @@ multi_assign(const CullBinHierarchicalZBuffer::ObjectData &object_data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CullBinHierarchicalZBuffer::OctreeNode::
 make_corner(int index) {
-  //cerr << "making corner " << hex << index << dec << "\n";
   nassertv(_corners[index] == NULL);
 
   OctreeNode *node = NULL;

@@ -24,6 +24,7 @@
 #include "dconfig.h"
 #include "configVariableInt.h"
 #include "configVariableDouble.h"
+#include "configVariableBool.h"
 
 class DSearchPath;
 
@@ -32,6 +33,7 @@ NotifyCategoryDecl(cull, EXPCL_PANDA, EXPTP_PANDA);
 
 extern ConfigVariableInt max_objects_per_octree_node;
 extern ConfigVariableDouble octree_multiassign_ratio;
+extern ConfigVariableBool show_octree;
 
 extern EXPCL_PANDA void init_libcull();
 

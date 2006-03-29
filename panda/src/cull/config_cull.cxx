@@ -47,6 +47,12 @@ ConfigVariableDouble octree_multiassign_ratio
           "order to be assigned to the node itself.  If the object is smaller "
           "than this, it will be multiply assigned to the node's children."));
 
+ConfigVariableBool show_octree
+("show-octree", false,
+ PRC_DESC("When true, visualizes the octree created for the hierarchical "
+          "Z-buffer algorithm, by drawing wireframe cubes around each "
+          "nonempty octree cell."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libcull
 //  Description: Initializes the library.  This must be called at

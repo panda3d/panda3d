@@ -98,11 +98,13 @@ private:
 
     void make_initial_bounds();
     void group_objects();
-    PT(OcclusionQueryContext) occlusion_test(GraphicsStateGuardianBase *gsg);
+    PT(OcclusionQueryContext) occlusion_test(CullBinHierarchicalZBuffer &bin);
     void draw(CullBinHierarchicalZBuffer &bin);
     void draw_wireframe(CullBinHierarchicalZBuffer &bin);
 
     INLINE void initial_assign(const ObjectData &object_data);
+
+    INLINE int get_total_num_objects() const;
 
   private:
     INLINE void reassign(const ObjectData &object_data);
@@ -110,6 +112,7 @@ private:
     void multi_assign(const ObjectData &object_data);
     void make_corner(int index);
 
+    int _total_num_objects;
     Objects _objects;
     OctreeNode *_corners[8];
     LPoint3f _mid;
@@ -129,7 +132,9 @@ private:
   typedef pdeque<PendingNode> PendingNodes;
   PendingNodes _pending_nodes;
 
+  PStatCollector _draw_occlusion_pcollector;
   static PStatCollector _wait_occlusion_pcollector;
+  static PStatCollector _geoms_occluded_pcollector;
 
   static PT(Geom) _octree_solid_test;
   static PT(Geom) _octree_wireframe_viz;
