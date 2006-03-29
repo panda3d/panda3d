@@ -5,7 +5,10 @@
 # subset of PandaModules that we know is available immediately.
 # Methods that require more advanced C++ methods may import the
 # appropriate files within their own scope.
-from pandac.libpandaexpressModules import *
+#from pandac.libpandaexpressModules import *
+
+# Temporary hack to get developers working again.  This can't remain.
+from pandac.PandaModules import *
 
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.PythonUtil import *
