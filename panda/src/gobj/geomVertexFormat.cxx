@@ -155,33 +155,63 @@ get_union_format(const GeomVertexFormat *other) const {
 
   PT(GeomVertexArrayFormat) new_array = new GeomVertexArrayFormat;
 
-  // First, ensure that it has all of the columns in the first format.
-  Arrays::const_iterator ai;
-  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
-    GeomVertexArrayFormat *array_format = (*ai);
-    int num_columns = array_format->get_num_columns();
-    for (int i = 0; i < num_columns; ++i) {
-      const GeomVertexColumn *column = array_format->get_column(i);
-      const GeomVertexColumn *other_column = other->get_column(column->get_name());
-      if (other_column != (GeomVertexColumn *)NULL &&
-	  other_column->get_total_bytes() > column->get_total_bytes()) {
-	// The other column is larger.  Keep it.
-	new_array->add_column(*other_column);
-      } else {
-	// Our column is larger.  Keep it.
-	new_array->add_column(*column);
+  // We go through all the (0)-level arrays fist, then all the
+  // (1)-level arrays, and so on.  We do this to ensure that the new
+  // format gets written out with all the (0)-level columns appearing
+  // before all the (1)-level columns, which might lead to a small
+  // optimization at render time.
+
+  size_t num_arrays = max(_arrays.size(), other->_arrays.size());
+  for (size_t ai = 0; ai < num_arrays; ++ai) {
+    // Add the columns from the first format.
+    if (ai < _arrays.size()) {
+      GeomVertexArrayFormat *array_format = _arrays[ai];
+      int num_columns = array_format->get_num_columns();
+      for (int i = 0; i < num_columns; ++i) {
+        const GeomVertexColumn *column_a = array_format->get_column(i);
+        if (!new_array->has_column(column_a->get_name())) {
+          const GeomVertexColumn *column_b = other->get_column(column_a->get_name());
+          if (column_b != (GeomVertexColumn *)NULL &&
+              column_b->get_total_bytes() > column_a->get_total_bytes()) {
+            // Column b is larger.  Keep it.
+            new_array->add_column(column_b->get_name(), 
+                                  column_b->get_num_components(),
+                                  column_b->get_numeric_type(),
+                                  column_b->get_contents());
+          } else {
+            // Column a is larger.  Keep it.
+            new_array->add_column(column_a->get_name(), 
+                                  column_a->get_num_components(),
+                                  column_a->get_numeric_type(),
+                                  column_a->get_contents());
+          }
+        }
       }
     }
-  }
 
-  // Now pick up any remaining columns in the second format.
-  for (ai = other->_arrays.begin(); ai != other->_arrays.end(); ++ai) {
-    GeomVertexArrayFormat *other_array_format = (*ai);
-    int num_columns = other_array_format->get_num_columns();
-    for (int i = 0; i < num_columns; ++i) {
-      const GeomVertexColumn *other_column = other_array_format->get_column(i);
-      if (!new_array->has_column(other_column->get_name())) {
-	new_array->add_column(*other_column);
+    // Add the columns from the second format.
+    if (ai < other->_arrays.size()) {
+      GeomVertexArrayFormat *array_format = other->_arrays[ai];
+      int num_columns = array_format->get_num_columns();
+      for (int i = 0; i < num_columns; ++i) {
+        const GeomVertexColumn *column_a = array_format->get_column(i);
+        if (!new_array->has_column(column_a->get_name())) {
+          const GeomVertexColumn *column_b = get_column(column_a->get_name());
+          if (column_b != (GeomVertexColumn *)NULL &&
+              column_b->get_total_bytes() > column_a->get_total_bytes()) {
+            // Column b is larger.  Keep it.
+            new_array->add_column(column_b->get_name(), 
+                                  column_b->get_num_components(),
+                                  column_b->get_numeric_type(),
+                                  column_b->get_contents());
+          } else {
+            // Column a is larger.  Keep it.
+            new_array->add_column(column_a->get_name(), 
+                                  column_a->get_num_components(),
+                                  column_a->get_numeric_type(),
+                                  column_a->get_contents());
+          }
+        }
       }
     }
   }
