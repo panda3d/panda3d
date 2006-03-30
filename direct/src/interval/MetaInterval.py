@@ -12,7 +12,6 @@ PREVIOUS_START = CMetaInterval.RSPreviousBegin
 TRACK_START = CMetaInterval.RSLevelBegin
 
 class MetaInterval(CMetaInterval):
-
     # This is a Python-C++ hybrid class.  MetaInterval is a Python
     # extension of the C++ class CMetaInterval, which adds some
     # Python-specific features (like list management).
@@ -24,7 +23,8 @@ class MetaInterval(CMetaInterval):
     SequenceNum = 1
     def __init__(self, *ivals, **kw):
         #if __debug__:
-        #    self.debugInitTraceback = PythonUtil.StackTrace("create interval", 1, 10)
+        #    self.debugInitTraceback = PythonUtil.StackTrace(
+        #        "create interval", 1, 10)
 
         name = None
         #if len(ivals) == 2 and isinstance(ivals[1], types.StringType):

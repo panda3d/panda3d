@@ -71,8 +71,10 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         self.stopProcessVisibility()
         self.visAvatar = avatar
         self.visZone = None
-        self.gridVisContext = self.cr.addInterest(self.getDoId(), 0, self.uniqueName("visibility"))
-        taskMgr.add(self.processVisibility, self.taskName("processVisibility"))
+        self.gridVisContext = self.cr.addInterest(
+            self.getDoId(), 0, self.uniqueName("visibility"))
+        taskMgr.add(
+            self.processVisibility, self.taskName("processVisibility"))
 
     def stopProcessVisibility(self, clearAll=False):
         taskMgr.remove(self.taskName("processVisibility"))
@@ -95,7 +97,8 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         y = pos[1] + dx
         col = x // self.cellWidth
         row = y // self.cellWidth
-        assert self.notify.debug("processVisibility: %s: avatar pos: %s %s" % (self.doId, x, y))
+        assert self.notify.debug(
+            "processVisibility: %s: avatar pos: %s %s" % (self.doId, x, y))
         if (row < 0) or (col < 0) or (row > self.gridSize) or (col > self.gridSize):
             assert self.notify.debug("processVisibility: %s: not on the grid" % (self.doId))
             # If we are viewingRadius away from this entire grid,
@@ -110,26 +113,34 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         assert self.notify.debug("processVisibility: %s: row: %s col: %s zoneId: %s" %
                                  (self.doId, row, col, zoneId))
         if (zoneId == self.visZone):
-            assert self.notify.debug("processVisibility: %s: interest did not change" % (self.doId))
+            assert self.notify.debug(
+                "processVisibility: %s: interest did not change" % (self.doId))
             return Task.cont
         else:
-            assert self.notify.debug("processVisibility: %s: new interest" % (self.doId))
+            assert self.notify.debug(
+                "processVisibility: %s: new interest" % (self.doId))
             self.visZone = zoneId
             if not self.gridVisContext:
-                self.gridVisContext = self.cr.addInterest(self.getDoId(), self.visZone,
-                                                      self.uniqueName("visibility"))
+                self.gridVisContext = self.cr.addInterest(
+                    self.getDoId(), self.visZone,
+                    self.uniqueName("visibility"))
             else:
-                assert self.notify.debug("processVisibility: %s: altering interest to zoneId: %s" %
-                                         (self.doId, zoneId))
-                self.cr.alterInterest(self.gridVisContext, self.getDoId(), self.visZone)
-                # If the visAvatar is parented to this grid, also do a setLocation
+                assert self.notify.debug(
+                    "processVisibility: %s: altering interest to zoneId: %s" %
+                    (self.doId, zoneId))
+                self.cr.alterInterest(
+                    self.gridVisContext, self.getDoId(), self.visZone)
+                # If the visAvatar is parented to this grid, also do a
+                # setLocation
                 parentId = self.visAvatar.parentId
                 oldZoneId = self.visAvatar.zoneId
                 assert self.notify.debug(
                     "processVisibility: %s: parentId: %s oldZoneId: %s" %
                     (self.doId, parentId, oldZoneId))
                 if parentId == self.doId:
-                    assert self.notify.debug("processVisibility: %s: changing location" % (self.doId))
+                    assert self.notify.debug(
+                        "processVisibility: %s: changing location" %
+                        (self.doId))
                     self.handleAvatarZoneChange(self.visAvatar, zoneId)
             return Task.cont
 

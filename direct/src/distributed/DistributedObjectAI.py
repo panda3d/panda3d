@@ -120,10 +120,12 @@ class DistributedObjectAI(DistributedObjectBase):
                 barrier.cleanup()
             self.__barriers = {}
 
-            # DCR: I've re-enabled this block of code so that Toontown's AI won't leak channels.
+            # DCR: I've re-enabled this block of code so that Toontown's
+            # AI won't leak channels.
             # Let me know if it causes trouble.
-            ### Asad: As per Roger's suggestion, turn off the following block until a solution is
-            ### Thought out of how to prevent this delete message or to handle this message better
+            ### Asad: As per Roger's suggestion, turn off the following
+            ### block until a solution is thought out of how to prevent
+            ### this delete message or to handle this message better
             # TODO: do we still need this check?
             if not hasattr(self, "doNotDeallocateChannel"):
                 if self.air:
