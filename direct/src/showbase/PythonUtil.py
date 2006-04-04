@@ -756,6 +756,13 @@ class Functor:
         self.__name__ = 'Functor: %s' % self._function.__name__
         self.__doc__ = self._function.__doc__
 
+    def destroy(self):
+        del self._function
+        del self._args
+        del self._kargs
+        del self.__name__
+        del self.__doc__
+    
     def __call__(self, *args, **kargs):
         """call function"""
         _args = list(self._args)
@@ -1112,6 +1119,12 @@ class ParamObj:
         if params is not None:
             params.applyTo(self)
 
+    def destroy(self):
+        for param in self.ParamSet.getParams():
+            setterName = getSetterName(param)
+            self.__dict__[setterName].destroy()
+            del self.__dict__[setterName]
+    
     def setDefaultParams(self):
         # set all the default parameters on ourself
         self.ParamSet().applyTo(self)
