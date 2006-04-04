@@ -50,7 +50,8 @@ class DoInterestManager(DirectObject.DirectObject):
 
     _interests = {}
     if __debug__:
-        _debug_currentInterests = []
+        _debug_currentInterests = {}
+        _debug_interestHistory = []
 
     def __init__(self):
         assert DoInterestManager.notify.debugCall()
@@ -66,7 +67,8 @@ class DoInterestManager(DirectObject.DirectObject):
             scopeId = self._getNextScopeId()
         else:
             scopeId = NO_SCOPE
-        DoInterestManager._interests[handle] = [description, STATE_ACTIVE, scopeId, event]
+        DoInterestManager._interests[handle] = [
+            description, STATE_ACTIVE, scopeId, event]
         if self.InterestDebug:
             print 'INTEREST DEBUG: addInterest(): handle=%s, parent=%s, zoneIds=%s, description=%s, event=%s' % (
                 handle, parentId, zoneIdList, description, event)
@@ -90,14 +92,17 @@ class DoInterestManager(DirectObject.DirectObject):
             DoInterestManager._interests[handle][SCOPE] = scopeId
             DoInterestManager._interests[handle][EVENT] = event
             if self.InterestDebug:
-                print 'INTEREST DEBUG: removeInterest(): handle=%s, event=%s' % (handle, event)
+                print 'INTEREST DEBUG: removeInterest(): handle=%s, event=%s' % (
+                    handle, event)
             self._sendRemoveInterest(handle, scopeId)
         else:
-            DoInterestManager.notify.warning("removeInterest: handle not found: %s" % (handle))
+            DoInterestManager.notify.warning(
+                "removeInterest: handle not found: %s" % (handle))
         assert self.printInterestsIfDebug()
         return existed
 
-    def alterInterest(self, handle, parentId, zoneIdList, description=None, event=None):
+    def alterInterest(self, handle, parentId, zoneIdList, description=None,
+            event=None):
         """
         Removes old interests and adds new interests.
 
@@ -125,7 +130,8 @@ class DoInterestManager(DirectObject.DirectObject):
             exists = True
             assert self.printInterestsIfDebug()
         else:
-            DoInterestManager.notify.warning("alterInterest: handle not found: %s" % (handle))
+            DoInterestManager.notify.warning(
+                "alterInterest: handle not found: %s" % (handle))
         return exists
 
     def _getNextHandle(self):
@@ -135,7 +141,8 @@ class DoInterestManager(DirectObject.DirectObject):
             # skip handles that are already in use
             if handle not in DoInterestManager._interests:
                 break
-            DoInterestManager.notify.warning('interest %s already in use' % handle)
+            DoInterestManager.notify.warning(
+                'interest %s already in use' % handle)
         DoInterestManager._HandleSerialNum = handle
         return DoInterestManager._HandleSerialNum
     def _getNextScopeId(self):
@@ -163,18 +170,27 @@ class DoInterestManager(DirectObject.DirectObject):
         def printInterestsIfDebug(self):
             if DoInterestManager.notify.getDebug():
                 self.printInterests()
-            return 1 # for assert()
+            return 1 # for assert
 
         def printInterests(self):
-            print "*********************** Interest Sets **************"
-            print "handle: [Description, State, Scope, Event]"
+            print "***************** Interest History *************"
+            format = '%9s %6s %6s %9s %s'
+            print format % (
+                "Action", "Handle", "Scope", "ParentId",
+                "ZoneIdList")
+            for i in DoInterestManager._debug_interestHistory:
+                print format % tuple(i)
+            print "Note: interests with a Scope of 0 do not get" \
+                " done/finished notices."
+            print "******************* Interest Sets **************"
+            format = '%6s %20s %10s %8s %5s %9s %9s %s'
+            print format % (
+                "Handle", "Description", "State", "Scope", "Event", 
+                "ScopeId", "ParentId", "ZoneIdList")
             for id, data in DoInterestManager._interests.items():
-                print '%s: %s' % (id, data)
-            print "************************** History *****************"
-            print "(Handle, ScopeId, ParentId, ZoneIdList)"
-            for i in DoInterestManager._debug_currentInterests:
-                print i
-            print "****************************************************"
+                print format % tuple((id,) + tuple(data) + \
+                    DoInterestManager._debug_currentInterests.get(id))
+            print "************************************************"
 
     def _sendAddInterest(self, handle, scopeId, parentId, zoneIdList):
         """
@@ -189,8 +205,10 @@ class DoInterestManager(DirectObject.DirectObject):
         if __debug__:
             if isinstance(zoneIdList, types.ListType):
                 zoneIdList.sort()
-            DoInterestManager._debug_currentInterests.append(
-                (handle, scopeId, parentId, zoneIdList))
+            DoInterestManager._debug_currentInterests[handle]=(
+                scopeId, parentId, zoneIdList)
+            DoInterestManager._debug_interestHistory.append(
+                ("add", handle, scopeId, parentId, zoneIdList))
         if parentId == 0:
             DoInterestManager.notify.error(
                 'trying to set interest to invalid parent: %s' % parentId)
@@ -225,6 +243,10 @@ class DoInterestManager(DirectObject.DirectObject):
         if scopeId != 0:
             datagram.addUint32(scopeId)
         self.send(datagram)
+        if __debug__:
+            DoInterestManager._debug_interestHistory.append(
+                ("remove", handle, scopeId) +
+                DoInterestManager._debug_currentInterests.get(handle)[1:])
 
     def handleInterestDoneMessage(self, di):
         """
@@ -251,5 +273,9 @@ class DoInterestManager(DirectObject.DirectObject):
                 "handleInterestDoneMessage--> Expecting scope %s, got %s" % (
                 DoInterestManager._interests[handle][SCOPE], scopeId))
         self._considerRemoveInterest(handle)
+        if __debug__:
+            DoInterestManager._debug_interestHistory.append(
+                ("finished", handle, scopeId) +
+                DoInterestManager._debug_currentInterests.get(handle)[1:])
 
         assert self.printInterestsIfDebug()
