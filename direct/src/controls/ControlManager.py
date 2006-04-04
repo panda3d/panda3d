@@ -221,7 +221,7 @@ class ControlManager:
             inputState.force("jump", 0)
 
     def monitor(self, foo):
-        #assert(self.debugPrint("monitor()"))
+        #assert self.debugPrint("monitor()")
         #if 1:
         #    airborneHeight=self.avatar.getAirborneHeight()
         #    onScreenDebug.add("airborneHeight", "% 10.4f"%(airborneHeight,))

@@ -7,7 +7,7 @@ You can use verify() just like assert, with these small differences:
       e.g.:
         assert foo  # OK
         verify foo  # Error
-        assert(foo) # OK
+        assert foo  # Not Recomended (may be interpreted as a tuple)
         verify(foo) # OK
     - verify() will print something like the following before raising
       an exception:
@@ -24,12 +24,12 @@ verify() will also throw an AssertionError, but you can ignore that if you
 like (I don't suggest trying to catch it, it's just doing it so that it can
 replace assert more fully).
 
-Please do not use assert() for things that you want run on release builds.
+Please do not use assert for things that you want run on release builds.
 That is a bad thing to do.  One of the main reasons that assert exists
 is to stip out debug code from a release build.  The fact that it throws
 an exception can get it mistaken for an error handler.  If your code
 needs to handle an error or throw an exception, you should do that
-(and not just assert() for it).
+(and not just assert for it).
 
 If you want to be a super keen software engineer then avoid using verify().
 If you want to be, or already are, a super keen software engineer, but

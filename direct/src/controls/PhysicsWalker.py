@@ -35,8 +35,9 @@ class PhysicsWalker(DirectObject.DirectObject):
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
             hardLandingForce=16.0):
-        assert(self.debugPrint("PhysicsWalker(gravity=%s, standableGround=%s)"%(
-                gravity, standableGround)))
+        assert self.debugPrint(
+            "PhysicsWalker(gravity=%s, standableGround=%s)"%(
+            gravity, standableGround))
         DirectObject.DirectObject.__init__(self)
         self.__gravity=gravity
         self.__standableGround=standableGround
@@ -115,7 +116,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.avatarControlRotateSpeed=rotate
 
     def getSpeeds(self):
-        #assert(self.debugPrint("getSpeeds()"))
+        #assert self.debugPrint("getSpeeds()")
         return (self.__speed, self.__rotationSpeed)
 
     def setAvatar(self, avatar):
@@ -322,7 +323,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             print "failed load of physics indicator"
 
     def avatarPhysicsIndicator(self, task):
-        #assert(self.debugPrint("avatarPhysicsIndicator()"))
+        #assert self.debugPrint("avatarPhysicsIndicator()")
         # Velocity:
         self.physVelocityIndicator.setPos(self.avatarNodePath, 0.0, 0.0, 6.0)
         physObject=self.actorNode.getPhysicsObject()
@@ -379,8 +380,9 @@ class PhysicsWalker(DirectObject.DirectObject):
                 self.oneTimeCollide()
 
     def getCollisionsActive(self):
-        assert(self.debugPrint("getCollisionsActive() returning=%s"%(
-            self.collisionsActive,)))
+        assert self.debugPrint(
+            "getCollisionsActive() returning=%s"%(
+            self.collisionsActive,))
         return self.collisionsActive
 
     def placeOnFloor(self):
@@ -438,7 +440,7 @@ class PhysicsWalker(DirectObject.DirectObject):
                 onScreenDebug.append("localAvatar pos = %s\n"%(base.localAvatar.getPos().pPrintValues(),))
                 onScreenDebug.append("localAvatar h = % 10.4f\n"%(base.localAvatar.getH(),))
                 onScreenDebug.append("localAvatar anim = %s\n"%(base.localAvatar.animFSM.getCurrentState().getName(),))
-        #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
+        #assert self.debugPrint("handleAvatarControls(task=%s)"%(task,))
         physObject=self.actorNode.getPhysicsObject()
         #rotAvatarToPhys=Mat3.rotateMatNormaxis(-self.avatarNodePath.getH(), Vec3.up())
         #rotPhysToAvatar=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())

@@ -274,21 +274,24 @@ class ClassicFSM(DirectObject):
         elif (aStateName == self.__finalState.getName()):
             if (self.__currentState == self.__finalState):
                 # Do not do the transition if we are already in the final state
-                assert(ClassicFSM.notify.debug("[%s]: already in final state: %s" %
-                                               (self.__name, aStateName)))
+                assert ClassicFSM.notify.debug(
+                    "[%s]: already in final state: %s" %
+                    (self.__name, aStateName))
                 return 1
             else:
                 # Force a transition to allow for cleanup
-                assert(ClassicFSM.notify.debug("[%s]: implicit transition to final state: %s" %
-                                               (self.__name, aStateName)))
+                assert ClassicFSM.notify.debug(
+                    "[%s]: implicit transition to final state: %s" %
+                    (self.__name, aStateName))
                 self.__transition(aState,
                                   enterArgList,
                                   exitArgList)
                 return 1
         # are we already in this state?
         elif (aStateName == self.__currentState.getName()):
-            assert(ClassicFSM.notify.debug("[%s]: already in state %s and no self transition" %
-                                           (self.__name, aStateName)))
+            assert ClassicFSM.notify.debug(
+                "[%s]: already in state %s and no self transition" %
+                (self.__name, aStateName))
             return 0
         else:
             msg = ("[%s]: no transition exists from %s to %s" %
@@ -346,8 +349,9 @@ class ClassicFSM(DirectObject):
         if transitionDefined:
             return self.request(aStateName, enterArgList, exitArgList)
         else:
-            assert(ClassicFSM.notify.debug("[%s]: condition_request: %s, transition doesnt exist" %
-                                           (self.__name, aStateName)))
+            assert ClassicFSM.notify.debug(
+                "[%s]: condition_request: %s, transition doesnt exist" %
+                (self.__name, aStateName))
             return 0
 
     def view(self):

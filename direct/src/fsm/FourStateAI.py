@@ -91,9 +91,9 @@ class FourStateAI:
         off (and so is state 2 which is oposite of state 4 and therefore 
         oposite of 'on').
         """
-        assert(self.debugPrint(
+        assert self.debugPrint(
                 "FourStateAI(names=%s, durations=%s)"
-                %(names, durations)))
+                %(names, durations))
         self.doLaterTask = None
         self.stateIndex = 0
         assert len(names) == 5
@@ -195,8 +195,9 @@ class FourStateAI:
         self.sendState()
     
     def enterStateN(self, stateIndex, nextStateIndex):
-        assert(self.debugPrint("enterStateN(stateIndex=%s, nextStateIndex=%s)"%(
-            stateIndex, nextStateIndex)))
+        assert self.debugPrint(
+            "enterStateN(stateIndex=%s, nextStateIndex=%s)"%
+            (stateIndex, nextStateIndex))
         self.stateIndex = stateIndex
         self.nextStateIndex = nextStateIndex
         self.distributeStateChange()

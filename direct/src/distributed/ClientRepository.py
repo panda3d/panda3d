@@ -171,7 +171,7 @@ class ClientRepository(ClientRepositoryBase):
             # ...it is in our dictionary.
             # Just update it.
             distObj = self.doId2do[doId]
-            assert(distObj.dclass == dclass)
+            assert distObj.dclass == dclass
             distObj.generate()
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
@@ -179,7 +179,7 @@ class ClientRepository(ClientRepositoryBase):
             # ...it is in the cache.
             # Pull it out of the cache:
             distObj = self.cache.retrieve(doId)
-            assert(distObj.dclass == dclass)
+            assert distObj.dclass == dclass
             # put it in the dictionary:
             self.doId2do[doId] = distObj
             # and update it.

@@ -37,9 +37,9 @@ class InputState(DirectObject.DirectObject):
             events occur.
         See Also: ignore()
         """
-        assert(self.debugPrint(
+        assert self.debugPrint(
             "watch(name=%s, eventOn=%s, eventOff=%s, default=%s)"%(
-            name, eventOn, eventOff, default)))
+            name, eventOn, eventOff, default))
         self.accept(eventOn, self.set, [name, 1])
         self.accept(eventOff, self.set, [name, 0])
         self.state[name] = default
@@ -96,7 +96,7 @@ class InputState(DirectObject.DirectObject):
         """
         returns 0, 1
         """
-        #assert(self.debugPrint("isSet(name=%s)"%(name)))
+        #assert self.debugPrint("isSet(name=%s)"%(name))
         r = self.forcing.get(name)
         if r is not None:
             return r

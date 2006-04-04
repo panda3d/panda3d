@@ -74,7 +74,7 @@ class ShipPilot(PhysicsWalker):
         self.avatarControlRotateSpeed=rotate
 
     def getSpeeds(self):
-        #assert(self.debugPrint("getSpeeds()"))
+        #assert self.debugPrint("getSpeeds()")
         return (self.__speed, self.__rotationSpeed)
 
     def setAvatar(self, ship):
@@ -444,7 +444,7 @@ class ShipPilot(PhysicsWalker):
             print "failed load of physics indicator"
 
     def avatarPhysicsIndicator(self, task):
-        #assert(self.debugPrint("avatarPhysicsIndicator()"))
+        #assert self.debugPrint("avatarPhysicsIndicator()")
         # Velocity:
         self.physVelocityIndicator.setPos(self.avatarNodePath, 0.0, 0.0, 6.0)
         physObject=self.actorNode.getPhysicsObject()
@@ -614,7 +614,7 @@ class ShipPilot(PhysicsWalker):
                     base.localAvatar.getHpr().pPrintValues(),))
                 #onScreenDebug.append("localAvatar anim = %s\n"%(
                 #    base.localAvatar.animFSM.getCurrentState().getName(),))
-        #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
+        #assert self.debugPrint("handleAvatarControls(task=%s)"%(task,))
         physObject=self.actorNode.getPhysicsObject()
         #rotAvatarToPhys=Mat3.rotateMatNormaxis(
         #    -self.avatarNodePath.getH(), Vec3.up())

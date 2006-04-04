@@ -45,7 +45,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.avatarControlRotateSpeed=rotate
 
     def getSpeeds(self):
-        #assert(self.debugPrint("getSpeeds()"))
+        #assert self.debugPrint("getSpeeds()")
         return (self.speed, self.rotationSpeed, self.slideSpeed)
 
     def setAvatar(self, avatar):

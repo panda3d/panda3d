@@ -85,15 +85,18 @@ class DistributedObjectOV(DistributedObjectBase):
             self.notify.error("Somebody decremented delayDelete for doId %s without incrementing"
                               % (self.doId))
         elif (self.delayDeleteCount == 0):
-            assert(self.notify.debug("delayDeleteCount for doId %s now 0"
-                                     % (self.doId)))
+            assert self.notify.debug(
+                "delayDeleteCount for doId %s now 0" %
+                (self.doId))
             if self.deleteImminent:
-                assert(self.notify.debug("delayDeleteCount for doId %s -- deleteImminent"
-                                         % (self.doId)))
+                assert self.notify.debug(
+                    "delayDeleteCount for doId %s -- deleteImminent" %
+                    (self.doId))
                 self.disableAnnounceAndDelete()
         else:
-            self.notify.debug("delayDeleteCount for doId %s now %s"
-                              % (self.doId, self.delayDeleteCount))
+            self.notify.debug(
+                "delayDeleteCount for doId %s now %s" %
+                (self.doId, self.delayDeleteCount))
 
         # Return the count just for kicks
         return self.delayDeleteCount
