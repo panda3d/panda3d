@@ -18,6 +18,7 @@ import os
 import getopt
 import sys
 import whrandom
+import types
 from direct.task import Task
 import __builtin__
 
