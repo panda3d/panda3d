@@ -432,7 +432,9 @@ class DistributedObjectAI(DistributedObjectBase):
             doId = "none"
             if hasattr(self, "doId"):
                 doId = self.doId
-            self.notify.warning("Tried to delete a %s (doId %s) that is already deleted" % (self.__class__, doId))
+            self.notify.warning(
+                "Tried to delete a %s (doId %s) that is already deleted" %
+                (self.__class__, doId))
             return
         self.air.requestDelete(self)
         self._DOAI_requestedDelete = True
@@ -467,7 +469,8 @@ class DistributedObjectAI(DistributedObjectBase):
         if avIds:
             barrier = Barrier.Barrier(
                 name, self.uniqueName(name), avIds, timeout,
-                doneFunc = PythonUtil.Functor(self.__barrierCallback, context, callback))
+                doneFunc = PythonUtil.Functor(
+                    self.__barrierCallback, context, callback))
             self.__barriers[context] = barrier
 
             # Send the context number to each involved client.

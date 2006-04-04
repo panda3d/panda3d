@@ -410,7 +410,8 @@ class DistributedObjectUD(DistributedObjectBase):
         if avIds:
             barrier = Barrier.Barrier(
                 name, self.uniqueName(name), avIds, timeout,
-                doneFunc = PythonUtil.Functor(self.__barrierCallback, context, callback))
+                doneFunc = PythonUtil.Functor(
+                    self.__barrierCallback, context, callback))
             self.__barriers[context] = barrier
 
             # Send the context number to each involved client.

@@ -49,21 +49,25 @@ class Messenger:
         to this event, otherwise it will respond only once.
         """
         if Messenger.notify.getDebug():
-            Messenger.notify.debug("object: %s\n accepting: %s\n method: %s\n extraArgs: %s\n persistent: %s" %
-                                   (object, event, method, extraArgs, persistent))
+            Messenger.notify.debug(
+                "object: %s\n accepting: %s\n method: %s\n extraArgs: %s\n persistent: %s" %
+                (object, event, method, extraArgs, persistent))
 
         # Make the the method is callable
-        assert callable(method), ("method not callable in accept (ignoring): %s %s"%
-                                  (method, extraArgs))
+        assert callable(method), (
+            "method not callable in accept (ignoring): %s %s"%
+            (method, extraArgs))
 
         acceptorDict = self.__callbacks.setdefault(event, {})
 
         # Make sure we are not inadvertently overwriting an existing event
         # on this particular object.
-        # assert (not acceptorDict.has_key(object)), ("object already accepting %s" %
-        #                                             (event))
+        # assert not acceptorDict.has_key(object)), \
+        #    "object already accepting %s" % (event)
         if acceptorDict.has_key(object):
-            self.notify.warning("object: %s already accepting: %s" % (object.__class__.__name__, event))
+            self.notify.warning(
+                "object: %s already accepting: %s" %
+                (object.__class__.__name__, event))
         
         acceptorDict[object] = [method, extraArgs, persistent]
 
@@ -97,7 +101,7 @@ class Messenger:
                 del self.__objectEvents[object]
 
     def ignoreAll(self, object):
-        """ ignoreAll(self, DirectObject)
+        """
         Make this object no longer respond to any events it was accepting
         Useful for cleanup
         """
@@ -151,7 +155,8 @@ class Messenger:
         Send this event, optionally passing in arguments
         """
         if Messenger.notify.getDebug() and not self.quieting.get(event):
-            Messenger.notify.debug('sent event: ' + event + ' sentArgs: ' + `sentArgs`)
+            Messenger.notify.debug(
+                'sent event: ' + event + ' sentArgs: ' + `sentArgs`)
         if __debug__:
             foundWatch=0
             if self.__isWatching:
@@ -190,7 +195,8 @@ class Messenger:
                     del acceptorDict[object]
                     # If the dictionary at this event is now empty, remove
                     # the event entry from the Messenger altogether
-                    if (self.__callbacks.has_key(event) and (len(self.__callbacks[event]) == 0)):
+                    if (self.__callbacks.has_key(event) \
+                            and (len(self.__callbacks[event]) == 0)):
                         del self.__callbacks[event]
 
                 if __debug__:
@@ -246,9 +252,8 @@ class Messenger:
                 #       'oldMethod: ' + `oldMethod` + '\n' +
                 #       'newFunction: ' + `newFunction` + '\n')
                 if (function == oldMethod):
-                    newMethod = new.instancemethod(newFunction,
-                                                   method.im_self,
-                                                   method.im_class)
+                    newMethod = new.instancemethod(
+                        newFunction, method.im_self, method.im_class)
                     params[0] = newMethod
                     # Found it retrun true
                     retFlag += 1
@@ -259,7 +264,8 @@ class Messenger:
         isVerbose = 1 - Messenger.notify.getDebug()
         Messenger.notify.setDebug(isVerbose)
         if isVerbose:
-            print "Verbose mode true.  quiet list = %s"%(self.quieting.keys(),)
+            print "Verbose mode true.  quiet list = %s"%(
+                self.quieting.keys(),)
 
     if __debug__:
         def watch(self, needle):
@@ -356,7 +362,8 @@ class Messenger:
         return string version of class.method or method.
         """
         if (type(method) == types.MethodType):
-            functionName = method.im_class.__name__ + '.' + method.im_func.__name__
+            functionName = method.im_class.__name__ + '.' + \
+                method.im_func.__name__
         else:
             functionName = method.__name__
         return functionName
