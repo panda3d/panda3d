@@ -74,10 +74,13 @@ def print_exc_plus():
                 print "<ERROR WHILE PRINTING VALUE>"
 
 class Task:
+    if __debug__:
+        debugTaskTraceback = 0 # base.config.GetBool('debug-task-traceback', 0)
     count = 0
     def __init__(self, callback, priority = 0):
-        #if __debug__:
-        #    self.debugInitTraceback = StackTrace("add task", 1, 10)
+        if __debug__:
+            if self.debugTaskTraceback:
+                self.debugInitTraceback = StackTrace("Task "+str(callback), 1, 10)
         # Unique ID for each task
         self.id = Task.count
         Task.count += 1
@@ -182,10 +185,10 @@ def make_sequence(taskList):
     def func(self):
         frameFinished = 0
         taskDoneStatus = -1
-        while (not frameFinished):
+        while not frameFinished:
             task = self.taskList[self.index]
             # If this is a new task, set its start time and frame
-            if (self.index > self.prevIndex):
+            if self.index > self.prevIndex:
                 task.setStartTimeFrame(self.time, self.frame)
             self.prevIndex = self.index
             # Calculate this task's time since it started
@@ -193,24 +196,24 @@ def make_sequence(taskList):
             # Execute the current task
             ret = task(task)
             # Check the return value from the task
-            # If this current task wants to continue,
-            # come back to it next frame
-            if (ret == cont):
+            if ret == cont:
+                # If this current task wants to continue,
+                # come back to it next frame
                 taskDoneStatus = cont
                 frameFinished = 1
-            # If this task is done, increment the index so that next frame
-            # we will start executing the next task on the list
-            elif (ret == done):
+            elif ret == done:
+                # If this task is done, increment the index so that next frame
+                # we will start executing the next task on the list
                 self.index = self.index + 1
                 taskDoneStatus = cont
                 frameFinished = 0
-            # If this task wants to exit, the sequence exits
-            elif (ret == exit):
+            elif ret == exit:
+                # If this task wants to exit, the sequence exits
                 taskDoneStatus = exit
                 frameFinished = 1
 
             # If we got to the end of the list, this sequence is done
-            if (self.index >= len(self.taskList)):
+            if self.index >= len(self.taskList):
                 # TaskManager.notify.debug('sequence done: ' + self.name)
                 frameFinished = 1
                 taskDoneStatus = done
@@ -250,24 +253,24 @@ def make_loop(taskList):
             # Execute the current task
             ret = task(task)
             # Check the return value from the task
-            # If this current task wants to continue,
-            # come back to it next frame
             if (ret == cont):
+                # If this current task wants to continue,
+                # come back to it next frame
                 taskDoneStatus = cont
                 frameFinished = 1
-            # If this task is done, increment the index so that next frame
-            # we will start executing the next task on the list
-            # TODO: we should go to the next frame now
             elif (ret == done):
+                # If this task is done, increment the index so that next frame
+                # we will start executing the next task on the list
+                # TODO: we should go to the next frame now
                 self.index = self.index + 1
                 taskDoneStatus = cont
                 frameFinished = 0
-            # If this task wants to exit, the sequence exits
             elif (ret == exit):
+                # If this task wants to exit, the sequence exits
                 taskDoneStatus = exit
                 frameFinished = 1
-            # If we got to the end of the list, wrap back around
             if (self.index >= len(self.taskList)):
+                # If we got to the end of the list, wrap back around
                 self.prevIndex = -1
                 self.index = 0
                 frameFinished = 1
@@ -727,7 +730,9 @@ class TaskManager:
                 # Do not increment the iterator
                 continue
             else:
-                raise StandardError, "Task named %s did not return cont, exit, done, or None" % task.name
+                raise StandardError, \
+                    "Task named %s did not return cont, exit, done, or None" % \
+                    (task.name,)
             # Move to the next element
             i += 1
 
@@ -758,7 +763,9 @@ class TaskManager:
         while priIndex < len(self.taskList):
             taskPriList = self.taskList[priIndex]
             pri = taskPriList.getPriority()
-            # assert TaskManager.notify.debug('step: running through taskList at pri: %s, priIndex: %s' % (pri, priIndex))
+            # assert TaskManager.notify.debug(
+            #    'step: running through taskList at pri: %s, priIndex: %s' %
+            #    (pri, priIndex))
             self.__stepThroughList(taskPriList)
 
             # Now see if that generated any pending tasks for this taskPriList
