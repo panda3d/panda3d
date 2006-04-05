@@ -19,7 +19,8 @@
 #include "animChannelScalarDynamic.h"
 #include "animBundle.h"
 #include "config_chan.h"
-
+#include "transformState.h"
+#include "pandaNode.h"
 #include "indent.h"
 #include "datagram.h"
 #include "datagramIterator.h"

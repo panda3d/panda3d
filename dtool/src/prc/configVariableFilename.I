@@ -25,8 +25,7 @@
 INLINE ConfigVariableFilename::
 ConfigVariableFilename(const string &name) :
   ConfigVariable(name, VT_filename),
-  _value_seq(-1),
-  _value_stale(true)
+  _local_modified(initial_invalid_cache())
 {
   _core->set_used();
 }
@@ -44,8 +43,7 @@ ConfigVariableFilename(const string &name, const Filename &default_value,
 #else
   ConfigVariable(name, VT_filename, string(), flags),
 #endif
-  _value_seq(-1),
-  _value_stale(true)
+  _local_modified(initial_invalid_cache())
 {
   _core->set_default_value(default_value);
   _core->set_used();
@@ -233,10 +231,11 @@ set_value(const Filename &value) {
 ////////////////////////////////////////////////////////////////////
 INLINE const Filename &ConfigVariableFilename::
 get_value() const {
-  if (_value_stale || _value_seq != _core->get_value_seq()) {
-    ((ConfigVariableFilename *)this)->reload_value();
+  TAU_PROFILE("const Filename &ConfigVariableFilename::get_value() const", " ", TAU_USER);
+  if (!is_cache_valid(_local_modified)) {
+    ((ConfigVariableFilename *)this)->reload_cache();
   }
-  return _value;
+  return _cache;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -18,6 +18,7 @@
 
 #include "transform2sg.h"
 #include "transformState.h"
+#include "dataNodeTransmit.h"
 
 
 TypeHandle Transform2SG::_type_handle;

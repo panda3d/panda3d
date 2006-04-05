@@ -19,6 +19,7 @@
 #include "textEncoder.h"
 #include "stringDecoder.h"
 #include "unicodeLatinMap.h"
+#include "config_express.h"
 
 TypeHandle TextEncoder::_type_handle;
 ConfigVariableEnum<TextEncoder::Encoding> TextEncoder::_default_encoding

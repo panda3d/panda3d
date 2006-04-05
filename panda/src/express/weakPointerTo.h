@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "weakPointerToBase.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WeakPointerTo

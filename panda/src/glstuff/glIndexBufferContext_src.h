@@ -18,6 +18,7 @@
 
 #include "pandabase.h"
 #include "indexBufferContext.h"
+#include "deletedChain.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLIndexBufferContext
@@ -28,6 +29,7 @@ class EXPCL_GL CLP(IndexBufferContext) : public IndexBufferContext {
 public:
   INLINE CLP(IndexBufferContext)(PreparedGraphicsObjects *pgo, 
                                  GeomPrimitive *data);
+  ALLOC_DELETED_CHAIN(CLP(IndexBufferContext));
 
   // This is the GL "name" of the data object.
   GLuint _index;

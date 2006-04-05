@@ -20,6 +20,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "indent.h"
+#include "transformTable.h"
 
 PipelineCycler<VertexTransform::CData> VertexTransform::_global_cycler;
 UpdateSeq VertexTransform::_next_modified;

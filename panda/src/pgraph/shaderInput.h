@@ -23,6 +23,8 @@
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "nodePath.h"
+#include "texture.h"
+#include "internalName.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ShaderInput

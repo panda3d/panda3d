@@ -47,6 +47,7 @@ public:
                      const LPoint3f &fur, const LPoint3f &ful,
                      const LPoint3f &nll, const LPoint3f &nlr,
                      const LPoint3f &nur, const LPoint3f &nul);
+  ALLOC_DELETED_CHAIN(BoundingHexahedron);
   virtual BoundingVolume *make_copy() const;
 
   virtual LPoint3f get_min() const;

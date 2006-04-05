@@ -21,6 +21,7 @@
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "graphicsStateGuardianBase.h"
 
 TypeHandle GeomTriangles::_type_handle;
 

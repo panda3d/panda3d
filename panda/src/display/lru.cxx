@@ -64,7 +64,7 @@ Lru::Lru (int maximum_memory, int maximum_pages, int maximum_page_types)
 
         lru_page = new LruPage ( );
         if(lru_page) {
-          lru_page->_m.pre_allocated = true;
+          lru_page->_m.v.pre_allocated = true;
           this->_m.lru_page_pool[index] = lru_page;
         }
         else {
@@ -100,7 +100,7 @@ Lru::~Lru ( )
     if(this->_m.lru_page_free_pool) {
       for(index = 0; index < this->_m.maximum_pages; index++) {
         lru_page = this->_m.lru_page_pool[index];
-        if(lru_page->_m.in_lru) {
+        if(lru_page->_m.v.in_lru) {
           this->remove_page(lru_page);
         }
 
@@ -214,7 +214,7 @@ LruPage *Lru::allocate_page (int size)
         this->_m.total_lru_pages_in_free_pool--;
 
         memset (&lru_page -> _m, 0, sizeof (LruPage::LruPageVariables));
-        lru_page->_m.pre_allocated = true;
+        lru_page->_m.v.pre_allocated = true;
       }
       else {
         if(this->_m.total_lru_pages_in_pool < this->_m.maximum_pages) {
@@ -236,7 +236,7 @@ LruPage *Lru::allocate_page (int size)
       lru_page->_m.first_frame_identifier = this->_m.current_frame_identifier;
       lru_page->_m.last_frame_identifier = this->_m.current_frame_identifier;
 
-      lru_page->_m.allocated = true;
+      lru_page->_m.v.allocated = true;
       lru_page->_m.identifier = this->_m.identifier;
 
       lru_page->_m.average_frame_utilization = 1.0f;
@@ -298,13 +298,13 @@ void Lru::free_page (LruPage *lru_page)
 
       this->update_start_update_lru_page(lru_page);
 
-      if(lru_page->_m.in_cache) {
+      if(lru_page->_m.v.in_cache) {
         this->_m.available_memory += lru_page->_m.size;
       }
 
-      if(lru_page->_m.pre_allocated) {
+      if(lru_page->_m.v.pre_allocated) {
         if(this->_m.maximum_pages) {
-          lru_page->_m.allocated = false;
+          lru_page->_m.v.allocated = false;
           this->_m.lru_page_free_pool [this->_m.total_lru_pages_in_free_pool] =
             lru_page;
           this->_m.total_lru_pages_in_free_pool++;
@@ -349,7 +349,7 @@ void Lru::add_page (LruPagePriority priority, LruPage *lru_page)
 
     this->_m.lru_page_array[lru_page->_m.priority] = lru_page;
 
-    lru_page->_m.in_lru = true;
+    lru_page->_m.v.in_lru = true;
   }
 }
 
@@ -364,7 +364,7 @@ void Lru::add_cached_page (LruPagePriority priority, LruPage *lru_page)
   if(lru_page) {
     LruMutexHolder(this->_m.mutex);
 
-    lru_page->_m.in_cache = true;
+    lru_page->_m.v.in_cache = true;
 
     if(lru_page->_m.size > this->_m.available_memory) {
       int  memory_required;
@@ -412,7 +412,7 @@ void Lru::remove_page (LruPage *lru_page)
         lru_page->_m.next = 0;
         lru_page->_m.previous = 0;
 
-        lru_page->_m.in_lru = false;
+        lru_page->_m.v.in_lru = false;
       }
     }
     else {
@@ -435,7 +435,7 @@ void Lru::remove_page (LruPage *lru_page)
 ////////////////////////////////////////////////////////////////////
 void Lru::lock_page (LruPage *lru_page)
 {
-  lru_page->_m.lock = true;
+  lru_page->_m.v.lock = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -445,7 +445,7 @@ void Lru::lock_page (LruPage *lru_page)
 ////////////////////////////////////////////////////////////////////
 void Lru::unlock_page (LruPage *lru_page)
 {
-  lru_page->_m.lock = false;
+  lru_page->_m.v.lock = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -475,7 +475,7 @@ void Lru::access_page (LruPage *lru_page)
     }
 
     // check if the page is out
-    if(lru_page->_m.in_cache == false) {
+    if(lru_page->_m.v.in_cache == false) {
       bool  state;
 
       state = true;
@@ -495,9 +495,9 @@ void Lru::access_page (LruPage *lru_page)
       // load the page in
       if(state) {
         // PAGE IN CALLBACK
-        if(this->_m.page_in_function_array[lru_page->_m.type](lru_page)) {
+        if(this->_m.page_in_function_array[lru_page->_m.v.type](lru_page)) {
           this->_m.available_memory -= lru_page->_m.size;
-          lru_page->_m.in_cache = true;
+          lru_page->_m.v.in_cache = true;
 
           // CHANGE THE PAGE PRIORITY FROM LPP_PageOut TO LPP_New
           this->remove_page(lru_page);
@@ -606,7 +606,7 @@ void Lru::update_lru_page (LruPage *lru_page)
   }
 #endif
 
-  if(lru_page->_m.lock == false && lru_page->_m.in_cache) {
+  if(lru_page->_m.v.lock == false && lru_page->_m.v.in_cache) {
     int delta_priority;
     int lifetime_frames;
 
@@ -702,7 +702,7 @@ void Lru::update_lru_page_old (LruPage *lru_page)
   }
 #endif
 
-  if(lru_page->_m.lock == false) {
+  if(lru_page->_m.v.lock == false) {
     int  delta_priority;
 
     delta_priority = 0;
@@ -989,7 +989,7 @@ void Lru::unlock_all_pages (void)
       while(lru_page) {
         next_lru_page = lru_page->_m.next;
 
-        lru_page->_m.lock = false;
+        lru_page->_m.v.lock = false;
 
         lru_page = next_lru_page;
       }
@@ -1026,13 +1026,13 @@ bool Lru::page_out_lru (int memory_required)
         while(lru_page) {
           next_lru_page = lru_page->_m.next;
 
-          if(lru_page->_m.lock == false && lru_page->_m.in_cache) {
+          if(lru_page->_m.v.lock == false && lru_page->_m.v.in_cache) {
             memory_required -= lru_page->_m.size;
             this->_m.available_memory += lru_page->_m.size;
-            lru_page->_m.in_cache = false;
+            lru_page->_m.v.in_cache = false;
 
             // PAGE OUT CALLBACK
-            this->_m.page_out_function_array[lru_page->_m.type](lru_page);
+            this->_m.page_out_function_array[lru_page->_m.v.type](lru_page);
             this->_m.total_lifetime_page_outs++;
 
             // MOVE THE PAGE TO THE LPP_PageOut PRIORITY
@@ -1124,11 +1124,11 @@ void Lru::calculate_lru_statistics (void)
 
         next_lru_page = lru_page->_m.next;
 
-        type = lru_page->_m.type;
+        type = lru_page->_m.v.type;
         page_type_statistics = &this->_m.page_type_statistics_array[type];
         page_type_statistics->total_pages++;
 
-        if(lru_page->_m.in_cache) {
+        if(lru_page->_m.v.in_cache) {
           page_type_statistics->total_pages_in++;
           page_type_statistics->total_memory_in += lru_page->_m.size;
         }

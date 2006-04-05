@@ -18,6 +18,8 @@
 
 #include "textureStage.h"
 #include "internalName.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 PT(TextureStage) TextureStage::_default_stage;
 UpdateSeq TextureStage::_sort_seq;

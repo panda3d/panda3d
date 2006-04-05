@@ -23,7 +23,7 @@
 
 #include "eggMesherEdge.h"
 #include "eggMesherStrip.h"
-
+#include "config_egg.h"
 #include "plist.h"
 #include "pvector.h"
 

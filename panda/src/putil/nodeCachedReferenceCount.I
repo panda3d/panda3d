@@ -135,7 +135,7 @@ INLINE NodeCachedReferenceCount::
 ////////////////////////////////////////////////////////////////////
 INLINE int NodeCachedReferenceCount::
 get_node_ref_count() const {
-#ifndef NDEBUG
+#ifdef _DEBUG
   test_ref_count_integrity();
 #endif
   return AtomicAdjust::get(_node_ref_count);
@@ -152,15 +152,15 @@ get_node_ref_count() const {
 //               with the object.  An object might be const in other
 //               ways, but we still need to accurately count the
 //               number of references to it.
-//
-//               The return value is the new reference count.
 ////////////////////////////////////////////////////////////////////
-INLINE int NodeCachedReferenceCount::
+INLINE void NodeCachedReferenceCount::
 node_ref() const {
-  nassertr(test_ref_count_integrity(), 0);
+#ifdef _DEBUG
+  nassertv(test_ref_count_integrity());
+#endif
 
   ref();
-  return AtomicAdjust::inc(((NodeCachedReferenceCount *)this)->_node_ref_count);
+  AtomicAdjust::inc(((NodeCachedReferenceCount *)this)->_node_ref_count);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,11 +186,14 @@ node_ref() const {
 //               ways, but we still need to accurately count the
 //               number of references to it.
 //
-//               The return value is the new reference count.
+//               The return value is true if the new reference count
+//               is nonzero, false if it is zero.
 ////////////////////////////////////////////////////////////////////
-INLINE int NodeCachedReferenceCount::
+INLINE bool NodeCachedReferenceCount::
 node_unref() const {
+#ifdef _DEBUG
   nassertr(test_ref_count_integrity(), 0);
+#endif
 
   // If this assertion fails, you tried to unref an object with a
   // zero reference count.  Are you using ref() and unref()

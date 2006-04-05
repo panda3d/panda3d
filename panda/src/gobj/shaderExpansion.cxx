@@ -18,6 +18,7 @@
 
 #include "pandabase.h"
 #include "shaderExpansion.h"
+#include "preparedGraphicsObjects.h"
 
 TypeHandle ShaderExpansion::_type_handle;
 ShaderExpansion::ExpansionCache ShaderExpansion::_expansion_cache;

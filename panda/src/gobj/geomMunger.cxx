@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "geomMunger.h"
+#include "geom.h"
 #include "geomCacheManager.h"
 #include "mutexHolder.h"
 #include "pStatTimer.h"
@@ -37,7 +38,6 @@ GeomMunger() :
 {
 #ifndef NDEBUG
   _registered_key = get_registry()->_mungers.end();
-  _next = NULL;
 #endif
 }
 
@@ -52,7 +52,6 @@ GeomMunger(const GeomMunger &copy) :
 {
 #ifndef NDEBUG
   _registered_key = get_registry()->_mungers.end();
-  _next = NULL;
 #endif
 }
 

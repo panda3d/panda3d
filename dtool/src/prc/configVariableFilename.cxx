@@ -20,14 +20,15 @@
 #include "executionEnvironment.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableFilename::reload_value
+//     Function: ConfigVariableFilename::reload_cache
 //       Access: Private
 //  Description: Recopies the config variable into the Filename for
 //               returning its value.
 ////////////////////////////////////////////////////////////////////
 void ConfigVariableFilename::
-reload_value() {
+reload_cache() {
   nassertv(_core != (ConfigVariableCore *)NULL);
+  mark_cache_valid(_local_modified);
 
   const ConfigDeclaration *decl = _core->get_declaration(0);
   const ConfigPage *page = decl->get_page();
@@ -36,9 +37,6 @@ reload_value() {
   Filename page_dirname = page_filename.get_dirname();
   ExecutionEnvironment::shadow_environment_variable("THIS_PRC_DIR", page_dirname.to_os_specific());
 
-  _value = Filename::expand_from(decl->get_string_value());
+  _cache = Filename::expand_from(decl->get_string_value());
   ExecutionEnvironment::clear_shadow("THIS_PRC_DIR");
-
-  _value_seq = _core->get_value_seq();
-  _value_stale = false;
 }

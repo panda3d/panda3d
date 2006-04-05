@@ -19,13 +19,15 @@
 #ifndef ATOMICADJUSTDUMMYIMPL_H
 #define ATOMICADJUSTDUMMYIMPL_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
 #ifdef THREAD_DUMMY_IMPL
 
-#include "pnotify.h"
 #include "numeric_types.h"
+
+#define HAVE_ATOMIC_COMPARE_AND_EXCHANGE 1
+#define HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR 1
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AtomicAdjustDummyImpl
@@ -33,12 +35,20 @@
 //               systems that don't require multiprogramming, and
 //               therefore don't require special atomic operations.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS AtomicAdjustDummyImpl {
+class EXPCL_DTOOL AtomicAdjustDummyImpl {
 public:
-  INLINE static PN_int32 inc(PN_int32 &var);
-  INLINE static PN_int32 dec(PN_int32 &var);
+  INLINE static void inc(PN_int32 &var);
+  INLINE static bool dec(PN_int32 &var);
   INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
   INLINE static PN_int32 get(const PN_int32 &var);
+
+  INLINE static PN_int32 compare_and_exchange(PN_int32 &mem, 
+                                              PN_int32 old_value,
+                                              PN_int32 new_value);
+
+  INLINE static void *compare_and_exchange_ptr(void *&mem, 
+                                               void *old_value,
+                                               void *new_value);
 };
 
 #include "atomicAdjustDummyImpl.I"

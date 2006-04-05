@@ -33,6 +33,7 @@
 #include "weakPointerTo.h"
 #include "shaderExpansion.h"
 #include "reMutex.h"
+#include "deletedChain.h"
 
 class GraphicsStateGuardianBase;
 class FogAttrib;
@@ -68,6 +69,7 @@ private:
 
 public:
   virtual ~RenderState();
+  ALLOC_DELETED_CHAIN(RenderState);
 
 PUBLISHED:
   bool operator < (const RenderState &other) const;
@@ -108,12 +110,12 @@ PUBLISHED:
   const RenderAttrib *get_attrib(TypeHandle type) const;
   int get_override(TypeHandle type) const;
 
-  int unref() const;
+  bool unref() const;
 
-  INLINE int cache_ref() const;
-  INLINE int cache_unref() const;
-  INLINE int node_ref() const;
-  INLINE int node_unref() const;
+  INLINE void cache_ref() const;
+  INLINE bool cache_unref() const;
+  INLINE void node_ref() const;
+  INLINE bool node_unref() const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;

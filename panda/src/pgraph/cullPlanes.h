@@ -26,6 +26,7 @@
 #include "boundingPlane.h"
 #include "pointerTo.h"
 #include "luse.h"
+#include "deletedChain.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullPlanes
@@ -51,6 +52,7 @@ protected:
 
 public:
   INLINE ~CullPlanes();
+  ALLOC_DELETED_CHAIN(CullPlanes);
 
   INLINE bool is_empty() const;
 

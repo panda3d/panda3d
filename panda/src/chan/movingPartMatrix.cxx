@@ -18,7 +18,7 @@
 
 
 #include "movingPartMatrix.h"
-
+#include "animChannelMatrixFixed.h"
 #include "compose_matrix.h"
 #include "datagram.h"
 #include "datagramIterator.h"

@@ -264,6 +264,12 @@ return_new(RenderAttrib *attrib) {
   nassertr(attrib->_saved_entry == _attribs->end(), attrib);
 
 #ifndef NDEBUG
+  if (!state_cache) {
+    return attrib;
+  }
+#endif
+
+#ifndef NDEBUG
   if (paranoid_const) {
     nassertr(validate_attribs(), attrib);
   }

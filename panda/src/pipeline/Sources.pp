@@ -2,6 +2,8 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c
 
+#define SELECT_TAU select.tau
+
 #begin lib_target
   #define TARGET pipeline
   
@@ -14,6 +16,7 @@
     conditionVarDummyImpl.h conditionVarDummyImpl.I \
     conditionVarImpl.h \
     conditionVarNsprImpl.h conditionVarNsprImpl.I \
+    conditionVarLinuxImpl.h conditionVarLinuxImpl.I \
     conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
     config_pipeline.h \
@@ -41,6 +44,7 @@
     reMutexHolder.I reMutexHolder.h \
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
     threadNsprImpl.h threadNsprImpl.I \
+    threadLinuxImpl.h threadLinuxImpl.I \
     threadPosixImpl.h threadPosixImpl.I \
     threadWin32Impl.h threadWin32Impl.I \
     threadPriority.h
@@ -51,6 +55,7 @@
     conditionVarDirect.cxx \
     conditionVarDummyImpl.cxx \
     conditionVarNsprImpl.cxx \
+    conditionVarLinuxImpl.cxx \
     conditionVarPosixImpl.cxx \
     conditionVarWin32Impl.cxx \
     config_pipeline.cxx \
@@ -76,6 +81,7 @@
     reMutexHolder.cxx \
     thread.cxx threadDummyImpl.cxx \
     threadNsprImpl.cxx \
+    threadLinuxImpl.cxx \
     threadPosixImpl.cxx \
     threadWin32Impl.cxx
 
@@ -86,6 +92,7 @@
     conditionVarDummyImpl.h conditionVarDummyImpl.I \
     conditionVarImpl.h \
     conditionVarNsprImpl.h conditionVarNsprImpl.I \
+    conditionVarLinuxImpl.h conditionVarLinuxImpl.I \
     conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
     config_pipeline.h \
@@ -113,6 +120,7 @@
     reMutexHolder.I reMutexHolder.h \
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
     threadNsprImpl.h threadNsprImpl.I \
+    threadLinuxImpl.h threadLinuxImpl.I \
     threadPosixImpl.h threadPosixImpl.I \
     threadWin32Impl.h threadWin32Impl.I \
     threadPriority.h
@@ -124,7 +132,7 @@
 
 #begin test_bin_target
   #define TARGET test_threaddata
-  #define LOCAL_LIBS $[LOCAL_LIBS] express
+  #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
   #define OTHER_LIBS dtoolutil:c dtool:m pystub
 
   #define SOURCES \
@@ -135,11 +143,22 @@
 
 #begin test_bin_target
   #define TARGET test_diners
-  #define LOCAL_LIBS $[LOCAL_LIBS] express
+  #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
   #define OTHER_LIBS dtoolutil:c dtool:m dtoolconfig:m pystub
 
   #define SOURCES \
     test_diners.cxx
+
+#end test_bin_target
+
+
+#begin test_bin_target
+  #define TARGET test_mutex
+  #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
+  #define OTHER_LIBS dtoolutil:c dtool:m dtoolconfig:m pystub
+
+  #define SOURCES \
+    test_mutex.cxx
 
 #end test_bin_target
 

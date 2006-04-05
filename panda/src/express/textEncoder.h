@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "unicodeLatinMap.h"
 #include "configVariableEnum.h"
+#include "typedObject.h"
 
 class StringDecoder;
 

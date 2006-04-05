@@ -24,7 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableString::
 ConfigVariableString(const string &name) :
-  ConfigVariable(name, VT_string)
+  ConfigVariable(name, VT_string),
+  _local_modified(initial_invalid_cache())
 {
   _core->set_used();
 }
@@ -38,10 +39,11 @@ INLINE ConfigVariableString::
 ConfigVariableString(const string &name, const string &default_value, 
                      const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
-  ConfigVariable(name, VT_string, description, flags)
+  ConfigVariable(name, VT_string, description, flags),
 #else
-  ConfigVariable(name, VT_string, string(), flags)
+  ConfigVariable(name, VT_string, string(), flags),
 #endif
+  _local_modified(initial_invalid_cache())
 {
   _core->set_default_value(default_value);
   _core->set_used();
@@ -155,7 +157,12 @@ set_value(const string &value) {
 ////////////////////////////////////////////////////////////////////
 INLINE const string &ConfigVariableString::
 get_value() const {
-  return get_string_value();
+  TAU_PROFILE("const string &ConfigVariableString::get_value() const", " ", TAU_USER);
+  if (!is_cache_valid(_local_modified)) {
+    mark_cache_valid(((ConfigVariableString *)this)->_local_modified);
+    ((ConfigVariableString *)this)->_cache = get_string_value();
+  }
+  return _cache;
 }
 
 ////////////////////////////////////////////////////////////////////

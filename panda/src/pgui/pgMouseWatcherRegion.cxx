@@ -49,7 +49,7 @@ PGMouseWatcherRegion::
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherRegion::enter
+//     Function: PGMouseWatcherRegion::enter_region
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
 //               mouse enters the region.  The mouse is only
@@ -58,14 +58,14 @@ PGMouseWatcherRegion::
 //               region before entering the inner one.
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherRegion::
-enter(const MouseWatcherParameter &param) {
+enter_region(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
-    _item->enter(param);
+    _item->enter_region(param);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherRegion::exit
+//     Function: PGMouseWatcherRegion::exit_region
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
 //               mouse exits the region.  The mouse is only considered
@@ -74,14 +74,14 @@ enter(const MouseWatcherParameter &param) {
 //               entering the inner one.
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherRegion::
-exit(const MouseWatcherParameter &param) {
+exit_region(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
-    _item->exit(param);
+    _item->exit_region(param);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherRegion::within
+//     Function: PGMouseWatcherRegion::within_region
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
 //               mouse moves within the boundaries of the region, even
@@ -91,23 +91,23 @@ exit(const MouseWatcherParameter &param) {
 //               region.
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherRegion::
-within(const MouseWatcherParameter &param) {
+within_region(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
-    _item->within(param);
+    _item->within_region(param);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherRegion::without
+//     Function: PGMouseWatcherRegion::without_region
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
 //               mouse moves completely outside the boundaries of the
-//               region.  See within().
+//               region.  See within_region().
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherRegion::
-without(const MouseWatcherParameter &param) {
+without_region(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
-    _item->without(param);
+    _item->without_region(param);
   }
 }
 

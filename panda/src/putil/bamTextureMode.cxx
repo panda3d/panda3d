@@ -18,6 +18,7 @@
 
 #include "bamTextureMode.h"
 #include "config_util.h"
+#include "string_utils.h"
 
 ostream &
 operator << (ostream &out, BamTextureMode btm) {

@@ -311,6 +311,7 @@ operator >= (const ordered_vector<Key, Compare> &other) const {
 template<class Key, class Compare>
 INLINE pair<TYPENAME ordered_vector<Key, Compare>::ITERATOR, bool> ordered_vector<Key, Compare>::
 insert_unique(const TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE &key) {
+  TAU_PROFILE("ordered_vector::insert_unique(const value_type &)", " ", TAU_USER);
   ITERATOR position = find_insert_position(begin(), end(), key);
 #ifdef NDEBUG
   pair<ITERATOR, bool> bogus_result(end(), false);
@@ -343,6 +344,7 @@ insert_unique(const TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE &key) {
 template<class Key, class Compare>
 INLINE TYPENAME ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
 insert_nonunique(const TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE &key) {
+  TAU_PROFILE("ordered_vector::insert_nonunique(const value_type &)", " ", TAU_USER);
   ITERATOR position = find_insert_position(begin(), end(), key);
   nassertr(position >= begin() && position <= end(), end());
 
@@ -360,6 +362,7 @@ insert_nonunique(const TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE &key) {
 template<class Key, class Compare>
 INLINE TYPENAME ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
 erase(TYPENAME ordered_vector<Key, Compare>::ITERATOR position) {
+  TAU_PROFILE("ordered_vector::erase(iterator)", " ", TAU_USER);
   SIZE_TYPE count = position - begin();
   _vector.erase(position);
   return begin() + count;
@@ -374,6 +377,7 @@ erase(TYPENAME ordered_vector<Key, Compare>::ITERATOR position) {
 template<class Key, class Compare>
 INLINE TYPENAME ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
 erase(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) {
+  TAU_PROFILE("ordered_vector::erase(const key_type &)", " ", TAU_USER);
   pair<ITERATOR, ITERATOR> result = equal_range(key);
   SIZE_TYPE count = result.second - result.first;
   erase(result.first, result.second);
@@ -390,6 +394,7 @@ template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
 erase(TYPENAME ordered_vector<Key, Compare>::ITERATOR first,
       TYPENAME ordered_vector<Key, Compare>::ITERATOR last) {
+  TAU_PROFILE("ordered_vector::erase(iterator, iterator)", " ", TAU_USER);
   _vector.erase(first, last);
 }
 
@@ -401,6 +406,7 @@ erase(TYPENAME ordered_vector<Key, Compare>::ITERATOR first,
 template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
 clear() {
+  TAU_PROFILE("ordered_vector::clear()", " ", TAU_USER);
   _vector.erase(_vector.begin(), _vector.end());
 }
 
@@ -415,6 +421,7 @@ clear() {
 template<class Key, class Compare>
 INLINE TYPENAME ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
 find(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) {
+  TAU_PROFILE("ordered_vector::find(const key_type &)", " ", TAU_USER);
   return nci(r_find(begin(), end(), end(), key));
 }
 
@@ -429,6 +436,7 @@ find(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) {
 template<class Key, class Compare>
 INLINE TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
 find(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+  TAU_PROFILE("ordered_vector::find(const key_type &)", " ", TAU_USER);
   return r_find(begin(), end(), end(), key);
 }
 
@@ -451,6 +459,7 @@ find(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
 template<class Key, class Compare>
 INLINE TYPENAME ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
 find_particular(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) {
+  TAU_PROFILE("ordered_vector::find_particular(const key_type &)", " ", TAU_USER);
   return nci(r_find_particular(begin(), end(), end(), key));
 }
 
@@ -470,6 +479,7 @@ find_particular(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) {
 template<class Key, class Compare>
 INLINE TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
 find_particular(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+  TAU_PROFILE("ordered_vector::find_particular(const key_type &)", " ", TAU_USER);
   return r_find_particular(begin(), end(), end(), key);
 }
 
@@ -482,6 +492,7 @@ find_particular(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) cons
 template<class Key, class Compare>
 INLINE TYPENAME ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
 count(const key_type &key) const {
+  TAU_PROFILE("ordered_vector::count(const key_type &)", " ", TAU_USER);
   return r_count(begin(), end(), key);
 }
 
@@ -494,6 +505,7 @@ count(const key_type &key) const {
 template<class Key, class Compare>
 INLINE TYPENAME ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
 lower_bound(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) {
+  TAU_PROFILE("ordered_vector::lower_bound(const key_type &)", " ", TAU_USER);
   return nci(r_lower_bound(begin(), end(), key));
 }
 
@@ -506,6 +518,7 @@ lower_bound(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) {
 template<class Key, class Compare>
 INLINE TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
 lower_bound(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+  TAU_PROFILE("ordered_vector::lower_bound(const key_type &)", " ", TAU_USER);
   return r_lower_bound(begin(), end(), key);
 }
 
@@ -519,6 +532,7 @@ lower_bound(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
 template<class Key, class Compare>
 INLINE TYPENAME ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
 upper_bound(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) {
+  TAU_PROFILE("ordered_vector::upper_bound(const key_type &)", " ", TAU_USER);
   return nci(r_upper_bound(begin(), end(), key));
 }
 
@@ -532,6 +546,7 @@ upper_bound(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) {
 template<class Key, class Compare>
 INLINE TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
 upper_bound(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+  TAU_PROFILE("ordered_vector::upper_bound(const key_type &)", " ", TAU_USER);
   return r_upper_bound(begin(), end(), key);
 }
 
@@ -543,6 +558,7 @@ upper_bound(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
 template<class Key, class Compare>
 INLINE pair<TYPENAME ordered_vector<Key, Compare>::ITERATOR, TYPENAME ordered_vector<Key, Compare>::ITERATOR> ordered_vector<Key, Compare>::
 equal_range(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) {
+  TAU_PROFILE("ordered_vector::equal_range(const key_type &)", " ", TAU_USER);
   pair<TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR, TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR> result;
   result = r_equal_range(begin(), end(), key);
   return pair<TYPENAME ordered_vector<Key, Compare>::ITERATOR, TYPENAME ordered_vector<Key, Compare>::ITERATOR>(nci(result.first), nci(result.second));
@@ -556,6 +572,7 @@ equal_range(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) {
 template<class Key, class Compare>
 INLINE pair<TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR, TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR> ordered_vector<Key, Compare>::
 equal_range(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+  TAU_PROFILE("ordered_vector::equal_range(const key_type &)", " ", TAU_USER);
   return r_equal_range(begin(), end(), key);
 }
 
@@ -568,6 +585,7 @@ equal_range(const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
 template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
 swap(ordered_vector<Key, Compare> &copy) {
+  TAU_PROFILE("ordered_vector::swap(ordered_vector &)", " ", TAU_USER);
   _vector.swap(copy._vector);
 }
 
@@ -581,6 +599,7 @@ swap(ordered_vector<Key, Compare> &copy) {
 template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
 reserve(TYPENAME ordered_vector<Key, Compare>::SIZE_TYPE n) {
+  TAU_PROFILE("ordered_vector::reserve(size_type)", " ", TAU_USER);
   _vector.reserve(n);
 }
 
@@ -599,6 +618,7 @@ reserve(TYPENAME ordered_vector<Key, Compare>::SIZE_TYPE n) {
 template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
 sort_unique() {
+  TAU_PROFILE("ordered_vector::sort_unique()", " ", TAU_USER);
   sort(begin(), end(), _compare);
   iterator new_end = unique(begin(), end(), EquivalentTest(_compare));
   erase(new_end, end());
@@ -616,6 +636,7 @@ sort_unique() {
 template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
 sort_nonunique() {
+  TAU_PROFILE("ordered_vector::sort_nonunique()", " ", TAU_USER);
   stable_sort(begin(), end(), _compare);
 }
 
@@ -630,6 +651,7 @@ sort_nonunique() {
 template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
 push_back(const value_type &key) {
+  TAU_PROFILE("ordered_vector::push_back()", " ", TAU_USER);
   _vector.push_back(key);
 }
 
@@ -641,6 +663,7 @@ push_back(const value_type &key) {
 template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
 pop_back() {
+  TAU_PROFILE("ordered_vector::pop_back()", " ", TAU_USER);
   _vector.pop_back();
 }
 

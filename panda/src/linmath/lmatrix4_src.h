@@ -35,6 +35,7 @@ PUBLISHED:
                                      FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
                                      FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
                                      FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
+  ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix4));
 
   // Construct a 4x4 matrix given a 3x3 rotation matrix and an optional
   // translation component.
@@ -135,7 +136,7 @@ PUBLISHED:
     translate_mat(FLOATTYPE tx, FLOATTYPE ty, FLOATTYPE tz);
   INLINE_LINMATH static FLOATNAME(LMatrix4)
     rotate_mat(FLOATTYPE angle,
-               FLOATNAME(LVecBase3) axis,
+               const FLOATNAME(LVecBase3) &axis,
                CoordinateSystem cs = CS_default);
   INLINE_LINMATH static FLOATNAME(LMatrix4)
     rotate_mat_normaxis(FLOATTYPE angle,

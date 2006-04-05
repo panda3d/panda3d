@@ -22,6 +22,7 @@
 #include "luse.h"
 #include "pvector.h"
 #include "typedObject.h"
+#include "typedReferenceCount.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ColorInterpolationFunction

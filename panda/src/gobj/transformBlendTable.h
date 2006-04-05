@@ -32,6 +32,8 @@
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : TransformBlendTable
 // Description : This structure collects together the different

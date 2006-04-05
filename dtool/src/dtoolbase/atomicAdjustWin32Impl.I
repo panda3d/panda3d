@@ -1,5 +1,5 @@
-// Filename: atomicAdjustNsprImpl.I
-// Created by:  drose (09Aug02)
+// Filename: atomicAdjustWin32Impl.I
+// Created by:  drose (07Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,40 +18,40 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustNsprImpl::inc
+//     Function: AtomicAdjustWin32Impl::inc
 //       Access: Public, Static
-//  Description: Atomically increments the indicated variable and
-//               returns the new value.
+//  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustNsprImpl::
+INLINE void AtomicAdjustWin32Impl::
 inc(PN_int32 &var) {
-  return PR_AtomicIncrement(&var);
+  InterlockedIncrement((LONG *)&var);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustNsprImpl::dec
+//     Function: AtomicAdjustWin32Impl::dec
 //       Access: Public, Static
 //  Description: Atomically decrements the indicated variable and
-//               returns the new value.
+//               returns true if the new value is nonzero, false if it
+//               is zero.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustNsprImpl::
+INLINE bool AtomicAdjustWin32Impl::
 dec(PN_int32 &var) {
-  return PR_AtomicDecrement(&var);
+  return (InterlockedDecrement((LONG *)&var) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustNsprImpl::set
+//     Function: AtomicAdjustWin32Impl::set
 //       Access: Public, Static
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustNsprImpl::
+INLINE PN_int32 AtomicAdjustWin32Impl::
 set(PN_int32 &var, PN_int32 new_value) {
-  return PR_AtomicSet(&var, new_value);
+  return InterlockedExchange((LONG *)&var, new_value);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustNsprImpl::get
+//     Function: AtomicAdjustWin32Impl::get
 //       Access: Public, Static
 //  Description: Atomically retrieves the snapshot value of the
 //               indicated variable.  This is the only guaranteed safe
@@ -59,7 +59,7 @@ set(PN_int32 &var, PN_int32 new_value) {
 //               asynchronously setting, incrementing, or decrementing
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustNsprImpl::
+INLINE PN_int32 AtomicAdjustWin32Impl::
 get(const PN_int32 &var) {
   return var;
 }

@@ -16,77 +16,42 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(OLD_STYLE_ALLOCATOR)
-
 template<class Type>
-INLINE Type *pallocator<Type>::
-allocate(size_t n) {
-  return (Type *)(*global_operator_new)(n);
+INLINE pallocator_single<Type>::
+pallocator_single() throw() {
 }
 
 template<class Type>
-INLINE void pallocator<Type>::
-deallocate(void *p, size_t) {
+INLINE TYPENAME pallocator_single<Type>::pointer pallocator_single<Type>::
+allocate(TYPENAME pallocator_single<Type>::size_type n, TYPENAME allocator<void>::const_pointer) {
+  TAU_PROFILE("pallocator_single:allocate()", " ", TAU_USER);
+  // This doesn't support allocating arrays.
+  assert(n == 1);
+  return DeletedChain<Type>::allocate(sizeof(Type));
+}
+
+template<class Type>
+INLINE void pallocator_single<Type>::
+deallocate(TYPENAME pallocator_single<Type>::pointer p, TYPENAME pallocator_single<Type>::size_type) {
+  TAU_PROFILE("pallocator_single:deallocate()", " ", TAU_USER);
+  return DeletedChain<Type>::deallocate(p);
+}
+
+template<class Type>
+INLINE pallocator_array<Type>::
+pallocator_array() throw() {
+}
+
+template<class Type>
+INLINE TYPENAME pallocator_array<Type>::pointer pallocator_array<Type>::
+allocate(TYPENAME pallocator_array<Type>::size_type n, TYPENAME allocator<void>::const_pointer) {
+  TAU_PROFILE("pallocator_array:allocate()", " ", TAU_USER);
+  return (TYPENAME pallocator_array<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
+}
+
+template<class Type>
+INLINE void pallocator_array<Type>::
+deallocate(TYPENAME pallocator_array<Type>::pointer p, TYPENAME pallocator_array<Type>::size_type) {
+  TAU_PROFILE("pallocator_array:deallocate()", " ", TAU_USER);
   (*global_operator_delete)(p);
 }
-
-#elif defined(GNU_STYLE_ALLOCATOR)
-
-template<class Type>
-INLINE pallocator<Type>::
-pallocator() {
-}
-
-template<class Type>
-template<class _Tp1>
-INLINE pallocator<Type>::
-pallocator(const pallocator<_Tp1> &) {
-}
-
-template<class Type>
-INLINE Type *pallocator<Type>::
-allocate(size_t n) {
-  return (Type *)(*global_operator_new)(n * sizeof(Type));
-}
-
-template<class Type>
-INLINE void pallocator<Type>::
-deallocate(void *p, size_t) {
-  (*global_operator_delete)(p);
-}
-
-#elif VC6_STYLE_ALLOCATOR
-
-template<class Type>
-INLINE pallocator<Type>::pointer pallocator<Type>::
-allocate(pallocator<Type>::size_type n, allocator<void>::const_pointer) {
-  return (pallocator<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
-}
-
-template<class Type>
-INLINE void pallocator<Type>::
-//deallocate(pallocator<Type>::pointer p, allocator<Type>::size_type) {
-deallocate(void *p, allocator<Type>::size_type) {
-  (*global_operator_delete)(p);
-}
-
-#elif MODERN_STYLE_ALLOCATOR
-
-template<class Type>
-INLINE pallocator<Type>::
-pallocator() throw() {
-}
-
-template<class Type>
-INLINE TYPENAME pallocator<Type>::pointer pallocator<Type>::
-allocate(TYPENAME pallocator<Type>::size_type n, TYPENAME allocator<void>::const_pointer) {
-  return (TYPENAME pallocator<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
-}
-
-template<class Type>
-INLINE void pallocator<Type>::
-deallocate(TYPENAME pallocator<Type>::pointer p, TYPENAME pallocator<Type>::size_type) {
-  (*global_operator_delete)(p);
-}
-
-#endif  // *_STYLE_ALLOCATOR

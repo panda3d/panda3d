@@ -21,6 +21,7 @@
 #include "configPageManager.h"
 #include "configVariableString.h"
 #include "configVariableBool.h"
+#include "config_prc.h"
 
 #include <time.h>  // for strftime().
 #include <assert.h>
@@ -40,7 +41,8 @@ NotifyCategory(const string &fullname, const string &basename,
   _parent(parent),
   _severity(get_config_name(), NS_unspecified, 
             "Default severity of this notify category", 
-            ConfigVariable::F_dynamic)
+            ConfigVariable::F_dynamic),
+  _local_modified(initial_invalid_cache())
 {
   if (_parent != (NotifyCategory *)NULL) {
     _parent->_children.push_back(this);
@@ -48,31 +50,6 @@ NotifyCategory(const string &fullname, const string &basename,
 
   // Only the unnamed top category is allowed not to have a parent.
   nassertv(_parent != (NotifyCategory *)NULL || _fullname.empty());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NotifyCategory::get_severity
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-NotifySeverity NotifyCategory::
-get_severity() const {
-  if (_severity == NS_unspecified) {
-    // If we don't have an explicit severity level, inherit our
-    // parent's.
-    if (_severity.has_value()) {
-      nout << "Invalid severity name for " << _severity.get_name() << ": "
-           << _severity.get_string_value() << "\n";
-    }
-    if (_parent != (NotifyCategory *)NULL) {
-      return _parent->get_severity();
-
-    } else {
-      // Unless, of course, we're the root.
-      return NS_info;
-    }
-  }
-  return _severity;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,6 +159,33 @@ get_config_name() const {
   }
 
   return config_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NotifyCategory::update_severity_cache
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void NotifyCategory::
+update_severity_cache() {
+  if (_severity == NS_unspecified) {
+    // If we don't have an explicit severity level, inherit our
+    // parent's.
+    if (_severity.has_value()) {
+      nout << "Invalid severity name for " << _severity.get_name() << ": "
+           << _severity.get_string_value() << "\n";
+    }
+    if (_parent != (NotifyCategory *)NULL) {
+      _severity_cache = _parent->get_severity();
+
+    } else {
+      // Unless, of course, we're the root.
+      _severity_cache = NS_info;
+    }
+  } else {
+    _severity_cache = _severity;
+  }
+  mark_cache_valid(_local_modified);  
 }
 
 ////////////////////////////////////////////////////////////////////

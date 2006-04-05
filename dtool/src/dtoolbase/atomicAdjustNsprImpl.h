@@ -1,5 +1,5 @@
-// Filename: mutexDummyImpl.h
-// Created by:  drose (08Aug02)
+// Filename: atomicAdjustNsprImpl.h
+// Created by:  drose (09Aug02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MUTEXDUMMYIMPL_H
-#define MUTEXDUMMYIMPL_H
+#ifndef ATOMICADJUSTNSPRIMPL_H
+#define ATOMICADJUSTNSPRIMPL_H
 
-#include "dtoolbase.h"
+#include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_DUMMY_IMPL
+#ifdef THREAD_NSPR_IMPL
 
-#include "pnotify.h"
+#include "numeric_types.h"
+
+#include <pratom.h>
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MutexDummyImpl
-// Description : A fake mutex implementation for single-threaded
-//               applications that don't need any synchronization
-//               control.  This does nothing at all.
+//       Class : AtomicAdjustNsprImpl
+// Description : Uses NSPR to implement atomic adjustments.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG MutexDummyImpl {
+class EXPCL_DTOOL AtomicAdjustNsprImpl {
 public:
-  INLINE MutexDummyImpl();
-  INLINE ~MutexDummyImpl();
-
-  INLINE void lock();
-  INLINE void release();
+  INLINE static void inc(PN_int32 &var);
+  INLINE static bool dec(PN_int32 &var);
+  INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
+  INLINE static PN_int32 get(const PN_int32 &var);
 };
 
-#include "mutexDummyImpl.I"
+#include "atomicAdjustNsprImpl.I"
 
-#endif  // THREAD_DUMMY_IMPL
+#endif  // THREAD_NSPR_IMPL
 
 #endif

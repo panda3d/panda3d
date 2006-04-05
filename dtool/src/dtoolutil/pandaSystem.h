@@ -21,6 +21,7 @@
 
 #include "dtoolbase.h"
 #include "pmap.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PandaSystem

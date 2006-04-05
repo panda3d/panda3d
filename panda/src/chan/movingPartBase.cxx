@@ -20,7 +20,8 @@
 #include "animControl.h"
 #include "animChannelBase.h"
 #include "bitArray.h"
-
+#include "config_chan.h"
+#include "dcast.h"
 #include "indent.h"
 
 TypeHandle MovingPartBase::_type_handle;

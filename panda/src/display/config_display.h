@@ -41,6 +41,7 @@ extern EXPCL_PANDA ConfigVariableBool view_frustum_cull;
 extern EXPCL_PANDA ConfigVariableBool pstats_unused_states;
 
 extern EXPCL_PANDA ConfigVariableString threading_model;
+extern EXPCL_PANDA ConfigVariableBool allow_nonpipeline_threads;
 extern EXPCL_PANDA ConfigVariableBool auto_flip;
 extern EXPCL_PANDA ConfigVariableBool yield_timeslice;
 

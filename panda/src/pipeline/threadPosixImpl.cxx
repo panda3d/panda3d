@@ -21,9 +21,9 @@
 
 #ifdef THREAD_POSIX_IMPL
 
+#include "thread.h"
 #include "pointerTo.h"
 #include "config_pipeline.h"
-
 #include <sched.h>
 
 pthread_key_t ThreadPosixImpl::_pt_ptr_index = 0;
@@ -60,7 +60,7 @@ bool ThreadPosixImpl::
 start(ThreadPriority priority, bool global, bool joinable) {
   _mutex.lock();
   if (thread_cat.is_debug()) {
-    thread_cat.debug() << "Starting thread " << _parent_obj->get_name() << "\n";
+    thread_cat.debug() << "Starting " << *_parent_obj << "\n";
   }
 
   nassertd(_status == S_new) {
@@ -94,7 +94,7 @@ start(ThreadPriority priority, bool global, bool joinable) {
 
   struct sched_param param;
   int current_policy = SCHED_OTHER;
-  result = pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
+  result = pthread_attr_setschedpolicy(&attr, current_policy);
   if (result != 0) {
     thread_cat.warning()
       << "Unable to set scheduling policy.\n";
@@ -185,44 +185,49 @@ join() {
 ////////////////////////////////////////////////////////////////////
 void *ThreadPosixImpl::
 root_func(void *data) {
-  ThreadPosixImpl *self = (ThreadPosixImpl *)data;
-  int result = pthread_setspecific(_pt_ptr_index, self->_parent_obj);
-  nassertr(result == 0, NULL);
-
+  TAU_REGISTER_THREAD();
   {
-    self->_mutex.lock();
-    nassertd(self->_status == S_start_called) {
-      self->_mutex.release();
-      return NULL;
-    }
+    TAU_PROFILE("void ThreadPosixImpl::root_func()", " ", TAU_USER);
+
+    ThreadPosixImpl *self = (ThreadPosixImpl *)data;
+    int result = pthread_setspecific(_pt_ptr_index, self->_parent_obj);
+    nassertr(result == 0, NULL);
+    
+    {
+      self->_mutex.lock();
+      nassertd(self->_status == S_start_called) {
+        self->_mutex.release();
+        return NULL;
+      }
       
-    self->_status = S_running;
-    self->_mutex.release();
-  }
-
-  self->_parent_obj->thread_main();
-
-  if (thread_cat.is_debug()) {
-    thread_cat.debug()
-      << "Terminating thread " << self->_parent_obj->get_name() 
-      << ", count = " << self->_parent_obj->get_ref_count() << "\n";
-  }
-
-  {
-    self->_mutex.lock();
-    nassertd(self->_status == S_running) {
+      self->_status = S_running;
       self->_mutex.release();
-      return NULL;
     }
-    self->_status = S_finished;
-    self->_mutex.release();
+    
+    self->_parent_obj->thread_main();
+    
+    if (thread_cat.is_debug()) {
+      thread_cat.debug()
+        << "Terminating thread " << self->_parent_obj->get_name() 
+        << ", count = " << self->_parent_obj->get_ref_count() << "\n";
+    }
+    
+    {
+      self->_mutex.lock();
+      nassertd(self->_status == S_running) {
+        self->_mutex.release();
+        return NULL;
+      }
+      self->_status = S_finished;
+      self->_mutex.release();
+    }
+    
+    // Now drop the parent object reference that we grabbed in start().
+    // This might delete the parent object, and in turn, delete the
+    // ThreadPosixImpl object.
+    unref_delete(self->_parent_obj);
   }
-
-  // Now drop the parent object reference that we grabbed in start().
-  // This might delete the parent object, and in turn, delete the
-  // ThreadPosixImpl object.
-  unref_delete(self->_parent_obj);
-
+  
   return NULL;
 }
 

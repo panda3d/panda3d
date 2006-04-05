@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "memoryUsagePointers.h"
+
 #ifdef DO_MEMORY_USAGE
 
-#include "memoryUsagePointers.h"
 #include "config_express.h"
 #include "referenceCount.h"
 #include "typedReferenceCount.h"

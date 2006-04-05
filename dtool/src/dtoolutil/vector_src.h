@@ -52,7 +52,7 @@
   #ifdef HAVE_DINKUM
 // With the Dinkum library, we must first export the base class,
 // _Vector_val.
-    #define VV_BASE std::_Vector_val<TYPE, pallocator<TYPE> >
+    #define VV_BASE std::_Vector_val<TYPE, pallocator_array<TYPE> >
 #pragma warning (disable : 4231)
 EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, VV_BASE)
     #undef VV_BASE
@@ -61,10 +61,10 @@ EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, VV_BASE)
 // Now we can export the vector class.
 #pragma warning (disable : 4231)
 
-#ifdef NO_STYLE_ALLOCATOR
+#ifndef USE_STL_ALLOCATOR
 EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, std::vector<TYPE>)
 #else
-#define STD_VECTOR std::vector<TYPE, pallocator<TYPE> >
+#define STD_VECTOR std::vector<TYPE, pallocator_array<TYPE> >
 EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, STD_VECTOR)
 #undef STD_VECTOR
 EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, pvector<TYPE>)
@@ -74,7 +74,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, pvector<TYPE>)
 
 // Now make a typedef for the vector.
 
-#ifdef NO_STYLE_ALLOCATOR
+#ifndef USE_STL_ALLOCATOR
 typedef std::vector<TYPE> NAME;
 #else
 typedef pvector<TYPE> NAME;

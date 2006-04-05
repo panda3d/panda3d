@@ -21,10 +21,6 @@
 #include "pandaNode.h"
 #include "indent.h"
 
-FindApproxLevelEntry *FindApproxLevelEntry::_deleted_chain = (FindApproxLevelEntry *)NULL;
-int FindApproxLevelEntry::_num_ever_allocated = 0;
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: FindApproxLevelEntry::output
 //       Access: Public

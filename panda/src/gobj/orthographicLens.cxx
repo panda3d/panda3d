@@ -18,6 +18,7 @@
 
 #include "orthographicLens.h"
 #include "indent.h"
+#include "bamReader.h"
 
 TypeHandle OrthographicLens::_type_handle;
 

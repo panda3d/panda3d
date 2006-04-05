@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "linearFrictionForce.h"
+#include "config_physics.h"
 
 TypeHandle LinearFrictionForce::_type_handle;
 

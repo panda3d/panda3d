@@ -19,6 +19,7 @@
 #include "pandabase.h"
 #include "texture.h"
 #include "config_gobj.h"
+#include "config_util.h"
 #include "texturePool.h"
 #include "textureContext.h"
 #include "datagram.h"

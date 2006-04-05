@@ -43,7 +43,7 @@ check_crc(Filename name) {
 
   // Compute the crc
   unsigned long crc = crc32(0L, Z_NULL, 0);
-  crc = crc32(crc, (uchar *)buffer, buffer_length);
+  crc = crc32(crc, (unsigned char *)buffer, buffer_length);
 
   delete buffer;
 
@@ -69,7 +69,7 @@ check_adler(Filename name) {
 
   // Compute the adler checksum
   unsigned long adler = adler32(0L, Z_NULL, 0);
-  adler = adler32(adler, (uchar *)buffer, buffer_length);
+  adler = adler32(adler, (unsigned char *)buffer, buffer_length);
 
   delete buffer;
 

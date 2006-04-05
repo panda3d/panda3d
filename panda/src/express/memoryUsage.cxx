@@ -16,13 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "memoryUsage.h"
+
 #ifdef DO_MEMORY_USAGE
 
 #include "memoryUsagePointers.h"
 #include "trueClock.h"
 #include "typedReferenceCount.h"
-
-#include "memoryUsage.h"
+#include "mutexImpl.h"
 #include "interrogate_request.h"
 
 #if defined(WIN32_VC) && defined(_DEBUG)
@@ -189,61 +190,6 @@ choose_bucket(double age) const {
   return 0;
 }
 
-#if defined(__GNUC__)
-
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::record_pointer
-//       Access: Public, Static
-//  Description: Indicates that the given pointer has been recently
-//               allocated.
-////////////////////////////////////////////////////////////////////
-void MemoryUsage::
-record_pointer(ReferenceCount *ptr) {
-  get_global_ptr()->ns_record_pointer(ptr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::update_type
-//       Access: Public, Static
-//  Description: Associates the indicated type with the given pointer.
-//               This should be called by functions (e.g. the
-//               constructor) that know more specifically what type of
-//               thing we've got; otherwise, the MemoryUsage database
-//               will know only that it's a "ReferenceCount".
-////////////////////////////////////////////////////////////////////
-void MemoryUsage::
-update_type(ReferenceCount *ptr, TypeHandle type) {
-  get_global_ptr()->ns_update_type(ptr, type);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::update_type
-//       Access: Public, Static
-//  Description: Associates the indicated type with the given pointer.
-//               This flavor of update_type() also passes in the
-//               pointer as a TypedObject, and useful for objects that
-//               are, in fact, TypedObjects.  Once the MemoryUsage
-//               database has the pointer as a TypedObject it doesn't
-//               need any more help.
-////////////////////////////////////////////////////////////////////
-void MemoryUsage::
-update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
-  get_global_ptr()->ns_update_type(ptr, typed_ptr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::remove_pointer
-//       Access: Public, Static
-//  Description: Indicates that the given pointer has been recently
-//               freed.
-////////////////////////////////////////////////////////////////////
-void MemoryUsage::
-remove_pointer(ReferenceCount *ptr) {
-  get_global_ptr()->ns_remove_pointer(ptr);
-}
-
-#endif // __GNUC__
-
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::operator_new_handler
 //       Access: Public, Static
@@ -278,6 +224,18 @@ operator_new_handler(size_t size) {
     }
   }
 
+  /*
+  cerr << "new(" << size << ") = " << ptr << "\n";
+  static int counter = 0;
+  static int target = 0;
+
+  ++counter;
+  if (target == 0 && counter == 1000) {
+    target = ConfigVariableInt("target", 10000);
+  }
+  nassertr(counter != target, ptr);
+  */
+
   return ptr;
 }
 
@@ -292,6 +250,7 @@ operator_new_handler(size_t size) {
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
 operator_delete_handler(void *ptr) {
+  cerr << "delete(" << ptr << ")\n";
   if (_recursion_protect) {
     if (express_cat.is_spam()) {
       express_cat.spam()
@@ -627,6 +586,7 @@ ns_record_void_pointer(void *ptr, size_t size) {
 
     // We have to protect modifications to the table from recursive
     // calls by toggling _recursion_protect while we adjust it.
+
     _recursion_protect = true;
     pair<Table::iterator, bool> insert_result =
       _table.insert(Table::value_type((void *)ptr, MemoryInfo()));
@@ -1021,7 +981,7 @@ ns_show_trend_ages() {
 //     Function: MemoryUsage::consolidate_void_ptr
 //       Access: Private
 //  Description: If the size information has not yet been determined
-//               for this pointer, checks to see if it has possible
+//               for this pointer, checks to see if it has possibly
 //               been recorded under the TypedObject pointer (this
 //               will happen when the class inherits from TypedObject
 //               before ReferenceCount, e.g. TypedReferenceCount).

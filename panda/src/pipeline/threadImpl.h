@@ -32,6 +32,11 @@ typedef ThreadDummyImpl ThreadImpl;
 #include "threadWin32Impl.h"
 typedef ThreadWin32Impl ThreadImpl;
 
+#elif defined(THREAD_LINUX_IMPL)
+
+#include "threadLinuxImpl.h"
+typedef ThreadLinuxImpl ThreadImpl;
+
 #elif defined(THREAD_POSIX_IMPL)
 
 #include "threadPosixImpl.h"

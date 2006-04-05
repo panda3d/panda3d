@@ -24,7 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableBool::
 ConfigVariableBool(const string &name) :
-  ConfigVariable(name, VT_bool)
+  ConfigVariable(name, VT_bool),
+  _local_modified(initial_invalid_cache())
 {
   _core->set_used();
 }
@@ -37,7 +38,12 @@ ConfigVariableBool(const string &name) :
 INLINE ConfigVariableBool::
 ConfigVariableBool(const string &name, bool default_value, 
                    const string &description, int flags) :
-  ConfigVariable(name, VT_bool, description, flags)
+#ifdef PRC_SAVE_DESCRIPTIONS
+  ConfigVariable(name, VT_bool, description, flags),
+#else
+  ConfigVariable(name, VT_bool, string(), flags),
+#endif
+  _local_modified(initial_invalid_cache())
 {
   _core->set_default_value(default_value ? "1" : "0");
   _core->set_used();
@@ -51,7 +57,12 @@ ConfigVariableBool(const string &name, bool default_value,
 INLINE ConfigVariableBool::
 ConfigVariableBool(const string &name, const string &default_value, 
                    const string &description, int flags) :
-  ConfigVariable(name, VT_bool, description, flags)
+#ifdef PRC_SAVE_DESCRIPTIONS
+  ConfigVariable(name, VT_bool, description, flags),
+#else
+  ConfigVariable(name, VT_bool, string(), flags),
+#endif
+  _local_modified(initial_invalid_cache())
 {
   _core->set_default_value(default_value);
   _core->set_used();
@@ -115,7 +126,12 @@ set_value(bool value) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableBool::
 get_value() const {
-  return get_bool_word(0);
+  TAU_PROFILE("bool ConfigVariableBool::get_value() const", " ", TAU_USER);
+  if (!is_cache_valid(_local_modified)) {
+    mark_cache_valid(((ConfigVariableBool *)this)->_local_modified);
+    ((ConfigVariableBool *)this)->_cache = get_bool_word(0);
+  }
+  return _cache;
 }
 
 ////////////////////////////////////////////////////////////////////

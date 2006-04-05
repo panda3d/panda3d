@@ -20,6 +20,7 @@
 #include "interrogateDatabase.h"
 #include "interrogateType.h"
 #include "interrogateFunction.h"
+#include "config_interrogatedb.h"
 
 // This function adds one more directory to the list of directories
 // search for interrogate (*.in) files.  In the past, this list has

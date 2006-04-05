@@ -20,6 +20,7 @@
 #include "pnmFileTypeRegistry.h"
 #include "pnmFileType.h"
 #include "pnmReader.h"
+#include "pnmWriter.h"
 #include "config_pnmimage.h"
 #include "virtualFileSystem.h"
 #include "zStream.h"

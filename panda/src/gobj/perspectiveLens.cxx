@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "perspectiveLens.h"
+#include "bamReader.h"
 
 TypeHandle PerspectiveLens::_type_handle;
 

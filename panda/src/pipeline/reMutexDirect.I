@@ -23,7 +23,15 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutexDirect::
-ReMutexDirect() {
+ReMutexDirect() 
+#ifndef HAVE_REMUTEXIMPL
+  : _cvar(_global_lock)
+#endif
+{
+#ifndef HAVE_REMUTEXIMPL
+  _locking_thread = NULL;
+  _lock_count = 0;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +49,11 @@ INLINE ReMutexDirect::
 //  Description: Do not attempt to copy reMutexes.
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutexDirect::
-ReMutexDirect(const ReMutexDirect &copy) {
+ReMutexDirect(const ReMutexDirect &copy)
+#ifndef HAVE_REMUTEXIMPL
+  : _cvar(_global_lock)
+#endif
+{
   nassertv(false);
 }
 
@@ -55,7 +67,6 @@ operator = (const ReMutexDirect &copy) {
   nassertv(false);
 }
 
-#ifdef HAVE_REMUTEXIMPL
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::lock
 //       Access: Public
@@ -73,11 +84,13 @@ operator = (const ReMutexDirect &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ReMutexDirect::
 lock() const {
-  ((ReMutexDirect *)this)->_impl.lock();
-}
-#endif  // HAVE_REMUTEXIMPL
-
 #ifdef HAVE_REMUTEXIMPL
+  ((ReMutexDirect *)this)->_impl.lock();
+#else
+  ((ReMutexDirect *)this)->do_lock();
+#endif  // HAVE_REMUTEXIMPL
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::release
 //       Access: Public
@@ -90,9 +103,12 @@ lock() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ReMutexDirect::
 release() const {
+#ifdef HAVE_REMUTEXIMPL
   ((ReMutexDirect *)this)->_impl.release();
-}
+#else
+  ((ReMutexDirect *)this)->do_release();
 #endif  // HAVE_REMUTEXIMPL
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::debug_is_locked

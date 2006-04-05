@@ -35,6 +35,7 @@
 #include "colorScaleAttrib.h"
 #include "transparencyAttrib.h"
 #include "clipPlaneAttrib.h"
+#include "geomVertexWriter.h"
 
 
 #ifdef DO_COLLISION_RECORDING

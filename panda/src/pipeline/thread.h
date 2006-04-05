@@ -66,7 +66,7 @@ PUBLISHED:
   INLINE void set_pstats_index(int pstats_index);
 
   INLINE int get_pipeline_stage() const;
-  INLINE void set_pipeline_stage(int pipeline_stage);
+  void set_pipeline_stage(int pipeline_stage);
   INLINE void set_min_pipeline_stage(int min_pipeline_stage);
 
   INLINE static Thread *get_main_thread();
@@ -79,7 +79,7 @@ PUBLISHED:
   virtual void output(ostream &out) const;
 
 public:
-  INLINE bool start(ThreadPriority priority, bool global, bool joinable);
+  bool start(ThreadPriority priority, bool global, bool joinable);
   INLINE void interrupt();
   INLINE void join();
 
@@ -128,6 +128,7 @@ private:
 
   friend class ThreadDummyImpl;
   friend class ThreadWin32Impl;
+  friend class ThreadLinuxImpl;
   friend class ThreadPosixImpl;
   friend class ThreadNsprImpl;
 };

@@ -549,7 +549,7 @@ clear_current_regions() {
     while (old_ri != _current_regions.end()) {
       // Here's a region we don't have any more.
       MouseWatcherRegion *old_region = (*old_ri);
-      old_region->exit(param);
+      old_region->exit_region(param);
       throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
       ++old_ri;
     }
@@ -557,7 +557,7 @@ clear_current_regions() {
     _current_regions.clear();
 
     if (_preferred_region != (MouseWatcherRegion *)NULL) {
-      _preferred_region->exit(param);
+      _preferred_region->exit_region(param);
       throw_event_pattern(_leave_pattern, _preferred_region, ButtonHandle::none());
       _preferred_region = (MouseWatcherRegion *)NULL;
     }
@@ -988,7 +988,7 @@ void MouseWatcher::
 enter_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
   nassertv(_lock.debug_is_locked());
 
-  region->enter(param);
+  region->enter_region(param);
   throw_event_pattern(_enter_pattern, region, ButtonHandle::none());
   if (_implicit_click) {
     MouseWatcherParameter param1(param);
@@ -1012,7 +1012,7 @@ exit_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
     param1.set_button(MouseButton::one());
     region->release(param1);
   }
-  region->exit(param);
+  region->exit_region(param);
   throw_event_pattern(_leave_pattern, region, ButtonHandle::none());
 }
 

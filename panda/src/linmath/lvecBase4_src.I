@@ -33,6 +33,7 @@ FLOATNAME(LVecBase4)() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4)::
 FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase4) &copy) {
+  TAU_PROFILE("LVecBase4::LVecBase4(LVecBase4 &)", " ", TAU_USER);
   _v.v._0 = copy._v.v._0;
   _v.v._1 = copy._v.v._1;
   _v.v._2 = copy._v.v._2;
@@ -47,6 +48,7 @@ FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase4) &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) &FLOATNAME(LVecBase4)::
 operator = (const FLOATNAME(LVecBase4) &copy) {
+  TAU_PROFILE("void LVecBase4::operator = (LVecBase4 &)", " ", TAU_USER);
   _v.v._0 = copy._v.v._0;
   _v.v._1 = copy._v.v._1;
   _v.v._2 = copy._v.v._2;
@@ -83,6 +85,7 @@ FLOATNAME(LVecBase4)(FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4)::
 FLOATNAME(LVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) {
+  TAU_PROFILE("void LVecBase4::operator = (FLOATTYPE, ...)", " ", TAU_USER);
   _v.v._0 = x;
   _v.v._1 = y;
   _v.v._2 = z;
@@ -179,6 +182,7 @@ operator [](int i) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase4)::
 is_nan() const {
+  TAU_PROFILE("bool LVecBase4::is_nan()", " ", TAU_USER);
   return cnan(_v.v._0) || cnan(_v.v._1) || cnan(_v.v._2) || cnan(_v.v._3);
 }
 
@@ -410,6 +414,7 @@ end() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
 fill(FLOATTYPE fill_value) {
+  TAU_PROFILE("void LVecBase4::fill()", " ", TAU_USER);
   _v.v._0 = fill_value;
   _v.v._1 = fill_value;
   _v.v._2 = fill_value;
@@ -423,6 +428,7 @@ fill(FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
 set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) {
+  TAU_PROFILE("void LVecBase4::set()", " ", TAU_USER);
   _v.v._0 = x;
   _v.v._1 = y;
   _v.v._2 = z;
@@ -436,6 +442,7 @@ set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
 dot(const FLOATNAME(LVecBase4) &other) const {
+  TAU_PROFILE("FLOATTYPE LVecBase4::dot()", " ", TAU_USER);
   return
     _v.v._0 * other._v.v._0 + _v.v._1 * other._v.v._1 +
     _v.v._2 * other._v.v._2 + _v.v._3 * other._v.v._3;
@@ -452,6 +459,7 @@ dot(const FLOATNAME(LVecBase4) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase4)::
 operator < (const FLOATNAME(LVecBase4) &other) const {
+  TAU_PROFILE("bool LVecBase4::operator <(const LVecBase4 &)", " ", TAU_USER);
   return (compare_to(other) < 0);
 }
 
@@ -462,6 +470,7 @@ operator < (const FLOATNAME(LVecBase4) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase4)::
 operator == (const FLOATNAME(LVecBase4) &other) const {
+  TAU_PROFILE("bool LVecBase4::operator ==(const LVecBase4 &)", " ", TAU_USER);
   return (_v.v._0 == other._v.v._0 &&
           _v.v._1 == other._v.v._1 &&
           _v.v._2 == other._v.v._2 &&
@@ -486,6 +495,7 @@ operator != (const FLOATNAME(LVecBase4) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH int FLOATNAME(LVecBase4)::
 compare_to(const FLOATNAME(LVecBase4) &other) const {
+  TAU_PROFILE("int LVecBase4::compare_to(const LVecBase4 &)", " ", TAU_USER);
   return compare_to(other, NEARLY_ZERO(FLOATTYPE));
 }
 
@@ -500,6 +510,7 @@ compare_to(const FLOATNAME(LVecBase4) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH int FLOATNAME(LVecBase4)::
 compare_to(const FLOATNAME(LVecBase4) &other, FLOATTYPE threshold) const {
+  TAU_PROFILE("int LVecBase4::compare_to(const LVecBase4 &, FLOATTYPE)", " ", TAU_USER);
   if (!IS_THRESHOLD_COMPEQ(_v.v._0, other._v.v._0, threshold)) {
     return (_v.v._0 < other._v.v._0) ? -1 : 1;
   }
@@ -522,6 +533,7 @@ compare_to(const FLOATNAME(LVecBase4) &other, FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
 get_hash() const {
+  TAU_PROFILE("size_t LVecBase4::get_hash()", " ", TAU_USER);
   return add_hash(0);
 }
 
@@ -532,6 +544,7 @@ get_hash() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
 get_hash(FLOATTYPE threshold) const {
+  TAU_PROFILE("size_t LVecBase4::get_hash(FLOATTYPE)", " ", TAU_USER);
   return add_hash(0, threshold);
 }
 
@@ -542,6 +555,7 @@ get_hash(FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
 add_hash(size_t hash) const {
+  TAU_PROFILE("size_t LVecBase4::add_hash(size_t)", " ", TAU_USER);
   return add_hash(hash, NEARLY_ZERO(FLOATTYPE));
 }
 
@@ -552,6 +566,7 @@ add_hash(size_t hash) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
 add_hash(size_t hash, FLOATTYPE threshold) const {
+  TAU_PROFILE("LVecBase4::add_hash(size_t, FLOATTYPE)", " ", TAU_USER);
   float_hash fhasher(threshold);
   hash = fhasher.add_hash(hash, _v.v._0);
   hash = fhasher.add_hash(hash, _v.v._1);
@@ -683,6 +698,7 @@ operator /= (FLOATTYPE scalar) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
 fmax(const FLOATNAME(LVecBase4) &other) {
+  TAU_PROFILE("LVecBase4::fmax()", " ", TAU_USER);
   return FLOATNAME(LVecBase4)(_v.v._0 > other._v.v._0 ? _v.v._0 : other._v.v._0,
                               _v.v._1 > other._v.v._1 ? _v.v._1 : other._v.v._1,
                               _v.v._2 > other._v.v._2 ? _v.v._2 : other._v.v._2,
@@ -696,6 +712,7 @@ fmax(const FLOATNAME(LVecBase4) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
 fmin(const FLOATNAME(LVecBase4) &other) {
+  TAU_PROFILE("LVecBase4::fmin()", " ", TAU_USER);
   return FLOATNAME(LVecBase4)(_v.v._0 < other._v.v._0 ? _v.v._0 : other._v.v._0,
                               _v.v._1 < other._v.v._1 ? _v.v._1 : other._v.v._1,
                               _v.v._2 < other._v.v._2 ? _v.v._2 : other._v.v._2,
@@ -710,6 +727,7 @@ fmin(const FLOATNAME(LVecBase4) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase4)::
 almost_equal(const FLOATNAME(LVecBase4) &other, FLOATTYPE threshold) const {
+  TAU_PROFILE("bool LVecBase4::almost_equal(LVecBase4 &, FLOATTYPE)", " ", TAU_USER);
   return (IS_THRESHOLD_EQUAL(_v.v._0, other._v.v._0, threshold) &&
           IS_THRESHOLD_EQUAL(_v.v._1, other._v.v._1, threshold) &&
           IS_THRESHOLD_EQUAL(_v.v._2, other._v.v._2, threshold) &&
@@ -724,6 +742,7 @@ almost_equal(const FLOATNAME(LVecBase4) &other, FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase4)::
 almost_equal(const FLOATNAME(LVecBase4) &other) const {
+  TAU_PROFILE("bool LVecBase4::almost_equal(LVecBase4 &)", " ", TAU_USER);
   return almost_equal(other, NEARLY_ZERO(FLOATTYPE));
 }
 
@@ -763,6 +782,7 @@ python_repr(ostream &out, const string &class_name) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
 generate_hash(ChecksumHashGenerator &hashgen) const {
+  TAU_PROFILE("LVecBase4::generate_hash(ChecksumHashGenerator &)", " ", TAU_USER);
   generate_hash(hashgen, NEARLY_ZERO(FLOATTYPE));
 }
 
@@ -773,6 +793,7 @@ generate_hash(ChecksumHashGenerator &hashgen) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
 generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
+  TAU_PROFILE("LVecBase4::generate_hash(ChecksumHashGenerator &, FLOATTYPE)", " ", TAU_USER);
   hashgen.add_fp(_v.v._0, threshold);
   hashgen.add_fp(_v.v._1, threshold);
   hashgen.add_fp(_v.v._2, threshold);

@@ -32,6 +32,7 @@
 #include "geomNode.h"
 #include "cullTraverserData.h"
 #include "pStatCollector.h"
+#include "deletedChain.h"
 
 class CullTraverser;
 
@@ -65,17 +66,9 @@ public:
 
 public:
   ~CullableObject();
+  ALLOC_DELETED_CHAIN(CullableObject);
 
-  // We will allocate and destroy hundreds or thousands of these a
-  // frame during the normal course of rendering.  As an optimization,
-  // then, we implement operator new and delete here to minimize this
-  // overhead.
-  INLINE void *operator new(size_t size);
-  INLINE void operator delete(void *ptr);
   void output(ostream &out) const;
-
-PUBLISHED:
-  INLINE static int get_num_ever_allocated();
 
 public:
   CPT(Geom) _geom;
@@ -111,9 +104,6 @@ private:
 
     const PointData *_array;
   };
-
-  static CullableObject *_deleted_chain;
-  static int _num_ever_allocated;
 
   static PStatCollector _munge_points_pcollector;
   static PStatCollector _munge_light_vector_pcollector;

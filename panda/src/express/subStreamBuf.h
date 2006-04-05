@@ -20,6 +20,7 @@
 #define SUBSTREAMBUF_H
 
 #include "pandabase.h"
+#include "mutexImpl.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SubStreamBuf
@@ -47,6 +48,7 @@ private:
   streampos _end;
   streampos _cur;
   size_t _unused;
+  MutexImpl _lock;
 };
 
 #endif

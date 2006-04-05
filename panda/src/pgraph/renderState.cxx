@@ -37,6 +37,7 @@
 #include "compareTo.h"
 #include "reMutexHolder.h"
 #include "thread.h"
+#include "attribSlots.h"
   
 ReMutex *RenderState::_states_lock = NULL;
 RenderState::States *RenderState::_states = NULL;
@@ -318,6 +319,12 @@ compose(const RenderState *other) const {
     return this;
   }
 
+#ifndef NDEBUG
+  if (!state_cache) {
+    return do_compose(other);
+  }
+#endif  // NDEBUG
+
   ReMutexHolder holder(*_states_lock);
 
   // Is this composition already cached?
@@ -397,6 +404,12 @@ invert_compose(const RenderState *other) const {
     // a->invert_compose(a) always produces identity.
     return make_empty();
   }
+
+#ifndef NDEBUG
+  if (!state_cache) {
+    return do_invert_compose(other);
+  }
+#endif  // NDEBUG
 
   ReMutexHolder holder(*_states_lock);
 
@@ -591,7 +604,7 @@ get_override(TypeHandle type) const {
 //               PT(TransformState) is a template class, and will call
 //               the appropriate method even though it is non-virtual.
 ////////////////////////////////////////////////////////////////////
-int RenderState::
+bool RenderState::
 unref() const {
   ReMutexHolder holder(*_states_lock);
 
@@ -1057,6 +1070,12 @@ bin_removed(int bin_index) {
 CPT(RenderState) RenderState::
 return_new(RenderState *state) {
   nassertr(state != (RenderState *)NULL, state);
+
+#ifndef NDEBUG
+  if (!state_cache) {
+    return state;
+  }
+#endif
 
 #ifndef NDEBUG
   if (paranoid_const) {
@@ -1644,6 +1663,7 @@ determine_cull_callback() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 update_pstats(int old_referenced_bits, int new_referenced_bits) {
+#ifdef DO_PSTATS
   if ((old_referenced_bits & R_node) != 0) {
     _node_counter.sub_level(1);
   } else if ((old_referenced_bits & R_cache) != 0) {
@@ -1654,6 +1674,7 @@ update_pstats(int old_referenced_bits, int new_referenced_bits) {
   } else if ((new_referenced_bits & R_cache) != 0) {
     _cache_counter.add_level(1);
   }
+#endif  // DO_PSTATS
 }
 
 ////////////////////////////////////////////////////////////////////

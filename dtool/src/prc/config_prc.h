@@ -22,7 +22,11 @@
 #include "dtoolbase.h"
 #include "notifyCategoryProxy.h"
 
+class ConfigVariableBool;
+
 NotifyCategoryDecl(prc, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
+
+extern ConfigVariableBool assert_abort;
 
 #endif
 

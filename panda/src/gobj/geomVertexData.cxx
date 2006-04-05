@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "geomVertexData.h"
+#include "geom.h"
 #include "geomVertexReader.h"
 #include "geomVertexWriter.h"
 #include "geomVertexRewriter.h"

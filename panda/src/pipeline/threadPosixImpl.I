@@ -47,6 +47,7 @@ prepare_for_exit() {
 ////////////////////////////////////////////////////////////////////
 INLINE Thread *ThreadPosixImpl::
 get_current_thread() {
+  TAU_PROFILE("Thread *ThreadPosixImpl::get_current_thread()", " ", TAU_USER);
   if (!_got_pt_ptr_index) {
     init_pt_ptr_index();
   }
@@ -86,6 +87,7 @@ is_threading_supported() {
 ////////////////////////////////////////////////////////////////////
 INLINE void ThreadPosixImpl::
 sleep(double seconds) {
+  TAU_PROFILE("void ThreadPosixImpl::sleep(double)", " ", TAU_USER);
   struct timespec rqtp;
   rqtp.tv_sec = time_t(seconds);
   rqtp.tv_nsec = long((seconds - (double)rqtp.tv_sec) * 1000000000.0);

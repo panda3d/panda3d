@@ -567,6 +567,12 @@ return_new(RenderEffects *state) {
   nassertr(state != (RenderEffects *)NULL, state);
 
 #ifndef NDEBUG
+  if (!state_cache) {
+    return state;
+  }
+#endif
+
+#ifndef NDEBUG
   if (paranoid_const) {
     nassertr(validate_states(), state);
   }

@@ -18,6 +18,7 @@
 
 #include "collisionLevelState.h"
 #include "collisionSolid.h"
+#include "collisionNode.h"
 #include "dcast.h"
 
 PStatCollector CollisionLevelState::_node_volume_pcollector("Collision Volumes:PandaNode");

@@ -24,7 +24,7 @@
 #include "dtoolbase.h"
 #include "pallocator.h"
 
-#ifdef NO_STYLE_ALLOCATOR
+#ifndef USE_STL_ALLOCATOR
 // If we're not using custom allocators, just use the standard class
 // definition.
 #define pvector vector
@@ -39,17 +39,26 @@
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Type>
-class pvector : public vector<Type, pallocator<Type> > {
+class pvector : public vector<Type, pallocator_array<Type> > {
 public:
-  typedef TYPENAME vector<Type, pallocator<Type> >::size_type size_type;
+  typedef vector<Type, pallocator_array<Type> > base_class;
+  typedef TYPENAME base_class::size_type size_type;
 
-  pvector() : vector<Type, pallocator<Type> >() { }
-  pvector(const pvector<Type> &copy) : vector<Type, pallocator<Type> >(copy) { }
-  pvector(size_type n) : vector<Type, pallocator<Type> >(n) { }
-  pvector(size_type n, const Type &value) : vector<Type, pallocator<Type> >(n, value) { }
-  pvector(const Type *begin, const Type *end) : vector<Type, pallocator<Type> >(begin, end) { }
+  pvector() : base_class() { }
+  pvector(const pvector<Type> &copy) : base_class(copy) { }
+  pvector(size_type n) : base_class(n) { }
+  pvector(size_type n, const Type &value) : base_class(n, value) { }
+  pvector(const Type *begin, const Type *end) : base_class(begin, end) { }
+
+#ifdef USE_TAU
+  void
+  push_back(const TYPENAME base_class::value_type &x) {
+    TAU_PROFILE("pvector::push_back(const value_type &)", " ", TAU_USER);
+    base_class::push_back(x);
+  }
+#endif  // USE_TAU
 };
 
-#endif  // NO_STYLE_ALLOCATOR
+#endif  // USE_STL_ALLOCATOR
 #endif
 

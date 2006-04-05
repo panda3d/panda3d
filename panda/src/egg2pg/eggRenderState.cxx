@@ -39,6 +39,7 @@
 #include "materialAttrib.h"
 #include "materialPool.h"
 #include "config_gobj.h"
+#include "config_egg2pg.h"
 
 
 ////////////////////////////////////////////////////////////////////

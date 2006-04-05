@@ -23,6 +23,7 @@
 
 #include "typedObject.h"
 #include "typedReferenceCount.h"
+#include "deletedChain.h"
 
 class BoundingSphere;
 class BoundingHexahedron;

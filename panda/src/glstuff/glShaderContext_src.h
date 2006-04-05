@@ -24,6 +24,7 @@
 #include "internalName.h"
 #include "shaderExpansion.h"
 #include "shaderContext.h"
+#include "deletedChain.h"
 
 class CLP(GraphicsStateGuardian);
 
@@ -38,6 +39,7 @@ public:
 
   CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg);
   ~CLP(ShaderContext)();
+  ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
   INLINE bool valid(void);
   void bind(GSG *gsg);

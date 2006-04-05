@@ -19,6 +19,7 @@
 #include "thread.h"
 #include "mainThread.h"
 #include "externalThread.h"
+#include "config_pipeline.h"
 
 Thread *Thread::_main_thread;
 Thread *Thread::_external_thread;
@@ -78,6 +79,35 @@ bind_thread(const string &name, const string &sync_name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::set_pipeline_stage
+//       Access: Published
+//  Description: Specifies the Pipeline stage number associated with
+//               this thread.  The default stage is 0 if no stage is
+//               specified otherwise.
+//
+//               This must be a value in the range [0
+//               .. pipeline->get_num_stages() - 1].  It specifies the
+//               values that this thread observes for all pipelined
+//               data.  Typically, an application thread will leave
+//               this at 0, but a render thread may set it to 1 or 2
+//               (to operate on the previous frame's data, or the
+//               second previous frame's data).
+////////////////////////////////////////////////////////////////////
+void Thread::
+set_pipeline_stage(int pipeline_stage) {
+#ifdef THREADED_PIPELINE
+  _pipeline_stage = pipeline_stage;
+#else
+  if (pipeline_stage != 0) {
+    pipeline_cat.warning()
+      << "Requested pipeline stage " << pipeline_stage
+      << " but multithreaded render pipelines not enabled in build.\n";
+  }
+  _pipeline_stage = 0;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::output
 //       Access: Published, Virtual
 //  Description:
@@ -85,6 +115,51 @@ bind_thread(const string &name, const string &sync_name) {
 void Thread::
 output(ostream &out) const {
   out << get_type() << " " << get_name();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::start
+//       Access: Public
+//  Description: Starts the thread executing.  It is only valid to
+//               call this once.
+//
+//               The thread will begin executing its thread_main()
+//               function, and will terminate when thread_main()
+//               returns.
+//
+//               priority is intended as a hint to the relative
+//               importance of this thread, and global should be set
+//               true if the thread will perform a lot of blocking
+//               I/O, or false otherwise (see the NSPR documentation
+//               on global vs. local threads for more on this).  Both
+//               of these parameters may be ignored by the thread
+//               implementation.
+//
+//               joinable should be set true if you intend to call
+//               join() to wait for the thread to terminate, or false
+//               if you don't care and you will never call join().
+//
+//               The return value is true if the thread is
+//               successfully started, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Thread::
+start(ThreadPriority priority, bool global, bool joinable) {
+  nassertr(!_started, false);
+
+  if (threads_always_global) {
+    global = true;
+  } else if (threads_never_global) {
+    global = false;
+  }
+
+  _started = _impl.start(priority, global, joinable);
+
+  if (!_started) {
+    thread_cat.warning()
+      << *this << " could not be started!\n";
+  }
+
+  return _started;
 }
 
 ////////////////////////////////////////////////////////////////////

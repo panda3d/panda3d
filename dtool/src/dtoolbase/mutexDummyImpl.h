@@ -1,5 +1,5 @@
-// Filename: mutexWin32Impl.h
-// Created by:  drose (07Feb06)
+// Filename: mutexDummyImpl.h
+// Created by:  drose (08Aug02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,40 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MUTEXWIN32IMPL_H
-#define MUTEXWIN32IMPL_H
+#ifndef MUTEXDUMMYIMPL_H
+#define MUTEXDUMMYIMPL_H
 
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_WIN32_IMPL
-
-#include "pnotify.h"
-
-#include <windows.h>
-
-#define MUTEX_DEFINES_TRYLOCK 1
+#ifdef THREAD_DUMMY_IMPL
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MutexWin32Impl
-// Description : Uses Windows native calls to implement a mutex.
+//       Class : MutexDummyImpl
+// Description : A fake mutex implementation for single-threaded
+//               applications that don't need any synchronization
+//               control.  This does nothing at all.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG MutexWin32Impl {
+class EXPCL_DTOOL MutexDummyImpl {
 public:
-  INLINE MutexWin32Impl();
-  INLINE ~MutexWin32Impl();
+  INLINE MutexDummyImpl();
+  INLINE ~MutexDummyImpl();
 
   INLINE void lock();
-  INLINE bool try_lock();
   INLINE void release();
-
-private:
-  CRITICAL_SECTION _lock;
-  friend class ConditionVarWin32Impl;
 };
 
-#include "mutexWin32Impl.I"
+#include "mutexDummyImpl.I"
 
-#endif  // THREAD_WIN32_IMPL
+#endif  // THREAD_DUMMY_IMPL
 
 #endif

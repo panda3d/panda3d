@@ -45,8 +45,9 @@ FLOATNAME(LMatrix4)() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &copy) {
+  TAU_PROFILE("LMatrix4::LMatrix4(const LMatrix4 &)", " ", TAU_USER);
+  
   memcpy(_m.data,copy._m.data,sizeof(_m.data));
-//  (*this) = copy;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,14 +57,10 @@ FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator = (const FLOATNAME(LMatrix4) &copy) {
-  //xxx888
+  TAU_PROFILE("void LMatrix4::operator = (const LMatrix4 &)", " ", TAU_USER);
+
   memcpy(_m.data,copy._m.data,sizeof(_m.data));
-//  set(copy(0, 0), copy(0, 1), copy(0, 2), copy(0, 3),
-//      copy(1, 0), copy(1, 1), copy(1, 2), copy(1, 3),
-//      copy(2, 0), copy(2, 1), copy(2, 2), copy(2, 3),
-//      copy(3, 0), copy(3, 1), copy(3, 2), copy(3, 3));
   return *this;
-  //xxx000
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,6 +84,7 @@ FLOATNAME(LMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
                     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
                     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
                     FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33) {
+  TAU_PROFILE("LMatrix4::LMatrix4(FLOATTYPE, ...)", " ", TAU_USER);
 
   _m.m._00 = e00;
   _m.m._01 = e01;
@@ -116,6 +114,7 @@ FLOATNAME(LMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3) {
+  TAU_PROFILE("void LMatrix4::LMatrix4(const LMatrix3 &)", " ", TAU_USER);
 
   _m.m._00 = upper3._m.m._00;
   _m.m._01 = upper3._m.m._01;
@@ -136,11 +135,6 @@ FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3) {
   _m.m._31 = 0.0f;
   _m.m._32 = 0.0f;
   _m.m._33 = 1.0f;
-
-//  set(upper3(0, 0), upper3(0, 1), upper3(0, 2), 0.0f,
-//      upper3(1, 0), upper3(1, 1), upper3(1, 2), 0.0f,
-//      upper3(2, 0), upper3(2, 1), upper3(2, 2), 0.0f,
-//      0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,6 +145,7 @@ FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3) {
 INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3,
          const FLOATNAME(LVecBase3) &trans) {
+  TAU_PROFILE("void LMatrix4::LMatrix4(upper3, const LVecBase3 &)", " ", TAU_USER);
 
   _m.m._00 = upper3._m.m._00;
   _m.m._01 = upper3._m.m._01;
@@ -171,11 +166,6 @@ FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3,
   _m.m._31 = trans._v.v._1;
   _m.m._32 = trans._v.v._2;
   _m.m._33 = 1.0f;
-
-//  set(upper3(0, 0), upper3(0, 1), upper3(0, 2), 0.0f,
-//      upper3(1, 0), upper3(1, 1), upper3(1, 2), 0.0f,
-//      upper3(2, 0), upper3(2, 1), upper3(2, 2), 0.0f,
-//      trans[0], trans[1], trans[2], 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,6 +177,7 @@ FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3,
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 fill(FLOATTYPE fill_value) {
+  TAU_PROFILE("void LMatrix4::fill(FLOATTYPE)", " ", TAU_USER);
   set(fill_value, fill_value, fill_value, fill_value,
       fill_value, fill_value, fill_value, fill_value,
       fill_value, fill_value, fill_value, fill_value,
@@ -203,6 +194,7 @@ set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
     FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33) {
+  TAU_PROFILE("void LMatrix4::set(FLOATTYPE, ...)", " ", TAU_USER);
 
   _m.m._00 = e00;
   _m.m._01 = e01;
@@ -232,6 +224,7 @@ set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set_upper_3(const FLOATNAME(LMatrix3) &upper3) {
+  TAU_PROFILE("void LMatrix4::set_upper_3(const LMatrix3 &)", " ", TAU_USER);
   _m.m._00 = upper3(0, 0);
   _m.m._01 = upper3(0, 1);
   _m.m._02 = upper3(0, 2);
@@ -252,6 +245,7 @@ set_upper_3(const FLOATNAME(LMatrix3) &upper3) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix4)::
 get_upper_3() const {
+  TAU_PROFILE("LMatrix3 LMatrix4::get_upper_3()", " ", TAU_USER);
   return FLOATNAME(LMatrix3)
     (_m.m._00, _m.m._01, _m.m._02,
      _m.m._10, _m.m._11, _m.m._12,
@@ -411,6 +405,7 @@ operator () (int row, int col) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 is_nan() const {
+  TAU_PROFILE("bool LMatrix4::is_nan()", " ", TAU_USER);
   return
     cnan(_m.data[0]) || cnan(_m.data[1]) || cnan(_m.data[2]) || cnan(_m.data[3]) ||
     cnan(_m.data[4]) || cnan(_m.data[5]) || cnan(_m.data[6]) || cnan(_m.data[7]) ||
@@ -588,6 +583,7 @@ add_hash(size_t hash) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LMatrix4)::
 add_hash(size_t hash, FLOATTYPE threshold) const {
+  TAU_PROFILE("size_t LMatrix4::add_hash(size_t, FLOATTYPE)", " ", TAU_USER);
   float_hash fhasher(threshold);
 
   hash = fhasher.add_hash(hash, _m.m._00);
@@ -627,16 +623,11 @@ v_res._v.v._3 = v._v.v._0*mat._m.m._03 + v._v.v._1*mat._m.m._13 + v._v.v._2*mat.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LMatrix4)::
 xform(const FLOATNAME(LVecBase4) &v) const {
-    FLOATNAME(LVecBase4) v_res;
-
-        VECTOR4_MATRIX4_PRODUCT(v_res, v,(*this));
-        return v_res;
-
-/*  return FLOATNAME(LVecBase4)(v.dot(get_col(0)),
-                              v.dot(get_col(1)),
-                              v.dot(get_col(2)),
-                              v.dot(get_col(3)));
-*/
+  TAU_PROFILE("LVecBase3 LMatrix4::xform(const LVecBase3 &)", " ", TAU_USER);
+  FLOATNAME(LVecBase4) v_res;
+  
+  VECTOR4_MATRIX4_PRODUCT(v_res, v,(*this));
+  return v_res;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -648,22 +639,16 @@ xform(const FLOATNAME(LVecBase4) &v) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 xform_point(const FLOATNAME(LVecBase3) &v) const {
+  TAU_PROFILE("LVecBase3 LMatrix4::xform_point(const LVecBase3 &)", " ", TAU_USER);
+  FLOATNAME(LVecBase3) v_res;
 
-        FLOATNAME(LVecBase3) v_res;
-
-        // v._v.v._3 == 1.0f for this case
-
-        v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10 + v._v.v._2*_m.m._20 + _m.m._30;
-        v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11 + v._v.v._2*_m.m._21 + _m.m._31;
-        v_res._v.v._2 = v._v.v._0*_m.m._02 + v._v.v._1*_m.m._12 + v._v.v._2*_m.m._22 + _m.m._32;
-
-        return v_res;
-
-/*
-  return FLOATNAME(LVecBase3)(v.dot(get_col3(0)) + _m.m._30,
-                              v.dot(get_col3(1)) + _m.m._31,
-                              v.dot(get_col3(2)) + _m.m._32);
-*/
+  // v._v.v._3 == 1.0f for this case
+  
+  v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10 + v._v.v._2*_m.m._20 + _m.m._30;
+  v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11 + v._v.v._2*_m.m._21 + _m.m._31;
+  v_res._v.v._2 = v._v.v._0*_m.m._02 + v._v.v._1*_m.m._12 + v._v.v._2*_m.m._22 + _m.m._32;
+  
+  return v_res;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -675,20 +660,16 @@ xform_point(const FLOATNAME(LVecBase3) &v) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 xform_vec(const FLOATNAME(LVecBase3) &v) const {
-        FLOATNAME(LVecBase3) v_res;
-
-        // v._v.v._3 == 0.0f for this case
-
-        v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10 + v._v.v._2*_m.m._20;
-        v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11 + v._v.v._2*_m.m._21;
-        v_res._v.v._2 = v._v.v._0*_m.m._02 + v._v.v._1*_m.m._12 + v._v.v._2*_m.m._22;
-
-        return v_res;
-/*
-  return FLOATNAME(LVecBase3)(v.dot(get_col3(0)),
-                              v.dot(get_col3(1)),
-                              v.dot(get_col3(2)));
-*/
+  TAU_PROFILE("LVecBase3 LMatrix4::xform_vec(const LVecBase3 &)", " ", TAU_USER);
+  FLOATNAME(LVecBase3) v_res;
+  
+  // v._v.v._3 == 0.0f for this case
+  
+  v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10 + v._v.v._2*_m.m._20;
+  v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11 + v._v.v._2*_m.m._21;
+  v_res._v.v._2 = v._v.v._0*_m.m._02 + v._v.v._1*_m.m._12 + v._v.v._2*_m.m._22;
+  
+  return v_res;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -730,60 +711,18 @@ res._m.m._33 = a._m.m._30*b._m.m._03 + a._m.m._31*b._m.m._13 + a._m.m._32*b._m.m
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 operator * (const FLOATNAME(LMatrix4) &other) const {
-        FLOATNAME(LMatrix4) t;
-
-        MATRIX4_PRODUCT(t,(*this),other);
-/*
-typedef union {
-        struct {
-           FLOATTYPE  _m.m._11, _m.m._12, _m.m._13, _m.m._14;
-           FLOATTYPE  _m.m._21, _m.m._22, _m.m._23, _m.m._24;
-           FLOATTYPE  _m.m._31, _m.m._32, _m.m._33, _m.m._34;
-           FLOATTYPE  _m.m._41, _m.m._42, _m.m._43, _m.m._44;
-        };
-
-                FLOATTYPE m[4][4];
-    } MYMATRIX4;
-
-        FLOATNAME(LMatrix4) t;
-
-        MYMATRIX4 *result_ptr=(MYMATRIX4 *)t.get_m.data();
-        MYMATRIX4 *mat1_ptr=(MYMATRIX4 *)this->get_m.data();
-        MYMATRIX4 *mat2_ptr=(MYMATRIX4 *)other.get_m.data();
-
-        MATRIX4_PRODUCT(result_ptr,mat1_ptr,mat2_ptr);
-*/
-
-/*
-
-  t(0, 0) = mult_cel(other, 0, 0);
-  t(0, 1) = mult_cel(other, 0, 1);
-  t(0, 2) = mult_cel(other, 0, 2);
-  t(0, 3) = mult_cel(other, 0, 3);
-
-  t(1, 0) = mult_cel(other, 1, 0);
-  t(1, 1) = mult_cel(other, 1, 1);
-  t(1, 2) = mult_cel(other, 1, 2);
-  t(1, 3) = mult_cel(other, 1, 3);
-
-  t(2, 0) = mult_cel(other, 2, 0);
-  t(2, 1) = mult_cel(other, 2, 1);
-  t(2, 2) = mult_cel(other, 2, 2);
-  t(2, 3) = mult_cel(other, 2, 3);
-
-  t(3, 0) = mult_cel(other, 3, 0);
-  t(3, 1) = mult_cel(other, 3, 1);
-  t(3, 2) = mult_cel(other, 3, 2);
-  t(3, 3) = mult_cel(other, 3, 3);
-*/
+  TAU_PROFILE("LMatrix4 LMatrix4::operator *(const LMatrix4 &)", " ", TAU_USER);
+  FLOATNAME(LMatrix4) t;
+  MATRIX4_PRODUCT(t,(*this),other);
   return t;
 }
 
 // this = other1 * other2
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 multiply(const FLOATNAME(LMatrix4) &other1, const FLOATNAME(LMatrix4) &other2) {
-// faster than operator * since it writes result in place, avoiding extra copying
-// this will fail if you try to mat.multiply(mat,other_mat)
+  TAU_PROFILE("LMatrix4 multiply(const LMatrix4 &, const LMatrix4 &)", " ", TAU_USER);
+  // faster than operator * since it writes result in place, avoiding extra copying
+  // this will fail if you try to mat.multiply(mat,other_mat)
 
   nassertv((&other1 != this) && (&other2 != this));
   MATRIX4_PRODUCT((*this),other1,other2);
@@ -796,6 +735,7 @@ multiply(const FLOATNAME(LMatrix4) &other1, const FLOATNAME(LMatrix4) &other2) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 operator * (FLOATTYPE scalar) const {
+  TAU_PROFILE("LMatrix4 operator *(const LMatrix4 &, FLOATTYPE)", " ", TAU_USER);
   FLOATNAME(LMatrix4) t;
 
   t._m.m._00 = _m.m._00 * scalar;
@@ -828,30 +768,8 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 operator / (FLOATTYPE scalar) const {
-  FLOATNAME(LMatrix4) t;
   FLOATTYPE recip_scalar = 1.0f/scalar;
-
-  t._m.m._00 = _m.m._00 * recip_scalar;
-  t._m.m._01 = _m.m._01 * recip_scalar;
-  t._m.m._02 = _m.m._02 * recip_scalar;
-  t._m.m._03 = _m.m._03 * recip_scalar;
-
-  t._m.m._10 = _m.m._10 * recip_scalar;
-  t._m.m._11 = _m.m._11 * recip_scalar;
-  t._m.m._12 = _m.m._12 * recip_scalar;
-  t._m.m._13 = _m.m._13 * recip_scalar;
-
-  t._m.m._20 = _m.m._20 * recip_scalar;
-  t._m.m._21 = _m.m._21 * recip_scalar;
-  t._m.m._22 = _m.m._22 * recip_scalar;
-  t._m.m._23 = _m.m._23 * recip_scalar;
-
-  t._m.m._30 = _m.m._30 * recip_scalar;
-  t._m.m._31 = _m.m._31 * recip_scalar;
-  t._m.m._32 = _m.m._32 * recip_scalar;
-  t._m.m._33 = _m.m._33 * recip_scalar;
-
-  return t;
+  return (*this) * recip_scalar;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -861,6 +779,7 @@ operator / (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator += (const FLOATNAME(LMatrix4) &other) {
+  TAU_PROFILE("LMatrix4 LMatrix4::operator +=(const LMatrix4 &)", " ", TAU_USER);
   _m.m._00 += other._m.m._00;
   _m.m._01 += other._m.m._01;
   _m.m._02 += other._m.m._02;
@@ -891,6 +810,7 @@ operator += (const FLOATNAME(LMatrix4) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator -= (const FLOATNAME(LMatrix4) &other) {
+  TAU_PROFILE("LMatrix4 LMatrix4::operator -=(const LMatrix4 &)", " ", TAU_USER);
   _m.m._00 -= other._m.m._00;
   _m.m._01 -= other._m.m._01;
   _m.m._02 -= other._m.m._02;
@@ -921,6 +841,7 @@ operator -= (const FLOATNAME(LMatrix4) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator *= (const FLOATNAME(LMatrix4) &other) {
+  TAU_PROFILE("LMatrix4 LMatrix4::operator *=(const LMatrix4 &)", " ", TAU_USER);
   (*this) = (*this) * other;
   return *this;
 }
@@ -932,6 +853,7 @@ operator *= (const FLOATNAME(LMatrix4) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator *= (FLOATTYPE scalar) {
+  TAU_PROFILE("LMatrix4 LMatrix4::operator *=(FLOATTYPE)", " ", TAU_USER);
   _m.m._00 *= scalar;
   _m.m._01 *= scalar;
   _m.m._02 *= scalar;
@@ -962,6 +884,7 @@ operator *= (FLOATTYPE scalar) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator /= (FLOATTYPE scalar) {
+  TAU_PROFILE("LMatrix4 LMatrix4::operator /=(FLOATTYPE)", " ", TAU_USER);
   FLOATTYPE recip_scalar = 1.0f/scalar;
   _m.m._00 *= recip_scalar;
   _m.m._01 *= recip_scalar;
@@ -994,6 +917,7 @@ operator /= (FLOATTYPE scalar) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 transpose_from(const FLOATNAME(LMatrix4) &other) {
+  TAU_PROFILE("LMatrix4 LMatrix4::transpose_from(const LMatrix4 &other)", " ", TAU_USER);
   _m.m._00 = other._m.m._00;
   _m.m._01 = other._m.m._10;
   _m.m._02 = other._m.m._20;
@@ -1022,8 +946,7 @@ transpose_from(const FLOATNAME(LMatrix4) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 transpose_in_place() {
-//  FLOATNAME(LMatrix4) temp = (*this);
-//  transpose_from(temp);
+  TAU_PROFILE("void LMatrix4::transpose_in_place()", " ", TAU_USER);
 
   #define SWAP__(x,y) { FLOATTYPE temp = (x);  (x) = (y);  (y) = temp;}
   SWAP__(_m.m._01,_m.m._10);
@@ -1053,6 +976,7 @@ transpose_in_place() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 invert_from(const FLOATNAME(LMatrix4) &other) {
+  TAU_PROFILE("bool LMatrix4::invert_from(const LMatrix4 &)", " ", TAU_USER);
   if (IS_NEARLY_EQUAL(other._m.m._03, 0.0f) &&
       IS_NEARLY_EQUAL(other._m.m._13, 0.0f) &&
       IS_NEARLY_EQUAL(other._m.m._23, 0.0f) &&
@@ -1103,6 +1027,7 @@ invert_from(const FLOATNAME(LMatrix4) &other) {
 //         (transpose upper 3x3 and take negative of translation component)
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 invert_affine_from(const FLOATNAME(LMatrix4) &other) {
+  TAU_PROFILE("bool LMatrix4::invert_affine_from(const LMatrix4 &)", " ", TAU_USER);
   FLOATNAME(LMatrix3) rot;
 
   // probably could use transpose here
@@ -1111,33 +1036,22 @@ invert_affine_from(const FLOATNAME(LMatrix4) &other) {
   }
 
   set_upper_3(rot);
-//  set_col(3, FLOATNAME(LVecBase4)(0.0f, 0.0f, 0.0f, 1.0f));
 
   _m.m._03 = 0.0f;
   _m.m._13 = 0.0f;
   _m.m._23 = 0.0f;
   _m.m._33 = 1.0f;
 
-  // compute -C*inv(A)
-/*
-  for (int i = 0; i < 3; i++) {
-    (*this)(3, i) = 0.0f;
-    for (int j = 0; j < 3; j++) {
-      (*this)(3, i) -= other(3, j) * (*this)(j, i);
-    }
-  }
-*/
-
-    _m.m._30 = -(other._m.m._30 * _m.m._00 +
+  _m.m._30 = -(other._m.m._30 * _m.m._00 +
                other._m.m._31 * _m.m._10 +
                other._m.m._32 * _m.m._20);
-
-    _m.m._31 = -(other._m.m._30 * _m.m._01 +
-                   other._m.m._31 * _m.m._11 +
+  
+  _m.m._31 = -(other._m.m._30 * _m.m._01 +
+               other._m.m._31 * _m.m._11 +
                other._m.m._32 * _m.m._21);
-
-    _m.m._32 = -(other._m.m._30 * _m.m._02 +
-                   other._m.m._31 * _m.m._12 +
+  
+  _m.m._32 = -(other._m.m._30 * _m.m._02 +
+               other._m.m._31 * _m.m._12 +
                other._m.m._32 * _m.m._22);
 
   return true;
@@ -1152,6 +1066,7 @@ invert_affine_from(const FLOATNAME(LMatrix4) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 invert_in_place() {
+  TAU_PROFILE("bool LMatrix4::invert_in_place()", " ", TAU_USER);
   FLOATNAME(LMatrix4) temp = (*this);
   return invert_from(temp);
 }
@@ -1191,8 +1106,9 @@ translate_mat(FLOATTYPE tx, FLOATTYPE ty, FLOATTYPE tz) {
 //               degrees counterclockwise about the indicated vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
-rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
+rotate_mat(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
            CoordinateSystem cs) {
+  TAU_PROFILE("LMatrix4 LMatrix4::rotate_mat(FLOATTYPE, const LVecBase3 &, cs)", " ", TAU_USER);
 
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
@@ -1210,24 +1126,13 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   FLOATTYPE axis_2 = axis._v.v._2;
 
   // Normalize the axis.
-
-/*
-  // hack check for prenormalization, only works for simple unit vecs,
-  // which is what we usually pass in anyway. screws up if you happen to
-  // pass in something like (.5,.5,0).  need to add flag parameter so caller
-  // can request normalization if needed
-
-  if((cabs(axis_0)+cabs(axis_1)+cabs(axis_2)) != 1.0f) {
-*/
-
-          FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
-          nassertr(length_sq != 0.0f, ident_mat());
-          FLOATTYPE recip_length = 1.0f/csqrt(length_sq);
-
-          axis_0 *= recip_length;
-          axis_1 *= recip_length;
-          axis_2 *= recip_length;
-//  }
+  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
+  nassertr(length_sq != 0.0f, ident_mat());
+  FLOATTYPE recip_length = 1.0f/csqrt(length_sq);
+  
+  axis_0 *= recip_length;
+  axis_1 *= recip_length;
+  axis_2 *= recip_length;
 
   FLOATTYPE angle_rad=deg_2_rad(angle);
   FLOATTYPE s,c;
@@ -1278,6 +1183,7 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
            CoordinateSystem cs) {
+  TAU_PROFILE("LMatrix4 LMatrix4::rotate_mat_normaxis(FLOATTYPE, const LVecBase3 &, cs)", " ", TAU_USER);
 
   FLOATNAME(LMatrix4) mat;
   rotate_mat_normaxis(angle,axis,mat,cs);
@@ -1287,6 +1193,8 @@ rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
                                         FLOATNAME(LMatrix4) &result_mat, CoordinateSystem cs) {
+  TAU_PROFILE("void LMatrix4::rotate_mat_normaxis(FLOATTYPE, const LVecBase3 &, LMatrix4 &, cs)", " ", TAU_USER);
+
 
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
@@ -1494,6 +1402,7 @@ transpose(const FLOATNAME(LMatrix4) &a) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4)
 invert(const FLOATNAME(LMatrix4) &a) {
+  TAU_PROFILE("LMatrix4 invert(const LMatrix4 &)", " ", TAU_USER);
   FLOATNAME(LMatrix4) result;
   bool nonsingular = result.invert_from(a);
 #ifndef NDEBUG

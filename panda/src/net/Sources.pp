@@ -22,7 +22,7 @@
      queuedConnectionReader.h recentConnectionReader.h \
      queuedReturn.h queuedReturn.I
 
-  #define INCLUDED_SOURCES \ \
+  #define INCLUDED_SOURCES \
      config_net.cxx connection.cxx connectionListener.cxx  \
      connectionManager.cxx connectionReader.cxx  \
      connectionWriter.cxx datagramQueue.cxx datagramTCPHeader.cxx  \

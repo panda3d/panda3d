@@ -135,26 +135,6 @@ get_pipeline_stage() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Thread::set_pipeline_stage
-//       Access: Published
-//  Description: Specifies the Pipeline stage number associated with
-//               this thread.  The default stage is 0 if no stage is
-//               specified otherwise.
-//
-//               This must be a value in the range [0
-//               .. pipeline->get_num_stages() - 1].  It specifies the
-//               values that this thread observes for all pipelined
-//               data.  Typically, an application thread will leave
-//               this at 0, but a render thread may set it to 1 or 2
-//               (to operate on the previous frame's data, or the
-//               second previous frame's data).
-////////////////////////////////////////////////////////////////////
-INLINE void Thread::
-set_pipeline_stage(int pipeline_stage) {
-  _pipeline_stage = pipeline_stage;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Thread::set_min_pipeline_stage
 //       Access: Published
 //  Description: Sets this thread's pipeline stage number to at least
@@ -163,7 +143,7 @@ set_pipeline_stage(int pipeline_stage) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Thread::
 set_min_pipeline_stage(int min_pipeline_stage) {
-  _pipeline_stage = max(_pipeline_stage, min_pipeline_stage);
+  set_pipeline_stage(max(_pipeline_stage, min_pipeline_stage));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -212,6 +192,7 @@ get_external_thread() {
 ////////////////////////////////////////////////////////////////////
 INLINE Thread *Thread::
 get_current_thread() {
+  TAU_PROFILE("Thread *Thread::get_current_thread()", " ", TAU_USER);
 #ifndef HAVE_THREADS
   return get_main_thread();
 #else  // HAVE_THREADS
@@ -233,12 +214,13 @@ get_current_thread() {
 ////////////////////////////////////////////////////////////////////
 INLINE int Thread::
 get_current_pipeline_stage() {
-#if !defined(HAVE_THREADS) || !defined(DO_PIPELINING)
-  // Without threads or pipelining, the result is always 0.
+  TAU_PROFILE("int Thread::get_current_pipeline_stage()", " ", TAU_USER);
+#ifndef THREADED_PIPELINE
+  // Without threaded pipelining, the result is always 0.
   return 0;
 #else
   return get_current_thread()->get_pipeline_stage();
-#endif  // !HAVE_THREADS || !DO_PIPELINING
+#endif  // !THREADED_PIPELINE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -263,39 +245,8 @@ is_threading_supported() {
 ////////////////////////////////////////////////////////////////////
 INLINE void Thread::
 sleep(double seconds) {
+  TAU_PROFILE("void Thread::sleep(double)", " ", TAU_USER);
   ThreadImpl::sleep(seconds);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Thread::start
-//       Access: Public
-//  Description: Starts the thread executing.  It is only valid to
-//               call this once.
-//
-//               The thread will begin executing its thread_main()
-//               function, and will terminate when thread_main()
-//               returns.
-//
-//               priority is intended as a hint to the relative
-//               importance of this thread, and global should be set
-//               true if the thread will perform a lot of blocking
-//               I/O, or false otherwise (see the NSPR documentation
-//               on global vs. local threads for more on this).  Both
-//               of these parameters may be ignored by the thread
-//               implementation.
-//
-//               joinable should be set true if you intend to call
-//               join() to wait for the thread to terminate, or false
-//               if you don't care and you will never call join().
-//
-//               The return value is true if the thread is
-//               successfully started, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool Thread::
-start(ThreadPriority priority, bool global, bool joinable) {
-  nassertr(!_started, false);
-  _started = _impl.start(priority, global, joinable);
-  return _started;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -321,6 +272,7 @@ interrupt() {
 ////////////////////////////////////////////////////////////////////
 INLINE void Thread::
 join() {
+  TAU_PROFILE("void Thread::join()", " ", TAU_USER);
   _impl.join();
 }
 

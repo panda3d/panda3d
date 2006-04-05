@@ -80,6 +80,7 @@ INLINE void ConfigDeclaration::
 set_string_value(const string &string_value) {
   _string_value = string_value;
   _got_words = false;
+  invalidate_cache();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -46,23 +46,10 @@ class EXPCL_PANDAEXPRESS MemoryUsage {
 public:
   INLINE static bool get_track_memory_usage();
 
-#if defined(__GNUC__)
-  // There seems to be a problem with egcs-2.91.66: it gets confused
-  // with too many nested inline functions, and sets the wrong pointer
-  // as 'this'.  Yucky.  The workaround is to make these functions
-  // non-inline, but this is inner-loop stuff, and we'd rather not pay
-  // the price universally.  So we only compile them non-inline when
-  // we're building on GCC.
-  static void record_pointer(ReferenceCount *ptr);
-  static void update_type(ReferenceCount *ptr, TypeHandle type);
-  static void update_type(ReferenceCount *ptr, TypedObject *typed_ptr);
-  static void remove_pointer(ReferenceCount *ptr);
-#else // __GNUC__
   INLINE static void record_pointer(ReferenceCount *ptr);
   INLINE static void update_type(ReferenceCount *ptr, TypeHandle type);
   INLINE static void update_type(ReferenceCount *ptr, TypedObject *typed_ptr);
   INLINE static void remove_pointer(ReferenceCount *ptr);
-#endif // __GNUC__
 
 public:
   static void *operator_new_handler(size_t size);

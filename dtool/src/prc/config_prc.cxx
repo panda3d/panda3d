@@ -17,5 +17,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_prc.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDef(prc, "");
+
+ConfigVariableBool assert_abort
+("assert-abort", false,
+ "Set this true to trigger a core dump and/or stack trace when the first assertion fails");
+

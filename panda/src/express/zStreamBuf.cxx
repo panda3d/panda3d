@@ -20,6 +20,9 @@
 
 #ifdef HAVE_ZLIB
 
+#include "pnotify.h"
+#include "config_express.h"
+
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us
 typedef int streamsize;

@@ -22,15 +22,11 @@
 #include "configVariableFilename.h"
 #include "configVariableBool.h"
 #include "filename.h"
+#include "config_prc.h"
 
 #include <ctype.h>
 
 Notify *Notify::_global_ptr = (Notify *)NULL;
-
-static ConfigVariableBool assert_abort
-("assert-abort", false,
- "Set this true to trigger a core dump and/or stack trace when the first assertion fails");
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Notify::Constructor

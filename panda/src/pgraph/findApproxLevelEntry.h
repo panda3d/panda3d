@@ -42,6 +42,7 @@ public:
                               FindApproxLevelEntry *next);
   INLINE FindApproxLevelEntry(const FindApproxLevelEntry &copy);
   INLINE void operator = (const FindApproxLevelEntry &copy);
+  ALLOC_DELETED_CHAIN(FindApproxLevelEntry);
 
   INLINE bool next_is_stashed(int increment) const;
 
@@ -52,15 +53,6 @@ public:
                           FindApproxLevelEntry *&next_level,
                           int increment) const;
   INLINE bool is_solution(int increment) const;
-
-  // We will allocate and destroy thousands of these during a typical
-  // NodePath::find() or find_all_matches() operation.  As an
-  // optimization, then, we implement operator new and delete here to
-  // minimize this overhead.
-  INLINE void *operator new(size_t size);
-  INLINE void operator delete(void *ptr);
-
-  INLINE static int get_num_ever_allocated();
 
   void output(ostream &out) const;
   void write_level(ostream &out, int indent_level) const;
@@ -76,10 +68,6 @@ public:
   int _i;
   FindApproxPath &_approx_path;
   FindApproxLevelEntry *_next;
-
-private:
-  static FindApproxLevelEntry *_deleted_chain;
-  static int _num_ever_allocated;
 };
 
 INLINE ostream &

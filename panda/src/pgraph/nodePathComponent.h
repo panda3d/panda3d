@@ -30,6 +30,7 @@
 #include "cycleDataStageReader.h"
 #include "cycleDataStageWriter.h"
 #include "pmutex.h"
+#include "deletedChain.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NodePathComponent
@@ -56,6 +57,7 @@ private:
 
 public:
   INLINE ~NodePathComponent();
+  ALLOC_DELETED_CHAIN(NodePathComponent);
   
   INLINE PandaNode *get_node() const;
   INLINE bool has_key() const;
@@ -85,6 +87,7 @@ private:
   public:
     INLINE CData();
     CData(const CData &copy);
+    ALLOC_DELETED_CHAIN(CData);
     virtual CycleData *make_copy() const;
     virtual TypeHandle get_parent_type() const {
       return NodePathComponent::get_class_type();

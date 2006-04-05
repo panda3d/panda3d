@@ -24,12 +24,13 @@
 ////////////////////////////////////////////////////////////////////
 INLINE MutexPosixImpl::
 MutexPosixImpl() {
+  TAU_PROFILE("MutexPosixImpl::MutexPosixImpl", " ", TAU_USER);
   pthread_mutexattr_t attr;
   pthread_mutexattr_init(&attr);
   pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
   int result = pthread_mutex_init(&_lock, &attr);
   pthread_mutexattr_destroy(&attr);
-  nassertv(result == 0);
+  assert(result == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,8 +40,9 @@ MutexPosixImpl() {
 ////////////////////////////////////////////////////////////////////
 INLINE MutexPosixImpl::
 ~MutexPosixImpl() {
+  TAU_PROFILE("MutexPosixImpl::~MutexPosixImpl", " ", TAU_USER);
   int result = pthread_mutex_destroy(&_lock);
-  nassertv(result == 0);
+  assert(result == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,8 +52,9 @@ INLINE MutexPosixImpl::
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexPosixImpl::
 lock() {
+  TAU_PROFILE("MutexPosixImpl::lock", " ", TAU_USER);
   int result = pthread_mutex_lock(&_lock);
-  nassertv(result == 0);
+  assert(result == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,8 +64,9 @@ lock() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool MutexPosixImpl::
 try_lock() {
+  TAU_PROFILE("MutexPosixImpl::try_lock", " ", TAU_USER);
   int result = pthread_mutex_trylock(&_lock);
-  nassertr(result == 0 || result == EBUSY, false);
+  assert(result == 0 || result == EBUSY);
   return (result == 0);
 }
 
@@ -73,8 +77,9 @@ try_lock() {
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexPosixImpl::
 release() {
+  TAU_PROFILE("MutexPosixImpl::release", " ", TAU_USER);
   int result = pthread_mutex_unlock(&_lock);
-  nassertv(result == 0);
+  assert(result == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,12 +89,13 @@ release() {
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutexPosixImpl::
 ReMutexPosixImpl() {
+  TAU_PROFILE("ReMutexPosixImpl::ReMutexPosixImpl", " ", TAU_USER);
   pthread_mutexattr_t attr;
   pthread_mutexattr_init(&attr);
   pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
   int result = pthread_mutex_init(&_lock, &attr);
   pthread_mutexattr_destroy(&attr);
-  nassertv(result == 0);
+  assert(result == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,8 +105,9 @@ ReMutexPosixImpl() {
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutexPosixImpl::
 ~ReMutexPosixImpl() {
+  TAU_PROFILE("ReMutexPosixImpl::~ReMutexPosixImpl", " ", TAU_USER);
   int result = pthread_mutex_destroy(&_lock);
-  nassertv(result == 0);
+  assert(result == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -110,8 +117,9 @@ INLINE ReMutexPosixImpl::
 ////////////////////////////////////////////////////////////////////
 INLINE void ReMutexPosixImpl::
 lock() {
+  TAU_PROFILE("ReMutexPosixImpl::lock", " ", TAU_USER);
   int result = pthread_mutex_lock(&_lock);
-  nassertv(result == 0);
+  assert(result == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,8 +129,9 @@ lock() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ReMutexPosixImpl::
 try_lock() {
+  TAU_PROFILE("ReMutexPosixImpl::try_lock", " ", TAU_USER);
   int result = pthread_mutex_trylock(&_lock);
-  nassertr(result == 0 || result == EBUSY, false);
+  assert(result == 0 || result == EBUSY);
   return (result == 0);
 }
 
@@ -133,6 +142,7 @@ try_lock() {
 ////////////////////////////////////////////////////////////////////
 INLINE void ReMutexPosixImpl::
 release() {
+  TAU_PROFILE("ReMutexPosixImpl::release", " ", TAU_USER);
   int result = pthread_mutex_unlock(&_lock);
-  nassertv(result == 0);
+  assert(result == 0);
 }

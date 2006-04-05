@@ -28,7 +28,7 @@
 #include <hash_set>
 #endif
 
-#ifdef NO_STYLE_ALLOCATOR
+#ifndef USE_STL_ALLOCATOR
 // If we're not using custom allocators, just use the standard class
 // definition.
 #define pset set
@@ -42,7 +42,7 @@
 #define phash_multiset multiset
 #endif  // HAVE_STL_HASH
 
-#else  // NO_STYLE_ALLOCATOR
+#else  // USE_STL_ALLOCATOR
 
 ////////////////////////////////////////////////////////////////////
 //       Class : pset
@@ -52,11 +52,57 @@
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare = less<Key> >
-class pset : public set<Key, Compare, pallocator<Key> > {
+class pset : public set<Key, Compare, pallocator_single<Key> > {
 public:
-  pset() : set<Key, Compare, pallocator<Key> >() { }
-  pset(const pset<Key, Compare> &copy) : set<Key, Compare, pallocator<Key> >(copy) { }
-  pset(const Compare &comp) : set<Key, Compare, pallocator<Key> >(comp) { }
+  typedef set<Key, Compare, pallocator_single<Key> > base_class;
+  pset() : base_class() { }
+  pset(const pset<Key, Compare> &copy) : base_class(copy) { }
+  pset(const Compare &comp) : base_class(comp) { }
+
+#ifdef USE_TAU
+  std::pair<TYPENAME base_class::iterator, bool>
+  insert(const TYPENAME base_class::value_type &x) {
+    TAU_PROFILE("pset::insert(const value_type &)", " ", TAU_USER);
+    return base_class::insert(x);
+  }
+
+  TYPENAME base_class::iterator
+  insert(TYPENAME base_class::iterator position, 
+         const TYPENAME base_class::value_type &x) {
+    TAU_PROFILE("pset::insert(iterator, const value_type &)", " ", TAU_USER);
+    return base_class::insert(position, x);
+  }
+
+  void
+  erase(TYPENAME base_class::iterator position) {
+    TAU_PROFILE("pset::erase(iterator)", " ", TAU_USER);
+    base_class::erase(position);
+  }
+
+  TYPENAME base_class::size_type
+  erase(const TYPENAME base_class::key_type &x) {
+    TAU_PROFILE("pset::erase(const key_type &)", " ", TAU_USER);
+    return base_class::erase(x);
+  }
+  
+  void
+  clear() {
+    TAU_PROFILE("pset::clear()", " ", TAU_USER);
+    base_class::clear();
+  }
+
+  TYPENAME base_class::iterator
+  find(const TYPENAME base_class::key_type &x) {
+    TAU_PROFILE("pset::find(x)", " ", TAU_USER);
+    return base_class::find(x);
+  }
+
+  TYPENAME base_class::const_iterator
+  find(const TYPENAME base_class::key_type &x) const {
+    TAU_PROFILE("pset::find(x)", " ", TAU_USER);
+    return base_class::find(x);
+  }
+#endif  // USE_TAU
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -67,11 +113,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare = less<Key> >
-class pmultiset : public multiset<Key, Compare, pallocator<Key> > {
+class pmultiset : public multiset<Key, Compare, pallocator_single<Key> > {
 public:
-  pmultiset() : multiset<Key, Compare, pallocator<Key> >() { }
-  pmultiset(const pmultiset<Key, Compare> &copy) : multiset<Key, Compare, pallocator<Key> >(copy) { }
-  pmultiset(const Compare &comp) : multiset<Key, Compare, pallocator<Key> >(comp) { }
+  pmultiset() : multiset<Key, Compare, pallocator_single<Key> >() { }
+  pmultiset(const pmultiset<Key, Compare> &copy) : multiset<Key, Compare, pallocator_single<Key> >(copy) { }
+  pmultiset(const Compare &comp) : multiset<Key, Compare, pallocator_single<Key> >(comp) { }
 };
 
 #ifdef HAVE_STL_HASH
@@ -83,11 +129,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare = method_hash<Key, less<Key> > >
-class phash_set : public hash_set<Key, Compare, pallocator<Key> > {
+class phash_set : public hash_set<Key, Compare, pallocator_single<Key> > {
 public:
-  phash_set() : hash_set<Key, Compare, pallocator<Key> >() { }
-  phash_set(const phash_set<Key, Compare> &copy) : hash_set<Key, Compare, pallocator<Key> >(copy) { }
-  phash_set(const Compare &comp) : hash_set<Key, Compare, pallocator<Key> >(comp) { }
+  phash_set() : hash_set<Key, Compare, pallocator_single<Key> >() { }
+  phash_set(const phash_set<Key, Compare> &copy) : hash_set<Key, Compare, pallocator_single<Key> >(copy) { }
+  phash_set(const Compare &comp) : hash_set<Key, Compare, pallocator_single<Key> >(comp) { }
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -98,11 +144,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare = method_hash<Key, less<Key> > >
-class phash_multiset : public hash_multiset<Key, Compare, pallocator<Key> > {
+class phash_multiset : public hash_multiset<Key, Compare, pallocator_single<Key> > {
 public:
-  phash_multiset() : hash_multiset<Key, Compare, pallocator<Key> >() { }
-  phash_multiset(const phash_multiset<Key, Compare> &copy) : hash_multiset<Key, Compare, pallocator<Key> >(copy) { }
-  phash_multiset(const Compare &comp) : hash_multiset<Key, Compare, pallocator<Key> >(comp) { }
+  phash_multiset() : hash_multiset<Key, Compare, pallocator_single<Key> >() { }
+  phash_multiset(const phash_multiset<Key, Compare> &copy) : hash_multiset<Key, Compare, pallocator_single<Key> >(copy) { }
+  phash_multiset(const Compare &comp) : hash_multiset<Key, Compare, pallocator_single<Key> >(comp) { }
 };
 
 #else // HAVE_STL_HASH
@@ -110,5 +156,5 @@ public:
 #define phash_multiset pmultiset
 #endif  // HAVE_STL_HASH
 
-#endif  // NO_STYLE_ALLOCATOR
+#endif  // USE_STL_ALLOCATOR
 #endif

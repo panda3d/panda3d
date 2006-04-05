@@ -24,7 +24,7 @@
 #include "collisionRecorder.h"
 #include "collisionVisualizer.h"
 #include "config_collide.h"
-
+#include "boundingSphere.h"
 #include "transformState.h"
 #include "geomNode.h"
 #include "geom.h"

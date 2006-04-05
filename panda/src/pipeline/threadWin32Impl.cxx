@@ -50,7 +50,7 @@ bool ThreadWin32Impl::
 start(ThreadPriority priority, bool global, bool joinable) {
   _mutex.lock();
   if (thread_cat.is_debug()) {
-    thread_cat.debug() << "Starting thread " << _parent_obj->get_name() << "\n";
+    thread_cat.debug() << "Starting " << *_parent_obj << "\n";
   }
 
   nassertd(_status == S_new && _thread == 0) {

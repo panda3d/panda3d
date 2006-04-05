@@ -21,6 +21,8 @@
 #include "eggPolygon.h"
 #include "eggCompositePrimitive.h"
 #include "eggTriangleStrip.h"
+#include "eggTriangleFan.h"
+#include "eggGroup.h"
 #include "config_egg.h"
 #include "eggGroupNode.h"
 #include "dcast.h"

@@ -41,8 +41,7 @@ ConfigVariableCore(const string &name) :
   _default_value(NULL),
   _local_value(NULL),
   _declarations_sorted(true),
-  _value_queried(false),
-  _value_seq(0)
+  _value_queried(false)
 {
 }
 
@@ -63,8 +62,7 @@ ConfigVariableCore(const ConfigVariableCore &templ, const string &name) :
   _default_value(NULL),
   _local_value(NULL),
   _declarations_sorted(false),
-  _value_queried(false),
-  _value_seq(0)
+  _value_queried(false)
 {
   if (templ._default_value != (ConfigDeclaration *)NULL) {
     set_default_value(templ._default_value->get_string_value());
@@ -244,11 +242,6 @@ make_local_value() {
     }
   }
 
-  // Assume that everytime someone asks for the local value, they're
-  // about to change it; further assume that no one changes the local
-  // value without calling this method immediately before.
-  _value_seq++;
-
   return _local_value;
 }
 
@@ -267,7 +260,6 @@ clear_local_value() {
   if (_local_value != (ConfigDeclaration *)NULL) {
     ConfigPage::get_local_page()->delete_declaration(_local_value);
     _local_value = (ConfigDeclaration *)NULL;
-    _value_seq++;
     return true;
   }
 
@@ -403,10 +395,6 @@ add_declaration(ConfigDeclaration *decl) {
   _declarations.push_back(decl);
 
   _declarations_sorted = false;
-
-  if (!has_local_value()) {
-    _value_seq++;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -429,9 +417,6 @@ remove_declaration(ConfigDeclaration *decl) {
       (*di) = (*di2);
       _declarations.erase(di2);
       _declarations_sorted = false;
-      if (!has_local_value()) {
-        _value_seq++;
-      }
       return;
     }
   }

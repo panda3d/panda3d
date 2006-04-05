@@ -42,6 +42,7 @@
 #include "pointerToArray.h"
 #include "pnotify.h"
 #include "updateSeq.h"
+#include "deletedChain.h"
 
 #ifdef HAVE_PYTHON
 
@@ -373,6 +374,7 @@ private:
     INLINE CDataLight();
     CDataLight(const CDataLight &copy);
     virtual ~CDataLight();
+    ALLOC_DELETED_CHAIN(CDataLight);
 
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
@@ -400,6 +402,7 @@ private:
     INLINE CDataHeavy();
     CDataHeavy(const CDataHeavy &copy);
     virtual ~CDataHeavy();
+    ALLOC_DELETED_CHAIN(CDataHeavy);
 
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
@@ -462,6 +465,7 @@ private:
     INLINE CDataBounds();
     CDataBounds(const CDataBounds &copy);
     virtual ~CDataBounds();
+    ALLOC_DELETED_CHAIN(CDataBounds);
 
     virtual CycleData *make_copy() const;
     virtual TypeHandle get_parent_type() const {
@@ -502,6 +506,7 @@ private:
     INLINE CDataLinks();
     CDataLinks(const CDataLinks &copy);
     virtual ~CDataLinks();
+    ALLOC_DELETED_CHAIN(CDataLinks);
 
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;

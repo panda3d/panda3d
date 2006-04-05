@@ -18,6 +18,7 @@
 
 #include "connectionWriter.h"
 #include "connectionManager.h"
+#include "datagramTCPHeader.h"
 #include "pprerror.h"
 #include "config_net.h"
 

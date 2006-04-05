@@ -25,6 +25,8 @@
 #include "conditionVar.h"
 #include "mutexHolder.h"
 #include "pointerTo.h"
+#include "referenceCount.h"
+#include "trueClock.h"
 
 #ifdef WIN32_VC
 // Under Windows, the rand() function seems to return a sequence
@@ -33,7 +35,7 @@
 static int last_rand = 0;
 #endif /* __WIN32__ */
 
-#define PRINTMSG(x) { MutexHolder l(Mutex::_notify_mutex); x; }
+#define PRINTMSG(x) { MutexHolder l(Mutex::_notify_mutex); x << flush; }
 
 Mutex rand_mutex;
 
@@ -72,7 +74,7 @@ ConditionVar room_condition(room_mutex);
 int room_occupancy = 0;
 
 class philosopher;
-PT(philosopher) phils[N_DINERS];
+PT(Thread) phils[N_DINERS];
 
 class philosopher : public Thread {
 private:
@@ -88,27 +90,25 @@ private:
     int r = l+1;
     if (r == N_DINERS)
       r = 0;
-    /*
     if (l & 1) {
       int t = l;
       l = r;
       r = t;
     }
-    */
     PRINTMSG(cerr << "Philosopher #" << _id << " has entered the room."
-             << endl);
+             << "\n");
     int count = (int)random_f(10.0) + 1;
     while (--count) {
       chopsticks[r].lock();
       Thread::sleep(1);
       chopsticks[l].lock();
       PRINTMSG(cerr << "Philosopher #" << _id
-               << " is eating spaghetti now." << endl);
+               << " is eating spaghetti now.\n");
       Thread::sleep(random_f(3.0));
       chopsticks[l].release();
       chopsticks[r].release();
       PRINTMSG(cerr << "Philosopher #" << _id
-               << " is pondering about life." << endl);
+               << " is pondering about life.\n");
       Thread::sleep(random_f(3.0));
     }
     room_mutex.lock();
@@ -117,7 +117,7 @@ private:
     room_condition.signal();
     room_mutex.release();
     PRINTMSG(cerr << "Philosopher #" << _id << " has left the room ("
-             << room_occupancy << " left)." << endl);
+             << room_occupancy << " left).\n");
   }
 
   inline void* make_arg(const int i) { return (void*)new int(i); }
@@ -131,8 +131,18 @@ public:
   }
 };
 
-int main(int, char**)
-{
+int
+main(int argc, char *argv[]) {
+  double has_run_time = false;
+  double run_time = 0.0;
+  if (argc > 1) {
+    run_time = atof(argv[1]);
+    cerr << "Running for " << run_time << " seconds\n";
+    has_run_time = true;
+  } else {
+    cerr << "Running indefinitely\n";
+  }
+
   int i;
   room_mutex.lock();
   for (i=0; i<N_DINERS; ++i) {
@@ -143,32 +153,41 @@ int main(int, char**)
     phils[i]->start(TP_normal, false, false);
   }
   room_occupancy = N_DINERS;
-  while (1) {
+
+  TrueClock *clock = TrueClock::get_global_ptr();
+  double start_time = clock->get_short_time();
+  double end_time = start_time + run_time;
+
+  while (!has_run_time || clock->get_short_time() < end_time) {
     while (room_occupancy == N_DINERS) {
       PRINTMSG(cerr << "main thread about to block " << room_occupancy
-               << endl);
+               << "\n");
       room_condition.wait();
     }
     // hmm.. someone left the room.
     room_mutex.release();
     // sleep for a while and then create a new philosopher
-    PRINTMSG(cerr << "main thread sleep" << endl);
+    PRINTMSG(cerr << "main thread sleep\n");
     Thread::sleep(2.0);
-    PRINTMSG(cerr << "main thread wake up" << endl);
+    PRINTMSG(cerr << "main thread wake up\n");
     room_mutex.lock();
     for (i=0; i<N_DINERS; ++i)
       if (phils[i] == (philosopher*)0L)
         break;
-    if (i == N_DINERS) {
-      PRINTMSG(cerr
-               << "Contrary to what I was told, no one has left the room!!!"
-               << endl);
-      PRINTMSG(cerr << "I give up!" << endl);
-      Thread::prepare_for_exit();
-      exit(1);
-    }
+    assert(i != N_DINERS);
     phils[i] = new philosopher(i);
     phils[i]->start(TP_normal, false, false);
     ++room_occupancy;
   }
+
+  PRINTMSG(cerr << "Waiting for philosophers to finish\n");
+
+  while (room_occupancy != 0) {
+    room_condition.wait();
+  }  
+
+  room_mutex.release();
+
+  cerr << "Exiting.\n";
+  return 0;
 }

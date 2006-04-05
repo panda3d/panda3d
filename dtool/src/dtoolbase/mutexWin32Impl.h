@@ -1,4 +1,4 @@
-// Filename: atomicAdjustWin32Impl.h
+// Filename: mutexWin32Impl.h
 // Created by:  drose (07Feb06)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,33 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef ATOMICADJUSTWIN32IMPL_H
-#define ATOMICADJUSTWIN32IMPL_H
+#ifndef MUTEXWIN32IMPL_H
+#define MUTEXWIN32IMPL_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
 #ifdef THREAD_WIN32_IMPL
 
-#include "pnotify.h"
-#include "numeric_types.h"
-
 #include <windows.h>
 
+#define MUTEX_DEFINES_TRYLOCK 1
+
 ////////////////////////////////////////////////////////////////////
-//       Class : AtomicAdjustWin32Impl
-// Description : Uses Windows native calls to implement atomic
-//               adjustments.
+//       Class : MutexWin32Impl
+// Description : Uses Windows native calls to implement a mutex.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS AtomicAdjustWin32Impl {
+class EXPCL_DTOOL MutexWin32Impl {
 public:
-  INLINE static PN_int32 inc(PN_int32 &var);
-  INLINE static PN_int32 dec(PN_int32 &var);
-  INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
-  INLINE static PN_int32 get(const PN_int32 &var);
+  INLINE MutexWin32Impl();
+  INLINE ~MutexWin32Impl();
+
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void release();
+
+private:
+  CRITICAL_SECTION _lock;
+  friend class ConditionVarWin32Impl;
 };
 
-#include "atomicAdjustWin32Impl.I"
+#include "mutexWin32Impl.I"
 
 #endif  // THREAD_WIN32_IMPL
 

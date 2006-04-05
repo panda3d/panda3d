@@ -43,6 +43,8 @@ extern ConfigVariableBool compose_componentwise;
 extern ConfigVariableBool uniquify_matrix;
 extern ConfigVariableBool paranoid_const;
 extern ConfigVariableBool auto_break_cycles;
+extern ConfigVariableBool transform_cache;
+extern ConfigVariableBool state_cache;
 extern ConfigVariableInt max_collect_vertices;
 extern ConfigVariableInt max_collect_indices;
 

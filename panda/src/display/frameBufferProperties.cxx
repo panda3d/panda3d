@@ -19,6 +19,7 @@
 #include "frameBufferProperties.h"
 #include "string_utils.h"
 #include "renderBuffer.h"
+#include "config_display.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::Constructor

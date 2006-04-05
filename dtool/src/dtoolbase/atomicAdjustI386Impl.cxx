@@ -1,5 +1,5 @@
-// Filename: atomicAdjust.cxx
-// Created by:  drose (09Aug02)
+// Filename: atomicAdjustI386Impl.cxx
+// Created by:  drose (28Mar06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,4 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "atomicAdjust.h"
+#include "selectThreadImpl.h"
+
+#ifdef __i386__
+
+#include "atomicAdjustI386Impl.h"
+
+#endif  // __i386__

@@ -20,8 +20,10 @@
 #define PGITEMNOTIFY_H
 
 #include "pandabase.h"
+#include "pset.h"
 
 class PGItem;
+class MouseWatcherParameter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGItemNotify

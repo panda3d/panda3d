@@ -22,6 +22,7 @@
 #include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
+#include "collisionEntry.h"
 #include "boundingSphere.h"
 #include "datagram.h"
 #include "datagramIterator.h"

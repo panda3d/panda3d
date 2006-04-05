@@ -47,6 +47,10 @@ PUBLISHED:
 
   INLINE bool get_word(int n) const;
   INLINE void set_word(int n, bool value);
+
+private:
+  PN_int32 _local_modified;
+  bool _cache;
 };
 
 #include "configVariableBool.I"

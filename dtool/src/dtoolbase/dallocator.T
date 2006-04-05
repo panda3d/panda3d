@@ -16,46 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(OLD_STYLE_ALLOCATOR)
-
-template<class Type>
-INLINE Type *dallocator<Type>::
-allocate(size_t n) {
-  return (Type *)default_operator_new(n);
-}
-
-template<class Type>
-INLINE void dallocator<Type>::
-deallocate(void *p, size_t) {
-  default_operator_delete(p);
-}
-
-#elif defined(GNU_STYLE_ALLOCATOR)
-
-template<class Type>
-INLINE dallocator<Type>::
-dallocator() {
-}
-
-template<class Type>
-template<class _Tp1>
-INLINE dallocator<Type>::
-dallocator(const dallocator<_Tp1> &) {
-}
-
-template<class Type>
-INLINE Type *dallocator<Type>::
-allocate(size_t n) {
-  return (Type *)default_operator_new(n * sizeof(Type));
-}
-
-template<class Type>
-INLINE void dallocator<Type>::
-deallocate(void *p, size_t) {
-  default_operator_delete(p);
-}
-
-#elif MODERN_STYLE_ALLOCATOR
 
 template<class Type>
 INLINE dallocator<Type>::
@@ -73,5 +33,3 @@ INLINE void dallocator<Type>::
 deallocate(TYPENAME dallocator<Type>::pointer p, TYPENAME dallocator<Type>::size_type) {
   (*global_operator_delete)(p);
 }
-
-#endif  // *_STYLE_ALLOCATOR

@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+class FLOATNAME(LRotation);
+
 ////////////////////////////////////////////////////////////////////////
 //       Class : LOrientation
 // Description : This is a unit quaternion representing an orientation.
@@ -30,10 +32,10 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LOrientation)(const FLOATNAME(LMatrix4) &);
 
   INLINE_LINMATH FLOATNAME(LOrientation)
-  operator *(const FLOATNAME(LRotation)& other) const;
+  operator * (const FLOATNAME(LRotation) &other) const;
 
   INLINE_LINMATH FLOATNAME(LOrientation)
-  operator *(const FLOATNAME(LQuaternion)& other) const;
+  operator * (const FLOATNAME(LQuaternion) &other) const;
 
 public:
   static TypeHandle get_class_type() {

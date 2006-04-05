@@ -9,11 +9,6 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES \
-    atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I atomicAdjust.h \
-    atomicAdjust.I atomicAdjustImpl.h \
-    atomicAdjustNsprImpl.h atomicAdjustNsprImpl.I \
-    atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I \
-    atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
     bigEndian.h buffer.I buffer.h \
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
     circBuffer.h \
@@ -35,7 +30,6 @@
     multifile.I multifile.h \
     namable.I \
     namable.h nativeNumericData.I nativeNumericData.h \
-    numeric_types.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \
     patchfile.I patchfile.h \
@@ -71,10 +65,6 @@
     zStream.I zStream.h zStreamBuf.h
 
   #define INCLUDED_SOURCES  \
-    atomicAdjust.cxx atomicAdjustDummyImpl.cxx \
-    atomicAdjustNsprImpl.cxx \
-    atomicAdjustPosixImpl.cxx \
-    atomicAdjustWin32Impl.cxx \
     buffer.cxx checksumHashGenerator.cxx \
     config_express.cxx \
     datagram.cxx datagramGenerator.cxx \
@@ -119,11 +109,6 @@
     zStream.cxx zStreamBuf.cxx
 
   #define INSTALL_HEADERS  \
-    atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I atomicAdjust.h \
-    atomicAdjust.I atomicAdjustImpl.h \
-    atomicAdjustNsprImpl.h atomicAdjustNsprImpl.I \
-    atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I \
-    atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
     bigEndian.h buffer.I buffer.h \
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
     circBuffer.h \
@@ -145,7 +130,6 @@
     multifile.I multifile.h \
     namable.I \
     namable.h nativeNumericData.I nativeNumericData.h \
-    numeric_types.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \
     patchfile.I patchfile.h \

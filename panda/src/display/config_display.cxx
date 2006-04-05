@@ -61,6 +61,15 @@ ConfigVariableString threading_model
           "a 3-stage pipeline.  See GraphicsEngine::set_threading_model(). "
           "EXPERIMENTAL and incomplete, do not use this!"));
 
+ConfigVariableBool allow_nonpipeline_threads
+("allow-nonpipeline-threads", false,
+ PRC_DESC("This variable should only be set true for debugging or development "
+          "purposes.  When true, the threading-model variable may specify "
+          "a threaded pipeline mode, even if pipelining is not compiled in.  "
+          "This will certainly result in erroneous behavior, and quite likely "
+          "will cause a crash.  Do not set this unless you know what you "
+          "are doing."));
+
 ConfigVariableBool auto_flip
 ("auto-flip", false,
  PRC_DESC("This indicates the initial setting of the auto-flip flag.  Set it "

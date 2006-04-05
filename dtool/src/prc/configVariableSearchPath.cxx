@@ -20,20 +20,6 @@
 #include "executionEnvironment.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::get_value
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-const DSearchPath &ConfigVariableSearchPath::
-get_value() const {
-  nassertr(_core != (ConfigVariableCore *)NULL, _value);
-  if (_value_stale || _value_seq != _core->get_value_seq()) {
-    ((ConfigVariableSearchPath *)this)->reload_search_path();
-  }
-  return _value;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableSearchPath::reload_search_path
 //       Access: Private
 //  Description: Recopies the config variable into the search path for
@@ -42,9 +28,10 @@ get_value() const {
 void ConfigVariableSearchPath::
 reload_search_path() {
   nassertv(_core != (ConfigVariableCore *)NULL);
-  _value.clear();
+  mark_cache_valid(_local_modified);
+  _cache.clear();
 
-  _value.append_path(_prefix);
+  _cache.append_path(_prefix);
   int num_unique_references = _core->get_num_unique_references();
   for (int i = 0; i < num_unique_references; i++) {
     const ConfigDeclaration *decl = _core->get_unique_reference(i);
@@ -56,16 +43,13 @@ reload_search_path() {
     string expanded = ExecutionEnvironment::expand_string(decl->get_string_value());
     ExecutionEnvironment::clear_shadow("THIS_PRC_DIR");
     if (!expanded.empty()) {
-      _value.append_directory(Filename::from_os_specific(expanded));
+      _cache.append_directory(Filename::from_os_specific(expanded));
     }
   }
-  _value.append_path(_postfix);
+  _cache.append_path(_postfix);
 
-  if (_value.is_empty()) {
+  if (_cache.is_empty()) {
     // An empty search path implicitly has "." on it.
-    _value.append_directory(".");
+    _cache.append_directory(".");
   }
-
-  _value_seq = _core->get_value_seq();
-  _value_stale = false;
 }

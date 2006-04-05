@@ -52,6 +52,10 @@ PUBLISHED:
 
 private:
   void set_default_value(double default_value);
+
+private:
+  PN_int32 _local_modified;
+  double _cache;
 };
 
 #include "configVariableDouble.I"

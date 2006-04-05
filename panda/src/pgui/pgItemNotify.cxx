@@ -69,7 +69,7 @@ item_draw_mask_changed(PGItem *) {
 //     Function: PGItemNotify::item_enter
 //       Access: Protected, Virtual
 //  Description: Called whenever the "enter" event is triggered on a
-//               watched PGItem.  See PGItem::enter().
+//               watched PGItem.  See PGItem::enter_region().
 ////////////////////////////////////////////////////////////////////
 void PGItemNotify::
 item_enter(PGItem *, const MouseWatcherParameter &) {
@@ -79,7 +79,7 @@ item_enter(PGItem *, const MouseWatcherParameter &) {
 //     Function: PGItemNotify::item_exit
 //       Access: Protected, Virtual
 //  Description: Called whenever the "exit" event is triggered on a
-//               watched PGItem.  See PGItem::exit().
+//               watched PGItem.  See PGItem::exit_region().
 ////////////////////////////////////////////////////////////////////
 void PGItemNotify::
 item_exit(PGItem *, const MouseWatcherParameter &) {
@@ -89,7 +89,7 @@ item_exit(PGItem *, const MouseWatcherParameter &) {
 //     Function: PGItemNotify::item_within
 //       Access: Protected, Virtual
 //  Description: Called whenever the "within" event is triggered on a
-//               watched PGItem.  See PGItem::within().
+//               watched PGItem.  See PGItem::within_region().
 ////////////////////////////////////////////////////////////////////
 void PGItemNotify::
 item_within(PGItem *, const MouseWatcherParameter &) {
@@ -99,7 +99,7 @@ item_within(PGItem *, const MouseWatcherParameter &) {
 //     Function: PGItemNotify::item_without
 //       Access: Protected, Virtual
 //  Description: Called whenever the "without" event is triggered on a
-//               watched PGItem.  See PGItem::without().
+//               watched PGItem.  See PGItem::without_region().
 ////////////////////////////////////////////////////////////////////
 void PGItemNotify::
 item_without(PGItem *, const MouseWatcherParameter &) {

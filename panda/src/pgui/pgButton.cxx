@@ -76,31 +76,31 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGButton::enter
+//     Function: PGButton::enter_region
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
 //               mouse enters the region.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-enter(const MouseWatcherParameter &param) {
+enter_region(const MouseWatcherParameter &param) {
   if (get_active()) {
     set_state(_button_down ? S_depressed : S_rollover);
   }
-  PGItem::enter(param);
+  PGItem::enter_region(param);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGButton::exit
+//     Function: PGButton::exit_region
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
 //               mouse exits the region.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-exit(const MouseWatcherParameter &param) {
+exit_region(const MouseWatcherParameter &param) {
   if (get_active()) {
     set_state(S_ready);
   }
-  PGItem::exit(param);
+  PGItem::exit_region(param);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "memoryInfo.h"
+
 #ifdef DO_MEMORY_USAGE
 
-#include "memoryInfo.h"
 #include "typedReferenceCount.h"
 #include "typeHandle.h"
 

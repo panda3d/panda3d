@@ -18,6 +18,7 @@
 
 #include "conditionVarDebug.h"
 #include "thread.h"
+#include "config_pipeline.h"
 
 #ifdef DEBUG_THREADS
 
@@ -85,10 +86,20 @@ wait() {
     _mutex._global_mutex.release();
     return;
   }
+
+  if (thread_cat.is_spam()) {
+    thread_cat.spam()
+      << *Thread::get_current_thread() << " waiting on " << *this << "\n";
+  }
   
   _mutex.do_release();
   _impl.wait();
   _mutex.do_lock();
+
+  if (thread_cat.is_spam()) {
+    thread_cat.spam()
+      << *Thread::get_current_thread() << " awake on " << *this << "\n";
+  }
 
   _mutex._global_mutex.release();
 }
@@ -121,6 +132,11 @@ signal() {
     return;
   }
 
+  if (thread_cat.is_spam()) {
+    thread_cat.spam()
+      << *Thread::get_current_thread() << " signalling " << *this << "\n";
+  }
+
   _impl.signal();
   _mutex._global_mutex.release();
 }
@@ -133,7 +149,7 @@ signal() {
 ////////////////////////////////////////////////////////////////////
 void ConditionVarDebug::
 output(ostream &out) const {
-  out << "ConditionVar " << (void *)this;
+  out << "ConditionVar " << (void *)this << " on " << _mutex;
 }
 
 #endif  // DEBUG_THREADS

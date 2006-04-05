@@ -84,6 +84,7 @@ set_string_word(int n, const string &value) {
     _string_value += (*wi)._str;
     ++wi;
   }
+  invalidate_cache();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,6 +103,7 @@ set_bool_word(int n, bool value) {
 
   _words[n]._flags |= (F_checked_bool | F_valid_bool);
   _words[n]._bool = value;
+  invalidate_cache();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,6 +120,7 @@ set_int_word(int n, int value) {
 
   _words[n]._flags |= (F_checked_int | F_valid_int);
   _words[n]._int = value;
+  invalidate_cache();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,6 +137,7 @@ set_double_word(int n, double value) {
 
   _words[n]._flags |= (F_checked_double | F_valid_double);
   _words[n]._double = value;
+  invalidate_cache();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -20,7 +20,7 @@
 #include "collisionNode.h"
 #include "collisionEntry.h"
 #include "config_collide.h"
-
+#include "collisionPlane.h"
 #include "clockObject.h"
 
 TypeHandle CollisionHandlerGravity::_type_handle;

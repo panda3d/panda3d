@@ -164,6 +164,19 @@ ConfigVariableBool auto_break_cycles
           "is false, you must explicitly call TransformState.clear_cache() "
           "from time to time to prevent gradual memory bloat."));
 
+ConfigVariableBool transform_cache
+("transform-cache", true,
+ PRC_DESC("Set this true to enable the cache of TransformState objects.  "
+          "Using the cache saves time computing transforms and inverse "
+          "transforms, but imposes some overhead for maintaining the "
+          "cache itself."));
+
+ConfigVariableBool state_cache
+("state-cache", true,
+ PRC_DESC("Set this true to enable the cache of RenderState objects, "
+          "similar to the TransformState cache controlled via "
+          "transform-cache."));
+
 ConfigVariableInt max_collect_vertices
 ("max-collect-vertices", 1024,
  PRC_DESC("Specifies the maximum number of vertices that are allowed to be "

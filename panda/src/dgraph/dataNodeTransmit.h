@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "eventParameter.h"
 #include "typedWritable.h"
+#include "deletedChain.h"
 
 class Datagram;
 class DatagramIterator;
@@ -41,6 +42,7 @@ public:
   INLINE DataNodeTransmit(const DataNodeTransmit &copy);
   INLINE void operator = (const DataNodeTransmit &copy);
   virtual ~DataNodeTransmit();
+  ALLOC_DELETED_CHAIN(DataNodeTransmit);
 
   INLINE void reserve(int num_wires);
 

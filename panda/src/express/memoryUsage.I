@@ -30,8 +30,6 @@ get_track_memory_usage() {
   return get_global_ptr()->_track_memory_usage;
 }
 
-#ifndef __GNUC__
-
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::record_pointer
 //       Access: Public, Static
@@ -82,8 +80,6 @@ INLINE void MemoryUsage::
 remove_pointer(ReferenceCount *ptr) {
   get_global_ptr()->ns_remove_pointer(ptr);
 }
-
-#endif  // __GNUC__
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::is_tracking

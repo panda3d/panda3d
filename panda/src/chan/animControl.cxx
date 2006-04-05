@@ -20,6 +20,7 @@
 #include "animChannelBase.h"
 #include "partBundle.h"
 #include "config_chan.h"
+#include "dcast.h"
 
 TypeHandle AnimControl::_type_handle;
 

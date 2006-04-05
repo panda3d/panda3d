@@ -96,7 +96,7 @@
     material.cxx  \
     internalName.cxx \
     materialPool.cxx matrixLens.cxx \
-    occlusionQuery.cxx \
+    occlusionQueryContext.cxx \
     orthographicLens.cxx  \
     perspectiveLens.cxx \
     preparedGraphicsObjects.cxx \

@@ -22,6 +22,7 @@
 // within OpenSSL.
 #ifdef HAVE_OPENSSL
 
+#include "pnotify.h"
 #include "openssl/evp.h"
 
 ////////////////////////////////////////////////////////////////////

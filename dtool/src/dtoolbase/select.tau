@@ -1,0 +1,4 @@
+BEGIN_EXCLUDE_LIST
+void *default_operator_new#
+void default_operator_delete#
+END_EXCLUDE_LIST

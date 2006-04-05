@@ -1,8 +1,3 @@
-#include "atomicAdjust.cxx"
-#include "atomicAdjustDummyImpl.cxx"
-#include "atomicAdjustNsprImpl.cxx"
-#include "atomicAdjustPosixImpl.cxx"
-#include "atomicAdjustWin32Impl.cxx"
 #include "buffer.cxx"
 #include "checksumHashGenerator.cxx"
 #include "config_express.cxx"

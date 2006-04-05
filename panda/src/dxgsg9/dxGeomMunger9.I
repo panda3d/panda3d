@@ -33,15 +33,3 @@ DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGeomMunger9::operator new
-//       Access: Public
-//  Description: Calls up to do_operator_new() to implement the
-//               low-overhead allocation/deallocation for this type of
-//               GeomMunger.
-////////////////////////////////////////////////////////////////////
-INLINE void *DXGeomMunger9::
-operator new(size_t size) {
-  return do_operator_new(size, &_deleted_chain);
-}
-

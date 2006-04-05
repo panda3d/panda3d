@@ -28,6 +28,7 @@ compose_matrix_old_hpr(FLOATNAME(LMatrix3) &mat,
                        const FLOATNAME(LVecBase3) &shear,
                        const FLOATNAME(LVecBase3) &hpr,
                        CoordinateSystem cs) {
+  TAU_PROFILE("void compose_matrix_old_hpr(LMatrix3 &, const LVecBase3 &, const LVecBase3 &, const LVecBase3 &)", " ", TAU_USER);
   mat = 
     FLOATNAME(LMatrix3)::scale_shear_mat(scale, shear, cs) *
     FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[1], FLOATNAME(LVector3)::right(cs), cs) *
@@ -46,6 +47,7 @@ compose_matrix_old_hpr(FLOATNAME(LMatrix3) &mat,
 ////////////////////////////////////////////////////////////////////
 static void
 unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
+  TAU_PROFILE("void unwind_yup_rotation_old_hpr(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
 
   typedef FLOATNAME(LMatrix3) Matrix;
 
@@ -126,6 +128,7 @@ unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
 ////////////////////////////////////////////////////////////////////
 static void
 unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
+  TAU_PROFILE("void unwind_zup_rotation_old_hpr(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
   typedef FLOATNAME(LMatrix3) Matrix;
   
   // Extract the axes from the matrix.
@@ -217,6 +220,7 @@ decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
                          FLOATNAME(LVecBase3) &shear,
                          FLOATNAME(LVecBase3) &hpr,
                          CoordinateSystem cs) {
+  TAU_PROFILE("bool decompose_matrix_old_hpr(LMatrix3 &, LVecBase3 &, LVecBase3 &, LVecBase3 &)", " ", TAU_USER);
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
   }
@@ -323,6 +327,7 @@ compose_matrix_new_hpr(FLOATNAME(LMatrix3) &mat,
                        const FLOATNAME(LVecBase3) &shear,
                        const FLOATNAME(LVecBase3) &hpr,
                        CoordinateSystem cs) {
+  TAU_PROFILE("void compose_matrix_new_hpr(LMatrix3 &, const LVecBase3 &, const LVecBase3 &, const LVecBase3 &)", " ", TAU_USER);
   mat =
     FLOATNAME(LMatrix3)::scale_shear_mat(scale, shear, cs) *
     FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[2], FLOATNAME(LVector3)::forward(cs), cs) *
@@ -341,6 +346,7 @@ compose_matrix_new_hpr(FLOATNAME(LMatrix3) &mat,
 ////////////////////////////////////////////////////////////////////
 static void
 unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
+  TAU_PROFILE("void unwind_yup_rotation_new_hpr(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
 
   typedef FLOATNAME(LMatrix3) Matrix;
 
@@ -421,6 +427,7 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
 ////////////////////////////////////////////////////////////////////
 static void
 unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
+  TAU_PROFILE("void unwind_zup_rotation_new_hpr(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
   typedef FLOATNAME(LMatrix3) Matrix;
 
   // Extract the axes from the matrix.
@@ -503,6 +510,7 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
                          FLOATNAME(LVecBase3) &shear,
                          FLOATNAME(LVecBase3) &hpr,
                          CoordinateSystem cs) {
+  TAU_PROFILE("bool decompose_matrix_new_hpr(LMatrix3 &, LVecBase3 &, LVecBase3 &, LVecBase3 &)", " ", TAU_USER);
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
   }
@@ -610,6 +618,7 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
 ////////////////////////////////////////////////////////////////////
 FLOATNAME(LVecBase3)
 old_to_new_hpr(const FLOATNAME(LVecBase3) &old_hpr) {
+  TAU_PROFILE("LVecBase3 old_to_new_hpr(const LVecBase3 &)", " ", TAU_USER);
   FLOATNAME(LMatrix3) mat;
   compose_matrix_old_hpr(mat, 
                          FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f),
@@ -636,6 +645,7 @@ old_to_new_hpr(const FLOATNAME(LVecBase3) &old_hpr) {
 ////////////////////////////////////////////////////////////////////
 FLOATNAME(LVecBase3)
 new_to_old_hpr(const FLOATNAME(LVecBase3) &new_hpr) {
+  TAU_PROFILE("LVecBase3 new_to_old_hpr(const LVecBase3 &)", " ", TAU_USER);
   FLOATNAME(LMatrix3) mat;
   compose_matrix_new_hpr(mat, 
                          FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f),

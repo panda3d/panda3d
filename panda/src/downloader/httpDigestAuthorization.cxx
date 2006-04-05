@@ -20,6 +20,7 @@
 
 #ifdef HAVE_OPENSSL
 
+#include "httpChannel.h"
 #include "openssl/ssl.h"
 #include "openssl/md5.h"
 #include <time.h>

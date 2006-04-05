@@ -26,6 +26,8 @@
 #include "geomVertexWriter.h"
 #include "geomVertexReader.h"
 #include "geomVertexRewriter.h"
+#include "config_distort.h"
+#include "cullTraverserData.h"
 
 TypeHandle ProjectionScreen::_type_handle;
 

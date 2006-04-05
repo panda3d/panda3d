@@ -51,7 +51,7 @@ PUBLISHED:
   INLINE ~ConfigVariableSearchPath();
 
   INLINE operator const DSearchPath & () const;
-  const DSearchPath &get_value() const;
+  INLINE const DSearchPath &get_value() const;
 
   INLINE bool clear_local_value();
 
@@ -77,11 +77,10 @@ PUBLISHED:
 private:
   void reload_search_path();
 
-  int _value_seq;
-  bool _value_stale;
-
-  DSearchPath _value;
   DSearchPath _prefix, _postfix;
+
+  PN_int32 _local_modified;
+  DSearchPath _cache;
 };
 
 INLINE ostream &operator << (ostream &out, const ConfigVariableSearchPath &variable);

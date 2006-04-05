@@ -32,15 +32,3 @@ DXGeomMunger8(GraphicsStateGuardian *gsg, const RenderState *state) :
     _texture = _texture->filter_to_max(gsg->get_max_texture_stages());
   }
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGeomMunger8::operator new
-//       Access: Public
-//  Description: Calls up to do_operator_new() to implement the
-//               low-overhead allocation/deallocation for this type of
-//               GeomMunger.
-////////////////////////////////////////////////////////////////////
-INLINE void *DXGeomMunger8::
-operator new(size_t size) {
-  return do_operator_new(size, &_deleted_chain);
-}

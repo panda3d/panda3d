@@ -54,6 +54,10 @@ PUBLISHED:
 
   INLINE string get_word(int n) const;
   INLINE void set_word(int n, const string &value);
+
+private:
+  PN_int32 _local_modified;
+  string _cache;
 };
 
 #include "configVariableString.I"

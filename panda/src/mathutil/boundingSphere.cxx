@@ -19,6 +19,7 @@
 #include "boundingSphere.h"
 #include "boundingHexahedron.h"
 #include "boundingLine.h"
+#include "boundingPlane.h"
 #include "config_mathutil.h"
 #include "dcast.h"
 

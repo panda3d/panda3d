@@ -33,6 +33,7 @@ FLOATNAME(LVecBase2)() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2)::
 FLOATNAME(LVecBase2)(const FLOATNAME(LVecBase2) &copy) {
+  TAU_PROFILE("LVecBase2::LVecBase2(LVecBase2 &)", " ", TAU_USER);
   _v.v._0 = copy._v.v._0;
   _v.v._1 = copy._v.v._1;
 //  (*this) = copy;
@@ -45,6 +46,7 @@ FLOATNAME(LVecBase2)(const FLOATNAME(LVecBase2) &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) &FLOATNAME(LVecBase2)::
 operator = (const FLOATNAME(LVecBase2) &copy) {
+  TAU_PROFILE("void LVecBase2::operator = (LVecBase2 &)", " ", TAU_USER);
   _v.v._0 = copy._v.v._0;
   _v.v._1 = copy._v.v._1;
 //  set(copy[0], copy[1]);
@@ -79,6 +81,7 @@ FLOATNAME(LVecBase2)(FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2)::
 FLOATNAME(LVecBase2)(FLOATTYPE x, FLOATTYPE y) {
+  TAU_PROFILE("void LVecBase2::operator = (FLOATTYPE, ...)", " ", TAU_USER);
   _v.v._0 = x;
   _v.v._1 = y;
 //  set(x, y);
@@ -153,6 +156,7 @@ operator [](int i) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase2)::
 is_nan() const {
+  TAU_PROFILE("bool LVecBase2::is_nan()", " ", TAU_USER);
   return cnan(_v.v._0) || cnan(_v.v._1);
 }
 
@@ -324,6 +328,7 @@ end() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
 fill(FLOATTYPE fill_value) {
+  TAU_PROFILE("void LVecBase2::fill()", " ", TAU_USER);
   _v.v._0 = fill_value;
   _v.v._1 = fill_value;
 }
@@ -335,6 +340,7 @@ fill(FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
 set(FLOATTYPE x, FLOATTYPE y) {
+  TAU_PROFILE("void LVecBase2::set()", " ", TAU_USER);
   _v.v._0 = x;
   _v.v._1 = y;
 }
@@ -346,6 +352,7 @@ set(FLOATTYPE x, FLOATTYPE y) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase2)::
 dot(const FLOATNAME(LVecBase2) &other) const {
+  TAU_PROFILE("FLOATTYPE LVecBase2::dot()", " ", TAU_USER);
   return _v.v._0 * other._v.v._0 + _v.v._1 * other._v.v._1;
 }
 
@@ -360,6 +367,7 @@ dot(const FLOATNAME(LVecBase2) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase2)::
 operator < (const FLOATNAME(LVecBase2) &other) const {
+  TAU_PROFILE("bool LVecBase2::operator <(const LVecBase2 &)", " ", TAU_USER);
   return (compare_to(other) < 0);
 }
 
@@ -370,6 +378,7 @@ operator < (const FLOATNAME(LVecBase2) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase2)::
 operator == (const FLOATNAME(LVecBase2) &other) const {
+  TAU_PROFILE("bool LVecBase2::operator ==(const LVecBase2 &)", " ", TAU_USER);
   return (_v.v._0 == other._v.v._0 &&
           _v.v._1 == other._v.v._1);
 }
@@ -392,6 +401,7 @@ operator != (const FLOATNAME(LVecBase2) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH int FLOATNAME(LVecBase2)::
 compare_to(const FLOATNAME(LVecBase2) &other) const {
+  TAU_PROFILE("int LVecBase2::compare_to(const LVecBase2 &)", " ", TAU_USER);
   return compare_to(other, NEARLY_ZERO(FLOATTYPE));
 }
 
@@ -406,6 +416,7 @@ compare_to(const FLOATNAME(LVecBase2) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH int FLOATNAME(LVecBase2)::
 compare_to(const FLOATNAME(LVecBase2) &other, FLOATTYPE threshold) const {
+  TAU_PROFILE("int LVecBase2::compare_to(const LVecBase2 &, FLOATTYPE)", " ", TAU_USER);
   if (!IS_THRESHOLD_COMPEQ(_v.v._0, other._v.v._0, threshold)) {
     return (_v.v._0 < other._v.v._0) ? -1 : 1;
   }
@@ -422,6 +433,7 @@ compare_to(const FLOATNAME(LVecBase2) &other, FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase2)::
 get_hash() const {
+  TAU_PROFILE("size_t LVecBase2::get_hash()", " ", TAU_USER);
   return add_hash(0);
 }
 
@@ -432,6 +444,7 @@ get_hash() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase2)::
 get_hash(FLOATTYPE threshold) const {
+  TAU_PROFILE("size_t LVecBase2::get_hash(FLOATTYPE)", " ", TAU_USER);
   return add_hash(0, threshold);
 }
 
@@ -442,6 +455,7 @@ get_hash(FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase2)::
 add_hash(size_t hash) const {
+  TAU_PROFILE("size_t LVecBase2::add_hash(size_t)", " ", TAU_USER);
   return add_hash(hash, NEARLY_ZERO(FLOATTYPE));
 }
 
@@ -452,6 +466,7 @@ add_hash(size_t hash) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase2)::
 add_hash(size_t hash, FLOATTYPE threshold) const {
+  TAU_PROFILE("LVecBase2::add_hash(size_t, FLOATTYPE)", " ", TAU_USER);
   float_hash fhasher(threshold);
   hash = fhasher.add_hash(hash, _v.v._0);
   hash = fhasher.add_hash(hash, _v.v._1);
@@ -565,6 +580,7 @@ operator /= (FLOATTYPE scalar) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
 fmax(const FLOATNAME(LVecBase2) &other) {
+  TAU_PROFILE("LVecBase2::fmax()", " ", TAU_USER);
   return FLOATNAME(LVecBase2)(_v.v._0 > other._v.v._0 ? _v.v._0 : other._v.v._0,
                               _v.v._1 > other._v.v._1 ? _v.v._1 : other._v.v._1);
 }
@@ -576,6 +592,7 @@ fmax(const FLOATNAME(LVecBase2) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
 fmin(const FLOATNAME(LVecBase2) &other) {
+  TAU_PROFILE("LVecBase2::fmin()", " ", TAU_USER);
   return FLOATNAME(LVecBase2)(_v.v._0 < other._v.v._0 ? _v.v._0 : other._v.v._0,
                               _v.v._1 < other._v.v._1 ? _v.v._1 : other._v.v._1);
 }
@@ -588,6 +605,7 @@ fmin(const FLOATNAME(LVecBase2) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase2)::
 almost_equal(const FLOATNAME(LVecBase2) &other, FLOATTYPE threshold) const {
+  TAU_PROFILE("bool LVecBase2::almost_equal(LVecBase2 &, FLOATTYPE)", " ", TAU_USER);
   return (IS_THRESHOLD_EQUAL(_v.v._0, other._v.v._0, threshold) &&
           IS_THRESHOLD_EQUAL(_v.v._1, other._v.v._1, threshold));
 }
@@ -600,6 +618,7 @@ almost_equal(const FLOATNAME(LVecBase2) &other, FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase2)::
 almost_equal(const FLOATNAME(LVecBase2) &other) const {
+  TAU_PROFILE("bool LVecBase2::almost_equal(LVecBase2 &)", " ", TAU_USER);
   return almost_equal(other, NEARLY_ZERO(FLOATTYPE));
 }
 

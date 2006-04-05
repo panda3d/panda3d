@@ -1,5 +1,5 @@
-// Filename: atomicAdjustPosixImpl.h
-// Created by:  drose (10Feb06)
+// Filename: mutexLinuxImpl.h
+// Created by:  drose (28Mar06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,36 +16,43 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef ATOMICADJUSTPOSIXIMPL_H
-#define ATOMICADJUSTPOSIXIMPL_H
+#ifndef MUTEXLINUXIMPL_H
+#define MUTEXLINUXIMPL_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_POSIX_IMPL
+#ifdef THREAD_LINUX_IMPL
 
-#include "pnotify.h"
 #include "numeric_types.h"
 
-#include <pthread.h>
+#undef MUTEX_DEFINES_TRYLOCK
 
 ////////////////////////////////////////////////////////////////////
-//       Class : AtomicAdjustPosixImpl
-// Description : Uses POSIX to implement atomic adjustments.
+//       Class : MutexLinuxImpl
+// Description : Uses Linux threads to implement a mutex.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS AtomicAdjustPosixImpl {
+class EXPCL_DTOOL MutexLinuxImpl {
 public:
-  INLINE static PN_int32 inc(PN_int32 &var);
-  INLINE static PN_int32 dec(PN_int32 &var);
-  INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
-  INLINE static PN_int32 get(const PN_int32 &var);
+  INLINE MutexLinuxImpl();
+  INLINE ~MutexLinuxImpl();
+
+  void lock();
+  void release();
 
 private:
-  static pthread_mutex_t _mutex;
+  enum Mode {
+    M_unlocked = 0,
+    M_locked_no_waiters = 1,
+    M_locked_with_waiters = 2,
+  };
+
+  PN_int32 _mode;
+  friend class ConditionVarLinuxImpl;
 };
 
-#include "atomicAdjustPosixImpl.I"
+#include "mutexLinuxImpl.I"
 
-#endif  // THREAD_POSIX_IMPL
+#endif  // THREAD_LINUX_IMPL
 
 #endif

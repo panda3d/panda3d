@@ -71,8 +71,6 @@ public:
   int get_num_declarations() const;
   const ConfigDeclaration *get_declaration(int n) const;
 
-  INLINE int get_value_seq() const;
-
   INLINE int get_num_references() const;
   INLINE const ConfigDeclaration *get_reference(int n) const;
 
@@ -108,7 +106,6 @@ private:
   Declarations _unique_declarations;
   bool _declarations_sorted;
   bool _value_queried;
-  int _value_seq;
 
   friend class ConfigDeclaration;
   friend class ConfigVariableManager;

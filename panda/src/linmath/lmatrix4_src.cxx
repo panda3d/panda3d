@@ -62,6 +62,7 @@ const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_ly_to_rz_mat =
 ////////////////////////////////////////////////////////////////////
 const FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 convert_mat(CoordinateSystem from, CoordinateSystem to) {
+  TAU_PROFILE("LMatrix4 LMatrix4::convert_mat(CoordinateSystem, CoordinateSystem)", " ", TAU_USER);
   if (from == CS_default) {
     from = get_default_coordinate_system();
   }
@@ -129,6 +130,7 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
 ////////////////////////////////////////////////////////////////////
 int FLOATNAME(LMatrix4)::
 compare_to(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
+  TAU_PROFILE("int LMatrix4::compare_to(const LMatrix4 &, FLOATTYPE)", " ", TAU_USER);
   // We compare values in reverse order, since the last row of the
   // matrix is most likely to be different between different matrices.
   for (int i = 15; i >= 0; i--) {
@@ -147,6 +149,7 @@ compare_to(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 bool FLOATNAME(LMatrix4)::
 almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
+  TAU_PROFILE("bool LMatrix4::almost_equal(const LMatrix4 &, FLOATTYPE)", " ", TAU_USER);
   return (IS_THRESHOLD_EQUAL((*this)(0, 0), other(0, 0), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(0, 1), other(0, 1), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(0, 2), other(0, 2), threshold) &&
@@ -268,6 +271,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LMatrix4)::
 generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
+  TAU_PROFILE("void LMatrix4::generate_hash(ChecksumHashGenerator &, FLOATTYPE)", " ", TAU_USER);
   for(int i = 0; i < 4; i++) {
     for(int j = 0; j < 4; j++) {
       hashgen.add_fp(get_cell(i,j), threshold);
@@ -282,6 +286,7 @@ generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 bool FLOATNAME(LMatrix4)::
 decompose_mat(int index[4]) {
+  TAU_PROFILE("bool LMatrix4::decompose_mat(int[4])", " ", TAU_USER);
   int i, j, k;
   FLOATTYPE vv[4];
   for (i = 0; i < 4; i++) {
@@ -359,6 +364,7 @@ decompose_mat(int index[4]) {
 ////////////////////////////////////////////////////////////////////
 bool FLOATNAME(LMatrix4)::
 back_sub_mat(int index[4], FLOATNAME(LMatrix4) &inv, int row) const {
+  TAU_PROFILE("bool LMatrix4::back_sub_mat(int[4], LMatrix4 &, int)", " ", TAU_USER);
   int ii = -1;
   int i, j;
   for (i = 0; i < 4; i++) {

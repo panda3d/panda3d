@@ -22,6 +22,7 @@
 #include "geomVertexData.h"
 #include "pointerTo.h"
 #include "pmap.h"
+#include "deletedChain.h"
 
 class CLP(GeomMunger);
 
@@ -33,6 +34,7 @@ class EXPCL_GL CLP(GeomContext) : public GeomContext {
 public:
   INLINE CLP(GeomContext)(Geom *geom);
   virtual ~CLP(GeomContext)();
+  ALLOC_DELETED_CHAIN(CLP(GeomContext));
 
   bool get_display_list(GLuint &index, const CLP(GeomMunger) *munger, 
                         UpdateSeq modified);

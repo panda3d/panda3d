@@ -38,6 +38,20 @@ get_basename() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NotifyCategory::get_severity
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+NotifySeverity NotifyCategory::
+get_severity() const {
+  TAU_PROFILE("NotifyCategory NotifyCategory::get_severity() const", " ", TAU_USER);
+  if (!is_cache_valid(_local_modified)) {
+    ((NotifyCategory *)this)->update_severity_cache();
+  }
+  return _severity_cache;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::set_severity
 //       Access: Public
 //  Description: Sets the severity level of messages that will be
@@ -47,6 +61,7 @@ get_basename() const {
 INLINE void NotifyCategory::
 set_severity(NotifySeverity severity) {
   _severity = severity;
+  invalidate_cache();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,6 +72,7 @@ set_severity(NotifySeverity severity) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool NotifyCategory::
 is_on(NotifySeverity severity) const {
+  TAU_PROFILE("bool NotifyCategory::is_on(NotifySeverity) const", " ", TAU_USER);
   return (int)severity >= (int)get_severity();
 }
 

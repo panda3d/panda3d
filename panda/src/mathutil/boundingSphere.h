@@ -33,6 +33,7 @@ class EXPCL_PANDA BoundingSphere : public FiniteBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingSphere();
   INLINE_MATHUTIL BoundingSphere(const LPoint3f &center, float radius);
+  ALLOC_DELETED_CHAIN(BoundingSphere);
 
 public:
   virtual BoundingVolume *make_copy() const;

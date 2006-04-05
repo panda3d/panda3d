@@ -24,6 +24,7 @@
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
 #include "texMatrixAttrib.h"
+#include "textureAttrib.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagram.h"

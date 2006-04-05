@@ -44,8 +44,8 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
 
-  virtual void enter(const MouseWatcherParameter &param);
-  virtual void exit(const MouseWatcherParameter &param);
+  virtual void enter_region(const MouseWatcherParameter &param);
+  virtual void exit_region(const MouseWatcherParameter &param);
   virtual void press(const MouseWatcherParameter &param, bool background);
   virtual void release(const MouseWatcherParameter &param, bool background);
 

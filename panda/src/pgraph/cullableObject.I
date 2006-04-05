@@ -121,55 +121,6 @@ draw(GraphicsStateGuardianBase *gsg) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::operator new
-//       Access: Public
-//  Description: Allocates the memory for a new CullableObject.  This
-//               is specialized here to provide for fast allocation of
-//               these things (since we may create and destroy
-//               thousands of these each frame).
-////////////////////////////////////////////////////////////////////
-INLINE void *CullableObject::
-operator new(size_t size) {
-  if (_deleted_chain != (CullableObject *)NULL) {
-    CullableObject *obj = _deleted_chain;
-    _deleted_chain = _deleted_chain->_next;
-    return obj;
-  }
-#ifndef NDEBUG
-  _num_ever_allocated++;
-#endif  // NDEBUG
-  return ::operator new(size);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::operator delete
-//       Access: Public
-//  Description: Frees the memory for a deleted CullableObject.  This
-//               is specialized here to provide for fast allocation of
-//               these things (since we may create and destroy
-//               thousands of these each frame).
-////////////////////////////////////////////////////////////////////
-INLINE void CullableObject::
-operator delete(void *ptr) {
-  CullableObject *obj = (CullableObject *)ptr;
-  obj->_next = _deleted_chain;
-  _deleted_chain = obj;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::get_num_ever_allocated
-//       Access: Published, Static
-//  Description: Returns the number of CullableObject pointers ever
-//               simultaneously allocated; these are now either in
-//               active use or have been recycled into the deleted
-//               CullableObject pool to be used again.
-////////////////////////////////////////////////////////////////////
-INLINE int CullableObject::
-get_num_ever_allocated() {
-  return _num_ever_allocated;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::SortPoints::Constructor
 //       Access: Public
 //  Description: 

@@ -20,6 +20,7 @@
 #define CONFIGPAGEMANAGER_H
 
 #include "dtoolbase.h"
+#include "configFlags.h"
 #include "pvector.h"
 #include "dSearchPath.h"
 #include "globPattern.h"
@@ -33,7 +34,7 @@ class ConfigPage;
 //               everywhere in the world, and keeps them in sorted
 //               order.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG ConfigPageManager {
+class EXPCL_DTOOLCONFIG ConfigPageManager : public ConfigFlags {
 protected:
   ConfigPageManager();
   ~ConfigPageManager();

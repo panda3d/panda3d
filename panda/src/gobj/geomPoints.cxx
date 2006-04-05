@@ -20,6 +20,7 @@
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "graphicsStateGuardianBase.h"
 
 TypeHandle GeomPoints::_type_handle;
 

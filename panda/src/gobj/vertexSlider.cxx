@@ -21,6 +21,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "indent.h"
+#include "sliderTable.h"
 
 TypeHandle VertexSlider::_type_handle;
 

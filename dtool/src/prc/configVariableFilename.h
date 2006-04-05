@@ -67,12 +67,11 @@ PUBLISHED:
   INLINE void set_word(int n, const Filename &value);
 
 private:
-  void reload_value();
+  void reload_cache();
 
-  int _value_seq;
-  bool _value_stale;
-
-  Filename _value;
+private:
+  PN_int32 _local_modified;
+  Filename _cache;
 };
 
 #include "configVariableFilename.I"

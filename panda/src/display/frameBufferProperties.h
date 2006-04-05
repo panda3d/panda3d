@@ -20,6 +20,7 @@
 #define FRAMEBUFFERPROPERTIES_H
 
 #include "pandabase.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FrameBufferProperties

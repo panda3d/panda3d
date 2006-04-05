@@ -30,6 +30,7 @@
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
 
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TransformTable

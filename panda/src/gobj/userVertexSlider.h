@@ -26,6 +26,8 @@
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : UserVertexSlider
 // Description : This is a specialization on VertexSlider that

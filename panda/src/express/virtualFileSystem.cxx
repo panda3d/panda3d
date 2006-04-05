@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "virtualFileSystem.h"
+#include "virtualFileSimple.h"
+#include "virtualFileComposite.h"
 #include "virtualFileMount.h"
 #include "virtualFileMountMultifile.h"
 #include "virtualFileMountSystem.h"

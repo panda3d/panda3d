@@ -28,7 +28,7 @@
 #include <hash_map>
 #endif
 
-#ifdef NO_STYLE_ALLOCATOR
+#ifndef USE_STL_ALLOCATOR
 // If we're not using custom allocators, just use the standard class
 // definition.
 #define pmap map
@@ -42,7 +42,7 @@
 #define phash_multimap multimap
 #endif  // HAVE_STL_HASH
 
-#else  // NO_STYLE_ALLOCATOR
+#else  // USE_STL_ALLOCATOR
 
 ////////////////////////////////////////////////////////////////////
 //       Class : pmap
@@ -52,11 +52,65 @@
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = less<Key> >
-class pmap : public map<Key, Value, Compare, pallocator<pair<const Key, Value> > > {
+class pmap : public map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > {
 public:
-  pmap() : map<Key, Value, Compare, pallocator<pair<const Key, Value> > >() { }
-  pmap(const pmap<Key, Value, Compare> &copy) : map<Key, Value, Compare, pallocator<pair<const Key, Value> > >(copy) { }
-  pmap(const Compare &comp) : map<Key, Value, Compare, pallocator<pair<const Key, Value> > >(comp) { }
+  typedef map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > base_class;
+
+  pmap() : base_class() { }
+  pmap(const pmap<Key, Value, Compare> &copy) : base_class(copy) { }
+  pmap(const Compare &comp) : base_class(comp) { }
+
+#ifdef USE_TAU
+  TYPENAME base_class::mapped_type &
+  operator [] (const TYPENAME base_class::key_type &k) {
+    TAU_PROFILE("pmap::operator [] (const key_type &)", " ", TAU_USER);
+    return base_class::operator [] (k);
+  }
+
+  std::pair<TYPENAME base_class::iterator, bool>
+  insert(const TYPENAME base_class::value_type &x) { 
+    TAU_PROFILE("pmap::insert(const value_type &)", " ", TAU_USER);
+    return base_class::insert(x); 
+  }
+
+  TYPENAME base_class::iterator
+  insert(TYPENAME base_class::iterator position, 
+         const TYPENAME base_class::value_type &x) {
+    TAU_PROFILE("pmap::insert(iterator, const value_type &)", " ", TAU_USER);
+    return base_class::insert(position, x);
+  }
+
+  void
+  erase(TYPENAME base_class::iterator position) {
+    TAU_PROFILE("pmap::erase(iterator)", " ", TAU_USER);
+    base_class::erase(position);
+  }
+
+  TYPENAME base_class::size_type
+  erase(const TYPENAME base_class::key_type &x) {
+    TAU_PROFILE("pmap::erase(const key_type &)", " ", TAU_USER);
+    return base_class::erase(x);
+  }
+
+  void
+  clear() {
+    TAU_PROFILE("pmap::clear()", " ", TAU_USER);
+    base_class::clear();
+  }
+
+  TYPENAME base_class::iterator
+  find(const TYPENAME base_class::key_type &x) {
+    TAU_PROFILE("pmap::find(const key_type &)", " ", TAU_USER);
+    return base_class::find(x);
+  }
+
+  TYPENAME base_class::const_iterator
+  find(const TYPENAME base_class::key_type &x) const {
+    TAU_PROFILE("pmap::find(const key_type &)", " ", TAU_USER);
+    return base_class::find(x);
+  }
+
+#endif  // USE_TAU
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -67,11 +121,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = less<Key> >
-class pmultimap : public multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > > {
+class pmultimap : public multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > {
 public:
-  pmultimap() : multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > >() { }
-  pmultimap(const pmultimap<Key, Value, Compare> &copy) : multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > >(copy) { }
-  pmultimap(const Compare &comp) : multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > >(comp) { }
+  pmultimap() : multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >() { }
+  pmultimap(const pmultimap<Key, Value, Compare> &copy) : multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >(copy) { }
+  pmultimap(const Compare &comp) : multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >(comp) { }
 };
 
 #ifdef HAVE_STL_HASH
@@ -83,11 +137,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
-class phash_map : public hash_map<Key, Value, Compare, pallocator<pair<const Key, Value> > > {
+class phash_map : public hash_map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > {
 public:
-  phash_map() : hash_map<Key, Value, Compare, pallocator<pair<const Key, Value> > >() { }
-  phash_map(const phash_map<Key, Value, Compare> &copy) : hash_map<Key, Value, Compare, pallocator<pair<const Key, Value> > >(copy) { }
-  phash_map(const Compare &comp) : hash_map<Key, Value, Compare, pallocator<pair<const Key, Value> > >(comp) { }
+  phash_map() : hash_map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >() { }
+  phash_map(const phash_map<Key, Value, Compare> &copy) : hash_map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >(copy) { }
+  phash_map(const Compare &comp) : hash_map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >(comp) { }
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -98,11 +152,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
-class phash_multimap : public hash_multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > > {
+class phash_multimap : public hash_multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > {
 public:
-  phash_multimap() : hash_multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > >() { }
-  phash_multimap(const phash_multimap<Key, Value, Compare> &copy) : hash_multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > >(copy) { }
-  phash_multimap(const Compare &comp) : hash_multimap<Key, Value, Compare, pallocator<pair<const Key, Value> > >(comp) { }
+  phash_multimap() : hash_multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >() { }
+  phash_multimap(const phash_multimap<Key, Value, Compare> &copy) : hash_multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >(copy) { }
+  phash_multimap(const Compare &comp) : hash_multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >(comp) { }
 };
 
 #else // HAVE_STL_HASH
@@ -110,5 +164,5 @@ public:
 #define phash_multimap pmultimap
 #endif  // HAVE_STL_HASH
 
-#endif  // NO_STYLE_ALLOCATOR
+#endif  // USE_STL_ALLOCATOR
 #endif

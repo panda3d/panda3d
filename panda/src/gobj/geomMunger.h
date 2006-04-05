@@ -89,22 +89,6 @@ protected:
   virtual int compare_to_impl(const GeomMunger *other) const;
   virtual int geom_compare_to_impl(const GeomMunger *other) const;
 
-public:
-  // To minimize overhead, each type of GeomMunger will implement new
-  // and delete using their own deleted_chain.  This is the base class
-  // implementation, which requires a pointer to deleted_chain be
-  // stored on each instance.
-  INLINE void *operator new(size_t size);
-  INLINE void operator delete(void *ptr);
-
-protected:
-  INLINE static void *do_operator_new(size_t size, GeomMunger **_deleted_chain);
-
-private:
-  GeomMunger **_deleted_chain;
-  // This is the next pointer along the deleted_chain.
-  GeomMunger *_next;
-
 private:
   class Registry;
   INLINE static Registry *get_registry();

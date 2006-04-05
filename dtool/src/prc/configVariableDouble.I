@@ -24,7 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableDouble::
 ConfigVariableDouble(const string &name) :
-  ConfigVariable(name, VT_double)
+  ConfigVariable(name, VT_double),
+  _local_modified(initial_invalid_cache())
 {
   _core->set_used();
 }
@@ -38,10 +39,11 @@ INLINE ConfigVariableDouble::
 ConfigVariableDouble(const string &name, double default_value, 
                      const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
-  ConfigVariable(name, ConfigVariableCore::VT_double, description, flags)
+  ConfigVariable(name, ConfigVariableCore::VT_double, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_double, string(), flags)
+  ConfigVariable(name, ConfigVariableCore::VT_double, string(), flags),
 #endif
+  _local_modified(initial_invalid_cache())
 {
   set_default_value(default_value);
   _core->set_used();
@@ -56,10 +58,11 @@ INLINE ConfigVariableDouble::
 ConfigVariableDouble(const string &name, const string &default_value, 
                      const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
-  ConfigVariable(name, ConfigVariableCore::VT_double, description, flags)
+  ConfigVariable(name, ConfigVariableCore::VT_double, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_double, string(), flags)
+  ConfigVariable(name, ConfigVariableCore::VT_double, string(), flags),
 #endif
+  _local_modified(initial_invalid_cache())
 {
   _core->set_default_value(default_value);
   _core->set_used();
@@ -123,7 +126,12 @@ set_value(double value) {
 ////////////////////////////////////////////////////////////////////
 INLINE double ConfigVariableDouble::
 get_value() const {
-  return get_double_word(0);
+  TAU_PROFILE("double ConfigVariableDouble::get_value() const", " ", TAU_USER);
+  if (!is_cache_valid(_local_modified)) {
+    mark_cache_valid(((ConfigVariableDouble *)this)->_local_modified);
+    ((ConfigVariableDouble *)this)->_cache = get_double_word(0);
+  }
+  return _cache;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #include "graphicsStateGuardian.h"
 #include "config_display.h"
 #include "textureContext.h"
@@ -36,6 +35,9 @@
 #include "colorWriteAttrib.h"
 #include "shader.h"
 #include "pnotify.h"
+#include "drawableRegion.h"
+#include "displayRegion.h"
+#include "graphicsOutput.h"
 
 #include <algorithm>
 #include <limits.h>

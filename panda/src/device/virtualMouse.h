@@ -20,11 +20,13 @@
 #define VIRTUALMOUSE_H
 
 #include "pandabase.h"
-
 #include "dataNode.h"
 #include "buttonHandle.h"
 #include "buttonEvent.h"
 #include "pointerTo.h"
+#include "luse.h"
+#include "linmath_events.h"
+#include "buttonEventList.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VirtualMouse

@@ -636,6 +636,12 @@ compose(const TransformState *other) const {
     return other;
   }
 
+#ifndef NDEBUG
+  if (!transform_cache) {
+    return do_compose(other);
+  }
+#endif  // NDEBUG
+
   ReMutexHolder holder(*_states_lock);
 
   // Is this composition already cached?
@@ -724,6 +730,12 @@ invert_compose(const TransformState *other) const {
     return make_identity();
   }
 
+#ifndef NDEBUG
+  if (!transform_cache) {
+    return do_invert_compose(other);
+  }
+#endif  // NDEBUG
+
   ReMutexHolder holder(*_states_lock);
 
   // Is this composition already cached?
@@ -791,7 +803,7 @@ invert_compose(const TransformState *other) const {
 //               PT(TransformState) is a template class, and will call
 //               the appropriate method even though it is non-virtual.
 ////////////////////////////////////////////////////////////////////
-int TransformState::
+bool TransformState::
 unref() const {
   ReMutexHolder holder(*_states_lock);
 
@@ -1281,6 +1293,12 @@ init_states() {
 CPT(TransformState) TransformState::
 return_new(TransformState *state) {
   nassertr(state != (TransformState *)NULL, state);
+
+#ifndef NDEBUG
+  if (!transform_cache) {
+    return state;
+  }
+#endif
 
 #ifndef NDEBUG
   if (paranoid_const) {
@@ -1837,6 +1855,7 @@ calc_mat() {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 update_pstats(int old_referenced_bits, int new_referenced_bits) {
+#ifdef DO_PSTATS
   if ((old_referenced_bits & R_node) != 0) {
     _node_counter.sub_level(1);
   } else if ((old_referenced_bits & R_cache) != 0) {
@@ -1847,6 +1866,7 @@ update_pstats(int old_referenced_bits, int new_referenced_bits) {
   } else if ((new_referenced_bits & R_cache) != 0) {
     _cache_counter.add_level(1);
   }
+#endif  // DO_PSTATS
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
-// Filename: atomicAdjustPosixImpl.I
-// Created by:  drose (10Feb06)
+// Filename: atomicAdjustDummyImpl.I
+// Created by:  drose (09Aug02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,50 +18,42 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustPosixImpl::inc
+//     Function: AtomicAdjustDummyImpl::inc
 //       Access: Public, Static
-//  Description: Atomically increments the indicated variable and
-//               returns the new value.
+//  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustPosixImpl::
+INLINE void AtomicAdjustDummyImpl::
 inc(PN_int32 &var) {
-  pthread_mutex_lock(&_mutex);
-  PN_int32 result = ++var;
-  pthread_mutex_unlock(&_mutex);
-  return result;
+  ++var;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustPosixImpl::dec
+//     Function: AtomicAdjustDummyImpl::dec
 //       Access: Public, Static
 //  Description: Atomically decrements the indicated variable and
-//               returns the new value.
+//               returns true if the new value is nonzero, false if it
+//               is zero.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustPosixImpl::
+INLINE bool AtomicAdjustDummyImpl::
 dec(PN_int32 &var) {
-  pthread_mutex_lock(&_mutex);
-  PN_int32 result = --var;
-  pthread_mutex_unlock(&_mutex);
-  return result;
+  return (--var) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustPosixImpl::set
+//     Function: AtomicAdjustDummyImpl::set
 //       Access: Public, Static
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustPosixImpl::
+INLINE PN_int32 AtomicAdjustDummyImpl::
 set(PN_int32 &var, PN_int32 new_value) {
-  pthread_mutex_lock(&_mutex);
   PN_int32 orig_value = var;
   var = new_value;
-  pthread_mutex_unlock(&_mutex);
   return orig_value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustPosixImpl::get
+//     Function: AtomicAdjustDummyImpl::get
 //       Access: Public, Static
 //  Description: Atomically retrieves the snapshot value of the
 //               indicated variable.  This is the only guaranteed safe
@@ -69,10 +61,44 @@ set(PN_int32 &var, PN_int32 new_value) {
 //               asynchronously setting, incrementing, or decrementing
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustPosixImpl::
+INLINE PN_int32 AtomicAdjustDummyImpl::
 get(const PN_int32 &var) {
-  pthread_mutex_lock(&_mutex);
-  PN_int32 orig_value = var;
-  pthread_mutex_unlock(&_mutex);
+  return var;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustDummyImpl::compare_and_exchange
+//       Access: Public, Static
+//  Description: Atomic compare and exchange.  
+//
+//               If mem is equal to old_value, store new_value in mem.
+//               In either case, return the original value of mem.
+//               The caller can test for success by comparing
+//               return_value == old_value.
+////////////////////////////////////////////////////////////////////
+INLINE PN_int32 AtomicAdjustDummyImpl::
+compare_and_exchange(PN_int32 &mem, PN_int32 old_value,
+                     PN_int32 new_value) {
+  PN_int32 orig_value = mem;
+  if (mem == old_value) {
+    mem = new_value;
+  }
+  return orig_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustDummyImpl::compare_and_exchange_ptr
+//       Access: Public, Static
+//  Description: Atomic compare and exchange.  
+//
+//               As above, but works on pointers instead of integers.
+////////////////////////////////////////////////////////////////////
+INLINE void *AtomicAdjustDummyImpl::
+compare_and_exchange_ptr(void *&mem, void *old_value,
+                         void *new_value) {
+  void *orig_value = mem;
+  if (mem == old_value) {
+    mem = new_value;
+  }
   return orig_value;
 }

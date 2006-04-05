@@ -22,25 +22,30 @@
 MutexImpl ReMutexDirect::_global_lock;
 #endif  // !HAVE_REMUTEXIMPL
 
-#ifndef HAVE_REMUTEXIMPL
 ////////////////////////////////////////////////////////////////////
-//     Function: ReMutexDirect::lock
+//     Function: ReMutexDirect::output
 //       Access: Public
-//  Description: Grabs the reMutex if it is available.  If it is not
-//               available, blocks until it becomes available, then
-//               grabs it.  In either case, the function does not
-//               return until the reMutex is held; you should then call
-//               unlock().
-//
-//               This method is considered const so that you can lock
-//               and unlock const reMutexes, mainly to allow thread-safe
-//               access to otherwise const data.
-//
-//               Also see ReMutexHolder.
+//  Description: This method is declared virtual in MutexDebug, but
+//               non-virtual in ReMutexDirect.
 ////////////////////////////////////////////////////////////////////
 void ReMutexDirect::
-lock() const {
-  _global_mutex.lock();
+output(ostream &out) const {
+  out << "ReMutex " << (void *)this;
+}
+
+#ifndef HAVE_REMUTEXIMPL
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::do_lock
+//       Access: Private
+//  Description: The private implementation of lock(), for the case in
+//               which the underlying lock system does not provide a
+//               reentrant mutex (and therefore we have to build this
+//               functionality on top of the existing non-reentrant
+//               mutex).
+////////////////////////////////////////////////////////////////////
+void ReMutexDirect::
+do_lock() {
+  _global_lock.lock();
 
   if (_locking_thread == (Thread *)NULL) {
     // The mutex is not already locked by anyone.  Lock it.
@@ -62,32 +67,36 @@ lock() const {
     while (_locking_thread != (Thread *)NULL) {
       _cvar.wait();
     }
-
+    
     _locking_thread = Thread::get_current_thread();
     ++_lock_count;
     nassertd(_lock_count == 1) {
     }
   }
-  _global_mutex.release();
+  _global_lock.release();
 }
 #endif  // !HAVE_REMUTEXIMPL
 
 #ifndef HAVE_REMUTEXIMPL
 ////////////////////////////////////////////////////////////////////
-//     Function: ReMutexDirect::release
-//       Access: Public
-//  Description: 
+//     Function: ReMutexDirect::do_release
+//       Access: Private
+//  Description: The private implementation of release(), for the case
+//               in which the underlying lock system does not provide
+//               a reentrant mutex (and therefore we have to build
+//               this functionality on top of the existing
+//               non-reentrant mutex).
 ////////////////////////////////////////////////////////////////////
 void ReMutexDirect::
-release() {
-  _global_mutex.lock();
+do_release() {
+  _global_lock.lock();
 
   if (_locking_thread != Thread::get_current_thread()) {
     ostringstream ostr;
     ostr << *_locking_thread << " attempted to release "
          << *this << " which it does not own";
     nassert_raise(ostr.str());
-    _global_mutex.release();
+    _global_lock.release();
     return;
   }
 
@@ -100,17 +109,6 @@ release() {
     _locking_thread = (Thread *)NULL;
     _cvar.signal();
   }
-  _global_mutex.release();
+  _global_lock.release();
 }
 #endif  // !HAVE_REMUTEXIMPL
-
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutexDirect::output
-//       Access: Public
-//  Description: This method is declared virtual in MutexDebug, but
-//               non-virtual in ReMutexDirect.
-////////////////////////////////////////////////////////////////////
-void ReMutexDirect::
-output(ostream &out) const {
-  out << "ReMutex " << (void *)this;
-}

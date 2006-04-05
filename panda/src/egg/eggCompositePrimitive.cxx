@@ -18,6 +18,7 @@
 
 #include "eggCompositePrimitive.h"
 #include "eggGroupNode.h"
+#include "eggVertexPool.h"
 
 TypeHandle EggCompositePrimitive::_type_handle;
 

@@ -23,7 +23,7 @@
 #include "pallocator.h"
 #include <list>
 
-#ifdef NO_STYLE_ALLOCATOR
+#ifndef USE_STL_ALLOCATOR
 // If we're not using custom allocators, just use the standard class
 // definition.
 #define plist list
@@ -38,19 +38,19 @@
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Type>
-class plist : public list<Type, pallocator<Type> > {
+class plist : public list<Type, pallocator_single<Type> > {
 public:
-  typedef TYPENAME list<Type, pallocator<Type> >::size_type size_type;
-  plist() : list<Type, pallocator<Type> >() { }
-  plist(const plist<Type> &copy) : list<Type, pallocator<Type> >(copy) { }
-  plist(size_type n) : list<Type, pallocator<Type> >(n) { }
-  plist(size_type n, const Type &value) : list<Type, pallocator<Type> >(n, value) { }
+  typedef TYPENAME list<Type, pallocator_single<Type> >::size_type size_type;
+  plist() : list<Type, pallocator_single<Type> >() { }
+  plist(const plist<Type> &copy) : list<Type, pallocator_single<Type> >(copy) { }
+  plist(size_type n) : list<Type, pallocator_single<Type> >(n) { }
+  plist(size_type n, const Type &value) : list<Type, pallocator_single<Type> >(n, value) { }
 
-  typedef TYPENAME list<Type, pallocator<Type> >::iterator iterator;
-  typedef TYPENAME list<Type, pallocator<Type> >::const_iterator const_iterator;
-  typedef TYPENAME list<Type, pallocator<Type> >::reverse_iterator reverse_iterator;
-  typedef TYPENAME list<Type, pallocator<Type> >::const_reverse_iterator const_reverse_iterator;
+  typedef TYPENAME list<Type, pallocator_single<Type> >::iterator iterator;
+  typedef TYPENAME list<Type, pallocator_single<Type> >::const_iterator const_iterator;
+  typedef TYPENAME list<Type, pallocator_single<Type> >::reverse_iterator reverse_iterator;
+  typedef TYPENAME list<Type, pallocator_single<Type> >::const_reverse_iterator const_reverse_iterator;
 };
 
-#endif  // NO_STYLE_ALLOCATOR
+#endif  // USE_STL_ALLOCATOR
 #endif

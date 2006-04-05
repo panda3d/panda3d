@@ -24,6 +24,7 @@
 #include "pointerTo.h"
 #include "plist.h"
 #include "pmap.h"
+#include "geomNode.h"
 
 PStatCollector SceneGraphReducer::_flatten_collector("*:Flatten:flatten");
 PStatCollector SceneGraphReducer::_apply_collector("*:Flatten:apply");

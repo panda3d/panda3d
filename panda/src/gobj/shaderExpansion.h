@@ -20,7 +20,7 @@
 #define SHADEREXPANSION_H
 
 #include "pandabase.h"
-#include "typedWritableReferenceCount.h"
+#include "typedReferenceCount.h"
 #include "namable.h"
 #include "graphicsStateGuardianBase.h"
 #include "internalName.h"

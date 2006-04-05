@@ -164,20 +164,6 @@ has_local_value() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::get_value_seq
-//       Access: Public
-//  Description: Returns a sequence number that changes every time the
-//               value of the variable might have changed.  This is
-//               useful for caching values from the variable, and
-//               detecting when the cache has expired.  It is
-//               initially zero and will increment from there.
-////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariableCore::
-get_value_seq() const {
-  return _value_seq;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableCore::get_num_references
 //       Access: Public
 //  Description: Returns the number of prc files that reference this

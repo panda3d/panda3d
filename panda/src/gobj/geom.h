@@ -39,6 +39,7 @@
 #include "pset.h"
 #include "boundingVolume.h"
 #include "pStatCollector.h"
+#include "deletedChain.h"
 
 class GeomContext;
 class PreparedGraphicsObjects;
@@ -62,6 +63,7 @@ protected:
 PUBLISHED:
   void operator = (const Geom &copy);
   virtual ~Geom();
+  ALLOC_DELETED_CHAIN(Geom);
 
   virtual Geom *make_copy() const;
 
@@ -182,6 +184,7 @@ private:
     INLINE CDataCache();
     INLINE CDataCache(const CDataCache &copy);
     virtual ~CDataCache();
+    ALLOC_DELETED_CHAIN(CDataCache);
     virtual CycleData *make_copy() const;
     virtual TypeHandle get_parent_type() const {
       return Geom::get_class_type();
@@ -195,7 +198,8 @@ private:
   };
   typedef CycleDataReader<CDataCache> CDCacheReader;
   typedef CycleDataWriter<CDataCache> CDCacheWriter;
-  
+
+public:  // It is not clear why MSVC7 needs this class to be public.  
   class CacheEntry : public GeomCacheEntry {
   public:
     INLINE CacheEntry(const GeomVertexData *source_data,
@@ -204,6 +208,7 @@ private:
                       const GeomVertexData *source_data,
                       const GeomMunger *modifier);
     INLINE bool operator < (const CacheEntry &other) const;
+    ALLOC_DELETED_CHAIN(CacheEntry);
 
     virtual void evict_callback();
     virtual void output(ostream &out) const;
@@ -216,11 +221,13 @@ private:
   };
   typedef pset<PT(CacheEntry), IndirectLess<CacheEntry> > Cache;
 
+private:
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);
+    ALLOC_DELETED_CHAIN(CData);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);

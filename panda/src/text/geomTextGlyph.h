@@ -42,6 +42,7 @@ public:
   GeomTextGlyph(const GeomTextGlyph &copy);
   void operator = (const GeomTextGlyph &copy);
   virtual ~GeomTextGlyph();
+  ALLOC_DELETED_CHAIN(GeomTextGlyph);
 
   virtual Geom *make_copy() const;
   virtual bool copy_primitives_from(const Geom *other);

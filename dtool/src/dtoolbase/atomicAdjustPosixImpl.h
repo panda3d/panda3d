@@ -1,5 +1,5 @@
-// Filename: atomicAdjust.h
-// Created by:  drose (09Aug02)
+// Filename: atomicAdjustPosixImpl.h
+// Created by:  drose (10Feb06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,28 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef ATOMICADJUST_H
-#define ATOMICADJUST_H
+#ifndef ATOMICADJUSTPOSIXIMPL_H
+#define ATOMICADJUSTPOSIXIMPL_H
 
-#include "pandabase.h"
-#include "atomicAdjustImpl.h"
+#include "dtoolbase.h"
+#include "selectThreadImpl.h"
+
+#ifdef THREAD_POSIX_IMPL
+
 #include "numeric_types.h"
 
+#include <pthread.h>
+
 ////////////////////////////////////////////////////////////////////
-//       Class : AtomicAdjust
-// Description : A suite of functions to atomically adjust a numeric
-//               value.  Some platforms require a bit more work than
-//               others to guarantee that a multibyte value is changed
-//               in one atomic operation.
+//       Class : AtomicAdjustPosixImpl
+// Description : Uses POSIX to implement atomic adjustments.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS AtomicAdjust {
+class EXPCL_DTOOL AtomicAdjustPosixImpl {
 public:
-  INLINE static PN_int32 inc(PN_int32 &var);
-  INLINE static PN_int32 dec(PN_int32 &var);
+  INLINE static void inc(PN_int32 &var);
+  INLINE static bool dec(PN_int32 &var);
   INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
   INLINE static PN_int32 get(const PN_int32 &var);
+
+private:
+  static pthread_mutex_t _mutex;
 };
 
-#include "atomicAdjust.I"
+#include "atomicAdjustPosixImpl.I"
+
+#endif  // THREAD_POSIX_IMPL
 
 #endif

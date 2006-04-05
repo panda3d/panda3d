@@ -98,7 +98,7 @@ public:
       unsigned int pre_allocated : 1;
       unsigned int allocated : 1;
       unsigned int in_lru : 1;
-    };
+    } v;
 
     int first_frame_identifier;   // creation time
     int last_frame_identifier;    // previous time page was used

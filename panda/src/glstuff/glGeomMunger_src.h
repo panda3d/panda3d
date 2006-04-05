@@ -35,15 +35,13 @@ class EXPCL_GL CLP(GeomMunger) : public StandardMunger {
 public:
   INLINE CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state);
   virtual ~CLP(GeomMunger)();
+  ALLOC_DELETED_CHAIN(CLP(GeomMunger));
 
 protected:
   virtual CPT(GeomVertexFormat) munge_format_impl(const GeomVertexFormat *orig,
                                                     const GeomVertexAnimationSpec &animation);
   virtual int compare_to_impl(const GeomMunger *other) const;
   virtual int geom_compare_to_impl(const GeomMunger *other) const;
-
-public:
-  INLINE void *operator new(size_t size);
 
 private:
   CPT(TextureAttrib) _texture;

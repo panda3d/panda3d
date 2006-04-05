@@ -38,8 +38,6 @@
 PStatCollector CullableObject::_munge_points_pcollector("*:Munge:Points");
 PStatCollector CullableObject::_munge_light_vector_pcollector("*:Munge:Light Vector");
 
-CullableObject *CullableObject::_deleted_chain = (CullableObject *)NULL;
-int CullableObject::_num_ever_allocated = 0;
 TypeHandle CullableObject::_type_handle;
 
 ////////////////////////////////////////////////////////////////////

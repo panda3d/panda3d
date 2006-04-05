@@ -23,7 +23,7 @@
 #include "pallocator.h"
 #include <deque>
 
-#ifdef NO_STYLE_ALLOCATOR
+#ifndef USE_STL_ALLOCATOR
 // If we're not using custom allocators, just use the standard class
 // definition.
 #define pdeque deque 
@@ -38,14 +38,14 @@
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Type>
-class pdeque : public deque<Type, pallocator<Type> > {
+class pdeque : public deque<Type, pallocator_array<Type> > {
 public:
-  typedef TYPENAME deque<Type, pallocator<Type> >::size_type size_type;
-  pdeque() : deque<Type, pallocator<Type> >() { }
-  pdeque(const pdeque<Type> &copy) : deque<Type, pallocator<Type> >(copy) { }
-  pdeque(size_type n) : deque<Type, pallocator<Type> >(n) { }
-  pdeque(size_type n, const Type &value) : deque<Type, pallocator<Type> >(n, value) { }
+  typedef TYPENAME deque<Type, pallocator_array<Type> >::size_type size_type;
+  pdeque() : deque<Type, pallocator_array<Type> >() { }
+  pdeque(const pdeque<Type> &copy) : deque<Type, pallocator_array<Type> >(copy) { }
+  pdeque(size_type n) : deque<Type, pallocator_array<Type> >(n) { }
+  pdeque(size_type n, const Type &value) : deque<Type, pallocator_array<Type> >(n, value) { }
 };
 
-#endif  // NO_STYLE_ALLOCATOR
+#endif  // USE_STL_ALLOCATOR
 #endif

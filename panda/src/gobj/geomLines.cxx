@@ -20,6 +20,9 @@
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "graphicsStateGuardianBase.h"
+#include "geomVertexReader.h"
+#include "geomVertexWriter.h"
 
 TypeHandle GeomLines::_type_handle;
 

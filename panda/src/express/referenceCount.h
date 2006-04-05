@@ -49,8 +49,8 @@ protected:
 
 PUBLISHED:
   INLINE int get_ref_count() const;
-  INLINE int ref() const;
-  INLINE int unref() const;
+  INLINE void ref() const;
+  INLINE bool unref() const;
 
   INLINE bool test_ref_count_integrity() const;
 

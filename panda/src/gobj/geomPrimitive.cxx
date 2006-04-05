@@ -30,6 +30,7 @@
 #include "bamWriter.h"
 #include "ioPtaDatagramInt.h"
 #include "indent.h"
+#include "pStatTimer.h"
 
 TypeHandle GeomPrimitive::_type_handle;
 

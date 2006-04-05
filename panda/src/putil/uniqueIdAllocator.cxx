@@ -19,6 +19,7 @@
 
 #include "pandabase.h"
 #include "pnotify.h"
+#include "notifyCategoryProxy.h"
 
 #include "uniqueIdAllocator.h"
 

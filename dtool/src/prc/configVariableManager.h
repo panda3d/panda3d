@@ -30,7 +30,8 @@ class ConfigVariableCore;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ConfigVariableManager
-// Description : A global object that maintains the set of ConfigVariableCores
+// Description : A global object that maintains the set of
+//               ConfigVariables (actually, ConfigVariableCores)
 //               everywhere in the world, and keeps them in sorted
 //               order.
 ////////////////////////////////////////////////////////////////////

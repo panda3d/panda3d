@@ -32,6 +32,7 @@
 #include "textureCollection.h"
 #include "nodePathCollection.h"
 #include "indent.h"
+#include "config_particlesystem.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : SpriteParticleRenderer::SpriteParticleRenderer

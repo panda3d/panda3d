@@ -304,6 +304,7 @@ reload_implicit_pages() {
   }
 
   _currently_loading = false;
+  invalidate_cache();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -320,6 +321,7 @@ make_explicit_page(const string &name) {
   ++_next_page_seq;
   _explicit_pages.push_back(page);
   _pages_sorted = false;
+  invalidate_cache();
   return page;
 }
 
@@ -340,6 +342,7 @@ delete_explicit_page(ConfigPage *page) {
     if ((*pi) == page) {
       _explicit_pages.erase(pi);
       delete page;
+      invalidate_cache();
       return true;
     }
   }

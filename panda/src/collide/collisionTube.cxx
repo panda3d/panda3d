@@ -37,6 +37,7 @@
 #include "geom.h"
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
+#include "boundingSphere.h"
 
 PStatCollector CollisionTube::_volume_pcollector("Collision Volumes:CollisionTube");
 PStatCollector CollisionTube::_test_pcollector("Collision Tests:CollisionTube");

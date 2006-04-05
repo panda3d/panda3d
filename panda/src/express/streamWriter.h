@@ -20,7 +20,7 @@
 #define STREAMWRITER_H
 
 #include "pandabase.h"
-
+#include "pnotify.h"
 #include "numeric_types.h"
 #include "littleEndian.h"
 #include "bigEndian.h"

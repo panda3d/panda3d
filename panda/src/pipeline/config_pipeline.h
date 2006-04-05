@@ -22,10 +22,16 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
+#include "configVariableInt.h"
+#include "configVariableBool.h"
 
 ConfigureDecl(config_pipeline, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pipeline, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(thread, EXPCL_PANDA, EXPTP_PANDA);
+
+extern ConfigVariableInt thread_stack_size;
+extern ConfigVariableBool threads_always_global;
+extern ConfigVariableBool threads_never_global;
 
 extern EXPCL_PANDA void init_libpipeline();
 

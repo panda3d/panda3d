@@ -28,9 +28,10 @@
     graphicsWindowInputDevice.I  \
     graphicsWindowInputDevice.h \
     graphicsDevice.h graphicsDevice.I \
+    lru.h \
     parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
-    lru.h
+    renderBuffer.h
     
  #define INCLUDED_SOURCES  \
     standardMunger.cxx \
@@ -68,6 +69,7 @@
     graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindowInputDevice.I graphicsWindowInputDevice.h \
     graphicsDevice.I graphicsDevice.h \
+    lru.h \
     parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
     renderBuffer.h

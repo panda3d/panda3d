@@ -180,7 +180,7 @@ create_ibuffer(DXScreenData &scrn) {
         lru_page = lru -> allocate_page (data_size);
         if (lru_page)
         {
-          lru_page -> _m.type = GPT_IndexBuffer;
+          lru_page -> _m.v.type = GPT_IndexBuffer;
           lru_page -> _m.lru_page_type.pointer = this;
 
           lru -> add_cached_page (LPP_New, lru_page);

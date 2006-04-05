@@ -20,6 +20,7 @@
 #define CONFIGDECLARATION_H
 
 #include "dtoolbase.h"
+#include "configFlags.h"
 #include "configPage.h"
 #include "vector_string.h"
 
@@ -33,7 +34,7 @@ class ConfigVariableCore;
 //               a pairing of a string name (actually, a
 //               ConfigVariableCore pointer) to a string value.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG ConfigDeclaration {
+class EXPCL_DTOOLCONFIG ConfigDeclaration : public ConfigFlags {
 private:
   ConfigDeclaration(ConfigPage *page, ConfigVariableCore *variable,
                     const string &string_value, int decl_seq);

@@ -24,6 +24,8 @@
 #include "config_display.h"
 #include "pset.h"
 
+#include <algorithm>
+
 GraphicsPipeSelection *GraphicsPipeSelection::_global_ptr = NULL;
 
 ////////////////////////////////////////////////////////////////////

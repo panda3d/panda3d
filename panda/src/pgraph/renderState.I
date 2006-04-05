@@ -83,15 +83,14 @@ has_cull_callback() const {
 //       Access: Published
 //  Description: Overrides this method to update PStats appropriately.
 ////////////////////////////////////////////////////////////////////
-INLINE int RenderState::
+INLINE void RenderState::
 cache_ref() const {
 #ifdef DO_PSTATS
   int old_referenced_bits = get_referenced_bits();
-  int result = NodeCachedReferenceCount::cache_ref();
+  NodeCachedReferenceCount::cache_ref();
   consider_update_pstats(old_referenced_bits);
-  return result;
 #else  // DO_PSTATS
-  return NodeCachedReferenceCount::cache_ref();
+  NodeCachedReferenceCount::cache_ref();
 #endif  // DO_PSTATS
 }
 
@@ -100,11 +99,11 @@ cache_ref() const {
 //       Access: Published
 //  Description: Overrides this method to update PStats appropriately.
 ////////////////////////////////////////////////////////////////////
-INLINE int RenderState::
+INLINE bool RenderState::
 cache_unref() const {
 #ifdef DO_PSTATS
   int old_referenced_bits = get_referenced_bits();
-  int result = NodeCachedReferenceCount::cache_unref();
+  bool result = NodeCachedReferenceCount::cache_unref();
   consider_update_pstats(old_referenced_bits);
   return result;
 #else  // DO_PSTATS
@@ -117,15 +116,14 @@ cache_unref() const {
 //       Access: Published
 //  Description: Overrides this method to update PStats appropriately.
 ////////////////////////////////////////////////////////////////////
-INLINE int RenderState::
+INLINE void RenderState::
 node_ref() const {
 #ifdef DO_PSTATS
   int old_referenced_bits = get_referenced_bits();
-  int result = NodeCachedReferenceCount::node_ref();
+  NodeCachedReferenceCount::node_ref();
   consider_update_pstats(old_referenced_bits);
-  return result;
 #else  // DO_PSTATS
-  return NodeCachedReferenceCount::node_ref();
+  NodeCachedReferenceCount::node_ref();
 #endif  // DO_PSTATS
 }
 
@@ -134,11 +132,11 @@ node_ref() const {
 //       Access: Published
 //  Description: Overrides this method to update PStats appropriately.
 ////////////////////////////////////////////////////////////////////
-INLINE int RenderState::
+INLINE bool RenderState::
 node_unref() const {
 #ifdef DO_PSTATS
   int old_referenced_bits = get_referenced_bits();
-  int result = NodeCachedReferenceCount::node_unref();
+  bool result = NodeCachedReferenceCount::node_unref();
   consider_update_pstats(old_referenced_bits);
   return result;
 #else  // DO_PSTATS
@@ -433,10 +431,12 @@ is_destructing() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void RenderState::
 consider_update_pstats(int old_referenced_bits) const {
+#ifdef DO_PSTATS
   int new_referenced_bits = get_referenced_bits();
   if (old_referenced_bits != new_referenced_bits) {
     update_pstats(old_referenced_bits, new_referenced_bits);
   }
+#endif  // DO_PSTATS
 }
 
 ////////////////////////////////////////////////////////////////////

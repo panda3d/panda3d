@@ -40,9 +40,9 @@
    #define INCLUDED_SOURCES \
      compose_matrix.cxx config_linmath.cxx coordinateSystem.cxx  \
      lmatrix.cxx lmatrix3.cxx  \
-     lmatrix4.cxx lorientation.cxx lorientation lpoint2.cxx  \
+     lmatrix4.cxx lorientation.cxx lpoint2.cxx  \
      lpoint3.cxx lpoint4.cxx lquaternion.cxx lrotation.cxx  \
-     lrotation luse.cxx lvecBase2.cxx lvecBase3.cxx lvecBase4.cxx  \
+     luse.cxx lvecBase2.cxx lvecBase3.cxx lvecBase4.cxx  \
      lvector2.cxx lvector3.cxx lvector4.cxx mathNumbers.cxx  \
      vector_Colorf.cxx vector_LPoint2f.cxx  \
      vector_LVecBase3f.cxx vector_Normalf.cxx vector_Vertexf.cxx  \

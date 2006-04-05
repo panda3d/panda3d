@@ -179,7 +179,13 @@ set_threading_model(const GraphicsThreadingModel &threading_model) {
     display_cat.warning()
       << "Threading model " << threading_model
       << " requested but multithreaded render pipelines not enabled in build.\n";
-    return;
+    if (!allow_nonpipeline_threads) {
+      display_cat.warning()
+        << "Ignoring requested threading model.\n";
+      return;
+    }
+    display_cat.warning()
+      << "Danger!  Creating requested render threads anyway!\n";
   }
 #endif  // THREADED_PIPELINE
   MutexHolder holder(_lock);
@@ -1705,7 +1711,7 @@ get_window_renderer(const string &name, int pipeline_stage) {
   thread->start(TP_normal, true, true);
   _threads[name] = thread;
 
-  nassertr(pipeline_stage < _pipeline->get_num_stages(), thread.p());
+  nassertr(thread->get_pipeline_stage() < _pipeline->get_num_stages(), thread.p());
 
   return thread.p();
 }

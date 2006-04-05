@@ -40,13 +40,8 @@ private:
   INLINE void operator = (const ReMutexDirect &copy);
 
 public:
-#ifdef HAVE_REMUTEXIMPL
   INLINE void lock() const;
   INLINE void release() const;
-#else
-  void lock() const;
-  void release() const;
-#endif
 
   INLINE bool debug_is_locked() const;
 
@@ -58,6 +53,9 @@ private:
 
 #else
   // If we don't have a reentrant mutex, we have to hand-roll one.
+  void do_lock();
+  void do_release();
+
   Thread *_locking_thread;
   int _lock_count;
   ConditionVarImpl _cvar;

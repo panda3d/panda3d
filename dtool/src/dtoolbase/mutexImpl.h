@@ -36,6 +36,12 @@ typedef MutexWin32Impl MutexImpl;
 typedef MutexWin32Impl ReMutexImpl;  // Win32 Mutexes are always reentrant.
 #define HAVE_REMUTEXIMPL 1
 
+#elif defined(THREAD_LINUX_IMPL)
+
+#include "mutexLinuxImpl.h"
+typedef MutexLinuxImpl MutexImpl;
+#undef HAVE_REMUTEXIMPL  // The futex implementation is non-reentrant.
+
 #elif defined(THREAD_POSIX_IMPL)
 
 #include "mutexPosixImpl.h"

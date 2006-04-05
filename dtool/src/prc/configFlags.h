@@ -20,6 +20,8 @@
 #define CONFIGFLAGS_H
 
 #include "dtoolbase.h"
+#include "numeric_types.h"
+#include "atomicAdjust.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ConfigFlags
@@ -60,9 +62,20 @@ PUBLISHED:
     // shouldn't pass this in directly.
     F_dconfig           = 0x00008000,
   };
+
+protected:
+  INLINE static bool is_cache_valid(PN_int32 local_modified);
+  INLINE static void mark_cache_valid(PN_int32 &local_modified); 
+  INLINE static PN_int32 initial_invalid_cache();
+  INLINE static void invalidate_cache();
+
+private:
+  static PN_int32 _global_modified;
 };
 
 ostream &operator << (ostream &out, ConfigFlags::ValueType type);
+
+#include "configFlags.I"
 
 #endif
 

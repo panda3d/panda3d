@@ -21,10 +21,11 @@
 
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
+#include "shaderExpansion.h"
 #include "pointerTo.h"
 #include "dcast.h"
 
-class ShaderExpansion;
+class RenderState;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Shader

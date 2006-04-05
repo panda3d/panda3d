@@ -23,6 +23,7 @@
 #include "recorderBase.h"
 #include "typedWritable.h"
 #include "recorderTable.h"
+#include "datagram.h"
 
 class BamWriter;
 class BamReader;

@@ -331,6 +331,23 @@
 // the target is not to be built.
 #defer build_target $[BUILD_TARGET]
 
+#if $[USE_TAU]
+#defer compile_c $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[COMPILE_C] $[TAU_CFLAGS]
+#defer compile_c++ $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[COMPILE_C++] $[TAU_CFLAGS] $[TAU_C++FLAGS]
+#defer link_bin_c $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[LINK_BIN_C] $[TAU_CFLAGS]
+#defer link_bin_c++ $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[LINK_BIN_C++] $[TAU_CFLAGS] $[TAU_C++FLAGS]
+#defer shared_lib_c $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[SHARED_LIB_C] $[TAU_CFLAGS]
+#defer shared_lib_c++ $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[SHARED_LIB_C++] $[TAU_CFLAGS] $[TAU_C++FLAGS]
+
+#else
+#defer compile_c $[COMPILE_C]
+#defer compile_c++ $[COMPILE_C++]
+#defer link_bin_c $[LINK_BIN_C]
+#defer link_bin_c++ $[LINK_BIN_C++]
+#defer shared_lib_c $[SHARED_LIB_C]
+#defer shared_lib_c++ $[SHARED_LIB_C++]
+#endif  // USE_TAU
+
 
 // This takes advantage of the above two variables to get the actual
 // list of local libraries we are to link with, eliminating those that
@@ -358,7 +375,7 @@
 
 #defer get_sources \
   $[SOURCES] \
-  $[if $[ne $[NO_COMBINED_SOURCES],], $[INCLUDED_SOURCES], $[get_combined_sources]]
+  $[if $[or $[NO_COMBINED_SOURCES],$[USE_TAU]], $[INCLUDED_SOURCES], $[get_combined_sources]]
 
 #defer included_sources $[INCLUDED_SOURCES]
 

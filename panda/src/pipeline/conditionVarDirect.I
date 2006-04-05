@@ -104,6 +104,7 @@ get_mutex() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarDirect::
 wait() {
+  TAU_PROFILE("ConditionVarDirect::wait()", " ", TAU_USER);
   _impl.wait();
 }
 
@@ -125,5 +126,6 @@ wait() {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarDirect::
 signal() {
+  TAU_PROFILE("ConditionVarDirect::signal()", " ", TAU_USER);
   _impl.signal();
 }

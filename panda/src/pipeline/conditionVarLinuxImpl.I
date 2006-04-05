@@ -1,5 +1,5 @@
-// Filename: atomicAdjustNsprImpl.h
-// Created by:  drose (09Aug02)
+// Filename: conditionVarLinuxImpl.I
+// Created by:  drose (28Mar06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef ATOMICADJUSTNSPRIMPL_H
-#define ATOMICADJUSTNSPRIMPL_H
-
-#include "pandabase.h"
-#include "selectThreadImpl.h"
-
-#ifdef THREAD_NSPR_IMPL
-
-#include "pnotify.h"
-#include "numeric_types.h"
-
-#include <pratom.h>
 
 ////////////////////////////////////////////////////////////////////
-//       Class : AtomicAdjustNsprImpl
-// Description : Uses NSPR to implement atomic adjustments.
+//     Function: ConditionVarLinuxImpl::Constructor
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS AtomicAdjustNsprImpl {
-public:
-  INLINE static PN_int32 inc(PN_int32 &var);
-  INLINE static PN_int32 dec(PN_int32 &var);
-  INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
-  INLINE static PN_int32 get(const PN_int32 &var);
-};
+INLINE ConditionVarLinuxImpl::
+ConditionVarLinuxImpl(MutexLinuxImpl &mutex) :
+  _mutex(mutex)
+{
+  _counter = 0;
+}
 
-#include "atomicAdjustNsprImpl.I"
-
-#endif  // THREAD_NSPR_IMPL
-
-#endif
+////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarLinuxImpl::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ConditionVarLinuxImpl::
+~ConditionVarLinuxImpl() {
+}

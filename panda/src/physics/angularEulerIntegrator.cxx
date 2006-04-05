@@ -82,7 +82,7 @@ child_integrate(Physical *physical,
 
     // global forces
     f_cur = forces.begin();
-    unsigned int index = 0;
+    //    unsigned int index = 0;
     for (; f_cur != forces.end(); ++f_cur) {
       AngularForce *cur_force = *f_cur;
 

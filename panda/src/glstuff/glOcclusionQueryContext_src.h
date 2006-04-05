@@ -18,6 +18,7 @@
 
 #include "pandabase.h"
 #include "occlusionQueryContext.h"
+#include "deletedChain.h"
 
 class GraphicsStateGuardian;
 
@@ -29,6 +30,7 @@ class EXPCL_GL CLP(OcclusionQueryContext) : public OcclusionQueryContext {
 public:
   INLINE CLP(OcclusionQueryContext)(GraphicsStateGuardian *gsg);
   virtual ~CLP(OcclusionQueryContext)();
+  ALLOC_DELETED_CHAIN(CLP(OcclusionQueryContext));
 
   virtual bool is_answer_ready() const;
   virtual void waiting_for_answer();

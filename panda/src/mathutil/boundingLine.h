@@ -38,6 +38,7 @@ class EXPCL_PANDA BoundingLine : public GeometricBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingLine();
   INLINE_MATHUTIL BoundingLine(const LPoint3f &a, const LPoint3f &b);
+  ALLOC_DELETED_CHAIN(BoundingLine);
 
 public:
   virtual BoundingVolume *make_copy() const;

@@ -1,4 +1,4 @@
-// Filename: atomicAdjust.I
+// Filename: atomicAdjustNsprImpl.I
 // Created by:  drose (09Aug02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,40 +18,40 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjust::inc
+//     Function: AtomicAdjustNsprImpl::inc
 //       Access: Public, Static
-//  Description: Atomically increments the indicated variable and
-//               returns the new value.
+//  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjust::
+INLINE void AtomicAdjustNsprImpl::
 inc(PN_int32 &var) {
-  return AtomicAdjustImpl::inc(var);
+  PR_AtomicIncrement(&var);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjust::dec
+//     Function: AtomicAdjustNsprImpl::dec
 //       Access: Public, Static
 //  Description: Atomically decrements the indicated variable and
-//               returns the new value.
+//               returns true if the new value is nonzero, false if it
+//               is zero.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjust::
+INLINE bool AtomicAdjustNsprImpl::
 dec(PN_int32 &var) {
-  return AtomicAdjustImpl::dec(var);
+  return (PR_AtomicDecrement(&var) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjust::set
+//     Function: AtomicAdjustNsprImpl::set
 //       Access: Public, Static
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjust::
+INLINE PN_int32 AtomicAdjustNsprImpl::
 set(PN_int32 &var, PN_int32 new_value) {
-  return AtomicAdjustImpl::set(var, new_value);
+  return PR_AtomicSet(&var, new_value);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjust::get
+//     Function: AtomicAdjustNsprImpl::get
 //       Access: Public, Static
 //  Description: Atomically retrieves the snapshot value of the
 //               indicated variable.  This is the only guaranteed safe
@@ -59,7 +59,7 @@ set(PN_int32 &var, PN_int32 new_value) {
 //               asynchronously setting, incrementing, or decrementing
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjust::
+INLINE PN_int32 AtomicAdjustNsprImpl::
 get(const PN_int32 &var) {
-  return AtomicAdjustImpl::get(var);
+  return var;
 }

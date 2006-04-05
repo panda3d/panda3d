@@ -1,5 +1,5 @@
-// Filename: mutexNsprImpl.h
-// Created by:  drose (08Aug02)
+// Filename: mutexLinuxImpl.I
+// Created by:  drose (28Mar06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,40 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MUTEXNSPRIMPL_H
-#define MUTEXNSPRIMPL_H
-
-#include "dtoolbase.h"
-#include "selectThreadImpl.h"
-
-#ifdef THREAD_NSPR_IMPL
-
-#include "pnotify.h"
-
-#include <prlock.h>
-
-#undef MUTEX_DEFINES_TRYLOCK
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MutexNsprImpl
-// Description : Uses NSPR to implement a mutex.
+//     Function: MutexLinuxImpl::Constructor
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG MutexNsprImpl {
-public:
-  INLINE MutexNsprImpl();
-  INLINE ~MutexNsprImpl();
+INLINE MutexLinuxImpl::
+MutexLinuxImpl() {
+  _mode = M_unlocked;
+}
 
-  INLINE void lock();
-  INLINE bool try_lock();
-  INLINE void release();
-
-private:
-  PRLock *_lock;
-  friend class ConditionVarNsprImpl;
-};
-
-#include "mutexNsprImpl.I"
-
-#endif  // THREAD_NSPR_IMPL
-
-#endif
+////////////////////////////////////////////////////////////////////
+//     Function: MutexLinuxImpl::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE MutexLinuxImpl::
+~MutexLinuxImpl() {
+  assert(_mode == M_unlocked);
+}

@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "virtualFileSimple.h"
+#include "virtualFileMount.h"
+#include "virtualFileList.h"
 #include "zStream.h"
 
 TypeHandle VirtualFileSimple::_type_handle;

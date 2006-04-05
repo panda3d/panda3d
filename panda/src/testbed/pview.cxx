@@ -364,5 +364,6 @@ main(int argc, char *argv[]) {
     framework.report_frame_rate(nout);
   }
 
+  framework.close_framework();
   return (0);
 }

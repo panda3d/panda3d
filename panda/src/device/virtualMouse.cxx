@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "virtualMouse.h"
+#include "dataNodeTransmit.h"
 
 TypeHandle VirtualMouse::_type_handle;
 

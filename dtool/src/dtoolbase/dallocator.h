@@ -35,46 +35,14 @@
 //               within the MemoryUsage class itself.
 ////////////////////////////////////////////////////////////////////
 
-#if defined(NO_STYLE_ALLOCATOR)
+#ifndef USE_STL_ALLOCATOR
 // If we're not trying to make custom allocators (either we don't know
 // what kind of syntax this STL library wants, or we're compiling with
 // OPTIMIZE 4), then simply use the standard allocator.
 #define dallocator allocator
 
-#elif defined(OLD_STYLE_ALLOCATOR)
-// Early versions of gcc wanted to use their own kind of allocator,
-// somewhat different from the STL standard.  Irix uses this one too.
-// It might be inherited from an early draft of the STL standard.
+#else
 
-template<class Type>
-class dallocator : public alloc {
-public:
-  INLINE static Type *allocate(size_t n);
-  INLINE static void deallocate(void *p, size_t n);
-};
-
-#elif defined(GNU_STYLE_ALLOCATOR)
-// Later versions of gcc want to use a still different,
-// not-quite-standard definition.  Sheesh.
-
-template<class Type>
-class dallocator : public allocator<Type> {
-public:
-  INLINE dallocator();
-  template<class _Tp1>
-  INLINE dallocator(const dallocator<_Tp1> &other);
-
-  INLINE Type *allocate(size_t n);
-  INLINE void deallocate(void *p, size_t n);
-
-  template <class _Tp1> struct rebind {
-    typedef dallocator<_Tp1> other;
-  };
-};
-
-#elif defined(MODERN_STYLE_ALLOCATOR)
-
-// The final specification?
 template<class Type>
 class dallocator : public allocator<Type> {
 public:
@@ -95,31 +63,14 @@ public:
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
   INLINE void deallocate(pointer p, size_type n);
 
-  /*
-#ifdef __GNUC__
-  template<class Subtype>
-  INLINE void destroy(Subtype *p) {
-    p->~Subtype();
-  }
-  template<class Subtype>
-  INLINE void construct(Subtype *p, const Subtype &value) {
-    ::new(p) Subtype(value);
-  }
-#endif  // __GNUC__
-  */
-
   template<class U> struct rebind { 
     typedef dallocator<U> other; 
   };
 };
 
-#else
-#error Unrecognized allocator symbol defined!
-#endif  // *_STYLE_ALLOCATOR
-
-#ifndef NO_STYLE_ALLOCATOR
 #include "dallocator.T"
-#endif
+
+#endif  // USE_STL_ALLOCATOR
 
 #endif
 

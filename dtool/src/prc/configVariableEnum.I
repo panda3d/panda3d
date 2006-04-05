@@ -31,10 +31,9 @@ ConfigVariableEnum(const string &name, EnumType default_value,
 #else
   ConfigVariable(name, ConfigVariableCore::VT_enum, string(), flags),
 #endif
-  _value_seq(-1),
-  _value(default_value),
   _got_default_value(true),
-  _default_value(default_value)
+  _default_value(default_value),
+  _local_modified(initial_invalid_cache())
 {
   _core->set_default_value(format_enum(default_value));
   _core->set_used();
@@ -54,10 +53,9 @@ ConfigVariableEnum(const string &name, const string &default_value,
 #else
   ConfigVariable(name, ConfigVariableCore::VT_enum, string(), flags),
 #endif
-  _value_seq(-1),
-  _value(default_value),
   _got_default_value(true),
-  _default_value(parse_string(default_value))
+  _default_value(parse_string(default_value)),
+  _local_modified(initial_invalid_cache())
 {
   _core->set_default_value(default_value);
   _core->set_used();
@@ -136,11 +134,12 @@ set_value(EnumType value) {
 template<class EnumType>
 INLINE EnumType ConfigVariableEnum<EnumType>::
 get_value() const {
-  if (_value_seq != _core->get_value_seq()) {
-    ((ConfigVariableEnum<EnumType> *)this)->_value = (EnumType)parse_string(get_string_value());
-    ((ConfigVariableEnum<EnumType> *)this)->_value_seq = _core->get_value_seq();
+  TAU_PROFILE("EnumType ConfigVariableEnum<EnumType>::get_value() const", " ", TAU_USER);
+  if (!is_cache_valid(_local_modified)) {
+    mark_cache_valid(((ConfigVariableEnum<EnumType> *)this)->_local_modified);
+    ((ConfigVariableEnum<EnumType> *)this)->_cache = (EnumType)parse_string(get_string_value());
   }
-  return _value;
+  return _cache;
 }
 
 ////////////////////////////////////////////////////////////////////

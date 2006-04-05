@@ -19,6 +19,7 @@
 #include "sliderTable.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "vertexTransform.h"
 
 TypeHandle SliderTable::_type_handle;
 

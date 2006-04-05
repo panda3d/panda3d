@@ -21,6 +21,7 @@
 #include "geomVertexRewriter.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "graphicsStateGuardianBase.h"
 
 TypeHandle GeomTrifans::_type_handle;
 

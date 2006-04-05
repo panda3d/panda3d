@@ -32,6 +32,7 @@
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
+#include "deletedChain.h"
 
 class GeomVertexData;
 class PreparedGraphicsObjects;
@@ -69,6 +70,7 @@ PUBLISHED:
   GeomPrimitive(const GeomPrimitive &copy);
   void operator = (const GeomPrimitive &copy);
   virtual ~GeomPrimitive();
+  ALLOC_DELETED_CHAIN(GeomPrimitive);
 
   virtual PT(GeomPrimitive) make_copy() const=0;
 
@@ -215,6 +217,7 @@ private:
   public:
     INLINE CData();
     INLINE CData(const CData &copy);
+    ALLOC_DELETED_CHAIN(CData);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);

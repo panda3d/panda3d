@@ -18,6 +18,8 @@
 
 #include "configFlags.h"
 
+PN_int32 ConfigFlags::_global_modified;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigFlags::Type output operator
 //  Description: 

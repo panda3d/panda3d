@@ -178,6 +178,10 @@
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
 ################################# DO NOT EDIT ###########################
 
+#if $[USE_TAU]
+include $[TAU_MAKEFILE]
+#endif
+
 // If we are using GNU make, this will automatically enable the
 // multiprocessor build mode according to the value in
 // NUMBER_OF_PROCESSORS, which should be set by NT.  Maybe this isn't
@@ -212,6 +216,9 @@ $[TAB] rm -f $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cx
 #endif
 #if $[py_sources]
 $[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
+#endif
+#if $[USE_TAU]
+$[TAB] rm -f *.pdb *.inst.*  // scrub out tau-generated files.
 #endif
                          
 // 'cleanall' is intended to undo all the effects of running ppremake
@@ -344,9 +351,9 @@ $[varname] = $[sources]
 
 $[target] : $[sources] $[static_lib_dependencies]
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-$[TAB] $[SHARED_LIB_C++]
+$[TAB] $[shared_lib_c++]
   #else  
-$[TAB] $[SHARED_LIB_C]
+$[TAB] $[shared_lib_c]
   #endif
 
   #if $[BUNDLE_EXT]
@@ -454,9 +461,9 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define sources $($[varname])
 $[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-$[TAB] $[SHARED_LIB_C++]
+$[TAB] $[shared_lib_c++]
 #else
-$[TAB] $[SHARED_LIB_C]
+$[TAB] $[shared_lib_c]
 #endif
 
 #end noinst_lib_target
@@ -555,9 +562,9 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define flags $[lflags]
 $[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-$[TAB] $[LINK_BIN_C++]
+$[TAB] $[link_bin_c++]
 #else
-$[TAB] $[LINK_BIN_C]
+$[TAB] $[link_bin_c]
 #endif
 
 #define installed_files \
@@ -600,9 +607,9 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define flags $[lflags]
 $[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-$[TAB] $[LINK_BIN_C++]
+$[TAB] $[link_bin_c++]
 #else
-$[TAB] $[LINK_BIN_C]
+$[TAB] $[link_bin_c]
 #endif
 
 #end noinst_bin_target test_bin_target
@@ -680,7 +687,7 @@ $[TAB] cp $[target_prebuilt] $[target]
 #endif
 
 $[target] : $[source] $[get_depends $[source]]
-$[TAB] $[COMPILE_C]
+$[TAB] $[compile_c]
 
 #end file
 
@@ -700,7 +707,7 @@ $[TAB] $[COMPILE_C]
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
 $[target] : $[source] $[get_depends $[source]] $[yxx_sources:%.yxx=%.h]
-$[TAB] $[COMPILE_C++]
+$[TAB] $[compile_c++]
 
 #end file
 

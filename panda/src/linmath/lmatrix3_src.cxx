@@ -60,6 +60,7 @@ FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
                 const FLOATNAME(LVecBase3) &shear,
                 CoordinateSystem cs) {
+  TAU_PROFILE("LMatrix3 LMatrix3::scale_shear_mat(const LVecBase3 &, const LVecBase3 &)", " ", TAU_USER);
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
   }
@@ -133,6 +134,7 @@ scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
 ////////////////////////////////////////////////////////////////////
 const FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 convert_mat(CoordinateSystem from, CoordinateSystem to) {
+  TAU_PROFILE("LMatrix3 LMatrix3::convert_mat(CoordinateSystem, CoordinateSystem)", " ", TAU_USER);
   if (from == CS_default) {
     from = get_default_coordinate_system();
   }
@@ -198,6 +200,7 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LMatrix3)::
 fill(FLOATTYPE fill_value) {
+  TAU_PROFILE("void LMatrix3::fill(FLOATTYPE)", " ", TAU_USER);
   set(fill_value, fill_value, fill_value,
       fill_value, fill_value, fill_value,
       fill_value, fill_value, fill_value);
@@ -214,6 +217,7 @@ fill(FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 int FLOATNAME(LMatrix3)::
 compare_to(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
+  TAU_PROFILE("int LMatrix3::compare_to(const LMatrix3 &, FLOATTYPE)", " ", TAU_USER);
   for (int i = 0; i < 9; i++) {
     if (!IS_THRESHOLD_COMPEQ(_m.data[i], other._m.data[i], threshold)) {
       return (_m.data[i] < other._m.data[i]) ? -1 : 1;
@@ -230,6 +234,7 @@ compare_to(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 bool FLOATNAME(LMatrix3)::
 almost_equal(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
+  TAU_PROFILE("bool LMatrix3::almost_equal(const LMatrix3 &, FLOATTYPE)", " ", TAU_USER);
   return (IS_THRESHOLD_EQUAL((*this)(0, 0), other(0, 0), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(0, 1), other(0, 1), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(0, 2), other(0, 2), threshold) &&
@@ -318,6 +323,7 @@ python_repr(ostream &out, const string &class_name) const {
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LMatrix3)::
 generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
+  TAU_PROFILE("void LMatrix3::generate_hash(ChecksumHashGenerator &, FLOATTYPE)", " ", TAU_USER);
   for(int i = 0; i < 3; i++) {
     for(int j = 0; j < 3; j++) {
       hashgen.add_fp(get_cell(i,j), threshold);

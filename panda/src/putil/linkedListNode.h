@@ -20,6 +20,7 @@
 #define LINKEDLISTNODE_H
 
 #include "pandabase.h"
+#include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LinkedListNode

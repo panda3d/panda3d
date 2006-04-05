@@ -35,6 +35,7 @@ template<class Key, class Compare>
 TYPENAME ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
 insert_unique(TYPENAME ordered_vector<Key, Compare>::ITERATOR position, 
               const TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE &key) {
+  TAU_PROFILE("ordered_vector::insert_unique(iterator, const value_type &)", " ", TAU_USER);
   if (position != end()) {
     // If we're not inserting at the end, the element we're
     // inserting before should not lexicographically precede this one.
@@ -81,6 +82,7 @@ template<class Key, class Compare>
 TYPENAME ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
 insert_nonunique(TYPENAME ordered_vector<Key, Compare>::ITERATOR position, 
                  const TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE &key) {
+  TAU_PROFILE("ordered_vector::insert_nonunique(iterator, const value_type &)", " ", TAU_USER);
   if (position != end()) {
     // If we're not inserting at the end, the element we're
     // inserting before should not lexicographically precede this one.
@@ -112,6 +114,7 @@ insert_nonunique(TYPENAME ordered_vector<Key, Compare>::ITERATOR position,
 template<class Key, class Compare>
 bool ordered_vector<Key, Compare>::
 verify_list_unique() const {
+  TAU_PROFILE("ordered_vector::verify_list_unique()", " ", TAU_USER);
   if (!empty()) {
     CONST_ITERATOR prev = begin();
     CONST_ITERATOR i = begin();
@@ -138,6 +141,7 @@ verify_list_unique() const {
 template<class Key, class Compare>
 bool ordered_vector<Key, Compare>::
 verify_list_nonunique() const {
+  TAU_PROFILE("ordered_vector::verify_list_nonunique()", " ", TAU_USER);
   if (!empty()) {
     CONST_ITERATOR prev = begin();
     CONST_ITERATOR i = begin();

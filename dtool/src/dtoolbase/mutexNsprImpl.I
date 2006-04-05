@@ -25,7 +25,7 @@
 INLINE MutexNsprImpl::
 MutexNsprImpl() {
   _lock = PR_NewLock();
-  nassertv(_lock != (PRLock *)NULL);
+  assert(_lock != (PRLock *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,5 +68,5 @@ try_lock() {
 INLINE void MutexNsprImpl::
 release() {
   int status = PR_Unlock(_lock);
-  nassertv(status == PR_SUCCESS);
+  assert(status == PR_SUCCESS);
 }

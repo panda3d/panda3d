@@ -68,6 +68,7 @@ operator = (const MutexDebug &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexDebug::
 lock() const {
+  TAU_PROFILE("MutexDebug::lock()", " ", TAU_USER);
   _global_mutex.lock();
   ((MutexDebug *)this)->do_lock();
   _global_mutex.release();
@@ -85,6 +86,7 @@ lock() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexDebug::
 release() const {
+  TAU_PROFILE("MutexDebug::release()", " ", TAU_USER);
   _global_mutex.lock();
   ((MutexDebug *)this)->do_release();
   _global_mutex.release();
@@ -102,6 +104,7 @@ release() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool MutexDebug::
 debug_is_locked() const {
+  TAU_PROFILE("MutexDebug::debug_is_locked()", " ", TAU_USER);
   _global_mutex.lock();
   bool is_locked = do_debug_is_locked();
   _global_mutex.release();

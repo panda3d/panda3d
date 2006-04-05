@@ -30,8 +30,7 @@ ConfigVariableSearchPath(const string &name,
 #else
   ConfigVariableBase(name, VT_search_path, string(), flags),
 #endif
-  _value_seq(-1),
-  _value_stale(true)
+  _local_modified(initial_invalid_cache())
 {
   // A SearchPath variable implicitly defines a default value of the empty
   // string.  This is just to prevent the core variable from
@@ -62,6 +61,20 @@ operator const DSearchPath & () const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableSearchPath::get_value
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const DSearchPath &ConfigVariableSearchPath::
+get_value() const {
+  TAU_PROFILE("const DSearchPath &ConfigVariableSearchPath::get_value() const", " ", TAU_USER);
+  if (!is_cache_valid(_local_modified)) {
+    ((ConfigVariableSearchPath *)this)->reload_search_path();
+  }
+  return _cache;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableSearchPath::clear_local_value
 //       Access: Published
 //  Description: Removes all the directories locally added to the
@@ -79,7 +92,7 @@ clear_local_value() {
     any_to_clear = true;
   }
 
-  _value_stale = true;
+  _local_modified = initial_invalid_cache();
   return any_to_clear;
 }
 
@@ -102,7 +115,7 @@ clear() {
 INLINE void ConfigVariableSearchPath::
 append_directory(const Filename &directory) {
   _postfix.append_directory(directory);
-  _value_stale = true;
+  _local_modified = initial_invalid_cache();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -113,7 +126,7 @@ append_directory(const Filename &directory) {
 INLINE void ConfigVariableSearchPath::
 prepend_directory(const Filename &directory) {
   _prefix.prepend_directory(directory);
-  _value_stale = true;
+  _local_modified = initial_invalid_cache();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,7 +138,7 @@ prepend_directory(const Filename &directory) {
 INLINE void ConfigVariableSearchPath::
 append_path(const string &path, const string &separator) {
   _postfix.append_path(path, separator);
-  _value_stale = true;
+  _local_modified = initial_invalid_cache();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,7 +150,7 @@ append_path(const string &path, const string &separator) {
 INLINE void ConfigVariableSearchPath::
 append_path(const DSearchPath &path) {
   _postfix.append_path(path);
-  _value_stale = true;
+  _local_modified = initial_invalid_cache();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,7 +162,7 @@ append_path(const DSearchPath &path) {
 INLINE void ConfigVariableSearchPath::
 prepend_path(const DSearchPath &path) {
   _prefix.prepend_path(path);
-  _value_stale = true;
+  _local_modified = initial_invalid_cache();
 }
 
 ////////////////////////////////////////////////////////////////////

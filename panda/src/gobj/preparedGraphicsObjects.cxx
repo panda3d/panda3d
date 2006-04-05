@@ -26,6 +26,8 @@
 #include "geomPrimitive.h"
 #include "shaderExpansion.h"
 #include "reMutexHolder.h"
+#include "geomContext.h"
+#include "shaderContext.h"
 
 int PreparedGraphicsObjects::_name_index = 0;
 

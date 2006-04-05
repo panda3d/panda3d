@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "pandaNode.h"
 #include "collisionRecorder.h"
+#include "collisionSolid.h"
 #include "nodePath.h"
 #include "pmap.h"
 

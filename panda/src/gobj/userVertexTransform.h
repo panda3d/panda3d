@@ -26,6 +26,8 @@
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : UserVertexTransform
 // Description : This is a specialization on VertexTransform that

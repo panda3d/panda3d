@@ -66,6 +66,7 @@ PUBLISHED:
   GeomVertexArrayData(const GeomVertexArrayData &copy);
   void operator = (const GeomVertexArrayData &copy);
   virtual ~GeomVertexArrayData();
+  ALLOC_DELETED_CHAIN(GeomVertexArrayData);
 
   INLINE const GeomVertexArrayFormat *get_array_format() const;
 
@@ -120,6 +121,7 @@ private:
   public:
     INLINE CData();
     INLINE CData(const CData &copy);
+    ALLOC_DELETED_CHAIN(CData);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg,
                                 void *extra_data) const;

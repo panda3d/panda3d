@@ -18,6 +18,7 @@
 
 #include "pandabase.h"
 #include "vertexBufferContext.h"
+#include "deletedChain.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLVertexBufferContext
@@ -28,6 +29,7 @@ class EXPCL_GL CLP(VertexBufferContext) : public VertexBufferContext {
 public:
   INLINE CLP(VertexBufferContext)(PreparedGraphicsObjects *pgo, 
                                   GeomVertexArrayData *data);
+  ALLOC_DELETED_CHAIN(CLP(VertexBufferContext));
 
   // This is the GL "name" of the data object.
   GLuint _index;

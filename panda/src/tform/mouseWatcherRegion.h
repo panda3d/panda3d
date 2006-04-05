@@ -70,10 +70,10 @@ PUBLISHED:
 public:
   INLINE bool operator < (const MouseWatcherRegion &other) const;
 
-  virtual void enter(const MouseWatcherParameter &param);
-  virtual void exit(const MouseWatcherParameter &param);
-  virtual void within(const MouseWatcherParameter &param);
-  virtual void without(const MouseWatcherParameter &param);
+  virtual void enter_region(const MouseWatcherParameter &param);
+  virtual void exit_region(const MouseWatcherParameter &param);
+  virtual void within_region(const MouseWatcherParameter &param);
+  virtual void without_region(const MouseWatcherParameter &param);
   virtual void press(const MouseWatcherParameter &param);
   virtual void release(const MouseWatcherParameter &param);
   virtual void keystroke(const MouseWatcherParameter &param);

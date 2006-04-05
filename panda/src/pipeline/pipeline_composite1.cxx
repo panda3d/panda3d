@@ -3,6 +3,7 @@
 #include "conditionVarDirect.cxx"
 #include "conditionVarDummyImpl.cxx"
 #include "conditionVarNsprImpl.cxx"
+#include "conditionVarLinuxImpl.cxx"
 #include "conditionVarPosixImpl.cxx"
 #include "conditionVarWin32Impl.cxx"
 #include "config_pipeline.cxx"

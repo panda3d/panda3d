@@ -17,39 +17,12 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "subStreamBuf.h"
+#include "pnotify.h"
 
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us
 typedef int streamsize;
 #endif /* HAVE_STREAMSIZE */
-
-// Temporary hack to make these thread-safe.
-//#define SUBSTREAM_THREAD_SAFE
-
-#ifdef SUBSTREAM_THREAD_SAFE
-// This requires NSPR for now.
-#include <prlock.h>
-PRLock *substream_mutex = (PRLock *)NULL;
-
-inline void init_lock() {
-  if (substream_mutex == (PRLock *)NULL) {
-    substream_mutex = PR_NewLock();
-  }
-}
-inline void grab_lock() {
-  PR_Lock(substream_mutex);
-}
-inline void release_lock() {
-  PR_Unlock(substream_mutex);
-}
-#else  // SUBSTREAM_THREAD_SAFE
-inline void init_lock() {
-}
-inline void grab_lock() {
-}
-inline void release_lock() {
-}
-#endif  // SUBSTREAM_THREAD_SAFE
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SubStreamBuf::Constructor
@@ -81,8 +54,6 @@ SubStreamBuf() {
   // This is important to prevent us from inadvertently seeking into
   // the unused part of the buffer.
   _unused = 0;
-
-  init_lock();
 
 #ifdef HAVE_IOSTREAM
   // The new-style iostream library doesn't seem to support allocate().
@@ -168,10 +139,10 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode mode) {
     if (_end == (streampos)0) {
       // If the end of the file is unspecified, we have to seek to
       // find it.
-      grab_lock();
+      _lock.lock();
       _source->seekg(off, ios::end);
       new_pos = _source->tellg();
-      release_lock();
+      _lock.release();
 
     } else {
       new_pos = _end + off;
@@ -269,11 +240,11 @@ underflow() {
     gbump(-(int)num_bytes);
     nassertr(gptr() + num_bytes <= egptr(), EOF);
 
-    grab_lock();
+    _lock.lock();
     _source->seekg(_cur);
     _source->read(gptr(), num_bytes);
     size_t read_count = _source->gcount();
-    release_lock();
+    _lock.release();
 
     if (read_count != num_bytes) {
       // Oops, we didn't read what we thought we would.

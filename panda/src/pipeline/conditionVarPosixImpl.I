@@ -26,6 +26,7 @@ INLINE ConditionVarPosixImpl::
 ConditionVarPosixImpl(MutexPosixImpl &mutex) :
   _mutex(mutex)
 {
+  TAU_PROFILE("ConditionVarPosixImpl::ConditionVarPosixImpl()", " ", TAU_USER);
   int result = pthread_cond_init(&_cvar, NULL);
   nassertv(result == 0);
 }
@@ -37,6 +38,7 @@ ConditionVarPosixImpl(MutexPosixImpl &mutex) :
 ////////////////////////////////////////////////////////////////////
 INLINE ConditionVarPosixImpl::
 ~ConditionVarPosixImpl() {
+  TAU_PROFILE("ConditionVarPosixImpl::~ConditionVarPosixImpl()", " ", TAU_USER);
   int result = pthread_cond_destroy(&_cvar);
   nassertv(result == 0);
 }
@@ -48,6 +50,7 @@ INLINE ConditionVarPosixImpl::
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarPosixImpl::
 wait() {
+  TAU_PROFILE("ConditionVarPosixImpl::wait()", " ", TAU_USER);
   int result = pthread_cond_wait(&_cvar, &_mutex._lock);
   nassertv(result == 0);
 }
@@ -59,6 +62,7 @@ wait() {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarPosixImpl::
 signal() {
+  TAU_PROFILE("ConditionVarPosixImpl::signal()", " ", TAU_USER);
   int result = pthread_cond_signal(&_cvar);
   nassertv(result == 0);
 }

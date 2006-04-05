@@ -30,7 +30,6 @@
     clientDialDevice.cxx clientTrackerDevice.cxx  \
     config_device.cxx \
     dialNode.cxx \
-    dialNode.cxx \
     mouseAndKeyboard.cxx \
     trackerData.cxx \
     trackerNode.cxx \

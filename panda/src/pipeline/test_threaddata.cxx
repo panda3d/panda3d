@@ -38,7 +38,7 @@ private:
 
 ThreadWithData::
 ThreadWithData(const string &name, int parameter) : 
-  Thread(name),
+  Thread(name, name),
   _parameter(parameter)
 {
   MutexHolder holder(cout_mutex);

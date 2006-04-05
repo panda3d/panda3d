@@ -459,6 +459,12 @@ $[cdefine HAVE_RTTI]
 /* Do we have Posix threads? */
 $[cdefine HAVE_POSIX_THREADS]
 
+/* Do we want to build for Linux native threads? */
+$[cdefine HAVE_LINUX_NATIVE_THREADS]
+
+/* Is the code being compiled with the Tau profiler's instrumentor? */
+$[cdefine USE_TAU]
+
 /* Must global operator new and delete functions throw exceptions? */
 $[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 
@@ -490,38 +496,8 @@ $[cdefine USE_MEMORY_PTMALLOC2]
 $[cdefine USE_MEMORY_MALLOC]
 $[cdefine USE_MEMORY_NOWRAPPERS]
 
-/* What style STL allocator should we declare? */
-#define OLD_STYLE_ALLOCATOR
-#define GNU_STYLE_ALLOCATOR
-#define VC6_STYLE_ALLOCATOR
-#define MODERN_STYLE_ALLOCATOR
-#define NO_STYLE_ALLOCATOR
-#if $[not $[DO_MEMORY_USAGE]]
-  // Without DO_MEMORY_USAGE, we never try to use custom allocators.
-  #set NO_STYLE_ALLOCATOR 1
-#elif $[eq $[STL_ALLOCATOR], OLD]
-  // "OLD": Irix 6.2-era STL.
-  #set OLD_STYLE_ALLOCATOR 1
-#elif $[eq $[STL_ALLOCATOR], GNU]
-  // "GNU": gcc 2.95-era.
-  #set GNU_STYLE_ALLOCATOR 1
-#elif $[eq $[STL_ALLOCATOR], VC6]
-  // "VC6": Microsoft Visual C++ 6.
-  #set VC6_STYLE_ALLOCATOR 1
-#elif $[eq $[STL_ALLOCATOR], MODERN]
-  // "MODERN": Have we finally come to a standard?
-  #set MODERN_STYLE_ALLOCATOR 1
-#else
-  // Anything else is "unknown".  We won't try to define allocators at
-  // all.
-  #set NO_STYLE_ALLOCATOR 1
-#endif
-$[cdefine OLD_STYLE_ALLOCATOR]
-$[cdefine GNU_STYLE_ALLOCATOR]
-$[cdefine VC6_STYLE_ALLOCATOR]
-$[cdefine MODERN_STYLE_ALLOCATOR]
-$[cdefine NO_STYLE_ALLOCATOR]
-
+/* Can we define a modern-style STL allocator? */
+$[cdefine USE_STL_ALLOCATOR]
 
 
 $[cdefine IS_OSX]

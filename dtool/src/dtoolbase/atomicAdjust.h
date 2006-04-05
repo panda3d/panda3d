@@ -1,4 +1,4 @@
-// Filename: atomicAdjustImpl.h
+// Filename: atomicAdjust.h
 // Created by:  drose (09Aug02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,31 +16,43 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef ATOMICADJUSTIMPL_H
-#define ATOMICADJUSTIMPL_H
+#ifndef ATOMICADJUST_H
+#define ATOMICADJUST_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
 #if defined(THREAD_DUMMY_IMPL)
 
 #include "atomicAdjustDummyImpl.h"
-typedef AtomicAdjustDummyImpl AtomicAdjustImpl;
+typedef AtomicAdjustDummyImpl AtomicAdjust;
+
+#elif defined(__i386__)
+// For an i386 architecture, we'll always use the i386 implementation.
+// It should be safe for any OS, and it might be a bit faster than
+// any OS-provided calls.
+
+#include "atomicAdjustI386Impl.h"
+typedef AtomicAdjustI386Impl AtomicAdjust;
 
 #elif defined(THREAD_WIN32_IMPL)
 
 #include "atomicAdjustWin32Impl.h"
-typedef AtomicAdjustWin32Impl AtomicAdjustImpl;
+typedef AtomicAdjustWin32Impl AtomicAdjust;
+
+#elif defined(THREAD_LINUX_IMPL)
+
+#error Linux native threads are currently implemented only for i386; use Posix threads instead.
 
 #elif defined(THREAD_POSIX_IMPL)
 
 #include "atomicAdjustPosixImpl.h"
-typedef AtomicAdjustPosixImpl AtomicAdjustImpl;
+typedef AtomicAdjustPosixImpl AtomicAdjust;
 
 #elif defined(THREAD_NSPR_IMPL)
 
 #include "atomicAdjustNsprImpl.h"
-typedef AtomicAdjustNsprImpl AtomicAdjustImpl;
+typedef AtomicAdjustNsprImpl AtomicAdjust;
 
 #endif
 

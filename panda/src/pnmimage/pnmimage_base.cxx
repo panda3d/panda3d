@@ -19,6 +19,7 @@
 #include "pnmimage_base.h"
 #include "streamReader.h"
 #include "streamWriter.h"
+#include "config_pnmimage.h"
 
 #include <stdarg.h>
 #include <stdio.h>   // for sprintf()

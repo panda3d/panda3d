@@ -471,7 +471,7 @@ has_display_region() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcher::
 within_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
-  region->within(param);
+  region->within_region(param);
   throw_event_pattern(_within_pattern, region, ButtonHandle::none());
   if (_enter_multiple) {
     enter_region(region, param);
@@ -489,6 +489,6 @@ without_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
   if (_enter_multiple) {
     exit_region(region, param);
   }
-  region->without(param);
+  region->without_region(param);
   throw_event_pattern(_without_pattern, region, ButtonHandle::none());
 }

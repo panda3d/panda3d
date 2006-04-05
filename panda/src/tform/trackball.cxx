@@ -23,6 +23,8 @@
 #include "compose_matrix.h"
 #include "mouseData.h"
 #include "modifierButtons.h"
+#include "linmath_events.h"
+#include "mouseButton.h"
 
 TypeHandle Trackball::_type_handle;
 

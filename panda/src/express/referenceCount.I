@@ -103,6 +103,7 @@ operator = (const ReferenceCount &) {
 ////////////////////////////////////////////////////////////////////
 INLINE ReferenceCount::
 ~ReferenceCount() {
+  TAU_PROFILE("ReferenceCount::~ReferenceCount()", " ", TAU_USER);
   nassertv(this != NULL);
 
   // If this assertion fails, we're trying to delete an object that
@@ -162,7 +163,7 @@ INLINE ReferenceCount::
 ////////////////////////////////////////////////////////////////////
 INLINE int ReferenceCount::
 get_ref_count() const {
-#ifndef NDEBUG
+#ifdef _DEBUG
   test_ref_count_integrity();
 #endif
   return AtomicAdjust::get(_ref_count);
@@ -183,14 +184,15 @@ get_ref_count() const {
 //               with the object.  An object might be const in other
 //               ways, but we still need to accurately count the
 //               number of references to it.
-//
-//               The return value is the new reference count.
 ////////////////////////////////////////////////////////////////////
-INLINE int ReferenceCount::
+INLINE void ReferenceCount::
 ref() const {
-  nassertr(test_ref_count_integrity(), 0);
+  TAU_PROFILE("void ReferenceCount::ref()", " ", TAU_USER);
+#ifdef _DEBUG
+  nassertv(test_ref_count_integrity());
+#endif
 
-  return AtomicAdjust::inc(((ReferenceCount *)this)->_ref_count);
+  AtomicAdjust::inc(((ReferenceCount *)this)->_ref_count);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,16 +218,20 @@ ref() const {
 //               ways, but we still need to accurately count the
 //               number of references to it.
 //
-//               The return value is the new reference count.
+//               The return value is true if the new reference count
+//               is nonzero, false if it is zero.
 ////////////////////////////////////////////////////////////////////
-INLINE int ReferenceCount::
+INLINE bool ReferenceCount::
 unref() const {
+  TAU_PROFILE("void ReferenceCount::unref()", " ", TAU_USER);
+#ifdef _DEBUG
   nassertr(test_ref_count_integrity(), 0);
 
   // If this assertion fails, you tried to unref an object with a
   // zero reference count.  Are you using ref() and unref()
   // directly?  Are you sure you can't use PointerTo's?
   nassertr(_ref_count > 0, 0);
+#endif
   return AtomicAdjust::dec(((ReferenceCount *)this)->_ref_count);
 }
 
@@ -308,6 +314,7 @@ get_weak_list() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ReferenceCount::
 weak_ref(WeakPointerToVoid *ptv) {
+  TAU_PROFILE("void ReferenceCount::weak_ref()", " ", TAU_USER);
   get_weak_list()->add_reference(ptv);
 }
 
@@ -320,6 +327,7 @@ weak_ref(WeakPointerToVoid *ptv) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ReferenceCount::
 weak_unref(WeakPointerToVoid *ptv) {
+  TAU_PROFILE("void ReferenceCount::weak_unref()", " ", TAU_USER);
   nassertv(has_weak_list());
   _weak_list->clear_reference(ptv);
 }
@@ -337,12 +345,13 @@ weak_unref(WeakPointerToVoid *ptv) {
 template<class RefCountType>
 INLINE void
 unref_delete(RefCountType *ptr) {
+  TAU_PROFILE("unref_delete()", " ", TAU_USER);
   // Although it may be tempting to try to upcast ptr to a
   // ReferenceCount object (particularly to get around inheritance
   // issues), resist that temptation, since some classes (in
   // particular, TransformState and RenderState) rely on a non-virtual
   // overloading of the unref() method.
-  if (ptr->unref() == 0) {
+  if (!ptr->unref()) {
 #ifndef NDEBUG
     if (get_leak_memory()) {
       // In leak-memory mode, we don't actually delete the pointer,

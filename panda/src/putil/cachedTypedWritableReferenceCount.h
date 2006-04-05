@@ -50,8 +50,8 @@ protected:
 
 PUBLISHED:
   INLINE int get_cache_ref_count() const;
-  INLINE int cache_ref() const;
-  INLINE int cache_unref() const;
+  INLINE void cache_ref() const;
+  INLINE bool cache_unref() const;
   INLINE bool test_ref_count_integrity() const;
 
 protected:

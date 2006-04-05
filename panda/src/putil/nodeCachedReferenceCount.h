@@ -57,8 +57,8 @@ protected:
 
 PUBLISHED:
   INLINE int get_node_ref_count() const;
-  INLINE int node_ref() const;
-  INLINE int node_unref() const;
+  INLINE void node_ref() const;
+  INLINE bool node_unref() const;
   INLINE bool test_ref_count_integrity() const;
 
   enum Referenced {

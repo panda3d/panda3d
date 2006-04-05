@@ -26,6 +26,7 @@
 template<class WantType>
 INLINE TypeHandle
 _dcast_get_typehandle(WantType *) {
+  TAU_PROFILE("_dcast_get_typehandle()", " ", TAU_USER);
   TypeHandle handle = WantType::get_class_type();
 
 #ifdef _DEBUG
@@ -55,6 +56,7 @@ template<class WantType>
 INLINE WantType *
 _dcast(WantType *, TypedObject *ptr) {
 #ifdef DO_DCAST
+  TAU_PROFILE("_dcast()", " ", TAU_USER);
   TypeHandle want_handle = _dcast_get_typehandle((WantType *)0);
   if (!_dcast_verify(want_handle, sizeof(WantType), ptr)) {
     return (WantType *)NULL;
@@ -76,6 +78,7 @@ template<class WantType>
 INLINE const WantType *
 _dcast(WantType *, const TypedObject *ptr) {
 #ifdef DO_DCAST
+  TAU_PROFILE("_dcast()", " ", TAU_USER);
   TypeHandle want_handle = _dcast_get_typehandle((WantType *)0);
   if (!_dcast_verify(want_handle, sizeof(WantType), ptr)) {
     return (const WantType *)NULL;

@@ -7,7 +7,7 @@
 //
 
 // What additional flags should we pass to interrogate?
-#define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const
+#define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const -Dvolatile=
 
 // Is the platform big-endian (like an SGI workstation) or
 // little-endian (like a PC)?  Define this to the empty string to
@@ -136,9 +136,9 @@
 // Must global operator new and delete functions throw exceptions?
 #define GLOBAL_OPERATOR_NEW_EXCEPTIONS 1
 
-// What is the syntax of the STL allocator declaration?  See
-// LocalSetup.pp for allowable values.
-#define STL_ALLOCATOR MODERN
+// Modern versions of gcc do support the latest STL allocator
+// definitions.
+#define USE_STL_ALLOCATOR 1
 
 // The dynamic library file extension (usually .so .dll or .dylib):
 #define DYNAMIC_LIB_EXT .so

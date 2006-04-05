@@ -32,6 +32,24 @@ ConfigureFn(config_pipeline) {
   init_libpipeline();
 }
 
+ConfigVariableInt thread_stack_size
+("thread-stack-size", 16384,
+ PRC_DESC("Specifies the size, in bytes, of the stack that will be created "
+          "for each newly-created thread.  Not all thread implementations "
+          "respect this value."));
+
+ConfigVariableBool threads_always_global
+("threads-always-global", false,
+ PRC_DESC("Set this true to override the application's 'global' setting "
+          "for each created thread, and create every thread with global "
+          "true.  Also see threads-never-global."));
+
+ConfigVariableBool threads_never_global
+("threads-never-global", false,
+ PRC_DESC("Set this true to override the application's 'global' setting "
+          "for each created thread, and create every thread with global "
+          "false.  Also see threads-always-global."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpipeline
 //  Description: Initializes the library.  This must be called at

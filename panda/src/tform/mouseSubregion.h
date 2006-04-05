@@ -23,6 +23,8 @@
 
 #include "mouseInterfaceNode.h"
 #include "luse.h"
+#include "linmath_events.h"
+#include "buttonEventList.h"
 
 
 ////////////////////////////////////////////////////////////////////

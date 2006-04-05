@@ -21,11 +21,13 @@
 
 #include "pandabase.h"
 #include "socketStream.h"
+#include "recorderBase.h"
 #include "pdeque.h"
 
 class BamReader;
 class BamWriter;
 class FactoryParams;
+class DatagramIterator;
 
 // At the present, this module is not compiled if OpenSSL is not
 // available, since in that case socketStream.h is not compiled

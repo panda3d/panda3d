@@ -420,7 +420,7 @@ activate_region(const LMatrix4f &transform, int sort,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGItem::enter
+//     Function: PGItem::enter_region
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
 //               mouse enters the region.  The mouse is only
@@ -429,7 +429,7 @@ activate_region(const LMatrix4f &transform, int sort,
 //               region before entering the inner one.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-enter(const MouseWatcherParameter &param) {
+enter_region(const MouseWatcherParameter &param) {
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_enter_event();
   play_sound(event);
@@ -443,7 +443,7 @@ enter(const MouseWatcherParameter &param) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGItem::exit
+//     Function: PGItem::exit_region
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
 //               mouse exits the region.  The mouse is only considered
@@ -452,7 +452,7 @@ enter(const MouseWatcherParameter &param) {
 //               entering the inner one.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-exit(const MouseWatcherParameter &param) {
+exit_region(const MouseWatcherParameter &param) {
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_exit_event();
   play_sound(event);
@@ -466,7 +466,7 @@ exit(const MouseWatcherParameter &param) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGItem::within
+//     Function: PGItem::within_region
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
 //               mouse moves within the boundaries of the region, even
@@ -476,7 +476,7 @@ exit(const MouseWatcherParameter &param) {
 //               region.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-within(const MouseWatcherParameter &param) {
+within_region(const MouseWatcherParameter &param) {
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_within_event();
   play_sound(event);
@@ -490,14 +490,14 @@ within(const MouseWatcherParameter &param) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGItem::without
+//     Function: PGItem::without_region
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
 //               mouse moves completely outside the boundaries of the
 //               region.  See within().
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-without(const MouseWatcherParameter &param) {
+without_region(const MouseWatcherParameter &param) {
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_without_event();
   play_sound(event);

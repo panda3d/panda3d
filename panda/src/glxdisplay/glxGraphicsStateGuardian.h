@@ -62,7 +62,9 @@ extern "C" void (*glXGetProcAddressARB(const GLubyte *procName))( void );
 // these functions are defined, and the system glx.h sometimes doesn't
 // declare these typedefs.
 typedef __GLXextFuncPtr (* PFNGLXGETPROCADDRESSPROC) (const GLubyte *procName);
+#ifndef __EDG__  // Protect the following from the Tau instrumentor.
 typedef int (* PFNGLXSWAPINTERVALSGIPROC) (int interval);
+#endif  // __EDG__
 
 ////////////////////////////////////////////////////////////////////
 //       Class : glxGraphicsStateGuardian

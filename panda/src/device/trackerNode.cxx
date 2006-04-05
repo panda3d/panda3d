@@ -18,6 +18,7 @@
 
 #include "trackerNode.h"
 #include "config_device.h"
+#include "dataNodeTransmit.h"
 
 TypeHandle TrackerNode::_type_handle;
 

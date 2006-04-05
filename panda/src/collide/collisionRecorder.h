@@ -21,8 +21,10 @@
 
 #include "pandabase.h"
 #include "typeHandle.h"
+#include "typedObject.h"
 
 class CollisionTraverser;
+class CollisionEntry;
 
 #ifdef DO_COLLISION_RECORDING
 

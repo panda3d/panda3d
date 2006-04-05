@@ -34,6 +34,7 @@
 class EXPCL_PANDADX DXGeomMunger8 : public StandardMunger {
 public:
   INLINE DXGeomMunger8(GraphicsStateGuardian *gsg, const RenderState *state);
+  ALLOC_DELETED_CHAIN(DXGeomMunger8);
 
 protected:
   virtual CPT(GeomVertexFormat) munge_format_impl(const GeomVertexFormat *orig,
@@ -41,9 +42,6 @@ protected:
 
   virtual int compare_to_impl(const GeomMunger *other) const;
   virtual int geom_compare_to_impl(const GeomMunger *other) const;
-
-public:
-  INLINE void *operator new(size_t size);
 
 private:
   CPT(TextureAttrib) _texture;

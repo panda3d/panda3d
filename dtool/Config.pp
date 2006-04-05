@@ -122,10 +122,9 @@
 // What level of compiler optimization/debug symbols should we build?
 // The various optimize levels are defined as follows:
 //
-//   1 - No compiler optimizations, full debug symbols
-//   2 - Full compiler optimizations, full debug symbols
-//         (if the compiler supports this)
-//   3 - Full compiler optimizations, no debug symbols
+//   1 - No compiler optimizations, debug symbols, debug heap, lots of checks
+//   2 - Full compiler optimizations, debug symbols, debug heap, lots of checks
+//   3 - Full compiler optimizations, full debug symbols, fewer checks
 //   4 - Full optimizations, no debug symbols, and asserts removed
 //
 #define OPTIMIZE 3
@@ -571,6 +570,13 @@
 // (pthread_create(), etc.), define this true.
 #define HAVE_POSIX_THREADS $[and $[isfile /usr/include/pthread.h],$[not $[WINDOWS_PLATFORM]]]
 
+// If you're building for an i386 Linux machine, kernel version 2.6 or
+// higher, and you want to use native Linux threading operations
+// instead of Posix threads, define this.  Warning: this is highly
+// experimental code, is likely to crash, and will probably be removed
+// in the future.  Use Posix threads instead; they're much better.
+#define HAVE_LINUX_NATIVE_THREADS
+
 // Do you want to build in support for threading (multiprocessing)?
 // Building in support for threading will enable Panda to take
 // advantage of multiple CPU's if you have them (and if the OS
@@ -627,6 +633,14 @@
 
 // Do you want to build the audio interface?
 #define HAVE_AUDIO 1
+
+// The Tau profiler provides a multiplatform, thread-aware profiler.
+// To use it, define TAU_MAKEFILE appropriately, define USE_TAU to 1,
+// and rebuild the code with ppremake; make install.
+#define TAU_MAKEFILE /usr/local/tau/i386_linux/lib/Makefile.tau-pthread-pdt
+#define TAU_OPTS -optKeepFiles
+#define TAU_CFLAGS -D_GNU_SOURCE
+#define USE_TAU
 
 // Info for the RAD game tools, Miles Sound System
 // note this may be overwritten in wintools Config.pp
@@ -837,7 +851,7 @@
 // relevant flags.
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] -Wall -g
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] -Wall -g $[OPTFLAGS]
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] $[OPTFLAGS]
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] -g $[OPTFLAGS]
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%] $[OPTFLAGS]
 
 // What additional flags should be passed to both compilers when
@@ -891,8 +905,8 @@
   #defer SHARED_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
   #defer BUNDLE_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -bundle -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
 #else
-  #defer SHARED_LIB_C $[cc_ld] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
-  #defer SHARED_LIB_C++ $[cxx_ld] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+  #defer SHARED_LIB_C $[cc_ld] -shared $[LFLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+  #defer SHARED_LIB_C++ $[cxx_ld] -shared $[LFLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
   #define BUNDLE_LIB_C++
 #endif
 

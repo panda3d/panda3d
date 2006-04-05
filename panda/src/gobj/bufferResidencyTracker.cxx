@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "bufferResidencyTracker.h"
+#include "bufferContext.h"
 #include "clockObject.h"
 
 PStatCollector BufferResidencyTracker::_gmem_collector("Graphics memory");

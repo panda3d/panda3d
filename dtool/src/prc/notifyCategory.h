@@ -23,6 +23,7 @@
 
 #include "notifySeverity.h"
 #include "configVariableEnum.h"
+#include "configFlags.h"
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -34,7 +35,7 @@
 //               created within a package if a finer grain of control
 //               is required.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG NotifyCategory {
+class EXPCL_DTOOLCONFIG NotifyCategory : public ConfigFlags {
 private:
   NotifyCategory(const string &fullname, const string &basename,
                  NotifyCategory *parent);
@@ -42,7 +43,7 @@ private:
 PUBLISHED:
   INLINE string get_fullname() const;
   INLINE string get_basename() const;
-  NotifySeverity get_severity() const;
+  INLINE NotifySeverity get_severity() const;
   INLINE void set_severity(NotifySeverity severity);
 
   INLINE bool is_on(NotifySeverity severity) const;
@@ -80,6 +81,7 @@ PUBLISHED:
 
 private:
   string get_config_name() const;
+  void update_severity_cache();
   static bool get_notify_timestamp();
   static bool get_check_debug_notify_protect();
 
@@ -91,6 +93,9 @@ private:
   Children _children;
 
   static long _server_delta; // not a time_t because server delta may be signed.
+
+  PN_int32 _local_modified;
+  NotifySeverity _severity_cache;
 
   friend class Notify;
 };

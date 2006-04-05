@@ -22,6 +22,7 @@
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "graphicsStateGuardianBase.h"
 
 TypeHandle GeomLinestrips::_type_handle;
 

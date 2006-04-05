@@ -36,6 +36,7 @@ class EXPCL_PANDA BoundingPlane : public GeometricBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingPlane();
   INLINE_MATHUTIL BoundingPlane(const Planef &plane);
+  ALLOC_DELETED_CHAIN(BoundingPlane);
 
 public:
   virtual BoundingVolume *make_copy() const;

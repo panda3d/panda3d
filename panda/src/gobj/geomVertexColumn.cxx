@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "geomVertexColumn.h"
+#include "geomVertexData.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 

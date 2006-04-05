@@ -18,6 +18,7 @@
 
 #include "pandabase.h"
 #include "textureContext.h"
+#include "deletedChain.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLTextureContext
@@ -26,6 +27,7 @@
 class EXPCL_GL CLP(TextureContext) : public TextureContext {
 public:
   INLINE CLP(TextureContext)(PreparedGraphicsObjects *pgo, Texture *tex);
+  ALLOC_DELETED_CHAIN(CLP(TextureContext));
 
   // This is the GL "name" of the texture object.
   GLuint _index;

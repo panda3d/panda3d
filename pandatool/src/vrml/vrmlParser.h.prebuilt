@@ -1,52 +1,122 @@
-#ifndef BISON_Y_TAB_H
-# define BISON_Y_TAB_H
+/* A Bison parser, made by GNU Bison 2.0.  */
 
-#ifndef YYSTYPE
-typedef union {
+/* Skeleton parser for Yacc-like parsing with Bison,
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
+
+/* As a special exception, when this file is copied by Bison into a
+   Bison output file, you may use that output file without restriction.
+   This special exception was added by the Free Software Foundation
+   in version 1.24 of Bison.  */
+
+/* Tokens.  */
+#ifndef YYTOKENTYPE
+# define YYTOKENTYPE
+   /* Put the tokens into the symbol table, so that GDB and other debuggers
+      know about them.  */
+   enum yytokentype {
+     IDENTIFIER = 258,
+     DEF = 259,
+     USE = 260,
+     PROTO = 261,
+     EXTERNPROTO = 262,
+     TO = 263,
+     IS = 264,
+     ROUTE = 265,
+     SFN_NULL = 266,
+     EVENTIN = 267,
+     EVENTOUT = 268,
+     FIELD = 269,
+     EXPOSEDFIELD = 270,
+     SFBOOL = 271,
+     SFCOLOR = 272,
+     SFFLOAT = 273,
+     SFIMAGE = 274,
+     SFINT32 = 275,
+     SFNODE = 276,
+     SFROTATION = 277,
+     SFSTRING = 278,
+     SFTIME = 279,
+     SFVEC2F = 280,
+     SFVEC3F = 281,
+     MFCOLOR = 282,
+     MFFLOAT = 283,
+     MFINT32 = 284,
+     MFROTATION = 285,
+     MFSTRING = 286,
+     MFVEC2F = 287,
+     MFVEC3F = 288,
+     MFNODE = 289
+   };
+#endif
+#define IDENTIFIER 258
+#define DEF 259
+#define USE 260
+#define PROTO 261
+#define EXTERNPROTO 262
+#define TO 263
+#define IS 264
+#define ROUTE 265
+#define SFN_NULL 266
+#define EVENTIN 267
+#define EVENTOUT 268
+#define FIELD 269
+#define EXPOSEDFIELD 270
+#define SFBOOL 271
+#define SFCOLOR 272
+#define SFFLOAT 273
+#define SFIMAGE 274
+#define SFINT32 275
+#define SFNODE 276
+#define SFROTATION 277
+#define SFSTRING 278
+#define SFTIME 279
+#define SFVEC2F 280
+#define SFVEC3F 281
+#define MFCOLOR 282
+#define MFFLOAT 283
+#define MFINT32 284
+#define MFROTATION 285
+#define MFSTRING 286
+#define MFVEC2F 287
+#define MFVEC3F 288
+#define MFNODE 289
+
+
+
+
+#if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
+#line 120 "vrmlParser.yxx"
+typedef union YYSTYPE {
   char *string;
   VrmlFieldValue fv;
   VrmlNode *node;
   MFArray *mfarray;
   SFNodeRef nodeRef;
   VrmlScene *scene;
-} yystype;
-# define YYSTYPE yystype
+} YYSTYPE;
+/* Line 1318 of yacc.c.  */
+#line 114 "y.tab.h"
+# define yystype YYSTYPE /* obsolescent; will be withdrawn */
+# define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
 #endif
-# define	IDENTIFIER	257
-# define	DEF	258
-# define	USE	259
-# define	PROTO	260
-# define	EXTERNPROTO	261
-# define	TO	262
-# define	IS	263
-# define	ROUTE	264
-# define	SFN_NULL	265
-# define	EVENTIN	266
-# define	EVENTOUT	267
-# define	FIELD	268
-# define	EXPOSEDFIELD	269
-# define	SFBOOL	270
-# define	SFCOLOR	271
-# define	SFFLOAT	272
-# define	SFIMAGE	273
-# define	SFINT32	274
-# define	SFNODE	275
-# define	SFROTATION	276
-# define	SFSTRING	277
-# define	SFTIME	278
-# define	SFVEC2F	279
-# define	SFVEC3F	280
-# define	MFCOLOR	281
-# define	MFFLOAT	282
-# define	MFINT32	283
-# define	MFROTATION	284
-# define	MFSTRING	285
-# define	MFVEC2F	286
-# define	MFVEC3F	287
-# define	MFNODE	288
-
 
 extern YYSTYPE vrmlyylval;
 
-#endif /* not BISON_Y_TAB_H */
+
+

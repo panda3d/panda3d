@@ -24,8 +24,6 @@
 
 #ifdef THREAD_POSIX_IMPL
 
-#include "pnotify.h"
-
 #include <pthread.h>
 #include <errno.h>
 
@@ -35,7 +33,7 @@
 //       Class : MutexPosixImpl
 // Description : Uses Posix threads to implement a mutex.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG MutexPosixImpl {
+class EXPCL_DTOOL MutexPosixImpl {
 public:
   INLINE MutexPosixImpl();
   INLINE ~MutexPosixImpl();
@@ -53,7 +51,7 @@ private:
 //       Class : ReMutexPosixImpl
 // Description : Uses Posix threads to implement a reentrant mutex.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG ReMutexPosixImpl {
+class EXPCL_DTOOL ReMutexPosixImpl {
 public:
   INLINE ReMutexPosixImpl();
   INLINE ~ReMutexPosixImpl();

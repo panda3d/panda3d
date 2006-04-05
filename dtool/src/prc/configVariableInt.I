@@ -24,7 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableInt::
 ConfigVariableInt(const string &name) :
-  ConfigVariable(name, VT_int)
+  ConfigVariable(name, VT_int),
+  _local_modified(initial_invalid_cache())
 {
   _core->set_used();
 }
@@ -38,10 +39,11 @@ INLINE ConfigVariableInt::
 ConfigVariableInt(const string &name, int default_value, 
                   const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
-  ConfigVariable(name, ConfigVariableCore::VT_int, description, flags)
+  ConfigVariable(name, ConfigVariableCore::VT_int, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_int, string(), flags)
+  ConfigVariable(name, ConfigVariableCore::VT_int, string(), flags),
 #endif
+  _local_modified(initial_invalid_cache())
 {
   set_default_value(default_value);
   _core->set_used();
@@ -56,10 +58,11 @@ INLINE ConfigVariableInt::
 ConfigVariableInt(const string &name, const string &default_value, 
                   const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
-  ConfigVariable(name, ConfigVariableCore::VT_int, description, flags)
+  ConfigVariable(name, ConfigVariableCore::VT_int, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_int, string(), flags)
+  ConfigVariable(name, ConfigVariableCore::VT_int, string(), flags),
 #endif
+  _local_modified(initial_invalid_cache())
 {
   _core->set_default_value(default_value);
   _core->set_used();
@@ -123,7 +126,12 @@ set_value(int value) {
 ////////////////////////////////////////////////////////////////////
 INLINE int ConfigVariableInt::
 get_value() const {
-  return get_int_word(0);
+  TAU_PROFILE("int ConfigVariableInt::get_value() const", " ", TAU_USER);
+  if (!is_cache_valid(_local_modified)) {
+    mark_cache_valid(((ConfigVariableInt *)this)->_local_modified);
+    ((ConfigVariableInt *)this)->_cache = get_int_word(0);
+  }
+  return _cache;
 }
 
 ////////////////////////////////////////////////////////////////////

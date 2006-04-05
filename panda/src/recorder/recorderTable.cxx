@@ -20,6 +20,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "config_recorder.h"
+#include "recorderController.h"
 #include "indent.h"
 
 TypeHandle RecorderTable::_type_handle;

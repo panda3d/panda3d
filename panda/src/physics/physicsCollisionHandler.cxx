@@ -21,6 +21,8 @@
 #include "collisionEntry.h"
 #include "collisionPolygon.h"
 #include "config_collide.h"
+#include "config_physics.h"
+#include "actorNode.h"
 #include "dcast.h"
 
 TypeHandle PhysicsCollisionHandler::_type_handle;

@@ -18,6 +18,7 @@
 
 #include "config_util.h"
 #include "animInterface.h"
+#include "bamReader.h"
 #include "bamReaderParam.h"
 #include "bitArray.h"
 #include "bitMask.h"

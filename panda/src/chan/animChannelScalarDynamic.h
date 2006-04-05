@@ -23,6 +23,9 @@
 
 #include "animChannel.h"
 
+class PandaNode;
+class TransformState;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : AnimChannelScalarDynamic
 // Description : An animation channel that accepts a scalar each frame

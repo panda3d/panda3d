@@ -63,11 +63,12 @@ private:
   INLINE EnumType parse_string(const string &value) const;
   INLINE string format_enum(EnumType value) const;
 
-  int _value_seq;
-  EnumType _value;
-
+private:
   bool _got_default_value;
   EnumType _default_value;
+
+  PN_int32 _local_modified;
+  EnumType _cache;
 };
 
 #include "configVariableEnum.I"
