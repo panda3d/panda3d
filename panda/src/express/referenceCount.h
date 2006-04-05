@@ -26,6 +26,7 @@
 #include "config_express.h"
 #include "atomicAdjust.h"
 #include "numeric_types.h"
+#include "deletedChain.h"
 
 #include <stdlib.h>
 
@@ -148,6 +149,7 @@ class RefCountObj : public ReferenceCount, public Base {
 public:
   INLINE RefCountObj();
   INLINE RefCountObj(const Base &copy);
+  ALLOC_DELETED_CHAIN(RefCountObj<Base>);
 
   static TypeHandle get_class_type() {
     return _type_handle;
