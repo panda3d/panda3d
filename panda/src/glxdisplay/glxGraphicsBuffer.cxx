@@ -98,7 +98,7 @@ begin_frame(FrameMode mode) {
     clear_cube_map_selection();
   }
   
-  _gsg()->set_current_properties(&get_fb_properties());
+  _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame();
 }
 
