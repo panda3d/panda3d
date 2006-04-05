@@ -168,7 +168,7 @@ begin_frame(FrameMode mode) {
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
-
+  
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_R(wglgsg, _gsg, false);
   
@@ -181,6 +181,7 @@ begin_frame(FrameMode mode) {
     clear_cube_map_selection();
   }
   
+  _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame();
 }
 
@@ -211,21 +212,6 @@ end_frame(FrameMode mode) {
     }
     clear_cube_map_selection();
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::release_gsg
-//       Access: Public, Virtual
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  The window will be
-//               permanently unable to render; this is normally called
-//               only just before destroying the window.  This should
-//               only be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::
-release_gsg() {
-  wglMakeCurrent(_hdc, NULL);
-  GraphicsWindow::release_gsg();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,6 +254,11 @@ begin_flip() {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
 close_window() {
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    wglMakeCurrent(_hdc, NULL);
+    _gsg.clear();
+    _active = false;
+  }
   ReleaseDC(_hWnd, _hdc);
   _hdc = (HDC)0;
   WinGraphicsWindow::close_window();

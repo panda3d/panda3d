@@ -38,16 +38,19 @@ public:
     T_aux_rgba_1       = 0x00000002,
     T_aux_rgba_2       = 0x00000004,
     T_aux_rgba_3       = 0x00000008,
+    T_aux_rgba_ALL     = 0x0000000F,
 
-    T_aux_hrgba_0      = 0x00000010,
-    T_aux_hrgba_1      = 0x00000020,
-    T_aux_hrgba_2      = 0x00000040,
+    T_aux_hrgba_0      = 0x00000010, // These can't really be implemented until 
+    T_aux_hrgba_1      = 0x00000020, // we have support for hrgba textures.
+    T_aux_hrgba_2      = 0x00000040, // I've just added the bits for the future.
     T_aux_hrgba_3      = 0x00000080,
+    T_aux_hrgba_ALL    = 0x000000F0,
 
-    T_aux_float_0      = 0x00000100,
-    T_aux_float_1      = 0x00000200,
-    T_aux_float_2      = 0x00000400,
+    T_aux_float_0      = 0x00000100, // These can't really be implemented until 
+    T_aux_float_1      = 0x00000200, // we have support for float textures.
+    T_aux_float_2      = 0x00000400, // I've just added the bits for the future.
     T_aux_float_3      = 0x00000800,
+    T_aux_float_ALL    = 0x00000F00,
 
     T_aux_undef_0      = 0x00001000,
     T_aux_undef_1      = 0x00002000,

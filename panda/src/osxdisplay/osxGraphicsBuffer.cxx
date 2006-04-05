@@ -82,6 +82,7 @@ begin_frame(FrameMode mode) {
     // begin_render_texture();
     clear_cube_map_selection();
   }
+  _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame();
 }
 
@@ -113,20 +114,6 @@ end_frame(FrameMode mode) {
     clear_cube_map_selection();
   }
 }
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsBuffer::release_gsg
-//       Access: Public
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  The window will be
-//               permanently unable to render; this is normally called
-//               only just before destroying the window.  This should
-//               only be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void osxGraphicsBuffer::
-release_gsg() {
-  //osxMakeCurrent(_display, None, NULL);
-  GraphicsBuffer::release_gsg();
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsBuffer::close_buffer
@@ -136,7 +123,11 @@ release_gsg() {
 ////////////////////////////////////////////////////////////////////
 void osxGraphicsBuffer::
 close_buffer() {
- 
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    //osxMakeCurrent(_display, None, NULL);
+    _gsg.clear();
+    _active = false;
+  }
   _is_valid = false;
 }
 

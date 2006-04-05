@@ -76,6 +76,7 @@ begin_frame(FrameMode mode) {
     // begin_render_texture();
     clear_cube_map_selection();
   }
+  _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame();
 }
 

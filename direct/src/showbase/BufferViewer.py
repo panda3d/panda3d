@@ -20,6 +20,8 @@ class BufferViewer(DirectObject):
         self.cullsort = 10000
         self.cards = []
         self.cardindex = 0
+        self.cardmaker = CardMaker("cubemaker")
+        self.cardmaker.setFrame(-1,1,-1,1)
         self.task = 0
         self.window = 0
         self.dirty = 1
@@ -39,7 +41,7 @@ class BufferViewer(DirectObject):
         # started.
         self.enable(self.enabled)
 
-    def isValidTextureSet(self, list):
+    def isValidTextureSet(self, x):
         """Access: private. Returns true if the parameter is a
         list of GraphicsOutput and Texture, or the keyword 'all'."""
         if (isinstance(x, list)):
@@ -270,10 +272,18 @@ class BufferViewer(DirectObject):
             for itex in range(win.countTextures()):
                 tex = win.getTexture(itex)
                 if (include.has_key(tex)) and (exclude.has_key(tex)==0):
-                    card = win.getTextureCard()
-                    card.setTexture(tex)
-                    cards.append(card)
+                    if (tex.getTextureType() == Texture.TTCubeMap):
+                        for face in range(6):
+                            self.cardmaker.setUvRangeCube(face)
+                            card = NodePath(self.cardmaker.generate())
+                            card.setTexture(tex)
+                            cards.append(card)
+                    else:
+                        card = win.getTextureCard()
+                        card.setTexture(tex)
+                        cards.append(card)
                     wins.append(win)
+                    exclude[tex] = 1
         self.cards = cards
         if (len(cards)==0):
             self.task = 0

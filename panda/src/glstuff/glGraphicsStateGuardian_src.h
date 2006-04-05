@@ -274,7 +274,6 @@ protected:
   void specify_texture(Texture *tex);
   void apply_texture(TextureContext *tc);
   bool upload_texture(CLP(TextureContext) *gtc);
-  bool upload_blank_image(Texture *tex, CLP(TextureContext) *gtc);
   bool upload_texture_image(CLP(TextureContext) *gtc, bool uses_mipmaps, 
                             GLenum target, GLint internal_format, 
                             int width, int height, int depth,
@@ -371,8 +370,6 @@ public:
 
   bool _supports_draw_range_elements;
   PFNGLDRAWRANGEELEMENTSPROC _glDrawRangeElements;
-
-  bool _supports_depth_texture;
 
   PFNGLTEXIMAGE3DPROC _glTexImage3D;
   PFNGLTEXSUBIMAGE3DPROC _glTexSubImage3D;

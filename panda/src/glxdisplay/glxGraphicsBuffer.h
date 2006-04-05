@@ -45,7 +45,6 @@ public:
 
   virtual bool begin_frame(FrameMode mode);
   virtual void end_frame(FrameMode mode);
-  virtual void release_gsg();
 
 protected:
   virtual void close_buffer();

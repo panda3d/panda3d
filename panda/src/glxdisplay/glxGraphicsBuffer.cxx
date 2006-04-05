@@ -97,6 +97,8 @@ begin_frame(FrameMode mode) {
     // begin_render_texture();
     clear_cube_map_selection();
   }
+  
+  _gsg()->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame();
 }
 
@@ -129,21 +131,6 @@ end_frame(FrameMode mode) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::release_gsg
-//       Access: Public
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  The window will be
-//               permanently unable to render; this is normally called
-//               only just before destroying the window.  This should
-//               only be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void glxGraphicsBuffer::
-release_gsg() {
-  glXMakeCurrent(_display, None, NULL);
-  GraphicsBuffer::release_gsg();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsBuffer::close_buffer
 //       Access: Protected, Virtual
 //  Description: Closes the buffer right now.  Called from the window
@@ -151,6 +138,12 @@ release_gsg() {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsBuffer::
 close_buffer() {
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    glXMakeCurrent(_display, None, NULL);
+    _gsg.clear();
+    _active = false;
+  }
+
   if (_pbuffer != None) {
     glXDestroyPbuffer(_display, _pbuffer);
     _pbuffer = None;

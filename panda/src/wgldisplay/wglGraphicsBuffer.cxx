@@ -91,13 +91,15 @@ begin_frame(FrameMode mode) {
       }
     }
   }
-
+  
   wglMakeCurrent(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc));
   
   if (mode == FM_render) {
     begin_render_texture();
     clear_cube_map_selection();
   }
+
+  _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame();
 }
 
@@ -229,20 +231,6 @@ select_cube_map(int cube_map_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::release_gsg
-//       Access: Public, Virtual
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  The window will be
-//               permanently unable to render; this is normally called
-//               only just before destroying the window.  This should
-//               only be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsBuffer::
-release_gsg() {
-  GraphicsBuffer::release_gsg();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsBuffer::process_events
 //       Access: Public, Virtual
 //  Description: Do whatever processing is necessary to ensure that
@@ -284,7 +272,11 @@ close_buffer() {
     if (_pbuffer) {
       wglgsg->_wglDestroyPbufferARB(_pbuffer);
     }
+    
+    _gsg.clear();
+    _active = false;
   }
+
   _pbuffer_dc = 0;
   _pbuffer = 0;
 

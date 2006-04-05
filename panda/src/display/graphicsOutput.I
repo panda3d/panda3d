@@ -107,11 +107,26 @@ get_texture(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_texture_plane
+//       Access: Published
+//  Description: Returns the RenderTexturePlane associated with the
+//               nth render-texture.  Returns 0 if there is no such
+//               texture.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsOutput::RenderTexturePlane GraphicsOutput::
+get_texture_plane(int i) const {
+  if ((i < 0) || (i >= ((int)_textures.size()))) {
+    return (RenderTexturePlane)0;
+  }
+  return _textures[i]._plane;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_rtm_mode
 //       Access: Published
 //  Description: Returns the RenderTextureMode associated with the
-//               nth texture.  Returns RTM_none if there is no such
-//               texture.
+//               nth render-texture.  Returns RTM_none if there is
+//               no such texture.
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsOutput::RenderTextureMode GraphicsOutput::
 get_rtm_mode(int i) const {

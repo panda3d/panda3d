@@ -568,8 +568,8 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode)
  
  
 	
-		_gsg->reset_if_new();
-
+  _gsg->reset_if_new();
+  _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame();
 }
 
@@ -588,22 +588,6 @@ void osxGraphicsWindow::end_frame(FrameMode mode)
 
   _gsg->end_frame();
   trigger_flip();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::release_gsg
-//       Access: Public, Virtual
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  The window will be
-//               permanently unable to render; this is normally called
-//               only just before destroying the window.  This should
-//               only be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void osxGraphicsWindow::release_gsg() 
-{
-	ReleaseSystemResources();
-		
-  GraphicsWindow::release_gsg();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -632,11 +616,12 @@ void osxGraphicsWindow::begin_flip()
 //  Description: Closes the window right now.  Called from the window
 //               thread.
 ////////////////////////////////////////////////////////////////////
-void osxGraphicsWindow::close_window() {
-
-	ReleaseSystemResources();
-	GraphicsWindow::close_window();
-
+void osxGraphicsWindow::close_window()
+{
+  ReleaseSystemResources();
+  _gsg.clear();
+  _active = false;
+  GraphicsWindow::close_window();
 }
 
 //////////////////////////////////////////////////////////

@@ -48,7 +48,6 @@ public:
   virtual void end_frame(FrameMode mode);
   
   virtual void select_cube_map(int cube_map_index);
-  virtual void release_gsg();
 
   virtual void process_events();
 

@@ -450,7 +450,6 @@ remove_all_windows() {
   
   _windows.clear();
 
-  _app.do_release(this);
   _app.do_close(this);
   terminate_threads();
 }
@@ -922,7 +921,6 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
-      win->get_gsg()->set_current_properties(&win->get_fb_properties());
       if (win->begin_frame(GraphicsOutput::FM_render)) {
         win->clear();
       
@@ -1088,7 +1086,6 @@ draw_bins(const GraphicsEngine::Windows &wlist) {
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
-      win->get_gsg()->set_current_properties(&win->get_fb_properties());
       if (win->begin_frame(GraphicsOutput::FM_render)) {
         win->clear();
       
@@ -1149,7 +1146,6 @@ make_contexts(const GraphicsEngine::Windows &wlist) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
-    win->get_gsg()->set_current_properties(&win->get_fb_properties());
     if (win->begin_frame(GraphicsOutput::FM_refresh)) {
       win->end_frame(GraphicsOutput::FM_refresh);
     }
@@ -1599,27 +1595,6 @@ terminate_threads() {
     thread->_cv_mutex.lock();
   }
   
-  // Now tell them to release their windows' graphics contexts.
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    RenderThread *thread = (*ti).second;
-    
-    while (thread->_thread_state != TS_wait) {
-      thread->_cv_done.wait();
-    }
-    thread->_thread_state = TS_do_release;
-    thread->_cv_start.signal();
-    thread->_cv_mutex.release();
-  }
-  
-  // Grab the mutex again to wait for the above to complete.
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    RenderThread *thread = (*ti).second;
-    thread->_cv_mutex.lock();
-    while (thread->_thread_state != TS_wait) {
-      thread->_cv_done.wait();
-    }
-  }
-
   // Now tell them to close their windows and terminate.
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
@@ -1776,30 +1751,6 @@ remove_window(GraphicsOutput *window) {
 
   Windows::iterator wi;
 
-  wi = _cdraw.find(ptwin);
-  if (wi != _cdraw.end()) {
-    // The window is on our _cdraw list, meaning its GSG operations are
-    // serviced by this thread (cull and draw in the same operation).
-    
-    // Move it to the pending release thread so we can release the GSG
-    // when the thread next runs.  We can't do this immediately,
-    // because we might not have been called from the subthread.
-    _pending_release.push_back(ptwin);
-    _cdraw.erase(wi);
-  }
-
-  wi = _draw.find(ptwin);
-  if (wi != _draw.end()) {
-    // The window is on our _draw list, meaning its GSG operations are
-    // serviced by this thread (draw performed on this thread).
-    
-    // Move it to the pending release thread so we can release the GSG
-    // when the thread next runs.  We can't do this immediately,
-    // because we might not have been called from the subthread.
-    _pending_release.push_back(ptwin);
-    _draw.erase(wi);
-  }
-
   wi = _window.find(ptwin);
   if (wi != _window.end()) {
     // The window is on our _window list, meaning its open/close
@@ -1925,22 +1876,6 @@ do_flip(GraphicsEngine *engine) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::do_release
-//       Access: Public
-//  Description: Releases the rendering contexts for all windows on
-//               the _draw list.
-////////////////////////////////////////////////////////////////////
-void GraphicsEngine::WindowRenderer::
-do_release(GraphicsEngine *) {
-  MutexHolder holder(_wl_lock);
-  Windows::iterator wi;
-  for (wi = _draw.begin(); wi != _draw.end(); ++wi) {
-    GraphicsOutput *win = (*wi);
-    win->release_gsg();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::WindowRenderer::do_close
 //       Access: Public
 //  Description: Closes all the windows on the _window list.
@@ -1981,16 +1916,6 @@ do_close(GraphicsEngine *engine) {
 void GraphicsEngine::WindowRenderer::
 do_pending(GraphicsEngine *engine) {
   MutexHolder holder(_wl_lock);
-
-  if (!_pending_release.empty()) {
-    // Release any GSG's that were waiting.
-    Windows::iterator wi;
-    for (wi = _pending_release.begin(); wi != _pending_release.end(); ++wi) {
-      GraphicsOutput *win = (*wi);
-      win->release_gsg();
-    }
-    _pending_release.clear();
-  }
 
   if (!_pending_close.empty()) {
     // Close any windows that were pending closure, but only if their
@@ -2128,7 +2053,6 @@ thread_main() {
 
     case TS_do_release:
       do_pending(_engine);
-      do_release(_engine);
       break;
 
     case TS_do_windows:

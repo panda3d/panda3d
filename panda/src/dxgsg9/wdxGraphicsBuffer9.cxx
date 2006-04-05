@@ -93,6 +93,7 @@ begin_frame(FrameMode mode) {
     clear_cube_map_selection();
   }
   
+  _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame();
 }
 
@@ -365,20 +366,6 @@ select_cube_map(int cube_map_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::release_gsg
-//       Access: Public, Virtual
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  The window will be
-//               permanently unable to render; this is normally called
-//               only just before destroying the window.  This should
-//               only be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsBuffer9::
-release_gsg() {
-  GraphicsBuffer::release_gsg();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsBuffer9::process_events
 //       Access: Public, Virtual
 //  Description: Do whatever processing is necessary to ensure that
@@ -434,6 +421,9 @@ close_buffer() {
       this -> _new_z_stencil_surface -> Release ( );
       this -> _new_z_stencil_surface = NULL;
     }
+    
+    _gsg.clear();
+    _active = false;
   }
 
   _cube_map_index = -1;

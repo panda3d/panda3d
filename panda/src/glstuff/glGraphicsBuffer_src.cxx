@@ -40,17 +40,10 @@ CLP(GraphicsBuffer)(GraphicsPipe *pipe,
   _fbo = 0;
   _rb_size_x = 0;
   _rb_size_y = 0;
-  for (int i=0; i<SLOT_COUNT; i++) {
+  for (int i=0; i<RTP_COUNT; i++) {
     _rb[i] = 0;
     _tex[i] = 0;
   }
-  _attach_point[SLOT_depth]   = GL_DEPTH_ATTACHMENT_EXT;
-  _attach_point[SLOT_stencil] = GL_STENCIL_ATTACHMENT_EXT;
-  _attach_point[SLOT_color]   = GL_COLOR_ATTACHMENT0_EXT;
-
-  _slot_format[SLOT_depth]   = GL_DEPTH_COMPONENT;
-  _slot_format[SLOT_stencil] = GL_STENCIL_INDEX;
-  _slot_format[SLOT_color]   = GL_RGBA;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,9 +70,6 @@ begin_frame(FrameMode mode) {
     return false;
   }
 
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_R(glgsg, _gsg, false);
-
   if (!_host->begin_frame(FM_parasite)) {
     return false;
   }
@@ -88,32 +78,51 @@ begin_frame(FrameMode mode) {
   if (mode == FM_render) {
     rebuild_bitplanes();
     clear_cube_map_selection();
-
-    // Verify that the frame buffer is ready for rendering.
-    GLenum status = glgsg->_glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT);
-    if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
-      GLCAT.error() << "EXT_framebuffer_object reports non-framebuffer-completeness.\n";
-      switch(status) {
-      case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
-        GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT\n"; break;
-      case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
-        GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT\n"; break;
-      case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
-        GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n"; break;
-      case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
-        GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n"; break;
-      case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
-        GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT\n"; break;
-      case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
-        GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT\n"; break;
-      case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
-        GLCAT.error() << "FRAMEBUFFER_UNSUPPORTED_EXT\n"; break;
-      default:
-        GLCAT.error() << "OTHER PROBLEM\n"; break;
-      }
-      glgsg->bind_fbo(0);
+    if (!check_fbo()) {
       return false;
     }
+  }
+
+  _gsg->set_current_properties(&get_fb_properties());
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glGraphicsBuffer::check_fbo
+//       Access: Private
+//  Description: Calls 'glCheckFramebufferStatus'.  On error, 
+//               prints out an appropriate error message and unbinds
+//               the fbo.  Returns true for OK or false for error.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsBuffer)::
+check_fbo() {
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_R(glgsg, _gsg, false);
+
+  GLenum status = glgsg->_glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT);
+  if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
+    GLCAT.error() << "EXT_framebuffer_object reports non-framebuffer-completeness.\n";
+    switch(status) {
+    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT\n"; break;
+    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT\n"; break;
+    case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n"; break;
+    case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n"; break;
+    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT\n"; break;
+    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+      GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT\n"; break;
+    case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+      GLCAT.error() << "FRAMEBUFFER_UNSUPPORTED_EXT\n"; break;
+    default:
+      GLCAT.error() << "OTHER PROBLEM\n"; break;
+    }
+    
+    glgsg->bind_fbo(0);
+    return false;
   }
   return true;
 }
@@ -151,26 +160,45 @@ rebuild_bitplanes() {
                           _host->get_y_size());
     }
   }
-  int desired_x = _x_size;
-  int desired_y = _y_size;
+  int bitplane_x = _x_size;
+  int bitplane_y = _y_size;
   if (!glgsg->get_supports_tex_non_pow2()) {
-    desired_x = Texture::up_to_power_2(desired_x);
-    desired_y = Texture::up_to_power_2(desired_y);
+    bitplane_x = Texture::up_to_power_2(bitplane_x);
+    bitplane_y = Texture::up_to_power_2(bitplane_y);
+  }
+  bool rb_resize = false;
+  if ((bitplane_x != _rb_size_x)||
+      (bitplane_y != _rb_size_y)) {
+    _rb_size_x = bitplane_x;
+    _rb_size_y = bitplane_y;
+    rb_resize = true;
   }
 
-  // Scan the textures list and determine what should be attached.
+  // These variables indicate what should be bound to each bitplane.
   
-  Texture *attach[SLOT_COUNT];
-  for (int i=0; i<SLOT_COUNT; i++) {
-    attach[i] = 0;
+  Texture *attach[RTP_COUNT];
+  attach[RTP_color] = 0;
+  attach[RTP_depth] = 0;
+  attach[RTP_stencil] = 0;
+  for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
+    attach[RTP_aux_rgba_0+i] = 0;
   }
+  for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
+    attach[RTP_aux_hrgba_0+i] = 0;
+  }
+  for (int i=0; i<_fb_properties.get_aux_float(); i++) {
+    attach[RTP_aux_float_0+i] = 0;
+  }
+  
+  // Sort the textures list into appropriate slots.
+  
   for (int i=0; i<count_textures(); i++) {
     if (get_rtm_mode(i) != RTM_bind_or_copy) {
       continue;
     }
     Texture *tex = get_texture(i);
-    Texture::Format fmt = tex->get_format();
-
+    RenderTexturePlane plane = get_texture_plane(i);
+    
     // If it's a not a 2D texture or a cube map, punt it.
     if ((tex->get_texture_type() != Texture::TT_2d_texture)&&
         (tex->get_texture_type() != Texture::TT_cube_map)) {
@@ -178,106 +206,123 @@ rebuild_bitplanes() {
       continue;
     }
     
-    // Identify right attachment point.
-    
-    int slot = SLOT_COUNT;
-    if (fmt == Texture::F_depth_component) {
-      slot = SLOT_depth;
-    } else if (fmt == Texture::F_stencil_index) {
-      slot = SLOT_stencil;
-    } else if ((fmt == Texture::F_rgba)||(fmt == Texture::F_rgb)) {
-      slot = SLOT_color;
-    } else {
-      _textures[i]._rtm_mode = RTM_copy_texture;
-      continue;
-    }
-    
-    // If there's already a texture bound to this slot,
-    // then punt this texture.  
-    if (attach[slot]) {
+    // If I can't find an appropriate slot, or if there's
+    // already a texture bound to this slot, then punt
+    // this texture.  
+
+    if (attach[plane]) {
       _textures[i]._rtm_mode = RTM_copy_texture;
       continue;
     }
     
     // Assign the texture to this slot.
-    attach[slot] = tex;
+    attach[plane] = tex;
   }
 
 
   // For all slots, update the slot.
-    
-  for (int slot=0; slot<SLOT_COUNT; slot++) {
-    if (slot == SLOT_stencil) continue;
-    Texture *tex = attach[slot];
-    if (tex) {
-      // If the texture is already bound to the slot, and it's
-      // the right size, then no update of this slot is needed.
-      if ((_tex[slot] == tex)&&
-          (tex->get_x_size() == desired_x)&&
-          (tex->get_y_size() == desired_y)) {
-        continue;
-      }
-      
-      // Bind the texture to the slot.
-      tex->set_x_size(desired_x);
-      tex->set_y_size(desired_y);
-      TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
-      nassertv(tc != (TextureContext *)NULL);
-      CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-      
-      if (tex->get_texture_type() == Texture::TT_2d_texture) {
-        glgsg->upload_blank_image(tex, gtc);
-        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, _attach_point[slot],
-                                       GL_TEXTURE_2D, gtc->_index, 0);
-      } else {
-        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, _attach_point[slot],
-                                       GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB, gtc->_index, 0);
-      }
-      _tex[slot] = tex;
-      
-      // If there was a renderbuffer bound to this slot, delete it.
-      if (_rb[slot] != 0) {
-        glgsg->_glDeleteRenderbuffers(1, &(_rb[slot]));
-        _rb[slot] = 0;
-      }
-      
-    } else {
-      
-      // If a renderbuffer is already attached to the slot, and it's
-      // the right size, then no update of this slot is needed.
-      if ((_rb[slot] != 0)&&
-          (_rb_size_x == desired_x)&&
-          (_rb_size_y == desired_y)) {
-        continue;
-      }
-      
-      // If there's no renderbuffer for this slot, create one.
-      if (_rb[slot] == 0) {
-        glgsg->_glGenRenderbuffers(1, &(_rb[slot]));
-      }
-      
-      // Resize the renderbuffer appropriately.
-      glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rb[slot]);
-      glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, _slot_format[slot],
-                                    desired_x, desired_y);
-      glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
-      
-      // Bind the renderbuffer to the slot.
-      glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, _attach_point[slot],
-                                        GL_RENDERBUFFER_EXT, _rb[slot]);
-      
-      // Toss any texture that was connected to the slot.
-      _tex[slot] = 0;
-    }
-  }
   
-  // These record the size of all nonzero renderbuffers.
-  _rb_size_x = desired_x;
-  _rb_size_y = desired_y;
+  bind_slot(rb_resize, attach, RTP_depth,   
+            GL_DEPTH_ATTACHMENT_EXT,    GL_DEPTH_COMPONENT,  Texture::F_depth_component);
+  //bind_slot(rb_resize, attach, RTP_stencil,
+  //          GL_STENCIL_ATTACHMENT_EXT,  GL_STENCIL_INDEX,    Texture::F_stencil_index);
+  bind_slot(rb_resize, attach, RTP_color, 
+            GL_COLOR_ATTACHMENT0_EXT,   GL_RGBA,             Texture::F_rgba);
+  int next = GL_COLOR_ATTACHMENT1_EXT;
+  for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
+    bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i),
+              next, GL_RGBA, Texture::F_rgba);
+    next += 1;
+  }
+  for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
+    bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_hrgba_0+i),
+              next, GL_RGBA, Texture::F_rgba);
+    next += 1;
+  }
+  for (int i=0; i<_fb_properties.get_aux_float(); i++) {
+    bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_float_0+i),
+              next, GL_RGBA, Texture::F_rgba);
+    next += 1;
+  }
   
   glgsg->report_my_gl_errors();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: glGraphicsBuffer::bind_slot
+//       Access: Private
+//  Description: Attaches either a texture or a renderbuffer to the
+//               specified bitplane.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsBuffer)::
+bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot,
+          GLenum attachpoint, GLenum texformat, Texture::Format fmt) {
+  
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_V(glgsg, _gsg);
+
+  Texture *tex = attach[slot];
+  if (tex) {
+    // If the texture is already bound to the slot, and it's
+    // the right size, then no update of this slot is needed.
+    if ((_tex[slot] == tex)&&
+        (tex->get_x_size() == _rb_size_x)&&
+        (tex->get_y_size() == _rb_size_y)) {
+      return;
+    }
+    
+    // Bind the texture to the slot.
+    tex->set_x_size(_rb_size_x);
+    tex->set_y_size(_rb_size_y);
+    tex->set_format(fmt);
+    TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
+    nassertv(tc != (TextureContext *)NULL);
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+    glgsg->apply_texture(tc);
+    
+    if (tex->get_texture_type() == Texture::TT_2d_texture) {
+      glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
+                                     GL_TEXTURE_2D, gtc->_index, 0);
+    } else {
+      glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
+                                     GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB, gtc->_index, 0);
+    }
+    _tex[slot] = tex;
+    
+    // If there was a renderbuffer bound to this slot, delete it.
+    if (_rb[slot] != 0) {
+      glgsg->_glDeleteRenderbuffers(1, &(_rb[slot]));
+      _rb[slot] = 0;
+    }
+    
+  } else {
+    
+    // If a renderbuffer is already attached to the slot, and it's
+    // the right size, then no update of this slot is needed.
+    if ((_rb[slot] != 0)&&(!rb_resize)) {
+      return;
+    }
+    
+    // If there's no renderbuffer for this slot, create one.
+    if (_rb[slot] == 0) {
+      glgsg->_glGenRenderbuffers(1, &(_rb[slot]));
+    }
+    
+    // Resize the renderbuffer appropriately.
+    glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rb[slot]);
+    glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, texformat,
+                                  _rb_size_x, _rb_size_y);
+    glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+    
+    // Bind the renderbuffer to the slot.
+    glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, attachpoint,
+                                      GL_RENDERBUFFER_EXT, _rb[slot]);
+    
+    // Toss any texture that was connected to the slot.
+    _tex[slot] = 0;
+  }
+}
+  
 ////////////////////////////////////////////////////////////////////
 //     Function: glGraphicsBuffer::generate_mipmaps
 //       Access: Private
@@ -292,7 +337,7 @@ generate_mipmaps() {
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
-  for (int slot=0; slot<SLOT_COUNT; slot++) {
+  for (int slot=0; slot<RTP_COUNT; slot++) {
     Texture *tex = _tex[slot];
     if ((tex != 0) && (tex->uses_mipmaps())) {
       glgsg->_state._texture = 0;
@@ -395,7 +440,7 @@ close_buffer() {
   DCAST_INTO_V(glgsg, _gsg);
   
   // Delete the renderbuffers.
-  for (int i=0; i<SLOT_COUNT; i++) {
+  for (int i=0; i<RTP_COUNT; i++) {
     if (_rb[i] != 0) {
       glgsg->_glDeleteRenderbuffers(1, &(_rb[i]));
       _rb[i] = 0;
@@ -408,5 +453,9 @@ close_buffer() {
   // Delete the FBO itself.
   nassertv(_fbo != 0);
   glgsg->_glDeleteFramebuffers(1, &_fbo);
+  
+  // Release the Gsg
+  _gsg.clear();
+  _active = false;
 }
 

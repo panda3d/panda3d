@@ -3024,24 +3024,15 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertv(tc != (TextureContext *)NULL);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+  apply_texture(tc);
 
   if (z >= 0) {
     // Copy to a cube map face.  This doesn't seem to work too well
     // with CopyTexSubImage2D, so we always use CopyTexImage2D.
-    GLP(BindTexture)(GL_TEXTURE_CUBE_MAP_ARB, gtc->_index);
     GLP(CopyTexImage2D)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + z, 0,
                         get_internal_image_format(tex),
                         xo, yo, w, h, 0);
-
   } else {
-    // If the texture has never been uploaded before, create it.  We
-    // cannot use glCopyTexImage2D to create a texture that may be
-    // larger than the screen, so use glTexImage2D with arbitrary
-    // data.
-    GLP(BindTexture)(GL_TEXTURE_2D, gtc->_index);
-    upload_blank_image(tex, gtc);
-
-    // Copy the pixel data from the frame buffer.
     GLP(CopyTexSubImage2D)(GL_TEXTURE_2D, 0, 0, 0, xo, yo, w, h);
   }
 
@@ -6375,11 +6366,14 @@ bool CLP(GraphicsStateGuardian)::
 upload_texture(CLP(TextureContext) *gtc) {
   Texture *tex = gtc->get_texture();
   CPTA_uchar image = tex->get_ram_image();
-  if (image.is_null()) {
-    return false;
-  }
-  Texture::CompressionMode image_compression = tex->get_ram_image_compression();
 
+  Texture::CompressionMode image_compression;
+  if (image.is_null()) {
+    image_compression = Texture::CM_off;
+  } else {
+    image_compression = tex->get_ram_image_compression();
+  }
+  
   int width = tex->get_x_size();
   int height = tex->get_y_size();
   int depth = tex->get_z_size();
@@ -6409,71 +6403,75 @@ upload_texture(CLP(TextureContext) *gtc) {
     return false;
   }
 
-  int texel_size = tex->get_num_components() * tex->get_component_width();
+  if (!image.is_null()) {
 
-  // If it doesn't fit, we have to reduce it on-the-fly.  This is kind
-  // of expensive and it doesn't look great; it would have been better
-  // if the user had specified max-texture-dimension to reduce the
-  // texture at load time instead.  Of course, the user doesn't always
-  // know ahead of time what the hardware limits are.
-  if (max_dimension > 0 && image_compression == Texture::CM_off) {
-    if (width > max_dimension) {
-      int byte_chunk = texel_size;
-      int stride = 1;
-      int new_width = width;
-      while (new_width > max_dimension) {
-        stride <<= 1;
-        new_width >>= 1;
+    // If it doesn't fit, we have to reduce it on-the-fly.  This is kind
+    // of expensive and it doesn't look great; it would have been better
+    // if the user had specified max-texture-dimension to reduce the
+    // texture at load time instead.  Of course, the user doesn't always
+    // know ahead of time what the hardware limits are.
+    if (max_dimension > 0 && image_compression == Texture::CM_off) {
+      if (width > max_dimension) {
+        int texel_size = tex->get_num_components() * tex->get_component_width();
+        int byte_chunk = texel_size;
+        int stride = 1;
+        int new_width = width;
+        while (new_width > max_dimension) {
+          stride <<= 1;
+          new_width >>= 1;
+        }
+        GLCAT.info()
+          << "Reducing width of " << tex->get_name()
+          << " from " << width << " to " << new_width << "\n";
+        image = reduce_image(image, byte_chunk, stride);
+        width = new_width;
       }
-      GLCAT.info()
-        << "Reducing width of " << tex->get_name()
-        << " from " << width << " to " << new_width << "\n";
-      image = reduce_image(image, byte_chunk, stride);
-      width = new_width;
-    }
-    if (height > max_dimension) {
-      int byte_chunk = width * texel_size;
-      int stride = 1;
-      int new_height = height;
-      while (new_height > max_dimension) {
-        stride <<= 1;
-        new_height >>= 1;
+      if (height > max_dimension) {
+        int texel_size = tex->get_num_components() * tex->get_component_width();
+        int byte_chunk = width * texel_size;
+        int stride = 1;
+        int new_height = height;
+        while (new_height > max_dimension) {
+          stride <<= 1;
+          new_height >>= 1;
+        }
+        GLCAT.info()
+          << "Reducing height of " << tex->get_name()
+          << " from " << height << " to " << new_height << "\n";
+        image = reduce_image(image, byte_chunk, stride);
+        height = new_height;
       }
-      GLCAT.info()
-        << "Reducing height of " << tex->get_name()
-        << " from " << height << " to " << new_height << "\n";
-      image = reduce_image(image, byte_chunk, stride);
-      height = new_height;
-    }
-    if (depth > max_dimension) {
-      int byte_chunk = height * width * texel_size;
-      int stride = 1;
-      int new_depth = depth;
-      while (new_depth > max_dimension) {
-        stride <<= 1;
-        new_depth >>= 1;
+      if (depth > max_dimension) {
+        int texel_size = tex->get_num_components() * tex->get_component_width();
+        int byte_chunk = height * width * texel_size;
+        int stride = 1;
+        int new_depth = depth;
+        while (new_depth > max_dimension) {
+          stride <<= 1;
+          new_depth >>= 1;
+        }
+        GLCAT.info()
+          << "Reducing depth of " << tex->get_name()
+          << " from " << depth << " to " << new_depth << "\n";
+        image = reduce_image(image, byte_chunk, stride);
+        depth = new_depth;
       }
-      GLCAT.info()
-        << "Reducing depth of " << tex->get_name()
-        << " from " << depth << " to " << new_depth << "\n";
-      image = reduce_image(image, byte_chunk, stride);
-      depth = new_depth;
     }
-  }
-
-  if (!_supports_bgr) {
-    // If the GL doesn't claim to support BGR, we may have to reverse
-    // the component ordering of the image.
-    image = fix_component_ordering(image, external_format, tex);
-  }
+    
+    if (!_supports_bgr) {
+      // If the GL doesn't claim to support BGR, we may have to reverse
+      // the component ordering of the image.
+      image = fix_component_ordering(image, external_format, tex);
+    }
 
 #ifndef NDEBUG
-  if (image_compression == Texture::CM_off) {
-    int wanted_size =
-      compute_gl_image_size(width, height, depth, external_format, component_type);
-    nassertr(wanted_size == (int)image.size(), false);
-  }
+    if (image_compression == Texture::CM_off) {
+      int wanted_size =
+        compute_gl_image_size(width, height, depth, external_format, component_type);
+      nassertr(wanted_size == (int)image.size(), false);
+    }
 #endif  // NDEBUG
+  }
 
   GLP(PixelStorei)(GL_UNPACK_ALIGNMENT, 1);
 
@@ -6541,7 +6539,9 @@ upload_texture(CLP(TextureContext) *gtc) {
     gtc->_depth = depth;
 
 #ifdef DO_PSTATS
-    gtc->update_data_size_bytes(get_texture_memory_size(tex));
+    if (!image.is_null()) {
+      gtc->update_data_size_bytes(get_texture_memory_size(tex));
+    }
 #endif
 
     report_my_gl_errors();
@@ -6552,59 +6552,6 @@ upload_texture(CLP(TextureContext) *gtc) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::upload_blank_image
-//       Access: Private
-//  Description: Uploads a blank, non-mipmapped image to the specified
-//               texture object.  This is usually used to prepare the
-//               texture for render-to-texture operations.
-////////////////////////////////////////////////////////////////////
-bool CLP(GraphicsStateGuardian)::
-upload_blank_image(Texture *tex, CLP(TextureContext) *gtc)
-
-{
-  GLint internal_format = get_internal_image_format(tex);
-  
-  if ((gtc->_already_applied == false)||
-      (gtc->_internal_format != internal_format)||
-      (gtc->_width  != tex->get_x_size())||
-      (gtc->_height != tex->get_y_size())||
-      (gtc->_depth  != 1)) {
-    
-    GLP(BindTexture)(GL_TEXTURE_2D, gtc->_index);
-    
-    char *image = new char[tex->get_x_size() * tex->get_y_size()];
-    memset(image, 128, tex->get_x_size() * tex->get_y_size());
-
-    switch (tex->get_format()) {
-    case Texture::F_depth_component:
-      GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
-                      tex->get_x_size(), tex->get_y_size(), 0,
-                      GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, image);
-      break;
-    case Texture::F_stencil_index:
-      GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
-                      tex->get_x_size(), tex->get_y_size(), 0,
-                      GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, image);
-      break;
-    default:
-      GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
-                      tex->get_x_size(), tex->get_y_size(), 0,
-                      GL_LUMINANCE, GL_UNSIGNED_BYTE, image);
-      break;
-    }
-
-    delete image;
-    
-    gtc->_already_applied = true;
-    gtc->_internal_format = internal_format;
-    gtc->_width  = tex->get_x_size();
-    gtc->_height = tex->get_y_size();
-    gtc->_depth  = 1;
-  }
-  
-  return true;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::upload_texture_image
@@ -6622,7 +6569,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
 		     Texture::CompressionMode image_compression) {
   // Make sure the error stack is cleared out before we begin.
   report_my_gl_errors();
-
+  
   if (target == GL_NONE) {
     // Unsupported target (e.g. 3-d texturing on GL 1.1).
     return false;
@@ -6633,6 +6580,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
   PStatTimer timer(_load_texture_pcollector);
   Texture *tex = gtc->get_texture();
+  CPTA_uchar image = tex->get_ram_image();
 
   if (GLCAT.is_debug()) {
     if (image_compression != Texture::CM_off) {
@@ -6644,33 +6592,11 @@ upload_texture_image(CLP(TextureContext) *gtc,
     }
   }
 
-  int num_ram_mipmap_levels = 1;
+  int num_ram_mipmap_levels = 0;
   bool load_ram_mipmaps = false;
 
-  if (uses_mipmaps) {
-    num_ram_mipmap_levels = tex->get_num_ram_mipmap_images();
-
-    if (num_ram_mipmap_levels == 1) {
-      // No RAM mipmap levels available.  Should we generate some?
-      if (!_supports_generate_mipmap || 
-          (!auto_generate_mipmaps && image_compression == Texture::CM_off)) {
-        // Yes, the GL won't generate them, so we need to.
-        tex->generate_ram_mipmap_images();
-        num_ram_mipmap_levels = tex->get_num_ram_mipmap_images();
-      }
-    }
-
-    if (num_ram_mipmap_levels != 1) {
-      // We will load the mipmap levels from RAM.  Don't ask the GL to
-      // generate them.
-      if (_supports_generate_mipmap) {
-        GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, false);
-      }
-      load_ram_mipmaps = true;
-
-    } else {
-      // We don't have mipmap levels in RAM.  Ask the GL to generate
-      // them if it can.
+  if (image.is_null()) {
+    if (uses_mipmaps) {
       if (_supports_generate_mipmap) {
         GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, true);
       } else {
@@ -6679,10 +6605,46 @@ upload_texture_image(CLP(TextureContext) *gtc,
         uses_mipmaps = false;
       }
     }
+  } else {
+    num_ram_mipmap_levels = 1;
+    if (uses_mipmaps) {
+      num_ram_mipmap_levels = tex->get_num_ram_mipmap_images();
+    
+      if (num_ram_mipmap_levels == 1) {
+        // No RAM mipmap levels available.  Should we generate some?
+        if (!_supports_generate_mipmap || 
+            (!auto_generate_mipmaps && image_compression == Texture::CM_off)) {
+          // Yes, the GL won't generate them, so we need to.
+          tex->generate_ram_mipmap_images();
+          num_ram_mipmap_levels = tex->get_num_ram_mipmap_images();
+        }
+      }
+      
+      if (num_ram_mipmap_levels != 1) {
+        // We will load the mipmap levels from RAM.  Don't ask the GL to
+        // generate them.
+        if (_supports_generate_mipmap) {
+          GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, false);
+        }
+        load_ram_mipmaps = true;
+        
+      } else {
+        // We don't have mipmap levels in RAM.  Ask the GL to generate
+        // them if it can.
+        if (_supports_generate_mipmap) {
+          GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, true);
+        } else {
+          // If it can't, do without mipmaps.
+          GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+          uses_mipmaps = false;
+        }
+      }
+    }
   }
-
+  
   int highest_level = 0;
-
+  
+  
   if (!gtc->_already_applied ||
       gtc->_internal_format != internal_format ||
       gtc->_width != width ||
@@ -6690,6 +6652,24 @@ upload_texture_image(CLP(TextureContext) *gtc,
       gtc->_depth != depth) {
     // We need to reload a new image.
 
+    if (num_ram_mipmap_levels == 0) {
+      int *blank_image = new int[width * height];
+      int color = 0xFF808080;
+      switch (z) {
+      case 0: color = 0xFF0000FF; break;
+      case 1: color = 0xFF00FF00; break;
+      case 2: color = 0xFFFF0000; break;
+      case 3: color = 0xFF00FFFF; break;
+      case 4: color = 0xFFFFFF00; break;
+      case 5: color = 0xFFFF00FF; break;
+      }
+      for (int i=0; i<width * height; i++) blank_image[i]=color;
+      GLP(TexImage2D)(target, 0, internal_format,
+                      width, height, 0,
+                      external_format, GL_UNSIGNED_BYTE, blank_image);
+      delete blank_image;
+    }
+    
     for (int n = 0; n < num_ram_mipmap_levels; ++n) {
       const unsigned char *image = tex->get_ram_mipmap_image(n);
       if (image == (const unsigned char *)NULL) {

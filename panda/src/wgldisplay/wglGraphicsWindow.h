@@ -40,7 +40,6 @@ public:
   virtual bool begin_frame(FrameMode mode);
   virtual void end_frame(FrameMode mode);
 
-  virtual void release_gsg();
   virtual void begin_flip();
 
 protected:

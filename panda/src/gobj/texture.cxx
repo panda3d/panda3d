@@ -931,6 +931,7 @@ set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
 ////////////////////////////////////////////////////////////////////
 void Texture::
 clear_ram_image() {
+  ++_modified;
   _ram_image_compression = CM_off;
   _ram_images.clear();
 }

@@ -25,21 +25,15 @@
 //
 //               The glGraphicsBuffer is based on the OpenGL
 //               EXT_framebuffer_object and ARB_draw_buffers extensions.
-//               This design has three significant advantages over the
-//               wglGraphicsBuffer and glxGraphicsBuffer.
+//               This design has significant advantages over the
+//               older wglGraphicsBuffer and glxGraphicsBuffer.
 //
-//               As you might expect, this type of buffer can export
-//               its color buffer as a texture.  But it can also export
-//               its depth buffer, its stencil buffer, and any number
-//               of auxiliary buffers.  This is the biggest advantage:
-//               it can render to many textures at the same time.
-//
-//               There is also a speed advantage.  When using a
-//               glGraphicsBuffer, it is not necessary to call the
-//               extremely expensive wglMakeCurrent on buffer switches.
-//
-//               The glGraphicsBuffer can also track the size of a host
-//               window, and automatically resize itself to match.
+//               * Can export depth and stencil.
+//               * Supports auxiliary bitplanes.
+//               * Supports non-power-of-two padding.
+//               * Supports tracking of host window size.
+//               * Faster than pbuffers.
+//               * Can render onto a texture without clearing it first.
 //
 //               If either of the necessary OpenGL extensions is not
 //               available, then the glGraphicsBuffer will not be
@@ -69,24 +63,18 @@ protected:
 
 private:
   
+  void bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane plane,
+                 GLenum attachpoint, GLenum texformat, Texture::Format fmt);
+  bool check_fbo();
   void generate_mipmaps();
   void rebuild_bitplanes();
   
-  enum {
-    SLOT_color,
-    SLOT_depth,
-    SLOT_stencil,
-    SLOT_COUNT
-  };
-
   GLuint      _fbo;
   int         _rb_size_x;
   int         _rb_size_y;
-  GLuint      _rb[SLOT_COUNT];
-  PT(Texture) _tex[SLOT_COUNT];
-  GLenum      _attach_point[SLOT_COUNT];
-  GLenum      _slot_format[SLOT_COUNT];
-
+  PT(Texture) _tex[RTP_COUNT];
+  GLuint      _rb[RTP_COUNT];
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

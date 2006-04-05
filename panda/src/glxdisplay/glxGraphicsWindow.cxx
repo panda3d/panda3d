@@ -105,20 +105,6 @@ move_pointer(int device, int x, int y) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::release_gsg
-//       Access: Public
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  The window will be
-//               permanently unable to render; this is normally called
-//               only just before destroying the window.  This should
-//               only be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::
-release_gsg() {
-  glXMakeCurrent(_display, None, NULL);
-  GraphicsWindow::release_gsg();
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsWindow::begin_frame
@@ -157,6 +143,8 @@ begin_frame(FrameMode mode) {
     // begin_render_texture();
     clear_cube_map_selection();
   }
+  
+  _gsg()->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame();
 }
 
@@ -375,8 +363,7 @@ process_events() {
           // In this case, the default case, the app does not intend
           // to service the request, so we do by closing the window.
 
-          // TODO: don't call release_gsg() in the window thread.
-          release_gsg();
+          // TODO: don't release the gsg in the window thread.
           close_window();
           properties.set_open(false);
           system_changed_properties(properties);
@@ -493,6 +480,12 @@ set_properties_now(WindowProperties &properties) {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
 close_window() {
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    glXMakeCurrent(_display, None, NULL);
+    _gsg.clear();
+    _active = false;
+  }
+  
   if (_ic != (XIC)NULL) {
     XDestroyIC(_ic);
     _ic = (XIC)NULL;

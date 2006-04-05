@@ -88,3 +88,7 @@ egg-object-type-direct-widget   <Scalar> collide-mask { 0x80000000 } <Collide> {
 # Define a new cull bin that will render on top of everything else.
 
 cull-bin gui-popup 60 unsorted
+
+# Paranoid clock. This fixes flaky hardware clocks.
+
+paranoid-clock 1

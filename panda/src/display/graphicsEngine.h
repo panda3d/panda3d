@@ -294,7 +294,6 @@ private:
     Windows _window;  // window stage, i.e. process windowing events 
 
     // These are not kept sorted.
-    Windows _pending_release;  // moved from _draw, pending release_gsg.
     Windows _pending_close;    // moved from _window, pending close.
 
     GSGs _gsgs;       // draw stage

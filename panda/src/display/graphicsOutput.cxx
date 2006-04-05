@@ -218,23 +218,49 @@ clear_render_textures() {
 //
 //               If tex is not NULL, it is the texture that will be
 //               set up for rendering into; otherwise, a new Texture
-//               object will be created (in which case you may call
-//               get_texture() to retrieve the new texture pointer
-//               later).
+//               object will be created, in which case you may call
+//               get_texture() to retrieve the new texture pointer.
 //
+//               You can specify a bitplane to attach the texture to.
+//               the legal choices are:
+//
+//               * RTP_depth
+//               * RTP_stencil
+//               * RTP_color
+//               * RTP_aux_rgba_0
+//               * RTP_aux_rgba_1
+//               * RTP_aux_rgba_2
+//               * RTP_aux_rgba_3
+//
+//               If you do not specify a bitplane to attach the 
+//               texture to, this routine will use a default based
+//               on the texture's format:
+//
+//               * F_depth_component attaches to RTP_depth
+//               * F_stencil_index attaches to RTP_stencil
+//               * all other formats attach to RTP_color.
+//
+//               The texture's format will be changed to match
+//               the format of the bitplane to which it is attached.
+//               For example, if you pass in an F_rgba texture and
+//               order that it be attached to RTP_depth, it will turn
+//               into an F_depth_component texture.
+//               
 //               Also see make_texture_buffer(), which is a
 //               higher-level interface for preparing
 //               render-to-a-texture mode.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
-add_render_texture(Texture *tex, RenderTextureMode mode) {
+add_render_texture(Texture *tex, RenderTextureMode mode,
+                   RenderTexturePlane plane) {
   if (mode == RTM_none) {
     return;
   }
   MutexHolder holder(_lock);
 
   throw_event("render-texture-targets-changed");
-
+  
+  // Create texture if necessary.
   if (tex == (Texture *)NULL) {
     tex = new Texture(get_name());
     tex->set_wrap_u(Texture::WM_clamp);
@@ -242,13 +268,45 @@ add_render_texture(Texture *tex, RenderTextureMode mode) {
   } else {
     tex->clear_ram_image();
   }
-  tex->set_match_framebuffer_format(true);
+
+  // Choose a default bitplane.
+  if (plane == RTP_COUNT) {
+    if (tex->get_format()==Texture::F_depth_component) {
+      plane = RTP_depth;
+    } else if (tex->get_format()==Texture::F_stencil_index) {
+      plane = RTP_stencil;
+    } else {
+      plane = RTP_color;
+    }
+  }
+  
+  // Set the texture's format to match the bitplane.
+  // (And validate the bitplane, while we're at it).
+
+  if (plane == RTP_depth) {
+    tex->set_format(Texture::F_depth_component);
+    tex->set_match_framebuffer_format(true);
+  } else if (plane == RTP_stencil) {
+    tex->set_format(Texture::F_stencil_index);
+    tex->set_match_framebuffer_format(true);
+  } else if ((plane == RTP_color)||
+             (plane == RTP_aux_rgba_0)||
+             (plane == RTP_aux_rgba_1)||
+             (plane == RTP_aux_rgba_2)||
+             (plane == RTP_aux_rgba_3)) {
+    tex->set_format(Texture::F_rgba);
+    tex->set_match_framebuffer_format(true);
+  } else {
+    display_cat.error() <<
+      "add_render_texture: invalid bitplane specified.\n";
+    return;
+  }
 
   // Go ahead and tell the texture our anticipated size, even if it
   // might be inaccurate (particularly if this is a GraphicsWindow,
   // which has system-imposed restrictions on size).
-  tex->set_x_size(get_x_size());
-  tex->set_y_size(get_y_size());
+  tex->set_x_size(Texture::up_to_power_2(get_x_size()));
+  tex->set_y_size(Texture::up_to_power_2(get_y_size()));
 
   if ((mode == RTM_bind_or_copy)&&(support_render_texture==0)) {
     mode = RTM_copy_texture;
@@ -259,36 +317,15 @@ add_render_texture(Texture *tex, RenderTextureMode mode) {
     }
   }
 
+
   RenderTexture result;
   result._texture = tex;
+  result._plane = plane;
   result._rtm_mode = mode;
   _textures.push_back(result);
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   set_inverted(_gsg->get_copy_texture_inverted());
-
-  // Sanity check that we don't have two textures of the same type.
-  int count_stencil_textures = 0;
-  int count_depth_textures = 0;
-  int count_color_textures = 0;
-  for (int i=0; i<count_textures(); i++) {
-    Texture::Format fmt = get_texture(i)->get_format();
-    if (fmt == Texture::F_depth_component) {
-      count_depth_textures += 1;
-    } else if (fmt == Texture::F_stencil_index) {
-      count_stencil_textures += 1;
-    } else {
-      count_color_textures += 1;
-    }
-  }
-  if ((count_color_textures > 1)||
-      (count_depth_textures > 1)||
-      (count_stencil_textures > 1)) {
-    display_cat.error() <<
-      "Currently, each GraphicsOutput can only render to one color texture, "
-      "one depth texture, and one stencil texture at a time.  RTM aborted.\n";
-    clear_render_textures();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -778,21 +815,6 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
   tex->set_wrap_v(Texture::WM_clamp);
   GraphicsOutput *buffer;
 
-  // I'll remove this permanently in a few days.
-  //  if (show_buffers) {
-  //    // If show_buffers is true, we'd like to create a window with the
-  //    // six buffers spread out and all visible at once, for the user's
-  //    // convenience.
-  //    buffer = make_texture_buffer(name, size * 3, size * 2, tex, to_ram);
-  //    tex->set_x_size(size);
-  //    tex->set_y_size(size);
-  //
-  //  } else {
-  //    // In the normal case, the six buffers are stacked on top of each
-  //    // other like pancakes.
-  //    buffer = make_texture_buffer(name, size, size, tex, to_ram);
-  //  }
-
   buffer = make_texture_buffer(name, size, size, tex, to_ram);
 
   // We don't need to clear the overall buffer; instead, we'll clear
@@ -811,13 +833,6 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
     camera_np.look_at(cube_faces[i]._look_at, cube_faces[i]._up);
 
     DisplayRegion *dr;
-    // I'll remove this permanently in a few days. - Josh
-    //    if (show_buffers) {
-    //      const ShowBuffersCubeMapRegions &r = cube_map_regions[i];
-    //      dr = buffer->make_display_region(r.l, r.r, r.b, r.t);
-    //    } else {
-    //      dr = buffer->make_display_region();
-    //    }
     dr = buffer->make_display_region();
 
     dr->set_cube_map_index(i);
@@ -1091,21 +1106,6 @@ change_scenes(DisplayRegion *new_dr) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 select_cube_map(int) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::release_gsg
-//       Access: Public
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  The window will be
-//               permanently unable to render; this is normally called
-//               only just before destroying the window.  This should
-//               only be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-release_gsg() {
-  _gsg.clear();
-  _active = false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -64,6 +64,7 @@ PUBLISHED:
   INLINE bool has_mode(int bit) const;
   INLINE bool is_single_buffered() const;
   INLINE bool is_stereo() const;
+
   bool subsumes(const FrameBufferProperties &prop) const;
   
   INLINE void set_frame_buffer_mode(int frameBuffer_mode);

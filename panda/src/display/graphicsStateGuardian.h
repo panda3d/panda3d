@@ -185,6 +185,8 @@ public:
   virtual void end_scene();
   virtual void end_frame();
 
+  void set_current_properties(FrameBufferProperties *properties);
+  
   virtual bool depth_offset_decals();
   virtual CPT(RenderState) begin_decal_base_first();
   virtual CPT(RenderState) begin_decal_nested();
@@ -244,8 +246,6 @@ protected:
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
   virtual void end_bind_clip_planes();
 
-  void set_current_properties(FrameBufferProperties *properties);
-  
   virtual void free_pointers();
   virtual void close_gsg();
   void panic_deactivate();

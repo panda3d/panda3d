@@ -119,6 +119,7 @@ begin_frame(FrameMode mode) {
     clear_cube_map_selection();
   }
   
+  _gsg->set_current_properties(&get_fb_properties());
   bool return_val = _gsg->begin_frame();
   _dxgsg->set_render_target();
   return return_val;
@@ -252,6 +253,10 @@ verify_window_sizes(int numsizes, int *dimen) {
 void wdxGraphicsWindow9::
 close_window() {
   wdxdisplay9_cat.debug() << "wdx closed window\n";
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    _gsg.clear();
+    _active = false;
+  }
   _dxgsg->release_swap_chain(&_wcontext);
   WinGraphicsWindow::close_window();
 }

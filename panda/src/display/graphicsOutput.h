@@ -82,6 +82,28 @@ PUBLISHED:
     RTM_triggered_copy_ram,
   };
 
+  // It seems awkward to have this type, and also
+  // RenderBuffer::Type.  However, the fact that RenderBuffer::Type
+  // is a bitmask makes it awfully awkward to work with.
+  enum RenderTexturePlane {
+    RTP_color,
+    RTP_depth,
+    RTP_stencil,
+    RTP_aux_rgba_0,
+    RTP_aux_rgba_1,
+    RTP_aux_rgba_2,
+    RTP_aux_rgba_3,
+    RTP_aux_hrgba_0,
+    RTP_aux_hrgba_1,
+    RTP_aux_hrgba_2,
+    RTP_aux_hrgba_3,
+    RTP_aux_float_0,
+    RTP_aux_float_1,
+    RTP_aux_float_2,
+    RTP_aux_float_3,
+    RTP_COUNT
+  };
+
   // There are many reasons to call begin_frame/end_frame.
   enum FrameMode {
     FM_render,   // We are rendering a frame.
@@ -98,9 +120,11 @@ PUBLISHED:
   INLINE int count_textures() const;
   INLINE bool has_texture() const;
   INLINE Texture *get_texture(int i=0) const;
+  INLINE RenderTexturePlane get_texture_plane(int i=0) const;
   INLINE RenderTextureMode get_rtm_mode(int i=0) const;
   void clear_render_textures();
-  void add_render_texture(Texture *tex, RenderTextureMode mode);
+  void add_render_texture(Texture *tex, RenderTextureMode mode, 
+                          RenderTexturePlane bitplane=RTP_COUNT);
   void setup_render_texture(Texture *tex, bool allow_bind, bool to_ram);
 
   INLINE int get_x_size() const;
@@ -200,8 +224,6 @@ public:
   void change_scenes(DisplayRegion *new_dr);
   virtual void select_cube_map(int cube_map_index);
 
-  virtual void release_gsg();
-  
   // These methods will be called within the app (main) thread.
   virtual void begin_flip();
   virtual void end_flip();
@@ -226,6 +248,7 @@ protected:
   class RenderTexture {
   public:
     PT(Texture) _texture;
+    RenderTexturePlane _plane;
     RenderTextureMode _rtm_mode;
   };
   PT(GraphicsStateGuardian) _gsg;
