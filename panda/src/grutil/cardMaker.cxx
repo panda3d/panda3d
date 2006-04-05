@@ -168,7 +168,7 @@ generate() {
 //               indicated range of UV's, which will be useful if a
 //               texture is applied.
 ////////////////////////////////////////////////////////////////////
-INLINE void CardMaker::
+void CardMaker::
 set_uv_range(const TexCoord3f &ll, const TexCoord3f &lr, const TexCoord3f &ur, const TexCoord3f &ul) {
   _ll_tex = ll;
   _lr_tex = lr;
@@ -187,7 +187,7 @@ set_uv_range(const TexCoord3f &ll, const TexCoord3f &lr, const TexCoord3f &ur, c
 //               indicated range of UV's, which will be useful if a
 //               texture is applied.
 ////////////////////////////////////////////////////////////////////
-INLINE void CardMaker::
+void CardMaker::
 set_uv_range(const TexCoordf &ll, const TexCoordf &lr, const TexCoordf &ur, const TexCoordf &ul) {
   _ll_tex.set(ll[0], ll[1], 0.0f);
   _lr_tex.set(lr[0], lr[1], 0.0f);
@@ -206,7 +206,7 @@ set_uv_range(const TexCoordf &ll, const TexCoordf &lr, const TexCoordf &ur, cons
 //               indicated range of UV's, which will be useful if a
 //               texture is applied.
 ////////////////////////////////////////////////////////////////////
-INLINE void CardMaker::
+void CardMaker::
 set_uv_range(const TexCoordf &ll, const TexCoordf &ur) {
   _ll_tex.set(ll[0], ll[1], 0.0f);
   _lr_tex.set(ur[0], ll[1], 0.0f);
@@ -225,7 +225,7 @@ set_uv_range(const TexCoordf &ll, const TexCoordf &ur) {
 //               indicated range of UV's, which will be useful if a
 //               texture is applied.
 ////////////////////////////////////////////////////////////////////
-INLINE void CardMaker::
+void CardMaker::
 set_uv_range(const LVector4f &x, const LVector4f &y, const LVector4f &z) {
   _ll_tex.set(x[0], y[0], z[0]);
   _lr_tex.set(x[1], y[1], z[1]);
@@ -241,7 +241,7 @@ set_uv_range(const LVector4f &x, const LVector4f &y, const LVector4f &z) {
 //  Description: Sets the range of UV's that will be applied to the
 //               vertices appropriately for a cube-map face.
 ////////////////////////////////////////////////////////////////////
-INLINE void CardMaker::
+void CardMaker::
 set_uv_range_cube(int face) {
   LVector4f varya(-1,  1,  1, -1);
   LVector4f varyb(-1, -1,  1,  1);
