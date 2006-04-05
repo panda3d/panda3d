@@ -82,13 +82,13 @@ private:
 // DeletedChain.
 #define ALLOC_DELETED_CHAIN(Type)                            \
   inline void *operator new(size_t size) {                   \
-    return (void *)DeletedChain<Type>::allocate(size);       \
+    return (void *)DeletedChain< Type >::allocate(size);       \
   }                                                          \
   inline void *operator new(size_t size, void *ptr) {        \
     return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
-    DeletedChain<Type>::deallocate((Type *)ptr);             \
+    DeletedChain< Type >::deallocate((Type *)ptr);             \
   }                                                          \
   inline void operator delete(void *, void *) {              \
   }
