@@ -110,7 +110,7 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Wait",                             { 0.6, 0.6, 0.6 } },
   { 0, "Wait:Mutex block",                 { 0.5, 0.0, 1.0 } },
   { 1, "Wait:Thread sync",                 { 0.0, 1.0, 0.5 } },
-  { 1, "App",                              { 0.0, 0.8, 0.4 },  1.0 / 30.0 },
+  { 1, "App",                              { 0.8, 0.0, 0.4 },  1.0 / 30.0 },
   { 1, "App:Collisions",                   { 1.0, 0.5, 0.0 } },
   { 1, "App:Collisions:Reset",             { 0.0, 0.0, 0.5 } },
   { 0, "App:Data graph",                   { 0.5, 0.8, 0.4 } },
