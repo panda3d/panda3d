@@ -19,24 +19,19 @@
 #include "indexParameters.h"
 
 // User parameters
-int max_index_width = 700;
-int max_index_height = 700;
-
-int thumb_width = 150;
-int thumb_height = 150;
+int max_index_size_array[2] = { 700, 700 };
+int thumb_size_array[2] = { 150, 150 };
 
 int thumb_caption_height = 12;
 int caption_font_size = 12;
 
-int thumb_x_space = 12;
-int thumb_y_space = 12;
+int thumb_space_array[2] = { 12, 12 };
 
 double frame_reduction_factor = 0.75;
 int frame_outer_bevel = 2;
 int frame_inner_bevel = 1;
 
-int reduced_width = 800;
-int reduced_height = 700;
+int reduced_size_array[2] = { 800, 700 };
 
 Filename archive_dir;
 
@@ -126,7 +121,7 @@ finalize_parameters() {
     (max_index_width - thumb_x_space) / (thumb_width + thumb_x_space);
   thumb_count_y = 
     (max_index_height - thumb_y_space) / (thumb_height + thumb_caption_height + thumb_y_space);
-  
+
   max_thumbs = thumb_count_x * thumb_count_y;
   
   actual_index_width = thumb_x_space + thumb_count_x * (thumb_width + thumb_x_space);
@@ -271,6 +266,16 @@ copy_file(const Filename &source_file, const Filename &dest_dir) {
   if (!source_file.exists()) {
     return false;
   }
+
+#if defined(HAVE_UNISTD_H) && !defined(WIN32)
+  // Try to make a hard link.
+  string os_source_file = source_file.to_os_specific();
+  string os_dest_file = dest_file.to_os_specific();
+  if (link(os_source_file.c_str(), os_dest_file.c_str()) == 0) {
+    cerr << "Linked " << source_file << " to " << dest_file << "\n";
+    return true;
+  }
+#endif
 
   ifstream in;
   if (!source_file.open_read(in)) {

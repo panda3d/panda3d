@@ -32,13 +32,15 @@
 // fit the images it contains, and it will shrink horizontally to fit
 // a complete row of images (even if it does not contain a complete
 // row).  It will never be larger than this.
-extern int max_index_width;
-extern int max_index_height;
+extern int max_index_size_array[2];
+#define max_index_width (max_index_size_array[0])
+#define max_index_height (max_index_size_array[0])
 
 // The size of the individual thumbnail images, including the frames
 // (if present).  Thumbnail images are scaled to fit within this box.
-extern int thumb_width;
-extern int thumb_height;
+extern int thumb_size_array[2];
+#define thumb_width (thumb_size_array[0])
+#define thumb_height (thumb_size_array[1])
 
 // The total number of pixels reserved for the caption under each
 // thumbnail image.  This is the caption_font_size plus whatever
@@ -53,8 +55,9 @@ extern int caption_font_size;
 
 // The amount of space, in pixels, between each two neighboring
 // thumbnail images, and around the overall index image.
-extern int thumb_x_space;
-extern int thumb_y_space;
+extern int thumb_space_array[2];
+#define thumb_x_space (thumb_space_array[0])
+#define thumb_y_space (thumb_space_array[1])
 
 // The ratio by which the thumbnail images are reduced further when
 // frames are drawn, to allow room for a frame that resembles a slide
@@ -68,8 +71,9 @@ extern int frame_inner_bevel;
 
 // The size of the reduced images on the individual image pages.  The
 // source image will be scaled to fit within this rectangle.
-extern int reduced_width;
-extern int reduced_height;
+extern int reduced_size_array[2];
+#define reduced_width (reduced_size_array[0])
+#define reduced_height (reduced_size_array[1])
 
 // The directory at the root of the output hierarchy (or as specified
 // by -a on the command line).

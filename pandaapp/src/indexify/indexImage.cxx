@@ -442,7 +442,7 @@ copy_reduced(const Filename &archive_dir) {
   for (pi = _photos.begin(); pi != _photos.end(); ++pi) {
     const PhotoInfo &pinfo = (*pi);
     int photo_index = pinfo._photo_index;
-    Photo *photo = _dir->get_photo(pinfo._photo_index);
+    Photo *photo = _dir->get_photo(photo_index);
 
     // Make sure we have a "reduced" image.
     PNMImage reduced_image;
@@ -655,7 +655,7 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
     static const streampos MB = 1024 * 1024;
     static const streampos GB = 1024 * 1024 * 1024;
     string size_units;
-    double size_float;
+    double size_float = size;
 
     if (size > GB) {
       size_units = "GB";
@@ -699,7 +699,7 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
     static const streampos MB = 1024 * 1024;
     static const streampos GB = 1024 * 1024 * 1024;
     string size_units;
-    double size_float;
+    double size_float = size;
 
     if (size > GB) {
       size_units = "GB";
