@@ -32,6 +32,7 @@ MutexImpl DeletedChain<Type>::_lock;
 template<class Type>
 INLINE Type *DeletedChain<Type>::
 allocate(size_t size) {
+  TAU_PROFILE("Type *DeletedChain<Type>::allocate(size_t)", " ", TAU_USER);
   assert(size <= sizeof(Type));
 
 #ifndef HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
@@ -76,6 +77,7 @@ allocate(size_t size) {
 template<class Type>
 INLINE void DeletedChain<Type>::
 deallocate(Type *ptr) {
+  TAU_PROFILE("void DeletedChain<Type>::deallocate(Type *)", " ", TAU_USER);
 #ifndef HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
   _lock.lock();
 
