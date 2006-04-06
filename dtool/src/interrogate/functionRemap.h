@@ -52,7 +52,7 @@ public:
   FunctionRemap(const InterrogateType &itype,
                 const InterrogateFunction &ifunc,
                 CPPInstance *cppfunc, int num_default_parameters,
-                InterfaceMaker *interface);
+                InterfaceMaker *interface_maker);
   ~FunctionRemap();
 
   string get_parameter_name(int n) const;
@@ -113,7 +113,7 @@ public:
 private:
   string get_call_str(const string &container, const vector_string &pexprs) const;
   string get_parameter_expr(int n, const vector_string &pexprs) const;
-  bool setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface);
+  bool setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_maker);
 };
 
 #endif

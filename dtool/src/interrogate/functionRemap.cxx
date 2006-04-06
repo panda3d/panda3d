@@ -42,7 +42,7 @@ extern bool inside_python_native;
 FunctionRemap::
 FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
               CPPInstance *cppfunc, int num_default_parameters,
-              InterfaceMaker *interface) {
+              InterfaceMaker *interface_maker) {
   _return_type = (ParameterRemap *)NULL;
   _void_return = true;
   _ForcedVoidReturn = false;
@@ -61,7 +61,7 @@ FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
   _cpptype = itype._cpptype;
   _cppscope = itype._cppscope;
 
-  _is_valid = setup_properties(ifunc, interface);
+  _is_valid = setup_properties(ifunc, interface_maker);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -413,7 +413,7 @@ get_parameter_expr(int n, const vector_string &pexprs) const {
 //               something unacceptable about the function.
 ////////////////////////////////////////////////////////////////////
 bool FunctionRemap::
-setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface) {
+setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_maker) {
   _function_signature = 
     TypeManager::get_function_signature(_cppfunc, _num_default_parameters);
   _expression = ifunc._expression;
@@ -445,8 +445,8 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface) {
     // constructor, then we need a "this" parameter.
     _has_this = true;
 
-    if (interface->synthesize_this_parameter()) {
-      // If the interface demands it, the "this" parameter is treated
+    if (interface_maker->synthesize_this_parameter()) {
+      // If the interface_maker demands it, the "this" parameter is treated
       // as any other parameter, and inserted at the beginning of the
       // parameter list.
       Parameter param;
@@ -493,7 +493,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface) {
       param._name = param_name.str();
     }
 
-    param._remap = interface->remap_parameter(_cpptype, type);
+    param._remap = interface_maker->remap_parameter(_cpptype, type);
     if (param._remap == (ParameterRemap *)NULL) {
       // If we can't handle one of the parameter types, we can't call
       // the function.
@@ -518,7 +518,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface) {
       return false;
     }
 
-    _return_type = interface->remap_parameter(_cpptype, _cpptype);
+    _return_type = interface_maker->remap_parameter(_cpptype, _cpptype);
     if (_return_type != (ParameterRemap *)NULL) {
       _void_return = false;
     }
@@ -533,7 +533,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface) {
       return false;
     } else {
       CPPType *ref_type = CPPType::new_type(new CPPReferenceType(_cpptype));
-      _return_type = interface->remap_parameter(_cpptype, ref_type);
+      _return_type = interface_maker->remap_parameter(_cpptype, ref_type);
       if (_return_type != (ParameterRemap *)NULL) {
         _void_return = false;
       }
@@ -542,7 +542,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface) {
   } else {
     // The normal case.
     CPPType *rtype = _ftype->_return_type->resolve_type(&parser, _cppscope);
-    _return_type = interface->remap_parameter(_cpptype, rtype);
+    _return_type = interface_maker->remap_parameter(_cpptype, rtype);
     if (_return_type != (ParameterRemap *)NULL) {
       _void_return = TypeManager::is_void(rtype);
     }
@@ -555,7 +555,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface) {
     _void_return = true;
     _ForcedVoidReturn = true;
     CPPType *void_type = TypeManager::get_void_type();
-    _return_type = interface->remap_parameter(_cpptype, void_type);
+    _return_type = interface_maker->remap_parameter(_cpptype, void_type);
     assert(_return_type != (ParameterRemap *)NULL);
   }
   
