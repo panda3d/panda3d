@@ -544,6 +544,53 @@ has_alpha_channel(int num_components) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::affects_polygon_alpha
+//       Access: Published
+//  Description: Returns true if this texture's environment type or
+//               combine mode allows the texture to have an affect on
+//               the polygon's alpha values, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggTexture::
+affects_polygon_alpha() const {
+  switch (_env_type) {
+  case ET_modulate:
+  case ET_replace:
+    return true;
+
+  case ET_decal:
+  case ET_blend:
+  case ET_add:
+  case ET_blend_color_scale:
+    return false;
+
+  case ET_unspecified:
+    break;
+  }
+
+  switch (_combiner[CC_alpha]._mode) {
+  case CM_replace:
+  case CM_modulate:
+  case CM_add_signed:
+  case CM_subtract:
+    return true;
+
+  case CM_interpolate:
+  case CM_add:
+  case CM_dot3_rgb:
+  case CM_dot3_rgba:
+    return false;
+
+  case CM_unspecified:
+    break;
+  }
+
+  // A completely unspecified texture environment implies "modulate",
+  // which does affect alpha.
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::clear_multitexture
 //       Access: Published
 //  Description: Resets the multitexture flags set by

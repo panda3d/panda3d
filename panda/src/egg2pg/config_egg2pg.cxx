@@ -129,7 +129,11 @@ ConfigVariableBool egg_suppress_hidden
 
 
 ConfigVariableEnum<EggRenderMode::AlphaMode> egg_alpha_mode
-("egg-alpha-mode", EggRenderMode::AM_blend);
+("egg-alpha-mode", EggRenderMode::AM_blend,
+ PRC_DESC("Specifies the alpha mode to apply when the alpha specification "
+          "\"on\" appears in the egg file (or when a primitive is implicitly "
+          "transparent, because of a <RGBA> that involves a non-unity alpha, "
+          "or because of a four-channel texture."));
 
 ConfigureFn(config_egg2pg) {
   init_libegg2pg();

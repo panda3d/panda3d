@@ -123,12 +123,12 @@ private:
   static TypeHandle _type_handle;
 };
 
-ostream &operator << (ostream &out, EggRenderMode::AlphaMode mode);
-istream &operator >> (istream &in, EggRenderMode::AlphaMode &mode);
+EXPCL_PANDAEGG ostream &operator << (ostream &out, EggRenderMode::AlphaMode mode);
+EXPCL_PANDAEGG istream &operator >> (istream &in, EggRenderMode::AlphaMode &mode);
 
-ostream &operator << (ostream &out, EggRenderMode::DepthWriteMode mode);
-ostream &operator << (ostream &out, EggRenderMode::DepthTestMode mode);
-ostream &operator << (ostream &out, EggRenderMode::VisibilityMode mode);
+EXPCL_PANDAEGG ostream &operator << (ostream &out, EggRenderMode::DepthWriteMode mode);
+EXPCL_PANDAEGG ostream &operator << (ostream &out, EggRenderMode::DepthTestMode mode);
+EXPCL_PANDAEGG ostream &operator << (ostream &out, EggRenderMode::VisibilityMode mode);
 
 #include "eggRenderMode.I"
 

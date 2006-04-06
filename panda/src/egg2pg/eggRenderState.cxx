@@ -115,20 +115,14 @@ fill_state(EggPrimitive *egg_prim) {
       // mode, assume it should be alpha'ed if the texture has an
       // alpha channel (unless the texture environment type is one
       // that doesn't apply its alpha to the result).
-      if (am == EggRenderMode::AM_unspecified) {
+      if (egg_tex->affects_polygon_alpha() &&
+          am == EggRenderMode::AM_unspecified) {
         const TextureAttrib *tex_attrib = DCAST(TextureAttrib, def._texture);
         Texture *tex = tex_attrib->get_texture();
         nassertv(tex != (Texture *)NULL);
         int num_components = tex->get_num_components();
         if (egg_tex->has_alpha_channel(num_components)) {
-          switch (egg_tex->get_env_type()) {
-          case EggTexture::ET_decal:
-          case EggTexture::ET_add:
-            break;
-
-          default:
-            implicit_alpha = true;
-          }
+          implicit_alpha = true;
         }
       }
 

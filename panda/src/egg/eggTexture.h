@@ -192,6 +192,7 @@ PUBLISHED:
 
   INLINE void set_env_type(EnvType type);
   INLINE EnvType get_env_type() const;
+  bool affects_polygon_alpha() const;
 
   INLINE void set_combine_mode(CombineChannel channel, CombineMode cm);
   INLINE CombineMode get_combine_mode(CombineChannel channel) const;

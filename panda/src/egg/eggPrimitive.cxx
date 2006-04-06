@@ -47,8 +47,17 @@ determine_alpha_mode() {
   if (result == (EggRenderMode *)NULL) {
     int num_textures = get_num_textures();
     for (int i = 0; i < num_textures && result == (EggRenderMode *)NULL; i++) {
-      if (get_texture(i)->get_alpha_mode() != AM_unspecified) {
-        result = get_texture(i);
+      EggTexture *egg_tex = get_texture(i);
+
+      // We only want to consider the alpha mode on those textures
+      // that can affect the transparency of the polygon.  This
+      // mostly depends on the envtype flag.
+      if (egg_tex->affects_polygon_alpha()) {
+        // This texture might affect the polygon alpha, so it gets to
+        // decide the polygon transparency mode.
+        if (egg_tex->get_alpha_mode() != AM_unspecified) {
+          result = get_texture(i);
+        }
       }
     }
   }
