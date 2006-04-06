@@ -46,12 +46,20 @@ template<class Type>
 INLINE TYPENAME pallocator_array<Type>::pointer pallocator_array<Type>::
 allocate(TYPENAME pallocator_array<Type>::size_type n, TYPENAME allocator<void>::const_pointer) {
   TAU_PROFILE("pallocator_array:allocate()", " ", TAU_USER);
+#ifdef DO_MEMORY_USAGE
   return (TYPENAME pallocator_array<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
+#else
+  return (TYPENAME pallocator_array<Type>::pointer)malloc(n * sizeof(Type));
+#endif  // DO_MEMORY_USAGE
 }
 
 template<class Type>
 INLINE void pallocator_array<Type>::
 deallocate(TYPENAME pallocator_array<Type>::pointer p, TYPENAME pallocator_array<Type>::size_type) {
   TAU_PROFILE("pallocator_array:deallocate()", " ", TAU_USER);
+#ifdef DO_MEMORY_USAGE
   (*global_operator_delete)(p);
+#else
+  free(p);
+#endif  // DO_MEMORY_USAGE
 }
