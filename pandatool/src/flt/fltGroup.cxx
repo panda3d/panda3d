@@ -19,6 +19,7 @@
 #include "fltGroup.h"
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
+#include "fltHeader.h"
 
 TypeHandle FltGroup::_type_handle;
 

@@ -35,6 +35,7 @@
 #include "fltTransformScale.cxx"
 #include "fltTransformTranslate.cxx"
 #include "fltUnsupportedRecord.cxx"
+#include "fltVectorRecord.cxx"
 #include "fltVertex.cxx"
 #include "fltVertexList.cxx"
 

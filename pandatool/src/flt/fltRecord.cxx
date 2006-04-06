@@ -33,6 +33,7 @@
 #include "fltInstanceRef.h"
 #include "fltUnsupportedRecord.h"
 #include "fltExternalReference.h"
+#include "fltVectorRecord.h"
 #include "config_flt.h"
 
 #include "dcast.h"

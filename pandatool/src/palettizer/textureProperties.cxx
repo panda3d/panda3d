@@ -23,6 +23,7 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "string_utils.h"
 
 TypeHandle TextureProperties::_type_handle;
 

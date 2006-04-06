@@ -26,7 +26,7 @@
      fltTransformRotateAboutEdge.h fltTransformRotateAboutPoint.h  \
      fltTransformRotateScale.h fltTransformScale.h  \
      fltTransformTranslate.h fltUnsupportedRecord.h \
-     fltVectorRecord.cxx fltVectorRecord.h \
+     fltVectorRecord.h \
      fltVertex.I fltVertex.h fltVertexList.h 
     
  #define INCLUDED_SOURCES \

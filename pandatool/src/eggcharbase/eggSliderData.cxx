@@ -20,7 +20,7 @@
 #include "eggVertexPointer.h"
 #include "eggScalarTablePointer.h"
 #include "eggSliderPointer.h"
-
+#include "dcast.h"
 #include "eggPrimitive.h"
 #include "eggVertex.h"
 #include "eggSAnimData.h"

@@ -12,13 +12,12 @@
 #begin bin_target
   #define TARGET egg-mkfont
   
-//  #define COMBINED_SOURCES $[TARGET]_composite1.cxx   
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx   
   
   #defer SOURCES \
     eggMakeFont.h \
     rangeDescription.h rangeDescription.I \
-    rangeIterator.h rangeIterator.I \
-    $[INCLUDED_SOURCES]
+    rangeIterator.h rangeIterator.I
 
   #define INCLUDED_SOURCES \
     eggMakeFont.cxx \

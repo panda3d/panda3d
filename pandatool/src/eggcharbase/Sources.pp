@@ -28,6 +28,7 @@
      eggJointPointer.cxx eggJointNodePointer.cxx \
      eggMatrixTablePointer.cxx eggScalarTablePointer.cxx \
      eggSliderData.cxx \
+     eggSliderPointer.cxx \
      eggVertexPointer.cxx 
 
   #define INSTALL_HEADERS \

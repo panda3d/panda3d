@@ -18,6 +18,7 @@
 
 #include "eggComponentData.h"
 #include "eggBackPointer.h"
+#include "nameUniquifier.h"
 
 #include "indent.h"
 

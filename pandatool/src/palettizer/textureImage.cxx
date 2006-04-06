@@ -24,7 +24,7 @@
 #include "paletteImage.h"
 #include "texturePlacement.h"
 #include "filenameUnifier.h"
-
+#include "string_utils.h"
 #include "indent.h"
 #include "datagram.h"
 #include "datagramIterator.h"

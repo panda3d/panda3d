@@ -25,6 +25,8 @@
 #include "luse.h"
 #include "eggTexture.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : TexturePosition
 // Description : This represents a particular position of a texture

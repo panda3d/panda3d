@@ -30,6 +30,7 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "string_utils.h"
 
 #include <algorithm>
 
