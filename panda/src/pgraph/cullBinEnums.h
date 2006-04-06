@@ -1,5 +1,5 @@
-// Filename: cullBinUnsorted.I
-// Created by:  drose (28Feb02)
+// Filename: cullBinEnums.h
+// Created by:  drose (03Apr06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,14 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef CULLBINENUMS_H
+#define CULLBINENUMS_H
+
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullBinUnsorted::Constructor
-//       Access: Public
-//  Description: 
+//       Class : CullBinEnums
+// Description : Provides scoping for the enumerated type shared by
+//               CullBin and CullBinManager.
 ////////////////////////////////////////////////////////////////////
-INLINE CullBinUnsorted::
-CullBinUnsorted(const string &name, GraphicsStateGuardianBase *gsg) :
-  CullBin(name, BT_unsorted, gsg)
-{
-}
+class EXPCL_PANDA CullBinEnums {
+PUBLISHED:
+  enum BinType {
+    BT_invalid,
+    BT_unsorted,
+    BT_state_sorted,
+    BT_back_to_front,
+    BT_front_to_back,
+    BT_fixed,
+    BT_occlusion_test,
+  };
+};
+
+#endif
+

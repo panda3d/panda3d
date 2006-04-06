@@ -18,6 +18,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullBinBackToFront::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CullBinBackToFront::
+CullBinBackToFront(const string &name, GraphicsStateGuardianBase *gsg) :
+  CullBin(name, BT_back_to_front, gsg)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullBinBackToFront::ObjectData::Constructor
 //       Access: Public
 //  Description: 
@@ -40,14 +51,3 @@ operator < (const ObjectData &other) const {
   return _dist > other._dist;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinBackToFront::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE CullBinBackToFront::
-CullBinBackToFront(const string &name, GraphicsStateGuardianBase *gsg) :
-  CullBin(name, gsg)
-{
-}

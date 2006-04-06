@@ -18,6 +18,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullBinStateSorted::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CullBinStateSorted::
+CullBinStateSorted(const string &name, GraphicsStateGuardianBase *gsg) :
+  CullBin(name, BT_state_sorted, gsg)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullBinStateSorted::ObjectData::Constructor
 //       Access: Public
 //  Description: 
@@ -62,14 +73,3 @@ operator < (const ObjectData &other) const {
   return sa < sb;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinStateSorted::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE CullBinStateSorted::
-CullBinStateSorted(const string &name, GraphicsStateGuardianBase *gsg) :
-  CullBin(name, gsg)
-{
-}

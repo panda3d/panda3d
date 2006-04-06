@@ -52,6 +52,7 @@ extern ConfigVariableBool polylight_info;
 extern ConfigVariableDouble lod_fade_time;
 
 extern ConfigVariableBool show_vertex_animation;
+extern ConfigVariableBool show_transparency;
 
 extern ConfigVariableBool m_dual;
 extern ConfigVariableBool m_dual_opaque;

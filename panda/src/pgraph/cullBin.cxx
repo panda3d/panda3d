@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullBin.h"
+#include "config_pgraph.h"
 
 PStatCollector CullBin::_cull_bin_pcollector("Cull:Sort");
 PStatCollector CullBin::_draw_bin_pcollector("Draw:Bins");
@@ -70,7 +71,7 @@ add_object(CullableObject *) {
 //               draw.
 ////////////////////////////////////////////////////////////////////
 void CullBin::
-finish_cull() {
+finish_cull(SceneSetup *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,3 +84,36 @@ void CullBin::
 draw() {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CullBin::check_flash_color
+//       Access: Private
+//  Description: Checks the config variables for a user variable of
+//               the name flash-bin-binname.  If found, it defines the
+//               r g b color to flash geometry in this bin.
+////////////////////////////////////////////////////////////////////
+void CullBin::
+check_flash_color() {
+#ifdef NDEBUG
+  _has_flash_color = false;
+#else
+  ConfigVariableDouble flash_bin
+    ("flash-bin-" + _name, "", "", ConfigVariable::F_dynamic);
+  if (flash_bin.get_num_words() == 0) {
+    _has_flash_color = false;
+
+  } else if (flash_bin.get_num_words() == 3) {
+    _has_flash_color = true;
+    _flash_color.set(flash_bin[0], flash_bin[1], flash_bin[2], 1.0f);
+
+  } else if (flash_bin.get_num_words() == 4) {
+    _has_flash_color = true;
+    _flash_color.set(flash_bin[0], flash_bin[1], flash_bin[2], flash_bin[3]);
+
+  } else {
+    _has_flash_color = false;
+    pgraph_cat.warning()
+      << "Invalid value for flash-bin-" << _name << ": " 
+      << flash_bin.get_string_value() << "\n";
+  }
+#endif  // NDEBUG
+}

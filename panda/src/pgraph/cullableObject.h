@@ -80,7 +80,7 @@ public:
   CullableObject *_next;
 
   // This flag is only used by certain CullBin types.  In particular,
-  // it is used by CullBinHierarchicalZBuffer.
+  // it is used by CullBinOcclusionTest.
   bool _already_drawn;
 
 private:

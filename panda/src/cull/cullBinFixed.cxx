@@ -74,7 +74,7 @@ add_object(CullableObject *object) {
 //               draw.
 ////////////////////////////////////////////////////////////////////
 void CullBinFixed::
-finish_cull() {
+finish_cull(SceneSetup *) {
   PStatTimer timer(_cull_this_pcollector);
   stable_sort(_objects.begin(), _objects.end());
 }

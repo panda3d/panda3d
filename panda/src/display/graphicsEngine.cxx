@@ -25,6 +25,7 @@
 #include "binCullHandler.h"
 #include "cullResult.h"
 #include "cullTraverser.h"
+#include "cullBinOcclusionTest.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
 #include "pStatClient.h"
@@ -47,7 +48,7 @@
 
 PStatCollector GraphicsEngine::_wait_pcollector("Wait:Thread sync");
 PStatCollector GraphicsEngine::_cycle_pcollector("App:Cycle");
-PStatCollector GraphicsEngine::_app_pcollector("App:Show code");
+PStatCollector GraphicsEngine::_app_pcollector("App:Show code:General");
 PStatCollector GraphicsEngine::_render_frame_pcollector("App:render_frame");
 PStatCollector GraphicsEngine::_do_frame_pcollector("*:do_frame");
 PStatCollector GraphicsEngine::_yield_pcollector("App:Yield");
@@ -645,7 +646,9 @@ render_frame() {
   CullTraverser::_nodes_pcollector.clear_level();
   CullTraverser::_geom_nodes_pcollector.clear_level();
   CullTraverser::_geoms_pcollector.clear_level();
-  CullTraverser::_geoms_occluded_pcollector.clear_level();
+  CullBinOcclusionTest::_occlusion_previous_pcollector.clear_level();
+  CullBinOcclusionTest::_occlusion_passed_pcollector.clear_level();
+  CullBinOcclusionTest::_occlusion_failed_pcollector.clear_level();
   GeomCacheManager::_geom_cache_active_pcollector.clear_level();
   GeomCacheManager::_geom_cache_record_pcollector.clear_level();
   GeomCacheManager::_geom_cache_erase_pcollector.clear_level();
@@ -1070,7 +1073,7 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr) {
 
     {
       PStatTimer timer(_cull_sort_pcollector);
-      cull_result->finish_cull();
+      cull_result->finish_cull(scene_setup);
       // Save the results for next frame.
       dr->set_cull_result(cull_result, scene_setup);
     }

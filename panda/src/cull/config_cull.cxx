@@ -21,7 +21,7 @@
 #include "cullBinBackToFront.h"
 #include "cullBinFixed.h"
 #include "cullBinFrontToBack.h"
-#include "cullBinHierarchicalZBuffer.h"
+#include "cullBinOcclusionTest.h"
 #include "cullBinStateSorted.h"
 #include "cullBinUnsorted.h"
 
@@ -38,7 +38,7 @@ ConfigureFn(config_cull) {
 ConfigVariableInt max_objects_per_octree_node
 ("max-objects-per-octree-node", 10,
  PRC_DESC("Specifies the maximum number of objects collected per octree "
-          "node, by the hierarchical-z cull bin algorithm."));
+          "node, by the occlusion test cull bin algorithm."));
 
 ConfigVariableDouble octree_multiassign_ratio
 ("octree-multiassign-ratio", 0.1,
@@ -49,8 +49,8 @@ ConfigVariableDouble octree_multiassign_ratio
 
 ConfigVariableBool show_octree
 ("show-octree", false,
- PRC_DESC("When true, visualizes the octree created for the hierarchical "
-          "Z-buffer algorithm, by drawing wireframe cubes around each "
+ PRC_DESC("When true, visualizes the octree created for the occlusion "
+          "test algorithm, by drawing wireframe cubes around each "
           "nonempty octree cell."));
 
 ////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ init_libcull() {
   CullBinBackToFront::init_type();
   CullBinFixed::init_type();
   CullBinFrontToBack::init_type();
-  CullBinHierarchicalZBuffer::init_type();
+  CullBinOcclusionTest::init_type();
   CullBinStateSorted::init_type();
   CullBinUnsorted::init_type();
 
@@ -87,6 +87,6 @@ init_libcull() {
                                  CullBinFrontToBack::make_bin);
   bin_manager->register_bin_type(CullBinManager::BT_fixed,
                                  CullBinFixed::make_bin);
-  bin_manager->register_bin_type(CullBinManager::BT_hierarchical_z,
-                                 CullBinHierarchicalZBuffer::make_bin);
+  bin_manager->register_bin_type(CullBinManager::BT_occlusion_test,
+                                 CullBinOcclusionTest::make_bin);
 }

@@ -18,14 +18,77 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullBin::Copy Constructor
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CullBin::
+CullBin(const CullBin &copy) : 
+  _name(copy._name),
+  _bin_type(copy._bin_type),
+  _gsg(copy._gsg),
+  _cull_this_pcollector(copy._cull_this_pcollector),
+  _draw_this_pcollector(copy._draw_this_pcollector)
+{
+  check_flash_color();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullBin::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CullBin::
-CullBin(const string &name, GraphicsStateGuardianBase *gsg) : 
+CullBin(const string &name, CullBin::BinType bin_type,
+        GraphicsStateGuardianBase *gsg) : 
+  _name(name),
+  _bin_type(bin_type),
   _gsg(gsg),
   _cull_this_pcollector(_cull_bin_pcollector, name),
   _draw_this_pcollector(_draw_bin_pcollector, name)
 {
+  check_flash_color();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBin::get_name
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const string &CullBin::
+get_name() const {
+  return _name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBin::get_bin_tyep
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CullBin::BinType CullBin::
+get_bin_type() const {
+  return _bin_type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBin::has_flash_color
+//       Access: Public
+//  Description: Returns true if this bin has a flash color configured
+//               via the flash-bin-binname config directive, or false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool CullBin::
+has_flash_color() const {
+  return _has_flash_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBin::get_flash_color
+//       Access: Public
+//  Description: If has_flash_color returns true, this returns the
+//               color specified.
+////////////////////////////////////////////////////////////////////
+INLINE const Colorf &CullBin::
+get_flash_color() const {
+  return _flash_color;
 }

@@ -22,6 +22,7 @@
 #include "alphaTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "colorScaleAttrib.h"
+#include "fogAttrib.h"
 #include "transparencyAttrib.h"
 #include "renderState.h"
 #include "clockObject.h"
@@ -51,6 +52,10 @@
 // whatever internal representation the graphics API will use.
 static const float dual_opaque_level = 252.0f / 256.0f;
 
+#ifndef NDEBUG
+static const double bin_color_flash_rate = 1.0;  // 1 state change per second
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::make_next
 //       Access: Public
@@ -64,9 +69,12 @@ make_next() const {
   PT(CullResult) new_result = new CullResult(_gsg);
   new_result->_bins.reserve(_bins.size());
 
-  for (Bins::const_iterator bi = _bins.begin(); bi != _bins.end(); ++bi) {
-    CullBin *old_bin = (*bi);
-    if (old_bin == (CullBin *)NULL) {
+  CullBinManager *bin_manager = CullBinManager::get_global_ptr();
+
+  for (size_t i = 0; i < _bins.size(); ++i) {
+    CullBin *old_bin = _bins[i];
+    if (old_bin == (CullBin *)NULL || 
+        old_bin->get_bin_type() != bin_manager->get_bin_type(i)) {
       new_result->_bins.push_back((CullBin *)NULL);
     } else {
       new_result->_bins.push_back(old_bin->make_next());
@@ -85,6 +93,11 @@ make_next() const {
 ////////////////////////////////////////////////////////////////////
 void CullResult::
 add_object(CullableObject *object, const CullTraverser *traverser) {
+  static const Colorf flash_alpha_color(0.92, 0.96, 0.10, 1.0f);
+  static const Colorf flash_binary_color(0.21f, 0.67f, 0.24f, 1.0f);
+  static const Colorf flash_multisample_color(0.78f, 0.05f, 0.81f, 1.0f);
+  static const Colorf flash_dual_color(0.92f, 0.01f, 0.01f, 1.0f);
+
   // Check to see if there's a special transparency setting.
   const RenderState *state = object->_state;
   nassertv(state != (const RenderState *)NULL);
@@ -92,9 +105,21 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   const TransparencyAttrib *trans = state->get_transparency();
   if (trans != (const TransparencyAttrib *)NULL) {
     switch (trans->get_mode()) {
+    case TransparencyAttrib::M_alpha:
+      // M_alpha implies an alpha-write test, so we don't waste time
+      // writing 0-valued pixels.
+      object->_state = state->compose(get_alpha_state());
+#ifndef NDEBUG
+      check_flash_transparency(object->_state, flash_alpha_color);
+#endif
+      break;
+
     case TransparencyAttrib::M_binary:
       // M_binary is implemented by explicitly setting the alpha test.
       object->_state = state->compose(get_binary_state());
+#ifndef NDEBUG
+      check_flash_transparency(object->_state, flash_binary_color);
+#endif
       break;
 
     case TransparencyAttrib::M_multisample:
@@ -104,16 +129,27 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
       if (!_gsg->get_supports_multisample()) {
         object->_state = state->compose(get_binary_state());
       }
+#ifndef NDEBUG
+      check_flash_transparency(object->_state, flash_multisample_color);
+#endif
       break;
 
     case TransparencyAttrib::M_dual:
+#ifndef NDEBUG
+      check_flash_transparency(object->_state, flash_dual_color);
+#endif
       if (m_dual) {
-        // M_dual is implemented by drawing the opaque parts first,
-        // without transparency, then drawing the transparent parts
-        // later.  This means we must copy the object and add it to
-        // both bins.  We can only do this if we do not have an
-        // explicit bin already applied; otherwise, M_dual falls back
-        // to M_alpha.
+        // If m_dual is configured off, it becomes M_alpha.
+        break;
+      }
+
+      // M_dual is implemented by drawing the opaque parts first,
+      // without transparency, then drawing the transparent parts
+      // later.  This means we must copy the object and add it to
+      // both bins.  We can only do this if we do not have an
+      // explicit bin already applied; otherwise, M_dual falls back
+      // to M_alpha. 
+      {
         const CullBinAttrib *bin_attrib = state->get_bin();
         if (bin_attrib == (CullBinAttrib *)NULL || 
             bin_attrib->get_bin_name().empty()) {
@@ -122,20 +158,23 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
 #ifndef NDEBUG
           if (m_dual_transparent) 
 #endif
-          {
-            CullableObject *transparent_part = new CullableObject(*object);
-            CPT(RenderState) transparent_state = object->has_decals() ? 
-              get_dual_transparent_state_decals() : 
-              get_dual_transparent_state();
-            transparent_part->_state = state->compose(transparent_state);
-            transparent_part->munge_geom
-              (_gsg, _gsg->get_geom_munger(transparent_part->_state),
-               traverser);
-            CullBin *bin = get_bin(transparent_part->_state->get_bin_index());
-            nassertv(bin != (CullBin *)NULL);
-            bin->add_object(transparent_part);
-          }
-
+            {
+              CullableObject *transparent_part = new CullableObject(*object);
+              CPT(RenderState) transparent_state = object->has_decals() ? 
+                get_dual_transparent_state_decals() : 
+                get_dual_transparent_state();
+              transparent_part->_state = state->compose(transparent_state);
+              transparent_part->munge_geom
+                (_gsg, _gsg->get_geom_munger(transparent_part->_state),
+                 traverser);
+              CullBin *bin = get_bin(transparent_part->_state->get_bin_index());
+              nassertv(bin != (CullBin *)NULL);
+#ifndef NDEBUG
+              check_flash_bin(transparent_part->_state, bin);
+#endif
+              bin->add_object(transparent_part);
+            }
+          
           // Now we can draw the opaque part, with decals.  This will
           // end up in the opaque bin.
           object->_state = state->compose(get_dual_opaque_state());
@@ -146,21 +185,28 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
           }
 #endif
         }
+        // The object is assigned to a specific bin; M_dual becomes
+        // M_alpha.
       }
       break;
-
+      
     default:
       // Other kinds of transparency need no special handling.
       break;
     }
   }
 
+  CullBin *bin = get_bin(object->_state->get_bin_index());
+  nassertv(bin != (CullBin *)NULL);
+
+#ifndef NDEBUG
+  check_flash_bin(object->_state, bin);
+#endif
+
   // Munge vertices as needed for the GSG's requirements, and the
   // object's current state.
   object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state), traverser);
   
-  CullBin *bin = get_bin(object->_state->get_bin_index());
-  nassertv(bin != (CullBin *)NULL);
   bin->add_object(object);
 }
 
@@ -174,11 +220,20 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
 //               draw.
 ////////////////////////////////////////////////////////////////////
 void CullResult::
-finish_cull() {
-  for (Bins::iterator bi = _bins.begin(); bi != _bins.end(); ++bi) {
-    CullBin *bin = (*bi);
-    if (bin != (CullBin *)NULL) {
-      bin->finish_cull();
+finish_cull(SceneSetup *scene_setup) {
+  CullBinManager *bin_manager = CullBinManager::get_global_ptr();
+
+  for (size_t i = 0; i < _bins.size(); ++i) {
+    if (!bin_manager->get_bin_active(i)) {
+      // If the bin isn't active, don't sort it, and don't draw it.
+      // In fact, clear it.
+      _bins[i] = NULL;
+
+    } else {
+      CullBin *bin = _bins[i];
+      if (bin != (CullBin *)NULL) {
+        bin->finish_cull(scene_setup);
+      }
     }
   }
 }
@@ -241,6 +296,23 @@ make_new_bin(int bin_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullResult::get_alpha_state
+//       Access: Private
+//  Description: Returns a RenderState that changes the alpha test to
+//               > 0, for implementing M_alpha.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CullResult::
+get_alpha_state() {
+  static CPT(RenderState) state = NULL;
+  if (state == (const RenderState *)NULL) {
+    // We don't monkey with the priority, since we want to allow the
+    // user to override this if he desires.
+    state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_greater, 0.0f));
+  }
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullResult::get_binary_state
 //       Access: Private
 //  Description: Returns a RenderState that applies the effects of
@@ -257,9 +329,47 @@ get_binary_state() {
   return state;
 }
 
-#ifndef NDEBUG
-static const double m_dual_flash_rate = 1.0;  // 1 state change per second
-#endif
+////////////////////////////////////////////////////////////////////
+//     Function: CullResult::check_flash_bin
+//       Access: Private
+//  Description: If the user configured flash-bin-binname, then update
+//               the object's state to flash all the geometry in the
+//               bin.
+////////////////////////////////////////////////////////////////////
+void CullResult::
+check_flash_bin(CPT(RenderState) &state, CullBin *bin) {
+  if (bin->has_flash_color()) {
+    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
+    if ((cycle & 1) == 0) {
+      state = state->remove_attrib(TextureAttrib::get_class_type());
+      state = state->remove_attrib(LightAttrib::get_class_type());
+      state = state->remove_attrib(ColorScaleAttrib::get_class_type());
+      state = state->remove_attrib(FogAttrib::get_class_type());
+      state = state->add_attrib(ColorAttrib::make_flat(bin->get_flash_color()));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullResult::check_flash_transparency
+//       Access: Private
+//  Description: If the user configured show-transparency, then
+//               update the object's state to flash the current
+//               geometry with the specified color.
+////////////////////////////////////////////////////////////////////
+void CullResult::
+check_flash_transparency(CPT(RenderState) &state, const Colorf &transparency) {
+  if (show_transparency) {
+    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
+    if ((cycle & 1) == 0) {
+      state = state->remove_attrib(TextureAttrib::get_class_type());
+      state = state->remove_attrib(LightAttrib::get_class_type());
+      state = state->remove_attrib(ColorScaleAttrib::get_class_type());
+      state = state->remove_attrib(FogAttrib::get_class_type());
+      state = state->add_attrib(ColorAttrib::make_flat(transparency));
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::get_dual_transparent_state
@@ -289,7 +399,7 @@ get_dual_transparent_state() {
 
 #ifndef NDEBUG
   if (m_dual_flash) {
-    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * m_dual_flash_rate);
+    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
     if ((cycle & 1) == 0) {
       static CPT(RenderState) flash_state = NULL;
       if (flash_state == (const RenderState *)NULL) {
@@ -327,7 +437,7 @@ get_dual_transparent_state_decals() {
 
 #ifndef NDEBUG
   if (m_dual_flash) {
-    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * m_dual_flash_rate);
+    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
     if ((cycle & 1) == 0) {
       static CPT(RenderState) flash_state = NULL;
       if (flash_state == (const RenderState *)NULL) {
@@ -358,7 +468,7 @@ get_dual_opaque_state() {
 
 #ifndef NDEBUG
   if (m_dual_flash) {
-    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * m_dual_flash_rate);
+    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
     if ((cycle & 1) == 0) {
       static CPT(RenderState) flash_state = NULL;
       if (flash_state == (const RenderState *)NULL) {
@@ -371,3 +481,4 @@ get_dual_opaque_state() {
 
   return state;
 }
+

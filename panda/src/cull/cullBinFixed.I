@@ -18,6 +18,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullBinFixed::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CullBinFixed::
+CullBinFixed(const string &name, GraphicsStateGuardianBase *gsg) :
+  CullBin(name, BT_fixed, gsg)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullBinFixed::ObjectData::Constructor
 //       Access: Public
 //  Description: 
@@ -40,14 +51,3 @@ operator < (const ObjectData &other) const {
   return _draw_order < other._draw_order;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFixed::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE CullBinFixed::
-CullBinFixed(const string &name, GraphicsStateGuardianBase *gsg) :
-  CullBin(name, gsg)
-{
-}

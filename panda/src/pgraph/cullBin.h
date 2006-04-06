@@ -20,13 +20,15 @@
 #define CULLBIN_H
 
 #include "pandabase.h"
-
+#include "cullBinEnums.h"
 #include "typedReferenceCount.h"
 #include "pStatCollector.h"
 #include "pointerTo.h"
+#include "luse.h"
 
 class CullableObject;
 class GraphicsStateGuardianBase;
+class SceneSetup;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullBin
@@ -39,20 +41,37 @@ class GraphicsStateGuardianBase;
 //               CullBinStateSorted and CullBinBackToFront provide the
 //               actual implementation.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBin : public TypedReferenceCount {
+class EXPCL_PANDA CullBin : public TypedReferenceCount, public CullBinEnums {
+protected:
+  INLINE CullBin(const CullBin &copy);
 public:
-  INLINE CullBin(const string &name, GraphicsStateGuardianBase *gsg);
+  INLINE CullBin(const string &name, BinType bin_type,
+                 GraphicsStateGuardianBase *gsg);
   virtual ~CullBin();
+
+  INLINE const string &get_name() const;
+  INLINE BinType get_bin_type() const;
 
   virtual PT(CullBin) make_next() const;
 
   virtual void add_object(CullableObject *object)=0;
-  virtual void finish_cull();
+  virtual void finish_cull(SceneSetup *scene_setup);
 
   virtual void draw()=0;
 
+  INLINE bool has_flash_color() const;
+  INLINE const Colorf &get_flash_color() const;
+
+private:
+  void check_flash_color();
+
 protected:
+  string _name;
+  BinType _bin_type;
   GraphicsStateGuardianBase *_gsg;
+
+  bool _has_flash_color;
+  Colorf _flash_color;
 
   static PStatCollector _cull_bin_pcollector;
   static PStatCollector _draw_bin_pcollector;

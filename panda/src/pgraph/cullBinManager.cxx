@@ -17,13 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullBinManager.h"
-/*
-#include "cullBinBackToFront.h"
-#include "cullBinFrontToBack.h"
-#include "cullBinFixed.h"
-#include "cullBinStateSorted.h"
-#include "cullBinUnsorted.h"
-*/
 #include "renderState.h"
 #include "cullResult.h"
 #include "config_pgraph.h"
@@ -118,6 +111,7 @@ add_bin(const string &name, BinType type, int sort) {
   def._name = name;
   def._type = type;
   def._sort = sort;
+  def._active = true;
 
   _bins_by_name.insert(BinsByName::value_type(name, new_bin_index));
   _sorted_bins.push_back(new_bin_index);
@@ -347,8 +341,8 @@ parse_bin_type(const string &bin_type) {
   } else if (cmp_nocase_uh(bin_type, "front_to_back") == 0) {
     return BT_front_to_back;
 
-  } else if (cmp_nocase_uh(bin_type, "hierarchical_z") == 0) {
-    return BT_hierarchical_z;
+  } else if (cmp_nocase_uh(bin_type, "occlusion_test") == 0) {
+    return BT_occlusion_test;
 
   } else {
     return BT_invalid;
@@ -380,8 +374,8 @@ operator << (ostream &out, CullBinManager::BinType bin_type) {
   case CullBinManager::BT_fixed:
     return out << "fixed";
     
-  case CullBinManager::BT_hierarchical_z:
-    return out << "hierarchical_z";
+  case CullBinManager::BT_occlusion_test:
+    return out << "occlusion_test";
   }
 
   return out << "**invalid BinType(" << (int)bin_type << ")**";

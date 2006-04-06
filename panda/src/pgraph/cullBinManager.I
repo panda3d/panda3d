@@ -95,14 +95,61 @@ get_bin_name(int bin_index) const {
 //       Access: Published
 //  Description: Returns the type of the bin with the indicated
 //               bin_index (where bin_index was retrieved by get_bin()
-//               or find_bin()).  The bin's type may not be changed
-//               during the life of the bin.
+//               or find_bin()).
 ////////////////////////////////////////////////////////////////////
 INLINE CullBinManager::BinType CullBinManager::
 get_bin_type(int bin_index) const {
   nassertr(bin_index >= 0 && bin_index < (int)_bin_definitions.size(), BT_invalid);
   nassertr(_bin_definitions[bin_index]._in_use, BT_invalid);
   return _bin_definitions[bin_index]._type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::get_bin_type
+//       Access: Published
+//  Description: Returns the type of the bin with the indicated
+//               name.
+////////////////////////////////////////////////////////////////////
+INLINE CullBinManager::BinType CullBinManager::
+get_bin_type(const string &name) const {
+  int bin_index = find_bin(name);
+  nassertr(bin_index != -1, BT_invalid);
+  return get_bin_type(bin_index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::set_bin_type
+//       Access: Published
+//  Description: Changes the type of the bin with the indicated
+//               bin_index (where bin_index was retrieved by get_bin()
+//               or find_bin()).
+//
+//               The change might be effective immediately, or it
+//               might take place next frame, depending on the bin
+//               type.
+////////////////////////////////////////////////////////////////////
+INLINE void CullBinManager::
+set_bin_type(int bin_index, CullBinManager::BinType type) {
+  nassertv(bin_index >= 0 && bin_index < (int)_bin_definitions.size());
+  nassertv(_bin_definitions[bin_index]._in_use);
+  _bin_definitions[bin_index]._type = type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::set_bin_type
+//       Access: Published
+//  Description: Changes the type of the bin with the indicated
+//               name.
+//
+//               The change might be effective immediately, or it
+//               might take place next frame, depending on the bin
+//               type.
+////////////////////////////////////////////////////////////////////
+INLINE void CullBinManager::
+set_bin_type(const string &name, CullBinManager::BinType type) {
+  int bin_index = find_bin(name);
+  nassertv(bin_index != -1);
+  set_bin_type(bin_index, type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,6 +171,23 @@ get_bin_sort(int bin_index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::get_bin_sort
+//       Access: Published
+//  Description: Returns the sort order of the bin with the indicated
+//               name.
+//
+//               The bins are rendered in increasing order by their
+//               sort order; this number may be changed from time to
+//               time to reorder the bins.
+////////////////////////////////////////////////////////////////////
+INLINE int CullBinManager::
+get_bin_sort(const string &name) const {
+  int bin_index = find_bin(name);
+  nassertr(bin_index != -1, 0);
+  return get_bin_sort(bin_index);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullBinManager::set_bin_sort
 //       Access: Published
 //  Description: Changes the sort order of the bin with the indicated
@@ -140,4 +204,87 @@ set_bin_sort(int bin_index, int sort) {
   nassertv(_bin_definitions[bin_index]._in_use);
   _bin_definitions[bin_index]._sort = sort;
   _bins_are_sorted = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::set_bin_sort
+//       Access: Published
+//  Description: Changes the sort order of the bin with the indicated
+//               name.
+//
+//               The bins are rendered in increasing order by their
+//               sort order; this number may be changed from time to
+//               time to reorder the bins.
+////////////////////////////////////////////////////////////////////
+INLINE void CullBinManager::
+set_bin_sort(const string &name, int sort) {
+  int bin_index = find_bin(name);
+  nassertv(bin_index != -1);
+  set_bin_sort(bin_index, sort);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::get_bin_active
+//       Access: Published
+//  Description: Returns the active flag of the bin with the indicated
+//               bin_index (where bin_index was retrieved by get_bin()
+//               or find_bin()).
+//
+//               When a bin is marked inactive, all geometry assigned
+//               to it is not rendered.
+////////////////////////////////////////////////////////////////////
+INLINE bool CullBinManager::
+get_bin_active(int bin_index) const {
+  nassertr(bin_index >= 0 && bin_index < (int)_bin_definitions.size(), false);
+  nassertr(_bin_definitions[bin_index]._in_use, false);
+  return _bin_definitions[bin_index]._active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::get_bin_active
+//       Access: Published
+//  Description: Returns the active flag of the bin with the indicated
+//               name.
+//
+//               When a bin is marked inactive, all geometry assigned
+//               to it is not rendered.
+////////////////////////////////////////////////////////////////////
+INLINE bool CullBinManager::
+get_bin_active(const string &name) const {
+  int bin_index = find_bin(name);
+  nassertr(bin_index != -1, false);
+  return get_bin_active(bin_index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::set_bin_active
+//       Access: Published
+//  Description: Changes the active flag of the bin with the indicated
+//               bin_index (where bin_index was retrieved by get_bin()
+//               or find_bin()).
+//
+//               When a bin is marked inactive, all geometry assigned
+//               to it is not rendered.
+////////////////////////////////////////////////////////////////////
+INLINE void CullBinManager::
+set_bin_active(int bin_index, bool active) {
+  nassertv(bin_index >= 0 && bin_index < (int)_bin_definitions.size());
+  nassertv(_bin_definitions[bin_index]._in_use);
+  _bin_definitions[bin_index]._active = active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::set_bin_active
+//       Access: Published
+//  Description: Changes the active flag of the bin with the indicated
+//               name.
+//
+//               When a bin is marked inactive, all geometry assigned
+//               to it is not rendered.
+////////////////////////////////////////////////////////////////////
+INLINE void CullBinManager::
+set_bin_active(const string &name, bool active) {
+  int bin_index = find_bin(name);
+  nassertv(bin_index != -1);
+  set_bin_active(bin_index, active);
 }

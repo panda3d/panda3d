@@ -110,7 +110,6 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Wait",                             { 0.6, 0.6, 0.6 } },
   { 0, "Wait:Mutex block",                 { 0.5, 0.0, 1.0 } },
   { 1, "Wait:Thread sync",                 { 0.0, 1.0, 0.5 } },
-  { 1, "Wait:Occlusion test",              { 1.0, 0.5, 0.0 } },
   { 1, "App",                              { 0.0, 0.8, 0.4 },  1.0 / 30.0 },
   { 1, "App:Collisions",                   { 1.0, 0.5, 0.0 } },
   { 1, "App:Collisions:Reset",             { 0.0, 0.0, 0.5 } },
@@ -152,6 +151,7 @@ static TimeCollectorProperties time_properties[] = {
   { 0, "Draw:Transfer data:Texture",       { 0.9, 0.0, 0.1 } },
   { 0, "Draw:Transfer data:Display lists", { 0.5, 0.0, 0.9 } },
   { 0, "Draw:Primitive",                   { 0.0, 0.0, 0.5 } },
+  { 1, "Draw:Wait occlusion",              { 1.0, 0.5, 0.0 } },
   { 0, NULL }
 };
 
@@ -184,13 +184,13 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "Nodes",                            { 0.4, 0.2, 0.8 },  "", 500.0 },
   { 1, "Nodes:GeomNodes",                  { 0.8, 0.2, 0.0 } },
   { 1, "Geoms",                            { 0.4, 0.8, 0.3 },  "", 500.0 },
-  { 1, "Geoms:Occluded",                   { 0.8, 0.2, 0.2 } },
   { 1, "Cull volumes",                     { 0.7, 0.6, 0.9 },  "", 500.0 },
   { 1, "Cull volumes:Transforms",          { 0.9, 0.6, 0.0 } },
   { 1, "State changes",                    { 1.0, 0.5, 0.2 },  "", 500.0 },
   { 1, "State changes:Other",              { 0.2, 0.2, 0.2 } },
   { 1, "State changes:Transforms",         { 0.2, 0.2, 0.8 } },
   { 1, "State changes:Textures",           { 0.8, 0.2, 0.2 } },
+  { 1, "Occlusion test",                   { 0.9, 0.8, 0.3 },  "", 500.0 },
   { 1, "Memory usage",                     { 0.5, 1.0, 0.5 },  "MB", 64, 1048576 },
   { 1, "Memory usage:C++",                 { 0.2, 0.2, 1.0 } },
   { 1, "Memory usage:Interpreter",         { 0.8, 0.2, 0.5 } },

@@ -214,6 +214,13 @@ ConfigVariableBool show_vertex_animation
           "by Panda on the CPU (flash red) or by hardware (flash blue).  "
           "This only has effect when NDEBUG is defined."));
 
+ConfigVariableBool show_transparency
+("show-transparency", false,
+ PRC_DESC("Set this true to flash any objects that are rendered in "
+          "some transparency mode.  The color chosen is based on the  "
+          "particular transparency mode in effect.  This only has effect "
+          "when NDEBUG is defined."));
+
 ConfigVariableBool m_dual
 ("m-dual", true,
  PRC_DESC("Set this false to disable TransparencyAttrib::M_dual altogether "

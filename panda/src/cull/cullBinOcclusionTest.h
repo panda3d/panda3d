@@ -1,4 +1,4 @@
-// Filename: cullBinHierarchicalZBuffer.h
+// Filename: cullBinOcclusionTest.h
 // Created by:  drose (24Mar06)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CULLBINHIERARCHICALZBUFFER_H
-#define CULLBINHIERARCHICALZBUFFER_H
+#ifndef CULLBINOCCLUSIONTEST_H
+#define CULLBINOCCLUSIONTEST_H
 
 #include "pandabase.h"
 
@@ -29,12 +29,13 @@
 #include "boundingSphere.h"
 #include "config_cull.h"
 #include "occlusionQueryContext.h"
-#include "pdeque.h"
 #include "pStatCollector.h"
+#include "pdeque.h"
+#include "ordered_vector.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CullBinHierarchicalZBuffer
-// Description : This cull bin uses a hierarchical Z-buffer algorithm
+//       Class : CullBinOcclusionTest
+// Description : This cull bin uses hardware-supported occlusion tests
 //               to attempt to further eliminate geometry that is
 //               obscured behind walls, etc.  It imposes some
 //               significant overhead over most of the other kinds of
@@ -46,16 +47,18 @@
 //
 //               This code is still experimental.  Use with caution.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBinHierarchicalZBuffer : public CullBin {
+class EXPCL_PANDA CullBinOcclusionTest : public CullBin {
+protected:
+  INLINE CullBinOcclusionTest(const CullBinOcclusionTest &copy);
 public:
-  INLINE CullBinHierarchicalZBuffer(const string &name, GraphicsStateGuardianBase *gsg);
-  virtual ~CullBinHierarchicalZBuffer();
+  INLINE CullBinOcclusionTest(const string &name, GraphicsStateGuardianBase *gsg);
+  virtual ~CullBinOcclusionTest();
 
   static CullBin *make_bin(const string &name, GraphicsStateGuardianBase *gsg);
   virtual PT(CullBin) make_next() const;
 
   virtual void add_object(CullableObject *object);
-  virtual void finish_cull();
+  virtual void finish_cull(SceneSetup *scene_setup);
   virtual void draw();
 
 private:
@@ -90,6 +93,23 @@ private:
     OC_z   = 0x04,
   };
 
+  static const LPoint3f _corner_points[8];
+
+  // This class is used to build a table of Geoms (and their
+  // associated net transform) that we have determined to be visible
+  // during the draw pass.  This will be useful information for next
+  // frame's draw.
+  class VisibleGeom {
+  public:
+    INLINE VisibleGeom(const Geom *geom, const TransformState *net_transform);
+    INLINE bool operator < (const VisibleGeom &other) const;
+
+    CPT(Geom) _geom;
+    CPT(TransformState) _net_transform;
+    CPT(BoundingVolume) _bounds;
+  };
+  typedef ov_set<VisibleGeom> VisibleGeoms;
+
   class OctreeNode {
   public:
     OctreeNode();
@@ -98,28 +118,38 @@ private:
 
     void make_initial_bounds();
     void group_objects();
-    PT(OcclusionQueryContext) occlusion_test(CullBinHierarchicalZBuffer &bin);
-    void draw(CullBinHierarchicalZBuffer &bin);
-    void draw_wireframe(CullBinHierarchicalZBuffer &bin);
+    void compute_distance(const LMatrix4f &world_mat,
+                          CullBinOcclusionTest &bin);
 
+    PT(OcclusionQueryContext) occlusion_test(CullBinOcclusionTest &bin);
+    int draw_previous(CullBinOcclusionTest &bin);
+    int draw(CullBinOcclusionTest &bin);
+    void draw_wireframe(CullBinOcclusionTest &bin);
+    void record_visible_geoms(VisibleGeoms &visible_geoms);
     INLINE void initial_assign(const ObjectData &object_data);
 
-    INLINE int get_total_num_objects() const;
+    void output(ostream &out) const;
 
   private:
     INLINE void reassign(const ObjectData &object_data);
     INLINE void assign_to_corner(int index, const ObjectData &object_data);
     void multi_assign(const ObjectData &object_data);
     void make_corner(int index);
+    LPoint3f get_corner_point(int index);
 
-    int _total_num_objects;
+  private:
     Objects _objects;
     OctreeNode *_corners[8];
     LPoint3f _mid;
     float _half_side;
+    float _distance;
+    bool _is_visible;
   };
 
   OctreeNode _root;
+  int _num_objects;
+  int _corners_front_to_back[8];
+  float _near_distance;
 
   // During draw(), we maintain a list of OctreeNodes that have been
   // tested and have yet to pass the occlusion query and be drawn (or
@@ -132,9 +162,21 @@ private:
   typedef pdeque<PendingNode> PendingNodes;
   PendingNodes _pending_nodes;
 
+  // The pointer to this class is preserved from one frame to the next
+  // (unlike the CullBin itself, which is recreated anew each frame).
+  // It keeps the data from the previous draw operation.
+  class PrevDrawData : public ReferenceCount {
+  public:
+    VisibleGeoms _visible_geoms;
+    Mutex _visible_lock;
+  };
+  PT(PrevDrawData) _prev_draw;
+
   PStatCollector _draw_occlusion_pcollector;
   static PStatCollector _wait_occlusion_pcollector;
-  static PStatCollector _geoms_occluded_pcollector;
+  static PStatCollector _occlusion_previous_pcollector;
+  static PStatCollector _occlusion_passed_pcollector;
+  static PStatCollector _occlusion_failed_pcollector;
 
   static PT(Geom) _octree_solid_test;
   static PT(Geom) _octree_wireframe_viz;
@@ -146,7 +188,7 @@ public:
   }
   static void init_type() {
     CullBin::init_type();
-    register_type(_type_handle, "CullBinHierarchicalZBuffer",
+    register_type(_type_handle, "CullBinOcclusionTest",
                   CullBin::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -158,9 +200,18 @@ private:
   static TypeHandle _type_handle;
 
   friend class OctreeNode;
+  friend class GraphicsEngine;
+
+  friend ostream &operator << (ostream &out, OctreeNode &node);
 };
 
-#include "cullBinHierarchicalZBuffer.I"
+INLINE ostream &
+operator << (ostream &out, CullBinOcclusionTest::OctreeNode &node) {
+  node.output(out);
+  return out;
+}
+
+#include "cullBinOcclusionTest.I"
 
 #endif
 

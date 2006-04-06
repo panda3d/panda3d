@@ -36,6 +36,7 @@ class GraphicsStateGuardianBase;
 class CullTraverser;
 class TransformState;
 class RenderState;
+class SceneSetup;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullResult
@@ -58,7 +59,7 @@ public:
   INLINE CullBin *get_bin(int bin_index);
 
   void add_object(CullableObject *object, const CullTraverser *traverser);
-  void finish_cull();
+  void finish_cull(SceneSetup *scene_setup);
   void draw();
 
 public:
@@ -66,7 +67,10 @@ public:
 
 private:
   CullBin *make_new_bin(int bin_index);
+  void check_flash_bin(CPT(RenderState) &state, CullBin *bin);
+  void check_flash_transparency(CPT(RenderState) &state, const Colorf &color);
 
+  static CPT(RenderState) get_alpha_state();
   static CPT(RenderState) get_binary_state();
   static CPT(RenderState) get_dual_transparent_state();
   static CPT(RenderState) get_dual_transparent_state_decals();

@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "cullBin.h"
+#include "cullBinEnums.h"
 #include "pointerTo.h"
 #include "pvector.h"
 #include "pmap.h"
@@ -34,21 +35,13 @@ class GraphicsStateGuardianBase;
 // Description : This is a global object that maintains the collection
 //               of named CullBins in the world.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBinManager {
+class EXPCL_PANDA CullBinManager : public CullBinEnums {
 protected:
   CullBinManager();
   ~CullBinManager();
 
 PUBLISHED:
-  enum BinType {
-    BT_invalid,
-    BT_unsorted,
-    BT_state_sorted,
-    BT_back_to_front,
-    BT_front_to_back,
-    BT_fixed,
-    BT_hierarchical_z,
-  };
+  typedef CullBin::BinType BinType;
 
   int add_bin(const string &name, BinType type, int sort);
   void remove_bin(int bin_index);
@@ -58,10 +51,21 @@ PUBLISHED:
   int find_bin(const string &name) const;
 
   INLINE string get_bin_name(int bin_index) const;
+
   INLINE BinType get_bin_type(int bin_index) const;
+  INLINE BinType get_bin_type(const string &name) const;
+  INLINE void set_bin_type(int bin_index, BinType type);
+  INLINE void set_bin_type(const string &name, BinType type);
 
   INLINE int get_bin_sort(int bin_index) const;
+  INLINE int get_bin_sort(const string &name) const;
   INLINE void set_bin_sort(int bin_index, int sort);
+  INLINE void set_bin_sort(const string &name, int sort);
+
+  INLINE bool get_bin_active(int bin_index) const;
+  INLINE bool get_bin_active(const string &name) const;
+  INLINE void set_bin_active(int bin_index, bool active);
+  INLINE void set_bin_active(const string &name, bool active);
 
   void write(ostream &out) const;
 
@@ -89,6 +93,7 @@ private:
     string _name;
     BinType _type;
     int _sort;
+    bool _active;
   };
   typedef pvector<BinDefinition> BinDefinitions;
   BinDefinitions _bin_definitions;

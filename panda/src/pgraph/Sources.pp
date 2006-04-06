@@ -26,6 +26,7 @@
     compassEffect.I compassEffect.h \
     config_pgraph.h \
     cullBin.I cullBin.h \
+    cullBinEnums.h \
     cullBinAttrib.I cullBinAttrib.h \
     cullBinManager.I cullBinManager.h \
     cullFaceAttrib.I cullFaceAttrib.h \
@@ -226,6 +227,7 @@
     compassEffect.I compassEffect.h \
     config_pgraph.h \
     cullBin.I cullBin.h \
+    cullBinEnums.h \
     cullBinAttrib.I cullBinAttrib.h \
     cullBinManager.I cullBinManager.h \
     cullFaceAttrib.I cullFaceAttrib.h \

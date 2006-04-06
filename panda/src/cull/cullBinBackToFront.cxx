@@ -86,7 +86,7 @@ add_object(CullableObject *object) {
 //               draw.
 ////////////////////////////////////////////////////////////////////
 void CullBinBackToFront::
-finish_cull() {
+finish_cull(SceneSetup *) {
   PStatTimer timer(_cull_this_pcollector);
   sort(_objects.begin(), _objects.end());
 }
