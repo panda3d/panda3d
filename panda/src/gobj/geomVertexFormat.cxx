@@ -153,23 +153,37 @@ CPT(GeomVertexFormat) GeomVertexFormat::
 get_union_format(const GeomVertexFormat *other) const {
   nassertr(is_registered() && other->is_registered(), NULL);
 
-  PT(GeomVertexArrayFormat) new_array = new GeomVertexArrayFormat;
+  PT(GeomVertexFormat) new_format = new GeomVertexFormat;
 
-  // We go through all the (0)-level arrays fist, then all the
+  // Keep track of the columns we have already added.
+  typedef pset< CPT(InternalName) > ColumnNames;
+  ColumnNames column_names;
+
+  // We go through all the (0)-level arrays first, then all the
   // (1)-level arrays, and so on.  We do this to ensure that the new
   // format gets written out with all the (0)-level columns appearing
   // before all the (1)-level columns, which might lead to a small
   // optimization at render time.
 
+  // We also try to keep the structure as similar as possible.  If
+  // both source formats have columns (A, B) in array 0, and columns
+  // (C, D, E) in array 1, then the resulting union format will also
+  // have (A, B) in array 0 and (C, D, E) in array 1.  In general, a
+  // column will appear in the result in the first array it appears in
+  // either of the inputs.
+
   size_t num_arrays = max(_arrays.size(), other->_arrays.size());
   for (size_t ai = 0; ai < num_arrays; ++ai) {
+    PT(GeomVertexArrayFormat) new_array = new GeomVertexArrayFormat;
+
     // Add the columns from the first format.
     if (ai < _arrays.size()) {
       GeomVertexArrayFormat *array_format = _arrays[ai];
       int num_columns = array_format->get_num_columns();
       for (int i = 0; i < num_columns; ++i) {
         const GeomVertexColumn *column_a = array_format->get_column(i);
-        if (!new_array->has_column(column_a->get_name())) {
+        bool inserted = column_names.insert(column_a->get_name()).second;
+        if (inserted) {
           const GeomVertexColumn *column_b = other->get_column(column_a->get_name());
           if (column_b != (GeomVertexColumn *)NULL &&
               column_b->get_total_bytes() > column_a->get_total_bytes()) {
@@ -195,7 +209,8 @@ get_union_format(const GeomVertexFormat *other) const {
       int num_columns = array_format->get_num_columns();
       for (int i = 0; i < num_columns; ++i) {
         const GeomVertexColumn *column_a = array_format->get_column(i);
-        if (!new_array->has_column(column_a->get_name())) {
+        bool inserted = column_names.insert(column_a->get_name()).second;
+        if (inserted) {
           const GeomVertexColumn *column_b = get_column(column_a->get_name());
           if (column_b != (GeomVertexColumn *)NULL &&
               column_b->get_total_bytes() > column_a->get_total_bytes()) {
@@ -214,10 +229,14 @@ get_union_format(const GeomVertexFormat *other) const {
         }
       }
     }
+
+    if (new_array->get_num_columns() != 0) {
+      new_format->add_array(new_array);
+    }
   }
 
-  // Finally, create a format for the thing.
-  return GeomVertexFormat::register_format(new_array);
+  // Finally, register the format for the thing.
+  return GeomVertexFormat::register_format(new_format);
 }
 
 ////////////////////////////////////////////////////////////////////
