@@ -197,7 +197,7 @@ pop_struct() {
 
 %token <u.real> REAL
 %token <u.integer> INTEGER
-%token <u.integer> CHAR
+%token <u.integer> CHAR_TOK
 %token <str> STRING SIMPLE_IDENTIFIER
 %token <u.identifier> IDENTIFIER TYPENAME_IDENTIFIER SCOPING
 %token <u.type> TYPEDEFNAME
@@ -2030,7 +2030,7 @@ element:
         | STRING
 {
 }
-        | CHAR
+        | CHAR_TOK
 {
 }
         | IDENTIFIER
@@ -2482,7 +2482,7 @@ const_operand:
 {
   $$ = new CPPExpression(false);
 }
-        | CHAR
+        | CHAR_TOK
 {
   $$ = new CPPExpression($1);
 }
@@ -2671,7 +2671,7 @@ formal_const_operand:
 {
   $$ = new CPPExpression(false);
 }
-        | CHAR
+        | CHAR_TOK
 {
   $$ = new CPPExpression($1);
 }

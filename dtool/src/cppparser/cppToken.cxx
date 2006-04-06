@@ -107,8 +107,8 @@ output(ostream &out) const {
     out << "INTEGER " << _lval.u.integer;
     break;
 
-  case CHAR:
-    out << "CHAR " << _lval.u.integer << " = " << _lval.str;
+  case CHAR_TOK:
+    out << "CHAR_TOK " << _lval.u.integer << " = " << _lval.str;
     break;
 
   case STRING:

@@ -1500,7 +1500,7 @@ get_quoted_char(int c) {
   } else {
     result.u.integer = 0;
   }
-  return CPPToken(CHAR, first_line, first_col, first_file, str, result);
+  return CPPToken(CHAR_TOK, first_line, first_col, first_file, str, result);
 }
 
 ////////////////////////////////////////////////////////////////////
