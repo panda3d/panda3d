@@ -19,7 +19,7 @@
 #ifndef ATOMICADJUSTWIN32IMPL_H
 #define ATOMICADJUSTWIN32IMPL_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
 #ifdef THREAD_WIN32_IMPL

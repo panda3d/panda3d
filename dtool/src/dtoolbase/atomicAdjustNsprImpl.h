@@ -19,7 +19,7 @@
 #ifndef ATOMICADJUSTNSPRIMPL_H
 #define ATOMICADJUSTNSPRIMPL_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
 #ifdef THREAD_NSPR_IMPL
