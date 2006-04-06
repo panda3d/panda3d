@@ -24,7 +24,7 @@
 #include "txaFile.h"
 
 #include "typedWritable.h"
-
+#include "eggRenderMode.h"
 #include "pvector.h"
 #include "pset.h"
 #include "pmap.h"
@@ -124,6 +124,8 @@ public:
   PNMFileType *_alpha_type;
   PNMFileType *_shadow_color_type;
   PNMFileType *_shadow_alpha_type;
+  EggRenderMode::AlphaMode _cutout_mode;
+  double _cutout_ratio;
 
 private:
   typedef pvector<TexturePlacement *> Placements;

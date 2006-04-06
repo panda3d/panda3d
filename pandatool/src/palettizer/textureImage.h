@@ -136,6 +136,8 @@ private:
     AB_all   = 0x07 // == AB_zero | AB_mid | AB_one
   };
   int _alpha_bits;
+  double _mid_pixel_ratio;
+  bool _is_cutout;
   EggRenderMode::AlphaMode _alpha_mode;
 
   PaletteGroups _explicitly_assigned_groups;

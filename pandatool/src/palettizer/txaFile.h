@@ -57,7 +57,7 @@ private:
   bool parse_shadowtype_line(const vector_string &words);
   bool parse_round_line(const vector_string &words);
   bool parse_remap_line(const vector_string &words);
-  bool parse_remapchar_line(const vector_string &words);
+  bool parse_cutout_line(const vector_string &words);
 
   typedef pvector<TxaLine> Lines;
   Lines _lines;

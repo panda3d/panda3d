@@ -854,6 +854,11 @@ write_source_pathnames(ostream &out, int indent_level) const {
     }
   }
 
+  if (_is_cutout) {
+    indent(out, indent_level)
+      << "Cutout image (ratio " << _mid_pixel_ratio << ")";
+  }
+
   // Now write out the group assignments.
   if (!_egg_files.empty()) {
     // Sort the egg files into order by name for output.
@@ -898,9 +903,8 @@ write_source_pathnames(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::write_scale_info
 //       Access: Public
-//  Description: Writes the list of source pathnames that might
-//               contribute to this texture to the indicated output
-//               stream, one per line.
+//  Description: Writes the information about the texture's size and
+//               placement.
 ////////////////////////////////////////////////////////////////////
 void TextureImage::
 write_scale_info(ostream &out, int indent_level) {
@@ -1136,6 +1140,7 @@ consider_alpha() {
   // file that didn't define these bits.
   if (_read_source_image || !_ever_read_image || _alpha_bits == -1) {
     _alpha_bits = 0;
+    int num_mid_pixels = 0;
 
     const PNMImage &source = read_source_image();
     if (source.is_valid() && source.has_alpha()) {
@@ -1149,16 +1154,16 @@ consider_alpha() {
             _alpha_bits |= AB_one;
           } else {
             _alpha_bits |= AB_mid;
-          }
-          if (_alpha_bits == AB_all) {
-            // Once we've found a sample of everything, we can stop
-            // searching.
-            break;
+            ++num_mid_pixels;
           }
         }
       }
     }
+
+    _mid_pixel_ratio = (double)num_mid_pixels / (double)(source.get_x_size() * source.get_y_size());
   }
+
+  _is_cutout = false;
 
   if (_alpha_bits != 0) {
     if (_alpha_bits == AB_one) {
@@ -1180,9 +1185,11 @@ consider_alpha() {
         // No middle range bits: a binary alpha image.
         _alpha_mode = EggRenderMode::AM_binary;
 
-      } else if ((_alpha_bits & AB_one) != 0) {
-        // At least some opaque bits: a dual alpha image.
-        _alpha_mode = EggRenderMode::AM_dual;
+      } else if ((_alpha_bits & AB_one) != 0 && _mid_pixel_ratio < pal->_cutout_ratio) {
+        // At least some opaque bits, and relatively few middle range
+        // bits: a cutout image.
+        _alpha_mode = pal->_cutout_mode;
+        _is_cutout = true;
 
       } else {
         // No opaque bits; just use regular alpha blending.
@@ -1327,6 +1334,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_bool(_forced_grayscale);
   datagram.add_uint8(_alpha_bits);
   datagram.add_int16((int)_alpha_mode);
+  datagram.add_float64(_mid_pixel_ratio);
+  datagram.add_bool(_is_cutout);
 
   // We don't write out _explicitly_assigned_groups; this is re-read
   // from the .txa file each time.
@@ -1442,6 +1451,15 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _forced_grayscale = scan.get_bool();
   _alpha_bits = scan.get_uint8();
   _alpha_mode = (EggRenderMode::AlphaMode)scan.get_int16();
+  if (pal->_read_pi_version >= 16) {
+    _mid_pixel_ratio = scan.get_float64();
+    _is_cutout = scan.get_bool();
+  } else {
+    // Force a re-read of the image if we are upgrading to pi version 16.
+    _ever_read_image = false;
+    _mid_pixel_ratio = 0.0;
+    _is_cutout = false;
+  }
 
   _actual_assigned_groups.fillin(scan, manager);
 

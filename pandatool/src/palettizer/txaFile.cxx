@@ -89,6 +89,9 @@ read(istream &in, const string &filename) {
       } else if (words[0] == ":remap") {
         okflag = parse_remap_line(words);
 
+      } else if (words[0] == ":cutout") {
+        okflag = parse_cutout_line(words);
+
       } else {
         nout << "Invalid keyword " << words[0] << "\n";
         okflag = false;
@@ -526,6 +529,38 @@ parse_remap_line(const vector_string &words) {
     }
 
     i++;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TxaFile::parse_cutout_line
+//       Access: Private
+//  Description: Handles the line in a .txa file that begins with the
+//               keyword ":cutout" and indicates how to handle
+//               alpha-cutout textures: those textures that appear to
+//               be mostly solid parts and invisible parts, with a
+//               thin border of antialiased alpha along the boundary.
+////////////////////////////////////////////////////////////////////
+bool TxaFile::
+parse_cutout_line(const vector_string &words) {
+  if (words.size() < 2 || words.size() > 3) {
+    nout << ":cutout alpha-mode [ratio]\n";
+    return false;
+  }
+
+  EggRenderMode::AlphaMode am = EggRenderMode::string_alpha_mode(words[1]);
+  if (am == EggRenderMode::AM_unspecified) {
+    nout << "Invalid cutout keyword: " << words[1] << "\n";
+    return false;
+  }
+  pal->_cutout_mode = am;
+
+  if (words.size() >= 3) {
+    if (!string_to_double(words[2], pal->_cutout_ratio)) {
+      nout << "Invalid cutout ratio: " << words[2] << "\n";
+    }
   }
 
   return true;

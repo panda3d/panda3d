@@ -41,7 +41,7 @@ Palettizer *pal = (Palettizer *)NULL;
 // allows us to easily update egg-palettize to write out additional
 // information to its pi file, without having it increment the bam
 // version number for all bam and boo files anywhere in the world.
-int Palettizer::_pi_version = 15;
+int Palettizer::_pi_version = 16;
 // Updated to version 8 on 3/20/03 to remove extensions from texture key names.
 // Updated to version 9 on 4/13/03 to add a few properties in various places.
 // Updated to version 10 on 4/15/03 to add _alpha_file_channel.
@@ -50,6 +50,7 @@ int Palettizer::_pi_version = 15;
 // Updated to version 13 on 9/13/03 to add _keep_format and _background.
 // Updated to version 14 on 7/26/05 to add _omit_everything.
 // Updated to version 15 on 8/01/05 to make TextureImages be case-insensitive.
+// Updated to version 16 on 4/03/06 to add Palettizer::_cutout_mode et al.
 
 int Palettizer::_min_pi_version = 8;
 // Dropped support for versions 7 and below on 7/14/03.
@@ -121,6 +122,8 @@ Palettizer() {
   _shadow_alpha_type = (PNMFileType *)NULL;
   _pal_x_size = _pal_y_size = 512;
   _background.set(0.0, 0.0, 0.0, 1.0);
+  _cutout_mode = EggRenderMode::AM_dual;
+  _cutout_ratio = 0.3;
 
   _round_uvs = true;
   _round_unit = 0.1;
@@ -210,6 +213,7 @@ report_pi() const {
   }
   cout << "  remap UV's: " << _remap_uv << "\n"
        << "  remap UV's for characters: " << _remap_char_uv << "\n";
+  cout << "  alpha cutouts: " << _cutout_mode << " " << _cutout_ratio << "\n";
 
   if (_color_type != (PNMFileType *)NULL) {
     cout << "  generate image files of type: "
@@ -1019,6 +1023,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_float64(_round_fuzz);
   datagram.add_int32((int)_remap_uv);
   datagram.add_int32((int)_remap_char_uv);
+  datagram.add_uint8((int)_cutout_mode);
+  datagram.add_float64(_cutout_ratio);
 
   writer->write_pointer(datagram, _color_type);
   writer->write_pointer(datagram, _alpha_type);
@@ -1237,6 +1243,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _round_fuzz = scan.get_float64();
   _remap_uv = (RemapUV)scan.get_int32();
   _remap_char_uv = (RemapUV)scan.get_int32();
+  if (_read_pi_version >= 16) {
+    _cutout_mode = (EggRenderMode::AlphaMode)scan.get_uint8();
+    _cutout_ratio = scan.get_float64();
+  }
 
   manager->read_pointer(scan);  // _color_type
   manager->read_pointer(scan);  // _alpha_type
