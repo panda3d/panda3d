@@ -162,3 +162,14 @@
 
 #end test_bin_target
 
+
+#begin test_bin_target
+  #define TARGET test_concurrency
+  #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
+  #define OTHER_LIBS dtoolutil:c dtool:m dtoolconfig:m pystub
+
+  #define SOURCES \
+    test_concurrency.cxx
+
+#end test_bin_target
+
