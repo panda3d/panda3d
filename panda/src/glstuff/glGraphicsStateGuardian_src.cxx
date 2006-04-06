@@ -6247,12 +6247,13 @@ specify_texture(Texture *tex) {
   GLP(TexParameteri)(target, GL_TEXTURE_MAG_FILTER,
                      get_texture_filter_type(magfilter, true));
 
-  if (_supports_shadow_filter) {
-    if (tex->get_format() == Texture::F_depth_component) {
+  if (tex->get_format() == Texture::F_depth_component) {
+    GLP(TexParameteri)(target, GL_DEPTH_TEXTURE_MODE_ARB, GL_INTENSITY);
+    if (_supports_shadow_filter) {
       if ((tex->get_magfilter() == Texture::FT_shadow) ||
           (tex->get_minfilter() == Texture::FT_shadow)) {
         GLP(TexParameteri)(target, GL_TEXTURE_COMPARE_MODE_ARB, GL_COMPARE_R_TO_TEXTURE_ARB);
-        GLP(TexParameteri)(target, GL_TEXTURE_COMPARE_FUNC_ARB, GL_GEQUAL);
+        GLP(TexParameteri)(target, GL_TEXTURE_COMPARE_FUNC_ARB, GL_LEQUAL);
       } else {
         GLP(TexParameteri)(target, GL_TEXTURE_COMPARE_MODE_ARB, GL_NONE);
         GLP(TexParameteri)(target, GL_TEXTURE_COMPARE_FUNC_ARB, GL_LEQUAL);

@@ -237,7 +237,7 @@ correct_time(double time) {
     // A step backward in the high-precision clock, or more than a
     // small jump on only one of the clocks, is cause for alarm.
 
-    express_cat.warning()
+    express_cat.debug()
       << "Clock error detected; elapsed time " << time_delta
       << "s on high-resolution counter, and " << tod_delta
       << "s on time-of-day clock.\n";

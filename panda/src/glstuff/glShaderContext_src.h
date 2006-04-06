@@ -56,7 +56,7 @@ private:
 #ifdef HAVE_CGGL
   CGcontext _cg_context;
   CGprofile _cg_profile[2];
-  CGprogram _cg_program[2];
+  CGprogram _cg_program[3];
 
   void report_cg_compile_errors(const string &file, CGcontext ctx);
   bool try_cg_compile(ShaderExpansion *s, GSG *gsg);

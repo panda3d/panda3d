@@ -79,6 +79,7 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
   _cg_profile[SHADER_type_frag] = CG_PROFILE_UNKNOWN;
   _cg_program[SHADER_type_vert] = (CGprogram)0;
   _cg_program[SHADER_type_frag] = (CGprogram)0;
+  _cg_program[2]                = (CGprogram)0;
 
   if (header == "//Cg") {
     // Create the Cg context.
@@ -248,15 +249,32 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
     return false;
   }
 
-#if DEBUG_GL_SHADER
-  // DEBUG: output the generated program
-  {
-    const char *program;
-    program = cgGetProgramString (_cg_program[1], CG_COMPILED_PROGRAM);
-
-    GLCAT.debug() << program << "\n";
+  bool success = true;
+  CGparameter parameter;
+  for (int progindex=0; progindex<2; progindex++) {
+    int nvtx = _var_spec.size();
+    for (parameter = cgGetFirstLeafParameter(_cg_program[progindex],CG_PROGRAM);
+         parameter != 0;
+         parameter = cgGetNextLeafParameter(parameter)) {
+      CGenum vbl = cgGetParameterVariability(parameter);
+      if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)) {
+        success &= compile_parameter(parameter, 
+                                     cgGetParameterName(parameter),
+                                     cg_type_to_panda_type(cgGetParameterType(parameter)),
+                                     cg_dir_to_panda_dir(cgGetParameterDirection(parameter)),
+                                     (vbl == CG_VARYING),
+                                     GLCAT.get_safe_ptr());
+      }
+    }
+    if ((progindex == SHADER_type_frag) && (nvtx != _var_spec.size())) {
+      GLCAT.error() << "Cannot use vtx parameters in an fshader\n";
+      success = false;
+    }
   }
-#endif
+  if (!success) {
+    release_resources();
+    return false;
+  }
 
   // The following code is present to work around a bug in the Cg compiler.
   // It does not generate correct code for shadow map lookups when using arbfp1.
@@ -269,7 +287,8 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
     bool anyshadow = false;
     memset(shadowunit, 0, sizeof(shadowunit));
     vector_string lines;
-    tokenize(cgGetProgramString(_cg_program[1], CG_COMPILED_PROGRAM), lines, "\n");
+    tokenize(cgGetProgramString(_cg_program[SHADER_type_frag],
+                                CG_COMPILED_PROGRAM), lines, "\n");
     // figure out which texture units contain shadow maps.
     for (int lineno=0; lineno<(int)lines.size(); lineno++) {
       if (lines[lineno].compare(0,21,"#var sampler2DSHADOW ")) {
@@ -318,43 +337,16 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
       for (int lineno=1; lineno<(int)lines.size(); lineno++) {
         result += (lines[lineno] + "\n");
       }
-      cgDestroyProgram(_cg_program[1]);
-      _cg_program[1] =
+      _cg_program[2] = _cg_program[SHADER_type_frag];
+      _cg_program[SHADER_type_frag] =
         cgCreateProgram(_cg_context, CG_OBJECT, result.c_str(),
-                        _cg_profile[1], "fshader", (const char**)NULL);
+                        _cg_profile[SHADER_type_frag], "fshader", (const char**)NULL);
       report_cg_compile_errors(s->get_name(), _cg_context);
       if (_cg_program[SHADER_type_frag]==0) {
         release_resources();
         return false;
       }
     }
-  }
-
-  bool success = true;
-  CGparameter parameter;
-  for (int progindex=0; progindex<2; progindex++) {
-    int nvtx = _var_spec.size();
-    for (parameter = cgGetFirstLeafParameter(_cg_program[progindex],CG_PROGRAM);
-         parameter != 0;
-         parameter = cgGetNextLeafParameter(parameter)) {
-      CGenum vbl = cgGetParameterVariability(parameter);
-      if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)) {
-        success &= compile_parameter(parameter, 
-                                     cgGetParameterName(parameter),
-                                     cg_type_to_panda_type(cgGetParameterType(parameter)),
-                                     cg_dir_to_panda_dir(cgGetParameterDirection(parameter)),
-                                     (vbl == CG_VARYING),
-                                     GLCAT.get_safe_ptr());
-      }
-    }
-    if ((progindex == SHADER_type_frag) && (nvtx != _var_spec.size())) {
-      GLCAT.error() << "Cannot use vtx parameters in an fshader\n";
-      success = false;
-    }
-  }
-  if (!success) {
-    release_resources();
-    return false;
   }
 
   cgGLLoadProgram(_cg_program[SHADER_type_vert]);
@@ -392,6 +384,7 @@ release_resources() {
     _cg_profile[SHADER_type_frag] = (CGprofile)0;
     _cg_program[SHADER_type_vert] = (CGprogram)0;
     _cg_program[SHADER_type_frag] = (CGprogram)0;
+    _cg_program[2]                = (CGprogram)0;
   }
 #endif
 }

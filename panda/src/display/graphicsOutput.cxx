@@ -596,12 +596,12 @@ create_texture_card_vdata(int x, int y)
   vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f, -1.0f));
   vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f,  1.0f));
   vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f, -1.0f));
-
+  
   texcoord.add_data2f( 0.0f,  yhi);
   texcoord.add_data2f( 0.0f, 0.0f);
   texcoord.add_data2f(  xhi,  yhi);
   texcoord.add_data2f(  xhi, 0.0f);
-
+  
   normal.add_data3f(LVector3f::back());
   normal.add_data3f(LVector3f::back());
   normal.add_data3f(LVector3f::back());
