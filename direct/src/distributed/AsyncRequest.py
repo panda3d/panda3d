@@ -72,7 +72,7 @@ class AsyncRequest(DirectObject):
         self.replyToChannelId=replyToChannelId
         self.neededObjects={}
         if __debug__:
-            if ForceTimeout > 0.0001:
+            if ForceTimeout >= 0.0:
                 timeout = ForceTimeout
         self.timeoutTask=taskMgr.doMethodLater(
             timeout, self.timeout, "AsyncRequestTimer-%s"%(id(self,)))
