@@ -2171,7 +2171,6 @@ make_vertex_data(const EggRenderState *render_state,
         PT(VertexTransform) vt = character_maker->egg_to_transform(primitive_home);
         nassertr(vt != (VertexTransform *)NULL, vertex_data);
         blend.add_transform(vt, 1.0f);
-
       } else {
         // If the vertex does have an explicit membership, ignore its
         // parentage and assign it where it wants to be.

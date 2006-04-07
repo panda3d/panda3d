@@ -55,8 +55,8 @@ Texture(const string &name) :
 {
   _primary_file_num_channels = 0;
   _alpha_file_channel = 0;
-  _magfilter = FT_linear;
-  _minfilter = FT_linear;
+  _magfilter = FT_default;
+  _minfilter = FT_default;
   _wrap_u = WM_repeat;
   _wrap_v = WM_repeat;
   _wrap_w = WM_repeat;
@@ -1639,6 +1639,8 @@ string_filter_type(const string &string) {
     return FT_linear_mipmap_linear;
   } else if (cmp_nocase_uh(string, "shadow") == 0) {
     return FT_shadow;
+  } else if (cmp_nocase_uh(string, "default") == 0) {
+    return FT_default;
   } else {
     return FT_invalid;
   }
@@ -3393,6 +3395,9 @@ operator << (ostream &out, Texture::FilterType ft) {
 
   case Texture::FT_shadow:
     return out << "shadow";
+
+  case Texture::FT_default:
+    return out << "default";
 
   case Texture::FT_invalid:
     return out << "invalid";

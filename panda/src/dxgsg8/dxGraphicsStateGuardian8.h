@@ -166,8 +166,10 @@ protected:
   bool release_swap_chain (DXScreenData *new_context);
   void copy_pres_reset(DXScreenData *new_context);
 
-  static D3DTEXTUREFILTERTYPE get_d3d_min_type(Texture::FilterType filter_type);
-  static D3DTEXTUREFILTERTYPE get_d3d_mip_type(Texture::FilterType filter_type);
+  static D3DTEXTUREFILTERTYPE get_d3d_min_type(Texture::FilterType filter_type,
+                                               Texture::Format format);
+  static D3DTEXTUREFILTERTYPE get_d3d_mip_type(Texture::FilterType filter_type,
+                                               Texture::Format format);
   static D3DTEXTUREOP get_texture_operation(TextureStage::CombineMode mode, int scale);
   static DWORD get_texture_argument(TextureStage::CombineSource source,
                                     TextureStage::CombineOperand operand);

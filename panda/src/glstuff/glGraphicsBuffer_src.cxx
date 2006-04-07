@@ -451,8 +451,10 @@ close_buffer() {
   _rb_size_y = 0;
   
   // Delete the FBO itself.
-  nassertv(_fbo != 0);
-  glgsg->_glDeleteFramebuffers(1, &_fbo);
+  if (_fbo != 0) {
+    glgsg->_glDeleteFramebuffers(1, &_fbo);
+    _fbo = 0;
+  }
   
   // Release the Gsg
   _gsg.clear();

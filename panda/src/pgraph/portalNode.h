@@ -28,10 +28,10 @@
 #include "pvector.h"
 
 /*
-#ifndef CPPPARSER
-#include "../collide/collisionSolid.h"
-#include "../collide/collisionNode.h"
-#endif
+//#ifndef CPPPARSER
+//#include "../collide/collisionSolid.h"
+//#include "../collide/collisionNode.h"
+//#endif
 */
 ////////////////////////////////////////////////////////////////////
 //       Class : PortalNode 

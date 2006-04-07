@@ -232,8 +232,10 @@ apply_texture(int i, TextureContext *tc) {
   _d3d_device->SetTextureStageState(i, D3DTSS_MAGFILTER, new_mag_filter);
 
   // map Panda composite min+mip filter types to d3d's separate min & mip filter types
-  D3DTEXTUREFILTERTYPE new_min_filter = get_d3d_min_type(tex->get_minfilter());
-  D3DTEXTUREFILTERTYPE new_mip_filter = get_d3d_mip_type(tex->get_minfilter());
+  D3DTEXTUREFILTERTYPE new_min_filter = get_d3d_min_type(tex->get_minfilter(),
+                                                         tex->get_format());
+  D3DTEXTUREFILTERTYPE new_mip_filter = get_d3d_mip_type(tex->get_minfilter(),
+                                                         tex->get_format());
 
   if (!tex->might_have_ram_image()) {
     // If the texture is completely dynamic, don't try to issue
@@ -3594,7 +3596,8 @@ copy_pres_reset(DXScreenData *screen) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 D3DTEXTUREFILTERTYPE DXGraphicsStateGuardian8::
-get_d3d_min_type(Texture::FilterType filter_type) {
+get_d3d_min_type(Texture::FilterType filter_type,
+                 Texture::Format format) {
   switch (filter_type) {
   case Texture::FT_nearest:
     return D3DTEXF_POINT;
@@ -3612,6 +3615,10 @@ get_d3d_min_type(Texture::FilterType filter_type) {
     return D3DTEXF_POINT;
 
   case Texture::FT_linear_mipmap_linear:
+    return D3DTEXF_LINEAR;
+
+  case Texture::FT_shadow:
+  case Texture::FT_default:
     return D3DTEXF_LINEAR;
   }
 
@@ -3626,7 +3633,8 @@ get_d3d_min_type(Texture::FilterType filter_type) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 D3DTEXTUREFILTERTYPE DXGraphicsStateGuardian8::
-get_d3d_mip_type(Texture::FilterType filter_type) {
+get_d3d_mip_type(Texture::FilterType filter_type,
+                 Texture::Format format) {
   switch (filter_type) {
   case Texture::FT_nearest:
     return D3DTEXF_NONE;
@@ -3645,6 +3653,10 @@ get_d3d_mip_type(Texture::FilterType filter_type) {
 
   case Texture::FT_linear_mipmap_linear:
     return D3DTEXF_LINEAR;
+
+  case Texture::FT_shadow:
+  case Texture::FT_default:
+    return D3DTEXF_NONE;
   }
 
   dxgsg8_cat.error()

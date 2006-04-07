@@ -191,6 +191,18 @@ get_clear_depth() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::disable_clears
+//       Access: Published
+//  Description: Disables both the color and depth clear.  See
+//               set_clear_color_active and set_clear_depth_active.
+////////////////////////////////////////////////////////////////////
+INLINE void DrawableRegion::
+disable_clears() {
+  set_clear_color_active(false);
+  set_clear_depth_active(false);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DrawableRegion::is_any_clear_active
 //       Access: Published
 //  Description: Returns true if any of the clear types (so far there

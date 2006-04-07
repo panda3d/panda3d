@@ -249,7 +249,8 @@ protected:
   GLenum get_texture_target(Texture::TextureType texture_type) const;
   GLenum get_texture_wrap_mode(Texture::WrapMode wm) const;
   static Texture::WrapMode get_panda_wrap_mode(GLenum wm);
-  static GLenum get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps);
+  static GLenum get_texture_filter_type(Texture::FilterType ft, 
+                             Texture::Format fmt, bool ignore_mipmaps);
   static Texture::FilterType get_panda_filter_type(GLenum ft);
   static GLenum get_component_type(Texture::ComponentType component_type);
   GLint get_external_image_format(Texture *tex) const;

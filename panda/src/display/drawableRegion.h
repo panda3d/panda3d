@@ -55,6 +55,8 @@ PUBLISHED:
   INLINE void set_clear_depth(float depth);
   INLINE float get_clear_depth() const;
 
+  INLINE void disable_clears();
+
   INLINE bool is_any_clear_active() const;
 
 public:

@@ -4493,7 +4493,8 @@ get_panda_wrap_mode(GLenum wm) {
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
+get_texture_filter_type(Texture::FilterType ft, Texture::Format fmt,
+                        bool ignore_mipmaps) {
   if (CLP(ignore_filters)) {
     return GL_NEAREST;
 
@@ -4509,6 +4510,13 @@ get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
       return GL_LINEAR;
     case Texture::FT_shadow:
       return GL_LINEAR;
+    case Texture::FT_default:
+      if ((fmt == Texture::F_depth_component)||
+          (fmt == Texture::F_stencil_index)) {
+        return GL_NEAREST;
+      } else {
+        return GL_LINEAR;
+      }
     case Texture::FT_invalid:
       break;
     }
@@ -4529,6 +4537,13 @@ get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
       return GL_LINEAR_MIPMAP_LINEAR;
     case Texture::FT_shadow:
       return GL_LINEAR;
+    case Texture::FT_default:
+      if ((fmt == Texture::F_depth_component)||
+          (fmt == Texture::F_stencil_index)) {
+        return GL_NEAREST;
+      } else {
+        return GL_LINEAR;
+      }
     case Texture::FT_invalid:
       break;
     }
@@ -6243,9 +6258,9 @@ specify_texture(Texture *tex) {
   }
 
   GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER,
-                     get_texture_filter_type(minfilter, !uses_mipmaps));
+                     get_texture_filter_type(minfilter, tex->get_format(), !uses_mipmaps));
   GLP(TexParameteri)(target, GL_TEXTURE_MAG_FILTER,
-                     get_texture_filter_type(magfilter, true));
+                     get_texture_filter_type(magfilter, tex->get_format(), true));
 
   if (tex->get_format() == Texture::F_depth_component) {
     GLP(TexParameteri)(target, GL_DEPTH_TEXTURE_MODE_ARB, GL_INTENSITY);

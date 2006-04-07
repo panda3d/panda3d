@@ -130,6 +130,10 @@ PUBLISHED:
 
     // The OpenGL ARB_shadow extension can be thought of as a kind of filtering.
     FT_shadow,
+    
+    // Default is usually linear, but it depends on format.
+    // This was added at the end of the list to avoid bumping TXO version #.
+    FT_default,
 
     // Returned by string_filter_type() for an invalid match.
     FT_invalid
