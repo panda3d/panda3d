@@ -6,7 +6,7 @@ from ConnectionRepository import *
 
 DefaultTimeout = 8.0
 if __debug__:
-    DefaultTimeout = config.GetFloat("async-request-default-timeout", 8.0)
+    ForceTimeout = config.GetFloat("async-request-force-timeout", 0.0)
     BreakOnTimeout = config.GetBool("async-request-break-on-timeout", 0)
 
 _asyncRequests={}
@@ -71,6 +71,9 @@ class AsyncRequest(DirectObject):
         self.air=air
         self.replyToChannelId=replyToChannelId
         self.neededObjects={}
+        if __debug__:
+            if ForceTimeout > 0.0001:
+                timeout = ForceTimeout
         self.timeoutTask=taskMgr.doMethodLater(
             timeout, self.timeout, "AsyncRequestTimer-%s"%(id(self,)))
 
