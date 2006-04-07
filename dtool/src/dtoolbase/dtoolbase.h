@@ -248,6 +248,7 @@
 #ifdef CPPPARSER
 #define BEGIN_PUBLISH __begin_publish
 #define END_PUBLISH __end_publish
+#undef USE_STL_ALLOCATOR  // Don't try to parse these template classes in interrogate.
 #else
 #define BEGIN_PUBLISH
 #define END_PUBLISH
