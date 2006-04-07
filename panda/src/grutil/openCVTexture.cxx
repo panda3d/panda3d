@@ -210,7 +210,6 @@ make_texture() {
 ////////////////////////////////////////////////////////////////////
 void OpenCVTexture::
 update_frame(int frame) {
-  nassertv(has_ram_image());
   int max_z = max(_z_size, (int)_pages.size());
   for (int z = 0; z < max_z; ++z) {
     VideoPage &page = _pages[z];
