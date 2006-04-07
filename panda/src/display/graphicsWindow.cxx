@@ -561,9 +561,9 @@ set_properties_now(WindowProperties &properties) {
       }
 
     } else {
-      // We can't close the window if its GSG hasn't been released
-      // yet.
-      nassertv(_gsg == (GraphicsStateGuardian *)NULL);
+      // We used to resist closing a window before its GSG has been
+      // released.  Now it seems we never release a GSG, so go ahead
+      // and close the window.
       close_window();
       _is_valid = false;
     }

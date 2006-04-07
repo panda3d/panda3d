@@ -458,6 +458,7 @@ remove_all_windows() {
   _windows.clear();
 
   _app.do_close(this);
+  _app.do_pending(this);
   terminate_threads();
 }
 
@@ -1927,21 +1928,12 @@ do_pending(GraphicsEngine *engine) {
   MutexHolder holder(_wl_lock);
 
   if (!_pending_close.empty()) {
-    // Close any windows that were pending closure, but only if their
-    // associated GSG has already been released.
-    Windows new_pending_close;
+    // Close any windows that were pending closure.
     Windows::iterator wi;
     for (wi = _pending_close.begin(); wi != _pending_close.end(); ++wi) {
       GraphicsOutput *win = (*wi);
-      if (win->get_gsg() == (GraphicsStateGuardian *)NULL) {
-        win->set_close_now();
-      } else {
-        // If the GSG hasn't been released yet, we have to save the
-        // close operation for next frame.
-        new_pending_close.push_back(win);
-      }
+      win->set_close_now();
     }
-    _pending_close.swap(new_pending_close);
   }
 }
 
