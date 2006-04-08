@@ -298,3 +298,8 @@ class Loader:
         if (shader == None):
             Loader.notify.warning("Could not load shader file %s." % shaderPath)
         return shader
+
+    def unloadShader(self, shaderPath):
+        if (shaderPath != None):
+            ShaderPool.releaseShader(shaderPath)
+        
