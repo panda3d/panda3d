@@ -541,6 +541,21 @@ class CodeDatabase:
         else:
             return []
 
+    def getClassConstants(self, cn):
+        type = self.types.get(cn)
+        if (isinstance(type, InterrogateType)):
+            result = []
+            for subtype in type.nested:
+                enumtype = type.db.types[subtype]
+                if (len(enumtype.enumvalues)):
+                    for enumvalue in enumtype.enumvalues:
+                        name = convertToPythonFn(enumvalue.name)
+                        result.append((name, "("+enumtype.componentname+")"))
+                    result.append(("",""))
+            return result
+        else:
+            return []
+
     def buildInheritance(self, inheritance, cn):
         if (inheritance.count(cn) == 0):
             inheritance.append(cn)
@@ -692,7 +707,7 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
     findFiles(directdirlist, ".py", ignore, pyfiles)
     code = CodeDatabase(cxxfiles, pyfiles)
     classes = code.getClassList()[:]
-    classes.sort()
+    classes.sort(None, str.lower)
     xclasses = classes[:]
     print "Generating HTML pages"
     for type in classes:
@@ -709,17 +724,23 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
         body = body + "</ul>\n"
         for sclass in inheritance:
             methods = code.getClassMethods(sclass)[:]
-            methods.sort()
+            methods.sort(None, str.lower)
             if (len(methods) > 0):
                 body = body + "<h2>Methods of "+sclass+":</h2>\n<ul>\n"
                 for method in methods:
                     fn = code.getFunctionName(method)
                     body = body + '<a href="#' + fn + '">' + fn + "</a><br>\n"
                 body = body + "</ul>\n"
-        body = body + "</ul>\n"
+        for sclass in inheritance:
+            enums = code.getClassConstants(sclass)[:]
+            if (len(enums) > 0):
+                body = body + "<h2>Constants in "+sclass+":</h2>\n<ul><table>\n"
+                for (value, comment) in enums:
+                    body = body + "<tr><td>" + value + "</td><td>" + comment + "</td></tr>\n"
+                body = body + "</table></ul>"
         for sclass in inheritance:
             methods = code.getClassMethods(sclass)[:]
-            methods.sort()
+            methods.sort(None, str.lower)
             for method in methods:
                 body = body + generateFunctionDocs(code, method)
         body = header + body + footer
@@ -728,12 +749,12 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
             modtype = CLASS_RENAME_DICT[type]
             writeFile(docdir + "/" + modtype + ".html", body)
             xclasses.append(modtype)
-    xclasses.sort()
+    xclasses.sort(None, str.lower)
 
     index = "<h1>List of Classes - Panda " + pversion + "</h1>\n"
     index = index + generateLinkTable(xclasses, xclasses, 3, urlprefix, urlsuffix)
     fnlist = code.getGlobalFunctionList()[:]
-    fnlist.sort()
+    fnlist.sort(None, str.lower)
     fnnames = []
     for i in range(len(fnlist)):
         fnnames.append(code.getFunctionName(fnlist[i]))
@@ -759,18 +780,18 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
     index = "<h1>List of Methods - Panda " + pversion + "</h1>\n"
 
     prefixes = table.keys()
-    prefixes.sort()
+    prefixes.sort(None, str.lower)
     for prefix in prefixes:
         index = index + linkTo("#"+prefix, prefix) + " "
     index = index + "<br><br>"
     for prefix in prefixes:
         index = index + '<a name="' + prefix + '">' + "\n"
         names = table[prefix].keys()
-        names.sort()
+        names.sort(None, str.lower)
         for name in names:
             line = '<b>' + name + ":</b><ul>\n"
             ctypes = table[prefix][name]
-            ctypes.sort()
+            ctypes.sort(None, str.lower)
             for type in ctypes:
                 line = line + "<li>" + linkTo(urlprefix+type+urlsuffix+"#"+name, type) + "\n"
             line = line + "</ul>\n"
