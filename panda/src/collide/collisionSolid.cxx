@@ -45,7 +45,7 @@ TypeHandle CollisionSolid::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionSolid::
-CollisionSolid() {
+CollisionSolid() : _lock("CollisionSolid") {
   _flags = F_viz_geom_stale | F_tangible | F_internal_bounds_stale;
 }
 
@@ -58,7 +58,8 @@ CollisionSolid::
 CollisionSolid(const CollisionSolid &copy) :
   _effective_normal(copy._effective_normal),
   _internal_bounds(copy._internal_bounds),
-  _flags(copy._flags)
+  _flags(copy._flags),
+  _lock("CollisionSolid")
 {
   _flags |= F_viz_geom_stale;
 }

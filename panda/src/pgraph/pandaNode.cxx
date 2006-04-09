@@ -67,7 +67,8 @@ TypeHandle PandaNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 PandaNode::
 PandaNode(const string &name) :
-  Namable(name)
+  Namable(name),
+  _paths_lock("PandaNode::_paths_lock")
 {
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
@@ -113,7 +114,8 @@ PandaNode::
 PandaNode(const PandaNode &copy) :
   ReferenceCount(copy),
   TypedWritable(copy),
-  Namable(copy)
+  Namable(copy),
+  _paths_lock("PandaNode::_paths_lock")
 {
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()

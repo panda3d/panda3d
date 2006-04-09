@@ -28,6 +28,21 @@ MutexDebug::VoidFunc *MutexDebug::_pstats_wait_stop;
 MutexImpl MutexDebug::_global_mutex;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MutexDebug::Constructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+MutexDebug::
+MutexDebug(const string &name, bool allow_recursion) :
+  _name(name),
+  _allow_recursion(allow_recursion),
+  _locking_thread(NULL),
+  _lock_count(0),
+  _cvar(_global_mutex)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::Destructor
 //       Access: Protected, Virtual
 //  Description:
@@ -50,9 +65,9 @@ MutexDebug::
 void MutexDebug::
 output(ostream &out) const {
   if (_allow_recursion) {
-    out << "ReMutex " << (void *)this;
+    out << "ReMutex " << _name << " " << (void *)this;
   } else {
-    out << "Mutex " << (void *)this;
+    out << "Mutex " << _name << " " << (void *)this;
   }
 }
 
@@ -152,7 +167,8 @@ do_lock() {
 
     if (thread_cat.is_spam()) {
       thread_cat.spam()
-        << *this_thread << " blocking on " << *this << "\n";
+        << *this_thread << " blocking on " << *this << " (held by "
+        << *_locking_thread << ")\n";
     }
     while (_locking_thread != (Thread *)NULL) {
       _cvar.wait();

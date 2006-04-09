@@ -66,7 +66,9 @@ const int GraphicsPipe::strip_properties[] = {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe::
-GraphicsPipe() {
+GraphicsPipe() :
+  _lock("GraphicsPipe")
+{
   // Initially, we assume the GraphicsPipe is valid.  A derived class
   // should set this to false if it determines otherwise.
   _is_valid = true;

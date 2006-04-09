@@ -50,6 +50,8 @@ class EXPCL_PANDA Mutex : public MutexDirect
 {
 public:
   INLINE Mutex();
+  INLINE Mutex(const char *name);
+  INLINE Mutex(const string &name);
   INLINE ~Mutex();
 private:
   INLINE Mutex(const Mutex &copy);

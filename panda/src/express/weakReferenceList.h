@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "pset.h"
+#include "mutexImpl.h"
 
 class WeakPointerToVoid;
 
@@ -45,6 +46,7 @@ public:
 private:  
   typedef pset<WeakPointerToVoid *> Pointers;
   Pointers _pointers;
+  MutexImpl _lock;
 };
 
 #include "weakReferenceList.I"

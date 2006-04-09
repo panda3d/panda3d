@@ -22,6 +22,8 @@
 #include "pandabase.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
+#include "atomicAdjust.h"
+#include "numeric_types.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : UpdateSeq
@@ -72,8 +74,9 @@ PUBLISHED:
   INLINE void output(ostream &out) const;
 
 private:
-  INLINE bool priv_is_special() const;
-  INLINE bool priv_lt(const UpdateSeq &other) const;
+  INLINE static bool priv_is_special(PN_int32 seq);
+  INLINE static bool priv_lt(PN_int32 a, PN_int32 b);
+  INLINE static bool priv_le(PN_int32 a, PN_int32 b);
 
 private:
   enum SpecialCases {
@@ -82,10 +85,8 @@ private:
     SC_fresh = ~(unsigned int)0,
   };
 
-  unsigned int _seq;
-
-  // This mutex globally protects all UpdateSeqs in the world.
-  static Mutex _lock;
+  PN_int32 _seq;
+  Mutex _lock;
 };
 
 INLINE ostream &operator << (ostream &out, const UpdateSeq &value);

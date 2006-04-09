@@ -22,7 +22,7 @@
 // We start the key counters off at 1, since 0 is reserved for an
 // empty NodePath (and also for an unassigned key).
 int NodePathComponent::_next_key = 1;
-Mutex NodePathComponent::_key_lock;
+Mutex NodePathComponent::_key_lock("NodePathComponent::_key_lock");
 TypeHandle NodePathComponent::_type_handle;
 
 

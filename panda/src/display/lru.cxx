@@ -79,7 +79,7 @@ Lru::Lru (int maximum_memory, int maximum_pages, int maximum_page_types)
     }
 
 #if ENABLE_MUTEX
-    this -> _m.mutex = new Mutex ( );
+    this -> _m.mutex = new Mutex ("lru");
 #endif
 
   }

@@ -269,6 +269,8 @@ private:
 
   class WindowRenderer {
   public:
+    WindowRenderer(const string &name);
+
     void add_gsg(GraphicsStateGuardian *gsg);
     void add_window(Windows &wlist, GraphicsOutput *window);
     void remove_window(GraphicsOutput *window);

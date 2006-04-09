@@ -58,7 +58,8 @@ PerThreadData() {
 ////////////////////////////////////////////////////////////////////
 PStatClient::
 PStatClient() :
-  _impl(NULL)
+  _impl(NULL),
+  _lock("PStatClient")
 {
   _collectors = NULL;
   _collectors_size = 0;
@@ -489,14 +490,7 @@ do_make_thread(Thread *thread) {
   _threads_by_name[thread->get_name()].push_back(new_index);
   _threads_by_sync_name[thread->get_sync_name()].push_back(new_index);
         
-  InternalThread *pthread = new InternalThread;
-  pthread->_thread = thread;
-  pthread->_name = thread->get_name();
-  pthread->_sync_name = thread->get_sync_name();
-  pthread->_is_active = false;
-  pthread->_next_packet = 0.0;
-  pthread->_frame_number = 0;
-
+  InternalThread *pthread = new InternalThread(thread);
   add_thread(pthread);
 
   // We need an additional PerThreadData for this thread in all of the
@@ -897,6 +891,23 @@ make_def(const PStatClient *client, int this_index) {
     }
     initialize_collector_def(client, _def);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::Collector::make_def
+//       Access: Private
+//  Description: Creates the new PStatCollectorDef for this collector.
+////////////////////////////////////////////////////////////////////
+PStatClient::InternalThread::
+InternalThread(Thread *thread) :
+  _thread(thread),
+  _name(thread->get_name()),
+  _sync_name(thread->get_sync_name()),
+  _is_active(false),
+  _next_packet(0.0),
+  _frame_number(0),
+  _thread_lock(string("PStatClient::InternalThread ") + thread->get_name())
+{
 }
 
 #endif // DO_PSTATS

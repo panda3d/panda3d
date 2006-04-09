@@ -100,7 +100,9 @@ PStatCollector GraphicsEngine::_test_geom_pcollector("Collision Tests:CollisionG
 ////////////////////////////////////////////////////////////////////
 GraphicsEngine::
 GraphicsEngine(Pipeline *pipeline) :
-  _pipeline(pipeline)
+  _pipeline(pipeline),
+  _app("app"),
+  _lock("GraphicsEngine")
 {
   if (_pipeline == (Pipeline *)NULL) {
     _pipeline = Pipeline::get_render_pipeline();
@@ -1728,6 +1730,17 @@ get_window_renderer(const string &name, int pipeline_stage) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GraphicsEngine::WindowRenderer::
+WindowRenderer(const string &name) :
+  _wl_lock(string("GraphicsEngine::WindowRenderer ") + name)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::WindowRenderer::add_gsg
 //       Access: Public
 //  Description: Adds a new GSG to the _gsg list, if it is not already
@@ -2026,7 +2039,9 @@ do_callbacks(GraphicsEngine::CallbackTime callback_time) {
 GraphicsEngine::RenderThread::
 RenderThread(const string &name, GraphicsEngine *engine) : 
   Thread(name, "Main"),
+  WindowRenderer(name),
   _engine(engine),
+  _cv_mutex(string("GraphicsEngine::RenderThread ") + name),
   _cv_start(_cv_mutex),
   _cv_done(_cv_mutex)
 {

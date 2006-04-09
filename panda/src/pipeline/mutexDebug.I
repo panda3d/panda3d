@@ -18,20 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexDebug::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE MutexDebug::
-MutexDebug(bool allow_recursion) :
-  _allow_recursion(allow_recursion),
-  _locking_thread(NULL),
-  _lock_count(0),
-  _cvar(_global_mutex)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::Copy Constructor
 //       Access: Private
 //  Description: Do not attempt to copy mutexes.

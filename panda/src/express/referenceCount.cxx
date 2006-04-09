@@ -16,8 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #include "referenceCount.h"
+#include "atomicAdjust.h"
+#include "mutexImpl.h"
 
 TypeHandle ReferenceCount::_type_handle;
 
@@ -48,3 +49,30 @@ do_test_ref_count_integrity() const {
 
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReferenceCount::create_weak_list
+//       Access: Private
+//  Description: Allocates a new WeakReferenceList structure and
+//               stores it on the object.
+////////////////////////////////////////////////////////////////////
+void ReferenceCount::
+create_weak_list() {
+#ifdef HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
+  WeakReferenceList *weak_list = new WeakReferenceList;
+  void *orig = 
+    AtomicAdjust::compare_and_exchange_ptr((void *&)_weak_list, NULL, weak_list);
+  if (orig != (void *)NULL) {
+    // Someone else created it first.
+    delete weak_list;
+  }
+#else
+  static MutexImpl lock("ReferenceCount::create_weak_list");
+  lock.lock();
+  if (_weak_list != (WeakReferenceList *)NULL) {
+    _weak_list = new WeakReferenceList;
+  }
+  lock.release();
+#endif  // HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
+}
+

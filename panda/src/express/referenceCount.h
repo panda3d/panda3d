@@ -67,6 +67,9 @@ protected:
   bool do_test_ref_count_integrity() const;
 
 private:
+  void create_weak_list();
+
+private:
   enum { 
     // We use this value as a flag to indicate an object has been
     // indicated as a local object, and should not be deleted except

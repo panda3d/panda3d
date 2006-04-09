@@ -29,7 +29,9 @@ TypeHandle MouseWatcherGroup::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 MouseWatcherGroup::
-MouseWatcherGroup() {
+MouseWatcherGroup() :
+  _lock("MouseWatcherGroup")
+{
 #ifndef NDEBUG
   _show_regions = false;
   _color.set(0.4f, 0.6f, 1.0f, 1.0f);

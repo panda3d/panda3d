@@ -194,6 +194,8 @@ private:
   // maintained separately for each thread.
   class InternalThread {
   public:
+    InternalThread(Thread *thread);
+
     WPT(Thread) _thread;
     string _name;
     string _sync_name;

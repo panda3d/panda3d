@@ -42,6 +42,8 @@ class EXPCL_PANDA ReMutex : public ReMutexDirect
 {
 public:
   INLINE ReMutex();
+  INLINE ReMutex(const char *name);
+  INLINE ReMutex(const string &name);
   INLINE ~ReMutex();
 private:
   INLINE ReMutex(const ReMutex &copy);

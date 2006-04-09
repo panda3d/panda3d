@@ -32,6 +32,9 @@ Pipeline *Pipeline::_render_pipeline = (Pipeline *)NULL;
 Pipeline::
 Pipeline(const string &name, int num_stages) :
   Namable(name)
+#ifdef THREADED_PIPELINE
+  , _lock("Pipeline")
+#endif
 {
 #ifdef THREADED_PIPELINE
   // Set up the linked list of cyclers to be a circular list that

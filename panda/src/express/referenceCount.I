@@ -301,7 +301,7 @@ has_weak_list() const {
 INLINE WeakReferenceList *ReferenceCount::
 get_weak_list() const {
   if (_weak_list == (WeakReferenceList *)NULL) {
-    ((ReferenceCount *)this)->_weak_list = new WeakReferenceList;
+    ((ReferenceCount *)this)->create_weak_list();
   }
   return _weak_list;
 }

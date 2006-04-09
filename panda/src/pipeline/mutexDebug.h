@@ -35,7 +35,7 @@ class Thread;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MutexDebug {
 protected:
-  INLINE MutexDebug(bool allow_recursion);
+  MutexDebug(const string &name, bool allow_recursion);
   virtual ~MutexDebug();
 private:
   INLINE MutexDebug(const MutexDebug &copy);
@@ -59,6 +59,7 @@ private:
   void report_deadlock(Thread *this_thread);
 
 private:
+  string _name;
   bool _allow_recursion;
   Thread *_locking_thread;
   int _lock_count;

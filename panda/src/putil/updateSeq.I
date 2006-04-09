@@ -23,7 +23,7 @@
 //  Description: Creates an UpdateSeq in the 'initial' state.
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq::
-UpdateSeq() {
+UpdateSeq() : _lock("UpdateSeq") {
   _seq = (unsigned int)SC_initial;
 }
 
@@ -67,9 +67,8 @@ fresh() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq::
-UpdateSeq(const UpdateSeq &copy) {
-  MutexHolder holder(_lock);
-  _seq = copy._seq;
+UpdateSeq(const UpdateSeq &copy) : _lock("UpdateSeq") {
+  _seq = AtomicAdjust::get(copy._seq);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,8 +78,7 @@ UpdateSeq(const UpdateSeq &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq &UpdateSeq::
 operator = (const UpdateSeq &copy) {
-  MutexHolder holder(_lock);
-  _seq = copy._seq;
+  AtomicAdjust::set(_seq, AtomicAdjust::get(copy._seq));
   return *this;
 }
 
@@ -91,8 +89,7 @@ operator = (const UpdateSeq &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void UpdateSeq::
 clear() {
-  MutexHolder holder(_lock);
-  _seq = (unsigned int)SC_initial;
+  AtomicAdjust::set(_seq, (PN_int32)SC_initial);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,8 +100,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_initial() const {
-  MutexHolder holder(_lock);
-  return _seq == (unsigned int)SC_initial;
+  return AtomicAdjust::get(_seq) == (PN_int32)SC_initial;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,8 +110,7 @@ is_initial() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_old() const {
-  MutexHolder holder(_lock);
-  return _seq == (unsigned int)SC_old;
+  return AtomicAdjust::get(_seq) == (PN_int32)SC_old;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,8 +121,7 @@ is_old() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_fresh() const {
-  MutexHolder holder(_lock);
-  return _seq == (unsigned int)SC_fresh;
+  return AtomicAdjust::get(_seq) == (PN_int32)SC_fresh;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -138,8 +132,8 @@ is_fresh() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_special() const {
-  MutexHolder holder(_lock);
-  return priv_is_special();
+  // This relies on the assumption that (~0 + 1) == 0.
+  return ((AtomicAdjust::get(_seq) + 1) <= 2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,8 +143,7 @@ is_special() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 operator == (const UpdateSeq &other) const {
-  MutexHolder holder(_lock);
-  return (_seq == other._seq);
+  return AtomicAdjust::get(_seq) == AtomicAdjust::get(other._seq);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -160,8 +153,7 @@ operator == (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 operator != (const UpdateSeq &other) const {
-  MutexHolder holder(_lock);
-  return (_seq != other._seq);
+  return AtomicAdjust::get(_seq) != AtomicAdjust::get(other._seq);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,8 +163,7 @@ operator != (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 operator < (const UpdateSeq &other) const {
-  MutexHolder holder(_lock);
-  return priv_lt(other);
+  return priv_lt(AtomicAdjust::get(_seq), AtomicAdjust::get(other._seq));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,8 +173,7 @@ operator < (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 operator <= (const UpdateSeq &other) const {
-  MutexHolder holder(_lock);
-  return _seq == other._seq || priv_lt(other);
+  return priv_le(AtomicAdjust::get(_seq), AtomicAdjust::get(other._seq));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -215,11 +205,14 @@ INLINE UpdateSeq UpdateSeq::
 operator ++ () {
   {
     MutexHolder holder(_lock);
-    ++_seq;
-    if (priv_is_special()) {
+
+    PN_int32 new_seq = _seq + 1;
+    if (priv_is_special(new_seq)) {
       // Oops, wraparound.  We don't want to confuse the new value
       // with our special cases.
-      _seq = (unsigned int)SC_old + 1;
+      AtomicAdjust::set(_seq, (PN_int32)SC_old + 1);
+    } else {
+      AtomicAdjust::set(_seq, new_seq);
     }
   }
     
@@ -237,10 +230,12 @@ operator ++ (int) {
   {
     MutexHolder holder(_lock);
     temp._seq = _seq;
-    
-    ++_seq;
-    if (priv_is_special()) {
-      _seq = (unsigned int)SC_old + 1;
+
+    PN_int32 new_seq = _seq + 1;
+    if (priv_is_special(new_seq)) {
+      AtomicAdjust::set(_seq, (PN_int32)SC_old + 1);
+    } else {
+      AtomicAdjust::set(_seq, new_seq);
     }
   }
     
@@ -254,11 +249,7 @@ operator ++ (int) {
 ////////////////////////////////////////////////////////////////////
 INLINE void UpdateSeq::
 output(ostream &out) const {
-  unsigned int seq;
-  {
-    MutexHolder holder(_lock);
-    seq = _seq;
-  }
+  PN_int32 seq = AtomicAdjust::get(_seq);
   switch (seq) {
   case SC_initial:
     out << "initial";
@@ -273,38 +264,46 @@ output(ostream &out) const {
     break;
 
   default:
-    out << (long unsigned int)seq;
+    out << (unsigned int)seq;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::priv_is_special
-//       Access: Published
-//  Description: The private implementation of is_special().  Assumes
-//               the lock is already held.
+//       Access: Private, Static
+//  Description: The private implementation of is_special().
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
-priv_is_special() const {
+priv_is_special(PN_int32 seq) {
   // This relies on the assumption that (~0 + 1) == 0.
-  return ((_seq + 1) <= 2);
+  return (((unsigned int)seq + 1) <= 2);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::priv_lt
-//       Access: Published
-//  Description: The private implementation of operator < ().  Assumes
-//               the lock is already held.
+//       Access: Private, Static
+//  Description: The private implementation of operator < ().
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
-priv_lt(const UpdateSeq &other) const {
+priv_lt(PN_int32 a, PN_int32 b) {
   // The special cases of SC_initial or SC_old are less than all other
   // non-special numbers, and SC_initial is less than SC_old.  The
   // special case of SC_fresh is greater than all other non-special
   // numbers.  For all other cases, we use a circular comparision such
   // that n < m iff (signed)(n - m) < 0.
   return
-    (priv_is_special() || other.priv_is_special()) ? (_seq < other._seq) :
-    ((signed int)(_seq - other._seq) < 0);
+    (priv_is_special(a) || priv_is_special(b)) ? ((unsigned int)a < (unsigned int)b) :
+    ((signed int)(a - b) < 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UpdateSeq::priv_le
+//       Access: Private, Static
+//  Description: The private implementation of operator <= ().
+////////////////////////////////////////////////////////////////////
+INLINE bool UpdateSeq::
+priv_le(PN_int32 a, PN_int32 b) {
+  return (a == b) || priv_lt(a, b);
 }
 
 INLINE ostream &operator << (ostream &out, const UpdateSeq &value) {

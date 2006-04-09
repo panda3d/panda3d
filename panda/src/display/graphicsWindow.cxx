@@ -42,7 +42,8 @@ GraphicsWindow(GraphicsPipe *pipe,
                int x_size, int y_size, int flags,
                GraphicsStateGuardian *gsg,
                GraphicsOutput *host) :
-  GraphicsOutput(pipe, name, properties, x_size, y_size, flags, gsg, host)
+  GraphicsOutput(pipe, name, properties, x_size, y_size, flags, gsg, host),
+  _input_lock("GraphicsWindow::_input_lock")
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);

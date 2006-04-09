@@ -24,9 +24,37 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutex::
 #ifdef DEBUG_THREADS
-ReMutex() : MutexDebug(true)
+ReMutex() : MutexDebug(string(), true)
 #else
 ReMutex()
+#endif  // DEBUG_THREADS
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ReMutex::
+#ifdef DEBUG_THREADS
+ReMutex(const char *name) : MutexDebug(string(name), true)
+#else
+ReMutex(const char *)
+#endif  // DEBUG_THREADS
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutex::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ReMutex::
+#ifdef DEBUG_THREADS
+ReMutex(const string &name) : MutexDebug(name, true)
+#else
+ReMutex(const string &)
 #endif  // DEBUG_THREADS
 {
 }
@@ -38,21 +66,6 @@ ReMutex()
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutex::
 ~ReMutex() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutex::Copy Constructor
-//       Access: Private
-//  Description: Do not attempt to copy mutexes.
-////////////////////////////////////////////////////////////////////
-INLINE ReMutex::
-#ifdef DEBUG_THREADS
-ReMutex(const ReMutex &copy) : MutexDebug(true)
-#else
-  ReMutex(const ReMutex &copy)
-#endif  // DEBUG_THREADS
-{
-  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////

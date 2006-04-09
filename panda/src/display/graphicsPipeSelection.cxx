@@ -34,7 +34,7 @@ GraphicsPipeSelection *GraphicsPipeSelection::_global_ptr = NULL;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsPipeSelection::
-GraphicsPipeSelection() {
+GraphicsPipeSelection() : _lock("GraphicsPipeSelection") {
   // We declare these variables here instead of in config_display, in
   // case this constructor is running at static init time.
   ConfigVariableString load_display
