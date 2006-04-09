@@ -103,6 +103,8 @@ private:
   BoundingVolumes _parent_bounds;
 
   static PStatCollector _node_volume_pcollector;
+
+  friend class CollisionTraverser;
 };
 
 #include "collisionLevelState.I"

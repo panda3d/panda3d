@@ -34,6 +34,8 @@
 #include "cullFaceAttrib.h"
 #include "string_utils.h"
 #include "geomCacheManager.h"
+#include "renderState.h"
+#include "transformState.h"
 #include "thread.h"
 #include "pipeline.h"
 #include "throw_event.h"
@@ -626,6 +628,11 @@ render_frame() {
 #endif  // DEBUG_THREADS
 
 #endif  // THREADED_PIPELINE && DO_PSTATS
+
+  GeomCacheManager::flush_level();
+  CullTraverser::flush_level();
+  RenderState::flush_level();
+  TransformState::flush_level();
 
   // Now cycle the pipeline and officially begin the next frame.
 #ifdef THREADED_PIPELINE

@@ -1296,6 +1296,11 @@ end_frame() {
 
   GraphicsStateGuardian::end_frame();
 
+  // Flush any PCollectors specific to this kind of GSG.
+  _primitive_batches_display_list_pcollector.flush_level();
+  _vertices_display_list_pcollector.flush_level();
+  _vertices_immediate_pcollector.flush_level();
+
   // Now is a good time to delete any pending display lists.
   {
     MutexHolder holder(_lock);

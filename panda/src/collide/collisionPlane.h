@@ -49,6 +49,8 @@ public:
 
   virtual void output(ostream &out) const;
 
+  INLINE static void flush_level();
+
 PUBLISHED:
   INLINE LVector3f get_normal() const;
   INLINE float dist_to_plane(const LPoint3f &point) const;

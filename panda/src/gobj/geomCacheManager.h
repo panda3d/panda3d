@@ -59,6 +59,7 @@ PUBLISHED:
 
 public:
   void evict_old_entries();
+  INLINE static void flush_level();
 
 private:
   // This mutex protects all operations on this object, especially the

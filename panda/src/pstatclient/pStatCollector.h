@@ -73,6 +73,9 @@ PUBLISHED:
   INLINE void set_level(float level);
   INLINE void add_level(float increment);
   INLINE void sub_level(float decrement);
+  INLINE void add_level_now(float increment);
+  INLINE void sub_level_now(float decrement);
+  INLINE void flush_level();
   INLINE float get_level();
 
   INLINE void clear_thread_level();
@@ -99,6 +102,7 @@ PUBLISHED:
 private:
   PStatClient *_client;
   int _index;
+  float _level;
 
 friend class PStatClient;
 

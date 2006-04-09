@@ -25,11 +25,15 @@
 #include "pStatClientImpl.h"
 #include "pStatCollectorDef.h"
 #include "reMutex.h"
+#include "pmutex.h"
 #include "reMutexHolder.h"
+#include "mutexHolder.h"
 #include "pmap.h"
 #include "thread.h"
 #include "weakPointerTo.h"
 #include "vector_int.h"
+#include "atomicAdjust.h"
+#include "numeric_types.h"
 
 class PStatCollector;
 class PStatCollectorDef;
@@ -124,8 +128,13 @@ private:
   void add_level(int collector_index, int thread_index, float increment);
   float get_level(int collector_index, int thread_index) const;
 
-  static void mutex_wait_start();
-  static void mutex_wait_stop();
+  class Collector;
+  class InternalThread;
+  void add_collector(Collector *collector);
+  void add_thread(InternalThread *thread);
+
+  INLINE Collector *get_collector_ptr(int collector_index) const;
+  INLINE InternalThread *get_thread_ptr(int thread_index) const;
 
 private:
   // This mutex protects everything in this class.
@@ -175,8 +184,10 @@ private:
     ThingsByName _children;
     PerThread _per_thread;
   };
-  typedef pvector<Collector> Collectors;
-  Collectors _collectors;
+  typedef Collector *CollectorPointer;
+  void *_collectors;  // CollectorPointer *_collectors;
+  PN_int32 _collectors_size;  // size of the allocated array
+  PN_int32 _num_collectors;   // number of in-use elements within the array
 
   // This defines a single thread, i.e. a separate chain of execution,
   // independent of all other threads.  Timing and level data are
@@ -190,9 +201,16 @@ private:
     bool _is_active;
     int _frame_number;
     float _next_packet;
+
+    // This mutex is used to protect writes to _frame_data for this
+    // particular thread, as well as writes to the _per_thread data
+    // for this particular thread in the Collector class, above.
+    Mutex _thread_lock;
   };
-  typedef pvector<InternalThread> Threads;
-  Threads _threads;
+  typedef InternalThread *ThreadPointer;
+  void *_threads;  // ThreadPointer *_threads;
+  PN_int32 _threads_size;  // size of the allocated array
+  PN_int32 _num_threads;   // number of in-use elements within the array
 
   PStatClientImpl *_impl;
 
@@ -200,10 +218,10 @@ private:
   static PStatCollector _cpp_size_pcollector;
   static PStatCollector _interpreter_size_pcollector;
   static PStatCollector _pstats_pcollector;
-  static PStatCollector _mutex_wait_pcollector;
 
   static PStatClient *_global_pstats;
 
+  friend class Collector;
   friend class PStatCollector;
   friend class PStatThread;
   friend class PStatClientImpl;

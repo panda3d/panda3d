@@ -27,7 +27,11 @@
 //               create your own Collector.
 ////////////////////////////////////////////////////////////////////
 INLINE PStatCollector::
-PStatCollector() {
+PStatCollector() : 
+  _client(NULL),
+  _index(0),
+  _level(0.0f)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -40,7 +44,8 @@ PStatCollector() {
 INLINE PStatCollector::
 PStatCollector(PStatClient *client, int index) :
   _client(client),
-  _index(index)
+  _index(index),
+  _level(0.0f)
 {
 }
 
@@ -65,7 +70,9 @@ PStatCollector(PStatClient *client, int index) :
 //               otherwise, the global client is used.
 ////////////////////////////////////////////////////////////////////
 INLINE PStatCollector::
-PStatCollector(const string &name, PStatClient *client) {
+PStatCollector(const string &name, PStatClient *client) :
+  _level(0.0f)
+{
   if (client == (PStatClient *)NULL) {
     client = PStatClient::get_global_pstats();
   }
@@ -96,7 +103,9 @@ PStatCollector(const string &name, PStatClient *client) {
 //               as its parent.
 ////////////////////////////////////////////////////////////////////
 INLINE PStatCollector::
-PStatCollector(const PStatCollector &parent, const string &name) {
+PStatCollector(const PStatCollector &parent, const string &name) :
+  _level(0.0f)
+{
   nassertv(parent._client != (PStatClient *)NULL);
   (*this) =
     parent._client->make_collector_with_relname(parent._index, name);
@@ -110,7 +119,8 @@ PStatCollector(const PStatCollector &parent, const string &name) {
 INLINE PStatCollector::
 PStatCollector(const PStatCollector &copy) :
   _client(copy._client),
-  _index(copy._index)
+  _index(copy._index),
+  _level(0.0f)
 {
 }
 
@@ -192,11 +202,12 @@ stop() {
 //  Description: Removes the level setting associated with this
 //               collector for the main thread.  The collector
 //               will no longer show up on any level graphs in the
-//               main thread.
+//               main thread.  This implicitly calls flush_level().
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 clear_level() {
   _client->clear_level(_index, 0);
+  _level = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,11 +215,12 @@ clear_level() {
 //       Access: Published
 //  Description: Sets the level setting associated with this
 //               collector for the main thread to the indicated
-//               value.
+//               value.  This implicitly calls flush_level().
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 set_level(float level) {
   _client->set_level(_index, 0, level);
+  _level = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -219,10 +231,14 @@ set_level(float level) {
 //               for the main thread.  If the collector did not
 //               already have a level setting for the main thread, it
 //               is initialized to 0.
+//
+//               As an optimization, the data is not immediately set
+//               to the PStatClient.  It will be sent the next time
+//               flush_level() is called.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 add_level(float increment) {
-  _client->add_level(_index, 0, increment);
+  _level += increment;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -233,20 +249,62 @@ add_level(float increment) {
 //               collector for the main thread.  If the collector did
 //               not already have a level setting for the main thread,
 //               it is initialized to 0.
+//
+//               As an optimization, the data is not immediately set
+//               to the PStatClient.  It will be sent the next time
+//               flush_level() is called.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 sub_level(float decrement) {
-  _client->add_level(_index, 0, -decrement);
+  _level -= decrement;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::add_level_now
+//       Access: Published
+//  Description: Calls add_level() and immediately calls flush_level().
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+add_level_now(float increment) {
+  add_level(increment);
+  flush_level();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::sub_level_now
+//       Access: Published
+//  Description: Calls sub_level() and immediately calls flush_level().
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+sub_level_now(float decrement) {
+  sub_level(decrement);
+  flush_level();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::flush_level
+//       Access: Published
+//  Description: Updates the PStatClient with the recent results from
+//               add_level() and sub_level().
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+flush_level() {
+  if (_level != 0.0f) {
+    _client->add_level(_index, 0, _level);
+    _level = 0.0f;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::get_level
 //       Access: Published
 //  Description: Returns the current level value of the given
-//               collector in the main thread.
+//               collector in the main thread.  This implicitly calls
+//               flush_level().
 ////////////////////////////////////////////////////////////////////
 INLINE float PStatCollector::
 get_level() {
+  flush_level();
   return _client->get_level(_index, 0);
 }
 

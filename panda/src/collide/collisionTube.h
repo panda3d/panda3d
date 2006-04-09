@@ -54,6 +54,8 @@ public:
 
   virtual void output(ostream &out) const;
 
+  INLINE static void flush_level();
+
 PUBLISHED:
   INLINE void set_point_a(const LPoint3f &a);
   INLINE void set_point_a(float x, float y, float z);

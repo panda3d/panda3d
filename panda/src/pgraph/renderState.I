@@ -581,6 +581,17 @@ set_shader_expansion(ShaderExpansion *exp) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::flush_level
+//       Access: Public, Static
+//  Description: Flushes the PStatCollectors used during traversal.
+////////////////////////////////////////////////////////////////////
+INLINE void RenderState::
+flush_level() {
+  _node_counter.flush_level();
+  _cache_counter.flush_level();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::CompositionCycleDescEntry::Constructor
 //       Access: Public
 //  Description: 

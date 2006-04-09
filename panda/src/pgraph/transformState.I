@@ -741,6 +741,17 @@ node_unref() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::flush_level
+//       Access: Public, Static
+//  Description: Flushes the PStatCollectors used during traversal.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+flush_level() {
+  _node_counter.flush_level();
+  _cache_counter.flush_level();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::check_singular
 //       Access: Private
 //  Description: Ensures that we know whether the matrix is singular.

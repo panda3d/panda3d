@@ -61,7 +61,6 @@ PStatCollector GraphicsStateGuardian::_vertices_tristrip_pcollector("Vertices:Tr
 PStatCollector GraphicsStateGuardian::_vertices_trifan_pcollector("Vertices:Triangle fans");
 PStatCollector GraphicsStateGuardian::_vertices_tri_pcollector("Vertices:Triangles");
 PStatCollector GraphicsStateGuardian::_vertices_other_pcollector("Vertices:Other");
-PStatCollector GraphicsStateGuardian::_vertices_indexed_tristrip_pcollector("Vertices:Indexed triangle strips");
 PStatCollector GraphicsStateGuardian::_state_pcollector("State changes");
 PStatCollector GraphicsStateGuardian::_transform_state_pcollector("State changes:Transforms");
 PStatCollector GraphicsStateGuardian::_texture_state_pcollector("State changes:Textures");
@@ -1124,6 +1123,24 @@ end_scene() {
 void GraphicsStateGuardian::
 end_frame() {
   _prepared_objects->end_frame();
+
+  // Flush any PStatCollectors.
+  _data_transferred_pcollector.flush_level();
+
+  _primitive_batches_pcollector.flush_level();
+  _primitive_batches_tristrip_pcollector.flush_level();
+  _primitive_batches_trifan_pcollector.flush_level();
+  _primitive_batches_tri_pcollector.flush_level();
+  _primitive_batches_other_pcollector.flush_level();
+  _vertices_tristrip_pcollector.flush_level();
+  _vertices_trifan_pcollector.flush_level();
+  _vertices_tri_pcollector.flush_level();
+  _vertices_other_pcollector.flush_level();
+
+  _state_pcollector.flush_level();
+  _texture_state_pcollector.flush_level();
+  _transform_state_pcollector.flush_level();
+  _draw_primitive_pcollector.flush_level();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1951,7 +1968,6 @@ init_frame_pstats() {
     _vertices_trifan_pcollector.clear_level();
     _vertices_tri_pcollector.clear_level();
     _vertices_other_pcollector.clear_level();
-    _vertices_indexed_tristrip_pcollector.clear_level();
     
     _state_pcollector.clear_level();
     _transform_state_pcollector.clear_level();

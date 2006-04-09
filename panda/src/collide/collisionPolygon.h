@@ -71,6 +71,8 @@ public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
+  INLINE static void flush_level();
+
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
 

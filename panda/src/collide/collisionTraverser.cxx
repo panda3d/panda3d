@@ -23,6 +23,10 @@
 #include "collisionGeom.h"
 #include "collisionRecorder.h"
 #include "collisionVisualizer.h"
+#include "collisionSphere.h"
+#include "collisionTube.h"
+#include "collisionPolygon.h"
+#include "collisionPlane.h"
 #include "config_collide.h"
 #include "boundingSphere.h"
 #include "transformState.h"
@@ -294,6 +298,16 @@ traverse(const NodePath &root) {
     get_recorder()->end_traversal();
   }
   #endif  // DO_COLLISION_RECORDING
+
+  CollisionLevelState::_node_volume_pcollector.flush_level();
+  _cnode_volume_pcollector.flush_level();
+  _gnode_volume_pcollector.flush_level();
+  _geom_volume_pcollector.flush_level();
+
+  CollisionSphere::flush_level();
+  CollisionTube::flush_level();
+  CollisionPolygon::flush_level();
+  CollisionPlane::flush_level();
 }
 
 ////////////////////////////////////////////////////////////////////

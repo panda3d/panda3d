@@ -80,7 +80,7 @@ get_max_rate() const {
 INLINE int PStatClient::
 get_num_collectors() const {
   ReMutexHolder holder(_lock);
-  return _collectors.size();
+  return _num_collectors;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,10 +90,9 @@ get_num_collectors() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PStatCollectorDef *PStatClient::
 get_collector_def(int index) const {
-  ReMutexHolder holder(_lock);
-  nassertr(index >= 0 && index < (int)_collectors.size(), NULL);
+  nassertr(index >= 0 && index < _num_collectors, NULL);
 
-  return _collectors[index].get_def(this, index);
+  return get_collector_ptr(index)->get_def(this, index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,7 +104,7 @@ get_collector_def(int index) const {
 INLINE int PStatClient::
 get_num_threads() const {
   ReMutexHolder holder(_lock);
-  return _threads.size();
+  return _num_threads;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,9 +114,8 @@ get_num_threads() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PStatClient::
 get_thread_name(int index) const {
-  ReMutexHolder holder(_lock);
-  nassertr(index >= 0 && index < (int)_threads.size(), string());
-  return _threads[index]._name;
+  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), string());
+  return get_thread_ptr(index)->_name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -127,9 +125,8 @@ get_thread_name(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PStatClient::
 get_thread_sync_name(int index) const {
-  ReMutexHolder holder(_lock);
-  nassertr(index >= 0 && index < (int)_threads.size(), string());
-  return _threads[index]._sync_name;
+  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), string());
+  return get_thread_ptr(index)->_sync_name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,12 +137,12 @@ get_thread_sync_name(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE Thread *PStatClient::
 get_thread_object(int index) const {
-  ReMutexHolder holder(_lock);
-  nassertr(index >= 0 && index < (int)_threads.size(), NULL);
-  if (_threads[index]._thread.was_deleted()) {
+  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), NULL);
+  InternalThread *thread = get_thread_ptr(index);
+  if (thread->_thread.was_deleted()) {
     return NULL;
   }
-  return _threads[index]._thread;
+  return thread->_thread;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -227,7 +224,6 @@ client_connect(string hostname, int port) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PStatClient::
 client_is_connected() const {
-  ReMutexHolder holder(_lock);
   return has_impl() && _impl->client_is_connected();
 }
 
@@ -284,6 +280,30 @@ get_impl() {
 INLINE const PStatClientImpl *PStatClient::
 get_impl() const {
   return ((PStatClient *)this)->get_impl();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::get_collector_ptr
+//       Access: Private
+//  Description: Returns the nth collector in a thread-safe manner,
+//               even if _lock is not held.
+////////////////////////////////////////////////////////////////////
+INLINE PStatClient::Collector *PStatClient::
+get_collector_ptr(int collector_index) const {
+  CollectorPointer *collectors = (CollectorPointer *)AtomicAdjust::get_ptr(_collectors);
+  return collectors[collector_index];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::get_thread_ptr
+//       Access: Private
+//  Description: Returns the nth thread in a thread-safe manner,
+//               even if _lock is not held.
+////////////////////////////////////////////////////////////////////
+INLINE PStatClient::InternalThread *PStatClient::
+get_thread_ptr(int thread_index) const {
+  ThreadPointer *threads = (ThreadPointer *)AtomicAdjust::get_ptr(_threads);
+  return threads[thread_index];
 }
 
 ////////////////////////////////////////////////////////////////////

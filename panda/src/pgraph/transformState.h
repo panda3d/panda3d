@@ -190,6 +190,8 @@ PUBLISHED:
 public:
   static void init_states();
 
+  INLINE static void flush_level();
+
 private:
   class CompositionCycleDescEntry {
   public:

@@ -107,10 +107,11 @@ struct LevelCollectorProperties {
 };
 
 static TimeCollectorProperties time_properties[] = {
+  { 1, "Frame",                            { 0.95, 1.0, 0.35 } },
   { 1, "Wait",                             { 0.6, 0.6, 0.6 } },
   { 0, "Wait:Mutex block",                 { 0.5, 0.0, 1.0 } },
   { 1, "Wait:Thread sync",                 { 0.0, 1.0, 0.5 } },
-  { 1, "App",                              { 0.8, 0.0, 0.4 },  1.0 / 30.0 },
+  { 1, "App",                              { 0.0, 0.4, 0.8 },  1.0 / 30.0 },
   { 1, "App:Collisions",                   { 1.0, 0.5, 0.0 } },
   { 1, "App:Collisions:Reset",             { 0.0, 0.0, 0.5 } },
   { 0, "App:Data graph",                   { 0.5, 0.8, 0.4 } },
@@ -122,7 +123,7 @@ static TimeCollectorProperties time_properties[] = {
   { 0, "App:Show code:Nametags:3d",        { 1.0, 0.0, 0.0 } },
   { 0, "App:Show code:Nametags:3d:Contents", { 0.0, 0.5, 0.0 } },
   { 0, "App:Show code:Nametags:3d:Adjust",   { 0.5, 0.0, 0.5 } },
-  { 1, "Cull",                             { 0.0, 1.0, 0.0 },  1.0 / 30.0 },
+  { 1, "Cull",                             { 0.21, 0.68, 0.37 },  1.0 / 30.0 },
   { 1, "Cull:Setup",                       { 0.7, 0.4, 0.5 } },
   { 1, "Cull:Sort",                        { 0.3, 0.3, 0.6 } },
   { 1, "*:Show fps",                       { 0.5, 0.8, 1.0 } },
@@ -135,7 +136,7 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "*:Animation",                      { 1.0, 0.0, 1.0 } },
   { 0, "*:Flatten",                        { 0.0, 0.7, 0.4 } },
   { 0, "*:State Cache",                    { 0.4, 0.7, 0.7 } },
-  { 1, "Draw",                             { 1.0, 0.0, 0.0 },  1.0 / 30.0 },
+  { 1, "Draw",                             { 0.83, 0.02, 0.01 },  1.0 / 30.0 },
   { 1, "Draw:Make current",                { 0.4, 0.2, 0.6 } },
   { 1, "Draw:Copy texture",                { 0.2, 0.6, 0.4 } },
   { 1, "Draw:Clear",                       { 0.0, 0.8, 0.6 } },

@@ -50,6 +50,8 @@ public:
 
   virtual void output(ostream &out) const;
 
+  INLINE static void flush_level();
+
 PUBLISHED:
   INLINE void set_center(const LPoint3f &center);
   INLINE void set_center(float x, float y, float z);

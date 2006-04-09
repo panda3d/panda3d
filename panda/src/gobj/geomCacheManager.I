@@ -58,3 +58,17 @@ INLINE int GeomCacheManager::
 get_total_size() const {
   return _total_size;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomCacheManager::flush_level
+//       Access: Public, Static
+//  Description: Flushes the PStatCollectors used during traversal.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomCacheManager::
+flush_level() {
+  _geom_cache_size_pcollector.flush_level();
+  _geom_cache_active_pcollector.flush_level();
+  _geom_cache_record_pcollector.flush_level();
+  _geom_cache_erase_pcollector.flush_level();
+  _geom_cache_evict_pcollector.flush_level();
+}

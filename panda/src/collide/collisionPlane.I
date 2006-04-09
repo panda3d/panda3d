@@ -52,8 +52,19 @@ CollisionPlane(const CollisionPlane &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::flush_level
+//       Access: Public, Static
+//  Description: Flushes the PStatCollectors used during traversal.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionPlane::
+flush_level() {
+  _volume_pcollector.flush_level();
+  _test_pcollector.flush_level();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::get_normal
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f CollisionPlane::
@@ -63,7 +74,7 @@ get_normal() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::dist_to_plane
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE float CollisionPlane::
@@ -73,7 +84,7 @@ dist_to_plane(const LPoint3f &point) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::set_plane
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionPlane::
@@ -85,7 +96,7 @@ set_plane(const Planef &plane) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::get_plane
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const Planef &CollisionPlane::

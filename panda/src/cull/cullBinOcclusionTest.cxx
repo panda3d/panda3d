@@ -247,9 +247,9 @@ draw() {
     _pending_nodes.pop_front();
   }
 
-  _occlusion_previous_pcollector.add_level(num_drawn_previous);
-  _occlusion_passed_pcollector.add_level(num_drawn);
-  _occlusion_failed_pcollector.add_level(_num_objects - (num_drawn_previous + num_drawn));
+  _occlusion_previous_pcollector.add_level_now(num_drawn_previous);
+  _occlusion_passed_pcollector.add_level_now(num_drawn);
+  _occlusion_failed_pcollector.add_level_now(_num_objects - (num_drawn_previous + num_drawn));
 
   // Now, store a list of the objects within OctreeNodes that passed
   // the occlusion test this frame, so we can ensure that they are

@@ -155,6 +155,8 @@ public:
   INLINE ShaderExpansion *get_shader_expansion() const;
   INLINE void set_shader_expansion(ShaderExpansion *exp);
 
+  INLINE static void flush_level();
+
 private:
   class CompositionCycleDescEntry {
   public:

@@ -286,8 +286,20 @@ set_portal_clipper(PortalClipper *portal_clipper) {
 //       Access: Public
 //  Description: Returns the _portal_clipper pointer
 ////////////////////////////////////////////////////////////////////
-
 INLINE PortalClipper *CullTraverser::
 get_portal_clipper() const {
   return _portal_clipper;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::flush_level
+//       Access: Public, Static
+//  Description: Flushes the PStatCollectors used during traversal.
+////////////////////////////////////////////////////////////////////
+INLINE void CullTraverser::
+flush_level() {
+  _nodes_pcollector.flush_level();
+  _geom_nodes_pcollector.flush_level();
+  _geoms_pcollector.flush_level();
+  _geoms_occluded_pcollector.flush_level();
 }

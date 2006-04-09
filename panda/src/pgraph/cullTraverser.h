@@ -88,6 +88,8 @@ public:
   void traverse(CullTraverserData &data);
   void traverse_below(CullTraverserData &data);
 
+  INLINE static void flush_level();
+
 public:
   // Statistics
   static PStatCollector _nodes_pcollector;

@@ -105,6 +105,17 @@ verify_points(const LPoint3f &a, const LPoint3f &b,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::flush_level
+//       Access: Public, Static
+//  Description: Flushes the PStatCollectors used during traversal.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionPolygon::
+flush_level() {
+  _volume_pcollector.flush_level();
+  _test_pcollector.flush_level();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::to_2d
 //       Access: Private
 //  Description: Assuming the indicated point in 3-d space lies within
