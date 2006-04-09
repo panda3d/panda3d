@@ -237,7 +237,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
 
   // Set the original filename, before we searched along the path.
   tex->set_filename(orig_filename);
-
+  tex->_texture_pool_key = filename;
   _textures[filename] = tex;
   return tex;
 }
@@ -289,7 +289,7 @@ ns_load_texture(const Filename &orig_filename,
   // Set the original filenames, before we searched along the path.
   tex->set_filename(orig_filename);
   tex->set_alpha_filename(orig_alpha_filename);
-
+  tex->_texture_pool_key = filename;
   _textures[filename] = tex;
   return tex;
 }
@@ -328,7 +328,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
 
   // Set the original filename, before we searched along the path.
   tex->set_filename(filename_pattern);
-
+  tex->_texture_pool_key = filename;
   _textures[filename] = tex;
   return tex;
 }
@@ -366,7 +366,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps) {
 
   // Set the original filename, before we searched along the path.
   tex->set_filename(filename_pattern);
-
+  tex->_texture_pool_key = filename;
   _textures[filename] = tex;
   return tex;
 }
@@ -396,12 +396,17 @@ ns_get_normalization_cube_map(int size) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_add_texture(Texture *tex) {
-  string filename = tex->get_filename();
+  PT(Texture) keep = tex;
+  if (!tex->_texture_pool_key.empty()) {
+    ns_release_texture(tex);
+  }
+  string filename = tex->get_fullpath();
   if (filename.empty()) {
     gobj_cat.error() << "Attempt to call add_texture() on an unnamed texture.\n";
   }
 
   // We blow away whatever texture was there previously, if any.
+  tex->_texture_pool_key = filename;
   _textures[filename] = tex;
 }
 
@@ -412,11 +417,13 @@ ns_add_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_release_texture(Texture *tex) {
-  string filename = tex->get_filename();
-  Textures::iterator ti;
-  ti = _textures.find(filename);
-  if (ti != _textures.end() && (*ti).second == tex) {
-    _textures.erase(ti);
+  if (!tex->_texture_pool_key.empty()) {
+    Textures::iterator ti;
+    ti = _textures.find(tex->_texture_pool_key);
+    if (ti != _textures.end() && (*ti).second == tex) {
+      _textures.erase(ti);
+    }
+    tex->_texture_pool_key = string();
   }
 }
 
@@ -427,6 +434,12 @@ ns_release_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_release_all_textures() {
+  Textures::iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    Texture *tex = (*ti).second;
+    tex->_texture_pool_key = string();
+  }
+
   _textures.clear();
   _normalization_cube_map = NULL;
 }
@@ -450,6 +463,7 @@ ns_garbage_collect() {
           << "Releasing " << (*ti).first << "\n";
       }
       ++num_released;
+      tex->_texture_pool_key = string();
     } else {
       new_set.insert(new_set.end(), *ti);
     }
@@ -480,10 +494,11 @@ ns_list_contents(ostream &out) const {
   out << _textures.size() << " textures:\n";
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    Texture *texture = (*ti).second;
+    Texture *tex = (*ti).second;
     out << "  " << (*ti).first
-        << " (count = " << texture->get_ref_count() << ", ram = "
-        << texture->get_ram_image_size() / 1024 << " Kb)\n";
+        << " (count = " << tex->get_ref_count() << ", ram = "
+        << tex->get_ram_image_size() / 1024 << " Kb)\n";
+    nassertv(tex->_texture_pool_key == (*ti).first);
   }
 }
 

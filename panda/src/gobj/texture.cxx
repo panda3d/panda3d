@@ -522,6 +522,27 @@ write_txo(ostream &out, const string &filename) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::reload
+//       Access: Published
+//  Description: Re-reads the Texture from its disk file.  Useful when
+//               you know the image on disk has recently changed, and
+//               you want to update the Texture image.
+//
+//               Returns true on success, false on failure (in which
+//               case, the Texture may or may not still be valid).
+////////////////////////////////////////////////////////////////////
+bool Texture::
+reload() {
+  if (_loaded_from_image && has_filename()) {
+    reload_ram_image();
+    return has_ram_image();
+  }
+
+  // We don't have a filename to load from.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::load_related
 //       Access: Published
 //  Description: Loads a texture whose filename is derived by

@@ -220,6 +220,7 @@ PUBLISHED:
   INLINE bool store(PNMImage &pnmimage) const;
   INLINE bool store(PNMImage &pnmimage, int z, int n) const;
 
+  bool reload();
   Texture *load_related(const PT(InternalName) &suffix) const;
 
   INLINE bool has_filename() const;
@@ -441,6 +442,7 @@ protected:
   Filename _alpha_filename;
   Filename _fullpath;
   Filename _alpha_fullpath;
+  string _texture_pool_key;
 
   // The number of channels of the primary file we use.  1, 2, 3, or 4.
   int _primary_file_num_channels;
@@ -533,6 +535,7 @@ private:
 
   friend class TextureContext;
   friend class PreparedGraphicsObjects;
+  friend class TexturePool;
 };
 
 EXPCL_PANDA ostream &operator << (ostream &out, Texture::FilterType ft);
