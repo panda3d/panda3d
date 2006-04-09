@@ -138,8 +138,8 @@ get_collector_color(int collector_index) {
       _client_data->get_collector_def(collector_index);
 
     RGBColorf sc(def._suggested_color.r,
-                 def._suggested_color.b,
-                 def._suggested_color.g);
+                 def._suggested_color.g,
+                 def._suggested_color.b);
     if (sc != RGBColorf::zero()) {
       ci = _colors.insert(Colors::value_type(collector_index, sc)).first;
       return (*ci).second;
