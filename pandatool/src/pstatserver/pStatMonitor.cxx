@@ -144,6 +144,16 @@ get_collector_color(int collector_index) {
       ci = _colors.insert(Colors::value_type(collector_index, sc)).first;
       return (*ci).second;
     }
+
+    // Use the fullname of the collector as a hash to seed the random
+    // number generator (consulted below), so we get the same color
+    // for a given name across sessions.
+    string fullname = _client_data->get_collector_fullname(collector_index);
+    unsigned int hash = 0;
+    for (string::const_iterator ci = fullname.begin(); ci != fullname.end(); ++ci) {
+      hash = hash * 37 + (unsigned int)(*ci);
+    }
+    srand(hash);
   }
 
   // We didn't have a color for the collector; make one up.
