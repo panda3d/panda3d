@@ -63,3 +63,28 @@ INLINE PN_int32 AtomicAdjustNsprImpl::
 get(const PN_int32 &var) {
   return var;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustNsprImpl::set_ptr
+//       Access: Public, Static
+//  Description: Atomically changes the indicated variable and
+//               returns the original value.
+////////////////////////////////////////////////////////////////////
+INLINE void *AtomicAdjustNsprImpl::
+set_ptr(void *&var, void *new_value) {
+  return PR_AtomicSet((PN_int32 *)&var, (PN_int32)new_value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustNsprImpl::get_ptr
+//       Access: Public, Static
+//  Description: Atomically retrieves the snapshot value of the
+//               indicated variable.  This is the only guaranteed safe
+//               way to retrieve the value that other threads might be
+//               asynchronously setting, incrementing, or decrementing
+//               (via other AtomicAjust methods).
+////////////////////////////////////////////////////////////////////
+INLINE void *AtomicAdjustNsprImpl::
+get_ptr(void * const &var) {
+  return var;
+}

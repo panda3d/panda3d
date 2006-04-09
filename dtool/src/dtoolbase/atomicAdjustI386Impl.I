@@ -77,6 +77,33 @@ get(const PN_int32 &var) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustI386Impl::set_ptr
+//       Access: Public, Static
+//  Description: Atomically changes the indicated variable and
+//               returns the original value.
+////////////////////////////////////////////////////////////////////
+INLINE void *AtomicAdjustI386Impl::
+set_ptr(void *&var, void *new_value) {
+  void *orig_value = var;
+  var = new_value;
+  return orig_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustI386Impl::get_ptr
+//       Access: Public, Static
+//  Description: Atomically retrieves the snapshot value of the
+//               indicated variable.  This is the only guaranteed safe
+//               way to retrieve the value that other threads might be
+//               asynchronously setting, incrementing, or decrementing
+//               (via other AtomicAjust methods).
+////////////////////////////////////////////////////////////////////
+INLINE void *AtomicAdjustI386Impl::
+get_ptr(void * const &var) {
+  return var;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AtomicAdjustI386Impl::compare_and_exchange
 //       Access: Public, Static
 //  Description: Atomic compare and exchange.  
