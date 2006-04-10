@@ -1089,7 +1089,7 @@ do_clear(const RenderBuffer &buffer) {
   int buffer_type = buffer._buffer_type;
   GLbitfield mask = 0;
 
-  set_state_and_transform(RenderState::make_empty(), _external_transform);
+  set_state_and_transform(RenderState::make_empty(), _internal_transform);
 
   if (buffer_type & RenderBuffer::T_color) {
     GLP(ClearColor)(_color_clear_value[0],
@@ -3070,7 +3070,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   // for GLP(ReadPixels)() to work
   // NOTE: reading the depth buffer is *much* slower than reading the
   // color buffer
-  set_state_and_transform(RenderState::make_empty(), _external_transform);
+  set_state_and_transform(RenderState::make_empty(), _internal_transform);
 
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
@@ -5457,11 +5457,16 @@ end_bind_clip_planes() {
 //  Description: Simultaneously resets the render state and the
 //               transform state.
 //
-//               This transform specified is the "external" net
-//               transform, expressed in the external coordinate
-//               space; internally, it will be pretransformed by
-//               get_cs_transform() to express it in the GSG's
-//               internal coordinate space.
+//               This transform specified is the "internal" net
+//               transform, already converted into the GSG's internal
+//               coordinate space by composing it to
+//               get_cs_transform().  (Previously, this used to be the
+//               "external" net transform, with the assumption that
+//               that GSG would convert it internally, but that is no
+//               longer the case.)
+//
+//               Special case: if (state==NULL), then the target
+//               state is already stored in _target.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 set_state_and_transform(const RenderState *target,
@@ -5474,10 +5479,9 @@ set_state_and_transform(const RenderState *target,
 #endif
   _state_pcollector.add_level(1);
 
-  if (transform != _external_transform) {
+  if (transform != _internal_transform) {
     _state_pcollector.add_level(1);
-    _external_transform = transform;
-    _internal_transform = _cs_transform->compose(transform);
+    _internal_transform = transform;
     do_issue_transform();
   }
 
@@ -5633,7 +5637,7 @@ free_pointers() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_auto_rescale_normal() {
-  if (_external_transform->has_identity_scale()) {
+  if (_internal_transform->has_identity_scale()) {
     // If there's no scale at all, don't do anything.
     GLP(Disable)(GL_NORMALIZE);
     if (GLCAT.is_spam()) {
@@ -5646,7 +5650,7 @@ do_auto_rescale_normal() {
       }
     }
 
-  } else if (_external_transform->has_uniform_scale()) {
+  } else if (_internal_transform->has_uniform_scale()) {
     // There's a uniform scale; use the rescale feature if available.
     if (_supports_rescale_normal && support_rescale_normal) {
       GLP(Enable)(GL_RESCALE_NORMAL);

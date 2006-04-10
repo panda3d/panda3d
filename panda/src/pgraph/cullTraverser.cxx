@@ -288,7 +288,8 @@ show_bounds(CullTraverserData &data, bool tight) {
       CullableObject *outer_viz = 
         new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
                            data.get_net_transform(this),
-                           data.get_modelview_transform(this));
+                           data.get_modelview_transform(this),
+                           get_gsg());
       _cull_handler->record_object(outer_viz, this);
     }
     
@@ -300,13 +301,15 @@ show_bounds(CullTraverserData &data, bool tight) {
       CullableObject *outer_viz = 
         new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
                            data.get_net_transform(this),
-                           data.get_modelview_transform(this));
+                           data.get_modelview_transform(this),
+                           get_gsg());
       _cull_handler->record_object(outer_viz, this);
       
       CullableObject *inner_viz = 
         new CullableObject(bounds_viz, get_bounds_inner_viz_state(), 
                            data.get_net_transform(this),
-                           data.get_modelview_transform(this));
+                           data.get_modelview_transform(this),
+                           get_gsg());
       _cull_handler->record_object(inner_viz, this);
     }
   }

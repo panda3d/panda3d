@@ -29,7 +29,7 @@ draw(CullableObject *object, GraphicsStateGuardianBase *gsg) {
   if (object->_next != (CullableObject *)NULL) {
     draw_with_decals(object, gsg);
   } else {
-    gsg->set_state_and_transform(object->_state, object->_modelview_transform);
+    gsg->set_state_and_transform(object->_state, object->_internal_transform);
     object->draw(gsg);
   }
 }

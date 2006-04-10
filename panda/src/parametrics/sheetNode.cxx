@@ -334,9 +334,11 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
-  CullableObject *object = new CullableObject(geom, data._state,
-                                              data.get_net_transform(trav),
-                                              data.get_modelview_transform(trav));
+  CullableObject *object = 
+    new CullableObject(geom, data._state,
+                       data.get_net_transform(trav),
+                       data.get_modelview_transform(trav),
+                       trav->get_gsg());
   trav->get_cull_handler()->record_object(object, trav);
 }
 

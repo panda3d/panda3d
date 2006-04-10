@@ -43,6 +43,7 @@ CullableObject(const CullTraverser *trav, const CullTraverserData &data,
   _state(data._state->compose(geom_node->get_geom_state(i))),
   _net_transform(data.get_net_transform(trav)),
   _modelview_transform(data.get_modelview_transform(trav)),
+  _internal_transform(trav->get_gsg()->get_cs_transform()->compose(_modelview_transform)),
   _next(next)
 {
 }
@@ -57,11 +58,13 @@ INLINE CullableObject::
 CullableObject(const Geom *geom, const RenderState *state,
                const TransformState *net_transform,
                const TransformState *modelview_transform,
+               const GraphicsStateGuardianBase *gsg,
                CullableObject *next) :
   _geom(geom),
   _state(state),
   _net_transform(net_transform),
   _modelview_transform(modelview_transform),
+  _internal_transform(gsg->get_cs_transform()->compose(modelview_transform)),
   _next(next)
 {
 }
@@ -79,6 +82,7 @@ CullableObject(const CullableObject &copy) :
   _state(copy._state),
   _net_transform(copy._net_transform),
   _modelview_transform(copy._modelview_transform),
+  _internal_transform(copy._internal_transform),
   _next((CullableObject *)NULL)
 {
 }
@@ -95,6 +99,7 @@ operator = (const CullableObject &copy) {
   _state = copy._state;
   _net_transform = copy._net_transform;
   _modelview_transform = copy._modelview_transform;
+  _internal_transform = copy._internal_transform;
 }
 
 ////////////////////////////////////////////////////////////////////

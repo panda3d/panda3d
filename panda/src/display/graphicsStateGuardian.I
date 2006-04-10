@@ -632,7 +632,7 @@ needs_reset() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_transform
+//     Function: GraphicsStateGuardian::get_external_transform
 //       Access: Public
 //  Description: Fetches the external net transform.  This
 //               transform is generally only set when geometry is
@@ -641,8 +641,22 @@ needs_reset() const {
 //               rendering process.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) GraphicsStateGuardian::
-get_transform() {
-  return _external_transform;
+get_external_transform() const {
+  return _inv_cs_transform->compose(_internal_transform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_internal_transform
+//       Access: Public
+//  Description: Fetches the external net transform.  This
+//               transform is generally only set when geometry is
+//               about to be rendered.  Therefore, this "get" function
+//               is typically only meaningful during the geometry
+//               rendering process.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) GraphicsStateGuardian::
+get_internal_transform() const {
+  return _internal_transform;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -677,21 +691,6 @@ get_current_stereo_channel() const {
 INLINE const Lens *GraphicsStateGuardian::
 get_current_lens() const {
   return _current_lens;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_cs_transform
-//       Access: Public
-//  Description: Returns a transform that converts from the GSG's
-//               external coordinate system (as returned by
-//               get_coordinate_system()) to its internal coordinate
-//               system (as returned by
-//               get_internal_coordinate_system()).  This is used for
-//               rendering.
-////////////////////////////////////////////////////////////////////
-INLINE const TransformState *GraphicsStateGuardian::
-get_cs_transform() const {
-  return _cs_transform;
 }
 
 ////////////////////////////////////////////////////////////////////

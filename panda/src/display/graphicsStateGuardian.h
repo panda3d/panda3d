@@ -208,7 +208,8 @@ public:
   INLINE void mark_new();
   virtual void reset();
 
-  INLINE CPT(TransformState) get_transform();
+  INLINE CPT(TransformState) get_external_transform() const;
+  INLINE CPT(TransformState) get_internal_transform() const;
   
   RenderBuffer get_render_buffer(int buffer_type, const FrameBufferProperties &prop);
   
@@ -216,7 +217,7 @@ public:
   INLINE Lens::StereoChannel get_current_stereo_channel() const;
   INLINE const Lens *get_current_lens() const;
 
-  INLINE const TransformState *get_cs_transform() const;
+  virtual const TransformState *get_cs_transform() const;
   INLINE const TransformState *get_inv_cs_transform() const;
   
   void do_issue_clip_plane();
@@ -268,7 +269,6 @@ protected:
   AttribSlots _target;
   CPT(RenderState) _state_rs;
   CPT(RenderState) _target_rs;
-  CPT(TransformState) _external_transform;
   CPT(TransformState) _internal_transform;
   CPT(GeomMunger) _munger;
   CPT(GeomVertexData) _vertex_data;

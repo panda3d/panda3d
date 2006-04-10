@@ -2112,11 +2112,13 @@ do_issue_shade_model() {
 //  Description: Simultaneously resets the render state and the
 //               transform state.
 //
-//               This transform specified is the "external" net
-//               transform, expressed in the external coordinate
-//               space; internally, it will be pretransformed by
-//               get_cs_transform() to express it in the GSG's
-//               internal coordinate space.
+//               This transform specified is the "internal" net
+//               transform, already converted into the GSG's internal
+//               coordinate space by composing it to
+//               get_cs_transform().  (Previously, this used to be the
+//               "external" net transform, with the assumption that
+//               that GSG would convert it internally, but that is no
+//               longer the case.)
 //
 //               Special case: if (state==NULL), then the target
 //               state is already stored in _target.
@@ -2132,10 +2134,9 @@ set_state_and_transform(const RenderState *target,
 #endif
   _state_pcollector.add_level(1);
 
-  if (transform != _external_transform) {
+  if (transform != _internal_transform) {
     _state_pcollector.add_level(1);
-    _external_transform = transform;
-    _internal_transform = _cs_transform->compose(transform);
+    _internal_transform = transform;
     do_issue_transform();
   }
 
@@ -2957,7 +2958,7 @@ set_read_buffer(const RenderBuffer &rb) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 do_auto_rescale_normal() {
-  if (_external_transform->has_identity_scale()) {
+  if (_internal_transform->has_identity_scale()) {
     // If there's no scale, don't normalize anything.
     _d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, false);
 

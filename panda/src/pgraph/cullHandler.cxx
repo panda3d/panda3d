@@ -65,7 +65,7 @@ draw_with_decals(CullableObject *object, GraphicsStateGuardianBase *gsg) {
 
   CullableObject *base = object;
   while (base != (CullableObject *)NULL && base->_geom != (Geom *)NULL) {
-    gsg->set_state_and_transform(base->_state->compose(state), base->_modelview_transform);
+    gsg->set_state_and_transform(base->_state->compose(state), base->_internal_transform);
     base->draw(gsg);
     
     base = base->_next;
@@ -77,7 +77,7 @@ draw_with_decals(CullableObject *object, GraphicsStateGuardianBase *gsg) {
 
     CullableObject *decal = base->_next;
     while (decal != (CullableObject *)NULL) {
-      gsg->set_state_and_transform(decal->_state->compose(state), decal->_modelview_transform);
+      gsg->set_state_and_transform(decal->_state->compose(state), decal->_internal_transform);
       decal->draw(gsg);
       decal = decal->_next;
     }
@@ -88,7 +88,7 @@ draw_with_decals(CullableObject *object, GraphicsStateGuardianBase *gsg) {
   if (state != (const RenderState *)NULL) {
     base = object;
     while (base != (CullableObject *)NULL && base->_geom != (Geom *)NULL) {
-      gsg->set_state_and_transform(base->_state->compose(state), base->_modelview_transform);
+      gsg->set_state_and_transform(base->_state->compose(state), base->_internal_transform);
       base->draw(gsg);
       
       base = base->_next;

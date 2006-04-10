@@ -487,6 +487,7 @@ occlusion_test(CullBinOcclusionTest &bin) {
      LVecBase3f(_half_side, _half_side, _half_side));
   CPT(TransformState) world_transform = bin._gsg->get_scene()->get_world_transform();
   CPT(TransformState) modelview_transform = world_transform->compose(net_transform);
+  CPT(TransformState) internal_transform = bin._gsg->get_cs_transform()->compose(modelview_transform);
   
   CPT(RenderState) state = get_octree_solid_test_state();
   PT(GeomMunger) munger = bin._gsg->get_geom_munger(state);
@@ -495,7 +496,7 @@ occlusion_test(CullBinOcclusionTest &bin) {
   CPT(GeomVertexData) munged_data = viz->get_vertex_data();
   munger->munge_geom(viz, munged_data);
   
-  bin._gsg->set_state_and_transform(state, modelview_transform);
+  bin._gsg->set_state_and_transform(state, internal_transform);
 
   PStatTimer timer(bin._draw_occlusion_pcollector);
   bin._gsg->begin_occlusion_query();
@@ -624,6 +625,7 @@ draw_wireframe(CullBinOcclusionTest &bin) {
      LVecBase3f(_half_side, _half_side, _half_side));
   CPT(TransformState) world_transform = bin._gsg->get_scene()->get_world_transform();
   CPT(TransformState) modelview_transform = world_transform->compose(net_transform);
+  CPT(TransformState) internal_transform = bin._gsg->get_cs_transform()->compose(modelview_transform);
   
   CPT(RenderState) state = RenderState::make_empty();
   PT(GeomMunger) munger = bin._gsg->get_geom_munger(state);
@@ -632,7 +634,7 @@ draw_wireframe(CullBinOcclusionTest &bin) {
   CPT(GeomVertexData) munged_data = viz->get_vertex_data();
   munger->munge_geom(viz, munged_data);
   
-  bin._gsg->set_state_and_transform(state, modelview_transform);
+  bin._gsg->set_state_and_transform(state, internal_transform);
   viz->draw(bin._gsg, munger, munged_data);
 }
 

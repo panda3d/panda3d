@@ -84,7 +84,6 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _default_properties(properties)
 {
   _coordinate_system = CS_invalid;
-  _external_transform = TransformState::make_identity();
   _internal_transform = TransformState::make_identity();
   
   set_coordinate_system(get_default_coordinate_system());
@@ -238,8 +237,6 @@ set_coordinate_system(CoordinateSystem cs) {
       (LMatrix4f::convert_mat(_internal_coordinate_system,
                               _coordinate_system));
   }
-  _internal_transform = _cs_transform->compose(_external_transform);
-  _transform_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -275,7 +272,6 @@ reset() {
   _target_rs = NULL;
   _state.clear_to_zero();
   _target.clear_to_defaults();
-  _external_transform = TransformState::make_identity();
   _internal_transform = _cs_transform;
   _scene_null = new SceneSetup;
   _scene_setup = _scene_null;
@@ -316,11 +312,13 @@ reset() {
 //  Description: Simultaneously resets the render state and the
 //               transform state.
 //
-//               This transform specified is the "external" net
-//               transform, expressed in the external coordinate
-//               space; internally, it will be pretransformed by
-//               get_cs_transform() to express it in the GSG's
-//               internal coordinate space.
+//               This transform specified is the "internal" net
+//               transform, already converted into the GSG's internal
+//               coordinate space by composing it to
+//               get_cs_transform().  (Previously, this used to be the
+//               "external" net transform, with the assumption that
+//               that GSG would convert it internally, but that is no
+//               longer the case.)
 //
 //               Special case: if (state==NULL), then the target
 //               state is already stored in _target.
@@ -841,11 +839,11 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
     return &(get_scene()->get_camera_transform()->get_mat());
   }
   case ShaderContext::SMO_model_to_view: {
-    return &(_external_transform->get_mat());
+    return &(get_external_transform()->get_mat());
   }
   case ShaderContext::SMO_view_to_model: {
     // DANGER: SLOW AND NOT CACHEABLE!
-    t.invert_from(_external_transform->get_mat());
+    t.invert_from(get_external_transform()->get_mat());
     return &t;
   }
   case ShaderContext::SMO_apiview_to_view: {
@@ -1331,80 +1329,18 @@ end_draw_primitives() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::do_issue_color_scale
+//     Function: GraphicsStateGuardian::get_cs_transform
 //       Access: Public, Virtual
-//  Description:
+//  Description: Returns a transform that converts from the GSG's
+//               external coordinate system (as returned by
+//               get_coordinate_system()) to its internal coordinate
+//               system (as returned by
+//               get_internal_coordinate_system()).  This is used for
+//               rendering.
 ////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-do_issue_color_scale() {
-  const ColorScaleAttrib *attrib = _target._color_scale;
-  _color_scale_enabled = attrib->has_scale();
-  _current_color_scale = attrib->get_scale();
-  
-  if (_color_blend_involves_color_scale) {
-    _state_rs = 0;
-    _state._transparency = 0;
-  }
-  if (_texture_involves_color_scale) {
-    _state_rs = 0;
-    _state._texture = 0;
-  }
-  if (_color_scale_via_lighting) {
-    _state_rs = 0;
-    _state._light = 0;
-    _state._material = 0;
-
-    determine_light_color_scale();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::do_issue_color
-//       Access: Public
-//  Description: This method is defined in the base class because it
-//               is likely that this functionality will be used for
-//               all (or at least most) kinds of
-//               GraphicsStateGuardians--it's not specific to any one
-//               rendering backend.
-//
-//               The ColorAttribute just changes the interpretation of
-//               the color on the vertices, and fiddles with
-//               _vertex_colors_enabled, etc.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-do_issue_color() {
-  const ColorAttrib *attrib = _target._color;
-  switch (attrib->get_color_type()) {
-  case ColorAttrib::T_flat:
-    // Color attribute flat: it specifies a scene graph color that
-    // overrides the vertex color.
-    _scene_graph_color = attrib->get_color();
-    _has_scene_graph_color = true;
-    _vertex_colors_enabled = false;
-    break;
-
-  case ColorAttrib::T_off:
-    // Color attribute off: it specifies that no scene graph color is
-    // in effect, and vertex color is not important either.
-    _has_scene_graph_color = false;
-    _vertex_colors_enabled = false;
-    break;
-
-  case ColorAttrib::T_vertex:
-    // Color attribute vertex: it specifies that vertex color should
-    // be revealed.
-    _has_scene_graph_color = false;
-    _vertex_colors_enabled = true;
-    break;
-  }
-
-  if (_color_scale_via_lighting) {
-    _state_rs = 0;
-    _state._light = 0;
-    _state._material = 0;
-
-    determine_light_color_scale();
-  }
+const TransformState *GraphicsStateGuardian::
+get_cs_transform() const {
+  return _cs_transform;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1527,39 +1463,80 @@ do_issue_clip_plane() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
+//     Function: GraphicsStateGuardian::do_issue_color
+//       Access: Public
+//  Description: This method is defined in the base class because it
+//               is likely that this functionality will be used for
+//               all (or at least most) kinds of
+//               GraphicsStateGuardians--it's not specific to any one
+//               rendering backend.
+//
+//               The ColorAttribute just changes the interpretation of
+//               the color on the vertices, and fiddles with
+//               _vertex_colors_enabled, etc.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
+do_issue_color() {
+  const ColorAttrib *attrib = _target._color;
+  switch (attrib->get_color_type()) {
+  case ColorAttrib::T_flat:
+    // Color attribute flat: it specifies a scene graph color that
+    // overrides the vertex color.
+    _scene_graph_color = attrib->get_color();
+    _has_scene_graph_color = true;
+    _vertex_colors_enabled = false;
+    break;
+
+  case ColorAttrib::T_off:
+    // Color attribute off: it specifies that no scene graph color is
+    // in effect, and vertex color is not important either.
+    _has_scene_graph_color = false;
+    _vertex_colors_enabled = false;
+    break;
+
+  case ColorAttrib::T_vertex:
+    // Color attribute vertex: it specifies that vertex color should
+    // be revealed.
+    _has_scene_graph_color = false;
+    _vertex_colors_enabled = true;
+    break;
+  }
+
+  if (_color_scale_via_lighting) {
+    _state_rs = 0;
+    _state._light = 0;
+    _state._material = 0;
+
+    determine_light_color_scale();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::bind_light
+//     Function: GraphicsStateGuardian::do_issue_color_scale
 //       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
-}
+do_issue_color_scale() {
+  const ColorScaleAttrib *attrib = _target._color_scale;
+  _color_scale_enabled = attrib->has_scale();
+  _current_color_scale = attrib->get_scale();
+  
+  if (_color_blend_involves_color_scale) {
+    _state_rs = 0;
+    _state._transparency = 0;
+  }
+  if (_texture_involves_color_scale) {
+    _state_rs = 0;
+    _state._texture = 0;
+  }
+  if (_color_scale_via_lighting) {
+    _state_rs = 0;
+    _state._light = 0;
+    _state._material = 0;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
+    determine_light_color_scale();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1722,6 +1699,42 @@ do_issue_light() {
   if (any_bound) {
     end_bind_lights();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -53,6 +53,7 @@ public:
   INLINE CullableObject(const Geom *geom, const RenderState *state,
                         const TransformState *net_transform,
                         const TransformState *modelview_transform,
+                        const GraphicsStateGuardianBase *gsg,
                         CullableObject *next = NULL);
     
   INLINE CullableObject(const CullableObject &copy);
@@ -77,6 +78,7 @@ public:
   CPT(RenderState) _state;
   CPT(TransformState) _net_transform;
   CPT(TransformState) _modelview_transform;
+  CPT(TransformState) _internal_transform;
   CullableObject *_next;
 
   // This flag is only used by certain CullBin types.  In particular,
