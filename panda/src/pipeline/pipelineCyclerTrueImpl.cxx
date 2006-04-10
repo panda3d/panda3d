@@ -341,6 +341,7 @@ set_num_stages(int num_stages) {
 ////////////////////////////////////////////////////////////////////
 void PipelineCyclerTrueImpl::CyclerMutex::
 output(ostream &out) const {
+  out << "CyclerMutex ";
   _cycler->cheat()->output(out);
 }
 #endif  // DEBUG_THREADS
