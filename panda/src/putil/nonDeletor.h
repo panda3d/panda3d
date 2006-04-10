@@ -30,7 +30,7 @@
 //               instance to determine if there is a problem with a
 //               destructor somewhere.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS NonDeletor : public ObjectDeletor {
+class EXPCL_PANDA NonDeletor : public ObjectDeletor {
 public:
   virtual void delete_object(DeleteFunc *func, void *ptr);
 

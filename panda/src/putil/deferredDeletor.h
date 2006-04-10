@@ -30,7 +30,7 @@
 //               frames, where it can be observed by PStats and where
 //               it won't interfere with rendering.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS DeferredDeletor : public ObjectDeletor {
+class EXPCL_PANDA DeferredDeletor : public ObjectDeletor {
 public:
   DeferredDeletor();
 
