@@ -30,7 +30,7 @@
 
 
 #define HACK_SCREEN_HASH_CONTEXT true
-OSStatus aglReportError (void);
+OSStatus aglReportError (const std::string &);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : osxGraphicsWindow
@@ -53,26 +53,30 @@ public:
   virtual bool begin_frame(FrameMode mode);
   virtual void end_frame(FrameMode mode);
   virtual void begin_flip();
+  virtual void end_flip();
   virtual void process_events();
+  
+  virtual bool do_reshape_request(int x_origin, int y_origin, bool has_origin,
+                                  int x_size, int y_size);
 
-
-
+  virtual void set_properties_now(WindowProperties &properties);
 
 private:
   void   ReleaseSystemResources();
-
+  inline void SendKeyEvent( ButtonHandle  key, bool down);
 
 protected:
   virtual void close_window();
   virtual bool open_window();
 
 private:
+	
+	bool OSOpenWindow(WindowProperties &properties);
+
     //
     // a singleton .. for the events to find the right pipe to push the event into
     //
-    static osxGraphicsWindow  * FullScreenWindow; 
 
-//    static osxGraphicsWindow * GetCurrentOSxWindow (WindowRef hint);
 
 public: // do not call direct ..
   OSStatus handleKeyInput (EventHandlerCallRef myHandler, EventRef event, Boolean keyDown);
@@ -91,32 +95,27 @@ public: // do not call direct ..
 
   AGLContext  get_ggs_context(void);
   AGLContext  get_context(void);
-  OSStatus	  buildGL(void);
+  OSStatus	  buildGL(bool full_screen);
 	
 	
-  inline void SendKeyEvent( ButtonHandle  key, bool down)
-  {
-     if(down)
-		_input_devices[0].button_down(key);
-	else
-		_input_devices[0].button_up(key);
-  }
+	
+	
 
 
-//	inline bool IsAlive(void)
-//	{
-//	    return (_is_fullsreen || _osx_window != NULL);
-//	}
 
-	WindowProperties & properties() { return _properties; };
+
+//	WindowProperties & properties() { return _properties; };
 private:
+public:
 	UInt32			_last_key_modifiers;
-     WindowRef		_osx_window;
+    WindowRef		_osx_window;
 	bool           _is_fullsreen;
+	
+	int				_ID;
+    static osxGraphicsWindow  * FullScreenWindow; 
 
 #ifdef HACK_SCREEN_HASH_CONTEXT
-  AGLPixelFormat	_aglPixFmt;
-  AGLContext		_aglcontext;
+  AGLContext		_holder_aglcontext;
 #endif
 	CFDictionaryRef _originalMode;
 	 
@@ -138,6 +137,16 @@ private:
   static TypeHandle _type_handle;
 };
 
+
+
+
+inline void osxGraphicsWindow::SendKeyEvent( ButtonHandle  key, bool down)
+{
+    if(down)
+		_input_devices[0].button_down(key);
+	else
+		_input_devices[0].button_up(key);
+}
 
 #endif
 

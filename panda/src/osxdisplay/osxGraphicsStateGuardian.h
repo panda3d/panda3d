@@ -57,8 +57,10 @@ public:
 	AGLContext		_aglcontext;
 
 
-public:
+	const AGLPixelFormat  getAGlPixelFormat() const { return _aglPixFmt; };
 
+public:
+	GLint   SharedBuffer;
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -16,6 +16,7 @@
 #include "osxGraphicsStateGuardian.h"
 #include "osxGraphicsBuffer.h"
 #include "string_utils.h"
+#include "config_osxdisplay.h"
 
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
@@ -36,12 +37,16 @@ TypeHandle osxGraphicsStateGuardian::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void *osxGraphicsStateGuardian::get_extension_func(const char *prefix, const char *name) 
 {	
-    string fullname = "_" + string(prefix) + string(name);
+	string fullname = "_" + string(prefix) + string(name);
     NSSymbol symbol = NULL;
     
     if (NSIsSymbolNameDefined (fullname.c_str()))
         symbol = NSLookupAndBindSymbol (fullname.c_str());
-		
+
+    if (osxdisplay_cat.is_debug())	
+	{		
+		osxdisplay_cat.debug() << "  Looking Up Symbol " << fullname <<" \n" ;
+	}
 		
     return symbol ? NSAddressOfSymbol (symbol) : NULL;
 }
@@ -60,6 +65,8 @@ osxGraphicsStateGuardian(const FrameBufferProperties &properties,
   _aglPixFmt(NULL),
   _aglcontext(NULL)
 {
+  SharedBuffer = 1011;
+  cerr << "osxGraphicsStateGuardian::osxGraphicsStateGuardian()\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,13 +74,14 @@ osxGraphicsStateGuardian(const FrameBufferProperties &properties,
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-osxGraphicsStateGuardian::
-~osxGraphicsStateGuardian() 
+osxGraphicsStateGuardian::~osxGraphicsStateGuardian() 
 {
+	cerr << "osxGraphicsStateGuardian::~osxGraphicsStateGuardian()\n";
+
   if(_aglcontext != (AGLContext)NULL)
   {
      aglDestroyContext(_aglcontext);
-	 aglReportError();
+	 aglReportError("osxGraphicsStateGuardian::~osxGraphicsStateGuardian()  aglDestroyContext");
 	 _aglcontext = (AGLContext)NULL;
   }
 }
@@ -109,26 +117,49 @@ OSStatus osxGraphicsStateGuardian::buildGL (osxGraphicsWindow  &window)
 {
 	OSStatus err = noErr;
 //	GLint attrib[] = { AGL_RGBA, AGL_DOUBLEBUFFER, AGL_DEPTH_SIZE, 16, AGL_NONE };
-	GLint attrib[] = { AGL_RGBA, AGL_NO_RECOVERY, AGL_FULLSCREEN, AGL_DOUBLEBUFFER, AGL_DEPTH_SIZE, 32, AGL_SAMPLE_BUFFERS_ARB, 1, AGL_SAMPLES_ARB, 0, 0 };
-    	
+//	GLint attrib[] = { AGL_RGBA, AGL_NO_RECOVERY, AGL_FULLSCREEN, AGL_DOUBLEBUFFER, AGL_DEPTH_SIZE, 32, AGL_SAMPLE_BUFFERS_ARB, 1, AGL_SAMPLES_ARB, 0, 0 };
+// 	GLint attrib[] = { AGL_RGBA, AGL_NO_RECOVERY,  AGL_DOUBLEBUFFER, AGL_NONE, 0, 0 };   
+//	GLint attrib[] = { AGL_RGBA, AGL_DOUBLEBUFFER,AGL_FULLSCREEN,AGL_ACCELERATED,AGL_DEPTH_SIZE, 32, AGL_NONE };	
+	GLint attrib[] = { AGL_RGBA, AGL_DOUBLEBUFFER,AGL_NO_RECOVERY,AGL_FULLSCREEN,AGL_DEPTH_SIZE, 32, AGL_NONE };	
 	if (_aglcontext)
 		return noErr; // already built
-		
+	
+	GDHandle display = GetMainDevice ();		
 	// build context
 	_aglcontext = NULL;
-	_aglPixFmt = aglChoosePixelFormat(NULL, 0, attrib);
-	err = aglReportError ();
+	_aglPixFmt = aglChoosePixelFormat(&display, 1, attrib);
+	err = aglReportError ("aglChoosePixelFormat");
 	if (_aglPixFmt)
 	 {
 	  if(_share_with == NULL)
 		_aglcontext = aglCreateContext(_aglPixFmt, NULL);
 	  else
 		_aglcontext = aglCreateContext(_aglPixFmt, ((osxGraphicsStateGuardian *)_share_with)->_aglcontext);
+	  err = aglReportError ("aglCreateContext");
 
-	  err = aglReportError ();
+	if (_aglcontext == NULL)
+	{
+		osxdisplay_cat.error() << "osxGraphicsStateGuardian::buildG Error Getting Gl Context \n" ;
+		if(err == noErr)
+		   err = -1;
 	}
+	else
+	{
+			aglSetInteger (_aglcontext, AGL_BUFFER_NAME, &SharedBuffer); 	
+			err = aglReportError ("aglSetInteger AGL_BUFFER_NAME");			
+	}
+	
+	}
+	else
+	{
+		osxdisplay_cat.error() << "osxGraphicsStateGuardian::buildG Error Getting Pixel Format  \n" ;
+		if(err == noErr)
+		   err = -1;
+	
+	}
+	
+	osxdisplay_cat.debug() << "osxGraphicsStateGuardian::buildGL Returning :" << err << "\n"; 
+	
     return err;
 }
-
-
 

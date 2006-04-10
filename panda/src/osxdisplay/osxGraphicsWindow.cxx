@@ -41,10 +41,15 @@ osxGraphicsWindow  * osxGraphicsWindow::FullScreenWindow = NULL;
 osxGraphicsWindow * osxGraphicsWindow::GetCurrentOSxWindow (WindowRef window)
 {
 	if(FullScreenWindow != NULL)
+	{
+//	 cerr << " Full Screen \n";
 	   return FullScreenWindow;
+   }
+//	 cerr << "Not Full Screen \n";
 
 	if (NULL == window)  // HID use this path
 		window = FrontWindow ();
+		
 	if (window)
 		return (osxGraphicsWindow *) GetWRefCon (window);
 	else
@@ -57,11 +62,11 @@ osxGraphicsWindow * osxGraphicsWindow::GetCurrentOSxWindow (WindowRef window)
 //  Description: Helper function for AGL error message and Grabing error code if any
 //
 ////////////////////////////////////////////////////////////////////
-OSStatus aglReportError (void)
+OSStatus aglReportError ( const std::string  &comment)
 {
 	GLenum err = aglGetError();
-	if (AGL_NO_ERROR != err) 
-		 osxdisplay_cat.error()<<"AGL Error " <<  aglErrorString(err) << "\n";
+	if (err != AGL_NO_ERROR ) 
+		 osxdisplay_cat.error()<<"AGL Error " <<  aglErrorString(err) << "[" <<comment <<"]\n";
 
 	if (err == AGL_NO_ERROR)
 		return noErr;
@@ -147,6 +152,7 @@ static void CompositeGLBufferIntoWindow (AGLContext ctx, Rect *bufferRect, GrafP
 ////////////////////////////////////////////////////////////////////
 void osxGraphicsWindow::SystemCloseWindow()
 {	
+ if (osxdisplay_cat.is_debug())	
 	osxdisplay_cat.debug() << "System Closing Window \n";
 	ReleaseSystemResources();	
 };
@@ -165,22 +171,33 @@ static pascal OSStatus windowEvtHndlr (EventHandlerCallRef myHandler, EventRef e
     UInt32 				the_class = GetEventClass (event);
     UInt32 				kind = GetEventKind (event);
  
+//	cerr << " In windowEvtHndlr \n";
+
+				
+    WindowRef window = NULL;		
+	GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
+
+	if(window != NULL)
+	{
+//	if(osx_win->	
+	osxGraphicsWindow * osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);		
+ 
 	switch (the_class) {
-		case kEventClassWindow:
-		
-		    WindowRef window = NULL;		
-			GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
-			osxGraphicsWindow * osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);
-			if(osx_win == NULL)
-				return result;
-			 
+		case kEventClassMouse:
+			result  = osx_win->handleWindowMouseEvents (myHandler, event);
+			break;
+	
+		case kEventClassWindow:	
+		   // WindowRef window = NULL;		
+		///	GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
+			//osxGraphicsWindow * osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);		 
 			switch (kind) {
 				case kEventWindowCollapsing:
-					Rect r;
-					GetWindowPortBounds (window, &r);					
-					CompositeGLBufferIntoWindow( osx_win->get_context(), &r, GetWindowPort (window));
-					result = UpdateCollapsedWindowDockTile (window);
-					osx_win->SystemSetWindowForground(false);
+					//Rect r;
+					//GetWindowPortBounds (window, &r);					
+					//CompositeGLBufferIntoWindow( osx_win->get_context(), &r, GetWindowPort (window));
+					//result = UpdateCollapsedWindowDockTile (window);
+					//osx_win->SystemSetWindowForground(false);
 					break;
 				case kEventWindowActivated: // called on click activation and initially
 						osx_win->SystemSetWindowForground(true);
@@ -202,6 +219,7 @@ static pascal OSStatus windowEvtHndlr (EventHandlerCallRef myHandler, EventRef e
 			}
 			break;
 	}
+	}
     return result;
 }
 ///////////////////////////////////////////////////////////////////
@@ -215,7 +233,7 @@ static pascal OSStatus windowEvtHndlr (EventHandlerCallRef myHandler, EventRef e
 void     osxGraphicsWindow::DoResize(void)
 {
     // only in window mode .. not full screen
-    if(_osx_window != NULL)
+    if(_osx_window != NULL && _is_fullsreen == false )
     {
         Rect				rectPort = {0,0,0,0};
         CGRect 				viewRect = {{0.0f, 0.0f}, {0.0f, 0.0f}};
@@ -228,11 +246,15 @@ void     osxGraphicsWindow::DoResize(void)
         properties.set_size((int)viewRect.size.width,(int)viewRect.size.height);
         properties.set_origin((int) rectPort.left,(int)rectPort.top);
         system_changed_properties(properties);
-        osxdisplay_cat.debug() << " Resizing Window " << viewRect.size.width << " " << viewRect.size.height << "\n";
+		
+      if (osxdisplay_cat.is_debug())	
+         osxdisplay_cat.debug() << " Resizing Window " << viewRect.size.width << " " << viewRect.size.height << "\n";
+
+	//cerr << " Resizing Window " << viewRect.size.width << " " << viewRect.size.height << "\n";
 
         // ping gl
         aglUpdateContext (aglGetCurrentContext());
-        aglReportError();
+        aglReportError("aglUpdateContext .. This is a Resize..");
     }						
 };
 
@@ -247,6 +269,9 @@ void     osxGraphicsWindow::DoResize(void)
 static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef event, void* userData)
 {
 #pragma unused (myHandler)
+
+//	cerr << " In appEvtHandler \n";
+
     OSStatus result = eventNotHandledErr;
     osxGraphicsWindow *osx_win = NULL;
     WindowRef window = NULL;	
@@ -267,12 +292,14 @@ static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef even
         case kEventClassTextInput:
 			  if(kind == kEventTextInputUnicodeForKeyEvent)
 				osx_win->handleTextInput(myHandler, event);
+			  //result = noErr; 
 				//
 				// can not report handled .. the os will not sent the raw key strokes then 
 				//	if(osx_win->handleTextInput(myHandler, event) == noErr)
 				//	      result = noErr;
 			  break;
 		case kEventClassKeyboard:
+			{
 			switch (kind) {
 				case kEventRawKeyDown:
 					result = osx_win->handleKeyInput  (myHandler, event, true);
@@ -284,15 +311,21 @@ static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef even
 					{
 						UInt32 newModifiers;
 						OSStatus error = GetEventParameter(event, kEventParamKeyModifiers,typeUInt32, NULL,sizeof(UInt32), NULL, &newModifiers);
-						if(error == noErr)						   
+						if(error == noErr)			
+						{			   
 							osx_win->HandleModifireDeleta(newModifiers);
+							result = noErr; 	
+						  }
 					}
 					break;
+			   }
 			}
 			break;
 
 		case kEventClassMouse:
-			osx_win->handleWindowMouseEvents (myHandler, event);
+			//if(osxGraphicsWindow::FullScreenWindow != NULL)	
+				result = osx_win->handleWindowMouseEvents (myHandler, event);
+ 		    //result = noErr; 
 			break;
 	}
     return result;
@@ -336,46 +369,50 @@ OSStatus osxGraphicsWindow::handleTextInput (EventHandlerCallRef myHandler, Even
 ////////////////////////////////////////////////////////////////////
  void   osxGraphicsWindow::ReleaseSystemResources()
  {
-		
+			
 	if(_is_fullsreen)
 	{
+		_is_fullsreen = false;
+		FullScreenWindow = NULL;
+		
+		
 		if(_originalMode != NULL)
 			CGDisplaySwitchToMode( kCGDirectMainDisplay, _originalMode );
 
+
+
 		CGDisplayRelease( kCGDirectMainDisplay );
-		aglSetDrawable (get_context(), NULL);
-		_is_fullsreen = false;
-		FullScreenWindow = NULL;
+		aglSetDrawable (get_ggs_context(), NULL);
+		
 		_originalMode = NULL;
 	}
 	
 	
-	if(_osx_window != NULL && GetWindowPort (_osx_window) == (GrafPtr)aglGetDrawable(get_context()))
-		aglSetDrawable (get_context(),NULL);
+	// if the ggs context is assigned to this window
+	// clear it..
+	if(_osx_window != NULL && GetWindowPort (_osx_window) == (GrafPtr)aglGetDrawable(get_ggs_context()))
+		aglSetDrawable (get_ggs_context(),NULL);
 	
-			
-	if(aglGetCurrentContext() == get_context())			
+	// if we are the active gl context clear it..		
+	if(aglGetCurrentContext() == get_ggs_context())			
 		aglSetCurrentContext (NULL);
 
 
  	if(_osx_window != NULL)  
 	{
-		HideWindow (_osx_window);
 		SetWRefCon (_osx_window, (long int) NULL);
+		HideWindow (_osx_window);
 		DisposeWindow(_osx_window);
 		_osx_window = NULL;
 	}
-		
-
-				
-#ifdef HACK_SCREEN_HASH_CONTEXT  		 
-	if (_aglcontext)
+						
+	if (_holder_aglcontext)
 	 {
-		aglDestroyContext (_aglcontext);		
-		_aglcontext = NULL;
+		aglDestroyContext (_holder_aglcontext);		
+		_holder_aglcontext = NULL;
 	}
-#endif 		
 	
+
 	WindowProperties properties;
     properties.set_foreground(false);
 	properties.set_open(false);
@@ -386,6 +423,7 @@ OSStatus osxGraphicsWindow::handleTextInput (EventHandlerCallRef myHandler, Even
  }
 
 
+static int id_seed = 100;
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsWindow::Constructor
 //       Access: Public
@@ -402,10 +440,10 @@ osxGraphicsWindow(GraphicsPipe *pipe,
   _osx_window(NULL),
   _is_fullsreen(false),
 #ifdef HACK_SCREEN_HASH_CONTEXT  
-   _aglPixFmt(NULL),
-  _aglcontext(NULL),
+  _holder_aglcontext(NULL),
 #endif  
-	_originalMode(NULL)
+	_originalMode(NULL),
+	_ID(id_seed++)
 {
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
@@ -413,6 +451,9 @@ osxGraphicsWindow(GraphicsPipe *pipe,
   _input_devices[0].set_pointer_in_window(0, 0);
   _last_key_modifiers = 0;
   
+   if (osxdisplay_cat.is_debug())	
+	osxdisplay_cat.debug() << "osxGraphicsWindow::osxGraphicsWindow() -" <<_ID << "\n";
+
   }
 
 ////////////////////////////////////////////////////////////////////
@@ -422,12 +463,12 @@ osxGraphicsWindow(GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 osxGraphicsWindow::~osxGraphicsWindow()
 {
+ if (osxdisplay_cat.is_debug())	
+	osxdisplay_cat.debug() << "osxGraphicsWindow::~osxGraphicsWindow() -" <<_ID << "\n";
 
-	ReleaseSystemResources();
-	
-
-  cerr << " osxGraphicsWindow::~osxGraphicsWindow() \n";
+	ReleaseSystemResources();	
 }
+ 
 
 ///////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsWindow::get_context
@@ -436,8 +477,8 @@ osxGraphicsWindow::~osxGraphicsWindow()
 ////////////////////////////////////////////////////////////////////
 AGLContext  osxGraphicsWindow::get_context(void)
 {
-	if(_aglcontext != NULL)
-	  return _aglcontext;
+	if(_holder_aglcontext != NULL)
+	  return _holder_aglcontext;
 
     return get_ggs_context();
  }
@@ -463,51 +504,49 @@ AGLContext  osxGraphicsWindow::get_ggs_context(void)
 //       Access: private..
 //  Description:  Code of the class.. used to control the GL context Allocation .. 
 ////////////////////////////////////////////////////////////////////
-OSStatus osxGraphicsWindow::buildGL (void)
+OSStatus osxGraphicsWindow::buildGL (bool full_screen)
 {
 	// make sure the ggs is up and runnig..
 		osxGraphicsStateGuardian *osxgsg = NULL;
 		osxgsg = DCAST(osxGraphicsStateGuardian, _gsg);
-		osxgsg->buildGL(*this);
+		OSStatus stat = osxgsg->buildGL(*this);
+		if(stat != noErr)
+		   return stat;
 
 	OSStatus err = noErr;
 	
-#ifdef HACK_SCREEN_HASH_CONTEXT  
+//	if(!full_screen)
+	{
 	
-//	GLint attrib[] = { AGL_RGBA, AGL_DOUBLEBUFFER, AGL_DEPTH_SIZE, 16, AGL_NONE,AGL_NONE,AGL_NONE,AGL_NONE };
-	GLint attrib[] = { AGL_RGBA, AGL_NO_RECOVERY,  AGL_DOUBLEBUFFER, AGL_DEPTH_SIZE, 32, AGL_SAMPLE_BUFFERS_ARB, 1, AGL_SAMPLES_ARB, 0, 0 };
-  
-	if(_properties.has_fullscreen() && _properties.get_fullscreen() == true)
-	{		
-		short i = 0;
-		while (attrib[i++] != AGL_NONE) {}
-		i--; // point to AGL_NONE
-		attrib [i++] = AGL_FULLSCREEN;
-		attrib [i++] = AGL_NONE;		
-		
-	}
-	
-				
-	if (_aglcontext)
-		return noErr; // already built
-		
-	// build context
-	_aglcontext = NULL;
-	_aglPixFmt = aglChoosePixelFormat(NULL, 0, attrib);
-	aglReportError ();
-	if (_aglPixFmt)
+
+	if (osxgsg->getAGlPixelFormat())
 	 {
-		_aglcontext = aglCreateContext(_aglPixFmt, get_ggs_context());
-		aglReportError ();
+		_holder_aglcontext = aglCreateContext(osxgsg->getAGlPixelFormat(),NULL);
+		
+		err  = aglReportError ("aglCreateContext");
+		if(_holder_aglcontext == NULL)
+		{
+			osxdisplay_cat.error() << "osxGraphicsWindow::buildG Error aglCreateContext \n";
+			if(err ==noErr)
+			  err = -1;				
+		}
+		else
+		{			
+			aglSetInteger (_holder_aglcontext, AGL_BUFFER_NAME, &osxgsg->SharedBuffer); 	
+			err = aglReportError ("aglSetInteger AGL_BUFFER_NAME");
+		
+		}
+		
 	}
-	
-#endif  // HACK_SCREEN_HASH_CONTEXT
+	else
+	{
+			osxdisplay_cat.error() << "osxGraphicsWindow::buildG Error Getting PixelFormat \n"; 	
+			if(err ==noErr)
+			  err = -1;				
+	}
+	}
     return err;
 }
-
-
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsWindow::begin_frame
@@ -522,48 +561,43 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode)
  {
   PStatTimer timer(_make_current_pcollector);
  
+//  cerr << " begin_frame [" << _ID << "]\n";
+ 
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL || (_osx_window == NULL && _is_fullsreen != true)) 
   {
         // not powered up .. just abort..
 		return false;
   }
-
+  
   if(_is_fullsreen)
   {
-		if (!aglSetCurrentContext(get_context()))
-				aglReportError ();	
+          aglSetFullScreen(get_ggs_context(),0,0,0,0);
+			aglReportError ("aglSetFullScreen");	
+
+		if (!aglSetCurrentContext(get_ggs_context()))
+				aglReportError ("aglSetCurrentContext");	
   }
   else
   {
+  
+		if(FullScreenWindow != NULL)
+		    return false;
+	
+  
+		if(!aglSetDrawable (get_ggs_context(),GetWindowPort (_osx_window)))
+		{
+			osxdisplay_cat.error() << "Error  aglSetDrawable \n";		   
+			aglReportError("aglSetDrawable");
+		}
 
-#ifndef HACK_SCREEN_HASH_CONTEXT
-      // if we do not have local contexts we need to do some wor
-	GrafPtr OtherWin = (GrafPtr)aglGetDrawable(get_context());
-	aglReportError();
-	WindowPtr other  = GetWindowFromPort(OtherWin);
-		
-	if(OtherWin != NULL && OtherWin != (GrafPtr)GetWindowPort (_osx_window))
-	{
-		Rect r;
-		GetWindowPortBounds (other, &r);
-		CompositeGLBufferIntoWindow(get_context(),& r,OtherWin);
-	}
-        
-        
-        // uggly uggly uggly on a mac ... not a good thing..
-		aglSetDrawable (get_context(),GetWindowPort (_osx_window));
-		aglReportError();
-		
-		
-		if (!aglSetCurrentContext(get_context()))
-				aglReportError ();	
-#else
 
-		if (!aglSetCurrentContext(get_context()))
-				aglReportError ();	
+		if (!aglSetCurrentContext(get_ggs_context()))
+		{
+					osxdisplay_cat.error() << "Error in aglSetCurrentContext \n";		   
+				aglReportError ("aglSetCurrentContext");
+		}	
 
-#endif
   }
  
  
@@ -583,11 +617,15 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode)
 void osxGraphicsWindow::end_frame(FrameMode mode) 
 {
   end_frame_spam();
-
+  
+  if(mode == FM_render )
+  {
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
+	aglSwapBuffers (get_ggs_context());
   _gsg->end_frame();
-  trigger_flip();
+  }
+//  trigger_flip();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -604,10 +642,54 @@ void osxGraphicsWindow::end_frame(FrameMode mode)
 //               end_flip(), to make it easier to flip all of the
 //               windows at the same time.
 ////////////////////////////////////////////////////////////////////
+void osxGraphicsWindow::end_flip()
+{
+//  cerr << " end_flip [" << _ID << "]\n";
+}
 void osxGraphicsWindow::begin_flip() 
 {
+ // this forces a rip to proper context
+ //  cerr << " begin_flip [" << _ID << "]\n";
+	return;
+ 
+  if(_is_fullsreen)
+	{
+	
+           aglSetFullScreen(get_ggs_context(),0,0,0,0);
+			aglReportError ("aglSetFullScreen");	
+
+		if (!aglSetCurrentContext(get_ggs_context()))
+				aglReportError ("aglSetCurrentContext");
+					
+		aglSwapBuffers (get_ggs_context());
+	}
+	else
+	{
+		if(!aglSetDrawable (get_ggs_context(),GetWindowPort (_osx_window)))
+		{
+			osxdisplay_cat.error() << "Error  aglSetDrawable \n";		   
+			aglReportError("aglSetDrawable");
+		}
+
+
+		if (!aglSetCurrentContext(get_ggs_context()))
+		{
+					osxdisplay_cat.error() << "Error in aglSetCurrentContext \n";		   
+				aglReportError ("aglSetCurrentContext");
+		}	
+
+		aglSwapBuffers (get_ggs_context());
+		}
+	
+/*	
+  if(_is_fullsreen)
+	aglSwapBuffers (get_ggs_context());
+  else	
 	aglSwapBuffers (get_context());
-	aglReportError();
+	
+	
+	aglReportError("aglSwapBuffers");
+	*/
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -648,13 +730,25 @@ extern OSErr CPSSetFrontProcess( struct CPSProcessSerNum *psn);
 //               thread.  Returns true if the window is successfully
 //               opened, or false if there was a problem.
 ////////////////////////////////////////////////////////////////////
-bool osxGraphicsWindow::open_window() 
+bool osxGraphicsWindow::open_window()
 {
-    OSErr err;
+	WindowProperties req_properties  = _properties;
+	_properties.clear();
+		
+	return OSOpenWindow(req_properties);
+}
+
+
+bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties ) 
+{
+    OSErr err = noErr;
 
     static bool GlobalInits = false;
     if(GlobalInits != true)
     {
+	    //
+		// one time aplication inits.. to get a window open from a standalone aplication..
+	
         EventHandlerRef	ref1;
         EventTypeSpec	list1[] = { 
             //{ kEventClassCommand,  kEventProcessCommand },
@@ -680,39 +774,28 @@ bool osxGraphicsWindow::open_window()
         GetCurrentProcess((ProcessSerialNumber *)&PSN);
         err = CPSGetCurrentProcess(&PSN);
 
-        if(_properties.has_title())
+        if(req_properties.has_title())
         {
-            err = CPSSetProcessName(&PSN,(char *)_properties.get_title().c_str());
+            err = CPSSetProcessName(&PSN,(char *)req_properties.get_title().c_str());
+			//_properties.set_title(req_properties.get_title());
         }
         else		
-            err = CPSSetProcessName(&PSN,"Panda3D");
+            err = CPSSetProcessName(&PSN,"");
+			
+			
 
         err = CPSEnableForegroundOperation(&PSN);
         err = CPSSetFrontProcess(&PSN);
 
-
-
     }
 
 
-//    EventHandlerRef		ref;
-//    EventTypeSpec list[] = { { kEventClassWindow, kEventWindowCollapsing },
-  //  { kEventClassWindow, kEventWindowShown },
-   // { kEventClassWindow, kEventWindowActivated },
-   // { kEventClassWindow, kEventWindowClose },
-   // { kEventClassWindow, kEventWindowBoundsChanged },
-   // { kEventClassWindow, kEventWindowZoomed },
-    //                         { kEventClassKeyboard, kEventRawKeyDown },
-    //                       { kEventClassKeyboard, kEventRawKeyUp } ,
-    //					 { kEventClassKeyboard, kEventRawKeyModifiersChanged }
-    //};
-
 
     Rect r;
-    if(_properties.has_origin())
+    if(req_properties.has_origin())
     {	
-        r.top = _properties.get_y_origin();
-        r.left =_properties.get_x_origin();
+        r.top = req_properties.get_y_origin();
+        r.left =req_properties.get_x_origin();
     }
     else
     {
@@ -720,100 +803,165 @@ bool osxGraphicsWindow::open_window()
         r.left = 10;
     }
 
-    if(_properties.has_size())
+    if(req_properties.has_size())
     {
-        r.right = r.left + _properties.get_x_size();
-        r.bottom = r.top + _properties.get_y_size();
+        r.right = r.left + req_properties.get_x_size();
+        r.bottom = r.top + req_properties.get_y_size();
     }
     else
     {			
         r.right = r.left + 512;
         r.bottom = r.top + 512;
-    }		
+    }
+			
 
-    if(_properties.has_fullscreen() && _properties.get_fullscreen() == true)
+    if(req_properties.has_fullscreen() && req_properties.get_fullscreen() == true)
     {
+//		if(FullScreenWindow != NULL)
+//			return false;
+	
         // capture the main display
         CGDisplayCapture( kCGDirectMainDisplay );
         // if sized try and switch it..
-        if(_properties.has_size())
+        if(req_properties.has_size())
         {
             _originalMode = CGDisplayCurrentMode( kCGDirectMainDisplay );	
             CGDisplaySwitchToMode( kCGDirectMainDisplay,
-                CGDisplayBestModeForParameters( kCGDirectMainDisplay, 32,  _properties.get_x_size(), _properties.get_y_size(), 0 ) );
+                CGDisplayBestModeForParameters( kCGDirectMainDisplay, 32,  req_properties.get_x_size(), req_properties.get_y_size(), 0 ) );
+				
         }
 
-        buildGL();	
-        if (!aglSetCurrentContext(get_context()))
-            err = aglReportError ();
-        aglSetFullScreen(get_context(),0,0,0,0);
-        aglReportError ();
+	   
+        if(buildGL(true) != noErr)
+		{
+			if(_originalMode != NULL)
+				CGDisplaySwitchToMode( kCGDirectMainDisplay, _originalMode );
+			_originalMode = NULL;
+		
+			CGDisplayRelease( kCGDirectMainDisplay );
+			return false;		     
+		 }	
+//        if (!aglSetCurrentContext(get_context()))
+  //          err = aglReportError ();
+//        aglSetFullScreen(get_context(),0,0,0,0);
+  //      aglReportError ();
 
         // VBL SYNC
-        GLint swap = 1;	
-        if (!aglSetInteger (get_context(), AGL_SWAP_INTERVAL, &swap))
-            aglReportError ();
+      //  GLint swap = 1;	
+      //  if (!aglSetInteger (get_context(), AGL_SWAP_INTERVAL, &swap))
+      //      aglReportError ();
+
+		_properties.set_fullscreen(true);
 
         _is_fullsreen	=true;	
         FullScreenWindow = this;
+		req_properties.clear_fullscreen();
+
     }
     else
     {
 
-        CreateNewWindow(//
-            // kUtilityWindowClass,
-            kDocumentWindowClass,   
-            //	kWindowLiveResizeAttribute |
-            kWindowStandardDocumentAttributes |  
-            kWindowStandardHandlerAttribute, 
-            &r, &_osx_window);
+		
+		// lets use this as a crome based window..
+		
+	
+		if(	!req_properties.has_undecorated() || req_properties.get_undecorated() == false)
+		{ // create a window with crome and sizing and sucj
+			CreateNewWindow(//
+				kDocumentWindowClass,   
+				kWindowStandardDocumentAttributes |  kWindowStandardHandlerAttribute, 
+				&r, 
+				&_osx_window);
+		}
+		else
+		{ // create a unmovable .. no edge window..
 
+			CreateNewWindow(//
+				kDocumentWindowClass,   
+				kWindowStandardDocumentAttributes |  kWindowNoTitleBarAttribute,
+				&r, 
+				&_osx_window);
+		}
 
         if (_osx_window)
         {
             EventHandlerUPP gWinEvtHandler;			// window event handler
-            EventHandlerRef		ref;
-            EventTypeSpec list[] = { { kEventClassWindow, kEventWindowCollapsing },
+            //EventHandlerRef		ref;
+            EventTypeSpec list[] = { 
+			{ kEventClassWindow, kEventWindowCollapsing },
             { kEventClassWindow, kEventWindowShown },
             { kEventClassWindow, kEventWindowActivated },
             { kEventClassWindow, kEventWindowClose },
-            { kEventClassWindow, kEventWindowBoundsChanged },
-            { kEventClassWindow, kEventWindowZoomed },
-            //                         { kEventClassKeyboard, kEventRawKeyDown },
-            //                       { kEventClassKeyboard, kEventRawKeyUp } ,
-            //					 { kEventClassKeyboard, kEventRawKeyModifiersChanged }
+			{ kEventClassWindow,kEventWindowBoundsChanged },
+			
+        //    { kEventClassMouse, kEventMouseDown },// handle trackball functionality globaly because there is only a single user
+        //    { kEventClassMouse, kEventMouseUp }, 
+        //    { kEventClassMouse, kEventMouseMoved },
+        //    { kEventClassMouse, kEventMouseDragged },
+        //    { kEventClassMouse, kEventMouseWheelMoved } ,
+			
+			
+//            { kEventClassKeyboard, kEventRawKeyDown },
+  //          { kEventClassKeyboard, kEventRawKeyUp } ,
+    //        { kEventClassKeyboard, kEventRawKeyModifiersChanged }	,
+      //      {kEventClassTextInput,	kEventTextInputUnicodeForKeyEvent},				   
+			
+			
             };
 
             SetWRefCon (_osx_window, (long) this); // point to the window record in the ref con of the window
             gWinEvtHandler = NewEventHandlerUPP(windowEvtHndlr); 
-            InstallWindowEventHandler (_osx_window, gWinEvtHandler, GetEventTypeCount (list), list, (void*)this, &ref); // add event handler
+            InstallWindowEventHandler (_osx_window, gWinEvtHandler, GetEventTypeCount (list), list, (void*)this, NULL); // add event handler
             ShowWindow (_osx_window);
 
-            buildGL();	
+			if(buildGL(false) != noErr)
+			{
+				osxdisplay_cat.error() << " Errror In Generate GL \n";
+				
+				HideWindow (_osx_window);
+				SetWRefCon (_osx_window, (long int) NULL);
+				DisposeWindow(_osx_window);
+				_osx_window = NULL;
+				return false;
+			}
 
-            GrafPtr portSave = NULL;
-            GetPort (&portSave);
-            SetPort ((GrafPtr) GetWindowPort (_osx_window));
+//            GrafPtr portSave = NULL;
+  //          GetPort (&portSave);
+    //        SetPort ((GrafPtr) GetWindowPort (_osx_window));
 
-            if(!aglSetDrawable(get_context(), GetWindowPort (_osx_window)))
-                err = aglReportError ();
+			//
+			// atach the holder context to the window..
+			//
+            if(!aglSetDrawable(_holder_aglcontext, GetWindowPort (_osx_window)))
+                err = aglReportError ("aglSetDrawable");
 
-            if (!aglSetCurrentContext(get_context()))
-                err = aglReportError ();
+//            if (!aglSetCurrentContext(get_context()))
+  //              err = aglReportError ("aglSetCurrentContext");
 
-            // VBL SYNC
-            GLint swap = 1;	
-            if (!aglSetInteger (get_context(), AGL_SWAP_INTERVAL, &swap))
-                aglReportError ();
+           // VBL SYNC
+           // GLint swap = 1;	
+           // if (!aglSetInteger (get_context(), AGL_SWAP_INTERVAL, &swap))
+		   //   aglReportError ();
 
-            SetPort (portSave);		
+      //      SetPort (portSave);		
+			if(req_properties.has_fullscreen())
+			{
+					_properties.set_fullscreen(false);		
+				   req_properties.clear_fullscreen();			
+			}		
+			if(req_properties.has_undecorated())
+			{
+					_properties.set_undecorated(req_properties.get_undecorated());		
+					req_properties.clear_undecorated();
+			}
+					
         }
     }
 
 
     //
-    // pull the size from the real window .. do not trust the requested values?
-    WindowProperties properties;
+    // pull the size from the real window .. do not trust the requested values?f	
+  //  WindowProperties properties;
 
     _properties.set_foreground(true);
     _properties.set_minimized(false);
@@ -823,19 +971,27 @@ bool osxGraphicsWindow::open_window()
     {
         CGDirectDisplayID display =   CGMainDisplayID ();
 
-        osxdisplay_cat.debug() << "Full Screen Size ["<< 	CGDisplayPixelsWide (display) <<","<< CGDisplayPixelsHigh (display) << "\n";
+//		if (osxdisplay_cat.is_debug())	
+			osxdisplay_cat.debug() << "Full Screen Size ["<< 	CGDisplayPixelsWide (display) <<","<< CGDisplayPixelsHigh (display) << "]\n";
         //	  _properties.set_size((int)800,(int) 600);
         _properties.set_size((int)CGDisplayPixelsWide (display),(int) CGDisplayPixelsHigh (display));
         _properties.set_origin((int) 0,(int)0);
+		req_properties.clear_size();
+		req_properties.clear_origin();		
     }
     else
     {
         GetWindowPortBounds (_osx_window, &rectPort); 	
         _properties.set_size((int)(rectPort.right - rectPort.left),(int) (rectPort.bottom - rectPort.top));
         _properties.set_origin((int) rectPort.left,(int)rectPort.top);
-
+		req_properties.clear_size();
+		req_properties.clear_origin();
     }
-    return true;
+
+
+//	cerr << " Generate Output Properties "<< _properties <<"\n";
+	
+    return (err == noErr);
 }
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsWindow::process_events()
@@ -854,8 +1010,11 @@ void osxGraphicsWindow::process_events()
     //    while  (ReceiveNextEvent(0, NULL,kEventDurationForever,true, &theEvent)== noErr)
     while  (ReceiveNextEvent(0, NULL,kEventDurationNoWait,true, &theEvent)== noErr)
     {
+//	   static int pass = 0;
+//	    cerr << "--------------------------------------------Dispatch Event " << pass++ << "\n";
         SendEventToEventTarget (theEvent, theTarget);
         ReleaseEvent(theEvent);
+//		cerr << "------------------------------------Done Dispatch \n";
     }
 
 };
@@ -906,11 +1065,12 @@ OSStatus osxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, Event
 			if(keyDown)
 			{
 			  SendKeyEvent(OSX_TranslateKey( keyCode , event ),true);
+			  result = noErr; 
 			}
 			else
 			{
 			  SendKeyEvent(OSX_TranslateKey( keyCode , event ),false);
-			   
+			  result = noErr; 
 			}
 	}	
 			
@@ -935,11 +1095,15 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
 	
  void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
  {
-    GrafPtr savePort;
-    GetPort( &savePort );
-    SetPortWindowPort(_osx_window );
-    GlobalToLocal( &qdGlobalPoint );
-    SetPort( savePort );				
+	if(_osx_window != NULL)
+	{
+		GrafPtr savePort;	
+		GetPort( &savePort );
+		SetPortWindowPort(_osx_window );
+		GlobalToLocal( &qdGlobalPoint );
+		SetPort( savePort );
+	}
+					
  };
 	
  ////////////////////////////////////////////////////////////////////
@@ -956,12 +1120,17 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
      EventMouseButton	button = 0;
      Point qdGlobalPoint = {0, 0};
      UInt32				modifiers = 0;	
-     long				wheelDelta = 0;		
      Rect 				rectPort;
+
+//	 cerr <<" Start Mouse Event " << _ID << "\n";
 
      // Mac OS X v10.1 and later
      // should this be front window???
      GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
+	 if(!_is_fullsreen && (window == NULL || window != _osx_window ))
+	     return eventNotHandledErr;
+	 
+	 
      GetWindowPortBounds (window, &rectPort);
 
      result = CallNextEventHandler(myHandler, event);	
@@ -983,6 +1152,7 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
                         button_h = MouseButton::three();
                     _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
                     _input_devices[0].button_down(button_h);
+					result = noErr;
                 }
                 break;
                 // stop trackball, pan, or dolly
@@ -1000,6 +1170,7 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
                         button_h = MouseButton::three();
                     _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
                     _input_devices[0].button_up(button_h);
+					result = noErr;					
                 }
                 break;
             case kEventMouseMoved:	
@@ -1008,14 +1179,21 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
                 SystemPointToLocalPoint(qdGlobalPoint);
 
                 _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+				result = noErr;
 
                 break;
-            case kEventMouseWheelMoved: 
-                GetEventParameter(event, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof(long), NULL, &wheelDelta);
+			//long				wheelDelta = 0;		
+				
+//            case kEventMouseWheelMoved: 
+//					result = NoErr;
+  //              GetEventParameter(event, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof(long), NULL, &wheelDelta);
                 break;
          }
-         result = noErr;
+//         result = noErr;
      }	
+	 
+//	 	 cerr <<" End Mouse Event \n";
+
      return result;
  }
 
@@ -1180,7 +1358,212 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
 ////////////////////////////////////////////////////////////////////
 bool osxGraphicsWindow::move_pointer(int device, int x, int y)
 {
-
 	return true;
 };
+
+bool osxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool has_origin,int x_size, int y_size)
+{
+	if(_osx_window == NULL)
+	  return false;
+
+ if (osxdisplay_cat.is_debug())	
+	osxdisplay_cat.debug() << "do_reshape_request " << x_origin <<" "<<  y_origin <<" "<< has_origin<< " " << x_size <<" "<<  y_size <<"\n";
+
+
+	// location is optional 
+	Rect  rect;
+	if(has_origin)
+	{
+		rect.left =  x_origin;
+		rect.top = y_origin;
+	}
+	else
+	{
+		GetWindowPortBounds (_osx_window, &rect);					
+	}
+	
+	// ok set size .. not oprional
+	rect.left = rect.left + x_size;
+	rect.bottom = rect.top + y_size;
+	
+	SetWindowUserState(_osx_window, &rect);
+	SetWindowStandardState (_osx_window, &rect );
+
+	return true;
+}								
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::set_properties_now
+//       Access: Public, Virtual
+//  Description: Applies the requested set of properties to the
+//               window, if possible, for instance to request a change
+//               in size or minimization status.
+//
+//               The window properties are applied immediately, rather
+//               than waiting until the next frame.  This implies that
+//               this method may *only* be called from within the
+//               window thread.
+//
+//               The properties that have been applied are cleared
+//               from the structure by this function; so on return,
+//               whatever remains in the properties structure are
+//               those that were unchanged for some reason (probably
+//               because the underlying interface does not support
+//               changing that property on an open window).
+////////////////////////////////////////////////////////////////////
+void osxGraphicsWindow::set_properties_now(WindowProperties &properties) 
+{
+	// if (osxdisplay_cat.is_debug())	
+//	cerr<< "-------------------------------------set_properties_now in Request=[" <<properties <<"]\n";
+
+	// ok dork with open flag
+	//
+	
+ if (osxdisplay_cat.is_debug())	
+ {
+	osxdisplay_cat.debug() << "------------------------------------------------------\n";
+	osxdisplay_cat.debug() << "set_properties_now " << properties << "\n";
+	}
+	
+	  GraphicsWindow::set_properties_now(properties);
+	  
+ if (osxdisplay_cat.is_debug())	
+	osxdisplay_cat.debug() << "set_properties_now After Base Class" << properties << "\n";
+	  
+	  
+	  
+//	  if(_osx_window == NULL)
+//	  {
+//		cerr<< "-------------------------------------set_properties_now out(not Window)  Request=[" <<properties <<"]\n";
+//		return;
+//	  }
+	
+	// open is weird..
+	// looks like it is a bad thing to muck
+	//
+	/*
+	if(properties.has_open())
+	{
+	  printf(" properties Has Open Flag \n");
+//	    _properties.set_open(properties.get_open());
+		properties.clear_open();		
+	}
+	*/	
+	
+
+ // this will set the main title on the crome of the window
+ //
+ 
+ // for some changes .. a full rebuild is required for the OS layer Window.
+ //    I think it is the crome atribute and full screen behaviour.
+ bool need_full_rebuild = false;
+ 
+ // if we are not full and transitioning o full
+  if (properties.has_fullscreen() &&   properties.get_fullscreen() != _properties.get_fullscreen()) 
+  {
+		need_full_rebuild = true;
+  }
+  
+  
+  
+  
+  
+  if(need_full_rebuild)
+  {
+	// Login here is ..  tage a union of the properties .. with the new  allowed to overwrite the old states.
+	// and start a bootstrap of a new window ..
+    // get a copy of my properties..
+	WindowProperties req_properties(_properties); 
+	cerr<< "-------------------------------------Lets Go Full Rebuild   Request=[" <<properties <<"]\n";
+	ReleaseSystemResources();
+	_properties.clear();	
+	req_properties.add_properties(properties);	
+	// put back in the request bucket..
+	properties = req_properties;
+	
+	OSOpenWindow(properties); 
+  }
+
+ 
+ 
+ 
+  if(properties.has_title())
+  {
+		_properties.set_title(properties.get_title());
+		if(_osx_window)
+			SetWindowTitleWithCFString(_osx_window,CFStringCreateWithCString(NULL,properties.get_title().c_str(),kCFStringEncodingMacRoman));
+		properties.clear_title();
+  }
+  // decorated .. if this changes it reqires a new window
+  if(properties.has_undecorated())
+  {
+		_properties.set_undecorated(properties.get_undecorated());
+		properties.clear_undecorated();
+  }
+  
+  // cursor managment..
+  if(properties.has_cursor_hidden())
+  {
+		_properties.set_cursor_hidden(properties.get_cursor_hidden());
+		properties.clear_cursor_hidden();
+  }
+	//
+	// icons
+	if(properties.has_icon_filename())
+	{
+		_properties.set_icon_filename(properties.get_icon_filename());
+		properties.clear_icon_filename();
+	}
+	
+	if(properties.has_cursor_filename())
+	{
+		_properties.set_cursor_filename(properties.get_cursor_filename());
+		properties.clear_cursor_filename();
+	}	
+
+
+	if(properties.has_minimized())
+	{
+		_properties.set_minimized(properties.get_minimized());
+		properties.clear_minimized();	
+	}
+
+
+
+	if(properties.has_foreground())
+	{
+		_properties.set_foreground(properties.get_foreground());
+		properties.clear_foreground();	
+	
+	}
+
+/*
+	if(properties.has_size())
+	{
+		_properties.set_size(properties.get_size());
+		properties.clear_size();
+		
+		do_reshape_request(_properties.
+	};
+*/
+
+
+	if(properties.has_open())
+	{
+	   
+//	  cerr << " properties Has Open Flag \n";
+		properties.clear_open();		
+	}
+
+
+    
+ // cerr<< "-------------------------------------- out request=[" <<properties <<"]\n";
+   if (osxdisplay_cat.is_debug())	
+	osxdisplay_cat.debug() << "set_properties_now  Out....." << _properties << "\n";
+
+	return;
+}
+
 

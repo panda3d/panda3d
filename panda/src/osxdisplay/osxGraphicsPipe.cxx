@@ -136,8 +136,9 @@ make_output(const string &name,
         ((flags&BF_refuse_window)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_color)!=0)||
-        ((flags&BF_can_bind_every)!=0)||
-        (properties != gsg->get_default_properties())) {
+        ((flags&BF_can_bind_every)!=0)
+ //       ||(properties != gsg->get_default_properties())
+		) {
       return NULL;
     }
     return new osxGraphicsWindow(this, name, properties,
@@ -161,7 +162,7 @@ make_output(const string &name,
   //  }
   
   // Third thing to try: an osxGraphicsBuffer
-  
+ /* 
   if (retry == 2) {
     if ((!support_render_texture)||
         ((flags&BF_require_parasite)!=0)||
@@ -174,7 +175,7 @@ make_output(const string &name,
     return new osxGraphicsBuffer(this, name, properties,
                                  x_size, y_size, flags, gsg, host);
   }
-  
+  */
   // Nothing else left to try.
   return NULL;
 }
