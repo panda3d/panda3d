@@ -14,6 +14,7 @@
 #include "configurable.cxx"
 #include "datagramInputFile.cxx"
 #include "datagramOutputFile.cxx"
+#include "deferredDeletor.cxx"
 #include "factoryBase.cxx"
 #include "factoryParam.cxx"
 #include "factoryParams.cxx"

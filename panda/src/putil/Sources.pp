@@ -27,6 +27,7 @@
     config_util.N config_util.h configurable.h \
     datagramInputFile.I datagramInputFile.h \
     datagramOutputFile.I datagramOutputFile.h \
+    deferredDeletor.h \
     drawMask.h \
     factoryBase.I factoryBase.h \
     factoryParam.I factoryParam.h factoryParams.I \
@@ -47,6 +48,7 @@
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
     nodePointerToBase.h nodePointerToBase.I \
     nodePointerTo.h nodePointerTo.I \
+    nonDeletor.h \
     pta_double.h \
     pta_float.h pta_int.h \
     string_utils.I string_utils.N string_utils.h \
@@ -72,6 +74,7 @@
     clockObject.cxx \
     config_util.cxx configurable.cxx \
     datagramInputFile.cxx datagramOutputFile.cxx \
+    deferredDeletor.cxx \
     factoryBase.cxx \
     factoryParam.cxx factoryParams.cxx \
     globalPointerRegistry.cxx \
@@ -85,6 +88,7 @@
     nodeCachedReferenceCount.cxx \
     nodePointerToBase.cxx \
     nodePointerTo.cxx \
+    nonDeletor.cxx \
     pta_double.cxx pta_float.cxx \
     pta_int.cxx pta_ushort.cxx \
     string_utils.cxx timedCycle.cxx typedWritable.cxx \
@@ -112,6 +116,7 @@
     config_util.h configurable.h factory.I factory.h \
     datagramInputFile.I datagramInputFile.h \
     datagramOutputFile.I datagramOutputFile.h \
+    deferredDeletor.h \
     drawMask.h \
     factoryBase.I factoryBase.h factoryParam.I factoryParam.h \
     factoryParams.I factoryParams.h \
@@ -132,6 +137,7 @@
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
     nodePointerToBase.h nodePointerToBase.I \
     nodePointerTo.h nodePointerTo.I \
+    nonDeletor.h \
     pta_double.h \
     pta_float.h pta_int.h pta_ushort.h \
     string_utils.I \

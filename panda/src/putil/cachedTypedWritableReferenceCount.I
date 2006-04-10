@@ -234,21 +234,12 @@ INLINE void
 cache_unref_delete(RefCountType *ptr) {
   ptr->cache_unref();
   if (ptr->get_ref_count() == 0) {
-#ifndef NDEBUG
-    if (get_leak_memory()) {
-      // In leak-memory mode, we don't actually delete the pointer,
-      // although we do call the destructor explicitly.  This has
-      // exactly the same effect as deleting it, without actually
-      // freeing up the memory it uses.
-
-      // Furthermore, if we have never-destruct set, we don't even
-      // call the destructor.
-      if (!get_never_destruct()) {
-        ptr->~RefCountType();
-      }
+    ObjectDeletor *deletor = ObjectDeletor::get_global_ptr();
+    if (deletor != (ObjectDeletor *)NULL) {
+      ptr->ref();
+      deletor->delete_object(RefCountDeleteWrapper<RefCountType>::do_delete, (void *)ptr);
       return;
     }
-#endif
     delete ptr;
   }
 }

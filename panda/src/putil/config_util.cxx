@@ -38,6 +38,8 @@
 #include "writableParam.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
+#include "deferredDeletor.h"
+#include "nonDeletor.h"
 
 #include "dconfig.h"
 
@@ -97,6 +99,9 @@ ConfigureFn(config_util) {
 
   KeyboardButton::init_keyboard_buttons();
   MouseButton::init_mouse_buttons();
+
+  DeferredDeletor::register_deletor();
+  NonDeletor::register_deletor();
 
   register_type(BamReader::_remove_flag, "remove");
 }

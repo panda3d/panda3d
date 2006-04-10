@@ -51,8 +51,6 @@ NotifyCategoryDecl(express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 
 //extern EXPCL_PANDAEXPRESS const bool track_memory_usage;
 
-EXPCL_PANDAEXPRESS bool get_leak_memory();
-EXPCL_PANDAEXPRESS bool get_never_destruct();
 EXPCL_PANDAEXPRESS bool get_use_high_res_clock();
 EXPCL_PANDAEXPRESS bool get_paranoid_clock();
 EXPCL_PANDAEXPRESS bool get_paranoid_inheritance();

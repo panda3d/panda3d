@@ -18,6 +18,7 @@
 #include "multifile.cxx"
 #include "namable.cxx"
 #include "nativeNumericData.cxx"
+#include "objectDeletor.cxx"
 #include "ordered_vector.cxx"
 #include "patchfile.cxx"
 #include "password_hash.cxx"

@@ -359,6 +359,7 @@ private:
   static PStatCollector _render_states_unused_pcollector;
   static PStatCollector _cyclers_pcollector;
   static PStatCollector _dirty_cyclers_pcollector;
+  static PStatCollector _delete_pcollector;
 
   static PStatCollector _cnode_volume_pcollector;
   static PStatCollector _gnode_volume_pcollector;

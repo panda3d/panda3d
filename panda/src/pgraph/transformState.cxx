@@ -805,26 +805,41 @@ invert_compose(const TransformState *other) const {
 ////////////////////////////////////////////////////////////////////
 bool TransformState::
 unref() const {
-  ReMutexHolder holder(*_states_lock);
+  // Most of the time, we won't need to grab the lock.  We first check
+  // whether we think we will need to grab it.  Then, after we have
+  // successfully acquired the lock, we check that the condition is
+  // still valid.
 
+  // It is possible that, due to some race condition, this condition
+  // is never seen as true on any one thread.  In that case, the cycle
+  // will not automatically be detected and broken.  But since (a)
+  // that will be a relatively rare situation, (b) it will be
+  // expensive to protect against it, and (c) the damage is minimal,
+  // the race condition is allowed to remain.
   if (get_cache_ref_count() > 0 &&
       get_ref_count() == get_cache_ref_count() + 1) {
-    // If we are about to remove the one reference that is not in the
-    // cache, leaving only references in the cache, then we need to
-    // check for a cycle involving this TransformState and break it if
-    // it exists.
 
-    if (auto_break_cycles) {
-      ++_last_cycle_detect;
-      if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
-        // Ok, we have a cycle.  This will be a leak unless we break the
-        // cycle by freeing the cache on this object.
-        if (pgraph_cat.is_debug()) {
-          pgraph_cat.debug()
-            << "Breaking cycle involving " << (*this) << "\n";
+    ReMutexHolder holder(*_states_lock);
+
+    if (get_cache_ref_count() > 0 &&
+        get_ref_count() == get_cache_ref_count() + 1) {
+      // If we are about to remove the one reference that is not in the
+      // cache, leaving only references in the cache, then we need to
+      // check for a cycle involving this TransformState and break it if
+      // it exists.
+      
+      if (auto_break_cycles) {
+        ++_last_cycle_detect;
+        if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
+          // Ok, we have a cycle.  This will be a leak unless we break the
+          // cycle by freeing the cache on this object.
+          if (pgraph_cat.is_debug()) {
+            pgraph_cat.debug()
+              << "Breaking cycle involving " << (*this) << "\n";
+          }
+          
+          ((TransformState *)this)->remove_cache_pointers();
         }
-
-        ((TransformState *)this)->remove_cache_pointers();
       }
     }
   }

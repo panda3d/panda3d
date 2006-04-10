@@ -30,6 +30,7 @@
     multifile.I multifile.h \
     namable.I \
     namable.h nativeNumericData.I nativeNumericData.h \
+    objectDeletor.h objectDeletor.I \
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \
     patchfile.I patchfile.h \
@@ -77,6 +78,7 @@
     memoryUsagePointers.cxx multifile.cxx \
     namable.cxx \
     nativeNumericData.cxx \
+    objectDeletor.cxx \
     ordered_vector.cxx \
     password_hash.cxx \
     patchfile.cxx \
@@ -130,6 +132,7 @@
     multifile.I multifile.h \
     namable.I \
     namable.h nativeNumericData.I nativeNumericData.h \
+    objectDeletor.h objectDeletor.I \
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \
     patchfile.I patchfile.h \

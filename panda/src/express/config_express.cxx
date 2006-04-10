@@ -168,45 +168,6 @@ init_libexpress() {
 #endif
 }
 
-
-bool
-get_leak_memory() {
-  static ConfigVariableBool *leak_memory = NULL;
-
-  if (leak_memory == (ConfigVariableBool *)NULL) {
-    leak_memory = new ConfigVariableBool
-      ("leak-memory", false,
-       PRC_DESC("Set leak-memory true to disable the actual deletion of "
-                "ReferenceCount-derived objects.  This is sometimes useful to track "
-                "a reference counting bug, since the formerly deleted objects will "
-                "still remain (with a reference count of -100) without being "
-                "overwritten with a newly-allocated object, and the assertion tests "
-                "in ReferenceCount may more accurately detect the first instance of "
-                "an error."));
-  }
-
-  return *leak_memory;
-}
-
-bool
-get_never_destruct() {
-  static ConfigVariableBool *never_destruct = NULL;
-
-  if (never_destruct == (ConfigVariableBool *)NULL) {
-    never_destruct = new ConfigVariableBool
-      ("never-destruct", false,
-       PRC_DESC("never-destruct is similar to leak-memory, except that not "
-                "only will memory not be freed, but the destructor will not even be "
-                "called (on ReferenceCount objects, at least).  This will leak gobs "
-                "of memory, but ensures that every pointer to a ReferenceCount "
-                "object will always be valid, and may be useful for tracking down "
-                "certain kinds of errors.  "
-                "never-destruct is only respected if leak-memory is true."));
-  }
-
-  return *never_destruct;
-}
-
 bool
 get_use_high_res_clock() {
   static ConfigVariableBool *use_high_res_clock = NULL;

@@ -39,6 +39,7 @@
 #include "thread.h"
 #include "pipeline.h"
 #include "throw_event.h"
+#include "objectDeletor.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -68,6 +69,7 @@ PStatCollector GraphicsEngine::_render_states_pcollector("RenderStates");
 PStatCollector GraphicsEngine::_render_states_unused_pcollector("RenderStates:Unused");
 PStatCollector GraphicsEngine::_cyclers_pcollector("PipelineCyclers");
 PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("Dirty PipelineCyclers");
+PStatCollector GraphicsEngine::_delete_pcollector("App:Delete");
 
 // These are counted independently by the collision system; we
 // redefine them here so we can reset them at each frame.
@@ -631,6 +633,14 @@ render_frame() {
 
 #endif  // THREADED_PIPELINE && DO_PSTATS
 
+  // If there is an object deletor, tell it to flush now, while we're
+  // between frames.
+  ObjectDeletor *deletor = ObjectDeletor::get_global_ptr();
+  if (deletor != (ObjectDeletor *)NULL) {
+    PStatTimer timer(_delete_pcollector);
+    deletor->flush();
+  }
+  
   GeomCacheManager::flush_level();
   CullTraverser::flush_level();
   RenderState::flush_level();

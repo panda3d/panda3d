@@ -27,6 +27,7 @@
 #include "atomicAdjust.h"
 #include "numeric_types.h"
 #include "deletedChain.h"
+#include "objectDeletor.h"
 
 #include <stdlib.h>
 
@@ -101,8 +102,23 @@ private:
   static TypeHandle _type_handle;
 };
 
+template<class ObjectType>
+class DeleteWrapper {
+public:
+  static void do_delete(void *ptr);
+};
+
+template<class RefCountType>
+class RefCountDeleteWrapper {
+public:
+  static void do_delete(void *ptr);
+};
+
 template<class RefCountType>
 INLINE void unref_delete(RefCountType *ptr);
+
+template<class ObjectType>
+INLINE void defer_delete(ObjectType *ptr);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RefCountProxy
