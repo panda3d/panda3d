@@ -68,7 +68,7 @@ read() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrueImpl::
 increment_read(const CycleData *pointer) const {
-#ifndef NDEBUG
+#ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
   nassertv(_data[pipeline_stage] == pointer);
@@ -84,7 +84,7 @@ increment_read(const CycleData *pointer) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrueImpl::
 release_read(const CycleData *pointer) const {
-#ifndef NDEBUG
+#ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
   nassertv(_data[pipeline_stage] == pointer);
@@ -125,7 +125,7 @@ write() {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerTrueImpl::
 elevate_read(const CycleData *pointer) {
-#ifndef NDEBUG
+#ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
   nassertr(_data[pipeline_stage] == pointer, NULL);
@@ -145,7 +145,7 @@ elevate_read(const CycleData *pointer) {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerTrueImpl::
 elevate_read_upstream(const CycleData *pointer, bool force_to_0) {
-#ifndef NDEBUG
+#ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
   nassertr(_data[pipeline_stage] == pointer, NULL);
@@ -164,7 +164,7 @@ elevate_read_upstream(const CycleData *pointer, bool force_to_0) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrueImpl::
 increment_write(CycleData *pointer) const {
-#ifndef NDEBUG
+#ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage >= 0 && pipeline_stage < _num_stages);
   nassertv(_data[pipeline_stage] == pointer);
@@ -224,7 +224,7 @@ read_stage(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrueImpl::
 release_read_stage(int n, const CycleData *pointer) const {
-#ifndef NDEBUG
+#ifdef _DEBUG
   nassertv(n >= 0 && n < _num_stages);
   nassertv(_data[n] == pointer);
 #endif
@@ -242,7 +242,7 @@ release_read_stage(int n, const CycleData *pointer) const {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerTrueImpl::
 elevate_read_stage(int n, const CycleData *pointer) {
-#ifndef NDEBUG
+#ifdef _DEBUG
   nassertr(n >= 0 && n < _num_stages, NULL);
   nassertr(_data[n] == pointer, NULL);
 #endif
@@ -259,7 +259,7 @@ elevate_read_stage(int n, const CycleData *pointer) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrueImpl::
 release_write_stage(int n, CycleData *pointer) {
-#ifndef NDEBUG
+#ifdef _DEBUG
   nassertv(n >= 0 && n < _num_stages);
   nassertv(_data[n] == pointer);
 #endif
