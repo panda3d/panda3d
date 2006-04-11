@@ -5555,7 +5555,7 @@ flatten_strong() {
   gr.apply_attribs(node());
   int num_removed = gr.flatten(node(), ~0);
 
-  gr.collect_vertex_data(node(), ~SceneGraphReducer::CVD_format);
+  gr.collect_vertex_data(node(), ~(SceneGraphReducer::CVD_format | SceneGraphReducer::CVD_name));
   gr.unify(node());
 
   return num_removed;
