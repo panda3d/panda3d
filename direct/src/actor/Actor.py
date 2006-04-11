@@ -397,9 +397,10 @@ class Actor(DirectObject, NodePath):
         # Reverse sort the doing a string->int
         def sortFunc(x, y):
             if not str(x).isdigit():
-                smap = {'h':2,
-                        'm':1,
-                        'l':0}
+                smap = {'h':3,
+                        'm':2,
+                        'l':1,
+                        'f':0}
                 return cmp(smap[y[0]], smap[x[0]])
             else:
                 return cmp (int(y), int(x))
