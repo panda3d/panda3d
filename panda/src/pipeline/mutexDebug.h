@@ -49,7 +49,6 @@ public:
   virtual void output(ostream &out) const;
 
   typedef void VoidFunc();
-  static void set_pstats_callbacks(VoidFunc *wait_start, VoidFunc *wait_stop);
 
 private:
   void do_lock();
@@ -64,8 +63,6 @@ private:
   Thread *_locking_thread;
   int _lock_count;
   ConditionVarImpl _cvar;
-
-  static VoidFunc *_pstats_wait_start, *_pstats_wait_stop;
 
   static MutexImpl _global_mutex;
 

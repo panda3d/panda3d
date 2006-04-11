@@ -22,9 +22,6 @@
 
 #ifdef DEBUG_THREADS
 
-MutexDebug::VoidFunc *MutexDebug::_pstats_wait_start;
-MutexDebug::VoidFunc *MutexDebug::_pstats_wait_stop;
-
 MutexImpl MutexDebug::_global_mutex;
 
 ////////////////////////////////////////////////////////////////////
@@ -72,24 +69,6 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexDebug::set_pstats_callbacks
-//       Access: Public, Static
-//  Description: This special function exists to provide hooks into
-//               the PStatClient system, so we can time the amount of
-//               time we spend waiting for a mutex lock (if the user
-//               configures this on).  We have to do this nutty void
-//               function callback thing, because PStats is defined in
-//               a later module (it depends on this module, because it
-//               needs to use mutex locks, of course).
-////////////////////////////////////////////////////////////////////
-void MutexDebug::
-set_pstats_callbacks(MutexDebug::VoidFunc *wait_start, 
-                     MutexDebug::VoidFunc *wait_stop) {
-  _pstats_wait_start = wait_start;
-  _pstats_wait_stop = wait_stop;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::do_lock
 //       Access: Private
 //  Description: The private implementation of lock() assumes that
@@ -124,11 +103,6 @@ do_lock() {
 
   } else {
     // The mutex is locked by some other thread.
-#ifdef DO_PSTATS
-    if (_pstats_wait_start != NULL) {
-      (*_pstats_wait_start)();
-    }
-#endif  // DO_PSTATS
 
     // Check for deadlock.
     MutexDebug *next_mutex = this;
@@ -137,12 +111,6 @@ do_lock() {
         // Whoops, the thread is blocked on me!  Deadlock!
         report_deadlock(this_thread);
         nassert_raise("Deadlock");
-
-#ifdef DO_PSTATS
-        if (_pstats_wait_stop != NULL) {
-          (*_pstats_wait_stop)();
-        }
-#endif  // DO_PSTATS
 
         _global_mutex.release();
         return;
@@ -184,13 +152,7 @@ do_lock() {
     _locking_thread = this_thread;
     ++_lock_count;
     nassertv(_lock_count == 1);
-
- #ifdef DO_PSTATS
-    if (_pstats_wait_stop != NULL) {
-      (*_pstats_wait_stop)();
-    }
-#endif  // DO_PSTATS
-   }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
