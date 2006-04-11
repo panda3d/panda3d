@@ -28,6 +28,9 @@
 
 #include <windows.h>
 
+#define HAVE_ATOMIC_COMPARE_AND_EXCHANGE 1
+#define HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR 1
+
 ////////////////////////////////////////////////////////////////////
 //       Class : AtomicAdjustWin32Impl
 // Description : Uses Windows native calls to implement atomic
@@ -42,6 +45,14 @@ public:
 
   INLINE static void *set_ptr(void *&var, void *new_value);
   INLINE static void *get_ptr(void * const &var);
+
+  INLINE static PN_int32 compare_and_exchange(volatile PN_int32 &mem, 
+                                              PN_int32 old_value,
+                                              PN_int32 new_value);
+
+  INLINE static void *compare_and_exchange_ptr(void * volatile &mem, 
+                                               void *old_value,
+                                               void *new_value);
 };
 
 #include "atomicAdjustWin32Impl.I"

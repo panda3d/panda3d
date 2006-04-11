@@ -22,7 +22,7 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#if defined(__i386__)
+#if defined(__i386__) || defined(_M_IX86)
 
 #include "numeric_types.h"
 

@@ -24,7 +24,15 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustI386Impl::
 inc(volatile PN_int32 &var) {
-#ifndef __EDG__
+#ifdef _M_IX86
+  // Windows case
+  volatile PN_int32 *var_ptr = &var;
+  __asm {
+    mov edx, var_ptr;
+    lock inc dword ptr [edx];
+  }
+#elif !defined(__EDG__)
+  // GCC case
   __asm__ __volatile__("lock; incl %0"
                        :"=m" (var)
                        :"m" (&var));
@@ -41,7 +49,16 @@ inc(volatile PN_int32 &var) {
 INLINE bool AtomicAdjustI386Impl::
 dec(volatile PN_int32 &var) {
   unsigned char c;
-#ifndef __EDG__
+#ifdef _M_IX86
+  // Windows case
+  volatile PN_int32 *var_ptr = &var;
+  __asm {
+    mov edx, var_ptr;
+    lock dec dword ptr [edx];
+    sete c;
+  }
+#elif !defined(__EDG__)
+  // GCC case
   __asm__ __volatile__("lock; decl %0; sete %1"
                        :"=m" (var), "=qm" (c)
                        :"m" (&var) : "memory");
@@ -126,7 +143,18 @@ INLINE PN_int32 AtomicAdjustI386Impl::
 compare_and_exchange(volatile PN_int32 &mem, PN_int32 old_value,
                      PN_int32 new_value) {
   PN_int32 prev;
-#ifndef __EDG__
+#ifdef _M_IX86
+  // Windows case
+  volatile PN_int32 *mem_ptr = &mem;
+  __asm {
+    mov edx, mem_ptr;
+    mov ecx, new_value;
+    mov eax, old_value;
+    lock cmpxchg dword ptr [edx], ecx;
+    mov prev, eax;
+  }
+#elif !defined(__EDG__)
+  // GCC case
   __asm__ __volatile__("lock; cmpxchgl %1,%2"
                        : "=a"(prev)
                        : "r"(new_value), "m"(mem), "0"(old_value)
@@ -146,7 +174,18 @@ INLINE void *AtomicAdjustI386Impl::
 compare_and_exchange_ptr(void * volatile &mem, void *old_value,
                          void *new_value) {
   void *prev;
-#ifndef __EDG__
+#ifdef _M_IX86
+  // Windows case
+  void * volatile *mem_ptr = &mem;
+  __asm {
+    mov edx, mem_ptr;
+    mov ecx, new_value;
+    mov eax, old_value;
+    lock cmpxchg dword ptr [edx], ecx;
+    mov prev, eax;
+  }
+#elif !defined(__EDG__)
+  // GCC case
   __asm__ __volatile__("lock; cmpxchgl %1,%2"
                        : "=a"(prev)
                        : "r"(new_value), "m"(mem), "0"(old_value)

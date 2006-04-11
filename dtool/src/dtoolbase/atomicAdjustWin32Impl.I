@@ -90,3 +90,45 @@ INLINE void *AtomicAdjustWin32Impl::
 get_ptr(void * const &var) {
   return var;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustWin32Impl::compare_and_exchange
+//       Access: Public, Static
+//  Description: Atomic compare and exchange.  
+//
+//               If mem is equal to old_value, store new_value in mem.
+//               In either case, return the original value of mem.
+//               The caller can test for success by comparing
+//               return_value == old_value.
+//
+//               The atomic function expressed in pseudo-code:
+//
+//                 orig_value = mem;
+//                 if (mem == old_value) {
+//                   mem = new_value;
+//                 }
+//                 return orig_value;
+//
+////////////////////////////////////////////////////////////////////
+INLINE PN_int32 AtomicAdjustWin32Impl::
+compare_and_exchange(volatile PN_int32 &mem, PN_int32 old_value,
+                     PN_int32 new_value) {
+  // Note that the AtomicAdjust parameter order is different from
+  // Windows convention!
+  return InterlockedCompareExchange((volatile LONG *)&mem, new_value, old_value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustWin32Impl::compare_and_exchange_ptr
+//       Access: Public, Static
+//  Description: Atomic compare and exchange.  
+//
+//               As above, but works on pointers instead of integers.
+////////////////////////////////////////////////////////////////////
+INLINE void *AtomicAdjustWin32Impl::
+compare_and_exchange_ptr(void * volatile &mem, void *old_value,
+                         void *new_value) {
+  // Note that the AtomicAdjust parameter order is different from
+  // Windows convention!
+  return InterlockedCompareExchangePointer(&mem, new_value, old_value);
+}
