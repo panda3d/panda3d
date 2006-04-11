@@ -588,19 +588,22 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
     GetWindowInfo(_hWnd, &wi);
     AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
 
-    if (_properties.has_origin()) {
+    UINT flags = SWP_NOZORDER | SWP_NOSENDCHANGING;
+
+    if (has_origin) {
       x_origin = view_rect.left;
       y_origin = view_rect.top;
       
     } else {
       x_origin = CW_USEDEFAULT;
       y_origin = CW_USEDEFAULT;
+      flags |= SWP_NOMOVE;
     }
 
     SetWindowPos(_hWnd, NULL, x_origin, y_origin,
                  view_rect.right - view_rect.left,
                  view_rect.bottom - view_rect.top,
-                 SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
+                 flags);
 
     // This isn't quite right, because handle_reshape() calls
     // system_changed_properties(), generating the event indicating
