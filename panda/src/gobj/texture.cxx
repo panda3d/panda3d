@@ -3322,7 +3322,8 @@ write_datagram(BamWriter *manager, Datagram &me) {
   case BTM_relative:
     filename = get_fullpath();
     alpha_filename = get_alpha_fullpath();
-    if (!has_bam_dir || filename.find_on_searchpath(bam_dir) == -1) {
+    bam_dir.make_absolute();
+    if (!has_bam_dir || !filename.make_relative_to(bam_dir, true)) {
       if (filename.find_on_searchpath(get_texture_path()) == -1) {
         filename.find_on_searchpath(get_model_path());
       }
@@ -3332,7 +3333,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
         << "Texture file " << get_filename()
         << " found as " << filename << "\n";
     }
-    if (!has_bam_dir || alpha_filename.find_on_searchpath(bam_dir) == -1) {
+    if (!has_bam_dir || !alpha_filename.make_relative_to(bam_dir, true)) {
       if (alpha_filename.find_on_searchpath(get_texture_path()) == -1) {
         alpha_filename.find_on_searchpath(get_model_path());
       }
