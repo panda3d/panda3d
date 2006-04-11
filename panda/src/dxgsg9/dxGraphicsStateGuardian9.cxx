@@ -4726,7 +4726,7 @@ get_d3d_mip_type(Texture::FilterType filter_type,
 
   case Texture::FT_shadow:
   case Texture::FT_default:
-    return D3DTEXF_LINEAR;
+    return D3DTEXF_NONE;
   }
 
   dxgsg9_cat.error()
