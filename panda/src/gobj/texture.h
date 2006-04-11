@@ -342,7 +342,8 @@ public:
 
   TextureContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                               GraphicsStateGuardianBase *gsg);
-
+  void texture_uploaded();
+  
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
 

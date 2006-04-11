@@ -816,9 +816,6 @@ create_texture(DXScreenData &scrn) {
     goto error_exit;
   }
 
-  // PRINT_REFCNT(dxgsg9, scrn._d3d9);
-
-
   // must not put render to texture into LRU
   if (_lru_page == 0 && _managed == false && get_texture()->get_render_to_texture ( ) == false) {
     Lru *lru;
@@ -838,6 +835,7 @@ create_texture(DXScreenData &scrn) {
     }
   }
 
+  get_texture()->texture_uploaded();
   return true;
 
  error_exit:

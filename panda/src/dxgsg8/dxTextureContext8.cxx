@@ -694,8 +694,7 @@ create_texture(DXScreenData &scrn) {
     goto error_exit;
   }
 
-  // PRINT_REFCNT(dxgsg8, scrn._d3d8);
-
+  get_texture()->texture_uploaded();
   return true;
 
  error_exit:

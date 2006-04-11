@@ -6569,6 +6569,8 @@ upload_texture(CLP(TextureContext) *gtc) {
     }
 #endif
 
+    tex->texture_uploaded();
+
     report_my_gl_errors();
     return true;
   }

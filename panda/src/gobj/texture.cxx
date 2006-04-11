@@ -251,13 +251,12 @@ setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
 //               texture coordinates (x, y, z), the resulting value is
 //               the normalized vector (x, y, z) (compressed from
 //               -1..1 into 0..1).
-//
-//               This also implicitly sets keep_ram_image to true.
 ////////////////////////////////////////////////////////////////////
 void Texture::
 generate_normalization_cube_map(int size) {
   setup_cube_map(size, T_unsigned_byte, F_rgb);
   PTA_uchar image = make_ram_image();
+  _keep_ram_image = true;
 
   float half_size = (float)size * 0.5f;
   float center = half_size - 0.5f;
@@ -875,7 +874,7 @@ get_ram_image() {
 //               If the RAM image has been dumped, or is stored
 //               compressed, creates a new one.
 //
-//               This also implicitly sets keep_ram_image to true.
+//               This does *not* affect keep_ram_image.
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
 modify_ram_image() {
@@ -887,7 +886,6 @@ modify_ram_image() {
   }
 
   ++_modified;
-  _keep_ram_image = true;
   return _ram_images[0]._image;
 }
 
@@ -898,7 +896,7 @@ modify_ram_image() {
 //               texture, if any, and allocates a new buffer of the
 //               appropriate size.  Returns the new buffer.
 //
-//               This also implicitly sets keep_ram_image to true.
+//               This does *not* affect keep_ram_image.
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
 make_ram_image() {
@@ -908,7 +906,6 @@ make_ram_image() {
   _ram_images[0]._image = PTA_uchar::empty_array(get_expected_ram_image_size());
   _ram_image_compression = CM_off;
   ++_modified;
-  _keep_ram_image = true;
   return _ram_images[0]._image;
 }
 
@@ -920,7 +917,7 @@ make_ram_image() {
 //               that the new data is already pre-compressed in the
 //               indicated format.
 //
-//               This also implicitly sets keep_ram_image to true.
+//               This does *not* affect keep_ram_image.
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
@@ -943,7 +940,6 @@ set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
     _ram_image_compression = compression;
     ++_modified;
   }
-  _keep_ram_image = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -953,7 +949,6 @@ set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
 ////////////////////////////////////////////////////////////////////
 void Texture::
 clear_ram_image() {
-  ++_modified;
   _ram_image_compression = CM_off;
   _ram_images.clear();
 }
@@ -1029,7 +1024,7 @@ get_ram_mipmap_image(int n) {
 //               is uncompressed; if this is not the case, raises an
 //               assertion.
 //
-//               This also implicitly sets keep_ram_image to true.
+//               This does *not* affect keep_ram_image.
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
 modify_ram_mipmap_image(int n) {
@@ -1041,7 +1036,6 @@ modify_ram_mipmap_image(int n) {
   }
 
   ++_modified;
-  _keep_ram_image = true;
   return _ram_images[n]._image;
 }
 
@@ -1052,7 +1046,7 @@ modify_ram_mipmap_image(int n) {
 //               nth mipmap level, if any, and allocates a new buffer
 //               of the appropriate size.  Returns the new buffer.
 //
-//               This also implicitly sets keep_ram_image to true.
+//               This does *not* affect keep_ram_image.
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
 make_ram_mipmap_image(int n) {
@@ -1066,7 +1060,6 @@ make_ram_mipmap_image(int n) {
   _ram_images[n]._image = PTA_uchar::empty_array(get_expected_ram_mipmap_image_size(n));
   _ram_images[n]._page_size = get_expected_ram_mipmap_page_size(n);
   ++_modified;
-  _keep_ram_image = true;
   return _ram_images[n]._image;
 }
 
@@ -1079,7 +1072,7 @@ make_ram_mipmap_image(int n) {
 //               data is already pre-compressed in the indicated
 //               format.
 //
-//               This also implicitly sets keep_ram_image to true.
+//               This does *not* affect keep_ram_image.
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size) {
@@ -1099,7 +1092,6 @@ set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size) {
     _ram_images[n]._page_size = page_size;
     ++_modified;
   }
-  _keep_ram_image = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1563,20 +1555,35 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   TextureContext *tc = prepared_objects->prepare_texture_now(this, gsg);
   _contexts[prepared_objects] = tc;
 
-  if (tc != (TextureContext *)NULL) {
-    if (!keep_texture_ram && !_keep_ram_image) {
-      // Once we have prepared the texture, we can generally safely
-      // remove the pixels from main RAM.  The GSG is now responsible
-      // for remembering what it looks like.
-
-      if (gobj_cat.is_debug()) {
-        gobj_cat.debug()
-          << "Dumping RAM for texture " << get_name() << "\n";
-      }
-      clear_ram_image();
-    }
-  }
   return tc;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::texture_uploaded
+//       Access: Public
+//  Description: This method is called by the GraphicsStateGuardian
+//               after a texture has been successfully uploaded to
+//               graphics memory.  It is intended as a callback so the
+//               texture can release its RAM image, if _keep_ram_image
+//               is false.
+//
+//               Normally, this is not called directly except by the
+//               GraphicsStateGuardian.
+////////////////////////////////////////////////////////////////////
+void Texture::
+texture_uploaded() {
+  if (!keep_texture_ram && !_keep_ram_image) {
+    // Once we have prepared the texture, we can generally safely
+    // remove the pixels from main RAM.  The GSG is now responsible
+    // for remembering what it looks like.
+    
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "Dumping RAM for texture " << get_name() << "\n";
+    }
+    clear_ram_image();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2221,7 +2228,6 @@ void Texture::
 reload_ram_image() {
   gobj_cat.info()
     << "Reloading texture " << get_name() << "\n";
-
   make_ram_image();
 
   int z = 0;
