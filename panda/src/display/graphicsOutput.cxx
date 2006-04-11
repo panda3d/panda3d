@@ -325,9 +325,6 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   result._plane = plane;
   result._rtm_mode = mode;
   _textures.push_back(result);
-
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-  set_inverted(_gsg->get_copy_texture_inverted());
 }
 
 ////////////////////////////////////////////////////////////////////

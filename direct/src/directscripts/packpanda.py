@@ -15,7 +15,8 @@
 import sys, os, getopt, string, shutil, py_compile
 
 OPTIONLIST = [
-("game",      1, "Name of directory containing game"),
+("dir",       1, "Name of directory containing game"),
+("name",      1, "Human-readable name of the game"),
 ("version",   1, "Version number to add to game name"),
 ("rmdir",     2, "Delete all directories with given name"),
 ("rmext",     2, "Delete all files with given extension"),
@@ -69,7 +70,7 @@ OPTIONS = ParseOptions(sys.argv[1:])
 
 PANDA=None
 for dir in sys.path:
-    if (dir != "") and os.path.exists(os.path.join(dir,"direct")) and os.path.exists(os.path.join(dir,"pandac")) and os.path.exists(os.path.join(dir,"python")) and os.path.exists(os.path.join(dir,"nsis")):
+    if (dir != "") and os.path.exists(os.path.join(dir,"direct")) and os.path.exists(os.path.join(dir,"pandac")) and os.path.exists(os.path.join(dir,"python")):
         PANDA=os.path.abspath(dir)
 if (PANDA is None):
   sys.exit("Cannot locate the panda root directory in the python path (cannot locate directory containing direct and pandac).")
@@ -84,31 +85,33 @@ else:
 
 ##############################################################################
 #
-# Identify the main parts of the game: GAME, NAME, MAIN, ICON, BITMAP, etc
+# Identify the main parts of the game: DIR, NAME, MAIN, ICON, BITMAP, etc
 #
 ##############################################################################
 
 VER=OPTIONS["version"]
-GAME=OPTIONS["game"]
-if (GAME==""):
-  print "You must specify the --game option."
+DIR=OPTIONS["dir"]
+if (DIR==""):
+  print "You must specify the --dir option."
   ParseFailure()
-GAME=os.path.abspath(GAME)
-NAME=os.path.basename(GAME)
-SMDIRECTORY=os.path.basename(GAME)
+DIR=os.path.abspath(DIR)
+NAME=os.path.basename(DIR)
+if (OPTIONS["name"] != ""):
+  NAME=OPTIONS["name"]
+SMDIRECTORY=NAME
 if (VER!=""): SMDIRECTORY=SMDIRECTORY+" "+VER
-ICON=os.path.join(GAME, NAME+".ico")
-BITMAP=os.path.join(GAME, NAME+".bmp")
-LICENSE=os.path.join(GAME,"LICENSE.TXT")
-OUTFILE=os.path.basename(GAME)
+ICON=os.path.join(DIR, "icon.ico")
+BITMAP=os.path.join(DIR, "installer.bmp")
+LICENSE=os.path.join(DIR, "license.txt")
+OUTFILE=os.path.basename(DIR)
 if (VER!=""): OUTFILE=OUTFILE+"-"+VER
 OUTFILE=os.path.abspath(OUTFILE+".exe")
-INSTALLDIR='C:\\'+os.path.basename(GAME)
+INSTALLDIR='C:\\'+os.path.basename(DIR)
 if (VER!=""): INSTALLDIR=INSTALLDIR+"-"+VER
 COMPRESS="lzma"
 if (OPTIONS["fast"]): COMPRESS="zlib"
-if (OPTIONS["pyc"]): MAIN=NAME+".pyc"
-else: MAIN=NAME+".py"
+if (OPTIONS["pyc"]): MAIN="main.pyc"
+else: MAIN="main.py"
 
 def PrintFileStatus(label, file):
   if (os.path.exists(file)):
@@ -116,21 +119,21 @@ def PrintFileStatus(label, file):
   else:
     print "%-15s: %s (MISSING)"%(label, file)
 
-PrintFileStatus("Game", GAME)
+PrintFileStatus("Dir", DIR)
 print "%-15s: %s"%("Name", NAME)
 print "%-15s: %s"%("Start Menu", SMDIRECTORY)
-PrintFileStatus("Main", os.path.join(GAME, MAIN))
+PrintFileStatus("Main", os.path.join(DIR, MAIN))
 PrintFileStatus("Icon", ICON)
 PrintFileStatus("Bitmap", BITMAP)
 PrintFileStatus("License", LICENSE)
 print "%-15s: %s"%("Output", OUTFILE)
 print "%-15s: %s"%("Install Dir", INSTALLDIR)
 
-if (os.path.isdir(GAME)==0):
-  sys.exit("Difficulty reading "+GAME+". Cannot continue.")
+if (os.path.isdir(DIR)==0):
+  sys.exit("Difficulty reading "+DIR+". Cannot continue.")
 
-if (os.path.isfile(os.path.join(GAME, NAME+".py"))==0):
-  sys.exit("Difficulty reading "+NAME+".py. Cannot continue.")
+if (os.path.isfile(os.path.join(DIR, "main.py"))==0):
+  sys.exit("Difficulty reading main.py. Cannot continue.")
 
 if (os.path.isfile(LICENSE)==0):
   LICENSE=os.path.join(PANDA,"LICENSE")
@@ -150,7 +153,7 @@ print "Copying the game to "+TMPDIR+"..."
 if (os.path.exists(TMPDIR)):
    try: shutil.rmtree(TMPDIR)
    except: sys.exit("Cannot delete "+TMPDIR)
-try: shutil.copytree(GAME, TMPDIR)
+try: shutil.copytree(DIR, TMPDIR)
 except: sys.exit("Cannot copy game to "+TMPDIR)
 
 ##############################################################################

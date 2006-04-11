@@ -96,6 +96,9 @@ def textToHTML(comment, sep, delsection=None):
         line = line.lstrip(" ").lstrip(sep).lstrip(" ").rstrip("\r").rstrip(" ")
         if (line == ""):
             sections.append("")
+        elif (line[0]=="*") or (line[0]=="-"):
+            sections.append(line)
+            sections.append("")
         elif (SECHEADER.match(line)):
             sections.append(line)
         else:

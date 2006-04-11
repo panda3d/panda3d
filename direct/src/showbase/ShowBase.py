@@ -804,7 +804,7 @@ class ShowBase(DirectObject.DirectObject):
     def makeCamera(self, win, sort = 0, scene = None,
                    displayRegion = (0, 1, 0, 1), stereo = None,
                    aspectRatio = None, clearDepth = 0, clearColor = None,
-                   lens = None, camName = 'cam'):
+                   lens = None, camName = 'cam', mask = None):
         """
         Makes a new 3-d camera associated with the indicated window,
         and creates a display region in the indicated subrectangle.
@@ -827,6 +827,11 @@ class ShowBase(DirectObject.DirectObject):
 
         if scene != None:
             camNode.setScene(scene)
+
+        if mask != None:
+            if (isinstance(mask, int)):
+                mask = BitMask32(mask)
+            camNode.setCameraMask(mask)
 
         # self.camera is the parent node of all cameras: a node that
         # we can move around to move all cameras as a group.

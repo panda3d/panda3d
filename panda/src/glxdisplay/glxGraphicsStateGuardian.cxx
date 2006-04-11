@@ -132,9 +132,15 @@ reset() {
     // It's Mesa, therefore probably a software context.
     if (!software) {
       glxdisplay_cat.error()
-        << "Using GL renderer " << _gl_renderer << "; it is probably a software renderer.\n";
+        << "The application requested harware acceleration, but your OpenGL\n";
       glxdisplay_cat.error()
-        << "To allow use of this display add FM_software to your frame buffer mode.\n";
+        << "driver, " << _gl_renderer << ", only supports software rendering.\n";
+      glxdisplay_cat.error()
+        << "You need to install a hardware-accelerated OpenGL driver, or,\n";
+      glxdisplay_cat.error()
+        << "if you actually *want* to use a software renderer, then\n";
+      glxdisplay_cat.error()
+        << "change the word 'hardware' to 'software' in the Config.prc file.\n";
       _is_valid = false;
     }
     frame_buffer_mode = (frame_buffer_mode | FrameBufferProperties::FM_software) & ~FrameBufferProperties::FM_hardware;

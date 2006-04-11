@@ -88,6 +88,7 @@ PUBLISHED:
     BF_can_bind_color      = 0x0040, // Need capability: bind the color bitplane to a tex.
     BF_can_bind_every      = 0x0080, // Need capability: bind all bitplanes to a tex.
     BF_size_track_host     = 0x0100, // Buffer should track the host size.
+    BF_rtt_cumulative      = 0x0200, // Buffer supports cumulative render-to-texture.
   };
 
   INLINE bool is_valid() const;

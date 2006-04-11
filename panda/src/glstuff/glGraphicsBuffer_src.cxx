@@ -40,6 +40,7 @@ CLP(GraphicsBuffer)(GraphicsPipe *pipe,
   _fbo = 0;
   _rb_size_x = 0;
   _rb_size_y = 0;
+  _cube_face_active = 0;
   for (int i=0; i<RTP_COUNT; i++) {
     _rb[i] = 0;
     _tex[i] = 0;
@@ -244,6 +245,7 @@ rebuild_bitplanes() {
               next, GL_RGBA, Texture::F_rgba);
     next += 1;
   }
+  _cube_face_active = 0;
   
   glgsg->report_my_gl_errors();
 }
@@ -285,9 +287,11 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot,
                                      GL_TEXTURE_2D, gtc->_index, 0);
     } else {
       glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
-                                     GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB, gtc->_index, 0);
+                                     GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
+                                     gtc->_index, 0);
     }
     _tex[slot] = tex;
+    _attach_point[slot] = attachpoint;
     
     // If there was a renderbuffer bound to this slot, delete it.
     if (_rb[slot] != 0) {
@@ -320,6 +324,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot,
     
     // Toss any texture that was connected to the slot.
     _tex[slot] = 0;
+    _attach_point[slot] = attachpoint;
   }
 }
   
@@ -401,7 +406,27 @@ end_frame(FrameMode mode) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 select_cube_map(int cube_map_index) {
-  GLCAT.error() << "select_cube_map not implemented yet.\n";
+  if (cube_map_index == _cube_face_active) {
+    return;
+  }
+  _cube_face_active = cube_map_index;
+
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_V(glgsg, _gsg);
+  
+  for (int i=0; i<RTP_COUNT; i++) {
+    Texture *tex = _tex[i];
+    if ((tex == 0) ||
+        (tex->get_texture_type() != Texture::TT_cube_map)) {
+      continue;
+    }
+    TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
+    nassertv(tc != (TextureContext *)NULL);
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+    glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, _attach_point[i],
+                                   GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + cube_map_index,
+                                   gtc->_index, 0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -435,6 +460,11 @@ open_buffer() {
 void CLP(GraphicsBuffer)::
 close_buffer() {
 
+  _active = false;
+  if (_gsg == 0) {
+    return;
+  }
+  
   // Get the glgsg.
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
@@ -458,6 +488,5 @@ close_buffer() {
   
   // Release the Gsg
   _gsg.clear();
-  _active = false;
 }
 

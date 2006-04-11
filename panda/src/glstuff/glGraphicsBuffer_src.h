@@ -26,14 +26,26 @@
 //               The glGraphicsBuffer is based on the OpenGL
 //               EXT_framebuffer_object and ARB_draw_buffers extensions.
 //               This design has significant advantages over the
-//               older wglGraphicsBuffer and glxGraphicsBuffer.
+//               older wglGraphicsBuffer and glxGraphicsBuffer:
 //
 //               * Can export depth and stencil.
 //               * Supports auxiliary bitplanes.
 //               * Supports non-power-of-two padding.
 //               * Supports tracking of host window size.
+//               * Supports cumulative render-to-texture.
 //               * Faster than pbuffers.
 //               * Can render onto a texture without clearing it first.
+//
+//               Some of these deserve a little explanation. 
+//               Auxiliary bitplanes are additional bitplanes above
+//               and beyond the normal depth,stencil,color.  One can
+//               use them to render out multiple textures in a single
+//               pass.  Cumulative render-to-texture means that if
+//               don't clear the buffer, then the contents of the
+//               buffer will be equal to the texture's previous
+//               contents.  This alo means you can meaningfully
+//               share a bitplane between two buffers by binding
+//               the same texture to both buffers. 
 //
 //               If either of the necessary OpenGL extensions is not
 //               available, then the glGraphicsBuffer will not be
@@ -72,8 +84,10 @@ private:
   GLuint      _fbo;
   int         _rb_size_x;
   int         _rb_size_y;
+  int         _cube_face_active;
   PT(Texture) _tex[RTP_COUNT];
   GLuint      _rb[RTP_COUNT];
+  GLenum      _attach_point[RTP_COUNT];
   
 public:
   static TypeHandle get_class_type() {
