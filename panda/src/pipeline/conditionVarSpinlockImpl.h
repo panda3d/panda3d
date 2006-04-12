@@ -49,7 +49,7 @@ public:
 
 private:
   MutexSpinlockImpl &_mutex;
-  volatile PN_int32 _event;
+  TVOLATILE PN_int32 _event;
 };
 
 #include "conditionVarSpinlockImpl.I"
