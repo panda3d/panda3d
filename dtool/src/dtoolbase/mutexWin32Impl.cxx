@@ -22,4 +22,14 @@
 
 #include "mutexWin32Impl.h"
 
+////////////////////////////////////////////////////////////////////
+//     Function: MutexWin32Impl::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+MutexWin32Impl::
+MutexWin32Impl() {
+  InitializeCriticalSectionAndSpinCount(&_lock, 4000);
+}
+
 #endif  // WIN32_VC

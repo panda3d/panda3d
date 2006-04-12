@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL MutexWin32Impl {
 public:
-  INLINE MutexWin32Impl();
+  MutexWin32Impl();
   INLINE ~MutexWin32Impl();
 
   INLINE void lock();
