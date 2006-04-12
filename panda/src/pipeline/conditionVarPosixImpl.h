@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_POSIX_IMPL
+#ifdef HAVE_POSIX_THREADS
 
 #include "mutexPosixImpl.h"
 #include "pnotify.h"
@@ -50,6 +50,6 @@ private:
 
 #include "conditionVarPosixImpl.I"
 
-#endif  // THREAD_POSIX_IMPL
+#endif  // HAVE_POSIX_THREADS
 
 #endif

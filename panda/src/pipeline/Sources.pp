@@ -19,6 +19,7 @@
     conditionVarLinuxImpl.h conditionVarLinuxImpl.I \
     conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
+    conditionVarSpinlockImpl.h conditionVarSpinlockImpl.I \
     config_pipeline.h \
     cycleData.h cycleData.I \
     cycleDataReader.h cycleDataReader.I \
@@ -58,6 +59,7 @@
     conditionVarLinuxImpl.cxx \
     conditionVarPosixImpl.cxx \
     conditionVarWin32Impl.cxx \
+    conditionVarSpinlockImpl.cxx \
     config_pipeline.cxx \
     cycleData.cxx \
     cycleDataReader.cxx \
@@ -95,6 +97,7 @@
     conditionVarLinuxImpl.h conditionVarLinuxImpl.I \
     conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
+    conditionVarSpinlockImpl.h conditionVarSpinlockImpl.I \
     config_pipeline.h \
     cycleData.h cycleData.I \
     cycleDataReader.h cycleDataReader.I \

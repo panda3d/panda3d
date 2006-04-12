@@ -1,5 +1,5 @@
-// Filename: conditionVarWin32Impl.h
-// Created by:  drose (07Feb06)
+// Filename: conditionVarSpinlockImpl.h
+// Created by:  drose (11Apr06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,23 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONDITIONVARWIN32IMPL_H
-#define CONDITIONVARWIN32IMPL_H
+#ifndef CONDITIONVARSPINLOCKIMPL_H
+#define CONDITIONVARSPINLOCKIMPL_H
 
 #include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#ifdef WIN32_VC
+#ifdef MUTEX_SPINLOCK
 
-#include "mutexWin32Impl.h"
+#include "mutexSpinlockImpl.h"
 #include "pnotify.h"
+#include "atomicAdjust.h"
 
-#include <prcvar.h>
-
-class MutexWin32Impl;
+class MutexSpinlockImpl;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : ConditionVarWin32Impl
+//       Class : ConditionVarSpinlockImpl
 // Description : Uses Windows native calls to implement a
 //               conditionVar.
 //
@@ -40,27 +39,27 @@ class MutexWin32Impl;
 //               actually implement a full POSIX-style condition
 //               variable, but the Event primitive does a fair job if
 //               we disallow POSIX broadcast.  See
-//               http://www.cs.wustl.edu/~schmidt/win32-cv-1.html for
+//               http://www.cs.wustl.edu/~schmidt/spinlock-cv-1.html for
 //               a full implementation that includes broadcast.  This
 //               class is much simpler than that full implementation,
 //               so we can avoid the overhead require to support
 //               broadcast.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConditionVarWin32Impl {
+class EXPCL_PANDA ConditionVarSpinlockImpl {
 public:
-  INLINE ConditionVarWin32Impl(MutexWin32Impl &mutex);
-  INLINE ~ConditionVarWin32Impl();
+  INLINE ConditionVarSpinlockImpl(MutexSpinlockImpl &mutex);
+  INLINE ~ConditionVarSpinlockImpl();
 
-  INLINE void wait();
+  void wait();
   INLINE void signal();
 
 private:
-  CRITICAL_SECTION *_external_mutex;
-  HANDLE _event_signal;
+  MutexSpinlockImpl &_mutex;
+  volatile PN_int32 _event;
 };
 
-#include "conditionVarWin32Impl.I"
+#include "conditionVarSpinlockImpl.I"
 
-#endif  // WIN32_VC
+#endif  // MUTEX_SPINLOCK
 
 #endif

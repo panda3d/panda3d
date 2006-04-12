@@ -3,3 +3,4 @@
 #include "atomicAdjustNsprImpl.cxx"
 #include "atomicAdjustPosixImpl.cxx"
 #include "atomicAdjustWin32Impl.cxx"
+#include "dtoolbase.cxx"

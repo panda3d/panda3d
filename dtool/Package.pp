@@ -214,6 +214,7 @@
 
 #set HAVE_THREADS $[HAVE_THREADS]
 #set DEBUG_THREADS $[DEBUG_THREADS]
+#set MUTEX_SPINLOCK $[MUTEX_SPINLOCK]
 
 #set NET_IPATH $[unixfilename $[NET_IPATH]]
 #set NET_LPATH $[unixfilename $[NET_LPATH]]

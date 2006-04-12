@@ -23,7 +23,7 @@
 //  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustDummyImpl::
-inc(PN_int32 &var) {
+inc(TVOLATILE PN_int32 &var) {
   ++var;
 }
 
@@ -35,7 +35,7 @@ inc(PN_int32 &var) {
 //               is zero.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AtomicAdjustDummyImpl::
-dec(PN_int32 &var) {
+dec(TVOLATILE PN_int32 &var) {
   return (--var) != 0;
 }
 
@@ -46,7 +46,7 @@ dec(PN_int32 &var) {
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustDummyImpl::
-set(PN_int32 &var, PN_int32 new_value) {
+set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
   PN_int32 orig_value = var;
   var = new_value;
   return orig_value;
@@ -62,7 +62,7 @@ set(PN_int32 &var, PN_int32 new_value) {
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustDummyImpl::
-get(const PN_int32 &var) {
+get(const TVOLATILE PN_int32 &var) {
   return var;
 }
 
@@ -73,7 +73,7 @@ get(const PN_int32 &var) {
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustDummyImpl::
-set_ptr(void *&var, void *new_value) {
+set_ptr(void * TVOLATILE &var, void *new_value) {
   void *orig_value = var;
   var = new_value;
   return orig_value;
@@ -89,7 +89,7 @@ set_ptr(void *&var, void *new_value) {
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustDummyImpl::
-get_ptr(void * const &var) {
+get_ptr(void * const TVOLATILE &var) {
   return var;
 }
 
@@ -104,7 +104,7 @@ get_ptr(void * const &var) {
 //               return_value == old_value.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustDummyImpl::
-compare_and_exchange(PN_int32 &mem, PN_int32 old_value,
+compare_and_exchange(TVOLATILE PN_int32 &mem, PN_int32 old_value,
                      PN_int32 new_value) {
   PN_int32 orig_value = mem;
   if (mem == old_value) {
@@ -121,7 +121,7 @@ compare_and_exchange(PN_int32 &mem, PN_int32 old_value,
 //               As above, but works on pointers instead of integers.
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustDummyImpl::
-compare_and_exchange_ptr(void *&mem, void *old_value,
+compare_and_exchange_ptr(void * TVOLATILE &mem, void *old_value,
                          void *new_value) {
   void *orig_value = mem;
   if (mem == old_value) {

@@ -17,9 +17,4 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "selectThreadImpl.h"
-
-#ifdef THREAD_DUMMY_IMPL
-
 #include "conditionVarDummyImpl.h"
-
-#endif  // THREAD_DUMMY_IMPL

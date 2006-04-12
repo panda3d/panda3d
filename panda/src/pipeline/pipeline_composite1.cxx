@@ -6,6 +6,7 @@
 #include "conditionVarLinuxImpl.cxx"
 #include "conditionVarPosixImpl.cxx"
 #include "conditionVarWin32Impl.cxx"
+#include "conditionVarSpinlockImpl.cxx"
 #include "config_pipeline.cxx"
 #include "cycleData.cxx"
 #include "cycleDataReader.cxx"

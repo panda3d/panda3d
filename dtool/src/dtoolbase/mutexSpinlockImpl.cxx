@@ -1,5 +1,5 @@
-// Filename: atomicAdjustDummyImpl.cxx
-// Created by:  drose (09Aug02)
+// Filename: mutexSpinlockImpl.cxx
+// Created by:  drose (11Apr06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -17,4 +17,20 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "selectThreadImpl.h"
-#include "atomicAdjustDummyImpl.h"
+
+#ifdef MUTEX_SPINLOCK
+
+#include "mutexSpinlockImpl.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexSpinlockImpl::do_lock
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MutexSpinlockImpl::
+do_lock() {
+  while (AtomicAdjust::compare_and_exchange(_lock, 0, 1) != 0) {
+  }
+}
+
+#endif  // MUTEX_SPINLOCK

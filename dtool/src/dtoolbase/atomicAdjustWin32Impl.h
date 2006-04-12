@@ -22,14 +22,11 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_WIN32_IMPL
+#ifdef WIN32_VC
 
 #include "numeric_types.h"
 
 #include <windows.h>
-
-#define HAVE_ATOMIC_COMPARE_AND_EXCHANGE 1
-#define HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR 1
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AtomicAdjustWin32Impl
@@ -38,25 +35,25 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL AtomicAdjustWin32Impl {
 public:
-  INLINE static void inc(PN_int32 &var);
-  INLINE static bool dec(PN_int32 &var);
-  INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
-  INLINE static PN_int32 get(const PN_int32 &var);
+  INLINE static void inc(TVOLATILE PN_int32 &var);
+  INLINE static bool dec(TVOLATILE PN_int32 &var);
+  INLINE static PN_int32 set(TVOLATILE PN_int32 &var, PN_int32 new_value);
+  INLINE static PN_int32 get(const TVOLATILE PN_int32 &var);
 
-  INLINE static void *set_ptr(void *&var, void *new_value);
-  INLINE static void *get_ptr(void * const &var);
+  INLINE static void *set_ptr(void * TVOLATILE &var, void *new_value);
+  INLINE static void *get_ptr(void * const TVOLATILE &var);
 
-  INLINE static PN_int32 compare_and_exchange(volatile PN_int32 &mem, 
+  INLINE static PN_int32 compare_and_exchange(TVOLATILE PN_int32 &mem, 
                                               PN_int32 old_value,
                                               PN_int32 new_value);
 
-  INLINE static void *compare_and_exchange_ptr(void * volatile &mem, 
+  INLINE static void *compare_and_exchange_ptr(void * TVOLATILE &mem, 
                                                void *old_value,
                                                void *new_value);
 };
 
 #include "atomicAdjustWin32Impl.I"
 
-#endif  // THREAD_WIN32_IMPL
+#endif  // WIN32_VC
 
 #endif

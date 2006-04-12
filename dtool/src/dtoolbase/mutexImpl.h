@@ -29,6 +29,12 @@ typedef MutexDummyImpl MutexImpl;
 typedef MutexDummyImpl ReMutexImpl;
 #define HAVE_REMUTEXIMPL 1
 
+#elif defined(MUTEX_SPINLOCK)
+
+#include "mutexSpinlockImpl.h"
+typedef MutexSpinlockImpl MutexImpl;
+#undef HAVE_REMUTEXIMPL
+
 #elif defined(THREAD_WIN32_IMPL)
 
 #include "mutexWin32Impl.h"
@@ -53,7 +59,8 @@ typedef ReMutexPosixImpl ReMutexImpl;
 
 #include "mutexNsprImpl.h"
 typedef MutexNsprImpl MutexImpl;
-#undef HAVE_REMUTEXIMPL  // NSPR doesn't provide a reentrant mutex.
+typedef ReMutexNsprImpl ReMutexImpl;
+#define HAVE_REMUTEXIMPL 1
 
 #endif
 

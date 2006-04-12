@@ -18,8 +18,10 @@
 
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_NSPR_IMPL
+#ifdef HAVE_NSPR
 
 #include "atomicAdjustNsprImpl.h"
 
-#endif  // THREAD_NSPR_IMPL
+PRLock *AtomicAdjustNsprImpl::_mutex = PR_NewLock();
+
+#endif  // HAVE_NSPR

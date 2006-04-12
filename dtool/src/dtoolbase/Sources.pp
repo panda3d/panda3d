@@ -24,6 +24,7 @@
     mutexLinuxImpl.h mutexLinuxImpl.I \
     mutexPosixImpl.h mutexPosixImpl.I \
     mutexWin32Impl.h mutexWin32Impl.I \
+    mutexSpinlockImpl.h mutexSpinlockImpl.I \
     nearly_zero.h \
     numeric_types.h \
     selectThreadImpl.h \
@@ -43,7 +44,8 @@
     mutexNsprImpl.cxx \
     mutexLinuxImpl.cxx \
     mutexPosixImpl.cxx \
-    mutexWin32Impl.cxx
+    mutexWin32Impl.cxx \
+    mutexSpinlockImpl.cxx
 
   #define INSTALL_HEADERS \
     atomicAdjust.h \
@@ -63,6 +65,7 @@
     mutexLinuxImpl.h mutexLinuxImpl.I \
     mutexPosixImpl.h mutexPosixImpl.I \
     mutexWin32Impl.h mutexWin32Impl.I \
+    mutexSpinlockImpl.h mutexSpinlockImpl.I \
     nearly_zero.h \
     numeric_types.h \
     selectThreadImpl.h \

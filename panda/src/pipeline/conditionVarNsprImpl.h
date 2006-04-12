@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_NSPR_IMPL
+#ifdef HAVE_NSPR
 
 #include "mutexNsprImpl.h"
 #include "pnotify.h"
@@ -49,6 +49,6 @@ private:
 
 #include "conditionVarNsprImpl.I"
 
-#endif  // THREAD_NSPR_IMPL
+#endif  // HAVE_NSPR
 
 #endif

@@ -140,6 +140,8 @@ do_lock() {
     }
     while (_locking_thread != (Thread *)NULL) {
       _cvar.wait();
+      thread_cat.spam()
+        << *this_thread << " wakeup\n";
     }
     
     if (thread_cat.is_spam()) {

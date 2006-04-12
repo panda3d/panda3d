@@ -1,5 +1,5 @@
-// Filename: mutexLinuxImpl.I
-// Created by:  drose (28Mar06)
+// Filename: mutexSpinlockImpl.I
+// Created by:  drose (11Apr06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,33 +18,52 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexLinuxImpl::Constructor
+//     Function: MutexSpinlockImpl::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE MutexLinuxImpl::
-MutexLinuxImpl() {
-  _mode = M_unlocked;
+INLINE MutexSpinlockImpl::
+MutexSpinlockImpl() {
+  _lock = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexLinuxImpl::Destructor
+//     Function: MutexSpinlockImpl::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE MutexLinuxImpl::
-~MutexLinuxImpl() {
-  assert(_mode == M_unlocked);
+INLINE MutexSpinlockImpl::
+~MutexSpinlockImpl() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexLinuxImpl::try_lock
+//     Function: MutexSpinlockImpl::lock
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool MutexLinuxImpl::
+INLINE void MutexSpinlockImpl::
+lock() {
+  if (!try_lock()) {
+    do_lock();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexSpinlockImpl::try_lock
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool MutexSpinlockImpl::
 try_lock() {
-  // We haven't implemented try_lock().  We just report that it would
-  // always block (since we don't know).
-  return false;
+  return (AtomicAdjust::compare_and_exchange(_lock, 0, 1) == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexSpinlockImpl::release
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void MutexSpinlockImpl::
+release() {
+  AtomicAdjust::set(_lock, 0);
 }

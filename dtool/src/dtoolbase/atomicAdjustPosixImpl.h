@@ -22,7 +22,7 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_POSIX_IMPL
+#ifdef HAVE_POSIX_THREADS
 
 #include "numeric_types.h"
 
@@ -34,13 +34,21 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL AtomicAdjustPosixImpl {
 public:
-  INLINE static void inc(PN_int32 &var);
-  INLINE static bool dec(PN_int32 &var);
-  INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
-  INLINE static PN_int32 get(const PN_int32 &var);
+  INLINE static void inc(TVOLATILE PN_int32 &var);
+  INLINE static bool dec(TVOLATILE PN_int32 &var);
+  INLINE static PN_int32 set(TVOLATILE PN_int32 &var, PN_int32 new_value);
+  INLINE static PN_int32 get(const TVOLATILE PN_int32 &var);
 
-  INLINE static void *set_ptr(void *&var, void *new_value);
-  INLINE static void *get_ptr(void * const &var);
+  INLINE static void *set_ptr(void * TVOLATILE &var, void *new_value);
+  INLINE static void *get_ptr(void * const TVOLATILE &var);
+
+  INLINE static PN_int32 compare_and_exchange(TVOLATILE PN_int32 &mem, 
+                                              PN_int32 old_value,
+                                              PN_int32 new_value);
+
+  INLINE static void *compare_and_exchange_ptr(void * TVOLATILE &mem, 
+                                               void *old_value,
+                                               void *new_value);
 
 private:
   static pthread_mutex_t _mutex;
@@ -48,6 +56,6 @@ private:
 
 #include "atomicAdjustPosixImpl.I"
 
-#endif  // THREAD_POSIX_IMPL
+#endif  // HAVE_POSIX_THREADS
 
 #endif

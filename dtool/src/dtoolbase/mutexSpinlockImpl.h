@@ -1,5 +1,5 @@
-// Filename: mutexWin32Impl.h
-// Created by:  drose (07Feb06)
+// Filename: mutexSpinlockImpl.h
+// Created by:  drose (11Apr06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,36 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MUTEXWIN32IMPL_H
-#define MUTEXWIN32IMPL_H
+#ifndef MUTEXSPINLOCKIMPL_H
+#define MUTEXSPINLOCKIMPL_H
 
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#ifdef WIN32_VC
+#ifdef MUTEX_SPINLOCK
 
-#include <windows.h>
+#include "atomicAdjust.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MutexWin32Impl
+//       Class : MutexSpinlockImpl
 // Description : Uses Windows native calls to implement a mutex.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOL MutexWin32Impl {
+class EXPCL_DTOOL MutexSpinlockImpl {
 public:
-  INLINE MutexWin32Impl();
-  INLINE ~MutexWin32Impl();
+  INLINE MutexSpinlockImpl();
+  INLINE ~MutexSpinlockImpl();
 
   INLINE void lock();
   INLINE bool try_lock();
   INLINE void release();
 
 private:
-  CRITICAL_SECTION _lock;
-  friend class ConditionVarWin32Impl;
+  void do_lock();
+
+  volatile PN_int32 _lock;
 };
 
-#include "mutexWin32Impl.I"
+#include "mutexSpinlockImpl.I"
 
-#endif  // WIN32_VC
+#endif  // MUTEX_SPINLOCK
 
 #endif

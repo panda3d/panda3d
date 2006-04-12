@@ -18,10 +18,10 @@
 
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_POSIX_IMPL
+#ifdef HAVE_POSIX_THREADS
 
 #include "atomicAdjustPosixImpl.h"
 
 pthread_mutex_t AtomicAdjustPosixImpl::_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-#endif  // THREAD_POSIX_IMPL
+#endif  // HAVE_POSIX_THREADS

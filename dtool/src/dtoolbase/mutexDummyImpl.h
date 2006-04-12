@@ -22,8 +22,6 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_DUMMY_IMPL
-
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexDummyImpl
 // Description : A fake mutex implementation for single-threaded
@@ -40,7 +38,5 @@ public:
 };
 
 #include "mutexDummyImpl.I"
-
-#endif  // THREAD_DUMMY_IMPL
 
 #endif

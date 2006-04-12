@@ -1,5 +1,5 @@
-// Filename: atomicAdjustDummyImpl.cxx
-// Created by:  drose (09Aug02)
+// Filename: conditionVarSpinlockImpl.cxx
+// Created by:  drose (11Apr06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -17,4 +17,25 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "selectThreadImpl.h"
-#include "atomicAdjustDummyImpl.h"
+
+#ifdef MUTEX_SPINLOCK
+
+#include "conditionVarSpinlockImpl.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarSpinlockImpl::wait
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ConditionVarSpinlockImpl::
+wait() {
+  PN_int32 current = _event;
+  _mutex.release();
+
+  while (AtomicAdjust::get(_event) == current) {
+  }
+
+  _mutex.lock();
+}
+
+#endif  // MUTEX_SPINLOCK

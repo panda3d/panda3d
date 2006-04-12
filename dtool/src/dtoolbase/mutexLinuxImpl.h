@@ -22,11 +22,9 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_LINUX_IMPL
+#ifdef HAVE_LINUX_NATIVE_THREADS
 
 #include "numeric_types.h"
-
-#undef MUTEX_DEFINES_TRYLOCK
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexLinuxImpl
@@ -38,6 +36,7 @@ public:
   INLINE ~MutexLinuxImpl();
 
   void lock();
+  INLINE bool try_lock();
   void release();
 
 private:
@@ -53,6 +52,6 @@ private:
 
 #include "mutexLinuxImpl.I"
 
-#endif  // THREAD_LINUX_IMPL
+#endif  // HAVE_LINUX_NATIVE_THREADS
 
 #endif

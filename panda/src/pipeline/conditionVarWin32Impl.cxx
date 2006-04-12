@@ -18,8 +18,8 @@
 
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_WIN32_IMPL
+#ifdef WIN32_VC
 
 #include "conditionVarWin32Impl.h"
 
-#endif  // THREAD_WIN32_IMPL
+#endif  // WIN32_VC

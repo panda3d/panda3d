@@ -235,6 +235,9 @@ $[cdefine HAVE_THREADS]
 /* Define to enable deadlock detection, mutex recursion checks, etc. */
 $[cdefine DEBUG_THREADS]
 
+/* Define to implement mutexes and condition variables via a user-space spinlock. */
+$[cdefine MUTEX_SPINLOCK]
+
 /* Define if we want to compile the net code.  */
 $[cdefine HAVE_NET]
 

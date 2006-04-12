@@ -23,7 +23,7 @@
 //  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustWin32Impl::
-inc(PN_int32 &var) {
+inc(TVOLATILE PN_int32 &var) {
   InterlockedIncrement((LONG *)&var);
 }
 
@@ -35,7 +35,7 @@ inc(PN_int32 &var) {
 //               is zero.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AtomicAdjustWin32Impl::
-dec(PN_int32 &var) {
+dec(TVOLATILE PN_int32 &var) {
   return (InterlockedDecrement((LONG *)&var) != 0);
 }
 
@@ -46,7 +46,7 @@ dec(PN_int32 &var) {
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustWin32Impl::
-set(PN_int32 &var, PN_int32 new_value) {
+set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
   return InterlockedExchange((LONG *)&var, new_value);
 }
 
@@ -60,7 +60,7 @@ set(PN_int32 &var, PN_int32 new_value) {
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustWin32Impl::
-get(const PN_int32 &var) {
+get(const TVOLATILE PN_int32 &var) {
   return var;
 }
 
@@ -71,7 +71,7 @@ get(const PN_int32 &var) {
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustWin32Impl::
-set_ptr(void *&var, void *new_value) {
+set_ptr(void * TVOLATILE &var, void *new_value) {
   void *orig_value = var;
   var = new_value;
   return orig_value;
@@ -87,7 +87,7 @@ set_ptr(void *&var, void *new_value) {
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustWin32Impl::
-get_ptr(void * const &var) {
+get_ptr(void * const TVOLATILE &var) {
   return var;
 }
 
@@ -111,11 +111,11 @@ get_ptr(void * const &var) {
 //
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustWin32Impl::
-compare_and_exchange(volatile PN_int32 &mem, PN_int32 old_value,
+compare_and_exchange(TVOLATILE PN_int32 &mem, PN_int32 old_value,
                      PN_int32 new_value) {
   // Note that the AtomicAdjust parameter order is different from
   // Windows convention!
-  return InterlockedCompareExchange((volatile LONG *)&mem, new_value, old_value);
+  return InterlockedCompareExchange((TVOLATILE LONG *)&mem, new_value, old_value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,7 +126,7 @@ compare_and_exchange(volatile PN_int32 &mem, PN_int32 old_value,
 //               As above, but works on pointers instead of integers.
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustWin32Impl::
-compare_and_exchange_ptr(void * volatile &mem, void *old_value,
+compare_and_exchange_ptr(void * TVOLATILE &mem, void *old_value,
                          void *new_value) {
   // Note that the AtomicAdjust parameter order is different from
   // Windows convention!

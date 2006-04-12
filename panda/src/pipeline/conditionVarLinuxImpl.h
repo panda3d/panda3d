@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_LINUX_IMPL
+#ifdef HAVE_LINUX_NATIVE_THREADS
 
 #include "mutexLinuxImpl.h"
 #include "pnotify.h"
@@ -48,6 +48,6 @@ private:
 
 #include "conditionVarLinuxImpl.I"
 
-#endif  // THREAD_LINUX_IMPL
+#endif  // HAVE_LINUX_NATIVE_THREADS
 
 #endif

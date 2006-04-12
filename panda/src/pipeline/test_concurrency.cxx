@@ -34,9 +34,19 @@ static const double delay_between_threads = 2.0;
 static const double thread_run_time = 15.0;
 
 // The number of threads to spawn.
-static const int number_of_threads = 5;
+static const int number_of_threads = 4;
+
+// Number of bytes to reserve between writable memory pointers.
+static const int block_size = 64;
 
 static Mutex _output_lock;
+
+union MemBlock {
+  char _pad[block_size];
+  int _value;
+};
+
+volatile MemBlock memblock[number_of_threads];
 
 #define OUTPUT(stuff) { \
   MutexHolder holder(_output_lock); \
@@ -45,8 +55,9 @@ static Mutex _output_lock;
 
 class MyThread : public Thread {
 public:
-  MyThread(const string &name) : 
-    Thread(name, name)
+  MyThread(const string &name, int index) : 
+    Thread(name, name),
+    _index(index)
   {
   }
     
@@ -55,11 +66,13 @@ public:
     
     double total_seconds = 0.0;
     TrueClock *clock = TrueClock::get_global_ptr();
+    volatile int snarf;
     
     while (total_seconds < thread_run_time) {
       double start_time = clock->get_short_time();
       
       for (long long i = 0; i < iterations_per_output; ++i) {
+        memblock[_index]._value = snarf;
       }
 
       double end_time = clock->get_short_time();
@@ -75,6 +88,8 @@ public:
     
     OUTPUT(nout << *this << " exiting.\n");
   }
+
+  int _index;
 };
 
 int
@@ -84,14 +99,14 @@ main(int argc, char *argv[]) {
   typedef pvector< PT(MyThread) > Threads;
   Threads threads;
 
-  PT(MyThread) thread = new MyThread("a");
+  PT(MyThread) thread = new MyThread("a", 0);
   threads.push_back(thread);
   thread->start(TP_normal, true, true);
 
   for (int i = 1; i < number_of_threads; ++i) {
     char name = 'a' + i;
     Thread::sleep(delay_between_threads);
-    PT(MyThread) thread = new MyThread(string(1, name));
+    PT(MyThread) thread = new MyThread(string(1, name), i);
     threads.push_back(thread);
     thread->start(TP_normal, true, true);
   }

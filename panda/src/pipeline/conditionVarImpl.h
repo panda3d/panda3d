@@ -27,6 +27,11 @@
 #include "conditionVarDummyImpl.h"
 typedef ConditionVarDummyImpl ConditionVarImpl;
 
+#elif defined(MUTEX_SPINLOCK)
+
+#include "conditionVarSpinlockImpl.h"
+typedef ConditionVarSpinlockImpl ConditionVarImpl;
+
 #elif defined(THREAD_WIN32_IMPL)
 
 #include "conditionVarWin32Impl.h"

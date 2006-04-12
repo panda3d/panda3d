@@ -599,6 +599,14 @@
 // run-time overhead for these tests.
 #defer DEBUG_THREADS $[<= $[OPTIMIZE], 2]
 
+// Define this true to implement mutexes and condition variables via
+// user-space spinlocks, instead of via OS-provided constructs.  This
+// is almost never a good idea, except possibly in very specialized
+// cases when you are building Panda for a particular application, on
+// a particular platform, and you are sure you won't have more threads
+// than CPU's.  Even then, OS-based locking is probably better.
+#define MUTEX_SPINLOCK
+
 // Do you want to build the network interface?  What additional libraries
 // are required?  Currently, this requires NSPR.
 #define NET_IPATH

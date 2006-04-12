@@ -35,10 +35,21 @@ typedef AtomicAdjustDummyImpl AtomicAdjust;
 #include "atomicAdjustI386Impl.h"
 typedef AtomicAdjustI386Impl AtomicAdjust;
 
+// These symbols are defined if the compare_and_exchange() methods are
+// implemented natively, without recourse to external locks.  If these
+// are not defined, users may elect to implement an operation with
+// some other method than compare_and_exchange(), which might be
+// faster.
+#define HAVE_ATOMIC_COMPARE_AND_EXCHANGE 1
+#define HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR 1
+
 #elif defined(THREAD_WIN32_IMPL)
 
 #include "atomicAdjustWin32Impl.h"
 typedef AtomicAdjustWin32Impl AtomicAdjust;
+
+#define HAVE_ATOMIC_COMPARE_AND_EXCHANGE 1
+#define HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR 1
 
 #elif defined(THREAD_LINUX_IMPL)
 

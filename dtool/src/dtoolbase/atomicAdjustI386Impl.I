@@ -23,10 +23,10 @@
 //  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustI386Impl::
-inc(volatile PN_int32 &var) {
+inc(TVOLATILE PN_int32 &var) {
 #ifdef _M_IX86
   // Windows case
-  volatile PN_int32 *var_ptr = &var;
+  TVOLATILE PN_int32 *var_ptr = &var;
   __asm {
     mov edx, var_ptr;
     lock inc dword ptr [edx];
@@ -47,11 +47,11 @@ inc(volatile PN_int32 &var) {
 //               is zero.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AtomicAdjustI386Impl::
-dec(volatile PN_int32 &var) {
+dec(TVOLATILE PN_int32 &var) {
   unsigned char c;
 #ifdef _M_IX86
   // Windows case
-  volatile PN_int32 *var_ptr = &var;
+  TVOLATILE PN_int32 *var_ptr = &var;
   __asm {
     mov edx, var_ptr;
     lock dec dword ptr [edx];
@@ -73,7 +73,7 @@ dec(volatile PN_int32 &var) {
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustI386Impl::
-set(PN_int32 &var, PN_int32 new_value) {
+set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
   PN_int32 orig_value = var;
   var = new_value;
   return orig_value;
@@ -89,7 +89,7 @@ set(PN_int32 &var, PN_int32 new_value) {
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustI386Impl::
-get(const PN_int32 &var) {
+get(const TVOLATILE PN_int32 &var) {
   return var;
 }
 
@@ -100,7 +100,7 @@ get(const PN_int32 &var) {
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustI386Impl::
-set_ptr(void *&var, void *new_value) {
+set_ptr(void * TVOLATILE &var, void *new_value) {
   void *orig_value = var;
   var = new_value;
   return orig_value;
@@ -116,7 +116,7 @@ set_ptr(void *&var, void *new_value) {
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustI386Impl::
-get_ptr(void * const &var) {
+get_ptr(void * const TVOLATILE &var) {
   return var;
 }
 
@@ -140,12 +140,12 @@ get_ptr(void * const &var) {
 //
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustI386Impl::
-compare_and_exchange(volatile PN_int32 &mem, PN_int32 old_value,
+compare_and_exchange(TVOLATILE PN_int32 &mem, PN_int32 old_value,
                      PN_int32 new_value) {
   PN_int32 prev;
 #ifdef _M_IX86
   // Windows case
-  volatile PN_int32 *mem_ptr = &mem;
+  TVOLATILE PN_int32 *mem_ptr = &mem;
   __asm {
     mov edx, mem_ptr;
     mov ecx, new_value;
@@ -171,12 +171,12 @@ compare_and_exchange(volatile PN_int32 &mem, PN_int32 old_value,
 //               As above, but works on pointers instead of integers.
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustI386Impl::
-compare_and_exchange_ptr(void * volatile &mem, void *old_value,
+compare_and_exchange_ptr(void * TVOLATILE &mem, void *old_value,
                          void *new_value) {
   void *prev;
 #ifdef _M_IX86
   // Windows case
-  void * volatile *mem_ptr = &mem;
+  void * TVOLATILE *mem_ptr = &mem;
   __asm {
     mov edx, mem_ptr;
     mov ecx, new_value;

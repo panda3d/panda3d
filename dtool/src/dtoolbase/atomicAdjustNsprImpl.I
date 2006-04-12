@@ -23,8 +23,8 @@
 //  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustNsprImpl::
-inc(PN_int32 &var) {
-  PR_AtomicIncrement(&var);
+inc(TVOLATILE PN_int32 &var) {
+  PR_AtomicIncrement((PRInt32 *)&var);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,8 +35,8 @@ inc(PN_int32 &var) {
 //               is zero.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AtomicAdjustNsprImpl::
-dec(PN_int32 &var) {
-  return (PR_AtomicDecrement(&var) != 0);
+dec(TVOLATILE PN_int32 &var) {
+  return (PR_AtomicDecrement((PRInt32 *)&var) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,8 +46,8 @@ dec(PN_int32 &var) {
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustNsprImpl::
-set(PN_int32 &var, PN_int32 new_value) {
-  return PR_AtomicSet(&var, new_value);
+set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
+  return PR_AtomicSet((PRInt32 *)&var, new_value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ set(PN_int32 &var, PN_int32 new_value) {
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustNsprImpl::
-get(const PN_int32 &var) {
+get(const TVOLATILE PN_int32 &var) {
   return var;
 }
 
@@ -71,8 +71,8 @@ get(const PN_int32 &var) {
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustNsprImpl::
-set_ptr(void *&var, void *new_value) {
-  return PR_AtomicSet((PN_int32 *)&var, (PN_int32)new_value);
+set_ptr(void * TVOLATILE &var, void *new_value) {
+  return (void *)PR_AtomicSet((PRInt32 *)&var, (PRInt32)new_value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,6 +85,56 @@ set_ptr(void *&var, void *new_value) {
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustNsprImpl::
-get_ptr(void * const &var) {
+get_ptr(void * const TVOLATILE &var) {
   return var;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustNsprImpl::compare_and_exchange
+//       Access: Public, Static
+//  Description: Atomic compare and exchange.  
+//
+//               If mem is equal to old_value, store new_value in mem.
+//               In either case, return the original value of mem.
+//               The caller can test for success by comparing
+//               return_value == old_value.
+//
+//               The atomic function expressed in pseudo-code:
+//
+//                 orig_value = mem;
+//                 if (mem == old_value) {
+//                   mem = new_value;
+//                 }
+//                 return orig_value;
+//
+////////////////////////////////////////////////////////////////////
+INLINE PN_int32 AtomicAdjustNsprImpl::
+compare_and_exchange(TVOLATILE PN_int32 &mem, PN_int32 old_value,
+                     PN_int32 new_value) {
+  PR_Lock(_mutex);
+  PN_int32 orig_value = mem;
+  if (mem == old_value) {
+    mem = new_value;
+  }
+  PR_Unlock(_mutex);
+  return orig_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustNsprImpl::compare_and_exchange_ptr
+//       Access: Public, Static
+//  Description: Atomic compare and exchange.  
+//
+//               As above, but works on pointers instead of integers.
+////////////////////////////////////////////////////////////////////
+INLINE void *AtomicAdjustNsprImpl::
+compare_and_exchange_ptr(void * TVOLATILE &mem, void *old_value,
+                         void *new_value) {
+  PR_Lock(_mutex);
+  void *orig_value = mem;
+  if (mem == old_value) {
+    mem = new_value;
+  }
+  PR_Unlock(_mutex);
+  return orig_value;
 }

@@ -17,9 +17,4 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "selectThreadImpl.h"
-
-#ifdef THREAD_DUMMY_IMPL
-
 #include "mutexDummyImpl.h"
-
-#endif  // THREAD_DUMMY_IMPL

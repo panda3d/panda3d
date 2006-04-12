@@ -22,11 +22,10 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_NSPR_IMPL
+#ifdef HAVE_NSPR
 
 #include <prlock.h>
-
-#undef MUTEX_DEFINES_TRYLOCK
+#include <prmon.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexNsprImpl
@@ -46,8 +45,25 @@ private:
   friend class ConditionVarNsprImpl;
 };
 
+////////////////////////////////////////////////////////////////////
+//       Class : ReMutexNsprImpl
+// Description : Uses NSPR to implement a reMutex.
+////////////////////////////////////////////////////////////////////
+class EXPCL_DTOOL ReMutexNsprImpl {
+public:
+  INLINE ReMutexNsprImpl();
+  INLINE ~ReMutexNsprImpl();
+
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void release();
+
+private:
+  PRMonitor *_monitor;
+};
+
 #include "mutexNsprImpl.I"
 
-#endif  // THREAD_NSPR_IMPL
+#endif  // HAVE_NSPR
 
 #endif

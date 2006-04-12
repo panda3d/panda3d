@@ -18,8 +18,8 @@
 
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_POSIX_IMPL
+#ifdef HAVE_POSIX_THREADS
 
 #include "mutexPosixImpl.h"
 
-#endif  // THREAD_POSIX_IMPL
+#endif  // HAVE_POSIX_THREADS

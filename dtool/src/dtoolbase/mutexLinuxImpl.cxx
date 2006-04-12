@@ -18,7 +18,7 @@
 
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_LINUX_IMPL
+#ifdef HAVE_LINUX_NATIVE_THREADS
 
 #include "mutexLinuxImpl.h"
 #include "atomicAdjust.h"
@@ -61,4 +61,4 @@ release() {
   }
 }
 
-#endif  // THREAD_LINUX_IMPL
+#endif  // HAVE_LINUX_NATIVE_THREADS

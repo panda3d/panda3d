@@ -22,11 +22,12 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_NSPR_IMPL
+#ifdef HAVE_NSPR
 
 #include "numeric_types.h"
 
 #include <pratom.h>
+#include <prlock.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AtomicAdjustNsprImpl
@@ -34,17 +35,28 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL AtomicAdjustNsprImpl {
 public:
-  INLINE static void inc(PN_int32 &var);
-  INLINE static bool dec(PN_int32 &var);
-  INLINE static PN_int32 set(PN_int32 &var, PN_int32 new_value);
-  INLINE static PN_int32 get(const PN_int32 &var);
+  INLINE static void inc(TVOLATILE PN_int32 &var);
+  INLINE static bool dec(TVOLATILE PN_int32 &var);
+  INLINE static PN_int32 set(TVOLATILE PN_int32 &var, PN_int32 new_value);
+  INLINE static PN_int32 get(const TVOLATILE PN_int32 &var);
 
-  INLINE static void *set_ptr(void *&var, void *new_value);
-  INLINE static void *get_ptr(void * const &var);
+  INLINE static void *set_ptr(void * TVOLATILE &var, void *new_value);
+  INLINE static void *get_ptr(void * const TVOLATILE &var);
+
+  INLINE static PN_int32 compare_and_exchange(TVOLATILE PN_int32 &mem, 
+                                              PN_int32 old_value,
+                                              PN_int32 new_value);
+
+  INLINE static void *compare_and_exchange_ptr(void * TVOLATILE &mem, 
+                                               void *old_value,
+                                               void *new_value);
+
+private:
+  static PRLock *_mutex;
 };
 
 #include "atomicAdjustNsprImpl.I"
 
-#endif  // THREAD_NSPR_IMPL
+#endif  // HAVE_NSPR
 
 #endif

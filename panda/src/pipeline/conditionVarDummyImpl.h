@@ -22,8 +22,6 @@
 #include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_DUMMY_IMPL
-
 #include "pnotify.h"
 
 class MutexDummyImpl;
@@ -45,7 +43,5 @@ public:
 };
 
 #include "conditionVarDummyImpl.I"
-
-#endif  // THREAD_DUMMY_IMPL
 
 #endif

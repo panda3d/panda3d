@@ -22,12 +22,10 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_POSIX_IMPL
+#ifdef HAVE_POSIX_THREADS
 
 #include <pthread.h>
 #include <errno.h>
-
-#define MUTEX_DEFINES_TRYLOCK 1
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexPosixImpl
@@ -66,6 +64,6 @@ private:
 
 #include "mutexPosixImpl.I"
 
-#endif  // THREAD_POSIX_IMPL
+#endif  // HAVE_POSIX_THREADS
 
 #endif

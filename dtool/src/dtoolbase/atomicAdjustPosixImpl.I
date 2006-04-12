@@ -23,7 +23,7 @@
 //  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustPosixImpl::
-inc(PN_int32 &var) {
+inc(TVOLATILE PN_int32 &var) {
   pthread_mutex_lock(&_mutex);
   ++var;
   pthread_mutex_unlock(&_mutex);
@@ -37,7 +37,7 @@ inc(PN_int32 &var) {
 //               is zero.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AtomicAdjustPosixImpl::
-dec(PN_int32 &var) {
+dec(TVOLATILE PN_int32 &var) {
   pthread_mutex_lock(&_mutex);
   PN_int32 result = --var;
   pthread_mutex_unlock(&_mutex);
@@ -51,7 +51,7 @@ dec(PN_int32 &var) {
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustPosixImpl::
-set(PN_int32 &var, PN_int32 new_value) {
+set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
   pthread_mutex_lock(&_mutex);
   PN_int32 orig_value = var;
   var = new_value;
@@ -69,7 +69,7 @@ set(PN_int32 &var, PN_int32 new_value) {
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 AtomicAdjustPosixImpl::
-get(const PN_int32 &var) {
+get(const TVOLATILE PN_int32 &var) {
   pthread_mutex_lock(&_mutex);
   PN_int32 orig_value = var;
   pthread_mutex_unlock(&_mutex);
@@ -83,7 +83,7 @@ get(const PN_int32 &var) {
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustPosixImpl::
-set_ptr(void *&var, void *new_value) {
+set_ptr(void * TVOLATILE &var, void *new_value) {
   pthread_mutex_lock(&_mutex);
   void *orig_value = var;
   var = new_value;
@@ -101,9 +101,59 @@ set_ptr(void *&var, void *new_value) {
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustPosixImpl::
-get_ptr(void * const &var) {
+get_ptr(void * const TVOLATILE &var) {
   pthread_mutex_lock(&_mutex);
   void *orig_value = var;
+  pthread_mutex_unlock(&_mutex);
+  return orig_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustPosixImpl::compare_and_exchange
+//       Access: Public, Static
+//  Description: Atomic compare and exchange.  
+//
+//               If mem is equal to old_value, store new_value in mem.
+//               In either case, return the original value of mem.
+//               The caller can test for success by comparing
+//               return_value == old_value.
+//
+//               The atomic function expressed in pseudo-code:
+//
+//                 orig_value = mem;
+//                 if (mem == old_value) {
+//                   mem = new_value;
+//                 }
+//                 return orig_value;
+//
+////////////////////////////////////////////////////////////////////
+INLINE PN_int32 AtomicAdjustPosixImpl::
+compare_and_exchange(TVOLATILE PN_int32 &mem, PN_int32 old_value,
+                     PN_int32 new_value) {
+  pthread_mutex_lock(&_mutex);
+  PN_int32 orig_value = mem;
+  if (mem == old_value) {
+    mem = new_value;
+  }
+  pthread_mutex_unlock(&_mutex);
+  return orig_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustPosixImpl::compare_and_exchange_ptr
+//       Access: Public, Static
+//  Description: Atomic compare and exchange.  
+//
+//               As above, but works on pointers instead of integers.
+////////////////////////////////////////////////////////////////////
+INLINE void *AtomicAdjustPosixImpl::
+compare_and_exchange_ptr(void * TVOLATILE &mem, void *old_value,
+                         void *new_value) {
+  pthread_mutex_lock(&_mutex);
+  void *orig_value = mem;
+  if (mem == old_value) {
+    mem = new_value;
+  }
   pthread_mutex_unlock(&_mutex);
   return orig_value;
 }

@@ -18,8 +18,8 @@
 
 #include "selectThreadImpl.h"
 
-#ifdef THREAD_NSPR_IMPL
+#ifdef HAVE_NSPR
 
 #include "conditionVarNsprImpl.h"
 
-#endif  // THREAD_NSPR_IMPL
+#endif  // HAVE_NSPR

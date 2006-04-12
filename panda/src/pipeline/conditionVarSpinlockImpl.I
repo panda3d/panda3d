@@ -1,5 +1,5 @@
-// Filename: conditionVarLinuxImpl.cxx
-// Created by:  drose (28Mar06)
+// Filename: conditionVarSpinlockImpl.I
+// Created by:  drose (11Apr06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,40 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "selectThreadImpl.h"
-
-#ifdef HAVE_LINUX_NATIVE_THREADS
-
-#include "conditionVarLinuxImpl.h"
-
-#include <linux/futex.h>
-#include <sys/time.h>
-#include <sys/syscall.h>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarLinuxImpl::wait
+//     Function: ConditionVarSpinlockImpl::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void ConditionVarLinuxImpl::
-wait() {
-  // Grab the current value of the counter before we release the
-  // mutex.
-  PN_int32 orig_counter = _counter;
-  _mutex.release();
-  syscall(SYS_futex, &_counter, FUTEX_WAIT, orig_counter, (void *)NULL);
-  _mutex.lock();
+INLINE ConditionVarSpinlockImpl::
+ConditionVarSpinlockImpl(MutexSpinlockImpl &mutex) : _mutex(mutex) {
+  _event = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarLinuxImpl::signal
+//     Function: ConditionVarSpinlockImpl::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ConditionVarSpinlockImpl::
+~ConditionVarSpinlockImpl() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarSpinlockImpl::signal
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void ConditionVarLinuxImpl::
+INLINE void ConditionVarSpinlockImpl::
 signal() {
-  AtomicAdjust::inc(_counter);
-  syscall(SYS_futex, &_counter, FUTEX_WAKE, 1);
+  // This will wake up all waiters on the lock.  But that's allowed.
+  AtomicAdjust::inc(_event);
 }
-
-#endif  // HAVE_LINUX_NATIVE_THREADS
