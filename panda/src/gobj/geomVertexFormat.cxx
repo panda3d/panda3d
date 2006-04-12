@@ -155,6 +155,15 @@ get_union_format(const GeomVertexFormat *other) const {
 
   PT(GeomVertexFormat) new_format = new GeomVertexFormat;
 
+  // Preserve whichever animation type is not AT_None.  (If both
+  // animation types are not AT_None, but they are different, this
+  // whole operation is questionable.)
+  if (_animation.get_animation_type() != AT_none) {
+    new_format->set_animation(_animation);
+  } else {
+    new_format->set_animation(other->get_animation());
+  }
+
   // Keep track of the columns we have already added.
   typedef pset< CPT(InternalName) > ColumnNames;
   ColumnNames column_names;
