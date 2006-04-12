@@ -38,6 +38,16 @@ INLINE PointerToVoid::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::Copy Constructor
+//       Access: Private
+//  Description: Don't use this constructor.
+////////////////////////////////////////////////////////////////////
+INLINE PointerToVoid::
+PointerToVoid(const PointerToVoid &) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PointerToVoid::is_null
 //       Access: Published
 //  Description: Returns true if the PointerTo is a NULL pointer,

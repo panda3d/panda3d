@@ -58,7 +58,6 @@ do_test_ref_count_integrity() const {
 ////////////////////////////////////////////////////////////////////
 void ReferenceCount::
 create_weak_list() {
-#ifdef HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
   WeakReferenceList *weak_list = new WeakReferenceList;
   void *orig = 
     AtomicAdjust::compare_and_exchange_ptr((void *&)_weak_list, NULL, weak_list);
@@ -66,13 +65,5 @@ create_weak_list() {
     // Someone else created it first.
     delete weak_list;
   }
-#else
-  static MutexImpl lock;
-  lock.lock();
-  if (_weak_list != (WeakReferenceList *)NULL) {
-    _weak_list = new WeakReferenceList;
-  }
-  lock.release();
-#endif  // HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
 }
 

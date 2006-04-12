@@ -28,6 +28,15 @@ WeakPointerToVoid() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WeakPointerToVoid::Destructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE WeakPointerToVoid::
+~WeakPointerToVoid() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WeakPointerToVoid::mark_deleted
 //       Access: Public
 //  Description: This is intended only to be called by the

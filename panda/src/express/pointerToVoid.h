@@ -38,6 +38,9 @@ protected:
   INLINE PointerToVoid();
   INLINE ~PointerToVoid();
 
+private:
+  INLINE PointerToVoid(const PointerToVoid &copy);
+
 PUBLISHED:
   INLINE bool is_null() const;
   INLINE size_t get_hash() const;
