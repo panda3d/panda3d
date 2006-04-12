@@ -28,7 +28,12 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexSpinlockImpl
-// Description : Uses Windows native calls to implement a mutex.
+// Description : Uses a simple user-space spinlock to implement a
+//               mutex.  It is usually not a good idea to use this
+//               implementation, unless you are building Panda for a
+//               specific application on a specific SMP machine, and
+//               you are confident that you have at least as many
+//               CPU's as you have threads.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL MutexSpinlockImpl {
 public:
@@ -42,7 +47,7 @@ public:
 private:
   void do_lock();
 
-  volatile PN_int32 _lock;
+  TVOLATILE PN_int32 _lock;
 };
 
 #include "mutexSpinlockImpl.I"
