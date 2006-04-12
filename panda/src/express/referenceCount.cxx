@@ -67,7 +67,7 @@ create_weak_list() {
     delete weak_list;
   }
 #else
-  static MutexImpl lock("ReferenceCount::create_weak_list");
+  static MutexImpl lock;
   lock.lock();
   if (_weak_list != (WeakReferenceList *)NULL) {
     _weak_list = new WeakReferenceList;
