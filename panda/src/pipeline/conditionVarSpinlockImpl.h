@@ -32,18 +32,12 @@ class MutexSpinlockImpl;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ConditionVarSpinlockImpl
-// Description : Uses Windows native calls to implement a
-//               conditionVar.
-//
-//               The Windows native synchronization primitives don't
-//               actually implement a full POSIX-style condition
-//               variable, but the Event primitive does a fair job if
-//               we disallow POSIX broadcast.  See
-//               http://www.cs.wustl.edu/~schmidt/spinlock-cv-1.html for
-//               a full implementation that includes broadcast.  This
-//               class is much simpler than that full implementation,
-//               so we can avoid the overhead require to support
-//               broadcast.
+// Description : Uses a simple user-space spinlock to implement a
+//               condition variable.  It is usually not a good idea to
+//               use this implementation, unless you are building
+//               Panda for a specific application on a specific SMP
+//               machine, and you are confident that you have at least
+//               as many CPU's as you have threads.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ConditionVarSpinlockImpl {
 public:
