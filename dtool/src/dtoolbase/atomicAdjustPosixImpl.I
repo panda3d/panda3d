@@ -101,7 +101,7 @@ set_ptr(void *&var, void *new_value) {
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
 INLINE void *AtomicAdjustPosixImpl::
-get_ptr(const void *&var) {
+get_ptr(void * const &var) {
   pthread_mutex_lock(&_mutex);
   void *orig_value = var;
   pthread_mutex_unlock(&_mutex);
