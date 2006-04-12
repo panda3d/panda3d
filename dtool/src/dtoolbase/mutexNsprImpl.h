@@ -26,6 +26,7 @@
 
 #include <prlock.h>
 #include <prmon.h>
+#include <assert.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexNsprImpl
