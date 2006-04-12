@@ -40,18 +40,22 @@ class ExcelHandler(saxutils.DefaultHandler):
             pass
         elif name=="Cell":
             s = ''.join(self.chars)
-            if self.isNumber:
-                # Determine if it is an int or float and use
-                # return the best fit
-                floatVersion = float(s)
-                intVersion = int(floatVersion)
-                if floatVersion == intVersion:
-                    # If the float is equal to the int, it must be an int
-                    s = intVersion
-                else:
-                    # Keep the precision and return a float
-                    s = floatVersion
-            self.cells.append(s)
+            if s:
+                if self.isNumber:
+                    # Determine if it is an int or float and use
+                    # return the best fit
+                    floatVersion = float(s)
+                    intVersion = int(floatVersion)
+                    if floatVersion == intVersion:
+                        # If the float is equal to the int, it must be an int
+                        s = intVersion
+                    else:
+                        # Keep the precision and return a float
+                        s = floatVersion
+                # Convert the string "None" to the python object None
+                elif s == "None":
+                    s = None
+                self.cells.append(s)
         elif name=="Row":
             self.rows.append(self.cells)
         elif name=="Table":
