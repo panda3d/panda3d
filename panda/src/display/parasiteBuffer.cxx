@@ -57,6 +57,8 @@ ParasiteBuffer(GraphicsOutput *host, const string &name,
   _default_display_region->compute_pixels(_x_size, _y_size);
   _is_valid = true;
   
+  set_inverted(host->get_gsg()->get_copy_texture_inverted());
+  
   nassertv(_x_size <= host->get_x_size() && _y_size <= host->get_y_size());
 }
 

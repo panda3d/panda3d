@@ -1009,6 +1009,7 @@ INLINE void Texture::
 set_x_size(int x_size) {
   if (_x_size != x_size) {
     _x_size = x_size;
+    ++_modified;
     clear_ram_image();
   }
 }
@@ -1025,6 +1026,7 @@ set_y_size(int y_size) {
   if (_y_size != y_size) {
     nassertv(_texture_type != Texture::TT_1d_texture || y_size == 1);
     _y_size = y_size;
+    ++_modified;
     clear_ram_image();
   }
 }
@@ -1043,6 +1045,7 @@ set_z_size(int z_size) {
              (_texture_type == Texture::TT_cube_map && z_size == 6) ||
              (z_size == 1));
     _z_size = z_size;
+    ++_modified;
     clear_ram_image();
   }
 }

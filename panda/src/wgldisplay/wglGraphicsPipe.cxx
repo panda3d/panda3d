@@ -25,6 +25,9 @@
 typedef enum {Software, MCD, ICD} OGLDriverType;
 
 TypeHandle wglGraphicsPipe::_type_handle;
+bool    wglGraphicsPipe::_current_valid;
+HDC     wglGraphicsPipe::_current_hdc;
+HGLRC   wglGraphicsPipe::_current_hglrc;
   
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsPipe::Constructor
@@ -33,6 +36,7 @@ TypeHandle wglGraphicsPipe::_type_handle;
 ////////////////////////////////////////////////////////////////////
 wglGraphicsPipe::
 wglGraphicsPipe() {
+  _current_valid = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,6 +46,25 @@ wglGraphicsPipe() {
 ////////////////////////////////////////////////////////////////////
 wglGraphicsPipe::
 ~wglGraphicsPipe() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::wgl_make_current
+//       Access: Private, Static
+//  Description: a thin wrapper around wglMakeCurrent to avoid
+//               unnecessary switches.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsPipe::
+wgl_make_current(HDC hdc, HGLRC hglrc) {
+  if ((_current_valid) &&
+      (_current_hdc == hdc) &&
+      (_current_hglrc == hglrc)) {
+    return;
+  }
+  _current_valid = true;
+  _current_hdc = hdc;
+  _current_hglrc = hglrc;
+  wglMakeCurrent(hdc, hglrc);
 }
 
 ////////////////////////////////////////////////////////////////////

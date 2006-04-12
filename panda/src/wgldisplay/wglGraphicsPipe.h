@@ -74,6 +74,12 @@ private:
                                       HDC window_dc, int pfnum);
   static string format_pfd_flags(DWORD pfd_flags);
 
+  static bool  _current_valid;
+  static HDC   _current_hdc;
+  static HGLRC _current_hglrc;
+
+  static void wgl_make_current(HDC hdc, HGLRC hglrc);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
