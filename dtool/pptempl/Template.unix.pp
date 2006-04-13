@@ -178,7 +178,7 @@
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
 ################################# DO NOT EDIT ###########################
 
-#if $[USE_TAU]
+#if $[and $[USE_TAU],$[TAU_MAKEFILE]]
 include $[TAU_MAKEFILE]
 #endif
 

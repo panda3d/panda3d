@@ -47,22 +47,11 @@
   // ensure pdbs are copied to install dir
   #define build_pdbs yes
 
-  #define STL_ALLOCATOR VC6
-
 #elif $[or $[eq $[USE_COMPILER], MSVC7], $[eq $[USE_COMPILER], MSVC7_1]]
 
   #define COMPILER cl
   #define LINKER link
   #define LIBBER lib
-
-  #if $[eq $[USE_COMPILER], MSVC7]
-    // What is the syntax of the STL allocator declaration?  See
-    // LocalSetup.pp for allowable values.
-    #define STL_ALLOCATOR MODERN
-  #else
-    // until I figure out how to get rid of 'rebind' vc7.1 C4346 build errors
-    #define STL_ALLOCATOR UNKNOWN
-  #endif
 
   #if $[eq $[NO_CROSSOBJ_OPT],]
      #define DO_CROSSOBJ_OPT 1
@@ -234,3 +223,7 @@
 #define END_CFLAGS $[END_CFLAGS] /E
 #endif
 
+#defer tau_opts $[decygwin %,-I"%",$[EXTRA_INCPATH] $[ipath] $[WIN32_PLATFORMSDK_INCPATH] $[tau_ipath]] $[building_var:%=-D%]
+#defer TAU_MAKE_IL $[ROOT_PDT]/Windows/bin/edgcpfe -o $[il_source] $[tau_opts] $[cdefines:%=-D%] $[TAU_INSTRUMENTOR_FLAGS] $[source]
+#defer TAU_MAKE_PDB $[ROOT_PDT]/Windows/bin/taucpdisp $[il_source] > $[pdb_source]
+#defer TAU_MAKE_INST $[ROOT_TAU]/bin/tau_instrumentor $[pdb_source] $[source] -o $[inst_source]

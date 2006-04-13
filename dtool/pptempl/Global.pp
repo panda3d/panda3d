@@ -331,7 +331,12 @@
 // the target is not to be built.
 #defer build_target $[BUILD_TARGET]
 
-#if $[USE_TAU]
+// If we have USE_TAU but not TAU_MAKEFILE, we invoke the tau
+// instrumentor and compiler directly.
+#define direct_tau $[and $[USE_TAU],$[not $[TAU_MAKEFILE]]]
+
+#if $[and $[USE_TAU],$[TAU_MAKEFILE]]
+  // Use the makefile-based rules to run the tau instrumentor.
 #defer compile_c $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[COMPILE_C] $[TAU_CFLAGS]
 #defer compile_c++ $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[COMPILE_C++] $[TAU_CFLAGS] $[TAU_C++FLAGS]
 #defer link_bin_c $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[LINK_BIN_C] $[TAU_CFLAGS]

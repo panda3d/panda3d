@@ -49,14 +49,6 @@ public:
   pvector(size_type n) : base_class(n) { }
   pvector(size_type n, const Type &value) : base_class(n, value) { }
   pvector(const Type *begin, const Type *end) : base_class(begin, end) { }
-
-#ifdef USE_TAU
-  void
-  push_back(const TYPENAME base_class::value_type &x) {
-    TAU_PROFILE("pvector::push_back(const value_type &)", " ", TAU_USER);
-    base_class::push_back(x);
-  }
-#endif  // USE_TAU
 };
 
 #endif  // USE_STL_ALLOCATOR

@@ -645,7 +645,7 @@
 // The Tau profiler provides a multiplatform, thread-aware profiler.
 // To use it, define TAU_MAKEFILE appropriately, define USE_TAU to 1,
 // and rebuild the code with ppremake; make install.
-#define TAU_MAKEFILE /usr/local/tau/i386_linux/lib/Makefile.tau-pthread-pdt
+#define TAU_MAKEFILE
 #define TAU_OPTS -optKeepFiles
 #define TAU_CFLAGS -D_GNU_SOURCE
 #define USE_TAU

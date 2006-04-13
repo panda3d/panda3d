@@ -234,6 +234,9 @@ $[TAB] rm -f $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cx
 #if $[py_sources]
 $[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
 #endif
+#if $[USE_TAU]
+$[TAB] rm -f *.il *.pdb *.inst.*  // scrub out tau-generated files.
+#endif
 
 // 'cleanall' is intended to undo all the effects of running ppremake
 // and building.  It removes everything except the Makefile.
@@ -380,16 +383,16 @@ $[TAB]  mkdir -p $[tmpdirname_cyg]  // this dir-creation-stuff is leftover from 
 $[TAB]  cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[tmpdirname_win]\verdate.h"
 $[TAB]  rc /n /I"$[tmpdirname_win]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[VER_RESOURCE] $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[SHARED_LIB_C++] $[VER_RESOURCE]
+$[TAB] $[shared_lib_c++] $[VER_RESOURCE]
   #else
-$[TAB] $[SHARED_LIB_C] $[VER_RESOURCE]
+$[TAB] $[shared_lib_c] $[VER_RESOURCE]
   #endif
 #else
 .NOTPARALLEL $[target] : $[sources] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[SHARED_LIB_C++]
+$[TAB] $[shared_lib_c++]
   #else
-$[TAB] $[SHARED_LIB_C]
+$[TAB] $[shared_lib_c]
   #endif
 #endif
 
@@ -506,9 +509,9 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define sources $($[varname])
 $[target] : $[sources] $[static_lib_dependencies] $[GENERATED_SOURCES]
 #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[SHARED_LIB_C++] $[COMPILED_RESOURCES]
+$[TAB] $[shared_lib_c++] $[COMPILED_RESOURCES]
 #else
-$[TAB] $[SHARED_LIB_C] $[COMPILED_RESOURCES]
+$[TAB] $[shared_lib_c] $[COMPILED_RESOURCES]
 #endif
 
 #if $[build_dlls]
@@ -670,9 +673,9 @@ $[TAB] $[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
 #else
   // Otherwise, we can use the normal linker.
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[LINK_BIN_C++]
+$[TAB] $[link_bin_c++]
   #else
-$[TAB] $[LINK_BIN_C]
+$[TAB] $[link_bin_c]
   #endif
 #endif
 
@@ -736,9 +739,9 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define sources $($[varname])
 $[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[LINK_BIN_C++]
+$[TAB] $[link_bin_c++]
 #else
-$[TAB] $[LINK_BIN_C]
+$[TAB] $[link_bin_c]
 #endif
 
 #end noinst_bin_target test_bin_target test_lib_target
@@ -817,8 +820,30 @@ $[TAB] cp $[target_prebuilt] $[target]
   #set ipath . $[ipath]
 #endif
 
+#if $[not $[direct_tau]]
+
 $[target] : $[source] $[get_depends $[source]]
+$[TAB] $[compile_c]
+
+#else  // direct_tau
+// This version is used to invoke the tau compiler directly.
+#define il_source $[source].il
+#define pdb_source $[source].pdb  // Not to be confused with windows .pdb debugger info files.
+#define inst_source $[source:%.c=%.inst.c]
+$[il_source] : $[source]
+$[TAB] $[TAU_MAKE_IL]
+
+$[pdb_source] : $[il_source]
+$[TAB] $[TAU_MAKE_PDB]
+
+$[inst_source] : $[pdb_source]
+$[TAB] $[TAU_MAKE_INST] -c
+
+$[target] : $[inst_source] $[get_depends $[source]]
+#define source $[inst_source]
 $[TAB] $[COMPILE_C]
+
+#endif  // direct_tau
 
 #end file
 
@@ -835,10 +860,31 @@ $[TAB] $[COMPILE_C]
   #set ipath . $[ipath]
 #endif
 
+#if $[not $[direct_tau]]
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
 $[target] : $[source] $[get_depends $[source]] $[yxx_sources:%.yxx=%.h]
+$[TAB] $[compile_c++]
+
+#else  // direct_tau
+// This version is used to invoke the tau compiler directly.
+#define il_source $[source].il
+#define pdb_source $[source].pdb  // Not to be confused with windows .pdb debugger info files.
+#define inst_source $[source:%.cxx=%.inst.cxx]
+$[il_source] : $[source] $[yxx_sources:%.yxx=%.h]
+$[TAB] $[TAU_MAKE_IL]
+
+$[pdb_source] : $[il_source]
+$[TAB] $[TAU_MAKE_PDB]
+
+$[inst_source] : $[pdb_source]
+$[TAB] $[TAU_MAKE_INST] -c++
+
+$[target] : $[inst_source] $[get_depends $[source]]
+#define source $[inst_source]
 $[TAB] $[COMPILE_C++]
+
+#endif  // direct_tau
 
 #end file
 

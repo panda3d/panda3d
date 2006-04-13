@@ -80,6 +80,8 @@
 #defer CDEFINES_OPT3 $[dlink_all_static] $[EXTRA_CDEFS]
 #defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS]
 
+#defer cdefines $[CDEFINES_OPT$[OPTIMIZE]]
+
 //  Opt1 /GZ disables OPT flags, so make sure its OPT1 only
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPT1FLAGS]
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
@@ -121,8 +123,20 @@
 // the defining extra_cflags in individual sources.pp's will not picked up.  use END_FLAGS instead
 #defer extra_cflags /EHsc /Zm500 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
-#defer DECYGWINED_INC_PATHLIST_ARGS $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath] $[WIN32_PLATFORMSDK_INCPATH]]
-#defer MAIN_C_COMPILE_ARGS /nologo /c $[DECYGWINED_INC_PATHLIST_ARGS] $[flags] $[extra_cflags] "$[osfilename $[source]]"
+#if $[direct_tau]
+#define tau_ipath $[ROOT_TAU]/include
+#define tau_cflags /DPROFILING_ON /DTAU_STDCXXLIB
+#define tau_lpath $[ROOT_TAU]/lib/VC7
+#define tau_libs tau-profile-static-mt.lib
+#else  // direct_tau
+#define tau_ipath
+#define tau_cflags
+#define tau_lpath
+#define tau_libs
+#endif   // direct_tau
+
+#defer DECYGWINED_INC_PATHLIST_ARGS $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath] $[WIN32_PLATFORMSDK_INCPATH] $[tau_ipath]]
+#defer MAIN_C_COMPILE_ARGS /nologo /c $[DECYGWINED_INC_PATHLIST_ARGS] $[flags] $[extra_cflags] $[tau_cflags] "$[osfilename $[source]]"
 
 #defer COMPILE_C $[COMPILER] /Fo"$[osfilename $[target]]" $[MAIN_C_COMPILE_ARGS]
 #defer COMPILE_C++ $[COMPILE_C]
@@ -148,10 +162,10 @@
 
 //#defer ver_resource $[directory]\ver.res
 //#defer SHARED_LIB_C link /nologo /dll /VERBOSE:LIB $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]]
-#defer SHARED_LIB_C $[LINKER] /nologo /DLL $[LINKER_DEF_FILE_ARG] $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]]
+#defer SHARED_LIB_C $[LINKER] /nologo /DLL $[LINKER_DEF_FILE_ARG] $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs]
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
-#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] /OUT:"$[osfilename $[target]]"
 #defer LINK_BIN_C++ $[LINK_BIN_C]
 
 #if $[ne $[LINK_ALL_STATIC],]
