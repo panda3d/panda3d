@@ -5,7 +5,7 @@
   interrogatedb:c dconfig:c dtoolconfig:m \
   dtoolutil:c dtoolbase:c dtool:m \
   pystub \
-  prc:c express:c 
+  prc:c pstatclient:c pandabase:c net:c linmath:c putil:c
 
 #define C++FLAGS -DWITHIN_PANDA
 
