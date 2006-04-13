@@ -837,6 +837,7 @@ create_texture(DXScreenData &scrn) {
     }
     get_texture()->texture_uploaded();
   }
+  mark_loaded();
 
   return true;
 

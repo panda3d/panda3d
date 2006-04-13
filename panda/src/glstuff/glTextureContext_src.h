@@ -36,6 +36,7 @@ public:
   // glTexImage2D() call.  If none of these have changed, we can
   // reload the texture image with a glTexSubImage2D().
   bool _already_applied;
+  bool _uses_mipmaps;
   GLint _internal_format;
   GLsizei _width;
   GLsizei _height;

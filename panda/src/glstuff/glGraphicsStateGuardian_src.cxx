@@ -6558,6 +6558,7 @@ upload_texture(CLP(TextureContext) *gtc) {
 
   if (success) {
     gtc->_already_applied = true;
+    gtc->_uses_mipmaps = uses_mipmaps;
     gtc->_internal_format = internal_format;
     gtc->_width = width;
     gtc->_height = height;
@@ -6673,6 +6674,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
   
   
   if (!gtc->_already_applied ||
+      gtc->_uses_mipmaps != uses_mipmaps ||
       gtc->_internal_format != internal_format ||
       gtc->_width != width ||
       gtc->_height != height ||

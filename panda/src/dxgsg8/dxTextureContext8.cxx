@@ -84,7 +84,6 @@ create_texture(DXScreenData &scrn) {
   nassertr(IS_VALID_PTR(get_texture()), false);
 
   delete_texture();
-  mark_loaded();
 
 #ifdef DO_PSTATS
   update_data_size_bytes(get_texture()->estimate_texture_memory());
@@ -695,6 +694,7 @@ create_texture(DXScreenData &scrn) {
   }
 
   get_texture()->texture_uploaded();
+  mark_loaded();
   return true;
 
  error_exit:
