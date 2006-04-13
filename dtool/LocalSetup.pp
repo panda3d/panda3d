@@ -468,6 +468,9 @@ $[cdefine HAVE_LINUX_NATIVE_THREADS]
 /* Is the code being compiled with the Tau profiler's instrumentor? */
 $[cdefine USE_TAU]
 
+/* Define if needed to have 64-bit file i/o */
+$[cdefine __USE_LARGEFILE64]
+
 /* Must global operator new and delete functions throw exceptions? */
 $[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 
