@@ -125,9 +125,9 @@
 
 #if $[direct_tau]
 #define tau_ipath $[ROOT_TAU]/include
-#define tau_cflags /DPROFILING_ON /DTAU_STDCXXLIB
+#define tau_cflags /DPROFILING_ON /DTAU_STDCXXLIB /DTAU_USE_C_API
 #define tau_lpath $[ROOT_TAU]/lib/VC7
-#define tau_libs tau-profile-static-mt.lib
+#define tau_libs tau-profile.lib
 #else  // direct_tau
 #define tau_ipath
 #define tau_cflags

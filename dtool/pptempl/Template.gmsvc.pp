@@ -827,9 +827,9 @@ $[TAB] $[compile_c]
 
 #else  // direct_tau
 // This version is used to invoke the tau compiler directly.
-#define il_source $[source].il
-#define pdb_source $[source].pdb  // Not to be confused with windows .pdb debugger info files.
-#define inst_source $[source:%.c=%.inst.c]
+#define il_source $[target].il
+#define pdb_source $[target].pdb  // Not to be confused with windows .pdb debugger info files.
+#define inst_source $[notdir $[target:%.obj=%.inst.c]]
 $[il_source] : $[source]
 $[TAB] $[TAU_MAKE_IL]
 
@@ -868,9 +868,9 @@ $[TAB] $[compile_c++]
 
 #else  // direct_tau
 // This version is used to invoke the tau compiler directly.
-#define il_source $[source].il
-#define pdb_source $[source].pdb  // Not to be confused with windows .pdb debugger info files.
-#define inst_source $[source:%.cxx=%.inst.cxx]
+#define il_source $[target].il
+#define pdb_source $[target].pdb  // Not to be confused with windows .pdb debugger info files.
+#define inst_source $[notdir $[target:%.obj=%.inst.cxx]]
 $[il_source] : $[source] $[yxx_sources:%.yxx=%.h]
 $[TAB] $[TAU_MAKE_IL]
 
