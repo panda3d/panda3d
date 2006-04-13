@@ -817,25 +817,27 @@ create_texture(DXScreenData &scrn) {
   }
 
   // must not put render to texture into LRU
-  if (_lru_page == 0 && _managed == false && get_texture()->get_render_to_texture ( ) == false) {
-    Lru *lru;
-
-    lru = scrn._dxgsg9 -> _lru;
-    if (lru) {
-      LruPage *lru_page;
-
-      lru_page = lru -> allocate_page (data_size);
-      if (lru_page) {
-        lru_page -> _m.v.type = GPT_Texture;
-        lru_page -> _m.lru_page_type.pointer = this;
-
-        lru -> add_cached_page (LPP_New, lru_page);
-        _lru_page = lru_page;
+  if (!_managed && !get_texture()->get_render_to_texture()) {
+    if (_lru_page == 0) {
+      Lru *lru;
+      
+      lru = scrn._dxgsg9 -> _lru;
+      if (lru) {
+        LruPage *lru_page;
+        
+        lru_page = lru -> allocate_page (data_size);
+        if (lru_page) {
+          lru_page -> _m.v.type = GPT_Texture;
+          lru_page -> _m.lru_page_type.pointer = this;
+          
+          lru -> add_cached_page (LPP_New, lru_page);
+          _lru_page = lru_page;
+        }
       }
     }
+    get_texture()->texture_uploaded();
   }
 
-  get_texture()->texture_uploaded();
   return true;
 
  error_exit:
