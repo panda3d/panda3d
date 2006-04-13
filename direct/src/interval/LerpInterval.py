@@ -622,6 +622,13 @@ class LerpFunctionInterval(Interval.Interval):
             name = ('LerpFunctionInterval-%d' %
                     LerpFunctionInterval.lerpFunctionIntervalNum)
             LerpFunctionInterval.lerpFunctionIntervalNum += 1
+        else:
+            # Allow the user to pass in a %d in the name and we'll go ahead
+            # and uniquify the name for them.
+            if "%d" in name:
+                name = name % LerpFunctionInterval.lerpFunctionIntervalNum
+                LerpFunctionInterval.lerpFunctionIntervalNum += 1
+            
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
 
