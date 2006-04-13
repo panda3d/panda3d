@@ -128,7 +128,8 @@ choose_pixel_format(const FrameBufferProperties &properties) {
 
     HDC twindow_dc = temp_gsg->get_twindow_dc();
     if (twindow_dc != 0) {
-      wglMakeCurrent(twindow_dc, temp_gsg->get_context(twindow_dc));
+      pipe->wgl_make_current(twindow_dc, temp_gsg->get_context(twindow_dc),
+                             NULL);
       temp_gsg->reset_if_new();
       
       if (temp_gsg->_supports_pixel_format) {

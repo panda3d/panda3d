@@ -69,7 +69,6 @@ wglGraphicsBuffer::
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsBuffer::
 begin_frame(FrameMode mode) {
-  PStatTimer timer(_make_current_pcollector);
 
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
@@ -91,8 +90,11 @@ begin_frame(FrameMode mode) {
       }
     }
   }
-  
-  wglMakeCurrent(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc));
+
+  wglGraphicsPipe *wglpipe;
+  DCAST_INTO_R(wglpipe, _pipe, false);
+  wglpipe->wgl_make_current(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc),
+                            &_make_current_pcollector);
   
   if (mode == FM_render) {
     begin_render_texture();
@@ -307,7 +309,10 @@ open_buffer() {
     return false;
   }
 
-  wglMakeCurrent(twindow_dc, wglgsg->get_context(twindow_dc));
+  wglGraphicsPipe *wglpipe;
+  DCAST_INTO_R(wglpipe, _pipe, false);
+  wglpipe->wgl_make_current(twindow_dc, wglgsg->get_context(twindow_dc),
+                            &_make_current_pcollector);
   wglgsg->reset_if_new();
 
   // Now that we have fully made a window and used that window to
@@ -315,13 +320,14 @@ open_buffer() {
   // This might fail if the pbuffer extensions are not supported.
 
   if (!make_pbuffer(twindow_dc)) {
-    wglMakeCurrent(0, 0);
+    wglpipe->wgl_make_current(0, 0, &_make_current_pcollector);
     return false;
   }
 
   _pbuffer_dc = wglgsg->_wglGetPbufferDCARB(_pbuffer);
   
-  wglMakeCurrent(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc));
+  wglpipe->wgl_make_current(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc),
+                            &_make_current_pcollector);
   wglgsg->report_my_gl_errors();
   
   _is_valid = true;

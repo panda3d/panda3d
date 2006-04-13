@@ -162,7 +162,6 @@ wglGraphicsWindow::
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsWindow::
 begin_frame(FrameMode mode) {
-  PStatTimer timer(_make_current_pcollector);
 
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
@@ -174,7 +173,10 @@ begin_frame(FrameMode mode) {
   
   HGLRC context = wglgsg->get_context(_hdc);
   nassertr(context, false);
-  wglMakeCurrent(_hdc, context);
+  
+  wglGraphicsPipe *wglpipe;
+  DCAST_INTO_R(wglpipe, _pipe, false);
+  wglpipe->wgl_make_current(_hdc, context, &_make_current_pcollector);
   wglgsg->reset_if_new();
 
   if (mode == FM_render) {
@@ -240,8 +242,9 @@ begin_flip() {
     DCAST_INTO_V(wglgsg, _gsg);
     HGLRC context = wglgsg->get_context(_hdc);
     nassertv(context);
-    wglMakeCurrent(_hdc, context);
-    
+    wglGraphicsPipe *wglpipe;
+    DCAST_INTO_V(wglpipe, _pipe);
+    wglpipe->wgl_make_current(_hdc, context, &_make_current_pcollector);
     SwapBuffers(_hdc);
   }
 }
@@ -255,7 +258,9 @@ begin_flip() {
 void wglGraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
-    wglMakeCurrent(_hdc, NULL);
+    wglGraphicsPipe *wglpipe;
+    DCAST_INTO_V(wglpipe, _pipe);
+    wglpipe->wgl_make_current(_hdc, NULL, &_make_current_pcollector);
     _gsg.clear();
     _active = false;
   }

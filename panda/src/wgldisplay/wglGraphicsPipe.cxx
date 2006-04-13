@@ -49,13 +49,13 @@ wglGraphicsPipe::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::wgl_make_current
+//     Function: wglGraphicsWindow::wgl_make_current
 //       Access: Private, Static
 //  Description: a thin wrapper around wglMakeCurrent to avoid
-//               unnecessary switches.
+//               unnecessary OS-call overhead.
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsPipe::
-wgl_make_current(HDC hdc, HGLRC hglrc) {
+wgl_make_current(HDC hdc, HGLRC hglrc, PStatCollector *collector) {
   if ((_current_valid) &&
       (_current_hdc == hdc) &&
       (_current_hglrc == hglrc)) {
@@ -64,7 +64,12 @@ wgl_make_current(HDC hdc, HGLRC hglrc) {
   _current_valid = true;
   _current_hdc = hdc;
   _current_hglrc = hglrc;
-  wglMakeCurrent(hdc, hglrc);
+  if (collector) {
+    PStatTimer timer(*collector);
+    wglMakeCurrent(hdc, hglrc);
+  } else {
+    wglMakeCurrent(hdc, hglrc);
+  }    
 }
 
 ////////////////////////////////////////////////////////////////////
