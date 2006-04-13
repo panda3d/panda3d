@@ -20,26 +20,23 @@
 #define PIPELINECYCLERBASE_H
 
 #include "pandabase.h"
+#include "selectThreadImpl.h"  // for THREADED_PIPELINE definition
 
-#ifdef DO_PIPELINING
-
-#ifdef HAVE_THREADS
+#if defined(THREADED_PIPELINE)
 
 // With DO_PIPELINING and threads available, we want the true cycler
 // implementation.
 #include "pipelineCyclerTrueImpl.h"
 typedef PipelineCyclerTrueImpl PipelineCyclerBase;
 
-#else  // HAVE_THREADS
+#elif defined(DO_PIPELINING)
 
 // With DO_PIPELINING but no threads available, we want the dummy,
 // self-validating cycler implementation.
 #include "pipelineCyclerDummyImpl.h"
 typedef PipelineCyclerDummyImpl PipelineCyclerBase;
 
-#endif // HAVE_THREADS
-
-#else  // DO_PIPELINING
+#else  // !DO_PIPELINING
 
 // Without DO_PIPELINING, we only want the trivial, do-nothing
 // implementation.

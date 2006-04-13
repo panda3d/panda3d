@@ -20,6 +20,7 @@
 #define PIPELINECYCLERTRUEIMPL_H
 
 #include "pandabase.h"
+#include "selectThreadImpl.h"  // for THREADED_PIPELINE definition
 
 #ifdef THREADED_PIPELINE
 

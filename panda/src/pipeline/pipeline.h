@@ -25,6 +25,7 @@
 #include "pset.h"
 #include "reMutex.h"
 #include "reMutexHolder.h"
+#include "selectThreadImpl.h"  // for THREADED_PIPELINE definition
 
 struct PipelineCyclerTrueImpl;
 

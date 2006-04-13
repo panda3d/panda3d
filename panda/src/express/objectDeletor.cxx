@@ -18,6 +18,7 @@
 
 #include "objectDeletor.h"
 #include "configVariableString.h"
+#include "config_express.h"
 
 void *ObjectDeletor::_global_ptr = NULL;
 
