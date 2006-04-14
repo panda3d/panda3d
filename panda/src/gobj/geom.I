@@ -281,9 +281,9 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                   const GeomVertexData *vertex_data,
                   bool got_mat, const LMatrix4f &mat) const {
   int pipeline_stage = Thread::get_current_pipeline_stage();
-  return do_calc_tight_bounds(min_point, max_point, found_any, 
-			      vertex_data, got_mat, mat,
-			      pipeline_stage);
+  do_calc_tight_bounds(min_point, max_point, found_any, 
+                       vertex_data, got_mat, mat,
+                       pipeline_stage);
 }
 
 ////////////////////////////////////////////////////////////////////

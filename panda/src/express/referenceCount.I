@@ -527,7 +527,7 @@ RefCountObj(const Base &copy) : Base(copy) {
 template<class Base>
 void RefCountObj<Base>::
 init_type() {
-#ifdef HAVE_RTTI
+#if defined(HAVE_RTTI) && !defined(__EDG__)
   // If we have RTTI, we can determine the name of the base type.
   string base_name = typeid(Base).name();
 #else

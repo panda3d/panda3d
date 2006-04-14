@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "reMutexDirect.h"
+#include "thread.h"
 
 #ifndef HAVE_REMUTEXIMPL
 MutexImpl ReMutexDirect::_global_lock;

@@ -23,6 +23,11 @@
 
 #ifdef HAVE_OPENSSL
 
+#ifdef WIN32_VC
+  #include <windows.h>  // for WSAGetLastError()
+  #undef X509_NAME
+#endif  // WIN32_VC
+
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us
 typedef int streamsize;

@@ -28,6 +28,7 @@
 #include "cmath.h"
 #include "mathNumbers.h"
 #include "graphicsStateGuardian.h"
+#include "displayRegion.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FisheyeMaker::reset

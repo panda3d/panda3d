@@ -235,7 +235,7 @@ $[TAB] rm -f $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cx
 $[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
 #endif
 #if $[USE_TAU]
-$[TAB] rm -f *.il *.pdb *.inst.*  // scrub out tau-generated files.
+$[TAB] rm -f $[ODIR]/*.il $[ODIR]/*.pdb *.inst.*  // scrub out tau-generated files.
 #endif
 
 // 'cleanall' is intended to undo all the effects of running ppremake
@@ -878,7 +878,7 @@ $[pdb_source] : $[il_source]
 $[TAB] $[TAU_MAKE_PDB]
 
 $[inst_source] : $[pdb_source]
-$[TAB] $[TAU_MAKE_INST] -c++
+$[TAB] $[TAU_MAKE_INST] -c
 
 $[target] : $[inst_source] $[get_depends $[source]]
 #define source $[inst_source]

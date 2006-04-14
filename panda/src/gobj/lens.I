@@ -437,7 +437,7 @@ adjust_comp_flags(int clear_flags, int set_flags) {
   _comp_flags = (_comp_flags & ~clear_flags) | set_flags;
 }
 
-EXPCL_PANDA INLINE ostream &
+INLINE ostream &
 operator << (ostream &out, const Lens &lens) {
   lens.output(out);
   return out;

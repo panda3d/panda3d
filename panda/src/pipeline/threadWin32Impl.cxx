@@ -21,6 +21,7 @@
 
 #ifdef THREAD_WIN32_IMPL
 
+#include "thread.h"
 #include "pointerTo.h"
 #include "config_pipeline.h"
 

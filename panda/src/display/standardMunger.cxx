@@ -21,6 +21,7 @@
 #include "graphicsStateGuardian.h"
 #include "dcast.h"
 #include "config_gobj.h"
+#include "displayRegion.h"
 
 TypeHandle StandardMunger::_type_handle;
 

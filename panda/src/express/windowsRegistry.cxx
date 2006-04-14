@@ -18,6 +18,7 @@
 
 #include "windowsRegistry.h"
 #include "config_express.h"
+#include "textEncoder.h"
 
 #ifdef WIN32_VC
 

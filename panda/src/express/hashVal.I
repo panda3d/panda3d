@@ -213,7 +213,7 @@ read_stream(StreamReader &source) {
 ////////////////////////////////////////////////////////////////////
 INLINE void HashVal::
 hash_ramfile(const Ramfile &ramfile) {
-  return hash_buffer(ramfile._data.data(), ramfile._data.length());
+  hash_buffer(ramfile._data.data(), ramfile._data.length());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -226,7 +226,7 @@ hash_ramfile(const Ramfile &ramfile) {
 ////////////////////////////////////////////////////////////////////
 INLINE void HashVal::
 hash_string(const string &data) {
-  return hash_buffer(data.data(), data.length());
+  hash_buffer(data.data(), data.length());
 }
 #endif  // HAVE_OPENSSL
 

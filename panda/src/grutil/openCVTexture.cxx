@@ -23,6 +23,7 @@
 #include "clockObject.h"
 #include "config_gobj.h"
 #include "config_grutil.h"
+#include "bamReader.h"
 
 TypeHandle OpenCVTexture::_type_handle;
 
