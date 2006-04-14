@@ -878,7 +878,7 @@ $[pdb_source] : $[il_source]
 $[TAB] $[TAU_MAKE_PDB]
 
 $[inst_source] : $[pdb_source]
-$[TAB] $[TAU_MAKE_INST] -c
+$[TAB] $[TAU_MAKE_INST] -c++
 
 $[target] : $[inst_source] $[get_depends $[source]]
 #define source $[inst_source]

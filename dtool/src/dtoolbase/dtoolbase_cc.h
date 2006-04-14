@@ -16,12 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PANDABASE_CC_H
-#define PANDABASE_CC_H
+#ifndef DTOOLBASE_CC_H
+#define DTOOLBASE_CC_H
 
 // This file should never be included directly; it's intended to be
 // included only from dtoolbase.h.  Include that file instead.
 
+#ifdef __cplusplus
 
 #ifdef CPPPARSER
 #include <iostream>
@@ -182,7 +183,30 @@ INLINE void operator delete[](void *ptr) {
   (*global_operator_delete)(ptr);
 }
 
+#if defined(USE_TAU) && defined(WIN32)
+// Hack around tau's lack of DLL export declarations for Profiler class.
+class EXPCL_DTOOL TauProfile {
+public:
+  TauProfile(char *name, char *type, int group, char *group_name) {
+    _tautimer = NULL;
+    Tau_profile_c_timer(&_tautimer, name, type, group, group_name);
+    TAU_PROFILE_START(_tautimer); 
+  }
+  ~TauProfile() {
+    TAU_PROFILE_STOP(_tautimer);
+  }
+
+private:
+  void *_tautimer;
+};
+
+#undef TAU_PROFILE
+#define TAU_PROFILE(name, type, group) TauProfile _taupr(name, type, group, #group)
+#endif  // USE_TAU
+
 #endif  // GLOBAL_OPERATOR_NEW_EXCEPTIONS
 #endif  // USE_MEMORY_NOWRAPPERS
+
+#endif  //  __cplusplus
 
 #endif

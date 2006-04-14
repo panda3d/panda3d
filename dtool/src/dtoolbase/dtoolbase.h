@@ -142,6 +142,7 @@
 /* If we're building with the Tau instrumentor, include the
    appropriate header file to pick up the TAU macros. */
 #include <TAU.h>
+#include <Profile/Profiler.h>
 #else
 /* Otherwise, if we're not building with the Tau instrumentor, turn
    off all the TAU macros.  We could include the Tau header file to do

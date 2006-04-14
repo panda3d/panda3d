@@ -643,9 +643,17 @@
 #define HAVE_AUDIO 1
 
 // The Tau profiler provides a multiplatform, thread-aware profiler.
-// To use it, define TAU_MAKEFILE appropriately, define USE_TAU to 1,
-// and rebuild the code with ppremake; make install.
+// To use it, define USE_TAU to 1, and set TAU_MAKEFILE to the
+// filename that contains the Tau-provided Makefile for your platform.
+// Then rebuild the code with ppremake; make install.  Alternatively,
+// instead of setting TAU_MAKEFILE, you can also define TAU_ROOT and
+// PDT_ROOT, to point to the root directory of the tau and pdtoolkit
+// installations, respectively; then the individual Tau components
+// will be invoked directly.  This is especially useful on Windows,
+// where there is no Tau Makefile.
 #define TAU_MAKEFILE
+#define TAU_ROOT
+#define PDT_ROOT
 #define TAU_OPTS -optKeepFiles
 #define TAU_CFLAGS -D_GNU_SOURCE
 #define USE_TAU

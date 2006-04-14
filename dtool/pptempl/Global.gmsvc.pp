@@ -124,9 +124,9 @@
 #defer extra_cflags /EHsc /Zm500 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
 #if $[direct_tau]
-#define tau_ipath $[ROOT_TAU]/include
+#define tau_ipath $[TAU_ROOT]/include
 #define tau_cflags /DPROFILING_ON /DTAU_STDCXXLIB /DTAU_USE_C_API
-#define tau_lpath $[ROOT_TAU]/lib/VC7
+#define tau_lpath $[TAU_ROOT]/lib/VC7
 #define tau_libs tau-profile.lib
 #else  // direct_tau
 #define tau_ipath
