@@ -55,7 +55,7 @@ release() {
 ////////////////////////////////////////////////////////////////////
 INLINE const CycleData *PipelineCyclerTrueImpl::
 read() const {
-  TAU_PROFILE("const CycleData PipelineCyclerTrueImpl::read()", " ", TAU_USER);
+  TAU_PROFILE("const CycleData *PipelineCyclerTrueImpl::read()", " ", TAU_USER);
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
   _lock.lock();

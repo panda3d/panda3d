@@ -52,7 +52,7 @@ INLINE MutexPosixImpl::
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexPosixImpl::
 lock() {
-  TAU_PROFILE("MutexPosixImpl::lock", " ", TAU_USER);
+  TAU_PROFILE("void MutexPosixImpl::lock", " ", TAU_USER);
   int result = pthread_mutex_lock(&_lock);
   assert(result == 0);
 }
@@ -64,7 +64,7 @@ lock() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool MutexPosixImpl::
 try_lock() {
-  TAU_PROFILE("MutexPosixImpl::try_lock", " ", TAU_USER);
+  TAU_PROFILE("bool MutexPosixImpl::try_lock", " ", TAU_USER);
   int result = pthread_mutex_trylock(&_lock);
   assert(result == 0 || result == EBUSY);
   return (result == 0);
@@ -77,7 +77,7 @@ try_lock() {
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexPosixImpl::
 release() {
-  TAU_PROFILE("MutexPosixImpl::release", " ", TAU_USER);
+  TAU_PROFILE("void MutexPosixImpl::release", " ", TAU_USER);
   int result = pthread_mutex_unlock(&_lock);
   assert(result == 0);
 }
@@ -117,7 +117,7 @@ INLINE ReMutexPosixImpl::
 ////////////////////////////////////////////////////////////////////
 INLINE void ReMutexPosixImpl::
 lock() {
-  TAU_PROFILE("ReMutexPosixImpl::lock", " ", TAU_USER);
+  TAU_PROFILE("void ReMutexPosixImpl::lock", " ", TAU_USER);
   int result = pthread_mutex_lock(&_lock);
   assert(result == 0);
 }
@@ -129,7 +129,7 @@ lock() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ReMutexPosixImpl::
 try_lock() {
-  TAU_PROFILE("ReMutexPosixImpl::try_lock", " ", TAU_USER);
+  TAU_PROFILE("bool ReMutexPosixImpl::try_lock", " ", TAU_USER);
   int result = pthread_mutex_trylock(&_lock);
   assert(result == 0 || result == EBUSY);
   return (result == 0);
@@ -142,7 +142,7 @@ try_lock() {
 ////////////////////////////////////////////////////////////////////
 INLINE void ReMutexPosixImpl::
 release() {
-  TAU_PROFILE("ReMutexPosixImpl::release", " ", TAU_USER);
+  TAU_PROFILE("void ReMutexPosixImpl::release", " ", TAU_USER);
   int result = pthread_mutex_unlock(&_lock);
   assert(result == 0);
 }

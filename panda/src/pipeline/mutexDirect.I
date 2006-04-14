@@ -72,7 +72,7 @@ operator = (const MutexDirect &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexDirect::
 lock() const {
-  TAU_PROFILE("MutexDirect::lock()", " ", TAU_USER);
+  TAU_PROFILE("void MutexDirect::lock()", " ", TAU_USER);
   ((MutexDirect *)this)->_impl.lock();
 }
 
@@ -88,7 +88,7 @@ lock() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexDirect::
 release() const {
-  TAU_PROFILE("MutexDirect::release()", " ", TAU_USER);
+  TAU_PROFILE("void MutexDirect::release()", " ", TAU_USER);
   ((MutexDirect *)this)->_impl.release();
 }
 

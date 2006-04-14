@@ -84,6 +84,7 @@ operator = (const ReMutexDirect &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ReMutexDirect::
 lock() const {
+  TAU_PROFILE("void ReMutexDirect::lock()", " ", TAU_USER);
 #ifdef HAVE_REMUTEXIMPL
   ((ReMutexDirect *)this)->_impl.lock();
 #else
@@ -103,6 +104,7 @@ lock() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ReMutexDirect::
 release() const {
+  TAU_PROFILE("void ReMutexDirect::release()", " ", TAU_USER);
 #ifdef HAVE_REMUTEXIMPL
   ((ReMutexDirect *)this)->_impl.release();
 #else

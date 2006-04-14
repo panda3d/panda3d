@@ -81,6 +81,7 @@ INLINE PipelineCyclerDummyImpl::
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
 lock() {
+  TAU_PROFILE("void PipelineCyclerDummyImpl::lock()", " ", TAU_USER);
   nassertv(!_locked);
   _locked = true;
 }
@@ -93,6 +94,7 @@ lock() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
 release() {
+  TAU_PROFILE("void PipelineCyclerDummyImpl::release()", " ", TAU_USER);
   nassertv(_locked);
   _locked = false;
 }
@@ -110,6 +112,7 @@ release() {
 ////////////////////////////////////////////////////////////////////
 INLINE const CycleData *PipelineCyclerDummyImpl::
 read() const {
+  TAU_PROFILE("const CycleData *PipelineCyclerDummyImpl::read()", " ", TAU_USER);
   // This function isn't truly const, but it doesn't change the data
   // in any meaningful way, so we pretend it is.
   ((PipelineCyclerDummyImpl *)this)->_read_count++;
@@ -128,6 +131,7 @@ read() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
 increment_read(const CycleData *pointer) const {
+  TAU_PROFILE("void PipelineCyclerDummyImpl::increment_read(const CycleData *)", " ", TAU_USER);
   // This function isn't truly const, but it doesn't change the data
   // in any meaningful way, so we pretend it is.
   nassertv(pointer == _data);
@@ -143,6 +147,7 @@ increment_read(const CycleData *pointer) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
 release_read(const CycleData *pointer) const {
+  TAU_PROFILE("void PipelineCyclerDummyImpl::release_read(const CycleData *)", " ", TAU_USER);
   // This function isn't truly const, but it doesn't change the data
   // in any meaningful way, so we pretend it is.
   nassertv(pointer == _data);
@@ -168,6 +173,7 @@ release_read(const CycleData *pointer) const {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
 write() {
+  TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::write()", " ", TAU_USER);
   _write_count++;
 
   // It's an error to grab a write pointer while someone else holds a
@@ -191,6 +197,7 @@ write() {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
 elevate_read(const CycleData *pointer) {
+  TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read(const CycleData *)", " ", TAU_USER);
   release_read(pointer);
   return write();
 }
@@ -205,6 +212,7 @@ elevate_read(const CycleData *pointer) {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
 elevate_read_upstream(const CycleData *pointer, bool force_to_0) {
+  TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read_upstream(const CycleData *, bool)", " ", TAU_USER);
   release_read(pointer);
   return write_upstream(force_to_0);
 }
@@ -218,6 +226,7 @@ elevate_read_upstream(const CycleData *pointer, bool force_to_0) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
 increment_write(CycleData *pointer) const {
+  TAU_PROFILE("void PipelineCyclerDummyImpl::increment_write(CycleData *)", " ", TAU_USER);
   // This function isn't truly const, but it doesn't change the data
   // in any meaningful way, so we pretend it is.
   nassertv(pointer == _data);
@@ -233,6 +242,7 @@ increment_write(CycleData *pointer) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
 release_write(CycleData *pointer) {
+  TAU_PROFILE("void PipelineCyclerDummyImpl::release_write(CycleData *)", " ", TAU_USER);
   nassertv(pointer == _data);
   nassertv(_write_count > 0);
   _write_count--;
@@ -261,6 +271,7 @@ get_num_stages() {
 ////////////////////////////////////////////////////////////////////
 INLINE const CycleData *PipelineCyclerDummyImpl::
 read_stage(int n) const {
+  TAU_PROFILE("const CycleData *PipelineCyclerDummyImpl::read_stage(int)", " ", TAU_USER);
   // This function isn't truly const, but it doesn't change the data
   // in any meaningful way, so we pretend it is.
   nassertr(n == 0, NULL);
@@ -279,6 +290,7 @@ read_stage(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
 release_read_stage(int n, const CycleData *pointer) const {
+  TAU_PROFILE("void PipelineCyclerDummyImpl::release_read_stage(int, const CycleData *)", " ", TAU_USER);
   // This function isn't truly const, but it doesn't change the data
   // in any meaningful way, so we pretend it is.
   nassertv(n == 0);
@@ -318,6 +330,7 @@ release_read_stage(int n, const CycleData *pointer) const {
 ////////////////////////////////////////////////////////////////////
 CycleData *PipelineCyclerDummyImpl::
 write_upstream(bool) {
+  TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::write_upstream(bool)", " ", TAU_USER);
   _write_count++;
   return _data;
 }
@@ -334,6 +347,7 @@ write_upstream(bool) {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
 write_stage(int n) {
+  TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::write_stage(int)", " ", TAU_USER);
   nassertr(n == 0, (CycleData *)NULL);
   _write_count++;
   return _data;
@@ -350,6 +364,7 @@ write_stage(int n) {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
 elevate_read_stage(int n, const CycleData *pointer) {
+  TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read_stage(int, CycleData *)", " ", TAU_USER);
   nassertr(n == 0, NULL);
   release_read(pointer);
   return write();
@@ -363,6 +378,7 @@ elevate_read_stage(int n, const CycleData *pointer) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
 release_write_stage(int n, CycleData *pointer) {
+  TAU_PROFILE("void PipelineCyclerDummyImpl::release_write_stage(int, CycleData *)", " ", TAU_USER);
   nassertv(n == 0 && pointer == _data);
   nassertv(_write_count > 0);
   _write_count--;
