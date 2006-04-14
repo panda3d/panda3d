@@ -5,17 +5,16 @@ from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
 from tkFileDialog import *
 from tkSimpleDialog import askstring
-import os
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.tkwidgets import VectorWidgets
-import Placer
 from direct.particles import ForceGroup
 from direct.particles import Particles
 from direct.particles import ParticleEffect
+import os,Placer
 
-from pandac.PandaModules import ColorBlendAttrib, getModelPath
+from pandac.PandaModules import *
 
 class ParticlePanel(AppShell):
     # Override class variables

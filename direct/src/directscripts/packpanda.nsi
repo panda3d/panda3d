@@ -146,7 +146,7 @@ Section "${SMDIRECTORY}" SecCore
 
             SetOutPath $INSTDIR
             WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
-            WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/manual/"
+            WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/wiki/index.php"
             SetOutPath $INSTDIR\samples\GreetingCard
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Greeting Card.lnk" "$INSTDIR\bin\ppython.exe" 'GreetingCard.py "$SMPROGRAMS\${SMDIRECTORY}"' "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Panda Greeting Card"
             SetOutPath $INSTDIR
