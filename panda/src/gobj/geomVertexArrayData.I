@@ -102,7 +102,7 @@ get_modified() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::get_data
-//       Access: Public
+//       Access: Published
 //  Description: Returns a const pointer to the actual vertex data,
 //               for application code to directly examine (but not
 //               modify).

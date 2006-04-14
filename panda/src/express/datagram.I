@@ -411,6 +411,56 @@ get_length() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Datagram::set_array
+//       Access: Public
+//  Description: Replaces the data in the Datagram with the data in
+//               the indicated PTA_uchar.  This is assignment by
+//               reference: subsequent changes to the Datagram will
+//               also change the source PTA_uchar.
+////////////////////////////////////////////////////////////////////
+INLINE void Datagram::
+set_array(PTA_uchar data) {
+  _data = data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Datagram::copy_array
+//       Access: Public
+//  Description: Replaces the data in the Datagram with a copy of the
+//               data in the indicated CPTA_uchar.  Unlike
+//               set_array(), a complete copy is made of the data;
+//               subsequent changes to the Datagram will *not* change
+//               the source CPTA_uchar.
+////////////////////////////////////////////////////////////////////
+INLINE void Datagram::
+copy_array(CPTA_uchar data) {
+  _data.clear();
+  _data.v() = data.v();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Datagram::get_array
+//       Access: Public
+//  Description: Returns a const pointer to the actual data in
+//               the Datagram.
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_uchar Datagram::
+get_array() const {
+  return _data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Datagram::modify_array
+//       Access: Public
+//  Description: Returns a modifiable pointer to the actual data in
+//               the Datagram.
+////////////////////////////////////////////////////////////////////
+INLINE PTA_uchar Datagram::
+modify_array() {
+  return _data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Datagram::operator ==
 //       Access: Public
 //  Description:

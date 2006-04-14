@@ -85,14 +85,13 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
-public:
   INLINE CPTA_uchar get_data() const;
   PTA_uchar modify_data();
   void set_data(CPTA_uchar data);
 
+public:
   void prepare(PreparedGraphicsObjects *prepared_objects);
 
-public:
   VertexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
                                    GraphicsStateGuardianBase *gsg);
   bool release(PreparedGraphicsObjects *prepared_objects);

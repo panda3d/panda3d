@@ -204,7 +204,7 @@ write(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::modify_data
-//       Access: Public
+//       Access: Published
 //  Description: Returns a modifiable pointer to the actual vertex
 //               array, so that application code may directly
 //               manipulate it.  Use with caution.
@@ -232,7 +232,7 @@ modify_data() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::set_data
-//       Access: Public
+//       Access: Published
 //  Description: Replaces the vertex data array with a completely new
 //               array.
 //

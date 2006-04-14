@@ -95,6 +95,11 @@ PUBLISHED:
   INLINE const void *get_data() const;
   INLINE size_t get_length() const;
 
+  INLINE void set_array(PTA_uchar data);
+  INLINE void copy_array(CPTA_uchar data);
+  INLINE CPTA_uchar get_array() const;
+  INLINE PTA_uchar modify_array();
+
   INLINE bool operator == (const Datagram &other) const;
   INLINE bool operator != (const Datagram &other) const;
   INLINE bool operator < (const Datagram &other) const;
