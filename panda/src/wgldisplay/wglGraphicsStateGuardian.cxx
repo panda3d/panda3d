@@ -308,6 +308,7 @@ make_context(HDC hdc) {
   _made_context = true;
 
   // Attempt to create a context.
+  wglGraphicsPipe::_current_valid = false;
   _context = wglCreateContext(hdc);
 
   if (_context == NULL) {

@@ -174,9 +174,7 @@ begin_frame(FrameMode mode) {
   HGLRC context = wglgsg->get_context(_hdc);
   nassertr(context, false);
   
-  wglGraphicsPipe *wglpipe;
-  DCAST_INTO_R(wglpipe, _pipe, false);
-  wglpipe->wgl_make_current(_hdc, context, &_make_current_pcollector);
+  wglGraphicsPipe::wgl_make_current(_hdc, context, &_make_current_pcollector);
   wglgsg->reset_if_new();
 
   if (mode == FM_render) {
@@ -242,9 +240,7 @@ begin_flip() {
     DCAST_INTO_V(wglgsg, _gsg);
     HGLRC context = wglgsg->get_context(_hdc);
     nassertv(context);
-    wglGraphicsPipe *wglpipe;
-    DCAST_INTO_V(wglpipe, _pipe);
-    wglpipe->wgl_make_current(_hdc, context, &_make_current_pcollector);
+    wglGraphicsPipe::wgl_make_current(_hdc, context, &_make_current_pcollector);
     SwapBuffers(_hdc);
   }
 }
@@ -258,9 +254,7 @@ begin_flip() {
 void wglGraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
-    wglGraphicsPipe *wglpipe;
-    DCAST_INTO_V(wglpipe, _pipe);
-    wglpipe->wgl_make_current(_hdc, NULL, &_make_current_pcollector);
+    wglGraphicsPipe::wgl_make_current(_hdc, NULL, &_make_current_pcollector);
     _gsg.clear();
     _active = false;
   }
