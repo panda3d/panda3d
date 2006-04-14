@@ -209,7 +209,7 @@ class ClassicFSM(DirectObject):
             ClassicFSM.notify.error("[%s]: enter: no such state" % (self.__name))
 
     def __transition(self, aState, enterArgList=[], exitArgList=[]):
-        """__transition(self, State, enterArgList, exitArgList)
+        """
         Exit currentState and enter given one
         """
         assert not self.__internalStateInFlux
@@ -273,7 +273,8 @@ class ClassicFSM(DirectObject):
         # We can implicitly always transition to our final state.
         elif (aStateName == self.__finalState.getName()):
             if (self.__currentState == self.__finalState):
-                # Do not do the transition if we are already in the final state
+                # Do not do the transition if we are already in the
+                # final state
                 assert ClassicFSM.notify.debug(
                     "[%s]: already in final state: %s" %
                     (self.__name, aStateName))
@@ -315,11 +316,11 @@ class ClassicFSM(DirectObject):
         """
         'if this transition is defined, do it'
         Attempt transition from currentState to given one, if it exists.
-        Return true if transition exists to given state,
-        false otherwise.  It is NOT an error/warning to attempt a cond_request
-        if the transition doesn't exist.  This lets people be sloppy about
-        ClassicFSM transitions, letting the same fn be used for different states
-        that may not have the same out transitions.
+        Return true if transition exists to given state, false otherwise.
+        It is NOT an error/warning to attempt a cond_request if the
+        transition doesn't exist.  This lets people be sloppy about
+        ClassicFSM transitions, letting the same fn be used for different
+        states that may not have the same out transitions.
         """
         assert not self.__internalStateInFlux
         if not self.__currentState:

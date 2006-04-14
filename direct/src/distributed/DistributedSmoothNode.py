@@ -70,8 +70,7 @@ def activateSmoothing(smoothing, prediction):
 
 class DistributedSmoothNode(DistributedNode.DistributedNode,
                             DistributedSmoothNodeBase.DistributedSmoothNodeBase):
-    """DistributedSmoothNode class:
-
+    """
     This specializes DistributedNode to add functionality to smooth
     motion over time, via the SmoothMover C++ object defined in
     DIRECT.
@@ -272,12 +271,14 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
                 self.lastSuggestResync = realTime
                 timestampB = globalClockDelta.localToNetworkTime(realTime)
                 serverTime = realTime - globalClockDelta.getDelta()
-                self.notify.info("Suggesting resync for %s, with discrepency %s; local time is %s and server time is %s." % (
+                self.notify.info(
+                    "Suggesting resync for %s, with discrepency %s; local time is %s and server time is %s." % (
                     self.doId, howFarFuture - chug,
                     realTime, serverTime))
-                self.d_suggestResync(self.cr.localAvatarDoId, timestamp,
-                                     timestampB, serverTime,
-                                     globalClockDelta.getUncertainty())
+                self.d_suggestResync(
+                    self.cr.localAvatarDoId, timestamp,
+                    timestampB, serverTime,
+                    globalClockDelta.getUncertainty())
         
         self.smoother.setTimestamp(local)
         self.smoother.markPosition()
@@ -319,41 +320,42 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         
     def suggestResync(self, avId, timestampA, timestampB,
                       serverTimeSec, serverTimeUSec, uncertainty):
-        """suggestResync(self, avId, ....)
-
+        """
         This message is sent from one client to another when the other
         client receives a timestamp from this client that is so far
         out of date as to suggest that one or both clients needs to
         resynchronize their clock information.
         """
         serverTime = float(serverTimeSec) + float(serverTimeUSec) / 10000.0
-        result = \
-               self.peerToPeerResync(avId, timestampA, serverTime, uncertainty)
+        result = self.peerToPeerResync(
+            avId, timestampA, serverTime, uncertainty)
         if result >= 0 and \
            globalClockDelta.getUncertainty() != None:
             other = self.cr.doId2do.get(avId)
             if (not other):
-                self.notify.info("Warning: couldn't find the avatar %d" % (avId))
+                self.notify.info(
+                    "Warning: couldn't find the avatar %d" % (avId))
             elif hasattr(other, "d_returnResync"):
                 realTime = globalClock.getRealTime()
                 serverTime = realTime - globalClockDelta.getDelta()
-                self.notify.info("Returning resync for %s; local time is %s and server time is %s." % (
+                self.notify.info(
+                    "Returning resync for %s; local time is %s and server time is %s." % (
                     self.doId, realTime, serverTime))
-                other.d_returnResync(self.cr.localAvatarDoId, timestampB,
-                                     serverTime,
-                                     globalClockDelta.getUncertainty())
+                other.d_returnResync(
+                    self.cr.localAvatarDoId, timestampB,
+                    serverTime,
+                    globalClockDelta.getUncertainty())
         
 
     def d_returnResync(self, avId, timestampB, serverTime, uncertainty):
         serverTimeSec = math.floor(serverTime)
         serverTimeUSec = (serverTime - serverTimeSec) * 10000.0
-        self.sendUpdate("returnResync", [avId, timestampB,
-                                         serverTimeSec, serverTimeUSec,
-                                         uncertainty])
+        self.sendUpdate("returnResync", [
+            avId, timestampB, serverTimeSec, serverTimeUSec, uncertainty])
         
-    def returnResync(self, avId, timestampB, serverTimeSec, serverTimeUSec, uncertainty):
-        """returnResync(self, avId)
-
+    def returnResync(self, avId, timestampB, serverTimeSec, serverTimeUSec,
+            uncertainty):
+        """
         A reply sent by a client whom we recently sent suggestResync
         to, this reports the client's new delta information so we can
         adjust our clock as well.
@@ -362,7 +364,8 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.peerToPeerResync(avId, timestampB, serverTime, uncertainty)
 
     def peerToPeerResync(self, avId, timestamp, serverTime, uncertainty):
-        gotSync = globalClockDelta.peerToPeerResync(avId, timestamp, serverTime, uncertainty)
+        gotSync = globalClockDelta.peerToPeerResync(
+            avId, timestamp, serverTime, uncertainty)
 
         # If we didn't get anything useful from the other client,
         # maybe our clock is just completely hosed.  Go ask the AI.

@@ -113,22 +113,24 @@ class Notifier:
 
     # error funcs
     def error(self, errorString, exception=StandardError):
-        """error(self, string, Exception=StandardError)
+        """
         Raise an exception with given string and optional type:
-        Exception: error"""
+        Exception: error
+        """
         string = (self.getTime() + str(exception) + ": " + self.__name + ": " + errorString)
         self.__log(string)
         raise exception(errorString)
 
     # warning funcs
     def warning(self, warningString):
-        """warning(self, string)
-        Issue the warning message if warn flag is on"""
+        """
+        Issue the warning message if warn flag is on
+        """
         if self.__warning:
             string = (self.getTime() + self.__name + '(warning): ' + warningString)
             self.__log(string)
             self.__print(string)
-        return 1 # to allow assert(myNotify.warning("blah"))
+        return 1 # to allow assert myNotify.warning("blah")
 
     def setWarning(self, bool):
         """
@@ -151,7 +153,7 @@ class Notifier:
             string = (self.getTime() + self.__name + '(debug): ' + debugString)
             self.__log(string)
             self.__print(string)
-        return 1 # to allow assert(myNotify.debug("blah"))
+        return 1 # to allow assert myNotify.debug("blah")
 
     def setDebug(self, bool):
         """
@@ -174,7 +176,7 @@ class Notifier:
             string = (self.getTime() + self.__name + '(info): ' + infoString)
             self.__log(string)
             self.__print(string)
-        return 1 # to allow assert(myNotify.info("blah"))
+        return 1 # to allow assert myNotify.info("blah")
 
     def getInfo(self):
         """
