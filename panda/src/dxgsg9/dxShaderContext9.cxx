@@ -512,6 +512,11 @@ bind(GSG *gsg) {
         hr = cgD3D9BindProgram(_cg_program[SHADER_type_frag]);
         if (FAILED (hr)) {
           dxgsg9_cat.error() << "cgD3D9BindProgram pixel shader failed\n";
+
+          CGerror error = cgGetError();
+          if (error != CG_NO_ERROR) {
+            dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
+          }
         }
       }
     }
@@ -648,6 +653,11 @@ issue_parameters(GSG *gsg, bool altered)
               << _mat_spec[i]._piece
               << " cgD3D9SetUniform failed "
               << D3DERRORSTRING(hr);
+
+            CGerror error = cgGetError ();
+            if (error != CG_NO_ERROR) {
+              dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
+            }
           }
         }
       }
