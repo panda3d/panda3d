@@ -125,8 +125,8 @@ Section "${SMDIRECTORY}" SecCore
             File /r /x *.exp "${PANDA}\lib\*"
             SetOutPath $INSTDIR\include
             File /r /x *.exp "${PANDA}\include\*"
-            SetOutPath $INSTDIR\SceneEditor
-            File /r /x CVS "${PSOURCE}\SceneEditor\*.*"
+            ; SetOutPath $INSTDIR\SceneEditor
+            ; File /r /x CVS "${PSOURCE}\SceneEditor\*.*"
             SetOutPath $INSTDIR\Pmw
             File /r /x CVS "${PANDA}\Pmw\*"
             SetOutPath $INSTDIR\NSIS
@@ -140,9 +140,7 @@ Section "${SMDIRECTORY}" SecCore
             SetOutPath $INSTDIR\models
             File /r /x CVS "${PANDA}\models\*"
             SetOutPath $INSTDIR\samples
-            File /r /x CVS /x GreetingCard "${PSOURCE}\samples\*"
-            SetOutPath $INSTDIR\samples\GreetingCard
-            File /r /x CVS "${PANDA}\tmp\GreetingCard\*"
+            File /r /x CVS "${PSOURCE}\samples\*"
 
             SetOutPath $INSTDIR
             WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
