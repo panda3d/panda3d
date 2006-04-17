@@ -1550,9 +1550,6 @@ MakeDirectory("built/models/icons")
 MakeDirectory("built/models/maps")
 MakeDirectory("built/models/misc")
 MakeDirectory("built/models/gui")
-MakeDirectory("built/tmp/GreetingCard")
-MakeDirectory("built/tmp/GreetingCard/models")
-MakeDirectory("built/tmp/GreetingCard/sound")
 
 if (OMIT.count("PYTHON")==0):
     MakeDirectory("built/direct")
@@ -1862,7 +1859,7 @@ CopyAllFiles("built/plugins/",  "pandatool/src/scripts/", ".mel")
 CopyAllFiles("built/plugins/",  "pandatool/src/scripts/", ".ms")
 if (OMIT.count("PYTHON")==0):
     CopyTree('built/Pmw',         'thirdparty/Pmw')
-    CopyTree('built/SceneEditor', 'SceneEditor')
+#    CopyTree('built/SceneEditor', 'SceneEditor')
 ConditionalWriteFile('built/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
 ########################################################################
@@ -4596,17 +4593,6 @@ if (OMIT.count("PANDATOOL")==0):
     CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".rgb")
     CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".rgba")
 
-#
-# egg2bam on the greeting card directory
-#
-
-if (INSTALLER):
-    CopyFile("built/tmp/GreetingCard/",            "samples/GreetingCard/GreetingCard.py")
-    CopyFile("built/tmp/GreetingCard/sound/",      "samples/GreetingCard/sound/soundtrack.mp3")
-    CopyAllFiles("built/tmp/GreetingCard/models/", "samples/GreetingCard/models/", ".jpg")
-    EnqueueBam("-ps strip", "built/tmp/GreetingCard/models/thankyou_card.bam", "samples/GreetingCard/models/thankyou_card.egg")
-    EnqueueBam("-ps strip", "built/tmp/GreetingCard/models/thankyou_anim.bam", "samples/GreetingCard/models/thankyou_anim.egg")
-
 
 ##########################################################################################
 #
@@ -4792,7 +4778,7 @@ Description: The panda3D free 3D engine
     oscmd("cp --recursive built/pandac  debtmp/usr/share/panda3d/pandac")
     oscmd("cp --recursive built/Pmw     debtmp/usr/share/panda3d/Pmw")
     oscmd("cp built/direct/__init__.py  debtmp/usr/share/panda3d/direct/__init__.py")
-    oscmd("cp --recursive SceneEditor   debtmp/usr/share/panda3d/SceneEditor")
+#    oscmd("cp --recursive SceneEditor   debtmp/usr/share/panda3d/SceneEditor")
     oscmd("cp --recursive built/models  debtmp/usr/share/panda3d/models")
     oscmd("cp --recursive samples       debtmp/usr/share/panda3d/samples")
     oscmd("cp doc/LICENSE               debtmp/usr/share/panda3d/LICENSE")
@@ -4807,7 +4793,7 @@ Description: The panda3D free 3D engine
         if ((base != "extensions") and (base != "extensions_native")):
             compileall.compile_dir("debtmp/usr/share/panda3d/direct/src/"+base)
     compileall.compile_dir("debtmp/usr/share/panda3d/Pmw")
-    compileall.compile_dir("debtmp/usr/share/panda3d/SceneEditor")
+#    compileall.compile_dir("debtmp/usr/share/panda3d/SceneEditor")
     oscmd("chmod -R 555 debtmp/usr/share/panda3d")
     oscmd("cd debtmp ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
     oscmd("cd debtmp ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
