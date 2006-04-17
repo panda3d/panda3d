@@ -60,3 +60,4 @@ class ExcelHandler(saxutils.DefaultHandler):
             self.rows.append(self.cells)
         elif name=="Table":
             self.tables.append(self.rows)
+
