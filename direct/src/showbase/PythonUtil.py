@@ -1713,6 +1713,47 @@ def randUint32(rng=random.random):
     rng must return float in [0..1]"""
     return long(rng() * 0xFFFFFFFFL)
 
+def beginExports(modname):
+    """The beginExports/endExports construct is used to bracket
+    a set of top-level python declarations.  The effect is to
+    add those declarations to the module's list of exported
+    symbols.  In other words, the purpose of this bracketing
+    construct is to make it easier to properly initialize the
+    export-list for a module.  The parameter should be the
+    current module's name."""
+    if (sys.modules.has_key(modname) == 0):
+        raise "beginExports("+modname+"): no such module"
+    mod = sys.modules[modname]
+    if (mod.__dict__.has_key("__begin_exports__")):
+        raise "beginExports("+modname+"): incorrect nesting"
+    mod.__begin_exports__ = set(mod.__dict__.keys())
+    if (mod.__dict__.has_key("__all__")==0):
+        mod.__all__ = []
+
+def endExports(modname):
+    """The beginExports/endExports construct is used to bracket
+    a set of top-level python declarations.  The effect is to
+    add those declarations to the module's list of exported
+    symbols.  In other words, the purpose of this bracketing
+    construct is to make it easier to properly initialize the
+    export-list for a module.  The parameter should be the
+    current module's name."""
+    if (sys.modules.has_key(modname) == 0):
+        raise "beginExports("+modname+"): no such module"
+    mod = sys.modules[modname]
+    if (mod.__dict__.has_key("__begin_exports__")==0):
+        raise "beginExports("+modname+"): incorrect nesting"
+    begin_exports = mod.__begin_exports__
+    del mod.__dict__["__begin_exports__"]
+    end_exports = set(mod.__dict__.keys())
+    added = list(end_exports.difference(begin_exports))
+    for x in added:
+        if (x[0]!="_"):
+            mod.__all__.append(x)
+
+# __builtins__["beginExports"] = beginExports
+# __builtins__["endExports"] = endExports
+
 class Enum:
     """Pass in list of strings or string of comma-separated strings.
     Items are accessible as instance.item, and are assigned unique,
