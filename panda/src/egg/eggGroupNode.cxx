@@ -1069,14 +1069,14 @@ rebuild_vertex_pool(EggVertexPool *vertex_pool, bool recurse) {
 //               polygons; otherwise, each polygon is considered
 //               individually.
 //
-//               If allow_per_primitive is false, S_per_face will
-//               treated like S_per_vertex: normals and colors will
-//               always be assigned to the vertices.  In this case,
-//               there will never be per-primitive colors or normals
-//               after this call returns.  On the other hand, if
-//               allow_per_primitive is true, then S_per_face means
-//               that normals and colors should be assigned to the
-//               primitives, and removed from the vertices, as
+//               If allow_per_primitive is false, S_per_face or
+//               S_overall will treated like S_per_vertex: normals and
+//               colors will always be assigned to the vertices.  In
+//               this case, there will never be per-primitive colors
+//               or normals after this call returns.  On the other
+//               hand, if allow_per_primitive is true, then S_per_face
+//               means that normals and colors should be assigned to
+//               the primitives, and removed from the vertices, as
 //               described above.
 //
 //               This may create redundant vertices in the vertex
@@ -1085,20 +1085,21 @@ rebuild_vertex_pool(EggVertexPool *vertex_pool, bool recurse) {
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
 unify_attributes(bool use_connected_shading, bool allow_per_primitive,
-		 bool recurse) {
+                 bool recurse) {
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     EggNode *child = *ci;
 
     if (child->is_of_type(EggPrimitive::get_class_type())) {
       EggPrimitive *prim = DCAST(EggPrimitive, child);
-      EggPrimitive::Shading shading = prim->get_shading();
-      if (use_connected_shading) {
-        shading = prim->get_connected_shading();
-      }
 
-      if (!allow_per_primitive && shading == EggPrimitive::S_per_face) {
-	shading = EggPrimitive::S_per_vertex;
+      EggPrimitive::Shading shading = EggPrimitive::S_per_vertex;
+
+      if (allow_per_primitive) {
+        shading = prim->get_shading();
+        if (use_connected_shading) {
+          shading = prim->get_connected_shading();
+        }
       }
 
       prim->unify_attributes(shading);
@@ -1106,7 +1107,7 @@ unify_attributes(bool use_connected_shading, bool allow_per_primitive,
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       if (recurse) {
         DCAST(EggGroupNode, child)->unify_attributes
-	  (use_connected_shading, allow_per_primitive, recurse);
+          (use_connected_shading, allow_per_primitive, recurse);
       }
     }
   }

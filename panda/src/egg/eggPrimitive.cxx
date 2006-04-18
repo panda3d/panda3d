@@ -215,8 +215,8 @@ determine_bin() {
 //               To get the most accurate results, you should call
 //               clear_shading() on all connected primitives (or on
 //               all primitives in the egg file), followed by
-//               determine_shading() on each primitive.  You may find
-//               it easiest to call these methods on the EggData root
+//               get_shading() on each primitive.  You may find it
+//               easiest to call these methods on the EggData root
 //               node (they are defined on EggGroupNode).
 ////////////////////////////////////////////////////////////////////
 EggPrimitive::Shading EggPrimitive::
