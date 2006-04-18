@@ -158,7 +158,10 @@ make_output(const string &name,
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
-        ((flags&BF_can_bind_every)!=0)) {
+        ((flags&BF_can_bind_every)!=0)||
+        (properties.get_aux_rgba() > 0)||
+        (properties.get_aux_hrgba() > 0)||
+        (properties.get_aux_float() > 0)) {
       return NULL;
     }
     return new wglGraphicsWindow(this, name, properties,
@@ -199,7 +202,10 @@ make_output(const string &name,
         ((flags&BF_require_window)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_rtt_cumulative)!=0)||
-        ((flags&BF_can_bind_every)!=0)) {
+        ((flags&BF_can_bind_every)!=0)||
+        (properties.get_aux_rgba() > 0)||
+        (properties.get_aux_hrgba() > 0)||
+        (properties.get_aux_float() > 0)) {
       return NULL;
     }
     if ((wglgsg != 0) &&
