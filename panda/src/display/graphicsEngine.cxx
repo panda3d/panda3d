@@ -339,7 +339,16 @@ make_output(GraphicsPipe *pipe,
       ((flags&GraphicsPipe::BF_require_window)==0)&&
       ((flags&GraphicsPipe::BF_refuse_parasite)==0)&&
       ((flags&GraphicsPipe::BF_can_bind_color)==0)&&
-      ((flags&GraphicsPipe::BF_can_bind_every)==0)) {
+      ((flags&GraphicsPipe::BF_can_bind_every)==0)&&
+      ((flags&GraphicsPipe::BF_rtt_cumulative)==0)&&
+      (prop.has_mode(FrameBufferProperties::FM_index)==false)&&
+      (prop.has_mode(FrameBufferProperties::FM_buffer)==false)&&
+      (prop.has_mode(FrameBufferProperties::FM_accum)==false)&&
+      (prop.has_mode(FrameBufferProperties::FM_stencil)==false)&&
+      (prop.has_mode(FrameBufferProperties::FM_multisample)==false)&&
+      (prop.get_aux_rgba() == 0)&&
+      (prop.get_aux_hrgba() == 0)&&
+      (prop.get_aux_float() == 0)) {
     can_use_parasite = true;
   }
   
