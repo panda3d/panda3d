@@ -373,12 +373,13 @@ class ParseTreeInfo:
     docstring = ''
     name = ''
 
-    def __init__(self, tree, name):
+    def __init__(self, tree, name, file):
         """
         The code can be a string (in which case it is parsed), or it
         can be in parse tree form already.
         """
         self.name = name
+        self.file = file
         self.class_info = {}
         self.function_info = {}
         self.derivs = {}
@@ -444,11 +445,11 @@ class ParseTreeInfo:
                 cstmt = vars['compound']
                 if cstmt[0] == symbol.funcdef:
                     name = cstmt[2][1]
-                    self.function_info[name] = ParseTreeInfo(cstmt and cstmt[-1] or None, name)
+                    self.function_info[name] = ParseTreeInfo(cstmt and cstmt[-1] or None, name, self.file)
                     self.function_info[name].prototype = self.extract_tokens("", cstmt[3])
                 elif cstmt[0] == symbol.classdef:
                     name = cstmt[2][1]
-                    self.class_info[name] = ParseTreeInfo(cstmt and cstmt[-1] or None, name)
+                    self.class_info[name] = ParseTreeInfo(cstmt and cstmt[-1] or None, name, self.file)
                     self.extract_derivs(self.class_info[name], cstmt)
 
     def extract_derivs(self, classinfo, tree):
@@ -505,7 +506,7 @@ class CodeDatabase:
                     self.funcs[type.scopedname+"."+func.pyname] = func
         print "Reading Python sources files"
         for py in pylist:
-            pyinf = ParseTreeInfo(readFile(py), py)
+            pyinf = ParseTreeInfo(readFile(py), py, py)
             for type in pyinf.class_info.keys():
                 typinf = pyinf.class_info[type]
                 self.types[type] = typinf
@@ -569,6 +570,17 @@ class CodeDatabase:
         inheritance = []
         self.buildInheritance(inheritance, cn)
         return inheritance
+
+    def getClassImport(self, cn):
+        type = self.types.get(cn)
+        if (isinstance(type, InterrogateType)):
+            return "pandac.PandaModules"
+        else:
+            result = type.file
+            if (result[-3:]==".py"): result=result[:-3]
+            result = result.replace("/src/","/")
+            result = result.replace("/",".")
+            return result
 
     def getClassMethods(self, cn):
         type = self.types.get(cn)
@@ -716,6 +728,7 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
     for type in classes:
         body = "<h1>" + type + "</h1>\n"
         comment = code.getClassComment(type)
+        body = body + "<ul>\nfrom " + code.getClassImport(type) + " import " + type + "</ul>\n\n"
         body = body + "<ul>\n" + comment + "</ul>\n\n"
         inheritance = code.getInheritance(type)
         body = body + "<h2>Inheritance:</h2>\n<ul>\n"
