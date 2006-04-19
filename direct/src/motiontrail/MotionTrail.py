@@ -58,9 +58,13 @@ class MotionTrail(NodePath):
 
         # set render states
         node_path.node ( ).setAttrib (ColorBlendAttrib.make (ColorBlendAttrib.MAdd))
+        node_path.setTransparency (True)
         node_path.setDepthWrite (False)
         node_path.setTwoSided (True)
 
+        # do not light
+        node_path.setLightOff ( )
+        
         # do not display in reflections
         OTPRender.renderReflection (False, self, 'motion_trail', None)
 
