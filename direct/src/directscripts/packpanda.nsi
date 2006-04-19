@@ -125,8 +125,8 @@ Section "${SMDIRECTORY}" SecCore
             File /r /x *.exp "${PANDA}\lib\*"
             SetOutPath $INSTDIR\include
             File /r /x *.exp "${PANDA}\include\*"
-            ; SetOutPath $INSTDIR\SceneEditor
-            ; File /r /x CVS "${PSOURCE}\SceneEditor\*.*"
+            SetOutPath $INSTDIR\SceneEditor
+            File /r /x CVS "${PSOURCE}\SceneEditor\*.*"
             SetOutPath $INSTDIR\Pmw
             File /r /x CVS "${PANDA}\Pmw\*"
             SetOutPath $INSTDIR\NSIS
