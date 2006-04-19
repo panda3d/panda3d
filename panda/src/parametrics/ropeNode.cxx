@@ -427,11 +427,11 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
 void RopeNode::
 render_billboard(CullTraverser *trav, CullTraverserData &data, 
                  NurbsCurveResult *result) const {
-  const TransformState *modelview_transform = data.get_modelview_transform(trav);
+  const TransformState *net_transform = data.get_net_transform(trav);
   const TransformState *camera_transform = trav->get_camera_transform();
 
   CPT(TransformState) rel_transform =
-    modelview_transform->invert_compose(camera_transform);
+    net_transform->invert_compose(camera_transform);
   LVector3f camera_vec = LVector3f::forward() * rel_transform->get_mat();
 
   CurveSegments curve_segments;
