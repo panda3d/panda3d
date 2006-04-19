@@ -254,12 +254,6 @@ ConfigVariableList load_file_type
           "either the name of a module, or a space-separate list of filename "
           "extensions, followed by the name of the module."));
 
-ConfigVariableList cull_bin
-("cull-bin", 
- PRC_DESC("Creates a new cull bin by name, with the specified properties.  "
-          "This is a string in three tokens, separated by whitespace: "
-          "'bin_name sort type'."));
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraph
 //  Description: Initializes the library.  This must be called at

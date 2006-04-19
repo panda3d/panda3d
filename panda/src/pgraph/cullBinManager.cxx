@@ -262,6 +262,12 @@ do_sort_bins() {
 ////////////////////////////////////////////////////////////////////
 void CullBinManager::
 setup_initial_bins() {
+  ConfigVariableList cull_bin
+    ("cull-bin", 
+     PRC_DESC("Creates a new cull bin by name, with the specified properties.  "
+              "This is a string in three tokens, separated by whitespace: "
+              "'bin_name sort type'."));
+  
   // First, add all of the bins specified in the Configrc file.
   int num_bins = cull_bin.get_num_unique_values();
 
