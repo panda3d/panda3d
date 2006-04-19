@@ -1855,7 +1855,7 @@ CopyAllFiles("built/plugins/",  "pandatool/src/scripts/", ".mel")
 CopyAllFiles("built/plugins/",  "pandatool/src/scripts/", ".ms")
 if (OMIT.count("PYTHON")==0):
     CopyTree('built/Pmw',         'thirdparty/Pmw')
-#    CopyTree('built/SceneEditor', 'SceneEditor')
+    CopyTree('built/SceneEditor', 'SceneEditor')
 ConditionalWriteFile('built/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
 ########################################################################
@@ -4774,7 +4774,7 @@ Description: The panda3D free 3D engine
     oscmd("cp --recursive built/pandac  debtmp/usr/share/panda3d/pandac")
     oscmd("cp --recursive built/Pmw     debtmp/usr/share/panda3d/Pmw")
     oscmd("cp built/direct/__init__.py  debtmp/usr/share/panda3d/direct/__init__.py")
-#    oscmd("cp --recursive SceneEditor   debtmp/usr/share/panda3d/SceneEditor")
+    oscmd("cp --recursive SceneEditor   debtmp/usr/share/panda3d/SceneEditor")
     oscmd("cp --recursive built/models  debtmp/usr/share/panda3d/models")
     oscmd("cp --recursive samples       debtmp/usr/share/panda3d/samples")
     oscmd("cp doc/LICENSE               debtmp/usr/share/panda3d/LICENSE")
@@ -4789,7 +4789,7 @@ Description: The panda3D free 3D engine
         if ((base != "extensions") and (base != "extensions_native")):
             compileall.compile_dir("debtmp/usr/share/panda3d/direct/src/"+base)
     compileall.compile_dir("debtmp/usr/share/panda3d/Pmw")
-#    compileall.compile_dir("debtmp/usr/share/panda3d/SceneEditor")
+    compileall.compile_dir("debtmp/usr/share/panda3d/SceneEditor")
     oscmd("chmod -R 555 debtmp/usr/share/panda3d")
     oscmd("cd debtmp ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
     oscmd("cd debtmp ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
