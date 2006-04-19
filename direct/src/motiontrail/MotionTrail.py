@@ -111,7 +111,7 @@ class MotionTrail(NodePath):
                 vertex_index += 1
                 float_vertex_index += 1.0
                 
-                print "motion_trail_vertex.v", motion_trail_vertex.v
+#                print "motion_trail_vertex.v", motion_trail_vertex.v
                 
         return
 
