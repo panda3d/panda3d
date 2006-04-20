@@ -386,6 +386,8 @@ compute_smooth_position(double timestamp) {
 
     // And if there's only one point left, remove even that one
     // after a while.
+    /* jbutler: commented this out, seems to cause the smoothing pop that occurs
+                when this object is stopped for a while then starts moving again
     if (_points.size() == 1) {
       double age = timestamp - _points.back()._timestamp;
       //cerr << "considering clearing all points, age = " << age << "\n";
@@ -394,6 +396,7 @@ compute_smooth_position(double timestamp) {
         _points.clear();
       }
     }
+    */
   }
 
   //cerr << "  result = " << result << "\n";
