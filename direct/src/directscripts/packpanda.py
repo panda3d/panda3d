@@ -141,6 +141,11 @@ if (os.path.isfile(LICENSE)==0):
 if (os.path.isfile(BITMAP)==0):
   BITMAP=os.path.join(NSIS,"Contrib","Graphics","Wizard","nsis.bmp")
 
+if (os.path.isfile(ICON)==0):
+  PPICON="bin\\ppython.exe"
+else:
+  PPICON="game\\icon.ico"
+
 ##############################################################################
 #
 # Copy the game to a temporary directory, so we can modify it safely.
@@ -247,6 +252,7 @@ CMD=CMD+'/DPANDA="'+PANDA+'" '
 CMD=CMD+'/DPSOURCE="'+PSOURCE+'" '
 CMD=CMD+'/DPPGAME="'+TMPDIR+'" '
 CMD=CMD+'/DPPMAIN="'+MAIN+'" '
+CMD=CMD+'/DPPICON="'+PPICON+'" '
 CMD=CMD+'"'+PSOURCE+'\\direct\\src\\directscripts\\packpanda.nsi"'
 
 print ""

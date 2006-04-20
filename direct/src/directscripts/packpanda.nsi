@@ -21,8 +21,10 @@
 ;   PSOURCE       - location of the panda source-tree if available, OR location of panda install tree.
 ;   PYEXTRAS      - directory containing python extras, if any.
 ;
-;   PPGAME    - directory containing prepagaged game, if any        (ie, "C:\My Games\Airblade")
+;   PPGAME      - directory containing prepagaged game, if any        (ie, "C:\My Games\Airblade")
 ;   PPMAIN      - python program containing prepackaged game, if any  (ie, "Airblade.py")
+;   PPICON      - file containing icon of prepackaged game.
+;
 
 !include "MUI.nsh"
 !include "WinMessages.nsh"
@@ -108,7 +110,7 @@ Section "${SMDIRECTORY}" SecCore
             File /r "${PANDA}\bin\ppython.exe"
             SetOutpath $INSTDIR\game
             File /r "${PPGAME}\*"
-            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk" "$INSTDIR\bin\ppython.exe" "${PPMAIN}" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Play ${NAME}"
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk" "$INSTDIR\bin\ppython.exe" "${PPMAIN}" "$INSTDIR\${PPICON}" 0 SW_SHOWMINIMIZED "" "Play ${NAME}"
 
         !else
 
