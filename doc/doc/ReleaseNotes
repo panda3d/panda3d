@@ -1,6 +1,6 @@
-------------------------  RELEASE 1.2.0  ------------------------
+------------------------  RELEASE 1.2.1  ------------------------
 
-This release is likely to be much more stable than its predecessor.
+This release is likely to be much more stable than its predecessors.
 It contains many new features:
 
 * lots of performance optimizations
@@ -16,6 +16,7 @@ It contains many new features:
 * ability to control mipmaps explicitly
 * better tools for debugging offscreen buffers
 * new sample programs
+* a number of packpanda repairs
 
 ------------------------  RELEASE 1.1.0  ------------------------
 
