@@ -266,10 +266,14 @@ add_consecutive_vertices(int start, int num_vertices) {
     if (cdata->_num_vertices == 0) {
       cdata->_first_vertex = start;
       cdata->_num_vertices = num_vertices;
+      cdata->_modified = Geom::get_next_modified();
+      cdata->_got_minmax = false;
       return;
 
     } else if (start == cdata->_first_vertex + cdata->_num_vertices) {
       cdata->_num_vertices += num_vertices;
+      cdata->_modified = Geom::get_next_modified();
+      cdata->_got_minmax = false;
       return;
     }
     
