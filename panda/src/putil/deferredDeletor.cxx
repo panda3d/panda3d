@@ -49,12 +49,16 @@ delete_object(DeleteFunc *func, void *ptr) {
 ////////////////////////////////////////////////////////////////////
 void DeferredDeletor::
 flush() {
-  MutexHolder holder(_lock);
+  Tokens new_tokens;
+  {
+    MutexHolder holder(_lock);
+    _tokens.swap(new_tokens);
+  }
+
   Tokens::iterator ti;
-  for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {
+  for (ti = new_tokens.begin(); ti != new_tokens.end(); ++ti) {
     (*ti).do_delete();
   }
-  _tokens.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
