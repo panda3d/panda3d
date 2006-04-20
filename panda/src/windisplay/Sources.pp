@@ -10,8 +10,13 @@
   #define LOCAL_LIBS \
     display putil
     
-//  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
-  
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
+
+  #define SOURCES \
+     config_windisplay.h \
+     winGraphicsPipe.I winGraphicsPipe.h \
+     winGraphicsWindow.I winGraphicsWindow.h
+   
   #define INSTALL_HEADERS \
      config_windisplay.h \
      winGraphicsPipe.I winGraphicsPipe.h \
@@ -19,10 +24,9 @@
 //     Win32Defs.h  
     
   #define INCLUDED_SOURCES \
-    config_windisplay.cxx winGraphicsPipe.cxx
+     config_windisplay.cxx winGraphicsPipe.cxx \
+     winGraphicsWindow.cxx
 
-  #define SOURCES \
-    winGraphicsWindow.cxx $[INSTALL_HEADERS]
 
   #define WIN_SYS_LIBS Imm32.lib winmm.lib kernel32.lib oldnames.lib user32.lib gdi32.lib
 
