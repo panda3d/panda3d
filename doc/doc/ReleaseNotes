@@ -1,3 +1,22 @@
+------------------------  RELEASE 1.2.0  ------------------------
+
+This release is likely to be much more stable than its predecessor.
+It contains many new features:
+
+* lots of performance optimizations
+* a preliminary OSX port
+* new modes for animation blending
+* easier partial-body animations
+* more powerful shader-to-engine interface
+* better support for rotating bodies in physics engine
+* support for compressed model files
+* multiple render targets (ie, glDrawBuffers)
+* support for stereo rendering
+* more complete API reference manual
+* ability to control mipmaps explicitly
+* better tools for debugging offscreen buffers
+* new sample programs
+
 ------------------------  RELEASE 1.1.0  ------------------------
 
 This is a BETA release.  It's pretty reliable, but there are still a
