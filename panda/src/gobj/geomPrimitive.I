@@ -111,7 +111,7 @@ is_composite() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomPrimitive::
 is_indexed() const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_pipeline_stage());
+  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   return reader.is_indexed();
 }
 
@@ -126,7 +126,7 @@ is_indexed() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
 get_first_vertex() const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_pipeline_stage());
+  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   return reader.get_first_vertex();
 }
 
@@ -138,7 +138,7 @@ get_first_vertex() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
 get_num_vertices() const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_pipeline_stage());
+  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   return reader.get_num_vertices();
 }
 
@@ -149,7 +149,7 @@ get_num_vertices() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
 get_vertex(int i) const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_pipeline_stage());
+  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   return reader.get_vertex(i);
 }
 
@@ -162,7 +162,7 @@ get_vertex(int i) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
 get_num_primitives() const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_pipeline_stage());
+  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   return reader.get_num_primitives();
 }
 
@@ -214,7 +214,7 @@ get_primitive_num_faces(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
 get_min_vertex() const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_pipeline_stage());
+  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   reader.check_minmax();
   return reader.get_min_vertex();
 }
@@ -227,7 +227,7 @@ get_min_vertex() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
 get_max_vertex() const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_pipeline_stage());
+  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   reader.check_minmax();
   return reader.get_max_vertex();
 }
@@ -267,10 +267,10 @@ get_modified() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomPrimitive::
 check_valid(const GeomVertexData *vertex_data) const {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  GeomPrimitivePipelineReader reader(this, pipeline_stage);
+  Thread *current_thread = Thread::get_current_thread();
+  GeomPrimitivePipelineReader reader(this, current_thread);
   reader.check_minmax();
-  GeomVertexDataPipelineReader data_reader(vertex_data, pipeline_stage);
+  GeomVertexDataPipelineReader data_reader(vertex_data, current_thread);
   data_reader.check_array_readers();
   return reader.check_valid(&data_reader);
 }
@@ -299,7 +299,7 @@ get_vertices() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
 get_index_stride() const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_pipeline_stage());
+  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   return reader.get_index_stride();
 }
 
@@ -346,7 +346,7 @@ get_ends() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomVertexArrayData *GeomPrimitive::
 get_mins() const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_pipeline_stage());
+  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   reader.check_minmax();
   return reader.get_mins();
 }
@@ -364,7 +364,7 @@ get_mins() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomVertexArrayData *GeomPrimitive::
 get_maxs() const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_pipeline_stage());
+  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   reader.check_minmax();
   return reader.get_maxs();
 }
@@ -468,6 +468,29 @@ CData(const GeomPrimitive::CData &copy) :
   _max_vertex(copy._max_vertex)
 {
 }
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomPrimitivePipelineReader::
+GeomPrimitivePipelineReader(const GeomPrimitive *object, 
+                            Thread *current_thread) :
+  _object(object),
+  _current_thread(current_thread),
+  _cdata(object->_cycler.read(current_thread)),
+  _vertices_reader(NULL)
+{
+  nassertv(_object->test_ref_count_nonzero());
+#ifdef DO_PIPELINING
+  nassertv(_cdata->test_ref_count_nonzero());
+#endif  // DO_PIPELINING
+  if (_cdata->_vertices != (GeomVertexArrayData *)NULL) {
+    _vertices_reader =
+      new GeomVertexArrayDataPipelineReader(_cdata->_vertices, _current_thread);
+    nassertv(_vertices_reader->get_object() == _cdata->_vertices);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::Copy Constructor
@@ -490,6 +513,32 @@ operator = (const GeomPrimitivePipelineReader &) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomPrimitivePipelineReader::
+~GeomPrimitivePipelineReader() {
+  if (_vertices_reader != (GeomVertexArrayDataPipelineReader *)NULL) {
+    nassertv(_vertices_reader->get_object() == _cdata->_vertices);
+    delete _vertices_reader;
+  }
+#ifdef _DEBUG
+  nassertv(_object->test_ref_count_nonzero());
+#ifdef DO_PIPELINING
+  nassertv(_cdata->test_ref_count_nonzero());
+#endif  // DO_PIPELINING
+#endif // _DEBUG
+  _object->_cycler.release_read(_cdata);
+
+#ifdef _DEBUG
+  _vertices_reader = NULL;
+  _object = NULL;
+  _cdata = NULL;
+#endif  // _DEBUG
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_object
 //       Access: Public
 //  Description:
@@ -500,13 +549,13 @@ get_object() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitivePipelineReader::get_pipeline_stage
+//     Function: GeomPrimitivePipelineReader::get_current_thread
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE int GeomPrimitivePipelineReader::
-get_pipeline_stage() const {
-  return _pipeline_stage;
+INLINE Thread *GeomPrimitivePipelineReader::
+get_current_thread() const {
+  return _current_thread;
 }
 
 ////////////////////////////////////////////////////////////////////

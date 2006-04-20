@@ -41,6 +41,8 @@ private:
 
 public:
   INLINE void lock() const;
+  INLINE void lock(Thread *current_thread) const;
+  INLINE void elevate_lock() const;
   INLINE void release() const;
 
   INLINE bool debug_is_locked() const;
@@ -53,14 +55,16 @@ private:
 
 #else
   // If we don't have a reentrant mutex, we have to hand-roll one.
-  void do_lock();
+  INLINE void do_lock();
+  void do_lock(Thread *current_thread);
+  void do_elevate_lock();
   void do_release();
 
   Thread *_locking_thread;
   int _lock_count;
-  ConditionVarImpl _cvar;
 
-  static MutexImpl _global_lock;
+  MutexImpl _lock_impl;
+  ConditionVarImpl _cvar_impl;
 #endif  // HAVE_REMUTEXIMPL
 };
 

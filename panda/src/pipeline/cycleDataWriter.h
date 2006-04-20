@@ -24,6 +24,7 @@
 #include "cycleData.h"
 #include "pipelineCycler.h"
 #include "cycleDataReader.h"
+#include "thread.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CycleDataWriter
@@ -40,8 +41,10 @@
 template<class CycleDataType>
 class CycleDataWriter {
 public:
-  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler);
-  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool force_to_0);
+  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
+                         Thread *current_thread = Thread::get_current_thread());
+  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool force_to_0,
+                         Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataWriter(const CycleDataWriter<CycleDataType> &copy);
   INLINE void operator = (const CycleDataWriter<CycleDataType> &copy);
 
@@ -55,10 +58,13 @@ public:
 
   INLINE operator CycleDataType * ();
 
+  INLINE Thread *get_current_thread() const;
+
 private:
 #ifdef DO_PIPELINING
   // This is the data stored for a real pipelining implementation.
   PipelineCycler<CycleDataType> *_cycler;
+  Thread *_current_thread;
   CycleDataType *_pointer;
 #else  // !DO_PIPELINING
   // This is all we need for the trivial, do-nothing implementation.

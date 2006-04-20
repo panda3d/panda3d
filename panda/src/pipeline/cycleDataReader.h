@@ -23,6 +23,7 @@
 
 #include "cycleData.h"
 #include "pipelineCycler.h"
+#include "thread.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CycleDataReader
@@ -39,7 +40,8 @@
 template<class CycleDataType>
 class CycleDataReader {
 public:
-  INLINE CycleDataReader(const PipelineCycler<CycleDataType> &cycler);
+  INLINE CycleDataReader(const PipelineCycler<CycleDataType> &cycler,
+                         Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataReader(const CycleDataReader<CycleDataType> &copy);
   INLINE void operator = (const CycleDataReader<CycleDataType> &copy);
 
@@ -49,11 +51,13 @@ public:
   INLINE operator const CycleDataType * () const;
 
   INLINE const CycleDataType *take_pointer();
+  INLINE Thread *get_current_thread() const;
 
 private:
 #ifdef DO_PIPELINING
   // This is the data stored for a real pipelining implementation.
   const PipelineCycler<CycleDataType> *_cycler;
+  Thread *_current_thread;
   const CycleDataType *_pointer;
   CycleDataType *_write_pointer;
 #else  // !DO_PIPELINING

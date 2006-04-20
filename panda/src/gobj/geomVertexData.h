@@ -307,11 +307,11 @@ private:
 class EXPCL_PANDA GeomVertexDataPipelineBase : public GeomEnums {
 protected:
   INLINE GeomVertexDataPipelineBase(GeomVertexData *object, 
-                                    int pipeline_stage,
+                                    Thread *current_thread,
                                     GeomVertexData::CData *cdata);
 
 public:
-  INLINE int get_pipeline_stage() const;
+  INLINE Thread *get_current_thread() const;
 
   INLINE const GeomVertexFormat *get_format() const;
   INLINE bool has_column(const InternalName *name) const;
@@ -327,7 +327,7 @@ public:
 
 protected:
   GeomVertexData *_object;
-  int _pipeline_stage;
+  Thread *_current_thread;
   GeomVertexData::CData *_cdata;
 };
 
@@ -338,7 +338,7 @@ protected:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomVertexDataPipelineReader : public GeomVertexDataPipelineBase {
 public:
-  INLINE GeomVertexDataPipelineReader(const GeomVertexData *object, int pipeline_stage);
+  INLINE GeomVertexDataPipelineReader(const GeomVertexData *object, Thread *current_thread);
 private:
   INLINE GeomVertexDataPipelineReader(const GeomVertexDataPipelineReader &copy);
   INLINE void operator = (const GeomVertexDataPipelineReader &copy);
@@ -390,8 +390,8 @@ private:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomVertexDataPipelineWriter : public GeomVertexDataPipelineBase {
 public:
-  INLINE GeomVertexDataPipelineWriter(GeomVertexData *object, int pipeline_stage,
-                                      bool force_to_0);
+  INLINE GeomVertexDataPipelineWriter(GeomVertexData *object, bool force_to_0,
+                                      Thread *current_thread);
 private:
   INLINE GeomVertexDataPipelineWriter(const GeomVertexDataPipelineWriter &copy);
   INLINE void operator = (const GeomVertexDataPipelineWriter &copy);

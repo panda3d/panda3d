@@ -467,15 +467,17 @@ CData(const Geom::CData &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPipelineReader::
-GeomPipelineReader(const Geom *object, int pipeline_stage) :
+GeomPipelineReader(const Geom *object, Thread *current_thread) :
   _object(object),
-  _pipeline_stage(pipeline_stage),
-  _cdata(object->_cycler.read_stage(pipeline_stage))
+  _current_thread(current_thread),
+  _cdata(object->_cycler.read(current_thread))
 {
+#ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
 #ifdef DO_PIPELINING
   nassertv(_cdata->test_ref_count_nonzero());
 #endif  // DO_PIPELINING
+#endif // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -505,13 +507,18 @@ operator = (const GeomPipelineReader &) {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPipelineReader::
 ~GeomPipelineReader() {
+#ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
 #ifdef DO_PIPELINING
   nassertv(_cdata->test_ref_count_nonzero());
 #endif  // DO_PIPELINING
-  _object->_cycler.release_read_stage(_pipeline_stage, _cdata);
+#endif // _DEBUG
+  _object->_cycler.release_read(_cdata);
+
+#ifdef _DEBUG
   _object = NULL;
   _cdata = NULL;
+#endif  // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -525,13 +532,13 @@ get_object() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomPipelineReader::get_pipeline_stage
+//     Function: GeomPipelineReader::get_current_thread
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE int GeomPipelineReader::
-get_pipeline_stage() const {
-  return _pipeline_stage;
+INLINE Thread *GeomPipelineReader::
+get_current_thread() const {
+  return _current_thread;
 }
 
 ////////////////////////////////////////////////////////////////////

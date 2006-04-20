@@ -27,10 +27,11 @@
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
-CycleDataWriter(PipelineCycler<CycleDataType> &cycler) :
-  _cycler(&cycler)
+CycleDataWriter(PipelineCycler<CycleDataType> &cycler, Thread *current_thread) :
+  _cycler(&cycler),
+  _current_thread(current_thread)
 {
-  _pointer = _cycler->write();
+  _pointer = _cycler->write(_current_thread);
   nassertv(_pointer != (CycleDataType *)NULL);
 }
 
@@ -47,10 +48,12 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler) :
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
-CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool force_to_0) :
-  _cycler(&cycler)
+CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool force_to_0,
+                Thread *current_thread) :
+  _cycler(&cycler),
+  _current_thread(current_thread)
 {
-  _pointer = _cycler->write_upstream(force_to_0);
+  _pointer = _cycler->write_upstream(force_to_0, _current_thread);
   nassertv(_pointer != (CycleDataType *)NULL);
 }
 
@@ -63,6 +66,7 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(const CycleDataWriter<CycleDataType> &copy) :
   _cycler(copy._cycler),
+  _current_thread(copy._current_thread),
   _pointer(copy._pointer)
 {
   nassertv(_pointer != (CycleDataType *)NULL);
@@ -78,6 +82,7 @@ template<class CycleDataType>
 INLINE void CycleDataWriter<CycleDataType>::
 operator = (const CycleDataWriter<CycleDataType> &copy) {
   nassertv(_pointer == (CycleDataType *)NULL);
+  nassertv(_current_thread == copy._current_thread);
 
   _cycler = copy._cycler;
   _pointer = copy._pointer;
@@ -97,9 +102,10 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
                 CycleDataReader<CycleDataType> &take_from) :
-  _cycler(&cycler)
+  _cycler(&cycler),
+  _current_thread(take_from.get_current_thread())
 {
-  _pointer = _cycler->elevate_read(take_from.take_pointer());
+  _pointer = _cycler->elevate_read(take_from.take_pointer(), _current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,9 +122,11 @@ INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
                 CycleDataReader<CycleDataType> &take_from,
 		bool force_to_0) :
-  _cycler(&cycler)
+  _cycler(&cycler),
+  _current_thread(take_from.get_current_thread())
 {
-  _pointer = _cycler->elevate_read_upstream(take_from.take_pointer(), force_to_0);
+  _pointer = _cycler->elevate_read_upstream(take_from.take_pointer(), 
+                                            force_to_0, _current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -173,6 +181,18 @@ operator CycleDataType * () {
   return _pointer;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::get_current_thread (full)
+//       Access: Public
+//  Description: Returns the Thread pointer of the currently-executing
+//               thread, as passed to the constructor of this object.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE Thread *CycleDataWriter<CycleDataType>::
+get_current_thread() const {
+  return _current_thread;
+}
+
 #else  // !DO_PIPELINING
 // This is the trivial, do-nothing implementation.
 
@@ -183,25 +203,19 @@ operator CycleDataType * () {
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
-CycleDataWriter(PipelineCycler<CycleDataType> &cycler) {
-  _pointer = cycler.write();
+CycleDataWriter(PipelineCycler<CycleDataType> &cycler, Thread *) {
+  _pointer = cycler.cheat();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataWriter::Constructor (full)
+//     Function: CycleDataWriter::Constructor (trivial)
 //       Access: Public
-//  Description: This two-parameter constructor, with a bool parameter
-//               for the second parameter, automatically propagates
-//               the CycleData pointer upstream from the current
-//               stage, either stopping at the first pointer
-//               encountered that's different, going or all the way to
-//               stage 0, according to force_to_0.  See
-//               PipelineCycler::write_upstream().
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
-CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool) {
-  _pointer = cycler.write();
+CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool, Thread *) {
+  _pointer = cycler.cheat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -304,6 +318,18 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 operator CycleDataType * () {
   return _pointer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::get_current_thread (trivial)
+//       Access: Public
+//  Description: Returns the Thread pointer of the currently-executing
+//               thread, as passed to the constructor of this object.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE Thread *CycleDataWriter<CycleDataType>::
+get_current_thread() const {
+  return Thread::get_current_thread();
 }
 
 #endif  // DO_PIPELINING

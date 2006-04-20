@@ -61,6 +61,51 @@ lock() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MutexDebug::lock
+//       Access: Public
+//  Description: This variant on lock() accepts the current thread as
+//               a parameter, if it is already known, as an
+//               optimization.
+////////////////////////////////////////////////////////////////////
+INLINE void MutexDebug::
+lock(Thread *current_thread) const {
+  TAU_PROFILE("void MutexDebug::lock(Thread *)", " ", TAU_USER);
+  nassertv(current_thread == Thread::get_current_thread());
+  // You may only pass a Thread parameter to a ReMutex--that is, to a
+  // mutex whose _allow_recursion flag is true.
+  nassertv(_allow_recursion);
+  lock();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexDebug::elevate_lock
+//       Access: Public
+//  Description: This method increments the lock count, assuming the
+//               calling thread already holds the lock.  After this
+//               call, release() will need to be called one additional
+//               time to release the lock.
+//
+//               This method really performs the same function as
+//               lock(), but it offers a potential (slight)
+//               performance benefit when the calling thread knows
+//               that it already holds the lock.  It is an error to
+//               call this when the calling thread does not hold the
+//               lock.
+////////////////////////////////////////////////////////////////////
+INLINE void MutexDebug::
+elevate_lock() const {
+  TAU_PROFILE("void MutexDebug::elevate_lock()", " ", TAU_USER);
+  // You may only pass call elevate_lock() on a ReMutex--that is, to a
+  // mutex whose _allow_recursion flag is true.
+  nassertv(_allow_recursion);
+
+  // Also, it's an error to call this if the lock is not already held.
+  nassertv(debug_is_locked());
+
+  lock();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::release
 //       Access: Public
 //  Description: Releases the mutex.  It is an error to call this if

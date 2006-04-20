@@ -62,7 +62,7 @@ has_column(const InternalName *name) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomVertexArrayData::
 get_num_rows() const {
-  GeomVertexArrayDataPipelineReader reader(this, Thread::get_current_pipeline_stage());
+  GeomVertexArrayDataPipelineReader reader(this, Thread::get_current_thread());
   return reader.get_num_rows();
 }
 
@@ -89,7 +89,7 @@ get_num_rows() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexArrayData::
 set_num_rows(int n) {
-  GeomVertexArrayDataPipelineWriter writer(this, Thread::get_current_pipeline_stage(), true);
+  GeomVertexArrayDataPipelineWriter writer(this, true, Thread::get_current_thread());
   return writer.set_num_rows(n);
 }
 
@@ -154,7 +154,7 @@ get_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_uchar GeomVertexArrayData::
 modify_data() {
-  GeomVertexArrayDataPipelineWriter writer(this, Thread::get_current_pipeline_stage(), true);
+  GeomVertexArrayDataPipelineWriter writer(this, true, Thread::get_current_thread());
   return writer.modify_data();
 }
 
@@ -170,7 +170,7 @@ modify_data() {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexArrayData::
 set_data(CPTA_uchar array) {
-  GeomVertexArrayDataPipelineWriter writer(this, Thread::get_current_pipeline_stage(), true);
+  GeomVertexArrayDataPipelineWriter writer(this, true, Thread::get_current_thread());
   writer.set_data(array);
 }
 
@@ -205,22 +205,22 @@ CData(const GeomVertexArrayData::CData &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayDataPipelineBase::
 GeomVertexArrayDataPipelineBase(GeomVertexArrayData *object, 
-                                int pipeline_stage,
+                                Thread *current_thread,
                                 GeomVertexArrayData::CData *cdata) :
   _object(object),
-  _pipeline_stage(pipeline_stage),
+  _current_thread(current_thread),
   _cdata(cdata)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineBase::get_pipeline_stage
+//     Function: GeomVertexArrayDataPipelineBase::get_current_thread
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE int GeomVertexArrayDataPipelineBase::
-get_pipeline_stage() const {
-  return _pipeline_stage;
+INLINE Thread *GeomVertexArrayDataPipelineBase::
+get_current_thread() const {
+  return _current_thread;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -290,15 +290,17 @@ get_modified() const {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayDataPipelineReader::
 GeomVertexArrayDataPipelineReader(const GeomVertexArrayData *object, 
-                                  int pipeline_stage) :
+                                  Thread *current_thread) :
   GeomVertexArrayDataPipelineBase((GeomVertexArrayData *)object,
-                                  pipeline_stage,
-                                  (GeomVertexArrayData::CData *)object->_cycler.read_stage(pipeline_stage))
+                                  current_thread,
+                                  (GeomVertexArrayData::CData *)object->_cycler.read(current_thread))
 {
+#ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
 #ifdef DO_PIPELINING
   nassertv(_cdata->test_ref_count_nonzero());
 #endif  // DO_PIPELINING
+#endif // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -330,13 +332,18 @@ operator = (const GeomVertexArrayDataPipelineReader &) {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayDataPipelineReader::
 ~GeomVertexArrayDataPipelineReader() {
+#ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
 #ifdef DO_PIPELINING
   nassertv(_cdata->test_ref_count_nonzero());
 #endif  // DO_PIPELINING
-  _object->_cycler.release_read_stage(_pipeline_stage, _cdata);
+#endif // _DEBUG
+  _object->_cycler.release_read(_cdata);
+
+#ifdef _DEBUG
   _object = NULL;
   _cdata = NULL;
+#endif  // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -355,15 +362,17 @@ get_object() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayDataPipelineWriter::
-GeomVertexArrayDataPipelineWriter(GeomVertexArrayData *object, 
-                                  int pipeline_stage, bool force_to_0) :
-  GeomVertexArrayDataPipelineBase(object, pipeline_stage,
-                                  object->_cycler.write_stage_upstream(pipeline_stage, force_to_0))
+GeomVertexArrayDataPipelineWriter(GeomVertexArrayData *object, bool force_to_0,
+                                  Thread *current_thread) :
+  GeomVertexArrayDataPipelineBase(object, current_thread,
+                                  object->_cycler.write_upstream(force_to_0, current_thread))
 {
+#ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
 #ifdef DO_PIPELINING
   nassertv(_cdata->test_ref_count_nonzero());
 #endif  // DO_PIPELINING
+#endif // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -395,13 +404,18 @@ operator = (const GeomVertexArrayDataPipelineWriter &) {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayDataPipelineWriter::
 ~GeomVertexArrayDataPipelineWriter() {
+#ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
 #ifdef DO_PIPELINING
   nassertv(_cdata->test_ref_count_nonzero());
 #endif  // DO_PIPELINING
-  _object->_cycler.release_write_stage(_pipeline_stage, _cdata);
+#endif // _DEBUG
+  _object->_cycler.release_write(_cdata);
+
+#ifdef _DEBUG
   _object = NULL;
   _cdata = NULL;
+#endif  // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -37,9 +37,11 @@
 template<class CycleDataType>
 class CycleDataStageWriter {
 public:
-  INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage);
   INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
-                              bool force_to_0);
+                              Thread *current_thread = Thread::get_current_thread());
+  INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
+                              bool force_to_0, Thread *current_thread = Thread::get_current_thread());
+
   INLINE CycleDataStageWriter(const CycleDataStageWriter<CycleDataType> &copy);
   INLINE void operator = (const CycleDataStageWriter<CycleDataType> &copy);
 
@@ -56,10 +58,13 @@ public:
 
   INLINE operator CycleDataType * ();
 
+  INLINE Thread *get_current_thread() const;
+
 private:
 #ifdef DO_PIPELINING
   // This is the data stored for a real pipelining implementation.
   PipelineCycler<CycleDataType> *_cycler;
+  Thread *_current_thread;
   CycleDataType *_pointer;
   int _stage;
 #else  // !DO_PIPELINING

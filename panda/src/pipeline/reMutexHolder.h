@@ -22,6 +22,8 @@
 #include "pandabase.h"
 #include "reMutex.h"
 
+class Thread;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : ReMutexHolder
 // Description : Similar to MutexHolder, but for a reentrant mutex.
@@ -29,6 +31,7 @@
 class EXPCL_PANDA ReMutexHolder {
 public:
   INLINE ReMutexHolder(const ReMutex &mutex);
+  INLINE ReMutexHolder(const ReMutex &mutex, Thread *current_thread);
   INLINE ReMutexHolder(ReMutex *&mutex);
   INLINE ~ReMutexHolder();
 private:

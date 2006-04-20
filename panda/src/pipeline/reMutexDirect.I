@@ -25,7 +25,7 @@
 INLINE ReMutexDirect::
 ReMutexDirect() 
 #ifndef HAVE_REMUTEXIMPL
-  : _cvar(_global_lock)
+  : _cvar_impl(_lock_impl)
 #endif
 {
 #ifndef HAVE_REMUTEXIMPL
@@ -51,7 +51,7 @@ INLINE ReMutexDirect::
 INLINE ReMutexDirect::
 ReMutexDirect(const ReMutexDirect &copy)
 #ifndef HAVE_REMUTEXIMPL
-  : _cvar(_global_lock)
+  : _cvar_impl(_lock_impl)
 #endif
 {
   nassertv(false);
@@ -93,6 +93,48 @@ lock() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::lock
+//       Access: Public
+//  Description: This variant on lock() accepts the current thread as
+//               a parameter, if it is already known, as an
+//               optimization.
+////////////////////////////////////////////////////////////////////
+INLINE void ReMutexDirect::
+lock(Thread *current_thread) const {
+  TAU_PROFILE("void ReMutexDirect::lock(Thread *)", " ", TAU_USER);
+#ifdef HAVE_REMUTEXIMPL
+  ((ReMutexDirect *)this)->_impl.lock();
+#else
+  ((ReMutexDirect *)this)->do_lock(current_thread);
+#endif  // HAVE_REMUTEXIMPL
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::elevate_lock
+//       Access: Public
+//  Description: This method increments the lock count, assuming the
+//               calling thread already holds the lock.  After this
+//               call, release() will need to be called one additional
+//               time to release the lock.
+//
+//               This method really performs the same function as
+//               lock(), but it offers a potential (slight)
+//               performance benefit when the calling thread knows
+//               that it already holds the lock.  It is an error to
+//               call this when the calling thread does not hold the
+//               lock.
+////////////////////////////////////////////////////////////////////
+INLINE void ReMutexDirect::
+elevate_lock() const {
+  TAU_PROFILE("void ReMutexDirect::elevate_lock()", " ", TAU_USER);
+#ifdef HAVE_REMUTEXIMPL
+  ((ReMutexDirect *)this)->_impl.lock();
+#else
+  ((ReMutexDirect *)this)->do_elevate_lock();
+#endif  // HAVE_REMUTEXIMPL
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::release
 //       Access: Public
 //  Description: Releases the reMutex.  It is an error to call this if
@@ -126,3 +168,20 @@ INLINE bool ReMutexDirect::
 debug_is_locked() const {
   return true;
 }
+
+#ifndef HAVE_REMUTEXIMPL
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::do_lock
+//       Access: Private
+//  Description: The private implementation of lock(), for the case in
+//               which the underlying lock system does not provide a
+//               reentrant mutex (and therefore we have to build this
+//               functionality on top of the existing non-reentrant
+//               mutex).
+////////////////////////////////////////////////////////////////////
+INLINE void ReMutexDirect::
+do_lock() {
+  do_lock(Thread::get_current_thread());
+}
+#endif
+

@@ -42,7 +42,7 @@ GeomVertexWriter() :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 GeomVertexWriter(GeomVertexData *vertex_data) :
-  _data_writer(new GeomVertexDataPipelineWriter(vertex_data, Thread::get_current_pipeline_stage(), true)),
+  _data_writer(new GeomVertexDataPipelineWriter(vertex_data, true, Thread::get_current_thread())),
   _array_writer(NULL),
   _owns_writer(true)
 {
@@ -58,7 +58,7 @@ GeomVertexWriter(GeomVertexData *vertex_data) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 GeomVertexWriter(GeomVertexData *vertex_data, const string &name) :
-  _data_writer(new GeomVertexDataPipelineWriter(vertex_data, Thread::get_current_pipeline_stage(), true)),
+  _data_writer(new GeomVertexDataPipelineWriter(vertex_data, true, Thread::get_current_thread())),
   _array_writer(NULL),
   _owns_writer(true)
 {
@@ -75,7 +75,7 @@ GeomVertexWriter(GeomVertexData *vertex_data, const string &name) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 GeomVertexWriter(GeomVertexData *vertex_data, const InternalName *name) :
-  _data_writer(new GeomVertexDataPipelineWriter(vertex_data, Thread::get_current_pipeline_stage(), true)),
+  _data_writer(new GeomVertexDataPipelineWriter(vertex_data, true, Thread::get_current_thread())),
   _array_writer(NULL),
   _owns_writer(true)
 {
@@ -92,7 +92,7 @@ GeomVertexWriter(GeomVertexData *vertex_data, const InternalName *name) :
 INLINE GeomVertexWriter::
 GeomVertexWriter(GeomVertexArrayData *array_data) :
   _data_writer(NULL),
-  _array_writer(new GeomVertexArrayDataPipelineWriter(array_data, Thread::get_current_pipeline_stage(), true)),
+  _array_writer(new GeomVertexArrayDataPipelineWriter(array_data, true, Thread::get_current_thread())),
   _owns_writer(true)
 {
   initialize();
@@ -107,7 +107,7 @@ GeomVertexWriter(GeomVertexArrayData *array_data) :
 INLINE GeomVertexWriter::
 GeomVertexWriter(GeomVertexArrayData *array_data, int column) :
   _data_writer(NULL),
-  _array_writer(new GeomVertexArrayDataPipelineWriter(array_data, Thread::get_current_pipeline_stage(), true)),
+  _array_writer(new GeomVertexArrayDataPipelineWriter(array_data, true, Thread::get_current_thread())),
   _owns_writer(true)
 {
   initialize();

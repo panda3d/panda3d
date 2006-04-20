@@ -190,11 +190,11 @@ private:
 class EXPCL_PANDA GeomVertexArrayDataPipelineBase : public GeomEnums {
 protected:
   INLINE GeomVertexArrayDataPipelineBase(GeomVertexArrayData *object, 
-                                         int pipeline_stage,
+                                         Thread *current_thread,
                                          GeomVertexArrayData::CData *cdata);
 
 public:
-  INLINE int get_pipeline_stage() const;
+  INLINE Thread *get_current_thread() const;
 
   INLINE const GeomVertexArrayFormat *get_array_format() const;
 
@@ -206,7 +206,7 @@ public:
 
 protected:
   GeomVertexArrayData *_object;
-  int _pipeline_stage;
+  Thread *_current_thread;
   GeomVertexArrayData::CData *_cdata;
 };
 
@@ -217,7 +217,7 @@ protected:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomVertexArrayDataPipelineReader : public GeomVertexArrayDataPipelineBase {
 public:
-  INLINE GeomVertexArrayDataPipelineReader(const GeomVertexArrayData *object, int pipeline_stage);
+  INLINE GeomVertexArrayDataPipelineReader(const GeomVertexArrayData *object, Thread *current_thread);
 private:
   INLINE GeomVertexArrayDataPipelineReader(const GeomVertexArrayDataPipelineReader &copy);
   INLINE void operator = (const GeomVertexArrayDataPipelineReader &copy);
@@ -236,7 +236,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomVertexArrayDataPipelineWriter : public GeomVertexArrayDataPipelineBase {
 public:
-  INLINE GeomVertexArrayDataPipelineWriter(GeomVertexArrayData *object, int pipeline_stage, bool force_to_0);
+  INLINE GeomVertexArrayDataPipelineWriter(GeomVertexArrayData *object, bool force_to_0, Thread *current_thread);
 private:
   INLINE GeomVertexArrayDataPipelineWriter(const GeomVertexArrayDataPipelineWriter &copy);
   INLINE void operator = (const GeomVertexArrayDataPipelineWriter &copy);

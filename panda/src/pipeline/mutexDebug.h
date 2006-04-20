@@ -43,6 +43,8 @@ private:
 
 public:
   INLINE void lock() const;
+  INLINE void lock(Thread *current_thread) const;
+  INLINE void elevate_lock() const;
   INLINE void release() const;
   INLINE bool debug_is_locked() const;
 

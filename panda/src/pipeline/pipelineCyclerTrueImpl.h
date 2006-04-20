@@ -58,27 +58,31 @@ public:
   ~PipelineCyclerTrueImpl();
 
   INLINE void lock();
+  INLINE void lock(Thread *current_thread);
   INLINE void release();
 
-  INLINE const CycleData *read() const;
+  INLINE const CycleData *read(Thread *current_thread) const;
   INLINE void increment_read(const CycleData *pointer) const;
   INLINE void release_read(const CycleData *pointer) const;
 
-  INLINE CycleData *write();
-  INLINE CycleData *elevate_read(const CycleData *pointer);
-  INLINE CycleData *elevate_read_upstream(const CycleData *pointer, bool force_to_0);
+  INLINE CycleData *write(Thread *current_thread);
+  INLINE CycleData *write_upstream(bool force_to_0, Thread *current_thread);
+  INLINE CycleData *elevate_read(const CycleData *pointer, Thread *current_thread);
+  INLINE CycleData *elevate_read_upstream(const CycleData *pointer, bool force_to_0, Thread *current_thread);
   INLINE void increment_write(CycleData *pointer) const;
   INLINE void release_write(CycleData *pointer);
 
   INLINE int get_num_stages();
-  INLINE const CycleData *read_stage(int n) const;
-  INLINE void release_read_stage(int n, const CycleData *pointer) const;
-  INLINE CycleData *write_upstream(bool force_to_0);
-  CycleData *write_stage(int pipeline_stage);
-  CycleData *write_stage_upstream(int pipeline_stage, bool force_to_0);
-  INLINE CycleData *elevate_read_stage(int n, const CycleData *pointer);
-  INLINE CycleData *elevate_read_stage_upstream(int n, const CycleData *pointer, bool force_to_0);
-  INLINE void release_write_stage(int n, CycleData *pointer);
+  INLINE const CycleData *read_stage(int pipeline_stage, Thread *current_thread) const;
+  INLINE void release_read_stage(int pipeline_stage, const CycleData *pointer) const;
+  CycleData *write_stage(int pipeline_stage, Thread *current_thread);
+  CycleData *write_stage_upstream(int pipeline_stage, bool force_to_0, 
+                                  Thread *current_thread);
+  INLINE CycleData *elevate_read_stage(int pipeline_stage, const CycleData *pointer, 
+                                       Thread *current_thread);
+  INLINE CycleData *elevate_read_stage_upstream(int pipeline_stage, const CycleData *pointer, 
+                                                bool force_to_0, Thread *current_thread);
+  INLINE void release_write_stage(int pipeline_stage, CycleData *pointer);
 
   INLINE TypeHandle get_parent_type() const;
 

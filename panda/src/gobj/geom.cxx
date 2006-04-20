@@ -685,9 +685,9 @@ transform_vertices(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 bool Geom::
 check_valid() const {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  GeomPipelineReader geom_reader(this, pipeline_stage);
-  GeomVertexDataPipelineReader data_reader(geom_reader.get_vertex_data(), pipeline_stage);
+  Thread *current_thread = Thread::get_current_thread();
+  GeomPipelineReader geom_reader(this, current_thread);
+  GeomVertexDataPipelineReader data_reader(geom_reader.get_vertex_data(), current_thread);
   data_reader.check_array_readers();
   return geom_reader.check_valid(&data_reader);
 }
@@ -702,9 +702,9 @@ check_valid() const {
 ////////////////////////////////////////////////////////////////////
 bool Geom::
 check_valid(const GeomVertexData *vertex_data) const {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  GeomPipelineReader geom_reader(this, pipeline_stage);
-  GeomVertexDataPipelineReader data_reader(vertex_data, pipeline_stage);
+  Thread *current_thread = Thread::get_current_thread();
+  GeomPipelineReader geom_reader(this, current_thread);
+  GeomVertexDataPipelineReader data_reader(vertex_data, current_thread);
   data_reader.check_array_readers();
   return geom_reader.check_valid(&data_reader);
 }
@@ -931,11 +931,11 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
 void Geom::
 draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
      const GeomVertexData *vertex_data) const {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  GeomPipelineReader geom_reader(this, pipeline_stage);
+  Thread *current_thread = Thread::get_current_thread();
+  GeomPipelineReader geom_reader(this, current_thread);
   geom_reader.check_usage_hint();
 
-  GeomVertexDataPipelineReader data_reader(vertex_data, pipeline_stage);
+  GeomVertexDataPipelineReader data_reader(vertex_data, current_thread);
   data_reader.check_array_readers();
 
   geom_reader.draw(gsg, munger, &data_reader);
@@ -1343,7 +1343,7 @@ check_valid(const GeomVertexDataPipelineReader *data_reader) const {
        pi != _cdata->_primitives.end();
        ++pi) {
     const GeomPrimitive *primitive = (*pi);
-    GeomPrimitivePipelineReader reader(primitive, _pipeline_stage);
+    GeomPrimitivePipelineReader reader(primitive, _current_thread);
     reader.check_minmax();
     if (!reader.check_valid(data_reader)) {
       return false;
@@ -1368,7 +1368,7 @@ draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
          pi != _cdata->_primitives.end();
          ++pi) {
       const GeomPrimitive *primitive = (*pi);
-      GeomPrimitivePipelineReader reader(primitive, _pipeline_stage);
+      GeomPrimitivePipelineReader reader(primitive, _current_thread);
       if (reader.get_num_vertices() != 0) {
         reader.check_minmax();
         primitive->draw(gsg, &reader);

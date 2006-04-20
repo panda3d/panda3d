@@ -302,7 +302,7 @@ private:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomPipelineReader : public GeomEnums {
 public:
-  INLINE GeomPipelineReader(const Geom *object, int pipeline_stage);
+  INLINE GeomPipelineReader(const Geom *object, Thread *current_thread);
 private:
   INLINE GeomPipelineReader(const GeomPipelineReader &copy);
   INLINE void operator = (const GeomPipelineReader &copy);
@@ -312,7 +312,7 @@ public:
   ALLOC_DELETED_CHAIN(GeomPipelineReader);
 
   INLINE const Geom *get_object() const;
-  INLINE int get_pipeline_stage() const;
+  INLINE Thread *get_current_thread() const;
 
   INLINE void check_usage_hint() const;
 
@@ -333,7 +333,7 @@ public:
 
 private:
   const Geom *_object;
-  int _pipeline_stage;
+  Thread *_current_thread;
   const Geom::CData *_cdata;
 };
 

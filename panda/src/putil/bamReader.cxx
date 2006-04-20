@@ -600,7 +600,7 @@ void BamReader::
 read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler) {
   PipelineCyclerBase *old_cycler = _reading_cycler;
   _reading_cycler = &cycler;
-  CycleData *cdata = cycler.write();
+  CycleData *cdata = cycler.write(Thread::get_current_thread());
   cdata->fillin(scan, this);
   cycler.release_write(cdata);
   _reading_cycler = old_cycler;
@@ -617,7 +617,7 @@ read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler,
            void *extra_data) {
   PipelineCyclerBase *old_cycler = _reading_cycler;
   _reading_cycler = &cycler;
-  CycleData *cdata = cycler.write();
+  CycleData *cdata = cycler.write(Thread::get_current_thread());
   cdata->fillin(scan, this, extra_data);
   cycler.release_write(cdata);
   _reading_cycler = old_cycler;
@@ -1114,7 +1114,7 @@ resolve_cycler_pointers(PipelineCyclerBase *cycler,
       
   if (is_complete) {
     // Okay, here's the complete list of pointers for you!
-    CycleData *cdata = cycler->write();
+    CycleData *cdata = cycler->write(Thread::get_current_thread());
     int num_completed = cdata->complete_pointers(&references[0], this);
     cycler->release_write(cdata);
     if (num_completed != (int)references.size()) {

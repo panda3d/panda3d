@@ -42,7 +42,7 @@ GeomVertexReader() :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexData *vertex_data) :
-  _data_reader(new GeomVertexDataPipelineReader(vertex_data, Thread::get_current_pipeline_stage())),
+  _data_reader(new GeomVertexDataPipelineReader(vertex_data, Thread::get_current_thread())),
   _array_reader(NULL),
   _owns_reader(true)
 {
@@ -58,7 +58,7 @@ GeomVertexReader(const GeomVertexData *vertex_data) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexData *vertex_data, const string &name) :
-  _data_reader(new GeomVertexDataPipelineReader(vertex_data, Thread::get_current_pipeline_stage())),
+  _data_reader(new GeomVertexDataPipelineReader(vertex_data, Thread::get_current_thread())),
   _array_reader(NULL),
   _owns_reader(true)
 {
@@ -76,7 +76,7 @@ GeomVertexReader(const GeomVertexData *vertex_data, const string &name) :
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexData *vertex_data, 
                  const InternalName *name) :
-  _data_reader(new GeomVertexDataPipelineReader(vertex_data, Thread::get_current_pipeline_stage())),
+  _data_reader(new GeomVertexDataPipelineReader(vertex_data, Thread::get_current_thread())),
   _array_reader(NULL),
   _owns_reader(true)
 {
@@ -93,7 +93,7 @@ GeomVertexReader(const GeomVertexData *vertex_data,
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexArrayData *array_data) :
   _data_reader(NULL),
-  _array_reader(new GeomVertexArrayDataPipelineReader(array_data, Thread::get_current_pipeline_stage())),
+  _array_reader(new GeomVertexArrayDataPipelineReader(array_data, Thread::get_current_thread())),
   _owns_reader(true)
 {
   initialize();
@@ -108,7 +108,7 @@ GeomVertexReader(const GeomVertexArrayData *array_data) :
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexArrayData *array_data, int column) :
   _data_reader(NULL),
-  _array_reader(new GeomVertexArrayDataPipelineReader(array_data, Thread::get_current_pipeline_stage())),
+  _array_reader(new GeomVertexArrayDataPipelineReader(array_data, Thread::get_current_thread())),
   _owns_reader(true)
 {
   initialize();

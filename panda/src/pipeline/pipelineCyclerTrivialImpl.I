@@ -85,7 +85,7 @@ INLINE PipelineCyclerTrivialImpl::
 //               walking the list of stages.
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrivialImpl::
-lock() {
+lock(Thread *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,7 +107,7 @@ release() {
 //               released by calling release_read().
 ////////////////////////////////////////////////////////////////////
 INLINE const CycleData *PipelineCyclerTrivialImpl::
-read() const {
+read(Thread *) const {
 #ifdef SIMPLE_STRUCT_POINTERS
   return (const CycleData *)this;
 #else
@@ -153,7 +153,45 @@ release_read(const CycleData *) const {
 //               stage (but see elevate_read).
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerTrivialImpl::
-write() {
+write(Thread *) {
+#ifdef SIMPLE_STRUCT_POINTERS
+  return (CycleData *)this;
+#else
+  return _data;
+#endif  // SIMPLE_STRUCT_POINTERS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrivialImpl::write_upstream
+//       Access: Public
+//  Description: This special variant on write() will automatically
+//               propagate changes back to upstream pipeline stages.
+//               If force_to_0 is false, then it propagates back only
+//               as long as the CycleData pointers are equivalent,
+//               guaranteeing that it does not modify upstream data
+//               (other than the modification that will be performed
+//               by the code that returns this pointer).  This is
+//               particularly appropriate for minor updates, where it
+//               doesn't matter much if the update is lost, such as
+//               storing a cached value.
+//
+//               If force_to_0 is trivial, then the CycleData pointer for
+//               the current pipeline stage is propagated all the way
+//               back up to stage 0; after this call, there will be
+//               only one CycleData pointer that is duplicated in all
+//               stages between stage 0 and the current stage.  This
+//               may undo some recent changes that were made
+//               independently at pipeline stage 0 (or any other
+//               upstream stage).  However, it guarantees that the
+//               change that is to be applied at this pipeline stage
+//               will stick.  This is slightly dangerous because of
+//               the risk of losing upstream changes; generally, this
+//               should only be done when you are confident that there
+//               are no upstream changes to be lost (for instance, for
+//               an object that has been recently created).
+////////////////////////////////////////////////////////////////////
+CycleData *PipelineCyclerTrivialImpl::
+write_upstream(bool, Thread *) {
 #ifdef SIMPLE_STRUCT_POINTERS
   return (CycleData *)this;
 #else
@@ -171,7 +209,7 @@ write() {
 //               current stage.
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerTrivialImpl::
-elevate_read(const CycleData *) {
+elevate_read(const CycleData *, Thread *) {
 #ifdef SIMPLE_STRUCT_POINTERS
   return (CycleData *)this;
 #else
@@ -188,7 +226,7 @@ elevate_read(const CycleData *) {
 //               write_upstream().
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerTrivialImpl::
-elevate_read_upstream(const CycleData *, bool) {
+elevate_read_upstream(const CycleData *, bool, Thread *) {
 #ifdef SIMPLE_STRUCT_POINTERS
   return (CycleData *)this;
 #else
@@ -236,7 +274,7 @@ get_num_stages() {
 //               release_read().
 ////////////////////////////////////////////////////////////////////
 INLINE const CycleData *PipelineCyclerTrivialImpl::
-read_stage(int) const {
+read_stage(int, Thread *) const {
 #ifdef SIMPLE_STRUCT_POINTERS
   return (const CycleData *)this;
 #else
@@ -255,44 +293,6 @@ release_read_stage(int, const CycleData *) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::write_upstream
-//       Access: Public
-//  Description: This special variant on write() will automatically
-//               propagate changes back to upstream pipeline stages.
-//               If force_to_0 is false, then it propagates back only
-//               as long as the CycleData pointers are equivalent,
-//               guaranteeing that it does not modify upstream data
-//               (other than the modification that will be performed
-//               by the code that returns this pointer).  This is
-//               particularly appropriate for minor updates, where it
-//               doesn't matter much if the update is lost, such as
-//               storing a cached value.
-//
-//               If force_to_0 is trivial, then the CycleData pointer for
-//               the current pipeline stage is propagated all the way
-//               back up to stage 0; after this call, there will be
-//               only one CycleData pointer that is duplicated in all
-//               stages between stage 0 and the current stage.  This
-//               may undo some recent changes that were made
-//               independently at pipeline stage 0 (or any other
-//               upstream stage).  However, it guarantees that the
-//               change that is to be applied at this pipeline stage
-//               will stick.  This is slightly dangerous because of
-//               the risk of losing upstream changes; generally, this
-//               should only be done when you are confident that there
-//               are no upstream changes to be lost (for instance, for
-//               an object that has been recently created).
-////////////////////////////////////////////////////////////////////
-CycleData *PipelineCyclerTrivialImpl::
-write_upstream(bool) {
-#ifdef SIMPLE_STRUCT_POINTERS
-  return (CycleData *)this;
-#else
-  return _data;
-#endif  // SIMPLE_STRUCT_POINTERS
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrivialImpl::write_stage
 //       Access: Public
 //  Description: Returns a pointer suitable for writing to the nth
@@ -303,7 +303,7 @@ write_upstream(bool) {
 //               release_write_stage().
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerTrivialImpl::
-write_stage(int) {
+write_stage(int, Thread *) {
 #ifdef SIMPLE_STRUCT_POINTERS
   return (CycleData *)this;
 #else
@@ -322,7 +322,7 @@ write_stage(int) {
 //               release_write_stage().
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerTrivialImpl::
-write_stage_upstream(int, bool) {
+write_stage_upstream(int, bool, Thread *) {
 #ifdef SIMPLE_STRUCT_POINTERS
   return (CycleData *)this;
 #else
@@ -340,7 +340,7 @@ write_stage_upstream(int, bool) {
 //               current stage.
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerTrivialImpl::
-elevate_read_stage(int, const CycleData *) {
+elevate_read_stage(int, const CycleData *, Thread *) {
 #ifdef SIMPLE_STRUCT_POINTERS
   return (CycleData *)this;
 #else
@@ -358,7 +358,7 @@ elevate_read_stage(int, const CycleData *) {
 //               current stage.
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerTrivialImpl::
-elevate_read_stage_upstream(int, const CycleData *, bool) {
+elevate_read_stage_upstream(int, const CycleData *, bool, Thread *) {
 #ifdef SIMPLE_STRUCT_POINTERS
   return (CycleData *)this;
 #else

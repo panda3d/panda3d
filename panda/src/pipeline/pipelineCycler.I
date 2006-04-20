@@ -63,19 +63,8 @@ operator = (const PipelineCycler<CycleDataType> &copy) {
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE const CycleDataType *PipelineCycler<CycleDataType>::
-read() const {
-  return (const CycleDataType *)PipelineCyclerBase::read();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::read (dummy or true)
-//       Access: Public
-//  Description: See PipelineCyclerBase::read_stage().
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE const CycleDataType *PipelineCycler<CycleDataType>::
-read_stage(int n) const {
-  return (const CycleDataType *)PipelineCyclerBase::read_stage(n);
+read(Thread *current_thread) const {
+  return (const CycleDataType *)PipelineCyclerBase::read(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,52 +74,8 @@ read_stage(int n) const {
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
-write() {
-  return (CycleDataType *)PipelineCyclerBase::write();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::elevate_read (dummy or true)
-//       Access: Public
-//  Description: See PipelineCyclerBase::elevate_read().
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE CycleDataType *PipelineCycler<CycleDataType>::
-elevate_read(const CycleDataType *pointer) {
-  return (CycleDataType *)PipelineCyclerBase::elevate_read(pointer);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::elevate_read_upstream (dummy or true)
-//       Access: Public
-//  Description: See PipelineCyclerBase::elevate_read_upstream().
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE CycleDataType *PipelineCycler<CycleDataType>::
-elevate_read_upstream(const CycleDataType *pointer, bool force_to_0) {
-  return (CycleDataType *)PipelineCyclerBase::elevate_read_upstream(pointer, force_to_0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::elevate_read_stage (dummy or true)
-//       Access: Public
-//  Description: See PipelineCyclerBase::elevate_read_stage().
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE CycleDataType *PipelineCycler<CycleDataType>::
-elevate_read_stage(int n, const CycleDataType *pointer) {
-  return (CycleDataType *)PipelineCyclerBase::elevate_read_stage(n, pointer);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::elevate_read_stage_upstream (dummy or true)
-//       Access: Public
-//  Description: See PipelineCyclerBase::elevate_read_stage_upstream().
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE CycleDataType *PipelineCycler<CycleDataType>::
-elevate_read_stage_upstream(int n, const CycleDataType *pointer, bool force_to_0) {
-  return (CycleDataType *)PipelineCyclerBase::elevate_read_stage_upstream(n, pointer, force_to_0);
+write(Thread *current_thread) {
+  return (CycleDataType *)PipelineCyclerBase::write(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,8 +85,66 @@ elevate_read_stage_upstream(int n, const CycleDataType *pointer, bool force_to_0
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
-write_upstream(bool force_to_0) {
-  return (CycleDataType *)PipelineCyclerBase::write_upstream(force_to_0);
+write_upstream(bool force_to_0, Thread *current_thread) {
+  return (CycleDataType *)PipelineCyclerBase::write_upstream(force_to_0, current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read (dummy or true)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read(const CycleDataType *pointer, Thread *current_thread) {
+  return (CycleDataType *)PipelineCyclerBase::elevate_read(pointer, current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read_upstream (dummy or true)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read_upstream().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read_upstream(const CycleDataType *pointer, bool force_to_0,
+                      Thread *current_thread) {
+  return (CycleDataType *)PipelineCyclerBase::elevate_read_upstream(pointer, force_to_0, current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::read (dummy or true)
+//       Access: Public
+//  Description: See PipelineCyclerBase::read_stage().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *PipelineCycler<CycleDataType>::
+read_stage(int pipeline_stage, Thread *current_thread) const {
+  return (const CycleDataType *)PipelineCyclerBase::read_stage(pipeline_stage, current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read_stage (dummy or true)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read_stage().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read_stage(int pipeline_stage, const CycleDataType *pointer, 
+                   Thread *current_thread) {
+  return (CycleDataType *)PipelineCyclerBase::elevate_read_stage(pipeline_stage, pointer, current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read_stage_upstream (dummy or true)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read_stage_upstream().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read_stage_upstream(int pipeline_stage, const CycleDataType *pointer, 
+                            bool force_to_0, Thread *current_thread) {
+  return (CycleDataType *)PipelineCyclerBase::elevate_read_stage_upstream(pipeline_stage, pointer, force_to_0, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,8 +154,8 @@ write_upstream(bool force_to_0) {
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
-write_stage(int n) {
-  return (CycleDataType *)PipelineCyclerBase::write_stage(n);
+write_stage(int pipeline_stage, Thread *current_thread) {
+  return (CycleDataType *)PipelineCyclerBase::write_stage(pipeline_stage, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,8 +165,9 @@ write_stage(int n) {
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
-write_stage_upstream(int pipeline_stage, bool force_to_0) {
-  return (CycleDataType *)PipelineCyclerBase::write_stage_upstream(pipeline_stage, force_to_0);
+write_stage_upstream(int pipeline_stage, bool force_to_0, 
+                     Thread *current_thread) {
+  return (CycleDataType *)PipelineCyclerBase::write_stage_upstream(pipeline_stage, force_to_0, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,18 +234,7 @@ operator = (const PipelineCycler<CycleDataType> &copy) {
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE const CycleDataType *PipelineCycler<CycleDataType>::
-read() const {
-  return &_typed_data;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::read_stage (trivial)
-//       Access: Public
-//  Description: See PipelineCyclerBase::read_stage().
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE const CycleDataType *PipelineCycler<CycleDataType>::
-read_stage(int) const {
+read(Thread *) const {
   return &_typed_data;
 }
 
@@ -252,51 +245,7 @@ read_stage(int) const {
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
-write() {
-  return &_typed_data;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::elevate_read (trivial)
-//       Access: Public
-//  Description: See PipelineCyclerBase::elevate_read().
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE CycleDataType *PipelineCycler<CycleDataType>::
-elevate_read(const CycleDataType *) {
-  return &_typed_data;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::elevate_read_upstream (trivial)
-//       Access: Public
-//  Description: See PipelineCyclerBase::elevate_read_upstream().
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE CycleDataType *PipelineCycler<CycleDataType>::
-elevate_read_upstream(const CycleDataType *, bool) {
-  return &_typed_data;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::elevate_read_stage (trivial)
-//       Access: Public
-//  Description: See PipelineCyclerBase::elevate_read_stage().
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE CycleDataType *PipelineCycler<CycleDataType>::
-elevate_read_stage(int, const CycleDataType *) {
-  return &_typed_data;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::elevate_read_stage_upstream (trivial)
-//       Access: Public
-//  Description: See PipelineCyclerBase::elevate_read_stage_upstream().
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE CycleDataType *PipelineCycler<CycleDataType>::
-elevate_read_stage_upstream(int, const CycleDataType *, bool) {
+write(Thread *) {
   return &_typed_data;
 }
 
@@ -307,7 +256,62 @@ elevate_read_stage_upstream(int, const CycleDataType *, bool) {
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
-write_upstream(bool) {
+write_upstream(bool, Thread *) {
+  return &_typed_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read(const CycleDataType *, Thread *) {
+  return &_typed_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read_upstream (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read_upstream().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read_upstream(const CycleDataType *, bool, Thread *) {
+  return &_typed_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::read_stage (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::read_stage().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *PipelineCycler<CycleDataType>::
+read_stage(int, Thread *) const {
+  return &_typed_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read_stage (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read_stage().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read_stage(int, const CycleDataType *, Thread *) {
+  return &_typed_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read_stage_upstream (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read_stage_upstream().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read_stage_upstream(int, const CycleDataType *, bool, Thread *) {
   return &_typed_data;
 }
 
@@ -318,7 +322,7 @@ write_upstream(bool) {
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
-write_stage(int) {
+write_stage(int, Thread *) {
   return &_typed_data;
 }
 
@@ -329,7 +333,7 @@ write_stage(int) {
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
-write_stage_upstream(int, bool) {
+write_stage_upstream(int, bool, Thread *) {
   return &_typed_data;
 }
 

@@ -29,11 +29,12 @@
 template<class CycleDataType>
 INLINE CycleDataStageReader<CycleDataType>::
 CycleDataStageReader(const PipelineCycler<CycleDataType> &cycler,
-                     int stage) :
+                     int stage, Thread *current_thread) :
   _cycler(&cycler),
+  _current_thread(current_thread),
   _stage(stage)
 {
-  _pointer = _cycler->read_stage(_stage);
+  _pointer = _cycler->read_stage(_stage, _current_thread);
   nassertv(_pointer != (const CycleDataType *)NULL);
 }
 
@@ -46,6 +47,7 @@ template<class CycleDataType>
 INLINE CycleDataStageReader<CycleDataType>::
 CycleDataStageReader(const CycleDataStageReader<CycleDataType> &copy) :
   _cycler(copy._cycler),
+  _current_thread(copy._current_thread),
   _pointer(copy._pointer),
   _stage(copy._stage)
 {
@@ -62,6 +64,7 @@ template<class CycleDataType>
 INLINE void CycleDataStageReader<CycleDataType>::
 operator = (const CycleDataStageReader<CycleDataType> &copy) {
   nassertv(_pointer == (CycleDataType *)NULL);
+  nassertv(_current_thread == copy._current_thread);
 
   _cycler = copy._cycler;
   _pointer = copy._pointer;
@@ -129,6 +132,18 @@ take_pointer() {
   return pointer;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataStageReader::get_current_thread (full)
+//       Access: Public
+//  Description: Returns the Thread pointer of the currently-executing
+//               thread, as passed to the constructor of this object.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE Thread *CycleDataStageReader<CycleDataType>::
+get_current_thread() const {
+  return _current_thread;
+}
+
 #else  // !DO_PIPELINING
 // This is the trivial, do-nothing implementation.
 
@@ -139,8 +154,9 @@ take_pointer() {
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataStageReader<CycleDataType>::
-CycleDataStageReader(const PipelineCycler<CycleDataType> &cycler, int) {
-  _pointer = cycler.read();
+CycleDataStageReader(const PipelineCycler<CycleDataType> &cycler, int,
+                     Thread *) {
+  _pointer = cycler.cheat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -214,6 +230,18 @@ template<class CycleDataType>
 INLINE const CycleDataType *CycleDataStageReader<CycleDataType>::
 take_pointer() {
   return _pointer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataStageReader::get_current_thread (trivial)
+//       Access: Public
+//  Description: Returns the Thread pointer of the currently-executing
+//               thread, as passed to the constructor of this object.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE Thread *CycleDataStageReader<CycleDataType>::
+get_current_thread() const {
+  return Thread::get_current_thread();
 }
 
 #endif  // DO_PIPELINING

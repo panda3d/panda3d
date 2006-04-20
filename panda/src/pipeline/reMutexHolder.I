@@ -33,6 +33,21 @@ ReMutexHolder(const ReMutex &mutex) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexHolder::Constructor
 //       Access: Public
+//  Description: This variant on the constructor accepts the current
+//               thread as a parameter, if it is already known, as an
+//               optimization.
+////////////////////////////////////////////////////////////////////
+INLINE ReMutexHolder::
+ReMutexHolder(const ReMutex &mutex, Thread *current_thread) {
+#if defined(HAVE_THREADS) || !defined(NDEBUG)
+  _mutex = &mutex;
+  _mutex->lock(current_thread);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexHolder::Constructor
+//       Access: Public
 //  Description: If the ReMutexHolder constructor is given a pointer to
 //               a ReMutex object (instead of an actual object), it will
 //               first check to see if the pointer is NULL, and

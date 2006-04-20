@@ -1483,50 +1483,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _got_minmax = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitivePipelineReader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-GeomPrimitivePipelineReader::
-GeomPrimitivePipelineReader(const GeomPrimitive *object, 
-                            int pipeline_stage) :
-  _object(object),
-  _pipeline_stage(pipeline_stage),
-  _cdata(object->_cycler.read_stage(pipeline_stage)),
-  _vertices_reader(NULL)
-{
-  nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
-  if (_cdata->_vertices != (GeomVertexArrayData *)NULL) {
-    _vertices_reader =
-      new GeomVertexArrayDataPipelineReader(_cdata->_vertices, _pipeline_stage);
-    nassertv(_vertices_reader->get_object() == _cdata->_vertices);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitivePipelineReader::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-GeomPrimitivePipelineReader::
-~GeomPrimitivePipelineReader() {
-  if (_vertices_reader != (GeomVertexArrayDataPipelineReader *)NULL) {
-    nassertv(_vertices_reader->get_object() == _cdata->_vertices);
-    delete _vertices_reader;
-    _vertices_reader = NULL;
-  }
-  nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
-  _object->_cycler.release_read_stage(_pipeline_stage, _cdata);
-  _object = NULL;
-  _cdata = NULL;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_first_vertex

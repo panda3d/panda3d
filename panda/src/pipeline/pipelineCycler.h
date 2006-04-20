@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "pipelineCyclerBase.h"
 #include "cyclerHolder.h"
-#include "thread.h"     // for convenience of code that uses PipelineReader classes
+#include "thread.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PipelineCycler
@@ -63,16 +63,17 @@ public:
   INLINE PipelineCycler(const PipelineCycler<CycleDataType> &copy);
   INLINE void operator = (const PipelineCycler<CycleDataType> &copy);
 
-  INLINE const CycleDataType *read() const;
-  INLINE const CycleDataType *read_stage(int n) const;
-  INLINE CycleDataType *write();
-  INLINE CycleDataType *elevate_read(const CycleDataType *pointer);
-  INLINE CycleDataType *elevate_read_upstream(const CycleDataType *pointer, bool force_to_0);
-  INLINE CycleDataType *elevate_read_stage(int n, const CycleDataType *pointer);
-  INLINE CycleDataType *elevate_read_stage_upstream(int n, const CycleDataType *pointer, bool force_to_0);
-  INLINE CycleDataType *write_upstream(bool force_to_0);
-  INLINE CycleDataType *write_stage_upstream(int pipeline_stage, bool force_to_0);
-  INLINE CycleDataType *write_stage(int n);
+  INLINE const CycleDataType *read(Thread *current_thread) const;
+  INLINE CycleDataType *write(Thread *current_thread);
+  INLINE CycleDataType *write_upstream(bool force_to_0, Thread *current_thread);
+  INLINE CycleDataType *elevate_read(const CycleDataType *pointer, Thread *current_thread);
+  INLINE CycleDataType *elevate_read_upstream(const CycleDataType *pointer, bool force_to_0, Thread *current_thread);
+
+  INLINE const CycleDataType *read_stage(int pipeline_stage, Thread *current_thread) const;
+  INLINE CycleDataType *elevate_read_stage(int pipeline_stage, const CycleDataType *pointer, Thread *current_thread);
+  INLINE CycleDataType *elevate_read_stage_upstream(int pipeline_stage, const CycleDataType *pointer, bool force_to_0, Thread *current_thread);
+  INLINE CycleDataType *write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread);
+  INLINE CycleDataType *write_stage(int pipeline_stage, Thread *current_thread);
 
   INLINE CycleDataType *cheat() const;
 

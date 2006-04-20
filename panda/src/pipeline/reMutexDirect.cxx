@@ -19,10 +19,6 @@
 #include "reMutexDirect.h"
 #include "thread.h"
 
-#ifndef HAVE_REMUTEXIMPL
-MutexImpl ReMutexDirect::_global_lock;
-#endif  // !HAVE_REMUTEXIMPL
-
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::output
 //       Access: Public
@@ -45,36 +41,72 @@ output(ostream &out) const {
 //               mutex).
 ////////////////////////////////////////////////////////////////////
 void ReMutexDirect::
-do_lock() {
-  _global_lock.lock();
+do_lock(Thread *current_thread) {
+  _lock_impl.lock();
 
   if (_locking_thread == (Thread *)NULL) {
     // The mutex is not already locked by anyone.  Lock it.
-    _locking_thread = Thread::get_current_thread();
+    _locking_thread = current_thread;
     ++_lock_count;
     nassertd(_lock_count == 1) {
     }
 
-  } else if (_locking_thread == Thread::get_current_thread()) {
+  } else if (_locking_thread == current_thread) {
     // The mutex is already locked by this thread.  Increment the lock
     // count.
     ++_lock_count;
     nassertd(_lock_count > 0) {
     }
-
+    
   } else {
     // The mutex is locked by some other thread.  Go to sleep on the
     // condition variable until it's unlocked.
     while (_locking_thread != (Thread *)NULL) {
-      _cvar.wait();
+      _cvar_impl.wait();
     }
     
-    _locking_thread = Thread::get_current_thread();
+    _locking_thread = current_thread;
     ++_lock_count;
     nassertd(_lock_count == 1) {
     }
   }
-  _global_lock.release();
+  _lock_impl.release();
+}
+#endif  // !HAVE_REMUTEXIMPL
+
+#ifndef HAVE_REMUTEXIMPL
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::do_elevate_lock
+//       Access: Private
+//  Description: The private implementation of lock(), for the case in
+//               which the underlying lock system does not provide a
+//               reentrant mutex (and therefore we have to build this
+//               functionality on top of the existing non-reentrant
+//               mutex).
+////////////////////////////////////////////////////////////////////
+void ReMutexDirect::
+do_elevate_lock() {
+  _lock_impl.lock();
+
+#ifdef _DEBUG
+  nassertd(_locking_thread == Thread::get_current_thread()) {
+    _lock_impl.release();
+    return;
+  }
+#elif !defined(NDEBUG)
+  nassertd(_locking_thread != (Thread *)NULL) {
+    _lock_impl.release();
+    return;
+  }
+#endif  // NDEBUG
+
+  // We know the mutex is already locked by this thread.  Increment
+  // the lock count.
+  ++_lock_count;
+  nassertd(_lock_count > 0) {
+  }
+
+  _lock_impl.release();
 }
 #endif  // !HAVE_REMUTEXIMPL
 
@@ -90,16 +122,18 @@ do_lock() {
 ////////////////////////////////////////////////////////////////////
 void ReMutexDirect::
 do_release() {
-  _global_lock.lock();
+  _lock_impl.lock();
 
+#ifdef _DEBUG
   if (_locking_thread != Thread::get_current_thread()) {
     ostringstream ostr;
     ostr << *_locking_thread << " attempted to release "
          << *this << " which it does not own";
     nassert_raise(ostr.str());
-    _global_lock.release();
+    _lock_impl.release();
     return;
   }
+#endif  // _DEBUG
 
   nassertd(_lock_count > 0) {
   }
@@ -108,8 +142,8 @@ do_release() {
   if (_lock_count == 0) {
     // That was the last lock held by this thread.  Release the lock.
     _locking_thread = (Thread *)NULL;
-    _cvar.signal();
+    _cvar_impl.signal();
   }
-  _global_lock.release();
+  _lock_impl.release();
 }
 #endif  // !HAVE_REMUTEXIMPL

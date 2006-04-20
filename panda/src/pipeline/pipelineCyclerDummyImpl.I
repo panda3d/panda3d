@@ -80,8 +80,8 @@ INLINE PipelineCyclerDummyImpl::
 //               walking the list of stages.
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
-lock() {
-  TAU_PROFILE("void PipelineCyclerDummyImpl::lock()", " ", TAU_USER);
+lock(Thread *) {
+  TAU_PROFILE("void PipelineCyclerDummyImpl::lock(Thread *)", " ", TAU_USER);
   nassertv(!_locked);
   _locked = true;
 }
@@ -111,7 +111,7 @@ release() {
 //               data when this function is called.
 ////////////////////////////////////////////////////////////////////
 INLINE const CycleData *PipelineCyclerDummyImpl::
-read() const {
+read(Thread *) const {
   TAU_PROFILE("const CycleData *PipelineCyclerDummyImpl::read()", " ", TAU_USER);
   // This function isn't truly const, but it doesn't change the data
   // in any meaningful way, so we pretend it is.
@@ -172,7 +172,7 @@ release_read(const CycleData *pointer) const {
 //               stage (but see elevate_read).
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
-write() {
+write(Thread *) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::write()", " ", TAU_USER);
   _write_count++;
 
@@ -187,6 +187,42 @@ write() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::write_upstream
+//       Access: Public
+//  Description: This special variant on write() will automatically
+//               propagate changes back to upstream pipeline stages.
+//               If force_to_0 is false, then it propagates back only
+//               as long as the CycleData pointers are equivalent,
+//               guaranteeing that it does not modify upstream data
+//               (other than the modification that will be performed
+//               by the code that returns this pointer).  This is
+//               particularly appropriate for minor updates, where it
+//               doesn't matter much if the update is lost, such as
+//               storing a cached value.
+//
+//               If force_to_0 is dummy, then the CycleData pointer for
+//               the current pipeline stage is propagated all the way
+//               back up to stage 0; after this call, there will be
+//               only one CycleData pointer that is duplicated in all
+//               stages between stage 0 and the current stage.  This
+//               may undo some recent changes that were made
+//               independently at pipeline stage 0 (or any other
+//               upstream stage).  However, it guarantees that the
+//               change that is to be applied at this pipeline stage
+//               will stick.  This is slightly dangerous because of
+//               the risk of losing upstream changes; generally, this
+//               should only be done when you are confident that there
+//               are no upstream changes to be lost (for instance, for
+//               an object that has been recently created).
+////////////////////////////////////////////////////////////////////
+CycleData *PipelineCyclerDummyImpl::
+write_upstream(bool, Thread *) {
+  TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::write_upstream(bool)", " ", TAU_USER);
+  _write_count++;
+  return _data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerDummyImpl::elevate_read
 //       Access: Public
 //  Description: Elevates a currently-held read pointer into a write
@@ -196,7 +232,7 @@ write() {
 //               current stage.
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
-elevate_read(const CycleData *pointer) {
+elevate_read(const CycleData *pointer, Thread *) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read(const CycleData *)", " ", TAU_USER);
   release_read(pointer);
   return write();
@@ -211,7 +247,7 @@ elevate_read(const CycleData *pointer) {
 //               write_upstream().
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
-elevate_read_upstream(const CycleData *pointer, bool force_to_0) {
+elevate_read_upstream(const CycleData *pointer, bool force_to_0, Thread *) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read_upstream(const CycleData *, bool)", " ", TAU_USER);
   release_read(pointer);
   return write_upstream(force_to_0);
@@ -270,11 +306,11 @@ get_num_stages() {
 //               data when this function is called.
 ////////////////////////////////////////////////////////////////////
 INLINE const CycleData *PipelineCyclerDummyImpl::
-read_stage(int n) const {
+read_stage(int pipeline_stage, Thread *) const {
   TAU_PROFILE("const CycleData *PipelineCyclerDummyImpl::read_stage(int)", " ", TAU_USER);
   // This function isn't truly const, but it doesn't change the data
   // in any meaningful way, so we pretend it is.
-  nassertr(n == 0, NULL);
+  nassertr(pipeline_stage == 0, NULL);
   ((PipelineCyclerDummyImpl *)this)->_read_count++;
 
   // It's not an error to grab a read pointer while someone else holds
@@ -289,50 +325,14 @@ read_stage(int n) const {
 //               read_stage().
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
-release_read_stage(int n, const CycleData *pointer) const {
+release_read_stage(int pipeline_stage, const CycleData *pointer) const {
   TAU_PROFILE("void PipelineCyclerDummyImpl::release_read_stage(int, const CycleData *)", " ", TAU_USER);
   // This function isn't truly const, but it doesn't change the data
   // in any meaningful way, so we pretend it is.
-  nassertv(n == 0);
+  nassertv(pipeline_stage == 0);
   nassertv(pointer == _data);
   nassertv(_read_count > 0);
   ((PipelineCyclerDummyImpl *)this)->_read_count--;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::write_upstream
-//       Access: Public
-//  Description: This special variant on write() will automatically
-//               propagate changes back to upstream pipeline stages.
-//               If force_to_0 is false, then it propagates back only
-//               as long as the CycleData pointers are equivalent,
-//               guaranteeing that it does not modify upstream data
-//               (other than the modification that will be performed
-//               by the code that returns this pointer).  This is
-//               particularly appropriate for minor updates, where it
-//               doesn't matter much if the update is lost, such as
-//               storing a cached value.
-//
-//               If force_to_0 is dummy, then the CycleData pointer for
-//               the current pipeline stage is propagated all the way
-//               back up to stage 0; after this call, there will be
-//               only one CycleData pointer that is duplicated in all
-//               stages between stage 0 and the current stage.  This
-//               may undo some recent changes that were made
-//               independently at pipeline stage 0 (or any other
-//               upstream stage).  However, it guarantees that the
-//               change that is to be applied at this pipeline stage
-//               will stick.  This is slightly dangerous because of
-//               the risk of losing upstream changes; generally, this
-//               should only be done when you are confident that there
-//               are no upstream changes to be lost (for instance, for
-//               an object that has been recently created).
-////////////////////////////////////////////////////////////////////
-CycleData *PipelineCyclerDummyImpl::
-write_upstream(bool) {
-  TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::write_upstream(bool)", " ", TAU_USER);
-  _write_count++;
-  return _data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -346,9 +346,9 @@ write_upstream(bool) {
 //               release_write_stage().
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
-write_stage(int n) {
+write_stage(int pipeline_stage, Thread *) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::write_stage(int)", " ", TAU_USER);
-  nassertr(n == 0, (CycleData *)NULL);
+  nassertr(pipeline_stage == 0, (CycleData *)NULL);
   _write_count++;
   return _data;
 }
@@ -364,9 +364,9 @@ write_stage(int n) {
 //               release_write_stage().
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
-write_stage_upstream(int n, bool) {
+write_stage_upstream(int pipeline_stage, bool, Thread *) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::write_stage_upstream(int)", " ", TAU_USER);
-  nassertr(n == 0, (CycleData *)NULL);
+  nassertr(pipeline_stage == 0, (CycleData *)NULL);
   _write_count++;
   return _data;
 }
@@ -381,9 +381,9 @@ write_stage_upstream(int n, bool) {
 //               current stage.
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
-elevate_read_stage(int n, const CycleData *pointer) {
+elevate_read_stage(int pipeline_stage, const CycleData *pointer, Thread *) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read_stage(int, CycleData *)", " ", TAU_USER);
-  nassertr(n == 0, NULL);
+  nassertr(pipeline_stage == 0, NULL);
   release_read(pointer);
   return write();
 }
@@ -398,9 +398,10 @@ elevate_read_stage(int n, const CycleData *pointer) {
 //               current stage.
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
-elevate_read_stage_upstream(int n, const CycleData *pointer, bool) {
+elevate_read_stage_upstream(int pipeline_stage, const CycleData *pointer, 
+                            bool, Thread *) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read_stage(int, CycleData *)", " ", TAU_USER);
-  nassertr(n == 0, NULL);
+  nassertr(pipeline_stage == 0, NULL);
   release_read(pointer);
   return write();
 }
@@ -412,9 +413,9 @@ elevate_read_stage_upstream(int n, const CycleData *pointer, bool) {
 //               write_stage().
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
-release_write_stage(int n, CycleData *pointer) {
+release_write_stage(int pipeline_stage, CycleData *pointer) {
   TAU_PROFILE("void PipelineCyclerDummyImpl::release_write_stage(int, CycleData *)", " ", TAU_USER);
-  nassertv(n == 0 && pointer == _data);
+  nassertv(pipeline_stage == 0 && pointer == _data);
   nassertv(_write_count > 0);
   _write_count--;
 }

@@ -296,17 +296,17 @@ private:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomPrimitivePipelineReader : public GeomEnums {
 public:
-  GeomPrimitivePipelineReader(const GeomPrimitive *object, int pipeline_stage);
+  INLINE GeomPrimitivePipelineReader(const GeomPrimitive *object, Thread *current_thread);
 private:
   INLINE GeomPrimitivePipelineReader(const GeomPrimitivePipelineReader &copy);
   INLINE void operator = (const GeomPrimitivePipelineReader &copy);
 
 public:
-  ~GeomPrimitivePipelineReader();
+  INLINE ~GeomPrimitivePipelineReader();
   ALLOC_DELETED_CHAIN(GeomPrimitivePipelineReader);
 
   INLINE const GeomPrimitive *get_object() const;
-  INLINE int get_pipeline_stage() const;
+  INLINE Thread *get_current_thread() const;
 
   INLINE void check_minmax() const;
 
@@ -331,7 +331,7 @@ public:
   
 private:
   const GeomPrimitive *_object;
-  int _pipeline_stage;
+  Thread *_current_thread;
   const GeomPrimitive::CData *_cdata;
   GeomVertexArrayDataPipelineReader *_vertices_reader;
 };

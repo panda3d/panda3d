@@ -1713,7 +1713,7 @@ make_array_readers() {
   _array_readers.reserve(_cdata->_arrays.size());
   GeomVertexData::Arrays::const_iterator ai;
   for (ai = _cdata->_arrays.begin(); ai != _cdata->_arrays.end(); ++ai) {
-    _array_readers.push_back(new GeomVertexArrayDataPipelineReader(*ai, _pipeline_stage));
+    _array_readers.push_back(new GeomVertexArrayDataPipelineReader(*ai, _current_thread));
   }
 
   _got_array_readers = true;
@@ -1778,7 +1778,7 @@ set_num_rows(int n) {
       if (_cdata->_arrays[i]->get_ref_count() > 1) {
         delete _array_writers[i];
         _cdata->_arrays[i] = new GeomVertexArrayData(*_cdata->_arrays[i]);
-        _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _pipeline_stage, _force_to_0);
+        _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _force_to_0, _current_thread);
       }
       if (_cdata->_arrays[i]->has_column(InternalName::get_color())) {
         color_array = i;
@@ -1856,7 +1856,7 @@ modify_array(int i) {
 
   if (_got_array_writers) {
     delete _array_writers[i];
-    _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _pipeline_stage, _force_to_0);
+    _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _force_to_0, _current_thread);
   }
 
   return _cdata->_arrays[i];
@@ -1877,7 +1877,7 @@ set_array(int i, const GeomVertexArrayData *array) {
 
   if (_got_array_writers) {
     delete _array_writers[i];
-    _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _pipeline_stage, _force_to_0);
+    _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _force_to_0, _current_thread);
   }
 }
 
@@ -1893,7 +1893,7 @@ make_array_writers() {
   _array_writers.reserve(_cdata->_arrays.size());
   GeomVertexData::Arrays::const_iterator ai;
   for (ai = _cdata->_arrays.begin(); ai != _cdata->_arrays.end(); ++ai) {
-    _array_writers.push_back(new GeomVertexArrayDataPipelineWriter(*ai, _pipeline_stage, _force_to_0));
+    _array_writers.push_back(new GeomVertexArrayDataPipelineWriter(*ai, _force_to_0, _current_thread));
   }
 
   _got_array_writers = true;

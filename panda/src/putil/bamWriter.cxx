@@ -282,7 +282,7 @@ write_pointer(Datagram &packet, const TypedWritable *object) {
 ////////////////////////////////////////////////////////////////////
 void BamWriter::
 write_cdata(Datagram &packet, const PipelineCyclerBase &cycler) {
-  const CycleData *cdata = cycler.read();
+  const CycleData *cdata = cycler.read(Thread::get_current_thread());
   cdata->write_datagram(this, packet);
   cycler.release_read(cdata);
 }
@@ -296,7 +296,7 @@ write_cdata(Datagram &packet, const PipelineCyclerBase &cycler) {
 void BamWriter::
 write_cdata(Datagram &packet, const PipelineCyclerBase &cycler,
             void *extra_data) {
-  const CycleData *cdata = cycler.read();
+  const CycleData *cdata = cycler.read(Thread::get_current_thread());
   cdata->write_datagram(this, packet, extra_data);
   cycler.release_read(cdata);
 }
