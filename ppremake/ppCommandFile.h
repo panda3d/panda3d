@@ -59,6 +59,7 @@ protected:
   bool handle_printvar_command();
   bool handle_include_command();
   bool handle_sinclude_command();
+  bool handle_copy_command();
   bool handle_call_command();
   bool handle_error_command();
   bool handle_mkdir_command();

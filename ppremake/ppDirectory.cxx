@@ -10,6 +10,7 @@
 #include "ppCommandFile.h"
 #include "ppDependableFile.h"
 #include "tokenize.h"
+#include "ppremake.h"
 
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
@@ -365,9 +366,10 @@ get_dependable_file(const string &filename, bool is_header) {
       if (_tree != main_tree &&
           other->get_directory()->get_tree() != main_tree) {
         // Both files are in external dependable trees.
-        cerr << "Warning: header file " << dependable->get_fullpath()
+        cerr << "Error: header file " << dependable->get_fullpath()
              << " may be confused with " << other->get_fullpath()
              << ".\n";
+        errors_occurred = true;
 
       } else if (other->get_directory()->get_tree() != _tree) {
         // This file is a source file in this tree, while the other
@@ -377,9 +379,10 @@ get_dependable_file(const string &filename, bool is_header) {
 
       } else {
         // Both files are within the same source tree.
-        cerr << "Warning: source file " << dependable->get_pathname()
+        cerr << "Error: source file " << dependable->get_pathname()
              << " may be confused with " << other->get_pathname()
              << ".\n";
+        errors_occurred = true;
       }
     }
   }

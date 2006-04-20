@@ -665,6 +665,9 @@ handle_command(const string &line) {
   } else if (_command == "sinclude") {
     return handle_sinclude_command();
 
+  } else if (_command == "copy") {
+    return handle_copy_command();
+
   } else if (_command == "call") {
     return handle_call_command();
 
@@ -1402,6 +1405,56 @@ handle_sinclude_command() {
   }
 
   return include_file(filename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::handle_copy_command
+//       Access: Protected
+//  Description: Handles the #copy command: the indicated file is
+//               read and output at this point.  This is useful for
+//               inserting within an #output sequence, to copy the
+//               contents of some file into the target file.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+handle_copy_command() {
+  string filename = trim_blanks(_scope->expand_string(_params));
+
+  // We allow optional quotation marks around the filename.
+  if (filename.length() >= 2 &&
+      filename[0] == '"' && 
+      filename[filename.length() - 1] == '"') {
+    filename = filename.substr(1, filename.length() - 2);
+  }
+
+  Filename fn(filename);
+  fn.set_text();
+
+  ifstream in;
+  if (!fn.open_read(in)) {
+    cerr << "Unable to open copy file " << fn << ".\n";
+    errors_occurred = true;
+    return false;
+  }
+  if (verbose) {
+    cerr << "Reading (copy) \"" << fn << "\"\n";
+  }
+
+  string line;
+  getline(in, line);
+  while (!in.fail() && !in.eof()) {
+    if (!_write_state->write_line(line)) {
+      return false;
+    }
+    getline(in, line);
+  }
+
+  if (!in.eof()) {
+    cerr << "Error reading " << fn << ".\n";
+    errors_occurred = true;
+    return false;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

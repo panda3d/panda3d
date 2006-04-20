@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="ppremake"
 	ProjectGUID="{B2B6A5F5-4403-4386-9294-B10EE8B0B3E8}"
 	Keyword="CustomAppWizProj">
@@ -33,7 +33,13 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -58,9 +64,17 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Template Files"
@@ -88,9 +102,6 @@
 			Name="Miscellaneous Files"
 			Filter="vsz;vsdir;ico;vcproj;csproj;css;inf">
 			<File
-				RelativePath="Templates\1033\Templates.inf">
-			</File>
-			<File
 				RelativePath="default.vcproj">
 			</File>
 			<File
@@ -101,6 +112,9 @@
 			</File>
 			<File
 				RelativePath="ppremake.vsz">
+			</File>
+			<File
+				RelativePath="Templates\1033\Templates.inf">
 			</File>
 		</Filter>
 		<File
@@ -113,13 +127,13 @@
 			RelativePath="config_msvc.h">
 		</File>
 		<File
-			RelativePath="dSearchPath.I">
-		</File>
-		<File
 			RelativePath="dSearchPath.cxx">
 		</File>
 		<File
 			RelativePath="dSearchPath.h">
+		</File>
+		<File
+			RelativePath="dSearchPath.I">
 		</File>
 		<File
 			RelativePath="executionEnvironment.cxx">
@@ -128,22 +142,22 @@
 			RelativePath="executionEnvironment.h">
 		</File>
 		<File
-			RelativePath="filename.I">
-		</File>
-		<File
 			RelativePath="filename.cxx">
 		</File>
 		<File
 			RelativePath="filename.h">
 		</File>
 		<File
-			RelativePath="globPattern.I">
+			RelativePath="filename.I">
 		</File>
 		<File
 			RelativePath="globPattern.cxx">
 		</File>
 		<File
 			RelativePath="globPattern.h">
+		</File>
+		<File
+			RelativePath="globPattern.I">
 		</File>
 		<File
 			RelativePath="gnu_getopt.c">
@@ -206,6 +220,12 @@
 			RelativePath="ppNamedScopes.h">
 		</File>
 		<File
+			RelativePath="ppremake.cxx">
+		</File>
+		<File
+			RelativePath="ppremake.h">
+		</File>
+		<File
 			RelativePath="ppScope.cxx">
 		</File>
 		<File
@@ -216,12 +236,6 @@
 		</File>
 		<File
 			RelativePath="ppSubroutine.h">
-		</File>
-		<File
-			RelativePath="ppremake.cxx">
-		</File>
-		<File
-			RelativePath="ppremake.h">
 		</File>
 		<File
 			RelativePath="sedAddress.cxx">
