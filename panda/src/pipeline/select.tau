@@ -1,3 +1,4 @@
 BEGIN_EXCLUDE_LIST
 void *ThreadPosixImpl::root_func#
+void *ThreadWin32Impl::root_func#
 END_EXCLUDE_LIST

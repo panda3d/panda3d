@@ -244,6 +244,41 @@ release_read_stage(int n, const CycleData *pointer) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::write_upstream
+//       Access: Public
+//  Description: This special variant on write() will automatically
+//               propagate changes back to upstream pipeline stages.
+//               If force_to_0 is false, then it propagates back only
+//               as long as the CycleData pointers are equivalent,
+//               guaranteeing that it does not modify upstream data
+//               (other than the modification that will be performed
+//               by the code that returns this pointer).  This is
+//               particularly appropriate for minor updates, where it
+//               doesn't matter much if the update is lost, such as
+//               storing a cached value.
+//
+//               If force_to_0 is true, then the CycleData pointer for
+//               the current pipeline stage is propagated all the way
+//               back up to stage 0; after this call, there will be
+//               only one CycleData pointer that is duplicated in all
+//               stages between stage 0 and the current stage.  This
+//               may undo some recent changes that were made
+//               independently at pipeline stage 0 (or any other
+//               upstream stage).  However, it guarantees that the
+//               change that is to be applied at this pipeline stage
+//               will stick.  This is slightly dangerous because of
+//               the risk of losing upstream changes; generally, this
+//               should only be done when you are confident that there
+//               are no upstream changes to be lost (for instance, for
+//               an object that has been recently created).
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerTrueImpl::
+write_upstream(bool force_to_0) {
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  return write_stage_upstream(pipeline_stage, force_to_0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrueImpl::elevate_read_stage
 //       Access: Public
 //  Description: Elevates a currently-held read pointer into a write
@@ -260,6 +295,27 @@ elevate_read_stage(int n, const CycleData *pointer) {
   nassertr(_data[n] == pointer, NULL);
 #endif
   CycleData *new_pointer = write_stage(n);
+  _lock.release();
+  return new_pointer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::elevate_read_stage_upstream
+//       Access: Public
+//  Description: Elevates a currently-held read pointer into a write
+//               pointer.  This may or may not change the value of the
+//               pointer.  It is only valid to do this if this is the
+//               only currently-outstanding read pointer on the
+//               indicated stage.
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerTrueImpl::
+elevate_read_stage_upstream(int n, const CycleData *pointer, bool force_to_0) {
+  TAU_PROFILE("CycleData *PipelineCyclerTrueImpl::elevate_read_stage(int, const CycleData *)", " ", TAU_USER);
+#ifdef _DEBUG
+  nassertr(n >= 0 && n < _num_stages, NULL);
+  nassertr(_data[n] == pointer, NULL);
+#endif
+  CycleData *new_pointer = write_stage_upstream(n, force_to_0);
   _lock.release();
   return new_pointer;
 }

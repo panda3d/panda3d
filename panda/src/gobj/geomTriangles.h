@@ -39,7 +39,8 @@ public:
   virtual int get_num_vertices_per_primitive() const;
 
 public:
-  virtual void draw(GraphicsStateGuardianBase *gsg) const;
+  virtual void draw(GraphicsStateGuardianBase *gsg,
+                    const GeomPrimitivePipelineReader *reader) const;
 
 protected:
   virtual CPT(GeomVertexArrayData) rotate_impl() const;

@@ -75,15 +75,15 @@ public:
   virtual void end_scene();
   virtual void end_frame();
 
-  virtual bool begin_draw_primitives(const Geom *geom,
+  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader, 
                                      const GeomMunger *munger,
-                                     const GeomVertexData *vertex_data);
-  virtual void draw_triangles(const GeomTriangles *primitive);
-  virtual void draw_tristrips(const GeomTristrips *primitive);
-  virtual void draw_trifans(const GeomTrifans *primitive);
-  virtual void draw_lines(const GeomLines *primitive);
-  virtual void draw_linestrips(const GeomLinestrips *primitive);
-  virtual void draw_points(const GeomPoints *primitive);
+                                     const GeomVertexDataPipelineReader *data_reader);
+  virtual void draw_triangles(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_tristrips(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_trifans(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_lines(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_linestrips(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_points(const GeomPrimitivePipelineReader *reader);
   virtual void end_draw_primitives();
 
   virtual void framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,

@@ -26,6 +26,7 @@
 #include "dcFile.h"
 #include "dcField.h"  // to pick up Python.h
 #include "pStatCollector.h"
+#include "datagramIterator.h"
 
 #ifdef HAVE_NSPR
 #include "queuedConnectionManager.h"

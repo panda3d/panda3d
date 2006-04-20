@@ -38,11 +38,16 @@ template<class CycleDataType>
 class CycleDataStageWriter {
 public:
   INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage);
+  INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
+                              bool force_to_0);
   INLINE CycleDataStageWriter(const CycleDataStageWriter<CycleDataType> &copy);
   INLINE void operator = (const CycleDataStageWriter<CycleDataType> &copy);
 
   INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
                               CycleDataStageReader<CycleDataType> &take_from);
+  INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
+                              CycleDataStageReader<CycleDataType> &take_from,
+                              bool force_to_0);
 
   INLINE ~CycleDataStageWriter();
 

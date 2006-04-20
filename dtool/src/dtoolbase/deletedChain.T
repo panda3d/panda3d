@@ -17,9 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 template<class Type>
-TYPENAME DeletedChain<Type>::ObjectNode *DeletedChain<Type>::_deleted_chain;
+TVOLATILE TYPENAME DeletedChain<Type>::ObjectNode * TVOLATILE DeletedChain<Type>::_deleted_chain;
 
-#ifndef HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
+#ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 template<class Type>
 MutexImpl DeletedChain<Type>::_lock;
 #endif
@@ -35,38 +35,54 @@ allocate(size_t size) {
   TAU_PROFILE("Type *DeletedChain<Type>::allocate(size_t)", " ", TAU_USER);
   assert(size <= sizeof(Type));
 
-#ifndef HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
+  TVOLATILE ObjectNode *obj;
+
+#ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
   _lock.lock();
   if (_deleted_chain != (ObjectNode *)NULL) {
-    ObjectNode *obj = _deleted_chain;
+    obj = _deleted_chain;
     _deleted_chain = _deleted_chain->_next;
     _lock.release();
+#ifndef NDEBUG
+    assert(obj->_flag == ((PN_int32)obj ^ deleted_chain_flag_hash));
+    obj->_flag = 0;
+#endif  // NDEBUG
     return (Type *)obj;
   }
   _lock.release();
 
-#else  // HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
-  ObjectNode *obj = _deleted_chain;
+#else  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
+  obj = _deleted_chain;
   while (obj != (ObjectNode *)NULL) {
-    ObjectNode *result = (ObjectNode *)AtomicAdjust::compare_and_exchange_ptr((void *&)_deleted_chain, (void *)obj, (void *)obj->_next);
+    TVOLATILE ObjectNode *next = obj->_next;
+    TVOLATILE ObjectNode *result = (ObjectNode *)AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_deleted_chain, (void *)obj, (void *)next);
     if (result == obj) {
       // We got it.
+#ifndef NDEBUG
+      assert(obj->_flag == ((PN_int32)obj ^ deleted_chain_flag_hash));
+      obj->_flag = 0;
+#endif  // NDEBUG
       return (Type *)obj;
     }
     // Someone else grabbed the top link first.  Try again.
     obj = _deleted_chain;
   }
 
-#endif  // HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
+#endif  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 
   // If we get here, the deleted_chain is empty; we have to allocate a
   // new object from the system pool.
 
 #ifdef DO_MEMORY_USAGE
-  return (Type *)(*global_operator_new)(sizeof(Type));
+  obj = (ObjectNode *)(*global_operator_new)(max(sizeof(Type), sizeof(ObjectNode)));
 #else
-  return (Type *)malloc(sizeof(Type));
+  obj = (ObjectNode *)malloc(max(sizeof(Type), sizeof(ObjectNode)));
 #endif
+#ifndef NDEBUG
+  obj->_flag = 0;
+#endif  // NDEBUG
+
+  return (Type *)obj;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,25 +94,32 @@ template<class Type>
 INLINE void DeletedChain<Type>::
 deallocate(Type *ptr) {
   TAU_PROFILE("void DeletedChain<Type>::deallocate(Type *)", " ", TAU_USER);
-#ifndef HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
+  TVOLATILE ObjectNode *obj = (ObjectNode *)ptr;
+
+#ifndef NDEBUG
+  assert(obj->_flag != ((PN_int32)obj ^ deleted_chain_flag_hash));
+  obj->_flag = (PN_int32)obj ^ deleted_chain_flag_hash;
+#endif  // NDEBUG
+
+#ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
   _lock.lock();
 
-  ObjectNode *obj = (ObjectNode *)ptr;
   obj->_next = _deleted_chain;
   _deleted_chain = obj;
 
   _lock.release();
 
-#else  // HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
+#else  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 
-  ObjectNode *obj = (ObjectNode *)ptr;
-  ObjectNode *result;
+  TVOLATILE ObjectNode *result;
+  TVOLATILE ObjectNode *next;
 
   do {
-    obj->_next = _deleted_chain;
-    result = (ObjectNode *)AtomicAdjust::compare_and_exchange_ptr((void *&)_deleted_chain, (void *)obj->_next, (void *)obj);
+    next = _deleted_chain;
+    obj->_next = next;
+    result = (ObjectNode *)AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_deleted_chain, (void *)next, (void *)obj);
     // Keep trying until no one else got to _deleted_chain first.
-  } while (result != obj->_next);
+  } while (result != next);
 
-#endif  // HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
+#endif  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 }

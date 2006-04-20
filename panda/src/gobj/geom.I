@@ -461,6 +461,174 @@ CData(const Geom::CData &copy) :
 {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomPipelineReader::
+GeomPipelineReader(const Geom *object, int pipeline_stage) :
+  _object(object),
+  _pipeline_stage(pipeline_stage),
+  _cdata(object->_cycler.read_stage(pipeline_stage))
+{
+  nassertv(_object->test_ref_count_nonzero());
+#ifdef DO_PIPELINING
+  nassertv(_cdata->test_ref_count_nonzero());
+#endif  // DO_PIPELINING
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::Copy Constructor
+//       Access: Private
+//  Description: Don't attempt to copy these objects.
+////////////////////////////////////////////////////////////////////
+INLINE GeomPipelineReader::
+GeomPipelineReader(const GeomPipelineReader &) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::Copy Assignment Operator
+//       Access: Private
+//  Description: Don't attempt to copy these objects.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomPipelineReader::
+operator = (const GeomPipelineReader &) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomPipelineReader::
+~GeomPipelineReader() {
+  nassertv(_object->test_ref_count_nonzero());
+#ifdef DO_PIPELINING
+  nassertv(_cdata->test_ref_count_nonzero());
+#endif  // DO_PIPELINING
+  _object->_cycler.release_read_stage(_pipeline_stage, _cdata);
+  _object = NULL;
+  _cdata = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::get_object
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const Geom *GeomPipelineReader::
+get_object() const {
+  return _object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::get_pipeline_stage
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int GeomPipelineReader::
+get_pipeline_stage() const {
+  return _pipeline_stage;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::check_usage_hint
+//       Access: Public
+//  Description: Ensures that the Geom's usage_hint cache has been
+//               computed.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomPipelineReader::
+check_usage_hint() const {
+  if (!_cdata->_got_usage_hint) {
+    ((Geom *)_object)->reset_usage_hint((Geom::CData *)_cdata);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::get_primitive_type
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GeomPipelineReader::PrimitiveType GeomPipelineReader::
+get_primitive_type() const {
+  return _cdata->_primitive_type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::get_shade_model
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GeomPipelineReader::ShadeModel GeomPipelineReader::
+get_shade_model() const {
+  return _cdata->_shade_model;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::get_geom_rendering
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int GeomPipelineReader::
+get_geom_rendering() const {
+  return _cdata->_geom_rendering;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::get_usage_hint
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GeomPipelineReader::UsageHint GeomPipelineReader::
+get_usage_hint() const {
+  nassertr(_cdata->_got_usage_hint, UH_static);
+  return _cdata->_usage_hint;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::get_vertex_data
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CPT(GeomVertexData) GeomPipelineReader::
+get_vertex_data() const {
+  return _cdata->_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::get_num_primitives
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int GeomPipelineReader::
+get_num_primitives() const {
+  return _cdata->_primitives.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::get_primitive
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const GeomPrimitive *GeomPipelineReader::
+get_primitive(int i) const {
+  nassertr(i >= 0 && i < (int)_cdata->_primitives.size(), NULL);
+  return _cdata->_primitives[i];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::get_modified
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq GeomPipelineReader::
+get_modified() const {
+  return _cdata->_modified;
+}
+
 INLINE ostream &
 operator << (ostream &out, const Geom &obj) {
   obj.output(out);

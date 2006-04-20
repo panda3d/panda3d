@@ -156,11 +156,6 @@ private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   bool check_will_be_valid(const GeomVertexData *vertex_data) const;
 
-  void do_draw(GraphicsStateGuardianBase *gsg, 
-	       const GeomMunger *munger,
-	       const GeomVertexData *vertex_data,
-	       const CData *cdata) const;
-
   void reset_usage_hint(CData *cdata);
   void reset_geom_rendering(CData *cdata);
 
@@ -296,7 +291,50 @@ private:
   friend class CacheEntry;
   friend class GeomMunger;
   friend class GeomContext;
+  friend class GeomPipelineReader;
   friend class PreparedGraphicsObjects;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : GeomPipelineReader
+// Description : Encapsulates the data from a Geom,
+//               pre-fetched for one stage of the pipeline.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA GeomPipelineReader : public GeomEnums {
+public:
+  INLINE GeomPipelineReader(const Geom *object, int pipeline_stage);
+private:
+  INLINE GeomPipelineReader(const GeomPipelineReader &copy);
+  INLINE void operator = (const GeomPipelineReader &copy);
+
+public:
+  INLINE ~GeomPipelineReader();
+  ALLOC_DELETED_CHAIN(GeomPipelineReader);
+
+  INLINE const Geom *get_object() const;
+  INLINE int get_pipeline_stage() const;
+
+  INLINE void check_usage_hint() const;
+
+  INLINE PrimitiveType get_primitive_type() const;
+  INLINE ShadeModel get_shade_model() const;
+  INLINE int get_geom_rendering() const;
+  INLINE UsageHint get_usage_hint() const;
+  INLINE CPT(GeomVertexData) get_vertex_data() const;
+  INLINE int get_num_primitives() const;
+  INLINE const GeomPrimitive *get_primitive(int i) const;
+
+  INLINE UpdateSeq get_modified() const;
+
+  bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
+
+  void draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
+            const GeomVertexDataPipelineReader *data_reader) const;
+
+private:
+  const Geom *_object;
+  int _pipeline_stage;
+  const Geom::CData *_cdata;
 };
 
 INLINE ostream &operator << (ostream &out, const Geom &obj);

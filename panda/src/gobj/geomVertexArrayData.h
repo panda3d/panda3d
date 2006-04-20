@@ -76,7 +76,7 @@ PUBLISHED:
   INLINE bool has_column(const InternalName *name) const;
 
   INLINE int get_num_rows() const;
-  bool set_num_rows(int n);
+  INLINE bool set_num_rows(int n);
   INLINE void clear_rows();
 
   INLINE int get_data_size_bytes() const;
@@ -86,8 +86,8 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
   INLINE CPTA_uchar get_data() const;
-  PTA_uchar modify_data();
-  void set_data(CPTA_uchar data);
+  INLINE PTA_uchar modify_data();
+  INLINE void set_data(CPTA_uchar data);
 
 public:
   void prepare(PreparedGraphicsObjects *prepared_objects);
@@ -133,6 +133,8 @@ private:
     UsageHint _usage_hint;
     PTA_uchar _data;
     UpdateSeq _modified;
+
+    friend class GeomVertexArrayData;
   };
 
   PipelineCycler<CData> _cycler;
@@ -174,6 +176,80 @@ private:
   friend class GeomCacheManager;
   friend class GeomVertexData;
   friend class PreparedGraphicsObjects;
+  friend class GeomVertexArrayDataPipelineBase;
+  friend class GeomVertexArrayDataPipelineReader;
+  friend class GeomVertexArrayDataPipelineWriter;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : GeomVertexArrayDataPipelineBase
+// Description : The common code from
+//               GeomVertexArrayDataPipelineReader and
+//               GeomVertexArrayDataPipelineWriter.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA GeomVertexArrayDataPipelineBase : public GeomEnums {
+protected:
+  INLINE GeomVertexArrayDataPipelineBase(GeomVertexArrayData *object, 
+                                         int pipeline_stage,
+                                         GeomVertexArrayData::CData *cdata);
+
+public:
+  INLINE int get_pipeline_stage() const;
+
+  INLINE const GeomVertexArrayFormat *get_array_format() const;
+
+  INLINE UsageHint get_usage_hint() const;
+  INLINE CPTA_uchar get_data() const;
+  INLINE int get_num_rows() const;
+  INLINE int get_data_size_bytes() const;
+  INLINE UpdateSeq get_modified() const;
+
+protected:
+  GeomVertexArrayData *_object;
+  int _pipeline_stage;
+  GeomVertexArrayData::CData *_cdata;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : GeomVertexArrayDataPipelineReader
+// Description : Encapsulates the data from a GeomVertexArrayData,
+//               pre-fetched for one stage of the pipeline.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA GeomVertexArrayDataPipelineReader : public GeomVertexArrayDataPipelineBase {
+public:
+  INLINE GeomVertexArrayDataPipelineReader(const GeomVertexArrayData *object, int pipeline_stage);
+private:
+  INLINE GeomVertexArrayDataPipelineReader(const GeomVertexArrayDataPipelineReader &copy);
+  INLINE void operator = (const GeomVertexArrayDataPipelineReader &copy);
+
+public:
+  INLINE ~GeomVertexArrayDataPipelineReader();
+  ALLOC_DELETED_CHAIN(GeomVertexArrayDataPipelineReader);
+
+  INLINE const GeomVertexArrayData *get_object() const;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : GeomVertexArrayDataPipelineWriter
+// Description : Encapsulates the data from a GeomVertexArrayData,
+//               pre-fetched for one stage of the pipeline.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA GeomVertexArrayDataPipelineWriter : public GeomVertexArrayDataPipelineBase {
+public:
+  INLINE GeomVertexArrayDataPipelineWriter(GeomVertexArrayData *object, int pipeline_stage, bool force_to_0);
+private:
+  INLINE GeomVertexArrayDataPipelineWriter(const GeomVertexArrayDataPipelineWriter &copy);
+  INLINE void operator = (const GeomVertexArrayDataPipelineWriter &copy);
+
+public:
+  INLINE ~GeomVertexArrayDataPipelineWriter();
+  ALLOC_DELETED_CHAIN(GeomVertexArrayDataPipelineWriter);
+
+  bool set_num_rows(int n);
+
+  INLINE GeomVertexArrayData *get_object() const;
+  PTA_uchar modify_data();
+  void set_data(CPTA_uchar data);
 };
 
 INLINE ostream &operator << (ostream &out, const GeomVertexArrayData &obj);

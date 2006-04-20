@@ -96,15 +96,15 @@ public:
   virtual bool begin_frame();
   virtual void end_frame();
 
-  virtual bool begin_draw_primitives(const Geom *geom, 
+  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader, 
                                      const GeomMunger *munger,
-                                     const GeomVertexData *vertex_data);
-  virtual void draw_triangles(const GeomTriangles *primitive);
-  virtual void draw_tristrips(const GeomTristrips *primitive);
-  virtual void draw_trifans(const GeomTrifans *primitive);
-  virtual void draw_lines(const GeomLines *primitive);
-  virtual void draw_linestrips(const GeomLinestrips *primitive);
-  virtual void draw_points(const GeomPoints *primitive);
+                                     const GeomVertexDataPipelineReader *data_reader);
+  virtual void draw_triangles(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_tristrips(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_trifans(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_lines(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_linestrips(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_points(const GeomPrimitivePipelineReader *reader);
   virtual void end_draw_primitives();
 
   INLINE bool draw_display_list(GeomContext *gc);
@@ -124,12 +124,13 @@ public:
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   void apply_vertex_buffer(VertexBufferContext *vbc);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
-  const unsigned char *setup_array_data(const GeomVertexArrayData *data);
+  const unsigned char *setup_array_data(const GeomVertexArrayDataPipelineReader *data);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
-  void apply_index_buffer(IndexBufferContext *ibc);
+  void apply_index_buffer(IndexBufferContext *ibc,
+                          const GeomPrimitivePipelineReader *reader);
   virtual void release_index_buffer(IndexBufferContext *ibc);
-  const unsigned char *setup_primitive(const GeomPrimitive *data);
+  const unsigned char *setup_primitive(const GeomPrimitivePipelineReader *reader);
 
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
@@ -159,8 +160,8 @@ public:
   const float *get_light_color(Light *light) const;
 
 #ifdef SUPPORT_IMMEDIATE_MODE
-  void draw_immediate_simple_primitives(const GeomPrimitive *primitive, GLenum mode);
-  void draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode);
+  void draw_immediate_simple_primitives(const GeomPrimitivePipelineReader *reader, GLenum mode);
+  void draw_immediate_composite_primitives(const GeomPrimitivePipelineReader *reader, GLenum mode);
 #endif  // SUPPORT_IMMEDIATE_MODE
 
   INLINE static bool report_errors(int line, const char *source_file);

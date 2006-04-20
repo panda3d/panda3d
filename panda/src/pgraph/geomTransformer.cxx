@@ -27,6 +27,7 @@
 #include "sliderTable.h"
 #include "pStatCollector.h"
 #include "pStatTimer.h"
+#include "vector_int.h"
 
 static PStatCollector apply_vertex_collector("*:Flatten:apply:vertex");
 static PStatCollector apply_texcoord_collector("*:Flatten:apply:texcoord");
@@ -483,7 +484,7 @@ collect_vertex_data(Geom *geom, int collect_bits) {
   // remapping transform indices in the vertices.  Each of these has a
   // slightly different way to handle the remapping, because they have
   // slightly different kinds of data.
-  typedef pvector<int> IndexMap;
+  typedef vector_int IndexMap;
 
   if (vdata->get_transform_table() != (TransformTable *)NULL) {
     // The TransformTable.

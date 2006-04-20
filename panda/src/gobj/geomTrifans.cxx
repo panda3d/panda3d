@@ -105,8 +105,8 @@ get_geom_rendering() const {
 //               primitive.
 ////////////////////////////////////////////////////////////////////
 void GeomTrifans::
-draw(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_trifans(this);
+draw(GraphicsStateGuardianBase *gsg, const GeomPrimitivePipelineReader *reader) const {
+  gsg->draw_trifans(reader);
 }
 
 ////////////////////////////////////////////////////////////////////

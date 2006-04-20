@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "geomEnums.h"
 #include "geomVertexArrayData.h"
+#include "geomVertexData.h"
 #include "typedWritableReferenceCount.h"
 #include "luse.h"
 #include "updateSeq.h"
@@ -31,14 +32,16 @@
 #include "cycleData.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
+#include "cycleDataStageReader.h"
+#include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
 #include "deletedChain.h"
 
-class GeomVertexData;
 class PreparedGraphicsObjects;
 class IndexBufferContext;
 class GraphicsStateGuardianBase;
 class FactoryParams;
+class GeomPrimitivePipelineReader;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomPrimitive
@@ -95,9 +98,9 @@ PUBLISHED:
 
   INLINE bool is_composite() const;
   INLINE bool is_indexed() const;
-  int get_first_vertex() const;
+  INLINE int get_first_vertex() const;
   INLINE int get_num_vertices() const;
-  int get_vertex(int i) const;
+  INLINE int get_vertex(int i) const;
   void add_vertex(int vertex);
   INLINE void add_vertices(int v1, int v2);
   INLINE void add_vertices(int v1, int v2, int v3);
@@ -111,7 +114,7 @@ PUBLISHED:
   void pack_vertices(GeomVertexData *dest, const GeomVertexData *source);
   void make_indexed();
 
-  int get_num_primitives() const;
+  INLINE int get_num_primitives() const;
   int get_primitive_start(int n) const;
   int get_primitive_end(int n) const;
   int get_primitive_num_vertices(int n) const;
@@ -132,7 +135,7 @@ PUBLISHED:
   INLINE int get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
-  bool check_valid(const GeomVertexData *vertex_data) const;
+  INLINE bool check_valid(const GeomVertexData *vertex_data) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
@@ -183,7 +186,8 @@ private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
 public:
-  virtual void draw(GraphicsStateGuardianBase *gsg) const=0;
+  virtual void draw(GraphicsStateGuardianBase *gsg,
+                    const GeomPrimitivePipelineReader *reader) const=0;
 
   void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                          bool &found_any, 
@@ -218,6 +222,7 @@ private:
     INLINE CData();
     INLINE CData(const CData &copy);
     ALLOC_DELETED_CHAIN(CData);
+    
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
@@ -225,7 +230,7 @@ private:
     virtual TypeHandle get_parent_type() const {
       return GeomPrimitive::get_class_type();
     }
-
+    
     ShadeModel _shade_model;
     int _first_vertex;
     int _num_vertices;
@@ -236,16 +241,21 @@ private:
     PT(GeomVertexArrayData) _mins;
     PT(GeomVertexArrayData) _maxs;
     UpdateSeq _modified;
-
+    
     bool _got_minmax;
     unsigned int _min_vertex;
     unsigned int _max_vertex;
+    
+    friend class GeomPrimitive;
   };
 
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
-
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
+  
+private:
   static PStatCollector _decompose_pcollector;
   static PStatCollector _rotate_pcollector;
 
@@ -276,6 +286,54 @@ private:
 
   friend class Geom;
   friend class PreparedGraphicsObjects;
+  friend class GeomPrimitivePipelineReader;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : GeomPrimitivePipelineReader
+// Description : Encapsulates the data from a GeomPrimitive,
+//               pre-fetched for one stage of the pipeline.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA GeomPrimitivePipelineReader : public GeomEnums {
+public:
+  GeomPrimitivePipelineReader(const GeomPrimitive *object, int pipeline_stage);
+private:
+  INLINE GeomPrimitivePipelineReader(const GeomPrimitivePipelineReader &copy);
+  INLINE void operator = (const GeomPrimitivePipelineReader &copy);
+
+public:
+  ~GeomPrimitivePipelineReader();
+  ALLOC_DELETED_CHAIN(GeomPrimitivePipelineReader);
+
+  INLINE const GeomPrimitive *get_object() const;
+  INLINE int get_pipeline_stage() const;
+
+  INLINE void check_minmax() const;
+
+  INLINE ShadeModel get_shade_model() const;
+  INLINE UsageHint get_usage_hint() const;
+  INLINE NumericType get_index_type() const;
+  INLINE bool is_indexed() const;
+  int get_first_vertex() const;
+  INLINE int get_num_vertices() const;
+  int get_vertex(int i) const;
+  int get_num_primitives() const;
+  INLINE int get_min_vertex() const;
+  INLINE int get_max_vertex() const;
+  INLINE int get_data_size_bytes() const;
+  INLINE UpdateSeq get_modified() const;
+  bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
+  INLINE int get_index_stride() const;
+  INLINE CPTA_uchar get_data() const;
+  INLINE CPTA_int get_ends() const;
+  INLINE const GeomVertexArrayData *get_mins() const;
+  INLINE const GeomVertexArrayData *get_maxs() const;
+  
+private:
+  const GeomPrimitive *_object;
+  int _pipeline_stage;
+  const GeomPrimitive::CData *_cdata;
+  GeomVertexArrayDataPipelineReader *_vertices_reader;
 };
 
 INLINE ostream &operator << (ostream &out, const GeomPrimitive &obj);

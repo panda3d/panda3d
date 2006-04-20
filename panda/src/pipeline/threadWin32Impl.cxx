@@ -146,44 +146,49 @@ join() {
 ////////////////////////////////////////////////////////////////////
 DWORD ThreadWin32Impl::
 root_func(LPVOID data) {
-  ThreadWin32Impl *self = (ThreadWin32Impl *)data;
-  BOOL result = TlsSetValue(_pt_ptr_index, self->_parent_obj);
-  nassertr(result, 1);
-
+  TAU_REGISTER_THREAD();
   {
-    self->_mutex.lock();
-    nassertd(self->_status == S_start_called) {
+    TAU_PROFILE("void ThreadPosixImpl::root_func()", " ", TAU_USER);
+
+    ThreadWin32Impl *self = (ThreadWin32Impl *)data;
+    BOOL result = TlsSetValue(_pt_ptr_index, self->_parent_obj);
+    nassertr(result, 1);
+    
+    {
+      self->_mutex.lock();
+      nassertd(self->_status == S_start_called) {
+        self->_mutex.release();
+        return 1;
+      }
+      self->_status = S_running;
+      self->_cv.signal();
       self->_mutex.release();
-      return 1;
     }
-    self->_status = S_running;
-    self->_cv.signal();
-    self->_mutex.release();
-  }
-
-  self->_parent_obj->thread_main();
-
-  if (thread_cat.is_debug()) {
-    thread_cat.debug()
-      << "Terminating thread " << self->_parent_obj->get_name() 
-      << ", count = " << self->_parent_obj->get_ref_count() << "\n";
-  }
-
-  {
-    self->_mutex.lock();
-    nassertd(self->_status == S_running) {
+    
+    self->_parent_obj->thread_main();
+    
+    if (thread_cat.is_debug()) {
+      thread_cat.debug()
+        << "Terminating thread " << self->_parent_obj->get_name() 
+        << ", count = " << self->_parent_obj->get_ref_count() << "\n";
+    }
+    
+    {
+      self->_mutex.lock();
+      nassertd(self->_status == S_running) {
+        self->_mutex.release();
+        return 1;
+      }
+      self->_status = S_finished;
+      self->_cv.signal();
       self->_mutex.release();
-      return 1;
     }
-    self->_status = S_finished;
-    self->_cv.signal();
-    self->_mutex.release();
+    
+    // Now drop the parent object reference that we grabbed in start().
+    // This might delete the parent object, and in turn, delete the
+    // ThreadWin32Impl object.
+    unref_delete(self->_parent_obj);
   }
-
-  // Now drop the parent object reference that we grabbed in start().
-  // This might delete the parent object, and in turn, delete the
-  // ThreadWin32Impl object.
-  unref_delete(self->_parent_obj);
 
   return 0;
 }

@@ -58,23 +58,22 @@ GeomVertexData(const string &name,
                const GeomVertexFormat *format,
                GeomVertexData::UsageHint usage_hint) :
   _name(name),
-  _format(format),
   _char_pcollector(PStatCollector(_animation_pcollector, name)),
   _skinning_pcollector(_char_pcollector, "Skinning"),
   _morphs_pcollector(_char_pcollector, "Morphs")
 {
-  nassertv(_format->is_registered());
-
-  set_usage_hint(usage_hint);
+  nassertv(format->is_registered());
 
   // Create some empty arrays as required by the format.
   // Let's ensure the vertex data gets set on all stages at once.
   OPEN_ITERATE_ALL_STAGES(_cycler) {
     CDStageWriter cdata(_cycler, pipeline_stage);
-    int num_arrays = _format->get_num_arrays();
+    cdata->_format = format;
+    cdata->_usage_hint = usage_hint;
+    int num_arrays = format->get_num_arrays();
     for (int i = 0; i < num_arrays; i++) {
       PT(GeomVertexArrayData) array = new GeomVertexArrayData
-        (_format->get_array(i), usage_hint);
+        (format->get_array(i), usage_hint);
       cdata->_arrays.push_back(array);
     }
   }
@@ -90,7 +89,6 @@ GeomVertexData::
 GeomVertexData(const GeomVertexData &copy) :
   TypedWritableReferenceCount(copy),
   _name(copy._name),
-  _format(copy._format),
   _cycler(copy._cycler),
   _char_pcollector(copy._char_pcollector),
   _skinning_pcollector(copy._skinning_pcollector),
@@ -118,13 +116,12 @@ GeomVertexData(const GeomVertexData &copy,
                const GeomVertexFormat *format) :
   TypedWritableReferenceCount(copy),
   _name(copy._name),
-  _format(format),
   _cycler(copy._cycler),
   _char_pcollector(copy._char_pcollector),
   _skinning_pcollector(copy._skinning_pcollector),
   _morphs_pcollector(copy._morphs_pcollector)
 {
-  nassertv(_format->is_registered());
+  nassertv(format->is_registered());
 
   // Create some empty arrays as required by the format.
   OPEN_ITERATE_ALL_STAGES(_cycler) {
@@ -132,10 +129,11 @@ GeomVertexData(const GeomVertexData &copy,
 
     UsageHint usage_hint = cdata->_usage_hint;
     cdata->_arrays.clear();
-    int num_arrays = _format->get_num_arrays();
+    cdata->_format = format;
+    int num_arrays = format->get_num_arrays();
     for (int i = 0; i < num_arrays; i++) {
       PT(GeomVertexArrayData) array = new GeomVertexArrayData
-        (_format->get_array(i), usage_hint);
+        (format->get_array(i), usage_hint);
       cdata->_arrays.push_back(array);
     }
 
@@ -161,7 +159,6 @@ operator = (const GeomVertexData &copy) {
   clear_cache();
 
   _name = copy._name;
-  _format = copy._format;
   _cycler = copy._cycler;
   _char_pcollector = copy._char_pcollector;
   _skinning_pcollector = copy._skinning_pcollector;
@@ -201,53 +198,6 @@ set_name(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::set_format
-//       Access: Published
-//  Description: Changes the format of the vertex data.  If the data
-//               is not empty, this will implicitly change every row
-//               to match the new format.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
-void GeomVertexData::
-set_format(const GeomVertexFormat *format) {
-  nassertv(format->is_registered());
-  if (format == _format) {
-    // Trivially no-op.
-    return;
-  }
-
-  CDWriter cdata(_cycler, true);
-
-  // Put the current data aside, so we can copy it back in below.
-  CPT(GeomVertexData) orig_data = new GeomVertexData(*this);
-
-  // Assign the new format.  This means clearing out all of our
-  // current arrays and replacing them with new, empty arrays.
-  _format = format;
-
-  UsageHint usage_hint = cdata->_usage_hint;
-  cdata->_arrays.clear();
-  int num_arrays = _format->get_num_arrays();
-  for (int i = 0; i < num_arrays; i++) {
-    PT(GeomVertexArrayData) array = new GeomVertexArrayData
-      (_format->get_array(i), usage_hint);
-    cdata->_arrays.push_back(array);
-  }
-
-  // Now copy the original data back in.  This will automatically
-  // convert it to the new format.
-  copy_from(orig_data, false);
-
-  clear_cache_stage();
-  cdata->_modified = Geom::get_next_modified();
-  cdata->_animated_vertices.clear();
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::set_usage_hint
 //       Access: Published
 //  Description: Changes the UsageHint hint for this vertex data, and
@@ -278,24 +228,52 @@ set_usage_hint(GeomVertexData::UsageHint usage_hint) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::get_num_rows
+//     Function: GeomVertexData::set_format
 //       Access: Published
-//  Description: Returns the number of rows stored within all the
-//               arrays.  All arrays store data for the same n
-//               rows.
+//  Description: Changes the format of the vertex data.  If the data
+//               is not empty, this will implicitly change every row
+//               to match the new format.
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
-int GeomVertexData::
-get_num_rows() const {
+void GeomVertexData::
+set_format(const GeomVertexFormat *format) {
+  nassertv(format->is_registered());
+
   CDReader cdata(_cycler);
-  nassertr(_format->get_num_arrays() == (int)cdata->_arrays.size(), 0);
-  if (_format->get_num_arrays() == 0) {
-    // No arrays means no rows.  Weird but legal.
-    return 0;
+
+  if (format == cdata->_format) {
+    // Trivially no-op.
+    return;
   }
 
-  // Look up the answer on the first array (since any array will do).
-  int stride = _format->get_array(0)->get_stride();
-  return cdata->_arrays[0]->get_data_size_bytes() / stride;
+  CDWriter cdataw(_cycler, cdata, true);
+
+  // Put the current data aside, so we can copy it back in below.
+  CPT(GeomVertexData) orig_data = new GeomVertexData(*this);
+
+  // Assign the new format.  This means clearing out all of our
+  // current arrays and replacing them with new, empty arrays.
+  cdataw->_format = format;
+
+  UsageHint usage_hint = cdataw->_usage_hint;
+  cdataw->_arrays.clear();
+  int num_arrays = cdataw->_format->get_num_arrays();
+  for (int i = 0; i < num_arrays; i++) {
+    PT(GeomVertexArrayData) array = new GeomVertexArrayData
+      (cdataw->_format->get_array(i), usage_hint);
+    cdataw->_arrays.push_back(array);
+  }
+
+  // Now copy the original data back in.  This will automatically
+  // convert it to the new format.
+  copy_from(orig_data, false);
+
+  clear_cache_stage();
+  cdataw->_modified = Geom::get_next_modified();
+  cdataw->_animated_vertices.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -312,7 +290,7 @@ get_num_rows() const {
 void GeomVertexData::
 clear_rows() {
   CDWriter cdata(_cycler, true);
-  nassertv(_format->get_num_arrays() == (int)cdata->_arrays.size());
+  nassertv(cdata->_format->get_num_arrays() == (int)cdata->_arrays.size());
 
   Arrays::iterator ai;
   for (ai = cdata->_arrays.begin();
@@ -329,38 +307,6 @@ clear_rows() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::modify_array
-//       Access: Published
-//  Description: Returns a modifiable pointer to the indicated vertex
-//               array, so that application code may directly
-//               manipulate the data.  You should avoid changing
-//               the length of this array, since all of the arrays
-//               should be kept in sync--use set_num_rows()
-//               instead.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
-GeomVertexArrayData *GeomVertexData::
-modify_array(int i) {
-  // Perform copy-on-write: if the reference count on the vertex data
-  // is greater than 1, assume some other GeomVertexData has the same
-  // pointer, so make a copy of it first.
-  CDWriter cdata(_cycler, true);
-  nassertr(i >= 0 && i < (int)cdata->_arrays.size(), NULL);
-
-  if (cdata->_arrays[i]->get_ref_count() > 1) {
-    cdata->_arrays[i] = new GeomVertexArrayData(*cdata->_arrays[i]);
-  }
-  clear_cache_stage();
-  cdata->_modified = Geom::get_next_modified();
-  cdata->_animated_vertices_modified = UpdateSeq();
-
-  return cdata->_arrays[i];
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::set_array
 //       Access: Published
 //  Description: Replaces the indicated vertex data array with
@@ -372,14 +318,10 @@ modify_array(int i) {
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
-void GeomVertexData::
+INLINE void GeomVertexData::
 set_array(int i, const GeomVertexArrayData *array) {
-  CDWriter cdata(_cycler, true);
-  nassertv(i >= 0 && i < (int)cdata->_arrays.size());
-  cdata->_arrays[i] = (GeomVertexArrayData *)array;
-  clear_cache_stage();
-  cdata->_modified = Geom::get_next_modified();
-  cdata->_animated_vertices_modified = UpdateSeq();
+  GeomVertexDataPipelineWriter writer(this, Thread::get_current_pipeline_stage(), true);
+  writer.set_array(i, array);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -481,26 +423,6 @@ set_slider_table(const SliderTable *table) {
   clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::get_num_bytes
-//       Access: Published
-//  Description: Returns the total number of bytes consumed by the
-//               different arrays of the vertex data.
-////////////////////////////////////////////////////////////////////
-int GeomVertexData::
-get_num_bytes() const {
-  CDReader cdata(_cycler);
-  
-  int num_bytes = sizeof(GeomVertexData);
-
-  Arrays::const_iterator ai;
-  for (ai = cdata->_arrays.begin(); ai != cdata->_arrays.end(); ++ai) {
-    num_bytes += (*ai)->get_data_size_bytes();
-  }
-
-  return num_bytes;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -756,7 +678,7 @@ copy_row_from(int dest_row, const GeomVertexData *source,
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
 convert_to(const GeomVertexFormat *new_format) const {
-  if (new_format == _format) {
+  if (new_format == get_format()) {
     // Trivial case: no change is needed.
     return this;
   }
@@ -791,7 +713,7 @@ convert_to(const GeomVertexFormat *new_format) const {
   // Okay, convert the data to the new format.
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
-      << "Converting " << get_num_rows() << " rows from " << *_format
+      << "Converting " << get_num_rows() << " rows from " << *get_format()
       << " to " << *new_format << "\n";
   }
   PStatTimer timer(_convert_pcollector);
@@ -836,7 +758,7 @@ convert_to(const GeomVertexFormat *new_format) const {
 CPT(GeomVertexData) GeomVertexData::
 scale_color(const LVecBase4f &color_scale) const {
   const GeomVertexColumn *old_column = 
-    _format->get_column(InternalName::get_color());
+    get_format()->get_column(InternalName::get_color());
   if (old_column == (GeomVertexColumn *)NULL) {
     return this;
   }
@@ -868,7 +790,7 @@ CPT(GeomVertexData) GeomVertexData::
 scale_color(const LVecBase4f &color_scale, int num_components,
             GeomVertexData::NumericType numeric_type,
             GeomVertexData::Contents contents) const {
-  int old_color_array = _format->get_array_with(InternalName::get_color());
+  int old_color_array = get_format()->get_array_with(InternalName::get_color());
   if (old_color_array == -1) {
     // Oops, no color anyway.
     return set_color(color_scale, num_components, numeric_type, contents);
@@ -913,7 +835,7 @@ scale_color(const LVecBase4f &color_scale, int num_components,
 CPT(GeomVertexData) GeomVertexData::
 set_color(const Colorf &color) const {
   const GeomVertexColumn *old_column = 
-    _format->get_column(InternalName::get_color());
+    get_format()->get_column(InternalName::get_color());
   if (old_column == (GeomVertexColumn *)NULL) {
     return this;
   }
@@ -982,7 +904,7 @@ CPT(GeomVertexData) GeomVertexData::
 animate_vertices() const {
   CDReader cdata(_cycler);
 
-  if (_format->get_animation().get_animation_type() != AT_panda) {
+  if (cdata->_format->get_animation().get_animation_type() != AT_panda) {
     return this;
   }
 
@@ -1068,11 +990,12 @@ PT(GeomVertexData) GeomVertexData::
 replace_column(InternalName *name, int num_components,
                GeomVertexData::NumericType numeric_type,
                GeomVertexData::Contents contents) const {
-  PT(GeomVertexFormat) new_format = new GeomVertexFormat(*_format);
+  CDReader cdata(_cycler);
+  PT(GeomVertexFormat) new_format = new GeomVertexFormat(*cdata->_format);
 
   // Remove the old description of the type from the format.
   bool removed_type_array = false;
-  int old_type_array = _format->get_array_with(name);
+  int old_type_array = cdata->_format->get_array_with(name);
   if (old_type_array != -1) {
     GeomVertexArrayFormat *array_format = new_format->modify_array(old_type_array);
     if (array_format->get_num_columns() == 1) {
@@ -1103,7 +1026,7 @@ replace_column(InternalName *name, int num_components,
     gobj_cat.debug()
       << "Replacing data type " << *name << "; converting "
       << get_num_rows() << " rows from " 
-      << *_format << " to " << *format << "\n";
+      << *cdata->_format << " to " << *format << "\n";
   }
   
   PT(GeomVertexData) new_data = new GeomVertexData(*this, format);
@@ -1163,7 +1086,7 @@ write(ostream &out, int indent_level) const {
   if (!get_name().empty()) {
     indent(out, indent_level) << get_name() << "\n";
   }
-  _format->write_with_data(out, indent_level + 2, this);
+  get_format()->write_with_data(out, indent_level + 2, this);
   if (get_transform_blend_table() != (TransformBlendTable *)NULL) {
     indent(out, indent_level)
       << "Transform blend table:\n";
@@ -1213,118 +1136,6 @@ clear_cache_stage() {
     CDCacheWriter cdata(entry->_cycler);
     cdata->_result = NULL;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::get_array_info
-//       Access: Public
-//  Description: A convenience function to collect together the
-//               important parts of the array data for rendering.
-//               Given the name of a data type, fills in the start of
-//               the array, the number of numeric values for each
-//               vertex, the starting bytes number, and the number of
-//               bytes to increment for each consecutive vertex.
-//
-//               The return value is true if the named array data
-//               exists in this record, or false if it does not (in
-//               which case none of the output parameters are valid).
-////////////////////////////////////////////////////////////////////
-bool GeomVertexData::
-get_array_info(const InternalName *name, 
-               const GeomVertexArrayData *&array_data,
-               int &num_values, 
-               GeomVertexData::NumericType &numeric_type, 
-               int &start, int &stride) const {
-  int array_index;
-  const GeomVertexColumn *column;
-  if (_format->get_array_info(name, array_index, column)) {
-    CDReader cdata(_cycler);
-    array_data = cdata->_arrays[array_index];
-    num_values = column->get_num_values();
-    numeric_type = column->get_numeric_type();
-    start = column->get_start();
-    stride = _format->get_array(array_index)->get_stride();
-    return true;
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::get_vertex_info
-//       Access: Public
-//  Description: A shortcut to get_array_info() for the "vertex"
-//               column.
-////////////////////////////////////////////////////////////////////
-bool GeomVertexData::
-get_vertex_info(const GeomVertexArrayData *&array_data,
-                int &num_values, 
-                GeomVertexData::NumericType &numeric_type, 
-                int &start, int &stride) const {
-  int array_index = _format->get_vertex_array_index();
-  if (array_index >= 0) {
-    const GeomVertexColumn *column = _format->get_vertex_column();
-
-    CDReader cdata(_cycler);
-    array_data = cdata->_arrays[array_index];
-    num_values = column->get_num_values();
-    numeric_type = column->get_numeric_type();
-    start = column->get_start();
-    stride = _format->get_array(array_index)->get_stride();
-    return true;
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::get_normal_info
-//       Access: Public
-//  Description: A shortcut to get_array_info() for the "normal"
-//               column.  Note that there is no num_values return,
-//               since normals should always have three values.
-////////////////////////////////////////////////////////////////////
-bool GeomVertexData::
-get_normal_info(const GeomVertexArrayData *&array_data,
-                GeomVertexData::NumericType &numeric_type, 
-                int &start, int &stride) const {
-  int array_index = _format->get_normal_array_index();
-  if (array_index >= 0) {
-    const GeomVertexColumn *column = _format->get_normal_column();
-    nassertr(column->get_num_values() == 3, false);
-
-    CDReader cdata(_cycler);
-    array_data = cdata->_arrays[array_index];
-    numeric_type = column->get_numeric_type();
-    start = column->get_start();
-    stride = _format->get_array(array_index)->get_stride();
-    return true;
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::get_color_info
-//       Access: Public
-//  Description: A shortcut to get_array_info() for the "color"
-//               column.
-////////////////////////////////////////////////////////////////////
-bool GeomVertexData::
-get_color_info(const GeomVertexArrayData *&array_data,
-                int &num_values, 
-                GeomVertexData::NumericType &numeric_type, 
-                int &start, int &stride) const {
-  int array_index = _format->get_color_array_index();
-  if (array_index >= 0) {
-    const GeomVertexColumn *column = _format->get_color_column();
-
-    CDReader cdata(_cycler);
-    array_data = cdata->_arrays[array_index];
-    num_values = column->get_num_values();
-    numeric_type = column->get_numeric_type();
-    start = column->get_start();
-    stride = _format->get_array(array_index)->get_stride();
-    return true;
-  }
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1384,81 +1195,6 @@ uint8_rgba_to_packed_argb(unsigned char *to, int to_stride,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::do_set_num_rows
-//       Access: Private
-//  Description: The private implementation of set_num_rows().
-////////////////////////////////////////////////////////////////////
-bool GeomVertexData::
-do_set_num_rows(int n, GeomVertexData::CData *cdata) {
-  nassertr(_format->get_num_arrays() == (int)cdata->_arrays.size(), false);
-
-  bool any_changed = false;
-
-  int color_array = -1;
-  int orig_color_rows = -1;
-
-  for (size_t i = 0; i < cdata->_arrays.size(); i++) {
-    if (cdata->_arrays[i]->get_num_rows() != n) {
-      // Copy-on-write.
-      if (cdata->_arrays[i]->get_ref_count() > 1) {
-        cdata->_arrays[i] = new GeomVertexArrayData(*cdata->_arrays[i]);
-      }
-      if (cdata->_arrays[i]->has_column(InternalName::get_color())) {
-        color_array = i;
-        orig_color_rows = cdata->_arrays[i]->get_num_rows();
-      }
-      cdata->_arrays[i]->set_num_rows(n);
-      any_changed = true;
-    }
-  }
-
-  if (color_array >= 0 && orig_color_rows < n) {
-    // We have just added some rows, fill the "color" column with
-    // (1, 1, 1, 1), for the programmer's convenience.
-    GeomVertexArrayData *array_data = cdata->_arrays[color_array];
-    const GeomVertexColumn *column = 
-      array_data->get_array_format()->get_column(InternalName::get_color());
-    int stride = array_data->get_array_format()->get_stride();
-    unsigned char *start = 
-      array_data->modify_data() + column->get_start();
-    unsigned char *stop = start + array_data->get_data_size_bytes();
-    unsigned char *pointer = start + stride * orig_color_rows;
-    int num_values = column->get_num_values();
-
-    switch (column->get_numeric_type()) {
-    case NT_packed_dcba:
-    case NT_packed_dabc:
-    case NT_uint8:
-    case NT_uint16:
-    case NT_uint32:
-      while (pointer < stop) {
-        memset(pointer, 0xff, column->get_total_bytes());
-        pointer += stride;
-      }
-      break;
-
-    case NT_float32:
-      while (pointer < stop) {
-        PN_float32 *pi = (PN_float32 *)pointer;
-        for (int i = 0; i < num_values; i++) {
-          pi[i] = 1.0f;
-        }
-        pointer += stride;
-      }
-      break;
-    }          
-  }
-
-  if (any_changed) {
-    clear_cache_stage();
-    cdata->_modified = Geom::get_next_modified();
-    cdata->_animated_vertices.clear();
-  }
-
-  return any_changed;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::update_animated_vertices
 //       Access: Private
 //  Description: Recomputes the results of computing the vertex
@@ -1477,8 +1213,10 @@ update_animated_vertices(GeomVertexData::CData *cdata) {
 
   PStatTimer timer(_char_pcollector);
 
+  const GeomVertexFormat *orig_format = cdata->_format;
+
   if (cdata->_animated_vertices == (GeomVertexData *)NULL) {
-    CPT(GeomVertexFormat) new_format = _format->get_post_animated_format();
+    CPT(GeomVertexFormat) new_format = orig_format->get_post_animated_format();
     cdata->_animated_vertices = 
       new GeomVertexData(get_name(), new_format,
                            min(get_usage_hint(), UH_dynamic));
@@ -1496,15 +1234,15 @@ update_animated_vertices(GeomVertexData::CData *cdata) {
   CPT(SliderTable) slider_table = cdata->_slider_table;
   if (slider_table != (SliderTable *)NULL) {
     PStatTimer timer2(_morphs_pcollector);
-    int num_morphs = _format->get_num_morphs();
+    int num_morphs = orig_format->get_num_morphs();
     for (int mi = 0; mi < num_morphs; mi++) {
-      CPT(InternalName) slider_name = _format->get_morph_slider(mi);
+      CPT(InternalName) slider_name = orig_format->get_morph_slider(mi);
       const VertexSlider *slider = slider_table->find_slider(slider_name);
       if (slider != (VertexSlider *)NULL) {
         float slider_value = slider->get_slider();
         if (slider_value != 0.0f) {
-          CPT(InternalName) base_name = _format->get_morph_base(mi);
-          CPT(InternalName) delta_name = _format->get_morph_delta(mi);
+          CPT(InternalName) base_name = orig_format->get_morph_base(mi);
+          CPT(InternalName) delta_name = orig_format->get_morph_delta(mi);
           
           GeomVertexRewriter data(new_data, base_name);
           GeomVertexReader delta(this, delta_name);
@@ -1566,8 +1304,8 @@ update_animated_vertices(GeomVertexData::CData *cdata) {
     }
 
     int ci;
-    for (ci = 0; ci < _format->get_num_points(); ci++) {
-      GeomVertexRewriter data(new_data, _format->get_point(ci));
+    for (ci = 0; ci < orig_format->get_num_points(); ci++) {
+      GeomVertexRewriter data(new_data, orig_format->get_point(ci));
       blendi.set_row(0);
       
       if (data.get_column()->get_num_values() == 4) {
@@ -1586,8 +1324,8 @@ update_animated_vertices(GeomVertexData::CData *cdata) {
         }
       }
     }
-    for (ci = 0; ci < _format->get_num_vectors(); ci++) {
-      GeomVertexRewriter data(new_data, _format->get_vector(ci));
+    for (ci = 0; ci < orig_format->get_num_vectors(); ci++) {
+      GeomVertexRewriter data(new_data, orig_format->get_vector(ci));
       blendi.set_row(0);
       
       for (int i = 0; i < num_rows; i++) {
@@ -1622,8 +1360,6 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritableReferenceCount::write_datagram(manager, dg);
 
   dg.add_string(_name);
-  manager->write_pointer(dg, _format);
-
   manager->write_cdata(dg, _cycler);
 }
 
@@ -1658,9 +1394,6 @@ make_from_bam(const FactoryParams &params) {
 int GeomVertexData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
-
-  _format = DCAST(GeomVertexFormat, p_list[pi++]);
-
   return pi;
 }
 
@@ -1689,19 +1422,18 @@ finalize(BamReader *manager) {
 
   CDWriter cdata(_cycler, true);
 
-  CPT(GeomVertexFormat) new_format = 
-    GeomVertexFormat::register_format(_format);
-
   for (size_t i = 0; i < cdata->_arrays.size(); ++i) {
+    CPT(GeomVertexFormat) new_format = 
+      GeomVertexFormat::register_format(cdata->_format);
+    manager->change_pointer(cdata->_format, new_format);
+    cdata->_format = new_format;
+
     CPT(GeomVertexArrayFormat) new_array_format = new_format->get_array(i);
     nassertv(cdata->_arrays[i]->_array_format->compare_to(*new_array_format) == 0);
 
     manager->change_pointer(cdata->_arrays[i]->_array_format, new_array_format);
     cdata->_arrays[i]->_array_format = new_array_format;
   }
-
-  manager->change_pointer(_format, new_format);
-  _format = new_format;
 
   if (cdata->_transform_table != (TransformTable *)NULL) {
     CPT(TransformTable) new_transform_table = 
@@ -1730,8 +1462,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
 
   set_name(scan.get_string());
-  manager->read_pointer(scan);
-
   manager->read_cdata(scan, _cycler);
 }
 
@@ -1788,6 +1518,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
+  manager->write_pointer(dg, _format);
   dg.add_uint8(_usage_hint);
 
   dg.add_uint16(_arrays.size());
@@ -1812,6 +1543,8 @@ int GeomVertexData::CData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CycleData::complete_pointers(p_list, manager);
 
+  _format = DCAST(GeomVertexFormat, p_list[pi++]);
+
   Arrays::iterator ai;
   for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
     (*ai) = DCAST(GeomVertexArrayData, p_list[pi++]);    
@@ -1835,6 +1568,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  manager->read_pointer(scan);
   _usage_hint = (UsageHint)scan.get_uint8();
 
   size_t num_arrays = scan.get_uint16();
@@ -1847,4 +1581,356 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan);
   manager->read_pointer(scan);
   manager->read_pointer(scan);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::get_num_bytes
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int GeomVertexDataPipelineBase::
+get_num_bytes() const {
+  int num_bytes = sizeof(GeomVertexData);
+
+  GeomVertexData::Arrays::const_iterator ai;
+  for (ai = _cdata->_arrays.begin(); ai != _cdata->_arrays.end(); ++ai) {
+    num_bytes += (*ai)->get_data_size_bytes();
+  }
+
+  return num_bytes;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::get_num_rows
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int GeomVertexDataPipelineReader::
+get_num_rows() const {
+  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), 0);
+  nassertr(_got_array_readers, 0);
+
+  if (_cdata->_format->get_num_arrays() == 0) {
+    // No arrays means no rows.  Weird but legal.
+    return 0;
+  }
+
+  // Look up the answer on the first array (since any array will do).
+  int stride = _cdata->_format->get_array(0)->get_stride();
+  return _array_readers[0]->get_data_size_bytes() / stride;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::get_array_info
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool GeomVertexDataPipelineReader::
+get_array_info(const InternalName *name, 
+               const GeomVertexArrayDataPipelineReader *&array_reader,
+               int &num_values, 
+               GeomVertexDataPipelineReader::NumericType &numeric_type, 
+               int &start, int &stride) const {
+  nassertr(_got_array_readers, false);
+  int array_index;
+  const GeomVertexColumn *column;
+  if (_cdata->_format->get_array_info(name, array_index, column)) {
+    array_reader = _array_readers[array_index];
+    num_values = column->get_num_values();
+    numeric_type = column->get_numeric_type();
+    start = column->get_start();
+    stride = _cdata->_format->get_array(array_index)->get_stride();
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::get_vertex_info
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool GeomVertexDataPipelineReader::
+get_vertex_info(const GeomVertexArrayDataPipelineReader *&array_reader,
+                int &num_values, 
+                GeomVertexDataPipelineReader::NumericType &numeric_type, 
+                int &start, int &stride) const {
+  nassertr(_got_array_readers, false);
+  int array_index = _cdata->_format->get_vertex_array_index();
+  if (array_index >= 0) {
+    const GeomVertexColumn *column = _cdata->_format->get_vertex_column();
+
+    array_reader = _array_readers[array_index];
+    num_values = column->get_num_values();
+    numeric_type = column->get_numeric_type();
+    start = column->get_start();
+    stride = _cdata->_format->get_array(array_index)->get_stride();
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::get_normal_info
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool GeomVertexDataPipelineReader::
+get_normal_info(const GeomVertexArrayDataPipelineReader *&array_reader,
+                GeomVertexDataPipelineReader::NumericType &numeric_type, 
+                int &start, int &stride) const {
+  nassertr(_got_array_readers, false);
+  int array_index = _cdata->_format->get_normal_array_index();
+  if (array_index >= 0) {
+    const GeomVertexColumn *column = _cdata->_format->get_normal_column();
+    nassertr(column->get_num_values() == 3, false);
+
+    array_reader = _array_readers[array_index];
+    numeric_type = column->get_numeric_type();
+    start = column->get_start();
+    stride = _cdata->_format->get_array(array_index)->get_stride();
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::get_color_info
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool GeomVertexDataPipelineReader::
+get_color_info(const GeomVertexArrayDataPipelineReader *&array_reader,
+               int &num_values, 
+               GeomVertexDataPipelineReader::NumericType &numeric_type, 
+               int &start, int &stride) const {
+  nassertr(_got_array_readers, false);
+  int array_index = _cdata->_format->get_color_array_index();
+  if (array_index >= 0) {
+    const GeomVertexColumn *column = _cdata->_format->get_color_column();
+
+    array_reader = _array_readers[array_index];
+    num_values = column->get_num_values();
+    numeric_type = column->get_numeric_type();
+    start = column->get_start();
+    stride = _cdata->_format->get_array(array_index)->get_stride();
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::make_array_readers
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomVertexDataPipelineReader::
+make_array_readers() {
+  nassertv(!_got_array_readers);
+
+  _array_readers.reserve(_cdata->_arrays.size());
+  GeomVertexData::Arrays::const_iterator ai;
+  for (ai = _cdata->_arrays.begin(); ai != _cdata->_arrays.end(); ++ai) {
+    _array_readers.push_back(new GeomVertexArrayDataPipelineReader(*ai, _pipeline_stage));
+  }
+
+  _got_array_readers = true;
+  nassertv(get_array_reader(0)->get_data_size_bytes() == get_array(0)->get_data_size_bytes());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::delete_array_readers
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomVertexDataPipelineReader::
+delete_array_readers() {
+  nassertv(_got_array_readers);
+
+  ArrayReaders::iterator ri;
+  for (ri = _array_readers.begin(); ri != _array_readers.end(); ++ri) {
+    delete (*ri);
+  }
+  _array_readers.clear();
+  _got_array_readers = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::get_num_rows
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int GeomVertexDataPipelineWriter::
+get_num_rows() const {
+  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), 0);
+  nassertr(_got_array_writers, 0);
+
+  if (_cdata->_format->get_num_arrays() == 0) {
+    // No arrays means no rows.  Weird but legal.
+    return 0;
+  }
+
+  // Look up the answer on the first array (since any array will do).
+  int stride = _cdata->_format->get_array(0)->get_stride();
+  return _array_writers[0]->get_data_size_bytes() / stride;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::set_num_rows
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool GeomVertexDataPipelineWriter::
+set_num_rows(int n) {
+  nassertr(_got_array_writers, false);
+  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), false);
+
+  bool any_changed = false;
+
+  int color_array = -1;
+  int orig_color_rows = -1;
+
+  for (size_t i = 0; i < _cdata->_arrays.size(); i++) {
+    if (_array_writers[i]->get_num_rows() != n) {
+      // Copy-on-write.
+      if (_cdata->_arrays[i]->get_ref_count() > 1) {
+        delete _array_writers[i];
+        _cdata->_arrays[i] = new GeomVertexArrayData(*_cdata->_arrays[i]);
+        _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _pipeline_stage, _force_to_0);
+      }
+      if (_cdata->_arrays[i]->has_column(InternalName::get_color())) {
+        color_array = i;
+        orig_color_rows = _array_writers[i]->get_num_rows();
+      }
+      _array_writers[i]->set_num_rows(n);
+      any_changed = true;
+    }
+  }
+
+  if (color_array >= 0 && orig_color_rows < n) {
+    // We have just added some rows, fill the "color" column with
+    // (1, 1, 1, 1), for the programmer's convenience.
+    GeomVertexArrayData *array_data = _cdata->_arrays[color_array];
+    const GeomVertexColumn *column = 
+      array_data->get_array_format()->get_column(InternalName::get_color());
+    int stride = array_data->get_array_format()->get_stride();
+    unsigned char *start = 
+      array_data->modify_data() + column->get_start();
+    unsigned char *stop = start + array_data->get_data_size_bytes();
+    unsigned char *pointer = start + stride * orig_color_rows;
+    int num_values = column->get_num_values();
+
+    switch (column->get_numeric_type()) {
+    case NT_packed_dcba:
+    case NT_packed_dabc:
+    case NT_uint8:
+    case NT_uint16:
+    case NT_uint32:
+      while (pointer < stop) {
+        memset(pointer, 0xff, column->get_total_bytes());
+        pointer += stride;
+      }
+      break;
+
+    case NT_float32:
+      while (pointer < stop) {
+        PN_float32 *pi = (PN_float32 *)pointer;
+        for (int i = 0; i < num_values; i++) {
+          pi[i] = 1.0f;
+        }
+        pointer += stride;
+      }
+      break;
+    }          
+  }
+
+  if (any_changed) {
+    _object->clear_cache_stage();
+    _cdata->_modified = Geom::get_next_modified();
+    _cdata->_animated_vertices.clear();
+  }
+
+  return any_changed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::modify_array
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GeomVertexArrayData *GeomVertexDataPipelineWriter::
+modify_array(int i) {
+  // Perform copy-on-write: if the reference count on the vertex data
+  // is greater than 1, assume some other GeomVertexData has the same
+  // pointer, so make a copy of it first.
+  nassertr(i >= 0 && i < (int)_cdata->_arrays.size(), NULL);
+
+  if (_cdata->_arrays[i]->get_ref_count() > 1) {
+    _cdata->_arrays[i] = new GeomVertexArrayData(*_cdata->_arrays[i]);
+  }
+  _object->clear_cache_stage();
+  _cdata->_modified = Geom::get_next_modified();
+  _cdata->_animated_vertices_modified = UpdateSeq();
+
+  if (_got_array_writers) {
+    delete _array_writers[i];
+    _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _pipeline_stage, _force_to_0);
+  }
+
+  return _cdata->_arrays[i];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::set_array
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomVertexDataPipelineWriter::
+set_array(int i, const GeomVertexArrayData *array) {
+  nassertv(i >= 0 && i < (int)_cdata->_arrays.size());
+  _cdata->_arrays[i] = (GeomVertexArrayData *)array;
+  _object->clear_cache_stage();
+  _cdata->_modified = Geom::get_next_modified();
+  _cdata->_animated_vertices_modified = UpdateSeq();
+
+  if (_got_array_writers) {
+    delete _array_writers[i];
+    _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _pipeline_stage, _force_to_0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::make_array_writers
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomVertexDataPipelineWriter::
+make_array_writers() {
+  nassertv(!_got_array_writers);
+
+  _array_writers.reserve(_cdata->_arrays.size());
+  GeomVertexData::Arrays::const_iterator ai;
+  for (ai = _cdata->_arrays.begin(); ai != _cdata->_arrays.end(); ++ai) {
+    _array_writers.push_back(new GeomVertexArrayDataPipelineWriter(*ai, _pipeline_stage, _force_to_0));
+  }
+
+  _got_array_writers = true;
+  nassertv(get_array_writer(0)->get_data_size_bytes() == get_array(0)->get_data_size_bytes());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::delete_array_writers
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomVertexDataPipelineWriter::
+delete_array_writers() {
+  nassertv(_got_array_writers);
+
+  ArrayWriters::iterator ri;
+  for (ri = _array_writers.begin(); ri != _array_writers.end(); ++ri) {
+    delete (*ri);
+  }
+  _array_writers.clear();
+  _got_array_writers = false;
 }

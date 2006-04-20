@@ -105,8 +105,8 @@ get_num_vertices_per_primitive() const {
 //               primitive.
 ////////////////////////////////////////////////////////////////////
 void GeomTriangles::
-draw(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_triangles(this);
+draw(GraphicsStateGuardianBase *gsg, const GeomPrimitivePipelineReader *reader) const {
+  gsg->draw_triangles(reader);
 }
 
 ////////////////////////////////////////////////////////////////////

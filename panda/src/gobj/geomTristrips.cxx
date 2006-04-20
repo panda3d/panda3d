@@ -120,8 +120,8 @@ get_num_unused_vertices_per_primitive() const {
 //               primitive.
 ////////////////////////////////////////////////////////////////////
 void GeomTristrips::
-draw(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_tristrips(this);
+draw(GraphicsStateGuardianBase *gsg, const GeomPrimitivePipelineReader *reader) const {
+  gsg->draw_tristrips(reader);
 }
 
 ////////////////////////////////////////////////////////////////////

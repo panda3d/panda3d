@@ -1356,23 +1356,24 @@ end_frame() {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
-                      const GeomVertexData *vertex_data) {
+begin_draw_primitives(const GeomPipelineReader *geom_reader,
+                      const GeomMunger *munger,
+                      const GeomVertexDataPipelineReader *data_reader) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
-    GLCAT.spam() << "begin_draw_primitives: " << *vertex_data << "\n";
+    GLCAT.spam() << "begin_draw_primitives: " << *(data_reader->get_object()) << "\n";
   }
 #endif  // NDEBUG
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom, munger, vertex_data)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, data_reader)) {
     return false;
   }
-  nassertr(_vertex_data != (GeomVertexData *)NULL, false);
+  nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
 
   _geom_display_list = 0;
 
   if (_auto_antialias_mode) {
-    switch (geom->get_primitive_type()) {
+    switch (geom_reader->get_primitive_type()) {
     case GeomPrimitive::PT_polygons:
       setup_antialias_polygon();
       break;
@@ -1396,7 +1397,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
   }
 
   const GeomVertexAnimationSpec &animation =
-    _vertex_data->get_format()->get_animation();
+    _data_reader->get_format()->get_animation();
   bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
   if (hardware_animation) {
     // Set up the transform matrices for vertex blending.
@@ -1404,7 +1405,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
     GLP(Enable)(GL_VERTEX_BLEND_ARB);
     _glVertexBlendARB(animation.get_num_transforms());
 
-    const TransformTable *table = _vertex_data->get_transform_table();
+    const TransformTable *table = _data_reader->get_transform_table();
     if (table != (TransformTable *)NULL) {
       if (animation.get_indexed_transforms()) {
         nassertr(_supports_matrix_palette, false);
@@ -1481,7 +1482,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
     }
   }
 
-  if (_vertex_data->is_vertex_transformed()) {
+  if (_data_reader->is_vertex_transformed()) {
     // If the vertex data claims to be already transformed into clip
     // coordinates, wipe out the current projection and modelview
     // matrix (so we don't attempt to transform it again).
@@ -1493,8 +1494,8 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
     GLP(LoadIdentity)();
   }
 
-  if (geom->get_usage_hint() == Geom::UH_static &&
-      _vertex_data->get_usage_hint() == Geom::UH_static &&
+  if (geom_reader->get_usage_hint() == Geom::UH_static &&
+      _data_reader->get_usage_hint() == Geom::UH_static &&
       display_lists && (!hardware_animation || display_list_animation)) {
     // If the geom claims to be totally static, try to build it into
     // a display list.
@@ -1518,11 +1519,11 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
       _current_ibuffer_index = 0;
     }
 
-    GeomContext *gc = ((Geom *)geom)->prepare_now(get_prepared_objects(), this);
+    GeomContext *gc = ((Geom *)geom_reader->get_object())->prepare_now(get_prepared_objects(), this);
     nassertr(gc != (GeomContext *)NULL, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
     const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
-    UpdateSeq modified = max(geom->get_modified(), _vertex_data->get_modified());
+    UpdateSeq modified = max(geom_reader->get_modified(), _data_reader->get_modified());
     if (ggc->get_display_list(_geom_display_list, gmunger, modified)) {
       // If it hasn't been modified, just play the display list again.
       if (GLCAT.is_spam()) {
@@ -1563,8 +1564,8 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
     // Count up the number of vertices used by primitives in the Geom,
     // for PStats reporting.
     ggc->_num_verts = 0;
-    for (int i = 0; i < geom->get_num_primitives(); i++) {
-      ggc->_num_verts += geom->get_primitive(i)->get_num_vertices();
+    for (int i = 0; i < geom_reader->get_num_primitives(); i++) {
+      ggc->_num_verts += geom_reader->get_primitive(i)->get_num_vertices();
     }
 #endif
   }
@@ -1610,19 +1611,18 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
 //               for setting up their own vertex arrays.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-update_standard_vertex_arrays()
-{
+update_standard_vertex_arrays() {
   const GeomVertexAnimationSpec &animation =
-    _vertex_data->get_format()->get_animation();
+    _data_reader->get_format()->get_animation();
   bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
     // We must use immediate mode to render primitives.
     _sender.clear();
 
-    _sender.add_column(_vertex_data, InternalName::get_normal(),
+    _sender.add_column(_data_reader, InternalName::get_normal(),
                        NULL, NULL, GLP(Normal3f), NULL);
-    if (!_sender.add_column(_vertex_data, InternalName::get_color(),
+    if (!_sender.add_column(_data_reader, InternalName::get_color(),
                             NULL, NULL, GLP(Color3f), GLP(Color4f))) {
       // If we didn't have a color column, the item color is white.
       GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1647,13 +1647,13 @@ update_standard_vertex_arrays()
         if (stage_index == 0) {
           // Use the original functions for stage 0, in case we don't
           // support multitexture.
-          _sender.add_column(_vertex_data, name,
+          _sender.add_column(_data_reader, name,
                              GLP(TexCoord1f), GLP(TexCoord2f),
                              GLP(TexCoord3f), GLP(TexCoord4f));
 
         } else {
           // Other stages require the multitexture functions.
-          _sender.add_texcoord_column(_vertex_data, name, stage_index,
+          _sender.add_texcoord_column(_data_reader, name, stage_index,
                                       _glMultiTexCoord1f, _glMultiTexCoord2f,
                                       _glMultiTexCoord3f, _glMultiTexCoord4f);
         }
@@ -1673,12 +1673,12 @@ update_standard_vertex_arrays()
     if (_supports_vertex_blend) {
       if (hardware_animation) {
         // Issue the weights and/or transform indices for vertex blending.
-        _sender.add_vector_column(_vertex_data, InternalName::get_transform_weight(),
+        _sender.add_vector_column(_data_reader, InternalName::get_transform_weight(),
                                   _glWeightfvARB);
 
         if (animation.get_indexed_transforms()) {
           // Issue the matrix palette indices.
-          _sender.add_vector_uint_column(_vertex_data, InternalName::get_transform_index(),
+          _sender.add_vector_uint_column(_data_reader, InternalName::get_transform_index(),
                                         _glMatrixIndexuivARB);
         }
       }
@@ -1686,22 +1686,22 @@ update_standard_vertex_arrays()
 
     // We must add vertex last, because glVertex3f() is the key
     // function call that actually issues the vertex.
-    _sender.add_column(_vertex_data, InternalName::get_vertex(),
+    _sender.add_column(_data_reader, InternalName::get_vertex(),
                        NULL, GLP(Vertex2f), GLP(Vertex3f), GLP(Vertex4f));
 
   } else
 #endif  // SUPPORT_IMMEDIATE_MODE
   {
     // We may use vertex arrays or buffers to render primitives.
-    const GeomVertexArrayData *array_data;
+    const GeomVertexArrayDataPipelineReader *array_reader;
     int num_values;
     Geom::NumericType numeric_type;
     int start;
     int stride;
 
-    if (_vertex_data->get_normal_info(array_data, numeric_type,
+    if (_data_reader->get_normal_info(array_reader, numeric_type,
                                       start, stride)) {
-      const unsigned char *client_pointer = setup_array_data(array_data);
+      const unsigned char *client_pointer = setup_array_data(array_reader);
       GLP(NormalPointer)(get_numeric_type(numeric_type), stride,
                          client_pointer + start);
       GLP(EnableClientState)(GL_NORMAL_ARRAY);
@@ -1709,10 +1709,10 @@ update_standard_vertex_arrays()
       GLP(DisableClientState)(GL_NORMAL_ARRAY);
     }
 
-    if (_vertex_data->get_color_info(array_data, num_values, numeric_type,
+    if (_data_reader->get_color_info(array_reader, num_values, numeric_type,
                                      start, stride) &&
         numeric_type != Geom::NT_packed_dabc) {
-      const unsigned char *client_pointer = setup_array_data(array_data);
+      const unsigned char *client_pointer = setup_array_data(array_reader);
       GLP(ColorPointer)(num_values, get_numeric_type(numeric_type),
                         stride, client_pointer + start);
       GLP(EnableClientState)(GL_COLOR_ARRAY);
@@ -1742,10 +1742,10 @@ update_standard_vertex_arrays()
         // texcoords issued for it.
         const InternalName *name = stage->get_texcoord_name();
 
-        if (_vertex_data->get_array_info(name, array_data, num_values,
+        if (_data_reader->get_array_info(name, array_reader, num_values,
                                          numeric_type, start, stride)) {
           // The vertex data does have texcoords for this stage.
-          const unsigned char *client_pointer = setup_array_data(array_data);
+          const unsigned char *client_pointer = setup_array_data(array_reader);
           GLP(TexCoordPointer)(num_values, get_numeric_type(numeric_type),
                                stride, client_pointer + start);
           GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
@@ -1774,10 +1774,10 @@ update_standard_vertex_arrays()
     if (_supports_vertex_blend) {
       if (hardware_animation) {
         // Issue the weights and/or transform indices for vertex blending.
-        if (_vertex_data->get_array_info(InternalName::get_transform_weight(),
-                                         array_data, num_values, numeric_type,
+        if (_data_reader->get_array_info(InternalName::get_transform_weight(),
+                                         array_reader, num_values, numeric_type,
                                          start, stride)) {
-          const unsigned char *client_pointer = setup_array_data(array_data);
+          const unsigned char *client_pointer = setup_array_data(array_reader);
           _glWeightPointerARB(num_values, get_numeric_type(numeric_type),
                               stride, client_pointer + start);
           GLP(EnableClientState)(GL_WEIGHT_ARRAY_ARB);
@@ -1787,10 +1787,10 @@ update_standard_vertex_arrays()
 
         if (animation.get_indexed_transforms()) {
           // Issue the matrix palette indices.
-          if (_vertex_data->get_array_info(InternalName::get_transform_index(),
-                                           array_data, num_values, numeric_type,
+          if (_data_reader->get_array_info(InternalName::get_transform_index(),
+                                           array_reader, num_values, numeric_type,
                                            start, stride)) {
-            const unsigned char *client_pointer = setup_array_data(array_data);
+            const unsigned char *client_pointer = setup_array_data(array_reader);
             _glMatrixIndexPointerARB(num_values, get_numeric_type(numeric_type),
                                      stride, client_pointer + start);
             GLP(EnableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
@@ -1809,9 +1809,9 @@ update_standard_vertex_arrays()
 
     // There's no requirement that we add vertices last, but we do
     // anyway.
-    if (_vertex_data->get_vertex_info(array_data, num_values, numeric_type,
+    if (_data_reader->get_vertex_info(array_reader, num_values, numeric_type,
                                       start, stride)) {
-      const unsigned char *client_pointer = setup_array_data(array_data);
+      const unsigned char *client_pointer = setup_array_data(array_reader);
       GLP(VertexPointer)(num_values, get_numeric_type(numeric_type),
                          stride, client_pointer + start);
       GLP(EnableClientState)(GL_VERTEX_ARRAY);
@@ -1865,38 +1865,39 @@ disable_standard_vertex_arrays()
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_triangles(const GeomTriangles *primitive) {
+draw_triangles(const GeomPrimitivePipelineReader *reader) {
   PStatTimer timer(_draw_primitive_pcollector);
 
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
-    GLCAT.spam() << "draw_triangles: " << *primitive << "\n";
+    GLCAT.spam() << "draw_triangles: " << *(reader->get_object()) << "\n";
   }
 #endif  // NDEBUG
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
-    draw_immediate_simple_primitives(primitive, GL_TRIANGLES);
+    draw_immediate_simple_primitives(reader, GL_TRIANGLES);
 
   } else
 #endif  // SUPPORT_IMMEDIATE_MODE
   {
-    _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
+    int num_vertices = reader->get_num_vertices();
+    _vertices_tri_pcollector.add_level(num_vertices);
     _primitive_batches_tri_pcollector.add_level(1);
 
-    if (primitive->is_indexed()) {
-      const unsigned char *client_pointer = setup_primitive(primitive);
+    if (reader->is_indexed()) {
+      const unsigned char *client_pointer = setup_primitive(reader);
 
       _glDrawRangeElements(GL_TRIANGLES,
-                           primitive->get_min_vertex(),
-                           primitive->get_max_vertex(),
-                           primitive->get_num_vertices(),
-                           get_numeric_type(primitive->get_index_type()),
+                           reader->get_min_vertex(),
+                           reader->get_max_vertex(),
+                           num_vertices,
+                           get_numeric_type(reader->get_index_type()),
                            client_pointer);
     } else {
       GLP(DrawArrays)(GL_TRIANGLES,
-                      primitive->get_first_vertex(),
-                      primitive->get_num_vertices());
+                      reader->get_first_vertex(),
+                      num_vertices);
     }
   }
 
@@ -1909,20 +1910,20 @@ draw_triangles(const GeomTriangles *primitive) {
 //  Description: Draws a series of triangle strips.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_tristrips(const GeomTristrips *primitive) {
+draw_tristrips(const GeomPrimitivePipelineReader *reader) {
   PStatTimer timer(_draw_primitive_pcollector);
 
   report_my_gl_errors();
 
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
-    GLCAT.spam() << "draw_tristrips: " << *primitive << "\n";
+    GLCAT.spam() << "draw_tristrips: " << *(reader->get_object()) << "\n";
   }
 #endif  // NDEBUG
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
-    draw_immediate_composite_primitives(primitive, GL_TRIANGLE_STRIP);
+    draw_immediate_composite_primitives(reader, GL_TRIANGLE_STRIP);
 
   } else
 #endif  // SUPPORT_IMMEDIATE_MODE
@@ -1930,35 +1931,36 @@ draw_tristrips(const GeomTristrips *primitive) {
     if (connect_triangle_strips && _render_mode != RenderModeAttrib::M_wireframe) {
       // One long triangle strip, connected by the degenerate vertices
       // that have already been set up within the primitive.
-      _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
+      int num_vertices = reader->get_num_vertices();
+      _vertices_tristrip_pcollector.add_level(num_vertices);
       _primitive_batches_tristrip_pcollector.add_level(1);
-      if (primitive->is_indexed()) {
-        const unsigned char *client_pointer = setup_primitive(primitive);
+      if (reader->is_indexed()) {
+        const unsigned char *client_pointer = setup_primitive(reader);
         _glDrawRangeElements(GL_TRIANGLE_STRIP,
-                             primitive->get_min_vertex(),
-                             primitive->get_max_vertex(),
-                             primitive->get_num_vertices(),
-                             get_numeric_type(primitive->get_index_type()),
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
                              client_pointer);
       } else {
         GLP(DrawArrays)(GL_TRIANGLE_STRIP,
-                        primitive->get_first_vertex(),
-                        primitive->get_num_vertices());
+                        reader->get_first_vertex(),
+                        num_vertices);
       }
 
     } else {
       // Send the individual triangle strips, stepping over the
       // degenerate vertices.
-      CPTA_int ends = primitive->get_ends();
+      CPTA_int ends = reader->get_ends();
 
       _primitive_batches_tristrip_pcollector.add_level(ends.size());
-      if (primitive->is_indexed()) {
-        const unsigned char *client_pointer = setup_primitive(primitive);
-        int index_stride = primitive->get_index_stride();
-        GeomVertexReader mins(primitive->get_mins(), 0);
-        GeomVertexReader maxs(primitive->get_maxs(), 0);
-        nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() &&
-                 primitive->get_maxs()->get_num_rows() == (int)ends.size());
+      if (reader->is_indexed()) {
+        const unsigned char *client_pointer = setup_primitive(reader);
+        int index_stride = reader->get_index_stride();
+        GeomVertexReader mins(reader->get_mins(), 0);
+        GeomVertexReader maxs(reader->get_maxs(), 0);
+        nassertv(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+                 reader->get_maxs()->get_num_rows() == (int)ends.size());
 
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
@@ -1966,13 +1968,13 @@ draw_tristrips(const GeomTristrips *primitive) {
           _glDrawRangeElements(GL_TRIANGLE_STRIP,
                                mins.get_data1i(), maxs.get_data1i(),
                                ends[i] - start,
-                               get_numeric_type(primitive->get_index_type()),
+                               get_numeric_type(reader->get_index_type()),
                                client_pointer + start * index_stride);
           start = ends[i] + 2;
         }
       } else {
         unsigned int start = 0;
-        int first_vertex = primitive->get_first_vertex();
+        int first_vertex = reader->get_first_vertex();
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
           GLP(DrawArrays)(GL_TRIANGLE_STRIP, first_vertex + start,
@@ -1992,45 +1994,45 @@ draw_tristrips(const GeomTristrips *primitive) {
 //  Description: Draws a series of triangle fans.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_trifans(const GeomTrifans *primitive) {
+draw_trifans(const GeomPrimitivePipelineReader *reader) {
   PStatTimer timer(_draw_primitive_pcollector);
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
-    GLCAT.spam() << "draw_trifans: " << *primitive << "\n";
+    GLCAT.spam() << "draw_trifans: " << *(reader->get_object()) << "\n";
   }
 #endif  // NDEBUG
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
-    draw_immediate_composite_primitives(primitive, GL_TRIANGLE_FAN);
+    draw_immediate_composite_primitives(reader, GL_TRIANGLE_FAN);
   } else
 #endif  // SUPPORT_IMMEDIATE_MODE
   {
     // Send the individual triangle fans.  There's no connecting fans
     // with degenerate vertices, so no worries about that.
-    CPTA_int ends = primitive->get_ends();
+    CPTA_int ends = reader->get_ends();
 
     _primitive_batches_trifan_pcollector.add_level(ends.size());
-    if (primitive->is_indexed()) {
-      const unsigned char *client_pointer = setup_primitive(primitive);
-      int index_stride = primitive->get_index_stride();
-      GeomVertexReader mins(primitive->get_mins(), 0);
-      GeomVertexReader maxs(primitive->get_maxs(), 0);
-      nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() &&
-               primitive->get_maxs()->get_num_rows() == (int)ends.size());
+    if (reader->is_indexed()) {
+      const unsigned char *client_pointer = setup_primitive(reader);
+      int index_stride = reader->get_index_stride();
+      GeomVertexReader mins(reader->get_mins(), 0);
+      GeomVertexReader maxs(reader->get_maxs(), 0);
+      nassertv(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+               reader->get_maxs()->get_num_rows() == (int)ends.size());
 
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
         _glDrawRangeElements(GL_TRIANGLE_FAN,
                              mins.get_data1i(), maxs.get_data1i(), ends[i] - start,
-                             get_numeric_type(primitive->get_index_type()),
+                             get_numeric_type(reader->get_index_type()),
                              client_pointer + start * index_stride);
         start = ends[i];
       }
     } else {
       unsigned int start = 0;
-      int first_vertex = primitive->get_first_vertex();
+      int first_vertex = reader->get_first_vertex();
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
         GLP(DrawArrays)(GL_TRIANGLE_FAN, first_vertex + start,
@@ -2049,35 +2051,36 @@ draw_trifans(const GeomTrifans *primitive) {
 //  Description: Draws a series of disconnected line segments.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_lines(const GeomLines *primitive) {
+draw_lines(const GeomPrimitivePipelineReader *reader) {
   PStatTimer timer(_draw_primitive_pcollector);
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
-    GLCAT.spam() << "draw_lines: " << *primitive << "\n";
+    GLCAT.spam() << "draw_lines: " << *(reader->get_object()) << "\n";
   }
 #endif  // NDEBUG
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
-    draw_immediate_simple_primitives(primitive, GL_LINES);
+    draw_immediate_simple_primitives(reader, GL_LINES);
   } else
 #endif  // SUPPORT_IMMEDIATE_MODE
   {
-    _vertices_other_pcollector.add_level(primitive->get_num_vertices());
+    int num_vertices = reader->get_num_vertices();
+    _vertices_other_pcollector.add_level(num_vertices);
     _primitive_batches_other_pcollector.add_level(1);
 
-    if (primitive->is_indexed()) {
-      const unsigned char *client_pointer = setup_primitive(primitive);
+    if (reader->is_indexed()) {
+      const unsigned char *client_pointer = setup_primitive(reader);
       _glDrawRangeElements(GL_LINES,
-                           primitive->get_min_vertex(),
-                           primitive->get_max_vertex(),
-                           primitive->get_num_vertices(),
-                           get_numeric_type(primitive->get_index_type()),
+                           reader->get_min_vertex(),
+                           reader->get_max_vertex(),
+                           num_vertices,
+                           get_numeric_type(reader->get_index_type()),
                            client_pointer);
     } else {
       GLP(DrawArrays)(GL_LINES,
-                      primitive->get_first_vertex(),
-                      primitive->get_num_vertices());
+                      reader->get_first_vertex(),
+                      num_vertices);
     }
   }
 
@@ -2090,11 +2093,11 @@ draw_lines(const GeomLines *primitive) {
 //  Description: Draws a series of line strips.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_linestrips(const GeomLinestrips *primitive) {
+draw_linestrips(const GeomPrimitivePipelineReader *reader) {
   PStatTimer timer(_draw_primitive_pcollector);
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
-    GLCAT.spam() << "draw_linestrips: " << *primitive << "\n";
+    GLCAT.spam() << "draw_linestrips: " << *(reader->get_object()) << "\n";
   }
 #endif  // NDEBUG
 
@@ -2106,35 +2109,36 @@ draw_linestrips(const GeomLinestrips *primitive) {
 //  Description: Draws a series of disconnected points.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_points(const GeomPoints *primitive) {
+draw_points(const GeomPrimitivePipelineReader *reader) {
   PStatTimer timer(_draw_primitive_pcollector);
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
-    GLCAT.spam() << "draw_points: " << *primitive << "\n";
+    GLCAT.spam() << "draw_points: " << *(reader->get_object()) << "\n";
   }
 #endif  // NDEBUG
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
-    draw_immediate_simple_primitives(primitive, GL_POINTS);
+    draw_immediate_simple_primitives(reader, GL_POINTS);
   } else
 #endif  // SUPPORT_IMMEDIATE_MODE
   {
-    _vertices_other_pcollector.add_level(primitive->get_num_vertices());
+    int num_vertices = reader->get_num_vertices();
+    _vertices_other_pcollector.add_level(num_vertices);
     _primitive_batches_other_pcollector.add_level(1);
 
-    if (primitive->is_indexed()) {
-      const unsigned char *client_pointer = setup_primitive(primitive);
+    if (reader->is_indexed()) {
+      const unsigned char *client_pointer = setup_primitive(reader);
       _glDrawRangeElements(GL_POINTS,
-                           primitive->get_min_vertex(),
-                           primitive->get_max_vertex(),
-                           primitive->get_num_vertices(),
-                           get_numeric_type(primitive->get_index_type()),
+                           reader->get_min_vertex(),
+                           reader->get_max_vertex(),
+                           num_vertices,
+                           get_numeric_type(reader->get_index_type()),
                            client_pointer);
     } else {
       GLP(DrawArrays)(GL_POINTS,
-                      primitive->get_first_vertex(),
-                      primitive->get_num_vertices());
+                      reader->get_first_vertex(),
+                      num_vertices);
     }
   }
 
@@ -2176,7 +2180,7 @@ end_draw_primitives() {
     GLP(LoadMatrixf)(_internal_transform->get_mat().get_data());
   }
 
-  if (_vertex_data->is_vertex_transformed()) {
+  if (_data_reader->is_vertex_transformed()) {
     // Restore the matrices that we pushed above.
     GLP(MatrixMode)(GL_PROJECTION);
     GLP(PopMatrix)();
@@ -2704,19 +2708,19 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 //               memory.
 //
 //               If the buffer object is bound, this function returns
-//               NULL (reprsenting the start of the buffer object in
+//               NULL (representing the start of the buffer object in
 //               server memory); if the buffer object is not bound,
 //               this function returns the pointer to the data array
 //               in client memory, that is, the data array passed in.
 ////////////////////////////////////////////////////////////////////
 const unsigned char *CLP(GraphicsStateGuardian)::
-setup_array_data(const GeomVertexArrayData *data) {
+setup_array_data(const GeomVertexArrayDataPipelineReader *array_reader) {
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
-    return data->get_data();
+    return array_reader->get_data();
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
-      data->get_usage_hint() == Geom::UH_client) {
+      array_reader->get_usage_hint() == Geom::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     if (_current_vbuffer_index != 0) {
@@ -2727,12 +2731,12 @@ setup_array_data(const GeomVertexArrayData *data) {
       _glBindBuffer(GL_ARRAY_BUFFER, 0);
       _current_vbuffer_index = 0;
     }
-    return data->get_data();
+    return array_reader->get_data();
   }
 
   // Prepare the buffer object and bind it.
-  VertexBufferContext *vbc = ((GeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
-  nassertr(vbc != (VertexBufferContext *)NULL, data->get_data());
+  VertexBufferContext *vbc = ((GeomVertexArrayData *)array_reader->get_object())->prepare_now(get_prepared_objects(), this);
+  nassertr(vbc != (VertexBufferContext *)NULL, array_reader->get_data());
   apply_vertex_buffer(vbc);
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
@@ -2780,9 +2784,10 @@ prepare_index_buffer(GeomPrimitive *data) {
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-apply_index_buffer(IndexBufferContext *ibc) {
+apply_index_buffer(IndexBufferContext *ibc,
+                   const GeomPrimitivePipelineReader *reader) {
   nassertv(_supports_buffers);
-  nassertv(ibc->get_data()->get_modified() != UpdateSeq::initial());
+  nassertv(reader->get_modified() != UpdateSeq::initial());
 
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 
@@ -2798,7 +2803,7 @@ apply_index_buffer(IndexBufferContext *ibc) {
 
   if (gibc->was_modified()) {
     PStatTimer timer(_load_index_buffer_pcollector);
-    int num_bytes = gibc->get_data()->get_data_size_bytes();
+    int num_bytes = reader->get_data_size_bytes();
     if (GLCAT.is_spam()) {
       GLCAT.spam()
         << "copying " << num_bytes
@@ -2807,12 +2812,12 @@ apply_index_buffer(IndexBufferContext *ibc) {
     if (num_bytes != 0) {
       if (gibc->changed_size() || gibc->changed_usage_hint()) {
         _glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_bytes,
-                      gibc->get_data()->get_data(),
-                      get_usage(gibc->get_data()->get_usage_hint()));
+                      reader->get_data(),
+                      get_usage(reader->get_usage_hint()));
 
       } else {
         _glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, num_bytes,
-                         gibc->get_data()->get_data());
+                         reader->get_data());
       }
       _data_transferred_pcollector.add_level(num_bytes);
     }
@@ -2877,13 +2882,13 @@ release_index_buffer(IndexBufferContext *ibc) {
 //               in client memory, that is, the data array passed in.
 ////////////////////////////////////////////////////////////////////
 const unsigned char *CLP(GraphicsStateGuardian)::
-setup_primitive(const GeomPrimitive *data) {
+setup_primitive(const GeomPrimitivePipelineReader *reader) {
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
-    return data->get_data();
+    return reader->get_data();
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
-      data->get_usage_hint() == Geom::UH_client) {
+      reader->get_usage_hint() == Geom::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     if (_current_ibuffer_index != 0) {
@@ -2894,13 +2899,13 @@ setup_primitive(const GeomPrimitive *data) {
       _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
       _current_ibuffer_index = 0;
     }
-    return data->get_data();
+    return reader->get_data();
   }
 
   // Prepare the buffer object and bind it.
-  IndexBufferContext *ibc = ((GeomPrimitive *)data)->prepare_now(get_prepared_objects(), this);
-  nassertr(ibc != (IndexBufferContext *)NULL, data->get_data());
-  apply_index_buffer(ibc);
+  IndexBufferContext *ibc = ((GeomPrimitive *)reader->get_object())->prepare_now(get_prepared_objects(), this);
+  nassertr(ibc != (IndexBufferContext *)NULL, reader->get_data());
+  apply_index_buffer(ibc, reader);
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
   return NULL;
@@ -3926,19 +3931,20 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 //               primitives of the indicated type.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_immediate_simple_primitives(const GeomPrimitive *primitive, GLenum mode) {
-  _vertices_immediate_pcollector.add_level(primitive->get_num_vertices());
+draw_immediate_simple_primitives(const GeomPrimitivePipelineReader *reader, GLenum mode) {
+  int num_vertices = reader->get_num_vertices();
+  _vertices_immediate_pcollector.add_level(num_vertices);
   GLP(Begin)(mode);
 
-  if (primitive->is_indexed()) {
-    for (int v = 0; v < primitive->get_num_vertices(); ++v) {
-      _sender.set_vertex(primitive->get_vertex(v));
+  if (reader->is_indexed()) {
+    for (int v = 0; v < num_vertices; ++v) {
+      _sender.set_vertex(reader->get_vertex(v));
       _sender.issue_vertex();
     }
 
   } else {
-    _sender.set_vertex(primitive->get_first_vertex());
-    for (int v = 0; v < primitive->get_num_vertices(); ++v) {
+    _sender.set_vertex(reader->get_first_vertex());
+    for (int v = 0; v < num_vertices; ++v) {
       _sender.issue_vertex();
     }
   }
@@ -3957,12 +3963,13 @@ draw_immediate_simple_primitives(const GeomPrimitive *primitive, GLenum mode) {
 //               several begin/end groups.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode) {
-  _vertices_immediate_pcollector.add_level(primitive->get_num_vertices());
-  CPTA_int ends = primitive->get_ends();
-  int num_unused_vertices_per_primitive = primitive->get_num_unused_vertices_per_primitive();
+draw_immediate_composite_primitives(const GeomPrimitivePipelineReader *reader, GLenum mode) {
+  int num_vertices = reader->get_num_vertices();
+  _vertices_immediate_pcollector.add_level(num_vertices);
+  CPTA_int ends = reader->get_ends();
+  int num_unused_vertices_per_primitive = reader->get_object()->get_num_unused_vertices_per_primitive();
 
-  if (primitive->is_indexed()) {
+  if (reader->is_indexed()) {
     int begin = 0;
     CPTA_int::const_iterator ei;
     for (ei = ends.begin(); ei != ends.end(); ++ei) {
@@ -3970,7 +3977,7 @@ draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode)
 
       GLP(Begin)(mode);
       for (int v = begin; v < end; ++v) {
-        _sender.set_vertex(primitive->get_vertex(v));
+        _sender.set_vertex(reader->get_vertex(v));
         _sender.issue_vertex();
       }
       GLP(End)();
@@ -3979,7 +3986,7 @@ draw_immediate_composite_primitives(const GeomPrimitive *primitive, GLenum mode)
     }
 
   } else {
-    _sender.set_vertex(primitive->get_first_vertex());
+    _sender.set_vertex(reader->get_first_vertex());
     int begin = 0;
     CPTA_int::const_iterator ei;
     for (ei = ends.begin(); ei != ends.end(); ++ei) {

@@ -33,10 +33,10 @@ ConfigureFn(config_pipeline) {
 }
 
 ConfigVariableInt thread_stack_size
-("thread-stack-size", 16384,
- PRC_DESC("Specifies the size, in bytes, of the stack that will be created "
-          "for each newly-created thread.  Not all thread implementations "
-          "respect this value."));
+("thread-stack-size", 4194304,
+ PRC_DESC("Specifies the minimum size, in bytes, of the stack that will be "
+          "created for each newly-created thread.  Not all thread "
+          "implementations respect this value."));
 
 ConfigVariableBool threads_always_global
 ("threads-always-global", false,

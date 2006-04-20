@@ -35,8 +35,6 @@
 static int last_rand = 0;
 #endif /* __WIN32__ */
 
-#define PRINTMSG(x) { MutexHolder l(Mutex::_notify_mutex); x << flush; }
-
 Mutex rand_mutex;
 
 static double random_f(double max)
@@ -48,6 +46,8 @@ static double random_f(double max)
 #endif /* __WIN32__ */
   return max * (double)i / (double)RAND_MAX;
 }
+
+#define PRINTMSG(x) { MutexHolder l(Mutex::_notify_mutex); x << flush; }
 
 // n philosophers sharing n chopsticks.  Philosophers are poor folk and can't
 // afford luxuries like 2 chopsticks per person.

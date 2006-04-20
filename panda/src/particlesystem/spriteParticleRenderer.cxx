@@ -575,7 +575,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   // First, since this is the only time we have access to the actual particles, do some delayed initialization.
   if (_animate_frames || anim_count) {
     if (!_birth_list.empty()) {
-      for (pvector<int>::iterator vIter = _birth_list.begin(); vIter != _birth_list.end(); ++vIter) {
+      for (vector_int::iterator vIter = _birth_list.begin(); vIter != _birth_list.end(); ++vIter) {
         cur_particle = (BaseParticle*)po_vector[*vIter].p();
         i = int(NORMALIZED_RAND()*anim_count);
         

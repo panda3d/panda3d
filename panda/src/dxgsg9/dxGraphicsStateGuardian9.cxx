@@ -1144,12 +1144,14 @@ DBG_S dxgsg9_cat.debug ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
-begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
-                      const GeomVertexData *vertex_data) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom, munger, vertex_data)) {
+begin_draw_primitives(const GeomPipelineReader *geom_reader, 
+                      const GeomMunger *munger,
+                      const GeomVertexDataPipelineReader *data_reader) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, 
+                                                    data_reader)) {
     return false;
   }
-  nassertr(_vertex_data != (GeomVertexData *)NULL, false);
+  nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
 
   DBG_SH5 dxgsg9_cat.debug ( ) << "begin_draw_primitives\n"; DBG_E
 
@@ -1173,9 +1175,9 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
   _vertex_array_shader_expansion = _current_shader_expansion;
   _vertex_array_shader_context = _current_shader_context;
 
-  const GeomVertexFormat *format = _vertex_data->get_format ( );
-  const GeomVertexArrayData *data;
-  int number_of_arrays = _vertex_data -> get_num_arrays ( );
+  const GeomVertexFormat *format = _data_reader->get_format ( );
+  const GeomVertexArrayDataPipelineReader *data;
+  int number_of_arrays = _data_reader -> get_num_arrays ( );
 
   if (_current_shader_context && number_of_arrays > 1) {
 
@@ -1198,7 +1200,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
       // find the one array with the minimum number of elements if possible
       {
         for (index = 0; index < number_of_arrays; index++) {
-          data = _vertex_data -> get_array (index);
+          data = _data_reader -> get_array_reader (index);
 
           const GeomVertexArrayFormat *array_format = data->get_array_format();
           int number_of_columns = array_format->get_num_columns();
@@ -1227,7 +1229,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
         // ugh slow, need to find which one
         for (index = first_index; index < number_of_arrays; index++)
         {
-          data = _vertex_data -> get_array (index);
+          data = _data_reader -> get_array_reader (index);
 
           const GeomVertexArrayFormat *array_format = data->get_array_format();
           int number_of_columns = array_format->get_num_columns();
@@ -1247,15 +1249,15 @@ vertex_element_array -> vertex_element_type_array;
           }
         }
 
-// since the check is not implemented yet use first_index for now
-data = _vertex_data -> get_array (first_index);
+        // since the check is not implemented yet use first_index for now
+        data = _data_reader -> get_array_reader (first_index);
 
         match = true;
       }
       else
       {
         if (first_index >= 0) {
-          data = _vertex_data -> get_array (first_index);
+          data = _data_reader -> get_array_reader (first_index);
           match = true;
         }
       }
@@ -1268,7 +1270,7 @@ data = _vertex_data -> get_array (first_index);
         dxgsg9_cat.error ( ) << "could not find matching vertex element data for vertex shader\n";
 
         // just use the 0 array
-        data = _vertex_data->get_array(0);
+        data = _data_reader->get_array_reader(0);
       }
     }
     else {
@@ -1278,15 +1280,15 @@ data = _vertex_data -> get_array (first_index);
   }
   else {
     // The munger should have put the FVF data in the first array.
-    data = _vertex_data->get_array(0);
+    data = _data_reader->get_array_reader(0);
   }
 
-  VertexBufferContext *vbc = ((GeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
+  VertexBufferContext *vbc = ((GeomVertexArrayData *)(data->get_object()))->prepare_now(get_prepared_objects(), this);
   nassertr(vbc != (VertexBufferContext *)NULL, false);
   apply_vertex_buffer(vbc, _current_shader_context);
 
   const GeomVertexAnimationSpec &animation =
-    vertex_data->get_format()->get_animation();
+    data_reader->get_format()->get_animation();
   if (animation.get_animation_type() == Geom::AT_hardware) {
     // Set up vertex blending.
     switch (animation.get_num_transforms()) {
@@ -1317,7 +1319,7 @@ data = _vertex_data -> get_array (first_index);
       set_render_state(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
     }
 
-    const TransformTable *table = vertex_data->get_transform_table();
+    const TransformTable *table = data_reader->get_transform_table();
     if (table != (TransformTable *)NULL) {
       for (int i = 0; i < table->get_num_transforms(); i++) {
         LMatrix4f mat;
@@ -1340,14 +1342,14 @@ data = _vertex_data -> get_array (first_index);
       _vertex_blending_enabled = false;
     }
 
-    if (_transform_stale && !_vertex_data->is_vertex_transformed()) {
+    if (_transform_stale && !_data_reader->is_vertex_transformed()) {
       const D3DMATRIX *d3d_mat = (const D3DMATRIX *)_internal_transform->get_mat().get_data();
       _d3d_device->SetTransform(D3DTS_WORLD, d3d_mat);
       _transform_stale = false;
     }
   }
 
-  if (_vertex_data->is_vertex_transformed()) {
+  if (_data_reader->is_vertex_transformed()) {
     // If the vertex data claims to be already transformed into clip
     // coordinates, wipe out the current projection and modelview
     // matrix (so we don't attempt to transform it again).
@@ -1376,20 +1378,20 @@ data = _vertex_data -> get_array (first_index);
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-draw_triangles(const GeomTriangles *primitive) {
+draw_triangles(const GeomPrimitivePipelineReader *reader) {
   PStatTimer timer(_draw_primitive_pcollector);
 
 //  DBG_SH5 dxgsg9_cat.debug ( ) << "draw_triangles 1\n"; DBG_E
 
-  _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
+  _vertices_tri_pcollector.add_level(reader->get_num_vertices());
   _primitive_batches_tri_pcollector.add_level(1);
-  if (primitive->is_indexed()) {
-    int min_vertex = dx_broken_max_index ? 0 : primitive->get_min_vertex();
-    int max_vertex = primitive->get_max_vertex();
+  if (reader->is_indexed()) {
+    int min_vertex = dx_broken_max_index ? 0 : reader->get_min_vertex();
+    int max_vertex = reader->get_max_vertex();
 
     if (_active_vbuffer != NULL) {
       // Indexed, vbuffers.
-      IndexBufferContext *ibc = ((GeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+      IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
       apply_index_buffer(ibc);
 
@@ -1398,22 +1400,22 @@ draw_triangles(const GeomTriangles *primitive) {
       _d3d_device->DrawIndexedPrimitive
         (D3DPT_TRIANGLELIST, 0,
          min_vertex, max_vertex - min_vertex + 1,
-         0, primitive->get_num_primitives());
+         0, reader->get_num_primitives());
 
     } else {
       // Indexed, client arrays.
 
 //DBG_SH2 dxgsg9_cat.debug ( ) << "draw_indexed_primitive_up \n"; DBG_E
 
-      D3DFORMAT index_type = get_index_type(primitive->get_index_type());
+      D3DFORMAT index_type = get_index_type(reader->get_index_type());
       draw_indexed_primitive_up
         (D3DPT_TRIANGLELIST,
          min_vertex, max_vertex,
-         primitive->get_num_primitives(),
-         primitive->get_data(),
+         reader->get_num_primitives(),
+         reader->get_data(),
          index_type,
-         _vertex_data->get_array(0)->get_data(),
-         _vertex_data->get_format()->get_array(0)->get_stride());
+         _data_reader->get_array_reader(0)->get_data(),
+         _data_reader->get_format()->get_array(0)->get_stride());
     }
   } else {
     if (_active_vbuffer != NULL) {
@@ -1423,19 +1425,19 @@ draw_triangles(const GeomTriangles *primitive) {
 
       _d3d_device->DrawPrimitive
         (D3DPT_TRIANGLELIST,
-         primitive->get_first_vertex(),
-         primitive->get_num_primitives());
+         reader->get_first_vertex(),
+         reader->get_num_primitives());
 
     } else {
       // Nonindexed, client arrays.
 
 //DBG_SH2 dxgsg9_cat.debug ( ) << "draw_primitive_up \n"; DBG_E
 
-      draw_primitive_up(D3DPT_TRIANGLELIST, primitive->get_num_primitives(),
-      primitive->get_first_vertex(),
-      primitive->get_num_vertices(),
-      _vertex_data->get_array(0)->get_data(),
-      _vertex_data->get_format()->get_array(0)->get_stride());
+      draw_primitive_up(D3DPT_TRIANGLELIST, reader->get_num_primitives(),
+      reader->get_first_vertex(),
+      reader->get_num_vertices(),
+      _data_reader->get_array_reader(0)->get_data(),
+      _data_reader->get_format()->get_array(0)->get_stride());
     }
   }
 
@@ -1448,7 +1450,7 @@ draw_triangles(const GeomTriangles *primitive) {
 //  Description: Draws a series of triangle strips.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-draw_tristrips(const GeomTristrips *primitive) {
+draw_tristrips(const GeomPrimitivePipelineReader *reader) {
   PStatTimer timer(_draw_primitive_pcollector);
 
   DBG_SH5 dxgsg9_cat.debug ( ) << "draw_tristrips\n"; DBG_E
@@ -1456,80 +1458,80 @@ draw_tristrips(const GeomTristrips *primitive) {
   if (connect_triangle_strips && _current_fill_mode != RenderModeAttrib::M_wireframe) {
     // One long triangle strip, connected by the degenerate vertices
     // that have already been set up within the primitive.
-    _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
+    _vertices_tristrip_pcollector.add_level(reader->get_num_vertices());
     _primitive_batches_tristrip_pcollector.add_level(1);
-    if (primitive->is_indexed()) {
-      int min_vertex = dx_broken_max_index ? 0 : primitive->get_min_vertex();
-      int max_vertex = primitive->get_max_vertex();
+    if (reader->is_indexed()) {
+      int min_vertex = dx_broken_max_index ? 0 : reader->get_min_vertex();
+      int max_vertex = reader->get_max_vertex();
 
       if (_active_vbuffer != NULL) {
         // Indexed, vbuffers, one line triangle strip.
-        IndexBufferContext *ibc = ((GeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+        IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
         nassertv(ibc != (IndexBufferContext *)NULL);
         apply_index_buffer(ibc);
 
-//dxgsg9_cat.error ( ) << "DrawIndexedPrimitive D3DPT_TRIANGLESTRIP VERTICES: " << primitive->get_num_vertices ( ) << "\n";
+//dxgsg9_cat.error ( ) << "DrawIndexedPrimitive D3DPT_TRIANGLESTRIP VERTICES: " << reader->get_num_vertices ( ) << "\n";
 
         _d3d_device->DrawIndexedPrimitive
           (D3DPT_TRIANGLESTRIP, 0,
            min_vertex, max_vertex - min_vertex + 1,
-           0, primitive->get_num_vertices() - 2);
+           0, reader->get_num_vertices() - 2);
 
       } else {
 
-//dxgsg9_cat.error ( ) << "draw_indexed_primitive_up D3DPT_TRIANGLESTRIP VERTICES: " << primitive->get_num_vertices ( ) << "\n";
+//dxgsg9_cat.error ( ) << "draw_indexed_primitive_up D3DPT_TRIANGLESTRIP VERTICES: " << reader->get_num_vertices ( ) << "\n";
 
         // Indexed, client arrays, one long triangle strip.
-        D3DFORMAT index_type = get_index_type(primitive->get_index_type());
+        D3DFORMAT index_type = get_index_type(reader->get_index_type());
         draw_indexed_primitive_up
           (D3DPT_TRIANGLESTRIP,
            min_vertex, max_vertex,
-           primitive->get_num_vertices() - 2,
-           primitive->get_data(), index_type,
-           _vertex_data->get_array(0)->get_data(),
-           _vertex_data->get_format()->get_array(0)->get_stride());
+           reader->get_num_vertices() - 2,
+           reader->get_data(), index_type,
+           _data_reader->get_array_reader(0)->get_data(),
+           _data_reader->get_format()->get_array(0)->get_stride());
       }
     } else {
       if (_active_vbuffer != NULL) {
         // Nonindexed, vbuffers, one long triangle strip.
 
-//dxgsg9_cat.error ( ) << "DrawPrimitive D3DPT_TRIANGLESTRIP " << primitive->get_first_vertex ( ) << " VERTICES: " << primitive->get_num_vertices ( ) << "\n";
+//dxgsg9_cat.error ( ) << "DrawPrimitive D3DPT_TRIANGLESTRIP " << reader->get_first_vertex ( ) << " VERTICES: " << reader->get_num_vertices ( ) << "\n";
 
         _d3d_device->DrawPrimitive
           (D3DPT_TRIANGLESTRIP,
-           primitive->get_first_vertex(),
-           primitive->get_num_vertices() - 2);
+           reader->get_first_vertex(),
+           reader->get_num_vertices() - 2);
 
       } else {
         // Indexed, client arrays, one long triangle strip.
         draw_primitive_up(D3DPT_TRIANGLESTRIP,
-        primitive->get_num_vertices() - 2,
-        primitive->get_first_vertex(),
-        primitive->get_num_vertices(),
-        _vertex_data->get_array(0)->get_data(),
-        _vertex_data->get_format()->get_array(0)->get_stride());
+        reader->get_num_vertices() - 2,
+        reader->get_first_vertex(),
+        reader->get_num_vertices(),
+        _data_reader->get_array_reader(0)->get_data(),
+        _data_reader->get_format()->get_array(0)->get_stride());
       }
     }
 
   } else {
     // Send the individual triangle strips, stepping over the
     // degenerate vertices.
-    CPTA_int ends = primitive->get_ends();
+    CPTA_int ends = reader->get_ends();
     _primitive_batches_tristrip_pcollector.add_level(ends.size());
 
-    if (primitive->is_indexed()) {
-      CPTA_int ends = primitive->get_ends();
-      int index_stride = primitive->get_index_stride();
+    if (reader->is_indexed()) {
+      CPTA_int ends = reader->get_ends();
+      int index_stride = reader->get_index_stride();
       _primitive_batches_tristrip_pcollector.add_level(ends.size());
 
-      GeomVertexReader mins(primitive->get_mins(), 0);
-      GeomVertexReader maxs(primitive->get_maxs(), 0);
-      nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() &&
-               primitive->get_maxs()->get_num_rows() == (int)ends.size());
+      GeomVertexReader mins(reader->get_mins(), 0);
+      GeomVertexReader maxs(reader->get_maxs(), 0);
+      nassertv(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+               reader->get_maxs()->get_num_rows() == (int)ends.size());
 
       if (_active_vbuffer != NULL) {
         // Indexed, vbuffers, individual triangle strips.
-        IndexBufferContext *ibc = ((GeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+        IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
         nassertv(ibc != (IndexBufferContext *)NULL);
         apply_index_buffer(ibc);
 
@@ -1549,10 +1551,10 @@ draw_tristrips(const GeomTristrips *primitive) {
 
       } else {
         // Indexed, client arrays, individual triangle strips.
-        CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
-        int stride = _vertex_data->get_format()->get_array(0)->get_stride();
-        CPTA_uchar vertices = primitive->get_data();
-        D3DFORMAT index_type = get_index_type(primitive->get_index_type());
+        CPTA_uchar array_data = _data_reader->get_array_reader(0)->get_data();
+        int stride = _data_reader->get_format()->get_array(0)->get_stride();
+        CPTA_uchar vertices = reader->get_data();
+        D3DFORMAT index_type = get_index_type(reader->get_index_type());
 
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
@@ -1570,7 +1572,7 @@ draw_tristrips(const GeomTristrips *primitive) {
         }
       }
     } else {
-      unsigned int first_vertex = primitive->get_first_vertex();
+      unsigned int first_vertex = reader->get_first_vertex();
 
       if (_active_vbuffer != NULL) {
         // Nonindexed, vbuffers, individual triangle strips.
@@ -1586,8 +1588,8 @@ draw_tristrips(const GeomTristrips *primitive) {
 
       } else {
         // Nonindexed, client arrays, individual triangle strips.
-        CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
-        int stride = _vertex_data->get_format()->get_array(0)->get_stride();
+        CPTA_uchar array_data = _data_reader->get_array_reader(0)->get_data();
+        int stride = _data_reader->get_format()->get_array(0)->get_stride();
 
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
@@ -1610,30 +1612,30 @@ draw_tristrips(const GeomTristrips *primitive) {
 //  Description: Draws a series of triangle fans.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-draw_trifans(const GeomTrifans *primitive) {
+draw_trifans(const GeomPrimitivePipelineReader *reader) {
   PStatTimer timer(_draw_primitive_pcollector);
 
   DBG_SH5 dxgsg9_cat.debug ( ) << "draw_trifans\n"; DBG_E
 
-  CPTA_int ends = primitive->get_ends();
+  CPTA_int ends = reader->get_ends();
   _primitive_batches_trifan_pcollector.add_level(ends.size());
 
-  if (primitive->is_indexed()) {
-    int min_vertex = dx_broken_max_index ? 0 : primitive->get_min_vertex();
-    int max_vertex = primitive->get_max_vertex();
+  if (reader->is_indexed()) {
+    int min_vertex = dx_broken_max_index ? 0 : reader->get_min_vertex();
+    int max_vertex = reader->get_max_vertex();
 
     // Send the individual triangle fans.  There's no connecting fans
     // with degenerate vertices, so no worries about that.
-    int index_stride = primitive->get_index_stride();
+    int index_stride = reader->get_index_stride();
 
-    GeomVertexReader mins(primitive->get_mins(), 0);
-    GeomVertexReader maxs(primitive->get_maxs(), 0);
-    nassertv(primitive->get_mins()->get_num_rows() == (int)ends.size() &&
-             primitive->get_maxs()->get_num_rows() == (int)ends.size());
+    GeomVertexReader mins(reader->get_mins(), 0);
+    GeomVertexReader maxs(reader->get_maxs(), 0);
+    nassertv(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+             reader->get_maxs()->get_num_rows() == (int)ends.size());
 
     if (_active_vbuffer != NULL) {
       // Indexed, vbuffers.
-      IndexBufferContext *ibc = ((GeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+      IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
       apply_index_buffer(ibc);
 
@@ -1652,10 +1654,10 @@ draw_trifans(const GeomTrifans *primitive) {
 
     } else {
       // Indexed, client arrays.
-      CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
-      int stride = _vertex_data->get_format()->get_array(0)->get_stride();
-      CPTA_uchar vertices = primitive->get_data();
-      D3DFORMAT index_type = get_index_type(primitive->get_index_type());
+      CPTA_uchar array_data = _data_reader->get_array_reader(0)->get_data();
+      int stride = _data_reader->get_format()->get_array(0)->get_stride();
+      CPTA_uchar vertices = reader->get_data();
+      D3DFORMAT index_type = get_index_type(reader->get_index_type());
 
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
@@ -1673,7 +1675,7 @@ draw_trifans(const GeomTrifans *primitive) {
       }
     }
   } else {
-    unsigned int first_vertex = primitive->get_first_vertex();
+    unsigned int first_vertex = reader->get_first_vertex();
 
     if (_active_vbuffer != NULL) {
       // Nonindexed, vbuffers.
@@ -1689,8 +1691,8 @@ draw_trifans(const GeomTrifans *primitive) {
 
     } else {
       // Nonindexed, client arrays.
-      CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
-      int stride = _vertex_data->get_format()->get_array(0)->get_stride();
+      CPTA_uchar array_data = _data_reader->get_array_reader(0)->get_data();
+      int stride = _data_reader->get_format()->get_array(0)->get_stride();
 
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
@@ -1712,18 +1714,18 @@ draw_trifans(const GeomTrifans *primitive) {
 //  Description: Draws a series of disconnected line segments.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-draw_lines(const GeomLines *primitive) {
+draw_lines(const GeomPrimitivePipelineReader *reader) {
   PStatTimer timer(_draw_primitive_pcollector);
-  _vertices_other_pcollector.add_level(primitive->get_num_vertices());
+  _vertices_other_pcollector.add_level(reader->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
-  if (primitive->is_indexed()) {
-    int min_vertex = dx_broken_max_index ? 0 : primitive->get_min_vertex();
-    int max_vertex = primitive->get_max_vertex();
+  if (reader->is_indexed()) {
+    int min_vertex = dx_broken_max_index ? 0 : reader->get_min_vertex();
+    int max_vertex = reader->get_max_vertex();
 
     if (_active_vbuffer != NULL) {
       // Indexed, vbuffers.
-      IndexBufferContext *ibc = ((GeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+      IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
       apply_index_buffer(ibc);
 
@@ -1731,36 +1733,36 @@ draw_lines(const GeomLines *primitive) {
         (D3DPT_LINELIST,
      0,
          min_vertex, max_vertex - min_vertex + 1,
-         0, primitive->get_num_primitives());
+         0, reader->get_num_primitives());
 
     } else {
       // Indexed, client arrays.
-      D3DFORMAT index_type = get_index_type(primitive->get_index_type());
+      D3DFORMAT index_type = get_index_type(reader->get_index_type());
 
       draw_indexed_primitive_up
         (D3DPT_LINELIST,
          min_vertex, max_vertex,
-         primitive->get_num_primitives(),
-         primitive->get_data(),
+         reader->get_num_primitives(),
+         reader->get_data(),
          index_type,
-         _vertex_data->get_array(0)->get_data(),
-         _vertex_data->get_format()->get_array(0)->get_stride());
+         _data_reader->get_array_reader(0)->get_data(),
+         _data_reader->get_format()->get_array(0)->get_stride());
     }
   } else {
     if (_active_vbuffer != NULL) {
       // Nonindexed, vbuffers.
       _d3d_device->DrawPrimitive
         (D3DPT_LINELIST,
-         primitive->get_first_vertex(),
-         primitive->get_num_primitives());
+         reader->get_first_vertex(),
+         reader->get_num_primitives());
 
     } else {
       // Nonindexed, client arrays.
-      draw_primitive_up(D3DPT_LINELIST, primitive->get_num_primitives(),
-      primitive->get_first_vertex(),
-      primitive->get_num_vertices(),
-      _vertex_data->get_array(0)->get_data(),
-      _vertex_data->get_format()->get_array(0)->get_stride());
+      draw_primitive_up(D3DPT_LINELIST, reader->get_num_primitives(),
+      reader->get_first_vertex(),
+      reader->get_num_vertices(),
+      _data_reader->get_array_reader(0)->get_data(),
+      _data_reader->get_format()->get_array(0)->get_stride());
     }
   }
 }
@@ -1771,7 +1773,7 @@ draw_lines(const GeomLines *primitive) {
 //  Description: Draws a series of line strips.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-draw_linestrips(const GeomLinestrips *primitive) {
+draw_linestrips(const GeomPrimitivePipelineReader *reader) {
   PStatTimer timer(_draw_primitive_pcollector);
 }
 
@@ -1781,29 +1783,29 @@ draw_linestrips(const GeomLinestrips *primitive) {
 //  Description: Draws a series of disconnected points.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-draw_points(const GeomPoints *primitive) {
+draw_points(const GeomPrimitivePipelineReader *reader) {
   PStatTimer timer(_draw_primitive_pcollector);
-  _vertices_other_pcollector.add_level(primitive->get_num_vertices());
+  _vertices_other_pcollector.add_level(reader->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
   // The munger should have protected us from indexed points--DirectX
   // doesn't support them.
-  nassertv(!primitive->is_indexed());
+  nassertv(!reader->is_indexed());
 
   if (_active_vbuffer != NULL) {
     // Nonindexed, vbuffers.
     _d3d_device->DrawPrimitive
       (D3DPT_POINTLIST,
-       primitive->get_first_vertex(),
-       primitive->get_num_primitives());
+       reader->get_first_vertex(),
+       reader->get_num_primitives());
 
   } else {
     // Nonindexed, client arrays.
-    draw_primitive_up(D3DPT_POINTLIST, primitive->get_num_primitives(),
-          primitive->get_first_vertex(),
-          primitive->get_num_vertices(),
-          _vertex_data->get_array(0)->get_data(),
-          _vertex_data->get_format()->get_array(0)->get_stride());
+    draw_primitive_up(D3DPT_POINTLIST, reader->get_num_primitives(),
+                      reader->get_first_vertex(),
+                      reader->get_num_vertices(),
+                      _data_reader->get_array_reader(0)->get_data(),
+                      _data_reader->get_format()->get_array(0)->get_stride());
   }
 }
 
@@ -1824,7 +1826,7 @@ end_draw_primitives() {
     _vertex_blending_enabled = false;
   }
 
-  if (_vertex_data->is_vertex_transformed()) {
+  if (_data_reader->is_vertex_transformed()) {
     // Restore the projection matrix that we wiped out above.
     _d3d_device->SetTransform(D3DTS_PROJECTION,
                               (D3DMATRIX*)_projection_mat->get_mat().get_data());

@@ -30,17 +30,6 @@ get_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::get_format
-//       Access: Published
-//  Description: Returns a pointer to the GeomVertexFormat structure
-//               that defines this data.
-////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexFormat *GeomVertexData::
-get_format() const {
-  return _format;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::get_usage_hint
 //       Access: Published
 //  Description: Returns the usage hint that was passed to the
@@ -61,6 +50,18 @@ get_usage_hint() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::get_format
+//       Access: Published
+//  Description: Returns a pointer to the GeomVertexFormat structure
+//               that defines this data.
+////////////////////////////////////////////////////////////////////
+INLINE const GeomVertexFormat *GeomVertexData::
+get_format() const {
+  CDReader cdata(_cycler);
+  return cdata->_format;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::has_column
 //       Access: Published
 //  Description: Returns true if the data has the named column,
@@ -69,7 +70,22 @@ get_usage_hint() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexData::
 has_column(const InternalName *name) const {
-  return _format->has_column(name);
+  CDReader cdata(_cycler);
+  return cdata->_format->has_column(name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::get_num_rows
+//       Access: Published
+//  Description: Returns the number of rows stored within all the
+//               arrays.  All arrays store data for the same n
+//               rows.
+////////////////////////////////////////////////////////////////////
+INLINE int GeomVertexData::
+get_num_rows() const {
+  GeomVertexDataPipelineReader reader(this, Thread::get_current_pipeline_stage());
+  reader.check_array_readers();
+  return reader.get_num_rows();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,8 +115,9 @@ has_column(const InternalName *name) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexData::
 set_num_rows(int n) {
-  CDWriter cdata(_cycler, true);
-  return do_set_num_rows(n, cdata);
+  GeomVertexDataPipelineWriter writer(this, Thread::get_current_pipeline_stage(), true);
+  writer.check_array_writers();
+  return writer.set_num_rows(n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,6 +145,26 @@ get_array(int i) const {
   CDReader cdata(_cycler);
   nassertr(i >= 0 && i < (int)cdata->_arrays.size(), NULL);
   return cdata->_arrays[i];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::modify_array
+//       Access: Published
+//  Description: Returns a modifiable pointer to the indicated vertex
+//               array, so that application code may directly
+//               manipulate the data.  You should avoid changing
+//               the length of this array, since all of the arrays
+//               should be kept in sync--use set_num_rows()
+//               instead.
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexArrayData *GeomVertexData::
+modify_array(int i) {
+  GeomVertexDataPipelineWriter writer(this, Thread::get_current_pipeline_stage(), true);
+  return writer.modify_array(i);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -226,6 +263,18 @@ clear_slider_table() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::get_num_bytes
+//       Access: Published
+//  Description: Returns the total number of bytes consumed by the
+//               different arrays of the vertex data.
+////////////////////////////////////////////////////////////////////
+INLINE int GeomVertexData::
+get_num_bytes() const {
+  GeomVertexDataPipelineReader reader(this, Thread::get_current_pipeline_stage());
+  return reader.get_num_bytes();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::get_modified
 //       Access: Published
 //  Description: Returns a sequence number which is guaranteed to
@@ -236,57 +285,6 @@ INLINE UpdateSeq GeomVertexData::
 get_modified() const {
   CDReader cdata(_cycler);
   return cdata->_modified;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::has_vertex
-//       Access: Public
-//  Description: Returns true if the data has a "vertex" column, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomVertexData::
-has_vertex() const {
-  return (_format->get_vertex_column() != (GeomVertexColumn *)NULL);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::is_vertex_transformed
-//       Access: Public
-//  Description: Returns true if the data has a "vertex" column and it
-//               is indicated as having been transformed into clip
-//               coordinates, false if there is no vertex column or if
-//               it contains ordinary 3-d pre-transformation points.
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomVertexData::
-is_vertex_transformed() const {
-  const GeomVertexColumn *column = _format->get_vertex_column();
-  if (column != (GeomVertexColumn *)NULL) {
-    return column->get_contents() == C_clip_point;
-  }
-
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::has_normal
-//       Access: Public
-//  Description: Returns true if the data has a "normal" column, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomVertexData::
-has_normal() const {
-  return (_format->get_normal_column() != (GeomVertexColumn *)NULL);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::has_color
-//       Access: Public
-//  Description: Returns true if the data has a "color" column, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomVertexData::
-has_color() const {
-  return (_format->get_color_column() != (GeomVertexColumn *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -448,6 +446,7 @@ CData() :
 INLINE GeomVertexData::CData::
 CData(const GeomVertexData::CData &copy) :
   _usage_hint(copy._usage_hint),
+  _format(copy._format),
   _arrays(copy._arrays),
   _transform_table(copy._transform_table),
   _transform_blend_table(copy._transform_blend_table),
@@ -456,6 +455,354 @@ CData(const GeomVertexData::CData &copy) :
   _animated_vertices_modified(copy._animated_vertices_modified),
   _modified(copy._modified)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexDataPipelineBase::
+GeomVertexDataPipelineBase(GeomVertexData *object, 
+                             int pipeline_stage,
+                             GeomVertexData::CData *cdata) :
+  _object(object),
+  _pipeline_stage(pipeline_stage),
+  _cdata(cdata)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::get_pipeline_stage
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int GeomVertexDataPipelineBase::
+get_pipeline_stage() const {
+  return _pipeline_stage;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::get_usage_hint
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexDataPipelineBase::UsageHint GeomVertexDataPipelineBase::
+get_usage_hint() const {
+  return _cdata->_usage_hint;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::get_format
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const GeomVertexFormat *GeomVertexDataPipelineBase::
+get_format() const {
+  return _cdata->_format;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::has_column
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexDataPipelineBase::
+has_column(const InternalName *name) const {
+  return _cdata->_format->has_column(name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::get_num_arrays
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int GeomVertexDataPipelineBase::
+get_num_arrays() const {
+  return _cdata->_arrays.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::get_array
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const GeomVertexArrayData *GeomVertexDataPipelineBase::
+get_array(int i) const {
+  nassertr(i >= 0 && i < (int)_cdata->_arrays.size(), NULL);
+  return _cdata->_arrays[i];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::get_transform_table
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const TransformTable *GeomVertexDataPipelineBase::
+get_transform_table() const {
+  return _cdata->_transform_table;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::get_transform_blend_table
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const TransformBlendTable *GeomVertexDataPipelineBase::
+get_transform_blend_table() const {
+  return _cdata->_transform_blend_table;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::get_slider_table
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const SliderTable *GeomVertexDataPipelineBase::
+get_slider_table() const {
+  return _cdata->_slider_table;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::get_modified
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq GeomVertexDataPipelineBase::
+get_modified() const {
+  return _cdata->_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexDataPipelineReader::
+GeomVertexDataPipelineReader(const GeomVertexData *object, 
+                             int pipeline_stage) :
+  GeomVertexDataPipelineBase((GeomVertexData *)object, pipeline_stage,
+                             (GeomVertexData::CData *)object->_cycler.read_stage(pipeline_stage)),
+  _got_array_readers(false)
+{
+  nassertv(_object->test_ref_count_nonzero());
+#ifdef DO_PIPELINING
+  nassertv(_cdata->test_ref_count_nonzero());
+#endif  // DO_PIPELINING
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::Copy Constructor
+//       Access: Private
+//  Description: Don't attempt to copy these objects.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexDataPipelineReader::
+GeomVertexDataPipelineReader(const GeomVertexDataPipelineReader &copy) : 
+  GeomVertexDataPipelineBase(copy)
+{
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::Copy Assignment Operator
+//       Access: Private
+//  Description: Don't attempt to copy these objects.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexDataPipelineReader::
+operator = (const GeomVertexDataPipelineReader &) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexDataPipelineReader::
+~GeomVertexDataPipelineReader() {
+  if (_got_array_readers) {
+    delete_array_readers();
+  }
+  nassertv(_object->test_ref_count_nonzero());
+#ifdef DO_PIPELINING
+  nassertv(_cdata->test_ref_count_nonzero());
+#endif  // DO_PIPELINING
+  _object->_cycler.release_read_stage(_pipeline_stage, _cdata);
+  _object = NULL;
+  _cdata = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::get_object
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const GeomVertexData *GeomVertexDataPipelineReader::
+get_object() const {
+  return _object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::check_array_readers
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexDataPipelineReader::
+check_array_readers() const {
+  if (!_got_array_readers) {
+    ((GeomVertexDataPipelineReader *)this)->make_array_readers();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::get_array_reader
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const GeomVertexArrayDataPipelineReader *GeomVertexDataPipelineReader::
+get_array_reader(int i) const {
+  nassertr(_got_array_readers, NULL);
+  nassertr(i >= 0 && i < (int)_array_readers.size(), NULL);
+  return _array_readers[i];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::has_vertex
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexDataPipelineReader::
+has_vertex() const {
+  return (_cdata->_format->get_vertex_column() != (GeomVertexColumn *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::is_vertex_transformed
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexDataPipelineReader::
+is_vertex_transformed() const {
+  const GeomVertexColumn *column = _cdata->_format->get_vertex_column();
+  if (column != (GeomVertexColumn *)NULL) {
+    return column->get_contents() == C_clip_point;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::has_normal
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexDataPipelineReader::
+has_normal() const {
+  return (_cdata->_format->get_normal_column() != (GeomVertexColumn *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::has_color
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexDataPipelineReader::
+has_color() const {
+  return (_cdata->_format->get_color_column() != (GeomVertexColumn *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexDataPipelineWriter::
+GeomVertexDataPipelineWriter(GeomVertexData *object, 
+                             int pipeline_stage, bool force_to_0) :
+  GeomVertexDataPipelineBase(object, pipeline_stage,
+                             object->_cycler.write_stage_upstream(pipeline_stage, force_to_0)),
+  _force_to_0(force_to_0),
+  _got_array_writers(false)
+{
+  nassertv(_object->test_ref_count_nonzero());
+#ifdef DO_PIPELINING
+  nassertv(_cdata->test_ref_count_nonzero());
+#endif  // DO_PIPELINING
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::Copy Constructor
+//       Access: Private
+//  Description: Don't attempt to copy these objects.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexDataPipelineWriter::
+GeomVertexDataPipelineWriter(const GeomVertexDataPipelineWriter &copy) : 
+  GeomVertexDataPipelineBase(copy)
+{
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::Copy Assignment Operator
+//       Access: Private
+//  Description: Don't attempt to copy these objects.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexDataPipelineWriter::
+operator = (const GeomVertexDataPipelineWriter &) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexDataPipelineWriter::
+~GeomVertexDataPipelineWriter() {
+  if (_got_array_writers) {
+    delete_array_writers();
+  }
+  nassertv(_object->test_ref_count_nonzero());
+#ifdef DO_PIPELINING
+  nassertv(_cdata->test_ref_count_nonzero());
+#endif  // DO_PIPELINING
+  _object->_cycler.release_write_stage(_pipeline_stage, _cdata);
+  _object = NULL;
+  _cdata = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::get_object
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexData *GeomVertexDataPipelineWriter::
+get_object() const {
+  return _object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::check_array_writers
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexDataPipelineWriter::
+check_array_writers() const {
+  if (!_got_array_writers) {
+    ((GeomVertexDataPipelineWriter *)this)->make_array_writers();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::get_array_writer
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexArrayDataPipelineWriter *GeomVertexDataPipelineWriter::
+get_array_writer(int i) const {
+  nassertr(_got_array_writers, NULL);
+  nassertr(i >= 0 && i < (int)_array_writers.size(), NULL);
+  return _array_writers[i];
 }
 
 INLINE ostream &

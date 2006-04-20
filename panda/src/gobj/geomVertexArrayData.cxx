@@ -105,66 +105,6 @@ GeomVertexArrayData::
   release_all();
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::set_num_rows
-//       Access: Published
-//  Description: Sets the length of the array to n rows.
-//               Normally, you would not call this directly, since all
-//               of the arrays in a particular GeomVertexData must
-//               have the same number of rows; instead, call
-//               GeomVertexData::set_num_rows().
-//
-//               The return value is true if the number of rows
-//               was changed, false if the object already contained n
-//               rows (or if there was some error).
-//
-//               The new vertex data is initialized to 0, including
-//               the "color" column (but see
-//               GeomVertexData::set_num_rows()).
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
-bool GeomVertexArrayData::
-set_num_rows(int n) {
-  CDWriter cdata(_cycler, true);
-
-  int stride = _array_format->get_stride();
-  int delta = n - (cdata->_data.size() / stride);
-  
-  if (delta != 0) {
-    if (cdata->_data.get_ref_count() > 1) {
-      // Copy-on-write: the data is already reffed somewhere else,
-      // so we're just going to make a copy.
-      PTA_uchar new_data;
-      new_data.reserve(n * stride);
-      new_data.insert(new_data.end(), n * stride, 0);
-      memcpy(new_data, cdata->_data, 
-             min((size_t)(n * stride), cdata->_data.size()));
-      cdata->_data = new_data;
-      
-    } else {
-      // We've got the only reference to the data, so we can change
-      // it directly.
-      if (delta > 0) {
-        cdata->_data.insert(cdata->_data.end(), delta * stride, 0);
-        
-      } else {
-        cdata->_data.erase(cdata->_data.begin() + n * stride, 
-                           cdata->_data.end());
-      }
-    }
-
-    cdata->_modified = Geom::get_next_modified();
-
-    return true;
-  }
-  
-  return false;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::set_usage_hint
 //       Access: Published
@@ -200,51 +140,6 @@ output(ostream &out) const {
 void GeomVertexArrayData::
 write(ostream &out, int indent_level) const {
   _array_format->write_with_data(out, indent_level, this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::modify_data
-//       Access: Published
-//  Description: Returns a modifiable pointer to the actual vertex
-//               array, so that application code may directly
-//               manipulate it.  Use with caution.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
-PTA_uchar GeomVertexArrayData::
-modify_data() {
-  // Perform copy-on-write: if the reference count on the vertex data
-  // is greater than 1, assume some other GeomVertexData has the same
-  // pointer, so make a copy of it first.
-  CDWriter cdata(_cycler, true);
-
-  if (cdata->_data.get_ref_count() > 1) {
-    PTA_uchar orig_data = cdata->_data;
-    cdata->_data = PTA_uchar();
-    cdata->_data.v() = orig_data.v();
-  }
-  cdata->_modified = Geom::get_next_modified();
-
-  return cdata->_data;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::set_data
-//       Access: Published
-//  Description: Replaces the vertex data array with a completely new
-//               array.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
-void GeomVertexArrayData::
-set_data(CPTA_uchar array) {
-  CDWriter cdata(_cycler, true);
-  cdata->_data = (PTA_uchar &)array;
-  cdata->_modified = Geom::get_next_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -612,4 +507,76 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
   READ_PTA(manager, scan, array_data->read_raw_data, _data);
 
   _modified = Geom::get_next_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataPipelineWriter::set_num_rows
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool GeomVertexArrayDataPipelineWriter::
+set_num_rows(int n) {
+  int stride = _object->_array_format->get_stride();
+  int delta = n - (_cdata->_data.size() / stride);
+  
+  if (delta != 0) {
+    if (_cdata->_data.get_ref_count() > 1) {
+      // Copy-on-write: the data is already reffed somewhere else,
+      // so we're just going to make a copy.
+      PTA_uchar new_data;
+      new_data.reserve(n * stride);
+      new_data.insert(new_data.end(), n * stride, 0);
+      memcpy(new_data, _cdata->_data, 
+             min((size_t)(n * stride), _cdata->_data.size()));
+      _cdata->_data = new_data;
+      
+    } else {
+      // We've got the only reference to the data, so we can change
+      // it directly.
+      if (delta > 0) {
+        _cdata->_data.insert(_cdata->_data.end(), delta * stride, 0);
+        
+      } else {
+        _cdata->_data.erase(_cdata->_data.begin() + n * stride, 
+                           _cdata->_data.end());
+      }
+    }
+
+    _cdata->_modified = Geom::get_next_modified();
+
+    return true;
+  }
+  
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataPipelineWriter::modify_data
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PTA_uchar GeomVertexArrayDataPipelineWriter::
+modify_data() {
+  // Perform copy-on-write: if the reference count on the vertex data
+  // is greater than 1, assume some other GeomVertexData has the same
+  // pointer, so make a copy of it first.
+  if (_cdata->_data.get_ref_count() > 1) {
+    PTA_uchar orig_data = _cdata->_data;
+    _cdata->_data = PTA_uchar();
+    _cdata->_data.v() = orig_data.v();
+  }
+  _cdata->_modified = Geom::get_next_modified();
+
+  return _cdata->_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataPipelineWriter::set_data
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomVertexArrayDataPipelineWriter::
+set_data(CPTA_uchar array) {
+  _cdata->_data = (PTA_uchar &)array;
+  _cdata->_modified = Geom::get_next_modified();
 }

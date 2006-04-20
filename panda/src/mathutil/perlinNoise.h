@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "pvector.h"
+#include "vector_int.h"
 #include "luse.h"
 #include "mersenne.h"
 
@@ -57,7 +58,7 @@ protected:
   static Mersenne _next_seed;
   static bool _got_first_seed;
 
-  typedef pvector<int> Index;
+  typedef vector_int Index;
   Index _index;
 };
 

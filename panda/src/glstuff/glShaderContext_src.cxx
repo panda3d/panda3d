@@ -419,8 +419,7 @@ bind(GSG *gsg) {
 //  Description: This function disables a currently-bound shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-unbind()
-{
+unbind() {
 #ifdef HAVE_CGGL
   if (_cg_context != 0) {
     cgGLDisableProfile(_cg_profile[SHADER_type_vert]);
@@ -445,8 +444,7 @@ unbind()
 //               transforms.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-issue_parameters(GSG *gsg, bool altered)
-{
+issue_parameters(GSG *gsg, bool altered) {
 #ifdef HAVE_CGGL
   if (_cg_context == 0) {
     return;
@@ -482,8 +480,7 @@ issue_parameters(GSG *gsg, bool altered)
 //  Description: Disable all the vertex arrays used by this shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-disable_shader_vertex_arrays(GSG *gsg)
-{
+disable_shader_vertex_arrays(GSG *gsg) {
 #ifdef HAVE_CGGL
   if (_cg_context == 0) {
     return;
@@ -508,8 +505,7 @@ disable_shader_vertex_arrays(GSG *gsg)
 //               reenable them.  We may optimize this someday.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
-{
+update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg) {
   if (prev) prev->disable_shader_vertex_arrays(gsg);
 #ifdef HAVE_CGGL
   if (_cg_context == 0) {
@@ -522,7 +518,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
   } else
 #endif // SUPPORT_IMMEDIATE_MODE
   {
-    const GeomVertexArrayData *array_data;
+    const GeomVertexArrayDataPipelineReader *array_reader;
     Geom::NumericType numeric_type;
     int start, stride, num_values;
     int nvarying = _var_spec.size();
@@ -543,10 +539,10 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
           }
         }
       }
-      if (gsg->_vertex_data->get_array_info(name,
-                                            array_data, num_values, numeric_type,
+      if (gsg->_data_reader->get_array_info(name,
+                                            array_reader, num_values, numeric_type,
                                             start, stride)) {
-        const unsigned char *client_pointer = gsg->setup_array_data(array_data);
+        const unsigned char *client_pointer = gsg->setup_array_data(array_reader);
         cgGLSetParameterPointer(p,
                                 num_values, gsg->get_numeric_type(numeric_type),
                                 stride, client_pointer + start);
@@ -565,8 +561,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 //  Description: Disable all the texture bindings used by this shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-disable_shader_texture_bindings(GSG *gsg)
-{
+disable_shader_texture_bindings(GSG *gsg) {
 #ifdef HAVE_CGGL
   if (_cg_context == 0) {
     return;
@@ -602,8 +597,7 @@ disable_shader_texture_bindings(GSG *gsg)
 //               reenable them.  We may optimize this someday.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
-{
+update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
   if (prev) prev->disable_shader_texture_bindings(gsg);
 #ifdef HAVE_CGGL
   if (_cg_context == 0) {

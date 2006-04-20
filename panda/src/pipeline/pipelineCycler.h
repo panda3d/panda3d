@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "pipelineCyclerBase.h"
 #include "cyclerHolder.h"
+#include "thread.h"     // for convenience of code that uses PipelineReader classes
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PipelineCycler
@@ -68,7 +69,9 @@ public:
   INLINE CycleDataType *elevate_read(const CycleDataType *pointer);
   INLINE CycleDataType *elevate_read_upstream(const CycleDataType *pointer, bool force_to_0);
   INLINE CycleDataType *elevate_read_stage(int n, const CycleDataType *pointer);
+  INLINE CycleDataType *elevate_read_stage_upstream(int n, const CycleDataType *pointer, bool force_to_0);
   INLINE CycleDataType *write_upstream(bool force_to_0);
+  INLINE CycleDataType *write_stage_upstream(int pipeline_stage, bool force_to_0);
   INLINE CycleDataType *write_stage(int n);
 
   INLINE CycleDataType *cheat() const;

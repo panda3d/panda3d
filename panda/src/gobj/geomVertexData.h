@@ -91,22 +91,22 @@ PUBLISHED:
   INLINE const string &get_name() const;
   void set_name(const string &name);
 
-  INLINE const GeomVertexFormat *get_format() const;
-  void set_format(const GeomVertexFormat *format);
-
   INLINE UsageHint get_usage_hint() const;
   void set_usage_hint(UsageHint usage_hint);
 
+  INLINE const GeomVertexFormat *get_format() const;
+  void set_format(const GeomVertexFormat *format);
+
   INLINE bool has_column(const InternalName *name) const;
 
-  int get_num_rows() const;
+  INLINE int get_num_rows() const;
   INLINE bool set_num_rows(int n);
   void clear_rows();
 
   INLINE int get_num_arrays() const;
   INLINE const GeomVertexArrayData *get_array(int i) const;
-  GeomVertexArrayData *modify_array(int i);
-  void set_array(int i, const GeomVertexArrayData *array);
+  INLINE GeomVertexArrayData *modify_array(int i);
+  INLINE void set_array(int i, const GeomVertexArrayData *array);
 
   INLINE const TransformTable *get_transform_table() const;
   void set_transform_table(const TransformTable *table);
@@ -121,7 +121,7 @@ PUBLISHED:
   void set_slider_table(const SliderTable *table);
   INLINE void clear_slider_table();
 
-  int get_num_bytes() const;
+  INLINE int get_num_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
   void copy_from(const GeomVertexData *source, bool keep_data_objects);
@@ -152,27 +152,6 @@ PUBLISHED:
   void clear_cache_stage();
 
 public:
-  bool get_array_info(const InternalName *name, 
-                      const GeomVertexArrayData *&array_data,
-                      int &num_values, NumericType &numeric_type, 
-                      int &start, int &stride) const;
-
-  INLINE bool has_vertex() const;
-  INLINE bool is_vertex_transformed() const;
-  bool get_vertex_info(const GeomVertexArrayData *&array_data,
-                       int &num_values, NumericType &numeric_type, 
-                       int &start, int &stride) const;
-
-  INLINE bool has_normal() const;
-  bool get_normal_info(const GeomVertexArrayData *&array_data,
-                       NumericType &numeric_type,
-                       int &start, int &stride) const;
-
-  INLINE bool has_color() const;
-  bool get_color_info(const GeomVertexArrayData *&array_data,
-                      int &num_values, NumericType &numeric_type, 
-                      int &start, int &stride) const;
-
   static INLINE PN_uint32 pack_abcd(unsigned int a, unsigned int b,
                                     unsigned int c, unsigned int d);
   static INLINE unsigned int unpack_abcd_a(PN_uint32 data);
@@ -201,7 +180,6 @@ private:
 
 private:
   string _name;
-  CPT(GeomVertexFormat) _format;
 
   typedef pvector< PT(GeomVertexArrayData) > Arrays;
 
@@ -256,6 +234,7 @@ private:
     }
 
     UsageHint _usage_hint;
+    CPT(GeomVertexFormat) _format;
     Arrays _arrays;
     CPT(TransformTable) _transform_table;
     PT(TransformBlendTable) _transform_blend_table;
@@ -274,7 +253,6 @@ private:
   Cache _cache;
 
 private:
-  bool do_set_num_rows(int n, CData *cdata);
   void update_animated_vertices(CData *cdata);
 
   static PStatCollector _convert_pcollector;
@@ -315,6 +293,132 @@ private:
   static TypeHandle _type_handle;
 
   friend class CacheEntry;
+  friend class GeomVertexDataPipelineBase;
+  friend class GeomVertexDataPipelineReader;
+  friend class GeomVertexDataPipelineWriter;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : GeomVertexDataPipelineBase
+// Description : The common code from
+//               GeomVertexDataPipelineReader and
+//               GeomVertexDataPipelineWriter.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA GeomVertexDataPipelineBase : public GeomEnums {
+protected:
+  INLINE GeomVertexDataPipelineBase(GeomVertexData *object, 
+                                    int pipeline_stage,
+                                    GeomVertexData::CData *cdata);
+
+public:
+  INLINE int get_pipeline_stage() const;
+
+  INLINE const GeomVertexFormat *get_format() const;
+  INLINE bool has_column(const InternalName *name) const;
+
+  INLINE UsageHint get_usage_hint() const;
+  INLINE int get_num_arrays() const;
+  INLINE const GeomVertexArrayData *get_array(int i) const;
+  INLINE const TransformTable *get_transform_table() const;
+  INLINE const TransformBlendTable *get_transform_blend_table() const;
+  INLINE const SliderTable *get_slider_table() const;
+  int get_num_bytes() const;
+  INLINE UpdateSeq get_modified() const;
+
+protected:
+  GeomVertexData *_object;
+  int _pipeline_stage;
+  GeomVertexData::CData *_cdata;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : GeomVertexDataPipelineReader
+// Description : Encapsulates the data from a GeomVertexData,
+//               pre-fetched for one stage of the pipeline.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA GeomVertexDataPipelineReader : public GeomVertexDataPipelineBase {
+public:
+  INLINE GeomVertexDataPipelineReader(const GeomVertexData *object, int pipeline_stage);
+private:
+  INLINE GeomVertexDataPipelineReader(const GeomVertexDataPipelineReader &copy);
+  INLINE void operator = (const GeomVertexDataPipelineReader &copy);
+
+public:
+  INLINE ~GeomVertexDataPipelineReader();
+  ALLOC_DELETED_CHAIN(GeomVertexDataPipelineReader);
+
+  INLINE const GeomVertexData *get_object() const;
+
+  INLINE void check_array_readers() const;
+  INLINE const GeomVertexArrayDataPipelineReader *get_array_reader(int i) const;
+  int get_num_rows() const;
+
+  bool get_array_info(const InternalName *name, 
+                      const GeomVertexArrayDataPipelineReader *&array_reader,
+                      int &num_values, NumericType &numeric_type, 
+                      int &start, int &stride) const;
+
+  INLINE bool has_vertex() const;
+  INLINE bool is_vertex_transformed() const;
+  bool get_vertex_info(const GeomVertexArrayDataPipelineReader *&array_reader,
+                       int &num_values, NumericType &numeric_type, 
+                       int &start, int &stride) const;
+
+  INLINE bool has_normal() const;
+  bool get_normal_info(const GeomVertexArrayDataPipelineReader *&array_reader,
+                       NumericType &numeric_type,
+                       int &start, int &stride) const;
+
+  INLINE bool has_color() const;
+  bool get_color_info(const GeomVertexArrayDataPipelineReader *&array_reader,
+                      int &num_values, NumericType &numeric_type, 
+                      int &start, int &stride) const;
+
+private:
+  void make_array_readers();
+  void delete_array_readers();
+
+  bool _got_array_readers;
+  typedef pvector<GeomVertexArrayDataPipelineReader *> ArrayReaders;
+  ArrayReaders _array_readers;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : GeomVertexDataPipelineWriter
+// Description : Encapsulates the data from a GeomVertexData,
+//               pre-fetched for one stage of the pipeline.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA GeomVertexDataPipelineWriter : public GeomVertexDataPipelineBase {
+public:
+  INLINE GeomVertexDataPipelineWriter(GeomVertexData *object, int pipeline_stage,
+                                      bool force_to_0);
+private:
+  INLINE GeomVertexDataPipelineWriter(const GeomVertexDataPipelineWriter &copy);
+  INLINE void operator = (const GeomVertexDataPipelineWriter &copy);
+
+public:
+  INLINE ~GeomVertexDataPipelineWriter();
+  ALLOC_DELETED_CHAIN(GeomVertexDataPipelineWriter);
+
+  INLINE GeomVertexData *get_object() const;
+
+  INLINE void check_array_writers() const;
+  INLINE GeomVertexArrayDataPipelineWriter *get_array_writer(int i) const;
+
+  GeomVertexArrayData *modify_array(int i);
+  void set_array(int i, const GeomVertexArrayData *array);
+
+  int get_num_rows() const;
+  bool set_num_rows(int n);
+
+private:
+  void make_array_writers();
+  void delete_array_writers();
+
+  bool _force_to_0;
+  bool _got_array_writers;
+  typedef pvector<GeomVertexArrayDataPipelineWriter *> ArrayWriters;
+  ArrayWriters _array_writers;
 };
 
 INLINE ostream &operator << (ostream &out, const GeomVertexData &obj);

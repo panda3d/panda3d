@@ -55,6 +55,7 @@ PUBLISHED:
   INLINE bool unref() const;
 
   INLINE bool test_ref_count_integrity() const;
+  INLINE bool test_ref_count_nonzero() const;
 
 public:
   INLINE void local_object();
@@ -66,6 +67,7 @@ public:
 
 protected:
   bool do_test_ref_count_integrity() const;
+  bool do_test_ref_count_nonzero() const;
 
 private:
   void create_weak_list();

@@ -84,9 +84,15 @@ start(ThreadPriority priority, bool global, bool joinable) {
     _detached = true;
   }
 
+  int result = pthread_attr_setstacksize(&attr, thread_stack_size);
+  if (result != 0) {
+    thread_cat.warning()
+      << "Unable to set stack size.\n";
+  }
+
   // Ensure the thread has "system" scope, which should ensure it can
   // run in parallel with other threads.
-  int result = pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
+  result = pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
   if (result != 0) {
     thread_cat.warning()
       << "Unable to set system scope.\n";

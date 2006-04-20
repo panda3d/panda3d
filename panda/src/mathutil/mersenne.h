@@ -69,6 +69,10 @@ PUBLISHED:
   Mersenne(unsigned long seed);
   unsigned long get_uint31();
 
+  enum { 
+    max_value = 0x7fffffff
+  };
+
 private:
   enum {
     // Period parameters

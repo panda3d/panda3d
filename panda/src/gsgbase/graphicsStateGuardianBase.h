@@ -36,20 +36,12 @@ class OcclusionQueryContext;
 class GeomContext;
 class GeomNode;
 class Geom;
-class GeomPoint;
-class GeomLine;
-class GeomLinestrip;
-class GeomSprite;
-class GeomPolygon;
-class GeomQuad;
-class GeomTri;
-class GeomTristrip;
-class GeomTrifan;
-class GeomSphere;
-class Geom;
+class GeomPipelineReader;
 class GeomVertexData;
+class GeomVertexDataPipelineReader;
 class GeomVertexArrayData;
 class GeomPrimitive;
+class GeomPrimitivePipelineReader;
 class GeomTriangles;
 class GeomTristrips;
 class GeomTrifans;
@@ -177,26 +169,15 @@ public:
   // inconvenient to declare each of those types to be friends of this
   // class.
 
-  virtual void draw_point(GeomPoint *geom, GeomContext *gc) { }
-  virtual void draw_line(GeomLine *geom, GeomContext *gc) { }
-  virtual void draw_linestrip(GeomLinestrip *geom, GeomContext *gc) { }
-  virtual void draw_sprite(GeomSprite *geom, GeomContext *gc) { }
-  virtual void draw_polygon(GeomPolygon *geom, GeomContext *gc) { }
-  virtual void draw_quad(GeomQuad *geom, GeomContext *gc) { }
-  virtual void draw_tri(GeomTri *geom, GeomContext *gc) { }
-  virtual void draw_tristrip(GeomTristrip *geom, GeomContext *gc) { }
-  virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc) { }
-  virtual void draw_sphere(GeomSphere *geom, GeomContext *gc) { }
-
-  virtual bool begin_draw_primitives(const Geom *geom, 
+  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader, 
                                      const GeomMunger *munger,
-                                     const GeomVertexData *vertex_data)=0;
-  virtual void draw_triangles(const GeomTriangles *primitive)=0;
-  virtual void draw_tristrips(const GeomTristrips *primitive)=0;
-  virtual void draw_trifans(const GeomTrifans *primitive)=0;
-  virtual void draw_lines(const GeomLines *primitive)=0;
-  virtual void draw_linestrips(const GeomLinestrips *primitive)=0;
-  virtual void draw_points(const GeomPoints *primitive)=0;
+                                     const GeomVertexDataPipelineReader *data_reader)=0;
+  virtual void draw_triangles(const GeomPrimitivePipelineReader *reader)=0;
+  virtual void draw_tristrips(const GeomPrimitivePipelineReader *reader)=0;
+  virtual void draw_trifans(const GeomPrimitivePipelineReader *reader)=0;
+  virtual void draw_lines(const GeomPrimitivePipelineReader *reader)=0;
+  virtual void draw_linestrips(const GeomPrimitivePipelineReader *reader)=0;
+  virtual void draw_points(const GeomPrimitivePipelineReader *reader)=0;
   virtual void end_draw_primitives()=0;
 
   virtual void framebuffer_copy_to_texture

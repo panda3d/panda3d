@@ -253,6 +253,22 @@ test_ref_count_integrity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ReferenceCount::test_ref_count_nonzero
+//       Access: Published
+//  Description: Does some easy checks to make sure that the reference
+//               count isn't zero, or completely bogus.  Returns true
+//               if ok, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool ReferenceCount::
+test_ref_count_nonzero() const {
+#ifndef NDEBUG
+  return do_test_ref_count_nonzero();
+#else
+  return true;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::local_object
 //       Access: Public
 //  Description: This function should be called, once, immediately

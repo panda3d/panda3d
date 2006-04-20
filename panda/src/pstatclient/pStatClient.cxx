@@ -409,7 +409,7 @@ make_collector_with_name(int parent_index, const string &name) {
   // initialize_collector_def(this, collector->_def);
 
   // We need one PerThreadData for each thread.
-  while (collector->_per_thread.size() < _num_threads) {
+  while ((int)collector->_per_thread.size() < _num_threads) {
     collector->_per_thread.push_back(PerThreadData());
   }
   add_collector(collector);
@@ -787,8 +787,8 @@ add_level(int collector_index, int thread_index, float increment) {
 float PStatClient::
 get_level(int collector_index, int thread_index) const {
 #ifdef _DEBUG
-  nassertv(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors));
-  nassertv(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads));
+  nassertr(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors), 0.0f);
+  nassertr(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads), 0.0f);
 #endif
 
   Collector *collector = get_collector_ptr(collector_index);

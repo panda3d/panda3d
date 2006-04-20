@@ -354,6 +354,24 @@ write_stage(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::write_stage_upstream
+//       Access: Public
+//  Description: Returns a pointer suitable for writing to the nth
+//               stage of the pipeline.  This is for special
+//               applications that need to update the entire pipeline
+//               at once (for instance, to remove an invalid pointer).
+//               This pointer should later be released with
+//               release_write_stage().
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerDummyImpl::
+write_stage_upstream(int n, bool) {
+  TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::write_stage_upstream(int)", " ", TAU_USER);
+  nassertr(n == 0, (CycleData *)NULL);
+  _write_count++;
+  return _data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerDummyImpl::elevate_read_stage
 //       Access: Public
 //  Description: Elevates a currently-held read pointer into a write
@@ -364,6 +382,23 @@ write_stage(int n) {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
 elevate_read_stage(int n, const CycleData *pointer) {
+  TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read_stage(int, CycleData *)", " ", TAU_USER);
+  nassertr(n == 0, NULL);
+  release_read(pointer);
+  return write();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::elevate_read_stage_upstream
+//       Access: Public
+//  Description: Elevates a currently-held read pointer into a write
+//               pointer.  This may or may not change the value of the
+//               pointer.  It is only valid to do this if this is the
+//               only currently-outstanding read pointer on the
+//               current stage.
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerDummyImpl::
+elevate_read_stage_upstream(int n, const CycleData *pointer, bool) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read_stage(int, CycleData *)", " ", TAU_USER);
   nassertr(n == 0, NULL);
   release_read(pointer);

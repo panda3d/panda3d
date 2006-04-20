@@ -73,9 +73,11 @@ public:
   INLINE int get_num_stages();
   INLINE const CycleData *read_stage(int n) const;
   INLINE void release_read_stage(int n, const CycleData *pointer) const;
-  CycleData *write_upstream(bool force_to_0);
+  INLINE CycleData *write_upstream(bool force_to_0);
   CycleData *write_stage(int pipeline_stage);
+  CycleData *write_stage_upstream(int pipeline_stage, bool force_to_0);
   INLINE CycleData *elevate_read_stage(int n, const CycleData *pointer);
+  INLINE CycleData *elevate_read_stage_upstream(int n, const CycleData *pointer, bool force_to_0);
   INLINE void release_write_stage(int n, CycleData *pointer);
 
   INLINE TypeHandle get_parent_type() const;

@@ -193,15 +193,15 @@ public:
   virtual CPT(RenderState) begin_decal_base_second();
   virtual void finish_decal();
 
-  virtual bool begin_draw_primitives(const Geom *geom, 
+  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader, 
                                      const GeomMunger *munger,
-                                     const GeomVertexData *vertex_data);
-  virtual void draw_triangles(const GeomTriangles *primitive);
-  virtual void draw_tristrips(const GeomTristrips *primitive);
-  virtual void draw_trifans(const GeomTrifans *primitive);
-  virtual void draw_lines(const GeomLines *primitive);
-  virtual void draw_linestrips(const GeomLinestrips *primitive);
-  virtual void draw_points(const GeomPoints *primitive);
+                                     const GeomVertexDataPipelineReader *data_reader);
+  virtual void draw_triangles(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_tristrips(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_trifans(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_lines(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_linestrips(const GeomPrimitivePipelineReader *reader);
+  virtual void draw_points(const GeomPrimitivePipelineReader *reader);
   virtual void end_draw_primitives();
 
   INLINE bool reset_if_new();
@@ -270,8 +270,11 @@ protected:
   CPT(RenderState) _state_rs;
   CPT(RenderState) _target_rs;
   CPT(TransformState) _internal_transform;
+
+  // These are set by begin_draw_primitives(), and are only valid
+  // between begin_draw_primitives() and end_draw_primitives().
   CPT(GeomMunger) _munger;
-  CPT(GeomVertexData) _vertex_data;
+  const GeomVertexDataPipelineReader *_data_reader;
 
   unsigned int _color_write_mask;
   Colorf _color_clear_value;

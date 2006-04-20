@@ -279,6 +279,8 @@ finish_send_update(DCPacker &packer) {
   nassertv(clock_delta != NULL);
   double delta = PyFloat_AsDouble(clock_delta);
   Py_DECREF(clock_delta);
+#else
+  static const double delta = 0.0f;
 #endif  // HAVE_PYTHON
 
   double local_time = ClockObject::get_global_clock()->get_frame_time();

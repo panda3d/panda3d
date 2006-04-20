@@ -81,6 +81,12 @@ PUBLISHED:
   INLINE GeomVertexWriter(GeomVertexArrayData *array_data);
   INLINE GeomVertexWriter(GeomVertexArrayData *array_data, 
                           int column);
+
+public:
+  INLINE GeomVertexWriter(GeomVertexDataPipelineWriter *data_writer,
+                          const InternalName *name);
+
+PUBLISHED:
   INLINE GeomVertexWriter(const GeomVertexWriter &copy);
   INLINE void operator = (const GeomVertexWriter &copy);
   INLINE ~GeomVertexWriter();
@@ -144,6 +150,7 @@ private:
   class Writer;
 
   void initialize();
+  void clear_writer();
 
   INLINE void set_pointer(int row);
   INLINE void quick_set_pointer(int row);
@@ -155,9 +162,10 @@ private:
   // must not keep a pointer to the particular ArrayData we are
   // working on (if we do, it may result in an extra copy of the data
   // due to holding the reference count).
-  PT(GeomVertexData) _vertex_data;
+  GeomVertexDataPipelineWriter *_data_writer;
   int _array;
-  PT(GeomVertexArrayData) _array_data;
+  GeomVertexArrayDataPipelineWriter *_array_writer;
+  bool _owns_writer;
 
   GeomVertexColumn::Packer *_packer;
   int _stride;

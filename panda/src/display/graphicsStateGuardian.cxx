@@ -88,7 +88,8 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   
   set_coordinate_system(get_default_coordinate_system());
 
-  _current_display_region = (DisplayRegion*)0L;
+  _data_reader = (GeomVertexDataPipelineReader *)NULL;
+  _current_display_region = (DisplayRegion*)NULL;
   _current_stereo_channel = Lens::SC_mono;
   _current_lens = (Lens *)NULL;
   _projection_mat = TransformState::make_identity();
@@ -1253,12 +1254,13 @@ finish_decal() {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
-                      const GeomVertexData *data) {
+begin_draw_primitives(const GeomPipelineReader *geom_reader, 
+                      const GeomMunger *munger,
+                      const GeomVertexDataPipelineReader *data_reader) {
   _munger = munger;
-  _vertex_data = data;
-  nassertr(geom->check_valid(data), false);
-  return _vertex_data->has_vertex();
+  _data_reader = data_reader;
+  nassertr(geom_reader->check_valid(data_reader), false);
+  return _data_reader->has_vertex();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1267,7 +1269,7 @@ begin_draw_primitives(const Geom *geom, const GeomMunger *munger,
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_triangles(const GeomTriangles *) {
+draw_triangles(const GeomPrimitivePipelineReader *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1276,7 +1278,7 @@ draw_triangles(const GeomTriangles *) {
 //  Description: Draws a series of triangle strips.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_tristrips(const GeomTristrips *primitive) {
+draw_tristrips(const GeomPrimitivePipelineReader *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1285,7 +1287,7 @@ draw_tristrips(const GeomTristrips *primitive) {
 //  Description: Draws a series of triangle fans.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_trifans(const GeomTrifans *primitive) {
+draw_trifans(const GeomPrimitivePipelineReader *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1294,7 +1296,7 @@ draw_trifans(const GeomTrifans *primitive) {
 //  Description: Draws a series of disconnected line segments.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_lines(const GeomLines *) {
+draw_lines(const GeomPrimitivePipelineReader *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1303,7 +1305,7 @@ draw_lines(const GeomLines *) {
 //  Description: Draws a series of line strips.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_linestrips(const GeomLinestrips *primitive) {
+draw_linestrips(const GeomPrimitivePipelineReader *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1312,7 +1314,7 @@ draw_linestrips(const GeomLinestrips *primitive) {
 //  Description: Draws a series of disconnected points.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_points(const GeomPoints *) {
+draw_points(const GeomPrimitivePipelineReader *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1325,7 +1327,7 @@ draw_points(const GeomPoints *) {
 void GraphicsStateGuardian::
 end_draw_primitives() {
   _munger = NULL;
-  _vertex_data = NULL;
+  _data_reader = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

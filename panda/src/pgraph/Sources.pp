@@ -4,9 +4,11 @@
     lerp event gsgbase gobj putil linmath \
     downloader express pandabase pstatclient 
  
-
 #begin lib_target
   #define TARGET pgraph
+
+  // This directory is too big to combine into a single composite file.
+  #define DONT_COMBINE 1
 
   #define SOURCES \
     accumulatedAttribs.I accumulatedAttribs.h \

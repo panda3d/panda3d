@@ -171,51 +171,6 @@ set_index_type(GeomPrimitive::NumericType index_type) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_first_vertex
-//       Access: Published
-//  Description: Returns the first vertex number referenced by the
-//               primitive.  This is particularly important in the
-//               case of a nonindexed primitive, in which case
-//               get_first_vertex() and get_num_vertices() completely
-//               define the extent of the vertex range.
-////////////////////////////////////////////////////////////////////
-int GeomPrimitive::
-get_first_vertex() const {
-  CDReader cdata(_cycler);
-  if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
-    return cdata->_first_vertex;
-  } else if (cdata->_vertices->get_num_rows() == 0) {
-    return 0;
-  } else {
-    GeomVertexReader index(cdata->_vertices, 0);
-    return index.get_data1i();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_vertex
-//       Access: Published
-//  Description: Returns the ith vertex index in the table.
-////////////////////////////////////////////////////////////////////
-int GeomPrimitive::
-get_vertex(int i) const {
-  CDReader cdata(_cycler);
-
-  if (cdata->_vertices != (GeomVertexArrayData *)NULL) {
-    // The indexed case.
-    nassertr(i >= 0 && i < (int)cdata->_vertices->get_num_rows(), -1);
-
-    GeomVertexReader index(cdata->_vertices, 0);
-    index.set_row(i);
-    return index.get_data1i();
-
-  } else {
-    // The nonindexed case.
-    return cdata->_first_vertex + i;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::add_vertex
 //       Access: Published
 //  Description: Adds the indicated vertex to the list of vertex
@@ -546,30 +501,6 @@ make_indexed() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_num_primitives
-//       Access: Published
-//  Description: Returns the number of individual primitives stored
-//               within this object.  All primitives are the same
-//               type.
-////////////////////////////////////////////////////////////////////
-int GeomPrimitive::
-get_num_primitives() const {
-  int num_vertices_per_primitive = get_num_vertices_per_primitive();
-
-  CDReader cdata(_cycler);
-  if (num_vertices_per_primitive == 0) {
-    // This is a complex primitive type like a triangle strip: each
-    // primitive uses a different number of vertices.
-    return cdata->_ends.size();
-
-  } else {
-    // This is a simple primitive type like a triangle: each primitive
-    // uses the same number of vertices.
-    return (get_num_vertices() / num_vertices_per_primitive);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_primitive_start
 //       Access: Published
 //  Description: Returns the element within the _vertices list at which
@@ -834,20 +765,6 @@ get_num_bytes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::check_valid
-//       Access: Published
-//  Description: Verifies that the primitive only references vertices
-//               that actually exist within the indicated
-//               GeomVertexData.  Returns true if the primitive
-//               appears to be valid, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool GeomPrimitive::
-check_valid(const GeomVertexData *vertex_data) const {
-  return get_num_vertices() == 0 ||
-    get_max_vertex() < vertex_data->get_num_rows();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::output
 //       Access: Published, Virtual
 //  Description: 
@@ -969,6 +886,8 @@ set_nonindexed_vertices(int first_vertex, int num_vertices) {
 
   cdata->_modified = Geom::get_next_modified();
   cdata->_got_minmax = false;
+
+  // Force the minmax to be recomputed.
   recompute_minmax(cdata);
 }
 
@@ -1357,7 +1276,7 @@ append_unused_vertices(GeomVertexArrayData *, int) {
 //               necessary.
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
-recompute_minmax(CData *cdata) {
+recompute_minmax(GeomPrimitive::CData *cdata) {
   if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
     // In the nonindexed case, we don't need to do much (the
     // minmax is trivial).
@@ -1562,4 +1481,119 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _modified = Geom::get_next_modified();
   _got_minmax = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+GeomPrimitivePipelineReader::
+GeomPrimitivePipelineReader(const GeomPrimitive *object, 
+                            int pipeline_stage) :
+  _object(object),
+  _pipeline_stage(pipeline_stage),
+  _cdata(object->_cycler.read_stage(pipeline_stage)),
+  _vertices_reader(NULL)
+{
+  nassertv(_object->test_ref_count_nonzero());
+#ifdef DO_PIPELINING
+  nassertv(_cdata->test_ref_count_nonzero());
+#endif  // DO_PIPELINING
+  if (_cdata->_vertices != (GeomVertexArrayData *)NULL) {
+    _vertices_reader =
+      new GeomVertexArrayDataPipelineReader(_cdata->_vertices, _pipeline_stage);
+    nassertv(_vertices_reader->get_object() == _cdata->_vertices);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+GeomPrimitivePipelineReader::
+~GeomPrimitivePipelineReader() {
+  if (_vertices_reader != (GeomVertexArrayDataPipelineReader *)NULL) {
+    nassertv(_vertices_reader->get_object() == _cdata->_vertices);
+    delete _vertices_reader;
+    _vertices_reader = NULL;
+  }
+  nassertv(_object->test_ref_count_nonzero());
+#ifdef DO_PIPELINING
+  nassertv(_cdata->test_ref_count_nonzero());
+#endif  // DO_PIPELINING
+  _object->_cycler.release_read_stage(_pipeline_stage, _cdata);
+  _object = NULL;
+  _cdata = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::get_first_vertex
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int GeomPrimitivePipelineReader::
+get_first_vertex() const {
+  if (_cdata->_vertices == (GeomVertexArrayData *)NULL) {
+    return _cdata->_first_vertex;
+  } else if (_vertices_reader->get_num_rows() == 0) {
+    return 0;
+  } else {
+    GeomVertexReader index(_cdata->_vertices, 0);
+    return index.get_data1i();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::get_vertex
+//       Access: Public
+//  Description: Returns the ith vertex index in the table.
+////////////////////////////////////////////////////////////////////
+int GeomPrimitivePipelineReader::
+get_vertex(int i) const {
+  if (_cdata->_vertices != (GeomVertexArrayData *)NULL) {
+    // The indexed case.
+    nassertr(i >= 0 && i < _vertices_reader->get_num_rows(), -1);
+
+    GeomVertexReader index(_cdata->_vertices, 0);
+    index.set_row(i);
+    return index.get_data1i();
+
+  } else {
+    // The nonindexed case.
+    return _cdata->_first_vertex + i;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::get_num_primitives
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int GeomPrimitivePipelineReader::
+get_num_primitives() const {
+  int num_vertices_per_primitive = _object->get_num_vertices_per_primitive();
+
+  if (num_vertices_per_primitive == 0) {
+    // This is a complex primitive type like a triangle strip: each
+    // primitive uses a different number of vertices.
+    return _cdata->_ends.size();
+
+  } else {
+    // This is a simple primitive type like a triangle: each primitive
+    // uses the same number of vertices.
+    return (get_num_vertices() / num_vertices_per_primitive);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::check_valid
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool GeomPrimitivePipelineReader::
+check_valid(const GeomVertexDataPipelineReader *data_reader) const {
+  return get_num_vertices() == 0 ||
+    get_max_vertex() < data_reader->get_num_rows();
 }

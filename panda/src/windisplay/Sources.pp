@@ -22,7 +22,7 @@
     config_windisplay.cxx winGraphicsPipe.cxx
 
   #define SOURCES \
-    winGraphicsWindow.cxx $[INCLUDED_SOURCES] $[INSTALL_HEADERS]
+    winGraphicsWindow.cxx $[INSTALL_HEADERS]
 
   #define WIN_SYS_LIBS Imm32.lib winmm.lib kernel32.lib oldnames.lib user32.lib gdi32.lib
 

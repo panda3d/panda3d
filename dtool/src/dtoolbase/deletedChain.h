@@ -23,7 +23,18 @@
 
 #include "mutexImpl.h"
 #include "atomicAdjust.h"
+#include "numeric_types.h"
 #include <assert.h>
+
+#ifdef HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
+// Actually, there appears to be a (maybe fatal) flaw in our
+//implementation of DeletedChain via the atomic exchange operation.
+//Specifically, a pointer may be removed from the head of the chain,
+//then the same pointer reinserted in the chain, while another thread
+//is waiting; and that thread will not detect the change.  For now,
+//then, let's not use this implmentation, and fall back to the mutex.
+//#define DELETED_CHAIN_USE_ATOMIC_EXCHANGE
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DeletedChain
@@ -60,7 +71,10 @@ public:
 private:
   class ObjectNode {
   public:
-    ObjectNode *_next;
+    TVOLATILE ObjectNode * TVOLATILE _next;
+#ifndef NDEBUG
+    TVOLATILE PN_int32 _flag;
+#endif
   };
 
   // Ideally, the compiler and linker will unify all references to
@@ -68,14 +82,16 @@ private:
   // However, if the compiler fails to do this (*cough* Microsoft), it
   // won't be a big deal; it just means there will be multiple
   // unrelated chains of deleted objects for a particular type.
-  static ObjectNode *_deleted_chain;
+  static TVOLATILE ObjectNode * TVOLATILE _deleted_chain;
 
-#ifndef HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
+#ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
   // If we don't have atomic compare-and-exchange, we need to use a
   // Mutex to protect the above linked list.
   static MutexImpl _lock;
 #endif
 };
+
+static const PN_int32 deleted_chain_flag_hash = 0x12345678;
 
 // Place this macro within a class definition to define appropriate
 // operator new and delete methods that take advantage of

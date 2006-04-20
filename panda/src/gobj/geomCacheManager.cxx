@@ -35,8 +35,8 @@ PStatCollector GeomCacheManager::_geom_cache_evict_pcollector("Geom cache operat
 ////////////////////////////////////////////////////////////////////
 GeomCacheManager::
 GeomCacheManager() :
-  _total_size(0),
-  _lock("GeomCacheManager")
+  _lock("GeomCacheManager"),
+  _total_size(0)
 {
   // We deliberately hang on to this pointer forever.
   _list = new GeomCacheEntry;

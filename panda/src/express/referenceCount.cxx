@@ -51,6 +51,20 @@ do_test_ref_count_integrity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ReferenceCount::do_test_ref_count_nonzero
+//       Access: Protected
+//  Description: Returns true if the reference count is nonzero, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool ReferenceCount::
+do_test_ref_count_nonzero() const {
+  nassertr(do_test_ref_count_integrity(), false);
+  nassertr(_ref_count > 0, false);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::create_weak_list
 //       Access: Private
 //  Description: Allocates a new WeakReferenceList structure and

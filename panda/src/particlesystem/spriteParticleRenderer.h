@@ -32,6 +32,7 @@
 #include "geomVertexWriter.h"
 #include "textureCollection.h"
 #include "nodePathCollection.h"
+#include "vector_int.h"
 
 class NodePath;
 
@@ -273,9 +274,9 @@ private:
   virtual void resize_pool(int new_size);
   int extract_textures_from_node(const NodePath &node_path, NodePathCollection &np_col, TextureCollection &tex_col);
 
-  pvector<int> _anim_size;   // Holds the number of frames in each animation.
+  vector_int _anim_size;   // Holds the number of frames in each animation.
   pvector<int*> _ttl_count;  // _ttl_count[i][j] holds the number of particles attached to animation 'i' at frame 'j'.
-  pvector<int> _birth_list;  // Holds the list of particles that need a new random animation to start on.
+  vector_int _birth_list;  // Holds the list of particles that need a new random animation to start on.
 };
 
 #include "spriteParticleRenderer.I"

@@ -40,8 +40,8 @@ const unsigned char GeomVertexReader::empty_buffer[100] = { 0 };
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexReader::
 set_column(int array, const GeomVertexColumn *column) {
-  if (_vertex_data == (const GeomVertexData *)NULL &&
-      _array_data == (const GeomVertexArrayData *)NULL) {
+  if (_data_reader == (const GeomVertexDataPipelineReader *)NULL &&
+      _array_reader == (const GeomVertexArrayDataPipelineReader *)NULL) {
     return false;
   }
 
@@ -56,18 +56,18 @@ set_column(int array, const GeomVertexColumn *column) {
     return false;
   }
 
-  if (_vertex_data != (const GeomVertexData *)NULL) {
+  if (_data_reader != (const GeomVertexDataPipelineReader *)NULL) {
 #ifndef NDEBUG
     _array = -1;
     _packer = NULL;
-    nassertr(array >= 0 && array < _vertex_data->get_num_arrays(), false);
+    nassertr(array >= 0 && array < _data_reader->get_num_arrays(), false);
 #endif
     _array = array;
-    const GeomVertexArrayData *array_data =_vertex_data->get_array(_array);
-    _stride = array_data->get_array_format()->get_stride();
+    const GeomVertexArrayDataPipelineReader *array_reader = _data_reader->get_array_reader(_array);
+    _stride = array_reader->get_array_format()->get_stride();
 
   } else {
-    _stride = _array_data->get_array_format()->get_stride();
+    _stride = _array_reader->get_array_format()->get_stride();
   }
 
   _packer = column->_packer;
@@ -103,10 +103,36 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexReader::
 initialize() {
+  if (_data_reader != (const GeomVertexDataPipelineReader *)NULL) {
+    _data_reader->check_array_readers();
+  }
+
   _array = 0;
   _packer = NULL;
   _pointer_begin = NULL;
   _pointer_end = NULL;
   _pointer = NULL;
   _start_row = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::clear_reader
+//       Access: Private
+//  Description: Destructs the GeomVertexDataPipelineReader, when
+//               necessary, for instance when this object destructs.
+////////////////////////////////////////////////////////////////////
+void GeomVertexReader::
+clear_reader() {
+  nassertv(_owns_reader);
+
+  if (_data_reader != (const GeomVertexDataPipelineReader *)NULL) {
+    delete (GeomVertexDataPipelineReader *)_data_reader;
+    _data_reader = NULL;
+  } else {
+    nassertv(_array_reader != (const GeomVertexArrayDataPipelineReader *)NULL);
+    delete (GeomVertexArrayDataPipelineReader *)_array_reader;
+    _array_reader = NULL;
+  }
+
+  _owns_reader = false;
 }

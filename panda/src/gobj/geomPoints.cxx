@@ -134,8 +134,8 @@ get_min_num_vertices_per_primitive() const {
 //               primitive.
 ////////////////////////////////////////////////////////////////////
 void GeomPoints::
-draw(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_points(this);
+draw(GraphicsStateGuardianBase *gsg, const GeomPrimitivePipelineReader *reader) const {
+  gsg->draw_points(reader);
 }
 
 ////////////////////////////////////////////////////////////////////

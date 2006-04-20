@@ -117,8 +117,8 @@ get_min_num_vertices_per_primitive() const {
 //               primitive.
 ////////////////////////////////////////////////////////////////////
 void GeomLines::
-draw(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_lines(this);
+draw(GraphicsStateGuardianBase *gsg, const GeomPrimitivePipelineReader *reader) const {
+  gsg->draw_lines(reader);
 }
 
 ////////////////////////////////////////////////////////////////////

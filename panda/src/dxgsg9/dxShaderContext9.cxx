@@ -714,7 +714,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
     {
       if (_vertex_element_array == 0) {
         bool error;
-        const GeomVertexArrayData *array_data;
+        const GeomVertexArrayDataPipelineReader *array_reader;
         Geom::NumericType numeric_type;
         int start, stride, num_values;
         int nvarying = _var_spec.size();
@@ -744,7 +744,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
               }
             }
           }
-          if (gsg->_vertex_data->get_array_info(name, array_data, num_values, numeric_type, start, stride)) {
+          if (gsg->_data_reader->get_array_info(name, array_reader, num_values, numeric_type, start, stride)) {
 
             if (false) {
 

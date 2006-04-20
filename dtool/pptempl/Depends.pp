@@ -87,7 +87,7 @@
       #push 1 $[file]_obj
     #end file
 
-    #if $[USE_SINGLE_COMPOSITE_SOURCEFILE]
+    #if $[and $[not $[DONT_COMBINE]],$[or $[USE_SINGLE_COMPOSITE_SOURCEFILE],$[and $[USE_TAU],$[WINDOWS_PLATFORM]]]]
       #if $[> $[words $[cxx_sources]], 1]
         // If we have multiple C++ files, put them together into one
         // composite file.

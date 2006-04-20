@@ -130,39 +130,52 @@ PipelineCyclerTrueImpl::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::write_upstream
+//     Function: PipelineCyclerTrueImpl::write_stage
 //       Access: Public
-//  Description: This special variant on write() will automatically
-//               propagate changes back to upstream pipeline stages.
-//               If force_to_0 is false, then it propagates back only
-//               as long as the CycleData pointers are equivalent,
-//               guaranteeing that it does not modify upstream data
-//               (other than the modification that will be performed
-//               by the code that returns this pointer).  This is
-//               particularly appropriate for minor updates, where it
-//               doesn't matter much if the update is lost, such as
-//               storing a cached value.
-//
-//               If force_to_0 is true, then the CycleData pointer for
-//               the current pipeline stage is propagated all the way
-//               back up to stage 0; after this call, there will be
-//               only one CycleData pointer that is duplicated in all
-//               stages between stage 0 and the current stage.  This
-//               may undo some recent changes that were made
-//               independently at pipeline stage 0 (or any other
-//               upstream stage).  However, it guarantees that the
-//               change that is to be applied at this pipeline stage
-//               will stick.  This is slightly dangerous because of
-//               the risk of losing upstream changes; generally, this
-//               should only be done when you are confident that there
-//               are no upstream changes to be lost (for instance, for
-//               an object that has been recently created).
+//  Description: Returns a pointer suitable for writing to the nth
+//               stage of the pipeline.  This is for special
+//               applications that need to update the entire pipeline
+//               at once (for instance, to remove an invalid pointer).
+//               This pointer should later be released with
+//               release_write_stage().
 ////////////////////////////////////////////////////////////////////
 CycleData *PipelineCyclerTrueImpl::
-write_upstream(bool force_to_0) {
+write_stage(int pipeline_stage) {
   _lock.lock();
-  
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+
+#ifndef NDEBUG
+  nassertd(pipeline_stage >= 0 && pipeline_stage < _num_stages) {
+    _lock.release();
+    return NULL;
+  }
+#endif  // NDEBUG
+
+  CycleData *old_data = _data[pipeline_stage];
+
+  if (old_data->get_ref_count() != 1) {
+    // Copy-on-write.
+    _data[pipeline_stage] = old_data->make_copy();
+
+    // Now we have differences between some of the data pointers, so
+    // we're "dirty".  Mark it so.
+    if (!_dirty) {
+      _pipeline->add_dirty_cycler(this);
+    }
+  }
+
+  return _data[pipeline_stage];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::write_stage_upstream
+//       Access: Public
+//  Description: This special variant on write_stage() will
+//               automatically propagate changes back to upstream
+//               pipeline stages.  See write_upstream().
+////////////////////////////////////////////////////////////////////
+CycleData *PipelineCyclerTrueImpl::
+write_stage_upstream(int pipeline_stage, bool force_to_0) {
+  _lock.lock();
 
 #ifndef NDEBUG
   nassertd(pipeline_stage >= 0 && pipeline_stage < _num_stages) {
@@ -212,43 +225,6 @@ write_upstream(bool force_to_0) {
         _data[k] = old_data;
         --k;
       }
-    }
-  }
-
-  return _data[pipeline_stage];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::write_stage
-//       Access: Public
-//  Description: Returns a pointer suitable for writing to the nth
-//               stage of the pipeline.  This is for special
-//               applications that need to update the entire pipeline
-//               at once (for instance, to remove an invalid pointer).
-//               This pointer should later be released with
-//               release_write_stage().
-////////////////////////////////////////////////////////////////////
-CycleData *PipelineCyclerTrueImpl::
-write_stage(int pipeline_stage) {
-  _lock.lock();
-
-#ifndef NDEBUG
-  nassertd(pipeline_stage >= 0 && pipeline_stage < _num_stages) {
-    _lock.release();
-    return NULL;
-  }
-#endif  // NDEBUG
-
-  CycleData *old_data = _data[pipeline_stage];
-
-  if (old_data->get_ref_count() != 1) {
-    // Copy-on-write.
-    _data[pipeline_stage] = old_data->make_copy();
-
-    // Now we have differences between some of the data pointers, so
-    // we're "dirty".  Mark it so.
-    if (!_dirty) {
-      _pipeline->add_dirty_cycler(this);
     }
   }
 

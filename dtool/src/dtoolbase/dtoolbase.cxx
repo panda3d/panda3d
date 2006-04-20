@@ -18,6 +18,12 @@
 
 #include "dtoolbase.h"
 
+#if defined(USE_TAU) && defined(WIN32)
+// Hack around tau's lack of DLL export declarations for Profiler class.
+bool __tau_shutdown = false;
+#endif
+
+
 /////////////////////////////////////////////////////////////////////
 //
 // Memory manager: DLMALLOC

@@ -685,18 +685,11 @@ transform_vertices(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 bool Geom::
 check_valid() const {
-  CDReader cdata(_cycler);
-
-  Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin(); 
-       pi != cdata->_primitives.end();
-       ++pi) {
-    if (!(*pi)->check_valid(cdata->_data)) {
-      return false;
-    }
-  }
-
-  return true;
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  GeomPipelineReader geom_reader(this, pipeline_stage);
+  GeomVertexDataPipelineReader data_reader(geom_reader.get_vertex_data(), pipeline_stage);
+  data_reader.check_array_readers();
+  return geom_reader.check_valid(&data_reader);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -709,18 +702,11 @@ check_valid() const {
 ////////////////////////////////////////////////////////////////////
 bool Geom::
 check_valid(const GeomVertexData *vertex_data) const {
-  CDReader cdata(_cycler);
-
-  Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin(); 
-       pi != cdata->_primitives.end();
-       ++pi) {
-    if (!(*pi)->check_valid(vertex_data)) {
-      return false;
-    }
-  }
-
-  return true;
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  GeomPipelineReader geom_reader(this, pipeline_stage);
+  GeomVertexDataPipelineReader data_reader(vertex_data, pipeline_stage);
+  data_reader.check_array_readers();
+  return geom_reader.check_valid(&data_reader);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -945,21 +931,14 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
 void Geom::
 draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
      const GeomVertexData *vertex_data) const {
-  CDReader cdata(_cycler);
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  GeomPipelineReader geom_reader(this, pipeline_stage);
+  geom_reader.check_usage_hint();
 
-#ifdef DO_PIPELINING
-  // Make sure the usage_hint is already updated before we start to
-  // draw, so we don't end up with a circular lock if the GSG asks us
-  // to update this while we're holding the read lock.
-  if (!cdata->_got_usage_hint) {
-    {
-      CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
-      ((Geom *)this)->reset_usage_hint(cdataw);
-      do_draw(gsg, munger, vertex_data, cdataw);
-    }
-  } else
-#endif  // DO_PIPELINING
-    do_draw(gsg, munger, vertex_data, cdata);
+  GeomVertexDataPipelineReader data_reader(vertex_data, pipeline_stage);
+  data_reader.check_array_readers();
+
+  geom_reader.draw(gsg, munger, &data_reader);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1082,29 +1061,6 @@ check_will_be_valid(const GeomVertexData *vertex_data) const {
   }
 
   return true;
-}
-  
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::do_draw
-//       Access: Private
-//  Description: The private implementation of draw().
-////////////////////////////////////////////////////////////////////
-void Geom::
-do_draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
-	const GeomVertexData *vertex_data, const Geom::CData *cdata) const {
-  PStatTimer timer(_draw_primitive_setup_pcollector);
-  if (gsg->begin_draw_primitives(this, munger, vertex_data)) {
-    Primitives::const_iterator pi;
-    for (pi = cdata->_primitives.begin(); 
-         pi != cdata->_primitives.end();
-         ++pi) {
-      const GeomPrimitive *primitive = (*pi);
-      if (primitive->get_num_vertices() != 0) {
-        (*pi)->draw(gsg);
-      }
-    }
-    gsg->end_draw_primitives();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1373,4 +1329,51 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _got_usage_hint = false;
   _modified = Geom::get_next_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::check_valid
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool GeomPipelineReader::
+check_valid(const GeomVertexDataPipelineReader *data_reader) const {
+  Geom::Primitives::const_iterator pi;
+  for (pi = _cdata->_primitives.begin(); 
+       pi != _cdata->_primitives.end();
+       ++pi) {
+    const GeomPrimitive *primitive = (*pi);
+    GeomPrimitivePipelineReader reader(primitive, _pipeline_stage);
+    reader.check_minmax();
+    if (!reader.check_valid(data_reader)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::draw
+//       Access: Public
+//  Description: The implementation of Geom::draw().
+////////////////////////////////////////////////////////////////////
+void GeomPipelineReader::
+draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
+     const GeomVertexDataPipelineReader *data_reader) const {
+  PStatTimer timer(Geom::_draw_primitive_setup_pcollector);
+  if (gsg->begin_draw_primitives(this, munger, data_reader)) {
+    Geom::Primitives::const_iterator pi;
+    for (pi = _cdata->_primitives.begin(); 
+         pi != _cdata->_primitives.end();
+         ++pi) {
+      const GeomPrimitive *primitive = (*pi);
+      GeomPrimitivePipelineReader reader(primitive, _pipeline_stage);
+      if (reader.get_num_vertices() != 0) {
+        reader.check_minmax();
+        primitive->draw(gsg, &reader);
+      }
+    }
+    gsg->end_draw_primitives();
+  }
 }

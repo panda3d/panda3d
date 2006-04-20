@@ -23,6 +23,7 @@
 #include "buffer.h"
 #include "multifile.h"
 #include "pointerTo.h"
+#include "vector_int.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Extractor
@@ -63,7 +64,7 @@ private:
 
   Filename _extract_dir;
 
-  typedef pvector<int> Requests;
+  typedef vector_int Requests;
   Requests _requests;
   size_t _requests_total_length;
   

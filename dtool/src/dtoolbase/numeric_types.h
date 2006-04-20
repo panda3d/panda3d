@@ -19,6 +19,8 @@
 #ifndef NUMERIC_TYPES_H
 #define NUMERIC_TYPES_H
 
+#include "dtoolbase.h"
+
 // This header file defines a number of typedefs that correspond to
 // the various numeric types for unsigned and signed numbers of
 // various widths.

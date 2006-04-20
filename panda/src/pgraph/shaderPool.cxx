@@ -25,9 +25,6 @@
 
 ShaderPool *ShaderPool::_global_ptr = (ShaderPool *)NULL;
 
-// ??? Is this needed ???
-static Loader model_loader;
-
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderPool::write
 //       Access: Published, Static

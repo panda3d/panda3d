@@ -40,8 +40,8 @@ unsigned char GeomVertexWriter::empty_buffer[100] = { 0 };
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexWriter::
 set_column(int array, const GeomVertexColumn *column) {
-  if (_vertex_data == (GeomVertexData *)NULL &&
-      _array_data == (GeomVertexArrayData *)NULL) {
+  if (_data_writer == (GeomVertexDataPipelineWriter *)NULL &&
+      _array_writer == (GeomVertexArrayDataPipelineWriter *)NULL) {
     return false;
   }
 
@@ -56,18 +56,18 @@ set_column(int array, const GeomVertexColumn *column) {
     return false;
   }
 
-  if (_vertex_data != (GeomVertexData *)NULL) {
+  if (_data_writer != (GeomVertexDataPipelineWriter *)NULL) {
 #ifndef NDEBUG
     _array = -1;
     _packer = NULL;
-    nassertr(array >= 0 && array < _vertex_data->get_num_arrays(), false);
+    nassertr(array >= 0 && array < _data_writer->get_num_arrays(), false);
 #endif
     _array = array;
-    const GeomVertexArrayData *array_data =_vertex_data->get_array(_array);
-    _stride = array_data->get_array_format()->get_stride();
+    GeomVertexArrayDataPipelineWriter *array_writer =_data_writer->get_array_writer(_array);
+    _stride = array_writer->get_array_format()->get_stride();
 
   } else {
-    _stride = _array_data->get_array_format()->get_stride();
+    _stride = _array_writer->get_array_format()->get_stride();
   }
 
   _packer = column->_packer;
@@ -103,10 +103,36 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexWriter::
 initialize() {
+  if (_data_writer != (const GeomVertexDataPipelineWriter *)NULL) {
+    _data_writer->check_array_writers();
+  }
+
   _array = 0;
   _packer = NULL;
   _pointer_begin = NULL;
   _pointer_end = NULL;
   _pointer = NULL;
   _start_row = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::clear_writer
+//       Access: Private
+//  Description: Destructs the GeomVertexDataPipelineWriter, when
+//               necessary, for instance when this object destructs.
+////////////////////////////////////////////////////////////////////
+void GeomVertexWriter::
+clear_writer() {
+  nassertv(_owns_writer);
+
+  if (_data_writer != (GeomVertexDataPipelineWriter *)NULL) {
+    delete _data_writer;
+    _data_writer = NULL;
+  } else {
+    nassertv(_array_writer != (GeomVertexArrayDataPipelineWriter *)NULL);
+    delete _array_writer;
+    _array_writer = NULL;
+  }
+
+  _owns_writer = false;
 }

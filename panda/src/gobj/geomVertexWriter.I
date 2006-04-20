@@ -27,7 +27,9 @@
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 GeomVertexWriter() :
-  _vertex_data(NULL)
+  _data_writer(NULL),
+  _array_writer(NULL),
+  _owns_writer(false)
 {
   initialize();
 }
@@ -40,7 +42,9 @@ GeomVertexWriter() :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 GeomVertexWriter(GeomVertexData *vertex_data) :
-  _vertex_data(vertex_data)
+  _data_writer(new GeomVertexDataPipelineWriter(vertex_data, Thread::get_current_pipeline_stage(), true)),
+  _array_writer(NULL),
+  _owns_writer(true)
 {
   initialize();
 }
@@ -54,7 +58,9 @@ GeomVertexWriter(GeomVertexData *vertex_data) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 GeomVertexWriter(GeomVertexData *vertex_data, const string &name) :
-  _vertex_data(vertex_data)
+  _data_writer(new GeomVertexDataPipelineWriter(vertex_data, Thread::get_current_pipeline_stage(), true)),
+  _array_writer(NULL),
+  _owns_writer(true)
 {
   initialize();
   set_column(name);
@@ -69,7 +75,9 @@ GeomVertexWriter(GeomVertexData *vertex_data, const string &name) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 GeomVertexWriter(GeomVertexData *vertex_data, const InternalName *name) :
-  _vertex_data(vertex_data)
+  _data_writer(new GeomVertexDataPipelineWriter(vertex_data, Thread::get_current_pipeline_stage(), true)),
+  _array_writer(NULL),
+  _owns_writer(true)
 {
   initialize();
   set_column(name);
@@ -83,7 +91,9 @@ GeomVertexWriter(GeomVertexData *vertex_data, const InternalName *name) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 GeomVertexWriter(GeomVertexArrayData *array_data) :
-  _array_data(array_data)
+  _data_writer(NULL),
+  _array_writer(new GeomVertexArrayDataPipelineWriter(array_data, Thread::get_current_pipeline_stage(), true)),
+  _owns_writer(true)
 {
   initialize();
 }
@@ -96,22 +106,44 @@ GeomVertexWriter(GeomVertexArrayData *array_data) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 GeomVertexWriter(GeomVertexArrayData *array_data, int column) :
-  _array_data(array_data)
+  _data_writer(NULL),
+  _array_writer(new GeomVertexArrayDataPipelineWriter(array_data, Thread::get_current_pipeline_stage(), true)),
+  _owns_writer(true)
 {
   initialize();
   set_column(column);
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::Constructor
+//       Access: Public
+//  Description: Constructs a new writer to process the vertices of
+//               the indicated data object.  This flavor creates the
+//               writer specifically to process the named data type.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexWriter::
+GeomVertexWriter(GeomVertexDataPipelineWriter *data_writer, 
+                 const InternalName *name) :
+  _data_writer(data_writer),
+  _array_writer(NULL),
+  _owns_writer(false)
+{
+  initialize();
+  set_column(name);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description: The copy constructor steals ownership of the writer
+//               pointer.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 GeomVertexWriter(const GeomVertexWriter &copy) :
-  _vertex_data(copy._vertex_data),
+  _data_writer(copy._data_writer),
   _array(copy._array),
-  _array_data(copy._array_data),
+  _array_writer(copy._array_writer),
+  _owns_writer(copy._owns_writer),
   _packer(copy._packer),
   _stride(copy._stride),
   _pointer_begin(copy._pointer_begin),
@@ -119,24 +151,29 @@ GeomVertexWriter(const GeomVertexWriter &copy) :
   _pointer(copy._pointer),
   _start_row(copy._start_row)
 {
+  ((GeomVertexWriter &)copy)._owns_writer = false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::Copy Assignment Operator
 //       Access: Published
-//  Description: 
+//  Description: The copy constructor steals ownership of the writer
+//               pointer.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 operator = (const GeomVertexWriter &copy) {
-  _vertex_data = copy._vertex_data;
+  _data_writer = copy._data_writer;
   _array = copy._array;
-  _array_data = copy._array_data;
+  _array_writer = copy._array_writer;
+  _owns_writer = copy._owns_writer;
   _packer = copy._packer;
   _stride = copy._stride;
   _pointer_begin = copy._pointer_begin;
   _pointer_end = copy._pointer_end;
   _pointer = copy._pointer;
   _start_row = copy._start_row;
+
+  ((GeomVertexWriter &)copy)._owns_writer = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,6 +183,9 @@ operator = (const GeomVertexWriter &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 ~GeomVertexWriter() {
+  if (_owns_writer) {
+    clear_writer();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,7 +197,10 @@ INLINE GeomVertexWriter::
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexData *GeomVertexWriter::
 get_vertex_data() const {
-  return _vertex_data;
+  if (_data_writer != (GeomVertexDataPipelineWriter *)NULL) {
+    return _data_writer->get_object();
+  }
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -168,7 +211,7 @@ get_vertex_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayData *GeomVertexWriter::
 get_array_data() const {
-  return _array_data;
+  return _array_writer->get_object();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,12 +229,12 @@ get_array_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexWriter::
 set_column(int column) {
-  if (_vertex_data != (GeomVertexData *)NULL) {
-    return set_column(_vertex_data->get_format()->get_array_with(column),
-                      _vertex_data->get_format()->get_column(column));
+  if (_data_writer != (GeomVertexDataPipelineWriter *)NULL) {
+    return set_column(_data_writer->get_format()->get_array_with(column),
+                      _data_writer->get_format()->get_column(column));
   }
-  if (_array_data != (GeomVertexArrayData *)NULL) {
-    return set_column(0, _array_data->get_array_format()->get_column(column));
+  if (_array_writer != (GeomVertexArrayDataPipelineWriter *)NULL) {
+    return set_column(0, _array_writer->get_array_format()->get_column(column));
   }
   return false;
 }
@@ -229,12 +272,12 @@ set_column(const string &name) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexWriter::
 set_column(const InternalName *name) {
-  if (_vertex_data != (GeomVertexData *)NULL) {
-    return set_column(_vertex_data->get_format()->get_array_with(name),
-                      _vertex_data->get_format()->get_column(name));
+  if (_data_writer != (GeomVertexDataPipelineWriter *)NULL) {
+    return set_column(_data_writer->get_format()->get_array_with(name),
+                      _data_writer->get_format()->get_column(name));
   }
-  if (_array_data != (GeomVertexArrayData *)NULL) {
-    return set_column(0, _array_data->get_array_format()->get_column(name));
+  if (_array_writer != (GeomVertexArrayDataPipelineWriter *)NULL) {
+    return set_column(0, _array_writer->get_array_format()->get_column(name));
   }
 
   return false;
@@ -759,14 +802,15 @@ get_packer() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 set_pointer(int row) {
-  if (_vertex_data != (const GeomVertexData *)NULL) {
-    GeomVertexArrayData *array_data = _vertex_data->modify_array(_array);
+  if (_data_writer != (const GeomVertexDataPipelineWriter *)NULL) {
+    _data_writer->modify_array(_array);
+    GeomVertexArrayDataPipelineWriter *array_data = _data_writer->get_array_writer(_array);
     _pointer_begin = array_data->modify_data();
     _pointer_end = _pointer_begin + array_data->get_data_size_bytes();
 
   } else {
-    _pointer_begin = _array_data->modify_data();
-    _pointer_end = _pointer_begin + _array_data->get_data_size_bytes();
+    _pointer_begin = _array_writer->modify_data();
+    _pointer_end = _pointer_begin + _array_writer->get_data_size_bytes();
   }
   quick_set_pointer(row);
 }
@@ -783,11 +827,11 @@ quick_set_pointer(int row) {
   nassertv(has_column());
 
 #ifdef _DEBUG
-  if (_vertex_data != (const GeomVertexData *)NULL) {
-    const GeomVertexArrayData *array_data = _vertex_data->get_array(_array);
-    nassertv(_pointer_begin == array_data->get_data());
+  if (_data_writer != (const GeomVertexDataPipelineWriter *)NULL) {
+    GeomVertexArrayDataPipelineWriter *array_writer = _data_writer->get_array_writer(_array);
+    nassertv(_pointer_begin == array_writer->get_data());
   } else {
-    nassertv(_pointer_begin == _array_data->get_data());
+    nassertv(_pointer_begin == _array_writer->get_data());
   }
 #endif
 
@@ -804,11 +848,11 @@ INLINE unsigned char *GeomVertexWriter::
 inc_pointer() {
 #ifdef _DEBUG
   nassertr(_pointer < _pointer_end, empty_buffer);
-  if (_vertex_data != (GeomVertexData *)NULL){ 
-    const GeomVertexArrayData *array_data = _vertex_data->get_array(_array);
-    nassertr(_pointer >= array_data->get_data().p() && _pointer < array_data->get_data().p() + array_data->get_data_size_bytes(), empty_buffer);
+  if (_data_writer != (GeomVertexDataPipelineWriter *)NULL){ 
+    GeomVertexArrayDataPipelineWriter *array_writer = _data_writer->get_array_writer(_array);
+    nassertr(_pointer >= array_writer->get_data().p() && _pointer < array_writer->get_data().p() + array_writer->get_data_size_bytes(), empty_buffer);
   } else {
-    nassertr(_pointer >= _array_data->get_data().p() && _pointer < _array_data->get_data().p() + _array_data->get_data_size_bytes(), empty_buffer);
+    nassertr(_pointer >= _array_writer->get_data().p() && _pointer < _array_writer->get_data().p() + _array_writer->get_data_size_bytes(), empty_buffer);
   }
 #endif
 
@@ -830,10 +874,10 @@ inc_add_pointer() {
   if (_pointer >= _pointer_end) {
     // Reset the data pointer.
     int write_row = get_write_row();
-    if (_vertex_data != (GeomVertexData *)NULL) {
-      _vertex_data->set_num_rows(max(write_row + 1, _vertex_data->get_num_rows()));
+    if (_data_writer != (GeomVertexDataPipelineWriter *)NULL) {
+      _data_writer->set_num_rows(max(write_row + 1, _data_writer->get_num_rows()));
     } else {
-      _array_data->set_num_rows(max(write_row + 1, _array_data->get_num_rows()));
+      _array_writer->set_num_rows(max(write_row + 1, _array_writer->get_num_rows()));
     }
     set_pointer(write_row);
   }

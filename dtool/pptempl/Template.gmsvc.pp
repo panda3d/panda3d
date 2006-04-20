@@ -183,7 +183,14 @@
 /* ################################# DO NOT EDIT ########################### */
 
 #foreach file $[$[composite_file]_sources]
+#if $[USE_TAU]
+// For the benefit of Tau, we copy the source file verbatim into the
+// composite file.  (Tau doesn't instrument files picked up via #include.)
+#copy $[DIRPREFIX]$[file]
+
+#else
 ##include "$[file]"
+#endif  // USE_TAU
 #end file
 
 #end $[composite_file]

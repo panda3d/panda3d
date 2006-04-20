@@ -70,7 +70,10 @@ public:
   INLINE void release_read_stage(int n, const CycleData *pointer) const;
   INLINE CycleData *write_upstream(bool force_to_0);
   INLINE CycleData *write_stage(int n);
+  INLINE CycleData *write_stage_upstream(int n, bool force_to_0);
   INLINE CycleData *elevate_read_stage(int n, const CycleData *pointer);
+  INLINE CycleData *elevate_read_stage_upstream(int n, const CycleData *pointer,
+                                                bool force_to_0);
   INLINE void release_write_stage(int n, CycleData *pointer);
 
   INLINE TypeHandle get_parent_type() const;

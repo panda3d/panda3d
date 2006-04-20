@@ -36,6 +36,22 @@ CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CycleDataStageWriter::Constructor (full)
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataStageWriter<CycleDataType>::
+CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
+                     bool force_to_0) :
+  _cycler(&cycler),
+  _stage(stage)
+{
+  _pointer = _cycler->write_stage_upstream(_stage, force_to_0);
+  nassertv(_pointer != (CycleDataType *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CycleDataStageWriter::Copy Constructor (full)
 //       Access: Public
 //  Description:
@@ -84,6 +100,25 @@ CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
   _stage(stage)
 {
   _pointer = _cycler->elevate_read_stage(_stage, take_from.take_pointer());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataStageWriter::Constructor (full)
+//       Access: Public
+//  Description: This flavor of the constructor elevates the pointer
+//               from the CycleDataStageReader from a read to a write
+//               pointer (and invalidates the reader).
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataStageWriter<CycleDataType>::
+CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
+                     CycleDataStageReader<CycleDataType> &take_from,
+                     bool force_to_0) :
+  _cycler(&cycler),
+  _stage(stage)
+{
+  _pointer = _cycler->elevate_read_stage_upstream(_stage, take_from.take_pointer(),
+                                                  force_to_0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,6 +188,17 @@ CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CycleDataStageWriter::Constructor (trivial)
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataStageWriter<CycleDataType>::
+CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int, bool) {
+  _pointer = cycler.write();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CycleDataStageWriter::Copy Constructor (trivial)
 //       Access: Public
 //  Description:
@@ -186,6 +232,22 @@ template<class CycleDataType>
 INLINE CycleDataStageWriter<CycleDataType>::
 CycleDataStageWriter(PipelineCycler<CycleDataType> &, int,
                      CycleDataStageReader<CycleDataType> &take_from) :
+  _pointer((CycleDataType *)take_from.take_pointer())
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataStageWriter::Constructor (trivial)
+//       Access: Public
+//  Description: This flavor of the constructor elevates the pointer
+//               from the CycleDataStageReader from a read to a write
+//               pointer (and invalidates the reader).
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataStageWriter<CycleDataType>::
+CycleDataStageWriter(PipelineCycler<CycleDataType> &, int,
+                     CycleDataStageReader<CycleDataType> &take_from,
+                     bool) :
   _pointer((CycleDataType *)take_from.take_pointer())
 {
 }

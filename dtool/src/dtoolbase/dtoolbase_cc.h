@@ -185,15 +185,18 @@ INLINE void operator delete[](void *ptr) {
 
 #if defined(USE_TAU) && defined(WIN32)
 // Hack around tau's lack of DLL export declarations for Profiler class.
+extern EXPCL_DTOOL bool __tau_shutdown;
 class EXPCL_DTOOL TauProfile {
 public:
-  TauProfile(char *name, char *type, int group, char *group_name) {
-    _tautimer = NULL;
-    Tau_profile_c_timer(&_tautimer, name, type, group, group_name);
+  TauProfile(void *&tautimer, char *name, char *type, int group, char *group_name) {
+    Tau_profile_c_timer(&tautimer, name, type, group, group_name);
+    _tautimer = tautimer;
     TAU_PROFILE_START(_tautimer); 
   }
   ~TauProfile() {
-    TAU_PROFILE_STOP(_tautimer);
+    if (!__tau_shutdown) {
+      TAU_PROFILE_STOP(_tautimer);
+    }
   }
 
 private:
@@ -201,7 +204,15 @@ private:
 };
 
 #undef TAU_PROFILE
-#define TAU_PROFILE(name, type, group) TauProfile _taupr(name, type, group, #group)
+#define TAU_PROFILE(name, type, group) \
+  static void *__tautimer; \
+  TauProfile __taupr(__tautimer, name, type, group, #group)
+
+#undef TAU_PROFILE_EXIT
+#define TAU_PROFILE_EXIT(msg) \
+  __tau_shutdown = true; \
+  Tau_exit(msg);
+
 #endif  // USE_TAU
 
 #endif  // GLOBAL_OPERATOR_NEW_EXCEPTIONS

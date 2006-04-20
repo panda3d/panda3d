@@ -27,7 +27,7 @@
 #include "atomicAdjustDummyImpl.h"
 typedef AtomicAdjustDummyImpl AtomicAdjust;
 
-#elif defined(__i386__) || defined(_M_IX86)
+#elif  defined(__i386__) || defined(_M_IX86)
 // For an i386 architecture, we'll always use the i386 implementation.
 // It should be safe for any OS, and it might be a bit faster than
 // any OS-provided calls.

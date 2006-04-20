@@ -89,10 +89,10 @@ issue_vertex() {
 //               named column doesn't exist in the vertex data).
 ////////////////////////////////////////////////////////////////////
 bool CLP(ImmediateModeSender)::
-add_column(const GeomVertexData *vertex_data, const InternalName *name,
+add_column(const GeomVertexDataPipelineReader *data_reader, const InternalName *name,
            Func1f *func1f, Func2f *func2f, Func3f *func3f, Func4f *func4f) {
-  if (vertex_data->has_column(name)) {
-    GeomVertexReader *reader = new GeomVertexReader(vertex_data, name);
+  if (data_reader->has_column(name)) {
+    GeomVertexReader *reader = new GeomVertexReader(data_reader, name);
     ComponentSender *sender = NULL;
     const GeomVertexColumn *column = reader->get_column();
     switch (column->get_num_components()) {
@@ -151,12 +151,12 @@ add_column(const GeomVertexData *vertex_data, const InternalName *name,
 //               named column doesn't exist in the vertex data).
 ////////////////////////////////////////////////////////////////////
 bool CLP(ImmediateModeSender)::
-add_texcoord_column(const GeomVertexData *vertex_data, 
+add_texcoord_column(const GeomVertexDataPipelineReader *data_reader, 
                     const InternalName *name, int stage_index,
                     TexcoordFunc1f *func1f, TexcoordFunc2f *func2f, 
                     TexcoordFunc3f *func3f, TexcoordFunc4f *func4f) {
-  if (vertex_data->has_column(name)) {
-    GeomVertexReader *reader = new GeomVertexReader(vertex_data, name);
+  if (data_reader->has_column(name)) {
+    GeomVertexReader *reader = new GeomVertexReader(data_reader, name);
     ComponentSender *sender = NULL;
     const GeomVertexColumn *column = reader->get_column();
     switch (column->get_num_components()) {
@@ -209,10 +209,10 @@ add_texcoord_column(const GeomVertexData *vertex_data,
 //               named column doesn't exist in the vertex data).
 ////////////////////////////////////////////////////////////////////
 bool CLP(ImmediateModeSender)::
-add_vector_column(const GeomVertexData *vertex_data, const InternalName *name,
+add_vector_column(const GeomVertexDataPipelineReader *data_reader, const InternalName *name,
                   VectorFunc *func) {
-  if (vertex_data->has_column(name)) {
-    GeomVertexReader *reader = new GeomVertexReader(vertex_data, name);
+  if (data_reader->has_column(name)) {
+    GeomVertexReader *reader = new GeomVertexReader(data_reader, name);
     ComponentSender *sender = NULL;
     const GeomVertexColumn *column = reader->get_column();
     switch (column->get_num_components()) {
@@ -262,10 +262,10 @@ add_vector_column(const GeomVertexData *vertex_data, const InternalName *name,
 //               named column doesn't exist in the vertex data).
 ////////////////////////////////////////////////////////////////////
 bool CLP(ImmediateModeSender)::
-add_vector_uint_column(const GeomVertexData *vertex_data, 
+add_vector_uint_column(const GeomVertexDataPipelineReader *data_reader, 
                        const InternalName *name, VectorUintFunc *func) {
-  if (vertex_data->has_column(name)) {
-    GeomVertexReader *reader = new GeomVertexReader(vertex_data, name);
+  if (data_reader->has_column(name)) {
+    GeomVertexReader *reader = new GeomVertexReader(data_reader, name);
     ComponentSender *sender = NULL;
     const GeomVertexColumn *column = reader->get_column();
     switch (column->get_num_components()) {

@@ -58,17 +58,18 @@ public:
   typedef void APIENTRY VectorFunc(GLint, const GLfloat *);
   typedef void APIENTRY VectorUintFunc(GLint, const GLuint *);
 
-  bool add_column(const GeomVertexData *vertex_data, const InternalName *name,
-                  Func1f *func1f, Func2f *func2f, Func3f *func3f, Func4f *func4f);
-  bool add_texcoord_column(const GeomVertexData *vertex_data, 
+  bool add_column(const GeomVertexDataPipelineReader *data_reader, 
+                  const InternalName *name, Func1f *func1f, 
+                  Func2f *func2f, Func3f *func3f, Func4f *func4f);
+  bool add_texcoord_column(const GeomVertexDataPipelineReader *data_reader, 
                            const InternalName *name, int stage_index,
                            TexcoordFunc1f *func1f, TexcoordFunc2f *func2f, 
                            TexcoordFunc3f *func3f, TexcoordFunc4f *func4f);
 
-  bool add_vector_column(const GeomVertexData *vertex_data, const InternalName *name,
-                         VectorFunc *func);
-  bool add_vector_uint_column(const GeomVertexData *vertex_data, const InternalName *name,
-                              VectorUintFunc *func);
+  bool add_vector_column(const GeomVertexDataPipelineReader *data_reader, 
+                         const InternalName *name, VectorFunc *func);
+  bool add_vector_uint_column(const GeomVertexDataPipelineReader *data_reader, 
+                              const InternalName *name, VectorUintFunc *func);
 
   void add_sender(ComponentSender *sender);
 

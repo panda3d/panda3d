@@ -336,7 +336,7 @@ convert_triangles(const GeomVertexData *vertex_data,
       Vertexf vertex = reader.get_data3f();
       egg_vert.set_pos(LCAST(double, vertex * net_mat));
 
-      if (vertex_data->has_normal()) {
+      if (vertex_data->has_column(InternalName::get_normal())) {
         reader.set_column(InternalName::get_normal());
         Normalf normal = reader.get_data3f();
         egg_vert.set_normal(LCAST(double, normal * net_mat));
@@ -346,7 +346,7 @@ convert_triangles(const GeomVertexData *vertex_data,
 
       } else if (!has_color_off) {
         Colorf color(1.0f, 1.0f, 1.0f, 1.0f);
-        if (vertex_data->has_color()) {
+        if (vertex_data->has_column(InternalName::get_color())) {
           reader.set_column(InternalName::get_color());
           color = reader.get_data4f();
         }

@@ -40,7 +40,7 @@ cp_report_error(ShaderArgInfo &p, const string &msg)
   if (p._direction == SAD_out)   dstr = "out ";
   if (p._direction == SAD_inout) dstr = "inout ";
 
-  string tstr = "unknown ";
+  string tstr = "invalid ";
   switch (p._type) {
   case SAT_float1: tstr = "float1 "; break;
   case SAT_float2: tstr = "float2 "; break;
@@ -51,6 +51,7 @@ cp_report_error(ShaderArgInfo &p, const string &msg)
   case SAT_sampler2d: tstr = "sampler2d "; break;
   case SAT_sampler3d: tstr = "sampler3d "; break;
   case SAT_samplercube: tstr = "samplercube "; break;
+  case SAT_unknown: tstr = "unknown "; break;
   }
 
   string fn = _shader_expansion->get_name();
@@ -70,7 +71,7 @@ cp_errchk_parameter_words(ShaderArgInfo &p, int len)
 {
   vector_string words;
   tokenize(p._name, words, "_");
-  if (words.size() != len) {
+  if ((int)words.size() != len) {
     cp_report_error(p, "parameter name has wrong number of words");
     return false;
   }
@@ -138,13 +139,14 @@ cp_errchk_parameter_uniform(ShaderArgInfo &p)
 bool ShaderContext::
 cp_errchk_parameter_float(ShaderArgInfo &p, int lo, int hi)
 {
-  int nfloat = 0;
+  int nfloat;
   switch (p._type) {
   case SAT_float1: nfloat = 1; break;
   case SAT_float2: nfloat = 2; break;
   case SAT_float3: nfloat = 3; break;
   case SAT_float4: nfloat = 4; break;
   case SAT_float4x4: nfloat = 16; break;
+  default: nfloat = 0; break;
   }
   if ((nfloat < lo)||(nfloat > hi)) {
     string msg = "wrong type for parameter: should be float";

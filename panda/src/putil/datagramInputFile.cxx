@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
+#include "datagramInputFile.h"
 #include "numeric_types.h"
 #include "datagramIterator.h"
 #include "profileTimer.h"
@@ -24,7 +24,6 @@
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "streamReader.h"
-#include "datagramInputFile.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::open

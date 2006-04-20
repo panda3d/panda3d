@@ -452,12 +452,17 @@ assert_failure(const char *expression, int line,
     // doesn't seem to work properly either, since we don't seem to
     // get a reliable stack trace.
 
-    // Guess we'll still have to force a segfault.
+    // The old reliable int 3 works (at least on an Intel platform) if
+    // you are already running within a debugger.  But it doesn't
+    // offer to bring up a debugger otherwise.
+
+    // So we'll force a segfault, which works every time.
     int *ptr = (int *)NULL;
     *ptr = 1;
-#else
+
+#else  // WIN32
     abort();
-#endif
+#endif  // WIN32
   }
 
   return true;
