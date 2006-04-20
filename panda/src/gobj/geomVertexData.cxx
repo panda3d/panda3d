@@ -307,24 +307,6 @@ clear_rows() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::set_array
-//       Access: Published
-//  Description: Replaces the indicated vertex data array with
-//               a completely new array.  You should be careful that
-//               the new array has the same length and format as the
-//               old one, unless you know what you are doing.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexData::
-set_array(int i, const GeomVertexArrayData *array) {
-  GeomVertexDataPipelineWriter writer(this, Thread::get_current_pipeline_stage(), true);
-  writer.set_array(i, array);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::set_transform_table
 //       Access: Published
 //  Description: Replaces the TransformTable on this vertex
