@@ -244,7 +244,9 @@ strip_prefix(string full_name) {
   size_t cut_point = full_name.find(":");
   if (cut_point != string::npos) {
     axed_name = full_name.substr(cut_point+1);
-    maya_cat.spam() << "stripped from: " << full_name << "-> to: " << axed_name << endl;
+    if (maya_cat.is_spam()) {
+      maya_cat.spam() << "stripped from: " << full_name << "-> to: " << axed_name << endl;
+    }
     return axed_name;
   }
   return full_name;
@@ -302,12 +304,16 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
     get_angle_attribute(color, "rotateUV", _rotate_uv);
 
     if (!trans) {
-      maya_cat.debug() << "pushed a file texture" << endl;
+      if (maya_cat.is_debug()) {
+        maya_cat.debug() << "pushed a file texture" << endl;
+      }
       shader->_color.push_back(this);
     }
 
   } else if (color.hasFn(MFn::kProjection)) {
-    maya_cat.debug() << "reading a projection texture" << endl;
+    if (maya_cat.is_debug()) {
+      maya_cat.debug() << "reading a projection texture" << endl;
+    }
     // This is a projected texture.  We will have to step one level
     // deeper to find the actual texture.
     MFnDependencyNode projection_fn(color);
@@ -340,7 +346,9 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
     }
 
   } else if (color.hasFn(MFn::kLayeredTexture)) {
-    maya_cat.debug() << "Found layered texture" << endl;
+    if (maya_cat.is_debug()) {
+      maya_cat.debug() << "Found layered texture" << endl;
+    }
 
     int blendValue;
     MStatus status;
@@ -350,7 +358,9 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
     MPlug inputsPlug = layered_fn.findPlug("inputs", &status);
     MPlug blendModePlug = layered_fn.findPlug("blendMode", &status);
 
-    maya_cat.debug() << "number of connections: " << color_pa.length() << endl;
+    if (maya_cat.is_debug()) {
+      maya_cat.debug() << "number of connections: " << color_pa.length() << endl;
+    }
     bool first = true;
     BlendType bt = BT_modulate;
     for (size_t i=0; i<color_pa.length(); ++i) {
@@ -362,15 +372,17 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
       int li = pl.logicalIndex();
       if (li > -1) {
         // found a blend mode
-
-        maya_cat.spam() << "*** Start doIt... ***" << endl;
-        maya_cat.spam() << "inputsPlug Name: " << inputsPlug.name() << endl;
-
+        if (maya_cat.is_spam()) {
+          maya_cat.spam() << "*** Start doIt... ***" << endl;
+          maya_cat.spam() << "inputsPlug Name: " << inputsPlug.name() << endl;
+        }
         status = blendModePlug.selectAncestorLogicalIndex(li,inputsPlug);
         blendModePlug.getValue(blendValue);
 
-        maya_cat.spam() 
-          << blendModePlug.name() << ": has value " << blendValue << endl;
+        if (maya_cat.is_spam()) {
+          maya_cat.spam() 
+            << blendModePlug.name() << ": has value " << blendValue << endl;
+        }
 
         MFnEnumAttribute blendModeEnum(blendModePlug);
         MString blendName = blendModeEnum.fieldName(blendValue, &status);
@@ -392,7 +404,9 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           break;
         }
         maya_cat.info() << layered_fn.name() << ": blendMode used " << blendName << endl;
-        maya_cat.spam() << "*** END doIt... ***" << endl;
+        if (maya_cat.is_spam()) {
+          maya_cat.spam() << "*** END doIt... ***" << endl;
+        }
 
         // advance to the next plug, because that is where the shader info are
         pl = color_pa[++i];
@@ -405,12 +419,16 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
         // sometimes, by default, maya gives a outAlpha on subsequent plugs, ignore that
         if (pla_name.find("outAlpha") != string::npos) {
           // top texture has an alpha channel, so make sure that this alpha is retained by egg file
-          maya_cat.debug() << pl.name().asChar() << ":has alpha channel" << pla_name << endl;
+          if (maya_cat.is_debug()) {
+            maya_cat.debug() << pl.name().asChar() << ":has alpha channel" << pla_name << endl;
+          }
           _has_alpha_channel = true;
           continue;
         }
         if (!first) {
-          maya_cat.debug() << pl.name().asChar() << " next:connectedTo: " << pla_name << endl;
+          if (maya_cat.is_debug()) {
+            maya_cat.debug() << pl.name().asChar() << " next:connectedTo: " << pla_name << endl;
+          }
           MayaShaderColorDef *color_p = new MayaShaderColorDef;
           color_p->read_surface_color(shader, pla[j].node());
           color_p->_texture_name.assign(pla[j].name().asChar());
@@ -419,10 +437,14 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           if (loc != string::npos) {
             color_p->_texture_name.resize(loc);
           }
-          maya_cat.debug() << "uv_name : " << color_p->_texture_name << endl;
+          if (maya_cat.is_debug()) {
+            maya_cat.debug() << "uv_name : " << color_p->_texture_name << endl;
+          }
         }
         else {
-          maya_cat.debug() << pl.name().asChar() << " first:connectedTo: " << pla_name << endl;
+          if (maya_cat.is_debug()) {
+            maya_cat.debug() << pl.name().asChar() << " first:connectedTo: " << pla_name << endl;
+          }
           read_surface_color(shader, pla[j].node());
           _texture_name.assign(pla[j].name().asChar());
           _blend_type = bt;
@@ -430,7 +452,9 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           if (loc != string::npos) {
             _texture_name.resize(loc);
           }
-          maya_cat.debug() << "uv_name : " << _texture_name << endl;
+          if (maya_cat.is_debug()) {
+            maya_cat.debug() << "uv_name : " << _texture_name << endl;
+          }
           first = false;
         }
       }
