@@ -1586,14 +1586,20 @@ find_uv_link(string match) {
   // find the index of this string in the _tex_names
   int idx = 0;
   vector_string::iterator vi;
-  mayaegg_cat.spam() << "ful: looking for " << match << endl;
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam() << "ful: looking for " << match << endl;
+  }
   for (vi = _tex_names.begin(); vi != _tex_names.end(); ++vi, ++idx) {
-    mayaegg_cat.spam() << "ful:" << idx << ":stored_name is " << vi->c_str() << endl;
+    if (mayaegg_cat.is_spam()) {
+      mayaegg_cat.spam() << "ful:" << idx << ":stored_name is " << vi->c_str() << endl;
+    }
     if (vi->find(match) != string::npos) {
       return _uvset_names[idx];
     }
   }
-  mayaegg_cat.spam() << "ful: did not find uvset-texture link called:" << match << endl;
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam() << "ful: did not find uvset-texture link called:" << match << endl;
+  }
   return "not found";
 }
 /*
@@ -1758,7 +1764,9 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   _tex_names.clear();
   _uvset_names.clear();
   for (size_t ui=0; ui<maya_uvset_names.length(); ++ui) {
-    mayaegg_cat.spam() << "uv_set[" << ui << "] name: " << maya_uvset_names[ui].asChar() << endl;
+    if (mayaegg_cat.is_spam()) {
+      mayaegg_cat.spam() << "uv_set[" << ui << "] name: " << maya_uvset_names[ui].asChar() << endl;
+    }
     _uvset_names.push_back(maya_uvset_names[ui].asChar());
 
     // Get the tex_names that are connected to those uvnames
@@ -1767,7 +1775,9 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     for (size_t ui=0; ui<moa.length(); ++ui){
       MFnDependencyNode dt(moa[ui]);
       t_n = dt.name().asChar();
-      mayaegg_cat.spam() << "texture_node:" << t_n << endl;
+      if (mayaegg_cat.is_spam()) {
+        mayaegg_cat.spam() << "texture_node:" << t_n << endl;
+      }
     }
     _tex_names.push_back(t_n);
   }
@@ -1865,12 +1875,16 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       string uvset_name("");
       if (color_def != (MayaShaderColorDef *)NULL && color_def->_has_texture) {
         // Go thru all the texture references for this primitive and set uvs
-        mayaegg_cat.debug() << "shader->_color.size is " << shader->_color.size() << endl;
-        mayaegg_cat.debug() << "primitive->tref.size is " << egg_poly->get_num_textures() << endl;
+        if (mayaegg_cat.is_debug()) {
+          mayaegg_cat.debug() << "shader->_color.size is " << shader->_color.size() << endl;
+          mayaegg_cat.debug() << "primitive->tref.size is " << egg_poly->get_num_textures() << endl;
+        }
         for (size_t ti=0; ti< _uvset_names.size(); ++ti) {
           // get the eggTexture pointer
           string colordef_uv_name = uvset_name=  _uvset_names[ti];
-          mayaegg_cat.debug() << "--uvset_name :" << uvset_name << endl;
+          if (mayaegg_cat.is_debug()) {
+            mayaegg_cat.debug() << "--uvset_name :" << uvset_name << endl;
+          }
 
           if (uvset_name == "map1")  // this is the name to look up by in maya
             colordef_uv_name = "default";
@@ -1883,18 +1897,24 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
           for (size_t tj=0; tj< shader->_color.size(); ++tj) {
             color_def = shader->get_color_def(tj);
             if (color_def->_uvset_name == colordef_uv_name) {
-              mayaegg_cat.debug() << "matched colordef idx: " << tj << endl;
+              if (mayaegg_cat.is_debug()) {
+                mayaegg_cat.debug() << "matched colordef idx: " << tj << endl;
+              }
               found = true;
               break;
             }
           }
           // if uvset is not used don't add it to the vertex
           if (!found && !keep_all_uvsets) {
-            mayaegg_cat.spam() << "discarding unused uvset " << uvset_name << endl;
+            if (mayaegg_cat.is_spam()) {
+              mayaegg_cat.spam() << "discarding unused uvset " << uvset_name << endl;
+            }
             continue;
           }
 
-          mayaegg_cat.debug() << "color_def->uvset_name :" << color_def->_uvset_name << endl;
+          if (mayaegg_cat.is_debug()) {
+            mayaegg_cat.debug() << "color_def->uvset_name :" << color_def->_uvset_name << endl;
+          }
           if (color_def->has_projection()) {
             // If the shader has a projection, use it instead of the
             // polygon's built-in UV's.
@@ -1923,10 +1943,18 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
           if (!status) {
             status.perror("MItMeshPolygon::getColor");
           } else {
+            // I saw instances where the color components exceeded 1.0
+            // so lets clamp the values to 0 to 1
+            c /= 1.0;
             // The vertex color is a color scale that modifies the
             // polygon color, not an override that replaces it.
             vert.set_color(Colorf(c.r * poly_color[0], c.g * poly_color[1],
                                   c.b * poly_color[2], c.a * poly_color[3]));
+
+            if (mayaegg_cat.is_spam()) {
+              mayaegg_cat.spam() << "poly_color = " << poly_color << endl;
+              mayaegg_cat.spam() << "maya_color = " << vert.get_color() << endl;
+            }
           }
         } else {
           vert.set_color(poly_color);
@@ -1961,15 +1989,19 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     if (got_face_normal && egg_poly->calculate_normal(order_normal)) {
       if (order_normal.dot(face_normal) < 0.0) {
         egg_poly->reverse_vertex_ordering();
-        mayaegg_cat.debug()
-          << "reversing polygon\n";
+        if (mayaegg_cat.is_debug()) {
+          mayaegg_cat.debug()
+            << "reversing polygon\n";
+        }
       }
     }
       
     pi.next();
 
   }
-  mayaegg_cat.spam() << "done traversing polys" << endl;
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam() << "done traversing polys" << endl;
+  }
 
   // Now that we've added all the polygons (and created all the
   // vertices), go back through the vertex pool and set up the
@@ -2370,18 +2402,26 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
   const MayaShaderColorDef &trans_def = shader._transparency;
   for (i=shader._color.size()-1; i>=0; --i) {
     color_def = shader.get_color_def(i);
-    mayaegg_cat.spam() << "slot " << i << ":got color_def: " << color_def << endl;
+    if (mayaegg_cat.is_spam()) {
+      mayaegg_cat.spam() << "slot " << i << ":got color_def: " << color_def << endl;
+    }
     if (color_def->_has_texture || trans_def._has_texture) {
       EggTexture tex(shader.get_name(), "");
-      mayaegg_cat.debug() << "got shader name:" << shader.get_name() << endl;
-      mayaegg_cat.debug() << "ssa:texture name[" << i << "]: " << color_def->_texture_name << endl;
+      if (mayaegg_cat.is_debug()) {
+        mayaegg_cat.debug() << "got shader name:" << shader.get_name() << endl;
+        mayaegg_cat.debug() << "ssa:texture name[" << i << "]: " << color_def->_texture_name << endl;
+      }
 
       string uvset_name = find_uv_link(color_def->_texture_name);
-      mayaegg_cat.debug() << "ssa:corresponding uvset name is " << uvset_name << endl;
+      if (mayaegg_cat.is_debug()) {
+        mayaegg_cat.debug() << "ssa:corresponding uvset name is " << uvset_name << endl;
+      }
 
       if (color_def->_has_texture) {
         // If we have a texture on color, apply it as the filename.
-        //mayaegg_cat.debug() << "ssa:got texture name" << color_def->_texture_filename << endl;
+        //if (mayaegg_cat.is_debug()) {
+          //mayaegg_cat.debug() << "ssa:got texture name" << color_def->_texture_filename << endl;
+        //}
         Filename filename = Filename::from_os_specific(color_def->_texture_filename);
         Filename fullpath, outpath;
         _path_replace->full_convert_path(filename, get_texture_path(), fullpath, outpath);
@@ -2479,9 +2519,11 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
                   if (color_def->_has_alpha_channel) {
                     // lets caution the artist that they should not be using a alpha channel on
                     // this texture. 
-                    maya_cat.spam() 
-                      << color_def->_texture_name 
-                      << " should not have alpha channel in multiply mode: ignoring\n";
+                    if (mayaegg_cat.is_spam()) {
+                      maya_cat.spam() 
+                        << color_def->_texture_name 
+                        << " should not have alpha channel in multiply mode: ignoring\n";
+                    }
                   }
                   if (is_rgb) {
                     //tex.set_alpha_mode(EggRenderMode::AM_off);  // force alpha off
@@ -2502,7 +2544,9 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
               // In the new decal mode, we achieve this with a third dummy layer
               // copy this layer to a new dummy layer
               EggTexture texDummy(shader.get_name()+".dummy", "");
-              mayaegg_cat.debug() << "creating dummy shader: " << texDummy.get_name() << endl;
+              if (mayaegg_cat.is_debug()) {
+                mayaegg_cat.debug() << "creating dummy shader: " << texDummy.get_name() << endl;
+              }
               texDummy.set_filename(outpath);
               texDummy.set_fullpath(fullpath);
               apply_texture_properties(texDummy, *color_def);
@@ -2530,7 +2574,9 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
         apply_texture_properties(tex, trans_def);
       }
       
-      mayaegg_cat.debug() << "ssa:tref_name:" << tex.get_name() << endl;
+      if (mayaegg_cat.is_debug()) {
+        mayaegg_cat.debug() << "ssa:tref_name:" << tex.get_name() << endl;
+      }
       if (is_rgb && i == (int)shader._color.size()-1) {
         // make base layer rgb only
         tex.set_format(EggTexture::F_rgb);  // Change the format to be rgb only
@@ -2539,8 +2585,9 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
         _textures.create_unique_texture(tex, ~0);
       
       if (pi) {
-        // see if the uvset_name exists for this polygon, if yes, add the texture to primitive
-        if (pi->hasUVs(MString(uvset_name.c_str()))) {
+        // Asad: let the primitive add the texture, don't worry about the coord
+        if (uvset_name.find("not found") == -1) {
+        //if (pi->hasUVs(MString(uvset_name.c_str()))) {
           primitive.add_texture(new_tex);
           if (uvset_name == "map1")  // this is the name to look up by in maya
             color_def->_uvset_name.assign("default");
@@ -2585,7 +2632,9 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
 
   primitive.set_color(rgba);
 
-  mayaegg_cat.spam() << "  set_shader_attributes : end\n";
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam() << "  set_shader_attributes : end\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
