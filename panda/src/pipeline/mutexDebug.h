@@ -59,13 +59,16 @@ private:
   void report_deadlock(Thread *this_thread);
 
 private:
+  INLINE static MutexImpl *get_global_lock();
+
   string _name;
   bool _allow_recursion;
   Thread *_locking_thread;
   int _lock_count;
-  ConditionVarImpl _cvar;
 
-  static MutexImpl _global_mutex;
+  ConditionVarImpl _cvar_impl;
+
+  static MutexImpl *_global_lock;
 
   friend class ConditionVarDebug;
 };

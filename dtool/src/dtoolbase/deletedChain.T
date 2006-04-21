@@ -21,7 +21,7 @@ TVOLATILE TYPENAME DeletedChain<Type>::ObjectNode * TVOLATILE DeletedChain<Type>
 
 #ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 template<class Type>
-MutexImpl DeletedChain<Type>::_lock;
+MutexImpl *DeletedChain<Type>::_lock;
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -38,18 +38,19 @@ allocate(size_t size) {
   TVOLATILE ObjectNode *obj;
 
 #ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
-  _lock.lock();
+  init_lock();
+  _lock->lock();
   if (_deleted_chain != (ObjectNode *)NULL) {
     obj = _deleted_chain;
     _deleted_chain = _deleted_chain->_next;
-    _lock.release();
+    _lock->release();
 #ifndef NDEBUG
     assert(obj->_flag == ((PN_int32)obj ^ deleted_chain_flag_hash));
     obj->_flag = 0;
 #endif  // NDEBUG
     return (Type *)obj;
   }
-  _lock.release();
+  _lock->release();
 
 #else  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
   obj = _deleted_chain;
@@ -102,12 +103,18 @@ deallocate(Type *ptr) {
 #endif  // NDEBUG
 
 #ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
-  _lock.lock();
+  // We have to test the lock again, even though we must have
+  // allocated this object at some point, because Windows might make
+  // multiple different DeletedChain instances for a particular Type,
+  // and there's no guarantee this one is the same one we used to
+  // allocate this object.
+  init_lock();
+  _lock->lock();
 
   obj->_next = _deleted_chain;
   _deleted_chain = obj;
 
-  _lock.release();
+  _lock->release();
 
 #else  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 
@@ -123,3 +130,18 @@ deallocate(Type *ptr) {
 
 #endif  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 }
+
+#ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
+////////////////////////////////////////////////////////////////////
+//     Function: DeletedChain::init_lock
+//       Access: Private
+//  Description: Ensures the lock pointer has been allocated.
+////////////////////////////////////////////////////////////////////
+template<class Type>
+INLINE void DeletedChain<Type>::
+init_lock() {
+  if (_lock == (MutexImpl *)NULL) {
+    _lock = new MutexImpl;
+  }
+}
+#endif  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE

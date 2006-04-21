@@ -95,6 +95,8 @@ private:
   void write_node(ostream &out, int indent_level,
                   const TypeRegistryNode *node) const;
 
+  static INLINE void init_lock();
+
   typedef pvector<TypeRegistryNode *> HandleRegistry;
   HandleRegistry _handle_registry;
 
@@ -106,7 +108,7 @@ private:
 
   bool _derivations_fresh;
 
-  static MutexImpl _lock;
+  static MutexImpl *_lock;
   static TypeRegistry *_global_pointer;
 };
 

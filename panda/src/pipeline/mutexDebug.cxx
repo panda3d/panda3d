@@ -22,7 +22,7 @@
 
 #ifdef DEBUG_THREADS
 
-MutexImpl MutexDebug::_global_mutex;
+MutexImpl *MutexDebug::_global_lock;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::Constructor
@@ -35,7 +35,7 @@ MutexDebug(const string &name, bool allow_recursion) :
   _allow_recursion(allow_recursion),
   _locking_thread(NULL),
   _lock_count(0),
-  _cvar(_global_mutex)
+  _cvar_impl(*get_global_lock())
 {
 }
 
@@ -72,7 +72,7 @@ output(ostream &out) const {
 //     Function: MutexDebug::do_lock
 //       Access: Private
 //  Description: The private implementation of lock() assumes that
-//               _global_mutex is held.
+//               _lock_impl is held.
 ////////////////////////////////////////////////////////////////////
 void MutexDebug::
 do_lock() {
@@ -112,7 +112,7 @@ do_lock() {
         report_deadlock(this_thread);
         nassert_raise("Deadlock");
 
-        _global_mutex.release();
+        _global_lock->release();
         return;
       }
       Thread *next_thread = next_mutex->_locking_thread;
@@ -139,7 +139,7 @@ do_lock() {
         << *_locking_thread << ")\n";
     }
     while (_locking_thread != (Thread *)NULL) {
-      _cvar.wait();
+      _cvar_impl.wait();
     }
     
     if (thread_cat.is_spam()) {
@@ -159,7 +159,7 @@ do_lock() {
 //     Function: MutexDebug::do_release
 //       Access: Private
 //  Description: The private implementation of lock() assumes that
-//               _global_mutex is held.
+//               _lock_impl is held.
 ////////////////////////////////////////////////////////////////////
 void MutexDebug::
 do_release() {
@@ -174,7 +174,7 @@ do_release() {
     ostr << *this_thread << " attempted to release "
          << *this << " which it does not own";
     nassert_raise(ostr.str());
-    _global_mutex.release();
+    _global_lock->release();
     return;
   }
 
@@ -184,7 +184,7 @@ do_release() {
   if (_lock_count == 0) {
     // That was the last lock held by this thread.  Release the lock.
     _locking_thread = (Thread *)NULL;
-    _cvar.signal();
+    _cvar_impl.signal();
   }
 }
 
@@ -192,7 +192,7 @@ do_release() {
 //     Function: MutexDebug::do_debug_is_locked
 //       Access: Private
 //  Description: The private implementation of debug_is_locked()
-//               assumes that _global_mutex is held.
+//               assumes that _lock_impl is held.
 ////////////////////////////////////////////////////////////////////
 bool MutexDebug::
 do_debug_is_locked() const {
@@ -202,7 +202,7 @@ do_debug_is_locked() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::report_deadlock
 //       Access: Private
-//  Description: Reports a detected deadlock situation.  _global_mutex
+//  Description: Reports a detected deadlock situation.  _lock_impl
 //               should be already held.
 ////////////////////////////////////////////////////////////////////
 void MutexDebug::

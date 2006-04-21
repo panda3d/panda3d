@@ -87,7 +87,8 @@ private:
 #ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
   // If we don't have atomic compare-and-exchange, we need to use a
   // Mutex to protect the above linked list.
-  static MutexImpl _lock;
+  static INLINE void init_lock();
+  static MutexImpl *_lock;
 #endif
 };
 

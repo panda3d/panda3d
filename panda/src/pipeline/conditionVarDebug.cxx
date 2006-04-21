@@ -35,7 +35,7 @@
 ConditionVarDebug::
 ConditionVarDebug(MutexDebug &mutex) :
   _mutex(mutex),
-  _impl(mutex._global_mutex)
+  _impl(*mutex.get_global_lock())
 {
   nassertv(!_mutex._allow_recursion);
 }
@@ -76,14 +76,14 @@ ConditionVarDebug::
 ////////////////////////////////////////////////////////////////////
 void ConditionVarDebug::
 wait() {
-  _mutex._global_mutex.lock();
+  _mutex._global_lock->lock();
 
   if (!_mutex.do_debug_is_locked()) {
     ostringstream ostr;
     ostr << *Thread::get_current_thread() << " attempted to wait on "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
-    _mutex._global_mutex.release();
+    _mutex._global_lock->release();
     return;
   }
 
@@ -101,7 +101,7 @@ wait() {
       << *Thread::get_current_thread() << " awake on " << *this << "\n";
   }
 
-  _mutex._global_mutex.release();
+  _mutex._global_lock->release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,13 +122,13 @@ wait() {
 ////////////////////////////////////////////////////////////////////
 void ConditionVarDebug::
 signal() {
-  _mutex._global_mutex.lock();
+  _mutex._global_lock->lock();
   if (!_mutex.do_debug_is_locked()) {
     ostringstream ostr;
     ostr << *Thread::get_current_thread() << " attempted to signal "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
-    _mutex._global_mutex.release();
+    _mutex._global_lock->release();
     return;
   }
 
@@ -138,7 +138,7 @@ signal() {
   }
 
   _impl.signal();
-  _mutex._global_mutex.release();
+  _mutex._global_lock->release();
 }
 
 ////////////////////////////////////////////////////////////////////

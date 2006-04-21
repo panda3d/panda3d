@@ -23,7 +23,7 @@
 //  Description: Do not attempt to copy mutexes.
 ////////////////////////////////////////////////////////////////////
 INLINE MutexDebug::
-MutexDebug(const MutexDebug &copy) : _cvar(_global_mutex) {
+MutexDebug(const MutexDebug &copy) : _cvar_impl(*get_global_lock()) {
   nassertv(false);
 }
 
@@ -55,9 +55,9 @@ operator = (const MutexDebug &copy) {
 INLINE void MutexDebug::
 lock() const {
   TAU_PROFILE("void MutexDebug::lock()", " ", TAU_USER);
-  _global_mutex.lock();
+  _global_lock->lock();
   ((MutexDebug *)this)->do_lock();
-  _global_mutex.release();
+  _global_lock->release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,9 +118,9 @@ elevate_lock() const {
 INLINE void MutexDebug::
 release() const {
   TAU_PROFILE("void MutexDebug::release()", " ", TAU_USER);
-  _global_mutex.lock();
+  _global_lock->lock();
   ((MutexDebug *)this)->do_release();
-  _global_mutex.release();
+  _global_lock->release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,8 +136,25 @@ release() const {
 INLINE bool MutexDebug::
 debug_is_locked() const {
   TAU_PROFILE("bool MutexDebug::debug_is_locked()", " ", TAU_USER);
-  _global_mutex.lock();
+  _global_lock->lock();
   bool is_locked = do_debug_is_locked();
-  _global_mutex.release();
+  _global_lock->release();
   return is_locked;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexDebug::get_global_lock
+//       Access: Private, Static
+//  Description: Ensures the global MutexImpl pointer has been
+//               created, and returns its pointer.  Since this method
+//               is called by the MutexDebug constructor, any other
+//               (non-static) methods of MutexDebug may simply assume
+//               that the pointer has already been created.
+////////////////////////////////////////////////////////////////////
+INLINE MutexImpl *MutexDebug::
+get_global_lock() {
+  if (_global_lock == (MutexImpl *)NULL) {
+    _global_lock = new MutexImpl;
+  }
+  return _global_lock;
 }

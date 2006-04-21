@@ -25,7 +25,7 @@
 INLINE ConditionVarDebug::
 ConditionVarDebug(const ConditionVarDebug &copy) : 
   _mutex(copy._mutex), 
-  _impl(_mutex._global_mutex)
+  _impl(*_mutex._global_lock)
 {
   nassertv(false);
 }

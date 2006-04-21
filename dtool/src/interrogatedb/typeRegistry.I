@@ -31,3 +31,15 @@ freshen_derivations() {
     _derivations_fresh = true;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeRegistry::init_lock
+//       Access: Private, Static
+//  Description: Ensures the lock pointer has been allocated.
+////////////////////////////////////////////////////////////////////
+INLINE void TypeRegistry::
+init_lock() {
+  if (_lock == (MutexImpl *)NULL) {
+    _lock = new MutexImpl;
+  }
+}
