@@ -122,6 +122,7 @@ PUBLISHED:
   INLINE void set_level(float) { }
   INLINE void add_level(float) { }
   INLINE void sub_level(float) { }
+  INLINE void flush_level() { }
   INLINE float get_level() { return 0.0; }
 
   INLINE bool is_active(const PStatThread &) { return false; }
