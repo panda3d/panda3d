@@ -1,6 +1,6 @@
 
 from pandac.PandaModules import *
-
+from direct.task import Task
 from otp.otpbase import OTPRender
 
 
@@ -11,6 +11,7 @@ class MotionTrailVertex:
         self.context = context
         self.vertex = Vec4 (0.0, 0.0, 0.0, 1.0)
 
+        # default
         self.start_color = Vec4 (1.0, 1.0, 1.0, 1.0)
         self.end_color = Vec4 (0.0, 0.0, 0.0, 1.0)
         self.v = 0.0
@@ -21,13 +22,114 @@ class MotionTrailFrame:
         self.transform = transform
         
 class MotionTrail(NodePath):
+
     notify = directNotify.newCategory ("MotionTrail")
+
+    task_added = False
+    motion_trail_list = [ ]    
+
+    def print_matrix (self, matrix):
+        separator = ' '
+        print matrix.getCell (0, 0), separator, matrix.getCell (0, 1), separator, matrix.getCell (0, 2), separator, matrix.getCell (0, 3)
+        print matrix.getCell (1, 0), separator, matrix.getCell (1, 1), separator, matrix.getCell (1, 2), separator, matrix.getCell (1, 3)
+        print matrix.getCell (2, 0), separator, matrix.getCell (2, 1), separator, matrix.getCell (2, 2), separator, matrix.getCell (2, 3)
+        print matrix.getCell (3, 0), separator, matrix.getCell (3, 1), separator, matrix.getCell (3, 2), separator, matrix.getCell (3, 3)
+        
+    def motion_trail_task (self, task):
+
+        current_time = task.time
+
+        index = 0
+        total_motion_trails = len (MotionTrail.motion_trail_list)
+        while (index < total_motion_trails):
+            motion_trail = MotionTrail.motion_trail_list [index]
+            if (motion_trail.active and motion_trail.check_for_update (current_time)):
+
+                transform = None
+
+                """
+                transform = motion_trail.getNetTransform ( ).getMat ( )
+                print "net matrix", transform.__repr__ ( )
+
+ #               transform = motion_trail.root_node_path.getTransform (motion_trail.parent_node_path).getMat ( )
+                transform = motion_trail.parent_node_path.getTransform (motion_trail.root_node_path).getMat ( )
+                print "rel matrix", transform.__repr__ ( )
+
+                transform = motion_trail.parent_node_path.getTransform (motion_trail).getMat ( )
+                print "lll matrix", transform.__repr__ ( )
+                """
+
+                if (motion_trail.root_node_path != None):
+    #               motion_trail.parent_node_path
+
+    #                transform_state = motion_trail.parent_node_path.getTransform (motion_trail.root_node_path);
+    #                transform = transform_state.getMat ( )
+                    pass
+                else:
+                    pass
+
+                net_matrix = motion_trail.getNetTransform ( ).getMat ( )
+                if (motion_trail.previous_matrix != None):
+                
+#                    i_matrix = Mat4 (Mat4.identMat ( ))
+#                    print "i matrix"
+#                    self.print_matrix (i_matrix)
+                    
+                    print "net matrix"
+                    self.print_matrix (net_matrix)
+
+                    print "previous matrix"
+                    self.print_matrix (motion_trail.previous_matrix)
+
+                    matrix = Mat4 (net_matrix)
+                    matrix.invertInPlace ( )
+                    print "inverse matrix"
+                    self.print_matrix (matrix)
+
+                    relative_matrix = Mat4 (Mat4.identMat ( ))                    
+                    relative_matrix.multiply (matrix, motion_trail.previous_matrix)
+                    print "relative_matrix #1"
+                    self.print_matrix (relative_matrix)
+
+                    relative_matrix.multiply (motion_trail.previous_matrix, matrix)
+                    print "relative_matrix #2"
+                    self.print_matrix (relative_matrix)
+
+
+                motion_trail.previous_matrix = Mat4 (net_matrix)
+
+                """
+                current_matrix = Mat4.translateMat (Vec3 (0.0, 8.0, 0.0))
+
+                inverse_matrix = Mat4 (current_matrix)
+                inverse_matrix.invertInPlace ( )
+
+                previous_matrix = Mat4.translateMat (Vec3 (0.0, 5.0, 0.0))
+
+                relative_matrix = Mat4 (Mat4.identMat ( ))                    
+                relative_matrix.multiply (inverse_matrix, previous_matrix)
+                print "relative_matrix 111", relative_matrix.__repr__ ( )
+
+                relative_matrix = Mat4 (Mat4.identMat ( ))                    
+                relative_matrix.multiply (previous_matrix, inverse_matrix)
+                print "relative_matrix 222", relative_matrix.__repr__ ( )
+                """
+                
+                if (False and transform != None):
+                    motion_trail.update_motion_trail (current_time, transform)
+
+            index += 1
+
+ #       print "motion_trail_task ( ): time =", task.time
+
+        return Task.cont
 
     def __init__ (self,name,parent_node_path):
 
         NodePath.__init__ (self,name)
 
         # required initialization
+        self.active = True
         self.enable = True
 
         self.pause = False
@@ -43,6 +145,11 @@ class MotionTrail(NodePath):
         self.texture = None
         self.vertex_list = [ ]
         self.frame_list = [ ]
+        
+        self.parent_node_path = parent_node_path
+
+        self.previous_matrix = None
+        self.calculate_relative_matrix = False
 
         # default options
         self.color_scale = 1.0
@@ -50,23 +157,36 @@ class MotionTrail(NodePath):
         self.sampling_time = 1.0 / 30.0
         self.square_t = True
 
+        self.task_transform = False
+        self.root_node_path = None
+
         # render
         self.reparentTo (parent_node_path)
         self.geom_node = GeomNode ("motion_trail") 
         self.geom_node_path = self.attachNewNode(self.geom_node) 
         node_path = self.geom_node_path
 
-        # set render states
-        node_path.node ( ).setAttrib (ColorBlendAttrib.make (ColorBlendAttrib.MAdd))
+        ### set render states
         node_path.setTransparency (True)
         node_path.setDepthWrite (False)
         node_path.setTwoSided (True)
+
+        # additive blend
+        node_path.node ( ).setAttrib (ColorBlendAttrib.make (ColorBlendAttrib.MAdd))
+
+        # disable writes to destination alpha
+        node_path.setAttrib (ColorWriteAttrib.make (ColorWriteAttrib.CRed | ColorWriteAttrib.CGreen | ColorWriteAttrib.CBlue));
 
         # do not light
         node_path.setLightOff ( )
         
         # do not display in reflections
         OTPRender.renderReflection (False, self, 'motion_trail', None)
+
+
+        if (MotionTrail.task_added == False):
+            taskMgr.add (self.motion_trail_task, "motion_trail_task", priority = 50)
+            MotionTrail.task_added = True
 
         return
 
@@ -115,6 +235,14 @@ class MotionTrail(NodePath):
                 
         return
 
+    def register_motion_trail (self):
+        MotionTrail.motion_trail_list = MotionTrail.motion_trail_list + [self]
+        return
+
+    def unregister_motion_trail (self):
+        MotionTrail.motion_trail_list = MotionTrail.motion_trail_list.remove (self)
+        return
+        
     def begin_geometry (self):
 
         self.vertex_index = 0;
@@ -166,16 +294,24 @@ class MotionTrail(NodePath):
         self.geom_node.removeAllGeoms ( )         
         self.geom_node.addGeom (self.geometry)         
 
-    def update_motion_trail (self, current_time, transform):
 
-        update = False
+    def check_for_update (self, current_time):
+        
+        state = False
         if ((current_time - self.last_update_time) >= self.sampling_time):
-            update = True        
+            state = True        
     
         if (self.pause):
-            update = False
-            
-        if (update):
+            state = False
+        
+        update = state and self.enable
+        
+        return state
+    
+    def update_motion_trail (self, current_time, transform):
+
+        if (self.check_for_update (current_time)):
+        
             color_scale = self.color_scale;
 
             if (self.fade):
@@ -242,7 +378,12 @@ class MotionTrail(NodePath):
 
 #                print "minimum_time", minimum_time
 #                print "delta_time", delta_time 
-                
+
+
+                if (self.calculate_relative_matrix):
+                    inverse_matrix = Mat4 (transform)
+                    inverse_matrix.invertInPlace ( ) 
+                    
                 segment_index = 0
                 while (segment_index < total_segments):                    
                     motion_trail_frame_start = self.frame_list [segment_index]
@@ -267,9 +408,27 @@ class MotionTrail(NodePath):
                     vertex_segement_index = 0
                     total_vertex_segments = self.total_vertices - 1
 
+                    if (self.calculate_relative_matrix):
+                        start_transform = Mat4 (Mat4.identMat ( ))
+                        end_transform = Mat4 (Mat4.identMat ( ))
+#                        start_transform = Mat4 ( )
+#                        end_transform = Mat4 ( )
+#                        start_transform.multiply (motion_trail_frame_start.transform, inverse_matrix)
+#                        end_transform.multiply (motion_trail_frame_end.transform, inverse_matrix)
+                        start_transform.multiply (inverse_matrix, motion_trail_frame_start.transform)
+                        end_transform.multiply (inverse_matrix, motion_trail_frame_end.transform)
+
+                        print "relative_matrix 111", start_transform.__repr__ ( )
+                        print "relative_matrix 222", end_transform.__repr__ ( )
+
+                    else:
+                        start_transform = motion_trail_frame_start.transform
+                        end_transform = motion_trail_frame_end.transform
+
                     motion_trail_vertex_start = self.vertex_list [0]
-                    v0 = motion_trail_frame_start.transform.xform (motion_trail_vertex_start.vertex)
-                    v2 = motion_trail_frame_end.transform.xform (motion_trail_vertex_start.vertex)
+
+                    v0 = start_transform.xform (motion_trail_vertex_start.vertex)
+                    v2 = end_transform.xform (motion_trail_vertex_start.vertex)
 
                     vertex_start_color = motion_trail_vertex_start.end_color + (motion_trail_vertex_start.start_color - motion_trail_vertex_start.end_color)
                     color_start_t = color_scale * start_t
@@ -285,8 +444,8 @@ class MotionTrail(NodePath):
                         motion_trail_vertex_start = self.vertex_list [vertex_segement_index]
                         motion_trail_vertex_end = self.vertex_list [vertex_segement_index + 1]
 
-                        v1 = motion_trail_frame_start.transform.xform (motion_trail_vertex_end.vertex)
-                        v3 = motion_trail_frame_end.transform.xform (motion_trail_vertex_end.vertex)
+                        v1 = start_transform.xform (motion_trail_vertex_end.vertex)
+                        v3 = end_transform.xform (motion_trail_vertex_end.vertex)
 
                         """
                         print v0
