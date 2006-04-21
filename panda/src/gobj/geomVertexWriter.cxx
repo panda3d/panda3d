@@ -40,8 +40,8 @@ unsigned char GeomVertexWriter::empty_buffer[100] = { 0 };
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexWriter::
 set_column(int array, const GeomVertexColumn *column) {
-  if (_data_writer == (GeomVertexDataPipelineWriter *)NULL &&
-      _array_writer == (GeomVertexArrayDataPipelineWriter *)NULL) {
+  if (_vertex_data == (GeomVertexData *)NULL &&
+      _array_data == (GeomVertexArrayData *)NULL) {
     return false;
   }
 
@@ -56,25 +56,18 @@ set_column(int array, const GeomVertexColumn *column) {
     return false;
   }
 
-  if (_data_writer != (GeomVertexDataPipelineWriter *)NULL) {
-#ifndef NDEBUG
-    _array = -1;
-    _packer = NULL;
-    nassertr(array >= 0 && array < _data_writer->get_num_arrays(), false);
-#endif
-    _array = array;
-    GeomVertexArrayDataPipelineWriter *array_writer =_data_writer->get_array_writer(_array);
-    _stride = array_writer->get_array_format()->get_stride();
-
-  } else {
-    _stride = _array_writer->get_array_format()->get_stride();
+  if (_vertex_data != (GeomVertexData *)NULL) {
+    GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
+    writer.check_array_writers();
+    return set_vertex_column(array, column, &writer);
+  }
+  if (_array_data != (GeomVertexArrayData *)NULL) {
+    GeomVertexArrayDataPipelineWriter writer(_array_data, true, _current_thread);
+    return set_array_column(column, &writer);
   }
 
-  _packer = column->_packer;
-  
-  set_pointer(_start_row);
-  
-  return true;
+  // No data is associated with the Writer.
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,10 +96,6 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexWriter::
 initialize() {
-  if (_data_writer != (const GeomVertexDataPipelineWriter *)NULL) {
-    _data_writer->check_array_writers();
-  }
-
   _array = 0;
   _packer = NULL;
   _pointer_begin = NULL;
@@ -116,23 +105,51 @@ initialize() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexWriter::clear_writer
+//     Function: GeomVertexWriter::set_vertex_column
 //       Access: Private
-//  Description: Destructs the GeomVertexDataPipelineWriter, when
-//               necessary, for instance when this object destructs.
+//  Description: Internal method to set the column to column from the
+//               indicated array, assuming we have a GeomVertexData
 ////////////////////////////////////////////////////////////////////
-void GeomVertexWriter::
-clear_writer() {
-  nassertv(_owns_writer);
+bool GeomVertexWriter::
+set_vertex_column(int array, const GeomVertexColumn *column,
+                  GeomVertexDataPipelineWriter *data_writer) {
+  nassertr(column != (const GeomVertexColumn *)NULL, false);
+  nassertr(_vertex_data != (GeomVertexData *)NULL, false);
 
-  if (_data_writer != (GeomVertexDataPipelineWriter *)NULL) {
-    delete _data_writer;
-    _data_writer = NULL;
-  } else {
-    nassertv(_array_writer != (GeomVertexArrayDataPipelineWriter *)NULL);
-    delete _array_writer;
-    _array_writer = NULL;
-  }
+#ifndef NDEBUG
+  _array = -1;
+  _packer = NULL;
+  nassertr(array >= 0 && array < _vertex_data->get_num_arrays(), false);
+#endif
 
-  _owns_writer = false;
+  _array = array;
+  GeomVertexArrayDataPipelineWriter *array_writer = 
+    data_writer->get_array_writer(_array);
+  _stride = array_writer->get_array_format()->get_stride();
+
+  _packer = column->_packer;
+  set_pointer(_start_row, array_writer);
+  
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_array_column
+//       Access: Private
+//  Description: Internal method to set the column to column from the
+//               indicated array, assuming we have a
+//               GeomVertexArrayData.
+////////////////////////////////////////////////////////////////////
+bool GeomVertexWriter::
+set_array_column(const GeomVertexColumn *column,
+                 GeomVertexArrayDataPipelineWriter *array_writer) {
+  nassertr(column != (const GeomVertexColumn *)NULL, false);
+  nassertr(_array_data != (GeomVertexArrayData *)NULL, false);
+
+  _stride = array_writer->get_array_format()->get_stride();
+
+  _packer = column->_packer;
+  set_pointer(_start_row, array_writer);
+  
+  return true;
 }

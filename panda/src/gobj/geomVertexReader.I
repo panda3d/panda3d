@@ -27,9 +27,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
 GeomVertexReader() :
-  _data_reader(NULL),
-  _array_reader(NULL),
-  _owns_reader(false)
+  _vertex_data(NULL),
+  _current_thread(Thread::get_current_thread())
 {
   initialize();
 }
@@ -42,9 +41,8 @@ GeomVertexReader() :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexData *vertex_data) :
-  _data_reader(new GeomVertexDataPipelineReader(vertex_data, Thread::get_current_thread())),
-  _array_reader(NULL),
-  _owns_reader(true)
+  _vertex_data(vertex_data),
+  _current_thread(Thread::get_current_thread())
 {
   initialize();
 }
@@ -58,9 +56,8 @@ GeomVertexReader(const GeomVertexData *vertex_data) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexData *vertex_data, const string &name) :
-  _data_reader(new GeomVertexDataPipelineReader(vertex_data, Thread::get_current_thread())),
-  _array_reader(NULL),
-  _owns_reader(true)
+  _vertex_data(vertex_data),
+  _current_thread(Thread::get_current_thread())
 {
   initialize();
   set_column(name);
@@ -75,10 +72,9 @@ GeomVertexReader(const GeomVertexData *vertex_data, const string &name) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexData *vertex_data, 
-                 const InternalName *name) :
-  _data_reader(new GeomVertexDataPipelineReader(vertex_data, Thread::get_current_thread())),
-  _array_reader(NULL),
-  _owns_reader(true)
+                   const InternalName *name) :
+  _vertex_data(vertex_data),
+  _current_thread(Thread::get_current_thread())
 {
   initialize();
   set_column(name);
@@ -92,9 +88,8 @@ GeomVertexReader(const GeomVertexData *vertex_data,
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexArrayData *array_data) :
-  _data_reader(NULL),
-  _array_reader(new GeomVertexArrayDataPipelineReader(array_data, Thread::get_current_thread())),
-  _owns_reader(true)
+  _array_data(array_data),
+  _current_thread(Thread::get_current_thread())
 {
   initialize();
 }
@@ -107,9 +102,8 @@ GeomVertexReader(const GeomVertexArrayData *array_data) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexArrayData *array_data, int column) :
-  _data_reader(NULL),
-  _array_reader(new GeomVertexArrayDataPipelineReader(array_data, Thread::get_current_thread())),
-  _owns_reader(true)
+  _array_data(array_data),
+  _current_thread(Thread::get_current_thread())
 {
   initialize();
   set_column(column);
@@ -123,28 +117,29 @@ GeomVertexReader(const GeomVertexArrayData *array_data, int column) :
 //               reader specifically to process the named data type.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
-GeomVertexReader(const GeomVertexDataPipelineReader *data_reader, 
+GeomVertexReader(const GeomVertexDataPipelineReader *data_reader,
                  const InternalName *name) :
-  _data_reader(data_reader),
-  _array_reader(NULL),
-  _owns_reader(false)
+  _vertex_data(data_reader->get_object()),
+  _current_thread(data_reader->get_current_thread())
 {
   initialize();
-  set_column(name);
+  const GeomVertexFormat *format = data_reader->get_format();
+  set_vertex_column(format->get_array_with(name),
+                    format->get_column(name),
+                    data_reader);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexReader::Copy Constructor
 //       Access: Published
-//  Description: The copy constructor steals ownership of the reader
-//               pointer.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexReader &copy) :
-  _data_reader(copy._data_reader),
+  _vertex_data(copy._vertex_data),
   _array(copy._array),
-  _array_reader(copy._array_reader),
-  _owns_reader(copy._owns_reader),
+  _array_data(copy._array_data),
+  _current_thread(copy._current_thread),
   _packer(copy._packer),
   _stride(copy._stride),
   _pointer_begin(copy._pointer_begin),
@@ -152,33 +147,25 @@ GeomVertexReader(const GeomVertexReader &copy) :
   _pointer(copy._pointer),
   _start_row(copy._start_row)
 {
-  ((GeomVertexReader &)copy)._owns_reader = false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexReader::Copy Assignment Operator
 //       Access: Published
-//  Description: The copy constructor steals ownership of the reader
-//               pointer.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexReader::
 operator = (const GeomVertexReader &copy) {
-  if (_owns_reader) {
-    clear_reader();
-  }
-
-  _data_reader = copy._data_reader;
+  _vertex_data = copy._vertex_data;
   _array = copy._array;
-  _array_reader = copy._array_reader;
-  _owns_reader = copy._owns_reader;
+  _array_data = copy._array_data;
+  _current_thread = copy._current_thread;
   _packer = copy._packer;
   _stride = copy._stride;
   _pointer_begin = copy._pointer_begin;
   _pointer_end = copy._pointer_end;
   _pointer = copy._pointer;
   _start_row = copy._start_row;
-
-  ((GeomVertexReader &)copy)._owns_reader = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -188,9 +175,6 @@ operator = (const GeomVertexReader &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
 ~GeomVertexReader() {
-  if (_owns_reader) {
-    clear_reader();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -202,10 +186,7 @@ INLINE GeomVertexReader::
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomVertexData *GeomVertexReader::
 get_vertex_data() const {
-  if (_data_reader != (GeomVertexDataPipelineReader *)NULL) {
-    return _data_reader->get_object();
-  }
-  return NULL;
+  return _vertex_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,7 +197,18 @@ get_vertex_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomVertexArrayData *GeomVertexReader::
 get_array_data() const {
-  return _array_reader->get_object();
+  return _array_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_current_thread
+//       Access: Published
+//  Description: Returns the Thread pointer of the currently-executing
+//               thread, as passed to the constructor of this object.
+////////////////////////////////////////////////////////////////////
+INLINE Thread *GeomVertexReader::
+get_current_thread() const {
+  return _current_thread;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -234,12 +226,18 @@ get_array_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexReader::
 set_column(int column) {
-  if (_data_reader != (const GeomVertexDataPipelineReader *)NULL) {
-    return set_column(_data_reader->get_format()->get_array_with(column),
-                      _data_reader->get_format()->get_column(column));
+  if (_vertex_data != (const GeomVertexData *)NULL) {
+    GeomVertexDataPipelineReader reader(_vertex_data, _current_thread);
+    reader.check_array_readers();
+    const GeomVertexFormat *format = reader.get_format();
+    return set_vertex_column(format->get_array_with(column),
+                             format->get_column(column),
+                             &reader);
   }
-  if (_array_reader != (const GeomVertexArrayDataPipelineReader *)NULL) {
-    return set_column(0, _array_reader->get_array_format()->get_column(column));
+  if (_array_data != (const GeomVertexArrayData *)NULL) {
+    GeomVertexArrayDataPipelineReader reader(_array_data, _current_thread);
+    return set_array_column(reader.get_array_format()->get_column(column),
+                            &reader);
   }
   return false;
 }
@@ -277,12 +275,18 @@ set_column(const string &name) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexReader::
 set_column(const InternalName *name) {
-  if (_data_reader != (const GeomVertexDataPipelineReader *)NULL) {
-    return set_column(_data_reader->get_format()->get_array_with(name),
-                      _data_reader->get_format()->get_column(name));
+  if (_vertex_data != (const GeomVertexData *)NULL) {
+    GeomVertexDataPipelineReader reader(_vertex_data, _current_thread);
+    reader.check_array_readers();
+    const GeomVertexFormat *format = reader.get_format();
+    return set_vertex_column(format->get_array_with(name),
+                             format->get_column(name),
+                             &reader);
   }
-  if (_array_reader != (const GeomVertexArrayDataPipelineReader *)NULL) {
-    return set_column(0, _array_reader->get_array_format()->get_column(name));
+  if (_array_data != (const GeomVertexArrayData *)NULL) {
+    GeomVertexArrayDataPipelineReader reader(_array_data, _current_thread);
+    return set_array_column(reader.get_array_format()->get_column(name),
+                            &reader);
   }
 
   return false;
@@ -500,16 +504,9 @@ get_packer() const {
 //               and sets the internal pointer to the indicated row.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexReader::
-set_pointer(int row) {
-  if (_data_reader != (const GeomVertexDataPipelineReader *)NULL) {
-    const GeomVertexArrayDataPipelineReader *array_reader = _data_reader->get_array_reader(_array);
-    _pointer_begin = array_reader->get_data();
-    _pointer_end = _pointer_begin + array_reader->get_data_size_bytes();
-
-  } else {
-    _pointer_begin = _array_reader->get_data();
-    _pointer_end = _pointer_begin + _array_reader->get_data_size_bytes();
-  }
+set_pointer(int row, const GeomVertexArrayDataPipelineReader *array_reader) {
+  _pointer_begin = array_reader->get_data();
+  _pointer_end = _pointer_begin + array_reader->get_data_size_bytes();
   quick_set_pointer(row);
 }
 
@@ -525,11 +522,11 @@ quick_set_pointer(int row) {
   nassertv(has_column());
 
 #ifdef _DEBUG
-  if (_data_reader != (const GeomVertexDataPipelineReader *)NULL) {
-    const GeomVertexArrayDataPipelineReader *array_reader = _data_reader->get_array_reader(_array);
-    nassertv(_pointer_begin == array_reader->get_data());
+  if (_vertex_data != (const GeomVertexData *)NULL) {
+    const GeomVertexArrayData *array_data = _vertex_data->get_array(_array);
+    nassertv(_pointer_begin == array_data->get_data());
   } else {
-    nassertv(_pointer_begin == _array_reader->get_data());
+    nassertv(_pointer_begin == _array_data->get_data());
   }
 #endif
 
@@ -546,11 +543,11 @@ INLINE const unsigned char *GeomVertexReader::
 inc_pointer() {
 #ifdef _DEBUG
   nassertr(_pointer < _pointer_end, empty_buffer);
-  if (_data_reader != (const GeomVertexDataPipelineReader *)NULL){ 
-    const GeomVertexArrayDataPipelineReader *array_reader = _data_reader->get_array_reader(_array);
-    nassertr(_pointer >= array_reader->get_data().p() && _pointer < array_reader->get_data().p() + array_reader->get_data_size_bytes(), empty_buffer);
+  if (_vertex_data != (const GeomVertexData *)NULL){ 
+    const GeomVertexArrayData *array_data = _vertex_data->get_array(_array);
+    nassertr(_pointer >= array_data->get_data().p() && _pointer < array_data->get_data().p() + array_data->get_data_size_bytes(), empty_buffer);
   } else {
-    nassertr(_pointer >= _array_reader->get_data().p() && _pointer < _array_reader->get_data().p() + _array_reader->get_data_size_bytes(), empty_buffer);
+    nassertr(_pointer >= _array_data->get_data().p() && _pointer < _array_data->get_data().p() + _array_data->get_data_size_bytes(), empty_buffer);
   }
 #endif
 

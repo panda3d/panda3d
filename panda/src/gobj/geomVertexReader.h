@@ -80,6 +80,7 @@ PUBLISHED:
 
   INLINE const GeomVertexData *get_vertex_data() const;
   INLINE const GeomVertexArrayData *get_array_data() const;
+  INLINE Thread *get_current_thread() const;
 
   INLINE bool set_column(int column);
   INLINE bool set_column(const string &name);
@@ -113,22 +114,27 @@ protected:
 
 private:
   void initialize();
-  void clear_reader();
 
-  INLINE void set_pointer(int row);
+  INLINE void set_pointer(int row, 
+                          const GeomVertexArrayDataPipelineReader *array_reader);
   INLINE void quick_set_pointer(int row);
   INLINE const unsigned char *inc_pointer();
+
+  bool set_vertex_column(int array, const GeomVertexColumn *column,
+                         const GeomVertexDataPipelineReader *data_reader);
+  bool set_array_column(const GeomVertexColumn *column,
+                        const GeomVertexArrayDataPipelineReader *array_reader);
 
   // It is important that we only store *one* of the following two
   // pointers.  If we are storing a GeomVertexData/array index, we
   // must not keep a pointer to the particular ArrayData we are
   // working on (if we do, it may result in an extra copy of the data
   // due to holding the reference count).
-  const GeomVertexDataPipelineReader *_data_reader;
+  CPT(GeomVertexData) _vertex_data;
   int _array;
-  const GeomVertexArrayDataPipelineReader *_array_reader;
-  bool _owns_reader;
+  CPT(GeomVertexArrayData) _array_data;
 
+  Thread *_current_thread;
   GeomVertexColumn::Packer *_packer;
   int _stride;
 

@@ -1891,8 +1891,11 @@ make_array_writers() {
   nassertv(!_got_array_writers);
 
   _array_writers.reserve(_cdata->_arrays.size());
-  GeomVertexData::Arrays::const_iterator ai;
+  GeomVertexData::Arrays::iterator ai;
   for (ai = _cdata->_arrays.begin(); ai != _cdata->_arrays.end(); ++ai) {
+    if ((*ai)->get_ref_count() > 1) {
+      (*ai) = new GeomVertexArrayData(*(*ai));
+    }
     _array_writers.push_back(new GeomVertexArrayDataPipelineWriter(*ai, _force_to_0, _current_thread));
   }
 
