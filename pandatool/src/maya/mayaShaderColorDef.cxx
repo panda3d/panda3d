@@ -270,7 +270,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
     color_gain[1] = color_gain[1] < 0.0 ? 0.0 : color_gain[1];
     _color_gain[1] *= color_gain[1];
     color_gain[2] = color_gain[2] > 1.0 ? 1.0 : color_gain[2];
-    color_gain[3] = color_gain[2] < 0.0 ? 0.0 : color_gain[2];
+    color_gain[2] = color_gain[2] < 0.0 ? 0.0 : color_gain[2];
     _color_gain[2] *= color_gain[2];
   }
   float alpha_gain;
