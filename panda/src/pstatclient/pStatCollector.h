@@ -122,6 +122,8 @@ PUBLISHED:
   INLINE void set_level(float) { }
   INLINE void add_level(float) { }
   INLINE void sub_level(float) { }
+  INLINE void add_level_now(float) { }
+  INLINE void sub_level_now(float) { }
   INLINE void flush_level() { }
   INLINE float get_level() { return 0.0; }
 
