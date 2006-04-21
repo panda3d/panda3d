@@ -263,13 +263,13 @@ void MayaShaderColorDef::
 read_surface_color(MayaShader *shader, MObject color, bool trans) {
   RGBColorf color_gain;
   if (get_vec3f_attribute(color, "colorGain", color_gain)) {
-    _color_gain[0] *= color_gain[0];
-    _color_gain[1] *= color_gain[1];
-    _color_gain[2] *= color_gain[2];
+    _color_gain[0] *= (color_gain[0] > 1.0 ? 1.0 : color_gain[0]) < 0.0 ? 0.0 : color_gain[0];
+    _color_gain[1] *= (color_gain[1] > 1.0 ? 1.0 : color_gain[1]) < 0.0 ? 0.0 : color_gain[1];
+    _color_gain[2] *= (color_gain[2] > 1.0 ? 1.0 : color_gain[2]) < 0.0 ? 0.0 : color_gain[2];
   }
   float alpha_gain;
   if (get_maya_attribute(color, "alphaGain", alpha_gain)) {
-    _color_gain[3] *= alpha_gain;
+    _color_gain[3] *= (alpha_gain > 1.0 ? 1.0 : alpha_gain) < 0.0 ? 0.0 : alpha_gain;
   }
   if (color.hasFn(MFn::kFileTexture)) {
     _color_object = new MObject(color);

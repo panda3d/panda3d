@@ -1953,7 +1953,8 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
 
             if (mayaegg_cat.is_spam()) {
               mayaegg_cat.spam() << "poly_color = " << poly_color << endl;
-              mayaegg_cat.spam() << "maya_color = " << vert.get_color() << endl;
+              mayaegg_cat.spam() << "maya_color = " << c << endl;
+              mayaegg_cat.spam() << "vert_color = " << vert.get_color() << endl;
             }
           }
         } else {
@@ -2631,6 +2632,9 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
   }
 
   primitive.set_color(rgba);
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam() << "ssa:rgba = " << rgba << endl;
+  }
 
   if (mayaegg_cat.is_spam()) {
     mayaegg_cat.spam() << "  set_shader_attributes : end\n";
