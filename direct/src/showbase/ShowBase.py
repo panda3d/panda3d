@@ -263,6 +263,15 @@ class ShowBase(DirectObject.DirectObject):
         sleepTime = self.config.GetFloat('client-sleep', 0.0)
         self.clientSleep = 0.0
         self.setSleep(sleepTime)
+        
+        # Extra sleep for running 4+ clients on a single machine
+        # adds a sleep right after the main render in igloop
+        # tends to even out the frame rate and keeps it from going
+        # to zero in the out of focus windows
+        if base.config.GetBool('multi-sleep', 1):
+            self.multiClientSleep = 1
+        else:
+            self.multiClientSleep = 0
 
         # Offscreen buffer viewing utility.
         self.bufferViewer = BufferViewer()
@@ -1286,6 +1295,8 @@ class ShowBase(DirectObject.DirectObject):
         self.graphicsEngine.renderFrame()
         if self.clusterSyncFlag:
             self.graphicsEngine.syncFrame()
+        if self.multiClientSleep:
+            time.sleep(0)
 
         # We clear the text buffer for the onScreenDebug as soon
         # as we reasonably can after the renderFrame().
