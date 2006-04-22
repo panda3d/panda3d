@@ -59,6 +59,12 @@ class MotionTrail(NodePath):
                 print "lll matrix", transform.__repr__ ( )
                 """
 
+                """
+#                transform = motion_trail.root_node_path.getTransform (motion_trail.parent_node_path).getMat ( )
+                transform = motion_trail.parent_node_path.getTransform (motion_trail.root_node_path).getMat ( )
+                print "rel matrix"
+                self.print_matrix (transform)
+
                 if (motion_trail.root_node_path != None):
     #               motion_trail.parent_node_path
 
@@ -75,16 +81,19 @@ class MotionTrail(NodePath):
 #                    print "i matrix"
 #                    self.print_matrix (i_matrix)
                     
-                    print "net matrix"
-                    self.print_matrix (net_matrix)
+#                    print "net matrix"
+#                    self.print_matrix (net_matrix)
 
-                    print "previous matrix"
-                    self.print_matrix (motion_trail.previous_matrix)
+#                    print "previous matrix"
+#                    self.print_matrix (motion_trail.previous_matrix)
 
-                    matrix = Mat4 (net_matrix)
-                    matrix.invertInPlace ( )
-                    print "inverse matrix"
-                    self.print_matrix (matrix)
+#                    print "previous rel matrix"
+#                    self.print_matrix (motion_trail.previous_rel_matrix)
+
+#                    matrix = Mat4 (net_matrix)
+#                    matrix.invertInPlace ( )
+#                    print "inverse matrix"
+#                    self.print_matrix (matrix)
 
                     relative_matrix = Mat4 (Mat4.identMat ( ))                    
                     relative_matrix.multiply (matrix, motion_trail.previous_matrix)
@@ -95,9 +104,10 @@ class MotionTrail(NodePath):
                     print "relative_matrix #2"
                     self.print_matrix (relative_matrix)
 
-
                 motion_trail.previous_matrix = Mat4 (net_matrix)
-
+                motion_trail.previous_rel_matrix = Mat4 (net_matrix)
+                """
+                
                 """
                 current_matrix = Mat4.translateMat (Vec3 (0.0, 8.0, 0.0))
 
@@ -115,12 +125,13 @@ class MotionTrail(NodePath):
                 print "relative_matrix 222", relative_matrix.__repr__ ( )
                 """
                 
-                if (False and transform != None):
+                transform = Mat4 (motion_trail.getNetTransform ( ).getMat ( ))
+                if (transform != None):
                     motion_trail.update_motion_trail (current_time, transform)
 
             index += 1
 
- #       print "motion_trail_task ( ): time =", task.time
+#        print "motion_trail_task ( ): time =", task.time, "total_motion_trails", total_motion_trails
 
         return Task.cont
 
@@ -185,7 +196,8 @@ class MotionTrail(NodePath):
 
 
         if (MotionTrail.task_added == False):
-            taskMgr.add (self.motion_trail_task, "motion_trail_task", priority = 50)
+#            taskMgr.add (self.motion_trail_task, "motion_trail_task", priority = 50)
+            taskMgr.add (self.motion_trail_task, "motion_trail_task")
             MotionTrail.task_added = True
 
         return
@@ -384,6 +396,13 @@ class MotionTrail(NodePath):
                     inverse_matrix = Mat4 (transform)
                     inverse_matrix.invertInPlace ( ) 
                     
+                    """                        
+                    print "current matrix"
+                    self.print_matrix (transform)
+                    print "inverse current matrix"
+                    self.print_matrix (inverse_matrix)
+                    """                        
+
                 segment_index = 0
                 while (segment_index < total_segments):                    
                     motion_trail_frame_start = self.frame_list [segment_index]
@@ -409,17 +428,28 @@ class MotionTrail(NodePath):
                     total_vertex_segments = self.total_vertices - 1
 
                     if (self.calculate_relative_matrix):
-                        start_transform = Mat4 (Mat4.identMat ( ))
-                        end_transform = Mat4 (Mat4.identMat ( ))
-#                        start_transform = Mat4 ( )
-#                        end_transform = Mat4 ( )
-#                        start_transform.multiply (motion_trail_frame_start.transform, inverse_matrix)
-#                        end_transform.multiply (motion_trail_frame_end.transform, inverse_matrix)
-                        start_transform.multiply (inverse_matrix, motion_trail_frame_start.transform)
-                        end_transform.multiply (inverse_matrix, motion_trail_frame_end.transform)
+                        start_transform = Mat4 ( )
+                        end_transform = Mat4 ( )
+#                        start_transform.multiply (inverse_matrix, motion_trail_frame_start.transform)
+#                        end_transform.multiply (inverse_matrix, motion_trail_frame_end.transform)
 
-                        print "relative_matrix 111", start_transform.__repr__ ( )
-                        print "relative_matrix 222", end_transform.__repr__ ( )
+                        start_transform.multiply (motion_trail_frame_start.transform, inverse_matrix)
+                        end_transform.multiply (motion_trail_frame_end.transform, inverse_matrix)
+
+#                        start_transform.transposeInPlace ( )
+#                        end_transform.transposeInPlace ( )
+
+                        """                        
+                        print "start matrix"
+                        self.print_matrix (motion_trail_frame_start.transform)
+                        print "relative_matrix 111"
+                        self.print_matrix (start_transform)
+                                                
+                        print "end matrix"
+                        self.print_matrix (motion_trail_frame_end.transform)
+                        print "relative_matrix 222" 
+                        self.print_matrix (end_transform)
+                        """
 
                     else:
                         start_transform = motion_trail_frame_start.transform
