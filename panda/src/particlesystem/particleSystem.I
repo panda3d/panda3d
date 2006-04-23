@@ -53,16 +53,13 @@ clear_to_initial() {
   BaseParticle *bp;
   int i;
 
-  //int particle_pool_size = _particle_pool_size;
-  //resize_pool(0);
-  //resize_pool(particle_pool_size);
-
   for(i = 0; i < (int)_physics_objects.size(); i++) {
     bp = (BaseParticle *)_physics_objects[i].p();
     if(bp->get_alive()) {
       kill_particle(i);
     }
   }
+  _tics_since_birth = 0.0f;
 }
 
 ////             ///////////////////////////////////////////////////////
