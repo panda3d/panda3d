@@ -37,6 +37,7 @@ PUBLISHED:
   INLINE bool get_mass_dependent() const;
 
   INLINE void set_vector_masks(bool x, bool y, bool z);
+  INLINE LVector3f get_vector_masks();
 
   LVector3f get_vector(const PhysicsObject *po);
 

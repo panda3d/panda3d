@@ -62,3 +62,12 @@ set_vector_masks(bool x, bool y, bool z) {
   _y_mask = y;
   _z_mask = z;
 }
+
+////////////////////////////////////////////////////////////////////
+//    Function : set_vector_masks
+//      Access : Public
+////////////////////////////////////////////////////////////////////
+INLINE LVector3f LinearForce::
+get_vector_masks() {
+  return LVector3f(_x_mask, _y_mask, _z_mask);
+}
