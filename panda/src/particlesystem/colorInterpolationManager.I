@@ -170,6 +170,17 @@ get_time_end() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : ColorInterpolationSegment::is_modulated
+//      Access : public
+// Description : Returns whether the function is additive or modulated.
+////////////////////////////////////////////////////////////////////
+
+INLINE bool ColorInterpolationSegment::
+is_modulated() const {
+  return _is_modulated;
+}
+
+////////////////////////////////////////////////////////////////////
 //    Function : ColorInterpolationSegment::is_enabled()
 //      Access : public
 // Description : Returns whether the segments effects are being applied.
@@ -230,6 +241,19 @@ INLINE void ColorInterpolationSegment::
 set_time_end(const float time) {
   _t_end = time;
   _t_total = _t_end-_t_begin;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : ColorInterpolationSegment::set_is_modulated
+//      Access : public
+// Description : Sets how the function is applied to the final color.
+//               If true, the value is multiplied. If false, the value
+//               is simply added. Default is true.
+////////////////////////////////////////////////////////////////////
+
+INLINE void ColorInterpolationSegment::
+set_is_modulated(const bool flag) {
+  _is_modulated = flag;
 }
 
 ////////////////////////////////////////////////////////////////////

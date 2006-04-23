@@ -252,12 +252,14 @@ PUBLISHED:
   INLINE TypedReferenceCount* get_function() const;
   INLINE float get_time_begin() const;
   INLINE float get_time_end() const;
+  INLINE bool is_modulated() const;
   INLINE int get_id() const;
   INLINE bool is_enabled() const;
 
   INLINE void set_function(ColorInterpolationFunction* function);
   INLINE void set_time_begin(const float time);
   INLINE void set_time_end(const float time);
+  INLINE void set_is_modulated(const bool flag);
   INLINE void set_enabled(const bool enabled);
 
 public:
@@ -268,6 +270,7 @@ protected:
   float _t_begin;
   float _t_end;
   float _t_total;
+  bool _is_modulated;
   bool _enabled;
   const int _id;
 };

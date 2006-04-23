@@ -208,6 +208,7 @@ ColorInterpolationSegment(ColorInterpolationFunction* function,
   _t_begin(time_begin),
   _t_end(time_end),
   _t_total(time_end-time_begin),
+  _is_modulated(true),
   _enabled(true),
   _id(id) {
 }
@@ -224,6 +225,7 @@ ColorInterpolationSegment(const ColorInterpolationSegment &copy) :
   _t_begin(copy._t_begin),
   _t_end(copy._t_end),
   _t_total(copy._t_total),
+  _is_modulated(copy._is_modulated),
   _enabled(copy._enabled),
   _id(copy._id) {
 }
@@ -411,7 +413,7 @@ clear_to_initial() {
 Colorf ColorInterpolationManager::
 generateColor(const float interpolated_time) {
   bool segment_found = false;
-  Colorf out(0.0f,0.0f,0.0f,0.0f);
+  Colorf out(_default_color);
   ColorInterpolationSegment *cur_seg;
   pvector<PT(ColorInterpolationSegment)>::iterator iter;
 
@@ -421,15 +423,27 @@ generateColor(const float interpolated_time) {
         interpolated_time >= cur_seg->get_time_begin() 
         && interpolated_time <= cur_seg->get_time_end() ) {
       segment_found = true;
-      out += cur_seg->interpolateColor(interpolated_time);
-      out[0] = max(0.0f, min(out[0], 1.0f));
-      out[1] = max(0.0f, min(out[1], 1.0f));
-      out[2] = max(0.0f, min(out[2], 1.0f));
-      out[3] = max(0.0f, min(out[3], 1.0f));
+      Colorf cur_color = cur_seg->interpolateColor(interpolated_time);
+      if( cur_seg->is_modulated() ) {
+        out[0] *= cur_color[0];
+        out[1] *= cur_color[1];
+        out[2] *= cur_color[2];
+        out[3] *= cur_color[3];
+      }
+      else {
+        out[0] += cur_color[0];
+        out[1] += cur_color[1];
+        out[2] += cur_color[2];
+        out[3] += cur_color[3];
+      }
     }
   }
   
   if(segment_found) {
+      out[0] = max(0.0f, min(out[0], 1.0f));
+      out[1] = max(0.0f, min(out[1], 1.0f));
+      out[2] = max(0.0f, min(out[2], 1.0f));
+      out[3] = max(0.0f, min(out[3], 1.0f));
     return out;
   }
   
