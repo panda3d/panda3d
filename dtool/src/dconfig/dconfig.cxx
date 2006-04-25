@@ -18,11 +18,7 @@
 
 #include "dconfig.h"
 
-namespace Config {
-
-  clock_t total_time_config_init = 0;
-  clock_t total_time_external_init = 0;
-  int total_num_get = 0;
-
-}
+clock_t Config::total_time_config_init = 0;
+clock_t Config::total_time_external_init = 0;
+int Config::total_num_get = 0;
 

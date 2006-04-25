@@ -7,8 +7,9 @@
 #begin lib_target
   #define TARGET pgraph
 
-  // This directory is too big to combine into a single composite file.
-  #define DONT_COMBINE 1
+  // This directory is too big to combine into a single composite
+  // file--at least on Windows.
+  #define DONT_COMBINE $[WINDOWS_PLATFORM]
 
   #define SOURCES \
     accumulatedAttribs.I accumulatedAttribs.h \
