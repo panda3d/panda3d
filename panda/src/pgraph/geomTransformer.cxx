@@ -128,8 +128,9 @@ bool GeomTransformer::
 transform_vertices(GeomNode *node, const LMatrix4f &mat) {
   bool any_changed = false;
 
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler) {
-    GeomNode::CDStageWriter cdata(node->_cycler, pipeline_stage);
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler, current_thread) {
+    GeomNode::CDStageWriter cdata(node->_cycler, pipeline_stage, current_thread);
     GeomNode::Geoms::iterator gi;
     for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
       GeomNode::GeomEntry &entry = (*gi);

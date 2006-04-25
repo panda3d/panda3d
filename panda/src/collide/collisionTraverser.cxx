@@ -41,7 +41,6 @@
 #include "indent.h"
 
 PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
-PStatCollector CollisionTraverser::_reset_prev_pcollector("App:Collisions:Reset");
 
 PStatCollector CollisionTraverser::_cnode_volume_pcollector("Collision Volumes:CollisionNode");
 PStatCollector CollisionTraverser::_gnode_volume_pcollector("Collision Volumes:GeomNode");
@@ -313,16 +312,12 @@ traverse(const NodePath &root) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::reset_prev_transform
 //       Access: Published
-//  Description: Once the collision traversal has finished, resets all
-//               of the velocity deltas in the scene graph by setting
-//               the "previous" transform to the current transform.
-//               This must be called at least once per frame for
-//               collisions to respect this velocity setting properly.
+//  Description: This method is deprecated.  Just call
+//               PandaNode::reset_all_prev_transform() now.
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
-reset_prev_transform(const NodePath &root) {
-  PStatTimer timer(_reset_prev_pcollector);
-  r_reset_prev_transform(root.node());
+reset_prev_transform(const NodePath &) {
+  PandaNode::reset_all_prev_transform();
 }
 
 #ifdef DO_COLLISION_RECORDING
@@ -881,22 +876,6 @@ remove_handler(CollisionTraverser::Handlers::iterator hi) {
   }
 
   return hi;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::r_reset_prev_transform
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void CollisionTraverser::
-r_reset_prev_transform(PandaNode *node) {
-  node->reset_prev_transform();
-
-  PandaNode::Children children = node->get_children();
-  int num_children = children.get_num_children();
-  for (int i = 0; i < num_children; ++i) {
-    r_reset_prev_transform(children.get_child(i));
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

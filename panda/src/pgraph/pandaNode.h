@@ -43,6 +43,8 @@
 #include "pnotify.h"
 #include "updateSeq.h"
 #include "deletedChain.h"
+#include "pandaNodeChain.h"
+#include "pStatCollector.h"
 
 #ifdef HAVE_PYTHON
 
@@ -66,7 +68,8 @@ class GeomTransformer;
 //               is the base class of all specialized nodes, and also
 //               serves as a generic node with no special properties.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PandaNode : public TypedWritable, public Namable,
+class EXPCL_PANDA PandaNode : public TypedWritable, public Namable, 
+                              public LinkedListNode,
                               virtual public ReferenceCount {
 PUBLISHED:
   PandaNode(const string &name);
@@ -169,6 +172,8 @@ PUBLISHED:
   void set_prev_transform(const TransformState *transform);
   INLINE const TransformState *get_prev_transform() const;
   void reset_prev_transform();
+  INLINE bool has_dirty_prev_transform() const;
+  static void reset_all_prev_transform();
 
   void set_tag(const string &key, const string &value);
   INLINE string get_tag(const string &key) const;
@@ -303,6 +308,9 @@ private:
   void fix_path_lengths(int pipeline_stage);
   void r_list_descendants(ostream &out, int indent_level) const;
 
+  INLINE void set_dirty_prev_transform();
+  INLINE void clear_dirty_prev_transform();
+
 public:
   // This must be declared public so that VC6 will allow the nested
   // CData class to access it.
@@ -323,7 +331,7 @@ public:
   };
 
 private:
-  typedef ov_multiset<DownConnection> Down;
+  typedef RefCountObj< ov_multiset<DownConnection> > Down;
 
   class EXPCL_PANDA UpConnection {
   public:
@@ -336,7 +344,7 @@ private:
     // children do not circularly reference each other.
     PandaNode *_parent;
   };
-  typedef ov_set<UpConnection> Up;
+  typedef RefCountObj< ov_set<UpConnection> > Up;
 
   // We also maintain a set of NodePathComponents in the node.  This
   // represents the set of instances of this node that we have
@@ -351,6 +359,9 @@ private:
   // mutex.
   Paths _paths;
   Mutex _paths_lock;
+
+  bool _dirty_prev_transform;
+  static PandaNodeChain _dirty_prev_transforms;
 
   // This is used to maintain a table of keyed data on each node, for
   // the user's purposes.
@@ -368,7 +379,7 @@ private:
   // are grouped into a different one.
 
   // The CDataLight object stores the lightweight parts of the node
-  // that are likely to change fairly often: transform and stage.
+  // that are likely to change fairly often: transform and state.
   class EXPCL_PANDA CDataLight : public CycleData {
   public:
     INLINE CDataLight();
@@ -529,9 +540,19 @@ private:
     void fillin_down_list(Down &down_list,
                           DatagramIterator &scan, BamReader *manager);
 
-    Down _down;
-    Down _stashed;
-    Up _up;
+    INLINE const Down *get_down() const;
+    INLINE Down *modify_down();
+    INLINE const Down *get_stashed() const;
+    INLINE Down *modify_stashed();
+    INLINE const Up *get_up() const;
+    INLINE Up *modify_up();
+
+  private:
+    // We store the child lists by reference, so we can copy them
+    // quickly.  We perform copy-on-write when necessary.
+    PT(Down) _down;
+    PT(Down) _stashed;
+    PT(Up) _up;
   };
 
   PipelineCycler<CDataLinks> _cycler_links;
@@ -545,37 +566,16 @@ private:
 
   static DrawMask _overall_bit;
 
+  static PStatCollector _reset_prev_pcollector;
+
 public:
-  // This class is returned from get_children_copy().  Use it to walk
-  // through the list of children, particularly with a self-modifying
-  // loop, since the list of children is copied first and is thus safe
-  // from self modification.
-  class EXPCL_PANDA ChildrenCopy {
-  public:
-    ChildrenCopy(const CDLinksReader &cdata);
-    INLINE ChildrenCopy(const ChildrenCopy &copy);
-    INLINE void operator = (const ChildrenCopy &copy);
-
-    INLINE int get_num_children() const;
-    INLINE PandaNode *get_child(int n) const;
-
-  private:
-    typedef PTA(PT(PandaNode)) List;
-    List _list;
-  };
-
-  // This class is returned from get_children().  Use this interface
-  // when you want to walk through the list of children with less
-  // overhead than get_children_copy(); in single-threaded Panda, a
-  // copy is not made first, so this interface is fast.  However, this
-  // does not protect you from self-modifying loops.  Also, since the
-  // lock is kept open the whole time, this is generally unsafe to use
-  // in threaded code (which would then hold the lock on the root node
-  // during an entire traversal), so when pipelining is enabled,
-  // get_children() returns the same thing as get_children_copy().
-#ifdef DO_PIPELINING
-  typedef ChildrenCopy Children;
-#else
+  // This class is returned from get_children().  Use it to walk
+  // through the list of children.  This is faster, and safer, than
+  // walking through the children one at a time via
+  // get_num_children()/get_child(), since the list of children is
+  // saved out ahead of time, rather than having to reacquire the lock
+  // with each iteration, or to keep the lock held for the entire
+  // pass.
   class EXPCL_PANDA Children {
   public:
     INLINE Children(const CDLinksReader &cdata);
@@ -586,28 +586,10 @@ public:
     INLINE PandaNode *get_child(int n) const;
 
   private:
-    CDLinksReader _cdata;
+    CPT(Down) _down;
   };
-#endif  // DO_PIPELINING
 
   // Similarly for stashed children.
-  class EXPCL_PANDA StashedCopy {
-  public:
-    StashedCopy(const CDLinksReader &cdata);
-    INLINE StashedCopy(const StashedCopy &copy);
-    INLINE void operator = (const StashedCopy &copy);
-
-    INLINE int get_num_stashed() const;
-    INLINE PandaNode *get_stashed(int n) const;
-
-  private:
-    typedef PTA(PT(PandaNode)) List;
-    List _list;
-  };
-
-#ifdef DO_PIPELINING
-  typedef StashedCopy Stashed;
-#else
   class EXPCL_PANDA Stashed {
   public:
     INLINE Stashed(const CDLinksReader &cdata);
@@ -618,30 +600,26 @@ public:
     INLINE PandaNode *get_stashed(int n) const;
 
   private:
-    CDLinksReader _cdata;
+    CPT(Down) _stashed;
   };
-#endif  // DO_PIPELINING
 
-  // This class is returned from get_parents_copy().
-  class EXPCL_PANDA ParentsCopy {
+  // This class is returned from get_parents().
+  class EXPCL_PANDA Parents {
   public:
-    ParentsCopy(const CDLinksReader &cdata);
-    INLINE ParentsCopy(const ParentsCopy &copy);
-    INLINE void operator = (const ParentsCopy &copy);
+    INLINE Parents(const CDLinksReader &cdata);
+    INLINE Parents(const Parents &copy);
+    INLINE void operator = (const Parents &copy);
 
     INLINE int get_num_parents() const;
     INLINE PandaNode *get_parent(int n) const;
 
   private:
-    typedef PTA(PT(PandaNode)) List;
-    List _list;
+    CPT(Up) _up;
   };
 
-  INLINE ChildrenCopy get_children_copy() const;
-  INLINE Children get_children() const;
-  INLINE StashedCopy get_stashed_copy() const;
-  INLINE Stashed get_stashed() const;
-  INLINE ParentsCopy get_parents_copy() const;
+  INLINE Children get_children(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE Stashed get_stashed(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE Parents get_parents(Thread *current_thread = Thread::get_current_thread()) const;
 
 public:
   static void register_with_read_factory();

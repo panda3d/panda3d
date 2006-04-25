@@ -86,20 +86,23 @@ compare_draw_mask(DrawMask running_draw_mask, DrawMask camera_mask) const {
 INLINE int PandaNode::
 get_num_parents() const {
   CDLinksReader cdata(_cycler_links);
-  return cdata->_up.size();
+  return cdata->get_up()->size();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_parent
 //       Access: Published
 //  Description: Returns the nth parent node of this node.  See
-//               get_num_parents().
+//               get_num_parents().  Also see get_parents(), if your
+//               intention is to iterate through the complete list of
+//               parents; get_parents() is preferable in this case.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::
 get_parent(int n) const {
   CDLinksReader cdata(_cycler_links);
-  nassertr(n >= 0 && n < (int)cdata->_up.size(), NULL);
-  return cdata->_up[n].get_parent();
+  const Up &up = *cdata->get_up();
+  nassertr(n >= 0 && n < (int)up.size(), NULL);
+  return up[n].get_parent();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,20 +128,23 @@ find_parent(PandaNode *node) const {
 INLINE int PandaNode::
 get_num_children() const {
   CDLinksReader cdata(_cycler_links);
-  return cdata->_down.size();
+  return cdata->get_down()->size();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_child
 //       Access: Published
 //  Description: Returns the nth child node of this node.  See
-//               get_num_children().
+//               get_num_children().  Also see get_children(), if your
+//               intention is to iterate through the complete list of
+//               children; get_children() is preferable in this case.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::
 get_child(int n) const {
   CDLinksReader cdata(_cycler_links);
-  nassertr(n >= 0 && n < (int)cdata->_down.size(), NULL);
-  return cdata->_down[n].get_child();
+  const Down &down = *cdata->get_down();
+  nassertr(n >= 0 && n < (int)down.size(), NULL);
+  return down[n].get_child();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,8 +157,9 @@ get_child(int n) const {
 INLINE int PandaNode::
 get_child_sort(int n) const {
   CDLinksReader cdata(_cycler_links);
-  nassertr(n >= 0 && n < (int)cdata->_down.size(), -1);
-  return cdata->_down[n].get_sort();
+  const Down &down = *cdata->get_down();
+  nassertr(n >= 0 && n < (int)down.size(), -1);
+  return down[n].get_sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -229,20 +236,24 @@ unstash_child(PandaNode *child_node) {
 INLINE int PandaNode::
 get_num_stashed() const {
   CDLinksReader cdata(_cycler_links);
-  return cdata->_stashed.size();
+  return cdata->get_stashed()->size();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_stashed
 //       Access: Published
-//  Description: Returns the nth stashed node of this node.  See
-//               get_num_stashed().
+//  Description: Returns the nth stashed child of this node.  See
+//               get_num_stashed().  Also see get_stashed(), if your
+//               intention is to iterate through the complete list of
+//               stashed children; get_stashed() is preferable in this
+//               case.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::
 get_stashed(int n) const {
   CDLinksReader cdata(_cycler_links);
-  nassertr(n >= 0 && n < (int)cdata->_stashed.size(), NULL);
-  return cdata->_stashed[n].get_child();
+  const Down &stashed = *cdata->get_stashed();
+  nassertr(n >= 0 && n < (int)stashed.size(), NULL);
+  return stashed[n].get_child();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -255,8 +266,9 @@ get_stashed(int n) const {
 INLINE int PandaNode::
 get_stashed_sort(int n) const {
   CDLinksReader cdata(_cycler_links);
-  nassertr(n >= 0 && n < (int)cdata->_stashed.size(), -1);
-  return cdata->_stashed[n].get_sort();
+  const Down &stashed = *cdata->get_stashed();
+  nassertr(n >= 0 && n < (int)stashed.size(), -1);
+  return stashed[n].get_sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -420,6 +432,20 @@ const TransformState *PandaNode::
 get_prev_transform() const {
   CDLightReader cdata(_cycler_light);
   return cdata->_prev_transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::has_dirty_prev_transform
+//       Access: Published
+//  Description: Returns true if this node has the
+//               _dirty_prev_transform flag set, which indicates its
+//               _prev_transform is different from its _transform
+//               value (in pipeline stage 0).  In this case, the node
+//               will be visited by reset_prev_transform().
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaNode::
+has_dirty_prev_transform() const {
+  return _dirty_prev_transform;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -691,96 +717,62 @@ mark_internal_bounds_stale(int pipeline_stage) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_children_copy
-//       Access: Public
-//  Description: Returns an object that can be used to walk through
-//               the list of children of the node.  Unlike
-//               get_children(), this function actually returns an
-//               object that protects you from self-modifying loops,
-//               because it makes and returns a copy of the complete
-//               children list.
-////////////////////////////////////////////////////////////////////
-INLINE PandaNode::ChildrenCopy PandaNode::
-get_children_copy() const {
-  CDLinksReader cdata(_cycler_links);
-  return ChildrenCopy(cdata);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_children
 //       Access: Public
 //  Description: Returns an object that can be used to walk through
 //               the list of children of the node.  When you intend to
 //               visit multiple children, using this is slightly
 //               faster than calling get_child() directly on the
-//               PandaNode, since this object keeps the PipelineCycler
-//               open the whole time.
+//               PandaNode, since this object avoids reopening the
+//               PipelineCycler each time.
 //
-//               However, this object does not protect you from
-//               self-modifying loops (e.g. adding or removing
-//               children during traversal).  Furthermore, if Panda is
-//               compiled with pipelining enabled, this method is
-//               compiled to behave exactly as get_children_copy(): it
-//               returns a copy.  This is intended to reduce the risk
-//               of deadlocks.
+//               This object also protects you from self-modifying
+//               loops (e.g. adding or removing children during
+//               traversal), since a virtual copy of the children is
+//               made ahead of time.  The virtual copy is fast--it is
+//               a form of copy-on-write, so the list is not actually
+//               copied unless it is modified during the traversal.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::Children PandaNode::
-get_children() const {
-  CDLinksReader cdata(_cycler_links);
+get_children(Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   return Children(cdata);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_stashed_copy
-//       Access: Public
-//  Description: Returns an object that can be used to walk through
-//               the list of stashed children of the node.  Unlike
-//               get_stashed(), this function actually returns an
-//               object that protects you from self-modifying loops,
-//               because it makes and returns a copy of the complete
-//               stashed list.
-////////////////////////////////////////////////////////////////////
-INLINE PandaNode::StashedCopy PandaNode::
-get_stashed_copy() const {
-  CDLinksReader cdata(_cycler_links);
-  return StashedCopy(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_stashed
 //       Access: Public
 //  Description: Returns an object that can be used to walk through
-//               the list of stashed children of the node.  When you
-//               intend to visit multiple children, using this is
-//               slightly faster than calling get_stashed() directly
-//               on the PandaNode, since this object keeps the
-//               PipelineCycler open the whole time.
+//               the list of children of the node.  When you intend to
+//               visit multiple children, using this is slightly
+//               faster than calling get_stashed() directly on the
+//               PandaNode, since this object avoids reopening the
+//               PipelineCycler each time.
 //
-//               However, this object does not protect you from
-//               self-modifying loops (e.g. adding or removing
-//               stashed during traversal).  Furthermore, if Panda is
-//               compiled with pipelining enabled, this method is
-//               compiled to behave exactly as get_stashed_copy(): it
-//               returns a copy.  This is intended to reduce the risk
-//               of deadlocks.
+//               This object also protects you from self-modifying
+//               loops (e.g. adding or removing children during
+//               traversal), since a virtual copy of the children is
+//               made ahead of time.  The virtual copy is fast--it is
+//               a form of copy-on-write, so the list is not actually
+//               copied unless it is modified during the traversal.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::Stashed PandaNode::
-get_stashed() const {
-  CDLinksReader cdata(_cycler_links);
+get_stashed(Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   return Stashed(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::get_parents_copy
+//     Function: PandaNode::get_parents
 //       Access: Public
 //  Description: Returns an object that can be used to walk through
 //               the list of parents of the node, similar to
-//               get_children_copy()/
+//               get_children() and get_stashed().
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode::ParentsCopy PandaNode::
-get_parents_copy() const {
-  CDLinksReader cdata(_cycler_links);
-  return ParentsCopy(cdata);
+INLINE PandaNode::Parents PandaNode::
+get_parents(Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
+  return Parents(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -790,11 +782,46 @@ get_parents_copy() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
 do_find_parent(PandaNode *node, const CDataLinks *cdata) const {
-  Up::const_iterator ui = cdata->_up.find(UpConnection(node));
-  if (ui == cdata->_up.end()) {
+  const Up &up = *cdata->get_up();
+  Up::const_iterator ui = up.find(UpConnection(node));
+  if (ui == up.end()) {
     return -1;
   }
-  return ui - cdata->_up.begin();
+  return ui - up.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_dirty_prev_transform
+//       Access: Private
+//  Description: Sets the dirty_prev_transform flag, and adds the node
+//               to the _dirty_prev_transforms chain.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+set_dirty_prev_transform() {
+  if (!_dirty_prev_transform) {
+    MutexHolder holder(_dirty_prev_transforms._lock);
+    if (!_dirty_prev_transform) {
+      LinkedListNode::insert_before(&_dirty_prev_transforms);
+      _dirty_prev_transform = true;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_dirty_prev_transform
+//       Access: Private
+//  Description: Clears the dirty_prev_transform flag, and removes the node
+//               from the _dirty_prev_transforms chain.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+clear_dirty_prev_transform() {
+  if (_dirty_prev_transform) {
+    MutexHolder holder(_dirty_prev_transforms._lock);
+    if (_dirty_prev_transform) {
+      LinkedListNode::remove_from_list();
+      _dirty_prev_transform = false;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -936,10 +963,85 @@ CDataBounds() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::CDataLinks::
-CDataLinks() {
+CDataLinks() : 
+  _down(new PandaNode::Down),
+  _stashed(new PandaNode::Down),
+  _up(new PandaNode::Up)
+{
 }
 
-#ifndef DO_PIPELINING
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CDataLinks::get_down
+//       Access: Public
+//  Description: Returns a read-only pointer to the _down list.
+////////////////////////////////////////////////////////////////////
+INLINE const PandaNode::Down *PandaNode::CDataLinks::
+get_down() const {
+  return _down;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CDataLinks::modify_down
+//       Access: Public
+//  Description: Returns a modifiable, unique pointer to the _down
+//               list.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::Down *PandaNode::CDataLinks::
+modify_down() {
+  if (_down->get_ref_count() > 1) {
+    _down = new Down(*_down);
+  }
+  return _down;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CDataLinks::get_stashed
+//       Access: Public
+//  Description: Returns a read-only pointer to the _stashed list.
+////////////////////////////////////////////////////////////////////
+INLINE const PandaNode::Down *PandaNode::CDataLinks::
+get_stashed() const {
+  return _stashed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CDataLinks::modify_stashed
+//       Access: Public
+//  Description: Returns a modifiable, unique pointer to the _stashed
+//               list.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::Down *PandaNode::CDataLinks::
+modify_stashed() {
+  if (_stashed->get_ref_count() > 1) {
+    _stashed = new Down(*_stashed);
+  }
+  return _stashed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CDataLinks::get_up
+//       Access: Public
+//  Description: Returns a read-only pointer to the _up list.
+////////////////////////////////////////////////////////////////////
+INLINE const PandaNode::Up *PandaNode::CDataLinks::
+get_up() const {
+  return _up;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CDataLinks::modify_up
+//       Access: Public
+//  Description: Returns a modifiable, unique pointer to the _up
+//               list.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::Up *PandaNode::CDataLinks::
+modify_up() {
+  if (_up->get_ref_count() > 1) {
+    _up = new Up(*_up);
+  }
+  return _up;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Children::Constructor
 //       Access: Public
@@ -947,12 +1049,10 @@ CDataLinks() {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::Children::
 Children(const PandaNode::CDLinksReader &cdata) :
-  _cdata(cdata)
+  _down(cdata->get_down())
 {
 }
-#endif  // DO_PIPELINING
 
-#ifndef DO_PIPELINING
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Children::Copy Constructor
 //       Access: Public
@@ -960,12 +1060,10 @@ Children(const PandaNode::CDLinksReader &cdata) :
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::Children::
 Children(const PandaNode::Children &copy) :
-  _cdata(copy._cdata)
+  _down(copy._down)
 {
 }
-#endif  // DO_PIPELINING
 
-#ifndef DO_PIPELINING
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Children::Copy Assignment Operator
 //       Access: Public
@@ -973,11 +1071,9 @@ Children(const PandaNode::Children &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::Children::
 operator = (const PandaNode::Children &copy) {
-  _cdata = copy._cdata;
+  _down = copy._down;
 }
-#endif  // DO_PIPELINING
 
-#ifndef DO_PIPELINING
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Children::get_num_children
 //       Access: Public
@@ -985,11 +1081,9 @@ operator = (const PandaNode::Children &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::Children::
 get_num_children() const {
-  return _cdata->_down.size();
+  return _down->size();
 }
-#endif  // DO_PIPELINING
 
-#ifndef DO_PIPELINING
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Children::get_child
 //       Access: Public
@@ -997,54 +1091,10 @@ get_num_children() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::Children::
 get_child(int n) const {
-  nassertr(n >= 0 && n < (int)_cdata->_down.size(), NULL);
-  return _cdata->_down[n].get_child();
-}
-#endif  // DO_PIPELINING
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::ChildrenCopy::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE PandaNode::ChildrenCopy::
-ChildrenCopy(const PandaNode::ChildrenCopy &copy) :
-  _list(copy._list)
-{
+  nassertr(n >= 0 && n < (int)_down->size(), NULL);
+  return (*_down)[n].get_child();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::ChildrenCopy::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::ChildrenCopy::
-operator = (const PandaNode::ChildrenCopy &copy) {
-  _list = copy._list;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::ChildrenCopy::get_num_children
-//       Access: Public
-//  Description: Returns the number of children of the node.
-////////////////////////////////////////////////////////////////////
-INLINE int PandaNode::ChildrenCopy::
-get_num_children() const {
-  return _list.size();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::ChildrenCopy::get_child
-//       Access: Public
-//  Description: Returns the nth child of the node.
-////////////////////////////////////////////////////////////////////
-INLINE PandaNode *PandaNode::ChildrenCopy::
-get_child(int n) const {
-  nassertr(n >= 0 && n < (int)_list.size(), NULL);
-  return _list[n];
-}
-
-#ifndef DO_PIPELINING
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Stashed::Constructor
 //       Access: Public
@@ -1052,12 +1102,10 @@ get_child(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::Stashed::
 Stashed(const PandaNode::CDLinksReader &cdata) :
-  _cdata(cdata)
+  _stashed(cdata->get_stashed())
 {
 }
-#endif  // DO_PIPELINING
 
-#ifndef DO_PIPELINING
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Stashed::Copy Constructor
 //       Access: Public
@@ -1065,12 +1113,10 @@ Stashed(const PandaNode::CDLinksReader &cdata) :
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::Stashed::
 Stashed(const PandaNode::Stashed &copy) :
-  _cdata(copy._cdata)
+  _stashed(copy._stashed)
 {
 }
-#endif  // DO_PIPELINING
 
-#ifndef DO_PIPELINING
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Stashed::Copy Assignment Operator
 //       Access: Public
@@ -1078,11 +1124,9 @@ Stashed(const PandaNode::Stashed &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::Stashed::
 operator = (const PandaNode::Stashed &copy) {
-  _cdata = copy._cdata;
+  _stashed = copy._stashed;
 }
-#endif  // DO_PIPELINING
 
-#ifndef DO_PIPELINING
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Stashed::get_num_stashed
 //       Access: Public
@@ -1090,11 +1134,9 @@ operator = (const PandaNode::Stashed &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::Stashed::
 get_num_stashed() const {
-  return _cdata->_stashed.size();
+  return _stashed->size();
 }
-#endif  // DO_PIPELINING
 
-#ifndef DO_PIPELINING
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Stashed::get_stashed
 //       Access: Public
@@ -1102,91 +1144,59 @@ get_num_stashed() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::Stashed::
 get_stashed(int n) const {
-  nassertr(n >= 0 && n < (int)_cdata->_stashed.size(), NULL);
-  return _cdata->_stashed[n].get_child();
+  nassertr(n >= 0 && n < (int)_stashed->size(), NULL);
+  return (*_stashed)[n].get_child();
 }
-#endif  // DO_PIPELINING
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::StashedCopy::Copy Constructor
+//     Function: PandaNode::Parents::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode::StashedCopy::
-StashedCopy(const PandaNode::StashedCopy &copy) :
-  _list(copy._list)
+INLINE PandaNode::Parents::
+Parents(const PandaNode::CDLinksReader &cdata) :
+  _up(cdata->get_up())
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::StashedCopy::Copy Assignment Operator
+//     Function: PandaNode::Parents::Copy Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::StashedCopy::
-operator = (const PandaNode::StashedCopy &copy) {
-  _list = copy._list;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::StashedCopy::get_num_stashed
-//       Access: Public
-//  Description: Returns the number of stashed children of the node.
-////////////////////////////////////////////////////////////////////
-INLINE int PandaNode::StashedCopy::
-get_num_stashed() const {
-  return _list.size();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::StashedCopy::get_stashed
-//       Access: Public
-//  Description: Returns the nth stashed child of the node.
-////////////////////////////////////////////////////////////////////
-INLINE PandaNode *PandaNode::StashedCopy::
-get_stashed(int n) const {
-  nassertr(n >= 0 && n < (int)_list.size(), NULL);
-  return _list[n];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::ParentsCopy::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE PandaNode::ParentsCopy::
-ParentsCopy(const PandaNode::ParentsCopy &copy) :
-  _list(copy._list)
+INLINE PandaNode::Parents::
+Parents(const PandaNode::Parents &copy) :
+  _up(copy._up)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::ParentsCopy::Copy Assignment Operator
+//     Function: PandaNode::Parents::Copy Assignment Operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::ParentsCopy::
-operator = (const PandaNode::ParentsCopy &copy) {
-  _list = copy._list;
+INLINE void PandaNode::Parents::
+operator = (const PandaNode::Parents &copy) {
+  _up = copy._up;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::ParentsCopy::get_num_parents
+//     Function: PandaNode::Parents::get_num_parents
 //       Access: Public
 //  Description: Returns the number of parents of the node.
 ////////////////////////////////////////////////////////////////////
-INLINE int PandaNode::ParentsCopy::
+INLINE int PandaNode::Parents::
 get_num_parents() const {
-  return _list.size();
+  return _up->size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::ParentsCopy::get_parent
+//     Function: PandaNode::Parents::get_parent
 //       Access: Public
 //  Description: Returns the nth parent of the node.
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode *PandaNode::ParentsCopy::
+INLINE PandaNode *PandaNode::Parents::
 get_parent(int n) const {
-  nassertr(n >= 0 && n < (int)_list.size(), NULL);
-  return _list[n];
+  nassertr(n >= 0 && n < (int)_up->size(), NULL);
+  return (*_up)[n].get_parent();
 }

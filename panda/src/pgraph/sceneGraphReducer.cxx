@@ -62,7 +62,7 @@ flatten(PandaNode *root, int combine_siblings_bits) {
 
     // Get a copy of the children list, so we don't have to worry
     // about self-modifications.
-    PandaNode::ChildrenCopy cr = root->get_children_copy();
+    PandaNode::Children cr = root->get_children();
 
     // Now visit each of the children in turn.
     int num_children = cr.get_num_children();
@@ -257,7 +257,7 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
 
     // First, recurse on each of the children.
     {
-      PandaNode::ChildrenCopy cr = parent_node->get_children_copy();
+      PandaNode::Children cr = parent_node->get_children();
       int num_children = cr.get_num_children();
       for (int i = 0; i < num_children; i++) {
         PandaNode *child_node = cr.get_child(i);

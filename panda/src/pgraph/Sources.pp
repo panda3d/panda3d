@@ -73,6 +73,7 @@
     nodePathComponent.I nodePathComponent.h \
     nodePathLerps.h \
     pandaNode.I pandaNode.h \
+    pandaNodeChain.I pandaNodeChain.h \
     planeNode.I planeNode.h \
     pointLight.I pointLight.h \
     polylightNode.I polylightNode.h \
@@ -174,6 +175,7 @@
     nodePathComponent.cxx \
     nodePathLerps.cxx \
     pandaNode.cxx \
+    pandaNodeChain.cxx \
     planeNode.cxx \
     pointLight.cxx \
     polylightNode.cxx \
@@ -272,6 +274,7 @@
     nodePathComponent.I nodePathComponent.h \
     nodePathLerps.h \
     pandaNode.I pandaNode.h \
+    pandaNodeChain.I pandaNodeChain.h \
     planeNode.I planeNode.h \
     pointLight.I pointLight.h \
     polylightNode.I polylightNode.h \

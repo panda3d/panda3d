@@ -102,8 +102,6 @@ private:
                                 const GeometricBoundingVolume *from_node_gbv,
                                 const GeometricBoundingVolume *solid_gbv);
 
-  void r_reset_prev_transform(PandaNode *node);
-
   PStatCollector &get_pass_collector(int pass);
 
 private:
@@ -134,7 +132,6 @@ private:
 
   // Statistics
   static PStatCollector _collisions_pcollector;
-  static PStatCollector _reset_prev_pcollector;
 
   static PStatCollector _cnode_volume_pcollector;
   static PStatCollector _gnode_volume_pcollector;

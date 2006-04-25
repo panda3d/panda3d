@@ -19,6 +19,7 @@
 #include "nodePathComponent.cxx"
 #include "nodePathLerps.cxx"
 #include "pandaNode.cxx"
+#include "pandaNodeChain.cxx"
 #include "planeNode.cxx"
 #include "pointLight.cxx"
 #include "polylightNode.cxx"

@@ -95,10 +95,10 @@ private:
 
 // Iterates through all of the pipeline stages upstream of the current
 // stage, but not including the current stage.
-#define OPEN_ITERATE_UPSTREAM_ONLY(cycler) {                        \
+#define OPEN_ITERATE_UPSTREAM_ONLY(cycler, current_thread) {        \
     CyclerHolder cholder(cycler);                                   \
     int pipeline_stage;                                             \
-    for (pipeline_stage = Thread::get_current_pipeline_stage() - 1; \
+    for (pipeline_stage = current_thread->get_pipeline_stage() - 1; \
          pipeline_stage >= 0;                                       \
          --pipeline_stage)
 
@@ -107,10 +107,10 @@ private:
 
 // Iterates through all of the pipeline stages upstream of the current
 // stage, and including the current stage.
-#define OPEN_ITERATE_CURRENT_AND_UPSTREAM(cycler) {                 \
+#define OPEN_ITERATE_CURRENT_AND_UPSTREAM(cycler, current_thread) { \
     CyclerHolder cholder(cycler);                                   \
     int pipeline_stage;                                             \
-    for (pipeline_stage = Thread::get_current_pipeline_stage();	    \
+    for (pipeline_stage = current_thread->get_pipeline_stage();	    \
          pipeline_stage >= 0;                                       \
          --pipeline_stage)
 
@@ -118,9 +118,9 @@ private:
   }
 
 // As above, but without holding the cycler lock during the loop.
-#define OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler) {	    \
+#define OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler, current_thread) {  \
     int pipeline_stage;                                             \
-    for (pipeline_stage = Thread::get_current_pipeline_stage();	    \
+    for (pipeline_stage = current_thread->get_pipeline_stage();    \
          pipeline_stage >= 0;                                       \
          --pipeline_stage)
 
@@ -142,20 +142,20 @@ private:
 // These are trivial implementations of the above macros, defined when
 // pipelining is not enabled, that simply operate on stage 0 without
 // bothering to create a for loop.
-#define OPEN_ITERATE_UPSTREAM_ONLY(cycler)      \
+#define OPEN_ITERATE_UPSTREAM_ONLY(cycler, current_thread)      \
   if (false) {                                  \
     const int pipeline_stage = -1;                   
 
 #define CLOSE_ITERATE_UPSTREAM_ONLY(cycler)     \
   }
 
-#define OPEN_ITERATE_CURRENT_AND_UPSTREAM(cycler) {                     \
+#define OPEN_ITERATE_CURRENT_AND_UPSTREAM(cycler, current_thread) {                     \
     const int pipeline_stage = 0;                                       \
     
 #define CLOSE_ITERATE_CURRENT_AND_UPSTREAM(cycler)      \
   }
 
-#define OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler) {		\
+#define OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler, current_thread) {  \
     const int pipeline_stage = 0;                                       \
     
 #define CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler)	\

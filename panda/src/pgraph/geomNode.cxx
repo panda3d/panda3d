@@ -191,8 +191,9 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     }
   }
 
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     Geoms::iterator gi;
     for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
       GeomEntry &entry = (*gi);
@@ -409,8 +410,9 @@ add_geom(Geom *geom, const RenderState *state) {
   nassertv(geom->check_valid());
   nassertv(state != (RenderState *)NULL);
 
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
 
     cdata->_geoms.push_back(GeomEntry(geom, state));
   }
@@ -427,9 +429,10 @@ add_geom(Geom *geom, const RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 add_geoms_from(const GeomNode *other) {
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    CDStageReader cdata_other(other->_cycler, pipeline_stage);
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    CDStageReader cdata_other(other->_cycler, pipeline_stage, current_thread);
 
     Geoms::const_iterator gi;
     for (gi = cdata_other->_geoms.begin(); 
@@ -511,8 +514,9 @@ check_valid() const {
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 unify() {
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
 
     Geoms new_geoms;
 
