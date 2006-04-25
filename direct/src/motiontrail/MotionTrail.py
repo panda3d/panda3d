@@ -549,6 +549,10 @@ class MotionTrail(NodePath):
             self.geom_node.removeAllGeoms ( )         
         return
 
+    def attach_motion_trail (self):
+        self.reset_motion_trail ( )
+        return
+
     def begin_motion_trail (self):
         if (self.continuous_motion_trail == False):
             self.reset_motion_trail ( )
