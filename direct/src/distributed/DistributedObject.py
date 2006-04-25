@@ -370,7 +370,10 @@ class DistributedObject(DistributedObjectBase):
             assert self.notify.debug('doneBarrier(%s) ignored; no active barrier.' % (name))
 
     def addInterest(self, zoneId, note="", event=None):
-        self.cr.addInterest(self.getDoId(), zoneId, note, event)
+        return self.cr.addInterest(self.getDoId(), zoneId, note, event)
+
+    def removeInterest(self, handle, event=None):
+        return self.cr.removeInterest(handle, event)
 
     def b_setLocation(self, parentId, zoneId):
         self.d_setLocation(parentId, zoneId)
