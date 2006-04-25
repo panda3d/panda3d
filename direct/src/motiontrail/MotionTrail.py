@@ -28,6 +28,76 @@ class MotionTrail(NodePath):
     task_added = False
     motion_trail_list = [ ]    
 
+
+    def __init__ (self,name,parent_node_path):
+
+        NodePath.__init__ (self,name)
+
+        # required initialization
+        self.active = True
+        self.enable = True
+
+        self.pause = False
+        self.pause_time = 0.0
+
+        self.fade = False
+        self.fade_end = False
+        self.fade_start_time = 0.0
+        self.fade_color_scale = 1.0
+        
+        self.total_vertices = 0
+        self.last_update_time = 0.0
+        self.texture = None
+        self.vertex_list = [ ]
+        self.frame_list = [ ]
+        
+        self.parent_node_path = parent_node_path
+
+        self.previous_matrix = None
+        self.calculate_relative_matrix = False
+
+        # default options
+        self.continuous_motion_trail = True
+        self.color_scale = 1.0
+        self.time_window = 1.0
+        self.sampling_time = 1.0 / 30.0
+        self.square_t = True
+
+        self.task_transform = False
+        self.root_node_path = None
+
+        # node path states
+        self.reparentTo (parent_node_path)
+        self.geom_node = GeomNode ("motion_trail") 
+        self.geom_node_path = self.attachNewNode(self.geom_node) 
+        node_path = self.geom_node_path
+
+        ### set render states
+
+        node_path.setTwoSided (True)
+
+        # additive blend states
+        node_path.setTransparency (True)
+        node_path.setDepthWrite (False)
+        node_path.node ( ).setAttrib (ColorBlendAttrib.make (ColorBlendAttrib.MAdd))
+
+        # do not light
+        node_path.setLightOff ( )
+
+        # disable writes to destination alpha, write out rgb colors only
+        node_path.setAttrib (ColorWriteAttrib.make (ColorWriteAttrib.CRed | ColorWriteAttrib.CGreen | ColorWriteAttrib.CBlue));
+        
+        # do not display in reflections
+        OTPRender.renderReflection (False, self, 'motion_trail', None)
+
+
+        if (MotionTrail.task_added == False):
+#            taskMgr.add (self.motion_trail_task, "motion_trail_task", priority = 50)
+            taskMgr.add (self.motion_trail_task, "motion_trail_task")
+            MotionTrail.task_added = True
+
+        return
+
     def print_matrix (self, matrix):
         separator = ' '
         print matrix.getCell (0, 0), separator, matrix.getCell (0, 1), separator, matrix.getCell (0, 2), separator, matrix.getCell (0, 3)
@@ -46,6 +116,9 @@ class MotionTrail(NodePath):
             if (motion_trail.active and motion_trail.check_for_update (current_time)):
 
                 transform = None
+
+                if (motion_trail.root_node_path != None):
+                    motion_trail.root_node_path.update ( )
 
                 """
                 transform = motion_trail.getNetTransform ( ).getMat ( )
@@ -128,79 +201,14 @@ class MotionTrail(NodePath):
                 transform = Mat4 (motion_trail.getNetTransform ( ).getMat ( ))
                 if (transform != None):
                     motion_trail.update_motion_trail (current_time, transform)
+    
+#                print "task update"
 
             index += 1
 
 #        print "motion_trail_task ( ): time =", task.time, "total_motion_trails", total_motion_trails
 
         return Task.cont
-
-    def __init__ (self,name,parent_node_path):
-
-        NodePath.__init__ (self,name)
-
-        # required initialization
-        self.active = True
-        self.enable = True
-
-        self.pause = False
-        self.pause_time = 0.0
-
-        self.fade = False
-        self.fade_end = False
-        self.fade_start_time = 0.0
-        self.fade_color_scale = 1.0
-        
-        self.total_vertices = 0
-        self.last_update_time = 0.0
-        self.texture = None
-        self.vertex_list = [ ]
-        self.frame_list = [ ]
-        
-        self.parent_node_path = parent_node_path
-
-        self.previous_matrix = None
-        self.calculate_relative_matrix = False
-
-        # default options
-        self.color_scale = 1.0
-        self.time_window = 1.0
-        self.sampling_time = 1.0 / 30.0
-        self.square_t = True
-
-        self.task_transform = False
-        self.root_node_path = None
-
-        # render
-        self.reparentTo (parent_node_path)
-        self.geom_node = GeomNode ("motion_trail") 
-        self.geom_node_path = self.attachNewNode(self.geom_node) 
-        node_path = self.geom_node_path
-
-        ### set render states
-        node_path.setTransparency (True)
-        node_path.setDepthWrite (False)
-        node_path.setTwoSided (True)
-
-        # additive blend
-        node_path.node ( ).setAttrib (ColorBlendAttrib.make (ColorBlendAttrib.MAdd))
-
-        # disable writes to destination alpha
-        node_path.setAttrib (ColorWriteAttrib.make (ColorWriteAttrib.CRed | ColorWriteAttrib.CGreen | ColorWriteAttrib.CBlue));
-
-        # do not light
-        node_path.setLightOff ( )
-        
-        # do not display in reflections
-        OTPRender.renderReflection (False, self, 'motion_trail', None)
-
-
-        if (MotionTrail.task_added == False):
-#            taskMgr.add (self.motion_trail_task, "motion_trail_task", priority = 50)
-            taskMgr.add (self.motion_trail_task, "motion_trail_task")
-            MotionTrail.task_added = True
-
-        return
 
     def add_vertex (self, vertex_id, vertex_function, context):
 
@@ -210,6 +218,12 @@ class MotionTrail(NodePath):
         self.total_vertices = len (self.vertex_list)
 
         return motion_trail_vertex
+
+    def set_vertex_color (self, vertex_id, start_color, end_color):
+        if (vertex_id >= 0 and vertex_id < self.total_vertices):
+            motion_trail_vertex = self.vertex_list [vertex_id]
+            motion_trail_vertex.start_color = start_color
+            motion_trail_vertex.end_color = end_color
     
     def set_texture (self, texture):
 
@@ -233,6 +247,7 @@ class MotionTrail(NodePath):
                 vertex_index += 1
 
             # calculate v coordinate
+            # this is based on the number of vertices only and not on the relative positions of the vertices
             vertex_index = 0
             float_vertex_index = 0.0
             float_total_vertices = 0.0
@@ -259,12 +274,17 @@ class MotionTrail(NodePath):
 
         self.vertex_index = 0;
 
-        self.format = GeomVertexFormat.getV3c4t2 ( ) 
+        if (self.texture != None):
+            self.format = GeomVertexFormat.getV3c4t2 ( ) 
+        else:
+            self.format = GeomVertexFormat.getV3c4 ( ) 
+        
         self.vertex_data = GeomVertexData ("vertices", self.format, Geom.UHStatic) 
 
         self.vertex_writer = GeomVertexWriter (self.vertex_data, "vertex") 
         self.color_writer = GeomVertexWriter (self.vertex_data, "color")
-        self.texture_writer = GeomVertexWriter (self.vertex_data, "texcoord")
+        if (self.texture != None):
+            self.texture_writer = GeomVertexWriter (self.vertex_data, "texcoord")
         
         self.triangles = GeomTriangles (Geom.UHStatic) 
         
@@ -280,10 +300,11 @@ class MotionTrail(NodePath):
         self.color_writer.addData4f (c2 [0], c2 [1], c2 [2], c2 [3])
         self.color_writer.addData4f (c3 [0], c3 [1], c3 [2], c3 [3])
 
-        self.texture_writer.addData2f (t0 [0], t0 [1])
-        self.texture_writer.addData2f (t1 [0], t1 [1])
-        self.texture_writer.addData2f (t2 [0], t2 [1])
-        self.texture_writer.addData2f (t3 [0], t3 [1])
+        if (self.texture != None):
+            self.texture_writer.addData2f (t0 [0], t0 [1])
+            self.texture_writer.addData2f (t1 [0], t1 [1])
+            self.texture_writer.addData2f (t2 [0], t2 [1])
+            self.texture_writer.addData2f (t3 [0], t3 [1])
 
         vertex_index = self.vertex_index;
         
@@ -395,6 +416,7 @@ class MotionTrail(NodePath):
                 if (self.calculate_relative_matrix):
                     inverse_matrix = Mat4 (transform)
                     inverse_matrix.invertInPlace ( ) 
+#                    inverse_matrix.transposeInPlace ( )
                     
                     """                        
                     print "current matrix"
@@ -522,6 +544,24 @@ class MotionTrail(NodePath):
         self.frame_list = [ ]
         return
 
+    def reset_motion_trail_geometry(self):
+        if (self.geom_node != None):
+            self.geom_node.removeAllGeoms ( )         
+        return
+
+    def begin_motion_trail (self):
+        if (self.continuous_motion_trail == False):
+            self.reset_motion_trail ( )
+            self.active = True;
+        return
+
+    def end_motion_trail (self):
+        if (self.continuous_motion_trail == False):
+            self.active = False
+            self.reset_motion_trail ( )
+            self.reset_motion_trail_geometry ( )
+        return
+                
     def set_fade (self, time, current_time):
         if (self.pause == False):
             self.fade_color_scale = 1.0
