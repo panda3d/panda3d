@@ -113,7 +113,10 @@ initialize() {
 bool GeomVertexWriter::
 set_vertex_column(int array, const GeomVertexColumn *column,
                   GeomVertexDataPipelineWriter *data_writer) {
-  nassertr(column != (const GeomVertexColumn *)NULL, false);
+  if (column == (const GeomVertexColumn *)NULL) {
+    return set_column(0, NULL);
+  }
+
   nassertr(_vertex_data != (GeomVertexData *)NULL, false);
 
 #ifndef NDEBUG
@@ -143,7 +146,10 @@ set_vertex_column(int array, const GeomVertexColumn *column,
 bool GeomVertexWriter::
 set_array_column(const GeomVertexColumn *column,
                  GeomVertexArrayDataPipelineWriter *array_writer) {
-  nassertr(column != (const GeomVertexColumn *)NULL, false);
+  if (column == (const GeomVertexColumn *)NULL) {
+    return set_column(0, NULL);
+  }
+
   nassertr(_array_data != (GeomVertexArrayData *)NULL, false);
 
   _stride = array_writer->get_array_format()->get_stride();

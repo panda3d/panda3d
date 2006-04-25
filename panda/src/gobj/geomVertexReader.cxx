@@ -108,7 +108,10 @@ initialize() {
 bool GeomVertexReader::
 set_vertex_column(int array, const GeomVertexColumn *column,
                   const GeomVertexDataPipelineReader *data_reader) {
-  nassertr(column != (const GeomVertexColumn *)NULL, false);
+  if (column == (const GeomVertexColumn *)NULL) {
+    return set_column(0, NULL);
+  }
+
   nassertr(_vertex_data != (const GeomVertexData *)NULL, false);
 
 #ifndef NDEBUG
@@ -138,7 +141,10 @@ set_vertex_column(int array, const GeomVertexColumn *column,
 bool GeomVertexReader::
 set_array_column(const GeomVertexColumn *column,
                  const GeomVertexArrayDataPipelineReader *array_reader) {
-  nassertr(column != (const GeomVertexColumn *)NULL, false);
+  if (column == (const GeomVertexColumn *)NULL) {
+    return set_column(0, NULL);
+  }
+
   nassertr(_array_data != (const GeomVertexArrayData *)NULL, false);
 
   _stride = array_reader->get_array_format()->get_stride();
