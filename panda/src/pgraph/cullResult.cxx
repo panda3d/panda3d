@@ -54,10 +54,7 @@
 // base 2, and thus will be more likely to have a precise value in
 // whatever internal representation the graphics API will use.
 static const float dual_opaque_level = 252.0f / 256.0f;
-
-#ifndef NDEBUG
 static const double bin_color_flash_rate = 1.0;  // 1 state change per second
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::make_next
