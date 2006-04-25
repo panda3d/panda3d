@@ -771,6 +771,15 @@ class Functor:
         _kargs.update(kargs)
         return apply(self._function, _args, _kargs)
 
+    def __repr__(self):
+        s = 'Functor(%s' % self._function.__name__
+        for arg in self._args:
+            s += ', %s' % repr(arg)
+        for karg, value in self._kargs.items():
+            s += ', %s=%s' % (karg, repr(value))
+        s += ')'
+        return s
+
 class Stack:
     def __init__(self):
         self.__list = []
@@ -1723,6 +1732,11 @@ class SerialNum:
         self.__counter += 1
         return self.__counter
 
+_uname = SerialNum()
+def uniqueName(name):
+    global _uname
+    return '%s-%s' % (name, _uname.next())
+
 def beginExports(modname):
     """The beginExports/endExports construct is used to bracket
     a set of top-level python declarations.  The effect is to
@@ -1910,3 +1924,4 @@ __builtin__.Functor = Functor
 __builtin__.Stack = Stack
 __builtin__.Queue = Queue
 __builtin__.SerialNum = SerialNum
+__builtin__.uniqueName = uniqueName
