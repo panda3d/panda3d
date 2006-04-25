@@ -39,7 +39,7 @@ public:
   static CullBin *make_bin(const string &name, GraphicsStateGuardianBase *gsg);
 
   virtual void add_object(CullableObject *object);
-  virtual void draw();
+  virtual void draw(Thread *current_thread);
 
 private:
   typedef pvector<CullableObject *> Objects;

@@ -60,7 +60,7 @@ public:
 
   void add_object(CullableObject *object, const CullTraverser *traverser);
   void finish_cull(SceneSetup *scene_setup);
-  void draw();
+  void draw(Thread *current_thread);
 
 public:
   static void bin_removed(int bin_index);

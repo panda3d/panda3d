@@ -971,7 +971,7 @@ prepare_for_deletion() {
 //               This function is called only within the draw thread.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
-clear() {
+clear(Thread *current_thread) {
   if (is_any_clear_active()) {
     if (display_cat.is_spam()) {
       display_cat.spam()
@@ -981,7 +981,8 @@ clear() {
 
     nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
-    _gsg->prepare_display_region(_default_display_region, Lens::SC_mono);
+    DisplayRegionPipelineReader dr_reader(_default_display_region, current_thread);
+    _gsg->prepare_display_region(&dr_reader, Lens::SC_mono);
     _gsg->clear(this);
   }
 }
@@ -1049,14 +1050,14 @@ copy_to_textures() {
 //               of a cube map.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
-change_scenes(DisplayRegion *new_dr) {
+change_scenes(DisplayRegionPipelineReader *new_dr) {
   int new_cube_map_index = new_dr->get_cube_map_index();
   if (new_cube_map_index != -1 &&
       new_cube_map_index != _cube_map_index) {
     int old_cube_map_index = _cube_map_index;
     DisplayRegion *old_cube_map_dr = _cube_map_dr;
     _cube_map_index = new_cube_map_index;
-    _cube_map_dr = new_dr;
+    _cube_map_dr = new_dr->get_object();
 
     for (int i=0; i<count_textures(); i++) {
       Texture *texture = get_texture(i);

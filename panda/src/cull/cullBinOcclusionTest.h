@@ -59,7 +59,7 @@ public:
 
   virtual void add_object(CullableObject *object);
   virtual void finish_cull(SceneSetup *scene_setup);
-  virtual void draw();
+  virtual void draw(Thread *current_thread);
 
 private:
   void draw_next();
@@ -121,10 +121,11 @@ private:
     void compute_distance(const LMatrix4f &world_mat,
                           CullBinOcclusionTest &bin);
 
-    PT(OcclusionQueryContext) occlusion_test(CullBinOcclusionTest &bin);
-    int draw_previous(CullBinOcclusionTest &bin);
-    int draw(CullBinOcclusionTest &bin);
-    void draw_wireframe(CullBinOcclusionTest &bin);
+    PT(OcclusionQueryContext) occlusion_test(CullBinOcclusionTest &bin,
+                                             Thread *current_thread);
+    int draw_previous(CullBinOcclusionTest &bin, Thread *current_thread);
+    int draw(CullBinOcclusionTest &bin, Thread *current_thread);
+    void draw_wireframe(CullBinOcclusionTest &bin, Thread *current_thread);
     void record_visible_geoms(VisibleGeoms &visible_geoms);
     INLINE void initial_assign(const ObjectData &object_data);
 

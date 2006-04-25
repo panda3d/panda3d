@@ -930,8 +930,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
 ////////////////////////////////////////////////////////////////////
 void Geom::
 draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
-     const GeomVertexData *vertex_data) const {
-  Thread *current_thread = Thread::get_current_thread();
+     const GeomVertexData *vertex_data, Thread *current_thread) const {
   GeomPipelineReader geom_reader(this, current_thread);
   geom_reader.check_usage_hint();
 

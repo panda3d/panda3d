@@ -28,6 +28,7 @@
 #include "graphicsThreadingModel.h"
 #include "graphicsPipe.h"
 #include "sceneSetup.h"
+#include "displayRegion.h"
 #include "luse.h"
 #include "coordinateSystem.h"
 #include "factory.h"
@@ -174,7 +175,7 @@ public:
   const LMatrix4f *fetch_specified_value(ShaderContext::ShaderMatSpec &spec, bool altered);
   const LMatrix4f *fetch_specified_part(ShaderContext::ShaderMatInput input, InternalName *name, LMatrix4f &t);
   
-  virtual void prepare_display_region(DisplayRegion *dr,
+  virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
                                       Lens::StereoChannel stereo_channel);
 
   virtual CPT(TransformState) calc_projection_mat(const Lens *lens);

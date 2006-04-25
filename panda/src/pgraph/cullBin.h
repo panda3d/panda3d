@@ -57,7 +57,7 @@ public:
   virtual void add_object(CullableObject *object)=0;
   virtual void finish_cull(SceneSetup *scene_setup);
 
-  virtual void draw()=0;
+  virtual void draw(Thread *current_thread)=0;
 
   INLINE bool has_flash_color() const;
   INLINE const Colorf &get_flash_color() const;

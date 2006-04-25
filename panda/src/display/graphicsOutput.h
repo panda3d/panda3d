@@ -208,7 +208,7 @@ public:
   // It is an error to call any of the following methods from any
   // thread other than the draw thread.  These methods are normally
   // called by the GraphicsEngine.
-  void clear();
+  void clear(Thread *current_thread);
   virtual bool begin_frame(FrameMode mode);
   virtual void end_frame(FrameMode mode);
 
@@ -221,7 +221,7 @@ public:
   //  virtual void make_current();
   //  virtual void auto_resize();
 
-  void change_scenes(DisplayRegion *new_dr);
+  void change_scenes(DisplayRegionPipelineReader *new_dr);
   virtual void select_cube_map(int cube_map_index);
 
   // These methods will be called within the app (main) thread.

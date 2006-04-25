@@ -772,8 +772,9 @@ do_clear(const RenderBuffer &buffer) {
 //       scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
-  nassertv(dr != (DisplayRegion *)NULL);
+prepare_display_region(DisplayRegionPipelineReader *dr,
+                       Lens::StereoChannel stereo_channel) {
+  nassertv(dr != (DisplayRegionPipelineReader *)NULL);
   GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
 
 // DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::PRE prepare_display_region\n"; DBG_E
@@ -781,7 +782,7 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
 // DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::prepare_display_region\n"; DBG_E
 
   int l, u, w, h;
-  _current_display_region->get_region_pixels_i(l, u, w, h);
+  dr->get_region_pixels_i(l, u, w, h);
 
   DBG_S dxgsg9_cat.debug ( ) << "display_region " << l << " " << u << " "  << w << " "  << h << "\n"; DBG_E
 

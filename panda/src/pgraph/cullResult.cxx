@@ -248,7 +248,7 @@ finish_cull(SceneSetup *scene_setup) {
 //               order.
 ////////////////////////////////////////////////////////////////////
 void CullResult::
-draw() {
+draw(Thread *current_thread) {
   // Ask the bin manager for the correct order to draw all the bins.
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
   int num_bins = bin_manager->get_num_bins();
@@ -257,7 +257,7 @@ draw() {
     nassertv(bin_index >= 0);
 
     if (bin_index < (int)_bins.size() && _bins[bin_index] != (CullBin *)NULL) {
-      _bins[bin_index]->draw();
+      _bins[bin_index]->draw(current_thread);
     }
   }
 }

@@ -25,11 +25,12 @@
 //               the object.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullHandler::
-draw(CullableObject *object, GraphicsStateGuardianBase *gsg) {
+draw(CullableObject *object, GraphicsStateGuardianBase *gsg,
+     Thread *current_thread) {
   if (object->_next != (CullableObject *)NULL) {
-    draw_with_decals(object, gsg);
+    draw_with_decals(object, gsg, current_thread);
   } else {
     gsg->set_state_and_transform(object->_state, object->_internal_transform);
-    object->draw(gsg);
+    object->draw(gsg, current_thread);
   }
 }

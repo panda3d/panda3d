@@ -29,6 +29,99 @@ operator < (const DisplayRegion &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_dimensions
+//       Access: Published
+//  Description: Retrieves the coordinates of the DisplayRegion's
+//               rectangle within its GraphicsOutput.  These numbers
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+get_dimensions(float &l, float &r, float &b, float &t) const {
+  CDReader cdata(_cycler);
+  l = cdata->_l;
+  r = cdata->_r;
+  b = cdata->_b;
+  t = cdata->_t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_left
+//       Access: Published
+//  Description: Retrieves the x coordinate of the left edge of the
+//               rectangle within its GraphicsOutput.  This number
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE float DisplayRegion::
+get_left() const {
+  CDReader cdata(_cycler);
+  return cdata->_l;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_right
+//       Access: Published
+//  Description: Retrieves the x coordinate of the right edge of the
+//               rectangle within its GraphicsOutput.  This number
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE float DisplayRegion::
+get_right() const {
+  CDReader cdata(_cycler);
+  return cdata->_r;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_bottom
+//       Access: Published
+//  Description: Retrieves the y coordinate of the bottom edge of 
+//               the rectangle within its GraphicsOutput.  This 
+//               number will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE float DisplayRegion::
+get_bottom() const {
+  CDReader cdata(_cycler);
+  return cdata->_b;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_top
+//       Access: Published
+//  Description: Retrieves the y coordinate of the top edge of the
+//               rectangle within its GraphicsOutput.  This number
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE float DisplayRegion::
+get_top() const {
+  CDReader cdata(_cycler);
+  return cdata->_t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_window
+//       Access: Published
+//  Description: Returns the GraphicsOutput that this DisplayRegion is
+//               ultimately associated with, or NULL if no window is
+//               associated.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsOutput *DisplayRegion::
+get_window() const {
+  return _window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_camera
+//       Access: Published
+//  Description: Returns the camera associated with this
+//               DisplayRegion, or an empty NodePath if no camera is
+//               associated.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath DisplayRegion::
+get_camera() const {
+  CDReader cdata(_cycler);
+  return cdata->_camera;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::is_active
 //       Access: Published
 //  Description: Returns the active flag associated with the
@@ -131,6 +224,76 @@ get_cube_map_index() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_pixels
+//       Access: Published
+//  Description: Retrieves the coordinates of the DisplayRegion within
+//               its window, in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+get_pixels(int &pl, int &pr, int &pb, int &pt) const {
+  CDReader cdata(_cycler);
+  pl = cdata->_pl;
+  pr = cdata->_pr;
+  pb = cdata->_pb;
+  pt = cdata->_pt;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_region_pixels
+//       Access: Published
+//  Description: Retrieves the coordinates of the DisplayRegion within
+//               its window, as the pixel location of its bottom-left
+//               corner, along with a pixel width and height.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+get_region_pixels(int &xo, int &yo, int &w, int &h) const {
+  CDReader cdata(_cycler);
+  xo = cdata->_pl;
+  yo = cdata->_pb;
+  w = cdata->_pr - cdata->_pl;
+  h = cdata->_pt - cdata->_pb;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_region_pixels_i
+//       Access: Published
+//  Description: Similar to get_region_pixels(), but returns the upper
+//               left corner, and the pixel numbers are numbered from
+//               the top-left corner down, in the DirectX way of
+//               things.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
+  CDReader cdata(_cycler);
+  xo = cdata->_pl;
+  yo = cdata->_pti;
+  w = cdata->_pr - cdata->_pl;
+  h = cdata->_pbi - cdata->_pti;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_pixel_width
+//       Access: Published
+//  Description: Returns the width of the DisplayRegion in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegion::
+get_pixel_width() const {
+  CDReader cdata(_cycler);
+  return cdata->_pr - cdata->_pl;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_pixel_height
+//       Access: Published
+//  Description: Returns the height of the DisplayRegion in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegion::
+get_pixel_height() const {
+  CDReader cdata(_cycler);
+  return cdata->_pt - cdata->_pb;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_cull_result
 //       Access: Public
 //  Description: Stores the result of performing a cull operation on
@@ -197,6 +360,308 @@ CDataCull(const DisplayRegion::CDataCull &copy) :
   _cull_result(copy._cull_result),
   _scene_setup(copy._scene_setup)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegionPipelineReader::
+DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread) :
+  _object(object),
+  _current_thread(current_thread),
+  _cdata(object->_cycler.read(current_thread))
+{
+#ifdef _DEBUG
+  nassertv(_object->test_ref_count_nonzero());
+#ifdef DO_PIPELINING
+  nassertv(_cdata->test_ref_count_nonzero());
+#endif  // DO_PIPELINING
+#endif // _DEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::Copy Constructor
+//       Access: Private
+//  Description: Don't attempt to copy these objects.
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegionPipelineReader::
+DisplayRegionPipelineReader(const DisplayRegionPipelineReader &) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::Copy Assignment Operator
+//       Access: Private
+//  Description: Don't attempt to copy these objects.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegionPipelineReader::
+operator = (const DisplayRegionPipelineReader &) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegionPipelineReader::
+~DisplayRegionPipelineReader() {
+#ifdef _DEBUG
+  nassertv(_object->test_ref_count_nonzero());
+#ifdef DO_PIPELINING
+  nassertv(_cdata->test_ref_count_nonzero());
+#endif  // DO_PIPELINING
+#endif // _DEBUG
+  _object->_cycler.release_read(_cdata);
+
+#ifdef _DEBUG
+  _object = NULL;
+  _cdata = NULL;
+#endif  // _DEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_object
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion *DisplayRegionPipelineReader::
+get_object() const {
+  return _object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_current_thread
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Thread *DisplayRegionPipelineReader::
+get_current_thread() const {
+  return _current_thread;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::is_any_clear_active
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool DisplayRegionPipelineReader::
+is_any_clear_active() const {
+  return _object->is_any_clear_active();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_dimensions
+//       Access: Public
+//  Description: Retrieves the coordinates of the DisplayRegion's
+//               rectangle within its GraphicsOutput.  These numbers
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegionPipelineReader::
+get_dimensions(float &l, float &r, float &b, float &t) const {
+  l = _cdata->_l;
+  r = _cdata->_r;
+  b = _cdata->_b;
+  t = _cdata->_t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_left
+//       Access: Public
+//  Description: Retrieves the x coordinate of the left edge of the
+//               rectangle within its GraphicsOutput.  This number
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE float DisplayRegionPipelineReader::
+get_left() const {
+  return _cdata->_l;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_right
+//       Access: Public
+//  Description: Retrieves the x coordinate of the right edge of the
+//               rectangle within its GraphicsOutput.  This number
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE float DisplayRegionPipelineReader::
+get_right() const {
+  return _cdata->_r;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_bottom
+//       Access: Public
+//  Description: Retrieves the y coordinate of the bottom edge of 
+//               the rectangle within its GraphicsOutput.  This 
+//               number will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE float DisplayRegionPipelineReader::
+get_bottom() const {
+  return _cdata->_b;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_top
+//       Access: Public
+//  Description: Retrieves the y coordinate of the top edge of the
+//               rectangle within its GraphicsOutput.  This number
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE float DisplayRegionPipelineReader::
+get_top() const {
+  return _cdata->_t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_window
+//       Access: Public
+//  Description: Returns the GraphicsOutput that this DisplayRegion is
+//               ultimately associated with, or NULL if no window is
+//               associated.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsOutput *DisplayRegionPipelineReader::
+get_window() const {
+  return _object->_window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_camera
+//       Access: Public
+//  Description: Returns the camera associated with this
+//               DisplayRegion, or an empty NodePath if no camera is
+//               associated.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath DisplayRegionPipelineReader::
+get_camera() const {
+  return _cdata->_camera;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::is_active
+//       Access: Public
+//  Description: Returns the active flag associated with the
+//               DisplayRegion.
+////////////////////////////////////////////////////////////////////
+INLINE bool DisplayRegionPipelineReader::
+is_active() const {
+  return _cdata->_active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_sort
+//       Access: Public
+//  Description: Returns the sort value associated with the
+//               DisplayRegion.
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegionPipelineReader::
+get_sort() const {
+  return _cdata->_sort;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_stereo_channel
+//       Access: Public
+//  Description: Returns whether the DisplayRegion is specified as the
+//               left or right channel of a stereo pair, or whether it
+//               is a normal, monocular image.  See
+//               set_stereo_channel().
+////////////////////////////////////////////////////////////////////
+INLINE Lens::StereoChannel DisplayRegionPipelineReader::
+get_stereo_channel() {
+  return _cdata->_stereo_channel;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_clear_depth_between_eyes
+//       Access: Public
+//  Description: Returns whether the depth buffer is cleared again
+//               between the left and right eyes of a stereo
+//               DisplayRegion.  See set_clear_depth_between_eyes().
+////////////////////////////////////////////////////////////////////
+INLINE bool DisplayRegionPipelineReader::
+get_clear_depth_between_eyes() const {
+  return _object->_clear_depth_between_eyes;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_cube_map_index
+//       Access: Public
+//  Description: Returns the cube map face index associated with this
+//               particular DisplayRegion, or -1 if it is not
+//               associated with a cube map.  See
+//               set_cube_map_index().
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegionPipelineReader::
+get_cube_map_index() const {
+  return _cdata->_cube_map_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_pixels
+//       Access: Public
+//  Description: Retrieves the coordinates of the DisplayRegion within
+//               its window, in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegionPipelineReader::
+get_pixels(int &pl, int &pr, int &pb, int &pt) const {
+  pl = _cdata->_pl;
+  pr = _cdata->_pr;
+  pb = _cdata->_pb;
+  pt = _cdata->_pt;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_region_pixels
+//       Access: Public
+//  Description: Retrieves the coordinates of the DisplayRegion within
+//               its window, as the pixel location of its bottom-left
+//               corner, along with a pixel width and height.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegionPipelineReader::
+get_region_pixels(int &xo, int &yo, int &w, int &h) const {
+  xo = _cdata->_pl;
+  yo = _cdata->_pb;
+  w = _cdata->_pr - _cdata->_pl;
+  h = _cdata->_pt - _cdata->_pb;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_region_pixels_i
+//       Access: Public
+//  Description: Similar to get_region_pixels(), but returns the upper
+//               left corner, and the pixel numbers are numbered from
+//               the top-left corner down, in the DirectX way of
+//               things.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegionPipelineReader::
+get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
+  xo = _cdata->_pl;
+  yo = _cdata->_pti;
+  w = _cdata->_pr - _cdata->_pl;
+  h = _cdata->_pbi - _cdata->_pti;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_pixel_width
+//       Access: Public
+//  Description: Returns the width of the DisplayRegion in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegionPipelineReader::
+get_pixel_width() const {
+  return _cdata->_pr - _cdata->_pl;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_pixel_height
+//       Access: Public
+//  Description: Returns the height of the DisplayRegion in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegionPipelineReader::
+get_pixel_height() const {
+  return _cdata->_pt - _cdata->_pb;
 }
 
 INLINE ostream &operator << (ostream &out, const DisplayRegion &dr) {

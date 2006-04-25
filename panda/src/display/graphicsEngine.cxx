@@ -434,6 +434,8 @@ make_output(GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 bool GraphicsEngine::
 remove_window(GraphicsOutput *window) {
+  Thread *current_thread = Thread::get_current_thread();
+
   // First, make sure we know what this window is.
   PT(GraphicsOutput) ptwin = window;
   size_t count;
@@ -449,7 +451,7 @@ remove_window(GraphicsOutput *window) {
     return false;
   }
 
-  do_remove_window(window);
+  do_remove_window(window, current_thread);
 
   nassertr(count == 1, true);
   return true;
@@ -464,16 +466,18 @@ remove_window(GraphicsOutput *window) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 remove_all_windows() {
+  Thread *current_thread = Thread::get_current_thread();
+
   Windows::iterator wi;
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
     GraphicsOutput *win = (*wi);
-    do_remove_window(win);
+    do_remove_window(win, current_thread);
   }
   
   _windows.clear();
 
-  _app.do_close(this);
-  _app.do_pending(this);
+  _app.do_close(this, current_thread);
+  _app.do_pending(this, current_thread);
   terminate_threads();
 }
 
@@ -542,6 +546,8 @@ get_window(int n) const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 render_frame() {
+  Thread *current_thread = Thread::get_current_thread();
+
   // Anything that happens outside of GraphicsEngine::render_frame()
   // is deemed to be App.
 #ifdef DO_PSTATS
@@ -569,7 +575,7 @@ render_frame() {
   }
 
   if (_flip_state != FS_flip) {
-    do_flip_frame();
+    do_flip_frame(current_thread);
   }
 
   // Are any of the windows ready to be deleted?
@@ -579,7 +585,7 @@ render_frame() {
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->get_delete_flag()) {
-      do_remove_window(win);
+      do_remove_window(win, current_thread);
       
     } else {
       new_windows.push_back(win);
@@ -612,7 +618,7 @@ render_frame() {
 
   // Now it's time to do any drawing from the main frame--after all of
   // the App code has executed, but before we begin the next frame.
-  _app.do_frame(this);
+  _app.do_frame(this, current_thread);
   
   // Grab each thread's mutex again after all windows have flipped,
   // and wait for the thread to finish.
@@ -756,6 +762,8 @@ render_frame() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 open_windows() {
+  Thread *current_thread = Thread::get_current_thread();
+
   MutexHolder holder(_lock);
 
   if (!_windows_sorted) {
@@ -765,8 +773,8 @@ open_windows() {
   // We do it twice, to allow both cull and draw to process the
   // window.
   for (int i = 0; i < 2; ++i) {
-    _app.do_windows(this);
-    _app.do_pending(this);
+    _app.do_windows(this, current_thread);
+    _app.do_pending(this, current_thread);
 
     PStatTimer timer(_wait_pcollector);
     Threads::const_iterator ti;
@@ -796,10 +804,11 @@ open_windows() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 sync_frame() {
+  Thread *current_thread = Thread::get_current_thread();
   MutexHolder holder(_lock);
 
   if (_flip_state == FS_draw) {
-    do_sync_frame();
+    do_sync_frame(current_thread);
   }
 }
 
@@ -814,10 +823,11 @@ sync_frame() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 flip_frame() {
+  Thread *current_thread = Thread::get_current_thread();
   MutexHolder holder(_lock);
 
   if (_flip_state != FS_flip) {
-    do_flip_frame();
+    do_flip_frame(current_thread);
   }
 }
 
@@ -952,7 +962,8 @@ set_window_sort(GraphicsOutput *window, int sort) {
 //               threading model begins with the "-" character.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
+cull_and_draw_together(const GraphicsEngine::Windows &wlist,
+                       Thread *current_thread) {
   PStatTimer timer(_cull_pcollector);
 
   Windows::const_iterator wi;
@@ -960,13 +971,13 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
       if (win->begin_frame(GraphicsOutput::FM_render)) {
-        win->clear();
+        win->clear(current_thread);
       
         int num_display_regions = win->get_num_active_display_regions();
         for (int i = 0; i < num_display_regions; i++) {
           DisplayRegion *dr = win->get_active_display_region(i);
           if (dr != (DisplayRegion *)NULL) {
-            cull_and_draw_together(win, dr);
+            cull_and_draw_together(win, dr, current_thread);
           }
         }
         win->end_frame(GraphicsOutput::FM_render);
@@ -995,29 +1006,39 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
 //               cull_and_draw_together(), above.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr) {
+cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
+                       Thread *current_thread) {
   GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
-  win->change_scenes(dr);
-  gsg->prepare_display_region(dr, dr->get_stereo_channel());
+  DisplayRegionPipelineReader *dr_reader = 
+    new DisplayRegionPipelineReader(dr, current_thread);
 
-  PT(SceneSetup) scene_setup = setup_scene(gsg, dr);
+  win->change_scenes(dr_reader);
+  gsg->prepare_display_region(dr_reader, dr_reader->get_stereo_channel());
+
+  PT(SceneSetup) scene_setup = setup_scene(gsg, dr_reader);
   if (!gsg->set_scene(scene_setup)) {
     // The scene or lens is inappropriate somehow.
     display_cat.error()
       << gsg->get_type() << " cannot render scene with specified lens.\n";
 
   } else {
-    if (dr->is_any_clear_active()) {
+    if (dr_reader->is_any_clear_active()) {
       gsg->clear(dr);
     }
 
     DrawCullHandler cull_handler(gsg);
     if (gsg->begin_scene()) {
-      do_cull(&cull_handler, scene_setup, gsg);
+      delete dr_reader;
+      dr_reader = NULL;
+      do_cull(&cull_handler, scene_setup, gsg, current_thread);
       gsg->end_scene();
     }
+  }
+
+  if (dr_reader != (DisplayRegionPipelineReader *)NULL) {
+    delete dr_reader;
   }
 }
 
@@ -1030,7 +1051,7 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr) {
 //               drawing.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-cull_to_bins(const GraphicsEngine::Windows &wlist) {
+cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   PStatTimer timer(_cull_pcollector);
 
   // Keep track of the cameras we have already used in this thread to
@@ -1046,13 +1067,17 @@ cull_to_bins(const GraphicsEngine::Windows &wlist) {
       for (int i = 0; i < num_display_regions; ++i) {
         DisplayRegion *dr = win->get_active_display_region(i);
         if (dr != (DisplayRegion *)NULL) {
-          NodePath camera = dr->get_camera();
+          DisplayRegionPipelineReader *dr_reader = 
+            new DisplayRegionPipelineReader(dr, current_thread);
+          NodePath camera = dr_reader->get_camera();
           AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(camera, NULL)).first;
           if ((*aci).second == NULL) {
             // We have not used this camera already in this thread.
             // Perform the cull operation.
+            delete dr_reader;
+            dr_reader = NULL;
             (*aci).second = dr;
-            cull_to_bins(win, dr);
+            cull_to_bins(win, dr, current_thread);
 
           } else {
             // We have already culled a scene using this camera in
@@ -1064,7 +1089,11 @@ cull_to_bins(const GraphicsEngine::Windows &wlist) {
             // the other DisplayRegion.
             DisplayRegion *other_dr = (*aci).second;
             dr->set_cull_result(other_dr->get_cull_result(),
-                                setup_scene(win->get_gsg(), dr));
+                                setup_scene(win->get_gsg(), dr_reader));
+          }
+
+          if (dr_reader != (DisplayRegionPipelineReader *)NULL) {
+            delete dr_reader;
           }
         }
       }
@@ -1079,7 +1108,7 @@ cull_to_bins(const GraphicsEngine::Windows &wlist) {
 //               above.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-cull_to_bins(GraphicsOutput *win, DisplayRegion *dr) {
+cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
@@ -1093,12 +1122,13 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr) {
     } else {
       cull_result = new CullResult(gsg);
     }
-    scene_setup = setup_scene(gsg, dr);
+    DisplayRegionPipelineReader dr_reader(dr, current_thread);
+    scene_setup = setup_scene(gsg, &dr_reader);
   }
 
   if (scene_setup != (SceneSetup *)NULL) {
     BinCullHandler cull_handler(cull_result);
-    do_cull(&cull_handler, scene_setup, gsg);
+    do_cull(&cull_handler, scene_setup, gsg, current_thread);
 
     {
       PStatTimer timer(_cull_sort_pcollector);
@@ -1119,19 +1149,19 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr) {
 //               cull_to_bins().
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-draw_bins(const GraphicsEngine::Windows &wlist) {
+draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
       if (win->begin_frame(GraphicsOutput::FM_render)) {
-        win->clear();
+        win->clear(current_thread);
       
         int num_display_regions = win->get_num_active_display_regions();
         for (int i = 0; i < num_display_regions; ++i) {
           DisplayRegion *dr = win->get_active_display_region(i);
           if (dr != (DisplayRegion *)NULL) {
-            draw_bins(win, dr);
+            draw_bins(win, dr, current_thread);
           }
         }
         win->end_frame(GraphicsOutput::FM_render);
@@ -1161,14 +1191,14 @@ draw_bins(const GraphicsEngine::Windows &wlist) {
 //               particular DisplayRegion.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-draw_bins(GraphicsOutput *win, DisplayRegion *dr) {
+draw_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
   PT(CullResult) cull_result = dr->get_cull_result();
   PT(SceneSetup) scene_setup = dr->get_scene_setup();
   if (cull_result != (CullResult *)NULL && scene_setup != (SceneSetup *)NULL) {
-    do_draw(cull_result, scene_setup, win, dr);
+    do_draw(cull_result, scene_setup, win, dr, current_thread);
   }
 }
 
@@ -1180,7 +1210,7 @@ draw_bins(GraphicsOutput *win, DisplayRegion *dr) {
 //               graphics context both get created.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-make_contexts(const GraphicsEngine::Windows &wlist) {
+make_contexts(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
@@ -1198,7 +1228,7 @@ make_contexts(const GraphicsEngine::Windows &wlist) {
 //               list of windows.  This is run in the window thread.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-process_events(const GraphicsEngine::Windows &wlist) {
+process_events(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
@@ -1214,7 +1244,7 @@ process_events(const GraphicsEngine::Windows &wlist) {
 //               the given list.  This is run in the draw thread.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-flip_windows(const GraphicsEngine::Windows &wlist) {
+flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
@@ -1239,7 +1269,7 @@ flip_windows(const GraphicsEngine::Windows &wlist) {
 //               is already held before this method is called.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-do_sync_frame() {
+do_sync_frame(Thread *current_thread) {
   nassertv(_lock.debug_is_locked());
 
   // Statistics
@@ -1266,7 +1296,7 @@ do_sync_frame() {
 //               is already held before this method is called.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-do_flip_frame() {
+do_flip_frame(Thread *current_thread) {
   nassertv(_lock.debug_is_locked());
 
   // Statistics
@@ -1291,7 +1321,7 @@ do_flip_frame() {
   }
   
   // Now signal all of our threads to flip the windows.
-  _app.do_flip(this);
+  _app.do_flip(this, current_thread);
 
   {
     Threads::const_iterator ti;
@@ -1316,7 +1346,7 @@ do_flip_frame() {
 //               reason.
 ////////////////////////////////////////////////////////////////////
 PT(SceneSetup) GraphicsEngine::
-setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
+setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   PStatTimer timer(_cull_setup_pcollector);
 
   GraphicsOutput *window = dr->get_window();
@@ -1380,7 +1410,7 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
     initial_state = initial_state->compose(get_invert_polygon_state());
   }
 
-  scene_setup->set_display_region(dr);
+  scene_setup->set_display_region(dr->get_object());
   scene_setup->set_viewport_size(dr->get_pixel_width(), dr->get_pixel_height());
   scene_setup->set_scene_root(scene_root);
   scene_setup->set_camera_path(camera);
@@ -1400,7 +1430,7 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
-        GraphicsStateGuardian *gsg) {
+        GraphicsStateGuardian *gsg, Thread *current_thread) {
   CullTraverser trav(gsg);
   trav.set_cull_handler(cull_handler);
   trav.set_depth_offset_decals(depth_offset_decals && gsg->depth_offset_decals());
@@ -1439,21 +1469,24 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 do_draw(CullResult *cull_result, SceneSetup *scene_setup,
-        GraphicsOutput *win, DisplayRegion *dr) {
+        GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   // Statistics
   PStatTimer timer(_draw_pcollector);
 
-  GraphicsStateGuardian *gsg = win->get_gsg();
-  win->change_scenes(dr);
+  DisplayRegionPipelineReader *dr_reader = 
+    new DisplayRegionPipelineReader(dr, current_thread);
 
-  if (dr->get_stereo_channel() == Lens::SC_stereo) {
+  GraphicsStateGuardian *gsg = win->get_gsg();
+  win->change_scenes(dr_reader);
+
+  if (dr_reader->get_stereo_channel() == Lens::SC_stereo) {
     // A special case.  For a stereo DisplayRegion, we render the left
     // eye, followed by the right eye.
-    if (dr->is_any_clear_active()) {
-      gsg->prepare_display_region(dr, Lens::SC_stereo);
-      gsg->clear(dr);
+    if (dr_reader->is_any_clear_active()) {
+      gsg->prepare_display_region(dr_reader, Lens::SC_stereo);
+      gsg->clear(dr_reader->get_object());
     }
-    gsg->prepare_display_region(dr, Lens::SC_left);
+    gsg->prepare_display_region(dr_reader, Lens::SC_left);
 
     if (!gsg->set_scene(scene_setup)) {
       // The scene or lens is inappropriate somehow.
@@ -1461,19 +1494,24 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
         << gsg->get_type() << " cannot render scene with specified lens.\n";
     } else {
       if (gsg->begin_scene()) {
-        cull_result->draw();
+        delete dr_reader;
+        dr_reader = NULL;
+        cull_result->draw(current_thread);
         gsg->end_scene();
+        dr_reader = new DisplayRegionPipelineReader(dr, current_thread);
       }
-      if (dr->get_clear_depth_between_eyes()) {
+      if (dr_reader->get_clear_depth_between_eyes()) {
         DrawableRegion clear_region;
         clear_region.set_clear_depth_active(true);
         clear_region.set_clear_depth(dr->get_clear_depth());
         gsg->clear(&clear_region);
       }
-      gsg->prepare_display_region(dr, Lens::SC_right);
+      gsg->prepare_display_region(dr_reader, Lens::SC_right);
       gsg->set_scene(scene_setup);
       if (gsg->begin_scene()) {
-        cull_result->draw();
+        delete dr_reader;
+        dr_reader = NULL;
+        cull_result->draw(current_thread);
         gsg->end_scene();
       }
     }
@@ -1481,21 +1519,27 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
   } else {
     // For a mono DisplayRegion, or a left/right eye only
     // DisplayRegion, we just render that.
-    gsg->prepare_display_region(dr, dr->get_stereo_channel());
+    gsg->prepare_display_region(dr_reader, dr_reader->get_stereo_channel());
 
     if (!gsg->set_scene(scene_setup)) {
       // The scene or lens is inappropriate somehow.
       display_cat.error()
         << gsg->get_type() << " cannot render scene with specified lens.\n";
     } else {
-      if (dr->is_any_clear_active()) {
-        gsg->clear(dr);
+      if (dr_reader->is_any_clear_active()) {
+        gsg->clear(dr_reader->get_object());
       }
       if (gsg->begin_scene()) {
-        cull_result->draw();
+        delete dr_reader;
+        dr_reader = NULL;
+        cull_result->draw(current_thread);
         gsg->end_scene();
       }
     }
+  }
+
+  if (dr_reader != (DisplayRegionPipelineReader *)NULL) {
+    delete dr_reader;
   }
 }
 
@@ -1564,7 +1608,7 @@ do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
 //               _windows list itself.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-do_remove_window(GraphicsOutput *window) {
+do_remove_window(GraphicsOutput *window, Thread *current_thread) {
   PT(GraphicsPipe) pipe = window->get_pipe();
   window->_pipe = (GraphicsPipe *)NULL;
 
@@ -1582,7 +1626,7 @@ do_remove_window(GraphicsOutput *window) {
 
   // If the window happened to be controlled by the app thread, we
   // might as well close it now rather than waiting for next frame.
-  _app.do_pending(this);
+  _app.do_pending(this, current_thread);
 
   if (display_cat.is_debug()) {
     display_cat.debug()
@@ -1858,16 +1902,16 @@ resort_windows() {
 //               the draw list, etc.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
-do_frame(GraphicsEngine *engine) {
+do_frame(GraphicsEngine *engine, Thread *current_thread) {
   PStatTimer timer(engine->_do_frame_pcollector);
   MutexHolder holder(_wl_lock);
 
   do_callbacks(CB_pre_frame);
 
-  engine->cull_to_bins(_cull);
-  engine->cull_and_draw_together(_cdraw);
-  engine->draw_bins(_draw);
-  engine->process_events(_window);
+  engine->cull_to_bins(_cull, current_thread);
+  engine->cull_and_draw_together(_cdraw, current_thread);
+  engine->draw_bins(_draw, current_thread);
+  engine->process_events(_window, current_thread);
 
   // If any GSG's on the list have no more outstanding pointers, clean
   // them up.  (We are in the draw thread for all of these GSG's.)
@@ -1902,13 +1946,13 @@ do_frame(GraphicsEngine *engine) {
 //               only if you want these things to open immediately.)
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
-do_windows(GraphicsEngine *engine) {
+do_windows(GraphicsEngine *engine, Thread *current_thread) {
   MutexHolder holder(_wl_lock);
 
-  engine->process_events(_window);
+  engine->process_events(_window, current_thread);
 
-  engine->make_contexts(_cdraw);
-  engine->make_contexts(_draw);
+  engine->make_contexts(_cdraw, current_thread);
+  engine->make_contexts(_draw, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1918,10 +1962,10 @@ do_windows(GraphicsEngine *engine) {
 //               thread.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
-do_flip(GraphicsEngine *engine) {
+do_flip(GraphicsEngine *engine, Thread *current_thread) {
   MutexHolder holder(_wl_lock);
-  engine->flip_windows(_cdraw);
-  engine->flip_windows(_draw);
+  engine->flip_windows(_cdraw, current_thread);
+  engine->flip_windows(_draw, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1930,7 +1974,7 @@ do_flip(GraphicsEngine *engine) {
 //  Description: Closes all the windows on the _window list.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
-do_close(GraphicsEngine *engine) {
+do_close(GraphicsEngine *engine, Thread *current_thread) {
   MutexHolder holder(_wl_lock);
   Windows::iterator wi;
   for (wi = _window.begin(); wi != _window.end(); ++wi) {
@@ -1963,7 +2007,7 @@ do_close(GraphicsEngine *engine) {
 //               removed from the WindowRenderer.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
-do_pending(GraphicsEngine *engine) {
+do_pending(GraphicsEngine *engine, Thread *current_thread) {
   MutexHolder holder(_wl_lock);
 
   if (!_pending_close.empty()) {
@@ -2076,6 +2120,8 @@ RenderThread(const string &name, GraphicsEngine *engine) :
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::RenderThread::
 thread_main() {
+  Thread *current_thread = Thread::get_current_thread();
+
   MutexHolder holder(_cv_mutex);
   while (true) {
     nassertv(_cv_mutex.debug_is_locked());
@@ -2085,26 +2131,26 @@ thread_main() {
       break;
 
     case TS_do_frame:
-      do_pending(_engine);
-      do_frame(_engine);
+      do_pending(_engine, current_thread);
+      do_frame(_engine, current_thread);
       break;
 
     case TS_do_flip:
-      do_flip(_engine);
+      do_flip(_engine, current_thread);
       break;
 
     case TS_do_release:
-      do_pending(_engine);
+      do_pending(_engine, current_thread);
       break;
 
     case TS_do_windows:
-      do_windows(_engine);
-      do_pending(_engine);
+      do_windows(_engine, current_thread);
+      do_pending(_engine, current_thread);
       break;
 
     case TS_terminate:
-      do_pending(_engine);
-      do_close(_engine);
+      do_pending(_engine, current_thread);
+      do_close(_engine, current_thread);
       _thread_state = TS_done;
       _cv_done.signal();
       return;

@@ -956,8 +956,9 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
 //               case, it is Lens::SC_mono.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
-  _current_display_region = dr;
+prepare_display_region(DisplayRegionPipelineReader *dr,
+                       Lens::StereoChannel stereo_channel) {
+  _current_display_region = dr->get_object();
   _current_stereo_channel = stereo_channel;
 
   _stereo_buffer_mask = ~0;

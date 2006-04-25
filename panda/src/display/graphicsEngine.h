@@ -152,30 +152,32 @@ private:
 
   void set_window_sort(GraphicsOutput *window, int sort);
 
-  void cull_and_draw_together(const Windows &wlist);
-  void cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr);
+  void cull_and_draw_together(const Windows &wlist, Thread *current_thread);
+  void cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
+                              Thread *current_thread);
 
-  void cull_to_bins(const Windows &wlist);
-  void cull_to_bins(GraphicsOutput *win, DisplayRegion *dr);
-  void draw_bins(const Windows &wlist);
-  void draw_bins(GraphicsOutput *win, DisplayRegion *dr);
-  void make_contexts(const Windows &wlist);
+  void cull_to_bins(const Windows &wlist, Thread *current_thread);
+  void cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread);
+  void draw_bins(const Windows &wlist, Thread *current_thread);
+  void draw_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread);
+  void make_contexts(const Windows &wlist, Thread *current_thread);
 
-  void process_events(const Windows &wlist);
-  void flip_windows(const Windows &wlist);
-  void do_sync_frame();
-  void do_flip_frame();
+  void process_events(const Windows &wlist, Thread *current_thread);
+  void flip_windows(const Windows &wlist, Thread *current_thread);
+  void do_sync_frame(Thread *current_thread);
+  void do_flip_frame(Thread *current_thread);
   INLINE void close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
 
-  PT(SceneSetup) setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr);
+  PT(SceneSetup) setup_scene(GraphicsStateGuardian *gsg, 
+                             DisplayRegionPipelineReader *dr);
   void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
-               GraphicsStateGuardian *gsg);
+               GraphicsStateGuardian *gsg, Thread *current_thread);
   void do_draw(CullResult *cull_result, SceneSetup *scene_setup,
-               GraphicsOutput *win, DisplayRegion *dr);
+               GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread);
 
   void do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
                      const GraphicsThreadingModel &threading_model);
-  void do_remove_window(GraphicsOutput *window);
+  void do_remove_window(GraphicsOutput *window, Thread *current_thread);
   void do_resort_windows();
   void terminate_threads();
 
@@ -275,12 +277,12 @@ private:
     void add_window(Windows &wlist, GraphicsOutput *window);
     void remove_window(GraphicsOutput *window);
     void resort_windows();
-    void do_frame(GraphicsEngine *engine);
-    void do_windows(GraphicsEngine *engine);
-    void do_flip(GraphicsEngine *engine);
-    void do_release(GraphicsEngine *engine);
-    void do_close(GraphicsEngine *engine);
-    void do_pending(GraphicsEngine *engine);
+    void do_frame(GraphicsEngine *engine, Thread *current_thread);
+    void do_windows(GraphicsEngine *engine, Thread *current_thread);
+    void do_flip(GraphicsEngine *engine, Thread *current_thread);
+    void do_release(GraphicsEngine *engine, Thread *current_thread);
+    void do_close(GraphicsEngine *engine, Thread *current_thread);
+    void do_pending(GraphicsEngine *engine, Thread *current_thread);
     bool any_done_gsgs() const;
 
     bool add_callback(CallbackTime callback_time, const Callback &callback);

@@ -63,7 +63,8 @@ public:
 
   void munge_geom(GraphicsStateGuardianBase *gsg,
                   GeomMunger *munger, const CullTraverser *traverser);
-  INLINE void draw(GraphicsStateGuardianBase *gsg);
+  INLINE void draw(GraphicsStateGuardianBase *gsg,
+                   Thread *current_thread);
 
 public:
   ~CullableObject();

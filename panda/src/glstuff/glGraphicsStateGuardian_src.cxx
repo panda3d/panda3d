@@ -1146,12 +1146,13 @@ do_clear(const RenderBuffer &buffer) {
 //               scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
-  nassertv(dr != (DisplayRegion *)NULL);
+prepare_display_region(DisplayRegionPipelineReader *dr, 
+                       Lens::StereoChannel stereo_channel) {
+  nassertv(dr != (DisplayRegionPipelineReader *)NULL);
   GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
 
   int l, b, w, h;
-  _current_display_region->get_region_pixels(l, b, w, h);
+  dr->get_region_pixels(l, b, w, h);
   _viewport_width = w;
   _viewport_height = h;
   GLint x = GLint(l);
@@ -1159,7 +1160,7 @@ prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
   GLsizei width = GLsizei(w);
   GLsizei height = GLsizei(h);
 
-  set_draw_buffer(get_render_buffer(_current_display_region->get_draw_buffer_type(),
+  set_draw_buffer(get_render_buffer(dr->get_object()->get_draw_buffer_type(),
                                     *_current_properties));
   enable_scissor(true);
   GLP(Scissor)(x, y, width, height);

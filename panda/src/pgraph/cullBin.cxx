@@ -75,16 +75,6 @@ finish_cull(SceneSetup *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullBin::draw
-//       Access: Public, Virtual
-//  Description: Draws all the geoms in the bin, in the appropriate
-//               order.
-////////////////////////////////////////////////////////////////////
-void CullBin::
-draw() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CullBin::check_flash_color
 //       Access: Private
 //  Description: Checks the config variables for a user variable of

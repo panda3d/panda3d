@@ -106,74 +106,6 @@ cleanup() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_dimensions
-//       Access: Published
-//  Description: Retrieves the coordinates of the DisplayRegion's
-//               rectangle within its GraphicsOutput.  These numbers
-//               will be in the range [0..1].
-////////////////////////////////////////////////////////////////////
-void DisplayRegion::
-get_dimensions(float &l, float &r, float &b, float &t) const {
-  CDReader cdata(_cycler);
-  l = cdata->_l;
-  r = cdata->_r;
-  b = cdata->_b;
-  t = cdata->_t;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_left
-//       Access: Published
-//  Description: Retrieves the x coordinate of the left edge of the
-//               rectangle within its GraphicsOutput.  This number
-//               will be in the range [0..1].
-////////////////////////////////////////////////////////////////////
-float DisplayRegion::
-get_left() const {
-  CDReader cdata(_cycler);
-  return cdata->_l;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_right
-//       Access: Published
-//  Description: Retrieves the x coordinate of the right edge of the
-//               rectangle within its GraphicsOutput.  This number
-//               will be in the range [0..1].
-////////////////////////////////////////////////////////////////////
-float DisplayRegion::
-get_right() const {
-  CDReader cdata(_cycler);
-  return cdata->_r;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_bottom
-//       Access: Published
-//  Description: Retrieves the y coordinate of the bottom edge of 
-//               the rectangle within its GraphicsOutput.  This 
-//               number will be in the range [0..1].
-////////////////////////////////////////////////////////////////////
-float DisplayRegion::
-get_bottom() const {
-  CDReader cdata(_cycler);
-  return cdata->_b;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_top
-//       Access: Published
-//  Description: Retrieves the y coordinate of the top edge of the
-//               rectangle within its GraphicsOutput.  This number
-//               will be in the range [0..1].
-////////////////////////////////////////////////////////////////////
-float DisplayRegion::
-get_top() const {
-  CDReader cdata(_cycler);
-  return cdata->_t;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_dimensions
 //       Access: Published
 //  Description: Changes the portion of the framebuffer this
@@ -196,18 +128,6 @@ set_dimensions(float l, float r, float b, float t) {
   if (_window != (GraphicsOutput *)NULL && _window->has_size()) {
     do_compute_pixels(_window->get_x_size(), _window->get_y_size(), cdata);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_window
-//       Access: Published
-//  Description: Returns the GraphicsOutput that this DisplayRegion is
-//               ultimately associated with, or NULL if no window is
-//               associated.
-////////////////////////////////////////////////////////////////////
-GraphicsOutput *DisplayRegion::
-get_window() const {
-  return _window;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -262,19 +182,6 @@ set_camera(const NodePath &camera) {
   }
 
   cdata->_camera = camera;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_camera
-//       Access: Published
-//  Description: Returns the camera associated with this
-//               DisplayRegion, or an empty NodePath if no camera is
-//               associated.
-////////////////////////////////////////////////////////////////////
-NodePath DisplayRegion::
-get_camera() const {
-  CDReader cdata(_cycler);
-  return cdata->_camera;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -423,76 +330,6 @@ compute_pixels_all_stages(int x_size, int y_size) {
     do_compute_pixels(x_size, y_size, cdata);
   } 
   CLOSE_ITERATE_ALL_STAGES(_cycler);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_pixels
-//       Access: Published
-//  Description: Retrieves the coordinates of the DisplayRegion within
-//               its window, in pixels.
-////////////////////////////////////////////////////////////////////
-void DisplayRegion::
-get_pixels(int &pl, int &pr, int &pb, int &pt) const {
-  CDReader cdata(_cycler);
-  pl = cdata->_pl;
-  pr = cdata->_pr;
-  pb = cdata->_pb;
-  pt = cdata->_pt;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_region_pixels
-//       Access: Published
-//  Description: Retrieves the coordinates of the DisplayRegion within
-//               its window, as the pixel location of its bottom-left
-//               corner, along with a pixel width and height.
-////////////////////////////////////////////////////////////////////
-void DisplayRegion::
-get_region_pixels(int &xo, int &yo, int &w, int &h) const {
-  CDReader cdata(_cycler);
-  xo = cdata->_pl;
-  yo = cdata->_pb;
-  w = cdata->_pr - cdata->_pl;
-  h = cdata->_pt - cdata->_pb;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_region_pixels_i
-//       Access: Published
-//  Description: Similar to get_region_pixels(), but returns the upper
-//               left corner, and the pixel numbers are numbered from
-//               the top-left corner down, in the DirectX way of
-//               things.
-////////////////////////////////////////////////////////////////////
-void DisplayRegion::
-get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
-  CDReader cdata(_cycler);
-  xo = cdata->_pl;
-  yo = cdata->_pti;
-  w = cdata->_pr - cdata->_pl;
-  h = cdata->_pbi - cdata->_pti;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_pixel_width
-//       Access: Published
-//  Description: Returns the width of the DisplayRegion in pixels.
-////////////////////////////////////////////////////////////////////
-int DisplayRegion::
-get_pixel_width() const {
-  CDReader cdata(_cycler);
-  return cdata->_pr - cdata->_pl;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_pixel_height
-//       Access: Published
-//  Description: Returns the height of the DisplayRegion in pixels.
-////////////////////////////////////////////////////////////////////
-int DisplayRegion::
-get_pixel_height() const {
-  CDReader cdata(_cycler);
-  return cdata->_pt - cdata->_pb;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -772,4 +609,16 @@ make_copy() const {
 CycleData *DisplayRegion::CDataCull::
 make_copy() const {
   return new CDataCull(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_pipe
+//       Access: Public
+//  Description: Returns the GraphicsPipe that this DisplayRegion is
+//               ultimately associated with, or NULL if no pipe is
+//               associated.
+////////////////////////////////////////////////////////////////////
+GraphicsPipe *DisplayRegionPipelineReader::
+get_pipe() const {
+  return (_object->_window != (GraphicsOutput *)NULL) ? _object->_window->get_pipe() : NULL;
 }

@@ -34,7 +34,7 @@
 #include "pipelineCycler.h"
 #include "config_display.h"
 #include "lens.h"
-
+#include "deletedChain.h"
 #include "plist.h"
 
 class GraphicsOutput;
@@ -70,18 +70,18 @@ public:
   INLINE bool operator < (const DisplayRegion &other) const;
 
 PUBLISHED:
-  void get_dimensions(float &l, float &r, float &b, float &t) const;
-  float get_left() const;
-  float get_right() const;
-  float get_bottom() const;
-  float get_top() const;
+  INLINE void get_dimensions(float &l, float &r, float &b, float &t) const;
+  INLINE float get_left() const;
+  INLINE float get_right() const;
+  INLINE float get_bottom() const;
+  INLINE float get_top() const;
   void set_dimensions(float l, float r, float b, float t);
 
-  GraphicsOutput *get_window() const;
+  INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
 
   void set_camera(const NodePath &camera);
-  NodePath get_camera() const;
+  INLINE NodePath get_camera() const;
 
   void set_active(bool active);
   INLINE bool is_active() const;
@@ -102,12 +102,12 @@ PUBLISHED:
   void compute_pixels_all_stages();
   void compute_pixels(int x_size, int y_size);
   void compute_pixels_all_stages(int x_size, int y_size);
-  void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
-  void get_region_pixels(int &xo, int &yo, int &w, int &h) const;
-  void get_region_pixels_i(int &xo, int &yo, int &w, int &h) const;
+  INLINE void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
+  INLINE void get_region_pixels(int &xo, int &yo, int &w, int &h) const;
+  INLINE void get_region_pixels_i(int &xo, int &yo, int &w, int &h) const;
 
-  int get_pixel_width() const;
-  int get_pixel_height() const;
+  INLINE int get_pixel_width() const;
+  INLINE int get_pixel_height() const;
 
   void output(ostream &out) const;
 
@@ -212,6 +212,57 @@ private:
   static TypeHandle _type_handle;
 
   friend class GraphicsOutput;
+  friend class DisplayRegionPipelineReader;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : DisplayRegionPipelineReader
+// Description : Encapsulates the data from a DisplayRegion,
+//               pre-fetched for one stage of the pipeline.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA DisplayRegionPipelineReader {
+public:
+  INLINE DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread);
+private:
+  INLINE DisplayRegionPipelineReader(const DisplayRegionPipelineReader &copy);
+  INLINE void operator = (const DisplayRegionPipelineReader &copy);
+
+public:
+  INLINE ~DisplayRegionPipelineReader();
+  ALLOC_DELETED_CHAIN(DisplayRegionPipelineReader);
+
+  INLINE DisplayRegion *get_object() const;
+  INLINE Thread *get_current_thread() const;
+
+  INLINE bool is_any_clear_active() const;
+
+  INLINE void get_dimensions(float &l, float &r, float &b, float &t) const;
+  INLINE float get_left() const;
+  INLINE float get_right() const;
+  INLINE float get_bottom() const;
+  INLINE float get_top() const;
+
+  INLINE GraphicsOutput *get_window() const;
+  GraphicsPipe *get_pipe() const;
+
+  INLINE NodePath get_camera() const;
+  INLINE bool is_active() const;
+  INLINE int get_sort() const;
+  INLINE Lens::StereoChannel get_stereo_channel();
+  INLINE bool get_clear_depth_between_eyes() const;
+  INLINE int get_cube_map_index() const;
+
+  INLINE void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
+  INLINE void get_region_pixels(int &xo, int &yo, int &w, int &h) const;
+  INLINE void get_region_pixels_i(int &xo, int &yo, int &w, int &h) const;
+
+  INLINE int get_pixel_width() const;
+  INLINE int get_pixel_height() const;
+
+private:
+  DisplayRegion *_object;
+  Thread *_current_thread;
+  const DisplayRegion::CData *_cdata;
 };
 
 INLINE ostream &operator << (ostream &out, const DisplayRegion &dr);

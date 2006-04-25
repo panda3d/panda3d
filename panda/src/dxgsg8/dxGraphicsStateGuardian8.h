@@ -66,7 +66,8 @@ public:
 
   virtual void do_clear(const RenderBuffer &buffer);
 
-  virtual void prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel);
+  virtual void prepare_display_region(DisplayRegionPipelineReader *dr, 
+                                      Lens::StereoChannel stereo_channel);
   virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
   virtual bool prepare_lens();
 

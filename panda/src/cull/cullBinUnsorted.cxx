@@ -61,17 +61,17 @@ add_object(CullableObject *object) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullBinUnsorted::draw
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Draws all the objects in the bin, in the appropriate
 //               order.
 ////////////////////////////////////////////////////////////////////
 void CullBinUnsorted::
-draw() {
+draw(Thread *current_thread) {
   PStatTimer timer(_draw_this_pcollector);
   Objects::iterator oi;
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     CullableObject *object = (*oi);
-    CullHandler::draw(object, _gsg);
+    CullHandler::draw(object, _gsg, current_thread);
   }
 }
 

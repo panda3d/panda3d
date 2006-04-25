@@ -81,17 +81,17 @@ finish_cull(SceneSetup *) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullBinFixed::draw
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Draws all the geoms in the bin, in the appropriate
 //               order.
 ////////////////////////////////////////////////////////////////////
 void CullBinFixed::
-draw() {
+draw(Thread *current_thread) {
   PStatTimer timer(_draw_this_pcollector);
   Objects::const_iterator oi;
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     CullableObject *object = (*oi)._object;
-    CullHandler::draw(object, _gsg);
+    CullHandler::draw(object, _gsg, current_thread);
   }
 }
 

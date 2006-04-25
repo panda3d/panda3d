@@ -195,7 +195,7 @@ finish_cull(SceneSetup *scene_setup) {
 //               order.
 ////////////////////////////////////////////////////////////////////
 void CullBinOcclusionTest::
-draw() {
+draw(Thread *current_thread) {
   PStatTimer timer(_draw_this_pcollector);
 
   // We'll want to know the near plane distance.
@@ -205,7 +205,7 @@ draw() {
   int num_drawn_previous;
   {
     MutexHolder holder(_prev_draw->_visible_lock);
-    num_drawn_previous = _root.draw_previous(*this);
+    num_drawn_previous = _root.draw_previous(*this, current_thread);
   }
 
   if (cull_cat.is_spam()) {
@@ -215,9 +215,9 @@ draw() {
 
   // Now draw the objects that may or may not remain.
   int num_drawn;
-  num_drawn = _root.draw(*this);
+  num_drawn = _root.draw(*this, current_thread);
   if (show_octree) {
-    _root.draw_wireframe(*this);
+    _root.draw_wireframe(*this, current_thread);
   }
 
   while (!_pending_nodes.empty()) {
@@ -239,9 +239,9 @@ draw() {
     if (num_fragments != 0) {
       // The octree cell is at least partially visible.  Draw it, and
       // continue recursion.
-      num_drawn += pending._octree_node->draw(*this);
+      num_drawn += pending._octree_node->draw(*this, current_thread);
       if (show_octree) {
-        pending._octree_node->draw_wireframe(*this);
+        pending._octree_node->draw_wireframe(*this, current_thread);
       }
     }
     _pending_nodes.pop_front();
@@ -475,7 +475,7 @@ compute_distance(const LMatrix4f &world_mat,
 //               occlusion query object representing this test.
 ////////////////////////////////////////////////////////////////////
 PT(OcclusionQueryContext) CullBinOcclusionTest::OctreeNode::
-occlusion_test(CullBinOcclusionTest &bin) {
+occlusion_test(CullBinOcclusionTest &bin, Thread *current_thread) {
   // Draw the bounding volume for visualization.  This is
   // complicated because we're doing this at such a low level, here
   // in the middle of the draw task--we've already completed the
@@ -500,7 +500,7 @@ occlusion_test(CullBinOcclusionTest &bin) {
 
   PStatTimer timer(bin._draw_occlusion_pcollector);
   bin._gsg->begin_occlusion_query();
-  viz->draw(bin._gsg, munger, munged_data);
+  viz->draw(bin._gsg, munger, munged_data, current_thread);
   return bin._gsg->end_occlusion_query();
 }
 
@@ -512,7 +512,7 @@ occlusion_test(CullBinOcclusionTest &bin) {
 //               objects drawn.
 ////////////////////////////////////////////////////////////////////
 int CullBinOcclusionTest::OctreeNode::
-draw_previous(CullBinOcclusionTest &bin) {
+draw_previous(CullBinOcclusionTest &bin, Thread *current_thread) {
   int num_drawn = 0;
 
   if (!_objects.empty()) {
@@ -523,7 +523,7 @@ draw_previous(CullBinOcclusionTest &bin) {
         VisibleGeom vg(object->_geom, object->_net_transform);
         if (bin._prev_draw->_visible_geoms.find(vg) != bin._prev_draw->_visible_geoms.end()) {
           // This object is visible.
-          CullHandler::draw(object, bin._gsg);
+          CullHandler::draw(object, bin._gsg, current_thread);
           object->_already_drawn = true;
           ++num_drawn;
         }
@@ -536,7 +536,7 @@ draw_previous(CullBinOcclusionTest &bin) {
     // farthest.
     int index = bin._corners_front_to_back[i];
     if (_corners[index] != (OctreeNode *)NULL) {
-      num_drawn += _corners[index]->draw_previous(bin);
+      num_drawn += _corners[index]->draw_previous(bin, current_thread);
     }
   }
 
@@ -551,7 +551,7 @@ draw_previous(CullBinOcclusionTest &bin) {
 //               nested nodes.  Returns the number of objects drawn.
 ////////////////////////////////////////////////////////////////////
 int CullBinOcclusionTest::OctreeNode::
-draw(CullBinOcclusionTest &bin) {
+draw(CullBinOcclusionTest &bin, Thread *current_thread) {
   // If the node is being drawn, it must have passed the occlusion
   // test.  Flag it as such.
   _is_visible = true;
@@ -568,7 +568,7 @@ draw(CullBinOcclusionTest &bin) {
     for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
       CullableObject *object = (*oi)._object;
       if (!object->_already_drawn) {
-        CullHandler::draw(object, bin._gsg);
+        CullHandler::draw(object, bin._gsg, current_thread);
         object->_already_drawn = true;
         ++num_drawn;
       }
@@ -588,7 +588,7 @@ draw(CullBinOcclusionTest &bin) {
         // some or all of the cube would be clipped), but it's not
         // likely that anything will be occluding something so close
         // to the camera anyway.
-        _corners[index]->draw(bin);
+        _corners[index]->draw(bin, current_thread);
 
       } else {
         // Otherwise, if the entire cube is in front of the near
@@ -597,7 +597,7 @@ draw(CullBinOcclusionTest &bin) {
         // through the depth test.
         PendingNode pending;
         pending._octree_node = _corners[index];
-        pending._query = _corners[index]->occlusion_test(bin);
+        pending._query = _corners[index]->occlusion_test(bin, current_thread);
 
         // We push it onto the list of nodes that are awaiting
         // feedback from the graphics pipe.  This way we can go work
@@ -617,7 +617,7 @@ draw(CullBinOcclusionTest &bin) {
 //               for debugging and visualization purposes.
 ////////////////////////////////////////////////////////////////////
 void CullBinOcclusionTest::OctreeNode::
-draw_wireframe(CullBinOcclusionTest &bin) {
+draw_wireframe(CullBinOcclusionTest &bin, Thread *current_thread) {
   // As above, this is complicated because we're doing this at such a
   // low level.
   CPT(TransformState) net_transform = TransformState::make_pos_hpr_scale
@@ -635,7 +635,7 @@ draw_wireframe(CullBinOcclusionTest &bin) {
   munger->munge_geom(viz, munged_data);
   
   bin._gsg->set_state_and_transform(state, internal_transform);
-  viz->draw(bin._gsg, munger, munged_data);
+  viz->draw(bin._gsg, munger, munged_data, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

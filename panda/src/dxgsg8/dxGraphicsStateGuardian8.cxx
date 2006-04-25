@@ -556,12 +556,13 @@ do_clear(const RenderBuffer &buffer) {
 //       scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-prepare_display_region(DisplayRegion *dr, Lens::StereoChannel stereo_channel) {
-  nassertv(dr != (DisplayRegion *)NULL);
+prepare_display_region(DisplayRegionPipelineReader *dr, 
+                       Lens::StereoChannel stereo_channel) {
+  nassertv(dr != (DisplayRegionPipelineReader *)NULL);
   GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
 
   int l, u, w, h;
-  _current_display_region->get_region_pixels_i(l, u, w, h);
+  dr->get_region_pixels_i(l, u, w, h);
 
   // Create the viewport
   D3DVIEWPORT8 vp = { l, u, w, h, 0.0f, 1.0f };
