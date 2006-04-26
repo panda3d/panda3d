@@ -17,7 +17,8 @@
   dtoolutil:c dtoolbase:c dtool:m \
   express:c pstatclient:c prc:c pandabase:c linmath:c \
   putil:c display:c event:c pgraph:c gsgbase:c gobj:c mathutil:c \
-  lerp:c downloader:c pnmimage:c chan:c 
+  lerp:c downloader:c pnmimage:c chan:c \
+  pipeline:c cull:c
 
 #begin metalib_target
   #define TARGET direct

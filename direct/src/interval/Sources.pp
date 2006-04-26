@@ -8,7 +8,8 @@
     pgraph:c putil:c panda:m express:c pandaexpress:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m \
-    pandabase:c prc:c gsgbase:c pstatclient:c
+    pandabase:c prc:c gsgbase:c pstatclient:c \
+    pipeline:c
 
   #define SOURCES \
     config_interval.cxx config_interval.h \

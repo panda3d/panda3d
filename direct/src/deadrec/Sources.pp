@@ -6,7 +6,8 @@
     express:c linmath:c \
     interrogatedb:c dconfig:c \
     dtoolutil:c dtoolbase:c dtool:m \
-    prc:c pandabase:c putil:c 
+    prc:c pandabase:c putil:c \
+    pipeline:c
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
