@@ -46,7 +46,7 @@ class BufferViewer(DirectObject):
         list of GraphicsOutput and Texture, or the keyword 'all'."""
         if (isinstance(x, list)):
             for elt in x:
-                if (self.isValidTextureSet(x)==0):
+                if (self.isValidTextureSet(elt)==0):
                     return 0
         else:
             return (x=="all") or (isinstance(x, Texture)) or (isinstance(x, GraphicsOutput))
