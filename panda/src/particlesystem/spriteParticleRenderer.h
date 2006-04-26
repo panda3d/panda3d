@@ -45,18 +45,8 @@ class NodePath;
 ////////////////////////////////////////////////////////////////////
 class SpriteWriter {
 public:
-  SpriteWriter(GeomVertexWriter v,
-               GeomVertexWriter c,
-               GeomVertexWriter r,
-               GeomVertexWriter s,
-               GeomVertexWriter a):
-    vertex(v),
-    color(c),
-    rotate(r),
-    size(s),
-    aspect_ratio(a){
-    };
-
+  SpriteWriter() {
+  }
   SpriteWriter(const SpriteWriter &copy):
     vertex(copy.vertex),
     color(copy.color),

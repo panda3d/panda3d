@@ -505,12 +505,7 @@ init_geoms() {
       geom->add_primitive(_sprites[i][j]);
       
       // This will be overwritten in render(), but we had to have some initial value 
-      // since there are no default constructors for GeomVertexWriter.
-      _sprite_writer[i].push_back(SpriteWriter(GeomVertexWriter(_vdata[i][j], InternalName::get_vertex()),
-                                               GeomVertexWriter(_vdata[i][j], InternalName::get_color()),
-                                               GeomVertexWriter(_vdata[i][j], InternalName::get_rotate()),
-                                               GeomVertexWriter(_vdata[i][j], InternalName::get_size()),
-                                               GeomVertexWriter(_vdata[i][j], InternalName::get_aspect_ratio())));
+      _sprite_writer[i].push_back(SpriteWriter());
 
       state = state->add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _base_y_scale * _height, true));
       if (anim->get_frame(j) != (Texture *)NULL) {
