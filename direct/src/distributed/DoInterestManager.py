@@ -154,6 +154,10 @@ class DoInterestManager(DirectObject.DirectObject):
             else:
                 description = DoInterestManager._interests[handle].desc
 
+            # are we overriding an existing change?
+            if DoInterestManager._interests[handle].scope != NO_SCOPE:
+                DoInterestManager._interests[handle].clearEvents()
+
             scopeId = self._getNextScopeId()
             DoInterestManager._interests[handle].scope = scopeId
             DoInterestManager._interests[handle].addEvent(event)
@@ -324,6 +328,7 @@ class DoInterestManager(DirectObject.DirectObject):
             # the events after we're once again in a stable state.
             #DoInterestManager._interests[handle].sendEvents()
             eventsToSend = list(DoInterestManager._interests[handle].getEvents())
+            DoInterestManager._interests[handle].clearEvents()
         else:
             DoInterestManager.notify.warning(
                 "handleInterestDoneMessage--> handle: %s: Expecting scope %s, got %s" % (
