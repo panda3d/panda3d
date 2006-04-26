@@ -1527,7 +1527,6 @@ class Actor(DirectObject, NodePath):
         for internal use only!
         """
         # make sure this anim is in the dict
-
         subpartDef = self.__subpartDict.get(partName)
         truePartName = partName
         subset = PartSubset()
