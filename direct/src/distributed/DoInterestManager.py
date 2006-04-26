@@ -41,6 +41,9 @@ class InterestState:
         self.clearEvents()
     def isPendingDelete(self):
         return self.state == InterestState.StatePendingDel
+    def __repr__(self):
+        return 'InterestState(desc=%s, state=%s, scope=%s, event=%s, parentId=%s, zoneIdList=%s)' % (
+            self.desc, self.state, self.scope, self.events, self.parentId, self.zoneIdList)
 
 # scope value for interest changes that have no complete event
 NO_SCOPE = 0
@@ -105,6 +108,10 @@ class DoInterestManager(DirectObject.DirectObject):
                 self.notify.warning(
                     'removeInterest: interest %s already pending removal' %
                     handle)
+                # this interest is already pending delete, so let's just tack this
+                # callback onto the list
+                if event is not None:
+                    intState.addEvent(event)
             else:
                 if len(intState.events) > 0:
                     # we're not pending a removal, but we have outstanding events?
@@ -116,7 +123,8 @@ class DoInterestManager(DirectObject.DirectObject):
                 scopeId = self._getNextScopeId()
                 intState.state = InterestState.StatePendingDel
                 intState.scope = scopeId
-                intState.addEvent(event)
+                if event is not None:
+                    intState.addEvent(event)
                 if self.InterestDebug:
                     print 'INTEREST DEBUG: removeInterest(): handle=%s, event=%s' % (
                         handle, event)
@@ -222,10 +230,10 @@ class DoInterestManager(DirectObject.DirectObject):
             print "Note: interests with a Scope of 0 do not get" \
                 " done/finished notices."
             print "******************* Interest Sets **************"
-            format = '%6s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %10s %8s %5s %9s %9s %s'
+            format = '%6s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %10s %5s %9s %9s %10s'
             print format % (
-                "Handle", "Description", "State", "Scope", "Event", 
-                "ScopeId", "ParentId", "ZoneIdList")
+                "Handle", "Description", "State", "Scope", 
+                "ParentId", "ZoneIdList", "Event")
             for id, state in DoInterestManager._interests.items():
                 if len(state.events) == 0:
                     event = ''
@@ -233,8 +241,8 @@ class DoInterestManager(DirectObject.DirectObject):
                     event = state.events[0]
                 else:
                     event = state.events
-                print format % (id, state.desc, state.state, state.scope, event,
-                                state.scope, state.parentId, state.zoneIdList)
+                print format % (id, state.desc, state.state, state.scope,
+                                state.parentId, state.zoneIdList, event)
             print "************************************************"
 
     def _sendAddInterest(self, handle, scopeId, parentId, zoneIdList, description,
@@ -308,10 +316,14 @@ class DoInterestManager(DirectObject.DirectObject):
         DoInterestManager.notify.debug(
             "handleInterestDoneMessage--> Received handle %s, scope %s" % (
             handle, scopeId))
+        eventsToSend = []
         # if the scope matches, send out the event
         if scopeId == DoInterestManager._interests[handle].scope:
             DoInterestManager._interests[handle].scope = NO_SCOPE
-            DoInterestManager._interests[handle].sendEvents()
+            # the event handlers may call back into the interest manager. Send out
+            # the events after we're once again in a stable state.
+            #DoInterestManager._interests[handle].sendEvents()
+            eventsToSend = list(DoInterestManager._interests[handle].getEvents())
         else:
             DoInterestManager.notify.warning(
                 "handleInterestDoneMessage--> handle: %s: Expecting scope %s, got %s" % (
@@ -322,7 +334,8 @@ class DoInterestManager(DirectObject.DirectObject):
                 "finished", state.desc, handle, scopeId, state.parentId,
                 state.zoneIdList)
         self._considerRemoveInterest(handle)
-
+        for event in eventsToSend:
+            messenger.send(event)
         assert self.printInterestsIfDebug()
 
 if __debug__:
