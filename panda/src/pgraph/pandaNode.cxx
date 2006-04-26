@@ -1141,6 +1141,12 @@ set_transform(const TransformState *transform, Thread *current_thread) {
     if (cdata->_transform != transform) {
       cdata->_transform = transform;
       any_changed = true;
+
+      if (pipeline_stage == 0) {
+        if (cdata->_transform != cdata->_prev_transform) {
+          set_dirty_prev_transform();
+        }
+      }
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light);
