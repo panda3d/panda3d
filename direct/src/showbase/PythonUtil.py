@@ -1919,6 +1919,10 @@ def printListEnum(l):
     for i in range(len(l)):
         print format % (i, l[i])
 
+def gcDebugOn():
+    import gc
+    return (gc.get_debug() & gc.DEBUG_LEAK) == gc.DEBUG_LEAK
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
