@@ -5,6 +5,7 @@ from direct.interval.IntervalGlobal import *
 from direct.distributed.DistributedNode import DistributedNode
 from direct.task import Task
 from direct.gui import DirectGuiGlobals
+from direct.showbase.EventGroup import EventGroup
 
 if __debug__:
     # For grid drawing
@@ -76,10 +77,17 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         taskMgr.add(
             self.processVisibility, self.taskName("processVisibility"))
 
-    def stopProcessVisibility(self, clearAll=False):
+    def stopProcessVisibility(self, clearAll=False, event=None):
         taskMgr.remove(self.taskName("processVisibility"))
+        if event is not None:
+            eventGroup = EventGroup('DistCartesianGrid.stopProcessVis',
+                                    doneEvent=event)
         if self.gridVisContext is not None:
-            self.cr.removeInterest(self.gridVisContext)
+            if event is not None:
+                removeEvent = eventGroup.newEvent('%s.removeInterest' % self.doId)
+            else:
+                removeEvent = None
+            self.cr.removeInterest(self.gridVisContext, removeEvent)
             self.gridVisContext = None
         self.visAvatar = None
         self.visZone = None
@@ -87,7 +95,11 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         # sometimes we also need to remove vis avatar from
         # my parent if it is also a grid
         if (clearAll):
-            self.cr.doId2do[self.parentId].worldGrid.stopProcessVisibility()
+            if event is not None:
+                parentEvent = eventGroup.newEvent('%s.parent.removeInterest' % self.doId)
+            else:
+                parentEvent = None
+            self.cr.doId2do[self.parentId].worldGrid.stopProcessVisibility(event=parentEvent)
 
     def processVisibility(self, task):
         pos = self.visAvatar.getPos(self)
