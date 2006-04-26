@@ -38,7 +38,7 @@ class PandaNode;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DataGraphTraverser {
 PUBLISHED:
-  DataGraphTraverser(Thread *current_thread);
+  DataGraphTraverser(Thread *current_thread = Thread::get_current_thread());
   ~DataGraphTraverser();
 
   void traverse(PandaNode *node);
