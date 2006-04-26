@@ -113,7 +113,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow8::
-end_frame(FrameMode mode) {
+end_frame(FrameMode mode, Thread *current_thread) {
 
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
@@ -122,7 +122,7 @@ end_frame(FrameMode mode) {
     copy_to_textures();
   }
 
-  _gsg->end_frame();
+  _gsg->end_frame(current_thread);
 
   if (mode == FM_render) {
     trigger_flip();

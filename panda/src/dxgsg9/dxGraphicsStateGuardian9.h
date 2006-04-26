@@ -107,10 +107,10 @@ public:
   virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
   virtual bool prepare_lens();
 
-  virtual bool begin_frame(Thread *current_thread, Thread *current_thread);
-  virtual bool begin_scene(Thread *current_thread, Thread *current_thread);
+  virtual bool begin_frame(Thread *current_thread);
+  virtual bool begin_scene();
   virtual void end_scene();
-  virtual void end_frame();
+  virtual void end_frame(Thread *current_thread);
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader, 
                                      const GeomMunger *munger,

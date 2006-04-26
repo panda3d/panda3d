@@ -42,8 +42,8 @@ public:
                      GraphicsOutput *host);
   virtual ~wdxGraphicsWindow8();
 
-  virtual bool begin_frame(FrameMode mode);
-  virtual void end_frame(FrameMode mode);
+  virtual bool begin_frame(FrameMode mode, Thread *current_thread);
+  virtual void end_frame(FrameMode mode, Thread *current_thread);
   virtual void end_flip();
 
   virtual int verify_window_sizes(int numsizes, int *dimen);

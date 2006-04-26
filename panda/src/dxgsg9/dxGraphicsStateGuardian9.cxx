@@ -4486,7 +4486,8 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     release_all_index_buffers();
 
     // must be called before reset
-    _prepared_objects->begin_frame(this);
+    Thread *current_thread = Thread::get_current_thread();
+    _prepared_objects->begin_frame(this, current_thread);
 
     hr = _d3d_device->Reset(&_presentation_reset);
     if (FAILED(hr)) {
@@ -4544,7 +4545,7 @@ check_cooperative_level() {
     _dx_is_ready = false;
 
     // call this just in case
-    _prepared_objects->begin_frame(this);
+    _prepared_objects->begin_frame(this, Thread::get_current_thread());
 
     hr = reset_d3d_device(&_screen->_presentation_params);
     if (FAILED(hr)) {
