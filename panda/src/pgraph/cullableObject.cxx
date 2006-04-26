@@ -50,11 +50,21 @@ void CullableObject::
 munge_geom(GraphicsStateGuardianBase *gsg,
            GeomMunger *munger, const CullTraverser *traverser) {
   if (_geom != (Geom *)NULL) {
+    Thread *current_thread = traverser->get_current_thread();
     _munger = munger;
-    _munged_data = _geom->get_vertex_data();
-    nassertv(_geom->check_valid(_munged_data));
 
-    int geom_rendering = _geom->get_geom_rendering();
+    GeomPipelineReader geom_reader(_geom, current_thread);
+    _munged_data = geom_reader.get_vertex_data();
+
+#ifndef NDEBUG
+    {
+      GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
+      data_reader.check_array_readers();
+      nassertv(geom_reader.check_valid(&data_reader));
+    }
+#endif  // NDEBUG
+
+    int geom_rendering = geom_reader.get_geom_rendering();
     geom_rendering = _state->get_geom_rendering(geom_rendering);
     geom_rendering = _modelview_transform->get_geom_rendering(geom_rendering);
     
@@ -89,7 +99,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       // the vertices in the CPU--and we have to do it before we call
       // munge_geom(), which might lose the tangent and binormal.
       CPT(GeomVertexData) animated_vertices = 
-        _munged_data->animate_vertices();
+        _munged_data->animate_vertices(current_thread);
       if (animated_vertices != _munged_data) {
         cpu_animated = true;
         _munged_data = animated_vertices;
@@ -99,7 +109,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
 
     // Now invoke the munger to ensure the resulting geometry is in
     // a GSG-friendly form.
-    munger->munge_geom(_geom, _munged_data);
+    munger->munge_geom(_geom, _munged_data, current_thread);
     
     StateMunger *state_munger;
     DCAST_INTO_V(state_munger, munger);
@@ -111,7 +121,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       // animation in hardware--then we have to calculate that
       // animation now.
       CPT(GeomVertexData) animated_vertices = 
-        _munged_data->animate_vertices();
+        _munged_data->animate_vertices(current_thread);
       if (animated_vertices != _munged_data) {
         cpu_animated = true;
         _munged_data = animated_vertices;
@@ -120,7 +130,8 @@ munge_geom(GraphicsStateGuardianBase *gsg,
 
 #ifndef NDEBUG
     if (show_vertex_animation) {
-      bool hardware_animated = (_munged_data->get_format()->get_animation().get_animation_type() == Geom::AT_hardware);
+      GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
+      bool hardware_animated = (data_reader.get_format()->get_animation().get_animation_type() == Geom::AT_hardware);
       if (cpu_animated || hardware_animated) {
         // These vertices were animated, so flash them red or blue.
         static const double flash_rate = 1.0;  // 1 state change per second
@@ -178,17 +189,25 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void CullableObject::
 munge_points_to_quads(const CullTraverser *traverser) {
-  PStatTimer timer(_munge_points_pcollector);
+  Thread *current_thread = traverser->get_current_thread();
+  PStatTimer timer(_munge_points_pcollector, current_thread);
 
   GraphicsStateGuardianBase *gsg = traverser->get_gsg();
 
-  GeomVertexReader vertex(_munged_data, InternalName::get_vertex());
-  GeomVertexReader normal(_munged_data, InternalName::get_normal());
-  GeomVertexReader color(_munged_data, InternalName::get_color());
-  GeomVertexReader texcoord(_munged_data, InternalName::get_texcoord());
-  GeomVertexReader rotate(_munged_data, InternalName::get_rotate());
-  GeomVertexReader size(_munged_data, InternalName::get_size());
-  GeomVertexReader aspect_ratio(_munged_data, InternalName::get_aspect_ratio());
+  GeomVertexReader vertex(_munged_data, InternalName::get_vertex(),
+                          current_thread);
+  GeomVertexReader normal(_munged_data, InternalName::get_normal(),
+                          current_thread);
+  GeomVertexReader color(_munged_data, InternalName::get_color(),
+                         current_thread);
+  GeomVertexReader texcoord(_munged_data, InternalName::get_texcoord(),
+                            current_thread);
+  GeomVertexReader rotate(_munged_data, InternalName::get_rotate(),
+                          current_thread);
+  GeomVertexReader size(_munged_data, InternalName::get_size(),
+                        current_thread);
+  GeomVertexReader aspect_ratio(_munged_data, InternalName::get_aspect_ratio(),
+                                current_thread);
 
   bool has_normal = (normal.has_column());
   bool has_color = (color.has_column());
@@ -301,9 +320,11 @@ munge_points_to_quads(const CullTraverser *traverser) {
   // CullFaceAttrib but will always render all of the vertices of the
   // polygons.  This is certainly a bug, but in order to fix it we'd
   // have to do the face culling ourselves--not sure if it's worth it.
-  int num_primitives = _geom->get_num_primitives();
+
+  GeomPipelineReader geom_reader(_geom, current_thread);
+  int num_primitives = geom_reader.get_num_primitives();
   for (int pi = 0; pi < num_primitives; ++pi) {
-    const GeomPrimitive *primitive = _geom->get_primitive(pi);
+    const GeomPrimitive *primitive = geom_reader.get_primitive(pi);
     if (primitive->get_num_vertices() != 0) {
       // We must first convert all of the points to eye space.
       int num_points = primitive->get_max_vertex() + 1;
@@ -314,7 +335,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
       unsigned int *vertices_end = vertices + num_vertices;
 
       if (primitive->is_indexed()) {
-        GeomVertexReader index(primitive->get_vertices(), 0);
+        GeomVertexReader index(primitive->get_vertices(), 0, current_thread);
         for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
           // Get the point in eye-space coordinates.
           unsigned int v = index.get_data1i();
@@ -475,7 +496,8 @@ munge_points_to_quads(const CullTraverser *traverser) {
 ////////////////////////////////////////////////////////////////////
 void CullableObject::
 munge_texcoord_light_vector(const CullTraverser *traverser) {
-  PStatTimer timer(_munge_light_vector_pcollector);
+  Thread *current_thread = traverser->get_current_thread();
+  PStatTimer timer(_munge_light_vector_pcollector, current_thread);
 
   if (_net_transform->is_singular()) {
     // If we're under a singular transform, never mind.
@@ -547,11 +569,13 @@ munge_texcoord_light_vector(const CullTraverser *traverser) {
           _net_transform->invert_compose(light.get_net_transform());
         const LMatrix4f &light_mat = light_transform->get_mat();
 
-        GeomVertexWriter texcoord(new_data, texcoord_name);
-        GeomVertexReader vertex(new_data, InternalName::get_vertex());
-        GeomVertexReader tangent(new_data, tangent_name);
-        GeomVertexReader binormal(new_data, binormal_name);
-        GeomVertexReader normal(new_data, InternalName::get_normal());
+        GeomVertexWriter texcoord(new_data, texcoord_name, current_thread);
+        GeomVertexReader vertex(new_data, InternalName::get_vertex(),
+                                current_thread);
+        GeomVertexReader tangent(new_data, tangent_name, current_thread);
+        GeomVertexReader binormal(new_data, binormal_name, current_thread);
+        GeomVertexReader normal(new_data, InternalName::get_normal(),
+                                current_thread);
 
         while (!vertex.is_at_end()) {
           LPoint3f p = vertex.get_data3f();

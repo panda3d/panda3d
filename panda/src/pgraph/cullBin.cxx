@@ -52,16 +52,6 @@ make_next() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullBin::add_object
-//       Access: Public, Virtual
-//  Description: Adds a geom, along with its associated state, to
-//               the bin for rendering.
-////////////////////////////////////////////////////////////////////
-void CullBin::
-add_object(CullableObject *) {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CullBin::finish_cull
 //       Access: Public, Virtual
 //  Description: Called after all the geoms have been added, this
@@ -71,7 +61,7 @@ add_object(CullableObject *) {
 //               draw.
 ////////////////////////////////////////////////////////////////////
 void CullBin::
-finish_cull(SceneSetup *) {
+finish_cull(SceneSetup *, Thread *) {
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -72,15 +72,20 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomVertexWriter : public GeomEnums {
 PUBLISHED:
-  INLINE GeomVertexWriter();
-  INLINE GeomVertexWriter(GeomVertexData *vertex_data);
+  INLINE GeomVertexWriter(Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexWriter(GeomVertexData *vertex_data,
-                          const string &name);
+                          Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexWriter(GeomVertexData *vertex_data,
-                          const InternalName *name);
-  INLINE GeomVertexWriter(GeomVertexArrayData *array_data);
+                          const string &name,
+                          Thread *current_thread = Thread::get_current_thread());
+  INLINE GeomVertexWriter(GeomVertexData *vertex_data,
+                          const InternalName *name,
+                          Thread *current_thread = Thread::get_current_thread());
+  INLINE GeomVertexWriter(GeomVertexArrayData *array_data,
+                          Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexWriter(GeomVertexArrayData *array_data, 
-                          int column);
+                          int column,
+                          Thread *current_thread = Thread::get_current_thread());
 
 public:
   INLINE GeomVertexWriter(GeomVertexDataPipelineWriter *data_writer,

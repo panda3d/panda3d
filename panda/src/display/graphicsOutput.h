@@ -209,8 +209,8 @@ public:
   // thread other than the draw thread.  These methods are normally
   // called by the GraphicsEngine.
   void clear(Thread *current_thread);
-  virtual bool begin_frame(FrameMode mode);
-  virtual void end_frame(FrameMode mode);
+  virtual bool begin_frame(FrameMode mode, Thread *current_thread);
+  virtual void end_frame(FrameMode mode, Thread *current_thread);
 
   // These entry points have been removed. Use begin_frame/end_frame instead.
   //  virtual void begin_render_texture();

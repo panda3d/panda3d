@@ -87,8 +87,8 @@ get_mode() const {
 //               frame remains in sync with each other.
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
-get_frame_time() const {
-  CDReader cdata(_cycler);
+get_frame_time(Thread *current_frame) const {
+  CDReader cdata(_cycler, current_frame);
   return cdata->_reported_frame_time;
 }
 
@@ -152,8 +152,8 @@ reset() {
 //               that have been rendered.
 ////////////////////////////////////////////////////////////////////
 INLINE int ClockObject::
-get_frame_count() const {
-  CDReader cdata(_cycler);
+get_frame_count(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
   return cdata->_frame_count;
 }
 
@@ -167,8 +167,9 @@ get_frame_count() const {
 //               M_non_real_time mode.
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
-get_net_frame_rate() const {
-  return (double)get_frame_count() / get_frame_time();
+get_net_frame_rate(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
+  return (double)cdata->_frame_count / cdata->_reported_frame_time;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,8 +180,8 @@ get_net_frame_rate() const {
 //               to tick().
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
-get_dt() const {
-  CDReader cdata(_cycler);
+get_dt(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
   if (_max_dt > 0.0) {
     return min(_max_dt, cdata->_dt);
   }
@@ -196,9 +197,9 @@ get_dt() const {
 //               this has no effect.
 ////////////////////////////////////////////////////////////////////
 INLINE void ClockObject::
-set_dt(double dt) {
-  nassertv(Thread::get_current_pipeline_stage() == 0);
-  CDWriter cdata(_cycler);
+set_dt(double dt, Thread *current_thread) {
+  nassertv(current_thread->get_pipeline_stage() == 0);
+  CDWriter cdata(_cycler, current_thread);
   cdata->_dt = dt;
 }
 
@@ -308,8 +309,8 @@ get_average_frame_rate_interval() const {
 //               M_non_real_time mode.
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
-get_average_frame_rate() const {
-  CDStageReader cdata(_cycler, 0);
+get_average_frame_rate(Thread *current_thread) const {
+  CDStageReader cdata(_cycler, 0, current_thread);
   if (_ticks.size() <= 1) {
     return 0.0;
   } else {
@@ -328,8 +329,8 @@ get_average_frame_rate() const {
 //               resynchronize with any external clocks.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ClockObject::
-check_errors() {
-  CDReader cdata(_cycler);  // Just to hold a mutex.
+check_errors(Thread *current_thread) {
+  CDReader cdata(_cycler, current_thread);  // Just to hold a mutex.
   int orig_error_count = _error_count;
   _error_count = _true_clock->get_error_count();
   return (_error_count != orig_error_count);

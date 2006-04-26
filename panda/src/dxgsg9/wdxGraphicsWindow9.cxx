@@ -96,7 +96,7 @@ make_current() {
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow9::
-begin_frame(FrameMode mode) {
+begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
@@ -120,7 +120,7 @@ begin_frame(FrameMode mode) {
   }
   
   _gsg->set_current_properties(&get_fb_properties());
-  bool return_val = _gsg->begin_frame();
+  bool return_val = _gsg->begin_frame(current_thread);
   _dxgsg->set_render_target();
   return return_val;
 }
@@ -133,7 +133,7 @@ begin_frame(FrameMode mode) {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow9::
-end_frame(FrameMode mode) {
+end_frame(FrameMode mode, Thread *current_thread) {
 
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
@@ -142,7 +142,7 @@ end_frame(FrameMode mode) {
     copy_to_textures();
   }
 
-  _gsg->end_frame();
+  _gsg->end_frame(current_thread);
 
   if (mode == FM_render) {
     trigger_flip();

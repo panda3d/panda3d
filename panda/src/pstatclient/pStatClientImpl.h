@@ -30,7 +30,7 @@
 #include "connectionWriter.h"
 #include "netAddress.h"
 
-#include "clockObject.h"
+#include "trueClock.h"
 #include "pmap.h"
 
 class PStatClient;
@@ -66,7 +66,7 @@ public:
   INLINE void set_max_rate(float rate);
   INLINE float get_max_rate() const;
 
-  INLINE const ClockObject &get_clock() const;
+  INLINE double get_real_time() const;
 
   INLINE void client_main_tick();
   bool client_connect(string hostname, int port);
@@ -82,8 +82,9 @@ private:
 
   void transmit_control_data();
 
-  // Stats collecting stuff
-  ClockObject _clock;
+  TrueClock *_clock;
+  double _delta;
+  double _last_frame;
 
   // Networking stuff
   string get_hostname();

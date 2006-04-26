@@ -26,9 +26,9 @@
 //               it.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
-GeomVertexWriter() :
+GeomVertexWriter(Thread *current_thread) :
   _vertex_data(NULL),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(current_thread)
 {
   initialize();
 }
@@ -40,9 +40,9 @@ GeomVertexWriter() :
 //               the indicated data object.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexData *vertex_data) :
+GeomVertexWriter(GeomVertexData *vertex_data, Thread *current_thread) :
   _vertex_data(vertex_data),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(current_thread)
 {
   initialize();
 }
@@ -55,9 +55,10 @@ GeomVertexWriter(GeomVertexData *vertex_data) :
 //               writer specifically to process the named data type.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexData *vertex_data, const string &name) :
+GeomVertexWriter(GeomVertexData *vertex_data, const string &name,
+                 Thread *current_thread) :
   _vertex_data(vertex_data),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(current_thread)
 {
   initialize();
   set_column(name);
@@ -71,9 +72,10 @@ GeomVertexWriter(GeomVertexData *vertex_data, const string &name) :
 //               writer specifically to process the named data type.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexData *vertex_data, const InternalName *name) :
+GeomVertexWriter(GeomVertexData *vertex_data, const InternalName *name,
+                 Thread *current_thread) :
   _vertex_data(vertex_data),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(current_thread)
 {
   initialize();
   set_column(name);
@@ -86,9 +88,10 @@ GeomVertexWriter(GeomVertexData *vertex_data, const InternalName *name) :
 //               the indicated array only.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexArrayData *array_data) :
+GeomVertexWriter(GeomVertexArrayData *array_data,
+                 Thread *current_thread) :
   _array_data(array_data),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(current_thread)
 {
   initialize();
 }
@@ -100,9 +103,10 @@ GeomVertexWriter(GeomVertexArrayData *array_data) :
 //               the indicated array only.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexArrayData *array_data, int column) :
+GeomVertexWriter(GeomVertexArrayData *array_data, int column,
+                 Thread *current_thread) :
   _array_data(array_data),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(current_thread)
 {
   initialize();
   set_column(column);

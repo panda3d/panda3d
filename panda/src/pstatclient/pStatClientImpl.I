@@ -72,17 +72,17 @@ get_max_rate() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::get_clock
+//     Function: PStatClientImpl::get_real_time
 //       Access: Public
-//  Description: Returns a reference to the PStatClientImpl's clock
-//               object.  It keeps its own clock, instead of using the
-//               global clock object, so the stats won't get mucked up
-//               if you put the global clock in non-real-time mode or
-//               something.
+//  Description: Returns the time according to the PStatClientImpl's
+//               clock object.  It keeps its own clock, instead of
+//               using the global clock object, so the stats won't get
+//               mucked up if you put the global clock in
+//               non-real-time mode or something.
 ////////////////////////////////////////////////////////////////////
-INLINE const ClockObject &PStatClientImpl::
-get_clock() const {
-  return _clock;
+INLINE double PStatClientImpl::
+get_real_time() const {
+  return _clock->get_short_time() + _delta;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ get_clock() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatClientImpl::
 client_main_tick() {
-  _clock.tick();
+  _last_frame = _clock->get_short_time();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,7 +115,6 @@ client_resume_after_pause() {
   // Simply reset the clock to the beginning of the last frame.  This
   // may lose a frame, but on the other hand we won't skip a whole
   // slew of frames either.
-
-  double frame_time = _clock.get_frame_time();
-  _clock.set_real_time(frame_time);
+  double delta = _clock->get_short_time() - _last_frame;
+  _delta -= delta;
 }

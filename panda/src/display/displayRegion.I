@@ -305,8 +305,9 @@ get_pixel_height() const {
 //               to all upstream pipeline stages.
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegion::
-set_cull_result(CullResult *cull_result, SceneSetup *scene_setup) {
-  CDCullWriter cdata(_cycler_cull, true);
+set_cull_result(CullResult *cull_result, SceneSetup *scene_setup,
+                Thread *current_thread) {
+  CDCullWriter cdata(_cycler_cull, true, current_thread);
   cdata->_cull_result = cull_result;
   cdata->_scene_setup = scene_setup;
 }
@@ -321,8 +322,8 @@ set_cull_result(CullResult *cull_result, SceneSetup *scene_setup) {
 //               directly.
 ////////////////////////////////////////////////////////////////////
 INLINE CullResult *DisplayRegion::
-get_cull_result() const {
-  CDCullReader cdata(_cycler_cull);
+get_cull_result(Thread *current_thread) const {
+  CDCullReader cdata(_cycler_cull, current_thread);
   return cdata->_cull_result;
 }
 
@@ -336,8 +337,8 @@ get_cull_result() const {
 //               directly.
 ////////////////////////////////////////////////////////////////////
 INLINE SceneSetup *DisplayRegion::
-get_scene_setup() const {
-  CDCullReader cdata(_cycler_cull);
+get_scene_setup(Thread *current_thread) const {
+  CDCullReader cdata(_cycler_cull, current_thread);
   return cdata->_scene_setup;
 }
 

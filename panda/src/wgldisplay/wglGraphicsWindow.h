@@ -37,8 +37,8 @@ public:
                     GraphicsOutput *host);
   virtual ~wglGraphicsWindow();
 
-  virtual bool begin_frame(FrameMode mode);
-  virtual void end_frame(FrameMode mode);
+  virtual bool begin_frame(FrameMode mode, Thread *current_thread);
+  virtual void end_frame(FrameMode mode, Thread *current_thread);
 
   virtual void begin_flip();
 

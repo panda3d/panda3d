@@ -83,7 +83,7 @@ wdxGraphicsBuffer8::
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsBuffer8::
-begin_frame(FrameMode mode) {
+begin_frame(FrameMode mode, Thread *current_thread) {
 
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
@@ -96,7 +96,7 @@ begin_frame(FrameMode mode) {
   }
   
   _gsg->set_current_properties(&get_fb_properties());
-  return _gsg->begin_frame();
+  return _gsg->begin_frame(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,7 +107,7 @@ begin_frame(FrameMode mode) {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsBuffer8::
-end_frame(FrameMode mode) {
+end_frame(FrameMode mode, Thread *current_thread) {
 
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
@@ -117,7 +117,7 @@ end_frame(FrameMode mode) {
     copy_to_textures();
   }
 
-  _gsg->end_frame();
+  _gsg->end_frame(current_thread);
 
   if (mode == FM_render) {
     trigger_flip();

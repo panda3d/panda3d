@@ -36,12 +36,12 @@ NodePath() :
 //               with the indicated name.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
-NodePath(const string &top_node_name) :
+NodePath(const string &top_node_name, Thread *current_thread) :
   _error_type(ET_ok)
 {
   PandaNode *top_node = new PandaNode(top_node_name);
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  _head = top_node->get_generic_component(false, pipeline_stage);
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  _head = top_node->get_generic_component(false, pipeline_stage, current_thread);
   _backup_key = 0;
 }
 
@@ -57,12 +57,12 @@ NodePath(const string &top_node_name) :
 //               also NodePath::any_path(), below).
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
-NodePath(PandaNode *node) :
+NodePath(PandaNode *node, Thread *current_thread) :
   _error_type(ET_ok)
 {
   if (node != (PandaNode *)NULL) {
-    int pipeline_stage = Thread::get_current_pipeline_stage();
-    _head = node->get_generic_component(false, pipeline_stage);
+    int pipeline_stage = current_thread->get_pipeline_stage();
+    _head = node->get_generic_component(false, pipeline_stage, current_thread);
   }
   _backup_key = 0;
 }
@@ -77,11 +77,12 @@ NodePath(PandaNode *node) :
 //               the path is ambiguous.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
-any_path(PandaNode *node) {
+any_path(PandaNode *node, Thread *current_thread) {
   NodePath result;
   if (node != (PandaNode *)NULL) {
-    int pipeline_stage = Thread::get_current_pipeline_stage();
-    result._head = node->get_generic_component(true, pipeline_stage);
+    int pipeline_stage = current_thread->get_pipeline_stage();
+    result._head = node->get_generic_component(true, pipeline_stage,
+                                               current_thread);
   }
   return result;
 }
@@ -94,13 +95,15 @@ any_path(PandaNode *node) {
 //               stashed or unstashed child of the parent.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
-NodePath(const NodePath &parent, PandaNode *child_node) :
+NodePath(const NodePath &parent, PandaNode *child_node, 
+         Thread *current_thread) :
   _error_type(ET_fail)
 {
   nassertv(!parent.is_empty());
   nassertv(child_node != (PandaNode *)NULL);
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  _head = PandaNode::get_component(parent._head, child_node, pipeline_stage);
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  _head = PandaNode::get_component(parent._head, child_node, pipeline_stage,
+                                   current_thread);
   nassertv(_head != (NodePathComponent *)NULL);
 
   if (_head != (NodePathComponent *)NULL) {
@@ -229,9 +232,9 @@ is_empty() const {
 //               node.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
-is_singleton() const {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  return (_head != (NodePathComponent *)NULL && _head->is_top_node(pipeline_stage));
+is_singleton(Thread *current_thread) const {
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  return (_head != (NodePathComponent *)NULL && _head->is_top_node(pipeline_stage, current_thread));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -252,12 +255,12 @@ get_error_type() const {
 //               is empty.  This requires iterating through the path.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *NodePath::
-get_top_node() const {
+get_top_node(Thread *current_thread) const {
   if (is_empty()) {
     return (PandaNode *)NULL;
   }
 
-  return get_top().node();
+  return get_top(current_thread).node();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -306,7 +309,7 @@ get_key() const {
 //               same (e.g., both "render").
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
-is_same_graph(const NodePath &other) const {
+is_same_graph(const NodePath &other, Thread *current_thread) const {
   // Actually, it's possible for the top nodes to be the same, but the
   // NodePaths still to be considered in different graphs.  But even
   // in this case, get_top() will be different for each one.  (They'll
@@ -318,7 +321,7 @@ is_same_graph(const NodePath &other) const {
   // returns a different instance of render that appears to have the
   // same top node.  But this is a very rare thing to do.
   int a_count, b_count;
-  return (find_common_ancestor(*this, other, a_count, b_count) != (NodePathComponent *)NULL);
+  return (find_common_ancestor(*this, other, a_count, b_count, current_thread) != (NodePathComponent *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -329,9 +332,9 @@ is_same_graph(const NodePath &other) const {
 //               or false if it is not.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
-is_ancestor_of(const NodePath &other) const {
+is_ancestor_of(const NodePath &other, Thread *current_thread) const {
   int a_count, b_count;
-  if (find_common_ancestor(*this, other, a_count, b_count) == (NodePathComponent *)NULL) {
+  if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)NULL) {
     // Not related.
     return false;
   }
@@ -350,9 +353,9 @@ is_ancestor_of(const NodePath &other) const {
 //               unrelated, returns NodePath::not_found().
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
-get_common_ancestor(const NodePath &other) const {
+get_common_ancestor(const NodePath &other, Thread *current_thread) const {
   int a_count, b_count;
-  NodePathComponent *common = find_common_ancestor(*this, other, a_count, b_count);
+  NodePathComponent *common = find_common_ancestor(*this, other, a_count, b_count, current_thread);
   if (common == (NodePathComponent *)NULL) {
     return NodePath::not_found();
   }
@@ -368,9 +371,9 @@ get_common_ancestor(const NodePath &other) const {
 //  Description: Returns the number of children of the referenced node.
 ////////////////////////////////////////////////////////////////////
 INLINE int NodePath::
-get_num_children() const {
+get_num_children(Thread *current_thread) const {
   nassertr_always(!is_empty(), 0);
-  return _head->get_node()->get_num_children();
+  return _head->get_node()->get_num_children(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -380,12 +383,12 @@ get_num_children() const {
 //               referenced node.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
-get_child(int n) const {
-  nassertr(n >= 0 && n < get_num_children(), NodePath());
+get_child(int n, Thread *current_thread) const {
+  nassertr(n >= 0 && n < get_num_children(current_thread), NodePath());
   NodePath child;
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  child._head = PandaNode::get_component(_head, _head->get_node()->get_child(n),
-					 pipeline_stage);
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  child._head = PandaNode::get_component(_head, _head->get_node()->get_child(n, current_thread),
+					 pipeline_stage, current_thread);
   return child;
 }
 
@@ -396,8 +399,8 @@ get_child(int n) const {
 //               i.e. the NodePath chain contains at least two nodes.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
-has_parent() const {
-  return !is_empty() && !is_singleton();
+has_parent(Thread *current_thread) const {
+  return !is_empty() && !is_singleton(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -409,15 +412,15 @@ has_parent() const {
 //               the empty NodePath.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
-get_parent() const {
-  if (!has_parent()) {
+get_parent(Thread *current_thread) const {
+  if (!has_parent(current_thread)) {
     return NodePath();
   }
 
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+  int pipeline_stage = current_thread->get_pipeline_stage();
 
   NodePath parent;
-  parent._head = _head->get_next(pipeline_stage);
+  parent._head = _head->get_next(pipeline_stage, current_thread);
   return parent;
 }
 
@@ -429,10 +432,10 @@ get_parent() const {
 //               references it.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
-attach_new_node(const string &name, int sort) const {
-  nassertr(verify_complete(), NodePath::fail());
+attach_new_node(const string &name, int sort, Thread *current_thread) const {
+  nassertr(verify_complete(current_thread), NodePath::fail());
 
-  return attach_new_node(new PandaNode(name), sort);
+  return attach_new_node(new PandaNode(name), sort, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -492,9 +495,9 @@ reverse_ls(ostream &out, int indent_level) const {
 //  Description: Changes the complete state object on this node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_state(const RenderState *state) {
+set_state(const RenderState *state, Thread *current_thread) {
   nassertv_always(!is_empty());
-  node()->set_state(state);
+  node()->set_state(state, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -503,9 +506,9 @@ set_state(const RenderState *state) {
 //  Description: Returns the net state on this node from the root.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(RenderState) NodePath::
-get_net_state() const {
+get_net_state(Thread *current_thread) const {
   nassertr(_error_type == ET_ok, RenderState::make_empty());
-  return r_get_net_state(_head);
+  return r_get_net_state(_head, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -657,8 +660,8 @@ clear_effects() {
 //  Description: Sets the transform object on this node to identity.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-clear_transform() {
-  set_transform(TransformState::make_identity());
+clear_transform(Thread *current_thread) {
+  set_transform(TransformState::make_identity(), current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -667,9 +670,9 @@ clear_transform() {
 //  Description: Changes the complete transform object on this node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_transform(const TransformState *transform) {
+set_transform(const TransformState *transform, Thread *current_thread) {
   nassertv_always(!is_empty());
-  node()->set_transform(transform);
+  node()->set_transform(transform, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -680,8 +683,8 @@ set_transform(const TransformState *transform) {
 //               this node at the same position as the other node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-clear_transform(const NodePath &other) {
-  set_transform(other, TransformState::make_identity());
+clear_transform(const NodePath &other, Thread *current_thread) {
+  set_transform(other, TransformState::make_identity(), current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -690,9 +693,9 @@ clear_transform(const NodePath &other) {
 //  Description: Returns the net transform on this node from the root.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) NodePath::
-get_net_transform() const {
+get_net_transform(Thread *current_thread) const {
   nassertr(_error_type == ET_ok, TransformState::make_identity());
-  return r_get_net_transform(_head);
+  return r_get_net_transform(_head, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -704,9 +707,9 @@ get_net_transform() const {
 //               calculations.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_prev_transform(const TransformState *transform) {
+set_prev_transform(const TransformState *transform, Thread *current_thread) {
   nassertv_always(!is_empty());
-  node()->set_prev_transform(transform);
+  node()->set_prev_transform(transform, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -716,9 +719,9 @@ set_prev_transform(const TransformState *transform) {
 //               from the root.  See set_prev_transform().
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) NodePath::
-get_net_prev_transform() const {
+get_net_prev_transform(Thread *current_thread) const {
   nassertr(_error_type == ET_ok, TransformState::make_identity());
-  return r_get_net_prev_transform(_head);
+  return r_get_net_prev_transform(_head, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -495,15 +495,16 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TextNode::
 calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
-                  const TransformState *transform) const {
+                  const TransformState *transform, Thread *current_thread) const {
   CPT(TransformState) next_transform = 
-    PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform);
+    PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform,
+                                 current_thread);
 
   check_rebuild();
 
   if (_internal_geom != (PandaNode *)NULL) {
     _internal_geom->calc_tight_bounds(min_point, max_point, 
-                                      found_any, next_transform);
+                                      found_any, next_transform, current_thread);
   }
 
   return next_transform;
@@ -579,9 +580,9 @@ is_renderable() const {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) TextNode::
-compute_internal_bounds(int pipeline_stage) const {
+compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
   // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage);
+  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage, current_thread);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);

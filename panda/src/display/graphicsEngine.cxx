@@ -478,7 +478,7 @@ remove_all_windows() {
 
   _app.do_close(this, current_thread);
   _app.do_pending(this, current_thread);
-  terminate_threads();
+  terminate_threads(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -623,7 +623,7 @@ render_frame() {
   // Grab each thread's mutex again after all windows have flipped,
   // and wait for the thread to finish.
   {
-    PStatTimer timer(_wait_pcollector);
+    PStatTimer timer(_wait_pcollector, current_thread);
     Threads::const_iterator ti;
     for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
       RenderThread *thread = (*ti).second;
@@ -652,7 +652,7 @@ render_frame() {
   // between frames.
   ObjectDeletor *deletor = ObjectDeletor::get_global_ptr();
   if (deletor != (ObjectDeletor *)NULL) {
-    PStatTimer timer(_delete_pcollector);
+    PStatTimer timer(_delete_pcollector, current_thread);
     deletor->flush();
   }
   
@@ -664,13 +664,13 @@ render_frame() {
   // Now cycle the pipeline and officially begin the next frame.
 #ifdef THREADED_PIPELINE
   {
-    PStatTimer timer(_cycle_pcollector);
+    PStatTimer timer(_cycle_pcollector, current_thread);
     _pipeline->cycle();
   }
 #endif  // THREADED_PIPELINE
 
-  global_clock->tick();
-  if (global_clock->check_errors()) {
+  global_clock->tick(current_thread);
+  if (global_clock->check_errors(current_thread)) {
     throw_event("clock_error");
   }
 
@@ -735,7 +735,7 @@ render_frame() {
   if (yield_timeslice) { 
     // Nap for a moment to yield the timeslice, to be polite to other
     // running applications.
-    PStatTimer timer(_yield_pcollector);
+    PStatTimer timer(_yield_pcollector, current_thread);
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 0;
@@ -776,7 +776,7 @@ open_windows() {
     _app.do_windows(this, current_thread);
     _app.do_pending(this, current_thread);
 
-    PStatTimer timer(_wait_pcollector);
+    PStatTimer timer(_wait_pcollector, current_thread);
     Threads::const_iterator ti;
     for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
       RenderThread *thread = (*ti).second;
@@ -964,13 +964,13 @@ set_window_sort(GraphicsOutput *window, int sort) {
 void GraphicsEngine::
 cull_and_draw_together(const GraphicsEngine::Windows &wlist,
                        Thread *current_thread) {
-  PStatTimer timer(_cull_pcollector);
+  PStatTimer timer(_cull_pcollector, current_thread);
 
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
-      if (win->begin_frame(GraphicsOutput::FM_render)) {
+      if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
         win->clear(current_thread);
       
         int num_display_regions = win->get_num_active_display_regions();
@@ -980,16 +980,16 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist,
             cull_and_draw_together(win, dr, current_thread);
           }
         }
-        win->end_frame(GraphicsOutput::FM_render);
+        win->end_frame(GraphicsOutput::FM_render, current_thread);
 
         if (_auto_flip) {
           if (win->flip_ready()) {
             {
-              PStatTimer timer(GraphicsEngine::_flip_begin_pcollector);
+              PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
               win->begin_flip();
             }
             {
-              PStatTimer timer(GraphicsEngine::_flip_end_pcollector);
+              PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
               win->end_flip();
             }
           }
@@ -1052,7 +1052,7 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
-  PStatTimer timer(_cull_pcollector);
+  PStatTimer timer(_cull_pcollector, current_thread);
 
   // Keep track of the cameras we have already used in this thread to
   // render DisplayRegions.
@@ -1088,8 +1088,9 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
             // result will be the same, so just use the result from
             // the other DisplayRegion.
             DisplayRegion *other_dr = (*aci).second;
-            dr->set_cull_result(other_dr->get_cull_result(),
-                                setup_scene(win->get_gsg(), dr_reader));
+            dr->set_cull_result(other_dr->get_cull_result(current_thread),
+                                setup_scene(win->get_gsg(), dr_reader),
+                                current_thread);
           }
 
           if (dr_reader != (DisplayRegionPipelineReader *)NULL) {
@@ -1115,8 +1116,8 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   PT(CullResult) cull_result;
   PT(SceneSetup) scene_setup;
   {
-    PStatTimer timer(_cull_setup_pcollector);
-    cull_result = dr->get_cull_result();
+    PStatTimer timer(_cull_setup_pcollector, current_thread);
+    cull_result = dr->get_cull_result(current_thread);
     if (cull_result != (CullResult *)NULL) {
       cull_result = cull_result->make_next();
     } else {
@@ -1131,10 +1132,10 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
     do_cull(&cull_handler, scene_setup, gsg, current_thread);
 
     {
-      PStatTimer timer(_cull_sort_pcollector);
-      cull_result->finish_cull(scene_setup);
+      PStatTimer timer(_cull_sort_pcollector, current_thread);
+      cull_result->finish_cull(scene_setup, current_thread);
       // Save the results for next frame.
-      dr->set_cull_result(cull_result, scene_setup);
+      dr->set_cull_result(cull_result, scene_setup, current_thread);
     }
   }
 }
@@ -1154,7 +1155,7 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
-      if (win->begin_frame(GraphicsOutput::FM_render)) {
+      if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
         win->clear(current_thread);
       
         int num_display_regions = win->get_num_active_display_regions();
@@ -1164,16 +1165,16 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
             draw_bins(win, dr, current_thread);
           }
         }
-        win->end_frame(GraphicsOutput::FM_render);
+        win->end_frame(GraphicsOutput::FM_render, current_thread);
 
         if (_auto_flip) {
           if (win->flip_ready()) {
             {
-              PStatTimer timer(GraphicsEngine::_flip_begin_pcollector);
+              PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
               win->begin_flip();
             }
             {
-              PStatTimer timer(GraphicsEngine::_flip_end_pcollector);
+              PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
               win->end_flip();
             }
           }
@@ -1195,8 +1196,8 @@ draw_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
-  PT(CullResult) cull_result = dr->get_cull_result();
-  PT(SceneSetup) scene_setup = dr->get_scene_setup();
+  PT(CullResult) cull_result = dr->get_cull_result(current_thread);
+  PT(SceneSetup) scene_setup = dr->get_scene_setup(current_thread);
   if (cull_result != (CullResult *)NULL && scene_setup != (SceneSetup *)NULL) {
     do_draw(cull_result, scene_setup, win, dr, current_thread);
   }
@@ -1214,8 +1215,8 @@ make_contexts(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
-    if (win->begin_frame(GraphicsOutput::FM_refresh)) {
-      win->end_frame(GraphicsOutput::FM_refresh);
+    if (win->begin_frame(GraphicsOutput::FM_refresh, current_thread)) {
+      win->end_frame(GraphicsOutput::FM_refresh, current_thread);
     }
   }
 }
@@ -1249,14 +1250,14 @@ flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->flip_ready()) {
-      PStatTimer timer(GraphicsEngine::_flip_begin_pcollector);
+      PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
       win->begin_flip();
     }
   }
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->flip_ready()) {
-      PStatTimer timer(GraphicsEngine::_flip_end_pcollector);
+      PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
       win->end_flip();
     }
   }
@@ -1273,7 +1274,7 @@ do_sync_frame(Thread *current_thread) {
   nassertv(_lock.debug_is_locked());
 
   // Statistics
-  PStatTimer timer(_sync_pcollector);
+  PStatTimer timer(_sync_pcollector, current_thread);
 
   nassertv(_flip_state == FS_draw);
 
@@ -1300,7 +1301,7 @@ do_flip_frame(Thread *current_thread) {
   nassertv(_lock.debug_is_locked());
 
   // Statistics
-  PStatTimer timer(_flip_pcollector);
+  PStatTimer timer(_flip_pcollector, current_thread);
 
   nassertv(_flip_state == FS_draw || _flip_state == FS_sync);
 
@@ -1308,7 +1309,7 @@ do_flip_frame(Thread *current_thread) {
   // necessary.  Grabbing the mutex (and waiting for TS_wait) should
   // achieve that.
   {
-    PStatTimer timer(_wait_pcollector);
+    PStatTimer timer(_wait_pcollector, current_thread);
     Threads::const_iterator ti;
     for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
       RenderThread *thread = (*ti).second;
@@ -1347,7 +1348,7 @@ do_flip_frame(Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 PT(SceneSetup) GraphicsEngine::
 setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
-  PStatTimer timer(_cull_setup_pcollector);
+  PStatTimer timer(_cull_setup_pcollector, dr->get_current_thread());
 
   GraphicsOutput *window = dr->get_window();
   // The window pointer shouldn't be NULL, since we presumably got to
@@ -1431,7 +1432,7 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
 void GraphicsEngine::
 do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
         GraphicsStateGuardian *gsg, Thread *current_thread) {
-  CullTraverser trav(gsg);
+  CullTraverser trav(gsg, current_thread);
   trav.set_cull_handler(cull_handler);
   trav.set_depth_offset_decals(depth_offset_decals && gsg->depth_offset_decals());
   trav.set_scene(scene_setup);
@@ -1471,7 +1472,7 @@ void GraphicsEngine::
 do_draw(CullResult *cull_result, SceneSetup *scene_setup,
         GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   // Statistics
-  PStatTimer timer(_draw_pcollector);
+  PStatTimer timer(_draw_pcollector, current_thread);
 
   DisplayRegionPipelineReader *dr_reader = 
     new DisplayRegionPipelineReader(dr, current_thread);
@@ -1662,12 +1663,12 @@ do_resort_windows() {
 //               them to clean up.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-terminate_threads() {
+terminate_threads(Thread *current_thread) {
   MutexHolder holder(_lock);
 
   // We spend almost our entire time in this method just waiting for
   // threads.  Time it appropriately.
-  PStatTimer timer(_wait_pcollector);
+  PStatTimer timer(_wait_pcollector, current_thread);
   
   // First, wait for all the threads to finish their current frame.
   // Grabbing the mutex should achieve that.
@@ -1903,7 +1904,7 @@ resort_windows() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
 do_frame(GraphicsEngine *engine, Thread *current_thread) {
-  PStatTimer timer(engine->_do_frame_pcollector);
+  PStatTimer timer(engine->_do_frame_pcollector, current_thread);
   MutexHolder holder(_wl_lock);
 
   do_callbacks(CB_pre_frame);
@@ -2165,7 +2166,7 @@ thread_main() {
     _cv_done.signal();
 
     {
-      PStatTimer timer(_wait_pcollector);
+      PStatTimer timer(_wait_pcollector, current_thread);
       _cv_start.wait();
     }
   }

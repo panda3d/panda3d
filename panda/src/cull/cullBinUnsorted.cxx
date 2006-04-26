@@ -55,7 +55,7 @@ make_bin(const string &name, GraphicsStateGuardianBase *gsg) {
 //               the bin for rendering.
 ////////////////////////////////////////////////////////////////////
 void CullBinUnsorted::
-add_object(CullableObject *object) {
+add_object(CullableObject *object, Thread *current_thread) {
   _objects.push_back(object);
 }
 
@@ -67,7 +67,7 @@ add_object(CullableObject *object) {
 ////////////////////////////////////////////////////////////////////
 void CullBinUnsorted::
 draw(Thread *current_thread) {
-  PStatTimer timer(_draw_this_pcollector);
+  PStatTimer timer(_draw_this_pcollector, current_thread);
   Objects::iterator oi;
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     CullableObject *object = (*oi);

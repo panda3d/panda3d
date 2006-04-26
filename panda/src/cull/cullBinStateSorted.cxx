@@ -58,7 +58,7 @@ make_bin(const string &name, GraphicsStateGuardianBase *gsg) {
 //               the bin for rendering.
 ////////////////////////////////////////////////////////////////////
 void CullBinStateSorted::
-add_object(CullableObject *object) {
+add_object(CullableObject *object, Thread *current_thread) {
   _objects.push_back(ObjectData(object));
 }
 
@@ -72,8 +72,8 @@ add_object(CullableObject *object) {
 //               draw.
 ////////////////////////////////////////////////////////////////////
 void CullBinStateSorted::
-finish_cull(SceneSetup *) {
-  PStatTimer timer(_cull_this_pcollector);
+finish_cull(SceneSetup *, Thread *current_thread) {
+  PStatTimer timer(_cull_this_pcollector, current_thread);
   sort(_objects.begin(), _objects.end());
 }
 
@@ -86,7 +86,7 @@ finish_cull(SceneSetup *) {
 ////////////////////////////////////////////////////////////////////
 void CullBinStateSorted::
 draw(Thread *current_thread) {
-  PStatTimer timer(_draw_this_pcollector);
+  PStatTimer timer(_draw_this_pcollector, current_thread);
   Objects::const_iterator oi;
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     CullableObject *object = (*oi)._object;

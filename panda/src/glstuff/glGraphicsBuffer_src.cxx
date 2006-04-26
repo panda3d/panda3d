@@ -66,12 +66,12 @@ CLP(GraphicsBuffer)::
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsBuffer)::
-begin_frame(FrameMode mode) {
+begin_frame(FrameMode mode, Thread *current_thread) {
   if (!_is_valid) {
     return false;
   }
 
-  if (!_host->begin_frame(FM_parasite)) {
+  if (!_host->begin_frame(FM_parasite, current_thread)) {
     return false;
   }
   
@@ -366,7 +366,7 @@ generate_mipmaps() {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
-end_frame(FrameMode mode) {
+end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
@@ -383,7 +383,7 @@ end_frame(FrameMode mode) {
     generate_mipmaps();
   }
 
-  _host->end_frame(FM_parasite);
+  _host->end_frame(FM_parasite, current_thread);
 
   if (mode == FM_render) {
     trigger_flip();

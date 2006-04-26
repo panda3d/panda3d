@@ -163,10 +163,11 @@ PUBLISHED:
   };
 
   INLINE NodePath();
-  INLINE NodePath(const string &top_node_name);
-  INLINE NodePath(PandaNode *node);
-  INLINE static NodePath any_path(PandaNode *node);
-  INLINE NodePath(const NodePath &parent, PandaNode *child_node);
+  INLINE NodePath(const string &top_node_name, Thread *current_thread = Thread::get_current_thread());
+  INLINE NodePath(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
+  INLINE static NodePath any_path(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
+  INLINE NodePath(const NodePath &parent, PandaNode *child_node,
+                  Thread *current_thread = Thread::get_current_thread());
 
   INLINE NodePath(const NodePath &copy);
   INLINE void operator = (const NodePath &copy);
@@ -180,34 +181,34 @@ PUBLISHED:
 
   // Methods to query a NodePath's contents.
   INLINE bool is_empty() const;
-  INLINE bool is_singleton() const;
-  int get_num_nodes() const;
-  PandaNode *get_node(int index) const;
+  INLINE bool is_singleton(Thread *current_thread = Thread::get_current_thread()) const;
+  int get_num_nodes(Thread *current_thread = Thread::get_current_thread()) const;
+  PandaNode *get_node(int index, Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE ErrorType get_error_type() const;
 
-  PandaNode *get_top_node() const;
-  NodePath get_top() const;
+  INLINE PandaNode *get_top_node(Thread *current_thread = Thread::get_current_thread()) const;
+  NodePath get_top(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE PandaNode *node() const;
 
   INLINE int get_key() const;
 
-  INLINE bool is_same_graph(const NodePath &other) const;
-  INLINE bool is_ancestor_of(const NodePath &other) const;
-  INLINE NodePath get_common_ancestor(const NodePath &other) const;
+  INLINE bool is_same_graph(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE bool is_ancestor_of(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE NodePath get_common_ancestor(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
 
   // Methods that return collections of NodePaths derived from or
   // related to this one.
 
-  NodePathCollection get_children() const;
-  INLINE int get_num_children() const;
-  INLINE NodePath get_child(int n) const;
-  NodePathCollection get_stashed_children() const;
+  NodePathCollection get_children(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE int get_num_children(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE NodePath get_child(int n, Thread *current_thread = Thread::get_current_thread()) const;
+  NodePathCollection get_stashed_children(Thread *current_thread = Thread::get_current_thread()) const;
 
-  INLINE bool has_parent() const;
-  INLINE NodePath get_parent() const;
-  int get_sort() const;
+  INLINE bool has_parent(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE NodePath get_parent(Thread *current_thread = Thread::get_current_thread()) const;
+  int get_sort(Thread *current_thread = Thread::get_current_thread()) const;
 
   NodePath find(const string &path) const;
   NodePath find_path_to(PandaNode *node) const;
@@ -219,16 +220,23 @@ PUBLISHED:
   // ordering between sibling nodes, useful when dealing with LOD's
   // and similar switch nodes.  If the sort value is the same, nodes
   // will be arranged in the order they were added.
-  void reparent_to(const NodePath &other, int sort = 0);
-  void wrt_reparent_to(const NodePath &other, int sort = 0);
-  NodePath instance_to(const NodePath &other, int sort = 0) const;
+  void reparent_to(const NodePath &other, int sort = 0,
+                   Thread *current_thread = Thread::get_current_thread());
+  void wrt_reparent_to(const NodePath &other, int sort = 0,
+                       Thread *current_thread = Thread::get_current_thread());
+  NodePath instance_to(const NodePath &other, int sort = 0,
+                       Thread *current_thread = Thread::get_current_thread()) const;
   NodePath instance_under_node(const NodePath &other, const string &name,
-                                 int sort = 0) const;
-  NodePath copy_to(const NodePath &other, int sort = 0) const;
-  NodePath attach_new_node(PandaNode *node, int sort = 0) const;
-  INLINE NodePath attach_new_node(const string &name, int sort = 0) const;
-  void remove_node();
-  void detach_node();
+                               int sort = 0,
+                               Thread *current_thread = Thread::get_current_thread()) const;
+  NodePath copy_to(const NodePath &other, int sort = 0,
+                   Thread *current_thread = Thread::get_current_thread()) const;
+  NodePath attach_new_node(PandaNode *node, int sort = 0,
+                           Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE NodePath attach_new_node(const string &name, int sort = 0,
+                                  Thread *current_thread = Thread::get_current_thread()) const;
+  void remove_node(Thread *current_thread = Thread::get_current_thread());
+  void detach_node(Thread *current_thread = Thread::get_current_thread());
 
   // Handy ways to look at what's there, and other miscellaneous
   // operations.
@@ -242,11 +250,11 @@ PUBLISHED:
 
 
   // Aggregate transform and state information.
-  const RenderState *get_state() const;
-  INLINE void set_state(const RenderState *state);
-  CPT(RenderState) get_state(const NodePath &other) const;
-  void set_state(const NodePath &other, const RenderState *state);
-  INLINE CPT(RenderState) get_net_state() const;
+  const RenderState *get_state(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE void set_state(const RenderState *state, Thread *current_thread = Thread::get_current_thread());
+  CPT(RenderState) get_state(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
+  void set_state(const NodePath &other, const RenderState *state, Thread *current_thread = Thread::get_current_thread());
+  INLINE CPT(RenderState) get_net_state(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE void set_attrib(const RenderAttrib *attrib, int priority = 0);
   INLINE const RenderAttrib *get_attrib(TypeHandle type) const;
@@ -262,19 +270,19 @@ PUBLISHED:
   INLINE const RenderEffects *get_effects() const;
   INLINE void clear_effects();
 
-  const TransformState *get_transform() const;
-  INLINE void clear_transform();
-  INLINE void set_transform(const TransformState *transform);
-  CPT(TransformState) get_transform(const NodePath &other) const;
-  INLINE void clear_transform(const NodePath &other);
-  void set_transform(const NodePath &other, const TransformState *transform);
-  INLINE CPT(TransformState) get_net_transform() const;
+  const TransformState *get_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE void clear_transform(Thread *current_thread = Thread::get_current_thread());
+  INLINE void set_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
+  CPT(TransformState) get_transform(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE void clear_transform(const NodePath &other, Thread *current_thread = Thread::get_current_thread());
+  void set_transform(const NodePath &other, const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
+  INLINE CPT(TransformState) get_net_transform(Thread *current_thread = Thread::get_current_thread()) const;
 
-  const TransformState *get_prev_transform() const;
-  INLINE void set_prev_transform(const TransformState *transform);
-  CPT(TransformState) get_prev_transform(const NodePath &other) const;
-  void set_prev_transform(const NodePath &other, const TransformState *transform);
-  INLINE CPT(TransformState) get_net_prev_transform() const;
+  const TransformState *get_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE void set_prev_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
+  CPT(TransformState) get_prev_transform(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
+  void set_prev_transform(const NodePath &other, const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
+  INLINE CPT(TransformState) get_net_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
 
 
   // Methods that get and set the matrix transform: pos, hpr, scale,
@@ -743,13 +751,14 @@ PUBLISHED:
   INLINE void hide();
   INLINE void hide(DrawMask camera_mask);
   INLINE bool is_hidden(DrawMask camera_mask = PandaNode::get_overall_bit()) const;
-  NodePath get_hidden_ancestor(DrawMask camera_mask = PandaNode::get_overall_bit()) const;
+  NodePath get_hidden_ancestor(DrawMask camera_mask = PandaNode::get_overall_bit(),
+                               Thread *current_thread = Thread::get_current_thread()) const;
 
-  void stash(int sort = 0);
-  void unstash(int sort = 0);
-  void unstash_all();
+  void stash(int sort = 0, Thread *current_thread = Thread::get_current_thread());
+  void unstash(int sort = 0, Thread *current_thread = Thread::get_current_thread());
+  void unstash_all(Thread *current_thread = Thread::get_current_thread());
   INLINE bool is_stashed() const;
-  NodePath get_stashed_ancestor() const;
+  NodePath get_stashed_ancestor(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE CollideMask get_collide_mask() const;
   INLINE void set_collide_mask(CollideMask new_mask, CollideMask bits_to_change = CollideMask::all_on(),
@@ -762,7 +771,7 @@ PUBLISHED:
   INLINE int compare_to(const NodePath &other) const;
 
   // Miscellaneous
-  bool verify_complete() const;
+  bool verify_complete(Thread *current_thread = Thread::get_current_thread()) const;
 
   void prepare_scene(GraphicsStateGuardianBase *gsg);
 
@@ -772,7 +781,8 @@ PUBLISHED:
   PT(BoundingVolume) get_bounds() const;
   void force_recompute_bounds();
   void write_bounds(ostream &out) const;
-  bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point);
+  bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                         Thread *current_thread = Thread::get_current_thread());
 
   void analyze() const;
 
@@ -808,14 +818,21 @@ PUBLISHED:
 private:
   static NodePathComponent *
   find_common_ancestor(const NodePath &a, const NodePath &b,
-                       int &a_count, int &b_count);
+                       int &a_count, int &b_count, 
+                       Thread *current_thread);
 
-  CPT(RenderState) r_get_net_state(NodePathComponent *comp) const;
-  CPT(RenderState) r_get_partial_state(NodePathComponent *comp, int n) const;
-  CPT(TransformState) r_get_net_transform(NodePathComponent *comp) const;
-  CPT(TransformState) r_get_partial_transform(NodePathComponent *comp, int n) const;
-  CPT(TransformState) r_get_net_prev_transform(NodePathComponent *comp) const;
-  CPT(TransformState) r_get_partial_prev_transform(NodePathComponent *comp, int n) const;
+  CPT(RenderState) r_get_net_state(NodePathComponent *comp, 
+                                   Thread *current_thread) const;
+  CPT(RenderState) r_get_partial_state(NodePathComponent *comp, int n,
+                                       Thread *current_thread) const;
+  CPT(TransformState) r_get_net_transform(NodePathComponent *comp, 
+                                          Thread *current_thread) const;
+  CPT(TransformState) r_get_partial_transform(NodePathComponent *comp, int n,
+                                              Thread *current_thread) const;
+  CPT(TransformState) r_get_net_prev_transform(NodePathComponent *comp,
+                                               Thread *current_thread) const;
+  CPT(TransformState) r_get_partial_prev_transform(NodePathComponent *comp, 
+                                                   int n, Thread *current_thread) const;
 
   void find_matches(NodePathCollection &result,
                     const string &approx_path_str,

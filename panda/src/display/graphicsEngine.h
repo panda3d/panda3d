@@ -179,7 +179,7 @@ private:
                      const GraphicsThreadingModel &threading_model);
   void do_remove_window(GraphicsOutput *window, Thread *current_thread);
   void do_resort_windows();
-  void terminate_threads();
+  void terminate_threads(Thread *current_thread);
 
 #ifdef DO_PSTATS
   typedef map<TypeHandle, PStatCollector> CyclerTypeCounters;

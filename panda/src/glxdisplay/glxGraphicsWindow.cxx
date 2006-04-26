@@ -116,8 +116,8 @@ move_pointer(int device, int x, int y) {
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool glxGraphicsWindow::
-begin_frame(FrameMode mode) {
-  PStatTimer timer(_make_current_pcollector);
+begin_frame(FrameMode mode, Thread *current_thread) {
+  PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
@@ -145,7 +145,7 @@ begin_frame(FrameMode mode) {
   }
   
   _gsg->set_current_properties(&get_fb_properties());
-  return _gsg->begin_frame();
+  return _gsg->begin_frame(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ begin_frame(FrameMode mode) {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
-end_frame(FrameMode mode) {
+end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam();
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
@@ -165,7 +165,7 @@ end_frame(FrameMode mode) {
     copy_to_textures();
   }
 
-  _gsg->end_frame();
+  _gsg->end_frame(current_thread);
 
   if (mode == FM_render) {
     trigger_flip();

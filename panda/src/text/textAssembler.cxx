@@ -763,6 +763,8 @@ assemble_row(TextAssembler::TextString::const_iterator &si,
              TextAssembler::PlacedGlyphs &row_placed_glyphs,
              float &row_width, float &line_height, 
              TextProperties::Alignment &align) {
+  Thread *current_thread = Thread::get_current_thread();
+
   line_height = 0.0f;
   float xpos = 0.0f;
   align = TextProperties::A_left;
@@ -863,7 +865,8 @@ assemble_row(TextAssembler::TextString::const_iterator &si,
         // glyph, so go get that.
         LPoint3f min_vert, max_vert;
         bool found_any = false;
-        placement->calc_tight_bounds(min_vert, max_vert, found_any);
+        placement->calc_tight_bounds(min_vert, max_vert, found_any,
+                                     current_thread);
 
         if (found_any) {
           LPoint3f centroid = (min_vert + max_vert) / 2.0f;
@@ -1168,7 +1171,9 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
                TextAssembler::GlyphPlacement *placement) const {
   TextFont *font = properties->get_font();
   nassertr(font != (TextFont *)NULL, false);
-  
+
+  Thread *current_thread = Thread::get_current_thread();
+
   const TextGlyph *accent_glyph;
   if (font->get_glyph(accent_mark, accent_glyph) ||
       font->get_glyph(toupper(accent_mark), accent_glyph)) {
@@ -1176,7 +1181,8 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
     if (accent_geom != (Geom *)NULL) {
       LPoint3f min_accent, max_accent;
       bool found_any = false;
-      accent_geom->calc_tight_bounds(min_accent, max_accent, found_any);
+      accent_geom->calc_tight_bounds(min_accent, max_accent, found_any,
+                                     current_thread);
       if (found_any) {
         float t, u;
         LMatrix4f accent_mat;
@@ -1431,10 +1437,11 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::GlyphPlacement::
 calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
-                  bool &found_any) const {
+                  bool &found_any, Thread *current_thread) const {
   Pieces::const_iterator pi;
   for (pi = _pieces.begin(); pi != _pieces.end(); ++pi) {
-    (*pi)._geom->calc_tight_bounds(min_point, max_point, found_any);
+    (*pi)._geom->calc_tight_bounds(min_point, max_point, found_any,
+                                   current_thread);
   }
 }
 

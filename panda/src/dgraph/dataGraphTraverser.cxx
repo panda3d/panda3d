@@ -47,7 +47,7 @@ set_data(int parent_index, const DataNodeTransmit &data) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DataGraphTraverser::
-DataGraphTraverser() {
+DataGraphTraverser(Thread *current_thread) : _current_thread(current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,9 +69,8 @@ void DataGraphTraverser::
 traverse(PandaNode *node) {
   if (node->is_of_type(DataNode::get_class_type())) {
     DataNode *data_node = DCAST(DataNode, node);
-    int num_parents = data_node->get_num_parents();
     // We must start the traversal at the root of the graph.
-    nassertv(num_parents == 0);
+    nassertv(data_node->get_num_parents(_current_thread) == 0);
 
     r_transmit(data_node, (DataNodeTransmit *)NULL);
 
@@ -91,7 +90,7 @@ traverse(PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 void DataGraphTraverser::
 traverse_below(PandaNode *node, const DataNodeTransmit &output) {
-  PandaNode::Children cr = node->get_children();
+  PandaNode::Children cr = node->get_children(_current_thread);
   int num_children = cr.get_num_children();
 
   for (int i = 0; i < num_children; i++) {
@@ -101,7 +100,7 @@ traverse_below(PandaNode *node, const DataNodeTransmit &output) {
       // If it's a DataNode-type child, we need to pass it the data.
       // Maybe it has only one parent, and can accept the data
       // immediately.
-      int num_parents = data_node->get_num_parents();
+      int num_parents = data_node->get_num_parents(_current_thread);
       if (num_parents == 1) {
         // The easy, common case: only one parent.  We make our output
         // into a one-element array of inputs by turning it into a
@@ -112,7 +111,7 @@ traverse_below(PandaNode *node, const DataNodeTransmit &output) {
         // instances together, meaning we must hold onto this node
         // until we have reached it through all paths.
         CollectedData &collected_data = _multipass_data[data_node];
-        int parent_index = data_node->find_parent(node);
+        int parent_index = data_node->find_parent(node, _current_thread);
         nassertv(parent_index != -1);
 
         collected_data.set_data(parent_index, output);

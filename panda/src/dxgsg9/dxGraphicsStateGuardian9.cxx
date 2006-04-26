@@ -893,11 +893,11 @@ prepare_lens() {
 //               be called).
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
-begin_frame() {
+begin_frame(Thread *current_thread) {
 
 DBG_S dxgsg9_cat.debug ( ) << "^^^^^^^^^^^ begin_frame \n"; DBG_E
 
-  GraphicsStateGuardian::begin_frame();
+  GraphicsStateGuardian::begin_frame(current_thread);
 
   if (_lru)
   {
@@ -1020,7 +1020,7 @@ DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::end_scene\n"; DBG_E
 //               rendering the frame, and before the window flips.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-end_frame() {
+end_frame(Thread *current_thread) {
 
 DBG_S dxgsg9_cat.debug ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
 
@@ -1133,7 +1133,7 @@ DBG_S dxgsg9_cat.debug ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
   // Note: regular GraphicsWindow::end_frame is being called,
   // but we override gsg::end_frame, so need to explicitly call it here
   // (currently it's an empty fn)
-  GraphicsStateGuardian::end_frame();
+  GraphicsStateGuardian::end_frame(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

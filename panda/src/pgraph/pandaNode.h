@@ -98,7 +98,8 @@ public:
   virtual CPT(TransformState)
     calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                       bool &found_any,
-                      const TransformState *transform) const;
+                      const TransformState *transform,
+                      Thread *current_thread) const;
   
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
@@ -111,41 +112,48 @@ public:
 
   INLINE void compose_draw_mask(DrawMask &running_draw_mask) const;
   INLINE bool compare_draw_mask(DrawMask running_draw_mask,
-                                DrawMask camera_mask) const;
+                                DrawMask camera_mask, 
+                                Thread *current_thread) const;
 
 PUBLISHED:
-  PT(PandaNode) copy_subgraph() const;
+  PT(PandaNode) copy_subgraph(Thread *current_thread = Thread::get_current_thread()) const;
 
-  INLINE int get_num_parents() const;
-  INLINE PandaNode *get_parent(int n) const;
-  INLINE int find_parent(PandaNode *node) const;
+  INLINE int get_num_parents(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE PandaNode *get_parent(int n, Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE int find_parent(PandaNode *node, Thread *current_thread = Thread::get_current_thread()) const;
 
-  INLINE int get_num_children() const;
-  INLINE PandaNode *get_child(int n) const;
-  INLINE int get_child_sort(int n) const;
-  INLINE int find_child(PandaNode *node) const;
+  INLINE int get_num_children(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE PandaNode *get_child(int n, Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE int get_child_sort(int n, Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE int find_child(PandaNode *node, Thread *current_thread = Thread::get_current_thread()) const;
 
-  void add_child(PandaNode *child_node, int sort = 0);
-  void remove_child(int child_index);
-  bool remove_child(PandaNode *child_node);
-  bool replace_child(PandaNode *orig_child, PandaNode *new_child);
+  void add_child(PandaNode *child_node, int sort = 0,
+                 Thread *current_thread = Thread::get_current_thread());
+  void remove_child(int child_index, Thread *current_thread = Thread::get_current_thread());
+  bool remove_child(PandaNode *child_node, Thread *current_thread = Thread::get_current_thread());
+  bool replace_child(PandaNode *orig_child, PandaNode *new_child,
+                     Thread *current_thread = Thread::get_current_thread());
 
-  INLINE bool stash_child(PandaNode *child_node);
-  void stash_child(int child_index);
-  INLINE bool unstash_child(PandaNode *child_node);
-  void unstash_child(int stashed_index);
+  INLINE bool stash_child(PandaNode *child_node,
+                          Thread *current_thread = Thread::get_current_thread());
+  void stash_child(int child_index,
+                   Thread *current_thread = Thread::get_current_thread());
+  INLINE bool unstash_child(PandaNode *child_node,
+                            Thread *current_thread = Thread::get_current_thread());
+  void unstash_child(int stashed_index,
+                     Thread *current_thread = Thread::get_current_thread());
 
-  INLINE int get_num_stashed() const;
-  INLINE PandaNode *get_stashed(int n) const;
-  INLINE int get_stashed_sort(int n) const;
-  INLINE int find_stashed(PandaNode *node) const;
+  INLINE int get_num_stashed(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE PandaNode *get_stashed(int n, Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE int get_stashed_sort(int n, Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE int find_stashed(PandaNode *node, Thread *current_thread = Thread::get_current_thread()) const;
 
-  void add_stashed(PandaNode *child_node, int sort = 0);
-  void remove_stashed(int child_index);
+  void add_stashed(PandaNode *child_node, int sort = 0, Thread *current_thread = Thread::get_current_thread());
+  void remove_stashed(int child_index, Thread *current_thread = Thread::get_current_thread());
 
-  void remove_all_children();
-  void steal_children(PandaNode *other);
-  void copy_children(PandaNode *other);
+  void remove_all_children(Thread *current_thread = Thread::get_current_thread());
+  void steal_children(PandaNode *other, Thread *current_thread = Thread::get_current_thread());
+  void copy_children(PandaNode *other, Thread *current_thread = Thread::get_current_thread());
 
   void set_attrib(const RenderAttrib *attrib, int override = 0);
   INLINE const RenderAttrib *get_attrib(TypeHandle type) const;
@@ -157,23 +165,23 @@ PUBLISHED:
   INLINE bool has_effect(TypeHandle type) const;
   void clear_effect(TypeHandle type);
 
-  void set_state(const RenderState *state);
-  INLINE const RenderState *get_state() const;
-  INLINE void clear_state();
+  void set_state(const RenderState *state, Thread *current_thread = Thread::get_current_thread());
+  INLINE const RenderState *get_state(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE void clear_state(Thread *current_thread = Thread::get_current_thread());
 
   void set_effects(const RenderEffects *effects);
   INLINE const RenderEffects *get_effects() const;
   INLINE void clear_effects();
 
-  void set_transform(const TransformState *transform);
-  INLINE const TransformState *get_transform() const;
-  INLINE void clear_transform();
+  void set_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
+  INLINE const TransformState *get_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE void clear_transform(Thread *current_thread = Thread::get_current_thread());
 
-  void set_prev_transform(const TransformState *transform);
-  INLINE const TransformState *get_prev_transform() const;
-  void reset_prev_transform();
+  void set_prev_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
+  INLINE const TransformState *get_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  void reset_prev_transform(Thread *current_thread = Thread::get_current_thread());
   INLINE bool has_dirty_prev_transform() const;
-  static void reset_all_prev_transform();
+  static void reset_all_prev_transform(Thread *current_thread = Thread::get_current_thread());
 
   void set_tag(const string &key, const string &value);
   INLINE string get_tag(const string &key) const;
@@ -233,7 +241,7 @@ PUBLISHED:
   CPT(BoundingVolume) get_bounds() const;
   INLINE CPT(BoundingVolume) get_internal_bounds() const;
 
-  void mark_bounds_stale() const;
+  void mark_bounds_stale(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE void set_final(bool flag);
   INLINE bool is_final() const;
@@ -243,17 +251,17 @@ PUBLISHED:
   virtual Light *as_light();
 
 protected:
-  INLINE CPT(BoundingVolume) get_user_bounds(int pipeline_stage) const;
-  CPT(BoundingVolume) get_internal_bounds(int pipeline_stage) const;
+  INLINE CPT(BoundingVolume) get_user_bounds(int pipeline_stage, Thread *current_thread) const;
+  CPT(BoundingVolume) get_internal_bounds(int pipeline_stage, Thread *current_thread) const;
   void set_internal_bounds(const BoundingVolume *volume);
 
-  INLINE void mark_bounds_stale(int pipeline_stage) const;
-  void force_bounds_stale();
-  void force_bounds_stale(int pipeline_stage);
-  void mark_internal_bounds_stale();
-  INLINE void mark_internal_bounds_stale(int pipeline_stage);
+  INLINE void mark_bounds_stale(int pipeline_stage, Thread *current_thread) const;
+  void force_bounds_stale(Thread *current_thread = Thread::get_current_thread());
+  void force_bounds_stale(int pipeline_stage, Thread *current_thread);
+  void mark_internal_bounds_stale(Thread *current_thread = Thread::get_current_thread());
+  INLINE void mark_internal_bounds_stale(int pipeline_stage, Thread *current_thread);
 
-  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage) const;
+  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;
   virtual void parents_changed();
   virtual void children_changed();
   virtual void transform_changed();
@@ -261,8 +269,10 @@ protected:
   virtual void draw_mask_changed();
 
   typedef pmap<PandaNode *, PandaNode *> InstanceMap;
-  virtual PT(PandaNode) r_copy_subgraph(InstanceMap &inst_map) const;
-  virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map);
+  virtual PT(PandaNode) r_copy_subgraph(InstanceMap &inst_map,
+                                        Thread *current_thread) const;
+  virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map,
+                               Thread *current_thread);
 
 private:
   class CDataLight;
@@ -273,39 +283,40 @@ private:
   INLINE int do_find_parent(PandaNode *node, const CDataLinks *cdata) const;
   int do_find_child(PandaNode *node, const CDataLinks *cdata) const;
   int do_find_stashed(PandaNode *node, const CDataLinks *cdata) const;
-  bool stage_remove_child(PandaNode *child_node, int pipeline_stage);
+  bool stage_remove_child(PandaNode *child_node, int pipeline_stage,
+                          Thread *current_thread);
   bool stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
-                           int pipeline_stage);
+                           int pipeline_stage, Thread *current_thread);
 
   // parent-child manipulation for NodePath support.  Don't try to
   // call these directly.
   static PT(NodePathComponent) attach(NodePathComponent *parent, 
 				      PandaNode *child, int sort,
-				      int pipeline_stage);
-  static void detach(NodePathComponent *child, int pipeline_stage);
-  static void detach_one_stage(NodePathComponent *child, int pipeline_stage);
+				      int pipeline_stage, Thread *current_thread);
+  static void detach(NodePathComponent *child, int pipeline_stage, Thread *current_thread);
+  static void detach_one_stage(NodePathComponent *child, int pipeline_stage, Thread *current_thread);
   static bool reparent(NodePathComponent *new_parent,
                        NodePathComponent *child, int sort, bool as_stashed,
-		       int pipeline_stage);
+		       int pipeline_stage, Thread *current_thread);
   static bool reparent_one_stage(NodePathComponent *new_parent,
 				 NodePathComponent *child, int sort, 
-				 bool as_stashed, int pipeline_stage);
+				 bool as_stashed, int pipeline_stage, Thread *current_thread);
   static PT(NodePathComponent) get_component(NodePathComponent *parent,
 					     PandaNode *child,
-					     int pipeline_stage);
+					     int pipeline_stage, Thread *current_thread);
   static PT(NodePathComponent) get_top_component(PandaNode *child, bool force,
-						 int pipeline_stage);
+						 int pipeline_stage, Thread *current_thread);
   PT(NodePathComponent) get_generic_component(bool accept_ambiguity,
-					      int pipeline_stage);
+					      int pipeline_stage, Thread *current_thread);
   PT(NodePathComponent) r_get_generic_component(bool accept_ambiguity, 
 						bool &ambiguity_detected,
-						int pipeline_stage);
+						int pipeline_stage, Thread *current_thread);
   void delete_component(NodePathComponent *component);
   static void sever_connection(PandaNode *parent_node, PandaNode *child_node,
-                               int pipeline_stage);
+                               int pipeline_stage, Thread *current_thread);
   static void new_connection(PandaNode *parent_node, PandaNode *child_node,
-                             int pipeline_stage);
-  void fix_path_lengths(int pipeline_stage);
+                             int pipeline_stage, Thread *current_thread);
+  void fix_path_lengths(int pipeline_stage, Thread *current_thread);
   void r_list_descendants(ostream &out, int indent_level) const;
 
   INLINE void set_dirty_prev_transform();
@@ -561,8 +572,8 @@ private:
   typedef CycleDataStageReader<CDataLinks> CDLinksStageReader;
   typedef CycleDataStageWriter<CDataLinks> CDLinksStageWriter;
 
-  CDBoundsStageWriter update_bounds(int pipeline_stage, 
-				    CDBoundsStageReader &cdata);
+  CDBoundsStageWriter update_bounds(int pipeline_stage,
+                                    CDBoundsStageReader &cdata);
 
   static DrawMask _overall_bit;
 
@@ -578,12 +589,14 @@ public:
   // pass.
   class EXPCL_PANDA Children {
   public:
-    INLINE Children(const CDLinksReader &cdata);
+    INLINE Children();
+    INLINE Children(const CDataLinks *cdata);
     INLINE Children(const Children &copy);
     INLINE void operator = (const Children &copy);
 
     INLINE int get_num_children() const;
     INLINE PandaNode *get_child(int n) const;
+    INLINE int get_child_sort(int n) const;
 
   private:
     CPT(Down) _down;
@@ -592,12 +605,14 @@ public:
   // Similarly for stashed children.
   class EXPCL_PANDA Stashed {
   public:
-    INLINE Stashed(const CDLinksReader &cdata);
+    INLINE Stashed();
+    INLINE Stashed(const CDataLinks *cdata);
     INLINE Stashed(const Stashed &copy);
     INLINE void operator = (const Stashed &copy);
 
     INLINE int get_num_stashed() const;
     INLINE PandaNode *get_stashed(int n) const;
+    INLINE int get_stashed_sort(int n) const;
 
   private:
     CPT(Down) _stashed;
@@ -606,7 +621,8 @@ public:
   // This class is returned from get_parents().
   class EXPCL_PANDA Parents {
   public:
-    INLINE Parents(const CDLinksReader &cdata);
+    INLINE Parents();
+    INLINE Parents(const CDataLinks *cdata);
     INLINE Parents(const Parents &copy);
     INLINE void operator = (const Parents &copy);
 

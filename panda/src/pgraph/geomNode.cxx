@@ -349,17 +349,21 @@ combine_with(PandaNode *other) {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) GeomNode::
 calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
-                  const TransformState *transform) const {
+                  const TransformState *transform, Thread *current_thread) const {
   CPT(TransformState) next_transform = 
-    PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform);
+    PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform,
+                                 current_thread);
 
   const LMatrix4f &mat = next_transform->get_mat();
-  int num_geoms = get_num_geoms();
-  for (int i = 0; i < num_geoms; i++) {
-    const Geom *geom = get_geom(i);
+
+  CDReader cdata(_cycler, current_thread);
+  Geoms::const_iterator gi;
+  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    const Geom *geom = (*gi)._geom;
     geom->calc_tight_bounds(min_point, max_point, found_any,
-			    geom->get_vertex_data()->animate_vertices(),
-			    !next_transform->is_identity(), mat);
+			    geom->get_vertex_data(current_thread)->animate_vertices(current_thread),
+			    !next_transform->is_identity(), mat,
+                            current_thread);
   }
 
   return next_transform;
@@ -661,16 +665,16 @@ is_geom_node() const {
 //               something internally.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) GeomNode::
-compute_internal_bounds(int pipeline_stage) const {
+compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
   // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage);
+  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage, current_thread);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   // Now actually compute the bounding volume by putting it around all
   // of our geoms' bounding volumes.
   pvector<const BoundingVolume *> child_volumes;
 
-  CDStageReader cdata(_cycler, pipeline_stage);
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   Geoms::const_iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     const GeomEntry &entry = (*gi);

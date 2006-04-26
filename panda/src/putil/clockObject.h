@@ -79,20 +79,20 @@ PUBLISHED:
   INLINE void set_mode(Mode mode);
   INLINE Mode get_mode() const;
 
-  INLINE double get_frame_time() const;
+  INLINE double get_frame_time(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE double get_real_time() const;
   INLINE double get_long_time() const;
 
   INLINE void reset();
   void set_real_time(double time);
-  void set_frame_time(double time);
-  void set_frame_count(int frame_count);
+  void set_frame_time(double time, Thread *current_thread = Thread::get_current_thread());
+  void set_frame_count(int frame_count, Thread *current_thread = Thread::get_current_thread());
 
-  INLINE int get_frame_count() const;
-  INLINE double get_net_frame_rate() const;
+  INLINE int get_frame_count(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE double get_net_frame_rate(Thread *current_thread = Thread::get_current_thread()) const;
 
-  INLINE double get_dt() const;
-  INLINE void set_dt(double dt);
+  INLINE double get_dt(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE void set_dt(double dt, Thread *current_thread = Thread::get_current_thread());
 
   INLINE double get_max_dt() const;
   INLINE void set_max_dt(double max_dt);
@@ -102,12 +102,12 @@ PUBLISHED:
 
   INLINE void set_average_frame_rate_interval(double time);
   INLINE double get_average_frame_rate_interval() const;
-  INLINE double get_average_frame_rate() const;
+  INLINE double get_average_frame_rate(Thread *current_thread = Thread::get_current_thread()) const;
 
-  void tick();
-  void sync_frame_time();
+  void tick(Thread *current_thread);
+  void sync_frame_time(Thread *current_thread);
 
-  INLINE bool check_errors();
+  INLINE bool check_errors(Thread *current_thread);
 
   INLINE static ClockObject *get_global_clock();
 

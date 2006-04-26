@@ -23,6 +23,8 @@
 
 #include "pStatCollector.h"
 
+class Thread;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : PStatTimer
 // Description : A lightweight class that can be used to automatically
@@ -37,11 +39,12 @@ class EXPCL_PANDA PStatTimer {
 public:
 #ifdef DO_PSTATS
   INLINE PStatTimer(PStatCollector &collector);
+  INLINE PStatTimer(PStatCollector &collector, Thread *current_thread);
   INLINE ~PStatTimer();
 
 private:
   PStatCollector &_collector;
-
+  PStatThread _thread;
 #else // DO_PSTATS
 
   INLINE PStatTimer(PStatCollector &) { }

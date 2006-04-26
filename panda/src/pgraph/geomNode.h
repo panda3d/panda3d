@@ -52,7 +52,8 @@ public:
   virtual CPT(TransformState)
     calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                       bool &found_any,
-                      const TransformState *transform) const;
+                      const TransformState *transform,
+                      Thread *current_thread) const;
   virtual bool is_renderable() const;
   virtual CollideMask get_legal_collide_mask() const;
 
@@ -84,7 +85,7 @@ public:
   virtual bool is_geom_node() const;
 
 protected:
-  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage) const;
+  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;
 
 public:
   // This must be declared public so that VC6 will allow the nested

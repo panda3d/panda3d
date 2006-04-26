@@ -519,6 +519,8 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
      0.0f, 0.0f, 0.5f, 0.0f, 
      0.5f, 0.5f, 0.5f, 1.0f);
 
+  Thread *current_thread = Thread::get_current_thread();
+
   Lens *lens = _projector_node->get_lens();
   nassertv(lens != (Lens *)NULL);
 
@@ -546,11 +548,11 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
   PT(GeomVertexData) modify_vdata = geom->modify_vertex_data();
 
   // Maybe the vdata has animation that we should consider.
-  CPT(GeomVertexData) animated_vdata = geom->get_vertex_data()->animate_vertices();
+  CPT(GeomVertexData) animated_vdata = geom->get_vertex_data(current_thread)->animate_vertices(current_thread);
 
-  GeomVertexWriter texcoord(modify_vdata, _texcoord_name);
-  GeomVertexWriter color(modify_vdata);
-  GeomVertexReader vertex(animated_vdata, InternalName::get_vertex());
+  GeomVertexWriter texcoord(modify_vdata, _texcoord_name, current_thread);
+  GeomVertexWriter color(modify_vdata, current_thread);
+  GeomVertexReader vertex(animated_vdata, InternalName::get_vertex(), current_thread);
   
   if (_vignette_on) {
     color.set_column(InternalName::get_color());

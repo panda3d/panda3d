@@ -28,6 +28,17 @@ get_gsg() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::get_current_thread
+//       Access: Public
+//  Description: Returns the currently-executing thread object, as
+//               passed to the CullTraverser constructor.
+////////////////////////////////////////////////////////////////////
+INLINE Thread *CullTraverser::
+get_current_thread() const {
+  return _current_thread;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::set_scene
 //       Access: Public
 //  Description: Sets the SceneSetup object that indicates the initial

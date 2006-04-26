@@ -72,7 +72,8 @@ public:
   INLINE CPT(GeomVertexData) munge_data(const GeomVertexData *data) const;
   void remove_data(const GeomVertexData *data);
 
-  void munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data);
+  void munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
+                  Thread *current_thread);
 
 public:
   INLINE int compare_to(const GeomMunger &other) const;
@@ -85,7 +86,8 @@ protected:
   virtual CPT(GeomVertexFormat) munge_format_impl(const GeomVertexFormat *orig,
                                                     const GeomVertexAnimationSpec &animation);
   virtual CPT(GeomVertexData) munge_data_impl(const GeomVertexData *data);
-  virtual bool munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data);
+  virtual bool munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data,
+                               Thread *current_thread);
   virtual int compare_to_impl(const GeomMunger *other) const;
   virtual int geom_compare_to_impl(const GeomMunger *other) const;
 

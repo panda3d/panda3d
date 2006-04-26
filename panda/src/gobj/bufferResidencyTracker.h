@@ -41,8 +41,8 @@ class EXPCL_PANDA BufferResidencyTracker {
 public:
   BufferResidencyTracker(const string &pgo_name, const string &type_name);
 
-  void begin_frame();
-  void end_frame();
+  void begin_frame(Thread *current_thread);
+  void end_frame(Thread *current_thread);
 
   INLINE BufferContextChain &get_inactive_nonresident();
   INLINE BufferContextChain &get_active_nonresident();

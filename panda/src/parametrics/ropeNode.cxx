@@ -233,9 +233,10 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
 reset_bound(const NodePath &rel_to) {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  do_recompute_bounds(rel_to, pipeline_stage);
-  mark_internal_bounds_stale();
+  Thread *current_thread = Thread::get_current_thread();
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  do_recompute_bounds(rel_to, pipeline_stage, current_thread);
+  mark_internal_bounds_stale(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -247,8 +248,9 @@ reset_bound(const NodePath &rel_to) {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) RopeNode::
-compute_internal_bounds(int pipeline_stage) const {
-  return do_recompute_bounds(NodePath((PandaNode *)this), pipeline_stage);
+compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
+  return do_recompute_bounds(NodePath((PandaNode *)this), pipeline_stage, 
+                             current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -289,13 +291,14 @@ get_format(bool support_normals) const {
 //  Description: Does the actual internal recompute.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) RopeNode::
-do_recompute_bounds(const NodePath &rel_to, int pipeline_stage) const {
+do_recompute_bounds(const NodePath &rel_to, int pipeline_stage, 
+                    Thread *current_thread) const {
   // TODO: fix the bounds so that it properly reflects the indicated
   // pipeline stage.  At the moment, we cheat and get some of the
   // properties from the current pipeline stage, the lazy way.
 
   // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage);
+  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage, current_thread);
   nassertr(bound != (BoundingVolume *)NULL, bound);
   
   NurbsCurveEvaluator *curve = get_curve();

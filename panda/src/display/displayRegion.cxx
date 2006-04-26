@@ -470,13 +470,15 @@ save_screenshot(const Filename &filename, const string &image_comment) {
 ////////////////////////////////////////////////////////////////////
 bool DisplayRegion::
 get_screenshot(PNMImage &image) {
+  Thread *current_thread = Thread::get_current_thread();
+
   GraphicsOutput *window = get_window();
   nassertr(window != (GraphicsOutput *)NULL, false);
   
   GraphicsStateGuardian *gsg = window->get_gsg();
   nassertr(gsg != (GraphicsStateGuardian *)NULL, false);
   
-  if (!window->begin_frame(GraphicsOutput::FM_refresh)) {
+  if (!window->begin_frame(GraphicsOutput::FM_refresh, current_thread)) {
     return false;
   }
 
@@ -489,7 +491,7 @@ get_screenshot(PNMImage &image) {
     return false;
   }
   
-  window->end_frame(GraphicsOutput::FM_refresh);
+  window->end_frame(GraphicsOutput::FM_refresh, current_thread);
   
   if (!tex->store(image)) {
     return false;

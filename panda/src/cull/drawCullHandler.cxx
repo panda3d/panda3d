@@ -38,6 +38,6 @@ record_object(CullableObject *object, const CullTraverser *traverser) {
   object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state), traverser);
 
   // And draw the object, then dispense with it.
-  draw(object, _gsg, Thread::get_current_thread());
+  draw(object, _gsg, traverser->get_current_thread());
   delete object;
 }

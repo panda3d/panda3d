@@ -59,7 +59,7 @@ public:
   INLINE CullBin *get_bin(int bin_index);
 
   void add_object(CullableObject *object, const CullTraverser *traverser);
-  void finish_cull(SceneSetup *scene_setup);
+  void finish_cull(SceneSetup *scene_setup, Thread *current_thread);
   void draw(Thread *current_thread);
 
 public:

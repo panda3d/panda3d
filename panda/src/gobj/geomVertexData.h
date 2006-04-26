@@ -139,7 +139,7 @@ PUBLISHED:
     set_color(const Colorf &color, int num_components,
               NumericType numeric_type, Contents contents) const;
 
-  CPT(GeomVertexData) animate_vertices() const;
+  CPT(GeomVertexData) animate_vertices(Thread *current_thread) const;
 
   PT(GeomVertexData) 
     replace_column(InternalName *name, int num_components,

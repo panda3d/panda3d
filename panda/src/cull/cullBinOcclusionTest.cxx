@@ -116,7 +116,7 @@ make_next() const {
 //               the bin for rendering.
 ////////////////////////////////////////////////////////////////////
 void CullBinOcclusionTest::
-add_object(CullableObject *object) {
+add_object(CullableObject *object, Thread *current_thread) {
   // Determine the world-space bounding sphere for the object.
   CPT(BoundingVolume) volume = object->_geom->get_bounds();
   if (volume->is_empty()) {
@@ -151,8 +151,8 @@ add_object(CullableObject *object) {
 //               draw.
 ////////////////////////////////////////////////////////////////////
 void CullBinOcclusionTest::
-finish_cull(SceneSetup *scene_setup) {
-  PStatTimer timer(_cull_this_pcollector);
+finish_cull(SceneSetup *scene_setup, Thread *current_thread) {
+  PStatTimer timer(_cull_this_pcollector, current_thread);
 
   // Now we have a loose list of objects that are to be rendered.
   // We'd rather have them in an octree, which has much better
@@ -196,7 +196,7 @@ finish_cull(SceneSetup *scene_setup) {
 ////////////////////////////////////////////////////////////////////
 void CullBinOcclusionTest::
 draw(Thread *current_thread) {
-  PStatTimer timer(_draw_this_pcollector);
+  PStatTimer timer(_draw_this_pcollector, current_thread);
 
   // We'll want to know the near plane distance.
   _near_distance = _gsg->get_scene()->get_lens()->get_near();
@@ -494,7 +494,7 @@ occlusion_test(CullBinOcclusionTest &bin, Thread *current_thread) {
   
   CPT(Geom) viz = get_octree_solid_test();
   CPT(GeomVertexData) munged_data = viz->get_vertex_data();
-  munger->munge_geom(viz, munged_data);
+  munger->munge_geom(viz, munged_data, current_thread);
   
   bin._gsg->set_state_and_transform(state, internal_transform);
 
@@ -632,7 +632,7 @@ draw_wireframe(CullBinOcclusionTest &bin, Thread *current_thread) {
   
   CPT(Geom) viz = get_octree_wireframe_viz();
   CPT(GeomVertexData) munged_data = viz->get_vertex_data();
-  munger->munge_geom(viz, munged_data);
+  munger->munge_geom(viz, munged_data, current_thread);
   
   bin._gsg->set_state_and_transform(state, internal_transform);
   viz->draw(bin._gsg, munger, munged_data, current_thread);

@@ -834,8 +834,8 @@ prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
 //               passed to prepare_texture are actually loaded.
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
-begin_frame(GraphicsStateGuardianBase *gsg) {
-  ReMutexHolder holder(_lock);
+begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
+  ReMutexHolder holder(_lock, current_thread);
 
   // First, release all the textures, geoms, and buffers awaiting
   // release.
@@ -890,9 +890,9 @@ begin_frame(GraphicsStateGuardianBase *gsg) {
   _released_index_buffers.clear();
 
   // Reset the residency trackers.
-  _texture_residency.begin_frame();
-  _vbuffer_residency.begin_frame();
-  _ibuffer_residency.begin_frame();
+  _texture_residency.begin_frame(current_thread);
+  _vbuffer_residency.begin_frame(current_thread);
+  _ibuffer_residency.begin_frame(current_thread);
 
   // Now prepare all the textures, geoms, and buffers awaiting
   // preparation.
@@ -955,12 +955,12 @@ begin_frame(GraphicsStateGuardianBase *gsg) {
 //               frame.
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
-end_frame() {
-  ReMutexHolder holder(_lock);
+end_frame(Thread *current_thread) {
+  ReMutexHolder holder(_lock, current_thread);
 
-  _texture_residency.end_frame();
-  _vbuffer_residency.end_frame();
-  _ibuffer_residency.end_frame();
+  _texture_residency.end_frame(current_thread);
+  _vbuffer_residency.end_frame(current_thread);
+  _ibuffer_residency.end_frame(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

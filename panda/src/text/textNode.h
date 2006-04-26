@@ -232,13 +232,14 @@ public:
   virtual CPT(TransformState)
     calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                       bool &found_any,
-                      const TransformState *transform) const;
+                      const TransformState *transform,
+                      Thread *current_thread) const;
 
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool is_renderable() const;
 
-  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage) const;
+  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;
 
 private:
   INLINE void invalidate_no_measure();

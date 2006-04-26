@@ -128,13 +128,13 @@ get_net_transform(const CullTraverser *) const {
 //               work for future nodes.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CullTraverserData::
-is_in_view(const DrawMask &camera_mask) {
-  if (node()->get_transform()->is_invalid()) {
+is_in_view(const DrawMask &camera_mask, Thread *current_thread) {
+  if (node()->get_transform(current_thread)->is_invalid()) {
     // If the transform is invalid, forget it.
     return false;
   }
 
-  if (!node()->compare_draw_mask(_draw_mask, camera_mask)) {
+  if (!node()->compare_draw_mask(_draw_mask, camera_mask, current_thread)) {
     // If there are no draw bits in common with the camera, the node
     // is out.
     return false;

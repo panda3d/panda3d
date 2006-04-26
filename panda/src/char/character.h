@@ -82,7 +82,8 @@ private:
   typedef pmap<const VertexTransform *, PT(JointVertexTransform) > GeomJointMap;
   typedef pmap<const VertexSlider *, PT(CharacterVertexSlider) > GeomSliderMap;
 
-  virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map);
+  virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map,
+                               Thread *current_thread);
   void fill_joint_map(JointMap &joint_map, PartGroup *copy, PartGroup *orig);
   void r_copy_char(PandaNode *dest, const PandaNode *source,
                    const Character *from, NodeMap &node_map,

@@ -672,8 +672,8 @@ prepare_lens() {
 //               be called).
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
-begin_frame() {
-  return GraphicsStateGuardian::begin_frame();
+begin_frame(Thread *current_thread) {
+  return GraphicsStateGuardian::begin_frame(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -759,7 +759,7 @@ end_scene() {
 //               rendering the frame, and before the window flips.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-end_frame() {
+end_frame(Thread *current_thread) {
 
 #if defined(DO_PSTATS)
   if (_texmgrmem_total_pcollector.is_active()) {
@@ -777,7 +777,7 @@ end_frame() {
   // Note: regular GraphicsWindow::end_frame is being called,
   // but we override gsg::end_frame, so need to explicitly call it here
   // (currently it's an empty fn)
-  GraphicsStateGuardian::end_frame();
+  GraphicsStateGuardian::end_frame(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

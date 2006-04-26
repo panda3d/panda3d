@@ -38,7 +38,7 @@ class PandaNode;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DataGraphTraverser {
 PUBLISHED:
-  DataGraphTraverser();
+  DataGraphTraverser(Thread *current_thread);
   ~DataGraphTraverser();
 
   void traverse(PandaNode *node);
@@ -49,6 +49,8 @@ private:
   void r_transmit(DataNode *data_node, const DataNodeTransmit inputs[]);
 
   typedef pvector<DataNodeTransmit> DataVector;
+
+  Thread *_current_thread;
 
   class CollectedData {
   public:

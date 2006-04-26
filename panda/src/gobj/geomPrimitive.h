@@ -192,7 +192,8 @@ public:
   void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                          bool &found_any, 
                          const GeomVertexData *vertex_data,
-                         bool got_mat, const LMatrix4f &mat) const;
+                         bool got_mat, const LMatrix4f &mat,
+                         Thread *current_thread) const;
 
 protected:
   virtual CPT(GeomPrimitive) decompose_impl() const;

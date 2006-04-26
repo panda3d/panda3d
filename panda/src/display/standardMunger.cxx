@@ -169,7 +169,8 @@ munge_data_impl(const GeomVertexData *data) {
 //  Description: Converts a Geom and/or its data as necessary.
 ////////////////////////////////////////////////////////////////////
 bool StandardMunger::
-munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
+munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
+                Thread *current_thread) {
   int supported_geom_rendering = _gsg->get_supported_geom_rendering();
 
   int unsupported_bits = geom->get_geom_rendering() & ~supported_geom_rendering;

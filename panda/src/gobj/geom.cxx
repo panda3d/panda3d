@@ -715,15 +715,14 @@ check_valid(const GeomVertexData *vertex_data) const {
 //  Description: Returns the bounding volume for the Geom.
 ////////////////////////////////////////////////////////////////////
 CPT(BoundingVolume) Geom::
-get_bounds() const {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  CDStageReader cdata(_cycler, pipeline_stage);
+get_bounds(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
   if (cdata->_internal_bounds_stale) {
-    CDStageWriter cdataw(((Geom *)this)->_cycler, pipeline_stage, cdata);
+    CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
     if (cdataw->_user_bounds != (BoundingVolume *)NULL) {
       cdataw->_internal_bounds = cdataw->_user_bounds;
     } else {
-      cdataw->_internal_bounds = compute_internal_bounds(pipeline_stage);
+      cdataw->_internal_bounds = compute_internal_bounds(current_thread);
     }
     cdataw->_internal_bounds_stale = false;
     return cdataw->_internal_bounds;
@@ -966,7 +965,7 @@ get_next_modified() {
 //               This includes all of the vertices.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) Geom::
-compute_internal_bounds(int pipeline_stage) const {
+compute_internal_bounds(Thread *current_thread) const {
   // First, get ourselves a fresh, empty bounding volume.
   PT(BoundingVolume) bound = new BoundingSphere;
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);
@@ -975,8 +974,9 @@ compute_internal_bounds(int pipeline_stage) const {
   // calc_tight_bounds to determine our minmax first.
   LPoint3f points[2];
   bool found_any = false;
-  do_calc_tight_bounds(points[0], points[1], found_any, get_vertex_data(),
-		       false, LMatrix4f::ident_mat(), pipeline_stage);
+  do_calc_tight_bounds(points[0], points[1], found_any, 
+                       get_vertex_data(current_thread),
+		       false, LMatrix4f::ident_mat(), current_thread);
   if (found_any) {
     // Then we put the bounding volume around both of those points.
     // Technically, we should put it around the eight points at the
@@ -1002,15 +1002,15 @@ do_calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 		     bool &found_any, 
 		     const GeomVertexData *vertex_data,
 		     bool got_mat, const LMatrix4f &mat,
-		     int pipeline_stage) const {
-  CDStageReader cdata(_cycler, pipeline_stage);
+		     Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
   
   Primitives::const_iterator pi;
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();
        ++pi) {
     (*pi)->calc_tight_bounds(min_point, max_point, found_any, vertex_data,
-                             got_mat, mat);
+                             got_mat, mat, current_thread);
   }
 }
 

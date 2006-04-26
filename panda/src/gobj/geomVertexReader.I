@@ -26,9 +26,9 @@
 //               it.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
-GeomVertexReader() :
+GeomVertexReader(Thread *current_thread) :
   _vertex_data(NULL),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(current_thread)
 {
   initialize();
 }
@@ -40,9 +40,10 @@ GeomVertexReader() :
 //               the indicated data object.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
-GeomVertexReader(const GeomVertexData *vertex_data) :
+GeomVertexReader(const GeomVertexData *vertex_data,
+                 Thread *current_thread) :
   _vertex_data(vertex_data),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(current_thread)
 {
   initialize();
 }
@@ -55,9 +56,10 @@ GeomVertexReader(const GeomVertexData *vertex_data) :
 //               reader specifically to process the named data type.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
-GeomVertexReader(const GeomVertexData *vertex_data, const string &name) :
+GeomVertexReader(const GeomVertexData *vertex_data, const string &name,
+                 Thread *current_thread) :
   _vertex_data(vertex_data),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(current_thread)
 {
   initialize();
   set_column(name);
@@ -72,9 +74,10 @@ GeomVertexReader(const GeomVertexData *vertex_data, const string &name) :
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexData *vertex_data, 
-                   const InternalName *name) :
+                 const InternalName *name,
+                 Thread *current_thread) :
   _vertex_data(vertex_data),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(current_thread)
 {
   initialize();
   set_column(name);
@@ -87,9 +90,10 @@ GeomVertexReader(const GeomVertexData *vertex_data,
 //               the indicated array only.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
-GeomVertexReader(const GeomVertexArrayData *array_data) :
+GeomVertexReader(const GeomVertexArrayData *array_data,
+                 Thread *current_thread) :
   _array_data(array_data),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(current_thread)
 {
   initialize();
 }
@@ -101,9 +105,10 @@ GeomVertexReader(const GeomVertexArrayData *array_data) :
 //               the indicated array only.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
-GeomVertexReader(const GeomVertexArrayData *array_data, int column) :
+GeomVertexReader(const GeomVertexArrayData *array_data, int column,
+                 Thread *current_thread) :
   _array_data(array_data),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(current_thread)
 {
   initialize();
   set_column(column);

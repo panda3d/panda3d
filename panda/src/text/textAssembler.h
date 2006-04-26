@@ -109,7 +109,7 @@ private:
   public:
     INLINE void add_piece(Geom *geom, const RenderState *state);
     void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
-                           bool &found_any) const;
+                           bool &found_any, Thread *current_thread) const;
     void assign_to(GeomNode *geom_node, const RenderState *state) const;
     void assign_copy_to(GeomNode *geom_node, const RenderState *state, 
                         const LMatrix4f &xform) const;

@@ -744,9 +744,9 @@ enable_default_keys() {
 //               called only from main_loop().
 ////////////////////////////////////////////////////////////////////
 bool PandaFramework::
-do_frame() {
+do_frame(Thread *current_thread) {
   nassertr(_is_open, false);
-  DataGraphTraverser dg_trav;
+  DataGraphTraverser dg_trav(current_thread);
   dg_trav.traverse(_data_root.node());
 
   throw_event("NewFrame");
@@ -783,7 +783,8 @@ do_frame() {
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
 main_loop() {
-  while (do_frame()) {
+  Thread *current_thread = Thread::get_current_thread();
+  while (do_frame(current_thread)) {
   }
 }
 

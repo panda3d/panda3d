@@ -209,8 +209,8 @@ is_renderable() const {
 //               something internally.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) PlaneNode::
-compute_internal_bounds(int pipeline_stage) const {
-  CDStageReader cdata(_cycler, pipeline_stage);
+compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   return new BoundingPlane(cdata->_plane);
 }
 

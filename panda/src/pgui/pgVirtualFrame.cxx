@@ -96,8 +96,9 @@ make_copy() const {
 //               override this function.
 ////////////////////////////////////////////////////////////////////
 void PGVirtualFrame::
-r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map) {
-  PandaNode::r_copy_children(from, inst_map);
+r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
+                Thread *current_thread) {
+  PandaNode::r_copy_children(from, inst_map, current_thread);
 
   // Reassign the canvas_node to point to the new copy, if it's there.
   const PGVirtualFrame *from_frame = DCAST(PGVirtualFrame, from);

@@ -26,9 +26,23 @@
 ////////////////////////////////////////////////////////////////////
 INLINE PStatTimer::
 PStatTimer(PStatCollector &collector) :
-  _collector(collector)
+  _collector(collector),
+  _thread(PStatClient::get_global_pstats()->get_current_thread())
 {
-  _collector.start();
+  _collector.start(_thread);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatTimer::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PStatTimer::
+PStatTimer(PStatCollector &collector, Thread *current_thread) :
+  _collector(collector),
+  _thread(current_thread)
+{
+  _collector.start(_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -38,7 +52,7 @@ PStatTimer(PStatCollector &collector) :
 ////////////////////////////////////////////////////////////////////
 INLINE PStatTimer::
 ~PStatTimer() {
-  _collector.stop();
+  _collector.stop(_thread);
 }
 
 #endif

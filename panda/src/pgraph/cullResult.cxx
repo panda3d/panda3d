@@ -98,6 +98,8 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   static const Colorf flash_multisample_color(0.78f, 0.05f, 0.81f, 1.0f);
   static const Colorf flash_dual_color(0.92f, 0.01f, 0.01f, 1.0f);
 
+  Thread *current_thread = traverser->get_current_thread();
+
   // Check to see if there's a special transparency setting.
   const RenderState *state = object->_state;
   nassertv(state != (const RenderState *)NULL);
@@ -172,7 +174,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
 #ifndef NDEBUG
               check_flash_bin(transparent_part->_state, bin);
 #endif
-              bin->add_object(transparent_part);
+              bin->add_object(transparent_part, current_thread);
             }
           
           // Now we can draw the opaque part, with decals.  This will
@@ -206,8 +208,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   // Munge vertices as needed for the GSG's requirements, and the
   // object's current state.
   object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state), traverser);
-  
-  bin->add_object(object);
+  bin->add_object(object, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -220,7 +221,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
 //               draw.
 ////////////////////////////////////////////////////////////////////
 void CullResult::
-finish_cull(SceneSetup *scene_setup) {
+finish_cull(SceneSetup *scene_setup, Thread *current_thread) {
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
 
   for (size_t i = 0; i < _bins.size(); ++i) {
@@ -232,7 +233,7 @@ finish_cull(SceneSetup *scene_setup) {
     } else {
       CullBin *bin = _bins[i];
       if (bin != (CullBin *)NULL) {
-        bin->finish_cull(scene_setup);
+        bin->finish_cull(scene_setup, current_thread);
       }
     }
   }

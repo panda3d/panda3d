@@ -40,15 +40,15 @@ compose_draw_mask(DrawMask &running_draw_mask) const {
 //               be visible to the indicated camera_mask.
 ////////////////////////////////////////////////////////////////////
 INLINE bool PandaNode::
-compare_draw_mask(DrawMask running_draw_mask, DrawMask camera_mask) const {
+compare_draw_mask(DrawMask running_draw_mask, DrawMask camera_mask,
+                  Thread *current_thread) const {
   DrawMask net_draw_control_mask, net_draw_show_mask;
 
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage);
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
     // The cache is stale; it needs to be rebuilt.
-    CDBoundsStageWriter cdataw = 
-      ((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
+    CDBoundsStageWriter cdataw = ((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
     net_draw_control_mask = cdataw->_net_draw_control_mask;
     net_draw_show_mask = cdataw->_net_draw_show_mask;
   } else {
@@ -84,8 +84,8 @@ compare_draw_mask(DrawMask running_draw_mask, DrawMask camera_mask) const {
 //               which the node was instanced to them.
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
-get_num_parents() const {
-  CDLinksReader cdata(_cycler_links);
+get_num_parents(Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   return cdata->get_up()->size();
 }
 
@@ -98,8 +98,8 @@ get_num_parents() const {
 //               parents; get_parents() is preferable in this case.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::
-get_parent(int n) const {
-  CDLinksReader cdata(_cycler_links);
+get_parent(int n, Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   const Up &up = *cdata->get_up();
   nassertr(n >= 0 && n < (int)up.size(), NULL);
   return up[n].get_parent();
@@ -112,8 +112,8 @@ get_parent(int n) const {
 //               is a parent, or -1 if it is not.
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
-find_parent(PandaNode *node) const {
-  CDLinksReader cdata(_cycler_links);
+find_parent(PandaNode *node, Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   return do_find_parent(node, cdata);
 }
 
@@ -126,8 +126,8 @@ find_parent(PandaNode *node) const {
 //               and also on the order in which the nodes were added.
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
-get_num_children() const {
-  CDLinksReader cdata(_cycler_links);
+get_num_children(Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   return cdata->get_down()->size();
 }
 
@@ -140,8 +140,8 @@ get_num_children() const {
 //               children; get_children() is preferable in this case.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::
-get_child(int n) const {
-  CDLinksReader cdata(_cycler_links);
+get_child(int n, Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   const Down &down = *cdata->get_down();
   nassertr(n >= 0 && n < (int)down.size(), NULL);
   return down[n].get_child();
@@ -155,8 +155,8 @@ get_child(int n) const {
 //               add_child()).  See get_num_children().
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
-get_child_sort(int n) const {
-  CDLinksReader cdata(_cycler_links);
+get_child_sort(int n, Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   const Down &down = *cdata->get_down();
   nassertr(n >= 0 && n < (int)down.size(), -1);
   return down[n].get_sort();
@@ -169,8 +169,8 @@ get_child_sort(int n) const {
 //               is a child, or -1 if it is not.
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
-find_child(PandaNode *node) const {
-  CDLinksReader cdata(_cycler_links);
+find_child(PandaNode *node, Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   return do_find_child(node, cdata);
 }
 
@@ -191,12 +191,12 @@ find_child(PandaNode *node) const {
 //               previously stashed).
 ////////////////////////////////////////////////////////////////////
 INLINE bool PandaNode::
-stash_child(PandaNode *child_node) {
-  int child_index = find_child(child_node);
+stash_child(PandaNode *child_node, Thread *current_thread) {
+  int child_index = find_child(child_node, current_thread);
   if (child_index < 0) {
     return false;
   }
-  stash_child(child_index);
+  stash_child(child_index, current_thread);
   return true;
 }
 
@@ -217,12 +217,12 @@ stash_child(PandaNode *child_node) {
 //               previously stashed).
 ////////////////////////////////////////////////////////////////////
 INLINE bool PandaNode::
-unstash_child(PandaNode *child_node) {
-  int stashed_index = find_stashed(child_node);
+unstash_child(PandaNode *child_node, Thread *current_thread) {
+  int stashed_index = find_stashed(child_node, current_thread);
   if (stashed_index < 0) {
     return false;
   }
-  unstash_child(stashed_index);
+  unstash_child(stashed_index, current_thread);
   return true;
 }
 
@@ -234,8 +234,8 @@ unstash_child(PandaNode *child_node) {
 //               moved to the special stashed list via stash_child().
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
-get_num_stashed() const {
-  CDLinksReader cdata(_cycler_links);
+get_num_stashed(Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   return cdata->get_stashed()->size();
 }
 
@@ -249,8 +249,8 @@ get_num_stashed() const {
 //               case.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::
-get_stashed(int n) const {
-  CDLinksReader cdata(_cycler_links);
+get_stashed(int n, Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   const Down &stashed = *cdata->get_stashed();
   nassertr(n >= 0 && n < (int)stashed.size(), NULL);
   return stashed[n].get_child();
@@ -264,8 +264,8 @@ get_stashed(int n) const {
 //               add_child()).  See get_num_stashed().
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
-get_stashed_sort(int n) const {
-  CDLinksReader cdata(_cycler_links);
+get_stashed_sort(int n, Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   const Down &stashed = *cdata->get_stashed();
   nassertr(n >= 0 && n < (int)stashed.size(), -1);
   return stashed[n].get_sort();
@@ -278,8 +278,8 @@ get_stashed_sort(int n) const {
 //               it is a stashed child, or -1 if it is not.
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
-find_stashed(PandaNode *node) const {
-  CDLinksReader cdata(_cycler_links);
+find_stashed(PandaNode *node, Thread *current_thread) const {
+  CDLinksReader cdata(_cycler_links, current_thread);
   return do_find_stashed(node, cdata);
 }
 
@@ -356,8 +356,8 @@ has_effect(TypeHandle type) const {
 //               that might be inherited from above.
 ////////////////////////////////////////////////////////////////////
 INLINE const RenderState *PandaNode::
-get_state() const {
-  CDLightReader cdata(_cycler_light);
+get_state(Thread *current_thread) const {
+  CDLightReader cdata(_cycler_light, current_thread);
   return cdata->_state;
 }
 
@@ -370,8 +370,8 @@ get_state() const {
 //               this level.
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
-clear_state() {
-  set_state(RenderState::make_empty());
+clear_state(Thread *current_thread) {
+  set_state(RenderState::make_empty(), current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -405,8 +405,8 @@ clear_effects() {
 //               node.
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *PandaNode::
-get_transform() const {
-  CDLightReader cdata(_cycler_light);
+get_transform(Thread *current_thread) const {
+  CDLightReader cdata(_cycler_light, current_thread);
   return cdata->_transform;
 }
 
@@ -417,8 +417,8 @@ get_transform() const {
 //               transform.
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
-clear_transform() {
-  set_transform(TransformState::make_identity());
+clear_transform(Thread *current_thread) {
+  set_transform(TransformState::make_identity(), current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -429,8 +429,8 @@ clear_transform() {
 //               set_prev_transform().
 ////////////////////////////////////////////////////////////////////
 const TransformState *PandaNode::
-get_prev_transform() const {
-  CDLightReader cdata(_cycler_light);
+get_prev_transform(Thread *current_thread) const {
+  CDLightReader cdata(_cycler_light, current_thread);
   return cdata->_prev_transform;
 }
 
@@ -620,8 +620,9 @@ clear_bounds() {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(BoundingVolume) PandaNode::
 get_internal_bounds() const {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  return get_internal_bounds(pipeline_stage);
+  Thread *current_thread = Thread::get_current_thread();
+  return get_internal_bounds(current_thread->get_pipeline_stage(),
+                             current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -670,8 +671,8 @@ is_final() const {
 //               never been set.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(BoundingVolume) PandaNode::
-get_user_bounds(int pipeline_stage) const {
-  CDHeavyStageReader cdata(_cycler_heavy, pipeline_stage);
+get_user_bounds(int pipeline_stage, Thread *current_thread) const {
+  CDHeavyStageReader cdata(_cycler_heavy, pipeline_stage, current_thread);
   return cdata->_user_bounds;
 }
 
@@ -685,16 +686,16 @@ get_user_bounds(int pipeline_stage) const {
 //               recomputed.
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
-mark_bounds_stale(int pipeline_stage) const {
+mark_bounds_stale(int pipeline_stage, Thread *current_thread) const {
   // It's important that we don't hold the lock during the call to
   // force_bounds_stale().
   bool is_stale_bounds;
   {
-    CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage);
+    CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage, current_thread);
     is_stale_bounds = (cdata->_last_update != cdata->_next_update);
   }
   if (!is_stale_bounds) {
-    ((PandaNode *)this)->force_bounds_stale(pipeline_stage);
+    ((PandaNode *)this)->force_bounds_stale(pipeline_stage, current_thread);
   }
 }
 
@@ -708,12 +709,12 @@ mark_bounds_stale(int pipeline_stage) const {
 //               bounding volume is next requested.
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
-mark_internal_bounds_stale(int pipeline_stage) {
+mark_internal_bounds_stale(int pipeline_stage, Thread *current_thread) {
   {
-    CDHeavyWriter cdata(_cycler_heavy);
+    CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage, current_thread);
     cdata->_internal_bounds_stale = true;
   }
-  mark_bounds_stale(pipeline_stage);
+  mark_bounds_stale(pipeline_stage, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1048,7 +1049,16 @@ modify_up() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::Children::
-Children(const PandaNode::CDLinksReader &cdata) :
+Children() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Children::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::Children::
+Children(const PandaNode::CDataLinks *cdata) :
   _down(cdata->get_down())
 {
 }
@@ -1081,6 +1091,7 @@ operator = (const PandaNode::Children &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::Children::
 get_num_children() const {
+  nassertr(_down != (Down *)NULL, 0);
   return _down->size();
 }
 
@@ -1091,8 +1102,23 @@ get_num_children() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::Children::
 get_child(int n) const {
+  nassertr(_down != (Down *)NULL, NULL);
   nassertr(n >= 0 && n < (int)_down->size(), NULL);
   return (*_down)[n].get_child();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Children::get_child_sort
+//       Access: Public
+//  Description: Returns the sort index of the nth child node of this
+//               node (that is, the number that was passed to
+//               add_child()).  See get_num_children().
+////////////////////////////////////////////////////////////////////
+INLINE int PandaNode::Children::
+get_child_sort(int n) const {
+  nassertr(_down != (Down *)NULL, -1);
+  nassertr(n >= 0 && n < (int)_down->size(), -1);
+  return (*_down)[n].get_sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1101,7 +1127,16 @@ get_child(int n) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::Stashed::
-Stashed(const PandaNode::CDLinksReader &cdata) :
+Stashed() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Stashed::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::Stashed::
+Stashed(const PandaNode::CDataLinks *cdata) :
   _stashed(cdata->get_stashed())
 {
 }
@@ -1134,6 +1169,7 @@ operator = (const PandaNode::Stashed &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::Stashed::
 get_num_stashed() const {
+  nassertr(_stashed != (Down *)NULL, 0);
   return _stashed->size();
 }
 
@@ -1144,8 +1180,23 @@ get_num_stashed() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::Stashed::
 get_stashed(int n) const {
+  nassertr(_stashed != (Down *)NULL, NULL);
   nassertr(n >= 0 && n < (int)_stashed->size(), NULL);
   return (*_stashed)[n].get_child();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Stashed::get_stashed_sort
+//       Access: Public
+//  Description: Returns the sort index of the nth child node of this
+//               node (that is, the number that was passed to
+//               add_child()).  See get_num_stashed().
+////////////////////////////////////////////////////////////////////
+INLINE int PandaNode::Stashed::
+get_stashed_sort(int n) const {
+  nassertr(_stashed != (Down *)NULL, -1);
+  nassertr(n >= 0 && n < (int)_stashed->size(), -1);
+  return (*_stashed)[n].get_sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1154,7 +1205,16 @@ get_stashed(int n) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::Parents::
-Parents(const PandaNode::CDLinksReader &cdata) :
+Parents() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Parents::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::Parents::
+Parents(const PandaNode::CDataLinks *cdata) :
   _up(cdata->get_up())
 {
 }
@@ -1187,6 +1247,7 @@ operator = (const PandaNode::Parents &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::Parents::
 get_num_parents() const {
+  nassertr(_up != (Up *)NULL, 0);
   return _up->size();
 }
 
@@ -1197,6 +1258,7 @@ get_num_parents() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::Parents::
 get_parent(int n) const {
+  nassertr(_up != (Up *)NULL, NULL);
   nassertr(n >= 0 && n < (int)_up->size(), NULL);
   return (*_up)[n].get_parent();
 }

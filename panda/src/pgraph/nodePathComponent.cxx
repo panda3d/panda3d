@@ -45,7 +45,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodePathComponent::
 NodePathComponent(PandaNode *node, NodePathComponent *next,
-		  int pipeline_stage) :
+		  int pipeline_stage, Thread *current_thread) :
   _node(node),
   _key(0)
 {
@@ -56,11 +56,11 @@ NodePathComponent(PandaNode *node, NodePathComponent *next,
   for (int pipeline_stage_i = pipeline_stage;
        pipeline_stage_i >= 0; 
        --pipeline_stage_i) {
-    CDStageWriter cdata(_cycler, pipeline_stage_i);
+    CDStageWriter cdata(_cycler, pipeline_stage_i, current_thread);
     cdata->_next = next;
     
     if (next != (NodePathComponent *)NULL) {
-      cdata->_length = next->get_length(pipeline_stage_i) + 1;
+      cdata->_length = next->get_length(pipeline_stage_i, current_thread) + 1;
     }
   }
 }
@@ -94,8 +94,8 @@ get_key() const {
 //               node in the path.
 ////////////////////////////////////////////////////////////////////
 bool NodePathComponent::
-is_top_node(int pipeline_stage) const {
-  CDStageReader cdata(_cycler, pipeline_stage);
+is_top_node(int pipeline_stage, Thread *current_thread) const {
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   return (cdata->_next == (NodePathComponent *)NULL);
 }
 
@@ -105,8 +105,8 @@ is_top_node(int pipeline_stage) const {
 //  Description: Returns the length of the path to this node.
 ////////////////////////////////////////////////////////////////////
 int NodePathComponent::
-get_length(int pipeline_stage) const {
-  CDStageReader cdata(_cycler, pipeline_stage);
+get_length(int pipeline_stage, Thread *current_thread) const {
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   return cdata->_length;
 }
 
@@ -116,8 +116,8 @@ get_length(int pipeline_stage) const {
 //  Description: Returns the next component in the path.
 ////////////////////////////////////////////////////////////////////
 NodePathComponent *NodePathComponent::
-get_next(int pipeline_stage) const {
-  CDStageReader cdata(_cycler, pipeline_stage);
+get_next(int pipeline_stage, Thread *current_thread) const {
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   NodePathComponent *next = cdata->_next;
   
   return next;
@@ -132,12 +132,12 @@ get_next(int pipeline_stage) const {
 //               component has been changed; otherwise, returns false.
 ////////////////////////////////////////////////////////////////////
 bool NodePathComponent::
-fix_length(int pipeline_stage) {
-  CDStageReader cdata(_cycler, pipeline_stage);
+fix_length(int pipeline_stage, Thread *current_thread) {
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
 
   int length_should_be = 1;
   if (cdata->_next != (NodePathComponent *)NULL) {
-    length_should_be = cdata->_next->get_length(pipeline_stage) + 1;
+    length_should_be = cdata->_next->get_length(pipeline_stage, current_thread) + 1;
   }
 
   if (cdata->_length == length_should_be) {
@@ -159,10 +159,11 @@ fix_length(int pipeline_stage) {
 ////////////////////////////////////////////////////////////////////
 void NodePathComponent::
 output(ostream &out) const {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+  Thread *current_thread = Thread::get_current_thread();
+  int pipeline_stage = current_thread->get_pipeline_stage();
 
   PandaNode *node = get_node();
-  NodePathComponent *next = get_next(pipeline_stage);
+  NodePathComponent *next = get_next(pipeline_stage, current_thread);
   if (next != (NodePathComponent *)NULL) {
     // This is not the head of the list; keep going up.
     next->output(out);
@@ -194,9 +195,9 @@ output(ostream &out) const {
 //  Description: Sets the next pointer in the path.
 ////////////////////////////////////////////////////////////////////
 void NodePathComponent::
-set_next(NodePathComponent *next, int pipeline_stage) {
+set_next(NodePathComponent *next, int pipeline_stage, Thread *current_thread) {
   nassertv(next != (NodePathComponent *)NULL);
-  CDStageWriter cdata(_cycler, pipeline_stage);
+  CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
   cdata->_next = next;
 }
 
@@ -207,7 +208,7 @@ set_next(NodePathComponent *next, int pipeline_stage) {
 //               path and makes this component a top node.
 ////////////////////////////////////////////////////////////////////
 void NodePathComponent::
-set_top_node(int pipeline_stage) {
-  CDStageWriter cdata(_cycler, pipeline_stage);
+set_top_node(int pipeline_stage, Thread *current_thread) {
+  CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
   cdata->_next = (NodePathComponent *)NULL;
 }

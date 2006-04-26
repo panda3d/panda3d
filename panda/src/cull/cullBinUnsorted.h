@@ -38,7 +38,7 @@ public:
 
   static CullBin *make_bin(const string &name, GraphicsStateGuardianBase *gsg);
 
-  virtual void add_object(CullableObject *object);
+  virtual void add_object(CullableObject *object, Thread *current_thread);
   virtual void draw(Thread *current_thread);
 
 private:

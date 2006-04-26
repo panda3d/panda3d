@@ -55,8 +55,15 @@ PStatThread(Thread *thread, PStatClient *client) {
   if (client == (PStatClient *)NULL) {
     client = PStatClient::get_global_pstats();
   }
-  PStatThread pthread(client->make_thread(thread));
-  (*this) = pthread;
+
+  int thread_index = thread->get_pstats_index();
+  if (thread_index != -1) {
+    (*this) = PStatThread(client, thread_index);
+  }
+
+  // This is the first time we have encountered this current Thread.
+  // Make a new PStatThread object for it.
+  (*this) = client->make_thread(thread);
 #else
   _client = (PStatClient *)NULL;
   _index = 0;

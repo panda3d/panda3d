@@ -83,7 +83,7 @@ PUBLISHED:
   PStatThread get_main_thread() const;
   PStatThread get_current_thread() const;
 
-  INLINE const ClockObject &get_clock() const;
+  INLINE double get_real_time() const;
 
   INLINE static bool connect(const string &hostname = string(), int port = -1);
   INLINE static void disconnect();

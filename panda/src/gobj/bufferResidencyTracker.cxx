@@ -45,9 +45,9 @@ BufferResidencyTracker(const string &pgo_name, const string &type_name) :
 //               initializes the active/inactive status.
 ////////////////////////////////////////////////////////////////////
 void BufferResidencyTracker::
-begin_frame() {
+begin_frame(Thread *current_thread) {
 #ifdef DO_PSTATS
-  int this_frame = ClockObject::get_global_clock()->get_frame_count();
+  int this_frame = ClockObject::get_global_clock()->get_frame_count(current_thread);
   if (_active_frame != this_frame) {
     _active_frame = this_frame;
 
@@ -68,7 +68,7 @@ begin_frame() {
 //               updates the PStatCollectors appropriately.
 ////////////////////////////////////////////////////////////////////
 void BufferResidencyTracker::
-end_frame() {
+end_frame(Thread *current_thread) {
   _inactive_nonresident_collector.set_level(_chains[S_inactive_nonresident].get_total_size());
   _active_nonresident_collector.set_level(_chains[S_active_nonresident].get_total_size());
   _inactive_resident_collector.set_level(_chains[S_inactive_resident].get_total_size());

@@ -883,6 +883,7 @@ void MultitexReducer::
 transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
               const MultitexReducer::GeomList &geom_list,
               bool preserve_color) {
+  Thread *current_thread = Thread::get_current_thread();
   GeomList::const_iterator gi;
   for (gi = geom_list.begin(); gi != geom_list.end(); ++gi) {
     const GeomInfo &geom_info = (*gi);
@@ -893,7 +894,7 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
     PT(Geom) geom = orig_geom->make_copy();
 
     // Ensure that any vertex animation has been applied.
-    geom->set_vertex_data(geom->get_vertex_data()->animate_vertices());
+    geom->set_vertex_data(geom->get_vertex_data(current_thread)->animate_vertices(current_thread));
 
     // Now get a modifiable pointer to the vertex data in the new
     // Geom.  This will actually perform a deep copy of the vertex
@@ -902,8 +903,8 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
     vdata->set_usage_hint(Geom::UH_stream);
     
     if (vdata->has_column(_target_stage->get_texcoord_name())) {
-      GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-      GeomVertexReader texcoord(vdata, _target_stage->get_texcoord_name());
+      GeomVertexWriter vertex(vdata, InternalName::get_vertex(), current_thread);
+      GeomVertexReader texcoord(vdata, _target_stage->get_texcoord_name(), current_thread);
       
       while (!texcoord.is_at_end()) {
         const LVecBase2f &tc = texcoord.get_data2f();
@@ -923,8 +924,8 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
            column->get_numeric_type(), column->get_contents());
         geom->set_vertex_data(vdata);
         
-        GeomVertexReader from(vdata, texcoord_name);
-        GeomVertexWriter to(vdata, InternalName::get_texcoord());
+        GeomVertexReader from(vdata, texcoord_name, current_thread);
+        GeomVertexWriter to(vdata, InternalName::get_texcoord(), current_thread);
         while (!from.is_at_end()) {
           to.add_data2f(from.get_data2f());
         }

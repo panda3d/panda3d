@@ -86,8 +86,8 @@ get_usage_hint() const {
 //               modify) the geom's underlying data.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(GeomVertexData) Geom::
-get_vertex_data() const {
-  CDReader cdata(_cycler);
+get_vertex_data(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
   return cdata->_data;
 }
 
@@ -279,11 +279,11 @@ INLINE void Geom::
 calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                   bool &found_any, 
                   const GeomVertexData *vertex_data,
-                  bool got_mat, const LMatrix4f &mat) const {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+                  bool got_mat, const LMatrix4f &mat,
+                  Thread *current_thread) const {
   do_calc_tight_bounds(min_point, max_point, found_any, 
                        vertex_data, got_mat, mat,
-                       pipeline_stage);
+                       current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -301,9 +301,11 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 ////////////////////////////////////////////////////////////////////
 INLINE void Geom::
 calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
-                  bool &found_any) const {
+                  bool &found_any, Thread *current_thread) const {
   calc_tight_bounds(min_point, max_point, found_any,
-                    get_vertex_data(), false, LMatrix4f::ident_mat());
+                    get_vertex_data(current_thread), false, 
+                    LMatrix4f::ident_mat(),
+                    current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -51,7 +51,7 @@
 class EXPCL_PANDA NodePathComponent : public ReferenceCount {
 private:
   NodePathComponent(PandaNode *node, NodePathComponent *next,
-		    int pipeline_stage);
+		    int pipeline_stage, Thread *current_thread);
   INLINE NodePathComponent(const NodePathComponent &copy);
   INLINE void operator = (const NodePathComponent &copy);
 
@@ -62,18 +62,18 @@ public:
   INLINE PandaNode *get_node() const;
   INLINE bool has_key() const;
   int get_key() const;
-  bool is_top_node(int pipeline_stage) const;
+  bool is_top_node(int pipeline_stage, Thread *current_thread) const;
   
-  NodePathComponent *get_next(int pipeline_stage) const;
-  int get_length(int pipeline_stage) const;
+  NodePathComponent *get_next(int pipeline_stage, Thread *current_thread) const;
+  int get_length(int pipeline_stage, Thread *current_thread) const;
 
-  bool fix_length(int pipeline_stage);
+  bool fix_length(int pipeline_stage, Thread *current_thread);
 
   void output(ostream &out) const;
   
 private:
-  void set_next(NodePathComponent *next, int pipeline_stage);
-  void set_top_node(int pipeline_stage);
+  void set_next(NodePathComponent *next, int pipeline_stage, Thread *current_thread);
+  void set_top_node(int pipeline_stage, Thread *current_thread);
 
   // We don't have to cycle the _node and _key elements, since these
   // are permanent properties of this object.  (Well, the _key is

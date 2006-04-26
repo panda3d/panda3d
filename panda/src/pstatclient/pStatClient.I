@@ -146,17 +146,17 @@ get_thread_object(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::get_clock
+//     Function: PStatClient::get_real_time
 //       Access: Published
-//  Description: Returns a reference to the PStatClient's clock
-//               object.  It keeps its own clock, instead of using the
-//               global clock object, so the stats won't get mucked up
-//               if you put the global clock in non-real-time mode or
-//               something.
+//  Description: Returns the time according to to the PStatClient's
+//               clock object.  It keeps its own clock, instead of
+//               using the global clock object, so the stats won't get
+//               mucked up if you put the global clock in
+//               non-real-time mode or something.
 ////////////////////////////////////////////////////////////////////
-INLINE const ClockObject &PStatClient::
-get_clock() const {
-  return get_impl()->get_clock();
+INLINE double PStatClient::
+get_real_time() const {
+  return get_impl()->get_real_time();
 }
 
 ////////////////////////////////////////////////////////////////////

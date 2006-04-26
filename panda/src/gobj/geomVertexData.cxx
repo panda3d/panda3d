@@ -883,8 +883,8 @@ set_color(const Colorf &color, int num_components,
 //               graphics backend to update vertex buffers optimally).
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
-animate_vertices() const {
-  CDReader cdata(_cycler);
+animate_vertices(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
 
   if (cdata->_format->get_animation().get_animation_type() != AT_panda) {
     return this;
@@ -1717,7 +1717,6 @@ make_array_readers() {
   }
 
   _got_array_readers = true;
-  nassertv(get_array_reader(0)->get_data_size_bytes() == get_array(0)->get_data_size_bytes());
 }
 
 ////////////////////////////////////////////////////////////////////

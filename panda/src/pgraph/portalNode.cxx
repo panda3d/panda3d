@@ -389,9 +389,9 @@ draw() const {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) PortalNode::
-compute_internal_bounds(int pipeline_stage) const {
+compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
   // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage);
+  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage, current_thread);
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);

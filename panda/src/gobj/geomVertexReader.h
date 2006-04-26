@@ -59,15 +59,20 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomVertexReader : public GeomEnums {
 PUBLISHED:
-  INLINE GeomVertexReader();
-  INLINE GeomVertexReader(const GeomVertexData *vertex_data);
+  INLINE GeomVertexReader(Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexReader(const GeomVertexData *vertex_data,
-                          const string &name);
+                          Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexReader(const GeomVertexData *vertex_data,
-                          const InternalName *name);
-  INLINE GeomVertexReader(const GeomVertexArrayData *array_data);
+                          const string &name,
+                          Thread *current_thread = Thread::get_current_thread());
+  INLINE GeomVertexReader(const GeomVertexData *vertex_data,
+                          const InternalName *name,
+                          Thread *current_thread = Thread::get_current_thread());
+  INLINE GeomVertexReader(const GeomVertexArrayData *array_data,
+                          Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexReader(const GeomVertexArrayData *array_data, 
-                          int column);
+                          int column,
+                          Thread *current_thread = Thread::get_current_thread());
 
 public:
   INLINE GeomVertexReader(const GeomVertexDataPipelineReader *data_reader,

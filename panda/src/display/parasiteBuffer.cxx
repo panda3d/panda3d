@@ -107,10 +107,10 @@ get_host() {
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool ParasiteBuffer::
-begin_frame(FrameMode mode) {
+begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam();
 
-  if (!_host->begin_frame(FM_parasite)) {
+  if (!_host->begin_frame(FM_parasite, current_thread)) {
     return false;
   }
 
@@ -134,7 +134,7 @@ begin_frame(FrameMode mode) {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void ParasiteBuffer::
-end_frame(FrameMode mode) {
+end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam();
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
@@ -143,7 +143,7 @@ end_frame(FrameMode mode) {
     return;
   }
 
-  _host->end_frame(FM_parasite);
+  _host->end_frame(FM_parasite, current_thread);
   
   if (mode == FM_render) {
     for (int i=0; i<count_textures(); i++) {

@@ -223,7 +223,7 @@ force_dgraph() {
   output.set_data(_transform_output, EventParameter(_transform));
   output.set_data(_velocity_output, EventParameter(_velocity));
 
-  DataGraphTraverser dg_trav;
+  DataGraphTraverser dg_trav(Thread::get_current_thread());
   dg_trav.traverse_below(this, output);
   dg_trav.collect_leftovers();
 }

@@ -119,10 +119,10 @@ PUBLISHED:
   bool get_screenshot(PNMImage &image);
 
 public:
-  INLINE void set_cull_result(
-    CullResult *cull_result, SceneSetup *scene_setup);
-  INLINE CullResult *get_cull_result() const;
-  INLINE SceneSetup *get_scene_setup() const;
+  INLINE void set_cull_result(CullResult *cull_result, SceneSetup *scene_setup,
+                              Thread *current_thread);
+  INLINE CullResult *get_cull_result(Thread *current_thread) const;
+  INLINE SceneSetup *get_scene_setup(Thread *current_thread) const;
 
 private:
   class CData;

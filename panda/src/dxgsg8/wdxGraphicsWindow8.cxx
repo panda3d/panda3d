@@ -76,7 +76,7 @@ wdxGraphicsWindow8::
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow8::
-begin_frame(FrameMode mode) {
+begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam();
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
@@ -100,7 +100,7 @@ begin_frame(FrameMode mode) {
   }
 
   _gsg->set_current_properties(&get_fb_properties());
-  bool return_val = _gsg->begin_frame();
+  bool return_val = _gsg->begin_frame(current_thread);
   _dxgsg->set_render_target();
   return return_val;
 }

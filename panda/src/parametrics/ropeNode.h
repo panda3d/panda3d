@@ -142,13 +142,14 @@ PUBLISHED:
   void reset_bound(const NodePath &rel_to);
 
 protected:
-  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage) const;
+  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;
 
 private:
   CPT(GeomVertexFormat) get_format(bool support_normals) const;
 
   PT(BoundingVolume) do_recompute_bounds(const NodePath &rel_to,
-					 int pipeline_stage) const;
+					 int pipeline_stage, 
+                                         Thread *current_thread) const;
   void render_thread(CullTraverser *trav, CullTraverserData &data, 
                      NurbsCurveResult *result) const;
   void render_tape(CullTraverser *trav, CullTraverserData &data, 

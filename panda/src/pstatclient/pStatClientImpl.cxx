@@ -43,6 +43,8 @@
 ////////////////////////////////////////////////////////////////////
 PStatClientImpl::
 PStatClientImpl(PStatClient *client) :
+  _clock(TrueClock::get_global_ptr()),
+  _delta(0.0),
   _client(client),
   _reader(this, 0),
   _writer(this, pstats_threaded_write ? 1 : 0)
@@ -53,9 +55,6 @@ PStatClientImpl(PStatClient *client) :
   _got_udp_port = false;
   _collectors_reported = 0;
   _threads_reported = 0;
-
-  // Make sure our clock is in "normal" mode.
-  _clock.set_mode(ClockObject::M_normal);
 
   _client_name = pstats_name;
   _max_rate = pstats_max_rate;
@@ -185,7 +184,7 @@ new_frame(int thread_index) {
     return;
   }
 
-  float frame_start = _clock.get_real_time();
+  float frame_start = get_real_time();
 
   if (!pthread->_frame_data.is_empty()) {
     // Collector 0 is the whole frame.
@@ -213,7 +212,7 @@ new_frame(int thread_index) {
   // Also record the time for the PStats operation itself.
   int pstats_index = PStatClient::_pstats_pcollector.get_index();
   _client->start(pstats_index, thread_index, frame_start);
-  _client->stop(pstats_index, thread_index, _clock.get_real_time());
+  _client->stop(pstats_index, thread_index, get_real_time());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,7 +231,7 @@ transmit_frame_data(int thread_index) {
     // server.  Check that enough time has elapsed for us to send a
     // new packet.  If not, we'll drop this packet on the floor and
     // send a new one next time around.
-    float now = _clock.get_real_time();
+    float now = get_real_time();
     if (now >= thread->_next_packet) {
       // We don't want to send more than _max_rate UDP-size packets
       // per second, per thread.

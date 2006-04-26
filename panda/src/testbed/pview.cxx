@@ -50,9 +50,11 @@ ConfigVariableBool pview_test_hack
 bool
 output_screenshot(Filename &fn)
 {
+  Thread *current_thread = Thread::get_current_thread();
+
   // Only one frame crashes.
-  framework.do_frame();
-  framework.do_frame();
+  framework.do_frame(current_thread);
+  framework.do_frame(current_thread);
 
   WindowFramework *wf = framework.get_window(0);
   bool ok = wf->get_graphics_window()->save_screenshot(fn, "from pview");
@@ -313,8 +315,9 @@ main(int argc, char *argv[]) {
 
       // Allow a couple of frames to go by so the window will be fully
       // created and the text will be visible.
-      framework.do_frame();
-      framework.do_frame();
+      Thread *current_thread = Thread::get_current_thread();
+      framework.do_frame(current_thread);
+      framework.do_frame(current_thread);
     }
 
     window->enable_keyboard();

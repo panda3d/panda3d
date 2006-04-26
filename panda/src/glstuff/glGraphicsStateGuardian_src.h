@@ -100,8 +100,8 @@ public:
   virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
   virtual bool prepare_lens();
 
-  virtual bool begin_frame();
-  virtual void end_frame();
+  virtual bool begin_frame(Thread *current_thread);
+  virtual void end_frame(Thread *current_thread);
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader, 
                                      const GeomMunger *munger,
@@ -129,7 +129,8 @@ public:
   void record_deleted_display_list(GLuint index);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
-  void apply_vertex_buffer(VertexBufferContext *vbc);
+  void apply_vertex_buffer(VertexBufferContext *vbc,
+                           const GeomVertexArrayDataPipelineReader *reader);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
   const unsigned char *setup_array_data(const GeomVertexArrayDataPipelineReader *data);
 

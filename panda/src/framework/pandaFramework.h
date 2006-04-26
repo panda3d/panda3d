@@ -108,7 +108,7 @@ public:
 
   void enable_default_keys();
 
-  virtual bool do_frame();
+  virtual bool do_frame(Thread *current_thread);
   void main_loop();
 
   INLINE void set_exit_flag();

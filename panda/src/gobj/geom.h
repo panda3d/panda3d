@@ -74,7 +74,7 @@ PUBLISHED:
   INLINE UsageHint get_usage_hint() const;
   void set_usage_hint(UsageHint usage_hint);
 
-  INLINE CPT(GeomVertexData) get_vertex_data() const;
+  INLINE CPT(GeomVertexData) get_vertex_data(Thread *current_thread = Thread::get_current_thread()) const;
   PT(GeomVertexData) modify_vertex_data();
   void set_vertex_data(const GeomVertexData *data);
   void offset_vertices(const GeomVertexData *data, int offset);
@@ -105,7 +105,7 @@ PUBLISHED:
   bool check_valid() const;
   bool check_valid(const GeomVertexData *vertex_data) const;
 
-  CPT(BoundingVolume) get_bounds() const;
+  CPT(BoundingVolume) get_bounds(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void mark_bounds_stale() const;
   INLINE void set_bounds(const BoundingVolume *volume);
   INLINE void clear_bounds();
@@ -132,9 +132,10 @@ public:
   INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 				bool &found_any, 
 				const GeomVertexData *vertex_data,
-				bool got_mat, const LMatrix4f &mat) const;
+				bool got_mat, const LMatrix4f &mat,
+                                Thread *current_thread) const;
   INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
-                                bool &found_any) const;
+                                bool &found_any, Thread *current_thread) const;
 
   static UpdateSeq get_next_modified();
 
@@ -146,13 +147,13 @@ private:
   class CData;
 
   INLINE void mark_internal_bounds_stale(CData *cdata);
-  PT(BoundingVolume) compute_internal_bounds(int pipeline_stage) const;
+  PT(BoundingVolume) compute_internal_bounds(Thread *current_thread) const;
 
   void do_calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 			    bool &found_any, 
 			    const GeomVertexData *vertex_data,
 			    bool got_mat, const LMatrix4f &mat,
-			    int pipeline_stage) const;
+			    Thread *current_thread) const;
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   bool check_will_be_valid(const GeomVertexData *vertex_data) const;

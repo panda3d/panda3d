@@ -914,7 +914,7 @@ reset_window(bool swapchain) {
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsOutput::
-begin_frame(FrameMode mode) {
+begin_frame(FrameMode mode, Thread *current_thread) {
   return false;
 }
 
@@ -926,7 +926,7 @@ begin_frame(FrameMode mode) {
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
-end_frame(FrameMode mode) {
+end_frame(FrameMode mode, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////

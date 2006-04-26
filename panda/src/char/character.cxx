@@ -277,7 +277,8 @@ copy_joints(PartGroup *copy, PartGroup *orig) {
 //               override this function.
 ////////////////////////////////////////////////////////////////////
 void Character::
-r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map) {
+r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
+                Thread *current_thread) {
   // We assume there will be no instancing going on below the
   // Character node.  If there is, too bad; it will get flattened out.
 

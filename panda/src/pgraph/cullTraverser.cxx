@@ -50,8 +50,9 @@ TypeHandle CullTraverser::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 CullTraverser::
-CullTraverser(GraphicsStateGuardianBase *gsg) :
-  _gsg(gsg)
+CullTraverser(GraphicsStateGuardianBase *gsg, Thread *current_thread) :
+  _gsg(gsg),
+  _current_thread(current_thread)
 {
   _camera_mask = DrawMask::all_on();
   _has_tag_state_key = false;
@@ -151,7 +152,7 @@ traverse(CullTraverserData &data) {
   // optimization, we should tag nodes with these properties as
   // being "fancy", and skip this processing for non-fancy nodes.
   
-  if (data.is_in_view(_camera_mask)) {
+  if (data.is_in_view(_camera_mask, _current_thread)) {
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam() 
         << "\n" << data._node_path
@@ -378,12 +379,14 @@ make_tight_bounds_viz(PandaNode *node) {
 
   LPoint3f n, x;
   bool found_any = false;
-  node->calc_tight_bounds(n, x, found_any, TransformState::make_identity());
+  node->calc_tight_bounds(n, x, found_any, TransformState::make_identity(),
+                          _current_thread);
   if (found_any) {
     PT(GeomVertexData) vdata = new GeomVertexData
       ("bounds", GeomVertexFormat::get_v3(),
       Geom::UH_stream);
-    GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    GeomVertexWriter vertex(vdata, InternalName::get_vertex(),
+                            _current_thread);
     
     vertex.add_data3f(n[0], n[1], n[2]);
     vertex.add_data3f(n[0], n[1], x[2]);
@@ -586,7 +589,7 @@ start_decal(const CullTraverserData &data) {
 ////////////////////////////////////////////////////////////////////
 CullableObject *CullTraverser::
 r_get_decals(CullTraverserData &data, CullableObject *decals) {
-  if (data.is_in_view(_camera_mask)) {
+  if (data.is_in_view(_camera_mask, _current_thread)) {
     PandaNode *node = data.node();
 
     const RenderEffects *node_effects = node->get_effects();

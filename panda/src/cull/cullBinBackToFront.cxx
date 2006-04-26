@@ -59,7 +59,7 @@ make_bin(const string &name, GraphicsStateGuardianBase *gsg) {
 //               the bin for rendering.
 ////////////////////////////////////////////////////////////////////
 void CullBinBackToFront::
-add_object(CullableObject *object) {
+add_object(CullableObject *object, Thread *current_thread) {
   // Determine the center of the bounding volume.
   CPT(BoundingVolume) volume = object->_geom->get_bounds();
 
@@ -86,8 +86,8 @@ add_object(CullableObject *object) {
 //               draw.
 ////////////////////////////////////////////////////////////////////
 void CullBinBackToFront::
-finish_cull(SceneSetup *) {
-  PStatTimer timer(_cull_this_pcollector);
+finish_cull(SceneSetup *, Thread *current_thread) {
+  PStatTimer timer(_cull_this_pcollector, current_thread);
   sort(_objects.begin(), _objects.end());
 }
 
@@ -99,7 +99,7 @@ finish_cull(SceneSetup *) {
 ////////////////////////////////////////////////////////////////////
 void CullBinBackToFront::
 draw(Thread *current_thread) {
-  PStatTimer timer(_draw_this_pcollector);
+  PStatTimer timer(_draw_this_pcollector, current_thread);
   Objects::const_iterator oi;
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     CullableObject *object = (*oi)._object;

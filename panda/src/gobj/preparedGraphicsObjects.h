@@ -106,8 +106,9 @@ public:
   prepare_index_buffer_now(GeomPrimitive *data,
                            GraphicsStateGuardianBase *gsg);
 
-  void begin_frame(GraphicsStateGuardianBase *gsg);
-  void end_frame();
+  void begin_frame(GraphicsStateGuardianBase *gsg,
+                   Thread *current_thread);
+  void end_frame(Thread *current_thread);
 
 private:
   static string init_name();

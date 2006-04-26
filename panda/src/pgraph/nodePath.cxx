@@ -77,12 +77,12 @@ TypeHandle NodePath::_type_handle;
 //  Description: Returns the number of nodes in the path.
 ////////////////////////////////////////////////////////////////////
 int NodePath::
-get_num_nodes() const {
+get_num_nodes(Thread *current_thread) const {
   if (is_empty()) {
     return 0;
   }
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  return _head->get_length(pipeline_stage);
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  return _head->get_length(pipeline_stage, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,17 +99,17 @@ get_num_nodes() const {
 //               NodePath, and is the one most frequently referenced).
 ////////////////////////////////////////////////////////////////////
 PandaNode *NodePath::
-get_node(int index) const {
+get_node(int index, Thread *current_thread) const {
   nassertr(index >= 0 && index < get_num_nodes(), NULL);
 
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+  int pipeline_stage = current_thread->get_pipeline_stage();
 
   NodePathComponent *comp = _head;
   while (index > 0) {
     // If this assertion fails, the index was out of range; the
     // component's length must have been invalid.
     nassertr(comp != (NodePathComponent *)NULL, NULL);
-    comp = comp->get_next(pipeline_stage);
+    comp = comp->get_next(pipeline_stage, current_thread);
     index--;
   }
 
@@ -126,16 +126,16 @@ get_node(int index) const {
 //               of the path, or empty NodePath if this path is empty.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
-get_top() const {
+get_top(Thread *current_thread) const {
   if (is_empty()) {
     return *this;
   }
 
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+  int pipeline_stage = current_thread->get_pipeline_stage();
 
   NodePathComponent *comp = _head;
-  while (!comp->is_top_node(pipeline_stage)) {
-    comp = comp->get_next(pipeline_stage);
+  while (!comp->is_top_node(pipeline_stage, current_thread)) {
+    comp = comp->get_next(pipeline_stage, current_thread);
     nassertr(comp != (NodePathComponent *)NULL, NULL);
   }
 
@@ -152,20 +152,20 @@ get_top() const {
 //               node.
 ////////////////////////////////////////////////////////////////////
 NodePathCollection NodePath::
-get_children() const {
+get_children(Thread *current_thread) const {
   NodePathCollection result;
   nassertr_always(!is_empty(), result);
 
   PandaNode *bottom_node = node();
 
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+  int pipeline_stage = current_thread->get_pipeline_stage();
 
   PandaNode::Children cr = bottom_node->get_children();
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
     NodePath child;
     child._head = PandaNode::get_component(_head, cr.get_child(i),
-					   pipeline_stage);
+					   pipeline_stage, current_thread);
     result.add_path(child);
   }
 
@@ -181,19 +181,19 @@ get_children() const {
 //               the list returned by get_children().
 ////////////////////////////////////////////////////////////////////
 NodePathCollection NodePath::
-get_stashed_children() const {
+get_stashed_children(Thread *current_thread) const {
   NodePathCollection result;
   nassertr_always(!is_empty(), result);
 
   PandaNode *bottom_node = node();
 
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+  int pipeline_stage = current_thread->get_pipeline_stage();
 
   int num_stashed = bottom_node->get_num_stashed();
   for (int i = 0; i < num_stashed; i++) {
     NodePath stashed;
     stashed._head = PandaNode::get_component(_head, bottom_node->get_stashed(i),
-					     pipeline_stage);
+					     pipeline_stage, current_thread);
     result.add_path(stashed);
   }
 
@@ -210,14 +210,14 @@ get_stashed_children() const {
 //               list of children.
 ////////////////////////////////////////////////////////////////////
 int NodePath::
-get_sort() const {
+get_sort(Thread *current_thread) const {
   if (!has_parent()) {
     return 0;
   }
 
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+  int pipeline_stage = current_thread->get_pipeline_stage();
 
-  PandaNode *parent = _head->get_next(pipeline_stage)->get_node();
+  PandaNode *parent = _head->get_next(pipeline_stage, current_thread)->get_node();
   PandaNode *child = node();
   nassertr(parent != (PandaNode *)NULL && child != (PandaNode *)NULL, 0);
   int child_index = parent->find_child(child);
@@ -328,7 +328,7 @@ find_all_paths_to(PandaNode *node) const {
 //               same thing as detach_node().
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-reparent_to(const NodePath &other, int sort) {
+reparent_to(const NodePath &other, int sort, Thread *current_thread) {
   nassertv(verify_complete());
   nassertv(other.verify_complete());
   nassertv_always(!is_empty());
@@ -337,9 +337,9 @@ reparent_to(const NodePath &other, int sort) {
   // Reparenting implicitly resets the delta vector.
   node()->reset_prev_transform();
 
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+  int pipeline_stage = current_thread->get_pipeline_stage();
   bool reparented = PandaNode::reparent(other._head, _head, sort, false,
-					pipeline_stage);
+					pipeline_stage, current_thread);
   nassertv(reparented);
 }
 
@@ -353,21 +353,21 @@ reparent_to(const NodePath &other, int sort) {
 //               different coordinate system.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-wrt_reparent_to(const NodePath &other, int sort) {
-  nassertv(verify_complete());
-  nassertv(other.verify_complete());
+wrt_reparent_to(const NodePath &other, int sort, Thread *current_thread) {
+  nassertv(verify_complete(current_thread));
+  nassertv(other.verify_complete(current_thread));
   nassertv_always(!is_empty());
   nassertv(other._error_type == ET_ok);
 
-  if (get_transform() == get_prev_transform()) {
-    set_transform(get_transform(other));
-    node()->reset_prev_transform();
+  if (get_transform(current_thread) == get_prev_transform(current_thread)) {
+    set_transform(get_transform(other, current_thread), current_thread);
+    node()->reset_prev_transform(current_thread);
   } else {
-    set_transform(get_transform(other));
-    set_prev_transform(get_prev_transform(other));
+    set_transform(get_transform(other, current_thread), current_thread);
+    set_prev_transform(get_prev_transform(other, current_thread), current_thread);
   }
 
-  reparent_to(other, sort);
+  reparent_to(other, sort, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -395,7 +395,7 @@ wrt_reparent_to(const NodePath &other, int sort) {
 //               return a different get_id() value.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
-instance_to(const NodePath &other, int sort) const {
+instance_to(const NodePath &other, int sort, Thread *current_thread) const {
   nassertr(verify_complete(), NodePath::fail());
   nassertr(other.verify_complete(), NodePath::fail());
   nassertr_always(!is_empty(), NodePath::fail());
@@ -405,12 +405,14 @@ instance_to(const NodePath &other, int sort) const {
 
   // First, we'll attach to NULL, to guarantee we get a brand new
   // instance.
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  new_instance._head = PandaNode::attach(NULL, node(), sort, pipeline_stage);
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  new_instance._head = PandaNode::attach(NULL, node(), sort, pipeline_stage,
+                                         current_thread);
 
   // Now, we'll reparent the new instance to the target node.
   bool reparented = PandaNode::reparent(other._head, new_instance._head,
-                                        sort, false, pipeline_stage);
+                                        sort, false, pipeline_stage,
+                                        current_thread);
   nassertr(reparented, new_instance);
 
   // instance_to() doesn't reset the velocity delta, unlike most of
@@ -431,11 +433,12 @@ instance_to(const NodePath &other, int sort) const {
 //               this instance.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
-instance_under_node(const NodePath &other, const string &name, int sort) const {
-  NodePath new_node = other.attach_new_node(name, sort);
-  NodePath instance = instance_to(new_node);
+instance_under_node(const NodePath &other, const string &name, int sort,
+                    Thread *current_thread) const {
+  NodePath new_node = other.attach_new_node(name, sort, current_thread);
+  NodePath instance = instance_to(new_node, 0, current_thread);
   if (instance.is_empty()) {
-    new_node.remove_node();
+    new_node.remove_node(current_thread);
     return instance;
   }
   return new_node;
@@ -451,19 +454,19 @@ instance_under_node(const NodePath &other, const string &name, int sort) const {
 //               returned.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
-copy_to(const NodePath &other, int sort) const {
-  nassertr(verify_complete(), fail());
-  nassertr(other.verify_complete(), fail());
+copy_to(const NodePath &other, int sort, Thread *current_thread) const {
+  nassertr(verify_complete(current_thread), fail());
+  nassertr(other.verify_complete(current_thread), fail());
   nassertr_always(!is_empty(), fail());
   nassertr(other._error_type == ET_ok, fail());
 
   PandaNode *source_node = node();
-  PT(PandaNode) copy_node = source_node->copy_subgraph();
+  PT(PandaNode) copy_node = source_node->copy_subgraph(current_thread);
   nassertr(copy_node != (PandaNode *)NULL, fail());
 
-  copy_node->reset_prev_transform();
+  copy_node->reset_prev_transform(current_thread);
 
-  return other.attach_new_node(copy_node, sort);
+  return other.attach_new_node(copy_node, sort, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -483,14 +486,15 @@ copy_to(const NodePath &other, int sort) const {
 //               returned.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
-attach_new_node(PandaNode *node, int sort) const {
-  nassertr(verify_complete(), NodePath::fail());
+attach_new_node(PandaNode *node, int sort, Thread *current_thread) const {
+  nassertr(verify_complete(current_thread), NodePath::fail());
   nassertr(_error_type == ET_ok, NodePath::fail());
   nassertr(node != (PandaNode *)NULL, NodePath::fail());
 
   NodePath new_path(*this);
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  new_path._head = PandaNode::attach(_head, node, sort, pipeline_stage);
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  new_path._head = PandaNode::attach(_head, node, sort, pipeline_stage,
+                                     current_thread);
   return new_path;
 }
 
@@ -516,17 +520,17 @@ attach_new_node(PandaNode *node, int sort) const {
 //               as the NodePath exists.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-remove_node() {
+remove_node(Thread *current_thread) {
   nassertv(_error_type != ET_not_found);
 
   // If we have no parents, remove_node() is just a do-nothing
   // operation; if we have no nodes, maybe we were already removed.
   // In either case, quietly do nothing except to ensure the
   // NodePath is clear.
-  if (!is_empty() && !is_singleton()) {
-    node()->reset_prev_transform();
-    int pipeline_stage = Thread::get_current_pipeline_stage();
-    PandaNode::detach(_head, pipeline_stage);
+  if (!is_empty() && !is_singleton(current_thread)) {
+    node()->reset_prev_transform(current_thread);
+    int pipeline_stage = current_thread->get_pipeline_stage();
+    PandaNode::detach(_head, pipeline_stage, current_thread);
   }
 
   if (is_empty() || _head->has_key()) {
@@ -563,12 +567,12 @@ remove_node() {
 //               as the NodePath exists.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-detach_node() {
+detach_node(Thread *current_thread) {
   nassertv(_error_type != ET_not_found);
   if (!is_empty() && !is_singleton()) {
     node()->reset_prev_transform();
-    int pipeline_stage = Thread::get_current_pipeline_stage();
-    PandaNode::detach(_head, pipeline_stage);
+    int pipeline_stage = current_thread->get_pipeline_stage();
+    PandaNode::detach(_head, pipeline_stage, current_thread);
   }
 }
 
@@ -607,11 +611,11 @@ output(ostream &out) const {
 //  Description: Returns the complete state object set on this node.
 ////////////////////////////////////////////////////////////////////
 const RenderState *NodePath::
-get_state() const {
+get_state(Thread *current_thread) const {
   // This method is declared non-inline to avoid a compiler bug in
   // gcc-3.4 and gcc-4.0.
   nassertr_always(!is_empty(), RenderState::make_empty());
-  return node()->get_state();
+  return node()->get_state(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -622,21 +626,21 @@ get_state() const {
 //               render state of the other node.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) NodePath::
-get_state(const NodePath &other) const {
+get_state(const NodePath &other, Thread *current_thread) const {
   nassertr(_error_type == ET_ok && other._error_type == ET_ok, RenderState::make_empty());
 
   if (other.is_empty()) {
-    return get_net_state();
+    return get_net_state(current_thread);
   }
   if (is_empty()) {
-    return other.get_net_state()->invert_compose(RenderState::make_empty());
+    return other.get_net_state(current_thread)->invert_compose(RenderState::make_empty());
   }
     
-  nassertr(verify_complete(), RenderState::make_empty());
-  nassertr(other.verify_complete(), RenderState::make_empty());
+  nassertr(verify_complete(current_thread), RenderState::make_empty());
+  nassertr(other.verify_complete(current_thread), RenderState::make_empty());
 
   int a_count, b_count;
-  if (find_common_ancestor(*this, other, a_count, b_count) == (NodePathComponent *)NULL) {
+  if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)NULL) {
     if (allow_unrelated_wrt) {
       pgraph_cat.debug()
         << *this << " is not related to " << other << "\n";
@@ -647,8 +651,8 @@ get_state(const NodePath &other) const {
     }
   }
 
-  CPT(RenderState) a_state = r_get_partial_state(_head, a_count);
-  CPT(RenderState) b_state = r_get_partial_state(other._head, b_count);
+  CPT(RenderState) a_state = r_get_partial_state(_head, a_count, current_thread);
+  CPT(RenderState) b_state = r_get_partial_state(other._head, b_count, current_thread);
   return b_state->invert_compose(a_state);
 }
 
@@ -661,20 +665,21 @@ get_state(const NodePath &other) const {
 //               other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_state(const NodePath &other, const RenderState *state) {
+set_state(const NodePath &other, const RenderState *state,
+          Thread *current_thread) {
   nassertv(_error_type == ET_ok && other._error_type == ET_ok);
   nassertv_always(!is_empty());
 
   // First, we perform a wrt to the parent, to get the conversion.
   CPT(RenderState) rel_state;
   if (has_parent()) {
-    rel_state = other.get_state(get_parent());
+    rel_state = other.get_state(get_parent(current_thread), current_thread);
   } else {
-    rel_state = other.get_state(NodePath());
+    rel_state = other.get_state(NodePath(), current_thread);
   }
 
   CPT(RenderState) new_state = rel_state->compose(state);
-  set_state(new_state);
+  set_state(new_state, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -683,11 +688,11 @@ set_state(const NodePath &other, const RenderState *state) {
 //  Description: Returns the complete transform object set on this node.
 ////////////////////////////////////////////////////////////////////
 const TransformState *NodePath::
-get_transform() const {
+get_transform(Thread *current_thread) const {
   // This method is declared non-inline to avoid a compiler bug in
   // gcc-3.4 and gcc-4.0.
   nassertr_always(!is_empty(), TransformState::make_identity());
-  return node()->get_transform();
+  return node()->get_transform(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -698,21 +703,21 @@ get_transform() const {
 //               as seen from the other node.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) NodePath::
-get_transform(const NodePath &other) const {
+get_transform(const NodePath &other, Thread *current_thread) const {
   nassertr(_error_type == ET_ok && other._error_type == ET_ok, TransformState::make_identity());
 
   if (other.is_empty()) {
-    return get_net_transform();
+    return get_net_transform(current_thread);
   }
   if (is_empty()) {
-    return other.get_net_transform()->invert_compose(TransformState::make_identity());
+    return other.get_net_transform(current_thread)->invert_compose(TransformState::make_identity());
   }
     
-  nassertr(verify_complete(), TransformState::make_identity());
-  nassertr(other.verify_complete(), TransformState::make_identity());
+  nassertr(verify_complete(current_thread), TransformState::make_identity());
+  nassertr(other.verify_complete(current_thread), TransformState::make_identity());
 
   int a_count, b_count;
-  if (find_common_ancestor(*this, other, a_count, b_count) == (NodePathComponent *)NULL) {
+  if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)NULL) {
     if (allow_unrelated_wrt) {
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
@@ -727,16 +732,16 @@ get_transform(const NodePath &other) const {
 
   CPT(TransformState) a_transform, b_transform;
 
-  a_transform = r_get_partial_transform(_head, a_count);
+  a_transform = r_get_partial_transform(_head, a_count, current_thread);
   if (a_transform != (TransformState *)NULL) {
-    b_transform = r_get_partial_transform(other._head, b_count);
+    b_transform = r_get_partial_transform(other._head, b_count, current_thread);
   }
   if (b_transform == (TransformState *)NULL) {
     // If either path involved a node with a net_transform
     // RenderEffect applied, we have to go all the way up to the root
     // to get the right answer.
-    a_transform = r_get_net_transform(_head);
-    b_transform = r_get_net_transform(other._head);
+    a_transform = r_get_net_transform(_head, current_thread);
+    b_transform = r_get_net_transform(other._head, current_thread);
   }
   return b_transform->invert_compose(a_transform);
 }
@@ -750,20 +755,21 @@ get_transform(const NodePath &other) const {
 //               other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_transform(const NodePath &other, const TransformState *transform) {
+set_transform(const NodePath &other, const TransformState *transform,
+              Thread *current_thread) {
   nassertv(_error_type == ET_ok && other._error_type == ET_ok);
   nassertv_always(!is_empty());
 
   // First, we perform a wrt to the parent, to get the conversion.
   CPT(TransformState) rel_trans;
   if (has_parent()) {
-    rel_trans = other.get_transform(get_parent());
+    rel_trans = other.get_transform(get_parent(current_thread), current_thread);
   } else {
-    rel_trans = other.get_transform(NodePath());
+    rel_trans = other.get_transform(NodePath(), current_thread);
   }
 
   CPT(TransformState) new_trans = rel_trans->compose(transform);
-  set_transform(new_trans);
+  set_transform(new_trans, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -774,11 +780,11 @@ set_transform(const NodePath &other, const TransformState *transform) {
 //               set_prev_transform().
 ////////////////////////////////////////////////////////////////////
 const TransformState *NodePath::
-get_prev_transform() const {
+get_prev_transform(Thread *current_thread) const {
   // This method is declared non-inline to avoid a compiler bug in
   // gcc-3.4 and gcc-4.0.
   nassertr_always(!is_empty(), TransformState::make_identity());
-  return node()->get_prev_transform();
+  return node()->get_prev_transform(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -790,21 +796,21 @@ get_prev_transform() const {
 //               in the previous frame.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) NodePath::
-get_prev_transform(const NodePath &other) const {
+get_prev_transform(const NodePath &other, Thread *current_thread) const {
   nassertr(_error_type == ET_ok && other._error_type == ET_ok, TransformState::make_identity());
 
   if (other.is_empty()) {
-    return get_net_prev_transform();
+    return get_net_prev_transform(current_thread);
   }
   if (is_empty()) {
-    return other.get_net_prev_transform()->invert_compose(TransformState::make_identity());
+    return other.get_net_prev_transform(current_thread)->invert_compose(TransformState::make_identity());
   }
     
-  nassertr(verify_complete(), TransformState::make_identity());
-  nassertr(other.verify_complete(), TransformState::make_identity());
+  nassertr(verify_complete(current_thread), TransformState::make_identity());
+  nassertr(other.verify_complete(current_thread), TransformState::make_identity());
 
   int a_count, b_count;
-  if (find_common_ancestor(*this, other, a_count, b_count) == (NodePathComponent *)NULL) {
+  if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)NULL) {
     if (allow_unrelated_wrt) {
       pgraph_cat.debug()
         << *this << " is not related to " << other << "\n";
@@ -815,8 +821,8 @@ get_prev_transform(const NodePath &other) const {
     }
   }
 
-  CPT(TransformState) a_prev_transform = r_get_partial_prev_transform(_head, a_count);
-  CPT(TransformState) b_prev_transform = r_get_partial_prev_transform(other._head, b_count);
+  CPT(TransformState) a_prev_transform = r_get_partial_prev_transform(_head, a_count, current_thread);
+  CPT(TransformState) b_prev_transform = r_get_partial_prev_transform(other._head, b_count, current_thread);
   return b_prev_transform->invert_compose(a_prev_transform);
 }
 
@@ -829,20 +835,21 @@ get_prev_transform(const NodePath &other) const {
 //               when seen from the other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_prev_transform(const NodePath &other, const TransformState *transform) {
+set_prev_transform(const NodePath &other, const TransformState *transform,
+                   Thread *current_thread) {
   nassertv(_error_type == ET_ok && other._error_type == ET_ok);
   nassertv_always(!is_empty());
 
   // First, we perform a wrt to the parent, to get the conversion.
   CPT(TransformState) rel_trans;
-  if (has_parent()) {
-    rel_trans = other.get_prev_transform(get_parent());
+  if (has_parent(current_thread)) {
+    rel_trans = other.get_prev_transform(get_parent(current_thread), current_thread);
   } else {
-    rel_trans = other.get_prev_transform(NodePath());
+    rel_trans = other.get_prev_transform(NodePath(), current_thread);
   }
 
   CPT(TransformState) new_trans = rel_trans->compose(transform);
-  set_prev_transform(new_trans);
+  set_prev_transform(new_trans, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5146,13 +5153,13 @@ get_antialias() const {
 //               is hidden (and the node should be visible).
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
-get_hidden_ancestor(DrawMask camera_mask) const {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+get_hidden_ancestor(DrawMask camera_mask, Thread *current_thread) const {
+  int pipeline_stage = current_thread->get_pipeline_stage();
 
   NodePathComponent *comp;
   for (comp = _head; 
        comp != (NodePathComponent *)NULL; 
-       comp = comp->get_next(pipeline_stage)) {
+       comp = comp->get_next(pipeline_stage, current_thread)) {
     PandaNode *node = comp->get_node();
     if (node->is_overall_hidden() ||
         ((node->get_draw_show_mask() | ~node->get_draw_control_mask()) & camera_mask).is_zero()) {
@@ -5181,13 +5188,14 @@ get_hidden_ancestor(DrawMask camera_mask) const {
 //               retrieve it).
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-stash(int sort) {
+stash(int sort, Thread *current_thread) {
   nassertv_always(!is_singleton() && !is_empty());
   nassertv(verify_complete());
 
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  bool reparented = PandaNode::reparent(_head->get_next(pipeline_stage),
-					_head, sort, true, pipeline_stage);
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  bool reparented = PandaNode::reparent(_head->get_next(pipeline_stage, current_thread),
+					_head, sort, true, pipeline_stage,
+                                        current_thread);
   nassertv(reparented);
 }
 
@@ -5200,13 +5208,14 @@ stash(int sort) {
 //               scene graph.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-unstash(int sort) {
+unstash(int sort, Thread *current_thread) {
   nassertv_always(!is_singleton() && !is_empty());
   nassertv(verify_complete());
 
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  bool reparented = PandaNode::reparent(_head->get_next(pipeline_stage),
-					_head, sort, false, pipeline_stage);
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  bool reparented = PandaNode::reparent(_head->get_next(pipeline_stage, current_thread),
+					_head, sort, false, pipeline_stage,
+                                        current_thread);
   nassertv(reparented);
 }
 
@@ -5216,10 +5225,10 @@ unstash(int sort) {
 //  Description: Unstashes this node and all stashed child nodes.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-unstash_all() {
+unstash_all(Thread *current_thread) {
   NodePathCollection stashed_descendents = find_all_matches("**/@@*");
   stashed_descendents.unstash();
-  unstash();
+  unstash(0, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5231,11 +5240,11 @@ unstash_all() {
 //               be visible).
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
-get_stashed_ancestor() const {
+get_stashed_ancestor(Thread *current_thread) const {
   NodePathComponent *comp = _head;
   if (comp != (NodePathComponent *)NULL) {
-    int pipeline_stage = Thread::get_current_pipeline_stage();
-    NodePathComponent *next = comp->get_next(pipeline_stage);
+    int pipeline_stage = current_thread->get_pipeline_stage();
+    NodePathComponent *next = comp->get_next(pipeline_stage, current_thread);
 
     while (next != (NodePathComponent *)NULL) {
       PandaNode *node = comp->get_node();
@@ -5248,7 +5257,7 @@ get_stashed_ancestor() const {
       }
 
       comp = next;
-      next = next->get_next(pipeline_stage);
+      next = next->get_next(pipeline_stage, current_thread);
     }
   }
 
@@ -5262,7 +5271,7 @@ get_stashed_ancestor() const {
 //               NodePath are connected, or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
-verify_complete() const {
+verify_complete(Thread *current_thread) const {
   if (is_empty()) {
     return true;
   }
@@ -5270,13 +5279,13 @@ verify_complete() const {
   const NodePathComponent *comp = _head;
   nassertr(comp != (const NodePathComponent *)NULL, false);
 
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+  int pipeline_stage = current_thread->get_pipeline_stage();
 
   PandaNode *node = comp->get_node();
   nassertr(node != (const PandaNode *)NULL, false);
-  int length = comp->get_length(pipeline_stage);
+  int length = comp->get_length(pipeline_stage, current_thread);
 
-  comp = comp->get_next(pipeline_stage);
+  comp = comp->get_next(pipeline_stage, current_thread);
   length--;
   while (comp != (const NodePathComponent *)NULL) {
     PandaNode *next_node = comp->get_node();
@@ -5289,16 +5298,16 @@ verify_complete() const {
       return false;
     }
 
-    if (comp->get_length(pipeline_stage) != length) {
+    if (comp->get_length(pipeline_stage, current_thread) != length) {
       pgraph_cat.warning()
         << *this << " is incomplete; length at " << *next_node
-        << " indicates " << comp->get_length(pipeline_stage)
+        << " indicates " << comp->get_length(pipeline_stage, current_thread)
 	<< " while length at " << *node << " indicates " << length << "\n";
       return false;
     }
 
     node = next_node;
-    comp = comp->get_next(pipeline_stage);
+    comp = comp->get_next(pipeline_stage, current_thread);
     length--;
   }
 
@@ -5434,14 +5443,16 @@ write_bounds(ostream &out) const {
 //               bounding volume, or false if none are.
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
-calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) {
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                  Thread *current_thread) {
   min_point.set(0.0f, 0.0f, 0.0f);
   max_point.set(0.0f, 0.0f, 0.0f);
   nassertr_always(!is_empty(), false);
 
   bool found_any = false;
   node()->calc_tight_bounds(min_point, max_point, found_any, 
-                            TransformState::make_identity());
+                            TransformState::make_identity(),
+                            current_thread);
 
   return found_any;
 }
@@ -5641,24 +5652,24 @@ write_bam_file(const string &filename) const {
 ////////////////////////////////////////////////////////////////////
 NodePathComponent *NodePath::
 find_common_ancestor(const NodePath &a, const NodePath &b,
-                     int &a_count, int &b_count) {
+                     int &a_count, int &b_count, Thread *current_thread) {
   nassertr(!a.is_empty() && !b.is_empty(), NULL);
   NodePathComponent *ac = a._head;
   NodePathComponent *bc = b._head;
   a_count = 0;
   b_count = 0;
 
-  int pipeline_stage = Thread::get_current_pipeline_stage();
+  int pipeline_stage = current_thread->get_pipeline_stage();
 
   // Shorten up the longer one until they are the same length.
-  while (ac->get_length(pipeline_stage) > bc->get_length(pipeline_stage)) {
+  while (ac->get_length(pipeline_stage, current_thread) > bc->get_length(pipeline_stage, current_thread)) {
     nassertr(ac != (NodePathComponent *)NULL, NULL);
-    ac = ac->get_next(pipeline_stage);
+    ac = ac->get_next(pipeline_stage, current_thread);
     a_count++;
   }
-  while (bc->get_length(pipeline_stage) > ac->get_length(pipeline_stage)) {
+  while (bc->get_length(pipeline_stage, current_thread) > ac->get_length(pipeline_stage, current_thread)) {
     nassertr(bc != (NodePathComponent *)NULL, NULL);
-    bc = bc->get_next(pipeline_stage);
+    bc = bc->get_next(pipeline_stage, current_thread);
     b_count++;
   }
 
@@ -5667,9 +5678,9 @@ find_common_ancestor(const NodePath &a, const NodePath &b,
     // These shouldn't go to NULL unless they both go there together. 
     nassertr(ac != (NodePathComponent *)NULL, NULL);
     nassertr(bc != (NodePathComponent *)NULL, NULL);
-    ac = ac->get_next(pipeline_stage);
+    ac = ac->get_next(pipeline_stage, current_thread);
     a_count++;
-    bc = bc->get_next(pipeline_stage);
+    bc = bc->get_next(pipeline_stage, current_thread);
     b_count++;
   }
 
@@ -5683,13 +5694,13 @@ find_common_ancestor(const NodePath &a, const NodePath &b,
 //               indicated component node from the root of the graph.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) NodePath::
-r_get_net_state(NodePathComponent *comp) const {
+r_get_net_state(NodePathComponent *comp, Thread *current_thread) const {
   if (comp == (NodePathComponent *)NULL) {
     return RenderState::make_empty();
   } else {
     CPT(RenderState) state = comp->get_node()->get_state();
-    int pipeline_stage = Thread::get_current_pipeline_stage();
-    return r_get_net_state(comp->get_next(pipeline_stage))->compose(state);
+    int pipeline_stage = current_thread->get_pipeline_stage();
+    return r_get_net_state(comp->get_next(pipeline_stage, current_thread), current_thread)->compose(state);
   }
 }
 
@@ -5702,13 +5713,14 @@ r_get_net_state(NodePathComponent *comp) const {
 //               net transform from the root of the graph.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) NodePath::
-r_get_partial_state(NodePathComponent *comp, int n) const {
+r_get_partial_state(NodePathComponent *comp, int n, 
+                    Thread *current_thread) const {
   if (n == 0 || comp == (NodePathComponent *)NULL) {
     return RenderState::make_empty();
   } else {
     CPT(RenderState) state = comp->get_node()->get_state();
-    int pipeline_stage = Thread::get_current_pipeline_stage();
-    return r_get_partial_state(comp->get_next(pipeline_stage), n - 1)->compose(state);
+    int pipeline_stage = current_thread->get_pipeline_stage();
+    return r_get_partial_state(comp->get_next(pipeline_stage, current_thread), n - 1, current_thread)->compose(state);
   }
 }
 
@@ -5719,12 +5731,12 @@ r_get_partial_state(NodePathComponent *comp, int n) const {
 //               indicated component node from the root of the graph.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) NodePath::
-r_get_net_transform(NodePathComponent *comp) const {
+r_get_net_transform(NodePathComponent *comp, Thread *current_thread) const {
   if (comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
-    int pipeline_stage = Thread::get_current_pipeline_stage();
-    CPT(TransformState) net_transform = r_get_net_transform(comp->get_next(pipeline_stage));
+    int pipeline_stage = current_thread->get_pipeline_stage();
+    CPT(TransformState) net_transform = r_get_net_transform(comp->get_next(pipeline_stage, current_thread), current_thread);
     CPT(TransformState) transform = comp->get_node()->get_transform();
 
     CPT(RenderEffects) effects = comp->get_node()->get_effects();
@@ -5749,7 +5761,8 @@ r_get_net_transform(NodePathComponent *comp) const {
 //               transform cannot be easily determined.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) NodePath::
-r_get_partial_transform(NodePathComponent *comp, int n) const {
+r_get_partial_transform(NodePathComponent *comp, int n, 
+                        Thread *current_thread) const {
   if (n == 0 || comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
@@ -5757,8 +5770,8 @@ r_get_partial_transform(NodePathComponent *comp, int n) const {
       return NULL;
     }
     CPT(TransformState) transform = comp->get_node()->get_transform();
-    int pipeline_stage = Thread::get_current_pipeline_stage();
-    CPT(TransformState) partial = r_get_partial_transform(comp->get_next(pipeline_stage), n - 1);
+    int pipeline_stage = current_thread->get_pipeline_stage();
+    CPT(TransformState) partial = r_get_partial_transform(comp->get_next(pipeline_stage, current_thread), n - 1, current_thread);
     if (partial == (const TransformState *)NULL) {
       return NULL;
     }
@@ -5774,13 +5787,13 @@ r_get_partial_transform(NodePathComponent *comp, int n) const {
 //               graph.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) NodePath::
-r_get_net_prev_transform(NodePathComponent *comp) const {
+r_get_net_prev_transform(NodePathComponent *comp, Thread *current_thread) const {
   if (comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
     CPT(TransformState) transform = comp->get_node()->get_prev_transform();
-    int pipeline_stage = Thread::get_current_pipeline_stage();
-    return r_get_net_prev_transform(comp->get_next(pipeline_stage))->compose(transform);
+    int pipeline_stage = current_thread->get_pipeline_stage();
+    return r_get_net_prev_transform(comp->get_next(pipeline_stage, current_thread), current_thread)->compose(transform);
   }
 }
 
@@ -5794,13 +5807,13 @@ r_get_net_prev_transform(NodePathComponent *comp) const {
 //               the graph.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) NodePath::
-r_get_partial_prev_transform(NodePathComponent *comp, int n) const {
+r_get_partial_prev_transform(NodePathComponent *comp, int n, Thread *current_thread) const {
   if (n == 0 || comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
     CPT(TransformState) transform = comp->get_node()->get_prev_transform();
-    int pipeline_stage = Thread::get_current_pipeline_stage();
-    return r_get_partial_prev_transform(comp->get_next(pipeline_stage), n - 1)->compose(transform);
+    int pipeline_stage = current_thread->get_pipeline_stage();
+    return r_get_partial_prev_transform(comp->get_next(pipeline_stage, current_thread), n - 1, current_thread)->compose(transform);
   }
 }
 

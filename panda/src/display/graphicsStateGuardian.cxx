@@ -1015,8 +1015,8 @@ prepare_lens() {
 //               be called).
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-begin_frame() {
-  _prepared_objects->begin_frame(this);
+begin_frame(Thread *current_thread) {
+  _prepared_objects->begin_frame(this, current_thread);
 
 #ifdef DO_PSTATS
   // For Pstats to track our current texture memory usage, we have to
@@ -1121,8 +1121,8 @@ end_scene() {
 //               rendering the frame, and before the window flips.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-end_frame() {
-  _prepared_objects->end_frame();
+end_frame(Thread *current_thread) {
+  _prepared_objects->end_frame(current_thread);
 
   // Flush any PStatCollectors.
   _data_transferred_pcollector.flush_level();

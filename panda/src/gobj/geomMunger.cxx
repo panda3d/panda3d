@@ -103,7 +103,8 @@ remove_data(const GeomVertexData *data) {
 //               same; so this result may be cached.
 ////////////////////////////////////////////////////////////////////
 void GeomMunger::
-munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data) {
+munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
+           Thread *current_thread) {
   CPT(GeomVertexData) source_data = data;
 
   // Look up the munger in the geom's cache--maybe we've recently
@@ -123,7 +124,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data) {
     entry->refresh();
 
     // Now check that it's fresh.
-    Geom::CDCacheReader cdata(entry->_cycler);
+    Geom::CDCacheReader cdata(entry->_cycler, current_thread);
     nassertv(cdata->_source == geom);
     if (cdata->_geom_result != (Geom *)NULL &&
 	geom->get_modified() <= cdata->_geom_result->get_modified() &&
@@ -142,11 +143,11 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data) {
   }
 
   // Ok, invoke the munger.
-  PStatTimer timer(_munge_pcollector);
+  PStatTimer timer(_munge_pcollector, current_thread);
 
   CPT(Geom) orig_geom = geom;
   data = munge_data(data);
-  munge_geom_impl(geom, data);
+  munge_geom_impl(geom, data, current_thread);
 
   // Record the new result in the cache.
   if (entry == (Geom::CacheEntry *)NULL) {
@@ -162,7 +163,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data) {
   }
 
   // Finally, store the cached result on the entry.
-  Geom::CDCacheWriter cdata(entry->_cycler, true);
+  Geom::CDCacheWriter cdata(entry->_cycler, true, current_thread);
   cdata->_source = (Geom *)orig_geom.p();
   cdata->set_result(geom, data);
 }
@@ -239,7 +240,7 @@ munge_data_impl(const GeomVertexData *data) {
 //  Description: Converts a Geom and/or its data as necessary.
 ////////////////////////////////////////////////////////////////////
 bool GeomMunger::
-munge_geom_impl(CPT(Geom) &, CPT(GeomVertexData) &) {
+munge_geom_impl(CPT(Geom) &, CPT(GeomVertexData) &, Thread *) {
   // The default implementation does nothing (the work has already
   // been done in munge_format_impl() and munge_data_impl()).
   return true;

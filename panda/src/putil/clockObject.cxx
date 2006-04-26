@@ -80,8 +80,8 @@ set_real_time(double time) {
 //               only for occasional special adjustments.
 ////////////////////////////////////////////////////////////////////
 void ClockObject::
-set_frame_time(double time) {
-  nassertv(Thread::get_current_pipeline_stage() == 0);
+set_frame_time(double time, Thread *current_thread) {
+  nassertv(current_thread->get_pipeline_stage() == 0);
 #ifdef NOTIFY_DEBUG
   if (this == _global_clock && _mode != M_slave) {
     util_cat.warning()
@@ -89,7 +89,7 @@ set_frame_time(double time) {
       << " seconds.\n";
   }
 #endif  // NOTIFY_DEBUG
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, current_thread);
   _actual_frame_time = time;
   cdata->_reported_frame_time = time;
 }
@@ -102,8 +102,8 @@ set_frame_time(double time) {
 //               set_frame_time().
 ////////////////////////////////////////////////////////////////////
 void ClockObject::
-set_frame_count(int frame_count) {
-  nassertv(Thread::get_current_pipeline_stage() == 0);
+set_frame_count(int frame_count, Thread *current_thread) {
+  nassertv(current_thread->get_pipeline_stage() == 0);
 #ifdef NOTIFY_DEBUG
   if (this == _global_clock && _mode != M_slave) {
     util_cat.warning()
@@ -111,7 +111,7 @@ set_frame_count(int frame_count) {
       << frame_count - get_frame_count() << " frames.\n";
   }
 #endif  // NOTIFY_DEBUG
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, current_thread);
   cdata->_frame_count = frame_count;
 }
 
@@ -126,9 +126,9 @@ set_frame_count(int frame_count) {
 //               dt.
 ////////////////////////////////////////////////////////////////////
 void ClockObject::
-tick() {
-  nassertv(Thread::get_current_pipeline_stage() == 0);
-  CDWriter cdata(_cycler);
+tick(Thread *current_thread) {
+  nassertv(current_thread->get_pipeline_stage() == 0);
+  CDWriter cdata(_cycler, current_thread);
   double old_reported_time = cdata->_reported_frame_time;
 
   if (_mode != M_slave) {
@@ -207,9 +207,9 @@ tick() {
 //               of time).
 ////////////////////////////////////////////////////////////////////
 void ClockObject::
-sync_frame_time() {
+sync_frame_time(Thread *current_thread) {
   if (_mode == M_normal) {
-    CDWriter cdata(_cycler);
+    CDWriter cdata(_cycler, current_thread);
     cdata->_reported_frame_time = get_real_time();
   }
 }

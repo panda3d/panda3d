@@ -1253,8 +1253,8 @@ prepare_lens() {
 //               be called).
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-begin_frame() {
-  if (!GraphicsStateGuardian::begin_frame()) {
+begin_frame(Thread *current_thread) {
+  if (!GraphicsStateGuardian::begin_frame(current_thread)) {
     return false;
   }
 
@@ -1276,7 +1276,7 @@ begin_frame() {
 //               rendering the frame, and before the window flips.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-end_frame() {
+end_frame(Thread *current_thread) {
 #ifdef DO_PSTATS
   // Check for textures, etc., that are no longer resident.  These
   // calls might be measurably expensive, and they don't have any
@@ -1295,7 +1295,7 @@ end_frame() {
   }
 #endif
 
-  GraphicsStateGuardian::end_frame();
+  GraphicsStateGuardian::end_frame(current_thread);
 
   // Flush any PCollectors specific to this kind of GSG.
   _primitive_batches_display_list_pcollector.flush_level();
@@ -1867,7 +1867,7 @@ disable_standard_vertex_arrays()
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_triangles(const GeomPrimitivePipelineReader *reader) {
-  PStatTimer timer(_draw_primitive_pcollector);
+  PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
 
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
@@ -1912,7 +1912,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_tristrips(const GeomPrimitivePipelineReader *reader) {
-  PStatTimer timer(_draw_primitive_pcollector);
+  PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
 
   report_my_gl_errors();
 
@@ -1996,7 +1996,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_trifans(const GeomPrimitivePipelineReader *reader) {
-  PStatTimer timer(_draw_primitive_pcollector);
+  PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_trifans: " << *(reader->get_object()) << "\n";
@@ -2053,7 +2053,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_lines(const GeomPrimitivePipelineReader *reader) {
-  PStatTimer timer(_draw_primitive_pcollector);
+  PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_lines: " << *(reader->get_object()) << "\n";
@@ -2095,7 +2095,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_linestrips(const GeomPrimitivePipelineReader *reader) {
-  PStatTimer timer(_draw_primitive_pcollector);
+  PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_linestrips: " << *(reader->get_object()) << "\n";
@@ -2111,7 +2111,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_points(const GeomPrimitivePipelineReader *reader) {
-  PStatTimer timer(_draw_primitive_pcollector);
+  PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_points: " << *(reader->get_object()) << "\n";
@@ -2617,9 +2617,10 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-apply_vertex_buffer(VertexBufferContext *vbc) {
+apply_vertex_buffer(VertexBufferContext *vbc,
+                    const GeomVertexArrayDataPipelineReader *reader) {
   nassertv(_supports_buffers);
-  nassertv(vbc->get_data()->get_modified() != UpdateSeq::initial());
+  nassertv(reader->get_modified() != UpdateSeq::initial());
 
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
@@ -2634,8 +2635,8 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
   }
 
   if (gvbc->was_modified()) {
-    PStatTimer timer(_load_vertex_buffer_pcollector);
-    int num_bytes = gvbc->get_data()->get_data_size_bytes();
+    PStatTimer timer(_load_vertex_buffer_pcollector, reader->get_current_thread());
+    int num_bytes = reader->get_data_size_bytes();
     if (GLCAT.is_spam()) {
       GLCAT.spam()
         << "copying " << num_bytes
@@ -2644,12 +2645,12 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     if (num_bytes != 0) {
       if (gvbc->changed_size() || gvbc->changed_usage_hint()) {
         _glBufferData(GL_ARRAY_BUFFER, num_bytes,
-                      gvbc->get_data()->get_data(),
-                      get_usage(gvbc->get_data()->get_usage_hint()));
+                      reader->get_data(),
+                      get_usage(reader->get_usage_hint()));
 
       } else {
         _glBufferSubData(GL_ARRAY_BUFFER, 0, num_bytes,
-                         gvbc->get_data()->get_data());
+                         reader->get_data());
       }
       _data_transferred_pcollector.add_level(num_bytes);
     }
@@ -2738,7 +2739,7 @@ setup_array_data(const GeomVertexArrayDataPipelineReader *array_reader) {
   // Prepare the buffer object and bind it.
   VertexBufferContext *vbc = ((GeomVertexArrayData *)array_reader->get_object())->prepare_now(get_prepared_objects(), this);
   nassertr(vbc != (VertexBufferContext *)NULL, array_reader->get_data());
-  apply_vertex_buffer(vbc);
+  apply_vertex_buffer(vbc, array_reader);
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
   return NULL;
@@ -2803,7 +2804,7 @@ apply_index_buffer(IndexBufferContext *ibc,
   }
 
   if (gibc->was_modified()) {
-    PStatTimer timer(_load_index_buffer_pcollector);
+    PStatTimer timer(_load_index_buffer_pcollector, reader->get_current_thread());
     int num_bytes = reader->get_data_size_bytes();
     if (GLCAT.is_spam()) {
       GLCAT.spam()

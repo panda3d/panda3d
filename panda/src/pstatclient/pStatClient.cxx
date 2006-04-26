@@ -58,8 +58,8 @@ PerThreadData() {
 ////////////////////////////////////////////////////////////////////
 PStatClient::
 PStatClient() :
-  _impl(NULL),
-  _lock("PStatClient")
+  _lock("PStatClient"),
+  _impl(NULL)
 {
   _collectors = NULL;
   _collectors_size = 0;
@@ -164,6 +164,7 @@ get_main_thread() const {
   return PStatThread((PStatClient *)this, 0);
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::get_current_thread
 //       Access: Published
@@ -173,15 +174,12 @@ get_main_thread() const {
 ////////////////////////////////////////////////////////////////////
 PStatThread PStatClient::
 get_current_thread() const {
-  Thread *thread = Thread::get_current_thread();
-  int thread_index = thread->get_pstats_index();
-  if (thread_index != -1) {
-    return PStatThread((PStatClient *)this, thread_index);
+  if (!client_is_connected()) {
+    // No need to make the relatively expensive call to 
+    // Thread::get_current_thread() if we're not even connected.
+    return get_main_thread();
   }
-
-  // This is the first time we have encountered this current Thread.
-  // Make a new PStatThread object for it.
-  return ((PStatClient *)this)->make_thread(thread);
+  return PStatThread(Thread::get_current_thread(), (PStatClient *)this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -499,7 +497,7 @@ do_make_thread(Thread *thread) {
   for (int ci = 0; ci < _num_collectors; ++ci) {
     Collector *collector = collectors[ci];
     collector->_per_thread.push_back(PerThreadData());
-    nassertr(collector->_per_thread.size() == _num_threads, PStatThread());
+    nassertr((int)collector->_per_thread.size() == _num_threads, PStatThread());
   }
 
   return PStatThread(this, new_index);
@@ -578,8 +576,7 @@ start(int collector_index, int thread_index) {
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       // This collector wasn't already started in this thread; record
       // a new data point.
-      thread->_frame_data.add_start(collector_index, 
-                                    get_clock().get_real_time());
+      thread->_frame_data.add_start(collector_index, get_real_time());
     }
     collector->_per_thread[thread_index]._nested_count++;
   }
@@ -647,8 +644,7 @@ stop(int collector_index, int thread_index) {
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       // This collector has now been completely stopped; record a new
       // data point.
-      thread->_frame_data.add_stop(collector_index,
-                                   get_clock().get_real_time());
+      thread->_frame_data.add_stop(collector_index, get_real_time());
     }
   }
 }
@@ -904,8 +900,8 @@ InternalThread(Thread *thread) :
   _name(thread->get_name()),
   _sync_name(thread->get_sync_name()),
   _is_active(false),
-  _next_packet(0.0),
   _frame_number(0),
+  _next_packet(0.0),
   _thread_lock(string("PStatClient::InternalThread ") + thread->get_name())
 {
 }

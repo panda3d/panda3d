@@ -59,7 +59,8 @@ PUBLISHED:
 protected:
   PGVirtualFrame(const PGVirtualFrame &copy);
   virtual PandaNode *make_copy() const;
-  virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map);
+  virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map,
+                               Thread *current_thread);
 
 PUBLISHED:
   void setup(float width, float height);

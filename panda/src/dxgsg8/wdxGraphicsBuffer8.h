@@ -44,8 +44,8 @@ public:
                      GraphicsOutput *host);
   virtual ~wdxGraphicsBuffer8();
 
-  virtual bool begin_frame(FrameMode mode);
-  virtual void end_frame(FrameMode mode);
+  virtual bool begin_frame(FrameMode mode, Thread *current_thread);
+  virtual void end_frame(FrameMode mode, Thread *current_thread);
   
   virtual void select_cube_map(int cube_map_index);
 

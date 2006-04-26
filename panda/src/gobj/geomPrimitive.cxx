@@ -1122,14 +1122,16 @@ void GeomPrimitive::
 calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                   bool &found_any, 
                   const GeomVertexData *vertex_data,
-                  bool got_mat, const LMatrix4f &mat) const {
-  GeomVertexReader reader(vertex_data, InternalName::get_vertex());
+                  bool got_mat, const LMatrix4f &mat,
+                  Thread *current_thread) const {
+  GeomVertexReader reader(vertex_data, InternalName::get_vertex(),
+                          current_thread);
   if (!reader.has_column()) {
     // No vertex data.
     return;
   }
 
-  CDReader cdata(_cycler);
+  CDReader cdata(_cycler, current_thread);
 
   if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
     // Nonindexed case.
@@ -1173,7 +1175,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 
   } else {
     // Indexed case.
-    GeomVertexReader index(cdata->_vertices, 0);
+    GeomVertexReader index(cdata->_vertices, 0, current_thread);
 
     if (got_mat) {
       while (!index.is_at_end()) {
