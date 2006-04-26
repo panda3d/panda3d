@@ -124,16 +124,19 @@ is_single_buffered() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::has_mode
+//     Function: FrameBufferProperties::specifies_mode
 //       Access: Published
 //  Description: Returns true if the frame buffer mode, logically
-//               anded with the given mask, is nonzero.  This is a
+//               anded with the given mask, is nonzero and the frame
+//               buffer mode is specified.  This is a
 //               convenience function to access this useful tidbit of
 //               data.
 ////////////////////////////////////////////////////////////////////
 INLINE bool FrameBufferProperties::
-has_mode(int bits) const {
-  nassertr(has_frame_buffer_mode(), false);
+specifies_mode(int bits) const {
+  if ((_specified & S_frame_buffer_mode)==0) {
+    return false;
+  }
   return (_frame_buffer_mode & bits) != 0;
 }
 

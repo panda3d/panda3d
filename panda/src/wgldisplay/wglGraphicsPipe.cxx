@@ -176,11 +176,11 @@ make_output(const string &name,
         (host==0)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
-        (properties.has_mode(FrameBufferProperties::FM_index))||
-        (properties.has_mode(FrameBufferProperties::FM_buffer))||
-        (properties.has_mode(FrameBufferProperties::FM_accum))||
-        (properties.has_mode(FrameBufferProperties::FM_stencil))||
-        (properties.has_mode(FrameBufferProperties::FM_multisample))) {
+        (properties.specifies_mode(FrameBufferProperties::FM_index))||
+        (properties.specifies_mode(FrameBufferProperties::FM_buffer))||
+        (properties.specifies_mode(FrameBufferProperties::FM_accum))||
+        (properties.specifies_mode(FrameBufferProperties::FM_stencil))||
+        (properties.specifies_mode(FrameBufferProperties::FM_multisample))) {
       return NULL;
     }
     if ((wglgsg != 0) &&

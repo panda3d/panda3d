@@ -62,7 +62,7 @@ PUBLISHED:
   INLINE void set_specified();
   INLINE int get_buffer_mask() const;
   INLINE bool is_any_specified() const;
-  INLINE bool has_mode(int bit) const;
+  INLINE bool specifies_mode(int bit) const;
   INLINE bool is_single_buffered() const;
   INLINE bool is_stereo() const;
 
