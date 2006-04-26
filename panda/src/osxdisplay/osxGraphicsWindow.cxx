@@ -557,7 +557,7 @@ OSStatus osxGraphicsWindow::buildGL (bool full_screen)
 //               if the frame should be rendered, or false if it
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
-bool osxGraphicsWindow::begin_frame(FrameMode mode)
+bool osxGraphicsWindow::begin_frame(FrameMode mode, Thread *current_thread)
  {
   PStatTimer timer(_make_current_pcollector);
  
@@ -604,7 +604,7 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode)
 	
   _gsg->reset_if_new();
   _gsg->set_current_properties(&get_fb_properties());
-  return _gsg->begin_frame();
+  return _gsg->begin_frame(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -614,7 +614,7 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode)
 //               after rendering is completed for a given frame.  It
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
-void osxGraphicsWindow::end_frame(FrameMode mode) 
+void osxGraphicsWindow::end_frame(FrameMode mode, Thread *current_thread) 
 {
   end_frame_spam();
   
@@ -623,7 +623,7 @@ void osxGraphicsWindow::end_frame(FrameMode mode)
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
 	aglSwapBuffers (get_ggs_context());
-  _gsg->end_frame();
+  _gsg->end_frame(current_thread);
   }
 //  trigger_flip();
 }
