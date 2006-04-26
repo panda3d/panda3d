@@ -70,6 +70,7 @@ CullTraverser(GraphicsStateGuardianBase *gsg, Thread *current_thread) :
 CullTraverser::
 CullTraverser(const CullTraverser &copy) :
   _gsg(copy._gsg),
+  _current_thread(copy._current_thread),
   _scene_setup(copy._scene_setup),
   _camera_mask(copy._camera_mask),
   _has_tag_state_key(copy._has_tag_state_key),
