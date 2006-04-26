@@ -950,7 +950,7 @@ def CopyTree(dstdir,srcdir):
 
 def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
     cmd = "cl /Fo" + wobj + " /nologo /c"
-    if (OMIT.count("PYTHON")==0): cmd = cmd + " /Ibuilt/python/include"
+    if (OMIT.count("PYTHON")==0): cmd = cmd + " /Ithirdparty/win-python/include"
     for ver in DXVERSIONS:
         if (PkgSelected(opts,"DX"+ver)):
             cmd = cmd + ' /I"' + DIRECTXSDK["DX"+ver] + '/include"'
@@ -1118,7 +1118,7 @@ def CompileIgateMSVC7(ipath,opts,outd,outc,wobj,src,module,library,files):
         if (optlevel==3): cmd = cmd + ' -DFORCE_INLINING'
         if (optlevel==4): cmd = cmd + ' -DFORCE_INLINING'
         cmd = cmd + ' -Sbuilt/include/parser-inc'
-        cmd = cmd + ' -Ibuilt/python/include'
+        cmd = cmd + ' -Ithirdparty/win-python/include'
         for pkg in PACKAGES:
             if (PkgSelected(opts,pkg)):
                 cmd = cmd + " -Ithirdparty/win-libs-vc7/" + pkg.lower() + "/include"
@@ -1151,7 +1151,7 @@ def CompileIgateLINUXA(ipath,opts,outd,outc,wobj,src,module,library,files):
         if (optlevel==3): cmd = cmd + ' '
         if (optlevel==4): cmd = cmd + ' '
         cmd = cmd + ' -Sbuilt/include/parser-inc -S/usr/include'
-        cmd = cmd + ' -Ibuilt/python/include'
+        cmd = cmd + ' -Ithirdparty/win-python/include'
         for pkg in PACKAGES:
             if (PkgSelected(opts,pkg)):
                 cmd = cmd + " -Ithirdparty/linux-libs-a/" + pkg.lower() + "/include"
@@ -1290,7 +1290,7 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
     if (ldef!=0): cmd = cmd + ' /DEF:"' + ldef + '"'
     cmd = cmd + ' /OUT:' + wdll
     if (wlib != 0): cmd = cmd + ' /IMPLIB:' + wlib
-    if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:built/python/libs '
+    if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:thirdparty/win-python/libs '
     for x in wobj: cmd = cmd + ' ' + x
     if (wdll[-4:]==".exe"): cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
     for ver in DXVERSIONS:
@@ -1838,10 +1838,13 @@ for pkg in (PACKAGES + ["extras"]):
             if (os.path.exists("thirdparty/linux-libs-a/"+pkg.lower()+"/lib")):
                 CopyAllFiles("built/lib/","thirdparty/linux-libs-a/"+pkg.lower()+"/lib/")
 if (sys.platform == "win32"):
-    CopyFile('built/bin/', 'thirdparty/win-python/python24.dll')
     if (OMIT.count("PYTHON")==0):
-        CopyTree('built/python', 'thirdparty/win-python')
-        ConditionalWriteFile('built/python/panda.pth',"..\n../bin\n")
+        CopyFile('built/bin/ppython.exe',  'thirdparty/win-python/python.exe')
+        CopyFile('built/bin/ppythonw.exe', 'thirdparty/win-python/pythonw.exe')
+        CopyFile('built/bin/python24.dll', 'thirdparty/win-python/python24.dll')
+        CopyTree('built/bin/lib',  'thirdparty/win-python/lib')
+        CopyTree('built/bin/dlls', 'thirdparty/win-python/dlls')
+        ConditionalWriteFile('built/bin/panda.pth',"..\n")
 
 ########################################################################
 ##
@@ -3141,9 +3144,11 @@ if (OMIT.count("PYTHON")==0):
     OPTS=['BUILDING_DIRECT', 'NSPR']
 #     CopyAllHeaders('direct/src/directbase')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='directbase.cxx', obj='directbase_directbase.obj')
-
-    EnqueueCxx(ipath=IPATH, opts=['BUILDING_PPYTHON'], src='ppython.cxx', obj='ppython.obj')
-    EnqueueLink(opts=['WINUSER'], dll='ppython.exe', obj=['ppython.obj'])
+    if (sys.platform != "win32"):
+        EnqueueCxx(ipath=IPATH, opts=['BUILDING_PPYTHON'], src='ppython.cxx', obj='ppython.obj')
+        EnqueueLink(opts=['WINUSER'], dll='ppython.exe', obj=['ppython.obj'])
+        EnqueueCxx(ipath=IPATH, opts=['BUILDING_PPYTHONW'], src='ppython.cxx', obj='ppythonw.obj')
+        EnqueueLink(opts=['WINUSER'], dll='ppythonw.exe', obj=['ppythonw.obj'])
     EnqueueCxx(ipath=IPATH, opts=['BUILDING_GENPYCODE'], src='ppython.cxx', obj='genpycode.obj')
     EnqueueLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
     EnqueueCxx(ipath=IPATH, opts=['BUILDING_PACKPANDA'], src='ppython.cxx', obj='packpanda.obj')
