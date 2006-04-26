@@ -172,6 +172,7 @@ void Thread::
 init_main_thread() {
   if (_main_thread == (Thread *)NULL) {
     _main_thread = new MainThread;
+    _main_thread->ref();
   }
 }
 
@@ -185,5 +186,6 @@ void Thread::
 init_external_thread() {
   if (_external_thread == (Thread *)NULL) {
     _external_thread = new ExternalThread;
+    _external_thread->ref();
   }
 }
