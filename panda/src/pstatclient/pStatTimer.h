@@ -47,7 +47,8 @@ private:
   PStatThread _thread;
 #else // DO_PSTATS
 
-  INLINE PStatTimer(PStatCollector &) { }
+  INLINE PStatTimer(PStatCollector &) { } 
+  INLINE PStatTimer(PStatCollector &, Thread *) { }
   INLINE ~PStatTimer() { }
 
 #endif  // DO_PSTATS
