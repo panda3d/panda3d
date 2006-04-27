@@ -29,6 +29,12 @@ public:
   Colorf _color;
   double _transparency;
   PT_EggTexture _tex;
+
+  bool _has_tex_transform;
+  LVecBase2d _tex_center;
+  double _tex_rotation;
+  LVecBase2d _tex_scale;
+  LVecBase2d _tex_translation;
 };
 
 #endif

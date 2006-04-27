@@ -14,12 +14,14 @@
 
 #include "vrmlAppearance.h"
 #include "vrmlNode.h"
+#include "deg_2_rad.h"
 
 VRMLAppearance::
 VRMLAppearance(const VrmlNode *appearance) {
   _has_material = false;
   _transparency = 0.0;
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _has_tex_transform = false;
 
   if (appearance != NULL) {
     const VrmlNode *material = appearance->get_value("material")._sfnode._p;
@@ -30,6 +32,20 @@ VRMLAppearance(const VrmlNode *appearance) {
       _color.set(c[0], c[1], c[2], 1.0 - _transparency);
     }
 
+    const VrmlNode *tex_transform = appearance->get_value("textureTransform")._sfnode._p;
+    if (tex_transform != NULL) {
+      if (strcmp(tex_transform->_type->getName(), "TextureTransform") == 0) {
+        _has_tex_transform = true;
+        const double *c = tex_transform->get_value("center")._sfvec;
+        _tex_center.set(c[0], c[1]);
+        _tex_rotation = tex_transform->get_value("rotation")._sffloat;
+        const double *s = tex_transform->get_value("scale")._sfvec;
+        _tex_scale.set(s[0], s[1]);
+        const double *t = tex_transform->get_value("translation")._sfvec;
+        _tex_translation.set(t[0], t[1]);
+      }
+    }
+
     const VrmlNode *texture = appearance->get_value("texture")._sfnode._p;
     if (texture != NULL) {
       if (strcmp(texture->_type->getName(), "ImageTexture") == 0) {
@@ -37,6 +53,14 @@ VRMLAppearance(const VrmlNode *appearance) {
         if (!url->empty()) {
           const char *filename = (*url->begin())._sfstring;
           _tex = new EggTexture("tref", filename);
+
+          if (_has_tex_transform) {
+            _tex->add_translate2d(-_tex_center);
+            _tex->add_scale2d(_tex_scale);
+            _tex->add_rotate2d(rad_2_deg(_tex_rotation));
+            _tex->add_translate2d(_tex_center);
+            _tex->add_translate2d(_tex_translation);
+          }
         }
       }
     }
