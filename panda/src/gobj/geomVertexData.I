@@ -300,8 +300,8 @@ get_num_bytes() const {
 //               modified.
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq GeomVertexData::
-get_modified() const {
-  CDReader cdata(_cycler);
+get_modified(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
   return cdata->_modified;
 }
 

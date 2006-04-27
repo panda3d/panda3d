@@ -45,7 +45,8 @@ make_copy() const {
 //               inputs and put the result into the indicated output.
 ////////////////////////////////////////////////////////////////////
 void DataNode::
-transmit_data(const DataNodeTransmit inputs[],
+transmit_data(DataGraphTraverser *trav,
+              const DataNodeTransmit inputs[],
               DataNodeTransmit &output) {
   DataNodeTransmit new_input;
   new_input.reserve(get_num_inputs());
@@ -79,7 +80,7 @@ transmit_data(const DataNodeTransmit inputs[],
   }
   #endif  // NDEBUG
 
-  do_transmit_data(new_input, output);
+  do_transmit_data(trav, new_input, output);
 
   #ifndef NDEBUG
   if (dgraph_cat.is_spam()) {
@@ -273,7 +274,8 @@ parents_changed() {
 //               calls.
 ////////////////////////////////////////////////////////////////////
 void DataNode::
-do_transmit_data(const DataNodeTransmit &, DataNodeTransmit &) {
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &, 
+                 DataNodeTransmit &) {
 }
 
 ////////////////////////////////////////////////////////////////////

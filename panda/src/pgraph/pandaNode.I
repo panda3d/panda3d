@@ -24,8 +24,9 @@
 //               masks to a running draw mask, as during a traversal.
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
-compose_draw_mask(DrawMask &running_draw_mask) const {
-  CDHeavyReader cdata(_cycler_heavy);
+compose_draw_mask(DrawMask &running_draw_mask,
+                  Thread *current_thread) const {
+  CDHeavyReader cdata(_cycler_heavy, current_thread);
   running_draw_mask = (running_draw_mask & ~cdata->_draw_control_mask) |
     (cdata->_draw_show_mask & cdata->_draw_control_mask);
 }
@@ -381,8 +382,8 @@ clear_state(Thread *current_thread) {
 //               applied to this node.
 ////////////////////////////////////////////////////////////////////
 INLINE const RenderEffects *PandaNode::
-get_effects() const {
-  CDHeavyReader cdata(_cycler_heavy);
+get_effects(Thread *current_thread) const {
+  CDHeavyReader cdata(_cycler_heavy, current_thread);
   return cdata->_effects;
 }
 
@@ -392,8 +393,8 @@ get_effects() const {
 //  Description: Resets this node to have no render effects.
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
-clear_effects() {
-  set_effects(RenderEffects::make_empty());
+clear_effects(Thread *current_thread) {
+  set_effects(RenderEffects::make_empty(), current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -457,8 +458,8 @@ has_dirty_prev_transform() const {
 //               string.
 ////////////////////////////////////////////////////////////////////
 INLINE string PandaNode::
-get_tag(const string &key) const {
-  CDHeavyReader cdata(_cycler_heavy);
+get_tag(const string &key, Thread *current_thread) const {
+  CDHeavyReader cdata(_cycler_heavy, current_thread);
   TagData::const_iterator ti;
   ti = cdata->_tag_data.find(key);
   if (ti != cdata->_tag_data.end()) {
@@ -475,8 +476,8 @@ get_tag(const string &key) const {
 //               empty string), or false if no value has been set.
 ////////////////////////////////////////////////////////////////////
 INLINE bool PandaNode::
-has_tag(const string &key) const {
-  CDHeavyReader cdata(_cycler_heavy);
+has_tag(const string &key, Thread *current_thread) const {
+  CDHeavyReader cdata(_cycler_heavy, current_thread);
   TagData::const_iterator ti;
   ti = cdata->_tag_data.find(key);
   return (ti != cdata->_tag_data.end());
@@ -657,8 +658,8 @@ set_final(bool flag) {
 //               set_final().
 ////////////////////////////////////////////////////////////////////
 INLINE bool PandaNode::
-is_final() const {
-  CDHeavyReader cdata(_cycler_heavy);
+is_final(Thread *current_thread) const {
+  CDHeavyReader cdata(_cycler_heavy, current_thread);
   return cdata->_final_bounds;
 }
 

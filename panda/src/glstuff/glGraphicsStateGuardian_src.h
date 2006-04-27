@@ -143,7 +143,8 @@ public:
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
 
-  virtual PT(GeomMunger) make_geom_munger(const RenderState *state);
+  virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
+                                          Thread *current_thread);
 
   virtual void framebuffer_copy_to_texture
     (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);

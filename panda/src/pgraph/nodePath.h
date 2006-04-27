@@ -778,7 +778,7 @@ PUBLISHED:
   void show_bounds();
   void show_tight_bounds();
   void hide_bounds();
-  PT(BoundingVolume) get_bounds() const;
+  PT(BoundingVolume) get_bounds(Thread *current_thread = Thread::get_current_thread()) const;
   void force_recompute_bounds();
   void write_bounds(ostream &out) const;
   bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,

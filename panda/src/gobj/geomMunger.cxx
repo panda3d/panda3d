@@ -121,14 +121,14 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
     // Here's an element in the cache for this computation.  Record a
     // cache hit, so this element will stay in the cache a while
     // longer.
-    entry->refresh();
+    entry->refresh(current_thread);
 
     // Now check that it's fresh.
     Geom::CDCacheReader cdata(entry->_cycler, current_thread);
     nassertv(cdata->_source == geom);
     if (cdata->_geom_result != (Geom *)NULL &&
-	geom->get_modified() <= cdata->_geom_result->get_modified() &&
-	data->get_modified() <= cdata->_data_result->get_modified()) {
+	geom->get_modified(current_thread) <= cdata->_geom_result->get_modified(current_thread) &&
+	data->get_modified(current_thread) <= cdata->_data_result->get_modified(current_thread)) {
       // The cache entry is still good; use it.
       
       geom = cdata->_geom_result;
@@ -159,7 +159,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
     // And tell the cache manager about the new entry.  (It might
     // immediately request a delete from the cache of the thing we
     // just added.)
-    entry->record();
+    entry->record(current_thread);
   }
 
   // Finally, store the cached result on the entry.
@@ -292,7 +292,7 @@ make_registry() {
 //  Description: Called internally when the munger is registered.
 ////////////////////////////////////////////////////////////////////
 void GeomMunger::
-do_register() {
+do_register(Thread *current_thread) {
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
       << "GeomMunger::do_register(): " << (void *)this << "\n";
@@ -305,7 +305,7 @@ do_register() {
   // over again.
   CacheEntry *entry = new CacheEntry;
   entry->_munger = this;
-  entry->record();
+  entry->record(current_thread);
 
   _is_registered = true;
 }
@@ -363,7 +363,7 @@ Registry() {
 //               this point on.
 ////////////////////////////////////////////////////////////////////
 PT(GeomMunger) GeomMunger::Registry::
-register_munger(GeomMunger *munger) {
+register_munger(GeomMunger *munger, Thread *current_thread) {
   if (munger->is_registered()) {
     return munger;
   }
@@ -377,7 +377,7 @@ register_munger(GeomMunger *munger) {
   GeomMunger *new_munger = (*mi);
   if (!new_munger->is_registered()) {
     new_munger->_registered_key = mi;
-    new_munger->do_register();
+    new_munger->do_register(current_thread);
   }
 
   return new_munger;

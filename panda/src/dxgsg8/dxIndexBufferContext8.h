@@ -33,8 +33,9 @@ public:
   DXIndexBufferContext8(PreparedGraphicsObjects *pgo, GeomPrimitive *data);
   virtual ~DXIndexBufferContext8();
 
-  void create_ibuffer(DXScreenData &scrn);
-  void upload_data();
+  void create_ibuffer(DXScreenData &scrn,
+                      const GeomPrimitivePipelineReader *reader);
+  void upload_data(const GeomPrimitivePipelineReader *reader);
 
   IDirect3DIndexBuffer8 *_ibuffer;
 

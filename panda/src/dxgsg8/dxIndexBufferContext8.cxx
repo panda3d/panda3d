@@ -62,21 +62,26 @@ DXIndexBufferContext8::
 //               to it).
 ////////////////////////////////////////////////////////////////////
 void DXIndexBufferContext8::
-create_ibuffer(DXScreenData &scrn) {
+create_ibuffer(DXScreenData &scrn, 
+               const GeomPrimitivePipelineReader *reader) {
+  nassertv(reader->get_object() == get_data());
+  Thread *current_thread = reader->get_current_thread();
+
   if (_ibuffer != NULL) {
     RELEASE(_ibuffer, dxgsg8, "index buffer", RELEASE_ONCE);
     _ibuffer = NULL;
   }
 
-  PStatTimer timer(GraphicsStateGuardian::_create_index_buffer_pcollector);
+  PStatTimer timer(GraphicsStateGuardian::_create_index_buffer_pcollector,
+                   current_thread);
 
   D3DFORMAT index_type =
-    DXGraphicsStateGuardian8::get_index_type(get_data()->get_index_type());
+    DXGraphicsStateGuardian8::get_index_type(reader->get_index_type());
 
   HRESULT hr = scrn._d3d_device->CreateIndexBuffer
-//    (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY,
+//    (reader->get_data_size_bytes(), D3DUSAGE_WRITEONLY,
 //     index_type, D3DPOOL_MANAGED, &_ibuffer);
-    (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC,
+    (reader->get_data_size_bytes(), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC,
      index_type, D3DPOOL_DEFAULT, &_ibuffer);
   if (FAILED(hr)) {
     dxgsg8_cat.warning()
@@ -86,8 +91,8 @@ create_ibuffer(DXScreenData &scrn) {
     if (dxgsg8_cat.is_debug()) {
       dxgsg8_cat.debug()
         << "creating index buffer " << _ibuffer << ": "
-        << get_data()->get_num_vertices() << " indices ("
-        << get_data()->get_vertices()->get_array_format()->get_column(0)->get_numeric_type()
+        << reader->get_num_vertices() << " indices ("
+        << reader->get_vertices_reader()->get_array_format()->get_column(0)->get_numeric_type()
         << ")\n";
     }
   }
@@ -100,11 +105,15 @@ create_ibuffer(DXScreenData &scrn) {
 //               DirectX.
 ////////////////////////////////////////////////////////////////////
 void DXIndexBufferContext8::
-upload_data() {
-  nassertv(_ibuffer != NULL);
-  PStatTimer timer(GraphicsStateGuardian::_load_index_buffer_pcollector);
+upload_data(const GeomPrimitivePipelineReader *reader) {
+  nassertv(reader->get_object() == get_data());
+  Thread *current_thread = reader->get_current_thread();
 
-  int data_size = get_data()->get_data_size_bytes();
+  nassertv(_ibuffer != NULL);
+  PStatTimer timer(GraphicsStateGuardian::_load_index_buffer_pcollector,
+                   current_thread);
+
+  int data_size = reader->get_data_size_bytes();
 
   if (dxgsg8_cat.is_spam()) {
     dxgsg8_cat.spam()
@@ -122,7 +131,7 @@ upload_data() {
   }
 
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
-  memcpy(local_pointer, get_data()->get_data(), data_size);
+  memcpy(local_pointer, reader->get_data(), data_size);
 
   _ibuffer->Unlock();
 }

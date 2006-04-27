@@ -340,14 +340,15 @@ free_vbuffer(void) {
 //  Description: Allocates vertex buffer memory.
 ////////////////////////////////////////////////////////////////////
 void DXVertexBufferContext9::
-allocate_vbuffer(DXScreenData &scrn) {
+allocate_vbuffer(DXScreenData &scrn,
+                 const GeomVertexArrayDataPipelineReader *reader) {
 
   int data_size;
   HRESULT hr;
   DWORD usage;
   D3DPOOL pool;
 
-  data_size = get_data()->get_data_size_bytes();
+  data_size = reader->get_data_size_bytes();
 
   _managed = scrn._managed_vertex_buffers;
   if (_managed) {
@@ -378,8 +379,8 @@ allocate_vbuffer(DXScreenData &scrn) {
     if (DEBUG_VERTEX_BUFFER && dxgsg9_cat.is_debug()) {
       dxgsg9_cat.debug()
         << "created vertex buffer " << _vbuffer << ": "
-        << get_data()->get_num_rows() << " vertices "
-        << *get_data()->get_array_format() << "\n";
+        << reader->get_num_rows() << " vertices "
+        << *reader->get_array_format() << "\n";
     }
   }
 }
@@ -391,7 +392,10 @@ allocate_vbuffer(DXScreenData &scrn) {
 //               to it).
 ////////////////////////////////////////////////////////////////////
 void DXVertexBufferContext9::
-create_vbuffer(DXScreenData &scrn) {
+create_vbuffer(DXScreenData &scrn,
+               const GeomVertexArrayDataPipelineReader *reader) {
+  nassertv(reader->get_object() == get_data());
+  Thread *current_thread = reader->get_current_thread();
 
   free_vbuffer ( );
 
@@ -401,13 +405,14 @@ create_vbuffer(DXScreenData &scrn) {
     _lru_page = 0;
   }
 
-  PStatTimer timer(GraphicsStateGuardian::_create_vertex_buffer_pcollector);
+  PStatTimer timer(GraphicsStateGuardian::_create_vertex_buffer_pcollector,
+                   current_thread);
 
   int data_size;
 
-  data_size = get_data()->get_data_size_bytes();
+  data_size = reader->get_data_size_bytes();
 
-  this -> allocate_vbuffer(scrn);
+  this -> allocate_vbuffer(scrn, reader);
 
   if (_vbuffer) {
     if (_managed == false) {
@@ -437,11 +442,14 @@ create_vbuffer(DXScreenData &scrn) {
 //               DirectX.
 ////////////////////////////////////////////////////////////////////
 void DXVertexBufferContext9::
-upload_data() {
+upload_data(const GeomVertexArrayDataPipelineReader *reader) {
+  nassertv(reader->get_object() == get_data());
   nassertv(_vbuffer != NULL);
-  PStatTimer timer(GraphicsStateGuardian::_load_vertex_buffer_pcollector);
+  Thread *current_thread = reader->get_current_thread();
+  PStatTimer timer(GraphicsStateGuardian::_load_vertex_buffer_pcollector,
+                   current_thread);
 
-  int data_size = get_data()->get_data_size_bytes();
+  int data_size = reader->get_data_size_bytes();
 
   if (dxgsg9_cat.is_spam()) {
     dxgsg9_cat.spam()
@@ -465,7 +473,7 @@ upload_data() {
   }
 
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
-  memcpy(local_pointer, get_data()->get_data(), data_size);
+  memcpy(local_pointer, reader->get_data(), data_size);
 
   _vbuffer->Unlock();
 }

@@ -131,7 +131,8 @@ write(ostream &out, int indent_level) const {
 //               calls.
 ////////////////////////////////////////////////////////////////////
 void MouseRecorder::
-do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input, 
+                 DataNodeTransmit &output) {
   bool has_mouse = false;
   LPoint2f mouse_xy;
   LPoint2f mouse_pixel_xy;

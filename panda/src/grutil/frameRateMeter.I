@@ -77,7 +77,8 @@ get_update_interval() const {
 INLINE void FrameRateMeter::
 set_text_pattern(const string &text_pattern) {
   _text_pattern = text_pattern;
-  do_update();
+  Thread *current_thread = Thread::get_current_thread();
+  do_update(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,5 +126,6 @@ get_clock_object() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameRateMeter::
 update() {
-  do_update();
+  Thread *current_thread = Thread::get_current_thread();
+  do_update(current_thread);
 }

@@ -41,6 +41,8 @@ PUBLISHED:
   DataGraphTraverser(Thread *current_thread = Thread::get_current_thread());
   ~DataGraphTraverser();
 
+  INLINE Thread *get_current_thread() const;
+
   void traverse(PandaNode *node);
   void traverse_below(PandaNode *node, const DataNodeTransmit &output);
   void collect_leftovers();

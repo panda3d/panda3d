@@ -19,6 +19,7 @@
 #include "transform2sg.h"
 #include "transformState.h"
 #include "dataNodeTransmit.h"
+#include "dataGraphTraverser.h"
 
 
 TypeHandle Transform2SG::_type_handle;
@@ -73,12 +74,15 @@ get_node() const {
 //               calls.
 ////////////////////////////////////////////////////////////////////
 void Transform2SG::
-do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &) {
+do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
+                 DataNodeTransmit &) {
+  Thread *current_thread = trav->get_current_thread();
+
   if (input.has_data(_transform_input)) {
     const TransformState *transform;
     DCAST_INTO_V(transform, input.get_data(_transform_input).get_ptr());
     if (_node != (PandaNode *)NULL) {
-      _node->set_transform(transform);
+      _node->set_transform(transform, current_thread);
     }
   }
 }

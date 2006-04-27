@@ -69,7 +69,8 @@ MouseSubregion::
 //               calls.
 ////////////////////////////////////////////////////////////////////
 void MouseSubregion::
-do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
+                 DataNodeTransmit &output) {
   bool has_mouse = false;
 
   if (input.has_data(_xy_input)) {

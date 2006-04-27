@@ -119,7 +119,8 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 set_usage_hint(Geom::UsageHint usage_hint) {
-  CDWriter cdata(_cycler, true);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
   cdata->_usage_hint = usage_hint;
 
   Primitives::iterator pi;
@@ -130,7 +131,7 @@ set_usage_hint(Geom::UsageHint usage_hint) {
     (*pi)->set_usage_hint(usage_hint);
   }
 
-  clear_cache_stage();
+  clear_cache_stage(current_thread);
   cdata->_modified = Geom::get_next_modified();
 }
 
@@ -147,14 +148,15 @@ set_usage_hint(Geom::UsageHint usage_hint) {
 ////////////////////////////////////////////////////////////////////
 PT(GeomVertexData) Geom::
 modify_vertex_data() {
+  Thread *current_thread = Thread::get_current_thread();
   // Perform copy-on-write: if the reference count on the vertex data
   // is greater than 1, assume some other Geom has the same pointer,
   // so make a copy of it first.
-  CDWriter cdata(_cycler, true);
+  CDWriter cdata(_cycler, true, current_thread);
   if (cdata->_data->get_ref_count() > 1) {
     cdata->_data = new GeomVertexData(*cdata->_data);
   }
-  clear_cache_stage();
+  clear_cache_stage(current_thread);
   mark_internal_bounds_stale(cdata);
   return cdata->_data;
 }
@@ -171,10 +173,11 @@ modify_vertex_data() {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 set_vertex_data(const GeomVertexData *data) {
+  Thread *current_thread = Thread::get_current_thread();
   nassertv(check_will_be_valid(data));
-  CDWriter cdata(_cycler, true);
+  CDWriter cdata(_cycler, true, current_thread);
   cdata->_data = (GeomVertexData *)data;
-  clear_cache_stage();
+  clear_cache_stage(current_thread);
   mark_internal_bounds_stale(cdata);
   reset_geom_rendering(cdata);
 }
@@ -196,7 +199,8 @@ set_vertex_data(const GeomVertexData *data) {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 offset_vertices(const GeomVertexData *data, int offset) {
-  CDWriter cdata(_cycler, true);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
   cdata->_data = (GeomVertexData *)data;
 
 #ifndef NDEBUG
@@ -217,7 +221,7 @@ offset_vertices(const GeomVertexData *data, int offset) {
   }
 
   cdata->_modified = Geom::get_next_modified();
-  clear_cache_stage();
+  clear_cache_stage(current_thread);
   nassertv(all_is_valid);
 }
 
@@ -236,9 +240,10 @@ offset_vertices(const GeomVertexData *data, int offset) {
 ////////////////////////////////////////////////////////////////////
 int Geom::
 make_nonindexed(bool composite_only) {
+  Thread *current_thread = Thread::get_current_thread();
   int num_changed = 0;
 
-  CDWriter cdata(_cycler, true);
+  CDWriter cdata(_cycler, true, current_thread);
   CPT(GeomVertexData) orig_data = cdata->_data;
   PT(GeomVertexData) new_data = new GeomVertexData(*cdata->_data);
   new_data->clear_rows();
@@ -285,7 +290,7 @@ make_nonindexed(bool composite_only) {
     cdata->_data = new_data;
     cdata->_primitives.swap(new_prims);
     cdata->_modified = Geom::get_next_modified();
-    clear_cache_stage();
+    clear_cache_stage(current_thread);
   }
 
   return num_changed;
@@ -303,7 +308,8 @@ make_nonindexed(bool composite_only) {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 set_primitive(int i, const GeomPrimitive *primitive) {
-  CDWriter cdata(_cycler, true);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
   nassertv(i >= 0 && i < (int)cdata->_primitives.size());
   nassertv(primitive->check_valid(cdata->_data));
 
@@ -330,7 +336,7 @@ set_primitive(int i, const GeomPrimitive *primitive) {
   reset_geom_rendering(cdata);
   cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
-  clear_cache_stage();
+  clear_cache_stage(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -347,7 +353,8 @@ set_primitive(int i, const GeomPrimitive *primitive) {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 add_primitive(const GeomPrimitive *primitive) {
-  CDWriter cdata(_cycler, true);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
 
   nassertv(primitive->check_valid(cdata->_data));
 
@@ -374,7 +381,7 @@ add_primitive(const GeomPrimitive *primitive) {
   reset_geom_rendering(cdata);
   cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
-  clear_cache_stage();
+  clear_cache_stage(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -388,7 +395,8 @@ add_primitive(const GeomPrimitive *primitive) {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 remove_primitive(int i) {
-  CDWriter cdata(_cycler, true);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
   nassertv(i >= 0 && i < (int)cdata->_primitives.size());
   cdata->_primitives.erase(cdata->_primitives.begin() + i);
   if (cdata->_primitives.empty()) {
@@ -398,7 +406,7 @@ remove_primitive(int i) {
   reset_geom_rendering(cdata);
   cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
-  clear_cache_stage();
+  clear_cache_stage(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -415,12 +423,13 @@ remove_primitive(int i) {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 clear_primitives() {
-  CDWriter cdata(_cycler, true);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
   cdata->_primitives.clear();
   cdata->_primitive_type = PT_none;
   cdata->_shade_model = SM_uniform;
   reset_geom_rendering(cdata);
-  clear_cache_stage();
+  clear_cache_stage(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -436,7 +445,8 @@ clear_primitives() {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 decompose_in_place() {
-  CDWriter cdata(_cycler, true);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
 
 #ifndef NDEBUG
   bool all_is_valid = true;
@@ -455,7 +465,7 @@ decompose_in_place() {
 
   cdata->_modified = Geom::get_next_modified();
   reset_geom_rendering(cdata);
-  clear_cache_stage();
+  clear_cache_stage(current_thread);
 
   nassertv(all_is_valid);
 }
@@ -473,7 +483,8 @@ decompose_in_place() {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 rotate_in_place() {
-  CDWriter cdata(_cycler, true);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
 
 #ifndef NDEBUG
   bool all_is_valid = true;
@@ -491,7 +502,7 @@ rotate_in_place() {
   }
 
   cdata->_modified = Geom::get_next_modified();
-  clear_cache_stage();
+  clear_cache_stage(current_thread);
 
   nassertv(all_is_valid);
 }
@@ -511,13 +522,14 @@ rotate_in_place() {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 unify_in_place() {
+  Thread *current_thread = Thread::get_current_thread();
   if (get_num_primitives() <= 1) {
     // If we don't have more than one primitive to start with, no need
     // to do anything.
     return;
   }
 
-  CDWriter cdata(_cycler, true);
+  CDWriter cdata(_cycler, true, current_thread);
 
   PT(GeomPrimitive) new_prim;
 
@@ -563,7 +575,7 @@ unify_in_place() {
   cdata->_primitives.push_back(new_prim);
 
   cdata->_modified = Geom::get_next_modified();
-  clear_cache_stage();
+  clear_cache_stage(current_thread);
   reset_geom_rendering(cdata);
 }
 
@@ -810,12 +822,12 @@ clear_cache() {
 //               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 void Geom::
-clear_cache_stage() {
+clear_cache_stage(Thread *current_thread) {
   for (Cache::iterator ci = _cache.begin();
        ci != _cache.end();
        ++ci) {
     CacheEntry *entry = (*ci);
-    CDCacheWriter cdata(entry->_cycler);
+    CDCacheWriter cdata(entry->_cycler, current_thread);
     cdata->set_result(NULL, NULL);
   }
 }

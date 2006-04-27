@@ -373,7 +373,8 @@ do_general_event(const ButtonEvent &button_event, const string &button_name) {
 //               calls.
 ////////////////////////////////////////////////////////////////////
 void ButtonThrower::
-do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
+                 DataNodeTransmit &output) {
   // Clear our outgoing button events.  We'll fill it up again with
   // just those events that want to carry on.
   _button_events->clear();

@@ -64,7 +64,7 @@ public:
   virtual ~GeomMunger();
 
   INLINE bool is_registered() const;
-  INLINE static PT(GeomMunger) register_munger(GeomMunger *munger);
+  INLINE static PT(GeomMunger) register_munger(GeomMunger *munger, Thread *current_thread);
 
   INLINE CPT(GeomVertexFormat) munge_format(const GeomVertexFormat *format,
                                               const GeomVertexAnimationSpec &animation) const;
@@ -96,7 +96,7 @@ private:
   INLINE static Registry *get_registry();
   static void make_registry();
 
-  void do_register();
+  void do_register(Thread *current_thread);
   void do_unregister();
 
 private:
@@ -116,7 +116,7 @@ private:
   class EXPCL_PANDA Registry {
   public:
     Registry();
-    PT(GeomMunger) register_munger(GeomMunger *munger);
+    PT(GeomMunger) register_munger(GeomMunger *munger, Thread *current_thread);
     void unregister_munger(GeomMunger *munger);
 
     Mungers _mungers;

@@ -680,6 +680,16 @@ get_index_stride() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::get_vertices_reader
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const GeomVertexArrayDataPipelineReader *GeomPrimitivePipelineReader::
+get_vertices_reader() const {
+  return _vertices_reader;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_data
 //       Access: Public
 //  Description: 

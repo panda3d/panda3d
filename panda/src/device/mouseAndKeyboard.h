@@ -54,7 +54,8 @@ PUBLISHED:
 
 protected:
   // Inherited from DataNode
-  virtual void do_transmit_data(const DataNodeTransmit &input,
+  virtual void do_transmit_data(DataGraphTraverser *trav,
+                                const DataNodeTransmit &input,
                                 DataNodeTransmit &output);
 
 private:

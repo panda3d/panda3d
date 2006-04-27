@@ -303,23 +303,24 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 //               makes it the current vertex buffer for rendering.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-apply_vertex_buffer(VertexBufferContext *vbc) {
+apply_vertex_buffer(VertexBufferContext *vbc,
+                    const GeomVertexArrayDataPipelineReader *reader) {
   DXVertexBufferContext8 *dvbc = DCAST(DXVertexBufferContext8, vbc);
 
   if (dvbc->_vbuffer == NULL) {
     // Attempt to create a new vertex buffer.
     if (vertex_buffers &&
-        dvbc->get_data()->get_usage_hint() != Geom::UH_client) {
-      dvbc->create_vbuffer(*_screen);
+        reader->get_usage_hint() != Geom::UH_client) {
+      dvbc->create_vbuffer(*_screen, reader);
     }
 
     if (dvbc->_vbuffer != NULL) {
-      dvbc->upload_data();
+      dvbc->upload_data(reader);
 
-      dvbc->mark_loaded();
+      dvbc->mark_loaded(reader);
 
       _d3d_device->SetStreamSource
-        (0, dvbc->_vbuffer, dvbc->get_data()->get_array_format()->get_stride());
+        (0, dvbc->_vbuffer, reader->get_array_format()->get_stride());
       _active_vbuffer = dvbc;
       _active_ibuffer = NULL;
       dvbc->set_active(true);
@@ -329,21 +330,21 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     }
 
   } else {
-    if (dvbc->was_modified()) {
-      if (dvbc->changed_size()) {
+    if (dvbc->was_modified(reader)) {
+      if (dvbc->changed_size(reader)) {
         // We have to destroy the old vertex buffer and create a new
         // one.
-        dvbc->create_vbuffer(*_screen);
+        dvbc->create_vbuffer(*_screen, reader);
       }
 
-      dvbc->upload_data();
-      dvbc->mark_loaded();
+      dvbc->upload_data(reader);
+      dvbc->mark_loaded(reader);
       _active_vbuffer = NULL;
     }
 
     if (_active_vbuffer != dvbc) {
       _d3d_device->SetStreamSource
-        (0, dvbc->_vbuffer, dvbc->get_data()->get_array_format()->get_stride());
+        (0, dvbc->_vbuffer, reader->get_array_format()->get_stride());
       _active_vbuffer = dvbc;
       _active_ibuffer = NULL;
       dvbc->set_active(true);
@@ -400,16 +401,17 @@ prepare_index_buffer(GeomPrimitive *data) {
 //               makes it the current index buffer for rendering.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-apply_index_buffer(IndexBufferContext *ibc) {
+apply_index_buffer(IndexBufferContext *ibc,
+                   const GeomPrimitivePipelineReader *reader) {
   DXIndexBufferContext8 *dibc = DCAST(DXIndexBufferContext8, ibc);
 
   if (dibc->_ibuffer == NULL) {
     // Attempt to create a new index buffer.
-    dibc->create_ibuffer(*_screen);
+    dibc->create_ibuffer(*_screen, reader);
 
     if (dibc->_ibuffer != NULL) {
-      dibc->upload_data();
-      dibc->mark_loaded();
+      dibc->upload_data(reader);
+      dibc->mark_loaded(reader);
 
       _d3d_device->SetIndices(dibc->_ibuffer, 0);
       _active_ibuffer = dibc;
@@ -421,16 +423,16 @@ apply_index_buffer(IndexBufferContext *ibc) {
     }
 
   } else {
-    if (dibc->was_modified()) {
-      if (dibc->changed_size()) {
+    if (dibc->was_modified(reader)) {
+      if (dibc->changed_size(reader)) {
         // We have to destroy the old index buffer and create a new
         // one.
-        dibc->create_ibuffer(*_screen);
+        dibc->create_ibuffer(*_screen, reader);
       }
 
-      dibc->upload_data();
+      dibc->upload_data(reader);
 
-      dibc->mark_loaded();
+      dibc->mark_loaded(reader);
       _active_ibuffer = NULL;
     }
 
@@ -463,9 +465,9 @@ release_index_buffer(IndexBufferContext *ibc) {
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
 PT(GeomMunger) DXGraphicsStateGuardian8::
-make_geom_munger(const RenderState *state) {
+make_geom_munger(const RenderState *state, Thread *current_thread) {
   PT(DXGeomMunger8) munger = new DXGeomMunger8(this, state);
-  return GeomMunger::register_munger(munger);
+  return GeomMunger::register_munger(munger, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -805,7 +807,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   VertexBufferContext *vbc = ((GeomVertexArrayData *)(data->get_object()))->prepare_now(get_prepared_objects(), this);
   nassertr(vbc != (VertexBufferContext *)NULL, false);
-  apply_vertex_buffer(vbc);
+  apply_vertex_buffer(vbc, data);
 
   const GeomVertexAnimationSpec &animation =
     data_reader->get_format()->get_animation();
@@ -910,7 +912,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
       // Indexed, vbuffers.
       IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
-      apply_index_buffer(ibc);
+      apply_index_buffer(ibc, reader);
 
       _d3d_device->DrawIndexedPrimitive
         (D3DPT_TRIANGLELIST,
@@ -970,7 +972,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
         // Indexed, vbuffers, one line triangle strip.
         IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
         nassertv(ibc != (IndexBufferContext *)NULL);
-        apply_index_buffer(ibc);
+        apply_index_buffer(ibc, reader);
 
         _d3d_device->DrawIndexedPrimitive
           (D3DPT_TRIANGLESTRIP,
@@ -1027,7 +1029,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
         // Indexed, vbuffers, individual triangle strips.
         IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
         nassertv(ibc != (IndexBufferContext *)NULL);
-        apply_index_buffer(ibc);
+        apply_index_buffer(ibc, reader);
 
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
@@ -1127,7 +1129,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
       // Indexed, vbuffers.
       IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
-      apply_index_buffer(ibc);
+      apply_index_buffer(ibc, reader);
 
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
@@ -1217,7 +1219,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
       // Indexed, vbuffers.
       IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
       nassertv(ibc != (IndexBufferContext *)NULL);
-      apply_index_buffer(ibc);
+      apply_index_buffer(ibc, reader);
 
       _d3d_device->DrawIndexedPrimitive
         (D3DPT_LINELIST,

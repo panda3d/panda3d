@@ -18,6 +18,7 @@
 
 #include "mouseWatcher.h"
 #include "config_tform.h"
+#include "dataGraphTraverser.h"
 #include "mouseWatcherParameter.h"
 #include "mouseAndKeyboard.h"
 #include "mouseData.h"
@@ -107,7 +108,7 @@ remove_region(MouseWatcherRegion *region) {
     _preferred_button_down_region = (MouseWatcherRegion *)NULL;
   }
 
-  return MouseWatcherGroup::remove_region(region);
+  return MouseWatcherGroup::do_remove_region(region);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1099,7 +1100,9 @@ consider_keyboard_suppress(const MouseWatcherRegion *region) {
 //               calls.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
-do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
+do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
+                 DataNodeTransmit &output) {
+  Thread *current_thread = trav->get_current_thread();
   MutexHolder holder(_lock);
 
   // Initially, we do not suppress any events to objects below us in
@@ -1129,7 +1132,8 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
     if (_display_region != (DisplayRegion *)NULL) {
       // If we've got a display region, constrain the mouse to it.
       int xo, yo, width, height;
-      _display_region->get_region_pixels_i(xo, yo, width, height);
+      DisplayRegionPipelineReader dr_reader(_display_region, current_thread);
+      dr_reader.get_region_pixels_i(xo, yo, width, height);
 
       if (p[0] < xo || p[0] >= xo + width || 
           p[1] < yo || p[1] >= yo + height) {
@@ -1143,7 +1147,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
       } else {
         // The mouse is within the display region; rescale it.
         float left, right, bottom, top;
-        _display_region->get_dimensions(left, right, bottom, top);
+        dr_reader.get_dimensions(left, right, bottom, top);
 
         // Need to translate this into DisplayRegion [0, 1] space
         float x = (f[0] + 1.0f) / 2.0f;

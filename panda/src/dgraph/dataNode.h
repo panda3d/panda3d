@@ -50,6 +50,7 @@
 #include "pandaNode.h"
 #include "pointerTo.h"
 
+class DataGraphTraverser;
 class DataNodeTransmit;
 
 ////////////////////////////////////////////////////////////////////
@@ -73,7 +74,8 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
 
-  void transmit_data(const DataNodeTransmit inputs[],
+  void transmit_data(DataGraphTraverser *trav,
+                     const DataNodeTransmit inputs[],
                      DataNodeTransmit &output);
 
   INLINE int get_num_inputs() const;
@@ -93,7 +95,8 @@ protected:
   virtual void parents_changed();
 
   // Local to DataNode
-  virtual void do_transmit_data(const DataNodeTransmit &input,
+  virtual void do_transmit_data(DataGraphTraverser *trav,
+                                const DataNodeTransmit &input,
                                 DataNodeTransmit &output);
 
 private:

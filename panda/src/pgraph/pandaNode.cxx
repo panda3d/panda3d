@@ -392,7 +392,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
                   const TransformState *transform, Thread *current_thread) const {
   CPT(TransformState) next_transform = transform->compose(get_transform());
 
-  Children cr = get_children();
+  Children cr = get_children(current_thread);
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
     cr.get_child(i)->calc_tight_bounds(min_point, max_point,
@@ -1001,7 +1001,7 @@ set_attrib(const RenderAttrib *attrib, int override) {
 
   // Maybe we changed a ClipPlaneAttrib.
   if (any_changed) {
-    mark_bounds_stale();
+    mark_bounds_stale(current_thread);
     state_changed();
   }
 }
@@ -1033,7 +1033,7 @@ clear_attrib(TypeHandle type) {
   // We mark the bounds stale when the state changes, in case
   // we have changed a ClipPlaneAttrib.
   if (any_changed) {
-    mark_bounds_stale();
+    mark_bounds_stale(current_thread);
     state_changed();
   }
 }
@@ -1099,7 +1099,7 @@ set_state(const RenderState *state, Thread *current_thread) {
 
   // Maybe we have changed a ClipPlaneAttrib.
   if (any_changed) {
-    mark_bounds_stale();
+    mark_bounds_stale(current_thread);
     state_changed();
   }
 }
@@ -1113,10 +1113,9 @@ set_state(const RenderState *state, Thread *current_thread) {
 //               set_attrib().
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-set_effects(const RenderEffects *effects) {
+set_effects(const RenderEffects *effects, Thread *current_thread) {
   // Apply this operation to the current stage as well as to all
   // upstream stages.
-  Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
     CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage, current_thread);
     cdata->_effects = effects;
@@ -1152,7 +1151,7 @@ set_transform(const TransformState *transform, Thread *current_thread) {
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light);
 
   if (any_changed) {
-    mark_bounds_stale();
+    mark_bounds_stale(current_thread);
     transform_changed();
   }
 }
@@ -1254,10 +1253,9 @@ reset_all_prev_transform(Thread *current_thread) {
 //               any one key's value.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-set_tag(const string &key, const string &value) {
+set_tag(const string &key, const string &value, Thread *current_thread) {
   // Apply this operation to the current stage as well as to all
   // upstream stages.
-  Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
     CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage, current_thread);
     cdata->_tag_data[key] = value;
@@ -1273,8 +1271,7 @@ set_tag(const string &key, const string &value) {
 //               has_tag() will return false for the indicated key.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-clear_tag(const string &key) {
-  Thread *current_thread = Thread::get_current_thread();
+clear_tag(const string &key, Thread *current_thread) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
     CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage, current_thread);
     cdata->_tag_data.erase(key);
@@ -1547,7 +1544,7 @@ adjust_draw_mask(DrawMask show_mask, DrawMask hide_mask, DrawMask clear_mask) {
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
 
   if (any_changed) {
-    mark_bounds_stale();
+    mark_bounds_stale(current_thread);
     draw_mask_changed();
   }
 }
@@ -1641,7 +1638,7 @@ set_into_collide_mask(CollideMask mask) {
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
 
   if (any_changed) {
-    mark_bounds_stale();
+    mark_bounds_stale(current_thread);
   }
 }
 
@@ -1668,8 +1665,7 @@ get_legal_collide_mask() const {
 //               set at CollisionNodes at this level and below.
 ////////////////////////////////////////////////////////////////////
 CollideMask PandaNode::
-get_net_collide_mask() const {
-  Thread *current_thread = Thread::get_current_thread();
+get_net_collide_mask(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
   CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
@@ -1689,8 +1685,7 @@ get_net_collide_mask() const {
 //               at this level and below.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) PandaNode::
-get_off_clip_planes() const {
-  Thread *current_thread = Thread::get_current_thread();
+get_off_clip_planes(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
   CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
@@ -1811,8 +1806,7 @@ set_bound(const BoundingVolume *volume) {
 //               children's bounding volumes.
 ////////////////////////////////////////////////////////////////////
 CPT(BoundingVolume) PandaNode::
-get_bounds() const {
-  Thread *current_thread = Thread::get_current_thread();
+get_bounds(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
   CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
@@ -2943,7 +2937,7 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
     child_volumes.push_back(internal_bounds);
 
     // Now expand those contents to include all of our children.
-    Children children = get_children();
+    Children children = get_children(current_thread);
     int num_children = children.get_num_children();
 
     for (int i = 0; i < num_children; ++i) {
@@ -3072,7 +3066,7 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
   
 	// If we have a transform, apply it to the bounding volume we
 	// just computed.
-	CPT(TransformState) transform = get_transform();
+	CPT(TransformState) transform = get_transform(current_thread);
 	if (!transform->is_identity()) {
 	  gbv->xform(transform->get_mat());
 	}

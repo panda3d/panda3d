@@ -2634,7 +2634,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
     gvbc->set_active(true);
   }
 
-  if (gvbc->was_modified()) {
+  if (gvbc->was_modified(reader)) {
     PStatTimer timer(_load_vertex_buffer_pcollector, reader->get_current_thread());
     int num_bytes = reader->get_data_size_bytes();
     if (GLCAT.is_spam()) {
@@ -2643,7 +2643,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
         << " bytes into vertex buffer " << gvbc->_index << "\n";
     }
     if (num_bytes != 0) {
-      if (gvbc->changed_size() || gvbc->changed_usage_hint()) {
+      if (gvbc->changed_size(reader) || gvbc->changed_usage_hint(reader)) {
         _glBufferData(GL_ARRAY_BUFFER, num_bytes,
                       reader->get_data(),
                       get_usage(reader->get_usage_hint()));
@@ -2655,7 +2655,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
       _data_transferred_pcollector.add_level(num_bytes);
     }
 
-    gvbc->mark_loaded();
+    gvbc->mark_loaded(reader);
   }
 
   report_my_gl_errors();
@@ -2803,7 +2803,7 @@ apply_index_buffer(IndexBufferContext *ibc,
     gibc->set_active(true);
   }
 
-  if (gibc->was_modified()) {
+  if (gibc->was_modified(reader)) {
     PStatTimer timer(_load_index_buffer_pcollector, reader->get_current_thread());
     int num_bytes = reader->get_data_size_bytes();
     if (GLCAT.is_spam()) {
@@ -2812,7 +2812,7 @@ apply_index_buffer(IndexBufferContext *ibc,
         << " bytes into index buffer " << gibc->_index << "\n";
     }
     if (num_bytes != 0) {
-      if (gibc->changed_size() || gibc->changed_usage_hint()) {
+      if (gibc->changed_size(reader) || gibc->changed_usage_hint(reader)) {
         _glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_bytes,
                       reader->get_data(),
                       get_usage(reader->get_usage_hint()));
@@ -2823,7 +2823,7 @@ apply_index_buffer(IndexBufferContext *ibc,
       }
       _data_transferred_pcollector.add_level(num_bytes);
     }
-    gibc->mark_loaded();
+    gibc->mark_loaded(reader);
   }
 
   report_my_gl_errors();
@@ -2967,9 +2967,9 @@ end_occlusion_query() {
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
 PT(GeomMunger) CLP(GraphicsStateGuardian)::
-make_geom_munger(const RenderState *state) {
+make_geom_munger(const RenderState *state, Thread *current_thread) {
   PT(CLP(GeomMunger)) munger = new CLP(GeomMunger)(this, state);
-  return GeomMunger::register_munger(munger);
+  return GeomMunger::register_munger(munger, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3035,7 +3035,6 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertv(tc != (TextureContext *)NULL);
-  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
   apply_texture(tc);
 
   if (z >= 0) {

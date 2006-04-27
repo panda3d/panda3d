@@ -116,8 +116,8 @@ get_window() const {
 //               associated.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath DisplayRegion::
-get_camera() const {
-  CDReader cdata(_cycler);
+get_camera(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
   return cdata->_camera;
 }
 

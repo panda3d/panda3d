@@ -247,10 +247,10 @@ list_aux_scene_data(ostream &out) const {
 //               elements released.
 ////////////////////////////////////////////////////////////////////
 int Camera::
-cleanup_aux_scene_data() {
+cleanup_aux_scene_data(Thread *current_thread) {
   int num_deleted = 0;
 
-  double now = ClockObject::get_global_clock()->get_frame_time();
+  double now = ClockObject::get_global_clock()->get_frame_time(current_thread);
 
   AuxData::iterator ai;
   ai = _aux_data.begin();

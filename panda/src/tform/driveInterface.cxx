@@ -393,7 +393,8 @@ apply(double x, double y, bool any_button) {
 //               calls.
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
-do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
+                 DataNodeTransmit &output) {
   // First, update our modifier buttons.
   bool required_buttons_match;
   const ButtonEventList *button_events = check_button_events(input, required_buttons_match);

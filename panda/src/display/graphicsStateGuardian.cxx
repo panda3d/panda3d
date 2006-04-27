@@ -578,13 +578,13 @@ end_occlusion_query() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_geom_munger
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Looks up or creates a GeomMunger object to munge
 //               vertices appropriate to this GSG for the indicated
 //               state.
 ////////////////////////////////////////////////////////////////////
 PT(GeomMunger) GraphicsStateGuardian::
-get_geom_munger(const RenderState *state) {
+get_geom_munger(const RenderState *state, Thread *current_thread) {
   // Before we even look up the map, see if the _last_mi value points
   // to this GSG.  This is likely because we tend to visit the same
   // state multiple times during a frame.  Also, this might well be
@@ -604,7 +604,7 @@ get_geom_munger(const RenderState *state) {
   }
 
   // Nothing in the map; create a new entry.
-  PT(GeomMunger) munger = make_geom_munger(state);
+  PT(GeomMunger) munger = make_geom_munger(state, current_thread);
 
   // Cast the RenderState to a non-const object.  We can do this
   // because we are only updating a cache within the RenderState, not
@@ -623,7 +623,7 @@ get_geom_munger(const RenderState *state) {
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
 PT(GeomMunger) GraphicsStateGuardian::
-make_geom_munger(const RenderState *state) {
+make_geom_munger(const RenderState *state, Thread *current_thread) {
   // The default implementation returns no munger at all, but
   // presumably, every kind of GSG needs some special munging action,
   // so real GSG's will override this to return something more

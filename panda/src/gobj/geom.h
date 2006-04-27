@@ -99,7 +99,7 @@ PUBLISHED:
   virtual bool copy_primitives_from(const Geom *other);
 
   int get_num_bytes() const;
-  INLINE UpdateSeq get_modified() const;
+  INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
 
   void transform_vertices(const LMatrix4f &mat);
   bool check_valid() const;
@@ -114,7 +114,7 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level = 0) const;
 
   void clear_cache();
-  void clear_cache_stage();
+  void clear_cache_stage(Thread *current_thread);
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool release(PreparedGraphicsObjects *prepared_objects);

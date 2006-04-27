@@ -111,30 +111,7 @@ has_region(MouseWatcherRegion *region) const {
 bool MouseWatcherGroup::
 remove_region(MouseWatcherRegion *region) {
   MutexHolder holder(_lock);
-
-  // See if the region is in the vector.
-  PT(MouseWatcherRegion) pt = region;
-  Regions::iterator ri = 
-    find(_regions.begin(), _regions.end(), pt);
-  if (ri != _regions.end()) {
-    // Found it, now erase it
-#ifndef NDEBUG
-    // Also remove it from the vizzes.
-    if (_show_regions) {
-      nassertr(_vizzes.size() == _regions.size(), false);
-      size_t index = ri - _regions.begin();
-      Vizzes::iterator vi = _vizzes.begin() + index;
-      _show_regions_root.node()->remove_child(*vi);
-      _vizzes.erase(vi);
-    }
-#endif  // NDEBUG    
-
-    _regions.erase(ri);
-    return true;
-  }
-
-  // Did not find the region to erase
-  return false;
+  return do_remove_region(region);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -286,6 +263,40 @@ hide_regions() {
   _vizzes.clear();
 }
 #endif  // NDEBUG
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherGroup::do_remove_region
+//       Access: Protected
+//  Description: The internal implementation of remove_region();
+//               assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+bool MouseWatcherGroup::
+do_remove_region(MouseWatcherRegion *region) {
+  // See if the region is in the vector.
+  PT(MouseWatcherRegion) pt = region;
+  Regions::iterator ri = 
+    find(_regions.begin(), _regions.end(), pt);
+  if (ri != _regions.end()) {
+    // Found it, now erase it
+#ifndef NDEBUG
+    // Also remove it from the vizzes.
+    if (_show_regions) {
+      nassertr(_vizzes.size() == _regions.size(), false);
+      size_t index = ri - _regions.begin();
+      Vizzes::iterator vi = _vizzes.begin() + index;
+      _show_regions_root.node()->remove_child(*vi);
+      _vizzes.erase(vi);
+    }
+#endif  // NDEBUG    
+
+    _regions.erase(ri);
+    return true;
+  }
+
+  // Did not find the region to erase
+  return false;
+}
 
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////

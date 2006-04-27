@@ -600,15 +600,15 @@ render_frame() {
       for (int i = 0; i < num_drs; ++i) {
         DisplayRegion *dr = win->get_active_display_region(i);
         if (dr != (DisplayRegion *)NULL) {
-          NodePath camera_np = dr->get_camera();
+          NodePath camera_np = dr->get_camera(current_thread);
           if (!camera_np.is_empty()) {
             Camera *camera = DCAST(Camera, camera_np.node());
             NodePath scene = camera->get_scene();
             if (scene.is_empty()) {
-              scene = camera_np.get_top();
+              scene = camera_np.get_top(current_thread);
             }
             if (!scene.is_empty()) {
-              scene.get_bounds();
+              scene.get_bounds(current_thread);
             }
           }
         }
@@ -1348,7 +1348,8 @@ do_flip_frame(Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 PT(SceneSetup) GraphicsEngine::
 setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
-  PStatTimer timer(_cull_setup_pcollector, dr->get_current_thread());
+  Thread *current_thread = dr->get_current_thread();
+  PStatTimer timer(_cull_setup_pcollector, current_thread);
 
   GraphicsOutput *window = dr->get_window();
   // The window pointer shouldn't be NULL, since we presumably got to
@@ -1369,7 +1370,7 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
     // Camera inactive, no draw.
     return NULL;
   }
-  camera_node->cleanup_aux_scene_data();
+  camera_node->cleanup_aux_scene_data(current_thread);
 
   Lens *lens = camera_node->get_lens();
   if (lens == (Lens *)NULL) {
@@ -1382,7 +1383,7 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
     // If there's no explicit scene specified, use whatever scene the
     // camera is parented within.  This is the normal and preferred
     // case; the use of an explicit scene is now deprecated.
-    scene_root = camera.get_top();
+    scene_root = camera.get_top(current_thread);
   }
 
   PT(SceneSetup) scene_setup = new SceneSetup;
@@ -1394,9 +1395,9 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   // scene_root, because the scene_root's own transform is immediately
   // applied to these during rendering.  (Normally, the parent of the
   // scene_root is the empty NodePath, although it need not be.)
-  NodePath scene_parent = scene_root.get_parent();
-  CPT(TransformState) camera_transform = camera.get_transform(scene_parent);
-  CPT(TransformState) world_transform = scene_parent.get_transform(camera);
+  NodePath scene_parent = scene_root.get_parent(current_thread);
+  CPT(TransformState) camera_transform = camera.get_transform(scene_parent, current_thread);
+  CPT(TransformState) world_transform = scene_parent.get_transform(camera, current_thread);
 
   CPT(RenderState) initial_state = camera_node->get_initial_state();
 
@@ -1451,9 +1452,9 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
       PT(GeometricBoundingVolume) local_frustum;
       local_frustum = DCAST(GeometricBoundingVolume, bv->make_copy());
 
-      NodePath scene_parent = scene_setup->get_scene_root().get_parent();
+      NodePath scene_parent = scene_setup->get_scene_root().get_parent(current_thread);
       CPT(TransformState) cull_center_transform = 
-        scene_setup->get_cull_center().get_transform(scene_parent);
+        scene_setup->get_cull_center().get_transform(scene_parent, current_thread);
       local_frustum->xform(cull_center_transform->get_mat());
 
       trav.set_view_frustum(local_frustum);

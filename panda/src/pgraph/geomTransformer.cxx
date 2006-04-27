@@ -131,8 +131,9 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler, current_thread) {
     GeomNode::CDStageWriter cdata(node->_cycler, pipeline_stage, current_thread);
-    GeomNode::Geoms::iterator gi;
-    for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    GeomNode::GeomList::iterator gi;
+    GeomNode::GeomList &geoms = *(cdata->modify_geoms());
+    for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
       GeomNode::GeomEntry &entry = (*gi);
       PT(Geom) new_geom = entry._geom->make_copy();
       if (transform_vertices(new_geom, mat)) {
@@ -224,8 +225,9 @@ transform_texcoords(GeomNode *node, const InternalName *from_name,
   bool any_changed = false;
 
   GeomNode::CDWriter cdata(node->_cycler);
-  GeomNode::Geoms::iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+  GeomNode::GeomList::iterator gi;
+  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     PT(Geom) new_geom = entry._geom->make_copy();
     if (transform_texcoords(new_geom, from_name, to_name, mat)) {
@@ -283,8 +285,9 @@ set_color(GeomNode *node, const Colorf &color) {
   bool any_changed = false;
 
   GeomNode::CDWriter cdata(node->_cycler);
-  GeomNode::Geoms::iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+  GeomNode::GeomList::iterator gi;
+  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     PT(Geom) new_geom = entry._geom->make_copy();
     if (set_color(new_geom, color)) {
@@ -345,8 +348,9 @@ transform_colors(GeomNode *node, const LVecBase4f &scale) {
   bool any_changed = false;
 
   GeomNode::CDWriter cdata(node->_cycler);
-  GeomNode::Geoms::iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+  GeomNode::GeomList::iterator gi;
+  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     PT(Geom) new_geom = entry._geom->make_copy();
     if (transform_colors(new_geom, scale)) {
@@ -371,8 +375,9 @@ apply_state(GeomNode *node, const RenderState *state) {
   bool any_changed = false;
 
   GeomNode::CDWriter cdata(node->_cycler);
-  GeomNode::Geoms::iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+  GeomNode::GeomList::iterator gi;
+  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     CPT(RenderState) new_state = state->compose(entry._state);
     if (entry._state != new_state) {
@@ -638,8 +643,9 @@ collect_vertex_data(GeomNode *node, int collect_bits) {
   GeomTransformer *dynamic = NULL;
 
   GeomNode::CDWriter cdata(node->_cycler);
-  GeomNode::Geoms::iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+  GeomNode::GeomList::iterator gi;
+  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     PT(Geom) new_geom = entry._geom->make_copy();
     entry._geom = new_geom;

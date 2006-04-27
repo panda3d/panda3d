@@ -188,7 +188,11 @@ DXVertexBufferContext8::
 //               to it).
 ////////////////////////////////////////////////////////////////////
 void DXVertexBufferContext8::
-create_vbuffer(DXScreenData &scrn) {
+create_vbuffer(DXScreenData &scrn,
+               const GeomVertexArrayDataPipelineReader *reader) {
+  nassertv(reader->get_object() == get_data());
+  Thread *current_thread = reader->get_current_thread();
+
   if (_vbuffer != NULL) {
     if (dxgsg8_cat.is_debug()) {
       dxgsg8_cat.debug()
@@ -199,12 +203,13 @@ create_vbuffer(DXScreenData &scrn) {
     _vbuffer = NULL;
   }
 
-  PStatTimer timer(GraphicsStateGuardian::_create_vertex_buffer_pcollector);
+  PStatTimer timer(GraphicsStateGuardian::_create_vertex_buffer_pcollector,
+                   current_thread);
 
   HRESULT hr = scrn._d3d_device->CreateVertexBuffer
-//    (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY,
+//    (reader->get_data_size_bytes(), D3DUSAGE_WRITEONLY,
 //     _fvf, D3DPOOL_MANAGED, &_vbuffer);
-     (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC,
+     (reader->get_data_size_bytes(), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC,
      _fvf, D3DPOOL_DEFAULT, &_vbuffer);
   if (FAILED(hr)) {
     dxgsg8_cat.warning()
@@ -214,8 +219,8 @@ create_vbuffer(DXScreenData &scrn) {
     if (dxgsg8_cat.is_debug()) {
       dxgsg8_cat.debug()
         << "created vertex buffer " << _vbuffer << ": "
-        << get_data()->get_num_rows() << " vertices "
-        << *get_data()->get_array_format() << "\n";
+        << reader->get_num_rows() << " vertices "
+        << *reader->get_array_format() << "\n";
     }
   }
 }
@@ -227,11 +232,14 @@ create_vbuffer(DXScreenData &scrn) {
 //               DirectX.
 ////////////////////////////////////////////////////////////////////
 void DXVertexBufferContext8::
-upload_data() {
+upload_data(const GeomVertexArrayDataPipelineReader *reader) {
+  nassertv(reader->get_object() == get_data());
   nassertv(_vbuffer != NULL);
-  PStatTimer timer(GraphicsStateGuardian::_load_vertex_buffer_pcollector);
+  Thread *current_thread = reader->get_current_thread();
+  PStatTimer timer(GraphicsStateGuardian::_load_vertex_buffer_pcollector,
+                   current_thread);
 
-  int data_size = get_data()->get_data_size_bytes();
+  int data_size = reader->get_data_size_bytes();
 
   if (dxgsg8_cat.is_spam()) {
     dxgsg8_cat.spam()
@@ -249,7 +257,7 @@ upload_data() {
   }
 
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
-  memcpy(local_pointer, get_data()->get_data(), data_size);
+  memcpy(local_pointer, reader->get_data(), data_size);
 
   _vbuffer->Unlock();
 }

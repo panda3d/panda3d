@@ -18,27 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomNode::GeomEntry::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE GeomNode::GeomEntry::
-GeomEntry(Geom *geom, const RenderState *state) :
-  _geom(geom),
-  _state(state)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomNode::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE GeomNode::CData::
-CData() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::get_num_geoms
 //       Access: Public
 //  Description: Returns the number of geoms in the node.
@@ -46,7 +25,7 @@ CData() {
 INLINE int GeomNode::
 get_num_geoms() const {
   CDReader cdata(_cycler);
-  return cdata->_geoms.size();
+  return cdata->get_geoms()->size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,8 +39,9 @@ get_num_geoms() const {
 INLINE const Geom *GeomNode::
 get_geom(int n) const {
   CDReader cdata(_cycler);
-  nassertr(n >= 0 && n < (int)cdata->_geoms.size(), NULL);
-  return cdata->_geoms[n]._geom;
+  const GeomList &geoms = *(cdata->get_geoms());
+  nassertr(n >= 0 && n < (int)geoms.size(), NULL);
+  return geoms[n]._geom;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,10 +78,11 @@ get_unique_geom(int n) {
 INLINE Geom *GeomNode::
 modify_geom(int n) {
   CDWriter cdata(_cycler, true);
-  nassertr(n >= 0 && n < (int)cdata->_geoms.size(), NULL);
-  Geom *geom = cdata->_geoms[n]._geom;
+  GeomList &geoms = *(cdata->modify_geoms());
+  nassertr(n >= 0 && n < (int)geoms.size(), NULL);
+  Geom *geom = geoms[n]._geom;
   if (geom->get_ref_count() > 1) {
-    geom = cdata->_geoms[n]._geom = geom->make_copy();
+    geom = geoms[n]._geom = geom->make_copy();
   }
 
   return geom;
@@ -120,8 +101,9 @@ modify_geom(int n) {
 INLINE const RenderState *GeomNode::
 get_geom_state(int n) const {
   CDReader cdata(_cycler);
-  nassertr(n >= 0 && n < (int)cdata->_geoms.size(), NULL);
-  return cdata->_geoms[n]._state;
+  const GeomList &geoms = *(cdata->get_geoms());
+  nassertr(n >= 0 && n < (int)geoms.size(), NULL);
+  return geoms[n]._state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,8 +126,9 @@ get_geom_state(int n) const {
 INLINE void GeomNode::
 set_geom_state(int n, const RenderState *state) {
   CDWriter cdata(_cycler, true);
-  nassertv(n >= 0 && n < (int)cdata->_geoms.size());
-  cdata->_geoms[n]._state = state;
+  GeomList &geoms = *(cdata->modify_geoms());
+  nassertv(n >= 0 && n < (int)geoms.size());
+  geoms[n]._state = state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,9 +139,10 @@ set_geom_state(int n, const RenderState *state) {
 INLINE void GeomNode::
 remove_geom(int n) {
   CDWriter cdata(_cycler);
-  nassertv(n >= 0 && n < (int)cdata->_geoms.size());
+  GeomList &geoms = *(cdata->modify_geoms());
+  nassertv(n >= 0 && n < (int)geoms.size());
 
-  cdata->_geoms.erase(cdata->_geoms.begin() + n);
+  geoms.erase(geoms.begin() + n);
   mark_internal_bounds_stale();
 }
 
@@ -170,7 +154,7 @@ remove_geom(int n) {
 INLINE void GeomNode::
 remove_all_geoms() {
   CDWriter cdata(_cycler);
-  cdata->_geoms.clear();
+  cdata->set_geoms(new GeomList);
   mark_internal_bounds_stale();
 }
 
@@ -212,4 +196,167 @@ get_name_count(const GeomNode::NameCount &name_count, const InternalName *name) 
     return (*ni).second;
   }
   return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::get_geoms
+//       Access: Public
+//  Description: Returns an object that can be used to walk through
+//               the list of geoms of the node.  When you intend to
+//               visit multiple geoms, using this is slightly
+//               faster than calling get_geom() directly on the
+//               GeomNode, since this object avoids reopening the
+//               PipelineCycler each time.
+//
+//               This object also protects you from self-modifying
+//               loops (e.g. adding or removing geoms during
+//               traversal), since a virtual copy of the geoms is
+//               made ahead of time.  The virtual copy is fast--it is
+//               a form of copy-on-write, so the list is not actually
+//               copied unless it is modified during the traversal.
+////////////////////////////////////////////////////////////////////
+INLINE GeomNode::Geoms GeomNode::
+get_geoms(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
+  return Geoms(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::GeomEntry::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomNode::GeomEntry::
+GeomEntry(Geom *geom, const RenderState *state) :
+  _geom(geom),
+  _state(state)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::CData::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomNode::CData::
+CData() :
+  _geoms(new GeomNode::GeomList)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::CData::get_geoms
+//       Access: Public
+//  Description: Returns a read-only pointer to the _geoms list.
+////////////////////////////////////////////////////////////////////
+INLINE const GeomNode::GeomList *GeomNode::CData::
+get_geoms() const {
+  return _geoms;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::CData::modify_geoms
+//       Access: Public
+//  Description: Returns a modifiable, unique pointer to the _geoms
+//               list.
+////////////////////////////////////////////////////////////////////
+INLINE GeomNode::GeomList *GeomNode::CData::
+modify_geoms() {
+  if (_geoms->get_ref_count() > 1) {
+    _geoms = new GeomList(*_geoms);
+  }
+  return _geoms;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::CData::set_geoms
+//       Access: Public
+//  Description: Replaces the _geoms list with a new list.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomNode::CData::
+set_geoms(GeomNode::GeomList *geoms) {
+  _geoms = geoms;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::Geoms::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomNode::Geoms::
+Geoms() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::Geoms::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomNode::Geoms::
+Geoms(const GeomNode::CData *cdata) :
+  _geoms(cdata->get_geoms())
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::Geoms::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomNode::Geoms::
+Geoms(const GeomNode::Geoms &copy) :
+  _geoms(copy._geoms)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::Geoms::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void GeomNode::Geoms::
+operator = (const GeomNode::Geoms &copy) {
+  _geoms = copy._geoms;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::Geoms::get_num_geoms
+//       Access: Public
+//  Description: Returns the number of geoms of the node.
+////////////////////////////////////////////////////////////////////
+INLINE int GeomNode::Geoms::
+get_num_geoms() const {
+  nassertr(_geoms != (GeomList *)NULL, 0);
+  return _geoms->size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::Geoms::get_geom
+//       Access: Public
+//  Description: Returns the nth geom of the node.  This object should
+//               not be modified, since the same object might be
+//               shared between multiple different GeomNodes.
+////////////////////////////////////////////////////////////////////
+INLINE const Geom *GeomNode::Geoms::
+get_geom(int n) const {
+  nassertr(_geoms != (GeomList *)NULL, NULL);
+  nassertr(n >= 0 && n < (int)_geoms->size(), NULL);
+  return (*_geoms)[n]._geom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::Geoms::get_geom_state
+//       Access: Public
+//  Description: Returns the RenderState associated with the nth geom
+//               of the node.  This is just the RenderState directly
+//               associated with the Geom; the actual state in which
+//               the Geom is rendered will also be affected by
+//               RenderStates that appear on the scene graph in nodes
+//               above this GeomNode.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderState *GeomNode::Geoms::
+get_geom_state(int n) const {
+  nassertr(_geoms != (GeomList *)NULL, NULL);
+  nassertr(n >= 0 && n < (int)_geoms->size(), NULL);
+  return (*_geoms)[n]._state;
 }

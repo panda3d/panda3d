@@ -36,88 +36,6 @@
 TypeHandle GeomNode::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomNode::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-GeomNode::CData::
-CData(const GeomNode::CData &copy) :
-  _geoms(copy._geoms)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomNode::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-CycleData *GeomNode::CData::
-make_copy() const {
-  return new CData(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomNode::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
-void GeomNode::CData::
-write_datagram(BamWriter *manager, Datagram &dg) const {
-  int num_geoms = _geoms.size();
-  nassertv(num_geoms == (int)(PN_uint16)num_geoms);
-  dg.add_uint16(num_geoms);
-  
-  Geoms::const_iterator gi;
-  for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {
-    const GeomEntry &entry = (*gi);
-    manager->write_pointer(dg, entry._geom);
-    manager->write_pointer(dg, entry._state);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomNode::CData::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
-int GeomNode::CData::
-complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int pi = CycleData::complete_pointers(p_list, manager);
-
-  // Get the geom and state pointers.
-  Geoms::iterator gi;
-  for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {
-    GeomEntry &entry = (*gi);
-    entry._geom = DCAST(Geom, p_list[pi++]);
-    entry._state = DCAST(RenderState, p_list[pi++]);
-  }
-
-  return pi;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomNode::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new GeomNode.
-////////////////////////////////////////////////////////////////////
-void GeomNode::CData::
-fillin(DatagramIterator &scan, BamReader *manager) {
-  int num_geoms = scan.get_uint16();
-  // Read the list of geoms and states.  Push back a NULL for each one.
-  _geoms.reserve(num_geoms);
-  for (int i = 0; i < num_geoms; i++) {
-    manager->read_pointer(scan);
-    manager->read_pointer(scan);
-    _geoms.push_back(GeomEntry(NULL, NULL));
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::Constructor
 //       Access: Published
 //  Description:
@@ -194,8 +112,9 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
-    Geoms::iterator gi;
-    for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    GeomList::iterator gi;
+    GeomList &geoms = *(cdata->modify_geoms());
+    for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
       GeomEntry &entry = (*gi);
       PT(Geom) new_geom = entry._geom->make_copy();
       
@@ -228,7 +147,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
         if (geom_attribs._tex_matrix != (const RenderAttrib *)NULL) {
           // Determine which texture coordinate names are used more than
           // once.  This assumes we have discovered all of the textures
-          // that are in effect on the geomNode; this may not be true if
+          // that are in effect on the GeomNode; this may not be true if
           // there is a texture that has been applied at a node above
           // that from which we started the flatten operation, but
           // caveat programmer.
@@ -357,8 +276,9 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
   const LMatrix4f &mat = next_transform->get_mat();
 
   CDReader cdata(_cycler, current_thread);
-  Geoms::const_iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+  GeomList::const_iterator gi;
+  const GeomList &geoms = *(cdata->get_geoms());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     const Geom *geom = (*gi)._geom;
     geom->calc_tight_bounds(min_point, max_point, found_any,
 			    geom->get_vertex_data(current_thread)->animate_vertices(current_thread),
@@ -418,7 +338,7 @@ add_geom(Geom *geom, const RenderState *state) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
 
-    cdata->_geoms.push_back(GeomEntry(geom, state));
+    cdata->modify_geoms()->push_back(GeomEntry(geom, state));
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
@@ -438,13 +358,13 @@ add_geoms_from(const GeomNode *other) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     CDStageReader cdata_other(other->_cycler, pipeline_stage, current_thread);
 
-    Geoms::const_iterator gi;
-    for (gi = cdata_other->_geoms.begin(); 
-         gi != cdata_other->_geoms.end(); 
-         ++gi) {
+    GeomList::const_iterator gi;
+    const GeomList &other_geoms = *(cdata_other->get_geoms());
+    GeomList &this_geoms = *(cdata->modify_geoms());
+    for (gi = other_geoms.begin(); gi != other_geoms.end(); ++gi) {
       const GeomEntry &entry = (*gi);
       nassertv(entry._geom->check_valid());
-      cdata->_geoms.push_back(entry);
+      this_geoms.push_back(entry);
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
@@ -471,8 +391,9 @@ set_geom(int n, Geom *geom) {
   nassertv(geom->check_valid());
 
   CDWriter cdata(_cycler, true);
-  nassertv(n >= 0 && n < (int)cdata->_geoms.size());
-  cdata->_geoms[n]._geom = geom;
+  GeomList &geoms = *(cdata->modify_geoms());
+  nassertv(n >= 0 && n < (int)geoms.size());
+  geoms[n]._geom = geom;
 
   mark_internal_bounds_stale();
 }
@@ -522,18 +443,19 @@ unify() {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
 
-    Geoms new_geoms;
+    PT(GeomList) new_geoms = new GeomList;
 
     // Try to unify each Geom with each preceding Geom.  This is an n^2
     // operation, but usually there are only a handful of Geoms to
     // consider, so that's not a big deal.
-    Geoms::iterator gi;
-    for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    GeomList::const_iterator gi;
+    const GeomList &geoms = *(cdata->get_geoms());
+    for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
       const GeomEntry &entry = (*gi);
       
       bool unified = false;
-      Geoms::iterator gj;
-      for (gj = new_geoms.begin(); gj != new_geoms.end() && !unified; ++gj) {
+      GeomList::iterator gj;
+      for (gj = new_geoms->begin(); gj != new_geoms->end() && !unified; ++gj) {
         GeomEntry &new_entry = (*gj);
         if (entry._state == new_entry._state) {
           // Both states match, so try to combine the primitives.
@@ -547,16 +469,15 @@ unify() {
       if (!unified) {
         // Couldn't unify this Geom with anything, so just add it to the
         // output list.
-        new_geoms.push_back(entry);
+        new_geoms->push_back(entry);
       }
     }
     
     // Done!  We'll keep whatever's left in the output list.
-    cdata->_geoms.swap(new_geoms);
-    new_geoms.clear();
+    cdata->set_geoms(new_geoms);
 
     // Finally, go back through and unify the resulting geom(s).
-    for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    for (gi = new_geoms->begin(); gi != new_geoms->end(); ++gi) {
       const GeomEntry &entry = (*gi);
       entry._geom->unify_in_place();
     }
@@ -574,8 +495,9 @@ void GeomNode::
 write_geoms(ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
   write(out, indent_level);
-  Geoms::const_iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+  GeomList::const_iterator gi;
+  const GeomList &geoms = *(cdata->get_geoms());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     const GeomEntry &entry = (*gi);
     indent(out, indent_level + 2) 
       << *entry._geom << " " << *entry._state << "\n";
@@ -592,8 +514,9 @@ void GeomNode::
 write_verbose(ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
   write(out, indent_level);
-  Geoms::const_iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+  GeomList::const_iterator gi;
+  const GeomList &geoms = *(cdata->get_geoms());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     const GeomEntry &entry = (*gi);
     indent(out, indent_level + 2) 
       << *entry._geom << " " << *entry._state << "\n";
@@ -616,8 +539,10 @@ output(ostream &out) const {
   CDReader cdata(_cycler);
 
   pset<TypeHandle> attrib_types;
-  Geoms::const_iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+
+  GeomList::const_iterator gi;
+  const GeomList &geoms = *(cdata->get_geoms());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     const GeomEntry &entry = (*gi);
     int num_attribs = entry._state->get_num_attribs();
     for (int i = 0; i < num_attribs; i++) {
@@ -627,7 +552,7 @@ output(ostream &out) const {
   }
 
   PandaNode::output(out);
-  out << " (" << cdata->_geoms.size() << " geoms";
+  out << " (" << geoms.size() << " geoms";
 
   if (!attrib_types.empty()) {
     out << ":";
@@ -675,8 +600,10 @@ compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
   pvector<const BoundingVolume *> child_volumes;
 
   CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-  Geoms::const_iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+
+  GeomList::const_iterator gi;
+  const GeomList &geoms = *(cdata->get_geoms());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     const GeomEntry &entry = (*gi);
     child_volumes.push_back(entry._geom->get_bounds());
   }
@@ -742,4 +669,86 @@ void GeomNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
   manager->read_cdata(scan, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+GeomNode::CData::
+CData(const GeomNode::CData &copy) :
+  _geoms(copy._geoms)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::CData::make_copy
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CycleData *GeomNode::CData::
+make_copy() const {
+  return new CData(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::CData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void GeomNode::CData::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+  int num_geoms = _geoms->size();
+  nassertv(num_geoms == (int)(PN_uint16)num_geoms);
+  dg.add_uint16(num_geoms);
+  
+  GeomList::const_iterator gi;
+  for (gi = _geoms->begin(); gi != _geoms->end(); ++gi) {
+    const GeomEntry &entry = (*gi);
+    manager->write_pointer(dg, entry._geom);
+    manager->write_pointer(dg, entry._state);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::CData::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int GeomNode::CData::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = CycleData::complete_pointers(p_list, manager);
+
+  // Get the geom and state pointers.
+  GeomList::iterator gi;
+  for (gi = _geoms->begin(); gi != _geoms->end(); ++gi) {
+    GeomEntry &entry = (*gi);
+    entry._geom = DCAST(Geom, p_list[pi++]);
+    entry._state = DCAST(RenderState, p_list[pi++]);
+  }
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::CData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new GeomNode.
+////////////////////////////////////////////////////////////////////
+void GeomNode::CData::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  int num_geoms = scan.get_uint16();
+  // Read the list of geoms and states.  Push back a NULL for each one.
+  _geoms->reserve(num_geoms);
+  for (int i = 0; i < num_geoms; i++) {
+    manager->read_pointer(scan);
+    manager->read_pointer(scan);
+    _geoms->push_back(GeomEntry(NULL, NULL));
+  }
 }

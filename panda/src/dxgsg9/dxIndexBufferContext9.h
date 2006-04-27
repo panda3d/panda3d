@@ -33,10 +33,10 @@ public:
   DXIndexBufferContext9(PreparedGraphicsObjects *pgo, GeomPrimitive *data);
   virtual ~DXIndexBufferContext9();
 
-  void free_ibuffer(void);
-  void allocate_ibuffer(DXScreenData &scrn);
-  void create_ibuffer(DXScreenData &scrn);
-  void upload_data();
+  void free_ibuffer();
+  void allocate_ibuffer(DXScreenData &scrn, const GeomPrimitivePipelineReader *reader);
+  void create_ibuffer(DXScreenData &scrn, const GeomPrimitivePipelineReader *reader);
+  void upload_data(const GeomPrimitivePipelineReader *reader);
 
   IDirect3DIndexBuffer9 *_ibuffer;
   int _managed;

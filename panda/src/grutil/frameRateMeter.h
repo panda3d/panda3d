@@ -68,7 +68,7 @@ protected:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
 private:
-  void do_update();
+  void do_update(Thread *current_thread);
 
 private:
   PT(GraphicsOutput) _window;

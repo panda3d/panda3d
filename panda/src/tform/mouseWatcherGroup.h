@@ -58,6 +58,9 @@ PUBLISHED:
 #endif  // NDEBUG
 
 protected:
+  bool do_remove_region(MouseWatcherRegion *region);
+
+protected:
   typedef pvector< PT(MouseWatcherRegion) > Regions;
   Regions _regions;
 

@@ -537,7 +537,8 @@ recompute() {
 //               calls.
 ////////////////////////////////////////////////////////////////////
 void Trackball::
-do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
+                 DataNodeTransmit &output) {
   // First, update our modifier buttons.
   bool required_buttons_match;
   check_button_events(input, required_buttons_match);

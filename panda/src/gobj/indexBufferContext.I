@@ -47,8 +47,9 @@ get_data() const {
 //               last time mark_loaded() was called.
 ////////////////////////////////////////////////////////////////////
 INLINE bool IndexBufferContext::
-changed_size() const {
-  return get_data_size_bytes() != (size_t)_data->get_data_size_bytes();
+changed_size(const GeomPrimitivePipelineReader *reader) const {
+  nassertr(reader->get_object() == _data, false);
+  return get_data_size_bytes() != (size_t)reader->get_data_size_bytes();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,8 +59,9 @@ changed_size() const {
 //               since the last time mark_loaded() was called.
 ////////////////////////////////////////////////////////////////////
 INLINE bool IndexBufferContext::
-changed_usage_hint() const {
-  return _usage_hint != _data->get_usage_hint();
+changed_usage_hint(const GeomPrimitivePipelineReader *reader) const {
+  nassertr(reader->get_object() == _data, false);
+  return _usage_hint != reader->get_usage_hint();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,8 +71,9 @@ changed_usage_hint() const {
 //               last time mark_loaded() was called.
 ////////////////////////////////////////////////////////////////////
 INLINE bool IndexBufferContext::
-was_modified() const {
-  return get_modified() != _data->get_modified();
+was_modified(const GeomPrimitivePipelineReader *reader) const {
+  nassertr(reader->get_object() == _data, false);
+  return get_modified() != reader->get_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,10 +84,11 @@ was_modified() const {
 //               internal flags for changed_size() and modified().
 ////////////////////////////////////////////////////////////////////
 INLINE void IndexBufferContext::
-mark_loaded() {
-  update_data_size_bytes(_data->get_data_size_bytes());
-  update_modified(_data->get_modified());
-  _usage_hint = _data->get_usage_hint();
+mark_loaded(const GeomPrimitivePipelineReader *reader) {
+  nassertv(reader->get_object() == _data);
+  update_data_size_bytes(reader->get_data_size_bytes());
+  update_modified(reader->get_modified());
+  _usage_hint = reader->get_usage_hint();
 
   // Assume the buffer is now resident.
   set_resident(true);

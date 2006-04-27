@@ -18,6 +18,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DataGraphTraverser::get_current_thread
+//       Access: Public
+//  Description: Returns the currently-executing thread object, as
+//               passed to the DataGraphTraverser constructor.
+////////////////////////////////////////////////////////////////////
+INLINE Thread *DataGraphTraverser::
+get_current_thread() const {
+  return _current_thread;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DataGraphTraverser::CollectedData::Constructor
 //       Access: Public
 //  Description: 

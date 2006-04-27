@@ -116,7 +116,8 @@ write(ostream &out, int indent_level) const {
 //               calls.
 ////////////////////////////////////////////////////////////////////
 void ButtonNode::
-do_transmit_data(const DataNodeTransmit &, DataNodeTransmit &output) {
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &, 
+                 DataNodeTransmit &output) {
   if (is_valid()) {
     _button->poll();
     _button->lock();

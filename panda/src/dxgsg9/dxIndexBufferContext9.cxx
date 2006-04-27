@@ -90,16 +90,17 @@ free_ibuffer(void) {
 //  Description: Allocates index buffer memory.
 ////////////////////////////////////////////////////////////////////
 void DXIndexBufferContext9::
-allocate_ibuffer(DXScreenData &scrn) {
+allocate_ibuffer(DXScreenData &scrn,
+                 const GeomPrimitivePipelineReader *reader) {
 
   D3DFORMAT index_type =
-    DXGraphicsStateGuardian9::get_index_type(get_data()->get_index_type());
+    DXGraphicsStateGuardian9::get_index_type(reader->get_index_type());
 
   int data_size;
   DWORD usage;
   D3DPOOL pool;
 
-  data_size = get_data()->get_data_size_bytes();
+  data_size = reader->get_data_size_bytes();
 
   _managed = scrn._managed_index_buffers;
   if (_managed)
@@ -133,8 +134,8 @@ allocate_ibuffer(DXScreenData &scrn) {
     if (DEBUG_INDEX_BUFFER && dxgsg9_cat.is_debug()) {
       dxgsg9_cat.debug()
         << "creating index buffer " << _ibuffer << ": "
-        << get_data()->get_num_vertices() << " indices ("
-        << get_data()->get_vertices()->get_array_format()->get_column(0)->get_numeric_type()
+        << reader->get_num_vertices() << " indices ("
+        << reader->get_vertices_reader()->get_array_format()->get_column(0)->get_numeric_type()
         << ")\n";
     }
   }
@@ -147,7 +148,10 @@ allocate_ibuffer(DXScreenData &scrn) {
 //               to it).
 ////////////////////////////////////////////////////////////////////
 void DXIndexBufferContext9::
-create_ibuffer(DXScreenData &scrn) {
+create_ibuffer(DXScreenData &scrn, 
+               const GeomPrimitivePipelineReader *reader) {
+  nassertv(reader->get_object() == get_data());
+  Thread *current_thread = reader->get_current_thread();
 
   this -> free_ibuffer ( );
 
@@ -158,13 +162,14 @@ create_ibuffer(DXScreenData &scrn) {
     _lru_page = 0;
   }
 
-  PStatTimer timer(GraphicsStateGuardian::_create_index_buffer_pcollector);
+  PStatTimer timer(GraphicsStateGuardian::_create_index_buffer_pcollector,
+                   current_thread);
 
   int data_size;
 
-  data_size = get_data()->get_data_size_bytes();
+  data_size = reader->get_data_size_bytes();
 
-  this -> allocate_ibuffer(scrn);
+  this -> allocate_ibuffer(scrn, reader);
 
   if (_ibuffer)
   {
@@ -198,11 +203,15 @@ create_ibuffer(DXScreenData &scrn) {
 //               DirectX.
 ////////////////////////////////////////////////////////////////////
 void DXIndexBufferContext9::
-upload_data() {
-  nassertv(_ibuffer != NULL);
-  PStatTimer timer(GraphicsStateGuardian::_load_index_buffer_pcollector);
+upload_data(const GeomPrimitivePipelineReader *reader) {
+  nassertv(reader->get_object() == get_data());
+  Thread *current_thread = reader->get_current_thread();
 
-  int data_size = get_data()->get_data_size_bytes();
+  nassertv(_ibuffer != NULL);
+  PStatTimer timer(GraphicsStateGuardian::_load_index_buffer_pcollector,
+                   current_thread);
+
+  int data_size = reader->get_data_size_bytes();
 
   if (dxgsg9_cat.is_spam()) {
     dxgsg9_cat.spam()
@@ -228,7 +237,7 @@ upload_data() {
   }
 
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
-  memcpy(local_pointer, get_data()->get_data(), data_size);
+  memcpy(local_pointer, reader->get_data(), data_size);
 
   _ibuffer->Unlock();
 }

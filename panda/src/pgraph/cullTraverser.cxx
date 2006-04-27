@@ -162,7 +162,7 @@ traverse(CullTraverserData &data) {
 
     PandaNode *node = data.node();
 
-    const RenderEffects *node_effects = node->get_effects();
+    const RenderEffects *node_effects = node->get_effects(_current_thread);
     if (node_effects->has_show_bounds()) {
       // If we should show the bounding volume for this node, make it
       // up now.
@@ -171,7 +171,7 @@ traverse(CullTraverserData &data) {
 
     data.apply_transform_and_state(this);
 
-    const FogAttrib *fog = node->get_state()->get_fog();
+    const FogAttrib *fog = node->get_state(_current_thread)->get_fog();
     if (fog != (const FogAttrib *)NULL && fog->get_fog() != (Fog *)NULL) {
       // If we just introduced a FogAttrib here, call adjust_to_camera()
       // now.  This maybe isn't the perfect time to call it, but it's
@@ -204,7 +204,7 @@ traverse_below(CullTraverserData &data) {
 
   bool this_node_hidden = data.is_this_node_hidden(this);
 
-  const RenderEffects *node_effects = node->get_effects();
+  const RenderEffects *node_effects = node->get_effects(_current_thread);
   bool has_decal = !this_node_hidden && node_effects->has_decal();
   if (has_decal && !_depth_offset_decals) {
     // Start the three-pass decal rendering if we're not using
@@ -223,10 +223,11 @@ traverse_below(CullTraverserData &data) {
       }
       
       // Get all the Geoms, with no decalling.
-      int num_geoms = geom_node->get_num_geoms();
+      GeomNode::Geoms geoms = geom_node->get_geoms(_current_thread);
+      int num_geoms = geoms.get_num_geoms();
       _geoms_pcollector.add_level(num_geoms);
       for (int i = 0; i < num_geoms; i++) {
-        CullableObject *object = new CullableObject(this, data, geom_node, i);
+        CullableObject *object = new CullableObject(this, data, geoms, i);
         if (object->_state->has_cull_callback() &&
             !object->_state->cull_callback(this, data)) {
           delete object;
@@ -251,7 +252,7 @@ traverse_below(CullTraverserData &data) {
     }
 
     // Now visit all the node's children.
-    PandaNode::Children children = node->get_children();
+    PandaNode::Children children = node->get_children(_current_thread);
     int num_children = children.get_num_children();
     if (node->has_selective_visibility()) {
       int i = node->get_first_visible_child();
@@ -530,7 +531,7 @@ start_decal(const CullTraverserData &data) {
   // Since the CullableObject is a linked list which gets built in
   // LIFO order, we start with the decals.
   CullableObject *decals = (CullableObject *)NULL;
-  PandaNode::Children cr = node->get_children();
+  PandaNode::Children cr = node->get_children(_current_thread);
   int num_children = cr.get_num_children();
   if (node->has_selective_visibility()) {
     int i = node->get_first_visible_child();
@@ -554,11 +555,12 @@ start_decal(const CullTraverserData &data) {
   // And now get the base Geoms, again in reverse order.
   CullableObject *object = separator;
   GeomNode *geom_node = DCAST(GeomNode, node);
-  int num_geoms = geom_node->get_num_geoms();
+  GeomNode::Geoms geoms = geom_node->get_geoms();
+  int num_geoms = geoms.get_num_geoms();
   _geoms_pcollector.add_level(num_geoms);
   for (int i = num_geoms - 1; i >= 0; i--) {
     CullableObject *next_object = 
-      new CullableObject(this, data, geom_node, i, object);
+      new CullableObject(this, data, geoms, i, object);
     if (next_object->_state->has_cull_callback() &&
         !next_object->_state->cull_callback(this, data)) {
       next_object->_next = NULL;
@@ -622,12 +624,12 @@ r_get_decals(CullTraverserData &data, CullableObject *decals) {
     // Now, tack on any geoms within the node.
     if (node->is_geom_node()) {
       GeomNode *geom_node = DCAST(GeomNode, node);
-      
-      int num_geoms = geom_node->get_num_geoms();
+      GeomNode::Geoms geoms = geom_node->get_geoms();
+      int num_geoms = geoms.get_num_geoms();
       _geoms_pcollector.add_level(num_geoms);
       for (int i = num_geoms - 1; i >= 0; i--) {
         CullableObject *next_decals = 
-          new CullableObject(this, data, geom_node, i, decals);
+          new CullableObject(this, data, geoms, i, decals);
         if (next_decals->_state->has_cull_callback() &&
             !next_decals->_state->cull_callback(this, data)) {
           next_decals->_next = NULL;

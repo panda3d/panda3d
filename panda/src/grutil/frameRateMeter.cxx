@@ -38,6 +38,8 @@ TypeHandle FrameRateMeter::_type_handle;
 ////////////////////////////////////////////////////////////////////
 FrameRateMeter::
 FrameRateMeter(const string &name) : TextNode(name) {
+  Thread *current_thread = Thread::get_current_thread();
+
   _update_interval = frame_rate_meter_update_interval;
   _last_update = 0.0f;
   _text_pattern = frame_rate_meter_text_pattern;
@@ -50,7 +52,7 @@ FrameRateMeter(const string &name) : TextNode(name) {
   set_card_as_margin(frame_rate_meter_side_margins, frame_rate_meter_side_margins, 0.1f, 0.0f);
   set_usage_hint(Geom::UH_client);
 
-  do_update();
+  do_update(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,14 +148,16 @@ clear_window() {
 ////////////////////////////////////////////////////////////////////
 bool FrameRateMeter::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  Thread *current_thread = trav->get_current_thread();
+
   // Statistics
-  PStatTimer timer(_show_fps_pcollector);
+  PStatTimer timer(_show_fps_pcollector, current_thread);
   
   // Check to see if it's time to update.
-  double now = _clock_object->get_frame_time();
+  double now = _clock_object->get_frame_time(current_thread);
   double elapsed = now - _last_update;
   if (elapsed < 0.0 || elapsed >= _update_interval) {
-    do_update();
+    do_update(current_thread);
   }
 
   return TextNode::cull_callback(trav, data);
@@ -165,10 +169,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 //  Description: Resets the text according to the current frame rate.
 ////////////////////////////////////////////////////////////////////
 void FrameRateMeter::
-do_update() {
-  _last_update = _clock_object->get_frame_time();
+do_update(Thread *current_thread) {
+  _last_update = _clock_object->get_frame_time(current_thread);
 
-  double frame_rate = _clock_object->get_average_frame_rate();
+  double frame_rate = _clock_object->get_average_frame_rate(current_thread);
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];

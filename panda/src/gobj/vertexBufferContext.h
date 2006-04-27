@@ -43,11 +43,11 @@ public:
 
   INLINE GeomVertexArrayData *get_data() const;
 
-  INLINE bool changed_size() const;
-  INLINE bool changed_usage_hint() const;
-  INLINE bool was_modified() const;
+  INLINE bool changed_size(const GeomVertexArrayDataPipelineReader *reader) const;
+  INLINE bool changed_usage_hint(const GeomVertexArrayDataPipelineReader *reader) const;
+  INLINE bool was_modified(const GeomVertexArrayDataPipelineReader *reader) const;
 
-  INLINE void mark_loaded();
+  INLINE void mark_loaded(const GeomVertexArrayDataPipelineReader *reader);
 
 private:
   // This cannot be a PT(GeomVertexArrayData), because the data and

@@ -37,10 +37,10 @@ CullableObject(CullableObject *next) :
 ////////////////////////////////////////////////////////////////////
 INLINE CullableObject::
 CullableObject(const CullTraverser *trav, const CullTraverserData &data,
-               GeomNode *geom_node, int i,
+               const GeomNode::Geoms &geoms, int i,
                CullableObject *next) :
-  _geom(geom_node->get_geom(i)),
-  _state(data._state->compose(geom_node->get_geom_state(i))),
+  _geom(geoms.get_geom(i)),
+  _state(data._state->compose(geoms.get_geom_state(i))),
   _net_transform(data.get_net_transform(trav)),
   _modelview_transform(data.get_modelview_transform(trav)),
   _internal_transform(trav->get_gsg()->get_cs_transform()->compose(_modelview_transform)),

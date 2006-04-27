@@ -26,6 +26,7 @@
 
 // A handful of forward references.
 
+class Thread;
 class RenderBuffer;
 class GraphicsWindow;
 class NodePath;
@@ -139,7 +140,8 @@ public:
   virtual void begin_occlusion_query()=0;
   virtual PT(OcclusionQueryContext) end_occlusion_query()=0;
 
-  virtual PT(GeomMunger) get_geom_munger(const RenderState *state)=0;
+  virtual PT(GeomMunger) get_geom_munger(const RenderState *state,
+                                         Thread *current_thread)=0;
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform)=0;

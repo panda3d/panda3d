@@ -46,8 +46,8 @@ is_registered() const {
 //               this point on.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(GeomMunger) GeomMunger::
-register_munger(GeomMunger *munger) {
-  return get_registry()->register_munger(munger);
+register_munger(GeomMunger *munger, Thread *current_thread) {
+  return get_registry()->register_munger(munger, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

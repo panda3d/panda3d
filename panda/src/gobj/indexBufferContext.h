@@ -42,11 +42,11 @@ public:
 
   INLINE GeomPrimitive *get_data() const;
 
-  INLINE bool changed_size() const;
-  INLINE bool changed_usage_hint() const;
-  INLINE bool was_modified() const;
+  INLINE bool changed_size(const GeomPrimitivePipelineReader *reader) const;
+  INLINE bool changed_usage_hint(const GeomPrimitivePipelineReader *reader) const;
+  INLINE bool was_modified(const GeomPrimitivePipelineReader *reader) const;
 
-  INLINE void mark_loaded();
+  INLINE void mark_loaded(const GeomPrimitivePipelineReader *reader);
 
 private:
   // This cannot be a PT(GeomPrimitive), because the data and

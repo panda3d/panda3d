@@ -38,7 +38,7 @@ GeomCacheEntry::
 //               time.
 ////////////////////////////////////////////////////////////////////
 PT(GeomCacheEntry) GeomCacheEntry::
-record() {
+record(Thread *current_thread) {
   nassertr(_next == (GeomCacheEntry *)NULL && _prev == (GeomCacheEntry *)NULL, NULL);
   PT(GeomCacheEntry) keepme = this;
 
@@ -55,7 +55,7 @@ record() {
   ++cache_mgr->_total_size;
   cache_mgr->_geom_cache_size_pcollector.set_level(cache_mgr->_total_size);
   cache_mgr->_geom_cache_record_pcollector.add_level(1);
-  _last_frame_used = ClockObject::get_global_clock()->get_frame_count();
+  _last_frame_used = ClockObject::get_global_clock()->get_frame_count(current_thread);
 
   if (PStatClient::is_connected()) {
     GeomCacheManager::_geom_cache_active_pcollector.add_level(1);
@@ -81,7 +81,7 @@ record() {
 //               be evicted for a while.
 ////////////////////////////////////////////////////////////////////
 void GeomCacheEntry::
-refresh() {
+refresh(Thread *current_thread) {
   nassertv(_next != (GeomCacheEntry *)NULL && _prev != (GeomCacheEntry *)NULL);
 
   GeomCacheManager *cache_mgr = GeomCacheManager::get_global_ptr();
@@ -90,7 +90,7 @@ refresh() {
   remove_from_list();
   insert_before(cache_mgr->_list);
 
-  int current_frame = ClockObject::get_global_clock()->get_frame_count();
+  int current_frame = ClockObject::get_global_clock()->get_frame_count(current_thread);
   if (PStatClient::is_connected()) {
     if (_last_frame_used != current_frame) {
       GeomCacheManager::_geom_cache_active_pcollector.add_level(1);

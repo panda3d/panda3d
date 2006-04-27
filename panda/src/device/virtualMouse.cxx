@@ -123,7 +123,8 @@ release_button(ButtonHandle button) {
 //               calls.
 ////////////////////////////////////////////////////////////////////
 void VirtualMouse::
-do_transmit_data(const DataNodeTransmit &, DataNodeTransmit &output) {
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
+                 DataNodeTransmit &output) {
   // Swap in the button events, and clear them for next time.
   PT(ButtonEventList) events = _button_events;
   _button_events = _next_button_events;

@@ -81,7 +81,7 @@ PUBLISHED:
   GraphicsPipe *get_pipe() const;
 
   void set_camera(const NodePath &camera);
-  INLINE NodePath get_camera() const;
+  INLINE NodePath get_camera(Thread *current_thread = Thread::get_current_thread()) const;
 
   void set_active(bool active);
   INLINE bool is_active() const;

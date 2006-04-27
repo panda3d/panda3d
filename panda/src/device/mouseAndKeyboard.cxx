@@ -74,7 +74,8 @@ set_source(GraphicsWindow *window, int device) {
 //               calls.
 ////////////////////////////////////////////////////////////////////
 void MouseAndKeyboard::
-do_transmit_data(const DataNodeTransmit &, DataNodeTransmit &output) {
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
+                 DataNodeTransmit &output) {
   if (_window->has_button_event(_device)) {
     // Fill up the button events.
     _button_events->clear();

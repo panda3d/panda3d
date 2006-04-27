@@ -110,7 +110,8 @@ public:
   virtual int get_visible_child() const;
   virtual bool is_renderable() const;
 
-  INLINE void compose_draw_mask(DrawMask &running_draw_mask) const;
+  INLINE void compose_draw_mask(DrawMask &running_draw_mask,
+                                Thread *current_thread) const;
   INLINE bool compare_draw_mask(DrawMask running_draw_mask,
                                 DrawMask camera_mask, 
                                 Thread *current_thread) const;
@@ -169,9 +170,9 @@ PUBLISHED:
   INLINE const RenderState *get_state(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_state(Thread *current_thread = Thread::get_current_thread());
 
-  void set_effects(const RenderEffects *effects);
-  INLINE const RenderEffects *get_effects() const;
-  INLINE void clear_effects();
+  void set_effects(const RenderEffects *effects, Thread *current_thread = Thread::get_current_thread());
+  INLINE const RenderEffects *get_effects(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE void clear_effects(Thread *current_thread = Thread::get_current_thread());
 
   void set_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
   INLINE const TransformState *get_transform(Thread *current_thread = Thread::get_current_thread()) const;
@@ -183,10 +184,14 @@ PUBLISHED:
   INLINE bool has_dirty_prev_transform() const;
   static void reset_all_prev_transform(Thread *current_thread = Thread::get_current_thread());
 
-  void set_tag(const string &key, const string &value);
-  INLINE string get_tag(const string &key) const;
-  INLINE bool has_tag(const string &key) const;
-  void clear_tag(const string &key);
+  void set_tag(const string &key, const string &value, 
+               Thread *current_thread = Thread::get_current_thread());
+  INLINE string get_tag(const string &key, 
+                        Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE bool has_tag(const string &key,
+                      Thread *current_thread = Thread::get_current_thread()) const;
+  void clear_tag(const string &key,
+                 Thread *current_thread = Thread::get_current_thread());
 
 #ifdef HAVE_PYTHON
   void set_python_tag(const string &key, PyObject *value);
@@ -216,8 +221,8 @@ PUBLISHED:
   INLINE CollideMask get_into_collide_mask() const;
   virtual CollideMask get_legal_collide_mask() const;
 
-  CollideMask get_net_collide_mask() const;
-  CPT(RenderAttrib) get_off_clip_planes() const;
+  CollideMask get_net_collide_mask(Thread *current_thread = Thread::get_current_thread()) const;
+  CPT(RenderAttrib) get_off_clip_planes(Thread *current_thread = Thread::get_current_thread()) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
@@ -238,13 +243,13 @@ PUBLISHED:
   void set_bounds(const BoundingVolume *volume);
   void set_bound(const BoundingVolume *volume);
   INLINE void clear_bounds();
-  CPT(BoundingVolume) get_bounds() const;
+  CPT(BoundingVolume) get_bounds(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE CPT(BoundingVolume) get_internal_bounds() const;
 
   void mark_bounds_stale(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE void set_final(bool flag);
-  INLINE bool is_final() const;
+  INLINE bool is_final(Thread *current_thread = Thread::get_current_thread()) const;
 
   virtual bool is_geom_node() const;
   virtual bool is_lod_node() const;

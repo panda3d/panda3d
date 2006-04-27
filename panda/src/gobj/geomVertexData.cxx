@@ -660,6 +660,8 @@ copy_row_from(int dest_row, const GeomVertexData *source,
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
 convert_to(const GeomVertexFormat *new_format) const {
+  Thread *current_thread = Thread::get_current_thread();
+
   if (new_format == get_format()) {
     // Trivial case: no change is needed.
     return this;
@@ -679,7 +681,7 @@ convert_to(const GeomVertexFormat *new_format) const {
     // Here's an element in the cache for this computation.  Record a
     // cache hit, so this element will stay in the cache a while
     // longer.
-    entry->refresh();
+    entry->refresh(current_thread);
 
     CDCacheReader cdata(entry->_cycler);
     if (cdata->_result != (GeomVertexData *)NULL) {
@@ -717,7 +719,7 @@ convert_to(const GeomVertexFormat *new_format) const {
     // And tell the cache manager about the new entry.  (It might
     // immediately request a delete from the cache of the thing we
     // just added.)
-    entry->record();
+    entry->record(current_thread);
   }
 
   // Finally, store the cached result on the entry.

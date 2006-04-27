@@ -325,6 +325,7 @@ public:
   INLINE UpdateSeq get_modified() const;
   bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
   INLINE int get_index_stride() const;
+  INLINE const GeomVertexArrayDataPipelineReader *get_vertices_reader() const;
   INLINE CPTA_uchar get_data() const;
   INLINE CPTA_int get_ends() const;
   INLINE const GeomVertexArrayData *get_mins() const;

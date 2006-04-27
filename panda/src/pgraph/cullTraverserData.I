@@ -148,7 +148,7 @@ is_in_view(const DrawMask &camera_mask, Thread *current_thread) {
   }
 
   // Otherwise, compare the bounding volume to the frustum.
-  return is_in_view_impl();
+  return is_in_view_impl(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

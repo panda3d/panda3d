@@ -158,8 +158,10 @@ public:
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
 
-  PT(GeomMunger) get_geom_munger(const RenderState *state);
-  virtual PT(GeomMunger) make_geom_munger(const RenderState *state);
+  virtual PT(GeomMunger) get_geom_munger(const RenderState *state, 
+                                         Thread *current_thread);
+  virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
+                                          Thread *current_thread);
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);

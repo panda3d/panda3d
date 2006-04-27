@@ -167,7 +167,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
                 get_dual_transparent_state();
               transparent_part->_state = state->compose(transparent_state);
               transparent_part->munge_geom
-                (_gsg, _gsg->get_geom_munger(transparent_part->_state),
+                (_gsg, _gsg->get_geom_munger(transparent_part->_state, current_thread),
                  traverser);
               CullBin *bin = get_bin(transparent_part->_state->get_bin_index());
               nassertv(bin != (CullBin *)NULL);
@@ -207,7 +207,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
 
   // Munge vertices as needed for the GSG's requirements, and the
   // object's current state.
-  object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state), traverser);
+  object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state, current_thread), traverser);
   bin->add_object(object, current_thread);
 }
 

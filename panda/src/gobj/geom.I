@@ -133,11 +133,12 @@ get_primitive(int i) const {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPrimitive *Geom::
 modify_primitive(int i) {
-  CDWriter cdata(_cycler, true);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
   nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
   cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
-  clear_cache_stage();
+  clear_cache_stage(current_thread);
   if (cdata->_primitives[i]->get_ref_count() > 1) {
     cdata->_primitives[i] = cdata->_primitives[i]->make_copy();
   }
@@ -199,8 +200,8 @@ unify() const {
 //               tested separately.
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq Geom::
-get_modified() const {
-  CDReader cdata(_cycler);
+get_modified(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
   return cdata->_modified;
 }
 

@@ -49,8 +49,8 @@ TypeHandle CullableObject::_type_handle;
 void CullableObject::
 munge_geom(GraphicsStateGuardianBase *gsg,
            GeomMunger *munger, const CullTraverser *traverser) {
+  Thread *current_thread = traverser->get_current_thread();
   if (_geom != (Geom *)NULL) {
-    Thread *current_thread = traverser->get_current_thread();
     _munger = munger;
 
     GeomPipelineReader geom_reader(_geom, current_thread);
@@ -145,7 +145,8 @@ munge_geom(GraphicsStateGuardianBase *gsg,
   }
   if (_next != (CullableObject *)NULL) {
     if (_next->_state != (RenderState *)NULL) {
-      _next->munge_geom(gsg, gsg->get_geom_munger(_next->_state), traverser);
+      _next->munge_geom(gsg, gsg->get_geom_munger(_next->_state, current_thread),
+                        traverser);
     } else {
       _next->munge_geom(gsg, munger, traverser);
     }

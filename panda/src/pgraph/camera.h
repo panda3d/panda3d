@@ -82,7 +82,7 @@ PUBLISHED:
   bool clear_aux_scene_data(const NodePath &node_path);
   AuxSceneData *get_aux_scene_data(const NodePath &node_path) const;
   void list_aux_scene_data(ostream &out) const;
-  int cleanup_aux_scene_data();
+  int cleanup_aux_scene_data(Thread *current_thread = Thread::get_current_thread());
 
 private:
   void add_display_region(DisplayRegion *display_region);

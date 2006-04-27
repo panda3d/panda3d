@@ -170,7 +170,7 @@ void DataGraphTraverser::
 r_transmit(DataNode *data_node, const DataNodeTransmit inputs[]) {
   DataNodeTransmit output;
   output.reserve(data_node->get_num_outputs());
-  data_node->transmit_data(inputs, output);
+  data_node->transmit_data(this, inputs, output);
 
   traverse_below(data_node, output);
 }

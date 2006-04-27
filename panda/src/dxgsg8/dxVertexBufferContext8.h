@@ -33,8 +33,9 @@ public:
   DXVertexBufferContext8(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data);
   virtual ~DXVertexBufferContext8();
 
-  void create_vbuffer(DXScreenData &scrn);
-  void upload_data();
+  void create_vbuffer(DXScreenData &scrn,
+                      const GeomVertexArrayDataPipelineReader *reader);
+  void upload_data(const GeomVertexArrayDataPipelineReader *reader);
 
   IDirect3DVertexBuffer8 *_vbuffer;
   int _fvf;

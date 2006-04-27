@@ -490,7 +490,7 @@ occlusion_test(CullBinOcclusionTest &bin, Thread *current_thread) {
   CPT(TransformState) internal_transform = bin._gsg->get_cs_transform()->compose(modelview_transform);
   
   CPT(RenderState) state = get_octree_solid_test_state();
-  PT(GeomMunger) munger = bin._gsg->get_geom_munger(state);
+  PT(GeomMunger) munger = bin._gsg->get_geom_munger(state, current_thread);
   
   CPT(Geom) viz = get_octree_solid_test();
   CPT(GeomVertexData) munged_data = viz->get_vertex_data();
@@ -628,7 +628,7 @@ draw_wireframe(CullBinOcclusionTest &bin, Thread *current_thread) {
   CPT(TransformState) internal_transform = bin._gsg->get_cs_transform()->compose(modelview_transform);
   
   CPT(RenderState) state = RenderState::make_empty();
-  PT(GeomMunger) munger = bin._gsg->get_geom_munger(state);
+  PT(GeomMunger) munger = bin._gsg->get_geom_munger(state, current_thread);
   
   CPT(Geom) viz = get_octree_wireframe_viz();
   CPT(GeomVertexData) munged_data = viz->get_vertex_data();

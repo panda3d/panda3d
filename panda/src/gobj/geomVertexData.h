@@ -122,7 +122,7 @@ PUBLISHED:
   INLINE void clear_slider_table();
 
   INLINE int get_num_bytes() const;
-  INLINE UpdateSeq get_modified() const;
+  INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
 
   void copy_from(const GeomVertexData *source, bool keep_data_objects);
   void copy_row_from(int dest_row, const GeomVertexData *source, 

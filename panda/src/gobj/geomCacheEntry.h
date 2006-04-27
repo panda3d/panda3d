@@ -40,8 +40,8 @@ public:
   INLINE GeomCacheEntry();
   virtual ~GeomCacheEntry();
 
-  PT(GeomCacheEntry) record();
-  void refresh();
+  PT(GeomCacheEntry) record(Thread *current_thread);
+  void refresh(Thread *current_thread);
   PT(GeomCacheEntry) erase();
 
   virtual void evict_callback();

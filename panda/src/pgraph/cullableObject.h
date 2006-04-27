@@ -22,7 +22,6 @@
 #include "pandabase.h"
 
 #include "geom.h"
-#include "geom.h"
 #include "geomVertexData.h"
 #include "geomMunger.h"
 #include "renderState.h"
@@ -48,7 +47,7 @@ public:
   INLINE CullableObject(CullableObject *next = NULL);
   INLINE CullableObject(const CullTraverser *trav,
                         const CullTraverserData &data,
-                        GeomNode *geom_node, int i,
+                        const GeomNode::Geoms &geoms, int i,
                         CullableObject *next = NULL);
   INLINE CullableObject(const Geom *geom, const RenderState *state,
                         const TransformState *net_transform,

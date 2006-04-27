@@ -5391,9 +5391,9 @@ hide_bounds() {
 //               the local coordinate space of the node.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) NodePath::
-get_bounds() const {
+get_bounds(Thread *current_thread) const {
   nassertr_always(!is_empty(), new BoundingSphere);
-  return node()->get_bounds()->make_copy();
+  return node()->get_bounds(current_thread)->make_copy();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5698,7 +5698,7 @@ r_get_net_state(NodePathComponent *comp, Thread *current_thread) const {
   if (comp == (NodePathComponent *)NULL) {
     return RenderState::make_empty();
   } else {
-    CPT(RenderState) state = comp->get_node()->get_state();
+    CPT(RenderState) state = comp->get_node()->get_state(current_thread);
     int pipeline_stage = current_thread->get_pipeline_stage();
     return r_get_net_state(comp->get_next(pipeline_stage, current_thread), current_thread)->compose(state);
   }
@@ -5718,7 +5718,7 @@ r_get_partial_state(NodePathComponent *comp, int n,
   if (n == 0 || comp == (NodePathComponent *)NULL) {
     return RenderState::make_empty();
   } else {
-    CPT(RenderState) state = comp->get_node()->get_state();
+    CPT(RenderState) state = comp->get_node()->get_state(current_thread);
     int pipeline_stage = current_thread->get_pipeline_stage();
     return r_get_partial_state(comp->get_next(pipeline_stage, current_thread), n - 1, current_thread)->compose(state);
   }
@@ -5737,9 +5737,9 @@ r_get_net_transform(NodePathComponent *comp, Thread *current_thread) const {
   } else {
     int pipeline_stage = current_thread->get_pipeline_stage();
     CPT(TransformState) net_transform = r_get_net_transform(comp->get_next(pipeline_stage, current_thread), current_thread);
-    CPT(TransformState) transform = comp->get_node()->get_transform();
+    CPT(TransformState) transform = comp->get_node()->get_transform(current_thread);
 
-    CPT(RenderEffects) effects = comp->get_node()->get_effects();
+    CPT(RenderEffects) effects = comp->get_node()->get_effects(current_thread);
     if (effects->has_adjust_transform()) {
       effects->adjust_transform(net_transform, transform);
     }
@@ -5766,10 +5766,10 @@ r_get_partial_transform(NodePathComponent *comp, int n,
   if (n == 0 || comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
-    if (comp->get_node()->get_effects()->has_adjust_transform()) {
+    if (comp->get_node()->get_effects(current_thread)->has_adjust_transform()) {
       return NULL;
     }
-    CPT(TransformState) transform = comp->get_node()->get_transform();
+    CPT(TransformState) transform = comp->get_node()->get_transform(current_thread);
     int pipeline_stage = current_thread->get_pipeline_stage();
     CPT(TransformState) partial = r_get_partial_transform(comp->get_next(pipeline_stage, current_thread), n - 1, current_thread);
     if (partial == (const TransformState *)NULL) {
@@ -5791,7 +5791,7 @@ r_get_net_prev_transform(NodePathComponent *comp, Thread *current_thread) const 
   if (comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
-    CPT(TransformState) transform = comp->get_node()->get_prev_transform();
+    CPT(TransformState) transform = comp->get_node()->get_prev_transform(current_thread);
     int pipeline_stage = current_thread->get_pipeline_stage();
     return r_get_net_prev_transform(comp->get_next(pipeline_stage, current_thread), current_thread)->compose(transform);
   }
@@ -5811,7 +5811,7 @@ r_get_partial_prev_transform(NodePathComponent *comp, int n, Thread *current_thr
   if (n == 0 || comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
-    CPT(TransformState) transform = comp->get_node()->get_prev_transform();
+    CPT(TransformState) transform = comp->get_node()->get_prev_transform(current_thread);
     int pipeline_stage = current_thread->get_pipeline_stage();
     return r_get_partial_prev_transform(comp->get_next(pipeline_stage, current_thread), n - 1, current_thread)->compose(transform);
   }

@@ -98,7 +98,7 @@ public:
   };
 
 private:
-  typedef pvector<GeomEntry> Geoms;
+  typedef RefCountObj< pvector<GeomEntry> > GeomList;
   typedef pmap<const InternalName *, int> NameCount;
 
   INLINE void count_name(NameCount &name_count, const InternalName *name);
@@ -117,7 +117,12 @@ private:
       return GeomNode::get_class_type();
     }
 
-    Geoms _geoms;
+    INLINE const GeomList *get_geoms() const;
+    INLINE GeomList *modify_geoms();
+    INLINE void set_geoms(GeomList *geoms);
+
+  private:
+    PT(GeomList) _geoms;
   };
 
   PipelineCycler<CData> _cycler;
@@ -125,6 +130,28 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageReader<CData> CDStageReader;
   typedef CycleDataStageWriter<CData> CDStageWriter;
+
+public:
+  // This class is returned from get_geoms().  It is similar to
+  // PandaNode::get_children(); use this to walk through the list of
+  // geoms faster than walking through the geoms directly from the
+  // node.
+  class EXPCL_PANDA Geoms {
+  public:
+    INLINE Geoms();
+    INLINE Geoms(const CData *cdata);
+    INLINE Geoms(const Geoms &copy);
+    INLINE void operator = (const Geoms &copy);
+
+    INLINE int get_num_geoms() const;
+    INLINE const Geom *get_geom(int n) const;
+    INLINE const RenderState *get_geom_state(int n) const;
+
+  private:
+    CPT(GeomList) _geoms;
+  };
+
+  INLINE Geoms get_geoms(Thread *current_thread = Thread::get_current_thread()) const;
 
 public:
   static void register_with_read_factory();
