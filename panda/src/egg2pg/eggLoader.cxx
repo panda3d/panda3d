@@ -1592,10 +1592,16 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     make_collision_solids(egg_group, egg_group, (CollisionNode *)node.p());
     if ((egg_group->get_collide_flags() & EggGroup::CF_keep) != 0) {
       // If we also specified to keep the geometry, continue the
-      // traversal.
+      // traversal.  In this case, we create a new PandaNode to be the
+      // parent of the visible geometry and the collision geometry.
+      PandaNode *combined = new PandaNode("");
+      parent->add_child(combined);
+      combined->add_child(node);
+      node = combined;
+      
       EggGroup::const_iterator ci;
       for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
-        make_node(*ci, parent);
+        make_node(*ci, combined);
       }
     }
 
