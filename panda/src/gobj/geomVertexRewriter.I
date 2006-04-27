@@ -26,7 +26,10 @@
 //               it.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexRewriter::
-GeomVertexRewriter() {
+GeomVertexRewriter(Thread *current_thread) :
+  GeomVertexWriter(current_thread),
+  GeomVertexReader(current_thread)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,9 +39,9 @@ GeomVertexRewriter() {
 //               the indicated data object.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexRewriter::
-GeomVertexRewriter(GeomVertexData *vertex_data) :
-  GeomVertexWriter(vertex_data),
-  GeomVertexReader(vertex_data)
+GeomVertexRewriter(GeomVertexData *vertex_data, Thread *current_thread) :
+  GeomVertexWriter(vertex_data, current_thread),
+  GeomVertexReader(vertex_data, current_thread)
 {
 }
 
@@ -50,9 +53,10 @@ GeomVertexRewriter(GeomVertexData *vertex_data) :
 //               rewriter specifically to process the named data type.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexRewriter::
-GeomVertexRewriter(GeomVertexData *vertex_data, const string &name) :
-  GeomVertexWriter(vertex_data),
-  GeomVertexReader(vertex_data)
+GeomVertexRewriter(GeomVertexData *vertex_data, const string &name,
+                   Thread *current_thread) :
+  GeomVertexWriter(vertex_data, current_thread),
+  GeomVertexReader(vertex_data, current_thread)
 {
   set_column(name);
 }
@@ -65,9 +69,10 @@ GeomVertexRewriter(GeomVertexData *vertex_data, const string &name) :
 //               rewriter specifically to process the named data type.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexRewriter::
-GeomVertexRewriter(GeomVertexData *vertex_data, const InternalName *name) :
-  GeomVertexWriter(vertex_data),
-  GeomVertexReader(vertex_data)
+GeomVertexRewriter(GeomVertexData *vertex_data, const InternalName *name,
+                   Thread *current_thread) :
+  GeomVertexWriter(vertex_data, current_thread),
+  GeomVertexReader(vertex_data, current_thread)
 {
   set_column(name);
 }
@@ -79,9 +84,9 @@ GeomVertexRewriter(GeomVertexData *vertex_data, const InternalName *name) :
 //               the indicated array only.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexRewriter::
-GeomVertexRewriter(GeomVertexArrayData *array_data) :
-  GeomVertexWriter(array_data),
-  GeomVertexReader(array_data)
+GeomVertexRewriter(GeomVertexArrayData *array_data, Thread *current_thread) :
+  GeomVertexWriter(array_data, current_thread),
+  GeomVertexReader(array_data, current_thread)
 {
 }
 
@@ -92,9 +97,10 @@ GeomVertexRewriter(GeomVertexArrayData *array_data) :
 //               the indicated array only.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexRewriter::
-GeomVertexRewriter(GeomVertexArrayData *array_data, int column) :
-  GeomVertexWriter(array_data),
-  GeomVertexReader(array_data)
+GeomVertexRewriter(GeomVertexArrayData *array_data, int column,
+                   Thread *current_thread) :
+  GeomVertexWriter(array_data, current_thread),
+  GeomVertexReader(array_data, current_thread)
 {
   set_column(column);
 }

@@ -42,15 +42,15 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomVertexRewriter : public GeomVertexWriter, public GeomVertexReader {
 PUBLISHED:
-  INLINE GeomVertexRewriter();
-  INLINE GeomVertexRewriter(GeomVertexData *vertex_data);
+  INLINE GeomVertexRewriter(Thread *current_thread = Thread::get_current_thread());
+  INLINE GeomVertexRewriter(GeomVertexData *vertex_data, Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexRewriter(GeomVertexData *vertex_data,
-                            const string &name);
+                            const string &name, Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexRewriter(GeomVertexData *vertex_data,
-                            const InternalName *name);
-  INLINE GeomVertexRewriter(GeomVertexArrayData *array_data);
+                            const InternalName *name, Thread *current_thread = Thread::get_current_thread());
+  INLINE GeomVertexRewriter(GeomVertexArrayData *array_data, Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexRewriter(GeomVertexArrayData *array_data, 
-                            int column);
+                            int column, Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexRewriter(const GeomVertexRewriter &copy);
   INLINE void operator = (const GeomVertexRewriter &copy);
   INLINE ~GeomVertexRewriter();
