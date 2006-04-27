@@ -190,8 +190,8 @@ int main(int argc, char **argv)
   FILE *f = fopen(ppbuf,"r");
   if (f) {
     char *pp = getenv("PYTHONPATH");
-    if (pp) sprintf(ppbuf,"PYTHONPATH=%s:%s",fnbuf,pp);
-    else    sprintf(ppbuf,"PYTHONPATH=%s",fnbuf);
+    if (pp) sprintf(ppbuf,"PYTHONPATH=%s:%s/lib:%s",fnbuf,fnbuf,pp);
+    else    sprintf(ppbuf,"PYTHONPATH=%s:%s/lib",fnbuf,fnbuf);
     putenv(ppbuf);
   }
   
