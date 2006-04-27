@@ -232,8 +232,10 @@ static pascal OSStatus windowEvtHndlr (EventHandlerCallRef myHandler, EventRef e
 ////////////////////////////////////////////////////////////////////
 void     osxGraphicsWindow::DoResize(void)
 {
+
+	osxdisplay_cat.debug() << "In Resize Out....." << _properties << "\n";
     // only in window mode .. not full screen
-    if(_osx_window != NULL && _is_fullsreen == false )
+    if(_osx_window != NULL && _is_fullsreen == false && _properties.has_size())
     {
         Rect				rectPort = {0,0,0,0};
         CGRect 				viewRect = {{0.0f, 0.0f}, {0.0f, 0.0f}};
