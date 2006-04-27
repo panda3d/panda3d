@@ -1,3 +1,13 @@
+------------------------  RELEASE 1.2.2  ------------------------
+
+This is a minor bugfix release.
+
+* Adds 'ppythonw', a version of ppython that doesn't
+  open a console window.
+* If you have a bad fmod DLL in your windows folder,
+  this version compensates.
+* Fixes a small bug in the VRML-to-egg converter.
+
 ------------------------  RELEASE 1.2.1  ------------------------
 
 This release is likely to be much more stable than its predecessors.
