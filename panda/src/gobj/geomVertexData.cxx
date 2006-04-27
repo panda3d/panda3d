@@ -1900,6 +1900,10 @@ make_array_writers() {
     _array_writers.push_back(new GeomVertexArrayDataPipelineWriter(*ai, _force_to_0, _current_thread));
   }
 
+  _object->clear_cache_stage();
+  _cdata->_modified = Geom::get_next_modified();
+  _cdata->_animated_vertices_modified = UpdateSeq();
+
   _got_array_writers = true;
   nassertv(get_array_writer(0)->get_data_size_bytes() == get_array(0)->get_data_size_bytes());
 }
