@@ -1,4 +1,3 @@
-
 ///////////////////////////////////////////////////////////////////////
 //
 // This simple program merely sets up the python environment
@@ -22,21 +21,15 @@
 
 #ifdef WIN32
 
-#ifdef BUILDING_PPYTHON
-#define LINK_SOURCE "\\bin\\ppython.exe"
-#define LINK_TARGET "\\python\\python.exe"
-#define PPYTHON 1
-#endif
-
 #ifdef BUILDING_GENPYCODE
 #define LINK_SOURCE "\\bin\\genpycode.exe"
-#define LINK_TARGET "\\python\\python.exe"
+#define LINK_TARGET "\\bin\\ppython.exe"
 #define GENPYCODE 1
 #endif
 
 #ifdef BUILDING_PACKPANDA
 #define LINK_SOURCE "\\bin\\packpanda.exe"
-#define LINK_TARGET "\\python\\python.exe"
+#define LINK_TARGET "\\bin\\ppython.exe"
 #define PACKPANDA 1
 #endif
 
@@ -83,13 +76,9 @@ int main(int argc, char **argv)
   // Set the PYTHONPATH and PATH
   
   char *pp = getenv("PYTHONPATH");
-  if (pp) sprintf(ppbuf,"PYTHONPATH=%s;%s\\bin;%s\\lib;%s",fnbuf,fnbuf,fnbuf,pp);
-  else    sprintf(ppbuf,"PYTHONPATH=%s;%s\\bin;%s\\lib",fnbuf,fnbuf,fnbuf);
+  if (pp) sprintf(ppbuf,"PYTHONPATH=%s;%s\\bin;%s",fnbuf,fnbuf,pp);
+  else    sprintf(ppbuf,"PYTHONPATH=%s;%s\\bin",fnbuf,fnbuf);
   putenv(ppbuf);
-  char *path = getenv("PATH");
-  if (path) sprintf(pabuf,"PATH=%s\\bin;%s",fnbuf,path);
-  else      sprintf(pabuf,"PATH=%s\\bin",fnbuf);
-  putenv(pabuf);
   
   // Fetch the command line and trim the first word.
 
@@ -109,14 +98,11 @@ int main(int argc, char **argv)
   
   // Calculate MODCMD
   
-#ifdef PPYTHON
-  sprintf(modcmd,"python %s",args);
-#endif
 #ifdef GENPYCODE
-  sprintf(modcmd,"python -c \"import direct.ffi.jGenPyCode\" %s",args);
+  sprintf(modcmd,"ppython -c \"import direct.ffi.jGenPyCode\" %s",args);
 #endif
 #ifdef PACKPANDA
-  sprintf(modcmd,"python -c \"import direct.directscripts.packpanda\" %s",args);
+  sprintf(modcmd,"ppython -c \"import direct.directscripts.packpanda\" %s",args);
 #endif
   
   // Run it.
@@ -204,8 +190,8 @@ int main(int argc, char **argv)
   FILE *f = fopen(ppbuf,"r");
   if (f) {
     char *pp = getenv("PYTHONPATH");
-    if (pp) sprintf(ppbuf,"PYTHONPATH=%s:%s/lib:%s",fnbuf,fnbuf,pp);
-    else    sprintf(ppbuf,"PYTHONPATH=%s:%s/lib",fnbuf,fnbuf);
+    if (pp) sprintf(ppbuf,"PYTHONPATH=%s:%s",fnbuf,pp);
+    else    sprintf(ppbuf,"PYTHONPATH=%s",fnbuf);
     putenv(ppbuf);
   }
   

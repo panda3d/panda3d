@@ -3147,8 +3147,6 @@ if (OMIT.count("PYTHON")==0):
     if (sys.platform != "win32"):
         EnqueueCxx(ipath=IPATH, opts=['BUILDING_PPYTHON'], src='ppython.cxx', obj='ppython.obj')
         EnqueueLink(opts=['WINUSER'], dll='ppython.exe', obj=['ppython.obj'])
-        EnqueueCxx(ipath=IPATH, opts=['BUILDING_PPYTHONW'], src='ppython.cxx', obj='ppythonw.obj')
-        EnqueueLink(opts=['WINUSER'], dll='ppythonw.exe', obj=['ppythonw.obj'])
     EnqueueCxx(ipath=IPATH, opts=['BUILDING_GENPYCODE'], src='ppython.cxx', obj='genpycode.obj')
     EnqueueLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
     EnqueueCxx(ipath=IPATH, opts=['BUILDING_PACKPANDA'], src='ppython.cxx', obj='packpanda.obj')
