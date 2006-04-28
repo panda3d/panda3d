@@ -36,6 +36,7 @@
 #include "indent.h"
 #include "compareTo.h"
 #include "reMutexHolder.h"
+#include "mutexHolder.h"
 #include "thread.h"
 #include "attribSlots.h"
   
@@ -61,7 +62,7 @@ TypeHandle RenderState::_type_handle;
 //               spurious warning if all constructors are private.
 ////////////////////////////////////////////////////////////////////
 RenderState::
-RenderState() {
+RenderState() : _lock("RenderState") {
   if (_states == (States *)NULL) {
     init_states();
   }
@@ -1444,13 +1445,22 @@ remove_cache_pointers() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_bin_index() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_bin_index) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   string bin_name;
   _draw_order = 0;
 
-  const CullBinAttrib *bin_attrib = get_bin();
-  if (bin_attrib != (const CullBinAttrib *)NULL) {
-    bin_name = bin_attrib->get_bin_name();
-    _draw_order = bin_attrib->get_draw_order();
+  if ((_flags & F_checked_bin) == 0) {
+    do_determine_bin();
+  }
+
+  if (_bin != (const CullBinAttrib *)NULL) {
+    bin_name = _bin->get_bin_name();
+    _draw_order = _bin->get_draw_order();
   }
 
   if (bin_name.empty()) {
@@ -1458,9 +1468,13 @@ determine_bin_index() {
     // either opaque or transparent, based on the transparency
     // setting.
     bin_name = "opaque";
-    const TransparencyAttrib *trans = get_transparency();
-    if (trans != (const TransparencyAttrib *)NULL) {
-      switch (trans->get_mode()) {
+
+    if ((_flags & F_checked_transparency) == 0) {
+      do_determine_transparency();
+    }
+
+    if (_transparency != (const TransparencyAttrib *)NULL) {
+      switch (_transparency->get_mode()) {
       case TransparencyAttrib::M_alpha:
       case TransparencyAttrib::M_dual:
         // These transparency modes require special back-to-front sorting.
@@ -1490,6 +1504,12 @@ determine_bin_index() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_fog() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_fog) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderAttrib *attrib = get_attrib(FogAttrib::get_class_type());
   _fog = (const FogAttrib *)NULL;
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1499,12 +1519,18 @@ determine_fog() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::determine_bin
+//     Function: RenderState::do_determine_bin
 //       Access: Private
-//  Description: This is the private implementation of get_bin().
+//  Description: This is the implementation of determine_bin(); it
+//               assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void RenderState::
-determine_bin() {
+do_determine_bin() {
+  if ((_flags & F_checked_bin) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderAttrib *attrib = get_attrib(CullBinAttrib::get_class_type());
   _bin = (const CullBinAttrib *)NULL;
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1514,12 +1540,19 @@ determine_bin() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::determine_transparency
+//     Function: RenderState::do_determine_transparency
 //       Access: Private
-//  Description: This is the private implementation of get_transparency().
+//  Description: This is the implementation of
+//               determine_transparency(); it assumes the lock is
+//               already held.
 ////////////////////////////////////////////////////////////////////
 void RenderState::
-determine_transparency() {
+do_determine_transparency() {
+  if ((_flags & F_checked_transparency) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderAttrib *attrib = 
     get_attrib(TransparencyAttrib::get_class_type());
   _transparency = (const TransparencyAttrib *)NULL;
@@ -1536,6 +1569,12 @@ determine_transparency() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_color() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_color) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderAttrib *attrib = get_attrib(ColorAttrib::get_class_type());
   _color = (const ColorAttrib *)NULL;
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1551,6 +1590,12 @@ determine_color() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_color_scale() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_color_scale) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderAttrib *attrib = get_attrib(ColorScaleAttrib::get_class_type());
   _color_scale = (const ColorScaleAttrib *)NULL;
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1566,6 +1611,12 @@ determine_color_scale() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_texture() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_texture) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderAttrib *attrib = get_attrib(TextureAttrib::get_class_type());
   _texture = (const TextureAttrib *)NULL;
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1581,6 +1632,12 @@ determine_texture() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_tex_gen() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_tex_gen) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderAttrib *attrib = get_attrib(TexGenAttrib::get_class_type());
   _tex_gen = (const TexGenAttrib *)NULL;
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1596,6 +1653,12 @@ determine_tex_gen() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_tex_matrix() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_tex_matrix) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderAttrib *attrib = get_attrib(TexMatrixAttrib::get_class_type());
   _tex_matrix = (const TexMatrixAttrib *)NULL;
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1611,6 +1674,12 @@ determine_tex_matrix() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_render_mode() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_render_mode) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderAttrib *attrib = get_attrib(RenderModeAttrib::get_class_type());
   _render_mode = (const RenderModeAttrib *)NULL;
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1626,6 +1695,12 @@ determine_render_mode() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_clip_plane() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_clip_plane) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderAttrib *attrib = get_attrib(ClipPlaneAttrib::get_class_type());
   _clip_plane = (const ClipPlaneAttrib *)NULL;
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1641,6 +1716,12 @@ determine_clip_plane() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_shader() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_shader) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderAttrib *attrib = get_attrib(ShaderAttrib::get_class_type());
   _shader = (const ShaderAttrib *)NULL;
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1656,6 +1737,12 @@ determine_shader() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_cull_callback() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_cull_callback) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   Attributes::const_iterator ai;
   for (ai = _attributes.begin(); ai != _attributes.end(); ++ai) {
     const Attribute &attrib = *ai;

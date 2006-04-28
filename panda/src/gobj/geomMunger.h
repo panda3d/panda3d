@@ -27,6 +27,7 @@
 #include "geomCacheEntry.h"
 #include "indirectCompareTo.h"
 #include "pStatCollector.h"
+#include "pmutex.h"
 #include "pointerTo.h"
 #include "pmap.h"
 #include "pset.h"
@@ -111,6 +112,9 @@ private:
   typedef pmap<GeomVertexAnimationSpec, Formats> FormatsByAnimation;
   FormatsByAnimation _formats_by_animation;
 
+  // This mutex protects the above.
+  Mutex _formats_lock;
+
   bool _is_registered;
   typedef pset<GeomMunger *, IndirectCompareTo<GeomMunger> > Mungers;
   class EXPCL_PANDA Registry {
@@ -120,6 +124,7 @@ private:
     void unregister_munger(GeomMunger *munger);
 
     Mungers _mungers;
+    Mutex _registry_lock;
   };
 
   // We store the iterator into the above registry, while we are

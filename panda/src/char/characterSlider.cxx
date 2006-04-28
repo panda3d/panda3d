@@ -88,12 +88,12 @@ make_copy() const {
 //               result of the update, or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CharacterSlider::
-update_internals(PartGroup *, bool, bool) {
+update_internals(PartGroup *, bool, bool, Thread *current_thread) {
   // Tell our related CharacterVertexSliders that they now need to
   // recompute themselves.
   VertexSliders::iterator vsi;
   for (vsi = _vertex_sliders.begin(); vsi != _vertex_sliders.end(); ++vsi) {
-    (*vsi)->mark_modified();
+    (*vsi)->mark_modified(current_thread);
   }
   
   return true;

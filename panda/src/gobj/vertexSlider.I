@@ -38,8 +38,8 @@ get_name() const {
 //               get_slider() changes.
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq VertexSlider::
-get_modified() const {
-  CDReader cdata(_cycler);
+get_modified(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
   return cdata->_modified;
 }
 

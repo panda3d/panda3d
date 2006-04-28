@@ -30,6 +30,7 @@
 #include "pStatCollector.h"
 #include "geomEnums.h"
 #include "reMutex.h"
+#include "pmutex.h"
 #include "config_pgraph.h"
 #include "deletedChain.h"
 
@@ -271,10 +272,13 @@ private:
   INLINE void check_quat() const;
   INLINE void check_mat() const;
   void calc_singular();
-  void calc_components();
-  void calc_hpr();
+  INLINE void calc_components();
+  void do_calc_components();
+  INLINE void calc_hpr();
+  void do_calc_hpr();
   void calc_quat();
-  void calc_mat();
+  INLINE void calc_mat();
+  void do_calc_mat();
 
   INLINE void check_uniform_scale();
   INLINE void check_uniform_scale2d();
@@ -311,6 +315,9 @@ private:
   LMatrix4f *_inv_mat;
   
   unsigned int _flags;
+
+  // This mutex protects _flags, and all of the above computed values.
+  Mutex _lock;
 
 public:
   static void register_with_read_factory();

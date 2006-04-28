@@ -93,8 +93,8 @@ get_transform(int n) const {
 //               changes.)
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq TransformTable::
-get_modified() const {
-  CDReader cdata(_cycler);
+get_modified(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
   return cdata->_modified;
 }
 
@@ -105,8 +105,8 @@ get_modified() const {
 //               reports that it has been modified.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformTable::
-update_modified(UpdateSeq modified) {
-  CDWriter cdata(_cycler, true);
+update_modified(UpdateSeq modified, Thread *current_thread) {
+  CDWriter cdata(_cycler, true, current_thread);
   cdata->_modified = modified;
 }
 

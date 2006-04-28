@@ -139,10 +139,9 @@ write(ostream &out, int indent_level) const {
 //               different space.
 ////////////////////////////////////////////////////////////////////
 UpdateSeq VertexTransform::
-get_next_modified() {
+get_next_modified(Thread *current_thread) {
+  CDWriter cdatag(_global_cycler, true, current_thread);
   ++_next_modified;
-
-  CDWriter cdatag(_global_cycler, true);
   cdatag->_modified = _next_modified;
 
   return _next_modified;
@@ -157,13 +156,13 @@ get_next_modified() {
 //               be propagated through the system.
 ////////////////////////////////////////////////////////////////////
 void VertexTransform::
-mark_modified() {
-  CDWriter cdata(_cycler, true);
-  cdata->_modified = get_next_modified();
+mark_modified(Thread *current_thread) {
+  CDWriter cdata(_cycler, true, current_thread);
+  cdata->_modified = get_next_modified(current_thread);
   
   Palettes::iterator pi;
   for (pi = _tables.begin(); pi != _tables.end(); ++pi) {
-    (*pi)->update_modified(cdata->_modified);
+    (*pi)->update_modified(cdata->_modified, current_thread);
   }
 }
 

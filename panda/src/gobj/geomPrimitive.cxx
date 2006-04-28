@@ -425,13 +425,14 @@ offset_vertices(int offset) {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 make_nonindexed(GeomVertexData *dest, const GeomVertexData *source) {
+  Thread *current_thread = Thread::get_current_thread();
   int num_vertices = get_num_vertices();
   int dest_start = dest->get_num_rows();
 
   dest->set_num_rows(dest_start + num_vertices);
   for (int i = 0; i < num_vertices; ++i) {
     int v = get_vertex(i);
-    dest->copy_row_from(dest_start + i, source, v);
+    dest->copy_row_from(dest_start + i, source, v, current_thread);
   }
 
   set_nonindexed_vertices(dest_start, num_vertices);
@@ -446,6 +447,7 @@ make_nonindexed(GeomVertexData *dest, const GeomVertexData *source) {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 pack_vertices(GeomVertexData *dest, const GeomVertexData *source) {
+  Thread *current_thread = Thread::get_current_thread();
   if (!is_indexed()) {
     // If the primitive is nonindexed, packing is the same as
     // converting (again) to nonindexed.
@@ -475,7 +477,7 @@ pack_vertices(GeomVertexData *dest, const GeomVertexData *source) {
 
       if (result.second) {
         // This is the first time we've seen vertex v.
-        dest->copy_row_from(v2, source, v);
+        dest->copy_row_from(v2, source, v, current_thread);
       }
     }
     

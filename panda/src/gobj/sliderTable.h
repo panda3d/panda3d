@@ -59,7 +59,7 @@ PUBLISHED:
   INLINE const VertexSlider *find_slider(const InternalName *name) const;
   INLINE bool has_slider(const InternalName *name) const;
   INLINE bool is_empty() const;
-  INLINE UpdateSeq get_modified() const;
+  INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
   void set_slider(int n, const VertexSlider *slider);
   void remove_slider(int n);
@@ -70,7 +70,7 @@ PUBLISHED:
 private:
   void do_register();
   void do_unregister();
-  INLINE void update_modified(UpdateSeq modified);
+  INLINE void update_modified(UpdateSeq modified, Thread *current_thread);
 
 private:
   bool _is_registered;

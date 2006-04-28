@@ -29,6 +29,7 @@
 #include "pointerTo.h"
 #include "ordered_vector.h"
 #include "reMutex.h"
+#include "pmutex.h"
 
 class CullTraverser;
 class CullTraverserData;
@@ -163,6 +164,9 @@ private:
     F_has_adjust_transform     = 0x0100,
   };
   int _flags;
+
+  // This mutex protects _flags, and all of the above computed values.
+  Mutex _lock;
 
 
 public:

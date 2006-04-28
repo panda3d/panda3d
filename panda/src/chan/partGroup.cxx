@@ -361,12 +361,13 @@ write_with_value(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 bool PartGroup::
 do_update(PartBundle *root, PartGroup *,
-          bool parent_changed, bool anim_changed) {
+          bool parent_changed, bool anim_changed, Thread *current_thread) {
   bool any_changed = false;
 
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    if ((*ci)->do_update(root, this, parent_changed, anim_changed)) {
+    if ((*ci)->do_update(root, this, parent_changed, anim_changed,
+                         current_thread)) {
       any_changed = true;
     }
   }

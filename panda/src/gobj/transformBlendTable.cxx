@@ -174,16 +174,16 @@ rebuild_index() {
 //               TransformBlend objects, if necessary.
 ////////////////////////////////////////////////////////////////////
 void TransformBlendTable::
-recompute_modified(TransformBlendTable::CData *cdata) {
+recompute_modified(TransformBlendTable::CData *cdata, Thread *current_thread) {
   // Update the global_modified sequence number first, to prevent race
   // conditions.
-  cdata->_global_modified = VertexTransform::get_global_modified();
+  cdata->_global_modified = VertexTransform::get_global_modified(current_thread);
 
   // Now get the local modified number.
   UpdateSeq seq;
   Blends::const_iterator bi;
   for (bi = _blends.begin(); bi != _blends.end(); ++bi) {
-    seq = max(seq, (*bi).get_modified());
+    seq = max(seq, (*bi).get_modified(current_thread));
   }
 
   cdata->_modified = seq;
@@ -196,8 +196,8 @@ recompute_modified(TransformBlendTable::CData *cdata) {
 //               recomputed.
 ////////////////////////////////////////////////////////////////////
 void TransformBlendTable::
-clear_modified() {
-  CDWriter cdata(_cycler, true);
+clear_modified(Thread *current_thread) {
+  CDWriter cdata(_cycler, true, current_thread);
   cdata->_global_modified = UpdateSeq();
   cdata->_modified = UpdateSeq();
 }
@@ -323,6 +323,7 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 void TransformBlendTable::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  _modified = VertexTransform::get_next_modified();
-  _global_modified = VertexTransform::get_global_modified();
+  Thread *current_thread = Thread::get_current_thread();
+  _modified = VertexTransform::get_next_modified(current_thread);
+  _global_modified = VertexTransform::get_global_modified(current_thread);
 }

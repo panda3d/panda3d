@@ -25,8 +25,8 @@
 //               get_matrix() changes.
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq VertexTransform::
-get_modified() const {
-  CDReader cdata(_cycler);
+get_modified(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
   return cdata->_modified;
 }
 
@@ -39,8 +39,8 @@ get_modified() const {
 //               VertexTransforms have changed value recently.
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq VertexTransform::
-get_global_modified() {
-  CDReader cdata(_global_cycler);
+get_global_modified(Thread *current_thread) {
+  CDReader cdata(_global_cycler, current_thread);
   return cdata->_modified;
 }
 

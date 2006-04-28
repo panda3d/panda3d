@@ -240,15 +240,16 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
 ////////////////////////////////////////////////////////////////////
 bool PartBundle::
 update() {
+  Thread *current_thread = Thread::get_current_thread();
   bool anim_changed;
   {
-    CDReader cdata(_cycler);
+    CDReader cdata(_cycler, current_thread);
     anim_changed = cdata->_anim_changed;
   }
-  bool any_changed = do_update(this, NULL, false, anim_changed);
+  bool any_changed = do_update(this, NULL, false, anim_changed, current_thread);
 
   // Now update all the controls for next time.
-  CDWriter cdata(_cycler, false);
+  CDWriter cdata(_cycler, false, current_thread);
   ChannelBlend::const_iterator cbi;
   for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
     AnimControl *control = (*cbi).first;
@@ -269,10 +270,11 @@ update() {
 ////////////////////////////////////////////////////////////////////
 bool PartBundle::
 force_update() {
-  bool any_changed = do_update(this, NULL, true, true);
+  Thread *current_thread = Thread::get_current_thread();
+  bool any_changed = do_update(this, NULL, true, true, current_thread);
 
   // Now update all the controls for next time.
-  CDWriter cdata(_cycler, false);
+  CDWriter cdata(_cycler, false, current_thread);
   ChannelBlend::const_iterator cbi;
   for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
     AnimControl *control = (*cbi).first;
@@ -428,7 +430,8 @@ clear_and_stop_intersecting(AnimControl *control, CData *cdata) {
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
 finalize(BamReader *) {
-  do_update(this, NULL, true, true);
+  Thread *current_thread = Thread::get_current_thread();
+  do_update(this, NULL, true, true, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

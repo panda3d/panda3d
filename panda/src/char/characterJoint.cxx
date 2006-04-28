@@ -60,9 +60,11 @@ CharacterJoint(PartGroup *parent, const string &name,
                const LMatrix4f &initial_value)
   : MovingPartMatrix(parent, name, initial_value)
 {
+  Thread *current_thread = Thread::get_current_thread();
+
   // Now that we've constructed and we're in the tree, let's call
   // update_internals() to get our _net_transform set properly.
-  update_internals(parent, true, false);
+  update_internals(parent, true, false, current_thread);
 
   // And then compute its inverse.  This is needed for
   // ComputedVertices, during animation.
@@ -106,7 +108,9 @@ make_copy() const {
 //               transforms for this particular joint.
 ////////////////////////////////////////////////////////////////////
 bool CharacterJoint::
-update_internals(PartGroup *parent, bool self_changed, bool parent_changed) {
+update_internals(PartGroup *parent, bool self_changed, bool parent_changed,
+                 Thread *current_thread) {
+
   nassertr(parent != (PartGroup *)NULL, false);
 
   bool net_changed = false;
@@ -137,7 +141,7 @@ update_internals(PartGroup *parent, bool self_changed, bool parent_changed) {
       ai = _net_transform_nodes.begin();
       while (ai != _net_transform_nodes.end()) {
         PandaNode *node = *ai;
-        node->set_transform(t);
+        node->set_transform(t, current_thread);
         ++ai;
       }
     }
@@ -147,7 +151,7 @@ update_internals(PartGroup *parent, bool self_changed, bool parent_changed) {
     VertexTransforms::iterator vti;
     for (vti = _vertex_transforms.begin(); vti != _vertex_transforms.end(); ++vti) {
       (*vti)->_matrix_stale = true;
-      (*vti)->mark_modified();
+      (*vti)->mark_modified(current_thread);
     }
   }
 
@@ -158,7 +162,7 @@ update_internals(PartGroup *parent, bool self_changed, bool parent_changed) {
     ai = _local_transform_nodes.begin();
     while (ai != _local_transform_nodes.end()) {
       PandaNode *node = *ai;
-      node->set_transform(t);
+      node->set_transform(t, current_thread);
       ++ai;
     }
   }

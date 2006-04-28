@@ -55,7 +55,7 @@ PUBLISHED:
 
   INLINE int get_num_transforms() const;
   INLINE const VertexTransform *get_transform(int n) const;
-  INLINE UpdateSeq get_modified() const;
+  INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
   void set_transform(int n, const VertexTransform *transform);
   void remove_transform(int n);
@@ -66,7 +66,7 @@ PUBLISHED:
 private:
   void do_register();
   void do_unregister();
-  INLINE void update_modified(UpdateSeq modified);
+  INLINE void update_modified(UpdateSeq modified, Thread *current_thread);
 
 private:
   bool _is_registered;

@@ -35,9 +35,10 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void UserVertexTransform::
 set_matrix(const LMatrix4f &matrix) {
-  CDWriter cdata(_cycler, true);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
   cdata->_matrix = matrix;
-  mark_modified();
+  mark_modified(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

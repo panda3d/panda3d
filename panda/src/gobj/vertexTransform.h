@@ -49,16 +49,16 @@ PUBLISHED:
   virtual void mult_matrix(LMatrix4f &result, const LMatrix4f &previous) const;
   virtual void accumulate_matrix(LMatrix4f &accum, float weight) const;
 
-  INLINE UpdateSeq get_modified() const;
+  INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
-  static UpdateSeq get_next_modified();
-  INLINE static UpdateSeq get_global_modified();
+  static UpdateSeq get_next_modified(Thread *current_thread);
+  INLINE static UpdateSeq get_global_modified(Thread *current_thread);
 
 protected:
-  void mark_modified();
+  void mark_modified(Thread *current_thread);
 
 private:
   typedef pset<TransformTable *> Palettes;

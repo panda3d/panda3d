@@ -26,6 +26,7 @@
 #include "pStatTimer.h"
 #include "config_pgraph.h"
 #include "reMutexHolder.h"
+#include "mutexHolder.h"
 #include "thread.h"
 
 ReMutex *TransformState::_states_lock = NULL;
@@ -48,7 +49,7 @@ TypeHandle TransformState::_type_handle;
 //               spurious warning if all constructors are private.
 ////////////////////////////////////////////////////////////////////
 TransformState::
-TransformState() {
+TransformState() : _lock("TransformState") {
   if (_states == (States *)NULL) {
     init_states();
   }
@@ -1743,6 +1744,11 @@ remove_cache_pointers() {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 calc_singular() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_singular_known) != 0) {
+    // Someone else computed it first.
+    return;
+  }
   nassertv((_flags & F_is_invalid) == 0);
 
   // We determine if a matrix is singular by attempting to invert it
@@ -1753,7 +1759,11 @@ calc_singular() {
   // This should be NULL if no one has called calc_singular() yet.
   nassertv(_inv_mat == (LMatrix4f *)NULL);
   _inv_mat = new LMatrix4f;
-  bool inverted = _inv_mat->invert_from(get_mat());
+
+  if ((_flags & F_mat_known) == 0) {
+    do_calc_mat();
+  }
+  bool inverted = _inv_mat->invert_from(_mat);
 
   if (!inverted) {
     _flags |= F_is_singular;
@@ -1764,12 +1774,18 @@ calc_singular() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformState::calc_components
+//     Function: TransformState::do_calc_components
 //       Access: Private
-//  Description: Derives the components from the matrix, if possible.
+//  Description: This is the implementation of calc_components(); it
+//               assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void TransformState::
-calc_components() {
+do_calc_components() {
+  if ((_flags & F_components_known) != 0) {
+    // Someone else computed it first.
+    return;
+  }
+
   nassertv((_flags & F_is_invalid) == 0);
   if ((_flags & F_is_identity) != 0) {
     _scale.set(1.0f, 1.0f, 1.0f);
@@ -1784,8 +1800,10 @@ calc_components() {
     // other explanation is that we were constructed via a matrix.
     nassertv((_flags & F_mat_known) != 0);
 
-    const LMatrix4f &mat = get_mat();
-    bool possible = decompose_matrix(mat, _scale, _shear, _hpr, _pos);
+    if ((_flags & F_mat_known) == 0) {
+      do_calc_mat();
+    }
+    bool possible = decompose_matrix(_mat, _scale, _shear, _hpr, _pos);
     if (!possible) {
       // Some matrices can't be decomposed into scale, hpr, pos.  In
       // this case, we now know that we cannot compute the components;
@@ -1799,20 +1817,27 @@ calc_components() {
     }
 
     // However, we can always get at least the pos.
-    mat.get_row3(_pos, 3);
+    _mat.get_row3(_pos, 3);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformState::calc_hpr
+//     Function: TransformState::do_calc_hpr
 //       Access: Private
-//  Description: Derives the hpr, from the matrix if necessary, or
-//               from the quat.
+//  Description: This is the implementation of calc_hpr(); it
+//               assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void TransformState::
-calc_hpr() {
+do_calc_hpr() {
+  if ((_flags & F_hpr_known) != 0) {
+    // Someone else computed it first.
+    return;
+  }
+
   nassertv((_flags & F_is_invalid) == 0);
-  check_components();
+  if ((_flags & F_components_known) == 0) {
+    do_calc_components();
+  }
   if ((_flags & F_hpr_known) == 0) {
     // If we don't know the hpr yet, we must have been given a quat.
     // Decompose it.
@@ -1829,8 +1854,16 @@ calc_hpr() {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 calc_quat() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_quat_known) != 0) {
+    // Someone else computed it first.
+    return;
+  }
+
   nassertv((_flags & F_is_invalid) == 0);
-  check_components();
+  if ((_flags & F_components_known) == 0) {
+    do_calc_components();
+  }
   if ((_flags & F_quat_known) == 0) {
     // If we don't know the quat yet, we must have been given a hpr.
     // Decompose it.
@@ -1841,12 +1874,18 @@ calc_quat() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformState::calc_mat
+//     Function: TransformState::do_calc_mat
 //       Access: Private
-//  Description: Computes the matrix from the components.
+//  Description: This is the implementation of calc_mat(); it
+//               assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void TransformState::
-calc_mat() {
+do_calc_mat() {
+  if ((_flags & F_mat_known) != 0) {
+    // Someone else computed it first.
+    return;
+  }
+
   nassertv((_flags & F_is_invalid) == 0);
   if ((_flags & F_is_identity) != 0) {
     _mat = LMatrix4f::ident_mat();
@@ -1855,6 +1894,10 @@ calc_mat() {
     // If we don't have a matrix and we're not identity, the only
     // other explanation is that we were constructed via components.
     nassertv((_flags & F_components_known) != 0);
+    if ((_flags & F_hpr_known) == 0) {
+      do_calc_hpr();
+    }
+
     compose_matrix(_mat, _scale, _shear, get_hpr(), _pos);
   }
   _flags |= F_mat_known;

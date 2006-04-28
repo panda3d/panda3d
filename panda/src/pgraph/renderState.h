@@ -33,6 +33,7 @@
 #include "weakPointerTo.h"
 #include "shaderExpansion.h"
 #include "reMutex.h"
+#include "pmutex.h"
 #include "deletedChain.h"
 
 class GraphicsStateGuardianBase;
@@ -182,8 +183,10 @@ private:
 
   void determine_bin_index();
   void determine_fog();
-  void determine_bin();
-  void determine_transparency();
+  INLINE void determine_bin();
+  void do_determine_bin();
+  INLINE void determine_transparency();
+  void do_determine_transparency();
   void determine_color();
   void determine_color_scale();
   void determine_texture();
@@ -323,6 +326,9 @@ private:
     F_is_destructing        = 0x8000,
   };
   unsigned short _flags;
+
+  // This mutex protects _flags, and all of the above computed values.
+  Mutex _lock;
 
 public:
   static void register_with_read_factory();

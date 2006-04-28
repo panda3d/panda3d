@@ -100,7 +100,8 @@ TransformBlend(const TransformBlend &copy) :
 INLINE void TransformBlend::
 operator = (const TransformBlend &copy) {
   _entries = copy._entries;
-  clear_result();
+  Thread *current_thread = Thread::get_current_thread();
+  clear_result(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -209,11 +210,11 @@ set_weight(int n, float weight) {
 //               calling get_blend() or transform_point().
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-update_blend() const {
-  CDReader cdata(_cycler);
-  if (cdata->_global_modified != VertexTransform::get_global_modified()) {
+update_blend(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
+  if (cdata->_global_modified != VertexTransform::get_global_modified(current_thread)) {
     CDWriter cdataw(((TransformBlend *)this)->_cycler, cdata, false);
-    ((TransformBlend *)this)->recompute_result(cdataw);
+    ((TransformBlend *)this)->recompute_result(cdataw, current_thread);
   }
 }
 
@@ -228,9 +229,8 @@ update_blend() const {
 //               cache is up-to-date before calling this.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-get_blend(LMatrix4f &result) const {
-  CDReader cdata(_cycler);
-  nassertv(cdata->_global_modified == VertexTransform::get_global_modified());
+get_blend(LMatrix4f &result, Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
   result = cdata->_result;
 }
 
@@ -243,10 +243,9 @@ get_blend(LMatrix4f &result) const {
 //               cache is up-to-date before calling this.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-transform_point(LPoint4f &point) const {
+transform_point(LPoint4f &point, Thread *current_thread) const {
   if (!_entries.empty()) {
-    CDReader cdata(_cycler);
-    nassertv(cdata->_global_modified == VertexTransform::get_global_modified());
+    CDReader cdata(_cycler, current_thread);
     point = point * cdata->_result;
   }
 }
@@ -260,10 +259,9 @@ transform_point(LPoint4f &point) const {
 //               cache is up-to-date before calling this.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-transform_point(LPoint3f &point) const {
+transform_point(LPoint3f &point, Thread *current_thread) const {
   if (!_entries.empty()) {
-    CDReader cdata(_cycler);
-    nassertv(cdata->_global_modified == VertexTransform::get_global_modified());
+    CDReader cdata(_cycler, current_thread);
     point = point * cdata->_result;
   }
 }
@@ -277,10 +275,9 @@ transform_point(LPoint3f &point) const {
 //               cache is up-to-date before calling this.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-transform_vector(LVector3f &vector) const {
+transform_vector(LVector3f &vector, Thread *current_thread) const {
   if (!_entries.empty()) {
-    CDReader cdata(_cycler);
-    nassertv(cdata->_global_modified == VertexTransform::get_global_modified());
+    CDReader cdata(_cycler, current_thread);
     vector = vector * cdata->_result;
   }
 }
@@ -292,11 +289,11 @@ transform_vector(LVector3f &vector) const {
 //               least as often as the result of get_blend() changes.
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq TransformBlend::
-get_modified() const {
-  CDReader cdata(_cycler);
-  if (cdata->_global_modified != VertexTransform::get_global_modified()) {
+get_modified(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
+  if (cdata->_global_modified != VertexTransform::get_global_modified(current_thread)) {
     CDWriter cdataw(((TransformBlend *)this)->_cycler, cdata, false);
-    ((TransformBlend *)this)->recompute_result(cdataw);
+    ((TransformBlend *)this)->recompute_result(cdataw, current_thread);
     return cdataw->_modified;
   } else {
     return cdata->_modified;

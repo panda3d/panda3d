@@ -50,13 +50,13 @@ PUBLISHED:
   INLINE const InternalName *get_name() const;
 
   virtual float get_slider() const=0;
-  INLINE UpdateSeq get_modified() const;
+  INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
 protected:
-  void mark_modified();
+  void mark_modified(Thread *current_thread);
 
 protected:
   CPT(InternalName) _name;

@@ -390,6 +390,28 @@ get_shader() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_bin
+//       Access: Private
+//  Description: This is the private implementation of get_bin().
+////////////////////////////////////////////////////////////////////
+INLINE void RenderState::
+determine_bin() {
+  MutexHolder holder(_lock);
+  do_determine_bin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_transparency
+//       Access: Private
+//  Description: This is the private implementation of get_transparency().
+////////////////////////////////////////////////////////////////////
+INLINE void RenderState::
+determine_transparency() {
+  MutexHolder holder(_lock);
+  do_determine_transparency();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::set_destructing
 //       Access: Private
 //  Description: This function should only be called from the

@@ -75,7 +75,8 @@ add_transform(const VertexTransform *transform, float weight) {
         _entries.erase(ei);
       }
     }
-    clear_result();
+    Thread *current_thread = Thread::get_current_thread();
+    clear_result(current_thread);
   }
 }
 
@@ -93,7 +94,8 @@ remove_transform(const VertexTransform *transform) {
   if (ei != _entries.end()) {
     _entries.erase(ei);
   }
-  clear_result();
+  Thread *current_thread = Thread::get_current_thread();
+  clear_result(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,7 +118,8 @@ normalize_weights() {
       (*ei)._weight /= net_weight;
     }
   }
-  clear_result();
+  Thread *current_thread = Thread::get_current_thread();
+  clear_result(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -180,6 +183,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void TransformBlend::
 write(ostream &out, int indent_level) const {
+  Thread *current_thread = Thread::get_current_thread();
   Entries::const_iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
     indent(out, indent_level)
@@ -189,7 +193,7 @@ write(ostream &out, int indent_level) const {
     mat.write(out, indent_level + 4);
   }
   LMatrix4f blend;
-  get_blend(blend);
+  get_blend(blend, current_thread);
   indent(out, indent_level)
     << "Blended result =\n";
   blend.write(out, indent_level + 2);
@@ -202,16 +206,16 @@ write(ostream &out, int indent_level) const {
 //               VertexTransform objects, if necessary.
 ////////////////////////////////////////////////////////////////////
 void TransformBlend::
-recompute_result(CData *cdata) {
+recompute_result(CData *cdata, Thread *current_thread) {
   // Update the global_modified sequence number first, to prevent race
   // conditions.
-  cdata->_global_modified = VertexTransform::get_global_modified();
+  cdata->_global_modified = VertexTransform::get_global_modified(current_thread);
 
   // Now see if we really need to recompute.
   UpdateSeq seq;
   Entries::const_iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
-    seq = max(seq, (*ei)._transform->get_modified());
+    seq = max(seq, (*ei)._transform->get_modified(current_thread));
   }
 
   if (cdata->_modified != seq) {
@@ -235,8 +239,8 @@ recompute_result(CData *cdata) {
 //               recomputed.
 ////////////////////////////////////////////////////////////////////
 void TransformBlend::
-clear_result() {
-  CDWriter cdata(_cycler, true);
+clear_result(Thread *current_thread) {
+  CDWriter cdata(_cycler, true, current_thread);
   cdata->_global_modified = UpdateSeq();
   if (cdata->_modified != UpdateSeq()) {
     cdata->_modified = UpdateSeq();

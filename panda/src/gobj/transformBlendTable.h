@@ -58,7 +58,7 @@ PUBLISHED:
 
   INLINE int get_num_blends() const;
   INLINE const TransformBlend &get_blend(int n) const;
-  INLINE UpdateSeq get_modified() const;
+  INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
   void set_blend(int n, const TransformBlend &blend);
   void remove_blend(int n);
@@ -76,8 +76,8 @@ private:
   INLINE void consider_rebuild_index() const;
   void rebuild_index();
 
-  void recompute_modified(CData *cdata);
-  void clear_modified();
+  void recompute_modified(CData *cdata, Thread *current_thread);
+  void clear_modified(Thread *current_thread);
 
 private:
   // We don't bother with registering the table, or protecting its

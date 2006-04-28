@@ -47,11 +47,11 @@ get_blend(int n) const {
 //               have changed.
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq TransformBlendTable::
-get_modified() const {
+get_modified(Thread *current_thread) const {
   CDReader cdata(_cycler);
-  if (cdata->_global_modified != VertexTransform::get_global_modified()) {
+  if (cdata->_global_modified != VertexTransform::get_global_modified(current_thread)) {
     CDWriter cdataw(((TransformBlendTable *)this)->_cycler, cdata, false);
-    ((TransformBlendTable *)this)->recompute_modified(cdataw);
+    ((TransformBlendTable *)this)->recompute_modified(cdataw, current_thread);
     return cdataw->_modified;
   } else {
     return cdata->_modified;

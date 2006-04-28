@@ -57,11 +57,12 @@ PUBLISHED:
 
 public:
   virtual bool do_update(PartBundle *root, PartGroup *parent,
-                         bool parent_changed, bool anim_changed);
+                         bool parent_changed, bool anim_changed,
+                         Thread *current_thread);
 
   virtual void get_blend_value(const PartBundle *root)=0;
   virtual bool update_internals(PartGroup *parent, bool self_changed,
-                                bool parent_changed);
+                                bool parent_changed, Thread *current_thread);
 
 protected:
   MovingPartBase();

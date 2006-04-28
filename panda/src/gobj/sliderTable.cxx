@@ -316,5 +316,6 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 void SliderTable::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  _modified = VertexTransform::get_next_modified();
+  Thread *current_thread = Thread::get_current_thread();
+  _modified = VertexTransform::get_next_modified(current_thread);
 }

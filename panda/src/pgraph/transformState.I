@@ -825,12 +825,49 @@ check_mat() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::calc_components
+//       Access: Private
+//  Description: Derives the components from the matrix, if possible.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+calc_components() {
+  MutexHolder holder(_lock);
+  do_calc_components();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::calc_hpr
+//       Access: Private
+//  Description: Derives the hpr, from the matrix if necessary, or
+//               from the quat.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+calc_hpr() {
+  MutexHolder holder(_lock);
+  do_calc_hpr();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::calc_mat
+//       Access: Private
+//  Description: Computes the matrix from the components.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+calc_mat() {
+  MutexHolder holder(_lock);
+  do_calc_mat();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::check_uniform_scale
 //       Access: Private
 //  Description: Should be called immediately after _scale (and
 //               F_has_components) is set, this checks for a
 //               identity and/or uniform scale (as well as a non-zero
 //               shear) and sets the bit appropriately.
+//
+//               It does not matter whether the lock is or is not held
+//               before calling this method.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformState::
 check_uniform_scale() {
@@ -854,6 +891,9 @@ check_uniform_scale() {
 //               F_has_components) is set, for a known 2-d scale, this
 //               checks for a identity and/or uniform scale (as well
 //               as a non-zero shear) and sets the bit appropriately.
+//
+//               It does not matter whether the lock is or is not held
+//               before calling this method.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformState::
 check_uniform_scale2d() {

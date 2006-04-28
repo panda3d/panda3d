@@ -37,7 +37,9 @@ GeomMunger() :
   _is_registered(false)
 {
 #ifndef NDEBUG
-  _registered_key = get_registry()->_mungers.end();
+  Registry *registry = get_registry();
+  MutexHolder holder(registry->_registry_lock);
+  _registered_key = registry->_mungers.end();
 #endif
 }
 
@@ -51,7 +53,9 @@ GeomMunger(const GeomMunger &copy) :
   _is_registered(false)
 {
 #ifndef NDEBUG
-  _registered_key = get_registry()->_mungers.end();
+  Registry *registry = get_registry();
+  MutexHolder holder(registry->_registry_lock);
+  _registered_key = registry->_mungers.end();
 #endif
 }
 
@@ -179,6 +183,8 @@ do_munge_format(const GeomVertexFormat *format,
                 const GeomVertexAnimationSpec &animation) {
   nassertr(_is_registered, NULL);
   nassertr(format->is_registered(), NULL);
+
+  MutexHolder holder(_formats_lock);
 
   Formats &formats = _formats_by_animation[animation];
 
@@ -373,6 +379,8 @@ register_munger(GeomMunger *munger, Thread *current_thread) {
   // will be automatically deleted when this function returns.
   PT(GeomMunger) pt_munger = munger;
 
+  MutexHolder holder(_registry_lock);
+
   Mungers::iterator mi = _mungers.insert(munger).first;
   GeomMunger *new_munger = (*mi);
   if (!new_munger->is_registered()) {
@@ -392,6 +400,8 @@ register_munger(GeomMunger *munger, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void GeomMunger::Registry::
 unregister_munger(GeomMunger *munger) {
+  MutexHolder holder(_registry_lock);
+
   nassertv(munger->is_registered());
   nassertv(munger->_registered_key != _mungers.end());
   _mungers.erase(munger->_registered_key);

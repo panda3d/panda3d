@@ -124,9 +124,10 @@ PUBLISHED:
   INLINE int get_num_bytes() const;
   INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
 
-  void copy_from(const GeomVertexData *source, bool keep_data_objects);
+  void copy_from(const GeomVertexData *source, bool keep_data_objects,
+                 Thread *current_thread = Thread::get_current_thread());
   void copy_row_from(int dest_row, const GeomVertexData *source, 
-                     int source_row);
+                     int source_row, Thread *current_thread);
   CPT(GeomVertexData) convert_to(const GeomVertexFormat *new_format) const;
   CPT(GeomVertexData) 
     scale_color(const LVecBase4f &color_scale) const;
@@ -253,7 +254,7 @@ private:
   Cache _cache;
 
 private:
-  void update_animated_vertices(CData *cdata);
+  void update_animated_vertices(CData *cdata, Thread *current_thread);
 
   static PStatCollector _convert_pcollector;
   static PStatCollector _scale_color_pcollector;

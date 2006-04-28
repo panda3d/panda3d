@@ -70,13 +70,13 @@ PUBLISHED:
   INLINE void set_transform(int n, const VertexTransform *transform);
   INLINE void set_weight(int n, float weight);
 
-  INLINE void update_blend() const;
+  INLINE void update_blend(Thread *current_thread) const;
 
-  INLINE void get_blend(LMatrix4f &result) const;
-  INLINE void transform_point(LPoint4f &point) const;
-  INLINE void transform_point(LPoint3f &point) const;
-  INLINE void transform_vector(LVector3f &point) const;
-  INLINE UpdateSeq get_modified() const;
+  INLINE void get_blend(LMatrix4f &result, Thread *current_thread) const;
+  INLINE void transform_point(LPoint4f &point, Thread *current_thread) const;
+  INLINE void transform_point(LPoint3f &point, Thread *current_thread) const;
+  INLINE void transform_vector(LVector3f &point, Thread *current_thread) const;
+  INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
@@ -84,8 +84,8 @@ PUBLISHED:
 private:
   class CData;
 
-  void recompute_result(CData *cdata);
-  void clear_result();
+  void recompute_result(CData *cdata, Thread *current_thread);
+  void clear_result(Thread *current_thread);
 
   class TransformEntry {
   public:

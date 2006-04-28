@@ -240,9 +240,10 @@ set_usage_hint(GeomVertexData::UsageHint usage_hint) {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 set_format(const GeomVertexFormat *format) {
+  Thread *current_thread = Thread::get_current_thread();
   nassertv(format->is_registered());
 
-  CDReader cdata(_cycler);
+  CDReader cdata(_cycler, current_thread);
 
   if (format == cdata->_format) {
     // Trivially no-op.
@@ -269,7 +270,7 @@ set_format(const GeomVertexFormat *format) {
 
   // Now copy the original data back in.  This will automatically
   // convert it to the new format.
-  copy_from(orig_data, false);
+  copy_from(orig_data, false, current_thread);
 
   clear_cache_stage();
   cdataw->_modified = Geom::get_next_modified();
@@ -289,7 +290,8 @@ set_format(const GeomVertexFormat *format) {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 clear_rows() {
-  CDWriter cdata(_cycler, true);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
   nassertv(cdata->_format->get_num_arrays() == (int)cdata->_arrays.size());
 
   Arrays::iterator ai;
@@ -321,9 +323,10 @@ clear_rows() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 set_transform_table(const TransformTable *table) {
+  Thread *current_thread = Thread::get_current_thread();
   nassertv(table == (TransformTable *)NULL || table->is_registered());
 
-  CDWriter cdata(_cycler, true);
+  CDWriter cdata(_cycler, true, current_thread);
   cdata->_transform_table = (TransformTable *)table;
   clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
@@ -428,7 +431,8 @@ set_slider_table(const SliderTable *table) {
 //               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
-copy_from(const GeomVertexData *source, bool keep_data_objects) {
+copy_from(const GeomVertexData *source, bool keep_data_objects,
+          Thread *current_thread) {
   const GeomVertexFormat *source_format = source->get_format();
   const GeomVertexFormat *dest_format = get_format();
 
@@ -626,7 +630,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects) {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 copy_row_from(int dest_row, const GeomVertexData *source, 
-              int source_row) {
+              int source_row, Thread *current_thread) {
   const GeomVertexFormat *source_format = source->get_format();
   const GeomVertexFormat *dest_format = get_format();
   nassertv(source_format == dest_format);
@@ -896,14 +900,14 @@ animate_vertices(Thread *current_thread) const {
   if (cdata->_transform_blend_table != (TransformBlendTable *)NULL) {
     if (cdata->_slider_table != (SliderTable *)NULL) {
       modified = 
-        max(cdata->_transform_blend_table->get_modified(),
-            cdata->_slider_table->get_modified());
+        max(cdata->_transform_blend_table->get_modified(current_thread),
+            cdata->_slider_table->get_modified(current_thread));
     } else {
-      modified = cdata->_transform_blend_table->get_modified();
+      modified = cdata->_transform_blend_table->get_modified(current_thread);
     }
 
   } else if (cdata->_slider_table != (SliderTable *)NULL) {
-    modified = cdata->_slider_table->get_modified();
+    modified = cdata->_slider_table->get_modified(current_thread);
 
   } else {
     // No transform blend table or slider table--ergo, no vertex
@@ -918,7 +922,7 @@ animate_vertices(Thread *current_thread) const {
   }
   CDWriter cdataw(((GeomVertexData *)this)->_cycler, cdata, false);
   cdataw->_animated_vertices_modified = modified;
-  ((GeomVertexData *)this)->update_animated_vertices(cdataw);
+  ((GeomVertexData *)this)->update_animated_vertices(cdataw, current_thread);
   return cdataw->_animated_vertices;
 }
 
@@ -1186,7 +1190,7 @@ uint8_rgba_to_packed_argb(unsigned char *to, int to_stride,
 //               existing animated_vertices object.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
-update_animated_vertices(GeomVertexData::CData *cdata) {
+update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
   int num_rows = get_num_rows();
 
   if (gobj_cat.is_debug()) {
@@ -1195,7 +1199,7 @@ update_animated_vertices(GeomVertexData::CData *cdata) {
       << "\n";
   }
 
-  PStatTimer timer(_char_pcollector);
+  PStatTimer timer(_char_pcollector, current_thread);
 
   const GeomVertexFormat *orig_format = cdata->_format;
 
@@ -1203,7 +1207,7 @@ update_animated_vertices(GeomVertexData::CData *cdata) {
     CPT(GeomVertexFormat) new_format = orig_format->get_post_animated_format();
     cdata->_animated_vertices = 
       new GeomVertexData(get_name(), new_format,
-                           min(get_usage_hint(), UH_dynamic));
+                         min(get_usage_hint(), UH_dynamic));
   }
   PT(GeomVertexData) new_data = cdata->_animated_vertices;
 
@@ -1275,7 +1279,7 @@ update_animated_vertices(GeomVertexData::CData *cdata) {
     int num_blends = tb_table->get_num_blends();
     int bi;
     for (bi = 0; bi < num_blends; bi++) {
-      tb_table->get_blend(bi).update_blend();
+      tb_table->get_blend(bi).update_blend(current_thread);
     }
 
     // Now go through and apply the transforms.
@@ -1296,14 +1300,14 @@ update_animated_vertices(GeomVertexData::CData *cdata) {
         for (int i = 0; i < num_rows; i++) {
           LPoint4f vertex = data.get_data4f();
           int bi = blendi.get_data1i();
-          tb_table->get_blend(bi).transform_point(vertex);
+          tb_table->get_blend(bi).transform_point(vertex, current_thread);
           data.set_data4f(vertex);
         }
       } else {
         for (int i = 0; i < num_rows; i++) {
           LPoint3f vertex = data.get_data3f();
           int bi = blendi.get_data1i();
-          tb_table->get_blend(bi).transform_point(vertex);
+          tb_table->get_blend(bi).transform_point(vertex, current_thread);
           data.set_data3f(vertex);
         }
       }
@@ -1315,7 +1319,7 @@ update_animated_vertices(GeomVertexData::CData *cdata) {
       for (int i = 0; i < num_rows; i++) {
         LVector3f vertex = data.get_data3f();
         int bi = blendi.get_data1i();
-        tb_table->get_blend(bi).transform_vector(vertex);
+        tb_table->get_blend(bi).transform_vector(vertex, current_thread);
         data.set_data3f(vertex);
       }
     }

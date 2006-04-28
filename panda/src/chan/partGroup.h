@@ -25,7 +25,7 @@
 #include "pointerTo.h"
 #include "namable.h"
 #include "typedef.h"
-
+#include "thread.h"
 #include "plist.h"
 
 class AnimControl;
@@ -86,7 +86,8 @@ public:
                        int hierarchy_match_flags = 0) const;
 
   virtual bool do_update(PartBundle *root, PartGroup *parent,
-                         bool parent_changed, bool anim_changed);
+                         bool parent_changed, bool anim_changed,
+                         Thread *current_thread);
 
 protected:
   void write_descendants(ostream &out, int indent_level) const;

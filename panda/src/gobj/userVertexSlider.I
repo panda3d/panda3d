@@ -24,9 +24,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void UserVertexSlider::
 set_slider(float slider) {
-  CDWriter cdata(_cycler, true);
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
   cdata->_slider = slider;
-  mark_modified();
+  mark_modified(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

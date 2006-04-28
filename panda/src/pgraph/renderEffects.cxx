@@ -29,6 +29,7 @@
 #include "indent.h"
 #include "compareTo.h"
 #include "reMutexHolder.h"
+#include "mutexHolder.h"
 #include "thread.h"
   
 ReMutex *RenderEffects::_states_lock = NULL;
@@ -44,7 +45,7 @@ TypeHandle RenderEffects::_type_handle;
 //               spurious warning if all constructors are private.
 ////////////////////////////////////////////////////////////////////
 RenderEffects::
-RenderEffects() {
+RenderEffects() : _lock("RenderEffects") {
   if (_states == (States *)NULL) {
     init_states();
   }
@@ -608,6 +609,12 @@ return_new(RenderEffects *state) {
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
 determine_decal() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_decal) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderEffect *effect = get_effect(DecalEffect::get_class_type());
   if (effect != (const RenderEffect *)NULL) {
     _flags |= F_has_decal;
@@ -622,6 +629,12 @@ determine_decal() {
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
 determine_show_bounds() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_show_bounds) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   const RenderEffect *effect = get_effect(ShowBoundsEffect::get_class_type());
   if (effect != (const RenderEffect *)NULL) {
     _flags |= F_has_show_bounds;
@@ -640,6 +653,12 @@ determine_show_bounds() {
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
 determine_cull_callback() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_cull_callback) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   _flags |= F_checked_cull_callback;
 
   Effects::const_iterator ei;
@@ -658,6 +677,12 @@ determine_cull_callback() {
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
 determine_adjust_transform() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_adjust_transform) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
   _flags |= F_checked_adjust_transform;
 
   Effects::const_iterator ei;

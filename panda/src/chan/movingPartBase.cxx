@@ -99,14 +99,15 @@ write_with_value(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 bool MovingPartBase::
 do_update(PartBundle *root, PartGroup *parent,
-          bool parent_changed, bool anim_changed) {
+          bool parent_changed, bool anim_changed,
+          Thread *current_thread) {
   bool any_changed = false;
   bool needs_update = anim_changed;
 
   // See if any of the channel values have changed since last time.
 
   {
-    PartBundle::CDReader cdata(root->_cycler);
+    PartBundle::CDReader cdata(root->_cycler, current_thread);
     PartBundle::ChannelBlend::const_iterator bci;
     for (bci = cdata->_blend.begin();
          !needs_update && bci != cdata->_blend.end();
@@ -127,14 +128,15 @@ do_update(PartBundle *root, PartGroup *parent,
   }
 
   if (parent_changed || needs_update) {
-    any_changed = update_internals(parent, needs_update, parent_changed);
+    any_changed = update_internals(parent, needs_update, parent_changed,
+                                   current_thread);
   }
 
   // Now recurse.
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     if ((*ci)->do_update(root, this, parent_changed || needs_update,
-                         anim_changed)) {
+                         anim_changed, current_thread)) {
       any_changed = true;
     }
   }
@@ -155,7 +157,7 @@ do_update(PartBundle *root, PartGroup *parent,
 //               result of the update, or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool MovingPartBase::
-update_internals(PartGroup *, bool, bool) {
+update_internals(PartGroup *, bool, bool, Thread *) {
   return true;
 }
 

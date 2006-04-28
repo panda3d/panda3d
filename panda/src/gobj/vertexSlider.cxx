@@ -76,13 +76,13 @@ write(ostream &out, int indent_level) const {
 //               be propagated through the system.
 ////////////////////////////////////////////////////////////////////
 void VertexSlider::
-mark_modified() {
-  CDWriter cdata(_cycler, true);
-  cdata->_modified = VertexTransform::get_next_modified();
+mark_modified(Thread *current_thread) {
+  CDWriter cdata(_cycler, true, current_thread);
+  cdata->_modified = VertexTransform::get_next_modified(current_thread);
   
   Tables::iterator ti;
   for (ti = _tables.begin(); ti != _tables.end(); ++ti) {
-    (*ti)->update_modified(cdata->_modified);
+    (*ti)->update_modified(cdata->_modified, current_thread);
   }
 }
 
