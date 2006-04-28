@@ -145,7 +145,6 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Draw:Flip",                        { 1.0, 0.6, 0.3 } },
   { 1, "Draw:Flip:Begin",                  { 0.3, 0.3, 0.9 } },
   { 1, "Draw:Flip:End",                    { 0.9, 0.3, 0.6 } },
-  { 1, "Draw:Bins",                        { 0.3, 0.6, 0.0 } },
   { 0, "Draw:Transfer data",               { 0.8, 0.0, 0.6 } },
   { 0, "Draw:Transfer data:Vertex buffer", { 0.0, 0.1, 0.9 } },
   { 0, "Draw:Transfer data:Index buffer",  { 0.1, 0.9, 0.0 } },

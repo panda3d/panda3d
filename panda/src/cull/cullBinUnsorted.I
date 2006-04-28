@@ -23,7 +23,8 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CullBinUnsorted::
-CullBinUnsorted(const string &name, GraphicsStateGuardianBase *gsg) :
-  CullBin(name, BT_unsorted, gsg)
+CullBinUnsorted(const string &name, GraphicsStateGuardianBase *gsg,
+                const PStatCollector &draw_region_pcollector) :
+  CullBin(name, BT_unsorted, gsg, draw_region_pcollector)
 {
 }

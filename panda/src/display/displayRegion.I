@@ -343,6 +343,28 @@ get_scene_setup(Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_cull_region_pcollector
+//       Access: Public
+//  Description: Returns a PStatCollector for timing the cull
+//               operation for just this DisplayRegion.
+////////////////////////////////////////////////////////////////////
+INLINE PStatCollector &DisplayRegion::
+get_cull_region_pcollector() {
+  return _cull_region_pcollector;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_draw_region_pcollector
+//       Access: Public
+//  Description: Returns a PStatCollector for timing the draw
+//               operation for just this DisplayRegion.
+////////////////////////////////////////////////////////////////////
+INLINE PStatCollector &DisplayRegion::
+get_draw_region_pcollector() {
+  return _draw_region_pcollector;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::CDataCull::Constructor
 //       Access: Public
 //  Description:

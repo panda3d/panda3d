@@ -23,8 +23,9 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CullBinBackToFront::
-CullBinBackToFront(const string &name, GraphicsStateGuardianBase *gsg) :
-  CullBin(name, BT_back_to_front, gsg)
+CullBinBackToFront(const string &name, GraphicsStateGuardianBase *gsg,
+                   const PStatCollector &draw_region_pcollector) :
+  CullBin(name, BT_back_to_front, gsg, draw_region_pcollector)
 {
 }
 

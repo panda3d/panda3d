@@ -51,7 +51,8 @@ class SceneSetup;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullResult : public ReferenceCount {
 public:
-  INLINE CullResult(GraphicsStateGuardianBase *gsg);
+  INLINE CullResult(GraphicsStateGuardianBase *gsg,
+                    const PStatCollector &draw_region_pcollector);
   INLINE ~CullResult();
 
   PT(CullResult) make_next() const;
@@ -77,6 +78,7 @@ private:
   static CPT(RenderState) get_dual_opaque_state();
 
   GraphicsStateGuardianBase *_gsg;
+  PStatCollector _draw_region_pcollector;
 
   typedef pvector< PT(CullBin) > Bins;
   Bins _bins;

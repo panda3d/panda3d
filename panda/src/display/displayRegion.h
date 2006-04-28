@@ -36,6 +36,7 @@
 #include "lens.h"
 #include "deletedChain.h"
 #include "plist.h"
+#include "pStatCollector.h"
 
 class GraphicsOutput;
 class GraphicsPipe;
@@ -124,11 +125,15 @@ public:
   INLINE CullResult *get_cull_result(Thread *current_thread) const;
   INLINE SceneSetup *get_scene_setup(Thread *current_thread) const;
 
+  INLINE PStatCollector &get_cull_region_pcollector();
+  INLINE PStatCollector &get_draw_region_pcollector();
+
 private:
   class CData;
 
   void win_display_regions_changed();
   void do_compute_pixels(int x_size, int y_size, CData *cdata);
+  void set_active_index(int index);
 
   // The associated window is a permanent property of the
   // DisplayRegion.  It doesn't need to be cycled.
@@ -197,6 +202,9 @@ private:
   PipelineCycler<CDataCull> _cycler_cull;
   typedef CycleDataReader<CDataCull> CDCullReader;
   typedef CycleDataWriter<CDataCull> CDCullWriter;
+
+  PStatCollector _cull_region_pcollector;
+  PStatCollector _draw_region_pcollector;
 
 public:
   static TypeHandle get_class_type() {

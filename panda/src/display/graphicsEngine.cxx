@@ -1063,6 +1063,7 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
+      PStatTimer timer(win->get_cull_window_pcollector(), current_thread);
       int num_display_regions = win->get_num_active_display_regions();
       for (int i = 0; i < num_display_regions; ++i) {
         DisplayRegion *dr = win->get_active_display_region(i);
@@ -1121,7 +1122,7 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
     if (cull_result != (CullResult *)NULL) {
       cull_result = cull_result->make_next();
     } else {
-      cull_result = new CullResult(gsg);
+      cull_result = new CullResult(gsg, dr->get_draw_region_pcollector());
     }
     DisplayRegionPipelineReader dr_reader(dr, current_thread);
     scene_setup = setup_scene(gsg, &dr_reader);
@@ -1155,6 +1156,7 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
+      PStatTimer timer(win->get_draw_window_pcollector(), current_thread);
       if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
         win->clear(current_thread);
       
@@ -1433,6 +1435,8 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
 void GraphicsEngine::
 do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
         GraphicsStateGuardian *gsg, Thread *current_thread) {
+  PStatTimer timer(scene_setup->get_display_region()->get_cull_region_pcollector(), current_thread);
+
   CullTraverser trav(gsg, current_thread);
   trav.set_cull_handler(cull_handler);
   trav.set_depth_offset_decals(depth_offset_decals && gsg->depth_offset_decals());
@@ -1473,7 +1477,7 @@ void GraphicsEngine::
 do_draw(CullResult *cull_result, SceneSetup *scene_setup,
         GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   // Statistics
-  PStatTimer timer(_draw_pcollector, current_thread);
+  PStatTimer timer(dr->get_draw_region_pcollector(), current_thread);
 
   DisplayRegionPipelineReader *dr_reader = 
     new DisplayRegionPipelineReader(dr, current_thread);

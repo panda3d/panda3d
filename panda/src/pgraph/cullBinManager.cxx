@@ -212,7 +212,8 @@ get_global_ptr() {
 //               brand new CullBin object of the appropriate type.
 ////////////////////////////////////////////////////////////////////
 PT(CullBin) CullBinManager::
-make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg) {
+make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg,
+             const PStatCollector &draw_region_pcollector) {
   nassertr(bin_index >= 0 && bin_index < (int)_bin_definitions.size(), NULL);
   nassertr(_bin_definitions[bin_index]._in_use, NULL);
   string name = get_bin_name(bin_index);
@@ -221,7 +222,7 @@ make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg) {
   BinConstructors::const_iterator ci = _bin_constructors.find(type);
   if (ci != _bin_constructors.end()) {
     BinConstructor *constructor = (*ci).second;
-    return constructor(name, gsg);
+    return constructor(name, gsg, draw_region_pcollector);
   }
 
   // Hmm, unknown (or unregistered) bin type.

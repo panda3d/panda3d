@@ -47,8 +47,9 @@ CullBinStateSorted::
 //  Description: Factory constructor for passing to the CullBinManager.
 ////////////////////////////////////////////////////////////////////
 CullBin *CullBinStateSorted::
-make_bin(const string &name, GraphicsStateGuardianBase *gsg) {
-  return new CullBinStateSorted(name, gsg);
+make_bin(const string &name, GraphicsStateGuardianBase *gsg,
+         const PStatCollector &draw_region_pcollector) {
+  return new CullBinStateSorted(name, gsg, draw_region_pcollector);
 }
 
 ////////////////////////////////////////////////////////////////////

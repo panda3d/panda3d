@@ -23,8 +23,9 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CullBinFixed::
-CullBinFixed(const string &name, GraphicsStateGuardianBase *gsg) :
-  CullBin(name, BT_fixed, gsg)
+CullBinFixed(const string &name, GraphicsStateGuardianBase *gsg,
+             const PStatCollector &draw_region_pcollector) :
+  CullBin(name, BT_fixed, gsg, draw_region_pcollector)
 {
 }
 

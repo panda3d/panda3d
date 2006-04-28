@@ -33,10 +33,14 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullBinUnsorted : public CullBin {
 public:
-  INLINE CullBinUnsorted(const string &name, GraphicsStateGuardianBase *gsg);
+  INLINE CullBinUnsorted(const string &name, 
+                         GraphicsStateGuardianBase *gsg,
+                         const PStatCollector &draw_region_pcollector);
   ~CullBinUnsorted();
 
-  static CullBin *make_bin(const string &name, GraphicsStateGuardianBase *gsg);
+  static CullBin *make_bin(const string &name, 
+                           GraphicsStateGuardianBase *gsg,
+                           const PStatCollector &draw_region_pcollector);
 
   virtual void add_object(CullableObject *object, Thread *current_thread);
   virtual void draw(Thread *current_thread);

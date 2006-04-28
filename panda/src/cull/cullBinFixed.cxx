@@ -48,8 +48,9 @@ CullBinFixed::
 //  Description: Factory constructor for passing to the CullBinManager.
 ////////////////////////////////////////////////////////////////////
 CullBin *CullBinFixed::
-make_bin(const string &name, GraphicsStateGuardianBase *gsg) {
-  return new CullBinFixed(name, gsg);
+make_bin(const string &name, GraphicsStateGuardianBase *gsg,
+         const PStatCollector &draw_region_pcollector) {
+  return new CullBinFixed(name, gsg, draw_region_pcollector);
 }
 
 ////////////////////////////////////////////////////////////////////

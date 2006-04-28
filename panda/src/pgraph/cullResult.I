@@ -23,8 +23,10 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CullResult::
-CullResult(GraphicsStateGuardianBase *gsg) :
-  _gsg(gsg)
+CullResult(GraphicsStateGuardianBase *gsg,
+           const PStatCollector &draw_region_pcollector) :
+  _gsg(gsg),
+  _draw_region_pcollector(draw_region_pcollector)
 {
 }
 

@@ -66,7 +66,7 @@ static const double bin_color_flash_rate = 1.0;  // 1 state change per second
 ////////////////////////////////////////////////////////////////////
 PT(CullResult) CullResult::
 make_next() const {
-  PT(CullResult) new_result = new CullResult(_gsg);
+  PT(CullResult) new_result = new CullResult(_gsg, _draw_region_pcollector);
   new_result->_bins.reserve(_bins.size());
 
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
@@ -283,7 +283,8 @@ bin_removed(int bin_index) {
 CullBin *CullResult::
 make_new_bin(int bin_index) {
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
-  PT(CullBin) bin = bin_manager->make_new_bin(bin_index, _gsg);
+  PT(CullBin) bin = bin_manager->make_new_bin(bin_index, _gsg,
+                                              _draw_region_pcollector);
   if (bin != (CullBin *)NULL) {
     // Now store it in the vector.
     while (bin_index >= (int)_bins.size()) {

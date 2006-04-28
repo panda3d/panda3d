@@ -46,7 +46,8 @@ protected:
   INLINE CullBin(const CullBin &copy);
 public:
   INLINE CullBin(const string &name, BinType bin_type,
-                 GraphicsStateGuardianBase *gsg);
+                 GraphicsStateGuardianBase *gsg,
+                 const PStatCollector &draw_region_pcollector);
   virtual ~CullBin();
 
   INLINE const string &get_name() const;
@@ -74,7 +75,6 @@ protected:
   Colorf _flash_color;
 
   static PStatCollector _cull_bin_pcollector;
-  static PStatCollector _draw_bin_pcollector;
   PStatCollector _cull_this_pcollector;
   PStatCollector _draw_this_pcollector;
 

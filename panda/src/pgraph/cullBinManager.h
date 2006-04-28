@@ -26,6 +26,7 @@
 #include "pvector.h"
 #include "pmap.h"
 #include "vector_int.h"
+#include "pStatCollector.h"
 
 class CullResult;
 class GraphicsStateGuardianBase;
@@ -73,12 +74,15 @@ PUBLISHED:
 
 public:
   // This interface is only intended to be used by CullResult.
-  PT(CullBin) make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg);
+  PT(CullBin) make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg,
+                           const PStatCollector &draw_region_pcollector);
 
   // This defines the factory interface for defining constructors to
   // bin types (the implementations are in the cull directory, not
   // here in pgraph, so we can't call the constructors directly).
-  typedef CullBin *BinConstructor(const string &name, GraphicsStateGuardianBase *gsg);
+  typedef CullBin *BinConstructor(const string &name, 
+                                  GraphicsStateGuardianBase *gsg,
+                                  const PStatCollector &draw_region_pcollector);
 
   void register_bin_type(BinType type, BinConstructor *constructor);
 

@@ -43,8 +43,9 @@ CullBinOcclusionTest(const CullBinOcclusionTest &copy) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CullBinOcclusionTest::
-CullBinOcclusionTest(const string &name, GraphicsStateGuardianBase *gsg) :
-  CullBin(name, BT_occlusion_test, gsg),
+CullBinOcclusionTest(const string &name, GraphicsStateGuardianBase *gsg,
+                     const PStatCollector &draw_region_pcollector) :
+  CullBin(name, BT_occlusion_test, gsg, draw_region_pcollector),
   _draw_occlusion_pcollector(_draw_this_pcollector, "Occlusion")
 {
   nassertv(_gsg->get_supports_occlusion_query());

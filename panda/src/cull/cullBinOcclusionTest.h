@@ -51,10 +51,14 @@ class EXPCL_PANDA CullBinOcclusionTest : public CullBin {
 protected:
   INLINE CullBinOcclusionTest(const CullBinOcclusionTest &copy);
 public:
-  INLINE CullBinOcclusionTest(const string &name, GraphicsStateGuardianBase *gsg);
+  INLINE CullBinOcclusionTest(const string &name, 
+                              GraphicsStateGuardianBase *gsg,
+                              const PStatCollector &draw_region_pcollector);
   virtual ~CullBinOcclusionTest();
 
-  static CullBin *make_bin(const string &name, GraphicsStateGuardianBase *gsg);
+  static CullBin *make_bin(const string &name, 
+                           GraphicsStateGuardianBase *gsg,
+                           const PStatCollector &draw_region_pcollector);
   virtual PT(CullBin) make_next() const;
 
   virtual void add_object(CullableObject *object, Thread *current_thread);

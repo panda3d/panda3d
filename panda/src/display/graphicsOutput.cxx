@@ -42,6 +42,8 @@ TypeHandle GraphicsOutput::_type_handle;
 
 PStatCollector GraphicsOutput::_make_current_pcollector("Draw:Make current");
 PStatCollector GraphicsOutput::_copy_texture_pcollector("Draw:Copy texture");
+PStatCollector GraphicsOutput::_cull_pcollector("Cull");
+PStatCollector GraphicsOutput::_draw_pcollector("Draw");
 
 struct CubeFaceDef {
   CubeFaceDef(const char *name, const LPoint3f &look_at, const LVector3f &up) :
@@ -75,7 +77,9 @@ GraphicsOutput(GraphicsPipe *pipe,
                int x_size, int y_size, int flags,
                GraphicsStateGuardian *gsg,
                GraphicsOutput *host) :
-  _lock("GraphicsOutput")
+  _lock("GraphicsOutput"),
+  _cull_window_pcollector(_cull_pcollector, name),
+  _draw_window_pcollector(_draw_pcollector, name)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -154,7 +158,10 @@ GraphicsOutput(GraphicsPipe *pipe,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput::
-GraphicsOutput(const GraphicsOutput &) {
+GraphicsOutput(const GraphicsOutput &) :
+  _cull_window_pcollector(_cull_pcollector, "Invalid"),
+  _draw_window_pcollector(_draw_pcollector, "Invalid")
+{
   nassertv(false);
 }
 
@@ -1183,6 +1190,7 @@ do_determine_display_regions() {
   _active_display_regions.clear();
   _active_display_regions.reserve(_total_display_regions.size());
 
+  int index = 0;
   TotalDisplayRegions::const_iterator dri;
   for (dri = _total_display_regions.begin();
        dri != _total_display_regions.end();
@@ -1190,6 +1198,9 @@ do_determine_display_regions() {
     DisplayRegion *display_region = (*dri);
     if (display_region->is_active()) {
       _active_display_regions.push_back(display_region);
+      display_region->set_active_index(index);
+    } else {
+      display_region->set_active_index(-1);
     }
   }
 

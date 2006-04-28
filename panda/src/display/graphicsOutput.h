@@ -233,6 +233,9 @@ public:
   // called by the GraphicsEngine.
   virtual void process_events();
 
+  INLINE PStatCollector &get_cull_window_pcollector();
+  INLINE PStatCollector &get_draw_window_pcollector();
+
 protected:
 
   void prepare_for_deletion();
@@ -311,6 +314,10 @@ protected:
 
   static PStatCollector _make_current_pcollector;
   static PStatCollector _copy_texture_pcollector;
+  static PStatCollector _cull_pcollector;
+  static PStatCollector _draw_pcollector;
+  PStatCollector _cull_window_pcollector;
+  PStatCollector _draw_window_pcollector;
   
 public:
   static TypeHandle get_class_type() {

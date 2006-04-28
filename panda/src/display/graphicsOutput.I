@@ -527,6 +527,28 @@ win_display_regions_changed() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_cull_window_pcollector
+//       Access: Public
+//  Description: Returns a PStatCollector for timing the cull
+//               operation for just this GraphicsOutput.
+////////////////////////////////////////////////////////////////////
+INLINE PStatCollector &GraphicsOutput::
+get_cull_window_pcollector() {
+  return _cull_window_pcollector;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_draw_window_pcollector
+//       Access: Public
+//  Description: Returns a PStatCollector for timing the draw
+//               operation for just this GraphicsOutput.
+////////////////////////////////////////////////////////////////////
+INLINE PStatCollector &GraphicsOutput::
+get_draw_window_pcollector() {
+  return _draw_window_pcollector;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::begin_frame_spam
 //       Access: Public
 //  Description: Display the spam message associated with begin_frame

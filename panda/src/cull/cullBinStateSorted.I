@@ -23,8 +23,9 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CullBinStateSorted::
-CullBinStateSorted(const string &name, GraphicsStateGuardianBase *gsg) :
-  CullBin(name, BT_state_sorted, gsg)
+CullBinStateSorted(const string &name, GraphicsStateGuardianBase *gsg,
+                   const PStatCollector &draw_region_pcollector) :
+  CullBin(name, BT_state_sorted, gsg, draw_region_pcollector)
 {
 }
 

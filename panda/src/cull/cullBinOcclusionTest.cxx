@@ -84,8 +84,9 @@ CullBinOcclusionTest::
 //  Description: Factory constructor for passing to the CullBinManager.
 ////////////////////////////////////////////////////////////////////
 CullBin *CullBinOcclusionTest::
-make_bin(const string &name, GraphicsStateGuardianBase *gsg) {
-  return new CullBinOcclusionTest(name, gsg);
+make_bin(const string &name, GraphicsStateGuardianBase *gsg,
+         const PStatCollector &draw_region_pcollector) {
+  return new CullBinOcclusionTest(name, gsg, draw_region_pcollector);
 }
 
 ////////////////////////////////////////////////////////////////////

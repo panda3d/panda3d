@@ -48,8 +48,9 @@ CullBinFrontToBack::
 //  Description: Factory constructor for passing to the CullBinManager.
 ////////////////////////////////////////////////////////////////////
 CullBin *CullBinFrontToBack::
-make_bin(const string &name, GraphicsStateGuardianBase *gsg) {
-  return new CullBinFrontToBack(name, gsg);
+make_bin(const string &name, GraphicsStateGuardianBase *gsg,
+         const PStatCollector &draw_region_pcollector) {
+  return new CullBinFrontToBack(name, gsg, draw_region_pcollector);
 }
 
 ////////////////////////////////////////////////////////////////////

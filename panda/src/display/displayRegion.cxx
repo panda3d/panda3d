@@ -34,7 +34,9 @@ TypeHandle DisplayRegion::_type_handle;
 DisplayRegion::
 DisplayRegion(GraphicsOutput *window) :
   _window(window),
-  _clear_depth_between_eyes(true)
+  _clear_depth_between_eyes(true),
+  _cull_region_pcollector("Cull:Invalid"),
+  _draw_region_pcollector("Draw:Invalid")
 {
   _draw_buffer_type = window->get_draw_buffer_type();
   compute_pixels_all_stages();
@@ -48,7 +50,9 @@ DisplayRegion(GraphicsOutput *window) :
 DisplayRegion::
 DisplayRegion(GraphicsOutput *window, float l, float r, float b, float t) :
   _window(window),
-  _clear_depth_between_eyes(true)
+  _clear_depth_between_eyes(true),
+  _cull_region_pcollector("Cull:Invalid"),
+  _draw_region_pcollector("Draw:Invalid")
 {
   _draw_buffer_type = window->get_draw_buffer_type();
   set_dimensions(l, r, b, t);
@@ -61,7 +65,10 @@ DisplayRegion(GraphicsOutput *window, float l, float r, float b, float t) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
-DisplayRegion(const DisplayRegion&) {
+DisplayRegion(const DisplayRegion&) : 
+  _cull_region_pcollector("Cull:Invalid"),
+  _draw_region_pcollector("Draw:Invalid")
+{
   nassertv(false);
 }
 
@@ -547,6 +554,30 @@ do_compute_pixels(int x_size, int y_size, CData *cdata) {
     cdata->_pbi = int(((1.0f - cdata->_b) * y_size) + 0.5);
     cdata->_pti = int(((1.0f - cdata->_t) * y_size) + 0.5);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_active_index
+//       Access: Private
+//  Description: This is called by GraphicsOutput to indicate that the
+//               index of this DisplayRegion within the window's list
+//               of active DisplayRegions might have changed.  The
+//               index number will be -1 if the DisplayRegion is not
+//               active.
+//
+//               This is primarily intended only for updating the
+//               PStatCollector name appropriately.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+set_active_index(int index) {
+#ifdef DO_PSTATS
+  ostringstream strm;
+  strm << "dr_" << index;
+  string name = strm.str();
+
+  _cull_region_pcollector = PStatCollector(_window->get_cull_window_pcollector(), name);
+  _draw_region_pcollector = PStatCollector(_window->get_draw_window_pcollector(), name);
+#endif  // DO_PSTATS
 }
 
 ////////////////////////////////////////////////////////////////////

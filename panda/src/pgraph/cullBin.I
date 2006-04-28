@@ -40,12 +40,13 @@ CullBin(const CullBin &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE CullBin::
 CullBin(const string &name, CullBin::BinType bin_type,
-        GraphicsStateGuardianBase *gsg) : 
+        GraphicsStateGuardianBase *gsg,
+        const PStatCollector &draw_region_pcollector) :
   _name(name),
   _bin_type(bin_type),
   _gsg(gsg),
   _cull_this_pcollector(_cull_bin_pcollector, name),
-  _draw_this_pcollector(_draw_bin_pcollector, name)
+  _draw_this_pcollector(draw_region_pcollector, name)
 {
   check_flash_color();
 }

@@ -38,10 +38,14 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullBinFrontToBack : public CullBin {
 public:
-  INLINE CullBinFrontToBack(const string &name, GraphicsStateGuardianBase *gsg);
+  INLINE CullBinFrontToBack(const string &name, 
+                            GraphicsStateGuardianBase *gsg,
+                            const PStatCollector &draw_region_pcollector);
   virtual ~CullBinFrontToBack();
 
-  static CullBin *make_bin(const string &name, GraphicsStateGuardianBase *gsg);
+  static CullBin *make_bin(const string &name, 
+                           GraphicsStateGuardianBase *gsg,
+                           const PStatCollector &draw_region_pcollector);
 
   virtual void add_object(CullableObject *object, Thread *current_thread);
   virtual void finish_cull(SceneSetup *scene_setup, Thread *current_thread);
