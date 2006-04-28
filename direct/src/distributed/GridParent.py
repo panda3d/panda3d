@@ -31,7 +31,11 @@ class GridParent:
     def delete(self):
         if self.av:
             if self.av.getParent() == self.cellOrigin:
+                # Keep render relative pos around in case
+                # the avatar needs it once he gets reparented again
+                avPos = self.av.getPos(render)
                 self.av.detachNode()
+                self.av.setPos(avPos)
             del self.av
             self.av = None
         # Remove the gridNodes
