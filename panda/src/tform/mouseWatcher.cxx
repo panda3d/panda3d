@@ -222,6 +222,14 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
   }
 
   MutexHolder holder(_lock);
+
+#ifndef NDEBUG
+  if (!_show_regions_render2d.is_empty()) {
+    old_group->hide_regions();
+    new_group->show_regions(_show_regions_render2d);
+  }
+#endif  // NDEBUG
+
   MutexHolder holder2(old_group->_lock);
   MutexHolder holder3(new_group->_lock);
 
@@ -272,7 +280,6 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
 
   // Did not find the group to erase
   return false;
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -564,6 +571,46 @@ clear_current_regions() {
     }
   }
 }
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::do_show_regions
+//       Access: Protected, Virtual
+//  Description: The protected implementation of show_regions().  This
+//               assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+do_show_regions(const NodePath &render2d) {
+  MouseWatcherGroup::do_show_regions(render2d);
+  _show_regions_render2d = render2d;
+
+  Groups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    MouseWatcherGroup *group = (*gi);
+    group->show_regions(render2d);
+  }
+}
+#endif  // NDEBUG
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::do_hide_regions
+//       Access: Protected, Virtual
+//  Description: The protected implementation of hide_regions().  This
+//               assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+do_hide_regions() {
+  MouseWatcherGroup::do_hide_regions();
+  _show_regions_render2d = NodePath();
+
+  Groups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    MouseWatcherGroup *group = (*gi);
+    group->hide_regions();
+  }
+}
+#endif  // NDEBUG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::intersect_regions

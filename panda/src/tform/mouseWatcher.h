@@ -126,6 +126,11 @@ protected:
   void set_current_regions(Regions &regions);
   void clear_current_regions();
 
+#ifndef NDEBUG
+  virtual void do_show_regions(const NodePath &render2d);
+  virtual void do_hide_regions();
+#endif  // NDEBUG
+
   static void intersect_regions(Regions &only_a,
                                 Regions &only_b,
                                 Regions &both,
@@ -161,7 +166,7 @@ protected:
 private:
   void consider_keyboard_suppress(const MouseWatcherRegion *region);
 
-protected:
+private:
   // This wants to be a set, but because you cannot export sets across
   // dlls in windows, we will make it a vector instead
   typedef pvector< PT(MouseWatcherGroup) > Groups;
@@ -193,6 +198,10 @@ protected:
   EventHandler *_eh;
   ModifierButtons _mods;
   DisplayRegion *_display_region;
+
+#ifndef NDEBUG
+  NodePath _show_regions_render2d;
+#endif
 
 protected:
   // Inherited from DataNode

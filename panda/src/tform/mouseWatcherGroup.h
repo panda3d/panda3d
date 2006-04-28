@@ -60,6 +60,11 @@ PUBLISHED:
 protected:
   bool do_remove_region(MouseWatcherRegion *region);
 
+#ifndef NDEBUG
+  virtual void do_show_regions(const NodePath &render2d);
+  virtual void do_hide_regions();
+#endif  // NDEBUG
+
 protected:
   typedef pvector< PT(MouseWatcherRegion) > Regions;
   Regions _regions;

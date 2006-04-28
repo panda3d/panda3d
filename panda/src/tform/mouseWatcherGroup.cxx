@@ -222,11 +222,7 @@ write(ostream &out, int indent_level) const {
 void MouseWatcherGroup::
 show_regions(const NodePath &render2d) {
   MutexHolder holder(_lock);
-
-  _show_regions = true;
-  _show_regions_root = render2d.attach_new_node("show_regions");
-  _show_regions_root.set_bin("unsorted", 0);
-  update_regions();
+  do_show_regions(render2d);
 }
 #endif  // NDEBUG
 
@@ -250,17 +246,14 @@ set_color(const Colorf &color) {
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherGroup::hide_regions
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Stops the visualization created by a previous call to
 //               show_regions().
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 hide_regions() {
   MutexHolder holder(_lock);
-
-  _show_regions_root.remove_node();
-  _show_regions = false;
-  _vizzes.clear();
+  do_hide_regions();
 }
 #endif  // NDEBUG
 
@@ -297,6 +290,38 @@ do_remove_region(MouseWatcherRegion *region) {
   // Did not find the region to erase
   return false;
 }
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherGroup::do_show_regions
+//       Access: Protected, Virtual
+//  Description: The protected implementation of show_regions().  This
+//               assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void MouseWatcherGroup::
+do_show_regions(const NodePath &render2d) {
+  _show_regions = true;
+  _show_regions_root = render2d.attach_new_node("show_regions");
+  _show_regions_root.set_bin("unsorted", 0);
+  update_regions();
+}
+#endif  // NDEBUG
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherGroup::do_hide_regions
+//       Access: Protected, Virtual
+//  Description: The protected implementation of hide_regions().  This
+//               assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void MouseWatcherGroup::
+do_hide_regions() {
+  _show_regions_root.remove_node();
+  _show_regions = false;
+  _vizzes.clear();
+}
+#endif  // NDEBUG
+
 
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
