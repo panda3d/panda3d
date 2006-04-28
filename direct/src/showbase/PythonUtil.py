@@ -69,34 +69,34 @@ def writeFsmTree(instance, indent = 0):
 
 
 
-if __debug__:
-    class StackTrace:
-        def __init__(self, label="", start=0, limit=None):
-            """
-            label is a string (or anything that be be a string)
-                that is printed as part of the trace back.
-                This is just to make it easier to tell what the
-                stack trace is referring to.
-            start is an integer number of stack frames back
-                from the most recent.  (This is automatically
-                bumped up by one to skip the __init__ call
-                to the StackTrace).
-            limit is an integer number of stack frames
-                to record (or None for unlimited).
-            """
-            self.label = label
-            if limit is not None:
-                self.trace = traceback.extract_stack(sys._getframe(1+start),
-                                                     limit=limit)
-            else:
-                self.trace = traceback.extract_stack(sys._getframe(1+start))
-
-        def __str__(self):
-            r = "Debug stack trace of %s (back %s frames):\n"%(
-                self.label, len(self.trace),)
-            for i in traceback.format_list(self.trace):
-                r+=i
-            return r
+#if __debug__: #RAU accdg to Darren its's ok that StackTrace is not protected by __debug__
+class StackTrace:
+    def __init__(self, label="", start=0, limit=None):
+        """
+        label is a string (or anything that be be a string)
+        that is printed as part of the trace back.
+        This is just to make it easier to tell what the
+        stack trace is referring to.
+        start is an integer number of stack frames back
+        from the most recent.  (This is automatically
+        bumped up by one to skip the __init__ call
+        to the StackTrace).
+        limit is an integer number of stack frames
+        to record (or None for unlimited).
+        """
+        self.label = label
+        if limit is not None:
+            self.trace = traceback.extract_stack(sys._getframe(1+start),
+                                                 limit=limit)
+        else:
+            self.trace = traceback.extract_stack(sys._getframe(1+start))
+            
+    def __str__(self):
+        r = "Debug stack trace of %s (back %s frames):\n"%(
+            self.label, len(self.trace),)
+        for i in traceback.format_list(self.trace):
+            r+=i
+        return r
 
 #-----------------------------------------------------------------------------
 
