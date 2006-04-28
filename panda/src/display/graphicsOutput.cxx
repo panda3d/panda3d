@@ -1202,6 +1202,7 @@ do_determine_display_regions() {
     } else {
       display_region->set_active_index(-1);
     }
+    ++index;
   }
 
   stable_sort(_active_display_regions.begin(), _active_display_regions.end(), IndirectLess<DisplayRegion>());
