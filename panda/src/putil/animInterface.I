@@ -43,8 +43,10 @@ play() {
 ////////////////////////////////////////////////////////////////////
 INLINE void AnimInterface::
 play(double from, double to) {
-  CDWriter cdata(_cycler);
-  cdata->play(from, to);
+  {
+    CDWriter cdata(_cycler);
+    cdata->play(from, to);
+  }
   animation_activated();
 }
 
@@ -71,8 +73,10 @@ loop(bool restart) {
 ////////////////////////////////////////////////////////////////////
 INLINE void AnimInterface::
 loop(bool restart, double from, double to) {
-  CDWriter cdata(_cycler);
-  cdata->loop(restart, from, to);
+  {
+    CDWriter cdata(_cycler);
+    cdata->loop(restart, from, to);
+  }
   animation_activated();
 }
 
@@ -99,8 +103,10 @@ pingpong(bool restart) {
 ////////////////////////////////////////////////////////////////////
 INLINE void AnimInterface::
 pingpong(bool restart, double from, double to) {
-  CDWriter cdata(_cycler);
-  cdata->pingpong(restart, from, to);
+  {
+    CDWriter cdata(_cycler);
+    cdata->pingpong(restart, from, to);
+  }
   animation_activated();
 }
 
@@ -124,8 +130,10 @@ stop() {
 ////////////////////////////////////////////////////////////////////
 INLINE void AnimInterface::
 pose(int frame) {
-  CDWriter cdata(_cycler);
-  cdata->pose(frame);
+  {
+    CDWriter cdata(_cycler);
+    cdata->pose(frame);
+  }
   animation_activated();
 }
 
