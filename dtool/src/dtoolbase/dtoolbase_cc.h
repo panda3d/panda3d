@@ -183,6 +183,9 @@ INLINE void operator delete[](void *ptr) {
   (*global_operator_delete)(ptr);
 }
 
+#endif  // GLOBAL_OPERATOR_NEW_EXCEPTIONS
+#endif  // USE_MEMORY_NOWRAPPERS
+
 #if defined(USE_TAU) && defined(WIN32)
 // Hack around tau's lack of DLL export declarations for Profiler class.
 extern EXPCL_DTOOL bool __tau_shutdown;
@@ -215,9 +218,5 @@ private:
 
 #endif  // USE_TAU
 
-#endif  // GLOBAL_OPERATOR_NEW_EXCEPTIONS
-#endif  // USE_MEMORY_NOWRAPPERS
-
 #endif  //  __cplusplus
-
 #endif
