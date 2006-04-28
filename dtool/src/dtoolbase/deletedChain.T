@@ -98,7 +98,9 @@ deallocate(Type *ptr) {
   TVOLATILE ObjectNode *obj = (ObjectNode *)ptr;
 
 #ifndef NDEBUG
-  assert(obj->_flag != ((PN_int32)obj ^ deleted_chain_flag_hash));
+  // We can't *guarantee* that this value is not a legitimate value of
+  // the deleted object, so we can't safely make this assertion.
+  //  assert(obj->_flag != ((PN_int32)obj ^ deleted_chain_flag_hash));
   obj->_flag = (PN_int32)obj ^ deleted_chain_flag_hash;
 #endif  // NDEBUG
 
