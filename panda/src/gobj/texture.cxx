@@ -867,49 +867,6 @@ get_ram_image() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::modify_ram_image
-//       Access: Published
-//  Description: Returns a modifiable pointer to the system-RAM image.
-//               This assumes the RAM image should be uncompressed.
-//               If the RAM image has been dumped, or is stored
-//               compressed, creates a new one.
-//
-//               This does *not* affect keep_ram_image.
-////////////////////////////////////////////////////////////////////
-PTA_uchar Texture::
-modify_ram_image() {
-  if (_ram_images.empty() || _ram_images[0]._image.empty() || 
-      _ram_image_compression != CM_off) {
-    make_ram_image();
-  } else {
-    clear_ram_mipmap_images();
-  }
-
-  ++_modified;
-  return _ram_images[0]._image;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::make_ram_image
-//       Access: Published
-//  Description: Discards the current system-RAM image for the
-//               texture, if any, and allocates a new buffer of the
-//               appropriate size.  Returns the new buffer.
-//
-//               This does *not* affect keep_ram_image.
-////////////////////////////////////////////////////////////////////
-PTA_uchar Texture::
-make_ram_image() {
-  _ram_images.clear();
-  _ram_images.push_back(RamImage());
-  _ram_images[0]._page_size = get_expected_ram_page_size();
-  _ram_images[0]._image = PTA_uchar::empty_array(get_expected_ram_image_size());
-  _ram_image_compression = CM_off;
-  ++_modified;
-  return _ram_images[0]._image;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_ram_image
 //       Access: Published
 //  Description: Replaces the current system-RAM image with the new
@@ -1014,29 +971,6 @@ get_ram_mipmap_image(int n) {
     return _ram_images[n]._image;
   }
   return CPTA_uchar();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::modify_ram_mipmap_image
-//       Access: Published
-//  Description: Returns a modifiable pointer to the system-RAM image
-//               for the nth mipmap level.  This assumes the RAM image
-//               is uncompressed; if this is not the case, raises an
-//               assertion.
-//
-//               This does *not* affect keep_ram_image.
-////////////////////////////////////////////////////////////////////
-PTA_uchar Texture::
-modify_ram_mipmap_image(int n) {
-  nassertr(_ram_image_compression == CM_off, PTA_uchar());
-
-  if (n >= (int)_ram_images.size() ||
-      _ram_images[n]._image.empty()) {
-    make_ram_mipmap_image(n);
-  }
-
-  ++_modified;
-  return _ram_images[n]._image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2150,11 +2084,11 @@ do_load_one(const PNMImage &pnmimage, int z, int n) {
       return false;
     }
 
-    modify_ram_image();
+    do_modify_ram_image();
     _loaded_from_image = true;
   }
 
-  modify_ram_mipmap_image(n);
+  do_modify_ram_mipmap_image(n);
 
   // Ensure the PNMImage is an appropriate size.
   int x_size = get_expected_mipmap_x_size(n);
@@ -2181,8 +2115,6 @@ do_load_one(const PNMImage &pnmimage, int z, int n) {
                           get_expected_ram_mipmap_page_size(n), z,
                           pnmimage);
   }
-
-  ++_modified;
 
   return true;
 }
@@ -2228,7 +2160,7 @@ void Texture::
 reload_ram_image() {
   gobj_cat.info()
     << "Reloading texture " << get_name() << "\n";
-  make_ram_image();
+  do_make_ram_image();
 
   int z = 0;
   int n = 0;
@@ -2243,6 +2175,53 @@ reload_ram_image() {
   do_read(get_fullpath(), get_alpha_fullpath(),
 	  _primary_file_num_channels, _alpha_file_channel,
 	  z, n, _has_read_pages, _has_read_mipmaps);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_modify_ram_image
+//       Access: Protected
+//  Description: This is called internally to uniquify the ram image
+//               pointer without updating _modified.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_modify_ram_image() {
+  if (_ram_images.empty() || _ram_images[0]._image.empty() || 
+      _ram_image_compression != CM_off) {
+    do_make_ram_image();
+  } else {
+    clear_ram_mipmap_images();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_make_ram_image
+//       Access: Protected
+//  Description: This is called internally to make a new ram image
+//               without updating _modified.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_make_ram_image() {
+  _ram_images.clear();
+  _ram_images.push_back(RamImage());
+  _ram_images[0]._page_size = get_expected_ram_page_size();
+  _ram_images[0]._image = PTA_uchar::empty_array(get_expected_ram_image_size());
+  _ram_image_compression = CM_off;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_modify_ram_mipmap_image
+//       Access: Protected
+//  Description: This is called internally to uniquify the nth mipmap
+//               image pointer without updating _modified.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_modify_ram_mipmap_image(int n) {
+  nassertv(_ram_image_compression == CM_off);
+
+  if (n >= (int)_ram_images.size() ||
+      _ram_images[n]._image.empty()) {
+    make_ram_mipmap_image(n);
+  }
 }
 
 

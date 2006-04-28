@@ -133,6 +133,7 @@ setup_cube_map(int size, ComponentType component_type,
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 read(const Filename &fullpath) {
+  ++_modified;
   return do_read(fullpath, Filename(), 0, 0, 0, 0, false, false);
 }
 
@@ -150,6 +151,7 @@ read(const Filename &fullpath) {
 INLINE bool Texture::
 read(const Filename &fullpath, const Filename &alpha_fullpath,
      int primary_file_num_channels, int alpha_file_channel) {
+  ++_modified;
   return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
 		 alpha_file_channel, 0, 0, false, false);
 }
@@ -167,6 +169,7 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
 INLINE bool Texture::
 read(const Filename &fullpath, int z, int n, 
      bool read_pages, bool read_mipmaps) {
+  ++_modified;
   return do_read(fullpath, Filename(), 0, 0, z, n, read_pages, read_mipmaps);
 }
 
@@ -243,6 +246,7 @@ INLINE bool Texture::
 read(const Filename &fullpath, const Filename &alpha_fullpath,
      int primary_file_num_channels, int alpha_file_channel,
      int z, int n, bool read_pages, bool read_mipmaps) {
+  ++_modified;
   return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
 		 alpha_file_channel, z, n, read_pages, read_mipmaps);
 }
@@ -324,6 +328,7 @@ write(const Filename &fullpath, int z, int n,
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 load(const PNMImage &pnmimage) {
+  ++_modified;
   return do_load_one(pnmimage, 0, 0);
 }
 
@@ -335,6 +340,7 @@ load(const PNMImage &pnmimage) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 load(const PNMImage &pnmimage, int z, int n) {
+  ++_modified;
   return do_load_one(pnmimage, z, n);
 }
 
@@ -764,6 +770,39 @@ get_ram_image_compression() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::modify_ram_image
+//       Access: Published
+//  Description: Returns a modifiable pointer to the system-RAM image.
+//               This assumes the RAM image should be uncompressed.
+//               If the RAM image has been dumped, or is stored
+//               compressed, creates a new one.
+//
+//               This does *not* affect keep_ram_image.
+////////////////////////////////////////////////////////////////////
+INLINE PTA_uchar Texture::
+modify_ram_image() {
+  do_modify_ram_image();
+  ++_modified;
+  return _ram_images[0]._image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::make_ram_image
+//       Access: Published
+//  Description: Discards the current system-RAM image for the
+//               texture, if any, and allocates a new buffer of the
+//               appropriate size.  Returns the new buffer.
+//
+//               This does *not* affect keep_ram_image.
+////////////////////////////////////////////////////////////////////
+INLINE PTA_uchar Texture::
+make_ram_image() {
+  ++_modified;
+  do_make_ram_image();
+  return _ram_images[0]._image;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_keep_ram_image
 //       Access: Published
 //  Description: Sets the flag that indicates whether this Texture is
@@ -874,6 +913,23 @@ get_expected_ram_mipmap_image_size(int n) const {
 INLINE size_t Texture::
 get_expected_ram_mipmap_page_size(int n) const {
   return (size_t)(get_expected_mipmap_x_size(n) * get_expected_mipmap_y_size(n) * _num_components * _component_width);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::modify_ram_mipmap_image
+//       Access: Published
+//  Description: Returns a modifiable pointer to the system-RAM image
+//               for the nth mipmap level.  This assumes the RAM image
+//               is uncompressed; if this is not the case, raises an
+//               assertion.
+//
+//               This does *not* affect keep_ram_image.
+////////////////////////////////////////////////////////////////////
+INLINE PTA_uchar Texture::
+modify_ram_mipmap_image(int n) {
+  do_modify_ram_mipmap_image(n);
+  ++_modified;
+  return _ram_images[n]._image;
 }
 
 ////////////////////////////////////////////////////////////////////

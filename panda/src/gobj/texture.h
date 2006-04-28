@@ -276,8 +276,8 @@ PUBLISHED:
   INLINE size_t get_expected_ram_page_size() const;
   CPTA_uchar get_ram_image();
   INLINE CompressionMode get_ram_image_compression() const;
-  PTA_uchar modify_ram_image();
-  PTA_uchar make_ram_image();
+  INLINE PTA_uchar modify_ram_image();
+  INLINE PTA_uchar make_ram_image();
   void set_ram_image(PTA_uchar image, CompressionMode compression = CM_off,
 		     size_t page_size = 0);
   void clear_ram_image();
@@ -292,7 +292,7 @@ PUBLISHED:
   INLINE size_t get_expected_ram_mipmap_image_size(int n) const;
   INLINE size_t get_expected_ram_mipmap_page_size(int n) const;
   CPTA_uchar get_ram_mipmap_image(int n);
-  PTA_uchar modify_ram_mipmap_image(int n);
+  INLINE PTA_uchar modify_ram_mipmap_image(int n);
   PTA_uchar make_ram_mipmap_image(int n);
   void set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size = 0);
   void clear_ram_mipmap_image(int n);
@@ -374,6 +374,10 @@ protected:
 
   virtual void reconsider_dirty();
   virtual void reload_ram_image();
+
+  void do_modify_ram_image();
+  void do_make_ram_image();
+  void do_modify_ram_mipmap_image(int n);
 
   bool reconsider_z_size(int z);
   bool reconsider_image_properties(int x_size, int y_size, int num_components,
