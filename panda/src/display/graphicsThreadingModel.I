@@ -58,6 +58,20 @@ get_cull_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsThreadingModel::set_cull_name
+//       Access: Published
+//  Description: Changes the name of the thread that will handle
+//               culling in this model.  This won't change any windows
+//               that were already created with this model; this only
+//               has an effect on newly-opened windows.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsThreadingModel::
+set_cull_name(const string &cull_name) {
+  _cull_name = cull_name;
+  update_stages();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsThreadingModel::get_cull_stage
 //       Access: Published
 //  Description: Returns the pipeline stage from which the cull thread
@@ -80,6 +94,20 @@ get_cull_stage() const {
 INLINE const string &GraphicsThreadingModel::
 get_draw_name() const {
   return _draw_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsThreadingModel::set_draw_name
+//       Access: Published
+//  Description: Changes the name of the thread that will handle
+//               drawing in this model.  This won't change any windows
+//               that were already created with this model; this only
+//               has an effect on newly-opened windows.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsThreadingModel::
+set_draw_name(const string &draw_name) {
+  _draw_name = draw_name;
+  update_stages();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,6 +134,22 @@ get_draw_stage() const {
 INLINE bool GraphicsThreadingModel::
 get_cull_sorting() const {
   return _cull_sorting;
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsThreadingModel::set_cull_sorting
+//       Access: Published
+//  Description: Changes the flag that indicates whether the threading
+//               model involves a separate cull pass.  This won't
+//               change any windows that were already created with
+//               this model; this only has an effect on newly-opened
+//               windows.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsThreadingModel::
+set_cull_sorting(bool cull_sorting) {
+  _cull_sorting = cull_sorting;
+  update_stages();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -34,14 +34,22 @@ PUBLISHED:
   
   string get_model() const;
   INLINE const string &get_cull_name() const;
+  INLINE void set_cull_name(const string &cull_name);
   INLINE int get_cull_stage() const;
+
   INLINE const string &get_draw_name() const;
+  INLINE void set_draw_name(const string &cull_name);
   INLINE int get_draw_stage() const;
+
   INLINE bool get_cull_sorting() const;
+  INLINE void set_cull_sorting(bool cull_sorting);
  
   INLINE bool is_single_threaded() const;
   INLINE bool is_default() const;
   INLINE void output(ostream &out) const;
+
+private:
+  void update_stages();
 
 private:
   string _cull_name;

@@ -64,6 +64,33 @@ GraphicsThreadingModel(const string &model) {
     _cull_name = model.substr(start, slash - start);
     _draw_name = model.substr(slash + 1);
   }
+
+  update_stages();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsThreadingModel::get_model
+//       Access: Published
+//  Description: Returns the string that describes the threading
+//               model.  See the constructor.
+////////////////////////////////////////////////////////////////////
+string GraphicsThreadingModel::
+get_model() const {
+  if (get_cull_sorting()) {
+    return get_cull_name() + "/" + get_draw_name();
+  } else {
+    return string("-") + get_cull_name();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsThreadingModel::update_stages
+//       Access: Private
+//  Description: Called internally to recompute _cull_stage and
+//               _draw_stage after either name has been changed.
+////////////////////////////////////////////////////////////////////
+void GraphicsThreadingModel::
+update_stages() {
   if (_cull_name.empty()) {
     _cull_stage = 0;
   } else {
@@ -80,18 +107,3 @@ GraphicsThreadingModel(const string &model) {
   }
 }
   
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsThreadingModel::get_model
-//       Access: Published
-//  Description: Returns the string that describes the threading
-//               model.  See the constructor.
-////////////////////////////////////////////////////////////////////
-string GraphicsThreadingModel::
-get_model() const {
-  if (get_cull_sorting()) {
-    return get_cull_name() + "/" + get_draw_name();
-  } else {
-    return string("-") + get_cull_name();
-  }
-}
