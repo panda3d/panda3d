@@ -1059,3 +1059,4 @@ def foo(task):
 
 taskMgr.add(foo, 'foo')
 """
+
