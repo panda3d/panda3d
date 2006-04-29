@@ -169,13 +169,15 @@ set_collector_has_level(int index, int thread_index, bool flag) {
   if (_collectors[index]._is_level.get_bit(thread_index) != flag) {
     any_changed = true;
     _collectors[index]._is_level.set_bit_to(thread_index, flag);
+  }
 
-    // Turning this on for a given collector also implicitly turns all
-    // of its ancestors.
-    if (flag) {
-      PStatCollectorDef *def = _collectors[index]._def;
-      if (def->_parent_index != 0) {
-        set_collector_has_level(def->_parent_index, thread_index, flag);
+  // Turning this on for a given collector also implicitly turns all
+  // of its ancestors.
+  if (flag) {
+    PStatCollectorDef *def = _collectors[index]._def;
+    if (def != (PStatCollectorDef *)NULL && def->_parent_index != 0) {
+      if (set_collector_has_level(def->_parent_index, thread_index, flag)) {
+        any_changed = true;
       }
     }
   }
@@ -411,7 +413,7 @@ update_toplevel_collectors() {
   Collectors::const_iterator ci;
   for (ci = _collectors.begin(); ci != _collectors.end(); ++ci) {
     PStatCollectorDef *def = (*ci)._def;
-    if (def->_parent_index == 0) {
+    if (def != (PStatCollectorDef *)NULL && def->_parent_index == 0) {
       _toplevel_collectors.push_back(def->_index);
     }
   }
