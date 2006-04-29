@@ -56,6 +56,8 @@ class MotionTrail(NodePath):
         self.previous_matrix = None
         self.calculate_relative_matrix = False
 
+        self.playing = False;
+
         # default options
         self.continuous_motion_trail = True
         self.color_scale = 1.0
@@ -110,7 +112,14 @@ class MotionTrail(NodePath):
         current_time = task.time
 
         index = 0
-        total_motion_trails = len (MotionTrail.motion_trail_list)
+
+        try:
+            total_motion_trails = len (MotionTrail.motion_trail_list)
+        except:
+            print "ERROR: len ( ) exception 1"
+            total_motion_trails = 0
+            MotionTrail.motion_trail_list = [ ]
+
         while (index < total_motion_trails):
             motion_trail = MotionTrail.motion_trail_list [index]
             if (motion_trail.active and motion_trail.check_for_update (current_time)):
@@ -213,10 +222,22 @@ class MotionTrail(NodePath):
     def add_vertex (self, vertex_id, vertex_function, context):
 
         motion_trail_vertex = MotionTrailVertex (vertex_id, vertex_function, context)
-        total_vertices = len (self.vertex_list)
+        try:
+            total_vertices = len (self.vertex_list)
+        except:
+            print "ERROR: len ( ) exception 2"
+            total_vertices = 0
+            self.vertex_list = [ ]
+            
         self.vertex_list [total_vertices : total_vertices] = [motion_trail_vertex]
-        self.total_vertices = len (self.vertex_list)
 
+        try:
+            self.total_vertices = len (self.vertex_list)
+        except:
+            print "ERROR: len ( ) exception 3"
+            self.total_vertices = 0
+            self.vertex_list = [ ]
+        
         return motion_trail_vertex
 
     def set_vertex_color (self, vertex_id, start_color, end_color):
@@ -237,7 +258,13 @@ class MotionTrail(NodePath):
 
     def update_vertices (self):
 
-        total_vertices = len (self.vertex_list)
+        try:
+            total_vertices = len (self.vertex_list)
+        except:
+            print "ERROR: len ( ) exception 4"
+            total_vertices = 0
+            self.vertex_list = [ ]
+            
         self.total_vertices = total_vertices
         if (total_vertices >= 2):        
             vertex_index = 0
@@ -370,8 +397,14 @@ class MotionTrail(NodePath):
             """
             
             index = 0
-            last_frame_index = len (self.frame_list) - 1
 
+            try:
+                last_frame_index = len (self.frame_list) - 1
+            except:
+                print "ERROR: len ( ) exception 5"
+                last_frame_index = -1
+                self.frame_list = [ ]
+                
             while (index <= last_frame_index):
                 motion_trail_frame = self.frame_list [last_frame_index - index]
                 if (motion_trail_frame.time >= minimum_time):
@@ -386,7 +419,12 @@ class MotionTrail(NodePath):
             self.frame_list = [motion_trail_frame] + self.frame_list
             
             # convert frames and vertices to geometry
-            total_frames = len (self.frame_list)
+            try:
+                total_frames = len (self.frame_list)
+            except:
+                print "ERROR: len ( ) exception 6"
+                total_frames = 0
+                self.frame_list = [ ]
             
             """
             print "total_frames", total_frames
@@ -557,6 +595,7 @@ class MotionTrail(NodePath):
         if (self.continuous_motion_trail == False):
             self.reset_motion_trail ( )
             self.active = True;
+            self.playing = True;
         return
 
     def end_motion_trail (self):
@@ -564,6 +603,7 @@ class MotionTrail(NodePath):
             self.active = False
             self.reset_motion_trail ( )
             self.reset_motion_trail_geometry ( )
+            self.playing = False;
         return
                 
     def set_fade (self, time, current_time):
