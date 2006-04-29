@@ -996,21 +996,22 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.updateFrameStyle()
 
     def destroy(self):
-        # Destroy children
-        for child in self.getChildrenAsList():
-            childGui = self.guiDict.get(child.getName())
-            if childGui: childGui.destroy()
-            # messenger.send(DESTROY + child.getName())
-        del self.guiDict[self.guiId]
-        del self.frameStyle
-        # Get rid of node path
-        self.removeNode()
-        for nodePath in self.stateNodePath:
-            nodePath.removeNode()
-        del self.stateNodePath
-        del self.guiItem
-        # Call superclass destruction method (clears out hooks)
-        DirectGuiBase.destroy(self)
+        if hasattr(self, "frameStyle"):
+            # Destroy children
+            for child in self.getChildrenAsList():
+                childGui = self.guiDict.get(child.getName())
+                if childGui: childGui.destroy()
+                # messenger.send(DESTROY + child.getName())
+            del self.guiDict[self.guiId]
+            del self.frameStyle
+            # Get rid of node path
+            self.removeNode()
+            for nodePath in self.stateNodePath:
+                nodePath.removeNode()
+            del self.stateNodePath
+            del self.guiItem
+            # Call superclass destruction method (clears out hooks)
+            DirectGuiBase.destroy(self)
 
     def printConfig(self, indent = 0):
         space = ' ' * indent
