@@ -138,6 +138,24 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGTop::is_renderable
+//       Access: Public, Virtual
+//  Description: Returns true if there is some value to visiting this
+//               particular node during the cull traversal for any
+//               camera, false otherwise.  This will be used to
+//               optimize the result of get_net_draw_show_mask(), so
+//               that any subtrees that contain only nodes for which
+//               is_renderable() is false need not be visited.
+////////////////////////////////////////////////////////////////////
+bool PGTop::
+is_renderable() const {
+  // We flag the PGTop as renderable, even though it technically
+  // doesn't have anything to render, but we do need the traverser to
+  // visit it every frame.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGTop::set_mouse_watcher
 //       Access: Published
 //  Description: Sets the MouseWatcher pointer that the PGTop object

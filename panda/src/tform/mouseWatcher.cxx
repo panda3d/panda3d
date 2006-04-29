@@ -158,6 +158,12 @@ add_group(MouseWatcherGroup *group) {
     return false;
   }
 
+#ifndef NDEBUG
+  if (!_show_regions_render2d.is_empty()) {
+    group->show_regions(_show_regions_render2d);
+  }
+#endif  // NDEBUG
+
   // Not in the set, add it and return true
   _groups.push_back(pt);
   return true;
@@ -187,6 +193,12 @@ remove_group(MouseWatcherGroup *group) {
   if (has_region_in(both, _preferred_button_down_region)) {
     _preferred_button_down_region = (MouseWatcherRegion *)NULL;
   }
+
+#ifndef NDEBUG
+  if (!_show_regions_render2d.is_empty()) {
+    group->do_hide_regions();
+  }
+#endif  // NDEBUG
 
   // See if the group is in the set/vector
   PT(MouseWatcherGroup) pt = group;
@@ -223,15 +235,15 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
 
   MutexHolder holder(_lock);
 
-#ifndef NDEBUG
-  if (!_show_regions_render2d.is_empty()) {
-    old_group->hide_regions();
-    new_group->show_regions(_show_regions_render2d);
-  }
-#endif  // NDEBUG
-
   MutexHolder holder2(old_group->_lock);
   MutexHolder holder3(new_group->_lock);
+
+#ifndef NDEBUG
+  if (!_show_regions_render2d.is_empty()) {
+    old_group->do_hide_regions();
+    new_group->do_show_regions(_show_regions_render2d);
+  }
+#endif  // NDEBUG
 
   // Figure out the list of regions that change
   Regions remove, add, keep;
@@ -268,6 +280,12 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
   if (gi == _groups.end()) {
     _groups.push_back(new_group);
   }
+
+#ifndef NDEBUG
+  if (!_show_regions_render2d.is_empty()) {
+    new_group->do_update_regions();
+  }
+#endif  // NDEBUG
     
   // Remove the old group, if it is already there.
   pt = old_group;

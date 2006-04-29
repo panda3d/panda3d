@@ -55,6 +55,8 @@ PUBLISHED:
   void show_regions(const NodePath &render2d);
   void set_color(const Colorf &color);
   void hide_regions();
+
+  void update_regions();
 #endif  // NDEBUG
 
 protected:
@@ -63,6 +65,7 @@ protected:
 #ifndef NDEBUG
   virtual void do_show_regions(const NodePath &render2d);
   virtual void do_hide_regions();
+  void do_update_regions();
 #endif  // NDEBUG
 
 protected:
@@ -76,7 +79,6 @@ protected:
 
 private:
 #ifndef NDEBUG
-  void update_regions();
   PandaNode *make_viz_region(MouseWatcherRegion *region);
 
   typedef pvector< PT(PandaNode) > Vizzes;

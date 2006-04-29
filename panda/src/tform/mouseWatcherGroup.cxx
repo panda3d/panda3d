@@ -239,14 +239,14 @@ set_color(const Colorf &color) {
   MutexHolder holder(_lock);
 
   _color = color;
-  update_regions();
+  do_update_regions();
 }
 #endif  // NDEBUG
 
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherGroup::hide_regions
-//       Access: Published, Virtual
+//       Access: Published
 //  Description: Stops the visualization created by a previous call to
 //               show_regions().
 ////////////////////////////////////////////////////////////////////
@@ -254,6 +254,20 @@ void MouseWatcherGroup::
 hide_regions() {
   MutexHolder holder(_lock);
   do_hide_regions();
+}
+#endif  // NDEBUG
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherGroup::update_regions
+//       Access: Published
+//  Description: Refreshes the visualization created by
+//               show_regions().
+////////////////////////////////////////////////////////////////////
+void MouseWatcherGroup::
+update_regions() {
+  MutexHolder holder(_lock);
+  do_update_regions();
 }
 #endif  // NDEBUG
 
@@ -300,10 +314,11 @@ do_remove_region(MouseWatcherRegion *region) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 do_show_regions(const NodePath &render2d) {
+  do_hide_regions();
   _show_regions = true;
   _show_regions_root = render2d.attach_new_node("show_regions");
   _show_regions_root.set_bin("unsorted", 0);
-  update_regions();
+  do_update_regions();
 }
 #endif  // NDEBUG
 
@@ -325,25 +340,28 @@ do_hide_regions() {
 
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherGroup::update_regions
-//       Access: Private
+//     Function: MouseWatcherGroup::do_update_regions
+//       Access: Protected
 //  Description: Internally regenerates the show_regions()
 //               visualization.  Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
-update_regions() {
+do_update_regions() {
   nassertv(_lock.debug_is_locked());
 
-  _show_regions_root.node()->remove_all_children();
-  _vizzes.clear();
-  _vizzes.reserve(_regions.size());
-
-  Regions::const_iterator ri;
-  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-    _vizzes.push_back(make_viz_region(*ri));
+  if (_show_regions) {
+    _show_regions_root.node()->remove_all_children();
+    _vizzes.clear();
+    _vizzes.reserve(_regions.size());
+    
+    Regions::const_iterator ri;
+    for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
+      _vizzes.push_back(make_viz_region(*ri));
+    }
   }
 }
 #endif  // NDEBUG
+
 
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
