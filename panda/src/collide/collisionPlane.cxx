@@ -148,14 +148,16 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << entry.get_from_node_path() << " into "
-      << entry.get_into_node_path() << "\n";
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   LVector3f from_normal = get_normal() * entry.get_inv_wrt_mat();
 
-  LVector3f normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+  LVector3f normal = (
+    has_effective_normal() && sphere->get_respect_effective_normal())
+    ? get_effective_normal() : get_normal();
 
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(from_center - get_normal() * dist);
