@@ -260,6 +260,7 @@ clear_local_value() {
   if (_local_value != (ConfigDeclaration *)NULL) {
     ConfigPage::get_local_page()->delete_declaration(_local_value);
     _local_value = (ConfigDeclaration *)NULL;
+    invalidate_cache();
     return true;
   }
 
