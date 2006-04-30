@@ -373,24 +373,34 @@ set_result(const Geom *geom_result, const GeomVertexData *data_result) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::CacheEntry::Constructor
+//     Function: Geom::CacheKey::Constructor
 //       Access: Public
-//  Description: This constructor makes an invalid CacheEntry that
-//               holds no data.  CacheEntries like this are normally
-//               not stored in the cache; this is usually used as a
-//               key to find an existing (valid) CacheEntry already in
-//               the cache.
-//
-//               However, it is possible for an empty CacheEntry to
-//               end up in the cache if its data gets cleared by
-//               clear_cache_stage().
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE Geom::CacheEntry::
-CacheEntry(const GeomVertexData *source_data, const GeomMunger *modifier) :
-  _source(NULL),
+INLINE Geom::CacheKey::
+CacheKey(const GeomVertexData *source_data, const GeomMunger *modifier) :
   _source_data(source_data),
   _modifier(modifier)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CacheKey::operator <
+//       Access: Public
+//  Description: Provides a unique ordering within the map.
+////////////////////////////////////////////////////////////////////
+INLINE bool Geom::CacheKey::
+operator < (const CacheKey &other) const {
+  if (_modifier != other._modifier) {
+    int compare = _modifier->geom_compare_to(*other._modifier);
+    if (compare != 0) {
+      return (compare < 0);
+    }
+  }
+  if (_source_data != other._source_data) {
+    return (_source_data < other._source_data);
+  }
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -402,28 +412,8 @@ INLINE Geom::CacheEntry::
 CacheEntry(Geom *source, const GeomVertexData *source_data,
            const GeomMunger *modifier) :
   _source(source),
-  _source_data(source_data),
-  _modifier(modifier)
+  _key(source_data, modifier)
 {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::CacheEntry::operator <
-//       Access: Public
-//  Description: Provides a unique ordering within the set.
-////////////////////////////////////////////////////////////////////
-INLINE bool Geom::CacheEntry::
-operator < (const CacheEntry &other) const {
-  if (_modifier != other._modifier) {
-    int compare = _modifier->geom_compare_to(*other._modifier);
-    if (compare != 0) {
-      return (compare < 0);
-    }
-  }
-  if (_source_data != other._source_data) {
-    return (_source_data < other._source_data);
-  }
-  return 0;
 }
 
 

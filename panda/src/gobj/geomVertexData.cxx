@@ -675,16 +675,15 @@ convert_to(const GeomVertexFormat *new_format) const {
   // it.
   PT(CacheEntry) entry;
 
-  CacheEntry temp_entry(new_format);
-  temp_entry.local_object();
+  CacheKey key(new_format);
 
   _cache_lock.lock();
-  Cache::const_iterator ci = _cache.find(&temp_entry);
+  Cache::const_iterator ci = _cache.find(&key);
   if (ci == _cache.end()) {
     _cache_lock.release();
 
   } else {
-    entry = (*ci);
+    entry = (*ci).second;
     _cache_lock.release();
     nassertr(entry->_source == this, NULL);
 
@@ -725,7 +724,7 @@ convert_to(const GeomVertexFormat *new_format) const {
     entry = new CacheEntry((GeomVertexData *)this, new_format);
     {
       MutexHolder holder(_cache_lock);
-      bool inserted = ((GeomVertexData *)this)->_cache.insert(entry).second;
+      bool inserted = ((GeomVertexData *)this)->_cache.insert(Cache::value_type(&entry->_key, entry)).second;
       if (!inserted) {
         // Some other thread must have beat us to the punch.  Never
         // mind.
@@ -1112,7 +1111,7 @@ clear_cache() {
   for (Cache::iterator ci = _cache.begin();
        ci != _cache.end();
        ++ci) {
-    CacheEntry *entry = (*ci);
+    CacheEntry *entry = (*ci).second;
     entry->erase();
   }
   _cache.clear();
@@ -1135,7 +1134,7 @@ clear_cache_stage() {
   for (Cache::iterator ci = _cache.begin();
        ci != _cache.end();
        ++ci) {
-    CacheEntry *entry = (*ci);
+    CacheEntry *entry = (*ci).second;
     CDCacheWriter cdata(entry->_cycler);
     cdata->_result = NULL;
   }
@@ -1487,9 +1486,9 @@ make_copy() const {
 void GeomVertexData::CacheEntry::
 evict_callback() {
   MutexHolder holder(_source->_cache_lock);
-  Cache::iterator ci = _source->_cache.find(this);
+  Cache::iterator ci = _source->_cache.find(&_key);
   nassertv(ci != _source->_cache.end());
-  nassertv((*ci) == this);
+  nassertv((*ci).second == this);
   _source->_cache.erase(ci);
 }
 
@@ -1501,7 +1500,7 @@ evict_callback() {
 void GeomVertexData::CacheEntry::
 output(ostream &out) const {
   out << "vertex data " << (void *)_source << " to " 
-      << *_modifier;
+      << *_key._modifier;
 }
 
 ////////////////////////////////////////////////////////////////////

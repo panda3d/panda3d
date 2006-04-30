@@ -200,24 +200,35 @@ private:
   typedef CycleDataReader<CDataCache> CDCacheReader;
   typedef CycleDataWriter<CDataCache> CDCacheWriter;
 
-public:  // It is not clear why MSVC7 needs this class to be public.  
+public:
+  // The CacheKey class separates out just the part of CacheEntry that
+  // is used to key the cache entry within the map.  We have this as a
+  // separate class so we can easily look up a new entry in the map,
+  // without having to execute the relatively expensive CacheEntry
+  // constructor.
+  class CacheKey {
+  public:
+    INLINE CacheKey(const GeomVertexFormat *modifier);
+    INLINE bool operator < (const CacheKey &other) const;
+
+    CPT(GeomVertexFormat) _modifier;
+  };
+  // It is not clear why MSVC7 needs this class to be public.  
   class CacheEntry : public GeomCacheEntry {
   public:
-    INLINE CacheEntry(const GeomVertexFormat *modifier);
     INLINE CacheEntry(GeomVertexData *source,
                       const GeomVertexFormat *modifier);
     ALLOC_DELETED_CHAIN(CacheEntry);
-    INLINE bool operator < (const CacheEntry &other) const;
 
     virtual void evict_callback();
     virtual void output(ostream &out) const;
 
-    GeomVertexData *_source;  // A back pointer to the containing GeomVertexData
-    CPT(GeomVertexFormat) _modifier;
+    GeomVertexData *_source;  // A back pointer to the containing data.
+    CacheKey _key;
 
     PipelineCycler<CDataCache> _cycler;
   };
-  typedef pset<PT(CacheEntry), IndirectLess<CacheEntry> > Cache;
+  typedef pmap<const CacheKey *, PT(CacheEntry), IndirectLess<CacheKey> > Cache;
 
 private:
   // This is the data that must be cycled between pipeline stages.

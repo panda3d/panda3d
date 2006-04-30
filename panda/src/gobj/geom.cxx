@@ -806,7 +806,7 @@ clear_cache() {
   for (Cache::iterator ci = _cache.begin();
        ci != _cache.end();
        ++ci) {
-    CacheEntry *entry = (*ci);
+    CacheEntry *entry = (*ci).second;
     entry->erase();
   }
   _cache.clear();
@@ -829,7 +829,7 @@ clear_cache_stage(Thread *current_thread) {
   for (Cache::iterator ci = _cache.begin();
        ci != _cache.end();
        ++ci) {
-    CacheEntry *entry = (*ci);
+    CacheEntry *entry = (*ci).second;
     CDCacheWriter cdata(entry->_cycler, current_thread);
     cdata->set_result(NULL, NULL);
   }
@@ -1244,9 +1244,9 @@ make_copy() const {
 void Geom::CacheEntry::
 evict_callback() {
   MutexHolder holder(_source->_cache_lock);
-  Cache::iterator ci = _source->_cache.find(this);
+  Cache::iterator ci = _source->_cache.find(&_key);
   nassertv(ci != _source->_cache.end());
-  nassertv((*ci) == this);
+  nassertv((*ci).second == this);
   _source->_cache.erase(ci);
 }
 
@@ -1258,7 +1258,7 @@ evict_callback() {
 void Geom::CacheEntry::
 output(ostream &out) const {
   out << "geom " << (void *)_source << ", " 
-      << (const void *)_modifier;
+      << (const void *)_key._modifier;
 }
 
 

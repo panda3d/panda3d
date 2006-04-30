@@ -115,15 +115,14 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
   // applied it.
   PT(Geom::CacheEntry) entry;
 
-  Geom::CacheEntry temp_entry(source_data, this);
-  temp_entry.local_object();
+  Geom::CacheKey key(source_data, this);
 
   geom->_cache_lock.lock();
-  Geom::Cache::const_iterator ci = geom->_cache.find(&temp_entry);
+  Geom::Cache::const_iterator ci = geom->_cache.find(&key);
   if (ci == geom->_cache.end()) {
     geom->_cache_lock.release();
   } else {
-    entry = (*ci);
+    entry = (*ci).second;
     geom->_cache_lock.release();
     nassertv(entry->_source == geom);
     
@@ -164,7 +163,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
     entry = new Geom::CacheEntry(orig_geom, source_data, this);
     {
       MutexHolder holder(orig_geom->_cache_lock);
-      bool inserted = orig_geom->_cache.insert(entry).second;
+      bool inserted = orig_geom->_cache.insert(Geom::Cache::value_type(&entry->_key, entry)).second;
       if (!inserted) {
         // Some other thread must have beat us to the punch.  Never
         // mind.

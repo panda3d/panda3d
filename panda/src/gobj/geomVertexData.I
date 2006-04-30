@@ -403,23 +403,24 @@ CDataCache(const GeomVertexData::CDataCache &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::CacheEntry::Constructor
+//     Function: GeomVertexData::CacheKey::Constructor
 //       Access: Public
-//  Description: This constructor makes an invalid CacheEntry that
-//               holds no data.  CacheEntries like this are normally
-//               not stored in the cache; this is usually used as a
-//               key to find an existing (valid) CacheEntry already in
-//               the cache.
-//
-//               However, it is possible for an empty CacheEntry to
-//               end up in the cache if its data gets cleared by
-//               clear_cache_stage().
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE GeomVertexData::CacheEntry::
-CacheEntry(const GeomVertexFormat *modifier) :
-  _source(NULL),
+INLINE GeomVertexData::CacheKey::
+CacheKey(const GeomVertexFormat *modifier) :
   _modifier(modifier)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::CacheKey::operator <
+//       Access: Public
+//  Description: Provides a unique ordering within the set.
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexData::CacheKey::
+operator < (const CacheKey &other) const {
+  return _modifier < other._modifier;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -428,21 +429,10 @@ CacheEntry(const GeomVertexFormat *modifier) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexData::CacheEntry::
-CacheEntry(GeomVertexData *source,
-           const GeomVertexFormat *modifier) :
+CacheEntry(GeomVertexData *source, const GeomVertexFormat *modifier) :
   _source(source),
-  _modifier(modifier)
+  _key(modifier)
 {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexData::CacheEntry::operator <
-//       Access: Public
-//  Description: Provides a unique ordering within the set.
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomVertexData::CacheEntry::
-operator < (const CacheEntry &other) const {
-  return _modifier < other._modifier;
 }
 
 ////////////////////////////////////////////////////////////////////
