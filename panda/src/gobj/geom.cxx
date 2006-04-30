@@ -26,6 +26,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "boundingSphere.h"
+#include "mutexHolder.h"
 
 UpdateSeq Geom::_next_modified;
 PStatCollector Geom::_draw_primitive_setup_pcollector("Draw:Primitive:Setup");
@@ -801,6 +802,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 clear_cache() {
+  MutexHolder holder(_cache_lock);
   for (Cache::iterator ci = _cache.begin();
        ci != _cache.end();
        ++ci) {
@@ -823,6 +825,7 @@ clear_cache() {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 clear_cache_stage(Thread *current_thread) {
+  MutexHolder holder(_cache_lock);
   for (Cache::iterator ci = _cache.begin();
        ci != _cache.end();
        ++ci) {
@@ -1240,6 +1243,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void Geom::CacheEntry::
 evict_callback() {
+  MutexHolder holder(_source->_cache_lock);
   Cache::iterator ci = _source->_cache.find(this);
   nassertv(ci != _source->_cache.end());
   nassertv((*ci) == this);

@@ -117,22 +117,27 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
 
   Geom::CacheEntry temp_entry(source_data, this);
   temp_entry.local_object();
-  Geom::Cache::const_iterator ci = geom->_cache.find(&temp_entry);
-  if (ci != geom->_cache.end()) {
-    entry = (*ci);
-    nassertv(entry->_source == geom);
 
+  geom->_cache_lock.lock();
+  Geom::Cache::const_iterator ci = geom->_cache.find(&temp_entry);
+  if (ci == geom->_cache.end()) {
+    geom->_cache_lock.release();
+  } else {
+    entry = (*ci);
+    geom->_cache_lock.release();
+    nassertv(entry->_source == geom);
+    
     // Here's an element in the cache for this computation.  Record a
     // cache hit, so this element will stay in the cache a while
     // longer.
     entry->refresh(current_thread);
-
+    
     // Now check that it's fresh.
     Geom::CDCacheReader cdata(entry->_cycler, current_thread);
-    nassertv(cdata->_source == geom);
-    if (cdata->_geom_result != (Geom *)NULL &&
-	geom->get_modified(current_thread) <= cdata->_geom_result->get_modified(current_thread) &&
-	data->get_modified(current_thread) <= cdata->_data_result->get_modified(current_thread)) {
+    if (cdata->_source == geom &&
+        cdata->_geom_result != (Geom *)NULL &&
+        geom->get_modified(current_thread) <= cdata->_geom_result->get_modified(current_thread) &&
+        data->get_modified(current_thread) <= cdata->_data_result->get_modified(current_thread)) {
       // The cache entry is still good; use it.
       
       geom = cdata->_geom_result;
@@ -149,16 +154,23 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
   // Ok, invoke the munger.
   PStatTimer timer(_munge_pcollector, current_thread);
 
-  CPT(Geom) orig_geom = geom;
+  PT(Geom) orig_geom = (Geom *)geom.p();
   data = munge_data(data);
   munge_geom_impl(geom, data, current_thread);
 
   // Record the new result in the cache.
   if (entry == (Geom::CacheEntry *)NULL) {
     // Create a new entry for the result.
-    entry = new Geom::CacheEntry((Geom *)orig_geom.p(), source_data, this);
-    bool inserted = ((Geom *)orig_geom.p())->_cache.insert(entry).second;
-    nassertv(inserted);
+    entry = new Geom::CacheEntry(orig_geom, source_data, this);
+    {
+      MutexHolder holder(orig_geom->_cache_lock);
+      bool inserted = orig_geom->_cache.insert(entry).second;
+      if (!inserted) {
+        // Some other thread must have beat us to the punch.  Never
+        // mind.
+        return;
+      }
+    }
   
     // And tell the cache manager about the new entry.  (It might
     // immediately request a delete from the cache of the thing we

@@ -70,7 +70,9 @@ INLINE const CycleData *PipelineCyclerTrueImpl::
 read(Thread *current_thread) const {
   TAU_PROFILE("const CycleData *PipelineCyclerTrueImpl::read(Thread *)", " ", TAU_USER);
   int pipeline_stage = current_thread->get_pipeline_stage();
+#ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
+#endif
   _lock.lock(current_thread);
   return _data[pipeline_stage];
 }
@@ -238,7 +240,7 @@ increment_write(CycleData *pointer) const {
 INLINE void PipelineCyclerTrueImpl::
 release_write(CycleData *pointer) {
   TAU_PROFILE("void PipelineCyclerTrueImpl::release_write(CycleData *)", " ", TAU_USER);
-#ifdef NDEBUG
+#ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
   return release_write_stage(pipeline_stage, pointer);
 #else
@@ -270,7 +272,9 @@ get_num_stages() {
 INLINE const CycleData *PipelineCyclerTrueImpl::
 read_stage(int pipeline_stage, Thread *current_thread) const {
   TAU_PROFILE("const CycleData *PipelineCyclerTrueImpl::read_stage(int)", " ", TAU_USER);
+#ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
+#endif
   _lock.lock(current_thread);
   return _data[pipeline_stage];
 }

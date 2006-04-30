@@ -47,6 +47,8 @@
     stringDecoder.h stringDecoder.I \
     subStream.I subStream.h subStreamBuf.h \
     textEncoder.h textEncoder.I \
+    threadSafePointerTo.I threadSafePointerTo.h \
+    threadSafePointerToBase.I threadSafePointerToBase.h \
     tokenBoard.I \
     tokenBoard.h trueClock.I trueClock.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
@@ -95,6 +97,8 @@
     stringDecoder.cxx \
     subStream.cxx subStreamBuf.cxx \
     textEncoder.cxx \
+    threadSafePointerTo.cxx \
+    threadSafePointerToBase.cxx \
     trueClock.cxx \
     typedReferenceCount.cxx \
     unicodeLatinMap.cxx \
@@ -149,6 +153,8 @@
     stringDecoder.h stringDecoder.I \
     subStream.I subStream.h subStreamBuf.h \
     textEncoder.h textEncoder.I \
+    threadSafePointerTo.I threadSafePointerTo.h \
+    threadSafePointerToBase.I threadSafePointerToBase.h \
     tokenBoard.I \
     tokenBoard.h trueClock.I trueClock.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \

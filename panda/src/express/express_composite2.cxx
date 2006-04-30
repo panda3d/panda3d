@@ -1,4 +1,3 @@
-#include "pta_uchar.cxx"
 #include "ramfile.cxx"
 #include "referenceCount.cxx"
 #include "reversedNumericData.cxx"
@@ -8,6 +7,8 @@
 #include "subStream.cxx"
 #include "subStreamBuf.cxx"
 #include "textEncoder.cxx"
+#include "threadSafePointerTo.cxx"
+#include "threadSafePointerToBase.cxx"
 #include "trueClock.cxx"
 #include "typedReferenceCount.cxx"
 #include "unicodeLatinMap.cxx"

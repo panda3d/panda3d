@@ -27,3 +27,4 @@
 #include "pointerToBase.cxx"
 #include "pointerToVoid.cxx"
 #include "profileTimer.cxx"
+#include "pta_uchar.cxx"

@@ -677,9 +677,15 @@ convert_to(const GeomVertexFormat *new_format) const {
 
   CacheEntry temp_entry(new_format);
   temp_entry.local_object();
+
+  _cache_lock.lock();
   Cache::const_iterator ci = _cache.find(&temp_entry);
-  if (ci != _cache.end()) {
+  if (ci == _cache.end()) {
+    _cache_lock.release();
+
+  } else {
     entry = (*ci);
+    _cache_lock.release();
     nassertr(entry->_source == this, NULL);
 
     // Here's an element in the cache for this computation.  Record a
@@ -717,8 +723,15 @@ convert_to(const GeomVertexFormat *new_format) const {
   if (entry == (CacheEntry *)NULL) {
     // Create a new entry for the result.
     entry = new CacheEntry((GeomVertexData *)this, new_format);
-    bool inserted = ((GeomVertexData *)this)->_cache.insert(entry).second;
-    nassertr(inserted, new_data);
+    {
+      MutexHolder holder(_cache_lock);
+      bool inserted = ((GeomVertexData *)this)->_cache.insert(entry).second;
+      if (!inserted) {
+        // Some other thread must have beat us to the punch.  Never
+        // mind.
+        return new_data;
+      }
+    }
     
     // And tell the cache manager about the new entry.  (It might
     // immediately request a delete from the cache of the thing we
@@ -727,7 +740,7 @@ convert_to(const GeomVertexFormat *new_format) const {
   }
 
   // Finally, store the cached result on the entry.
-  CDCacheWriter cdata(entry->_cycler, true);
+  CDCacheWriter cdata(entry->_cycler, true, current_thread);
   cdata->_result = new_data;
 
   return new_data;
@@ -1095,6 +1108,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 clear_cache() {
+  MutexHolder holder(_cache_lock);
   for (Cache::iterator ci = _cache.begin();
        ci != _cache.end();
        ++ci) {
@@ -1117,6 +1131,7 @@ clear_cache() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 clear_cache_stage() {
+  MutexHolder holder(_cache_lock);
   for (Cache::iterator ci = _cache.begin();
        ci != _cache.end();
        ++ci) {
@@ -1471,6 +1486,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::CacheEntry::
 evict_callback() {
+  MutexHolder holder(_source->_cache_lock);
   Cache::iterator ci = _source->_cache.find(this);
   nassertv(ci != _source->_cache.end());
   nassertv((*ci) == this);

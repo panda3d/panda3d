@@ -252,6 +252,7 @@ private:
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
   Cache _cache;
+  Mutex _cache_lock;
 
 private:
   void update_animated_vertices(CData *cdata, Thread *current_thread);
