@@ -253,6 +253,8 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 bool PortalNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  Thread *current_thread = trav->get_current_thread();
+
   PortalClipper *portal_viewer = trav->get_portal_clipper();
   set_visible(false);
   if (is_open() && !_cell_out.is_empty() && portal_viewer) {
@@ -312,7 +314,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
       CullTraverserData next_data(_cell_out, 
                                   cell_transform,
-                                  next_state, new_bh, NULL);
+                                  next_state, new_bh, NULL,
+                                  current_thread);
       //                                  data._state, new_bh, NULL);
 
       // Make this cell show with the reduced frustum

@@ -115,7 +115,7 @@ traverse(const NodePath &root, bool python_cull_control) {
 
     CullTraverserData data(root, TransformState::make_identity(),
                            _initial_state, _view_frustum, 
-                           _guard_band);
+                           _guard_band, _current_thread);
     
     traverse(data);
     
@@ -133,7 +133,7 @@ traverse(const NodePath &root, bool python_cull_control) {
   } else {
     CullTraverserData data(root, TransformState::make_identity(),
                            _initial_state, _view_frustum, 
-                           _guard_band);
+                           _guard_band, _current_thread);
     
     traverse(data);
   }
@@ -153,16 +153,17 @@ traverse(CullTraverserData &data) {
   // optimization, we should tag nodes with these properties as
   // being "fancy", and skip this processing for non-fancy nodes.
   
-  if (data.is_in_view(_camera_mask, _current_thread)) {
+  if (data.is_in_view(_camera_mask)) {
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam() 
         << "\n" << data._node_path
         << " " << data._draw_mask << "\n";
     }
 
+    PandaNodePipelineReader *node_reader = data.node_reader();
     PandaNode *node = data.node();
 
-    const RenderEffects *node_effects = node->get_effects(_current_thread);
+    const RenderEffects *node_effects = node_reader->get_effects();
     if (node_effects->has_show_bounds()) {
       // If we should show the bounding volume for this node, make it
       // up now.
@@ -171,7 +172,7 @@ traverse(CullTraverserData &data) {
 
     data.apply_transform_and_state(this);
 
-    const FogAttrib *fog = node->get_state(_current_thread)->get_fog();
+    const FogAttrib *fog = node_reader->get_state()->get_fog();
     if (fog != (const FogAttrib *)NULL && fog->get_fog() != (Fog *)NULL) {
       // If we just introduced a FogAttrib here, call adjust_to_camera()
       // now.  This maybe isn't the perfect time to call it, but it's
@@ -200,11 +201,12 @@ traverse(CullTraverserData &data) {
 void CullTraverser::
 traverse_below(CullTraverserData &data) {
   _nodes_pcollector.add_level(1);
+  PandaNodePipelineReader *node_reader = data.node_reader();
   PandaNode *node = data.node();
 
   bool this_node_hidden = data.is_this_node_hidden(this);
 
-  const RenderEffects *node_effects = node->get_effects(_current_thread);
+  const RenderEffects *node_effects = node_reader->get_effects();
   bool has_decal = !this_node_hidden && node_effects->has_decal();
   if (has_decal && !_depth_offset_decals) {
     // Start the three-pass decal rendering if we're not using
@@ -252,7 +254,8 @@ traverse_below(CullTraverserData &data) {
     }
 
     // Now visit all the node's children.
-    PandaNode::Children children = node->get_children(_current_thread);
+    PandaNode::Children children = node_reader->get_children();
+    node_reader->release();
     int num_children = children.get_num_children();
     if (node->has_selective_visibility()) {
       int i = node->get_first_visible_child();
@@ -523,6 +526,8 @@ start_decal(const CullTraverserData &data) {
     return;
   }
 
+  const PandaNodePipelineReader *node_reader = data.node_reader();
+
   // Build a chain of CullableObjects.  The head of the chain will be
   // all of the base Geoms in order, followed by an empty
   // CullableObject node, followed by all of the decal Geoms, in
@@ -531,7 +536,7 @@ start_decal(const CullTraverserData &data) {
   // Since the CullableObject is a linked list which gets built in
   // LIFO order, we start with the decals.
   CullableObject *decals = (CullableObject *)NULL;
-  PandaNode::Children cr = node->get_children(_current_thread);
+  PandaNode::Children cr = node_reader->get_children();
   int num_children = cr.get_num_children();
   if (node->has_selective_visibility()) {
     int i = node->get_first_visible_child();
@@ -592,10 +597,11 @@ start_decal(const CullTraverserData &data) {
 ////////////////////////////////////////////////////////////////////
 CullableObject *CullTraverser::
 r_get_decals(CullTraverserData &data, CullableObject *decals) {
-  if (data.is_in_view(_camera_mask, _current_thread)) {
+  if (data.is_in_view(_camera_mask)) {
+    PandaNodePipelineReader *node_reader = data.node_reader();
     PandaNode *node = data.node();
 
-    const RenderEffects *node_effects = node->get_effects();
+    const RenderEffects *node_effects = node_reader->get_effects();
     if (node_effects->has_show_bounds()) {
       // If we should show the bounding volume for this node, make it
       // up now.
@@ -605,18 +611,18 @@ r_get_decals(CullTraverserData &data, CullableObject *decals) {
     data.apply_transform_and_state(this);
 
     // First, visit all of the node's children.
-    int num_children = node->get_num_children();
+    int num_children = node_reader->get_num_children();
     if (node->has_selective_visibility()) {
       int i = node->get_first_visible_child();
       while (i < num_children) {
-        CullTraverserData next_data(data, node->get_child(i));
+        CullTraverserData next_data(data, node_reader->get_child(i));
         decals = r_get_decals(next_data, decals);
         i = node->get_next_visible_child(i);
       }
       
     } else {
       for (int i = num_children - 1; i >= 0; i--) {
-        CullTraverserData next_data(data, node->get_child(i));
+        CullTraverserData next_data(data, node_reader->get_child(i));
         decals = r_get_decals(next_data, decals);
       }
     }

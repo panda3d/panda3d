@@ -51,7 +51,8 @@ public:
                            const TransformState *net_transform,
                            const RenderState *state,
                            GeometricBoundingVolume *view_frustum,
-                           GeometricBoundingVolume *guard_band);
+                           GeometricBoundingVolume *guard_band,
+                           Thread *current_thread);
   INLINE CullTraverserData(const CullTraverserData &copy);
   INLINE void operator = (const CullTraverserData &copy); 
   INLINE CullTraverserData(const CullTraverserData &parent, 
@@ -59,11 +60,13 @@ public:
   INLINE ~CullTraverserData();
 
   INLINE PandaNode *node() const;
+  INLINE PandaNodePipelineReader *node_reader();
+  INLINE const PandaNodePipelineReader *node_reader() const;
 
   CPT(TransformState) get_modelview_transform(const CullTraverser *trav) const;
   INLINE const TransformState *get_net_transform(const CullTraverser *trav) const;
 
-  INLINE bool is_in_view(const DrawMask &camera_mask, Thread *current_thread);
+  INLINE bool is_in_view(const DrawMask &camera_mask);
   INLINE bool is_this_node_hidden(const CullTraverser *trav) const;
 
   void apply_transform_and_state(CullTraverser *trav);
@@ -74,6 +77,7 @@ public:
                                  const RenderAttrib *off_clip_planes);
 
   WorkingNodePath _node_path;
+  PandaNodePipelineReader _node_reader;
   CPT(TransformState) _net_transform;
   CPT(RenderState) _state;
   PT(GeometricBoundingVolume) _view_frustum;
@@ -82,7 +86,7 @@ public:
   DrawMask _draw_mask;
 
 private:
-  bool is_in_view_impl(Thread *current_thread);
+  bool is_in_view_impl();
   int test_within_clip_planes_impl(const CullTraverser *trav,
                                    const ClipPlaneAttrib *cpa) const;
 

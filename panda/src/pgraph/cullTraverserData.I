@@ -26,8 +26,10 @@ CullTraverserData(const NodePath &start,
                   const TransformState *net_transform,
                   const RenderState *state,
                   GeometricBoundingVolume *view_frustum,
-                  GeometricBoundingVolume *guard_band) :
+                  GeometricBoundingVolume *guard_band,
+                  Thread *current_thread) :
   _node_path(start),
+  _node_reader(start.node(), current_thread),
   _net_transform(net_transform),
   _state(state),
   _view_frustum(view_frustum),
@@ -35,6 +37,7 @@ CullTraverserData(const NodePath &start,
   _cull_planes(CullPlanes::make_empty()),
   _draw_mask(DrawMask::all_on())
 {
+  _node_reader.check_bounds();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,6 +48,7 @@ CullTraverserData(const NodePath &start,
 INLINE CullTraverserData::
 CullTraverserData(const CullTraverserData &copy) :
   _node_path(copy._node_path),
+  _node_reader(copy._node_reader),
   _net_transform(copy._net_transform),
   _state(copy._state),
   _view_frustum(copy._view_frustum),
@@ -62,6 +66,7 @@ CullTraverserData(const CullTraverserData &copy) :
 INLINE void CullTraverserData::
 operator = (const CullTraverserData &copy) {
   _node_path = copy._node_path;
+  _node_reader = copy._node_reader;
   _net_transform = copy._net_transform;
   _state = copy._state;
   _view_frustum = copy._view_frustum;
@@ -79,6 +84,7 @@ operator = (const CullTraverserData &copy) {
 INLINE CullTraverserData::
 CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
   _node_path(parent._node_path, child),
+  _node_reader(child, parent._node_reader.get_current_thread()),
   _net_transform(parent._net_transform),
   _state(parent._state),
   _view_frustum(parent._view_frustum),
@@ -86,6 +92,7 @@ CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
   _cull_planes(parent._cull_planes),
   _draw_mask(parent._draw_mask)
 {
+  _node_reader.check_bounds();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,6 +112,28 @@ INLINE CullTraverserData::
 INLINE PandaNode *CullTraverserData::
 node() const {
   return _node_path.node();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::node_reader
+//       Access: Public
+//  Description: Returns the PipelineReader for the node traversed to
+//               so far.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNodePipelineReader *CullTraverserData::
+node_reader() {
+  return &_node_reader;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::node_reader
+//       Access: Public
+//  Description: Returns the PipelineReader for the node traversed to
+//               so far.
+////////////////////////////////////////////////////////////////////
+INLINE const PandaNodePipelineReader *CullTraverserData::
+node_reader() const {
+  return &_node_reader;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,13 +157,13 @@ get_net_transform(const CullTraverser *) const {
 //               work for future nodes.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CullTraverserData::
-is_in_view(const DrawMask &camera_mask, Thread *current_thread) {
-  if (node()->get_transform(current_thread)->is_invalid()) {
+is_in_view(const DrawMask &camera_mask) {
+  if (_node_reader.get_transform()->is_invalid()) {
     // If the transform is invalid, forget it.
     return false;
   }
 
-  if (!node()->compare_draw_mask(_draw_mask, camera_mask, current_thread)) {
+  if (!_node_reader.compare_draw_mask(_draw_mask, camera_mask)) {
     // If there are no draw bits in common with the camera, the node
     // is out.
     return false;
@@ -148,7 +177,7 @@ is_in_view(const DrawMask &camera_mask, Thread *current_thread) {
   }
 
   // Otherwise, compare the bounding volume to the frustum.
-  return is_in_view_impl(current_thread);
+  return is_in_view_impl();
 }
 
 ////////////////////////////////////////////////////////////////////

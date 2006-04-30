@@ -56,13 +56,13 @@ munge_geom(GraphicsStateGuardianBase *gsg,
     GeomPipelineReader geom_reader(_geom, current_thread);
     _munged_data = geom_reader.get_vertex_data();
 
-#ifndef NDEBUG
+#ifdef _DEBUG
     {
       GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
       data_reader.check_array_readers();
       nassertv(geom_reader.check_valid(&data_reader));
     }
-#endif  // NDEBUG
+#endif  // _DEBUG
 
     int geom_rendering = geom_reader.get_geom_rendering();
     geom_rendering = _state->get_geom_rendering(geom_rendering);

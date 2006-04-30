@@ -51,24 +51,22 @@ get_modelview_transform(const CullTraverser *trav) const {
 ////////////////////////////////////////////////////////////////////
 void CullTraverserData::
 apply_transform_and_state(CullTraverser *trav) {
-  Thread *current_thread = trav->get_current_thread();
-  PandaNode *node = _node_path.node();
-  CPT(RenderState) node_state = node->get_state(current_thread);
+  CPT(RenderState) node_state = _node_reader.get_state();
 
   if (trav->has_tag_state_key() && 
-      node->has_tag(trav->get_tag_state_key(), current_thread)) {
+      _node_reader.has_tag(trav->get_tag_state_key())) {
     // Here's a node that has been tagged with the special key for our
     // current camera.  This indicates some special state transition
     // for this node, which is unique to this camera.
     const Camera *camera = trav->get_scene()->get_camera_node();
-    string tag_state = node->get_tag(trav->get_tag_state_key(), current_thread);
+    string tag_state = _node_reader.get_tag(trav->get_tag_state_key());
     node_state = node_state->compose(camera->get_tag_state(tag_state));
   }
-  node->compose_draw_mask(_draw_mask, current_thread);
+  _node_reader.compose_draw_mask(_draw_mask);
 
-  apply_transform_and_state(trav, node->get_transform(current_thread),
-                            node_state, node->get_effects(current_thread),
-                            node->get_off_clip_planes(current_thread));
+  apply_transform_and_state(trav, _node_reader.get_transform(),
+                            node_state, _node_reader.get_effects(),
+                            _node_reader.get_off_clip_planes());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,8 +135,8 @@ apply_transform_and_state(CullTraverser *trav,
 //  Description: The private implementation of is_in_view().
 ////////////////////////////////////////////////////////////////////
 bool CullTraverserData::
-is_in_view_impl(Thread *current_thread) {
-  CPT(BoundingVolume) node_volume = node()->get_bounds(current_thread);
+is_in_view_impl() {
+  CPT(BoundingVolume) node_volume = _node_reader.get_bounds();
   nassertr(node_volume->is_of_type(GeometricBoundingVolume::get_class_type()), false);
   const GeometricBoundingVolume *node_gbv =
     DCAST(GeometricBoundingVolume, node_volume);
@@ -173,7 +171,7 @@ is_in_view_impl(Thread *current_thread) {
     } else {
       // The node is partially, but not completely, within the viewing
       // frustum.
-      if (node()->is_final(current_thread)) {
+      if (_node_reader.is_final()) {
         // Normally we'd keep testing child bounding volumes as we
         // continue down.  But this node has the "final" flag, so the
         // user is claiming that there is some important reason we
@@ -207,7 +205,7 @@ is_in_view_impl(Thread *current_thread) {
       
     } else {
       // The node is partially within one or more clip planes.
-      if (node()->is_final(current_thread)) {
+      if (_node_reader.is_final()) {
         // Even though the node is only partially within the clip
         // planes, stop culling against them.
         _cull_planes = CullPlanes::make_empty();
@@ -230,7 +228,7 @@ test_within_clip_planes_impl(const CullTraverser *trav,
   int result = BoundingVolume::IF_all | BoundingVolume::IF_possible | BoundingVolume::IF_some;
 
 
-  const BoundingVolume *node_volume = node()->get_bounds();
+  const BoundingVolume *node_volume = _node_reader.get_bounds();
   nassertr(node_volume->is_of_type(GeometricBoundingVolume::get_class_type()), result);
   const GeometricBoundingVolume *node_gbv =
     DCAST(GeometricBoundingVolume, node_volume);

@@ -110,12 +110,6 @@ public:
   virtual int get_visible_child() const;
   virtual bool is_renderable() const;
 
-  INLINE void compose_draw_mask(DrawMask &running_draw_mask,
-                                Thread *current_thread) const;
-  INLINE bool compare_draw_mask(DrawMask running_draw_mask,
-                                DrawMask camera_mask, 
-                                Thread *current_thread) const;
-
 PUBLISHED:
   PT(PandaNode) copy_subgraph(Thread *current_thread = Thread::get_current_thread()) const;
 
@@ -280,14 +274,11 @@ protected:
                                Thread *current_thread);
 
 private:
-  class CDataLight;
-  class CDataHeavy;
-  class CDataBounds;
-  class CDataLinks;
+  class CData;
 
-  INLINE int do_find_parent(PandaNode *node, const CDataLinks *cdata) const;
-  int do_find_child(PandaNode *node, const CDataLinks *cdata) const;
-  int do_find_stashed(PandaNode *node, const CDataLinks *cdata) const;
+  INLINE int do_find_parent(PandaNode *node, const CData *cdata) const;
+  int do_find_child(PandaNode *node, const CData *cdata) const;
+  int do_find_stashed(PandaNode *node, const CData *cdata) const;
   bool stage_remove_child(PandaNode *child_node, int pipeline_stage,
                           Thread *current_thread);
   bool stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
@@ -387,21 +378,14 @@ private:
 #endif  // HAVE_PYTHON
 
   
-  // This is the data that must be cycled between pipeline stages.  We
-  // store it in several different CData objects, in an attempt to
-  // minimize overhead caused by cycling data unnecessarily.  The
-  // things that are likely to change often (and at the same time) are
-  // grouped into the same CData object; things that change less often
-  // are grouped into a different one.
+  // This is the data that must be cycled between pipeline stages. 
 
-  // The CDataLight object stores the lightweight parts of the node
-  // that are likely to change fairly often: transform and state.
-  class EXPCL_PANDA CDataLight : public CycleData {
+  class EXPCL_PANDA CData : public CycleData {
   public:
-    INLINE CDataLight();
-    CDataLight(const CDataLight &copy);
-    virtual ~CDataLight();
-    ALLOC_DELETED_CHAIN(CDataLight);
+    CData();
+    CData(const CData &copy);
+    virtual ~CData();
+    ALLOC_DELETED_CHAIN(CData);
 
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
@@ -410,35 +394,19 @@ private:
     virtual TypeHandle get_parent_type() const {
       return PandaNode::get_class_type();
     }
+
+  public:
+    // This section contains the lightweight parts of the node that
+    // are likely to change fairly often: transform and state.
 
     NCPT(RenderState) _state;
     NCPT(TransformState) _transform;
     NCPT(TransformState) _prev_transform;
-  };
 
-  PipelineCycler<CDataLight> _cycler_light;
-  typedef CycleDataReader<CDataLight> CDLightReader;
-  typedef CycleDataWriter<CDataLight> CDLightWriter;
-  typedef CycleDataStageReader<CDataLight> CDLightStageReader;
-  typedef CycleDataStageWriter<CDataLight> CDLightStageWriter;
-
-  // The CDataHeavy object stores the heavierweight parts of the node
-  // that are less likely to change as often: tags, collide mask.
-  class EXPCL_PANDA CDataHeavy : public CycleData {
   public:
-    INLINE CDataHeavy();
-    CDataHeavy(const CDataHeavy &copy);
-    virtual ~CDataHeavy();
-    ALLOC_DELETED_CHAIN(CDataHeavy);
-
-    virtual CycleData *make_copy() const;
-    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
-    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
-    virtual void fillin(DatagramIterator &scan, BamReader *manager);
-    virtual TypeHandle get_parent_type() const {
-      return PandaNode::get_class_type();
-    }
-
+    // This section contains the heavierweight parts of the node that
+    // are less likely to change as often: tags, collide mask.
+    
 #ifdef HAVE_PYTHON
     void inc_py_refs();
     void dec_py_refs();
@@ -475,29 +443,12 @@ private:
     // This is true if the external bounds of this node should be
     // deemed "final".  See set_final().
     bool _final_bounds;
-  };
 
-  PipelineCycler<CDataHeavy> _cycler_heavy;
-  typedef CycleDataReader<CDataHeavy> CDHeavyReader;
-  typedef CycleDataWriter<CDataHeavy> CDHeavyWriter;
-  typedef CycleDataStageReader<CDataHeavy> CDHeavyStageReader;
-  typedef CycleDataStageWriter<CDataHeavy> CDHeavyStageWriter;
-
-  // The CDataBounds object stores the data that is accumulated upward
-  // from the node's children: that is, the external bounding volume,
-  // and conceptually similar things like the net_collide_mask, etc.
-  // None of the data in this object is preserved in a bam file.
-  class EXPCL_PANDA CDataBounds : public CycleData {
   public:
-    INLINE CDataBounds();
-    CDataBounds(const CDataBounds &copy);
-    virtual ~CDataBounds();
-    ALLOC_DELETED_CHAIN(CDataBounds);
-
-    virtual CycleData *make_copy() const;
-    virtual TypeHandle get_parent_type() const {
-      return PandaNode::get_class_type();
-    }
+    // This section contains the data that is accumulated upward from
+    // the node's children: that is, the external bounding volume, and
+    // conceptually similar things like the net_collide_mask, etc.
+    // None of the data in this object is preserved in a bam file.
 
     // This is the union of all into_collide_mask bits for any nodes
     // at and below this level.
@@ -518,30 +469,10 @@ private:
 
     // When _last_update != _next_update, this cache is stale.
     UpdateSeq _last_update, _next_update;
-  };
 
-  PipelineCycler<CDataBounds> _cycler_bounds;
-  typedef CycleDataReader<CDataBounds> CDBoundsReader;
-  typedef CycleDataWriter<CDataBounds> CDBoundsWriter;
-  typedef CycleDataStageReader<CDataBounds> CDBoundsStageReader;
-  typedef CycleDataStageWriter<CDataBounds> CDBoundsStageWriter;
-
-  // The CDataLinks object stores the links to other nodes above and
-  // below this node in the graph.
-  class EXPCL_PANDA CDataLinks : public CycleData {
   public:
-    INLINE CDataLinks();
-    CDataLinks(const CDataLinks &copy);
-    virtual ~CDataLinks();
-    ALLOC_DELETED_CHAIN(CDataLinks);
-
-    virtual CycleData *make_copy() const;
-    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
-    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
-    virtual void fillin(DatagramIterator &scan, BamReader *manager);
-    virtual TypeHandle get_parent_type() const {
-      return PandaNode::get_class_type();
-    }
+    // This section stores the links to other nodes above and below
+    // this node in the graph.
 
     void write_up_list(const Up &up_list,
                        BamWriter *manager, Datagram &dg) const;
@@ -571,14 +502,13 @@ private:
     PT(Up) _up;
   };
 
-  PipelineCycler<CDataLinks> _cycler_links;
-  typedef CycleDataReader<CDataLinks> CDLinksReader;
-  typedef CycleDataWriter<CDataLinks> CDLinksWriter;
-  typedef CycleDataStageReader<CDataLinks> CDLinksStageReader;
-  typedef CycleDataStageWriter<CDataLinks> CDLinksStageWriter;
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
-  CDBoundsStageWriter update_bounds(int pipeline_stage,
-                                    CDBoundsStageReader &cdata);
+  CDStageWriter update_bounds(int pipeline_stage, CDStageReader &cdata);
 
   static DrawMask _overall_bit;
 
@@ -595,7 +525,7 @@ public:
   class EXPCL_PANDA Children {
   public:
     INLINE Children();
-    INLINE Children(const CDataLinks *cdata);
+    INLINE Children(const CData *cdata);
     INLINE Children(const Children &copy);
     INLINE void operator = (const Children &copy);
 
@@ -611,7 +541,7 @@ public:
   class EXPCL_PANDA Stashed {
   public:
     INLINE Stashed();
-    INLINE Stashed(const CDataLinks *cdata);
+    INLINE Stashed(const CData *cdata);
     INLINE Stashed(const Stashed &copy);
     INLINE void operator = (const Stashed &copy);
 
@@ -627,7 +557,7 @@ public:
   class EXPCL_PANDA Parents {
   public:
     INLINE Parents();
-    INLINE Parents(const CDataLinks *cdata);
+    INLINE Parents(const CData *cdata);
     INLINE Parents(const Parents &copy);
     INLINE void operator = (const Parents &copy);
 
@@ -678,6 +608,70 @@ private:
   friend class NodePath;
   friend class NodePathComponent;
   friend class WorkingNodePath;
+  friend class PandaNodePipelineReader;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : PandaNodePipelineReader
+// Description : Encapsulates the data from a PandaNode,
+//               pre-fetched for one stage of the pipeline.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA PandaNodePipelineReader {
+public:
+  INLINE PandaNodePipelineReader(const PandaNode *object, Thread *current_thread);
+  INLINE PandaNodePipelineReader(const PandaNodePipelineReader &copy);
+  INLINE void operator = (const PandaNodePipelineReader &copy);
+
+public:
+  INLINE ~PandaNodePipelineReader();
+  ALLOC_DELETED_CHAIN(PandaNodePipelineReader);
+
+  INLINE const PandaNode *get_object() const;
+  INLINE Thread *get_current_thread() const;
+
+  INLINE void release();
+
+  INLINE void check_bounds() const;
+
+  INLINE void compose_draw_mask(DrawMask &running_draw_mask) const;
+  INLINE bool compare_draw_mask(DrawMask running_draw_mask,
+                                DrawMask camera_mask) const;
+  
+  INLINE int get_num_parents() const;
+  INLINE PandaNode *get_parent(int n) const;
+  INLINE int find_parent(PandaNode *node) const;
+
+  INLINE int get_num_children() const;
+  INLINE PandaNode *get_child(int n) const;
+  INLINE int get_child_sort(int n) const;
+  INLINE int find_child(PandaNode *node) const;
+
+  INLINE int get_num_stashed() const;
+  INLINE PandaNode *get_stashed(int n) const;
+  INLINE int get_stashed_sort(int n) const;
+  INLINE int find_stashed(PandaNode *node) const;
+
+  INLINE const RenderState *get_state() const;
+  INLINE const RenderEffects *get_effects() const;
+  INLINE const TransformState *get_transform() const;
+  INLINE const TransformState *get_prev_transform() const;
+
+  INLINE string get_tag(const string &key) const;
+  INLINE bool has_tag(const string &key) const;
+
+  INLINE CollideMask get_net_collide_mask() const;
+  INLINE CPT(RenderAttrib) get_off_clip_planes() const;
+  INLINE CPT(BoundingVolume) get_bounds() const;
+  INLINE bool is_final() const;
+
+  INLINE PandaNode::Children get_children() const;
+  INLINE PandaNode::Stashed get_stashed() const;
+  INLINE PandaNode::Parents get_parents() const;
+
+private:
+  const PandaNode *_object;
+  Thread *_current_thread;
+  const PandaNode::CData *_cdata;
 };
 
 INLINE ostream &operator << (ostream &out, const PandaNode &node) {

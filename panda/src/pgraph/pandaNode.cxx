@@ -102,7 +102,7 @@ PandaNode::
   // there's a refcount fault somewhere.
 #ifndef NDEBUG
   {
-    CDLinksReader cdata(_cycler_links);
+    CDReader cdata(_cycler);
     nassertv(cdata->get_up()->empty());
   }
 #endif  // NDEBUG
@@ -136,8 +136,8 @@ PandaNode(const PandaNode &copy) :
 
   // Copy the other node's state.
   {
-    CDLightReader copy_cdata(copy._cycler_light);
-    CDLightWriter cdata(_cycler_light, true);
+    CDReader copy_cdata(copy._cycler);
+    CDWriter cdata(_cycler, true);
     cdata->_state = copy_cdata->_state;
     cdata->_transform = copy_cdata->_transform;
     cdata->_prev_transform = copy_cdata->_prev_transform;
@@ -146,8 +146,8 @@ PandaNode(const PandaNode &copy) :
     }
   }
   {
-    CDHeavyReader copy_cdata(copy._cycler_heavy);
-    CDHeavyWriter cdata(_cycler_heavy, true);
+    CDReader copy_cdata(copy._cycler);
+    CDWriter cdata(_cycler, true);
     cdata->_effects = copy_cdata->_effects;
     cdata->_tag_data = copy_cdata->_tag_data;
     cdata->_draw_control_mask = copy_cdata->_draw_control_mask;
@@ -577,19 +577,19 @@ add_child(PandaNode *child_node, int sort, Thread *current_thread) {
 
   // Apply this operation to the current stage as well as to all
   // upstream stages.
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_links, current_thread) {
-    CDLinksStageWriter cdata(_cycler_links, pipeline_stage, current_thread);
-    CDLinksStageWriter cdata_child(child_node->_cycler_links, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    CDStageWriter cdata_child(child_node->_cycler, pipeline_stage, current_thread);
     
     cdata->modify_down()->insert(DownConnection(child_node, sort));
     cdata_child->modify_up()->insert(UpConnection(this));
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_links);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler_links, current_thread) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler, current_thread) {
     new_connection(this, child_node, pipeline_stage, current_thread);
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler_links);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler);
 
   force_bounds_stale();
   children_changed();
@@ -606,12 +606,12 @@ remove_child(int child_index, Thread *current_thread) {
   int pipeline_stage = current_thread->get_pipeline_stage();
   nassertv(pipeline_stage == 0);
 
-  CDLinksStageWriter cdata(_cycler_links, pipeline_stage, current_thread);
+  CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
   Down &down = *cdata->modify_down();
   nassertv(child_index >= 0 && child_index < (int)down.size());
   
   PT(PandaNode) child_node = down[child_index].get_child();
-  CDLinksStageWriter cdata_child(child_node->_cycler_links, pipeline_stage, 
+  CDStageWriter cdata_child(child_node->_cycler, pipeline_stage, 
                                  current_thread);
   Up &up = *cdata_child->modify_up();
 
@@ -645,7 +645,7 @@ remove_child(PandaNode *child_node, Thread *current_thread) {
   // We have to do this for each upstream pipeline stage.
   bool any_removed = false;
 
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler_links, current_thread) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler, current_thread) {
     if (stage_remove_child(child_node, pipeline_stage, current_thread)) {
       any_removed = true;
 
@@ -653,7 +653,7 @@ remove_child(PandaNode *child_node, Thread *current_thread) {
       force_bounds_stale(pipeline_stage, current_thread);
     }
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler_links);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler);
 
   if (any_removed) {
     // Call callback hooks.
@@ -690,12 +690,12 @@ replace_child(PandaNode *orig_child, PandaNode *new_child,
   // We have to do this for each upstream pipeline stage.
   bool any_replaced = false;
 
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_links, current_thread) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     if (stage_replace_child(orig_child, new_child, pipeline_stage, current_thread)) {
       any_replaced = true;
     }
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_links);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
   if (any_replaced) {
     children_changed();
@@ -736,8 +736,8 @@ stash_child(int child_index, Thread *current_thread) {
   remove_child(child_index);
 
   {
-    CDLinksStageWriter cdata(_cycler_links, pipeline_stage, current_thread);
-    CDLinksStageWriter cdata_child(child_node->_cycler_links, pipeline_stage, current_thread);
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    CDStageWriter cdata_child(child_node->_cycler, pipeline_stage, current_thread);
     
     cdata->modify_stashed()->insert(DownConnection(child_node, sort));
     cdata_child->modify_up()->insert(UpConnection(this));
@@ -782,8 +782,8 @@ unstash_child(int stashed_index, Thread *current_thread) {
   remove_stashed(stashed_index);
   
   {
-    CDLinksWriter cdata(_cycler_links);
-    CDLinksWriter cdata_child(child_node->_cycler_links);
+    CDWriter cdata(_cycler);
+    CDWriter cdata_child(child_node->_cycler);
 
     cdata->modify_down()->insert(DownConnection(child_node, sort));
     cdata_child->modify_up()->insert(UpConnection(this));
@@ -820,8 +820,8 @@ add_stashed(PandaNode *child_node, int sort, Thread *current_thread) {
   remove_child(child_node);
 
   {
-    CDLinksWriter cdata(_cycler_links);
-    CDLinksWriter cdata_child(child_node->_cycler_links);
+    CDWriter cdata(_cycler);
+    CDWriter cdata_child(child_node->_cycler);
     
     cdata->modify_stashed()->insert(DownConnection(child_node, sort));
     cdata_child->modify_up()->insert(UpConnection(this));
@@ -844,12 +844,12 @@ remove_stashed(int child_index, Thread *current_thread) {
   int pipeline_stage = current_thread->get_pipeline_stage();
   nassertv(pipeline_stage == 0);
 
-  CDLinksStageWriter cdata(_cycler_links, pipeline_stage, current_thread);
+  CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
   Down &stashed = *cdata->modify_stashed();
   nassertv(child_index >= 0 && child_index < (int)stashed.size());
   
   PT(PandaNode) child_node = stashed[child_index].get_child();
-  CDLinksStageWriter cdata_child(child_node->_cycler_links, pipeline_stage, current_thread);
+  CDStageWriter cdata_child(child_node->_cycler, pipeline_stage, current_thread);
 
   stashed.erase(stashed.begin() + child_index);
   int num_erased = cdata_child->modify_up()->erase(UpConnection(this));
@@ -874,13 +874,13 @@ remove_stashed(int child_index, Thread *current_thread) {
 void PandaNode::
 remove_all_children(Thread *current_thread) {
   // We have to do this for each upstream pipeline stage.
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_links, current_thread) {
-    CDLinksStageWriter cdata(_cycler_links, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     Down &down = *cdata->modify_down();
     Down::iterator di;
     for (di = down.begin(); di != down.end(); ++di) {
       PT(PandaNode) child_node = (*di).get_child();
-      CDLinksStageWriter cdata_child(child_node->_cycler_links, pipeline_stage,
+      CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
                                      current_thread);
       cdata_child->modify_up()->erase(UpConnection(this));
       
@@ -892,7 +892,7 @@ remove_all_children(Thread *current_thread) {
     Down &stashed = *cdata->modify_stashed();
     for (di = stashed.begin(); di != stashed.end(); ++di) {
       PT(PandaNode) child_node = (*di).get_child();
-      CDLinksStageWriter cdata_child(child_node->_cycler_links, pipeline_stage,
+      CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
                                      current_thread);
       cdata_child->modify_up()->erase(UpConnection(this));
       
@@ -901,7 +901,7 @@ remove_all_children(Thread *current_thread) {
     }
     stashed.clear();
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_links);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
   force_bounds_stale();
   children_changed();
@@ -988,8 +988,8 @@ set_attrib(const RenderAttrib *attrib, int override) {
   // upstream stages.
   bool any_changed = false;
   Thread *current_thread = Thread::get_current_thread();
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light, current_thread) {
-    CDLightStageWriter cdata(_cycler_light, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     
     CPT(RenderState) new_state = cdata->_state->add_attrib(attrib, override);
     if (cdata->_state != new_state) {
@@ -997,7 +997,7 @@ set_attrib(const RenderAttrib *attrib, int override) {
       any_changed = true;
     }
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
   // Maybe we changed a ClipPlaneAttrib.
   if (any_changed) {
@@ -1019,8 +1019,8 @@ clear_attrib(TypeHandle type) {
   bool any_changed = false;
 
   Thread *current_thread = Thread::get_current_thread();
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light, current_thread) {
-    CDLightStageWriter cdata(_cycler_light, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     
     CPT(RenderState) new_state = cdata->_state->remove_attrib(type);
     if (cdata->_state != new_state) {
@@ -1028,7 +1028,7 @@ clear_attrib(TypeHandle type) {
       any_changed = true;
     }
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
   // We mark the bounds stale when the state changes, in case
   // we have changed a ClipPlaneAttrib.
@@ -1050,11 +1050,11 @@ set_effect(const RenderEffect *effect) {
   // Apply this operation to the current stage as well as to all
   // upstream stages.
   Thread *current_thread = Thread::get_current_thread();
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
-    CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = cdata->_effects->add_effect(effect);
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1066,11 +1066,11 @@ set_effect(const RenderEffect *effect) {
 void PandaNode::
 clear_effect(TypeHandle type) {
   Thread *current_thread = Thread::get_current_thread();
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
-    CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = cdata->_effects->remove_effect(type);
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1088,14 +1088,14 @@ set_state(const RenderState *state, Thread *current_thread) {
   // Apply this operation to the current stage as well as to all
   // upstream stages.
   bool any_changed = false;
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light, current_thread) {
-    CDLightStageWriter cdata(_cycler_light, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     if (cdata->_state != state) {
       cdata->_state = state;
       any_changed = true;
     }
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
   // Maybe we have changed a ClipPlaneAttrib.
   if (any_changed) {
@@ -1116,11 +1116,11 @@ void PandaNode::
 set_effects(const RenderEffects *effects, Thread *current_thread) {
   // Apply this operation to the current stage as well as to all
   // upstream stages.
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
-    CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = effects;
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1135,8 +1135,8 @@ set_transform(const TransformState *transform, Thread *current_thread) {
   // Apply this operation to the current stage as well as to all
   // upstream stages.
   bool any_changed = false;
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light, current_thread) {
-    CDLightStageWriter cdata(_cycler_light, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     if (cdata->_transform != transform) {
       cdata->_transform = transform;
       any_changed = true;
@@ -1148,7 +1148,7 @@ set_transform(const TransformState *transform, Thread *current_thread) {
       }
     }
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
   if (any_changed) {
     mark_bounds_stale(current_thread);
@@ -1168,8 +1168,8 @@ void PandaNode::
 set_prev_transform(const TransformState *transform, Thread *current_thread) {
   // Apply this operation to the current stage as well as to all
   // upstream stages.
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light, current_thread) {
-    CDLightStageWriter cdata(_cycler_light, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_prev_transform = transform;
     if (pipeline_stage == 0) {
       if (cdata->_transform != cdata->_prev_transform) {
@@ -1179,7 +1179,7 @@ set_prev_transform(const TransformState *transform, Thread *current_thread) {
       }
     }
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1196,11 +1196,11 @@ reset_prev_transform(Thread *current_thread) {
   // upstream stages.
   clear_dirty_prev_transform();
 
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light, current_thread) {
-    CDLightStageWriter cdata(_cycler_light, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_prev_transform = cdata->_transform;
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_light);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1225,7 +1225,7 @@ reset_all_prev_transform(Thread *current_thread) {
     nassertv(panda_node->_dirty_prev_transform);
     panda_node->_dirty_prev_transform = false;
     
-    CDLightStageWriter cdata(panda_node->_cycler_light, 0, current_thread);
+    CDStageWriter cdata(panda_node->_cycler, 0, current_thread);
     cdata->_prev_transform = cdata->_transform;
 
     list_node = panda_node->_next;
@@ -1256,11 +1256,11 @@ void PandaNode::
 set_tag(const string &key, const string &value, Thread *current_thread) {
   // Apply this operation to the current stage as well as to all
   // upstream stages.
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
-    CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_tag_data[key] = value;
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1272,11 +1272,11 @@ set_tag(const string &key, const string &value, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 clear_tag(const string &key, Thread *current_thread) {
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
-    CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_tag_data.erase(key);
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 #ifdef HAVE_PYTHON
@@ -1300,7 +1300,7 @@ set_python_tag(const string &key, PyObject *value) {
   int pipeline_stage = current_thread->get_pipeline_stage();
   nassertv(pipeline_stage == 0);
 
-  CDHeavyWriter cdata(_cycler_heavy);
+  CDWriter cdata(_cycler);
   Py_XINCREF(value);
 
   pair<PythonTagData::iterator, bool> result;
@@ -1329,7 +1329,7 @@ set_python_tag(const string &key, PyObject *value) {
 ////////////////////////////////////////////////////////////////////
 PyObject *PandaNode::
 get_python_tag(const string &key) const {
-  CDHeavyReader cdata(_cycler_heavy);
+  CDReader cdata(_cycler);
   PythonTagData::const_iterator ti;
   ti = cdata->_python_tag_data.find(key);
   if (ti != cdata->_python_tag_data.end()) {
@@ -1351,7 +1351,7 @@ get_python_tag(const string &key) const {
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
 has_python_tag(const string &key) const {
-  CDHeavyReader cdata(_cycler_heavy);
+  CDReader cdata(_cycler);
   PythonTagData::const_iterator ti;
   ti = cdata->_python_tag_data.find(key);
   return (ti != cdata->_python_tag_data.end());
@@ -1373,7 +1373,7 @@ clear_python_tag(const string &key) {
   int pipeline_stage = current_thread->get_pipeline_stage();
   nassertv(pipeline_stage == 0);
 
-  CDHeavyWriter cdata(_cycler_heavy, current_thread);
+  CDWriter cdata(_cycler, current_thread);
   PythonTagData::iterator ti;
   ti = cdata->_python_tag_data.find(key);
   if (ti != cdata->_python_tag_data.end()) {
@@ -1402,9 +1402,9 @@ copy_tags(PandaNode *other) {
   // Apply this operation to the current stage as well as to all
   // upstream stages.
   Thread *current_thread = Thread::get_current_thread();
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
-    CDHeavyStageWriter cdataw(_cycler_heavy, pipeline_stage, current_thread);
-    CDHeavyStageReader cdatar(other->_cycler_heavy, pipeline_stage,
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
+    CDStageReader cdatar(other->_cycler, pipeline_stage,
                               current_thread);
       
     TagData::const_iterator ti;
@@ -1439,7 +1439,7 @@ copy_tags(PandaNode *other) {
     }
 #endif // HAVE_PYTHON
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1456,7 +1456,7 @@ copy_tags(PandaNode *other) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 list_tags(ostream &out, const string &separator) const {
-  CDHeavyReader cdata(_cycler_heavy);
+  CDReader cdata(_cycler);
   if (!cdata->_tag_data.empty()) {
     TagData::const_iterator ti = cdata->_tag_data.begin();
     out << (*ti).first;
@@ -1526,8 +1526,8 @@ adjust_draw_mask(DrawMask show_mask, DrawMask hide_mask, DrawMask clear_mask) {
   bool any_changed = false;
 
   Thread *current_thread = Thread::get_current_thread();
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
-    CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     
     DrawMask draw_control_mask = (cdata->_draw_control_mask | show_mask | hide_mask) & ~clear_mask;
     DrawMask draw_show_mask = (cdata->_draw_show_mask | show_mask) & ~hide_mask;
@@ -1541,7 +1541,7 @@ adjust_draw_mask(DrawMask show_mask, DrawMask hide_mask, DrawMask clear_mask) {
       any_changed = true;
     }
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
   if (any_changed) {
     mark_bounds_stale(current_thread);
@@ -1565,10 +1565,10 @@ DrawMask PandaNode::
 get_net_draw_control_mask() const {
   Thread *current_thread = Thread::get_current_thread();
   int pipeline_stage = current_thread->get_pipeline_stage();
-  CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage, current_thread);
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
     // The cache is stale; it needs to be rebuilt.
-    CDBoundsStageWriter cdataw = 
+    CDStageWriter cdataw = 
       ((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
     return cdataw->_net_draw_control_mask;
   }
@@ -1595,10 +1595,10 @@ DrawMask PandaNode::
 get_net_draw_show_mask() const {
   Thread *current_thread = Thread::get_current_thread();
   int pipeline_stage = current_thread->get_pipeline_stage();
-  CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage, current_thread);
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
     // The cache is stale; it needs to be rebuilt.
-    CDBoundsStageWriter cdataw = 
+    CDStageWriter cdataw = 
       ((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
     return cdataw->_net_draw_show_mask;
   }
@@ -1628,14 +1628,14 @@ set_into_collide_mask(CollideMask mask) {
 
   bool any_changed = false;
   Thread *current_thread = Thread::get_current_thread();
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
-    CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     if (cdata->_into_collide_mask != mask) {
       cdata->_into_collide_mask = mask;
       any_changed = true;
     }
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
   if (any_changed) {
     mark_bounds_stale(current_thread);
@@ -1667,10 +1667,10 @@ get_legal_collide_mask() const {
 CollideMask PandaNode::
 get_net_collide_mask(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
-  CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage, current_thread);
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
     // The cache is stale; it needs to be rebuilt.
-    CDBoundsStageWriter cdataw = 
+    CDStageWriter cdataw = 
       ((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
     return cdataw->_net_collide_mask;
   }
@@ -1687,10 +1687,10 @@ get_net_collide_mask(Thread *current_thread) const {
 CPT(RenderAttrib) PandaNode::
 get_off_clip_planes(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
-  CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage, current_thread);
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
     // The cache is stale; it needs to be rebuilt.
-    CDBoundsStageWriter cdataw = 
+    CDStageWriter cdataw = 
       ((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
     return cdataw->_off_clip_planes;
   }
@@ -1772,15 +1772,15 @@ write(ostream &out, int indent_level) const {
 void PandaNode::
 set_bounds(const BoundingVolume *volume) {
   Thread *current_thread = Thread::get_current_thread();
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
-    CDHeavyStageWriter cdata(_cycler_heavy, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     if (volume == NULL) {
       cdata->_user_bounds = NULL;
     } else {
       cdata->_user_bounds = volume->make_copy();
     }
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   
   mark_internal_bounds_stale();
 }
@@ -1808,12 +1808,12 @@ set_bound(const BoundingVolume *volume) {
 CPT(BoundingVolume) PandaNode::
 get_bounds(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
-  CDBoundsStageReader cdata(_cycler_bounds, pipeline_stage, current_thread);
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
     // The cache is stale; it needs to be rebuilt.
     CPT(BoundingVolume) result;
     {
-      CDBoundsStageWriter cdataw = 
+      CDStageWriter cdataw = 
 	((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
       result = cdataw->_external_bounds;
     }
@@ -1827,7 +1827,7 @@ get_bounds(Thread *current_thread) const {
 //       Access: Published
 //  Description: Indicates that the bounding volume, or something that
 //               influences the bounding volume (or any of the other
-//               things stored in CDataBounds, like net_collide_mask),
+//               things stored in CData, like net_collide_mask),
 //               may have changed for this node, and that it must be
 //               recomputed.
 //
@@ -1842,10 +1842,10 @@ get_bounds(Thread *current_thread) const {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 mark_bounds_stale(Thread *current_thread) const {
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler_links, current_thread) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler, current_thread) {
     mark_bounds_stale(pipeline_stage, current_thread);
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler_links);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1900,9 +1900,9 @@ as_light() {
 ////////////////////////////////////////////////////////////////////
 CPT(BoundingVolume) PandaNode::
 get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
-  CDHeavyStageReader cdata(_cycler_heavy, pipeline_stage, current_thread);
+  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   if (cdata->_internal_bounds_stale) {
-    CDHeavyStageWriter cdataw(((PandaNode *)this)->_cycler_heavy, pipeline_stage, cdata);
+    CDStageWriter cdataw(((PandaNode *)this)->_cycler, pipeline_stage, cdata);
     if (cdataw->_user_bounds != (BoundingVolume *)NULL) {
       cdataw->_internal_bounds = cdataw->_user_bounds;
     } else {
@@ -1926,12 +1926,12 @@ get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
 void PandaNode::
 set_internal_bounds(const BoundingVolume *volume) {
   Thread *current_thread = Thread::get_current_thread();
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy, current_thread) {
-    CDHeavyStageWriter cdataw(_cycler_heavy, pipeline_stage, current_thread);
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
     cdataw->_internal_bounds = volume;
     cdataw->_internal_bounds_stale = false;
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler_heavy);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   mark_bounds_stale(current_thread);
 }
 
@@ -1948,10 +1948,10 @@ set_internal_bounds(const BoundingVolume *volume) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 force_bounds_stale(Thread *current_thread) {
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler_links, current_thread) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler, current_thread) {
     force_bounds_stale(pipeline_stage, current_thread);
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler_links);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1964,7 +1964,7 @@ force_bounds_stale(Thread *current_thread) {
 void PandaNode::
 force_bounds_stale(int pipeline_stage, Thread *current_thread) {
   {
-    CDBoundsStageWriter cdata(_cycler_bounds, pipeline_stage, current_thread);
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     ++cdata->_next_update;
 
     // It is important that we allow this lock to be dropped before we
@@ -1977,7 +1977,7 @@ force_bounds_stale(int pipeline_stage, Thread *current_thread) {
   // through the parents list directly on the node.
   Parents parents;
   {
-    CDLinksStageReader cdata(_cycler_links, pipeline_stage, current_thread);
+    CDStageReader cdata(_cycler, pipeline_stage, current_thread);
     parents = Parents(cdata);
   }
   int num_parents = parents.get_num_parents();
@@ -2001,10 +2001,10 @@ force_bounds_stale(int pipeline_stage, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 mark_internal_bounds_stale(Thread *current_thread) {
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler_links, current_thread) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler, current_thread) {
     mark_internal_bounds_stale(pipeline_stage, current_thread);
   }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler_links);
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2123,7 +2123,7 @@ r_copy_subgraph(PandaNode::InstanceMap &inst_map, Thread *current_thread) const 
 void PandaNode::
 r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
                 Thread *current_thread) {
-  CDLinksReader from_cdata(from->_cycler_links, current_thread);
+  CDReader from_cdata(from->_cycler, current_thread);
   const Down &from_down = *from_cdata->get_down();
   Down::const_iterator di;
   for (di = from_down.begin(); di != from_down.end(); ++di) {
@@ -2154,7 +2154,7 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
 //  Description: The private implementation of find_child().
 ////////////////////////////////////////////////////////////////////
 int PandaNode::
-do_find_child(PandaNode *node, const CDataLinks *cdata) const {
+do_find_child(PandaNode *node, const CData *cdata) const {
   nassertr(node != (PandaNode *)NULL, -1);
 
   // We have to search for the child by brute force, since we don't
@@ -2176,7 +2176,7 @@ do_find_child(PandaNode *node, const CDataLinks *cdata) const {
 //  Description: The private implementation of find_stashed().
 ////////////////////////////////////////////////////////////////////
 int PandaNode::
-do_find_stashed(PandaNode *node, const CDataLinks *cdata) const {
+do_find_stashed(PandaNode *node, const CData *cdata) const {
   nassertr(node != (PandaNode *)NULL, -1);
 
   // We have to search for the child by brute force, since we don't
@@ -2202,11 +2202,11 @@ do_find_stashed(PandaNode *node, const CDataLinks *cdata) const {
 bool PandaNode::
 stage_remove_child(PandaNode *child_node, int pipeline_stage,
                    Thread *current_thread) {
-  CDLinksStageWriter cdata(_cycler_links, pipeline_stage, current_thread);
+  CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
       
   // First, look for the parent in the child's up list, to ensure the
   // child is known.
-  CDLinksStageWriter cdata_child(child_node->_cycler_links, pipeline_stage,
+  CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
                                  current_thread);
   int parent_index = child_node->do_find_parent(this, cdata_child);
   if (parent_index < 0) {
@@ -2251,9 +2251,9 @@ bool PandaNode::
 stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
                     int pipeline_stage, Thread *current_thread) {
   {
-    CDLinksStageWriter cdata(_cycler_links, pipeline_stage, current_thread);
-    CDLinksStageWriter cdata_orig_child(orig_child->_cycler_links, pipeline_stage, current_thread);
-    CDLinksStageWriter cdata_new_child(new_child->_cycler_links, pipeline_stage, current_thread);
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    CDStageWriter cdata_orig_child(orig_child->_cycler, pipeline_stage, current_thread);
+    CDStageWriter cdata_new_child(new_child->_cycler, pipeline_stage, current_thread);
     
     // First, look for the parent in the child's up list, to ensure the
     // child is known.
@@ -2392,8 +2392,8 @@ detach_one_stage(NodePathComponent *child, int pipeline_stage,
   PT(PandaNode) child_node = child->get_node();
   PT(PandaNode) parent_node = child->get_next(pipeline_stage, current_thread)->get_node();
     
-  CDLinksStageWriter cdata_parent(parent_node->_cycler_links, pipeline_stage, current_thread);
-  CDLinksStageWriter cdata_child(child_node->_cycler_links, pipeline_stage, current_thread);
+  CDStageWriter cdata_parent(parent_node->_cycler, pipeline_stage, current_thread);
+  CDStageWriter cdata_child(child_node->_cycler, pipeline_stage, current_thread);
   int parent_index = child_node->do_find_parent(parent_node, cdata_child);
   if (parent_index >= 0) {
     // Now look for the child and break the actual connection.
@@ -2498,7 +2498,7 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
     PandaNode *parent_node = new_parent->get_node();
 
     {
-      CDLinksStageReader cdata_child(child_node->_cycler_links, pipeline_stage, current_thread);
+      CDStageReader cdata_child(child_node->_cycler, pipeline_stage, current_thread);
       int parent_index = child_node->do_find_parent(parent_node, cdata_child);
 
       if (parent_index >= 0) {
@@ -2512,8 +2512,8 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
     
     // Now reattach the child node at the indicated sort position.
     {
-      CDLinksStageWriter cdata_parent(parent_node->_cycler_links, pipeline_stage, current_thread);
-      CDLinksStageWriter cdata_child(child_node->_cycler_links, pipeline_stage, current_thread);
+      CDStageWriter cdata_parent(parent_node->_cycler, pipeline_stage, current_thread);
+      CDStageWriter cdata_child(child_node->_cycler, pipeline_stage, current_thread);
 
       if (as_stashed) {
         cdata_parent->modify_stashed()->insert(DownConnection(child_node, sort));
@@ -2566,7 +2566,7 @@ get_component(NodePathComponent *parent, PandaNode *child_node,
     
   // We don't already have a NodePathComponent referring to this
   // parent-child relationship.  Are they actually related?
-  CDLinksStageReader cdata_child(child_node->_cycler_links, pipeline_stage, current_thread);
+  CDStageReader cdata_child(child_node->_cycler, pipeline_stage, current_thread);
   int parent_index = child_node->do_find_parent(parent_node, cdata_child);
   
   if (parent_index >= 0) {
@@ -2668,7 +2668,7 @@ r_get_generic_component(bool accept_ambiguity, bool &ambiguity_detected,
   PT(PandaNode) parent_node;
 
   {
-    CDLinksStageReader cdata(_cycler_links, pipeline_stage, current_thread);
+    CDStageReader cdata(_cycler, pipeline_stage, current_thread);
     
     int num_parents = cdata->get_up()->size();
     if (num_parents == 0) {
@@ -2813,7 +2813,7 @@ fix_path_lengths(int pipeline_stage, Thread *current_thread) {
     Children children;
     Stashed stashed;
     {
-      CDLinksStageReader cdata(_cycler_links, pipeline_stage, current_thread);
+      CDStageReader cdata(_cycler, pipeline_stage, current_thread);
       children = Children(cdata);
       stashed = Stashed(cdata);
     }
@@ -2867,8 +2867,8 @@ r_list_descendants(ostream &out, int indent_level) const {
 //               The old value should be passed in; it will be
 //               released.  The new value is returned.
 ////////////////////////////////////////////////////////////////////
-PandaNode::CDBoundsStageWriter PandaNode::
-update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
+PandaNode::CDStageWriter PandaNode::
+update_bounds(int pipeline_stage, PandaNode::CDStageReader &cdata) {
   // We might need to try this a couple of times, in case someone else
   // steps on our result.
   if (drawmask_cat.is_debug()) {
@@ -2881,8 +2881,8 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
     // Grab the last_update counter, then release the lock.
     UpdateSeq last_update = cdata->_last_update;
     UpdateSeq next_update = cdata->_next_update;
-    nassertr(last_update != next_update, CDBoundsStageWriter(_cycler_bounds, pipeline_stage, cdata));
-    _cycler_bounds.release_read_stage(pipeline_stage, cdata.take_pointer());
+    nassertr(last_update != next_update, CDStageWriter(_cycler, pipeline_stage, cdata));
+    _cycler.release_read_stage(pipeline_stage, cdata.take_pointer());
 
     // Start with a clean slate, or at least with the contents of the
     // node itself.
@@ -2891,7 +2891,7 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
     DrawMask draw_control_mask, draw_show_mask;
     bool renderable = is_renderable();
     {
-      CDHeavyStageReader cdata(_cycler_heavy, pipeline_stage, current_thread);
+      CDStageReader cdata(_cycler, pipeline_stage, current_thread);
       net_collide_mask = cdata->_into_collide_mask;
       draw_control_mask = net_draw_control_mask = cdata->_draw_control_mask;
       draw_show_mask = net_draw_show_mask = cdata->_draw_show_mask;
@@ -2916,7 +2916,7 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
     }
     CPT(RenderAttrib) off_clip_planes;
     {
-      CDLightStageReader cdata(_cycler_light, pipeline_stage, current_thread);
+      CDStageReader cdata(_cycler, pipeline_stage, current_thread);
       off_clip_planes = cdata->_state->get_clip_plane();
     }
     if (off_clip_planes == (RenderAttrib *)NULL) {
@@ -2945,10 +2945,10 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
 
       const ClipPlaneAttrib *orig_cp = DCAST(ClipPlaneAttrib, off_clip_planes);
       
-      CDBoundsStageReader child_cdata(child->_cycler_bounds, pipeline_stage, current_thread);
+      CDStageReader child_cdata(child->_cycler, pipeline_stage, current_thread);
       if (child_cdata->_last_update != child_cdata->_next_update) {
 	// Child needs update.
-	CDBoundsStageWriter child_cdataw = child->update_bounds(pipeline_stage, child_cdata);
+	CDStageWriter child_cdataw = child->update_bounds(pipeline_stage, child_cdata);
       
 	net_collide_mask |= child_cdataw->_net_collide_mask;
 
@@ -3028,7 +3028,7 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
 
     {
       // Now grab the write lock on this node.
-      CDBoundsStageWriter cdataw(_cycler_bounds, pipeline_stage, current_thread);
+      CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
       if (last_update == cdataw->_last_update && 
 	  next_update == cdataw->_next_update) {
 	// Great, no one has monkeyed with these while we were computing
@@ -3089,12 +3089,12 @@ update_bounds(int pipeline_stage, PandaNode::CDBoundsStageReader &cdata) {
 
     // We need to go around again.  Release the write lock, and grab
     // the read lock back.
-    cdata = CDBoundsStageReader(_cycler_bounds, pipeline_stage, current_thread);
+    cdata = CDStageReader(_cycler, pipeline_stage, current_thread);
 
     if (cdata->_last_update == cdata->_next_update) {
       // Someone else has computed the cache for us while we were
       // diddling with the locks.  OK.
-      return CDBoundsStageWriter(_cycler_bounds, pipeline_stage, cdata);
+      return CDStageWriter(_cycler, pipeline_stage, cdata);
     }
 
   } while (true);
@@ -3122,9 +3122,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
   dg.add_string(get_name());
 
-  manager->write_cdata(dg, _cycler_light);
-  manager->write_cdata(dg, _cycler_heavy);
-  manager->write_cdata(dg, _cycler_links);
+  manager->write_cdata(dg, _cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3182,9 +3180,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   string name = scan.get_string();
   set_name(name);
 
-  manager->read_cdata(scan, _cycler_light);
-  manager->read_cdata(scan, _cycler_heavy);
-  manager->read_cdata(scan, _cycler_links);
+  manager->read_cdata(scan, _cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3203,60 +3199,143 @@ fillin_recorder(DatagramIterator &scan, BamReader *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLight::Copy Constructor
+//     Function: PandaNode::CData::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PandaNode::CDataLight::
-CDataLight(const PandaNode::CDataLight &copy) :
+PandaNode::CData::
+CData() {
+  _state = RenderState::make_empty();
+  _transform = TransformState::make_identity();
+  _prev_transform = TransformState::make_identity();
+
+  _effects = RenderEffects::make_empty();
+  _draw_control_mask = DrawMask::all_off();
+  _draw_show_mask = DrawMask::all_on();
+  _into_collide_mask = CollideMask::all_off();
+  _user_bounds = NULL;
+  _internal_bounds = NULL;
+  _internal_bounds_stale = true;
+  _final_bounds = false;
+
+  _net_collide_mask = CollideMask::all_off();
+  _net_draw_control_mask = DrawMask::all_off();
+  _net_draw_show_mask = DrawMask::all_off();
+  ++_next_update;
+
+  _down = new PandaNode::Down;
+  _stashed = new PandaNode::Down;
+  _up = new PandaNode::Up;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+PandaNode::CData::
+CData(const PandaNode::CData &copy) :
   _state(copy._state),
   _transform(copy._transform),
-  _prev_transform(copy._prev_transform)
+  _prev_transform(copy._prev_transform),
+
+  _effects(copy._effects),
+  _tag_data(copy._tag_data),
+  _draw_control_mask(copy._draw_control_mask),
+  _draw_show_mask(copy._draw_show_mask),
+  _into_collide_mask(copy._into_collide_mask),
+  _user_bounds(copy._user_bounds),
+  _internal_bounds(copy._internal_bounds),
+  _internal_bounds_stale(copy._internal_bounds_stale),
+  _final_bounds(copy._final_bounds),
+
+  _net_collide_mask(copy._net_collide_mask),
+  _net_draw_control_mask(copy._net_draw_control_mask),
+  _net_draw_show_mask(copy._net_draw_show_mask),
+  _off_clip_planes(copy._off_clip_planes),
+  _external_bounds(copy._external_bounds),
+  _last_update(copy._last_update),
+  _next_update(copy._next_update),
+
+  _down(copy._down),
+  _stashed(copy._stashed),
+  _up(copy._up)
 {
   // Note that this copy constructor is not used by the PandaNode copy
   // constructor!  Any elements that must be copied between nodes
   // should also be explicitly copied there.
+
+#ifdef HAVE_PYTHON
+  // Copy and increment all of the Python objects held by the other
+  // node.
+  _python_tag_data = _python_tag_data;
+  inc_py_refs();
+#endif  // HAVE_PYTHON
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLight::Destructor
+//     Function: PandaNode::CData::Destructor
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PandaNode::CDataLight::
-~CDataLight() {
+PandaNode::CData::
+~CData() {
+#ifdef HAVE_PYTHON
+  // Free all of the Python objects held by this node.
+  dec_py_refs();
+#endif  // HAVE_PYTHON
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLight::make_copy
+//     Function: PandaNode::CData::make_copy
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-CycleData *PandaNode::CDataLight::
+CycleData *PandaNode::CData::
 make_copy() const {
-  return new CDataLight(*this);
+  return new CData(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLight::write_datagram
+//     Function: PandaNode::CData::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
 //               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
-void PandaNode::CDataLight::
+void PandaNode::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   manager->write_pointer(dg, _state);
   manager->write_pointer(dg, _transform);
+
+  //
+  manager->write_pointer(dg, _effects);
+
+  dg.add_uint32(_draw_control_mask.get_word());
+  dg.add_uint32(_draw_show_mask.get_word());
+  dg.add_uint32(_into_collide_mask.get_word());
+
+  dg.add_uint32(_tag_data.size());
+  TagData::const_iterator ti;
+  for (ti = _tag_data.begin(); ti != _tag_data.end(); ++ti) {
+    dg.add_string((*ti).first);
+    dg.add_string((*ti).second);
+  }
+
+  //
+  write_up_list(*get_up(), manager, dg);
+  write_down_list(*get_down(), manager, dg);
+  write_down_list(*get_stashed(), manager, dg);
+
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLight::complete_pointers
+//     Function: PandaNode::CData::complete_pointers
 //       Access: Public, Virtual
 //  Description: Receives an array of pointers, one for each time
 //               manager->read_pointer() was called in fillin().
 //               Returns the number of pointers processed.
 ////////////////////////////////////////////////////////////////////
-int PandaNode::CDataLight::
+int PandaNode::CData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CycleData::complete_pointers(p_list, manager);
 
@@ -3276,107 +3355,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   manager->finalize_now((RenderState *)_state.p());
   manager->finalize_now((TransformState *)_transform.p());
 
-  return pi;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLight::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new PandaNode.
-////////////////////////////////////////////////////////////////////
-void PandaNode::CDataLight::
-fillin(DatagramIterator &scan, BamReader *manager) {
-  // Read the state and transform pointers.
-  manager->read_pointer(scan);
-  manager->read_pointer(scan);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataHeavy::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-PandaNode::CDataHeavy::
-CDataHeavy(const PandaNode::CDataHeavy &copy) :
-  _effects(copy._effects),
-  _tag_data(copy._tag_data),
-  _draw_control_mask(copy._draw_control_mask),
-  _draw_show_mask(copy._draw_show_mask),
-  _into_collide_mask(copy._into_collide_mask),
-  _user_bounds(copy._user_bounds),
-  _internal_bounds(copy._internal_bounds),
-  _internal_bounds_stale(copy._internal_bounds_stale),
-  _final_bounds(copy._final_bounds)
-{
-  // Note that this copy constructor is not used by the PandaNode copy
-  // constructor!  Any elements that must be copied between nodes
-  // should also be explicitly copied there.
-
-#ifdef HAVE_PYTHON
-  // Copy and increment all of the Python objects held by the other
-  // node.
-  _python_tag_data = _python_tag_data;
-  inc_py_refs();
-#endif  // HAVE_PYTHON
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataHeavy::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-PandaNode::CDataHeavy::
-~CDataHeavy() {
-#ifdef HAVE_PYTHON
-  // Free all of the Python objects held by this node.
-  dec_py_refs();
-#endif  // HAVE_PYTHON
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataHeavy::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-CycleData *PandaNode::CDataHeavy::
-make_copy() const {
-  return new CDataHeavy(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataHeavy::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
-void PandaNode::CDataHeavy::
-write_datagram(BamWriter *manager, Datagram &dg) const {
-  manager->write_pointer(dg, _effects);
-
-  dg.add_uint32(_draw_control_mask.get_word());
-  dg.add_uint32(_draw_show_mask.get_word());
-  dg.add_uint32(_into_collide_mask.get_word());
-
-  dg.add_uint32(_tag_data.size());
-  TagData::const_iterator ti;
-  for (ti = _tag_data.begin(); ti != _tag_data.end(); ++ti) {
-    dg.add_string((*ti).first);
-    dg.add_string((*ti).second);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataHeavy::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
-int PandaNode::CDataHeavy::
-complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int pi = CycleData::complete_pointers(p_list, manager);
+  //
 
   // Get the effects pointer.
   _effects = DCAST(RenderEffects, p_list[pi++]);
@@ -3391,18 +3370,30 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   // leak (see the comments in TransformState::finalize(), etc.).
   manager->finalize_now((RenderEffects *)_effects.p());
 
+  //
+
+  // Get the parent and child pointers.
+  pi += complete_up_list(*modify_up(), p_list + pi, manager);
+  pi += complete_down_list(*modify_down(), p_list + pi, manager);
+  pi += complete_down_list(*modify_stashed(), p_list + pi, manager);
+
   return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataHeavy::fillin
+//     Function: PandaNode::CData::fillin
 //       Access: Public, Virtual
 //  Description: This internal function is called by make_from_bam to
 //               read in all of the relevant data from the BamFile for
 //               the new PandaNode.
 ////////////////////////////////////////////////////////////////////
-void PandaNode::CDataHeavy::
+void PandaNode::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  // Read the state and transform pointers.
+  manager->read_pointer(scan);
+  manager->read_pointer(scan);
+
+  //
   // Read the effects pointer.
   manager->read_pointer(scan);
 
@@ -3441,16 +3432,22 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     string value = scan.get_string();
     _tag_data[key] = value;
   }
+
+  //
+  fillin_up_list(*modify_up(), scan, manager);
+  fillin_down_list(*modify_down(), scan, manager);
+  fillin_down_list(*modify_stashed(), scan, manager);
+
 }
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataHeavy::inc_py_refs
+//     Function: PandaNode::CData::inc_py_refs
 //       Access: Public
 //  Description: Increments the reference counts on all held Python
 //               objects.
 ////////////////////////////////////////////////////////////////////
-void PandaNode::CDataHeavy::
+void PandaNode::CData::
 inc_py_refs() {
   PythonTagData::const_iterator ti;
   for (ti = _python_tag_data.begin();
@@ -3464,12 +3461,12 @@ inc_py_refs() {
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataHeavy::dec_py_refs
+//     Function: PandaNode::CData::dec_py_refs
 //       Access: Public
 //  Description: Decrements the reference counts on all held Python
 //               objects.
 ////////////////////////////////////////////////////////////////////
-void PandaNode::CDataHeavy::
+void PandaNode::CData::
 dec_py_refs() {
   PythonTagData::const_iterator ti;
   for (ti = _python_tag_data.begin();
@@ -3482,132 +3479,12 @@ dec_py_refs() {
 #endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataBounds::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-PandaNode::CDataBounds::
-CDataBounds(const PandaNode::CDataBounds &copy) :
-  _net_collide_mask(copy._net_collide_mask),
-  _net_draw_control_mask(copy._net_draw_control_mask),
-  _net_draw_show_mask(copy._net_draw_show_mask),
-  _off_clip_planes(copy._off_clip_planes),
-  _external_bounds(copy._external_bounds),
-  _last_update(copy._last_update),
-  _next_update(copy._next_update)
-{
-  // Note that this copy constructor is not used by the PandaNode copy
-  // constructor!  Any elements that must be copied between nodes
-  // should also be explicitly copied there.
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataBounds::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-PandaNode::CDataBounds::
-~CDataBounds() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataBounds::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-CycleData *PandaNode::CDataBounds::
-make_copy() const {
-  return new CDataBounds(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLinks::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-PandaNode::CDataLinks::
-CDataLinks(const PandaNode::CDataLinks &copy) :
-  _down(copy._down),
-  _stashed(copy._stashed),
-  _up(copy._up)
-{
-  // Note that this copy constructor is not used by the PandaNode copy
-  // constructor!  Any elements that must be copied between nodes
-  // should also be explicitly copied there.
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLinks::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-PandaNode::CDataLinks::
-~CDataLinks() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLinks::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-CycleData *PandaNode::CDataLinks::
-make_copy() const {
-  return new CDataLinks(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLinks::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
-void PandaNode::CDataLinks::
-write_datagram(BamWriter *manager, Datagram &dg) const {
-  write_up_list(*get_up(), manager, dg);
-  write_down_list(*get_down(), manager, dg);
-  write_down_list(*get_stashed(), manager, dg);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLinks::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
-int PandaNode::CDataLinks::
-complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int pi = CycleData::complete_pointers(p_list, manager);
-
-  // Get the parent and child pointers.
-  pi += complete_up_list(*modify_up(), p_list + pi, manager);
-  pi += complete_down_list(*modify_down(), p_list + pi, manager);
-  pi += complete_down_list(*modify_stashed(), p_list + pi, manager);
-
-  return pi;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLinks::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new PandaNode.
-////////////////////////////////////////////////////////////////////
-void PandaNode::CDataLinks::
-fillin(DatagramIterator &scan, BamReader *manager) {
-  fillin_up_list(*modify_up(), scan, manager);
-  fillin_down_list(*modify_down(), scan, manager);
-  fillin_down_list(*modify_stashed(), scan, manager);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLinks::write_up_list
+//     Function: PandaNode::CData::write_up_list
 //       Access: Public
 //  Description: Writes the indicated list of parent node pointers to
 //               the datagram.
 ////////////////////////////////////////////////////////////////////
-void PandaNode::CDataLinks::
+void PandaNode::CData::
 write_up_list(const PandaNode::Up &up_list,
               BamWriter *manager, Datagram &dg) const {
   // When we write a PandaNode, we write out its complete list of
@@ -3638,12 +3515,12 @@ write_up_list(const PandaNode::Up &up_list,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLinks::write_down_list
+//     Function: PandaNode::CData::write_down_list
 //       Access: Public
 //  Description: Writes the indicated list of child node pointers to
 //               the datagram.
 ////////////////////////////////////////////////////////////////////
-void PandaNode::CDataLinks::
+void PandaNode::CData::
 write_down_list(const PandaNode::Down &down_list,
                 BamWriter *manager, Datagram &dg) const {
   int num_children = down_list.size();
@@ -3662,12 +3539,12 @@ write_down_list(const PandaNode::Down &down_list,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLinks::complete_up_list
+//     Function: PandaNode::CData::complete_up_list
 //       Access: Public
 //  Description: Calls complete_pointers() on the list of parent node
 //               pointers.
 ////////////////////////////////////////////////////////////////////
-int PandaNode::CDataLinks::
+int PandaNode::CData::
 complete_up_list(PandaNode::Up &up_list,
                  TypedWritable **p_list, BamReader *manager) {
   int pi = 0;
@@ -3694,12 +3571,12 @@ complete_up_list(PandaNode::Up &up_list,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLinks::complete_down_list
+//     Function: PandaNode::CData::complete_down_list
 //       Access: Public
 //  Description: Calls complete_pointers() on the list of child node
 //               pointers.
 ////////////////////////////////////////////////////////////////////
-int PandaNode::CDataLinks::
+int PandaNode::CData::
 complete_down_list(PandaNode::Down &down_list,
                    TypedWritable **p_list, BamReader *manager) {
   int pi = 0;
@@ -3719,13 +3596,13 @@ complete_down_list(PandaNode::Down &down_list,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLinks::fillin_up_list
+//     Function: PandaNode::CData::fillin_up_list
 //       Access: Public
 //  Description: Reads the indicated list parent node pointers from
 //               the datagram (or at least calls read_pointer() for
 //               each one).
 ////////////////////////////////////////////////////////////////////
-void PandaNode::CDataLinks::
+void PandaNode::CData::
 fillin_up_list(PandaNode::Up &up_list,
                DatagramIterator &scan, BamReader *manager) {
   int num_parents = scan.get_uint16();
@@ -3738,13 +3615,13 @@ fillin_up_list(PandaNode::Up &up_list,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::CDataLinks::fillin_down_list
+//     Function: PandaNode::CData::fillin_down_list
 //       Access: Public
 //  Description: Reads the indicated list child node pointers from
 //               the datagram (or at least calls read_pointer() for
 //               each one).
 ////////////////////////////////////////////////////////////////////
-void PandaNode::CDataLinks::
+void PandaNode::CData::
 fillin_down_list(PandaNode::Down &down_list,
                  DatagramIterator &scan, BamReader *manager) {
   int num_children = scan.get_uint16();
