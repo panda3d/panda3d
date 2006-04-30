@@ -28,12 +28,27 @@
 
 #ifdef HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
 // Actually, there appears to be a (maybe fatal) flaw in our
-//implementation of DeletedChain via the atomic exchange operation.
-//Specifically, a pointer may be removed from the head of the chain,
-//then the same pointer reinserted in the chain, while another thread
-//is waiting; and that thread will not detect the change.  For now,
-//then, let's not use this implmentation, and fall back to the mutex.
+// implementation of DeletedChain via the atomic exchange operation.
+// Specifically, a pointer may be removed from the head of the chain,
+// then the same pointer reinserted in the chain, while another thread
+// is waiting; and that thread will not detect the change.  For now,
+// then, let's not use this implementation, and fall back to the mutex.
 //#define DELETED_CHAIN_USE_ATOMIC_EXCHANGE
+#endif
+
+#ifndef NDEBUG
+// In development mode, we defined USE_DELETEDCHAINFLAG, which
+// triggers the piggyback of an additional word of data on every
+// allocated block, so we can ensure that an object is not
+// double-deleted and that the deleted chain remains intact.
+#define USE_DELETEDCHAINFLAG 1
+#endif // NDEBUG
+
+#ifdef USE_DELETEDCHAINFLAG
+enum DeletedChainFlag {
+  DCF_deleted = 0xfeedba0f,
+  DCF_alive = 0x12487654,
+};
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -71,11 +86,23 @@ public:
 private:
   class ObjectNode {
   public:
-    TVOLATILE ObjectNode * TVOLATILE _next;
-#ifndef NDEBUG
+#ifdef USE_DELETEDCHAINFLAG
+    // In development mode, we piggyback this extra data.  This is
+    // maintained out-of-band from the actual pointer returned, so we
+    // can safely use this flag to indicate the difference between
+    // allocated and freed pointers.
     TVOLATILE PN_int32 _flag;
 #endif
+
+    // This pointer sits in the same space referenced by the actual
+    // pointer returned (unlike _flag, above).  It's only used when
+    // the object is deleted, so there's no harm in sharing space with
+    // the undeleted object.
+    TVOLATILE ObjectNode * TVOLATILE _next;
   };
+
+  INLINE static Type *node_to_type(TVOLATILE ObjectNode *node);
+  INLINE static ObjectNode *type_to_node(Type *ptr);
 
   // Ideally, the compiler and linker will unify all references to
   // this static pointer for a given type, as per the C++ spec.
@@ -91,8 +118,6 @@ private:
   static MutexImpl *_lock;
 #endif
 };
-
-static const PN_int32 deleted_chain_flag_hash = 0x12345678;
 
 // Place this macro within a class definition to define appropriate
 // operator new and delete methods that take advantage of
