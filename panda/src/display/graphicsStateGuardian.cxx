@@ -1260,7 +1260,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader) {
   _munger = munger;
   _data_reader = data_reader;
-  nassertr(geom_reader->check_valid(data_reader), false);
   return _data_reader->has_vertex();
 }
 

@@ -86,7 +86,6 @@ private:
   };
 
   PN_int32 _seq;
-  Mutex _lock;
 };
 
 INLINE ostream &operator << (ostream &out, const UpdateSeq &value);

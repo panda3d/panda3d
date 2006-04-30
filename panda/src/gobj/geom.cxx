@@ -1386,6 +1386,7 @@ draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
       GeomPrimitivePipelineReader reader(primitive, _current_thread);
       if (reader.get_num_vertices() != 0) {
         reader.check_minmax();
+        nassertv(reader.check_valid(data_reader));
         primitive->draw(gsg, &reader);
       }
     }

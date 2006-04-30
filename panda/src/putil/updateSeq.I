@@ -23,7 +23,7 @@
 //  Description: Creates an UpdateSeq in the 'initial' state.
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq::
-UpdateSeq() : _lock("UpdateSeq") {
+UpdateSeq() {
   _seq = (unsigned int)SC_initial;
 }
 
@@ -67,7 +67,7 @@ fresh() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq::
-UpdateSeq(const UpdateSeq &copy) : _lock("UpdateSeq") {
+UpdateSeq(const UpdateSeq &copy) {
   _seq = AtomicAdjust::get(copy._seq);
 }
 
@@ -203,18 +203,30 @@ operator >= (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq UpdateSeq::
 operator ++ () {
-  {
-    MutexHolder holder(_lock);
+  PN_int32 old_seq = AtomicAdjust::get(_seq);
+  PN_int32 new_seq = old_seq + 1;
+  if (priv_is_special(new_seq)) {
+    // Oops, wraparound.  We don't want to confuse the new value
+    // with our special cases.
+    new_seq = (PN_int32)SC_old;
+  }
 
-    PN_int32 new_seq = _seq + 1;
+#ifdef HAVE_THREADS
+  PN_int32 result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
+  while (result != old_seq) {
+    // Some other thread beat us to it; try again.
+    old_seq = AtomicAdjust::get(_seq);
+    new_seq = old_seq + 1;
     if (priv_is_special(new_seq)) {
       // Oops, wraparound.  We don't want to confuse the new value
       // with our special cases.
-      AtomicAdjust::set(_seq, (PN_int32)SC_old + 1);
-    } else {
-      AtomicAdjust::set(_seq, new_seq);
+      new_seq = (PN_int32)SC_old;
     }
+    result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
   }
+#else
+  _seq = new_seq;
+#endif  // HAVE_THREADS
     
   return *this;
 }
@@ -226,19 +238,33 @@ operator ++ () {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq UpdateSeq::
 operator ++ (int) {
-  UpdateSeq temp;
-  {
-    MutexHolder holder(_lock);
-    temp._seq = _seq;
-
-    PN_int32 new_seq = _seq + 1;
-    if (priv_is_special(new_seq)) {
-      AtomicAdjust::set(_seq, (PN_int32)SC_old + 1);
-    } else {
-      AtomicAdjust::set(_seq, new_seq);
-    }
+  PN_int32 old_seq = AtomicAdjust::get(_seq);
+  PN_int32 new_seq = old_seq + 1;
+  if (priv_is_special(new_seq)) {
+    // Oops, wraparound.  We don't want to confuse the new value
+    // with our special cases.
+    new_seq = (PN_int32)SC_old;
   }
-    
+
+#ifdef HAVE_THREADS
+  PN_int32 result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
+  while (result != old_seq) {
+    // Some other thread beat us to it; try again.
+    old_seq = AtomicAdjust::get(_seq);
+    new_seq = old_seq + 1;
+    if (priv_is_special(new_seq)) {
+      // Oops, wraparound.  We don't want to confuse the new value
+      // with our special cases.
+      new_seq = (PN_int32)SC_old;
+    }
+    result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
+  }
+#else
+  _seq = new_seq;
+#endif  // HAVE_THREADS
+
+  UpdateSeq temp;
+  temp._seq = old_seq;
   return temp;
 }
 

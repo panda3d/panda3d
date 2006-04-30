@@ -621,16 +621,16 @@ unref() const {
   if (get_cache_ref_count() > 0 &&
       get_ref_count() == get_cache_ref_count() + 1) {
 
-    ReMutexHolder holder(*_states_lock);
-
-    if (get_cache_ref_count() > 0 &&
-        get_ref_count() == get_cache_ref_count() + 1) {
-      // If we are about to remove the one reference that is not in the
-      // cache, leaving only references in the cache, then we need to
-      // check for a cycle involving this RenderState and break it if
-      // it exists.
+    if (auto_break_cycles) {
+      ReMutexHolder holder(*_states_lock);
       
-      if (auto_break_cycles) {
+      if (get_cache_ref_count() > 0 &&
+          get_ref_count() == get_cache_ref_count() + 1) {
+        // If we are about to remove the one reference that is not in the
+        // cache, leaving only references in the cache, then we need to
+        // check for a cycle involving this RenderState and break it if
+        // it exists.
+        
         ++_last_cycle_detect;
         if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
           // Ok, we have a cycle.  This will be a leak unless we break the
