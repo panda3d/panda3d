@@ -1929,6 +1929,9 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
               if (!status) {
                 status.perror("MItMeshPolygon::getUV");
               } else {
+                // apply upto 1/1000th precision
+                uvs[0] = (double)((long)(uvs[0]*1000))/1000.0;
+                uvs[1] = (double)((long)(uvs[1]*1000))/1000.0;
                 vert.set_uv(colordef_uv_name, TexCoordd(uvs[0], uvs[1]));
               }
             }
@@ -1937,6 +1940,9 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       }
 
       if (!ignore_vertex_color) {
+        if (mayaegg_cat.is_spam()) {
+          mayaegg_cat.spam() << "poly_color = " << poly_color << endl;
+        }
         if (pi.hasColor()) {
           MColor c;
           status = pi.getColor(c, i);
@@ -1952,7 +1958,6 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
                                   c.b * poly_color[2], c.a * poly_color[3]));
 
             if (mayaegg_cat.is_spam()) {
-              mayaegg_cat.spam() << "poly_color = " << poly_color << endl;
               mayaegg_cat.spam() << "maya_color = " << c << endl;
               mayaegg_cat.spam() << "vert_color = " << vert.get_color() << endl;
             }
@@ -2611,6 +2616,9 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
   }
   // Also apply an overall color to the primitive.
   Colorf rgba = shader.get_rgba();
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam() << "ssa:rgba = " << rgba << endl;
+  }
 
   // The existence of a texture on either color channel completely
   // replaces the corresponding flat color.
@@ -2629,12 +2637,12 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
     rgba[1] *= color_def->_color_gain[1];
     rgba[2] *= color_def->_color_gain[2];
     rgba[3] *= color_def->_color_gain[3];
+    if (mayaegg_cat.is_spam()) {
+      mayaegg_cat.spam() << "ssa:rgba = " << rgba << endl;
+    }
   }
 
   primitive.set_color(rgba);
-  if (mayaegg_cat.is_spam()) {
-    mayaegg_cat.spam() << "ssa:rgba = " << rgba << endl;
-  }
 
   if (mayaegg_cat.is_spam()) {
     mayaegg_cat.spam() << "  set_shader_attributes : end\n";
