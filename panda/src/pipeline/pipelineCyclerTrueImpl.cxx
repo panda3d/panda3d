@@ -162,7 +162,7 @@ write_stage(int pipeline_stage, Thread *current_thread) {
 
     // Now we have differences between some of the data pointers, so
     // we're "dirty".  Mark it so.
-    if (!_dirty) {
+    if (!_dirty && _num_stages != 1) {
       _pipeline->add_dirty_cycler(this);
     }
   }

@@ -1359,7 +1359,8 @@ check_usage_hint() const {
     // already have modified the pointer on the object since we
     // queried it.
     {
-      Geom::CDWriter fresh_cdata(((Geom *)_object)->_cycler, _current_thread);
+      Geom::CDWriter fresh_cdata(((Geom *)_object)->_cycler, 
+                                 false, _current_thread);
       if (!fresh_cdata->_got_usage_hint) {
         // The cache is still stale.  We have to do the work of
         // freshening it.

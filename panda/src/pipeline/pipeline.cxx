@@ -247,6 +247,7 @@ add_dirty_cycler(PipelineCyclerTrueImpl *cycler) {
   nassertv(cycler->_lock.debug_is_locked());
 
   ReMutexHolder holder(_lock);
+  nassertv(_num_stages != 1);
   nassertv(!_cycling);
   nassertv(!cycler->_dirty);
   cycler->_dirty = true;

@@ -1504,7 +1504,8 @@ check_minmax() const {
     // already have modified the pointer on the object since we
     // queried it.
     {
-      GeomPrimitive::CDWriter fresh_cdata(((GeomPrimitive *)_object)->_cycler, _current_thread);
+      GeomPrimitive::CDWriter fresh_cdata(((GeomPrimitive *)_object)->_cycler, 
+                                          false, _current_thread);
       if (!fresh_cdata->_got_minmax) {
         // The cache is still stale.  We have to do the work of
         // freshening it.
