@@ -840,7 +840,7 @@ template<class Element>
 INLINE void ConstPointerToArray<Element>::
 node_ref() const {
   if ((this->_void_ptr) == NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   ((To *)(this->_void_ptr))->node_ref();
 }
