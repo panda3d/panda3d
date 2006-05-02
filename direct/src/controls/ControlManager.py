@@ -26,6 +26,7 @@ class ControlManager:
         self.enableJumpCounter = 1
         self.controls = {}
         self.currentControls = None
+        self.currentControlsName = None
         self.isEnabled = 1
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
         inputState.watch("run", "running-on", "running-off")
@@ -129,6 +130,7 @@ class ControlManager:
                     self.currentControls.setCollisionsActive(0)
                     self.currentControls.setAvatar(None)
                 self.currentControls = controls
+                self.currentControlsName = name
                 self.currentControls.setAvatar(avatar)
                 self.currentControls.setCollisionsActive(1)
                 if self.isEnabled:
