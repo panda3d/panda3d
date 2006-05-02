@@ -3645,6 +3645,7 @@ check_bounds() const {
     // We'll need to get a fresh read pointer, since another thread
     // might already have modified the pointer on the object since we
     // queried it.
+    ((PandaNodePipelineReader *)this)->_cdata = NULL;
     int pipeline_stage = _current_thread->get_pipeline_stage();
     PandaNode::CDLockedStageReader fresh_cdata(_object->_cycler, pipeline_stage, _current_thread);
     if (fresh_cdata->_last_update == fresh_cdata->_next_update) {
