@@ -51,7 +51,7 @@
 
 PStatCollector GraphicsEngine::_wait_pcollector("Wait:Thread sync");
 PStatCollector GraphicsEngine::_cycle_pcollector("App:Cycle");
-PStatCollector GraphicsEngine::_app_pcollector("App:xxx:General");
+PStatCollector GraphicsEngine::_app_pcollector("App:Show code:General");
 PStatCollector GraphicsEngine::_render_frame_pcollector("App:render_frame");
 PStatCollector GraphicsEngine::_do_frame_pcollector("*:do_frame");
 PStatCollector GraphicsEngine::_yield_pcollector("App:Yield");
