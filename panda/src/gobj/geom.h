@@ -352,7 +352,11 @@ public:
 private:
   const Geom *_object;
   Thread *_current_thread;
+#ifdef DO_PIPELINING
   CPT(Geom::CData) _cdata;
+#else
+  const Geom::CData *_cdata;
+#endif  // DO_PIPELINING
 };
 
 INLINE ostream &operator << (ostream &out, const Geom &obj);

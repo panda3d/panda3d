@@ -192,7 +192,7 @@ release_read(const CycleData *pointer) const {
 //               stage (but see elevate_read).
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
-write(Thread *) {
+write(Thread *current_thread) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::write()", " ", TAU_USER);
   _write_count++;
 
@@ -252,10 +252,10 @@ write_upstream(bool, Thread *) {
 //               current stage.
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
-elevate_read(const CycleData *pointer, Thread *) {
+elevate_read(const CycleData *pointer, Thread *current_thread) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read(const CycleData *)", " ", TAU_USER);
   release_read(pointer);
-  return write();
+  return write(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -267,10 +267,10 @@ elevate_read(const CycleData *pointer, Thread *) {
 //               write_upstream().
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
-elevate_read_upstream(const CycleData *pointer, bool force_to_0, Thread *) {
+elevate_read_upstream(const CycleData *pointer, bool force_to_0, Thread *current_thread) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read_upstream(const CycleData *, bool)", " ", TAU_USER);
   release_read(pointer);
-  return write_upstream(force_to_0);
+  return write_upstream(force_to_0, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -416,11 +416,11 @@ write_stage_upstream(int pipeline_stage, bool, Thread *) {
 //               current stage.
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
-elevate_read_stage(int pipeline_stage, const CycleData *pointer, Thread *) {
+elevate_read_stage(int pipeline_stage, const CycleData *pointer, Thread *current_thread) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read_stage(int, CycleData *)", " ", TAU_USER);
   nassertr(pipeline_stage == 0, NULL);
   release_read(pointer);
-  return write();
+  return write(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -434,11 +434,11 @@ elevate_read_stage(int pipeline_stage, const CycleData *pointer, Thread *) {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerDummyImpl::
 elevate_read_stage_upstream(int pipeline_stage, const CycleData *pointer, 
-                            bool, Thread *) {
+                            bool, Thread *current_thread) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::elevate_read_stage(int, CycleData *)", " ", TAU_USER);
   nassertr(pipeline_stage == 0, NULL);
   release_read(pointer);
-  return write();
+  return write(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

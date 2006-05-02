@@ -673,7 +673,12 @@ public:
 private:
   const PandaNode *_object;
   Thread *_current_thread;
+
+#ifdef DO_PIPELINING
   CPT(PandaNode::CData) _cdata;
+#else
+  const PandaNode::CData *_cdata;
+#endif  // DO_PIPELINING
 };
 
 INLINE ostream &operator << (ostream &out, const PandaNode &node) {

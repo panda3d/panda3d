@@ -343,7 +343,11 @@ public:
 protected:
   GeomVertexData *_object;
   Thread *_current_thread;
+#ifdef DO_PIPELINING
   PT(GeomVertexData::CData) _cdata;
+#else
+  GeomVertexData::CData *_cdata;
+#endif  // DO_PIPELINING
 };
 
 ////////////////////////////////////////////////////////////////////

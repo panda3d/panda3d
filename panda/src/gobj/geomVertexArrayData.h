@@ -208,7 +208,11 @@ public:
 protected:
   GeomVertexArrayData *_object;
   Thread *_current_thread;
+#ifdef DO_PIPELINING
   PT(GeomVertexArrayData::CData) _cdata;
+#else
+  GeomVertexArrayData::CData *_cdata;
+#endif  // DO_PIPELINING
 };
 
 ////////////////////////////////////////////////////////////////////
