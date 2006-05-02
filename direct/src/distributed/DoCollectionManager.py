@@ -218,8 +218,11 @@ class DoCollectionManager:
         if distObj is not None:
             distObj.setLocation(parentId, zoneId)
 
-    def storeObjectLocation(self, doId, parentId, zoneId):
-        obj = self.doId2do.get(doId)
+    def storeObjectLocation(self, doId, parentId, zoneId, object=None):
+        if (object == None):
+            obj = self.doId2do.get(doId)
+        else:
+            obj = object
         if obj is not None:
             oldParentId = obj.parentId
             oldZoneId = obj.zoneId
