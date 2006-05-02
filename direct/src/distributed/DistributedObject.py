@@ -183,7 +183,7 @@ class DistributedObject(DistributedObjectBase):
             self.activeState = ESDisabled
             self.__callbacks = {}
             #self.cr.deleteObjectLocation(self.doId, self.parentId, self.zoneId)
-            self.setLocation(None, None)
+            self.setLocation(0,0)
             # TODO: disable my children
 
     def isDisabled(self):
@@ -383,7 +383,7 @@ class DistributedObject(DistributedObjectBase):
         self.cr.sendSetLocation(self.doId, parentId, zoneId)
 
     def setLocation(self, parentId, zoneId):
-        self.cr.storeObjectLocation(self.doId, parentId, zoneId)
+        self.cr.storeObjectLocation(self.doId, parentId, zoneId, self)
 
     def getLocation(self):
         try:
