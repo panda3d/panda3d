@@ -9,6 +9,8 @@
 #include "conditionVarSpinlockImpl.cxx"
 #include "config_pipeline.cxx"
 #include "cycleData.cxx"
+#include "cycleDataLockedReader.cxx"
+#include "cycleDataLockedStageReader.cxx"
 #include "cycleDataReader.cxx"
 #include "cycleDataStageReader.cxx"
 #include "cycleDataStageWriter.cxx"

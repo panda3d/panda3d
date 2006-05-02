@@ -39,7 +39,7 @@ PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
   }
 
   _num_stages = _pipeline->get_num_stages();
-  _data = new PT(CycleData)[_num_stages];
+  _data = new NPT(CycleData)[_num_stages];
   for (int i = 0; i < _num_stages; ++i) {
     _data[i] = initial_data;
   }
@@ -63,7 +63,7 @@ PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
   
   _num_stages = _pipeline->get_num_stages();
   nassertv(_num_stages == copy._num_stages);
-  _data = new PT(CycleData)[_num_stages];
+  _data = new NPT(CycleData)[_num_stages];
   
   // It's no longer critically important that we preserve pointerwise
   // equivalence between different stages in the copy, but it doesn't
@@ -77,7 +77,7 @@ PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
     if (new_pt == NULL) {
       new_pt = copy._data[i]->make_copy();
     }
-    _data[i] = new_pt;
+    _data[i] = new_pt.p();
   }
 
   _pipeline->add_cycler(this);
@@ -105,7 +105,7 @@ operator = (const PipelineCyclerTrueImpl &copy) {
     if (new_pt == NULL) {
       new_pt = copy._data[i]->make_copy();
     }
-    _data[i] = new_pt;
+    _data[i] = new_pt.p();
   }
 
   if (copy._dirty && !_dirty) {
@@ -152,7 +152,11 @@ write_stage(int pipeline_stage, Thread *current_thread) {
 
   CycleData *old_data = _data[pipeline_stage];
 
-  if (old_data->get_ref_count() != 1) {
+  // Only the node reference count is considered an important count
+  // for copy-on-write purposes.  A standard reference of other than 1
+  // just means that some code (other that the PipelineCycler) has a
+  // pointer, which is safe to modify.
+  if (old_data->get_node_ref_count() != 1) {
     // Copy-on-write.
     _data[pipeline_stage] = old_data->make_copy();
 
@@ -203,7 +207,7 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
       
       k = pipeline_stage - 1;
       while (k >= 0 && (_data[k] == old_data || force_to_0)) {
-        _data[k] = new_data;
+        _data[k] = new_data.p();
         --k;
       }
       
@@ -251,7 +255,7 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
 ////////////////////////////////////////////////////////////////////
 PT(CycleData) PipelineCyclerTrueImpl::
 cycle() {
-  PT(CycleData) last_val = _data[_num_stages - 1];
+  PT(CycleData) last_val = _data[_num_stages - 1].p();
   nassertr(_lock.debug_is_locked(), last_val);
   nassertr(_dirty, last_val);
 
@@ -294,7 +298,7 @@ set_num_stages(int num_stages) {
 
   } else {
     // To increase the array, we must reallocate it larger.
-    PT(CycleData) *new_data = new PT(CycleData)[num_stages];
+    NPT(CycleData) *new_data = new NPT(CycleData)[num_stages];
     int i;
     for (i = 0; i < _num_stages; ++i) {
       new_data[i] = _data[i];

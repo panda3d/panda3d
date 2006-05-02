@@ -1161,7 +1161,7 @@ INLINE PandaNodePipelineReader::
 PandaNodePipelineReader(const PandaNode *object, Thread *current_thread) :
   _object(object),
   _current_thread(current_thread),
-  _cdata(object->_cycler.read(current_thread))
+  _cdata(object->_cycler.read_unlocked(current_thread))
 {
 #ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
@@ -1182,9 +1182,11 @@ PandaNodePipelineReader(const PandaNodePipelineReader &copy) :
   _current_thread(copy._current_thread),
   _cdata(copy._cdata)
 {
+  /*
   if (_cdata != (PandaNode::CData *)NULL) {
     _object->_cycler.increment_read(_cdata);
   }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1196,16 +1198,20 @@ INLINE void PandaNodePipelineReader::
 operator = (const PandaNodePipelineReader &copy) {
   nassertv(_current_thread == copy._current_thread);
 
+  /*
   if (_cdata != (PandaNode::CData *)NULL) {
     _object->_cycler.release_read(_cdata);
   }
+  */
 
   _object = copy._object;
   _cdata = copy._cdata;
 
+  /*
   if (_cdata != (PandaNode::CData *)NULL) {
     _object->_cycler.increment_read(_cdata);
   }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1215,9 +1221,11 @@ operator = (const PandaNodePipelineReader &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNodePipelineReader::
 ~PandaNodePipelineReader() {
+  /*
   if (_cdata != (PandaNode::CData *)NULL) {
     _object->_cycler.release_read(_cdata);
   }
+  */
 
 #ifdef _DEBUG
   _object = NULL;
@@ -1253,30 +1261,12 @@ get_current_thread() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNodePipelineReader::
 release() {
+  /*
   if (_cdata != (PandaNode::CData *)NULL) {
     _object->_cycler.release_read(_cdata);
     _cdata = NULL;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNodePipelineReader::check_bounds
-//       Access: Public
-//  Description: Ensures that the bounding volume is properly computed
-//               on this node.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNodePipelineReader::
-check_bounds() const {
-  nassertv(_cdata != (PandaNode::CData *)NULL);
-  if (_cdata->_last_update != _cdata->_next_update) {
-    // The cache is stale; it needs to be rebuilt.
-
-    // We should technically drop _cdata while we do this operation,
-    // but at the moment, it doesn't really matter.
-    int pipeline_stage = _current_thread->get_pipeline_stage();
-    PandaNode::CDStageReader fresh_cdata(_object->_cycler, pipeline_stage, _current_thread);
-    ((PandaNode *)_object)->update_bounds(pipeline_stage, fresh_cdata); 
-  }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////

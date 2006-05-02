@@ -94,7 +94,7 @@ void PartBundle::
 set_blend_type(BlendType bt) {
   nassertv(Thread::get_current_pipeline_stage() == 0);
 
-  CDReader cdata(_cycler);
+  CDLockedReader cdata(_cycler);
   if (cdata->_blend_type != bt) {
     CDWriter cdataw(_cycler, cdata);
     cdataw->_blend_type = bt;
@@ -131,7 +131,7 @@ void PartBundle::
 clear_control_effects() {
   nassertv(Thread::get_current_pipeline_stage() == 0);
 
-  CDReader cdata(_cycler);
+  CDLockedReader cdata(_cycler);
   if (!cdata->_blend.empty()) {
     CDWriter cdataw(_cycler, cdata);
     cdataw->_blend.clear();
@@ -299,7 +299,7 @@ control_activated(AnimControl *control) {
   nassertv(Thread::get_current_pipeline_stage() == 0);
   nassertv(control->get_part() == this);
 
-  CDReader cdata(_cycler);
+  CDLockedReader cdata(_cycler);
   // If (and only if) our blend type is BT_single, which means no
   // blending, then starting an animation implicitly enables it.
   if (cdata->_blend_type == BT_single) {

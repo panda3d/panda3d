@@ -95,13 +95,13 @@ operator = (const CycleDataWriter<CycleDataType> &copy) {
 //     Function: CycleDataWriter::Constructor (full)
 //       Access: Public
 //  Description: This flavor of the constructor elevates the pointer
-//               from the CycleDataReader from a read to a write
+//               from the CycleDataLockedReader from a read to a write
 //               pointer (and invalidates the reader).
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
-                CycleDataReader<CycleDataType> &take_from) :
+                CycleDataLockedReader<CycleDataType> &take_from) :
   _cycler(&cycler),
   _current_thread(take_from.get_current_thread())
 {
@@ -112,7 +112,7 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
 //     Function: CycleDataWriter::Constructor (full)
 //       Access: Public
 //  Description: This flavor of the constructor elevates the pointer
-//               from the CycleDataReader from a read to a write
+//               from the CycleDataLockedReader from a read to a write
 //               pointer (and invalidates the reader).  It also
 //               propagates the pointer back upstream; see
 //               PipelineCycler::write_upstream().
@@ -120,7 +120,7 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
-                CycleDataReader<CycleDataType> &take_from,
+                CycleDataLockedReader<CycleDataType> &take_from,
 		bool force_to_0) :
   _cycler(&cycler),
   _current_thread(take_from.get_current_thread())
@@ -245,13 +245,13 @@ operator = (const CycleDataWriter<CycleDataType> &copy) {
 //     Function: CycleDataWriter::Constructor (trivial)
 //       Access: Public
 //  Description: This flavor of the constructor elevates the pointer
-//               from the CycleDataReader from a read to a write
+//               from the CycleDataLockedReader from a read to a write
 //               pointer (and invalidates the reader).
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &,
-                CycleDataReader<CycleDataType> &take_from) :
+                CycleDataLockedReader<CycleDataType> &take_from) :
   _pointer((CycleDataType *)take_from.take_pointer())
 {
 }
@@ -260,7 +260,7 @@ CycleDataWriter(PipelineCycler<CycleDataType> &,
 //     Function: CycleDataWriter::Constructor (trivial)
 //       Access: Public
 //  Description: This flavor of the constructor elevates the pointer
-//               from the CycleDataReader from a read to a write
+//               from the CycleDataLockedReader from a read to a write
 //               pointer (and invalidates the reader).  It also
 //               propagates the pointer back upstream; see
 //               PipelineCycler::write_upstream().
@@ -268,7 +268,7 @@ CycleDataWriter(PipelineCycler<CycleDataType> &,
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &,
-                CycleDataReader<CycleDataType> &take_from,
+                CycleDataLockedReader<CycleDataType> &take_from,
 		bool force_to_0) :
   _pointer((CycleDataType *)take_from.take_pointer())
 {

@@ -57,6 +57,17 @@ operator = (const PipelineCycler<CycleDataType> &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::read_unlocked (dummy or true)
+//       Access: Public
+//  Description: See PipelineCyclerBase::read_unlocked().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *PipelineCycler<CycleDataType>::
+read_unlocked(Thread *current_thread) const {
+  return (const CycleDataType *)PipelineCyclerBase::read_unlocked(current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCycler::read (dummy or true)
 //       Access: Public
 //  Description: See PipelineCyclerBase::read().
@@ -113,7 +124,18 @@ elevate_read_upstream(const CycleDataType *pointer, bool force_to_0,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::read (dummy or true)
+//     Function: PipelineCycler::read_stage_unlocked (dummy or true)
+//       Access: Public
+//  Description: See PipelineCyclerBase::read_stage_unlocked().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *PipelineCycler<CycleDataType>::
+read_stage_unlocked(int pipeline_stage) const {
+  return (const CycleDataType *)PipelineCyclerBase::read_stage_unlocked(pipeline_stage);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::read_stage (dummy or true)
 //       Access: Public
 //  Description: See PipelineCyclerBase::read_stage().
 ////////////////////////////////////////////////////////////////////
@@ -228,6 +250,17 @@ operator = (const PipelineCycler<CycleDataType> &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::read_unlocked (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::read_unlocked().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *PipelineCycler<CycleDataType>::
+read_unlocked(Thread *) const {
+  return &_typed_data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCycler::read (trivial)
 //       Access: Public
 //  Description: See PipelineCyclerBase::read().
@@ -279,6 +312,17 @@ elevate_read(const CycleDataType *, Thread *) {
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
 elevate_read_upstream(const CycleDataType *, bool, Thread *) {
+  return &_typed_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::read_stage_unlocked (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::read_stage_unlocked().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *PipelineCycler<CycleDataType>::
+read_stage_unlocked(int) const {
   return &_typed_data;
 }
 

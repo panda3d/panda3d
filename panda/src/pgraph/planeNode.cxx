@@ -222,7 +222,7 @@ compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
 ////////////////////////////////////////////////////////////////////
 PT(Geom) PlaneNode::
 get_viz(CullTraverser *trav, CullTraverserData &data) {
-  CDReader cdata(_cycler);
+  CDLockedReader cdata(_cycler);
   
   // Figure out whether we are looking at the front or the back of the
   // plane.

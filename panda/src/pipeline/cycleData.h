@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 #include "typeHandle.h"
-#include "referenceCount.h"
+#include "nodeReferenceCount.h"
 
 class BamWriter;
 class BamReader;
@@ -40,8 +40,11 @@ class DatagramIterator;
 
 // If we are compiling in pipelining support, we maintain a pointer to
 // a CycleData object in each containing class, instead of the object
-// itself.  Thus, it should be a ReferenceCount object.
-class EXPCL_PANDA CycleData : public ReferenceCount 
+// itself.  Thus, it should be a ReferenceCount object.  Furthermore,
+// since we want to make a distinction between references within the
+// cycler, and references outside the cycler
+// (e.g. GeomPipelineReader), we make it a NodeReferenceCount.
+class EXPCL_PANDA CycleData : public NodeReferenceCount 
 
 #else  // !DO_PIPELINING
 

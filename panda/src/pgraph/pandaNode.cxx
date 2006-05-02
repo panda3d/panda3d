@@ -1404,8 +1404,7 @@ copy_tags(PandaNode *other) {
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
-    CDStageReader cdatar(other->_cycler, pipeline_stage,
-                              current_thread);
+    CDStageReader cdatar(other->_cycler, pipeline_stage, current_thread);
       
     TagData::const_iterator ti;
     for (ti = cdatar->_tag_data.begin();
@@ -1565,7 +1564,7 @@ DrawMask PandaNode::
 get_net_draw_control_mask() const {
   Thread *current_thread = Thread::get_current_thread();
   int pipeline_stage = current_thread->get_pipeline_stage();
-  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
+  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
     // The cache is stale; it needs to be rebuilt.
     CDStageWriter cdataw = 
@@ -1595,7 +1594,7 @@ DrawMask PandaNode::
 get_net_draw_show_mask() const {
   Thread *current_thread = Thread::get_current_thread();
   int pipeline_stage = current_thread->get_pipeline_stage();
-  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
+  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
     // The cache is stale; it needs to be rebuilt.
     CDStageWriter cdataw = 
@@ -1667,7 +1666,7 @@ get_legal_collide_mask() const {
 CollideMask PandaNode::
 get_net_collide_mask(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
-  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
+  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
     // The cache is stale; it needs to be rebuilt.
     CDStageWriter cdataw = 
@@ -1687,7 +1686,7 @@ get_net_collide_mask(Thread *current_thread) const {
 CPT(RenderAttrib) PandaNode::
 get_off_clip_planes(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
-  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
+  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
     // The cache is stale; it needs to be rebuilt.
     CDStageWriter cdataw = 
@@ -1808,7 +1807,7 @@ set_bound(const BoundingVolume *volume) {
 CPT(BoundingVolume) PandaNode::
 get_bounds(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
-  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
+  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
   if (cdata->_last_update != cdata->_next_update) {
     // The cache is stale; it needs to be rebuilt.
     CPT(BoundingVolume) result;
@@ -1900,7 +1899,7 @@ as_light() {
 ////////////////////////////////////////////////////////////////////
 CPT(BoundingVolume) PandaNode::
 get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
-  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
+  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
   if (cdata->_internal_bounds_stale) {
     CDStageWriter cdataw(((PandaNode *)this)->_cycler, pipeline_stage, cdata);
     if (cdataw->_user_bounds != (BoundingVolume *)NULL) {
@@ -2868,7 +2867,7 @@ r_list_descendants(ostream &out, int indent_level) const {
 //               released.  The new value is returned.
 ////////////////////////////////////////////////////////////////////
 PandaNode::CDStageWriter PandaNode::
-update_bounds(int pipeline_stage, PandaNode::CDStageReader &cdata) {
+update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
   // We might need to try this a couple of times, in case someone else
   // steps on our result.
   if (drawmask_cat.is_debug()) {
@@ -2878,24 +2877,20 @@ update_bounds(int pipeline_stage, PandaNode::CDStageReader &cdata) {
   Thread *current_thread = cdata.get_current_thread();
 
   do {
-    // Grab the last_update counter, then release the lock.
+    // Grab the last_update counter.
     UpdateSeq last_update = cdata->_last_update;
     UpdateSeq next_update = cdata->_next_update;
     nassertr(last_update != next_update, CDStageWriter(_cycler, pipeline_stage, cdata));
-    _cycler.release_read_stage(pipeline_stage, cdata.take_pointer());
 
     // Start with a clean slate, or at least with the contents of the
     // node itself.
-    CollideMask net_collide_mask;
+    CollideMask net_collide_mask = cdata->_into_collide_mask;
     DrawMask net_draw_control_mask, net_draw_show_mask;
     DrawMask draw_control_mask, draw_show_mask;
+    draw_control_mask = net_draw_control_mask = cdata->_draw_control_mask;
+    draw_show_mask = net_draw_show_mask = cdata->_draw_show_mask;
     bool renderable = is_renderable();
-    {
-      CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-      net_collide_mask = cdata->_into_collide_mask;
-      draw_control_mask = net_draw_control_mask = cdata->_draw_control_mask;
-      draw_show_mask = net_draw_show_mask = cdata->_draw_show_mask;
-    }
+
     if (!renderable) {
       // This is not a "renderable" node.  This means that this node
       // does not itself contribute any bits to net_draw_show_mask or
@@ -2914,14 +2909,17 @@ update_bounds(int pipeline_stage, PandaNode::CDStageReader &cdata) {
         << "\ndraw_show_mask = " << draw_show_mask
         << "\n";
     }
-    CPT(RenderAttrib) off_clip_planes;
-    {
-      CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-      off_clip_planes = cdata->_state->get_clip_plane();
-    }
+    CPT(RenderAttrib) off_clip_planes = cdata->_state->get_clip_plane();
     if (off_clip_planes == (RenderAttrib *)NULL) {
       off_clip_planes = ClipPlaneAttrib::make();
     }
+
+    // Also get the list of the node's children.
+    Children children(cdata);
+
+    // Now that we've got all the data we need from the node, we can
+    // release the lock.
+    _cycler.release_read_stage(pipeline_stage, cdata.take_pointer());
 
     // We need to keep references to the bounding volumes, since in a
     // threaded environment the pointers might go away while we're
@@ -2937,7 +2935,6 @@ update_bounds(int pipeline_stage, PandaNode::CDStageReader &cdata) {
     child_volumes.push_back(internal_bounds);
 
     // Now expand those contents to include all of our children.
-    Children children = get_children(current_thread);
     int num_children = children.get_num_children();
 
     for (int i = 0; i < num_children; ++i) {
@@ -2945,7 +2942,7 @@ update_bounds(int pipeline_stage, PandaNode::CDStageReader &cdata) {
 
       const ClipPlaneAttrib *orig_cp = DCAST(ClipPlaneAttrib, off_clip_planes);
       
-      CDStageReader child_cdata(child->_cycler, pipeline_stage, current_thread);
+      CDLockedStageReader child_cdata(child->_cycler, pipeline_stage, current_thread);
       if (child_cdata->_last_update != child_cdata->_next_update) {
 	// Child needs update.
 	CDStageWriter child_cdataw = child->update_bounds(pipeline_stage, child_cdata);
@@ -3089,7 +3086,7 @@ update_bounds(int pipeline_stage, PandaNode::CDStageReader &cdata) {
 
     // We need to go around again.  Release the write lock, and grab
     // the read lock back.
-    cdata = CDStageReader(_cycler, pipeline_stage, current_thread);
+    cdata = CDLockedStageReader(_cycler, pipeline_stage, current_thread);
 
     if (cdata->_last_update == cdata->_next_update) {
       // Someone else has computed the cache for us while we were
@@ -3632,4 +3629,42 @@ fillin_down_list(PandaNode::Down &down_list,
     int sort = scan.get_int32();
     down_list.push_back(DownConnection(NULL, sort));
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNodePipelineReader::check_bounds
+//       Access: Public
+//  Description: Ensures that the bounding volume is properly computed
+//               on this node.
+////////////////////////////////////////////////////////////////////
+void PandaNodePipelineReader::
+check_bounds() const {
+  if (_cdata->_last_update != _cdata->_next_update) {
+    // The cache is stale; it needs to be rebuilt.
+
+    // We'll need to get a fresh read pointer, since another thread
+    // might already have modified the pointer on the object since we
+    // queried it.
+    {
+      int pipeline_stage = _current_thread->get_pipeline_stage();
+      PandaNode::CDLockedStageReader fresh_cdata(_object->_cycler, pipeline_stage, _current_thread);
+      if (fresh_cdata->_last_update == fresh_cdata->_next_update) {
+        // What luck, some other thread has already freshened the
+        // cache for us.  Save the new pointer, and let the lock
+        // release itself.
+        ((PandaNodePipelineReader *)this)->_cdata = fresh_cdata;
+
+      } else {
+        // No, the cache is still stale.  We have to do the work of
+        // freshening it.
+        PandaNode::CDStageWriter cdataw = ((PandaNode *)_object)->update_bounds(pipeline_stage, fresh_cdata);
+        nassertv(cdataw->_last_update == cdataw->_next_update);
+        // As above, we save the new pointer, and then let the lock
+        // release itself.
+        ((PandaNodePipelineReader *)this)->_cdata = cdataw;
+      }
+    }
+  }
+
+  nassertv(_cdata->_last_update == _cdata->_next_update);
 }

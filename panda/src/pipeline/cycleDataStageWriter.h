@@ -23,7 +23,7 @@
 
 #include "cycleData.h"
 #include "pipelineCycler.h"
-#include "cycleDataStageReader.h"
+#include "cycleDataLockedStageReader.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CycleDataStageWriter
@@ -46,9 +46,9 @@ public:
   INLINE void operator = (const CycleDataStageWriter<CycleDataType> &copy);
 
   INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
-                              CycleDataStageReader<CycleDataType> &take_from);
+                              CycleDataLockedStageReader<CycleDataType> &take_from);
   INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
-                              CycleDataStageReader<CycleDataType> &take_from,
+                              CycleDataLockedStageReader<CycleDataType> &take_from,
                               bool force_to_0);
 
   INLINE ~CycleDataStageWriter();

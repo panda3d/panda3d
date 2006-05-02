@@ -1,5 +1,5 @@
-// Filename: cycleDataReader.h
-// Created by:  drose (21Feb02)
+// Filename: cycleDataLockedReader.h
+// Created by:  drose (30Apr06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CYCLEDATAREADER_H
-#define CYCLEDATAREADER_H
+#ifndef CYCLEDATALOCKEDREADER_H
+#define CYCLEDATALOCKEDREADER_H
 
 #include "pandabase.h"
 
@@ -26,15 +26,21 @@
 #include "thread.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CycleDataReader
-// Description : This template class calls
-//               PipelineCycler::read_unlocked(), and then provides a
-//               transparent read-only access to the CycleData.  It is
-//               used to access the data quickly, without holding a
-//               lock, for a thread that does not intend to modify the
-//               data and write it back out.  For cases where the data
-//               might be subsequently modified, you should use
-//               CycleDataLockedReader.
+//       Class : CycleDataLockedReader
+// Description : This template class calls PipelineCycler::read() in
+//               the constructor and PipelineCycler::release_read() in
+//               the destructor.  In the interim, it provides a
+//               transparent read-only access to the CycleData.
+//
+//               Since a lock is held on the data while the instance
+//               of this class exists, no other thread may modify any
+//               stage of the pipeline during that time.  Thus, this
+//               class is appropriate to use for cases in which you
+//               might want to read and then modify the data.  It is
+//               possible to pass an instance of CycleDataLockedReader
+//               to the CycleDataWriter constructor, which
+//               automatically elevates the read lock into a write
+//               lock.
 //
 //               It exists as a syntactic convenience to access the
 //               data in the CycleData.  It also allows the whole
@@ -42,18 +48,19 @@
 //               SUPPORT_PIPELINING is not defined.
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-class CycleDataReader {
+class CycleDataLockedReader {
 public:
-  INLINE CycleDataReader(const PipelineCycler<CycleDataType> &cycler,
-                         Thread *current_thread = Thread::get_current_thread());
-  INLINE CycleDataReader(const CycleDataReader<CycleDataType> &copy);
-  INLINE void operator = (const CycleDataReader<CycleDataType> &copy);
-
-  INLINE ~CycleDataReader();
+  INLINE CycleDataLockedReader(const PipelineCycler<CycleDataType> &cycler,
+                               Thread *current_thread = Thread::get_current_thread());
+  INLINE CycleDataLockedReader(const CycleDataLockedReader<CycleDataType> &copy);
+  INLINE void operator = (const CycleDataLockedReader<CycleDataType> &copy);
+  
+  INLINE ~CycleDataLockedReader();
 
   INLINE const CycleDataType *operator -> () const;
   INLINE operator const CycleDataType * () const;
 
+  INLINE const CycleDataType *take_pointer();
   INLINE Thread *get_current_thread() const;
 
 private:
@@ -69,6 +76,6 @@ private:
 #endif  // DO_PIPELINING
 };
 
-#include "cycleDataReader.I"
+#include "cycleDataLockedReader.I"
 
 #endif

@@ -120,6 +120,7 @@ private:
   public:
     INLINE CData();
     INLINE CData(const CData &copy);
+    virtual ~CData();
     ALLOC_DELETED_CHAIN(CData);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg,
@@ -207,7 +208,7 @@ public:
 protected:
   GeomVertexArrayData *_object;
   Thread *_current_thread;
-  GeomVertexArrayData::CData *_cdata;
+  PT(GeomVertexArrayData::CData) _cdata;
 };
 
 ////////////////////////////////////////////////////////////////////

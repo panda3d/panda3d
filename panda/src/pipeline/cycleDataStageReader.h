@@ -43,7 +43,6 @@ public:
   INLINE const CycleDataType *operator -> () const;
   INLINE operator const CycleDataType * () const;
 
-  INLINE const CycleDataType *take_pointer();
   INLINE Thread *get_current_thread() const;
 
 private:

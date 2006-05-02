@@ -27,6 +27,7 @@
 #include "pipelineCyclerLinks.h"
 #include "cycleData.h"
 #include "pointerTo.h"
+#include "nodePointerTo.h"
 #include "thread.h"
 #include "reMutex.h"
 #include "reMutexHolder.h"
@@ -61,6 +62,8 @@ public:
   INLINE void lock(Thread *current_thread);
   INLINE void release();
 
+  INLINE const CycleData *read_unlocked(Thread *current_thread) const;
+
   INLINE const CycleData *read(Thread *current_thread) const;
   INLINE void increment_read(const CycleData *pointer) const;
   INLINE void release_read(const CycleData *pointer) const;
@@ -73,6 +76,7 @@ public:
   INLINE void release_write(CycleData *pointer);
 
   INLINE int get_num_stages();
+  INLINE const CycleData *read_stage_unlocked(int pipeline_stage) const;
   INLINE const CycleData *read_stage(int pipeline_stage, Thread *current_thread) const;
   INLINE void release_read_stage(int pipeline_stage, const CycleData *pointer) const;
   CycleData *write_stage(int pipeline_stage, Thread *current_thread);
@@ -113,8 +117,8 @@ private:
 private:
   Pipeline *_pipeline;
 
-  // An array of PT(CycleData) objects.
-  PT(CycleData) *_data;
+  // An array of NPT(CycleData) objects.
+  NPT(CycleData) *_data;
   int _num_stages;
   bool _dirty;
 

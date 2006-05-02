@@ -478,7 +478,7 @@ GeomPrimitivePipelineReader(const GeomPrimitive *object,
                             Thread *current_thread) :
   _object(object),
   _current_thread(current_thread),
-  _cdata(object->_cycler.read(current_thread)),
+  _cdata(object->_cycler.read_unlocked(current_thread)),
   _vertices_reader(NULL)
 {
   nassertv(_object->test_ref_count_nonzero());
@@ -529,7 +529,7 @@ INLINE GeomPrimitivePipelineReader::
   nassertv(_cdata->test_ref_count_nonzero());
 #endif  // DO_PIPELINING
 #endif // _DEBUG
-  _object->_cycler.release_read(_cdata);
+  //  _object->_cycler.release_read(_cdata);
 
 #ifdef _DEBUG
   _vertices_reader = NULL;
@@ -556,19 +556,6 @@ get_object() const {
 INLINE Thread *GeomPrimitivePipelineReader::
 get_current_thread() const {
   return _current_thread;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitivePipelineReader::check_minmax
-//       Access: Public
-//  Description: Ensures that the primitive's minmax cache has been
-//               computed.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomPrimitivePipelineReader::
-check_minmax() const {
-  if (!_cdata->_got_minmax) {
-    ((GeomPrimitive *)_object)->recompute_minmax((GeomPrimitive::CData *)_cdata);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

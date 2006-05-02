@@ -28,6 +28,7 @@
 #include "pmap.h"
 #include "indirectLess.h"
 #include "cycleData.h"
+#include "cycleDataLockedReader.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
@@ -115,6 +116,7 @@ private:
   };
 
   PipelineCycler<CData> _cycler;
+  typedef CycleDataLockedReader<CData> CDLockedReader;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
 

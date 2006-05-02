@@ -100,6 +100,26 @@ release() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::read_unlocked
+//       Access: Public
+//  Description: Returns a const CycleData pointer, filled with the
+//               data for the current stage of the pipeline as seen by
+//               this thread.  No lock is made on the contents; there
+//               is no guarantee that some other thread won't modify
+//               this object's data while you are working on it.
+//               (However, the data within the returned CycleData
+//               object itself is safe from modification; if another
+//               thread modifies the data, it will perform a
+//               copy-on-write, and thereby change the pointer stored
+//               within the object.)
+////////////////////////////////////////////////////////////////////
+INLINE const CycleData *PipelineCyclerDummyImpl::
+read_unlocked(Thread *current_thread) const {
+  TAU_PROFILE("const CycleData *PipelineCyclerDummyImpl::read_unlocked()", " ", TAU_USER);
+  return _data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerDummyImpl::read
 //       Access: Public
 //  Description: Returns a const CycleData pointer, filled with the
@@ -295,6 +315,21 @@ get_num_stages() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerDummyImpl::read_stage_unlocked
+//       Access: Public
+//  Description: Returns a const CycleData pointer, filled with the
+//               data for the indicated stage of the pipeline.  As in
+//               read_unlocked(), no lock is held on the returned
+//               pointer.
+////////////////////////////////////////////////////////////////////
+INLINE const CycleData *PipelineCyclerDummyImpl::
+read_stage_unlocked(int pipeline_stage) const {
+  TAU_PROFILE("const CycleData *PipelineCyclerDummyImpl::read_stage_unlocked(int)", " ", TAU_USER);
+  nassertr(pipeline_stage == 0, NULL);
+  return _data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerDummyImpl::read_stage
 //       Access: Public
 //  Description: Returns a const CycleData pointer, filled with the
@@ -307,7 +342,7 @@ get_num_stages() {
 ////////////////////////////////////////////////////////////////////
 INLINE const CycleData *PipelineCyclerDummyImpl::
 read_stage(int pipeline_stage, Thread *) const {
-  TAU_PROFILE("const CycleData *PipelineCyclerDummyImpl::read_stage(int)", " ", TAU_USER);
+  TAU_PROFILE("const CycleData *PipelineCyclerDummyImpl::read_stage(int, Thread *)", " ", TAU_USER);
   // This function isn't truly const, but it doesn't change the data
   // in any meaningful way, so we pretend it is.
   nassertr(pipeline_stage == 0, NULL);

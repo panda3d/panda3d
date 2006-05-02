@@ -181,6 +181,7 @@ private:
   GeomVertexColumn::Packer *_packer;
   int _stride;
 
+  PTA_uchar _data;
   unsigned char *_pointer_begin;
   unsigned char *_pointer_end;
   unsigned char *_pointer;

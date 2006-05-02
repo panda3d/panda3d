@@ -243,7 +243,7 @@ set_format(const GeomVertexFormat *format) {
   Thread *current_thread = Thread::get_current_thread();
   nassertv(format->is_registered());
 
-  CDReader cdata(_cycler, current_thread);
+  CDLockedReader cdata(_cycler, current_thread);
 
   if (format == cdata->_format) {
     // Trivially no-op.
@@ -902,7 +902,7 @@ set_color(const Colorf &color, int num_components,
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
 animate_vertices(Thread *current_thread) const {
-  CDReader cdata(_cycler, current_thread);
+  CDLockedReader cdata(_cycler, current_thread);
 
   if (cdata->_format->get_animation().get_animation_type() != AT_panda) {
     return this;
@@ -1812,13 +1812,14 @@ set_num_rows(int n) {
   if (color_array >= 0 && orig_color_rows < n) {
     // We have just added some rows, fill the "color" column with
     // (1, 1, 1, 1), for the programmer's convenience.
-    GeomVertexArrayData *array_data = _cdata->_arrays[color_array];
+    GeomVertexArrayDataPipelineWriter *array_writer = _array_writers[color_array];
+    const GeomVertexArrayFormat *array_format = array_writer->get_array_format();
     const GeomVertexColumn *column = 
-      array_data->get_array_format()->get_column(InternalName::get_color());
-    int stride = array_data->get_array_format()->get_stride();
+      array_format->get_column(InternalName::get_color());
+    int stride = array_format->get_stride();
     unsigned char *start = 
-      array_data->modify_data() + column->get_start();
-    unsigned char *stop = start + array_data->get_data_size_bytes();
+      array_writer->modify_data() + column->get_start();
+    unsigned char *stop = start + array_writer->get_data_size_bytes();
     unsigned char *pointer = start + stride * orig_color_rows;
     int num_values = column->get_num_values();
 

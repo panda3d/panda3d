@@ -729,7 +729,7 @@ check_valid(const GeomVertexData *vertex_data) const {
 ////////////////////////////////////////////////////////////////////
 CPT(BoundingVolume) Geom::
 get_bounds(Thread *current_thread) const {
-  CDReader cdata(_cycler, current_thread);
+  CDLockedReader cdata(_cycler, current_thread);
   if (cdata->_internal_bounds_stale) {
     CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
     if (cdataw->_user_bounds != (BoundingVolume *)NULL) {
@@ -1344,6 +1344,35 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _got_usage_hint = false;
   _modified = Geom::get_next_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::check_usage_hint
+//       Access: Public
+//  Description: Ensures that the Geom's usage_hint cache has been
+//               computed.
+////////////////////////////////////////////////////////////////////
+void GeomPipelineReader::
+check_usage_hint() const {
+  if (!_cdata->_got_usage_hint) {
+    // We'll need to get a fresh pointer, since another thread might
+    // already have modified the pointer on the object since we
+    // queried it.
+    {
+      Geom::CDWriter fresh_cdata(((Geom *)_object)->_cycler, _current_thread);
+      if (!fresh_cdata->_got_usage_hint) {
+        // The cache is still stale.  We have to do the work of
+        // freshening it.
+        ((Geom *)_object)->reset_usage_hint(fresh_cdata);
+        nassertv(fresh_cdata->_got_usage_hint);
+      }
+
+      // Save the new pointer, and then let the lock release itself.
+      ((GeomPipelineReader *)this)->_cdata = fresh_cdata;
+    }
+  }
+
+  nassertv(_cdata->_got_usage_hint);
 }
 
 ////////////////////////////////////////////////////////////////////

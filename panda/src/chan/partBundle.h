@@ -26,6 +26,10 @@
 #include "partSubset.h"
 #include "pointerTo.h"
 #include "thread.h"
+#include "cycleData.h"
+#include "cycleDataLockedReader.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
 
 class AnimBundle;
 class PartBundleNode;
@@ -150,6 +154,7 @@ private:
   };
 
   PipelineCycler<CData> _cycler;
+  typedef CycleDataLockedReader<CData> CDLockedReader;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
 

@@ -1,5 +1,5 @@
-// Filename: cycleDataReader.h
-// Created by:  drose (21Feb02)
+// Filename: cycleDataLockedStageReader.h
+// Created by:  drose (30Apr06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,44 +16,34 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CYCLEDATAREADER_H
-#define CYCLEDATAREADER_H
+#ifndef CYCLEDATALOCKEDSTAGEREADER_H
+#define CYCLEDATALOCKEDSTAGEREADER_H
 
 #include "pandabase.h"
 
 #include "cycleData.h"
 #include "pipelineCycler.h"
-#include "thread.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CycleDataReader
-// Description : This template class calls
-//               PipelineCycler::read_unlocked(), and then provides a
-//               transparent read-only access to the CycleData.  It is
-//               used to access the data quickly, without holding a
-//               lock, for a thread that does not intend to modify the
-//               data and write it back out.  For cases where the data
-//               might be subsequently modified, you should use
-//               CycleDataLockedReader.
-//
-//               It exists as a syntactic convenience to access the
-//               data in the CycleData.  It also allows the whole
-//               system to compile down to nothing if
-//               SUPPORT_PIPELINING is not defined.
+//       Class : CycleDataLockedStageReader
+// Description : This class is similar to CycleDataLockedReader,
+//               except it allows reading from a particular stage of
+//               the pipeline.
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-class CycleDataReader {
+class CycleDataLockedStageReader {
 public:
-  INLINE CycleDataReader(const PipelineCycler<CycleDataType> &cycler,
-                         Thread *current_thread = Thread::get_current_thread());
-  INLINE CycleDataReader(const CycleDataReader<CycleDataType> &copy);
-  INLINE void operator = (const CycleDataReader<CycleDataType> &copy);
-
-  INLINE ~CycleDataReader();
+  INLINE CycleDataLockedStageReader(const PipelineCycler<CycleDataType> &cycler, 
+                                    int stage, Thread *current_thread = Thread::get_current_thread());
+  INLINE CycleDataLockedStageReader(const CycleDataLockedStageReader<CycleDataType> &copy);
+  INLINE void operator = (const CycleDataLockedStageReader<CycleDataType> &copy);
+  
+  INLINE ~CycleDataLockedStageReader();
 
   INLINE const CycleDataType *operator -> () const;
   INLINE operator const CycleDataType * () const;
 
+  INLINE const CycleDataType *take_pointer();
   INLINE Thread *get_current_thread() const;
 
 private:
@@ -62,13 +52,13 @@ private:
   const PipelineCycler<CycleDataType> *_cycler;
   Thread *_current_thread;
   const CycleDataType *_pointer;
-  CycleDataType *_write_pointer;
+  int _stage;
 #else  // !DO_PIPELINING
   // This is all we need for the trivial, do-nothing implementation.
   const CycleDataType *_pointer;
 #endif  // DO_PIPELINING
 };
 
-#include "cycleDataReader.I"
+#include "cycleDataLockedStageReader.I"
 
 #endif

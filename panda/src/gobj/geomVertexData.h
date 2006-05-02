@@ -31,6 +31,7 @@
 #include "sliderTable.h"
 #include "internalName.h"
 #include "cycleData.h"
+#include "cycleDataLockedReader.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
 #include "cycleDataStageReader.h"
@@ -257,6 +258,7 @@ private:
   };
 
   PipelineCycler<CData> _cycler;
+  typedef CycleDataLockedReader<CData> CDLockedReader;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageReader<CData> CDStageReader;
@@ -341,7 +343,7 @@ public:
 protected:
   GeomVertexData *_object;
   Thread *_current_thread;
-  GeomVertexData::CData *_cdata;
+  PT(GeomVertexData::CData) _cdata;
 };
 
 ////////////////////////////////////////////////////////////////////

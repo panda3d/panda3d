@@ -590,7 +590,7 @@ INLINE GeomVertexDataPipelineReader::
 GeomVertexDataPipelineReader(const GeomVertexData *object, 
                              Thread *current_thread) :
   GeomVertexDataPipelineBase((GeomVertexData *)object, current_thread,
-                             (GeomVertexData::CData *)object->_cycler.read(current_thread)),
+                             (GeomVertexData::CData *)object->_cycler.read_unlocked(current_thread)),
   _got_array_readers(false)
 {
   nassertv(_object->test_ref_count_nonzero());
@@ -637,7 +637,7 @@ INLINE GeomVertexDataPipelineReader::
   nassertv(_cdata->test_ref_count_nonzero());
 #endif  // DO_PIPELINING
 #endif // _DEBUG
-  _object->_cycler.release_read(_cdata);
+  //  _object->_cycler.release_read(_cdata);
 
 #ifdef _DEBUG
   _object = NULL;

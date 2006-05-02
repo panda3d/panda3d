@@ -145,6 +145,7 @@ GeomVertexWriter(const GeomVertexWriter &copy) :
   _current_thread(copy._current_thread),
   _packer(copy._packer),
   _stride(copy._stride),
+  _data(copy._data),
   _pointer_begin(copy._pointer_begin),
   _pointer_end(copy._pointer_end),
   _pointer(copy._pointer),
@@ -165,6 +166,7 @@ operator = (const GeomVertexWriter &copy) {
   _current_thread = copy._current_thread;
   _packer = copy._packer;
   _stride = copy._stride;
+  _data = copy._data;
   _pointer_begin = copy._pointer_begin;
   _pointer_end = copy._pointer_end;
   _pointer = copy._pointer;
@@ -813,7 +815,8 @@ get_packer() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 set_pointer(int row, GeomVertexArrayDataPipelineWriter *array_writer) {
-  _pointer_begin = array_writer->modify_data();
+  _data = array_writer->modify_data();
+  _pointer_begin = _data;
   _pointer_end = _pointer_begin + array_writer->get_data_size_bytes();
   quick_set_pointer(row);
 }
@@ -829,7 +832,12 @@ INLINE void GeomVertexWriter::
 quick_set_pointer(int row) {
   nassertv(has_column());
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(HAVE_THREADS)
+  // Make sure we still have the same pointer as stored the array.  We
+  // only perform this test in debug mode, because it is expensive,
+  // and only in single-threaded mode, because in threaded mode
+  // another thread might have reallocated the other pointer outside
+  // of our control anyway.
   if (_vertex_data != (const GeomVertexData *)NULL) {
     const GeomVertexArrayData *array_data = _vertex_data->get_array(_array);
     nassertv(_pointer_begin == array_data->get_data());

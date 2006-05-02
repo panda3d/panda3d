@@ -22,6 +22,8 @@
     conditionVarSpinlockImpl.h conditionVarSpinlockImpl.I \
     config_pipeline.h \
     cycleData.h cycleData.I \
+    cycleDataLockedReader.h cycleDataLockedReader.I \
+    cycleDataLockedStageReader.h cycleDataLockedStageReader.I \
     cycleDataReader.h cycleDataReader.I \
     cycleDataStageReader.h cycleDataStageReader.I \
     cycleDataStageWriter.h cycleDataStageWriter.I \
@@ -62,6 +64,8 @@
     conditionVarSpinlockImpl.cxx \
     config_pipeline.cxx \
     cycleData.cxx \
+    cycleDataLockedReader.cxx \
+    cycleDataLockedStageReader.cxx \
     cycleDataReader.cxx \
     cycleDataStageReader.cxx \
     cycleDataStageWriter.cxx \
@@ -100,6 +104,8 @@
     conditionVarSpinlockImpl.h conditionVarSpinlockImpl.I \
     config_pipeline.h \
     cycleData.h cycleData.I \
+    cycleDataLockedReader.h cycleDataLockedReader.I \
+    cycleDataLockedStageReader.h cycleDataLockedStageReader.I \
     cycleDataReader.h cycleDataReader.I \
     cycleDataStageReader.h cycleDataStageReader.I \
     cycleDataStageWriter.h cycleDataStageWriter.I \

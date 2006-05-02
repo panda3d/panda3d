@@ -99,6 +99,29 @@ release() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrivialImpl::read_unlocked
+//       Access: Public
+//  Description: Returns a const CycleData pointer, filled with the
+//               data for the current stage of the pipeline as seen by
+//               this thread.  No lock is made on the contents; there
+//               is no guarantee that some other thread won't modify
+//               this object's data while you are working on it.
+//               (However, the data within the returned CycleData
+//               object itself is safe from modification; if another
+//               thread modifies the data, it will perform a
+//               copy-on-write, and thereby change the pointer stored
+//               within the object.)
+////////////////////////////////////////////////////////////////////
+INLINE const CycleData *PipelineCyclerTrivialImpl::
+read_unlocked(Thread *) const {
+#ifdef SIMPLE_STRUCT_POINTERS
+  return (const CycleData *)this;
+#else
+  return _data;
+#endif  // SIMPLE_STRUCT_POINTERS
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrivialImpl::read
 //       Access: Public
 //  Description: Returns a const CycleData pointer, filled with the
@@ -263,6 +286,23 @@ release_write(CycleData *) {
 INLINE int PipelineCyclerTrivialImpl::
 get_num_stages() {
   return 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrivialImpl::read_stage_unlocked
+//       Access: Public
+//  Description: Returns a const CycleData pointer, filled with the
+//               data for the indicated stage of the pipeline.  As in
+//               read_unlocked(), no lock is held on the returned
+//               pointer.
+////////////////////////////////////////////////////////////////////
+INLINE const CycleData *PipelineCyclerTrivialImpl::
+read_stage_unlocked(int) const {
+#ifdef SIMPLE_STRUCT_POINTERS
+  return (const CycleData *)this;
+#else
+  return _data;
+#endif  // SIMPLE_STRUCT_POINTERS
 }
 
 ////////////////////////////////////////////////////////////////////

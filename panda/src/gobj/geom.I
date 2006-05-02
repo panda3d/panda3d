@@ -69,7 +69,7 @@ get_geom_rendering() const {
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::UsageHint Geom::
 get_usage_hint() const {
-  CDReader cdata(_cycler);
+  CDLockedReader cdata(_cycler);
   if (!cdata->_got_usage_hint) {
     CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
     ((Geom *)this)->reset_usage_hint(cdataw);
@@ -463,7 +463,7 @@ INLINE GeomPipelineReader::
 GeomPipelineReader(const Geom *object, Thread *current_thread) :
   _object(object),
   _current_thread(current_thread),
-  _cdata(object->_cycler.read(current_thread))
+  _cdata(object->_cycler.read_unlocked(current_thread))
 {
 #ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
@@ -506,7 +506,7 @@ INLINE GeomPipelineReader::
   nassertv(_cdata->test_ref_count_nonzero());
 #endif  // DO_PIPELINING
 #endif // _DEBUG
-  _object->_cycler.release_read(_cdata);
+  //  _object->_cycler.release_read(_cdata);
 
 #ifdef _DEBUG
   _object = NULL;
@@ -532,19 +532,6 @@ get_object() const {
 INLINE Thread *GeomPipelineReader::
 get_current_thread() const {
   return _current_thread;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPipelineReader::check_usage_hint
-//       Access: Public
-//  Description: Ensures that the Geom's usage_hint cache has been
-//               computed.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomPipelineReader::
-check_usage_hint() const {
-  if (!_cdata->_got_usage_hint) {
-    ((Geom *)_object)->reset_usage_hint((Geom::CData *)_cdata);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

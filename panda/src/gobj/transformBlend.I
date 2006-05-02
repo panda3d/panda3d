@@ -211,7 +211,7 @@ set_weight(int n, float weight) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
 update_blend(Thread *current_thread) const {
-  CDReader cdata(_cycler, current_thread);
+  CDLockedReader cdata(_cycler, current_thread);
   if (cdata->_global_modified != VertexTransform::get_global_modified(current_thread)) {
     CDWriter cdataw(((TransformBlend *)this)->_cycler, cdata, false);
     ((TransformBlend *)this)->recompute_result(cdataw, current_thread);
@@ -290,7 +290,7 @@ transform_vector(LVector3f &vector, Thread *current_thread) const {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq TransformBlend::
 get_modified(Thread *current_thread) const {
-  CDReader cdata(_cycler, current_thread);
+  CDLockedReader cdata(_cycler, current_thread);
   if (cdata->_global_modified != VertexTransform::get_global_modified(current_thread)) {
     CDWriter cdataw(((TransformBlend *)this)->_cycler, cdata, false);
     ((TransformBlend *)this)->recompute_result(cdataw, current_thread);

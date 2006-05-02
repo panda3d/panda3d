@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "cachedTypedWritableReferenceCount.h"
+#include "nodeReferenceCount.h" // for node_unref_delete()
 #include "objectDeletor.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -31,6 +32,19 @@
 //               node_ref_count, for the purposes of counting the
 //               number of times the object is referenced by a "node",
 //               presumably a PandaNode.
+//
+//               This essentially combines the functionality of
+//               NodeReferenceCount and
+//               CachedTypedWritableReferenceCount, so that a
+//               derivative of this object actually has three
+//               counters: the standard reference count, the "cache"
+//               reference count, and the "node" reference count.
+//               Rather than multiply inheriting from the two
+//               reference count classes, we inherit only from
+//               CachedTypedWritableReferenceCount and simply
+//               duplicate the functionality of NodeReferenceCount, to
+//               avoid all of the problems associated with multiple
+//               inheritance.
 //
 //               The intended design is to use this as a base class
 //               for RenderState and TransformState, both of which are
@@ -89,9 +103,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-template<class RefCountType>
-INLINE void node_unref_delete(RefCountType *ptr);
 
 #include "nodeCachedReferenceCount.I"
 

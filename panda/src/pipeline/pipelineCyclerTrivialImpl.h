@@ -60,6 +60,7 @@ public:
   INLINE void lock(Thread *current_thread = NULL);
   INLINE void release();
 
+  INLINE const CycleData *read_unlocked(Thread *current_thread) const;
   INLINE const CycleData *read(Thread *current_thread) const;
   INLINE void increment_read(const CycleData *pointer) const;
   INLINE void release_read(const CycleData *pointer) const;
@@ -73,6 +74,7 @@ public:
   INLINE void release_write(CycleData *pointer);
 
   INLINE int get_num_stages();
+  INLINE const CycleData *read_stage_unlocked(int pipeline_stage) const;
   INLINE const CycleData *read_stage(int pipeline_stage, Thread *current_thread) const;
   INLINE void release_read_stage(int pipeline_stage, const CycleData *pointer) const;
   INLINE CycleData *write_stage(int pipeline_stage, Thread *current_thread);

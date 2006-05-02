@@ -30,6 +30,9 @@
     multifile.I multifile.h \
     namable.I \
     namable.h nativeNumericData.I nativeNumericData.h \
+    nodePointerToBase.h nodePointerToBase.I \
+    nodePointerTo.h nodePointerTo.I \
+    nodeReferenceCount.h nodeReferenceCount.I \
     objectDeletor.h objectDeletor.I \
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \
@@ -80,6 +83,9 @@
     memoryUsagePointers.cxx multifile.cxx \
     namable.cxx \
     nativeNumericData.cxx \
+    nodePointerToBase.cxx \
+    nodePointerTo.cxx \
+    nodeReferenceCount.cxx \
     objectDeletor.cxx \
     ordered_vector.cxx \
     password_hash.cxx \
@@ -136,6 +142,9 @@
     multifile.I multifile.h \
     namable.I \
     namable.h nativeNumericData.I nativeNumericData.h \
+    nodePointerToBase.h nodePointerToBase.I \
+    nodePointerTo.h nodePointerTo.I \
+    nodeReferenceCount.h nodeReferenceCount.I \
     objectDeletor.h objectDeletor.I \
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \

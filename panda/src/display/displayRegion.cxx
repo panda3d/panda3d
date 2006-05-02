@@ -202,7 +202,7 @@ void DisplayRegion::
 set_active(bool active) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage == 0);
-  CDReader cdata(_cycler);
+  CDLockedReader cdata(_cycler);
 
   if (active != cdata->_active) {
     CDWriter cdataw(_cycler, cdata);
@@ -222,7 +222,7 @@ set_active(bool active) {
 void DisplayRegion::
 set_sort(int sort) {
   nassertv(Thread::get_current_pipeline_stage() == 0);
-  CDReader cdata(_cycler);
+  CDLockedReader cdata(_cycler);
 
   if (sort != cdata->_sort) {
     CDWriter cdataw(_cycler, cdata);

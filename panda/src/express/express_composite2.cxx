@@ -1,3 +1,4 @@
+#include "pta_uchar.cxx"
 #include "ramfile.cxx"
 #include "referenceCount.cxx"
 #include "reversedNumericData.cxx"

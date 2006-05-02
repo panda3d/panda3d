@@ -32,8 +32,7 @@ CycleDataReader(const PipelineCycler<CycleDataType> &cycler,
   _cycler(&cycler),
   _current_thread(current_thread)
 {
-  _pointer = _cycler->read(_current_thread);
-  nassertv(_pointer != (const CycleDataType *)NULL);
+  _pointer = _cycler->read_unlocked(_current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,8 +47,6 @@ CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
   _current_thread(copy._current_thread),
   _pointer(copy._pointer)
 {
-  nassertv(_pointer != (const CycleDataType *)NULL);
-  _cycler->increment_read(_pointer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,14 +57,10 @@ CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
 template<class CycleDataType>
 INLINE void CycleDataReader<CycleDataType>::
 operator = (const CycleDataReader<CycleDataType> &copy) {
-  nassertv(_pointer == (CycleDataType *)NULL);
   nassertv(_current_thread == copy._current_thread);
 
   _cycler = copy._cycler;
   _pointer = copy._pointer;
-
-  nassertv(_pointer != (const CycleDataType *)NULL);
-  _cycler->increment_read(_pointer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,9 +71,6 @@ operator = (const CycleDataReader<CycleDataType> &copy) {
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 ~CycleDataReader() {
-  if (_pointer != NULL) {
-    _cycler->release_read(_pointer);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +82,6 @@ INLINE CycleDataReader<CycleDataType>::
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataReader<CycleDataType>::
 operator -> () const {
-  nassertr(_pointer != (const CycleDataType *)NULL, _cycler->cheat());
   return _pointer;
 }
 
@@ -105,27 +94,7 @@ operator -> () const {
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 operator const CycleDataType * () const {
-  nassertr(_pointer != (const CycleDataType *)NULL, _cycler->cheat());
   return _pointer;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::take_pointer (full)
-//       Access: Public
-//  Description: This is intended to be called only from
-//               CycleDataWriter when it elevates the pointer from
-//               read to write status.  This function returns the
-//               reader's pointer and relinquishes ownership of the
-//               pointer, rendering the reader invalid for future
-//               reads.
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE const CycleDataType *CycleDataReader<CycleDataType>::
-take_pointer() {
-  const CycleDataType *pointer = _pointer;
-  _pointer = (CycleDataType *)NULL;
-  nassertr(pointer != (const CycleDataType *)NULL, _cycler->cheat());
-  return pointer;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,22 +177,6 @@ operator -> () const {
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 operator const CycleDataType * () const {
-  return _pointer;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::take_pointer (trivial)
-//       Access: Public
-//  Description: This is intended to be called only from
-//               CycleDataWriter when it elevates the pointer from
-//               read to write status.  This function returns the
-//               reader's pointer and relinquishes ownership of the
-//               pointer, rendering the reader invalid for future
-//               reads.
-////////////////////////////////////////////////////////////////////
-template<class CycleDataType>
-INLINE const CycleDataType *CycleDataReader<CycleDataType>::
-take_pointer() {
   return _pointer;
 }
 

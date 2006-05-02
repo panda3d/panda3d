@@ -63,12 +63,14 @@ public:
   INLINE PipelineCycler(const PipelineCycler<CycleDataType> &copy);
   INLINE void operator = (const PipelineCycler<CycleDataType> &copy);
 
+  INLINE const CycleDataType *read_unlocked(Thread *current_thread) const;
   INLINE const CycleDataType *read(Thread *current_thread) const;
   INLINE CycleDataType *write(Thread *current_thread);
   INLINE CycleDataType *write_upstream(bool force_to_0, Thread *current_thread);
   INLINE CycleDataType *elevate_read(const CycleDataType *pointer, Thread *current_thread);
   INLINE CycleDataType *elevate_read_upstream(const CycleDataType *pointer, bool force_to_0, Thread *current_thread);
 
+  INLINE const CycleDataType *read_stage_unlocked(int pipeline_stage) const;
   INLINE const CycleDataType *read_stage(int pipeline_stage, Thread *current_thread) const;
   INLINE CycleDataType *elevate_read_stage(int pipeline_stage, const CycleDataType *pointer, Thread *current_thread);
   INLINE CycleDataType *elevate_read_stage_upstream(int pipeline_stage, const CycleDataType *pointer, bool force_to_0, Thread *current_thread);

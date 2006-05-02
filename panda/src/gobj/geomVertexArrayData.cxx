@@ -432,6 +432,9 @@ finalize(BamReader *manager) {
     // Now is the time to endian-reverse the data.
     cdata->_data = reverse_data_endianness(cdata->_data);
   }
+
+  // Now is also the time to node_ref the data.
+  cdata->_data.node_ref();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -468,6 +471,16 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   manager->read_pointer(scan);
   manager->read_cdata(scan, _cycler, this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::CData::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+GeomVertexArrayData::CData::
+~CData() {
+  _data.node_unref();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -520,7 +533,7 @@ set_num_rows(int n) {
   int delta = n - (_cdata->_data.size() / stride);
   
   if (delta != 0) {
-    if (_cdata->_data.get_ref_count() > 1) {
+    if (_cdata->_data.get_node_ref_count() > 1) {
       // Copy-on-write: the data is already reffed somewhere else,
       // so we're just going to make a copy.
       PTA_uchar new_data;
@@ -528,7 +541,9 @@ set_num_rows(int n) {
       new_data.insert(new_data.end(), n * stride, 0);
       memcpy(new_data, _cdata->_data, 
              min((size_t)(n * stride), _cdata->_data.size()));
+      _cdata->_data.node_unref();
       _cdata->_data = new_data;
+      _cdata->_data.node_ref();
       
     } else {
       // We've got the only reference to the data, so we can change
@@ -557,13 +572,16 @@ set_num_rows(int n) {
 ////////////////////////////////////////////////////////////////////
 PTA_uchar GeomVertexArrayDataPipelineWriter::
 modify_data() {
-  // Perform copy-on-write: if the reference count on the vertex data
-  // is greater than 1, assume some other GeomVertexData has the same
-  // pointer, so make a copy of it first.
-  if (_cdata->_data.get_ref_count() > 1) {
+  // Perform copy-on-write: if the *node* reference count on the
+  // vertex data is greater than 1, assume some other
+  // GeomVertexArrayData has the same pointer, so make a copy of it
+  // first.
+  if (_cdata->_data.get_node_ref_count() > 1) {
     PTA_uchar orig_data = _cdata->_data;
+    _cdata->_data.node_unref();
     _cdata->_data = PTA_uchar();
     _cdata->_data.v() = orig_data.v();
+    _cdata->_data.node_ref();
   }
   _cdata->_modified = Geom::get_next_modified();
 
@@ -577,6 +595,8 @@ modify_data() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayDataPipelineWriter::
 set_data(CPTA_uchar array) {
+  _cdata->_data.node_unref();
   _cdata->_data = (PTA_uchar &)array;
+  _cdata->_data.node_ref();
   _cdata->_modified = Geom::get_next_modified();
 }

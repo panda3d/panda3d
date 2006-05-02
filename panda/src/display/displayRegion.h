@@ -28,6 +28,7 @@
 #include "sceneSetup.h"
 #include "pointerTo.h"
 #include "cycleData.h"
+#include "cycleDataLockedReader.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
 #include "cycleDataStageWriter.h"
@@ -176,6 +177,7 @@ private:
   };
 
   PipelineCycler<CData> _cycler;
+  typedef CycleDataLockedReader<CData> CDLockedReader;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageWriter<CData> CDStageWriter;

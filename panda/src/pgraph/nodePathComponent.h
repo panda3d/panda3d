@@ -27,6 +27,7 @@
 #include "cycleData.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
+#include "cycleDataLockedStageReader.h"
 #include "cycleDataStageReader.h"
 #include "cycleDataStageWriter.h"
 #include "pmutex.h"
@@ -100,6 +101,7 @@ private:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataLockedStageReader<CData> CDLockedStageReader;
   typedef CycleDataStageReader<CData> CDStageReader;
   typedef CycleDataStageWriter<CData> CDStageWriter;
 

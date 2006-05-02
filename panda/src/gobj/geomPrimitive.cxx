@@ -1491,6 +1491,34 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _got_minmax = false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::check_minmax
+//       Access: Public
+//  Description: Ensures that the primitive's minmax cache has been
+//               computed.
+////////////////////////////////////////////////////////////////////
+void GeomPrimitivePipelineReader::
+check_minmax() const {
+  if (!_cdata->_got_minmax) {
+    // We'll need to get a fresh pointer, since another thread might
+    // already have modified the pointer on the object since we
+    // queried it.
+    {
+      GeomPrimitive::CDWriter fresh_cdata(((GeomPrimitive *)_object)->_cycler, _current_thread);
+      if (!fresh_cdata->_got_minmax) {
+        // The cache is still stale.  We have to do the work of
+        // freshening it.
+        ((GeomPrimitive *)_object)->recompute_minmax(fresh_cdata);
+        nassertv(fresh_cdata->_got_minmax);
+      }
+
+      // Save the new pointer, and then let the lock release itself.
+      ((GeomPrimitivePipelineReader *)this)->_cdata = fresh_cdata;
+    }
+  }
+
+  nassertv(_cdata->_got_minmax);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_first_vertex

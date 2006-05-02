@@ -24,6 +24,7 @@
 #include "cycleData.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
+#include "cycleDataLockedStageReader.h"
 #include "cycleDataStageReader.h"
 #include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
@@ -505,10 +506,11 @@ private:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataLockedStageReader<CData> CDLockedStageReader;
   typedef CycleDataStageReader<CData> CDStageReader;
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
-  CDStageWriter update_bounds(int pipeline_stage, CDStageReader &cdata);
+  CDStageWriter update_bounds(int pipeline_stage, CDLockedStageReader &cdata);
 
   static DrawMask _overall_bit;
 
@@ -631,7 +633,7 @@ public:
 
   INLINE void release();
 
-  INLINE void check_bounds() const;
+  void check_bounds() const;
 
   INLINE void compose_draw_mask(DrawMask &running_draw_mask) const;
   INLINE bool compare_draw_mask(DrawMask running_draw_mask,
@@ -671,7 +673,7 @@ public:
 private:
   const PandaNode *_object;
   Thread *_current_thread;
-  const PandaNode::CData *_cdata;
+  CPT(PandaNode::CData) _cdata;
 };
 
 INLINE ostream &operator << (ostream &out, const PandaNode &node) {

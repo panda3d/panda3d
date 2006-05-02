@@ -70,7 +70,7 @@
 
 #include "pandabase.h"
 
-#include "referenceCount.h"
+#include "nodeReferenceCount.h"
 #include "pointerTo.h"
 #include "pvector.h"
 
@@ -87,11 +87,21 @@
 //               element.  This is actually implemented as an STL
 //               vector, using the RefCountObj class to wrap it up
 //               with a reference count.
+//
+//               We actually inherit from NodeRefCountObj these days,
+//               which adds node_ref() and node_unref() to the
+//               standard ref() and unref().  This is particularly
+//               useful for GeomVertexArrayData; other classes may or
+//               may not find this additional counter useful, but
+//               since it adds relatively little overhead (compared
+//               with what is presumably a largish array), we go ahead
+//               and add it here, even though it is inherited by many
+//               different parts of the system that may not use it.
 ////////////////////////////////////////////////////////////////////
 template <class Element>
-class PointerToArray : public PointerToBase<RefCountObj<pvector<Element> > > {
+class PointerToArray : public PointerToBase<NodeRefCountObj<pvector<Element> > > {
 public:
-  typedef TYPENAME PointerToBase<RefCountObj<pvector<Element> > >::To To;
+  typedef TYPENAME PointerToBase<NodeRefCountObj<pvector<Element> > >::To To;
   typedef TYPENAME pvector<Element>::value_type value_type;
   typedef TYPENAME pvector<Element>::reference reference;
   typedef TYPENAME pvector<Element>::const_reference const_reference;
@@ -176,9 +186,13 @@ public:
 
   INLINE int get_ref_count() const;
 
+  INLINE int get_node_ref_count() const;
+  INLINE void node_ref() const;
+  INLINE bool node_unref() const;
+
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE PointerToArray<Element> &
-  operator = (RefCountObj<pvector<Element> > *ptr);
+  operator = (NodeRefCountObj<pvector<Element> > *ptr);
   INLINE PointerToArray<Element> &
   operator = (const PointerToArray<Element> &copy);
   INLINE void clear();
@@ -198,9 +212,9 @@ private:
 //               may not be modified.
 ////////////////////////////////////////////////////////////////////
 template <class Element>
-class ConstPointerToArray : public PointerToBase<RefCountObj<pvector<Element> > > {
+class ConstPointerToArray : public PointerToBase<NodeRefCountObj<pvector<Element> > > {
 public:
-  typedef TYPENAME PointerToBase<RefCountObj<pvector<Element> > >::To To;
+  typedef TYPENAME PointerToBase<NodeRefCountObj<pvector<Element> > >::To To;
   typedef TYPENAME pvector<Element>::value_type value_type;
   typedef TYPENAME pvector<Element>::const_reference reference;
   typedef TYPENAME pvector<Element>::const_reference const_reference;
@@ -258,9 +272,13 @@ public:
 
   INLINE int get_ref_count() const;
 
+  INLINE int get_node_ref_count() const;
+  INLINE void node_ref() const;
+  INLINE bool node_unref() const;
+
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE ConstPointerToArray<Element> &
-  operator = (RefCountObj<pvector<Element> > *ptr);
+  operator = (NodeRefCountObj<pvector<Element> > *ptr);
   INLINE ConstPointerToArray<Element> &
   operator = (const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray<Element> &

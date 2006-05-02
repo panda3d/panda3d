@@ -309,7 +309,7 @@ public:
   INLINE const GeomPrimitive *get_object() const;
   INLINE Thread *get_current_thread() const;
 
-  INLINE void check_minmax() const;
+  void check_minmax() const;
 
   INLINE ShadeModel get_shade_model() const;
   INLINE UsageHint get_usage_hint() const;
@@ -334,7 +334,7 @@ public:
 private:
   const GeomPrimitive *_object;
   Thread *_current_thread;
-  const GeomPrimitive::CData *_cdata;
+  CPT(GeomPrimitive::CData) _cdata;
   GeomVertexArrayDataPipelineReader *_vertices_reader;
 };
 

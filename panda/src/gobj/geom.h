@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
 #include "cycleData.h"
+#include "cycleDataLockedReader.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
 #include "cycleDataStageReader.h"
@@ -261,6 +262,7 @@ private:
   };
  
   PipelineCycler<CData> _cycler;
+  typedef CycleDataLockedReader<CData> CDLockedReader;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageReader<CData> CDStageReader;
@@ -330,7 +332,7 @@ public:
   INLINE const Geom *get_object() const;
   INLINE Thread *get_current_thread() const;
 
-  INLINE void check_usage_hint() const;
+  void check_usage_hint() const;
 
   INLINE PrimitiveType get_primitive_type() const;
   INLINE ShadeModel get_shade_model() const;
@@ -350,7 +352,7 @@ public:
 private:
   const Geom *_object;
   Thread *_current_thread;
-  const Geom::CData *_cdata;
+  CPT(Geom::CData) _cdata;
 };
 
 INLINE ostream &operator << (ostream &out, const Geom &obj);

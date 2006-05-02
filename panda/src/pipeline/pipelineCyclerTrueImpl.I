@@ -56,6 +56,30 @@ release() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::read_unlocked
+//       Access: Public
+//  Description: Returns a const CycleData pointer, filled with the
+//               data for the current stage of the pipeline as seen by
+//               this thread.  No lock is made on the contents; there
+//               is no guarantee that some other thread won't modify
+//               this object's data while you are working on it.
+//               (However, the data within the returned CycleData
+//               object itself is safe from modification; if another
+//               thread modifies the data, it will perform a
+//               copy-on-write, and thereby change the pointer stored
+//               within the object.)
+////////////////////////////////////////////////////////////////////
+INLINE const CycleData *PipelineCyclerTrueImpl::
+read_unlocked(Thread *current_thread) const {
+  TAU_PROFILE("const CycleData *PipelineCyclerTrueImpl::read_unlocked(Thread *)", " ", TAU_USER);
+  int pipeline_stage = current_thread->get_pipeline_stage();
+#ifdef _DEBUG
+  nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
+#endif
+  return _data[pipeline_stage];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrueImpl::read
 //       Access: Public
 //  Description: Returns a const CycleData pointer, filled with the
@@ -259,6 +283,23 @@ get_num_stages() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerTrueImpl::read_stage_unlocked
+//       Access: Public
+//  Description: Returns a const CycleData pointer, filled with the
+//               data for the indicated stage of the pipeline.  As in
+//               read_unlocked(), no lock is held on the returned
+//               pointer.
+////////////////////////////////////////////////////////////////////
+INLINE const CycleData *PipelineCyclerTrueImpl::
+read_stage_unlocked(int pipeline_stage) const {
+  TAU_PROFILE("const CycleData *PipelineCyclerTrueImpl::read_stage_unlocked(int)", " ", TAU_USER);
+#ifdef _DEBUG
+  nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
+#endif
+  return _data[pipeline_stage];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrueImpl::read_stage
 //       Access: Public
 //  Description: Returns a const CycleData pointer, filled with the
@@ -271,7 +312,7 @@ get_num_stages() {
 ////////////////////////////////////////////////////////////////////
 INLINE const CycleData *PipelineCyclerTrueImpl::
 read_stage(int pipeline_stage, Thread *current_thread) const {
-  TAU_PROFILE("const CycleData *PipelineCyclerTrueImpl::read_stage(int)", " ", TAU_USER);
+  TAU_PROFILE("const CycleData *PipelineCyclerTrueImpl::read_stage(int, Thread *)", " ", TAU_USER);
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
 #endif
@@ -421,7 +462,7 @@ get_write_count() const {
 INLINE PT(CycleData) PipelineCyclerTrueImpl::
 cycle_2() {
   TAU_PROFILE("PT(CycleData) PipelineCyclerTrueImpl::cycle_2()", " ", TAU_USER);
-  PT(CycleData) last_val = _data[1];
+  PT(CycleData) last_val = _data[1].p();
   nassertr(_lock.debug_is_locked(), last_val);
   nassertr(_dirty, last_val);
   nassertr(_num_stages == 2, last_val);
@@ -445,7 +486,7 @@ cycle_2() {
 INLINE PT(CycleData) PipelineCyclerTrueImpl::
 cycle_3() {
   TAU_PROFILE("PT(CycleData) PipelineCyclerTrueImpl::cycle_3()", " ", TAU_USER);
-  PT(CycleData) last_val = _data[2];
+  PT(CycleData) last_val = _data[2].p();
   nassertr(_lock.debug_is_locked(), last_val);
   nassertr(_dirty, last_val);
   nassertr(_num_stages == 3, last_val);

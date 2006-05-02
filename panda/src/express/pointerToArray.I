@@ -30,7 +30,7 @@ pvector<Element> ConstPointerToArray<Element>::_empty_array;
 template<class Element>
 INLINE PointerToArray<Element>::
 PointerToArray() :
-  PointerToBase<RefCountObj<pvector<Element> > >((RefCountObj<pvector<Element> > *)NULL)
+  PointerToBase<NodeRefCountObj<pvector<Element> > >((NodeRefCountObj<pvector<Element> > *)NULL)
 {
 }
 
@@ -52,7 +52,7 @@ PointerToArray<Element>::empty_array(size_type n) {
 template<class Element>
 INLINE PointerToArray<Element>::
 PointerToArray(size_type n, const Element &value) :
-  PointerToBase<RefCountObj<pvector<Element> > >(new RefCountObj<pvector<Element> >) {
+  PointerToBase<NodeRefCountObj<pvector<Element> > >(new NodeRefCountObj<pvector<Element> >) {
   ((To *)(this->_void_ptr))->reserve(n);
   insert(begin(), n, value);
 }
@@ -65,7 +65,7 @@ PointerToArray(size_type n, const Element &value) :
 template<class Element>
 INLINE PointerToArray<Element>::
 PointerToArray(const PointerToArray<Element> &copy) :
-  PointerToBase<RefCountObj<pvector<Element> > >(copy)
+  PointerToBase<NodeRefCountObj<pvector<Element> > >(copy)
 {
 }
 
@@ -145,7 +145,7 @@ template<class Element>
 INLINE TYPENAME PointerToArray<Element>::size_type PointerToArray<Element>::
 max_size() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   return ((To *)(this->_void_ptr))->max_size();
 }
@@ -170,7 +170,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 reserve(TYPENAME PointerToArray<Element>::size_type n) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new RefCountObj<pvector<Element> >);
+    reassign(new NodeRefCountObj<pvector<Element> >);
   }
   ((To *)(this->_void_ptr))->reserve(n);
 }
@@ -196,7 +196,7 @@ template<class Element>
 INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
 front() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   nassertd(!((To *)(this->_void_ptr))->empty()) {
     ((To *)(this->_void_ptr))->push_back(Element());
@@ -213,7 +213,7 @@ template<class Element>
 INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
 back() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   nassertd(!((To *)(this->_void_ptr))->empty()) {
     ((To *)(this->_void_ptr))->push_back(Element());
@@ -230,7 +230,7 @@ template<class Element>
 INLINE TYPENAME PointerToArray<Element>::iterator PointerToArray<Element>::
 insert(iterator position, const Element &x) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new RefCountObj<pvector<Element> >);
+    reassign(new NodeRefCountObj<pvector<Element> >);
     position = end();
   }
   nassertr(position >= ((To *)(this->_void_ptr))->begin() &&
@@ -247,7 +247,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 insert(iterator position, size_type n, const Element &x) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new RefCountObj<pvector<Element> >);
+    reassign(new NodeRefCountObj<pvector<Element> >);
     position = end();
   }
   nassertv(position >= ((To *)(this->_void_ptr))->begin() &&
@@ -293,7 +293,7 @@ template<class Element>
 INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
 operator [](size_type n) const {
   nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   nassertd(!((To *)(this->_void_ptr))->empty()) {
     ((To *)(this->_void_ptr))->push_back(Element());
@@ -354,7 +354,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 push_back(const Element &x) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new RefCountObj<pvector<Element> >);
+    reassign(new NodeRefCountObj<pvector<Element> >);
   }
   ((To *)(this->_void_ptr))->push_back(x);
 }
@@ -368,7 +368,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 pop_back() {
   nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   nassertv(!((To *)(this->_void_ptr))->empty());
   ((To *)(this->_void_ptr))->pop_back();
@@ -385,7 +385,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 make_empty() {
   nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   nassertv(!((To *)(this->_void_ptr))->empty());
   ((To *)(this->_void_ptr))->clear();
@@ -429,7 +429,7 @@ template<class Element>
 INLINE pvector<Element> &PointerToArray<Element>::
 v() const {
   if ((this->_void_ptr) == NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   return *((To *)(this->_void_ptr));
 }
@@ -469,13 +469,50 @@ get_ref_count() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::get_node_ref_count
+//       Access: Public
+//  Description: Returns the node_ref of the underlying vector.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE int PointerToArray<Element>::
+get_node_ref_count() const {
+  return ((this->_void_ptr) == NULL) ? 0 : ((To *)(this->_void_ptr))->get_node_ref_count();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::node_ref
+//       Access: Public
+//  Description: Increments the node_ref of the underlying vector.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+node_ref() const {
+  if ((this->_void_ptr) == NULL) {
+    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+  }
+  ((To *)(this->_void_ptr))->node_ref();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::node_unref
+//       Access: Public
+//  Description: Decrements the node_ref of the underlying vector.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE bool PointerToArray<Element>::
+node_unref() const {
+  nassertr((this->_void_ptr) != NULL, true);
+  return ((To *)(this->_void_ptr))->node_unref();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Assignment operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element> &PointerToArray<Element>::
-operator = (RefCountObj<pvector<Element> > *ptr) {
+operator = (NodeRefCountObj<pvector<Element> > *ptr) {
   reassign(ptr);
   return *this;
 }
@@ -502,7 +539,7 @@ operator = (const PointerToArray<Element> &copy) {
 template<class Element>
 INLINE void PointerToArray<Element>::
 clear() {
-  reassign((RefCountObj<pvector<Element> > *)NULL);
+  reassign((NodeRefCountObj<pvector<Element> > *)NULL);
 }
 
 
@@ -515,7 +552,7 @@ clear() {
 template<class Element>
 INLINE ConstPointerToArray<Element>::
 ConstPointerToArray() :
-  PointerToBase<RefCountObj<pvector<Element> > >((RefCountObj<pvector<Element> > *)NULL)
+  PointerToBase<NodeRefCountObj<pvector<Element> > >((NodeRefCountObj<pvector<Element> > *)NULL)
 {
 }
 
@@ -527,7 +564,7 @@ ConstPointerToArray() :
 template<class Element>
 INLINE ConstPointerToArray<Element>::
 ConstPointerToArray(const PointerToArray<Element> &copy) :
-  PointerToBase<RefCountObj<pvector<Element> > >(copy)
+  PointerToBase<NodeRefCountObj<pvector<Element> > >(copy)
 {
 }
 
@@ -539,7 +576,7 @@ ConstPointerToArray(const PointerToArray<Element> &copy) :
 template<class Element>
 INLINE ConstPointerToArray<Element>::
 ConstPointerToArray(const ConstPointerToArray<Element> &copy) :
-  PointerToBase<RefCountObj<pvector<Element> > >(copy)
+  PointerToBase<NodeRefCountObj<pvector<Element> > >(copy)
 {
 }
 
@@ -619,7 +656,7 @@ template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
 max_size() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   return ((To *)(this->_void_ptr))->max_size();
 }
@@ -644,7 +681,7 @@ template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
 capacity() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   return ((To *)(this->_void_ptr))->capacity();
 }
@@ -658,7 +695,7 @@ template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
 front() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   nassertd(!((To *)(this->_void_ptr))->empty()) {
     ((To *)(this->_void_ptr))->push_back(Element());
@@ -675,7 +712,7 @@ template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
 back() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   nassertd(!((To *)(this->_void_ptr))->empty()) {
     ((To *)(this->_void_ptr))->push_back(Element());
@@ -693,7 +730,7 @@ template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
 operator [](size_type n) const {
   nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   nassertd(!((To *)(this->_void_ptr))->empty()) {
     ((To *)(this->_void_ptr))->push_back(Element());
@@ -767,7 +804,7 @@ template<class Element>
 INLINE const pvector<Element> &ConstPointerToArray<Element>::
 v() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
   }
   return *(To *)(this->_void_ptr);
 }
@@ -784,13 +821,50 @@ get_ref_count() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::get_node_ref_count
+//       Access: Public
+//  Description: Returns the node_ref of the underlying vector.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE int ConstPointerToArray<Element>::
+get_node_ref_count() const {
+  return ((this->_void_ptr) == NULL) ? 0 : ((To *)(this->_void_ptr))->get_node_ref_count();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::node_ref
+//       Access: Public
+//  Description: Increments the node_ref of the underlying vector.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void ConstPointerToArray<Element>::
+node_ref() const {
+  if ((this->_void_ptr) == NULL) {
+    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+  }
+  ((To *)(this->_void_ptr))->node_ref();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::node_unref
+//       Access: Public
+//  Description: Decrements the node_ref of the underlying vector.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE bool ConstPointerToArray<Element>::
+node_unref() const {
+  nassertr((this->_void_ptr) != NULL, true);
+  return ((To *)(this->_void_ptr))->node_unref();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Assignment operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
-operator = (RefCountObj<pvector<Element> > *ptr) {
+operator = (NodeRefCountObj<pvector<Element> > *ptr) {
   reassign(ptr);
   return *this;
 }
@@ -829,6 +903,6 @@ operator = (const ConstPointerToArray<Element> &copy) {
 template<class Element>
 INLINE void ConstPointerToArray<Element>::
 clear() {
-  reassign((RefCountObj<pvector<Element> > *)NULL);
+  reassign((NodeRefCountObj<pvector<Element> > *)NULL);
 }
 

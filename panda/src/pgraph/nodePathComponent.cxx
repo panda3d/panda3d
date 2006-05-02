@@ -133,7 +133,7 @@ get_next(int pipeline_stage, Thread *current_thread) const {
 ////////////////////////////////////////////////////////////////////
 bool NodePathComponent::
 fix_length(int pipeline_stage, Thread *current_thread) {
-  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
+  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
 
   int length_should_be = 1;
   if (cdata->_next != (NodePathComponent *)NULL) {

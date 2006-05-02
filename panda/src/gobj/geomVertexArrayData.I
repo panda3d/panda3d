@@ -183,6 +183,7 @@ INLINE GeomVertexArrayData::CData::
 CData() :
   _usage_hint(UH_unspecified)
 {
+  _data.node_ref();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -196,6 +197,7 @@ CData(const GeomVertexArrayData::CData &copy) :
   _data(copy._data),
   _modified(copy._modified)
 {
+  _data.node_ref();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -293,7 +295,7 @@ GeomVertexArrayDataPipelineReader(const GeomVertexArrayData *object,
                                   Thread *current_thread) :
   GeomVertexArrayDataPipelineBase((GeomVertexArrayData *)object,
                                   current_thread,
-                                  (GeomVertexArrayData::CData *)object->_cycler.read(current_thread))
+                                  (GeomVertexArrayData::CData *)object->_cycler.read_unlocked(current_thread))
 {
 #ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
@@ -338,7 +340,7 @@ INLINE GeomVertexArrayDataPipelineReader::
   nassertv(_cdata->test_ref_count_nonzero());
 #endif  // DO_PIPELINING
 #endif // _DEBUG
-  _object->_cycler.release_read(_cdata);
+  //  _object->_cycler.release_read(_cdata);
 
 #ifdef _DEBUG
   _object = NULL;

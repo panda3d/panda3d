@@ -46,8 +46,6 @@
     modifierButtons.I modifierButtons.h mouseButton.h \
     mouseData.I mouseData.h nameUniquifier.I nameUniquifier.h \
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
-    nodePointerToBase.h nodePointerToBase.I \
-    nodePointerTo.h nodePointerTo.I \
     nonDeletor.h \
     pta_double.h \
     pta_float.h pta_int.h \
@@ -86,8 +84,6 @@
     modifierButtons.cxx mouseButton.cxx mouseData.cxx \
     nameUniquifier.cxx \
     nodeCachedReferenceCount.cxx \
-    nodePointerToBase.cxx \
-    nodePointerTo.cxx \
     nonDeletor.cxx \
     pta_double.cxx pta_float.cxx \
     pta_int.cxx pta_ushort.cxx \
@@ -135,8 +131,6 @@
     modifierButtons.h mouseButton.h mouseData.I mouseData.h \
     nameUniquifier.I nameUniquifier.h \
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
-    nodePointerToBase.h nodePointerToBase.I \
-    nodePointerTo.h nodePointerTo.I \
     nonDeletor.h \
     pta_double.h \
     pta_float.h pta_int.h pta_ushort.h \

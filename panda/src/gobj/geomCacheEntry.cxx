@@ -82,10 +82,9 @@ record(Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void GeomCacheEntry::
 refresh(Thread *current_thread) {
-  nassertv(_next != (GeomCacheEntry *)NULL && _prev != (GeomCacheEntry *)NULL);
-
   GeomCacheManager *cache_mgr = GeomCacheManager::get_global_ptr();
   MutexHolder holder(cache_mgr->_lock);
+  nassertv(_next != (GeomCacheEntry *)NULL && _prev != (GeomCacheEntry *)NULL);
 
   remove_from_list();
   insert_before(cache_mgr->_list);
