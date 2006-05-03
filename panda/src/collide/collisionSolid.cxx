@@ -35,8 +35,10 @@
 #include "transparencyAttrib.h"
 #include "geomNode.h"
 
-PStatCollector CollisionSolid::_volume_pcollector("Collision Volumes:CollisionSolid");
-PStatCollector CollisionSolid::_test_pcollector("Collision Tests:CollisionSolid");
+PStatCollector CollisionSolid::_volume_pcollector(
+  "Collision Volumes:CollisionSolid");
+PStatCollector CollisionSolid::_test_pcollector(
+  "Collision Tests:CollisionSolid");
 TypeHandle CollisionSolid::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -201,6 +203,20 @@ write(ostream &out, int indent_level) const {
 PT(BoundingVolume) CollisionSolid::
 compute_internal_bounds() const {
   return new BoundingSphere;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::test_intersection_from_ds_solid
+//       Access: Protected, Virtual
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a DSSolid.
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionSolid::
+test_intersection_from_ds_solid(const CollisionEntry &) const {
+  report_undefined_intersection_test(CollisionSphere::get_class_type(),
+                                     get_type());
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
