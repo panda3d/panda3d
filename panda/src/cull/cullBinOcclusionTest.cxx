@@ -121,6 +121,7 @@ add_object(CullableObject *object, Thread *current_thread) {
   // Determine the world-space bounding sphere for the object.
   CPT(BoundingVolume) volume = object->_geom->get_bounds();
   if (volume->is_empty()) {
+    delete object;
     return;
   }
 
