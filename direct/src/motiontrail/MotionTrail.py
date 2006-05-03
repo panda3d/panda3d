@@ -2,7 +2,28 @@
 from pandac.PandaModules import *
 from direct.task import Task
 from otp.otpbase import OTPRender
+from direct.showbase.DirectObject import DirectObject
 
+
+def remove_task ( ):
+    if (MotionTrail.task_added):
+        try:
+            total_motion_trails = len (MotionTrail.motion_trail_list)
+        except:
+            print "ERROR: len ( ) exception 0"
+            total_motion_trails = 0
+
+        if (total_motion_trails > 0):
+            print "warning", total_motion_trails, "motion trails still exist when motion trail task is removed"
+
+        MotionTrail.motion_trail_list = [ ]
+
+        taskMgr.remove (MotionTrail.motion_trail_task_name)
+        
+        print "MotionTrail task removed"
+        
+        MotionTrail.task_added = False
+    return
 
 class MotionTrailVertex:
     def __init__(self, vertex_id, vertex_function, context):
@@ -28,6 +49,9 @@ class MotionTrail(NodePath):
     task_added = False
     motion_trail_list = [ ]
     motion_trail_task_name = "motion_trail_task"
+
+    direct_object = DirectObject ( )
+    direct_object.accept ("clientLogout", remove_task)
 
     def __init__ (self,name,parent_node_path):
 
@@ -97,23 +121,6 @@ class MotionTrail(NodePath):
 #            taskMgr.add (self.motion_trail_task, "motion_trail_task", priority = 50)
             taskMgr.add (self.motion_trail_task, MotionTrail.motion_trail_task_name)
             MotionTrail.task_added = True
-        return
-
-    def remove_task (self):
-        if (MotionTrail.task_added):
-            try:
-                total_motion_trails = len (MotionTrail.motion_trail_list)
-            except:
-                print "ERROR: len ( ) exception 0"
-                total_motion_trails = 0
-
-            if (total_motion_trails > 0):
-                pass
-
-            MotionTrail.motion_trail_list = [ ]
-
-            taskMgr.remove (MotionTrail.motion_trail_task_name)
-            MotionTrail.task_added = False
         return
         
     def print_matrix (self, matrix):
