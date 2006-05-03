@@ -57,6 +57,16 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionDSSolid::test_intersection
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionDSSolid::
+test_intersection(const CollisionEntry &entry) const {
+  return entry.get_into()->test_intersection_from_ds_solid(entry);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionDSSolid::xform
 //       Access: Public, Virtual
 //  Description: Transforms the solid by the indicated matrix.
@@ -219,6 +229,7 @@ PT(CollisionEntry) CollisionDSSolid::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
+  cerr<<"CollisionDSSolid::test_intersection_from_ds_solid\n";
 
   CPT(TransformState) wrt_space = entry.get_wrt_space();
 
@@ -276,8 +287,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   LVector3f surface_normal;
   LPoint3f surface_point;
-  float spheres = sa_distance_squared - sb_distance_squared;
-  float planes = pa_distance * pa_distance - pb_distance * pb_distance;
+  float spheres = sqrtf(sa_distance_squared) - sqrtf(sb_distance_squared);
+  float planes = pa_distance - pb_distance;
   if (spheres > planes) {
     if (spheres > 0) {
       // sphere_a is the furthest
@@ -359,7 +370,6 @@ fill_viz_geom() {
   PT(GeomVertexData) vdata = new GeomVertexData(
     "collision", GeomVertexFormat::get_v3cp(), Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  GeomVertexWriter color(vdata, InternalName::get_color());
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   // Generate the first endcap.
@@ -370,38 +380,36 @@ fill_viz_geom() {
     for (si = 0; si <= num_slices; ++si) {
       vertex.add_data3f(calc_sphere2_vertex(
           ri, si, num_rings, num_slices, -half_length, half_arc_angle_a));
-      //color.add_data4f(Colorf(1.0f, 0.0f, 0.0f, 1.0f));
-      color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
       vertex.add_data3f(calc_sphere2_vertex(
           ri + 1, si, num_rings, num_slices, -half_length, half_arc_angle_a));
-      //color.add_data4f(Colorf(1.0f, 0.0f, 0.0f, 1.0f));
-      color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
     }
     strip->add_next_vertices((num_slices + 1) * 2);
     strip->close_primitive();
   }
   
-  #if 0
-  // Now the planes.
-  for (si = 0; si <= num_slices; ++si) {
-    vertex.add_data3f(calc_sphere1_vertex(
-        num_rings, si, num_rings, num_slices));
-    vertex.add_data3f(calc_sphere2_vertex(
-        num_rings, si, num_rings, num_slices, half_length));
-  }
-  strip->add_next_vertices((num_slices + 1) * 2);
+  // Add plane A
+  vertex.add_data3f(Vertexf(-100, -100, 0));
+  vertex.add_data3f(Vertexf(-100, 100, 0));
+  vertex.add_data3f(Vertexf(100, -100, 0));
+  vertex.add_data3f(Vertexf(100, 100, 0));
+  strip->add_next_vertices(4);
   strip->close_primitive();
-  #endif
+  
+  // Add plane B
+  vertex.add_data3f(Vertexf(-100, -100, 20));
+  vertex.add_data3f(Vertexf(-100, 100, 20));
+  vertex.add_data3f(Vertexf(100, -100, 20));
+  vertex.add_data3f(Vertexf(100, 100, 20));
+  strip->add_next_vertices(4);
+  strip->close_primitive();
   
   // And the second endcap.
   for (ri = num_rings - 1; ri >= 0; --ri) {
     for (si = 0; si <= num_slices; ++si) {
       vertex.add_data3f(calc_sphere1_vertex(
           ri + 1, si, num_rings, num_slices, half_length, half_arc_angle_b));
-      color.add_data4f(Colorf(0.0f, 0.0f, 1.0f, 1.0f));
       vertex.add_data3f(calc_sphere1_vertex(
           ri, si, num_rings, num_slices, half_length, half_arc_angle_b));
-      color.add_data4f(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
     }
     strip->add_next_vertices((num_slices + 1) * 2);
     strip->close_primitive();
