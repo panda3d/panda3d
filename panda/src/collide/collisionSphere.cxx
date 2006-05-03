@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 
+#include "collisionDSSolid.h"
 #include "collisionSphere.h"
 #include "collisionLine.h"
 #include "collisionRay.h"
@@ -36,8 +37,10 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 
-PStatCollector CollisionSphere::_volume_pcollector("Collision Volumes:CollisionSphere");
-PStatCollector CollisionSphere::_test_pcollector("Collision Tests:CollisionSphere");
+PStatCollector CollisionSphere::_volume_pcollector(
+  "Collision Volumes:CollisionSphere");
+PStatCollector CollisionSphere::_test_pcollector(
+  "Collision Tests:CollisionSphere");
 TypeHandle CollisionSphere::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -132,6 +135,122 @@ output(ostream &out) const {
 PT(BoundingVolume) CollisionSphere::
 compute_internal_bounds() const {
   return new BoundingSphere(_center, _radius);
+}
+#define USE_DS_SOLID_PLANES 0
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSphere::test_intersection_from_ds_solid
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionSphere::
+test_intersection_from_ds_solid(const CollisionEntry &entry) const {
+  const CollisionDSSolid *ds_solid;
+  DCAST_INTO_R(ds_solid, entry.get_from(), 0);
+  cerr<<"CollisionSphere::test_intersection_from_ds_solid\n";
+
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+
+  const LMatrix4f &wrt_mat = wrt_space->get_mat();
+
+  LPoint3f into_center = get_center();
+  float into_radius = get_radius();
+
+  LPoint3f sa_center = ds_solid->get_center_a() * wrt_mat;
+  float sa_radius = length(
+    LVector3f(ds_solid->get_radius_a(), 0.0f, 0.0f) * wrt_mat);
+  LVector3f sa_vec = sa_center - into_center;
+  float sa_distance_squared = dot(sa_vec, sa_vec);
+  float sa_and_into_radii_squared = (
+    sa_radius + into_radius) * (sa_radius + into_radius);
+  if (sa_distance_squared > sa_and_into_radii_squared) {
+    // No intersection.
+    return NULL;
+  }
+
+  LPoint3f sb_center = ds_solid->get_center_b() * wrt_mat;
+  float sb_radius = length(
+    LVector3f(ds_solid->get_radius_b(), 0.0f, 0.0f) * wrt_mat);
+  LVector3f sb_vec = sb_center - into_center;
+  float sb_distance_squared = dot(sb_vec, sb_vec);
+  float sb_and_into_radii_squared = (
+    sb_radius + into_radius) * (sb_radius + into_radius);
+  if (sb_distance_squared > sb_and_into_radii_squared) {
+    // No intersection.
+    return NULL;
+  }
+
+  #if USE_DS_SOLID_PLANES
+  float pa_distance = ds_solid->dist_to_plane_a(into_center);
+  if (pa_distance > into_radius) {
+    // No intersection.
+    return NULL;
+  }
+
+  float pb_distance = ds_solid->dist_to_plane_b(into_center);
+  if (pb_distance > into_radius) {
+    // No intersection.
+    return NULL;
+  }
+  #endif
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+
+  LVector3f surface_normal; // into
+  LPoint3f surface_point; // into
+  LPoint3f interior_point; // from
+  float spheres = sqrtf(sa_distance_squared) - sqrtf(sb_distance_squared);
+  #if USE_DS_SOLID_PLANES
+  float planes = pa_distance - pb_distance;
+  if (spheres > planes) {
+  #endif
+    if (spheres > 0) {
+      // sphere_a is the furthest
+      cerr<<"sphere_a is the furthest"<<"\n";
+      float vec_length = sa_vec.length();
+      if (IS_NEARLY_ZERO(vec_length)) {
+        // The centers are coincident, use an arbitrary normal.
+        surface_normal.set(1.0, 0.0, 0.0);
+      } else {
+        surface_normal = sa_vec / vec_length;
+      }
+      interior_point = sa_center - surface_normal * sa_radius;
+    } else {
+      // sphere_b is the furthest
+      cerr<<"sphere_b is the furthest"<<"\n";
+      float vec_length = sb_vec.length();
+      if (IS_NEARLY_ZERO(vec_length)) {
+        // The centers are coincident, use an arbitrary normal.
+        surface_normal.set(1.0, 0.0, 0.0);
+      } else {
+        surface_normal = sb_vec / vec_length;
+      }
+      interior_point = sb_center - surface_normal * sb_radius;
+    }
+  #if USE_DS_SOLID_PLANES
+  } else {
+    if (planes > 0) {
+      // plane_a is the furthest
+      cerr<<"plane_a is the furthest"<<"\n";
+      surface_normal = ds_solid->get_plane_a().get_normal();
+      interior_point = into_center - surface_normal * pa_distance;
+    } else {
+      // plane_b is the furthest
+      cerr<<"plane_b is the furthest"<<"\n";
+      surface_normal = ds_solid->get_plane_b().get_normal();
+      interior_point = into_center - surface_normal * pb_distance;
+    }
+  }
+  #endif
+
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+  new_entry->set_surface_normal(surface_normal);
+  new_entry->set_surface_point(into_center + surface_normal * into_radius);
+  new_entry->set_interior_point(interior_point);
+  return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////

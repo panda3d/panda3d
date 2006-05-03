@@ -96,6 +96,8 @@ protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
 
   virtual PT(CollisionEntry)
+  test_intersection_from_ds_solid(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
   test_intersection_from_sphere(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_line(const CollisionEntry &entry) const;
@@ -164,6 +166,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class CollisionDSSolid;
   friend class CollisionSphere;
   friend class CollisionLine;
   friend class CollisionRay;
