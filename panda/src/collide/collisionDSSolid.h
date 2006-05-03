@@ -48,6 +48,9 @@ public:
   INLINE CollisionDSSolid(const CollisionDSSolid &copy);
   virtual CollisionSolid *make_copy();
 
+  virtual PT(CollisionEntry)
+  test_intersection(const CollisionEntry &entry) const;
+
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
 
