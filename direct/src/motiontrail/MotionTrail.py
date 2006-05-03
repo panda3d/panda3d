@@ -26,8 +26,8 @@ class MotionTrail(NodePath):
     notify = directNotify.newCategory ("MotionTrail")
 
     task_added = False
-    motion_trail_list = [ ]    
-
+    motion_trail_list = [ ]
+    motion_trail_task_name = "motion_trail_task"
 
     def __init__ (self,name,parent_node_path):
 
@@ -95,11 +95,27 @@ class MotionTrail(NodePath):
 
         if (MotionTrail.task_added == False):
 #            taskMgr.add (self.motion_trail_task, "motion_trail_task", priority = 50)
-            taskMgr.add (self.motion_trail_task, "motion_trail_task")
+            taskMgr.add (self.motion_trail_task, MotionTrail.motion_trail_task_name)
             MotionTrail.task_added = True
-
         return
 
+    def remove_task (self):
+        if (MotionTrail.task_added):
+            try:
+                total_motion_trails = len (MotionTrail.motion_trail_list)
+            except:
+                print "ERROR: len ( ) exception 0"
+                total_motion_trails = 0
+
+            if (total_motion_trails > 0):
+                pass
+
+            MotionTrail.motion_trail_list = [ ]
+
+            taskMgr.remove (MotionTrail.motion_trail_task_name)
+            MotionTrail.task_added = False
+        return
+        
     def print_matrix (self, matrix):
         separator = ' '
         print matrix.getCell (0, 0), separator, matrix.getCell (0, 1), separator, matrix.getCell (0, 2), separator, matrix.getCell (0, 3)
@@ -111,8 +127,6 @@ class MotionTrail(NodePath):
 
         current_time = task.time
 
-        index = 0
-
         try:
             total_motion_trails = len (MotionTrail.motion_trail_list)
         except:
@@ -120,6 +134,7 @@ class MotionTrail(NodePath):
             total_motion_trails = 0
             MotionTrail.motion_trail_list = [ ]
 
+        index = 0
         while (index < total_motion_trails):
             motion_trail = MotionTrail.motion_trail_list [index]
             if (motion_trail.active and motion_trail.check_for_update (current_time)):
@@ -294,7 +309,8 @@ class MotionTrail(NodePath):
         return
 
     def unregister_motion_trail (self):
-        MotionTrail.motion_trail_list = MotionTrail.motion_trail_list.remove (self)
+        if (self in MotionTrail.motion_trail_list):    
+            MotionTrail.motion_trail_list.remove (self)
         return
         
     def begin_geometry (self):
