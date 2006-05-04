@@ -42,7 +42,7 @@ class MotionTrailFrame:
         self.time = current_time
         self.transform = transform
         
-class MotionTrail(NodePath):
+class MotionTrail(NodePath, DirectObject):
 
     notify = directNotify.newCategory ("MotionTrail")
 
@@ -50,11 +50,9 @@ class MotionTrail(NodePath):
     motion_trail_list = [ ]
     motion_trail_task_name = "motion_trail_task"
 
-    direct_object = DirectObject ( )
-    direct_object.accept ("clientLogout", remove_task)
-
     def __init__ (self,name,parent_node_path):
 
+        DirectObject.__init__(self)
         NodePath.__init__ (self,name)
 
         # required initialization
@@ -120,6 +118,9 @@ class MotionTrail(NodePath):
         if (MotionTrail.task_added == False):
 #            taskMgr.add (self.motion_trail_task, "motion_trail_task", priority = 50)
             taskMgr.add (self.motion_trail_task, MotionTrail.motion_trail_task_name)
+
+            self.acceptOnce ("clientLogout", remove_task)
+            
             MotionTrail.task_added = True
         return
         
