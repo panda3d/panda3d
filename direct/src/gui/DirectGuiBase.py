@@ -1010,7 +1010,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def destroy(self):
         if __dev__:
             if hasattr(base, 'guiItems'):
-                if self in base.guiItems:
+                if self.guiId in base.guiItems:
                     del base.guiItems[self.guiId]
                 else:
                     base.notify.warning(
