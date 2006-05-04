@@ -8,8 +8,7 @@ class DirectObject:
     def __init__(self):
         pass
 
-    def __del__(self):
-        self.ignoreAll()
+    #def __del__(self):
         # This next line is useful for debugging leaks
         #print "Destructing: ", self.__class__.__name__
 
