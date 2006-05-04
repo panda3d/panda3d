@@ -101,9 +101,10 @@ class Pool:
         cleanupFunc will be called on every free and used item.
         """
         if cleanupFunc:
-            for item in self.__free:
-                cleanupFunc(item)
-            for item in self.__used:
+            # Make a list of all the items first in case the act of
+            # calling cleanupFunc moves some from used to free.
+            allItems = self.__free + self.__used
+            for item in allItems:
                 cleanupFunc(item)
         del self.__free
         del self.__used
