@@ -154,6 +154,7 @@ class ShowBase(DirectObject.DirectObject):
         self.shadowTrav = 0
         # in the collisionLoop task.
         self.cTrav = 0
+        self.cTravStack = Stack()
         # Ditto for an AppTraverser.
         self.appTrav = 0
 
@@ -247,6 +248,11 @@ class ShowBase(DirectObject.DirectObject):
 
         ShowBase.notify.info('__dev__ == %s' % __dev__)
 
+        if __dev__:
+            if self.config.GetBool('track-gui-items', True):
+                # dict of guiId to gui item, for tracking down leaks
+                self.guiItems = {}
+
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
         # main window.
@@ -285,6 +291,15 @@ class ShowBase(DirectObject.DirectObject):
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk)
         # Start IGLOOP
         self.restart()
+
+    # add a collision traverser via pushCTrav and remove it via popCTrav
+    # that way the owner of the new cTrav doesn't need to hold onto the
+    # previous one in order to put it back
+    def pushCTrav(self, cTrav):
+        self.cTravStack.push(self.cTrav)
+        self.cTrav = cTrav
+    def popCTrav(self):
+        self.cTrav = self.cTravStack.pop()
 
     def printEnvDebugInfo(self):
         """

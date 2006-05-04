@@ -626,6 +626,10 @@ class DirectGuiBase(DirectObject.DirectObject):
         """
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
+        if base.config.GetBool('debug-directgui-msgs', False):
+            from direct.showbase.PythonUtil import StackTrace
+            print gEvent
+            print StackTrace()
         self.accept(gEvent, command, extraArgs = extraArgs)
 
     def unbind(self, event):
@@ -711,6 +715,14 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         if self['guiId']:
             self.guiItem.setId(self['guiId'])
         self.guiId = self.guiItem.getId()
+        if __dev__:
+            # track gui items by guiId for tracking down leaks
+            if hasattr(base, 'guiItems'):
+                if self.guiId in base.guiItems:
+                    base.notify.warning('duplicate guiId: %s (%s stomping %s)' %
+                                        (self.guiId, self,
+                                         base.guiItems[self.guiId]))
+                base.guiItems[self.guiId] = self
         # Attach button to parent and make that self
         if (parent == None):
             parent = aspect2d
@@ -996,6 +1008,15 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.updateFrameStyle()
 
     def destroy(self):
+        if __dev__:
+            if hasattr(base, 'guiItems'):
+                if self in base.guiItems:
+                    del base.guiItems[self.guiId]
+                else:
+                    base.notify.warning(
+                        'DirectGuiWidget.destroy(): '
+                        'gui item %s not in base.guiItems' %
+                        self.guiId)
         if hasattr(self, "frameStyle"):
             # Destroy children
             for child in self.getChildrenAsList():
