@@ -95,6 +95,17 @@ class DoInterestManager(DirectObject.DirectObject):
         assert self.printInterestsIfDebug()
         return handle
 
+    def countOpenInterests(self):
+        openInterestsCount = 0
+        for interest in DoInterestManager._interests.values():
+            # I'm only getting NO_SCOPE interests, so for now I'll key off
+            # of events
+            #if interest.scope != NO_SCOPE:     
+            #    openInterestsCount += 1
+            #if len(interest.events) != 0:
+                openInterestsCount += 1
+        return openInterestsCount
+
     def removeInterest(self, handle, event=None):
         """
         Stop looking in a (set of) zone(s)
