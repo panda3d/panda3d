@@ -78,6 +78,8 @@ class DoInterestManager(DirectObject.DirectObject):
     def __init__(self):
         assert DoInterestManager.notify.debugCall()
         DirectObject.DirectObject.__init__(self)
+        self._addInterestEvent = uniqueName('DoInterestManager-Add')
+        self._removeInterestEvent = uniqueName('DoInterestManager-Remove')
 
     def addInterest(self, parentId, zoneIdList, description, event=None):
         """
@@ -92,6 +94,8 @@ class DoInterestManager(DirectObject.DirectObject):
             print 'INTEREST DEBUG: addInterest(): handle=%s, parent=%s, zoneIds=%s, description=%s, event=%s' % (
                 handle, parentId, zoneIdList, description, event)
         self._sendAddInterest(handle, scopeId, parentId, zoneIdList, description)
+        if event:
+            messenger.send(self._getAddInterestEvent(), [event])
         assert self.printInterestsIfDebug()
         return handle
 
@@ -115,6 +119,9 @@ class DoInterestManager(DirectObject.DirectObject):
         if DoInterestManager._interests.has_key(handle):
             existed = True
             intState = DoInterestManager._interests[handle]
+            if event:
+                messenger.send(self._getRemoveInterestEvent(),
+                               [event, intState.parentId, intState.zoneIdList])
             if intState.isPendingDelete():
                 self.notify.warning(
                     'removeInterest: interest %s already pending removal' %
@@ -183,6 +190,12 @@ class DoInterestManager(DirectObject.DirectObject):
             DoInterestManager.notify.warning(
                 "alterInterest: handle not found: %s" % (handle))
         return exists
+
+    # events for InterestWatcher
+    def _getAddInterestEvent(self):
+        return self._addInterestEvent
+    def _getRemoveInterestEvent(self):
+        return self._removeInterestEvent
 
     def _getInterestState(self, handle):
         return DoInterestManager._interests[handle]

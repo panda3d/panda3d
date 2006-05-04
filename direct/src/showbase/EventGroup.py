@@ -45,11 +45,13 @@ class EventGroup(DirectObject.DirectObject):
                 self.addEvent(event)
 
     def destroy(self):
-        del self._name
-        del self._subEvents
-        del self._completedEvents
-        del self._doneEvent
-        self.ignoreAll()
+        if hasattr(self, '_name'):
+            # keep this around
+            #del self._doneEvent
+            del self._name
+            del self._subEvents
+            del self._completedEvents
+            self.ignoreAll()
 
     def getName(self):
         return self._name
