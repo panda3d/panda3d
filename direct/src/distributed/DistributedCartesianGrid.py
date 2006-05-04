@@ -89,6 +89,11 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
                 removeEvent = None
             self.cr.removeInterest(self.gridVisContext, removeEvent)
             self.gridVisContext = None
+        else:
+            # if we were given an event but we have not interest open,
+            # just send the event right away
+            if event is not None:
+                messenger.send(event)
         self.visAvatar = None
         self.visZone = None
 
