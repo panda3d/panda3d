@@ -26,6 +26,7 @@
 
 #include <pthread.h>
 #include <errno.h>
+#include <assert.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexPosixImpl

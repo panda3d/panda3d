@@ -205,6 +205,7 @@ $[cdefine HAVE_ZLIB]
 
 /* Define if we have OpenGL installed and want to build for GL.  */
 $[cdefine HAVE_GL]
+$[cdefine HAVE_GLU]
 
 /* Define if we have OpenCV installed and want to build for OpenCV.  */
 $[cdefine HAVE_OPENCV]

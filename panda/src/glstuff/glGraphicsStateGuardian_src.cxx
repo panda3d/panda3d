@@ -2320,15 +2320,9 @@ extract_texture_data(Texture *tex) {
   // Make sure we were able to query those parameters properly.
   GLenum error_code = GLP(GetError)();
   if (error_code != GL_NO_ERROR) {
-    const GLubyte *error_string = GLUP(ErrorString)(error_code);
     GLCAT.error()
-      << "Unable to query texture parameters for " << tex->get_name();
-    if (error_string != (const GLubyte *)NULL) {
-      GLCAT.error(false)
-        << " : " << error_string;
-    }
-    GLCAT.error(false)
-      << "\n";
+      << "Unable to query texture parameters for " << tex->get_name()
+      << " : " << get_error_string(error_code) << "\n";
 
     return false;
   }
@@ -4021,22 +4015,37 @@ report_errors_loop(int line, const char *source_file, GLenum error_code,
 
   while ((error_count < max_gl_errors_reported) &&
          (error_code != GL_NO_ERROR)) {
-    const GLubyte *error_string = GLUP(ErrorString)(error_code);
-    if (error_string != (const GLubyte *)NULL) {
-      GLCAT.error()
-        << "at " << line << " of " << source_file << ": "
-        << error_string << "\n";
-    } else {
-      GLCAT.error()
-        << "at " << line << " of " << source_file << ": "
-        << "GL error " << (int)error_code << "\n";
-    }
+    GLCAT.error()
+      << "at " << line << " of " << source_file << " : "
+      << get_error_string(error_code) << "\n";
+
     error_code = GLP(GetError)();
     error_count++;
   }
 
 #endif
   return (error_code == GL_NO_ERROR);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_error_string
+//       Access: Protected, Static
+//  Description: Returns gluGetErrorString(), if GLU is available;
+//               otherwise, returns some default error message.
+////////////////////////////////////////////////////////////////////
+string CLP(GraphicsStateGuardian)::
+get_error_string(GLenum error_code) {
+#ifdef HAVE_GLU
+  const GLubyte *error_string = GLUP(ErrorString)(error_code);
+  if (error_string != (const GLubyte *)NULL) {
+    return string((const char *)error_string);
+  }
+#endif  // HAVE_GLU
+
+  ostringstream strm;
+  strm << "GL error " << (int)error_code;
+
+  return strm.str();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6855,15 +6864,9 @@ upload_texture_image(CLP(TextureContext) *gtc,
   // failed.
   GLenum error_code = GLP(GetError)();
   if (error_code != GL_NO_ERROR) {
-    const GLubyte *error_string = GLUP(ErrorString)(error_code);
     GLCAT.error()
-      << "GL texture creation failed for " << tex->get_name();
-    if (error_string != (const GLubyte *)NULL) {
-      GLCAT.error(false)
-        << " : " << error_string;
-    }
-    GLCAT.error(false)
-      << "\n";
+      << "GL texture creation failed for " << tex->get_name()
+      << " : " << get_error_string(error_code) << "\n";
 
     return false;
   }
@@ -6907,15 +6910,9 @@ get_texture_memory_size(Texture *tex) {
     GLenum error_code = GLP(GetError)();
     if (error_code != GL_NO_ERROR) {
       if (GLCAT.is_debug()) {
-	const GLubyte *error_string = GLUP(ErrorString)(error_code);
 	GLCAT.debug()
-	  << "Couldn't get compressed size for " << tex->get_name();
-	if (error_string != (const GLubyte *)NULL) {
-	  GLCAT.debug(false)
-	    << " : " << error_string;
-	}
-	GLCAT.debug(false)
-	  << "\n";
+	  << "Couldn't get compressed size for " << tex->get_name()
+	  << " : " << get_error_string(error_code) << "\n";
       }
       // Fall through to the noncompressed case.
     } else {
@@ -7074,16 +7071,10 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
   // Now see if we were successful.
   GLenum error_code = GLP(GetError)();
   if (error_code != GL_NO_ERROR) {
-    const GLubyte *error_string = GLUP(ErrorString)(error_code);
     GLCAT.error()
       << "Unable to extract texture for " << *tex
-      << ", mipmap level " << n << ": ";
-    if (error_string != (const GLubyte *)NULL) {
-      GLCAT.error(false)
-        << " : " << error_string;
-    }
-    GLCAT.error(false)
-      << "\n";
+      << ", mipmap level " << n
+      << " : " << get_error_string(error_code) << "\n";
 
     return false;
   }

@@ -182,6 +182,7 @@
 #set GL_LPATH $[unixfilename $[GL_LPATH]]
 #set GL_LIBS $[GL_LIBS]
 #set HAVE_GL $[HAVE_GL]
+#set HAVE_GLU $[HAVE_GLU]
 
 #set MESA_IPATH $[unixfilename $[MESA_IPATH]]
 #set MESA_LPATH $[unixfilename $[MESA_LPATH]]

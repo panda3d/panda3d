@@ -49,7 +49,9 @@
 #include <OpenGL/glu.h>
 #else
 #include <GL/gl.h>
+#ifdef HAVE_GLU
 #include <GL/glu.h>
+#endif
 #endif 
 
 #include "glstuff_src.h"
