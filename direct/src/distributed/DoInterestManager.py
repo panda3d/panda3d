@@ -82,15 +82,20 @@ class DoInterestManager(DirectObject.DirectObject):
         DirectObject.DirectObject.__init__(self)
         self._addInterestEvent = uniqueName('DoInterestManager-Add')
         self._removeInterestEvent = uniqueName('DoInterestManager-Remove')
+        self._noNewInterests = True
 
     def _getAnonymousEvent(self, desc):
         return 'anonymous-%s-%s' % (desc, DoInterestManager._Serial.next())
+
+    def setNoNewInterests(self, flag):
+        self._noNewInterests = flag
 
     def addInterest(self, parentId, zoneIdList, description, event=None):
         """
         Look into a (set of) zone(s).
         """
         assert DoInterestManager.notify.debugCall()
+        assert not self._noNewInterests
         handle = self._getNextHandle()
         scopeId = self._getNextScopeId()
         if event is None:
@@ -174,6 +179,7 @@ class DoInterestManager(DirectObject.DirectObject):
         If this is a problem, consider opening multiple interests.
         """
         assert DoInterestManager.notify.debugCall()
+        assert not self._noNewInterests
         exists = False
         if event is None:
             event = self._getAnonymousEvent('alterInterest')
