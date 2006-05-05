@@ -75,11 +75,16 @@ class DoInterestManager(DirectObject.DirectObject):
         _debug_interestHistory = []
         _debug_maxDescriptionLen = 20
 
+    _Serial = SerialNum()
+
     def __init__(self):
         assert DoInterestManager.notify.debugCall()
         DirectObject.DirectObject.__init__(self)
         self._addInterestEvent = uniqueName('DoInterestManager-Add')
         self._removeInterestEvent = uniqueName('DoInterestManager-Remove')
+
+    def _getAnonymousEvent(self, desc):
+        return 'anonymous-%s-%s' % (desc, DoInterestManager._Serial.next())
 
     def addInterest(self, parentId, zoneIdList, description, event=None):
         """
@@ -88,6 +93,8 @@ class DoInterestManager(DirectObject.DirectObject):
         assert DoInterestManager.notify.debugCall()
         handle = self._getNextHandle()
         scopeId = self._getNextScopeId()
+        if event is None:
+            event = self._getAnonymousEvent('addInterest')
         DoInterestManager._interests[handle] = InterestState(
             description, InterestState.StateActive, scopeId, event, parentId, zoneIdList)
         if self.InterestDebug:
@@ -116,6 +123,8 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         assert DoInterestManager.notify.debugCall()
         existed = False
+        if event is None:
+            event = self._getAnonymousEvent('removeInterest')
         if DoInterestManager._interests.has_key(handle):
             existed = True
             intState = DoInterestManager._interests[handle]
@@ -166,6 +175,8 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         assert DoInterestManager.notify.debugCall()
         exists = False
+        if event is None:
+            event = self._getAnonymousEvent('alterInterest')
         if DoInterestManager._interests.has_key(handle):
             if description is not None:
                 DoInterestManager._interests[handle].desc = description
