@@ -157,7 +157,7 @@ class FSM(DirectObject):
 
     def __del__(self):
         self.cleanup()
-        DirectObject.__del__(self)
+        # DirectObject.__del__(self)
 
     def cleanup(self):
         # A convenience function to force the FSM to clean itself up
