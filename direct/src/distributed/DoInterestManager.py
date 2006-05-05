@@ -82,7 +82,7 @@ class DoInterestManager(DirectObject.DirectObject):
         DirectObject.DirectObject.__init__(self)
         self._addInterestEvent = uniqueName('DoInterestManager-Add')
         self._removeInterestEvent = uniqueName('DoInterestManager-Remove')
-        self._noNewInterests = True
+        self._noNewInterests = False
 
     def _getAnonymousEvent(self, desc):
         return 'anonymous-%s-%s' % (desc, DoInterestManager._Serial.next())
