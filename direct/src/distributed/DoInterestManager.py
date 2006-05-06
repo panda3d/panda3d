@@ -90,6 +90,9 @@ class DoInterestManager(DirectObject.DirectObject):
     def setNoNewInterests(self, flag):
         self._noNewInterests = flag
 
+    def noNewInterests(self):
+        return self._noNewInterests
+
     def addInterest(self, parentId, zoneIdList, description, event=None):
         """
         Look into a (set of) zone(s).
