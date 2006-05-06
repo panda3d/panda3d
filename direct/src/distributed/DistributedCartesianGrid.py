@@ -70,7 +70,13 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
 
     def startProcessVisibility(self, avatar):
         assert not self.cr._noNewInterests
+        if self.cr.noNewInterests():
+            self.notify.warning(
+                'startProcessVisibility(%s): tried to open a new interest during logout'
+                % self.doId)
+            return
         self.stopProcessVisibility()
+        self.acceptOnce(self.cr.StopVisibilityEvent, self.stopProcessVisibility)
         self.visAvatar = avatar
         self.visZone = None
         self.gridVisContext = self.cr.addInterest(
@@ -79,6 +85,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
             self.processVisibility, self.taskName("processVisibility"))
 
     def stopProcessVisibility(self, clearAll=False, event=None):
+        self.ignore(self.cr.StopVisibilityEvent)
         taskMgr.remove(self.taskName("processVisibility"))
         if event is not None:
             eventGroup = EventGroup('DistCartesianGrid.stopProcessVis',
