@@ -69,6 +69,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         return self.centerPos
 
     def startProcessVisibility(self, avatar):
+        assert not self.cr._noNewInterests
         self.stopProcessVisibility()
         self.visAvatar = avatar
         self.visZone = None
