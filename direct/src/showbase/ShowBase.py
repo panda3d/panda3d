@@ -248,7 +248,7 @@ class ShowBase(DirectObject.DirectObject):
 
         ShowBase.notify.info('__dev__ == %s' % __dev__)
 
-        if __dev__:
+        if __dev__ or self.config.GetBool('want-e3-hacks', False):
             if self.config.GetBool('track-gui-items', True):
                 # dict of guiId to gui item, for tracking down leaks
                 self.guiItems = {}
