@@ -70,6 +70,9 @@ def writeFsmTree(instance, indent = 0):
 
 
 #if __debug__: #RAU accdg to Darren its's ok that StackTrace is not protected by __debug__
+# DCR if somebody ends up using StackTrace in production, either
+# A) it will be OK because it hardly ever gets called, or
+# B) it will be easy to track it down (grep for StackTrace)
 class StackTrace:
     def __init__(self, label="", start=0, limit=None):
         """
@@ -699,6 +702,62 @@ PyUtilProfileDefaultFilename = 'profiledata'
 PyUtilProfileDefaultLines = 80
 PyUtilProfileDefaultSorts = ['cumulative', 'time', 'calls']
 
+def profile(callback, name):
+    import __builtin__
+    if 'globalProfileFunc' in __builtin__.__dict__:
+        # rats. Python profiler is not re-entrant...
+        base.notify.warning(
+            'PythonUtil.profileStart(%s): aborted, already profiling %s'
+            #'\nStack Trace:\n%s'
+            % (name, __builtin__.globalProfileFunc,
+            #StackTrace()
+            ))
+        return
+    __builtin__.globalProfileFunc = callback
+    print '***** START PROFILE: %s *****' % name
+    startProfile(cmd='globalProfileFunc()')
+    print '***** END PROFILE: %s *****' % name
+    del __builtin__.__dict__['globalProfileFunc']
+
+def profiled(category):
+    """ decorator for profiling functions
+    turn categories on and off via "want-profile-categoryName 1"
+    
+    e.g.
+
+    @profiled('particles')
+    def loadParticles():
+        ...
+
+    """
+    assert type(category) is types.StringType, "must provide a category name for @profiled"
+    if not __dev__:
+        # if we're not in __dev__, just return the function itself. This
+        # results in zero runtime overhead, since decorators are evaluated
+        # at module-load.
+        def nullDecorator(f):
+            return f
+        return nullDecorator
+
+    def profileDecorator(f):
+        def _profiled(*args, **kArgs):
+            #import pdb;pdb.set_trace()
+            # must do this in here because we don't have base/simbase
+            # at the time that PythonUtil is loaded
+            name = '(%s) %s from %s' % (category, f.func_name, f.__module__)
+            try:
+                _base = base
+            except:
+                _base = simbase
+            if _base.config.GetBool('want-profile-%s' % category, 0):
+                return profile(Functor(f, *args, **kArgs), name)
+            else:
+                return f(*args, **kArgs)
+        #import pdb;pdb.set_trace()
+        _profiled.__doc__ = f.__doc__
+        return _profiled
+    return profileDecorator
+
 # call this from the prompt, and break back out to the prompt
 # to stop profiling
 #
@@ -774,7 +833,11 @@ class Functor:
     def __repr__(self):
         s = 'Functor(%s' % self._function.__name__
         for arg in self._args:
-            s += ', %s' % repr(arg)
+            try:
+                argStr = repr(arg)
+            except:
+                argStr = 'bad repr: %s' % arg.__class__
+            s += ', %s' % argStr
         for karg, value in self._kargs.items():
             s += ', %s=%s' % (karg, repr(value))
         s += ')'
@@ -1929,3 +1992,4 @@ __builtin__.Stack = Stack
 __builtin__.Queue = Queue
 __builtin__.SerialNum = SerialNum
 __builtin__.uniqueName = uniqueName
+__builtin__.profiled = profiled
