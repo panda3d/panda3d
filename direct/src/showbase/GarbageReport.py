@@ -16,20 +16,6 @@ class GarbageReport:
             gc.set_debug(0)
 
         numGarbage = len(garbage)
-        # grab the referents
-        referentsByReference = {}
-        referentsByNumber = {}
-        for i in xrange(numGarbage):
-            referents = gc.get_referents(garbage[i])
-            referentsByReference[i] = list(referents)
-            # look to see if each referent is another garbage item
-            referentsByNumber[i] = list()
-            for referent in referents:
-                try:
-                    num = garbage.index(referent)
-                except:
-                    num = 'NG' # Not Garbage
-                referentsByNumber[i].append(num)
         # grab the referrers
         referrersByReference = {}
         referrersByNumber = {}
@@ -44,6 +30,20 @@ class GarbageReport:
                 except:
                     num = 'NG' # Not Garbage
                 referrersByNumber[i].append(num)
+        # grab the referents
+        referentsByReference = {}
+        referentsByNumber = {}
+        for i in xrange(numGarbage):
+            referents = gc.get_referents(garbage[i])
+            referentsByReference[i] = list(referents)
+            # look to see if each referent is another garbage item
+            referentsByNumber[i] = list()
+            for referent in referents:
+                try:
+                    num = garbage.index(referent)
+                except:
+                    num = 'NG' # Not Garbage
+                referentsByNumber[i].append(num)
 
         s = '\n===== GarbageReport: \'%s\' (%s items) =====' % (name, numGarbage)
         if numGarbage > 0:
@@ -59,17 +59,17 @@ class GarbageReport:
                 s += format % (i, type(garbage[i]), garbage[i])
 
             format = '\n%0' + '%s' % digits + 'i:%s'
-            s += '\n\n===== Referents By Number (what is garbage item referring to?) NG=NonGarbage ====='
-            for i in xrange(numGarbage):
-                s += format % (i, referentsByNumber[i])
             s += '\n\n===== Referrers By Number (what is referring to garbage item?) NG=NonGarbage ====='
             for i in xrange(numGarbage):
                 s += format % (i, referrersByNumber[i])
-            s += '\n\n===== Referents (what is garbage item referring to?) ====='
+            s += '\n\n===== Referents By Number (what is garbage item referring to?) NG=NonGarbage ====='
             for i in xrange(numGarbage):
-                s += format % (i, referentsByReference[i])
+                s += format % (i, referentsByNumber[i])
             s += '\n\n===== Referrers (what is referring to garbage item?) ====='
             for i in xrange(numGarbage):
                 s += format % (i, referrersByReference[i])
+            s += '\n\n===== Referents (what is garbage item referring to?) ====='
+            for i in xrange(numGarbage):
+                s += format % (i, referentsByReference[i])
 
         self.notify.info(s)
