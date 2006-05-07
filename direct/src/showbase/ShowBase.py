@@ -280,7 +280,8 @@ class ShowBase(DirectObject.DirectObject):
             self.multiClientSleep = 0
 
         # Offscreen buffer viewing utility.
-        self.bufferViewer = BufferViewer()
+        if self.config.GetBool('show-buffers', 0):
+            self.bufferViewer = BufferViewer()
 
         # Start Tk and DIRECT if specified by Config.prc
         fTk = self.config.GetBool('want-tk', 0)
