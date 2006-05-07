@@ -123,6 +123,11 @@ class MotionTrail(NodePath, DirectObject):
             
             MotionTrail.task_added = True
         return
+
+    def delete(self):
+        del self.root_node_path
+        del self.parent_node_path
+        self.removeNode()
         
     def print_matrix (self, matrix):
         separator = ' '
