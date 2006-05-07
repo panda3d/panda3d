@@ -98,8 +98,13 @@ class DoInterestManager(DirectObject.DirectObject):
         Look into a (set of) zone(s).
         """
         assert DoInterestManager.notify.debugCall()
-        assert not self._noNewInterests
+        #assert not self._noNewInterests
         handle = self._getNextHandle()
+        if self._noNewInterests:
+            DoInterestManager.notify.warning(
+                "addInterest: addingInterests on delete: %s" % (handle))
+            return
+        
         scopeId = self._getNextScopeId()
         if event is None:
             event = self._getAnonymousEvent('addInterest')
@@ -182,7 +187,12 @@ class DoInterestManager(DirectObject.DirectObject):
         If this is a problem, consider opening multiple interests.
         """
         assert DoInterestManager.notify.debugCall()
-        assert not self._noNewInterests
+        #assert not self._noNewInterests
+        if self._noNewInterests:
+            DoInterestManager.notify.warning(
+                "alterInterest: addingInterests on delete: %s" % (handle))
+            return
+        
         exists = False
         if event is None:
             event = self._getAnonymousEvent('alterInterest')
