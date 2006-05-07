@@ -242,6 +242,7 @@ class DirectScrolledList(DirectFrame):
 
             item.show()
             item.setPos(0, 0,  -(i-self.index) * self.maxHeight)
+            #print 'height bug tracker: i-%s idx-%s h-%s' % (i, self.index, self.maxHeight)
 
         if self['command']:
             # Pass any extra args to command
