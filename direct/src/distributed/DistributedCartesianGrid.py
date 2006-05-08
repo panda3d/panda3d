@@ -14,6 +14,10 @@ if __debug__:
 
 from CartesianGridBase import CartesianGridBase
 
+# increase this number if you want to visualize the grid lines
+# above water level
+GRID_Z_OFFSET = 0.0
+
 class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
     notify = directNotify.newCategory("DistributedCartesianGrid")
     notify.setDebug(0)
@@ -262,21 +266,21 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
             for i in range(numLines+1):
                 icw = i * cw - dx
                 if i == numLines/2:
-                    center.moveTo(icw, -scaledSize, 0)
-                    center.drawTo(icw, scaledSize, 0)
-                    center.moveTo(-scaledSize, icw, 0)
-                    center.drawTo(scaledSize, icw, 0)
+                    center.moveTo(icw, -scaledSize, GRID_Z_OFFSET)
+                    center.drawTo(icw, scaledSize, GRID_Z_OFFSET)
+                    center.moveTo(-scaledSize, icw, GRID_Z_OFFSET)
+                    center.drawTo(scaledSize, icw, GRID_Z_OFFSET)
                 else:
                     if (i % 5) == 0:
-                        major.moveTo(icw, -scaledSize, 0)
-                        major.drawTo(icw, scaledSize, 0)
-                        major.moveTo(-scaledSize, icw, 0)
-                        major.drawTo(scaledSize, icw, 0)
+                        major.moveTo(icw, -scaledSize, GRID_Z_OFFSET)
+                        major.drawTo(icw, scaledSize, GRID_Z_OFFSET)
+                        major.moveTo(-scaledSize, icw, GRID_Z_OFFSET)
+                        major.drawTo(scaledSize, icw, GRID_Z_OFFSET)
                     else:
-                        minor.moveTo(icw, -scaledSize, 0)
-                        minor.drawTo(icw, scaledSize, 0)
-                        minor.moveTo(-scaledSize, icw, 0)
-                        minor.drawTo(scaledSize, icw, 0)
+                        minor.moveTo(icw, -scaledSize, GRID_Z_OFFSET)
+                        minor.drawTo(icw, scaledSize, GRID_Z_OFFSET)
+                        minor.moveTo(-scaledSize, icw, GRID_Z_OFFSET)
+                        minor.drawTo(scaledSize, icw, GRID_Z_OFFSET)
             center.create()
             minor.create()
             major.create()
@@ -306,7 +310,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
                     # Place the text node in the center of the cell
                     textNodePath.setPosHprScale((i * cw - dx) + (cw * 0.5), # x
                                                 (j * cw - dx) + (cw * 0.5), # y
-                                                3.0, # z
+                                                GRID_Z_OFFSET+3.0, # z
                                                 # Lay them down flat
                                                 0, -90, 0, # hpr
                                                 scale, scale, scale)
@@ -324,7 +328,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
                     marker.reparentTo(self.markerParent)
                     marker.setPos(i * self.cellWidth - dx,
                                   j * self.cellWidth - dx,
-                                  1.0)
+                                  GRID_Z_OFFSET + 1.0)
                     marker.setScale(5)
                     self.cellMarkers.append(marker)
 
