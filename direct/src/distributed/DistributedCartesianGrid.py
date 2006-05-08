@@ -14,7 +14,6 @@ if __debug__:
 
 from CartesianGridBase import CartesianGridBase
 
-
 class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
     notify = directNotify.newCategory("DistributedCartesianGrid")
     notify.setDebug(0)
