@@ -176,12 +176,6 @@ ConfigVariableString red_blue_stereo_colors
           "be a two-word string, where each word is one of 'red', 'blue', "
           "'green', or 'alpha'."));
 
-ConfigVariableBool invert_red_blue_stereo
-("invert-red-blue-stereo", false,
- PRC_DESC("When this is true, the red and blue colors of red-blue stereo mode "
-	  "are inverted from their default convention, so the blue is on the "
-	  "left and red is on the right."));
-
 ConfigVariableBool depth_offset_decals
 ("depth-offset-decals", false,
  PRC_DESC("Set this true to allow decals to be implemented via the advanced "

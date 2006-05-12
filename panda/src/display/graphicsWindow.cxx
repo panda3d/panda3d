@@ -54,6 +54,11 @@ GraphicsWindow(GraphicsPipe *pipe,
       << "Creating new window " << get_name() << "\n";
   }
 
+  _red_blue_stereo = red_blue_stereo && !properties.is_stereo();
+  if (_red_blue_stereo) {
+    _left_eye_color_mask = parse_color_mask(red_blue_stereo_colors.get_word(0));    _right_eye_color_mask = parse_color_mask(red_blue_stereo_colors.get_word(1));
+  }
+
   _properties.set_open(false);
   _properties.set_undecorated(false);
   _properties.set_fullscreen(false);
