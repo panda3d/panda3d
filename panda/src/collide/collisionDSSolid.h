@@ -51,6 +51,8 @@ public:
   virtual PT(CollisionEntry)
   test_intersection(const CollisionEntry &entry) const;
 
+  INLINE float get_lens_radius() const;
+
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
 
@@ -109,10 +111,13 @@ private:
   float _radius_b;
   Planef _plane_a;
   Planef _plane_b;
+  
+  mutable float _lens_radius;
 
   static PStatCollector _volume_pcollector;
   static PStatCollector _test_pcollector;
 
+  void calc_plane(const Planef &plane);
   Vertexf calc_sphere1_vertex(
       int ri, int si, int num_rings, int num_slices, float length,
       float angle);

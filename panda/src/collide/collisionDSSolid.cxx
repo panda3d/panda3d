@@ -38,6 +38,8 @@
 #include "transformState.h"
 #include "geom.h"
 #include "geomTristrips.h"
+#include "geomTrifans.h"
+#include "geomLinestrips.h"
 #include "geomVertexWriter.h"
 
 PStatCollector CollisionDSSolid::_volume_pcollector(
@@ -198,14 +200,14 @@ compute_internal_bounds() const {
       
       // Get the lens center point on the intersection plane between
       // sphere A and sphere B
-      LVector3f lens_center = _center_a + vec * (n / dist_doubled);
-      float lens_radius = (1.0f / dist_doubled) * sqrt(m);
-      cerr<<"lens_center:"<<lens_center<<", lens_radius:"<<lens_radius<<"\n";
+      LPoint3f lens_center = _center_a + vec * (n / dist_doubled);
+      _lens_radius = (1.0f / dist_doubled) * sqrt(m);
+      cerr<<"lens_center:"<<lens_center<<", lens_radius:"<<_lens_radius<<"\n";
       
       //TODO: account for cutting planes (which could make the sphere
       // smaller, which is an optimization).
       
-      BoundingSphere sphere(lens_center, lens_radius);
+      BoundingSphere sphere(lens_center, _lens_radius);
       gbound->extend_by(&sphere);
     } else {
       // Both endpoints are coincident; therefore, the bounding volume
@@ -368,7 +370,7 @@ fill_viz_geom() {
   float half_arc_angle_b = acos(triangle_height / _radius_b);
 
   PT(GeomVertexData) vdata = new GeomVertexData(
-    "collision", GeomVertexFormat::get_v3cp(), Geom::UH_static);
+    "collision", GeomVertexFormat::get_v3(), Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
@@ -388,20 +390,10 @@ fill_viz_geom() {
   }
   
   // Add plane A
-  vertex.add_data3f(Vertexf(-100, -100, 0));
-  vertex.add_data3f(Vertexf(-100, 100, 0));
-  vertex.add_data3f(Vertexf(100, -100, 0));
-  vertex.add_data3f(Vertexf(100, 100, 0));
-  strip->add_next_vertices(4);
-  strip->close_primitive();
+  calc_plane(_plane_a);
   
   // Add plane B
-  vertex.add_data3f(Vertexf(-100, -100, 20));
-  vertex.add_data3f(Vertexf(-100, 100, 20));
-  vertex.add_data3f(Vertexf(100, -100, 20));
-  vertex.add_data3f(Vertexf(100, 100, 20));
-  strip->add_next_vertices(4);
-  strip->close_primitive();
+  calc_plane(_plane_b);
   
   // And the second endcap.
   for (ri = num_rings - 1; ri >= 0; --ri) {
@@ -428,6 +420,76 @@ fill_viz_geom() {
   
   _viz_geom->add_geom(geom, get_solid_viz_state());
   _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionDSSolid::calc_plane
+//       Access: Private
+//  Description: Calculates a plane, for use in generating the
+//               viz geometry.
+////////////////////////////////////////////////////////////////////
+void CollisionDSSolid::
+calc_plane(const Planef &plane) {
+  LPoint3f cp;
+  LVector3f p1, p2, p3, p4;
+
+  LVector3f normal = plane.get_normal();
+  float D = plane[3];
+
+  if (fabs(normal[0]) > fabs(normal[1]) &&
+      fabs(normal[0]) > fabs(normal[2])) {
+    // X has the largest coefficient.
+    cp.set(-D / normal[0], 0.0f, 0.0f);
+    p1 = LPoint3f(-(normal[1] + normal[2] + D)/normal[0], 1.0f, 1.0f) - cp;
+
+  } else if (fabs(normal[1]) > fabs(normal[2])) {
+    // Y has the largest coefficient.
+    cp.set(0.0f, -D / normal[1], 0.0f);
+    p1 = LPoint3f(1.0f, -(normal[0] + normal[2] + D)/normal[1], 1.0f) - cp;
+
+  } else {
+    // Z has the largest coefficient.
+    cp.set(0.0f, 0.0f, -D / normal[2]);
+    p1 = LPoint3f(1.0f, 1.0f, -(normal[0] + normal[1] + D)/normal[2]) - cp;
+  }
+
+  p1.normalize();
+  p2 = cross(normal, p1);
+  p3 = cross(normal, p2);
+  p4 = cross(normal, p3);
+
+  static const double plane_scale = 100.0;
+
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("collision", GeomVertexFormat::get_v3(),
+     Geom::UH_static);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  
+  vertex.add_data3f(cp + p1 * plane_scale);
+  vertex.add_data3f(cp + p2 * plane_scale);
+  vertex.add_data3f(cp + p3 * plane_scale);
+  vertex.add_data3f(cp + p4 * plane_scale);
+  
+  PT(GeomTrifans) body = new GeomTrifans(Geom::UH_static);
+  body->add_consecutive_vertices(0, 4);
+  body->close_primitive();
+  
+  PT(GeomLinestrips) border = new GeomLinestrips(Geom::UH_static);
+  border->add_consecutive_vertices(0, 4);
+  border->add_vertex(0);
+  border->close_primitive();
+  
+  PT(Geom) geom1 = new Geom(vdata);
+  geom1->add_primitive(body);
+  
+  PT(Geom) geom2 = new Geom(vdata);
+  geom2->add_primitive(border);
+  
+  _viz_geom->add_geom(geom1, get_solid_viz_state());
+  _viz_geom->add_geom(geom2, get_wireframe_viz_state());
+  
+  _bounds_viz_geom->add_geom(geom1, get_solid_bounds_viz_state());
+  _bounds_viz_geom->add_geom(geom2, get_wireframe_bounds_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////

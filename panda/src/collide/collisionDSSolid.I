@@ -30,7 +30,8 @@ CollisionDSSolid(
     const Planef &plane_a, const Planef &plane_b) :
   _center_a(center_a), _radius_a(radius_a),
   _center_b(center_b), _radius_b(radius_b),
-  _plane_a(plane_a), _plane_b(plane_b)
+  _plane_a(plane_a), _plane_b(plane_b),
+  _lens_radius(0.0f)
 {
   recalc_internals();
   nassertv(_radius_a >= 0.0f);
@@ -51,7 +52,8 @@ CollisionDSSolid(
     const Planef &plane_a, const Planef &plane_b) :
   _center_a(ax, ay, az), _radius_a(radius_a),
   _center_b(bx, by, bz), _radius_b(radius_b),
-  _plane_a(plane_a), _plane_b(plane_b)
+  _plane_a(plane_a), _plane_b(plane_b),
+  _lens_radius(0.0f)
 {
   recalc_internals();
   nassertv(_radius_a >= 0.0f);
@@ -282,5 +284,15 @@ set_plane_b(const Planef &plane) {
 INLINE const Planef &CollisionDSSolid::
 get_plane_b() const {
   return _plane_b;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionDSSolid::get_lens_radius
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE float CollisionDSSolid::
+get_lens_radius() const {
+  return _lens_radius;
 }
 
