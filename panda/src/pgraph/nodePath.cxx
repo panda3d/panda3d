@@ -4490,7 +4490,9 @@ get_fog() const {
 void NodePath::
 set_render_mode_wireframe(int priority) {
   nassertv_always(!is_empty());
-  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_wireframe), priority);
+  float thickness = get_render_mode_thickness();
+  bool perspective = get_render_mode_perspective();
+  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_wireframe, thickness, perspective), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4503,7 +4505,53 @@ set_render_mode_wireframe(int priority) {
 void NodePath::
 set_render_mode_filled(int priority) {
   nassertv_always(!is_empty());
-  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled), priority);
+  float thickness = get_render_mode_thickness();
+  bool perspective = get_render_mode_perspective();
+  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled, thickness, perspective), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_render_mode_perspective
+//       Access: Published
+//  Description: Sets up the point geometry at this level and below to
+//               render as perspective sprites (that is, billboarded
+//               quads).  The thickness, as specified with
+//               set_render_mode_thickness(), is the width of each
+//               point in 3-D units, unless it is overridden on a
+//               per-vertex basis.  This does not affect geometry
+//               other than points.
+//
+//               If you want the quads to be individually textured,
+//               you should also set a TexGenAttrib::M_point_sprite on
+//               the node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_render_mode_perspective(bool perspective, int priority) {
+  nassertv_always(!is_empty());
+  RenderModeAttrib::Mode mode = get_render_mode();
+  float thickness = get_render_mode_thickness();
+  node()->set_attrib(RenderModeAttrib::make(mode, thickness, perspective), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_render_mode_thickness
+//       Access: Published
+//  Description: Sets up the point geometry at this level and below to
+//               render as thick points (that is, billboarded
+//               quads).  The thickness is in pixels, unless
+//               set_render_mode_perspective is also true, in which
+//               case it is in 3-D units.
+//
+//               If you want the quads to be individually textured,
+//               you should also set a TexGenAttrib::M_point_sprite on
+//               the node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_render_mode_thickness(float thickness, int priority) {
+  nassertv_always(!is_empty());
+  RenderModeAttrib::Mode mode = get_render_mode();
+  bool perspective = get_render_mode_perspective();
+  node()->set_attrib(RenderModeAttrib::make(mode, thickness, perspective), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4573,7 +4621,7 @@ get_render_mode() const {
 //       Access: Published
 //  Description: Returns the render mode thickness that has been
 //               specifically set on this node via set_render_mode(),
-//               or 0.0 if nothing has been set.
+//               or 1.0 if nothing has been set.
 ////////////////////////////////////////////////////////////////////
 float NodePath::
 get_render_mode_thickness() const {
@@ -4585,7 +4633,27 @@ get_render_mode_thickness() const {
     return ta->get_thickness();
   }
 
-  return 0.0f;
+  return 1.0f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_render_mode_perspective
+//       Access: Published
+//  Description: Returns the flag that has been set on this node via
+//               set_render_mode_perspective(), or false if no flag
+//               has been set.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+get_render_mode_perspective() const {
+  nassertr_always(!is_empty(), 0.0f);
+  const RenderAttrib *attrib =
+    node()->get_attrib(RenderModeAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const RenderModeAttrib *ta = DCAST(RenderModeAttrib, attrib);
+    return ta->get_perspective();
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

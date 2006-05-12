@@ -694,11 +694,14 @@ PUBLISHED:
 
   void set_render_mode_wireframe(int priority = 0);
   void set_render_mode_filled(int priority = 0);
+  void set_render_mode_thickness(float thickness, int priority = 0);
+  void set_render_mode_perspective(bool perspective, int priority = 0);
   void set_render_mode(RenderModeAttrib::Mode mode, float thickness, int priority = 0);
   void clear_render_mode();
   bool has_render_mode() const;
   RenderModeAttrib::Mode get_render_mode() const;
   float get_render_mode_thickness() const;
+  bool get_render_mode_perspective() const;
 
   void set_two_sided(bool two_sided, int priority = 0);
   void clear_two_sided();
