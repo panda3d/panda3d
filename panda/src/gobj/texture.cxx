@@ -534,6 +534,7 @@ bool Texture::
 reload() {
   if (_loaded_from_image && has_filename()) {
     reload_ram_image();
+    ++_modified;
     return has_ram_image();
   }
 
