@@ -754,18 +754,6 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   return NULL;
 }
 
-struct ShowBuffersCubeMapRegions {
-  float l, r, b, t;
-};
-static ShowBuffersCubeMapRegions cube_map_regions[6] = {
-  { 0.0, 0.3333, 0.5, 1.0 },
-  { 0.0, 0.3333, 0.0, 0.5 },
-  { 0.3333, 0.6667, 0.5, 1.0 },
-  { 0.3333, 0.6667, 0.0, 0.5 },
-  { 0.6667, 1.0, 0.5, 1.0 },
-  { 0.6667, 1.0, 0.0, 0.5 },
-};
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::make_cube_map
 //       Access: Published
@@ -1199,10 +1187,10 @@ do_determine_display_regions() {
     if (display_region->is_active()) {
       _active_display_regions.push_back(display_region);
       display_region->set_active_index(index);
+      ++index;
     } else {
       display_region->set_active_index(-1);
     }
-    ++index;
   }
 
   stable_sort(_active_display_regions.begin(), _active_display_regions.end(), IndirectLess<DisplayRegion>());
