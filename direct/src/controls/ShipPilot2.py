@@ -29,6 +29,8 @@ class ShipPilot2(PhysicsWalker):
         'want-avatar-physics-indicator', 0)
 
     useBowSternSpheres = 1
+    useOneSphere = 0
+    useDSSolid = 0
     useLifter = 0
     useHeightRay = 0
 
@@ -73,7 +75,7 @@ class ShipPilot2(PhysicsWalker):
         self.avatarControlRotateSpeed=rotate
 
     def getSpeeds(self):
-        #assert(self.debugPrint("getSpeeds()"))
+        #assert self.debugPrint("getSpeeds()")
         return (self.__speed, self.__rotationSpeed)
 
     def setAvatar(self, ship):
@@ -91,7 +93,7 @@ class ShipPilot2(PhysicsWalker):
             if not hasattr(ship, "acceleration"):
                 self.ship.acceleration = 60
                 self.ship.maxSpeed = 14
-                self.ship.reverseAcceleration = 10
+                self.ship.reverseAcceleration = 30
                 self.ship.maxReverseSpeed = 2
                 self.ship.turnRate = 3
                 self.ship.maxTurn = 30
@@ -235,6 +237,55 @@ class ShipPilot2(PhysicsWalker):
             shipCollWall = self.avatarNodePath.hull.find("**/collision_hull")
             if not shipCollWall.isEmpty():
                 shipCollWall.stash()
+        elif self.useOneSphere:
+            # Front sphere:
+            self.cSphere = CollisionSphere(0.0, 0.0, -5.0, avatarRadius)
+            cSphereNode = CollisionNode('SP.cSphereNode')
+            cSphereNode.addSolid(self.cSphere)
+            self.cSphereNodePath = self.avatarNodePath.attachNewNode(
+                cSphereNode)
+            if 1:
+                self.cSphereNodePath.show()
+                self.cSphereNodePath.showBounds()
+
+            cSphereNode.setFromCollideMask(self.cSphereBitMask)
+            cSphereNode.setIntoCollideMask(BitMask32.allOff())
+
+            self.cSphereNode = cSphereNode
+
+            self.pusher.addCollider(
+                self.cSphereNodePath, self.avatarNodePath)
+
+            # hide other things on my ship that these spheres might collide
+            # with and which I dont need anyways...
+            shipCollWall = self.avatarNodePath.hull.find("**/collision_hull")
+            if not shipCollWall.isEmpty():
+                shipCollWall.stash()
+        elif self.useDSSolid:
+            # DSSolid:
+            self.cHull = CollisionDSSolid(
+                Point3(-160, 0, 0), 200, Point3(160, 0, 0), 200,
+                Plane(Vec3(0, 0, 1), Point3(0, 0, 50)),
+                Plane(Vec3(0, -1, 0), Point3(0, -90, 0)))
+            cHullNode = CollisionNode('SP.cHullNode')
+            cHullNode.addSolid(self.cHull)
+            self.cHullNodePath = self.avatarNodePath.attachNewNode(
+                cHullNode)
+            self.cHullNodePath.show()
+
+            cHullNode.setFromCollideMask(bitmask)
+            cHullNode.setIntoCollideMask(BitMask32.allOff())
+
+            self.cHullNode = cHullNode
+
+            self.pusher.addCollider(
+                self.cHullNodePath, self.avatarNodePath)            
+
+            # hide other things on my ship that these spheres might collide
+            # with and which I dont need anyways...
+            shipCollWall = self.avatarNodePath.hull.find("**/collision_hull")
+            if not shipCollWall.isEmpty():
+                shipCollWall.stash()
 
     def takedownPhysics(self):
         assert self.debugPrint("takedownPhysics()")
@@ -366,7 +417,7 @@ class ShipPilot2(PhysicsWalker):
             print "failed load of physics indicator"
 
     def avatarPhysicsIndicator(self, task):
-        #assert(self.debugPrint("avatarPhysicsIndicator()"))
+        #assert self.debugPrint("avatarPhysicsIndicator()")
         # Velocity:
         self.physVelocityIndicator.setPos(self.avatarNodePath, 0.0, 0.0, 6.0)
         physObject=self.actorNode.getPhysicsObject()
@@ -392,9 +443,12 @@ class ShipPilot2(PhysicsWalker):
             self.collisionsActive = active
             if active:
                 if self.useBowSternSpheres:
-                    #self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
                     self.cTrav.addCollider(self.cBowSphereNodePath, self.pusher)
                     self.cTrav.addCollider(self.cSternSphereNodePath, self.pusher)
+                elif self.useOneSphere:
+                    self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
+                elif self.useDSSolid:
+                    self.cTrav.addCollider(self.cHullNodePath, self.pusher)
                 if self.useHeightRay:
                     if self.useLifter:
                         self.cTrav.addCollider(self.cRayNodePath, self.lifter)
@@ -402,9 +456,12 @@ class ShipPilot2(PhysicsWalker):
                         self.cTrav.addCollider(self.cRayNodePath, self.cRayQueue)
             else:
                 if self.useBowSternSpheres:
-                    #self.cTrav.removeCollider(self.cSphereNodePath)
                     self.cTrav.removeCollider(self.cBowSphereNodePath)
                     self.cTrav.removeCollider(self.cSternSphereNodePath)
+                elif self.useOneSphere:
+                    self.cTrav.removeCollider(self.cSphereNodePath)
+                elif self.useDSSolid:
+                    self.cTrav.removeCollider(self.cHullNodePath)
                 if self.useHeightRay:
                     self.cTrav.removeCollider(self.cRayNodePath)
                 # Now that we have disabled collisions, make one more pass
@@ -520,7 +577,7 @@ class ShipPilot2(PhysicsWalker):
                     base.localAvatar.getPos().pPrintValues(),))
                 onScreenDebug.append("localAvatar hpr = %s\n"%(
                     base.localAvatar.getHpr().pPrintValues(),))
-        #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
+        #assert self.debugPrint("handleAvatarControls(task=%s)"%(task,))
         physObject=self.actorNode.getPhysicsObject()
         contact=self.actorNode.getContactVector()
 

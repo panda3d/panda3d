@@ -136,7 +136,7 @@ PT(BoundingVolume) CollisionSphere::
 compute_internal_bounds() const {
   return new BoundingSphere(_center, _radius);
 }
-#define USE_DS_SOLID_PLANES 0
+#define USE_DS_SOLID_PLANES 1
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::test_intersection_from_ds_solid
 //       Access: Public, Virtual
@@ -149,7 +149,6 @@ test_intersection_from_ds_solid(const CollisionEntry &entry) const {
   cerr<<"CollisionSphere::test_intersection_from_ds_solid\n";
 
   CPT(TransformState) wrt_space = entry.get_wrt_space();
-
   const LMatrix4f &wrt_mat = wrt_space->get_mat();
 
   LPoint3f into_center = get_center();
@@ -180,16 +179,116 @@ test_intersection_from_ds_solid(const CollisionEntry &entry) const {
   }
 
   #if USE_DS_SOLID_PLANES
-  float pa_distance = ds_solid->dist_to_plane_a(into_center);
-  if (pa_distance > into_radius) {
+  CPT(TransformState) inv_wrt_space = entry.get_inv_wrt_space();
+  const LMatrix4f &inv_wrt_mat = inv_wrt_space->get_mat();
+  
+  LPoint3f inv_into_center = get_center() * inv_wrt_mat;
+  float inv_into_radius = length(
+    LVector3f(get_radius(), 0.0f, 0.0f) * inv_wrt_mat);
+
+  float pa_distance =
+    ds_solid->dist_to_plane_a(inv_into_center) - inv_into_radius;
+  if (pa_distance > 0.0f) {
     // No intersection.
     return NULL;
   }
 
-  float pb_distance = ds_solid->dist_to_plane_b(into_center);
-  if (pb_distance > into_radius) {
+  float pb_distance =
+    ds_solid->dist_to_plane_b(inv_into_center) - inv_into_radius;
+  if (pb_distance > 0.0f) {
     // No intersection.
     return NULL;
+  }
+  #endif
+
+  LVector3f lens_center = ds_solid->get_collision_origin() * wrt_mat;
+  float lens_radius = length(
+    LVector3f(ds_solid->get_lens_radius(), 0.0f, 0.0f) * wrt_mat);
+  LVector3f lens_vec = lens_center - into_center;
+  float lens_distance_squared = dot(lens_vec, lens_vec);
+
+  LVector3f surface_normal; // into
+  //LPoint3f surface_point; // into
+  LPoint3f interior_point; // from
+  float sa_distance = sqrtf(sa_distance_squared) - sa_radius;
+  float sb_distance = sqrtf(sb_distance_squared) - sb_radius;
+  pa_distance = ds_solid->dist_to_plane_a(inv_into_center);
+  pb_distance = ds_solid->dist_to_plane_b(inv_into_center);
+  #if USE_DS_SOLID_PLANES
+  cerr
+    <<" sa_distance:"<<sa_distance
+    <<" sb_distance:"<<sb_distance
+    <<" pa_distance:"<<pa_distance
+    <<" pb_distance:"<<pb_distance<<"\n";
+  if ((sa_distance > pa_distance && sa_distance > pb_distance) ||
+      (sb_distance > pa_distance && sb_distance > pb_distance)) {
+  #else
+  cerr
+    <<" sa_distance:"<<sa_distance
+    <<" sb_distance:"<<sb_distance<<"\n";
+  #endif
+    LVector3f *primary_vec;
+    LPoint3f *primary_center;
+    float primary_radius;
+    LPoint3f *secondary_center;
+    float secondary_radius;
+    if (sa_distance > sb_distance) {
+      // sphere_a is the furthest
+      cerr<<"sphere_a is the furthest\n";
+      primary_vec = &sa_vec;
+      primary_center = &sa_center;
+      primary_radius = sa_radius;
+      secondary_center = &sb_center;
+      secondary_radius = sb_radius;
+    } else {
+      // sphere_b is the furthest
+      cerr<<"sphere_b is the furthest\n";
+      primary_vec = &sb_vec;
+      primary_center = &sb_center;
+      primary_radius = sb_radius;
+      secondary_center = &sa_center;
+      secondary_radius = sa_radius;
+    }
+
+    float vec_length = primary_vec->length();
+    if (IS_NEARLY_ZERO(vec_length)) {
+      // The centers are coincident, use an arbitrary normal.
+      surface_normal.set(1.0, 0.0, 0.0);
+    } else {
+      // Lens face
+      surface_normal = *primary_vec / vec_length;
+    }
+    interior_point = *primary_center - surface_normal * primary_radius;
+
+    float temp_length_squared =
+      (interior_point - *secondary_center).length_squared();
+    if (temp_length_squared > (secondary_radius * secondary_radius)) {
+      cerr<<"foo\n";
+      LVector3f a = (*primary_center - lens_center).normalize();
+      LVector3f b =
+        cross(cross(a, (into_center - lens_center).normalize()), a).normalize();
+      interior_point = lens_center + b * lens_radius;
+      surface_normal = (interior_point - into_center).normalize();
+    }
+  #if USE_DS_SOLID_PLANES
+  } else {
+    if (pa_distance > pb_distance) {
+      // plane_a is the furthest
+      cerr<<"plane_a is the furthest\n";
+      surface_normal = -(ds_solid->get_plane_a().get_normal() * wrt_mat);
+      float d = length(
+        LVector3f(pa_distance, 0.0f, 0.0f) * wrt_mat);
+      interior_point = into_center + surface_normal * d;
+    } else {
+      // plane_b is the furthest
+      cerr<<"plane_b is the furthest\n";
+      //surface_normal = -(ds_solid->get_plane_b().get_normal() * wrt_mat);
+      surface_normal = -ds_solid->get_plane_b().get_normal();
+      surface_normal = surface_normal * wrt_mat;
+      float d = length(
+        LVector3f(pb_distance, 0.0f, 0.0f) * wrt_mat);
+      interior_point = into_center + surface_normal * d;
+    }
   }
   #endif
 
@@ -198,53 +297,6 @@ test_intersection_from_ds_solid(const CollisionEntry &entry) const {
       << "intersection detected from " << entry.get_from_node_path()
       << " into " << entry.get_into_node_path() << "\n";
   }
-
-  LVector3f surface_normal; // into
-  LPoint3f surface_point; // into
-  LPoint3f interior_point; // from
-  float spheres = sqrtf(sa_distance_squared) - sqrtf(sb_distance_squared);
-  #if USE_DS_SOLID_PLANES
-  float planes = pa_distance - pb_distance;
-  if (spheres > planes) {
-  #endif
-    if (spheres > 0) {
-      // sphere_a is the furthest
-      cerr<<"sphere_a is the furthest"<<"\n";
-      float vec_length = sa_vec.length();
-      if (IS_NEARLY_ZERO(vec_length)) {
-        // The centers are coincident, use an arbitrary normal.
-        surface_normal.set(1.0, 0.0, 0.0);
-      } else {
-        surface_normal = sa_vec / vec_length;
-      }
-      interior_point = sa_center - surface_normal * sa_radius;
-    } else {
-      // sphere_b is the furthest
-      cerr<<"sphere_b is the furthest"<<"\n";
-      float vec_length = sb_vec.length();
-      if (IS_NEARLY_ZERO(vec_length)) {
-        // The centers are coincident, use an arbitrary normal.
-        surface_normal.set(1.0, 0.0, 0.0);
-      } else {
-        surface_normal = sb_vec / vec_length;
-      }
-      interior_point = sb_center - surface_normal * sb_radius;
-    }
-  #if USE_DS_SOLID_PLANES
-  } else {
-    if (planes > 0) {
-      // plane_a is the furthest
-      cerr<<"plane_a is the furthest"<<"\n";
-      surface_normal = ds_solid->get_plane_a().get_normal();
-      interior_point = into_center - surface_normal * pa_distance;
-    } else {
-      // plane_b is the furthest
-      cerr<<"plane_b is the furthest"<<"\n";
-      surface_normal = ds_solid->get_plane_b().get_normal();
-      interior_point = into_center - surface_normal * pb_distance;
-    }
-  }
-  #endif
 
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
   new_entry->set_surface_normal(surface_normal);
