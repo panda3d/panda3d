@@ -22,6 +22,19 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+#include <algorithm>
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatFrameData::sort_time
+//       Access: Public
+//  Description: Ensures the frame data is in monotonically increasing
+//               order by time.
+////////////////////////////////////////////////////////////////////
+void PStatFrameData::
+sort_time() {
+  stable_sort(_time_data.begin(), _time_data.end());
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatFrameData::write_datagram
 //       Access: Public

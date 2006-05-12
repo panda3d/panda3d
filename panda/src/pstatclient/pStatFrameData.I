@@ -237,3 +237,14 @@ get_level(int n) const {
   nassertr(n >= 0 && n < (int)_level_data.size(), 0);
   return _level_data[n]._value;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatFrameData::DataPoint::operator <
+//       Access: Public
+//  Description: Orders the data points by time.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatFrameData::DataPoint::
+operator < (const PStatFrameData::DataPoint &other) const {
+  return _value < other._value;
+}
+

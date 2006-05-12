@@ -19,6 +19,7 @@
 #include "config_pstats.h"
 #include "pStatClient.h"
 #include "pStatCollector.h"
+#include "thread.h"
 
 #include "queuedConnectionManager.h"
 #include "queuedConnectionReader.h"
@@ -145,10 +146,11 @@ main(int argc, char *argv[]) {
   }
 
   while (!user_interrupted && client->is_connected()) {
-    client->get_main_thread().new_frame();
+    PStatClient::main_tick();
 
     float total_ms = 0.0;
-    float now = client->get_clock().get_real_time();
+    float now = client->get_real_time();
+    float start = now;
 
     typedef pvector<WaitRequest> Wait;
     Wait wait;
@@ -184,22 +186,26 @@ main(int argc, char *argv[]) {
 
     // Put the wait requests in order, to allow for the jitter, and
     // invoke them.
+
+    static const double delay = 1.0;
+    _collectors[0].stop(client->get_main_thread(), start + delay);
+
     sort(wait.begin(), wait.end());
     Wait::const_iterator wi;
     for (wi = wait.begin(); wi != wait.end(); ++wi) {
       const WaitRequest &wr = (*wi);
       if (wr._start) {
-        _collectors[wr._index].start(client->get_main_thread(), wr._time);
+        _collectors[wr._index].start(client->get_main_thread(), wr._time + delay);
       } else {
-        _collectors[wr._index].stop(client->get_main_thread(), wr._time);
+        _collectors[wr._index].stop(client->get_main_thread(), wr._time + delay);
       }
     }
 
+    _collectors[0].start(client->get_main_thread(), now + total_ms / 1000 + delay);
+
     // Now actually wait some approximation of the time we said we
     // did.
-    PRIntervalTime sleep_timeout =
-      PR_MillisecondsToInterval((int)total_ms + 5);
-    PR_Sleep(sleep_timeout);
+    Thread::sleep(total_ms / 1000.0 + delay);
   }
 
   return (0);

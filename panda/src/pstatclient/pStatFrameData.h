@@ -47,6 +47,8 @@ public:
   INLINE void add_stop(int index, float time);
   INLINE void add_level(int index, float level);
 
+  void sort_time();
+
   INLINE float get_start() const;
   INLINE float get_end() const;
   INLINE float get_net_time() const;
@@ -66,6 +68,8 @@ public:
 private:
   class DataPoint {
   public:
+    INLINE bool operator < (const DataPoint &other) const;
+
     int _index;
     float _value;
   };
