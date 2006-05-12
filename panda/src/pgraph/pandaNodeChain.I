@@ -35,4 +35,6 @@ PandaNodeChain() :
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNodeChain::
 ~PandaNodeChain() {
+  _next = NULL;
+  _prev = NULL;
 }
