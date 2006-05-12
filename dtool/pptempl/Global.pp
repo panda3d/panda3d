@@ -122,7 +122,7 @@
   #define gl_ipath $[wildcard $[GL_IPATH]]
   #define gl_lpath $[wildcard $[GL_LPATH]]
   #define gl_cflags $[GL_CFLAGS]
-  #define gl_libs $[GL_LIBS]
+  #define gl_libs $[GL_LIBS] $[if $[HAVE_GLU],$[GLU_LIBS]]
   #define gl_framework $[GL_FRAMEWORK]
 #endif
 

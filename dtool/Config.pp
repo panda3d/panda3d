@@ -478,19 +478,22 @@
 #defer GL_IPATH /usr/include
 #defer GL_LPATH
 #defer GL_LIBS
+#defer GLU_LIBS
 #if $[WINDOWS_PLATFORM]
-  #define GL_LIBS opengl32.lib $[if $[HAVE_GLU],glu32.lib]
+  #define GL_LIBS opengl32.lib
+  #define GLU_LIBS glu32.lib
 #elif $[OSX_PLATFORM]
   #defer GL_FRAMEWORK OpenGL
 #else
   #defer GL_LPATH /usr/X11R6/lib
-  #defer GL_LIBS GL $[if $[HAVE_GLU],GLU]
+  #defer GL_LIBS GL
+  #defer GLU_LIBS GLU
 #endif
 #defer HAVE_GL $[libtest $[GL_LPATH],$[GL_LIBS]]
 
 // GLU is an auxiliary library that is usually provided with OpenGL,
 // but is sometimes missing (e.g. the default FC5 installation).
-#defer HAVE_GLU $[HAVE_GL]
+#defer HAVE_GLU $[libtest $[GL_LPATH],$[GLU_LIBS]]
 
 // Is Mesa installed separately from OpenGL?  Mesa is an open-source
 // software-only OpenGL renderer.  Panda can link with it
