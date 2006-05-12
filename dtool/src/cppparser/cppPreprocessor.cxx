@@ -1231,7 +1231,19 @@ handle_define_directive(const string &args, int first_line,
         manifest->_expr = parse_expr(expr_string, global_scope, global_scope);
       }
     }
+
+    // ok one memory leak here..
+    Manifests::iterator mi = _manifests.find(manifest->_name);
+    if(mi != _manifests.end())
+    {
+        // i do not see a goodway to compare the old and new hmmmm
+        //cerr << "Warning Overwriting Constant " << manifest->_name << "\n";
+        delete mi->second;
+    }
+
     _manifests[manifest->_name] = manifest;
+
+
   }
 }
 

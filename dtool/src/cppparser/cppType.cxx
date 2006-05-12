@@ -265,7 +265,7 @@ new_type(CPPType *type) {
     // however, it's not.  Thus, someone failed to call new_type() on
     // a type pointer before saving it somewhere.  Fix me soon.  ****
 
-    //delete type;
+    delete type;
   }
   return *result.first;
 }
