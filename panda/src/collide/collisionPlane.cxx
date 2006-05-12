@@ -196,7 +196,9 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 
   LPoint3f into_intersection_point = from_origin + t * from_direction;
 
-  LVector3f normal = (has_effective_normal() && line->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+  LVector3f normal = 
+    (has_effective_normal() && line->get_respect_effective_normal())
+    ? get_effective_normal() : get_normal();
 
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(into_intersection_point);
@@ -239,7 +241,9 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 
   LPoint3f into_intersection_point = from_origin + t * from_direction;
 
-  LVector3f normal = (has_effective_normal() && ray->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+  LVector3f normal =
+    (has_effective_normal() && ray->get_respect_effective_normal()) 
+    ? get_effective_normal() : get_normal();
 
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(into_intersection_point);
