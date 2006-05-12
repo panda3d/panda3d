@@ -18,6 +18,27 @@
 
 #ifndef ORDERED_VECTOR_H
 #define ORDERED_VECTOR_H
+#ifdef CPPPARSER // hack around this for  interigate...
+//****** HACK allert ***
+// this code is intended to tell interigate to not expand this class definition past basic names
+//    It drops the interigate memory foot pront and user time by a bunch
+// on pc cygwin from  3 minutes to 17 seconds ?? really need to explore interigate to figure out what is 
+// going on ..
+//
+template<class Key, class Compare = less<int> > class ov_multiset
+{
+};
+
+template<class Key, class Compare = less<int> > class ov_set
+{
+};
+
+template<class Key, class Compare = less<int> > class ordered_vector
+{
+};
+
+#else  // cppparser
+
 
 #include "pandabase.h"
 
@@ -295,5 +316,5 @@ public:
 
 #include "ordered_vector.I"
 #include "ordered_vector.T"
-
+#endif // cppparser ..
 #endif
