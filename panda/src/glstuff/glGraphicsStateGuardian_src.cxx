@@ -6208,9 +6208,10 @@ do_issue_tex_gen() {
       break;
 
     case TexGenAttrib::M_point_sprite:
-      nassertv(_supports_point_sprite);
-      GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
-      got_point_sprites = true;
+      if (_supports_point_sprite) {
+        GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
+        got_point_sprites = true;
+      }
       break;
 
     case TexGenAttrib::M_unused:
