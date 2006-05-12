@@ -228,10 +228,22 @@ munge_points_to_quads(const CullTraverser *traverser) {
     }
   }
 
-  PT(GeomVertexArrayFormat) new_array_format =
-    new GeomVertexArrayFormat(InternalName::get_vertex(), 4, 
-                              Geom::NT_float32,
-                              Geom::C_clip_point);
+  PT(GeomVertexArrayFormat) new_array_format;
+  if (retransform_sprites) {
+    // With retransform_sprites in effect, we will be sending ordinary
+    // 3-D points to the graphics API.
+    new_array_format = 
+      new GeomVertexArrayFormat(InternalName::get_vertex(), 3, 
+                                Geom::NT_float32,
+                                Geom::C_point);
+  } else {
+    // Without retransform_sprites, we will be sending 4-component
+    // clip-space points.
+    new_array_format = 
+      new GeomVertexArrayFormat(InternalName::get_vertex(), 4, 
+                                Geom::NT_float32,
+                                Geom::C_clip_point);
+  }
   if (has_normal) {
     const GeomVertexColumn *c = normal.get_column();
     new_array_format->add_column
@@ -303,12 +315,9 @@ munge_points_to_quads(const CullTraverser *traverser) {
       projection;
   }
 
-  // We will need the composite render transform to compute the
-  // lighting normal.
-  LMatrix4f render_transform;
-  if (has_normal) {
-    render_transform = modelview * projection;
-  }
+  LMatrix4f render_transform = modelview * projection;
+  LMatrix4f inv_render_transform;
+  inv_render_transform.invert_from(render_transform);
 
   // Replace each primitive in the Geom (it's presumably a GeomPoints
   // primitive, although it might be some other kind of primitive if
@@ -431,18 +440,39 @@ munge_points_to_quads(const CullTraverser *traverser) {
         c0.set(c0[0] * rx, c0[1] * ry);
         c1.set(c1[0] * rx, c1[1] * ry);
 
-        new_vertex.add_data4f(p4[0] + c0[0], p4[1] + c0[1], p4[2], p4[3]);
-        new_vertex.add_data4f(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3]);
-        new_vertex.add_data4f(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3]);
-        new_vertex.add_data4f(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3]);
+        if (retransform_sprites) {
+          // With retransform_sprites in effect, we must reconvert the
+          // resulting quad back into the original 3-D space.
+          new_vertex.add_data4f(inv_render_transform.xform(LPoint4f(p4[0] + c0[0], p4[1] + c0[1], p4[2], p4[3])));
+          new_vertex.add_data4f(inv_render_transform.xform(LPoint4f(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3])));
+          new_vertex.add_data4f(inv_render_transform.xform(LPoint4f(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3])));
+          new_vertex.add_data4f(inv_render_transform.xform(LPoint4f(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3])));
+          
+          if (has_normal) {
+            normal.set_row(*vi);
+            const Normalf &c = normal.get_data3f();
+            new_normal.add_data3f(c);
+            new_normal.add_data3f(c);
+            new_normal.add_data3f(c);
+            new_normal.add_data3f(c);
+          }
 
-        if (has_normal) {
-          normal.set_row(*vi);
-          Normalf c = render_transform.xform_vec(normal.get_data3f());
-          new_normal.add_data3f(c);
-          new_normal.add_data3f(c);
-          new_normal.add_data3f(c);
-          new_normal.add_data3f(c);
+        } else {
+          // Without retransform_sprites, we can simply load the
+          // clip-space coordinates.
+          new_vertex.add_data4f(p4[0] + c0[0], p4[1] + c0[1], p4[2], p4[3]);
+          new_vertex.add_data4f(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3]);
+          new_vertex.add_data4f(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3]);
+          new_vertex.add_data4f(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3]);
+          
+          if (has_normal) {
+            normal.set_row(*vi);
+            Normalf c = render_transform.xform_vec(normal.get_data3f());
+            new_normal.add_data3f(c);
+            new_normal.add_data3f(c);
+            new_normal.add_data3f(c);
+            new_normal.add_data3f(c);
+          }
         }
         if (has_color) {
           color.set_row(*vi);

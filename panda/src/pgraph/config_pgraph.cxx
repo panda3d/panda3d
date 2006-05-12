@@ -177,6 +177,16 @@ ConfigVariableBool state_cache
           "similar to the TransformState cache controlled via "
           "transform-cache."));
 
+ConfigVariableBool retransform_sprites
+("retransform-sprites", true,
+ PRC_DESC("To render sprite-based particle effects, Panda must convert "
+          "the sprite points from object space into clip space, and compute "
+          "the corners of the quads in clip space.  When this variable is "
+          "false, the resulting quads are then sent to the graphics "
+          "hardware in clip space.  When this is true, the quads are "
+          "re-transformed back into the original object space, which is "
+          "necessary in order for fog to work correctly on the sprites."));
+
 ConfigVariableInt max_collect_vertices
 ("max-collect-vertices", 1024,
  PRC_DESC("Specifies the maximum number of vertices that are allowed to be "
