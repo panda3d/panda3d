@@ -66,13 +66,28 @@ init_libgrutil() {
   FrameRateMeter::init_type();
 
 #ifdef HAVE_OPENCV
+  
+  {
   OpenCVTexture::init_type();
   OpenCVTexture::register_with_read_factory();
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("OpenCV");
   TexturePool *ts = TexturePool::get_global_ptr();
-  ts->register_texture_type(OpenCVTexture::make_texture, "avi mpg");
+  ts->register_texture_type(OpenCVTexture::make_texture, "");
+	}
 #endif // HAVE_OPENCV
+
+#ifdef HAVE_FFMPEG
+  {
+  FFMpegTexture::init_type();
+  FFMpegTexture::register_with_read_factory();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("FFMpeg");
+  TexturePool *ts = TexturePool::get_global_ptr();
+  ts->register_texture_type(FFMpegTexture::make_texture, "avi mov");
+	}
+#endif // HAVE_FFMPEG
 }
 
