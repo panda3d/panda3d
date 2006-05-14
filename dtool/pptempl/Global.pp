@@ -168,6 +168,13 @@
   #define opencv_libs $[OPENCV_LIBS]
 #endif
 
+#if $[HAVE_FFMPEG]
+  #define ffmpeg_ipath $[wildcard $[FFMPEG_IPATH]]
+  #define ffmpeg_lpath $[wildcard $[FFMPEG_LPATH]]
+  #define ffmpeg_cflags $[FFMPEG_CFLAGS]
+  #define ffmpeg_libs $[FFMPEG_LIBS]
+#endif
+
 #if $[HAVE_JPEG]
   #define jpeg_ipath $[wildcard $[JPEG_IPATH]]
   #define jpeg_lpath $[wildcard $[JPEG_LPATH]]

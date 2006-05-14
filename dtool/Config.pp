@@ -568,6 +568,13 @@
 #define OPENCV_LIBS $[if $[WINDOWS_PLATFORM],cv.lib highgui.lib cxcore.lib,cv highgui cxcore]
 #defer HAVE_OPENCV $[libtest $[OPENCV_LPATH],$[OPENCV_LIBS]]
 
+// Is FFMPEG installed, and where?
+#define FFMPEG_IPATH c:\ffmpeg\include
+#define FFMPEG_LPATH c:\ffmpeg\lib
+#define FFMPEG_LIBS libavcodec.lib libavformat.lib libavutil.lib libgcc.lib
+#defer HAVE_FFMPEG $[libtest $[FFMPEG_LPATH],$[FFMPEG_LIBS]]
+
+
 // Do you want to build the DirectD tools for starting Panda clients
 // remotely?  This only affects the direct tree.  Enabling this may
 // cause libdirect.dll to fail to load on Win98 clients.

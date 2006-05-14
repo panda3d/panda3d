@@ -106,6 +106,11 @@
 #else
 #print - Did not find OpenCV
 #endif
+#if $[HAVE_FFMPEG]
+#print + FFMPEG
+#else
+#print - Did not find FFMPEG
+#endif
 #if $[HAVE_MAYA]
 #print + OpenMaya
 #else
@@ -210,6 +215,8 @@ $[cdefine HAVE_GLU]
 /* Define if we have OpenCV installed and want to build for OpenCV.  */
 $[cdefine HAVE_OPENCV]
 
+/* Define if we have FFMPEG installed and want to build for FFMPEG.  */
+$[cdefine HAVE_FFMPEG]
 
 /* Define if we have Mesa installed and want to build mesadisplay.  */
 $[cdefine HAVE_MESA]
