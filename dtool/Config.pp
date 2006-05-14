@@ -260,8 +260,8 @@
 
 // Is Python installed, and should Python interfaces be generated?  If
 // Python is installed, which directory is it in?
-#define PYTHON_IPATH /usr/include/python2.4
-#define PYTHON_LPATH
+#define PYTHON_IPATH c:\python24\include
+#define PYTHON_LPATH c:\python24\libs
 #define PYTHON_FPATH
 #define PYTHON_COMMAND python
 #defer PYTHON_DEBUG_COMMAND $[PYTHON_COMMAND]$[if $[WINDOWS_PLATFORM],_d]
@@ -569,8 +569,8 @@
 #defer HAVE_OPENCV $[libtest $[OPENCV_LPATH],$[OPENCV_LIBS]]
 
 // Is FFMPEG installed, and where?
-#define FFMPEG_IPATH c:\ffmpeg\include
-#define FFMPEG_LPATH c:\ffmpeg\lib
+#define FFMPEG_IPATH /usr/local/include/ffmpeg
+#define FFMPEG_LPATH /usr/lcoal/lib
 #define FFMPEG_LIBS libavcodec.lib libavformat.lib libavutil.lib libgcc.lib
 #defer HAVE_FFMPEG $[libtest $[FFMPEG_LPATH],$[FFMPEG_LIBS]]
 
