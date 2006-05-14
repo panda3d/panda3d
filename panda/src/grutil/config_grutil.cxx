@@ -19,6 +19,7 @@
 #include "config_grutil.h"
 #include "frameRateMeter.h"
 #include "openCVTexture.h"
+#include "ffmpegTexture.h"
 #include "pandaSystem.h"
 #include "texturePool.h"
 
@@ -64,7 +65,6 @@ init_libgrutil() {
   initialized = true;
 
   FrameRateMeter::init_type();
-
 #ifdef HAVE_OPENCV
   
   {
@@ -80,6 +80,9 @@ init_libgrutil() {
 
 #ifdef HAVE_FFMPEG
   {
+	//configure all known codecs. Can take a few frames. 
+	av_register_all();
+
   FFMpegTexture::init_type();
   FFMpegTexture::register_with_read_factory();
 
