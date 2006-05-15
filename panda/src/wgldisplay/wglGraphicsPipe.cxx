@@ -185,11 +185,11 @@ make_output(const string &name,
     // Early failure - if we are sure that this buffer WONT
     // meet specs, we can bail out early.
     if ((flags & BF_fb_props_optional)==0) {
-      if ((properties.has_mode(FrameBufferProperties::FM_index))||
-          (properties.has_mode(FrameBufferProperties::FM_buffer))||
-          (properties.has_mode(FrameBufferProperties::FM_accum))||
-          (properties.has_mode(FrameBufferProperties::FM_stencil))||
-          (properties.has_mode(FrameBufferProperties::FM_multisample))) {
+      if ((properties.specifies_mode(FrameBufferProperties::FM_index))||
+          (properties.specifies_mode(FrameBufferProperties::FM_buffer))||
+          (properties.specifies_mode(FrameBufferProperties::FM_accum))||
+          (properties.specifies_mode(FrameBufferProperties::FM_stencil))||
+          (properties.specifies_mode(FrameBufferProperties::FM_multisample))) {
         return NULL;
       }
     }
