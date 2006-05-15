@@ -26,7 +26,7 @@ pieces from the panda website.  Look for the files labeled "Panda3D
 source, piecewise, X of 3".  You can also obtain the first piece
 directly from the sourceforge CVS server:
 
-    CVSROOT=:pserver:anonymous@cvs.sourceforge.net:/cvsroot/panda3d
+    CVSROOT=:pserver:anonymous@panda3d.cvs.sourceforge.net:/cvsroot/panda3d
 
 Make sure you have all three pieces.  If you do, then your panda
 directory will contain the following subdirectories:
