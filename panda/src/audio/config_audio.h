@@ -36,13 +36,18 @@ NotifyCategoryDecl(audio, EXPCL_PANDA, EXPTP_PANDA);
 //We Need This one.
 extern EXPCL_PANDA ConfigVariableString audio_library_name;
 
-//This Specifies the number of possible [max] audio channels.
-extern EXPCL_PANDA ConfigVariableInt fmod_number_of_sound_channels;
+// Config vars for Fmod:
 
-//This is to turn on Surround Sound.
+extern EXPCL_PANDA ConfigVariableInt fmod_number_of_sound_channels;
 extern EXPCL_PANDA ConfigVariableBool fmod_use_surround_sound;
 
+// Config vars for Miles:
 
+extern EXPCL_PANDA ConfigVariableBool audio_software_midi;
+extern EXPCL_PANDA ConfigVariableFilename audio_dls_file;
+extern EXPCL_PANDA ConfigVariableInt audio_output_rate;
+extern EXPCL_PANDA ConfigVariableInt audio_output_bits;
+extern EXPCL_PANDA ConfigVariableInt audio_output_channels;
 
 
 
