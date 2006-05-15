@@ -21,7 +21,7 @@
 #define COLLISIONDSSOLID_H
 
 #include "pandabase.h"
-
+#include "plane.h"
 #include "collisionSolid.h"
 
 ////////////////////////////////////////////////////////////////////
