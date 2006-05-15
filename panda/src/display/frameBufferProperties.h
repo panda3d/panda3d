@@ -45,7 +45,7 @@ PUBLISHED:
     FM_index          = 0x0001,
     FM_single_buffer  = 0x0000,
     FM_double_buffer  = 0x0002,
-    FM_triple_buffer  = 0x0004,
+    FM_triple_buffer  = 0x0006,
     FM_buffer         = 0x0006,  // == (FM_single_buffer | FM_double_buffer | FM_triple_buffer)
     FM_accum          = 0x0008,
     FM_alpha          = 0x0010,
@@ -57,15 +57,33 @@ PUBLISHED:
     FM_software       = 0x0200,
     FM_hardware       = 0x0400,
   };
+
+  // This bitmask indicates which of the parameters in the properties
+  // structure have been filled in by the user, and which remain
+  // unspecified.
+  enum Specified {
+    S_frame_buffer_mode = 0x0001,
+    S_depth_bits        = 0x0002,
+    S_color_bits        = 0x0004,
+    S_alpha_bits        = 0x0008,
+    S_stencil_bits      = 0x0010,
+    S_multisamples      = 0x0020,
+    S_aux_rgba          = 0x0040,
+    S_aux_hrgba         = 0x0080,
+    S_aux_float         = 0x0100,
+    S_ALL_SPECIFIED     = 0x01FF,
+  };
   
   void clear();
   INLINE void set_specified();
+  INLINE int get_specified() const;
   INLINE int get_buffer_mask() const;
   INLINE bool is_any_specified() const;
   INLINE bool specifies_mode(int bit) const;
   INLINE bool is_single_buffered() const;
   INLINE bool is_stereo() const;
-
+  INLINE bool is_basic() const;
+  
   bool subsumes(const FrameBufferProperties &prop) const;
   
   INLINE void set_frame_buffer_mode(int frameBuffer_mode);
@@ -124,21 +142,6 @@ private:
   void recalc_buffer_mask();
 
 private:
-  // This bitmask indicates which of the parameters in the properties
-  // structure have been filled in by the user, and which remain
-  // unspecified.
-  enum Specified {
-    S_frame_buffer_mode = 0x0001,
-    S_depth_bits        = 0x0002,
-    S_color_bits        = 0x0004,
-    S_alpha_bits        = 0x0008,
-    S_stencil_bits      = 0x0010,
-    S_multisamples      = 0x0020,
-    S_aux_rgba          = 0x0040,
-    S_aux_hrgba         = 0x0080,
-    S_aux_float         = 0x0100,
-    S_ALL_SPECIFIED     = 0x01FF,
-  };
 
   int _specified;
   int _flags;

@@ -23,6 +23,7 @@
 #include "config_fmodAudio.h"
 #include "fmodAudioManager.h"
 #include "fmodAudioSound.h"
+#include "fmodAudioDSP.h"
 #include "pandaSystem.h"
 #include "dconfig.h"
 
@@ -51,6 +52,10 @@ init_libFmodAudio() {
   initialized = true;
 
   AudioManager::register_AudioManager_creator(Create_AudioManager);
+
+  FmodAudioManager::init_type();
+  FmodAudioSound::init_type();
+  FmodAudioDSP::init_type();
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("FMOD");

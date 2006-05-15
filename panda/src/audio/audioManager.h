@@ -22,12 +22,68 @@
 
 #include "config_audio.h"
 #include "audioSound.h"
+#include "audioDSP.h"
 
 typedef PT(AudioManager) Create_AudioManager_proc();
 
 
 class EXPCL_PANDA AudioManager : public TypedReferenceCount {
 PUBLISHED:
+
+
+	//This is an enumerator for the FMOD DSPs.
+	//The reason why this is here, is because Panda's DTOOL interegator
+	//For the Python Bindings, does not seem to like getting 'PUBLISHED'
+	//Functions in the AudioTraits.
+	//I guess this is a bug, but it was beyond me.
+	enum DSP_category {
+		// These enumerants line up one-to-one
+		// with the FMOD DSP enumerants.
+		DSP_unknown, 
+		DSP_mixer, 
+		DSP_oscillator, 
+		DSP_lowpass, 
+		DSP_itlowpass, 
+		DSP_highpass, 
+		DSP_echo, 
+		DSP_flange, 
+		DSP_distortion, 
+		DSP_normalize, 
+		DSP_parameq, 
+		DSP_pitchshift, 
+		DSP_chorus, 
+		DSP_reverb, 
+		DSP_vstplugin, 
+		DSP_winampplugin, 
+		DSP_itecho,
+		DSP_compressor,
+		DSP_COUNT
+	};
+
+	enum SPEAKERMODE_category{
+		// These enumerants line up one-to-one
+		// with the FMOD SPEAKERMODE enumerants.
+		SPEAKERMODE_raw, 
+		SPEAKERMODE_mono, 
+		SPEAKERMODE_stereo, 
+		SPEAKERMODE_quad, 
+		SPEAKERMODE_surround, 
+		SPEAKERMODE_5point1, 
+		SPEAKERMODE_7point1, 
+		SPEAKERMODE_prologic, 
+		SPEAKERMODE_max,
+		SPEAKERMODE_COUNT
+	};
+
+	virtual PT(AudioDSP) create_dsp(DSP_category cat);
+
+	virtual bool add_dsp(PT(AudioDSP) x);
+	virtual bool remove_dsp(PT(AudioDSP) x);
+
+
+  	virtual int getSpeakerSetup();
+	virtual void setSpeakerSetup(SPEAKERMODE_category cat);
+
   // Create an AudioManager for each category of sounds you have.
   // E.g.
   //   MySoundEffects = create_AudioManager::AudioManager();
@@ -52,6 +108,7 @@ PUBLISHED:
   
   // Get a sound:
   virtual PT(AudioSound) get_sound(const string& file_name, bool positional = false) = 0;
+  
   PT(AudioSound) get_null_sound();
 
   // Tell the AudioManager there is no need to keep this one cached.

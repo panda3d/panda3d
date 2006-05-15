@@ -141,6 +141,31 @@ specifies_mode(int bits) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::is_basic
+//       Access: Published
+//  Description: Returns true if the properties are extremely basic.
+//               The following count as basic: rgb or rgba, depth.
+//               If anything else is specified, the properties are
+//               non-basic.
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+is_basic() const {
+  if (_frame_buffer_mode & (~(FM_alpha | FM_depth))) {
+    return false;
+  }
+  if (_depth_bits || _color_bits || _alpha_bits || _stencil_bits) {
+    return false;
+  }
+  if (_multisamples) {
+    return false;
+  }
+  if (_aux_rgba || _aux_hrgba || _aux_float) {
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::is_stereo
 //       Access: Published
 //  Description: Returns true if the frame buffer indicates a
@@ -542,6 +567,16 @@ INLINE void FrameBufferProperties::
 set_specified() {
   _specified = S_ALL_SPECIFIED;
   recalc_buffer_mask();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_specified
+//       Access: Public
+//  Description: Returns the specified flags.
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_specified() const {
+  return _specified;
 }
 
 ////////////////////////////////////////////////////////////////////

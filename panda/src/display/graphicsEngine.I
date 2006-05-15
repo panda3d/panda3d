@@ -126,7 +126,8 @@ make_window(GraphicsStateGuardian *gsg, const string &name, int sort) {
   // The hardwired size here is never used.
   GraphicsOutput *result = make_output(gsg->get_pipe(), name, sort,
                                        gsg->get_default_properties(), 50, 50,
-                                       GraphicsPipe::BF_require_window,
+                                       GraphicsPipe::BF_require_window |
+                                       GraphicsPipe::BF_fb_props_optional,
                                        gsg, NULL);
   return DCAST(GraphicsWindow, result);
 }
@@ -150,7 +151,8 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
   props.set_frame_buffer_mode(props.get_frame_buffer_mode() & (~clear));
   GraphicsOutput *result = make_output(gsg->get_pipe(), name, sort,
                                        gsg->get_default_properties(), x_size, y_size,
-                                       GraphicsPipe::BF_refuse_window,
+                                       GraphicsPipe::BF_refuse_window |
+                                       GraphicsPipe::BF_fb_props_optional,
                                        gsg, NULL);
   return result;
 }
@@ -166,7 +168,8 @@ make_parasite(GraphicsOutput *host, const string &name,
   FrameBufferProperties props;
   GraphicsOutput *result = make_output(host->get_pipe(), name, sort,
                                        props, x_size, y_size,
-                                       GraphicsPipe::BF_require_parasite,
+                                       GraphicsPipe::BF_require_parasite |
+                                       GraphicsPipe::BF_fb_props_optional,
                                        host->get_gsg(), host);
   return result;
 }

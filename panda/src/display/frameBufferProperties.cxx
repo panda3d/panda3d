@@ -61,7 +61,55 @@ operator = (const FrameBufferProperties &copy) {
 ////////////////////////////////////////////////////////////////////
 bool FrameBufferProperties::
 subsumes(const FrameBufferProperties &other) const {
-  // NOT IMPLEMENTED YET
+  if (other._specified & S_depth_bits) {
+    if (((_specified & S_depth_bits)==0) || (other._depth_bits > _depth_bits)) {
+      return false;
+    }
+  }
+  if (other._specified & S_color_bits) {
+    if (((_specified & S_color_bits)==0) || (other._color_bits > _color_bits)) {
+      return false;
+    }
+  }
+  if (other._specified & S_alpha_bits) {
+    if (((_specified & S_alpha_bits)==0) || (other._alpha_bits > _alpha_bits)) {
+      return false;
+    }
+  }
+  if (other._specified & S_stencil_bits) {
+    if (((_specified & S_stencil_bits)==0) || (other._stencil_bits > _stencil_bits)) {
+      return false;
+    }
+  }
+  if ((other._specified & S_multisamples) && (other._multisamples > 1)) {
+    // Multisample spec of 1 is ignored - 1 multisample is tautologous.
+    if (((_specified & S_multisamples)==0) || (other._multisamples > _multisamples)) {
+      return false;
+    }
+  }
+  if (other._specified & S_aux_rgba) {
+    if (((_specified & S_aux_rgba)==0) || (other._aux_rgba > _aux_rgba)) {
+      return false;
+    }
+  }
+  if (other._specified & S_aux_hrgba) {
+    if (((_specified & S_aux_hrgba)==0) || (other._aux_hrgba > _aux_hrgba)) {
+      return false;
+    }
+  }
+  if (other._specified & S_aux_float) {
+    if (((_specified & S_aux_float)==0) || (other._aux_float > _aux_float)) {
+      return false;
+    }
+  }
+  if (other._specified & S_frame_buffer_mode) {
+    if ((_specified & S_frame_buffer_mode)==0) {
+      return false;
+    }
+    if (other._frame_buffer_mode & (~_frame_buffer_mode)) {
+      return false;
+    }
+  }
   return true;
 }
 
@@ -74,6 +122,7 @@ subsumes(const FrameBufferProperties &other) const {
 ////////////////////////////////////////////////////////////////////
 FrameBufferProperties FrameBufferProperties::
 get_default() {
+
   FrameBufferProperties props;
 
   int mode = 0;
@@ -148,6 +197,9 @@ get_default() {
   }
   if (framebuffer_stereo) {
     mode |= FM_stereo;
+  }
+  if ((mode & FM_hardware) && (mode & FM_software)) {
+    mode = mode & ~(FM_hardware | FM_software);
   }
 
   props.set_frame_buffer_mode(mode);

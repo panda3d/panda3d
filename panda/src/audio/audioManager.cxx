@@ -38,8 +38,7 @@ namespace {
 Create_AudioManager_proc* AudioManager::_create_AudioManager
     =create_NullAudioManger;
 
-void AudioManager::
-register_AudioManager_creator(Create_AudioManager_proc* proc) {
+void AudioManager::register_AudioManager_creator(Create_AudioManager_proc* proc) {
   nassertv(_create_AudioManager==create_NullAudioManger);
   _create_AudioManager=proc;
 }
@@ -47,10 +46,8 @@ register_AudioManager_creator(Create_AudioManager_proc* proc) {
 
 
 // Factory method for getting a platform specific AudioManager:
-PT(AudioManager) AudioManager::
-create_AudioManager() {
-  audio_debug("create_AudioManager()\n  audio_library_name=\""
-      <<audio_library_name<<"\"");
+PT(AudioManager) AudioManager::create_AudioManager() {
+  audio_debug("create_AudioManager()\n  audio_library_name=\""<<audio_library_name<<"\"");
   static int lib_load;
   if (!lib_load) {
     lib_load=1;
@@ -91,8 +88,7 @@ create_AudioManager() {
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-AudioManager::
-~AudioManager() {
+AudioManager::~AudioManager() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -104,8 +100,7 @@ AudioManager::
 //               change your mind and want to play sounds again, you
 //               will have to recreate all of these objects.
 ////////////////////////////////////////////////////////////////////
-void AudioManager::
-shutdown() {
+void AudioManager::shutdown() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,8 +111,7 @@ shutdown() {
 //               sound.  This same object may also be returned by
 //               get_sound() if it fails.
 ////////////////////////////////////////////////////////////////////
-PT(AudioSound) AudioManager::
-get_null_sound() {
+PT(AudioSound) AudioManager::get_null_sound() {
   if (_null_sound == (AudioSound *)NULL) {
     _null_sound = new NullAudioSound;
   }
@@ -125,13 +119,74 @@ get_null_sound() {
 }
 
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::create_dsp
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PT(AudioDSP) AudioManager::
+create_dsp(DSP_category) {
+    // intentionally blank.
+	return NULL;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::add_dsp
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool AudioManager::
+add_dsp(PT(AudioDSP) x) {
+	// intentionally blank
+	return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::remove_dsp
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool AudioManager::
+remove_dsp(PT(AudioDSP) x) {
+	// intentionally blank
+	return false;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::getSpeakerSetup()
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int AudioManager::
+getSpeakerSetup() {
+	// intentionally blank
+	return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::setSpeakerSetup()
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AudioManager::
+setSpeakerSetup(SPEAKERMODE_category cat) {
+	// intentionally blank
+	;
+}
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::audio_3d_update
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AudioManager::
-audio_3d_update() {
+void AudioManager::audio_3d_update() {
     // intentionally blank.
 }
 
@@ -140,8 +195,7 @@ audio_3d_update() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AudioManager::
-audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
+void AudioManager::audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
     // intentionally blank.
 }
 
@@ -150,8 +204,7 @@ audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float v
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AudioManager::
-audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz, float *fx, float *fy, float *fz, float *ux, float *uy, float *uz) {
+void AudioManager::audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz, float *fx, float *fy, float *fz, float *ux, float *uy, float *uz) {
     // intentionally blank.
 }
 
@@ -160,8 +213,7 @@ audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, flo
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AudioManager::
-audio_3d_set_distance_factor(float factor) {
+void AudioManager::audio_3d_set_distance_factor(float factor) {
     // intentionally blank.
 }
 
@@ -170,8 +222,7 @@ audio_3d_set_distance_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float AudioManager::
-audio_3d_get_distance_factor() const {
+float AudioManager::audio_3d_get_distance_factor() const {
     // intentionally blank.
     return 0.0f;
 }
@@ -181,8 +232,7 @@ audio_3d_get_distance_factor() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AudioManager::
-audio_3d_set_doppler_factor(float factor) {
+void AudioManager::audio_3d_set_doppler_factor(float factor) {
     // intentionally blank.
 }
 
@@ -191,8 +241,7 @@ audio_3d_set_doppler_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float AudioManager::
-audio_3d_get_doppler_factor() const {
+float AudioManager::audio_3d_get_doppler_factor() const {
     // intentionally blank.
     return 0.0f;
 }
@@ -202,8 +251,7 @@ audio_3d_get_doppler_factor() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AudioManager::
-audio_3d_set_drop_off_factor(float factor) {
+void AudioManager::audio_3d_set_drop_off_factor(float factor) {
     // intentionally blank.
 }
 
@@ -212,8 +260,7 @@ audio_3d_set_drop_off_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float AudioManager::
-audio_3d_get_drop_off_factor() const {
+float AudioManager::audio_3d_get_drop_off_factor() const {
     // intentionally blank.
     return 0.0f;
 }

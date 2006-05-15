@@ -1,5 +1,7 @@
-// Filename: audio.h
-// Created by:  frang (06Jul00)
+// Filename: fmodAudioDSP.I
+// Created by:  Stan Rosenbaum "Staque" - Spring 2006
+//
+//
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,11 +18,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef __AUDIO_H__
-#define __AUDIO_H__
 
-#include "audioSound.h"
-#include "audioDSP.h"
-#include "audioManager.h"
 
-#endif /* __AUDIO_H__ */
+
+
+

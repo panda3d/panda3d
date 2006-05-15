@@ -158,11 +158,15 @@ make_output(const string &name,
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
-        ((flags&BF_can_bind_every)!=0)||
-        (properties.get_aux_rgba() > 0)||
-        (properties.get_aux_hrgba() > 0)||
-        (properties.get_aux_float() > 0)) {
+        ((flags&BF_can_bind_every)!=0)) {
       return NULL;
+    }
+    if ((flags & BF_fb_props_optional)==0) {
+      if ((properties.get_aux_rgba() > 0)||
+          (properties.get_aux_hrgba() > 0)||
+          (properties.get_aux_float() > 0)) {
+        return NULL;
+      }
     }
     return new wglGraphicsWindow(this, name, properties,
                                  x_size, y_size, flags, gsg, host);
@@ -175,19 +179,28 @@ make_output(const string &name,
         (!gl_support_fbo)||
         (host==0)||
         ((flags&BF_require_parasite)!=0)||
-        ((flags&BF_require_window)!=0)||
-        (properties.specifies_mode(FrameBufferProperties::FM_index))||
-        (properties.specifies_mode(FrameBufferProperties::FM_buffer))||
-        (properties.specifies_mode(FrameBufferProperties::FM_accum))||
-        (properties.specifies_mode(FrameBufferProperties::FM_stencil))||
-        (properties.specifies_mode(FrameBufferProperties::FM_multisample))) {
+        ((flags&BF_require_window)!=0)) {
       return NULL;
     }
+    // Early failure - if we are sure that this buffer WONT
+    // meet specs, we can bail out early.
+    if ((flags & BF_fb_props_optional)==0) {
+      if ((properties.has_mode(FrameBufferProperties::FM_index))||
+          (properties.has_mode(FrameBufferProperties::FM_buffer))||
+          (properties.has_mode(FrameBufferProperties::FM_accum))||
+          (properties.has_mode(FrameBufferProperties::FM_stencil))||
+          (properties.has_mode(FrameBufferProperties::FM_multisample))) {
+        return NULL;
+      }
+    }
+    // Early success - if we are sure that this buffer WILL
+    // meet specs, we can precertify it.
     if ((wglgsg != 0) &&
         (wglgsg->is_valid()) &&
         (!wglgsg->needs_reset()) &&
         (wglgsg->_supports_framebuffer_object) &&
-        (wglgsg->_glDrawBuffers != 0)) {
+        (wglgsg->_glDrawBuffers != 0)&&
+        (properties.is_basic())) {
       precertify = true;
     }
     return new GLGraphicsBuffer(this, name, properties,
@@ -202,16 +215,25 @@ make_output(const string &name,
         ((flags&BF_require_window)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_rtt_cumulative)!=0)||
-        ((flags&BF_can_bind_every)!=0)||
-        (properties.get_aux_rgba() > 0)||
-        (properties.get_aux_hrgba() > 0)||
-        (properties.get_aux_float() > 0)) {
+        ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
+    // Early failure - if we are sure that this buffer WONT
+    // meet specs, we can bail out early.
+    if ((flags & BF_fb_props_optional) == 0) {
+      if ((properties.get_aux_rgba() > 0)||
+          (properties.get_aux_hrgba() > 0)||
+          (properties.get_aux_float() > 0)) {
+        return NULL;
+      }
+    }
+    // Early success - if we are sure that this buffer WILL
+    // meet specs, we can precertify the window.
     if ((wglgsg != 0) &&
         (wglgsg->is_valid()) &&
         (!wglgsg->needs_reset()) &&
-        (wglgsg->_supports_pbuffer)) {
+        (wglgsg->_supports_pbuffer) &&
+        (properties.is_basic())) {
       precertify = true;
     }
     return new wglGraphicsBuffer(this, name, properties,
@@ -525,7 +547,7 @@ get_properties(FrameBufferProperties &properties, HDC hdc,
   } else {
     mode |= FrameBufferProperties::FM_hardware;
   }
-
+  
   if (pfd.cColorBits != 0) {
     mode |= FrameBufferProperties::FM_rgb;
     properties.set_color_bits(pfd.cColorBits);

@@ -332,6 +332,23 @@ make_output(GraphicsPipe *pipe,
     gsg = make_gsg(pipe, prop);
   }
   
+  // If there is a host window, and it is not yet initialized,
+  // then call open_windows to get the host ready.  If that 
+  // fails, give up on using the host window.
+
+  if (host != (GraphicsOutput *)NULL) {
+    if ((!host->is_valid())||
+        (!host->get_gsg()->is_valid())||
+        (host->get_gsg()->needs_reset())) {
+      open_windows();
+    }
+    if ((!host->is_valid())||
+        (!host->get_gsg()->is_valid())||
+        (host->get_gsg()->needs_reset())) {
+      host = NULL;
+    }
+  }
+
   // Determine if a parasite buffer meets the user's specs.
 
   bool can_use_parasite = false;
@@ -340,24 +357,23 @@ make_output(GraphicsPipe *pipe,
       ((flags&GraphicsPipe::BF_refuse_parasite)==0)&&
       ((flags&GraphicsPipe::BF_can_bind_color)==0)&&
       ((flags&GraphicsPipe::BF_can_bind_every)==0)&&
-      ((flags&GraphicsPipe::BF_rtt_cumulative)==0)&&
-      (prop.specifies_mode(FrameBufferProperties::FM_index)==false)&&
-      (prop.specifies_mode(FrameBufferProperties::FM_buffer)==false)&&
-      (prop.specifies_mode(FrameBufferProperties::FM_accum)==false)&&
-      (prop.specifies_mode(FrameBufferProperties::FM_stencil)==false)&&
-      (prop.specifies_mode(FrameBufferProperties::FM_multisample)==false)&&
-      (prop.get_aux_rgba() == 0)&&
-      (prop.get_aux_hrgba() == 0)&&
-      (prop.get_aux_float() == 0)) {
-    can_use_parasite = true;
+      ((flags&GraphicsPipe::BF_rtt_cumulative)==0)) {
+    if ((flags&GraphicsPipe::BF_fb_props_optional) ||
+        (host->get_fb_properties().subsumes(prop))) {
+      can_use_parasite = true;
+    }
   }
 
   // If parasite buffers are preferred, then try a parasite first.
+  // Even if prefer-parasite-buffer is set, parasites are not preferred
+  // if the host window is too small, or if the host window does not
+  // have the requested properties.
   
   if ((prefer_parasite_buffer) &&
       (can_use_parasite) &&
       (x_size <= host->get_x_size())&&
-      (y_size <= host->get_y_size())) {
+      (y_size <= host->get_y_size())&&
+      (host->get_fb_properties().subsumes(prop))) {
     ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size, flags);
     buffer->_sort = sort;
     do_add_window(buffer, gsg, threading_model);
@@ -378,7 +394,14 @@ make_output(GraphicsPipe *pipe,
       }
       open_windows();
       if (window->is_valid()) {
-        return window;
+        if (window->get_fb_properties().subsumes(prop)) {
+          return window;
+        } else {
+          if (flags & GraphicsPipe::BF_fb_props_optional) {
+            display_cat.warning() << "FrameBufferProperties available less than requested.\n";
+            return window;
+          }
+        }
       }
       // No good; delete the window and keep trying.
       bool removed = remove_window(window);

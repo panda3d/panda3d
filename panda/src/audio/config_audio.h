@@ -33,28 +33,18 @@
 
 NotifyCategoryDecl(audio, EXPCL_PANDA, EXPTP_PANDA);
 
-extern EXPCL_PANDA ConfigVariableBool audio_active;
-extern EXPCL_PANDA ConfigVariableInt audio_cache_limit;
-extern EXPCL_PANDA ConfigVariableDouble audio_volume;
-
-extern EXPCL_PANDA ConfigVariableDouble audio_doppler_factor;
-extern EXPCL_PANDA ConfigVariableDouble audio_distance_factor;
-extern EXPCL_PANDA ConfigVariableDouble audio_drop_off_factor;
-
-extern EXPCL_PANDA ConfigVariableInt audio_min_hw_channels;
-
-extern EXPCL_PANDA ConfigVariableBool audio_software_midi;
-extern EXPCL_PANDA ConfigVariableFilename audio_dls_file;
-
-extern EXPCL_PANDA ConfigVariableBool audio_play_midi;
-extern EXPCL_PANDA ConfigVariableBool audio_play_wave;
-extern EXPCL_PANDA ConfigVariableBool audio_play_mp3;
-
-extern EXPCL_PANDA ConfigVariableInt audio_output_rate;
-extern EXPCL_PANDA ConfigVariableInt audio_output_bits;
-extern EXPCL_PANDA ConfigVariableInt audio_output_channels;
-
+//We Need This one.
 extern EXPCL_PANDA ConfigVariableString audio_library_name;
+
+//This Specifies the number of possible [max] audio channels.
+extern EXPCL_PANDA ConfigVariableInt fmod_number_of_sound_channels;
+
+//This is to turn on Surround Sound.
+extern EXPCL_PANDA ConfigVariableBool fmod_use_surround_sound;
+
+
+
+
 
 #ifndef NDEBUG //[
   // Non-release build:
