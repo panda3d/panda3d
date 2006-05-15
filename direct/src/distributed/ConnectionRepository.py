@@ -65,6 +65,10 @@ class ConnectionRepository(
         # DC file.  The AIRepository will redefine this to 'AI'.
         self.dcSuffix = ''
 
+        if self.config.GetBool('want-debug-leak', 1):
+            import gc
+            gc.set_debug(gc.DEBUG_SAVEALL)
+
     def generateGlobalObject(self, doId, dcname, values=None):
         def applyFieldValues(distObj, dclass, values):
             for i in range(dclass.getNumInheritedFields()):
