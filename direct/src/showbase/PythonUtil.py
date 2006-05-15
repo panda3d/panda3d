@@ -1984,7 +1984,7 @@ def printListEnum(l):
 
 def gcDebugOn():
     import gc
-    return (gc.get_debug() & gc.DEBUG_LEAK) == gc.DEBUG_LEAK
+    return (gc.get_debug() & gc.DEBUG_SAVEALL) == gc.DEBUG_SAVEALL
 
 import __builtin__
 __builtin__.Functor = Functor
