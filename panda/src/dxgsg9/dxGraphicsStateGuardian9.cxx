@@ -393,7 +393,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 //               makes it the current vertex buffer for rendering.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-apply_vertex_buffer(VertexBufferContext *vbc, 
+apply_vertex_buffer(VertexBufferContext *vbc,
                     CLP(ShaderContext) *shader_context,
                     const GeomVertexArrayDataPipelineReader *reader) {
   DXVertexBufferContext9 *dvbc = DCAST(DXVertexBufferContext9, vbc);
@@ -709,7 +709,7 @@ do_clear(const RenderBuffer &buffer) {
   DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::do_clear\n"; DBG_E
 
   //set appropriate flags
-  if (buffer_type & RenderBuffer::T_back) {
+  if (buffer_type & RenderBuffer::T_color) {
     main_flags |=  D3DCLEAR_TARGET;
   }
 
@@ -727,6 +727,7 @@ do_clear(const RenderBuffer &buffer) {
   if ((main_flags | aux_flags) != 0) {
 
   DBG_S dxgsg9_cat.debug ( ) << "ccccc DXGraphicsStateGuardian9::really do_clear\n"; DBG_E
+  DBG_S dxgsg9_cat.debug ( ) << "clear flags: main " << main_flags << " aux :" << aux_flags << "\n"; DBG_E
 
     HRESULT hr = _d3d_device->Clear(0, NULL, main_flags | aux_flags, _d3dcolor_clear_value,
                                     _depth_clear_value, (DWORD)_stencil_clear_value);
@@ -1148,10 +1149,10 @@ DBG_S dxgsg9_cat.debug ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
-begin_draw_primitives(const GeomPipelineReader *geom_reader, 
+begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, 
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger,
                                                     data_reader)) {
     return false;
   }
@@ -2215,7 +2216,7 @@ bool vertex_buffer_page_in_function (LruPage *lru_page)
 
   // allocate vertex buffer
   Thread *current_thread = Thread::get_current_thread();
-  GeomVertexArrayDataPipelineReader reader(vertex_buffer->get_data(), current_thread);  
+  GeomVertexArrayDataPipelineReader reader(vertex_buffer->get_data(), current_thread);
   vertex_buffer -> allocate_vbuffer (*(gsg->_screen), &reader);
 
   // update vertex buffer
@@ -2256,7 +2257,7 @@ bool index_buffer_page_in_function (LruPage *lru_page)
 
   // allocate vertex buffer
   Thread *current_thread = Thread::get_current_thread();
-  GeomPrimitivePipelineReader reader(index_buffer->get_data(), current_thread);  
+  GeomPrimitivePipelineReader reader(index_buffer->get_data(), current_thread);
   index_buffer -> allocate_ibuffer (*(gsg->_screen), &reader);
 
   // update vertex buffer
@@ -4697,7 +4698,7 @@ get_d3d_min_type(Texture::FilterType filter_type,
 
   case Texture::FT_linear_mipmap_linear:
     return D3DTEXF_LINEAR;
-    
+
   case Texture::FT_shadow:
   case Texture::FT_default:
     return D3DTEXF_LINEAR;

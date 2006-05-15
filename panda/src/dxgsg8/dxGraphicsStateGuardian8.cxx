@@ -496,7 +496,7 @@ do_clear(const RenderBuffer &buffer) {
   DWORD aux_flags = 0;
 
   //set appropriate flags
-  if (buffer_type & RenderBuffer::T_back) {
+  if (buffer_type & RenderBuffer::T_color) {
     main_flags |=  D3DCLEAR_TARGET;
   }
 
@@ -558,7 +558,7 @@ do_clear(const RenderBuffer &buffer) {
 //       scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-prepare_display_region(DisplayRegionPipelineReader *dr, 
+prepare_display_region(DisplayRegionPipelineReader *dr,
                        Lens::StereoChannel stereo_channel) {
   nassertv(dr != (DisplayRegionPipelineReader *)NULL);
   GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
@@ -791,10 +791,10 @@ end_frame(Thread *current_thread) {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
-begin_draw_primitives(const GeomPipelineReader *geom_reader, 
+begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, 
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger,
                                                     data_reader)) {
     return false;
   }
