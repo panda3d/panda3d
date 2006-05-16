@@ -116,6 +116,7 @@ apply_to_egg(EggPrimitive *egg_prim, XFileToEggConverter *converter) {
     EggMaterial temp("");
     temp.set_diff(_face_color);
     if (got_spec) {
+      cerr << "shininess = " << _power << "\n";
       temp.set_shininess(_power);
       temp.set_spec(Colorf(_specular_color[0], _specular_color[1],
                            _specular_color[2], 1.0));
@@ -207,7 +208,7 @@ make_x_material(XFileNode *x_meshMaterials, const string &suffix) {
 bool XFileMaterial::
 fill_material(XFileDataNode *obj) {
   _face_color = LCAST(float, (*obj)["faceColor"].vec4());
-  _power = (*obj)["faceColor"].d();
+  _power = (*obj)["power"].d();
   _specular_color = LCAST(float, (*obj)["specularColor"].vec3());
   _emissive_color = LCAST(float, (*obj)["emissiveColor"].vec3());
   _has_material = true;
