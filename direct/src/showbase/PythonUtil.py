@@ -1986,10 +1986,15 @@ def gcDebugOn():
     import gc
     return (gc.get_debug() & gc.DEBUG_SAVEALL) == gc.DEBUG_SAVEALL
 
+class ScratchPad:
+    """empty class to stick values onto"""
+    pass
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
 __builtin__.Queue = Queue
 __builtin__.SerialNum = SerialNum
+__builtin__.ScratchPad = ScratchPad
 __builtin__.uniqueName = uniqueName
 __builtin__.profiled = profiled
