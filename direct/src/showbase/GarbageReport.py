@@ -1,6 +1,6 @@
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import PythonUtil
-from direct.showbase.PythonUtil import POD
+from direct.showbase.TaskThreaded import TaskThreaded
 import gc
 
 class FakeObject:
@@ -12,7 +12,7 @@ def _createGarbage():
     a.other = b
     b.other = a
 
-class GarbageReport:
+class GarbageReport(TaskThreaded):
     """Detects leaked Python objects (via gc.collect()) and reports on garbage
     items, garbage-to-garbage references, and garbage cycles.
     If you just want to dump the report to the log, use GarbageLogger."""
@@ -20,9 +20,23 @@ class GarbageReport:
 
     NotGarbage = 'NG'
 
-    def __init__(self, name=None, log=True, verbose=False, fullReport=False, findCycles=True):
+    def __init__(self, name, log=True, verbose=False, fullReport=False, findCycles=True,
+                 threaded=False, doneCallback=None):
         # if log is True, GarbageReport will self-destroy after logging
         # if false, caller is responsible for calling destroy()
+        # if threaded is True, processing will be performed over multiple frames
+        TaskThreaded.__init__(self, name, threaded)
+        # stick the arguments onto a ScratchPad so we can access them from the thread
+        # functions and delete them all at once
+        self._args = ScratchPad()
+        self._args.name = name
+        self._args.log = log
+        self._args.verbose = verbose
+        self._args.fullReport = fullReport
+        self._args.findCycles = findCycles
+        self._args.doneCallback = doneCallback
+
+        # do the garbage collection
         wasOn = PythonUtil.gcDebugOn()
         oldFlags = gc.get_debug()
         if not wasOn:
@@ -37,14 +51,17 @@ class GarbageReport:
 
         self.numGarbage = len(self.garbage)
 
-        if verbose:
+        if self._args.verbose:
             self.notify.info('found %s garbage items' % self.numGarbage)
+
+        self.scheduleNext(self.T_getReferrers)
+    def T_getReferrers(self):
 
         # grab the referrers (pointing to garbage)
         self.referrersByReference = {}
         self.referrersByNumber = {}
-        if fullReport:
-            if verbose:
+        if self._args.fullReport:
+            if self._args.verbose:
                 self.notify.info('getting referrers...')
             # we need referents to detect cycles, but we don't need referrers
             for i in xrange(self.numGarbage):
@@ -52,23 +69,32 @@ class GarbageReport:
                 self.referrersByNumber[i] = byNum
                 self.referrersByReference[i] = byRef
 
+        self.scheduleNext(self.T_getReferents)
+    def T_getReferents(self):
+
         # grab the referents (pointed to by garbage)
         self.referentsByReference = {}
         self.referentsByNumber = {}
-        if verbose:
+        if self._args.verbose:
             self.notify.info('getting referents...')
         for i in xrange(self.numGarbage):
             byNum, byRef = self._getReferents(self.garbage[i])
             self.referentsByNumber[i] = byNum
             self.referentsByReference[i] = byRef
 
+        self.scheduleNext(self.T_getCycles)
+    def T_getCycles(self):
+
         # find the cycles
-        if findCycles and self.numGarbage > 0:
-            if verbose:
+        if self._args.findCycles and self.numGarbage > 0:
+            if self._args.verbose:
                 self.notify.info('detecting cycles...')
             self.cycles = self._getCycles()
 
-        s = '\n===== GarbageReport: \'%s\' (%s items) =====' % (name, self.numGarbage)
+        self.scheduleNext(self.T_createReport)
+    def T_createReport(self):
+
+        s = '\n===== GarbageReport: \'%s\' (%s items) =====' % (self._args.name, self.numGarbage)
         if self.numGarbage > 0:
             # log each individual item with a number in front of it
             s += '\n\n===== Garbage Items ====='
@@ -81,13 +107,13 @@ class GarbageReport:
             for i in range(len(self.garbage)):
                 s += format % (i, type(self.garbage[i]), self.garbage[i])
 
-            if findCycles:
+            if self._args.findCycles:
                 format = '\n%s'
                 s += '\n\n===== Cycles ====='
                 for cycle in self.cycles:
                     s += format % cycle
 
-            if fullReport:
+            if self._args.fullReport:
                 format = '\n%0' + '%s' % digits + 'i:%s'
                 s += '\n\n===== Referrers By Number (what is referring to garbage item?) ====='
                 for i in xrange(self.numGarbage):
@@ -103,19 +129,21 @@ class GarbageReport:
                     s += format % (i, self.referentsByReference[i])
 
         self._report = s
-        if log:
+
+        self.scheduleNext(self.T_printReport)
+    def T_printReport(self):
+
+        if self._args.log:
             self.notify.info(self._report)
 
-    def getNumItems(self):
-        return self.numGarbage
+        self.scheduleNext(self.T_completed)
+    def T_completed(self):
 
-    def getGarbage(self):
-        return self.garbage
-
-    def getReport(self):
-        return self._report
+        if self._args.doneCallback:
+            self._args.doneCallback(self)
 
     def destroy(self):
+        del self._args
         del self.garbage
         del self.numGarbage
         del self.referrersByReference
@@ -125,6 +153,15 @@ class GarbageReport:
         if hasattr(self, 'cycles'):
             del self.cycles
         del self._report
+
+    def getNumItems(self):
+        return self.numGarbage
+
+    def getGarbage(self):
+        return self.garbage
+
+    def getReport(self):
+        return self._report
 
     def _getReferrers(self, obj):
         # referrers (pointing to garbage)
@@ -203,4 +240,6 @@ class GarbageLogger(GarbageReport):
     def __init__(self, *args, **kArgs):
         kArgs['log'] = True
         GarbageReport.__init__(self, *args, **kArgs)
+    def T_completed(self):
+        GarbageReport.T_completed(self)
         self.destroy()
