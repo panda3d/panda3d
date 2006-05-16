@@ -12,20 +12,15 @@ def _createGarbage():
     a.other = b
     b.other = a
 
-class CycleSearchState(POD):
-    DataSet = {
-        'curId': None,
-        'cycleByNumSoFar': [],
-        'cycleByRefSoFar': [],
-        'nonGarbageDepth': 0,
-        }
-
 class GarbageReport:
+    """Detects leaked Python objects (via gc.collect()) and reports on garbage
+    items, garbage-to-garbage references, and garbage cycles.
+    If you just want to dump the report to the log, use GarbageLogger."""
     notify = DirectNotifyGlobal.directNotify.newCategory("GarbageReport")
 
     NotGarbage = 'NG'
 
-    def __init__(self, name=None, log=True, fullReport=False, findCycles=True):
+    def __init__(self, name=None, log=True, verbose=False, fullReport=False, findCycles=True):
         # if log is True, GarbageReport will self-destroy after logging
         # if false, caller is responsible for calling destroy()
         wasOn = PythonUtil.gcDebugOn()
@@ -42,27 +37,36 @@ class GarbageReport:
 
         self.numGarbage = len(self.garbage)
 
+        if verbose:
+            self.notify.info('found %s garbage items' % self.numGarbage)
+
         # grab the referrers (pointing to garbage)
         self.referrersByReference = {}
         self.referrersByNumber = {}
-        for i in xrange(self.numGarbage):
-            byNum, byRef = self._getReferrers(self.garbage[i])
-            self.referrersByNumber[i] = byNum
-            self.referrersByReference[i] = byRef
+        if fullReport:
+            if verbose:
+                self.notify.info('getting referrers...')
+            # we need referents to detect cycles, but we don't need referrers
+            for i in xrange(self.numGarbage):
+                byNum, byRef = self._getReferrers(self.garbage[i])
+                self.referrersByNumber[i] = byNum
+                self.referrersByReference[i] = byRef
 
         # grab the referents (pointed to by garbage)
         self.referentsByReference = {}
         self.referentsByNumber = {}
+        if verbose:
+            self.notify.info('getting referents...')
         for i in xrange(self.numGarbage):
             byNum, byRef = self._getReferents(self.garbage[i])
             self.referentsByNumber[i] = byNum
             self.referentsByReference[i] = byRef
 
-        """
         # find the cycles
-        if findCycles:
+        if findCycles and self.numGarbage > 0:
+            if verbose:
+                self.notify.info('detecting cycles...')
             self.cycles = self._getCycles()
-            """
 
         s = '\n===== GarbageReport: \'%s\' (%s items) =====' % (name, self.numGarbage)
         if self.numGarbage > 0:
@@ -77,23 +81,20 @@ class GarbageReport:
             for i in range(len(self.garbage)):
                 s += format % (i, type(self.garbage[i]), self.garbage[i])
 
-            """
             if findCycles:
                 format = '\n%s'
                 s += '\n\n===== Cycles ====='
                 for cycle in self.cycles:
                     s += format % cycle
-                    """
-
-            format = '\n%0' + '%s' % digits + 'i:%s'
-            s += '\n\n===== Referrers By Number (what is referring to garbage item?) ====='
-            for i in xrange(self.numGarbage):
-                s += format % (i, self.referrersByNumber[i])
-            s += '\n\n===== Referents By Number (what is garbage item referring to?) ====='
-            for i in xrange(self.numGarbage):
-                s += format % (i, self.referentsByNumber[i])
 
             if fullReport:
+                format = '\n%0' + '%s' % digits + 'i:%s'
+                s += '\n\n===== Referrers By Number (what is referring to garbage item?) ====='
+                for i in xrange(self.numGarbage):
+                    s += format % (i, self.referrersByNumber[i])
+                s += '\n\n===== Referents By Number (what is garbage item referring to?) ====='
+                for i in xrange(self.numGarbage):
+                    s += format % (i, self.referentsByNumber[i])
                 s += '\n\n===== Referrers (what is referring to garbage item?) ====='
                 for i in xrange(self.numGarbage):
                     s += format % (i, self.referrersByReference[i])
@@ -104,7 +105,6 @@ class GarbageReport:
         self._report = s
         if log:
             self.notify.info(self._report)
-            self.destroy()
 
     def getNumItems(self):
         return self.numGarbage
@@ -162,98 +162,45 @@ class GarbageReport:
         assert self.notify.debugCall()
         # returns list of lists, sublists are garbage reference cycles
         cycles = []
-        # dict of already-found cycles as sets so we can avoid duplicate cycle reports
-        cycleSets = {}
-        # set of garbage item IDs involved in already-discovered cycles
-        visited = set()
-        self.stateStack = Stack()
+        # sets of cycle members, to avoid duplicates
+        cycleSets = []
+        stateStack = Stack()
         for rootId in xrange(len(self.garbage)):
-            cycleSoFar = []
-            self.stateStack.push((rootId, rootId, cycles, cycleSoFar, cycleSets, visited))
-            self._findCycles()
-            self.stateStack.pop()
-        assert len(self.stateStack) == 0
-        return cycles
-
-    def _findCycles(self):
-        # rootId: id of first garbage item in potential cycle
-        # curId: id of current garbage item under examination
-        # cycles: list of complete cycles we have already found
-        # cycleSoFar: list of IDs leading from rootId up to curId
-        # cycleSets: dict of ID to list of cycle ID sets
-        # visited: set of garbage item IDs from existing (already-found) cycles
-        assert self.notify.debugCall()
-        rootId, curId, cycles, cycleSoFar, cycleSets, visited = self.stateStack.top()
-        cycleSoFar.append(curId)
-        # make sure this is not a cycle that is already in the list of cycles
-        if curId in cycleSets:
-            cycleSet = set(cycleSoFar)
-            cycleSet.add(curId)
-            if cycleSet in cycleSets[curId]:
-                return
-        for refId in self.referentsByNumber[curId]:
-            if refId == rootId:
-                # we found a cycle!
-                cycle = list(cycleSoFar) + [refId]
-                cycleSet = set(cycle)
-                # make sure this is not a duplicate of a previously-found cycle
-                if cycleSet not in cycleSets.get(rootId, []):
-                    cycles.append(cycle)
-                    for id in cycle:
-                        visited.add(id)
-                        cycleSets.setdefault(id, [])
-                        if cycleSet not in cycleSets[id]:
-                            cycleSets[id].append(cycleSet)
-            elif refId not in visited and refId not in cycleSoFar and refId != GarbageReport.NotGarbage:
-                #print rootId, curId, refId, visited, cycles, cycleSoFar, cycleSets
-                self.stateStack.push((rootId, refId, cycles, list(cycleSoFar), cycleSets, visited))
-                self._findCycles()
-                self.stateStack.pop()
-
-"""
-    def _getCycles(self):
-        # returns list of lists, sublists are garbage reference cycles by number
-        cycles = []
-        for rootId in xrange(len(self.garbage)):
-            curId = rootId
-            stateStack = Stack()
-            initialState = CycleSearchState(curId=curId, cycleByNumSoFar=[rootId],
-                                            cycleByRefSoFar=[self.garbage[rootId]])
-            stateStack.push(initialState)
-            curState = stateStack.top()
-            while not stateStack.isEmpty():
-                for index in xrange(len(self.referentsByNumber[curId])):
+            assert len(stateStack) == 0
+            stateStack.push(([rootId], rootId, 0))
+            while True:
+                if len(stateStack) == 0:
+                    break
+                candidateCycle, curId, resumeIndex = stateStack.pop()
+                if self.notify.getDebug():
+                    print 'restart: %s root=%s cur=%s resume=%s' % (
+                        candidateCycle, rootId, curId, resumeIndex)
+                for index in xrange(resumeIndex, len(self.referentsByNumber[curId])):
                     refId = self.referentsByNumber[curId][index]
-                    if refId is rootId:
-                        # we found a cycle!
-                        cyclesByNumber.append(curState.cycleByNumSoFar + [refId])
-                        cyclesByReference.append(curState.cycleByRefSoFar + [
-
-    def _getCycles(self):
-        assert self.notify.debugCall()
-        # returns list of lists, sublists are garbage reference cycles
-        cycles = []
-        # dict of already-found cycles as sets so we can avoid duplicate cycle reports
-        cycleSets = {}
-        # set of garbage item IDs involved in already-discovered cycles
-        visited = set()
-        for rootId in xrange(len(self.garbage)):
-            for index in xrange(len(self.referentsByNumber[rootId])):
-                refId = self.referentsByNumber[rootId][index]
-                if refId is rootId:
-                    # we found a cycle!
-                    cycle = [rootId, rootId]
-                    cycleSet = set(cycle)
-                    # make sure this is not a duplicate of a previously-found cycle
-                    if cycleSet not in cycleSets.get(rootId, []):
-                        cycles.append(cycle)
-                        for id in cycle:
-                            visited.add(id)
-                            cycleSets.setdefault(id, [])
-                            if cycleSet not in cycleSets[id]:
-                                cycleSets[id].append(cycleSet)
-                elif refId is not GarbageReport.NotGarbage:
-                    cycleSoFar = [rootId]
-                    self._findCycles(rootId, refId, cycles, cycleSoFar, cycleSets, visited)
+                    if self.notify.getDebug():
+                        print '       : %s -> %s' % (curId, refId)
+                    if refId == rootId:
+                        # we found a cycle! mark it down and move on to the next refId
+                        if not set(candidateCycle) in cycleSets:
+                            if self.notify.getDebug():
+                                print '  FOUND: ', list(candidateCycle) + [refId]
+                            cycles.append(list(candidateCycle) + [refId])
+                            cycleSets.append(set(candidateCycle))
+                    elif refId in candidateCycle:
+                        pass
+                    else:
+                        # this refId does not complete a cycle. Mark down
+                        # where we are in this list of referents, then
+                        # start looking through the referents of the new refId
+                        stateStack.push((list(candidateCycle), curId, index+1))
+                        stateStack.push((list(candidateCycle) + [refId], refId, 0))
+                        break
         return cycles
-    """
+
+class GarbageLogger(GarbageReport):
+    """If you just want to log the current garbage to the log file, make
+    one of these. It automatically destroys itself after logging"""
+    def __init__(self, *args, **kArgs):
+        kArgs['log'] = True
+        GarbageReport.__init__(self, *args, **kArgs)
+        self.destroy()
