@@ -569,9 +569,9 @@
 #defer HAVE_OPENCV $[libtest $[OPENCV_LPATH],$[OPENCV_LIBS]]
 
 // Is FFMPEG installed, and where?
-#define FFMPEG_IPATH /usr/local/include/ffmpeg
-#define FFMPEG_LPATH /usr/lcoal/lib
-#define FFMPEG_LIBS libavcodec.lib libavformat.lib libavutil.lib libgcc.lib
+#define FFMPEG_IPATH /usr/include/ffmpeg
+#define FFMPEG_LPATH
+#define FFMPEG_LIBS $[if $[WINDOWS_PLATFORM],libavcodec.lib libavformat.lib libavutil.lib libgcc.lib,avcodec avformat avutil]
 #defer HAVE_FFMPEG $[libtest $[FFMPEG_LPATH],$[FFMPEG_LIBS]]
 
 
