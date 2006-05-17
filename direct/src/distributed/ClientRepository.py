@@ -192,7 +192,7 @@ class ClientRepository(ClientRepositoryBase):
             classDef = dclass.getClassDef()
             if classDef == None:
                 self.notify.error("Could not create an undefined %s object." % (
-dclass.getName()))
+                    dclass.getName()))
             distObj = classDef(self)
             distObj.dclass = dclass
             # Assign it an Id
