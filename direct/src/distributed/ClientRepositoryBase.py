@@ -91,41 +91,6 @@ class ClientRepositoryBase(ConnectionRepository):
             self.disconnect()
         self.stopHeartbeat()
 
-    if 0: # Code that became obsolete before it was used:
-        def setWorldOffset(self, xOffset=0, yOffset=0):
-            self.worldXOffset=xOffset
-            self.worldYOffset=yOffset
-
-        def getWorldPos(self, nodePath):
-            pos = nodePath.getPos(self.worldScale)
-            return (int(round(pos.getX())), int(round(pos.getY())))
-
-        def sendWorldPos(self, x, y):
-            # The server will need to know the world
-            # offset of our current render node path
-            # and adjust the x, y accordingly.  At one
-            # point I considered adding the world offset
-            # here, but that would just use extra bits.
-
-            onScreenDebug.add("worldPos", "%-4d, %-4d"%(x, y))
-            return #*#
-
-            datagram = PyDatagram()
-            # Add message type
-            datagram.addUint16(CLIENT_SET_WORLD_POS)
-            # Add x
-            datagram.addInt16(x)
-            # Add y
-            datagram.addSint16(y)
-            # send the message
-            self.send(datagram)
-
-        def checkWorldPos(self, nodePath):
-            worldPos = self.getWorldPos(nodePath)
-            if self.priorWorldPos != worldPos:
-                self.priorWorldPos = worldPos
-                self.sendWorldPos(worldPos[0], worldPos[1])
-
     def allocateContext(self):
         self.context+=1
         return self.context
@@ -276,33 +241,6 @@ class ClientRepositoryBase(ConnectionRepository):
             # updateRequiredFields calls announceGenerate
             print "New DO:%s, dclass:%s"%(doId, dclass.getName())
         return distObj
-
-    ## def generateGlobalObject(self, doId, dcname):
-        ## # Look up the dclass
-        ## dclass = self.dclassesByName[dcname]
-        ## # Create a new distributed object, and put it in the dictionary
-        ## #distObj = self.generateWithRequiredFields(dclass, doId, di)
-
-        ## # Construct a new one
-        ## classDef = dclass.getClassDef()
-        ## if classDef == None:
-             ## self.notify.error("Could not create an undefined %s object."%(
-                ## dclass.getName()))
-        ## distObj = classDef(self)
-        ## distObj.dclass = dclass
-        ## # Assign it an Id
-        ## distObj.doId = doId
-        ## # Put the new do in the dictionary
-        ## self.doId2do[doId] = distObj
-        ## # Update the required fields
-        ## distObj.generateInit()  # Only called when constructed
-        ## distObj.generate()
-        ## # TODO: ROGER: where should we get parentId and zoneId?
-        ## parentId = None
-        ## zoneId = None
-        ## distObj.setLocation(parentId, zoneId)
-        ## # updateRequiredFields calls announceGenerate
-        ## return  distObj
 
     def generateWithRequiredOtherFields(self, dclass, doId, di,
                                         parentId = None, zoneId = None):
