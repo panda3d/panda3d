@@ -49,8 +49,8 @@ public:
 
 protected:
   virtual void update_frame(int frame);
-	virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
-			   int z, int n, int primary_file_num_channels, int alpha_file_channel);
+  virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
+         int z, int n, int primary_file_num_channels, int alpha_file_channel);
 
   virtual bool do_load_one(const PNMImage &pnmimage, int z, int n);
 
@@ -74,21 +74,21 @@ private:
     INLINE bool is_valid() const;
     INLINE bool is_from_file() const;
     bool get_frame_data(int frame);
-		AVFormatContext *pFormatCtx; 
-  	AVCodecContext *pCodecCtx; 
-  	
-  	int streamNumber;
-  	AVFrame *pFrame;
-		AVFrame *pFrameOut;
+    AVFormatContext *pFormatCtx; 
+    AVCodecContext *pCodecCtx; 
+    
+    int streamNumber;
+    AVFrame *pFrame;
+    AVFrame *pFrameOut;
 
     Filename _filename;
     int _next_frame;
     int imageSizeBytes;
   private:
-  	unsigned char * rawData;
-		AVCodec *pCodec;
+    unsigned char * rawData;
+    AVCodec *pCodec;
 
-  	
+    
   };
 
   class VideoPage {

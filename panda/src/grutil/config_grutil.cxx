@@ -68,29 +68,34 @@ init_libgrutil() {
 #ifdef HAVE_OPENCV
   
   {
-  OpenCVTexture::init_type();
-  OpenCVTexture::register_with_read_factory();
+    OpenCVTexture::init_type();
+    OpenCVTexture::register_with_read_factory();
+    
+    PandaSystem *ps = PandaSystem::get_global_ptr();
+    ps->add_system("OpenCV");
 
-  PandaSystem *ps = PandaSystem::get_global_ptr();
-  ps->add_system("OpenCV");
-  TexturePool *ts = TexturePool::get_global_ptr();
-  ts->register_texture_type(OpenCVTexture::make_texture, "");
-	}
+#ifndef HAVE_FFMPEG
+    // We use OpenCV to render AVI files only if ffmpeg is not
+    // available.
+    TexturePool *ts = TexturePool::get_global_ptr();
+    ts->register_texture_type(OpenCVTexture::make_texture, "avi");
+#endif
+  }
 #endif // HAVE_OPENCV
 
 #ifdef HAVE_FFMPEG
   {
-	//configure all known codecs. Can take a few frames. 
-	av_register_all();
-
-  FFMpegTexture::init_type();
-  FFMpegTexture::register_with_read_factory();
-
-  PandaSystem *ps = PandaSystem::get_global_ptr();
-  ps->add_system("FFMpeg");
-  TexturePool *ts = TexturePool::get_global_ptr();
-  ts->register_texture_type(FFMpegTexture::make_texture, "avi mov");
-	}
+    //configure all known codecs. Can take a few frames. 
+    av_register_all();
+    
+    FFMpegTexture::init_type();
+    FFMpegTexture::register_with_read_factory();
+    
+    PandaSystem *ps = PandaSystem::get_global_ptr();
+    ps->add_system("FFMpeg");
+    TexturePool *ts = TexturePool::get_global_ptr();
+    ts->register_texture_type(FFMpegTexture::make_texture, "avi mov mpg");
+  }
 #endif // HAVE_FFMPEG
 }
 

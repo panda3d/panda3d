@@ -35,7 +35,7 @@ FFMpegTexture::
 FFMpegTexture(const string &name) : 
   VideoTexture(name) 
 {
-	
+  
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ FFMpegTexture(const FFMpegTexture &copy) :
 ////////////////////////////////////////////////////////////////////
 FFMpegTexture::
 ~FFMpegTexture() {
-	clear();
+  clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,30 +111,30 @@ reconsider_video_properties(const FFMpegTexture::VideoStream &stream,
 
   double frame_rate = 0.0f;
   int num_frames = 0;
-	if(!stream.pCodecCtx)
+  if(!stream.pCodecCtx)
   {
-		//printf("not valid yet\n");
-			return true;
-	}
-	
-				
+    //printf("not valid yet\n");
+      return true;
+  }
+  
+        
   AVStream* vstream=stream.pFormatCtx->streams[stream.streamNumber];
   
   if (stream.is_from_file() ) {
- 			//frame rate comes from ffmpeg as an avRational. 
-	    frame_rate = vstream->r_frame_rate.num/(float)vstream->r_frame_rate.den;
-	    
-	    //Number of frames is a little questionable if we've got variable 
-	    //frame rate. Duration comes in as a generic timestamp, 
-	    //and is therefore multiplied by AV_TIME_BASE.
-	    num_frames = (int(stream.pFormatCtx->duration*frame_rate))/AV_TIME_BASE;
-	    if (grutil_cat.is_debug()) {
-	      grutil_cat.debug()
-	        << "Loaded " << stream._filename << ", " << num_frames << " frames at "
-	        << frame_rate << " fps\n";
-	    }
-		
-	}
+      //frame rate comes from ffmpeg as an avRational. 
+      frame_rate = vstream->r_frame_rate.num/(float)vstream->r_frame_rate.den;
+      
+      //Number of frames is a little questionable if we've got variable 
+      //frame rate. Duration comes in as a generic timestamp, 
+      //and is therefore multiplied by AV_TIME_BASE.
+      num_frames = (int(stream.pFormatCtx->duration*frame_rate))/AV_TIME_BASE;
+      if (grutil_cat.is_debug()) {
+        grutil_cat.debug()
+          << "Loaded " << stream._filename << ", " << num_frames << " frames at "
+          << frame_rate << " fps\n";
+      }
+    
+  }
   
   int width = stream.pCodecCtx->width;
   int height = stream.pCodecCtx->height;
@@ -156,7 +156,7 @@ reconsider_video_properties(const FFMpegTexture::VideoStream &stream,
 
   if (!reconsider_image_properties(x_size, y_size, num_components,
                                    T_unsigned_byte, z)) {
-   	return false;
+    return false;
   }
 
   if (_loaded_from_image && 
@@ -215,37 +215,37 @@ void FFMpegTexture::update_frame(int frame) {
         nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
         unsigned char *dest = _ram_images[0]._image.p() + get_expected_ram_page_size() * z;
         int dest_row_width = (_x_size * _num_components * _component_width);
-			  
-			  //Simplest case, where we deal with an rgb texture
-			  if (get_num_components() == 3) {
+        
+        //Simplest case, where we deal with an rgb texture
+        if (get_num_components() == 3) {
           int source_row_width=3*page._color.pCodecCtx->width;
-		    	unsigned char * source=(unsigned char *)page._color.pFrameOut->data[0]
-		    													+source_row_width*(get_video_height()-1);		    	
+          unsigned char * source=(unsigned char *)page._color.pFrameOut->data[0]
+                                  +source_row_width*(get_video_height()-1);         
 
-					//row by row copy. 				
+          //row by row copy.        
           for (int y = 0; y < get_video_height(); ++y) {
-          	memcpy(dest, source, source_row_width);
+            memcpy(dest, source, source_row_width);
             dest += dest_row_width;
             source -= source_row_width;
           }
-				//Next best option, we're a 4 component alpha video on one stream 
-       	} else if(page._color.pCodecCtx->pix_fmt==PIX_FMT_RGBA32) {
-		     	int source_row_width= page._color.pCodecCtx->width * 4;
-    	 	 	unsigned char * source=(unsigned char *)page._color.pFrameOut->data[0]
-    	 	 													+source_row_width*(get_video_height()-1);
-		    	
-    	 	 	//row by row copy. 				
+        //Next best option, we're a 4 component alpha video on one stream 
+        } else if(page._color.pCodecCtx->pix_fmt==PIX_FMT_RGBA32) {
+          int source_row_width= page._color.pCodecCtx->width * 4;
+          unsigned char * source=(unsigned char *)page._color.pFrameOut->data[0]
+                                  +source_row_width*(get_video_height()-1);
+          
+          //row by row copy.        
           for (int y = 0; y < get_video_height(); ++y) {
-           	memcpy(dest,source,source_row_width);
-           	dest += dest_row_width;
-           	source -= source_row_width;
-         	}	
+            memcpy(dest,source,source_row_width);
+            dest += dest_row_width;
+            source -= source_row_width;
+          } 
         //Otherwise, we've got to be tricky
         } else {
           int source_row_width= page._color.pCodecCtx->width * 3;
- 	    	 	unsigned char * source=(unsigned char *)page._color.pFrameOut->data[0]
- 	    	 													+source_row_width*(get_video_height()-1);
-		    	
+          unsigned char * source=(unsigned char *)page._color.pFrameOut->data[0]
+                                  +source_row_width*(get_video_height()-1);
+          
           // The harder case--interleave the color in with the alpha,
           // pixel by pixel.
           nassertv(get_num_components() == 4);
@@ -263,14 +263,14 @@ void FFMpegTexture::update_frame(int frame) {
             source -= source_row_width;
           }
         }
- 				
+        
         
       }
     }
     
     if (page._alpha.is_valid()) {
       nassertv(get_num_components() == 4 && get_component_width() == 1);
-	
+  
       if(page._alpha.get_frame_data(frame)) {
         nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
         
@@ -278,11 +278,11 @@ void FFMpegTexture::update_frame(int frame) {
         //There is no reason it can't be a 256 color grayscale though.
         unsigned char *dest = _ram_images[0]._image.p() + get_expected_ram_page_size() * z;
         int dest_row_width = (_x_size * _num_components * _component_width);
-			 	
-			 	int source_row_width= page._color.pCodecCtx->width * 3;
-    		unsigned char * source=(unsigned char *)page._color.pFrameOut->data[0]
-    														+source_row_width*(get_video_height()-1);
-	    	for (int y = 0; y < get_video_height(); ++y) {
+        
+        int source_row_width= page._color.pCodecCtx->width * 3;
+        unsigned char * source=(unsigned char *)page._color.pFrameOut->data[0]
+                                +source_row_width*(get_video_height()-1);
+        for (int y = 0; y < get_video_height(); ++y) {
           int dx = 3;
           int sx = 0;
           for (int x = 0; x < get_video_width(); ++x) {
@@ -310,7 +310,7 @@ void FFMpegTexture::update_frame(int frame) {
 ////////////////////////////////////////////////////////////////////
 bool FFMpegTexture::
 do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
-	    int z, int n, int primary_file_num_channels, int alpha_file_channel) {
+      int z, int n, int primary_file_num_channels, int alpha_file_channel) {
   nassertr(n == 0, false);
   nassertr(z >= 0 && z < get_z_size(), false);
 
@@ -324,7 +324,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
   if (!alpha_fullpath.empty()) {
     if (!page._alpha.read(alpha_fullpath)) {
       grutil_cat.error()
-	<< "FFMPEG couldn't read " << alpha_fullpath << " as video.\n";
+  << "FFMPEG couldn't read " << alpha_fullpath << " as video.\n";
       page._color.clear();
       return false;
     }
@@ -343,42 +343,42 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     set_fullpath(fullpath);
     set_alpha_fullpath(alpha_fullpath);
   }
-	if(page._color.pCodecCtx->pix_fmt==PIX_FMT_RGBA32) {
-  	//There had better not be an alpha interleave here. 
+  if(page._color.pCodecCtx->pix_fmt==PIX_FMT_RGBA32) {
+    //There had better not be an alpha interleave here. 
     nassertr(alpha_fullpath.empty(), false);
     
-  	_primary_file_num_channels = 4;
-	  _alpha_file_channel = 0;
-  	if (!reconsider_video_properties(page._color, 4, z)) {
-	      page._color.clear();
-	      return false;
-	  }
-	   
+    _primary_file_num_channels = 4;
+    _alpha_file_channel = 0;
+    if (!reconsider_video_properties(page._color, 4, z)) {
+        page._color.clear();
+        return false;
+    }
+     
   } else {
-  	_primary_file_num_channels = 3;
-	  _alpha_file_channel = alpha_file_channel;
+    _primary_file_num_channels = 3;
+    _alpha_file_channel = alpha_file_channel;
 
     if(page._alpha.is_valid()) {
-	    if (!reconsider_video_properties(page._color, 4, z)) {
-	      page._color.clear();
-	      page._alpha.clear();
-	      return false;
-	    }
-	    if (!reconsider_video_properties(page._alpha, 4, z)) {
-	      page._color.clear();
-	      page._alpha.clear();
-	      return false;
-	    }
+      if (!reconsider_video_properties(page._color, 4, z)) {
+        page._color.clear();
+        page._alpha.clear();
+        return false;
+      }
+      if (!reconsider_video_properties(page._alpha, 4, z)) {
+        page._color.clear();
+        page._alpha.clear();
+        return false;
+      }
     } else {
-    	if (!reconsider_video_properties(page._color, 3, z)) {
-	      page._color.clear();
-	      page._alpha.clear();
-	      return false;
-	    }
-	    
+      if (!reconsider_video_properties(page._color, 3, z)) {
+        page._color.clear();
+        page._alpha.clear();
+        return false;
+      }
+      
     }
     
-	}
+  }
   set_loaded_from_image();
   clear_current_frame();
   update_frame(0);
@@ -435,9 +435,11 @@ FFMpegTexture::VideoStream::
 VideoStream() :
   pCodecCtx(NULL),
   pFormatCtx(NULL),
+  pFrame(NULL),
+  pFrameOut(NULL),
   _next_frame(0)
 {
-	//printf("creating video stream\n");
+  //printf("creating video stream\n");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -447,7 +449,11 @@ VideoStream() :
 ////////////////////////////////////////////////////////////////////
 FFMpegTexture::VideoStream::
 VideoStream(const FFMpegTexture::VideoStream &copy) :
-  pCodecCtx(NULL)
+  pCodecCtx(NULL),
+  pFormatCtx(NULL),
+  pFrame(NULL),
+  pFrameOut(NULL),
+  _next_frame(0)
 {
   // Rather than copying the _capture pointer, we must open a new
   // stream that references the same file.
@@ -478,7 +484,7 @@ FFMpegTexture::VideoStream::
 ////////////////////////////////////////////////////////////////////
 bool FFMpegTexture::VideoStream::
 get_frame_data(int frame) {
-  nassertr(is_valid(), NULL);
+  nassertr(is_valid(), false);
   int comingFrom=_next_frame;
 
   _next_frame = frame + 1;
@@ -489,45 +495,45 @@ get_frame_data(int frame) {
   
   long long timeStamp=(AV_TIME_BASE/vstream->r_frame_rate.num)*(frame *vstream->r_frame_rate.den);
   long long currTimeStamp;
-  								
+                  
   //first find out where to go
   if(frame==comingFrom)
   { 
-  	int err=av_read_frame(pFormatCtx, &packet);
-  	if(err<0)
-	  {
-	  	return 0;
-	  }
-	}
+    int err=av_read_frame(pFormatCtx, &packet);
+    if(err<0)
+    {
+      return 0;
+    }
+  }
   else
   {
-  	//find point in time
-  	int res=av_seek_frame( pFormatCtx,-1, timeStamp,AVSEEK_FLAG_BACKWARD );
-		
-		//Okay, now we're at the nearest keyframe behind our timestamp.
-		//Hurry up and move through frames until we find a frame just after it.
-		pCodecCtx->hurry_up = 1;
-		do {
-	    av_read_frame( pFormatCtx, &packet );
-	    
-	    // should really be checking that this is a video packet
-	    currTimeStamp = packet.pts / packet.duration *
-					AV_TIME_BASE / av_q2d( vstream->r_frame_rate);
-			
-			if( currTimeStamp > timeStamp )
-	        break;
-	    
-	    avcodec_decode_video( pCodecCtx, pFrame, &gotFrame, packet.data,
-	        packet.size );
-	    av_free_packet( &packet );
-		} while(1);
-		pCodecCtx->hurry_up = 0;
-		// Now near frame with Packet ready for decode (and free)
+    //find point in time
+    int res=av_seek_frame( pFormatCtx,-1, timeStamp,AVSEEK_FLAG_BACKWARD );
+    
+    //Okay, now we're at the nearest keyframe behind our timestamp.
+    //Hurry up and move through frames until we find a frame just after it.
+    pCodecCtx->hurry_up = 1;
+    do {
+      av_read_frame( pFormatCtx, &packet );
+      
+      // should really be checking that this is a video packet
+      currTimeStamp = (long long)(packet.pts / packet.duration *
+                                  AV_TIME_BASE / av_q2d( vstream->r_frame_rate));
+      
+      if( currTimeStamp > timeStamp )
+          break;
+      
+      avcodec_decode_video( pCodecCtx, pFrame, &gotFrame, packet.data,
+          packet.size );
+      av_free_packet( &packet );
+    } while(1);
+    pCodecCtx->hurry_up = 0;
+    // Now near frame with Packet ready for decode (and free)
   }
   
   //Now we have a packet from someone. Lets get this in a frame
   
-	int frameFinished;
+  int frameFinished;
   // Is this a packet from the video stream?
   if(packet.stream_index==streamNumber)
   {
@@ -538,16 +544,16 @@ get_frame_data(int frame) {
     // Did we get a video frame?
     if(frameFinished)
     {
-			// Convert the image from its native format to RGB
+      // Convert the image from its native format to RGB
       if(pCodecCtx->pix_fmt!=PIX_FMT_RGBA32)
       {
-      	img_convert((AVPicture *)pFrameOut, PIX_FMT_BGR24, 
+        img_convert((AVPicture *)pFrameOut, PIX_FMT_BGR24, 
           (AVPicture*)pFrame, pCodecCtx->pix_fmt, pCodecCtx->width, 
           pCodecCtx->height);
-			}
-			else if(pCodecCtx->pix_fmt==PIX_FMT_RGBA32)
-			{
-			  img_convert((AVPicture *)pFrameOut, PIX_FMT_RGBA32, 
+      }
+      else if(pCodecCtx->pix_fmt==PIX_FMT_RGBA32)
+      {
+        img_convert((AVPicture *)pFrameOut, PIX_FMT_RGBA32, 
           (AVPicture*)pFrame, pCodecCtx->pix_fmt, pCodecCtx->width, 
           pCodecCtx->height);
       }
@@ -568,16 +574,17 @@ get_frame_data(int frame) {
 ////////////////////////////////////////////////////////////////////
 bool FFMpegTexture::VideoStream::
 read(const Filename &filename) {
-	
-	//Clear out the last stream
+  
+  //Clear out the last stream
   clear();
   
-	string os_specific = filename.to_os_specific();
+  string os_specific = filename.to_os_specific();
   // Open video file
   if(av_open_input_file(&pFormatCtx, os_specific.c_str(), NULL, 0, NULL)!=0) {
     //Don't do anything, because nothing happened yet
     return 0;
   }
+
   // Retrieve stream information
   if(av_find_stream_info(pFormatCtx)<0) {
     clear();
@@ -585,7 +592,7 @@ read(const Filename &filename) {
   }
   dump_format(pFormatCtx, 0, os_specific.c_str(), false);
   
-	streamNumber=-1;
+  streamNumber=-1;
   for(int i=0; i<pFormatCtx->nb_streams; i++) {
     if((*pFormatCtx->streams[i]->codec).codec_type==CODEC_TYPE_VIDEO) {
       streamNumber=i;
@@ -593,14 +600,14 @@ read(const Filename &filename) {
     }
   }
   if(streamNumber==-1) {
-  	clear();
+    clear();
     return 0;
   }
-	
-	//Get a pointer to the codec context for the video stream
+  
+  //Get a pointer to the codec context for the video stream
   pCodecCtx=pFormatCtx->streams[streamNumber]->codec;
- 	
- 	//Find the decoder for the video stream
+  
+  //Find the decoder for the video stream
   //printf("codec id is %d\n",pCodecCtx->codec_id);
   pCodec=avcodec_find_decoder(pCodecCtx->codec_id);
   if(pCodec==NULL) {
@@ -608,51 +615,51 @@ read(const Filename &filename) {
     return 0;
   }
   
-	if(pCodec->capabilities & CODEC_CAP_TRUNCATED)
-	  pCodecCtx->flags|=CODEC_FLAG_TRUNCATED;
+  if(pCodec->capabilities & CODEC_CAP_TRUNCATED)
+    pCodecCtx->flags|=CODEC_FLAG_TRUNCATED;
 
-	// Open codec
-	if(avcodec_open(pCodecCtx, pCodec)<0) {
-	  clear();
-	  return 0;
-	}
-	
-	pFrame=avcodec_alloc_frame();
+  // Open codec
+  if(avcodec_open(pCodecCtx, pCodec)<0) {
+    clear();
+    return 0;
+  }
   
-	if(pCodecCtx->pix_fmt!=PIX_FMT_RGBA32) {
-		pFrameOut=avcodec_alloc_frame();
-		if(pFrameOut==NULL) {
-	  	clear();
-	  	return 0;
-		}
-		
-	 	// Determine required buffer size and allocate buffer
-	  imageSizeBytes=avpicture_get_size(PIX_FMT_BGR24, pCodecCtx->width,
-	          pCodecCtx->height);
-	          
-	  rawData=new uint8_t[imageSizeBytes];
-		// Assign appropriate parts of buffer to image planes in pFrameRGB
-		avpicture_fill((AVPicture *)pFrameOut, rawData, PIX_FMT_BGR24,
-	            pCodecCtx->width, pCodecCtx->height);
-	} else {
-		pFrameOut=avcodec_alloc_frame();
-		if(pFrameOut==NULL) {
-	    clear();
-	  	return 0;
-		}
-		
-	 	// Determine required buffer size and allocate buffer
-	  imageSizeBytes=avpicture_get_size(PIX_FMT_RGBA32, pCodecCtx->width,
-	          pCodecCtx->height);
-	          
-	  rawData=new uint8_t[imageSizeBytes];
-		// Assign appropriate parts of buffer to image planes in pFrameRGB
-		avpicture_fill((AVPicture *)pFrameOut, rawData, PIX_FMT_RGBA32,
-	            pCodecCtx->width, pCodecCtx->height);
-	} 
-	//We could put an option here for single channel frames.
-	
-		
+  pFrame=avcodec_alloc_frame();
+  
+  if(pCodecCtx->pix_fmt!=PIX_FMT_RGBA32) {
+    pFrameOut=avcodec_alloc_frame();
+    if(pFrameOut==NULL) {
+      clear();
+      return 0;
+    }
+    
+    // Determine required buffer size and allocate buffer
+    imageSizeBytes=avpicture_get_size(PIX_FMT_BGR24, pCodecCtx->width,
+            pCodecCtx->height);
+            
+    rawData=new uint8_t[imageSizeBytes];
+    // Assign appropriate parts of buffer to image planes in pFrameRGB
+    avpicture_fill((AVPicture *)pFrameOut, rawData, PIX_FMT_BGR24,
+              pCodecCtx->width, pCodecCtx->height);
+  } else {
+    pFrameOut=avcodec_alloc_frame();
+    if(pFrameOut==NULL) {
+      clear();
+      return 0;
+    }
+    
+    // Determine required buffer size and allocate buffer
+    imageSizeBytes=avpicture_get_size(PIX_FMT_RGBA32, pCodecCtx->width,
+            pCodecCtx->height);
+            
+    rawData=new uint8_t[imageSizeBytes];
+    // Assign appropriate parts of buffer to image planes in pFrameRGB
+    avpicture_fill((AVPicture *)pFrameOut, rawData, PIX_FMT_RGBA32,
+              pCodecCtx->width, pCodecCtx->height);
+  } 
+  //We could put an option here for single channel frames.
+  
+    
   _next_frame=0;
   
   _filename = filename;
@@ -671,8 +678,8 @@ void FFMpegTexture::VideoStream::
 clear() {
   if(pCodecCtx)
   {
-  	avcodec_close(pCodecCtx);
-  	pCodecCtx=0;  
+    avcodec_close(pCodecCtx);
+    pCodecCtx=0;  
   }
   if(pFormatCtx)
   {
@@ -681,13 +688,13 @@ clear() {
   }
   if(pFrame)
   {
-  	av_free(pFrame);
-  	pFrame=0;
+    av_free(pFrame);
+    pFrame=0;
   }
   if(pFrameOut)
   {
-  	av_free(pFrameOut);
-  	pFrameOut=0;
+    av_free(pFrameOut);
+    pFrameOut=0;
   }
   
   _next_frame=0;
