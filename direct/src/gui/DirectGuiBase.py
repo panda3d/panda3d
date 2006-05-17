@@ -715,7 +715,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         if self['guiId']:
             self.guiItem.setId(self['guiId'])
         self.guiId = self.guiItem.getId()
-        if __dev__ or (hasattr(base, 'cr') and base.cr.wantE3hacks):
+        if __dev__:
             # track gui items by guiId for tracking down leaks
             if hasattr(base, 'guiItems'):
                 if self.guiId in base.guiItems:
@@ -1008,7 +1008,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.updateFrameStyle()
 
     def destroy(self):
-        if __dev__ or (hasattr(base, 'cr') and base.cr.wantE3hacks):
+        if __dev__:
             if hasattr(base, 'guiItems'):
                 if self.guiId in base.guiItems:
                     del base.guiItems[self.guiId]
