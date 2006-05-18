@@ -933,8 +933,9 @@ def expandImports(indirlist, directdirlist, fixdirlist):
                 varExports = code.getVarExports(module)
                 if (len(typeExports)+len(funcExports)+len(varExports)==0):
                     result.append(line)
+                    print fixfile+" : "+module+" : no exports"
                 else:
-                    print "modifying "+fixfile
+                    print fixfile+" : "+module+" : repairing"
                     for x in funcExports:
                         fn = code.getFunctionName(x)
                         if (used.has_key(fn)):
