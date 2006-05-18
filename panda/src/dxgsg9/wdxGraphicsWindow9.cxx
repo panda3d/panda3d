@@ -101,7 +101,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
-  
+
   if (_awaiting_restore) {
     // The fullscreen window was recently restored; we can't continue
     // until the GSG says we can.
@@ -118,7 +118,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (mode == FM_render) {
     clear_cube_map_selection();
   }
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   bool return_val = _gsg->begin_frame(current_thread);
   _dxgsg->set_render_target();
@@ -477,8 +477,7 @@ do_fullscreen_resize(int x_size, int y_size) {
   _wcontext._display_mode.Height = y_size;
   _wcontext._display_mode.Format = pixFmt;
   _wcontext._display_mode.RefreshRate = D3DPRESENT_RATE_DEFAULT;
-
-  _wcontext._presentation_params.BackBufferFormat = pixFmt;   // make reset_device_resize use presparams or displaymode??
+  // keep the previous setting for _wcontext._presentation_params.BackBufferFormat
 
   bResizeSucceeded = reset_device_resize_window(x_size, y_size);
 
@@ -533,13 +532,12 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   // Update: Did I fix the bug? - Josh
   int frame_buffer_mode = _fb_properties.get_frame_buffer_mode();
   bool bWantStencil = ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0);
+  bool bWantAlpha = ((frame_buffer_mode & FrameBufferProperties::FM_rgba) != 0);
 
   PRINT_REFCNT(wdxdisplay9, _d3d9);
 
   assert(_d3d9 != NULL);
   assert(pD3DCaps->DevCaps & D3DDEVCAPS_HWRASTERIZATION);
-
-  presentation_params->BackBufferFormat = display._display_mode.Format;  // dont need dest alpha, so just use adapter format
 
   bool do_sync = sync_video;
 
@@ -549,11 +547,33 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
     do_sync = false;
   }
 
-  // verify the rendertarget fmt one last time
-  if (FAILED(_d3d9->CheckDeviceFormat(display._card_id, D3DDEVTYPE_HAL, display._display_mode.Format, D3DUSAGE_RENDERTARGET,
-                                      D3DRTYPE_SURFACE, presentation_params->BackBufferFormat))) {
-    wdxdisplay9_cat.error() << "device #" << display._card_id << " CheckDeviceFmt failed for surface fmt " << D3DFormatStr(presentation_params->BackBufferFormat) << endl;
-    goto Fallback_to_16bpp_buffers;
+  bool check_device_format;
+
+  // check for D3DFMT_A8R8G8B8 first
+  check_device_format = false;
+  if (bWantAlpha) {
+    presentation_params->BackBufferFormat = D3DFMT_A8R8G8B8;
+    // verify the rendertarget fmt
+    if (FAILED(_d3d9->CheckDeviceFormat(display._card_id, D3DDEVTYPE_HAL, display._display_mode.Format, D3DUSAGE_RENDERTARGET,
+                                        D3DRTYPE_SURFACE, presentation_params->BackBufferFormat))) {
+      wdxdisplay9_cat.error() << "device #" << display._card_id << " CheckDeviceFmt failed for surface fmt " << D3DFormatStr(presentation_params->BackBufferFormat) << endl;
+    }
+    else {
+      check_device_format = true;
+    }
+  }
+
+  // check for same format as display_mode
+  if (check_device_format == false) {
+    presentation_params->BackBufferFormat = display._display_mode.Format;
+    // verify the rendertarget fmt
+    if (FAILED(_d3d9->CheckDeviceFormat(display._card_id, D3DDEVTYPE_HAL, display._display_mode.Format, D3DUSAGE_RENDERTARGET,
+                                        D3DRTYPE_SURFACE, presentation_params->BackBufferFormat))) {
+      wdxdisplay9_cat.error() << "device #" << display._card_id << " CheckDeviceFmt failed for surface fmt " << D3DFormatStr(presentation_params->BackBufferFormat) << endl;
+    }
+    else {
+      check_device_format = true;
+    }
   }
 
   if (FAILED(_d3d9->CheckDeviceType(display._card_id, D3DDEVTYPE_HAL, display._display_mode.Format, presentation_params->BackBufferFormat,
