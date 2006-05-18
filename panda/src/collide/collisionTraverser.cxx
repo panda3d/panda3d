@@ -470,6 +470,11 @@ prepare_colliders(CollisionTraverser::LevelStates &level_states,
   int max_colliders = CollisionLevelState::get_max_colliders();
 
   CollisionLevelState level_state(root);
+  // This reserve() call is only correct if there is exactly one solid
+  // per collider added to the traverser, which is the normal case.
+  // If there is more than one solid in any of the colliders, this
+  // reserve() call won't reserve enough, but the code is otherwise
+  // correct.
   level_state.reserve(min(num_colliders, max_colliders));
 
   OrderedColliders::iterator oci;
@@ -500,7 +505,6 @@ prepare_colliders(CollisionTraverser::LevelStates &level_states,
         CollisionSolid *collider = cnode->get_solid(s);
         def._collider = collider;
         level_state.prepare_collider(def);
-        --num_colliders;
 
         if (level_state.get_num_colliders() == max_colliders) {
           // That's the limit.  Save off this level state and make a
@@ -510,12 +514,15 @@ prepare_colliders(CollisionTraverser::LevelStates &level_states,
           level_state.reserve(min(num_colliders, max_colliders));
         }
       }
+      --num_colliders;
+      nassertv(num_colliders >= 0);
     }
   }
 
   if (level_state.get_num_colliders() != 0) {
     level_states.push_back(level_state);
   }
+  nassertv(num_colliders == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
