@@ -18,4 +18,4 @@ import gendocs
 if (os.path.isfile("built/pandac/input/libpgraph.in")==0) or (os.path.isfile("built/pandac/input/libputil.in")==0):
     sys.exit("Cannot read the interrogate-output files in built/pandac/input")
 
-gendocs.expandImports("built/pandac/input", "direct", "direct")
+gendocs.expandImports("built/pandac/input", "direct", "samples")

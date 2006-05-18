@@ -35,7 +35,7 @@ GENMAN=0
 VERSION=0
 VERBOSE=1
 COMPRESSOR="zlib"
-PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
+PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","FMODEX","NVIDIACG","HELIX","NSPR",
           "OPENSSL","FREETYPE","FFTW","MILES","MAYA6","MAYA65","MAYA7","MAX6","MAX7","MAX8",
           "BISON","FLEX","OPENCV","PANDATOOL","PANDAAPP","DX8","DX9"]
 OMIT=PACKAGES[:]
@@ -985,6 +985,7 @@ def CompileCxxLINUXA(wobj,fullsrc,ipath,opts):
     if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/vrpn/include'
     if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/fftw/include'
     if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/fmod/include'
+    if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -Ithirdparty/linux-libs-a/fmodex/include'
     if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -Ithirdparty/linux-libs-a/nvidiacg/include'
     if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/nspr/include'
     if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
@@ -1319,6 +1320,8 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
         cmd = cmd + ' thirdparty/win-libs-vc7/vrpn/lib/quat.lib'
     if (PkgSelected(opts,"FMOD")):
         cmd = cmd + ' thirdparty/win-libs-vc7/fmod/lib/fmod.lib'
+    if (PkgSelected(opts,"FMODEX")):
+        cmd = cmd + ' thirdparty/win-libs-vc7/fmodex/lib/fmodex_vc.lib'
     if (PkgSelected(opts,"MILES")):
         cmd = cmd + ' thirdparty/win-libs-vc7/miles/lib/mss32.lib'
     if (PkgSelected(opts,"NVIDIACG")):
@@ -1374,6 +1377,7 @@ def CompileLinkLINUXA(wdll, obj, wobj, opts, dll, ldef):
         elif (suffix==".lib"): cmd = cmd + ' built/lib/' + x[:-4] + '.a'
         elif (suffix==".ilb"): cmd = cmd + ' built/tmp/' + x[:-4] + '.a'
     if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/fmod/lib -lfmod-3.74'
+    if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -Lthirdparty/linux-libs-a/fmodex/lib -lfmod-3.74'
     if (PkgSelected(opts,"NVIDIACG")):
         cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
         if (opts.count("CGGL")):  cmd = cmd + " -lCgGL"
@@ -1656,6 +1660,7 @@ DTOOLDEFAULTS=[
     ("HAVE_TIFF",                      'UNDEF',                  'UNDEF'),
     ("HAVE_VRPN",                      'UNDEF',                  'UNDEF'),
     ("HAVE_FMOD",                      'UNDEF',                  'UNDEF'),
+    ("HAVE_FMODEX",                    'UNDEF',                  'UNDEF'),
     ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
     ("HAVE_NSPR",                      'UNDEF',                  'UNDEF'),
     ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
@@ -1844,6 +1849,7 @@ if (sys.platform == "win32"):
         CopyFile('built/bin/python24.dll', 'thirdparty/win-python/python24.dll')
         CopyTree('built/bin/lib',  'thirdparty/win-python/lib')
         CopyTree('built/bin/dlls', 'thirdparty/win-python/dlls')
+        CopyTree('built/bin/tcl',  'thirdparty/win-python/tcl')
         ConditionalWriteFile('built/bin/panda.pth',"..\n")
 
 ########################################################################
@@ -2728,12 +2734,12 @@ EnqueueLink(opts=OPTS, dll='libpanda.dll', obj=OBJFILES, xdep=[
 # DIRECTORY: panda/src/audiotraits/
 #
 
-if OMIT.count("FMOD") == 0:
+if OMIT.count("FMODEX") == 0:
   IPATH=['panda/src/audiotraits']
-  OPTS=['BUILDING_FMOD_AUDIO', 'NSPR', 'FMOD']
+  OPTS=['BUILDING_FMOD_AUDIO', 'NSPR', 'FMODEX']
 #   CopyAllHeaders('panda/src/audiotraits')
   EnqueueCxx(ipath=IPATH, opts=OPTS, src='fmod_audio_composite.cxx', obj='fmod_audio_fmod_audio_composite.obj')
-  EnqueueLink(opts=['ADVAPI', 'WINUSER', 'WINMM', 'FMOD', 'NSPR'], dll='libfmod_audio.dll', obj=[
+  EnqueueLink(opts=['ADVAPI', 'WINUSER', 'WINMM', 'FMODEX', 'NSPR'], dll='libfmod_audio.dll', obj=[
                'fmod_audio_fmod_audio_composite.obj',
                'libpanda.dll',
                'libpandaexpress.dll',
