@@ -23,16 +23,6 @@ if __debug__:
     # For pstats
     from pandac.PandaModules import PStatCollector
 
-# MRM: Need to make internal task variables like time, name, index
-# more unique (less likely to have name clashes)
-
-exit = -1
-done = 0
-cont = 1
-again = 2  # return this when a doLater needs to be repeated (to be able to
-           # avoid having to remove and add a new doLater for continuously
-           # repeating tasks)
-
 # Task needs this because it might run before __builtin__.globalClock
 # can be set.
 globalClock = ClockObject.getGlobalClock()
@@ -74,6 +64,13 @@ def print_exc_plus():
                 print "<ERROR WHILE PRINTING VALUE>"
 
 class Task:
+
+    # This enum is a copy of the one at the top-level.
+    exit = -1
+    done = 0
+    cont = 1
+    again = 2
+
     if __debug__:
         debugTaskTraceback = 0 # base.config.GetBool('debug-task-traceback', 0)
     count = 0
@@ -1039,6 +1036,19 @@ class TaskManager:
             fpformat.fix(totalDt*1000, 2).rjust(dtWidth),
             fpformat.fix(totalAvgDt*1000, 2).rjust(dtWidth),))
         return cont
+
+
+
+# These constants are moved to the top level of the module,
+# to make it easier for legacy code.  In general though, putting
+# constants at the top level of a module is deprecated.
+
+exit  = Task.exit
+done  = Task.done
+cont  = Task.cont
+again = Task.again
+
+
 """
 
 import Task
