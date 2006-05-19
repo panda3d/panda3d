@@ -178,6 +178,7 @@ DXGraphicsStateGuardian9::
   }
 #endif
 
+  GraphicsStateGuardian::~GraphicsStateGuardian();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,8 +231,7 @@ apply_texture(int i, TextureContext *tc) {
 
   DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
 
-  if (_lru)
-  {
+  if (_lru) {
     _lru -> access_page (dtc -> _lru_page);
   }
 
@@ -2357,6 +2357,108 @@ void DXGraphicsStateGuardian9::reset_render_states (void)
 }
 
 ////////////////////////////////////////////////////////////////////
+//  DX stencil code section
+////////////////////////////////////////////////////////////////////
+
+static int dx_stencil_comparison_function_array [ ] =
+{
+  D3DCMP_NEVER,
+  D3DCMP_LESS,
+  D3DCMP_EQUAL,
+  D3DCMP_LESSEQUAL,
+  D3DCMP_GREATER,
+  D3DCMP_NOTEQUAL,
+  D3DCMP_GREATEREQUAL,
+  D3DCMP_ALWAYS,
+};
+
+static int dx_stencil_operation_array [ ] =
+{
+  D3DSTENCILOP_KEEP,
+  D3DSTENCILOP_ZERO,
+  D3DSTENCILOP_REPLACE,
+  D3DSTENCILOP_INCR,
+  D3DSTENCILOP_DECR,
+  D3DSTENCILOP_INVERT,
+
+  D3DSTENCILOP_INCRSAT,
+  D3DSTENCILOP_DECRSAT,
+};
+
+void dx_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+  StencilType render_state_value;
+
+  DXGraphicsStateGuardian9 *gsg;
+
+  gsg = (DXGraphicsStateGuardian9 *) stencil_render_states -> _gsg;
+
+  render_state_value = stencil_render_states -> get_stencil_render_state (stencil_render_state);
+  switch (stencil_render_state)
+  {
+    case StencilRenderStates::SRS_clear_value:
+      gsg -> set_stencil_clear_value (render_state_value);
+      break;
+
+    case StencilRenderStates::SRS_reference:
+      gsg -> set_render_state (D3DRS_STENCILREF, render_state_value);
+      break;
+
+    case StencilRenderStates::SRS_read_mask:
+      gsg -> set_render_state (D3DRS_STENCILMASK, render_state_value);
+      break;
+    case StencilRenderStates::SRS_write_mask:
+      gsg -> set_render_state (D3DRS_STENCILWRITEMASK, render_state_value);
+      break;
+
+    case StencilRenderStates::SRS_front_enable:
+      gsg -> set_render_state (D3DRS_STENCILENABLE, render_state_value);
+      break;
+    case StencilRenderStates::SRS_front_comparison_function:
+      gsg -> set_render_state (D3DRS_STENCILFUNC, dx_stencil_comparison_function_array [render_state_value]);
+      break;
+
+    case StencilRenderStates::SRS_front_stencil_fail_operation:
+      gsg -> set_render_state (D3DRS_STENCILFAIL, dx_stencil_operation_array [render_state_value]);
+      break;
+    case StencilRenderStates::SRS_front_stencil_pass_z_fail_operation:
+      gsg -> set_render_state (D3DRS_STENCILZFAIL, dx_stencil_operation_array [render_state_value]);
+      break;
+    case StencilRenderStates::SRS_front_stencil_pass_z_pass_operation:
+      gsg -> set_render_state (D3DRS_STENCILPASS, dx_stencil_operation_array [render_state_value]);
+      break;
+
+    case StencilRenderStates::SRS_back_enable:
+      gsg -> set_render_state (D3DRS_TWOSIDEDSTENCILMODE, render_state_value);
+      break;
+    case StencilRenderStates::SRS_back_comparison_function:
+      gsg -> set_render_state (D3DRS_CCW_STENCILFUNC, dx_stencil_comparison_function_array [render_state_value]);
+      break;
+    case StencilRenderStates::SRS_back_stencil_fail_operation:
+      gsg -> set_render_state (D3DRS_CCW_STENCILFAIL, dx_stencil_operation_array [render_state_value]);
+      break;
+    case StencilRenderStates::SRS_back_stencil_pass_z_fail_operation:
+      gsg -> set_render_state (D3DRS_CCW_STENCILZFAIL, dx_stencil_operation_array [render_state_value]);
+      break;
+    case StencilRenderStates::SRS_back_stencil_pass_z_pass_operation:
+      gsg -> set_render_state (D3DRS_CCW_STENCILPASS, dx_stencil_operation_array [render_state_value]);
+      break;
+
+    default:
+      break;
+  }
+}
+
+void dx_set_stencil_functions (StencilRenderStates *stencil_render_states) {
+  if (stencil_render_states) {
+    StencilRenderStates::StencilRenderState stencil_render_state;
+
+    for (stencil_render_state = StencilRenderStates::SRS_first; stencil_render_state < StencilRenderStates::SRS_total; stencil_render_state = (StencilRenderStates::StencilRenderState) ((int) stencil_render_state + 1)) {
+      stencil_render_states -> set_stencil_function (stencil_render_state, dx_stencil_function);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::reset
 //       Access: Public, Virtual
 //  Description: Resets all internal state as if the gsg were newly
@@ -2400,6 +2502,9 @@ reset() {
   _screen->_supports_dynamic_textures = ((d3d_caps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) != 0);
   _screen->_supports_automatic_mipmap_generation = ((d3d_caps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP) != 0);
 
+  _supports_stencil_wrap = (d3d_caps.StencilCaps & D3DSTENCILCAPS_INCR) && (d3d_caps.StencilCaps & D3DSTENCILCAPS_DECR);
+  _supports_two_sided_stencil = ((d3d_caps.StencilCaps & D3DSTENCILCAPS_TWOSIDED) != 0);
+
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
       << "\nHwTransformAndLight = " << ((d3d_caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) != 0)
@@ -2428,6 +2533,8 @@ reset() {
       << "\nsupports_stream_offset = " << _supports_stream_offset
       << "\nsupports_dynamic_textures = " << _screen->_supports_dynamic_textures
       << "\nsupports_automatic_mipmap_generation = " << _screen->_supports_automatic_mipmap_generation
+      << "\nsupports_stencil_wrap = " << _supports_stencil_wrap
+      << "\nsupports_two_sided_stencil = " << _supports_two_sided_stencil
       << "\nMaxAnisotropy = " << d3d_caps.MaxAnisotropy
       << "\nDirectX SDK version " DIRECTX_SDK_VERSION
       << "\n";
@@ -2732,6 +2839,8 @@ reset() {
   _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
 
   PRINT_REFCNT(dxgsg9, _d3d_device);
+
+  dx_set_stencil_functions (_stencil_render_states);
 }
 
 ////////////////////////////////////////////////////////////////////

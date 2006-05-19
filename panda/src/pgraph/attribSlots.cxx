@@ -51,13 +51,14 @@ initialize_defvals() {
   _defvals._rescale_normal = DCAST(RescaleNormalAttrib,RescaleNormalAttrib::make_default());
   _defvals._shade_model    = DCAST(ShadeModelAttrib,ShadeModelAttrib::make(ShadeModelAttrib::M_smooth));
   _defvals._shader         = DCAST(ShaderAttrib,ShaderAttrib::make_off());
+  _defvals._stencil        = DCAST(StencilAttrib,StencilAttrib::make());
   _defvals._tex_gen        = DCAST(TexGenAttrib,TexGenAttrib::make());
   _defvals._tex_matrix     = DCAST(TexMatrixAttrib,TexMatrixAttrib::make());
   _defvals._texture        = DCAST(TextureAttrib,TextureAttrib::make_all_off());
   _defvals._transparency   = DCAST(TransparencyAttrib,TransparencyAttrib::make(TransparencyAttrib::M_none));
-  
+
   // Step two. Replace each with make_default_impl.
-  
+
   _defvals._alpha_test     = DCAST(AlphaTestAttrib,_defvals._alpha_test->make_default());
   _defvals._antialias      = DCAST(AntialiasAttrib,_defvals._antialias->make_default());
   _defvals._clip_plane     = DCAST(ClipPlaneAttrib,_defvals._clip_plane->make_default());
@@ -77,6 +78,7 @@ initialize_defvals() {
   _defvals._rescale_normal = DCAST(RescaleNormalAttrib,_defvals._rescale_normal->make_default());
   _defvals._shade_model    = DCAST(ShadeModelAttrib,_defvals._shade_model->make_default());
   _defvals._shader         = DCAST(ShaderAttrib,_defvals._shader->make_default());
+  _defvals._stencil        = DCAST(StencilAttrib,_defvals._stencil->make_default());
   _defvals._tex_gen        = DCAST(TexGenAttrib,_defvals._tex_gen->make_default());
   _defvals._tex_matrix     = DCAST(TexMatrixAttrib,_defvals._tex_matrix->make_default());
   _defvals._texture        = DCAST(TextureAttrib,_defvals._texture->make_default());
@@ -118,6 +120,7 @@ AttribSlots(const AttribSlots &copy) :
   _rescale_normal(copy._rescale_normal),
   _shade_model(copy._shade_model),
   _shader(copy._shader),
+  _stencil(copy._stencil),
   _tex_gen(copy._tex_gen),
   _tex_matrix(copy._tex_matrix),
   _texture(copy._texture),
@@ -151,6 +154,7 @@ operator =(const AttribSlots &src) {
   _rescale_normal = src._rescale_normal;
   _shade_model    = src._shade_model;
   _shader         = src._shader;
+  _stencil        = src._stencil;
   _tex_gen        = src._tex_gen;
   _tex_matrix     = src._tex_matrix;
   _texture        = src._texture;
@@ -184,10 +188,11 @@ get_slot(int n) const {
   case 16: return DCAST(RenderAttrib, _rescale_normal);
   case 17: return DCAST(RenderAttrib, _shade_model);
   case 18: return DCAST(RenderAttrib, _shader);
-  case 19: return DCAST(RenderAttrib, _tex_gen);
-  case 20: return DCAST(RenderAttrib, _tex_matrix);
-  case 21: return DCAST(RenderAttrib, _texture);
-  case 22: return DCAST(RenderAttrib, _transparency);
+  case 19: return DCAST(RenderAttrib, _stencil);
+  case 20: return DCAST(RenderAttrib, _tex_gen);
+  case 21: return DCAST(RenderAttrib, _tex_matrix);
+  case 22: return DCAST(RenderAttrib, _texture);
+  case 23: return DCAST(RenderAttrib, _transparency);
   default:
     nassertr(false, NULL);
     return NULL;
@@ -221,11 +226,11 @@ set_slot(int n, const RenderAttrib *val) {
   case 16: _rescale_normal = DCAST(RescaleNormalAttrib, val); break;
   case 17: _shade_model    = DCAST(ShadeModelAttrib, val);    break;
   case 18: _shader         = DCAST(ShaderAttrib, val);        break;
-  case 19: _tex_gen        = DCAST(TexGenAttrib, val);        break;
-  case 20: _tex_matrix     = DCAST(TexMatrixAttrib, val);     break;
-  case 21: _texture        = DCAST(TextureAttrib, val);       break;
-  case 22: _transparency   = DCAST(TransparencyAttrib, val);  break;
+  case 19: _stencil        = DCAST(StencilAttrib, val);       break;
+  case 20: _tex_gen        = DCAST(TexGenAttrib, val);        break;
+  case 21: _tex_matrix     = DCAST(TexMatrixAttrib, val);     break;
+  case 22: _texture        = DCAST(TextureAttrib, val);       break;
+  case 23: _transparency   = DCAST(TransparencyAttrib, val);  break;
   default: nassertv(false);
   }
 }
-

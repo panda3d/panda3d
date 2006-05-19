@@ -85,7 +85,7 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
 {
   _coordinate_system = CS_invalid;
   _internal_transform = TransformState::make_identity();
-  
+
   set_coordinate_system(get_default_coordinate_system());
 
   _data_reader = (GeomVertexDataPipelineReader *)NULL;
@@ -94,7 +94,7 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _current_lens = (Lens *)NULL;
   _projection_mat = TransformState::make_identity();
   _projection_mat_inv = TransformState::make_identity();
-  
+
   _needs_reset = true;
   _is_valid = false;
   _current_properties = NULL;
@@ -130,7 +130,7 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _supports_compressed_texture = false;
   _compressed_texture_formats.clear();
   _compressed_texture_formats.set_bit(Texture::CM_off);
-  
+
   // Assume no limits on number of lights or clip planes.
   _max_lights = -1;
   _max_clip_planes = -1;
@@ -152,12 +152,18 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _supports_depth_texture = false;
   _supports_shadow_filter = false;
   _supports_basic_shaders = false;
+
+  _supports_stencil_wrap = false;
+  _supports_two_sided_stencil = false;
+
   _supported_geom_rendering = 0;
 
   // If this is true, then we can apply a color and/or color scale by
   // twiddling the material and/or ambient light (which could mean
   // enabling lighting even without a LightAttrib).
   _color_scale_via_lighting = color_scale_via_lighting;
+
+  _stencil_render_states = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,6 +175,11 @@ GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
   if (_global_gsg == this) {
     _global_gsg = NULL;
+  }
+
+  if (_stencil_render_states) {
+    delete _stencil_render_states;
+    _stencil_render_states = 0;
   }
 }
 
@@ -229,11 +240,11 @@ set_coordinate_system(CoordinateSystem cs) {
     _inv_cs_transform = TransformState::make_identity();
 
   } else {
-    _cs_transform = 
+    _cs_transform =
       TransformState::make_mat
       (LMatrix4f::convert_mat(_coordinate_system,
                               _internal_coordinate_system));
-    _inv_cs_transform = 
+    _inv_cs_transform =
       TransformState::make_mat
       (LMatrix4f::convert_mat(_internal_coordinate_system,
                               _coordinate_system));
@@ -276,11 +287,11 @@ reset() {
   _internal_transform = _cs_transform;
   _scene_null = new SceneSetup;
   _scene_setup = _scene_null;
-  
+
   _color_write_mask = ColorWriteAttrib::C_all;
   _color_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
   _depth_clear_value = 1.0f;
-  _stencil_clear_value = 0.0f;
+  _stencil_clear_value = 0;
   _accum_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
 
   _has_scene_graph_color = false;
@@ -305,6 +316,12 @@ reset() {
   _last_max_stage_index = 0;
 
   _is_valid = true;
+
+  if (_stencil_render_states) {
+    delete _stencil_render_states;
+    _stencil_render_states = 0;
+  }
+  _stencil_render_states = new StencilRenderStates (this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -737,7 +754,7 @@ clear(DrawableRegion *clearable) {
 //
 //                  * window size
 //                  * texture coordinates of card center
-//               
+//
 //               This routine can fetch these values as well, by
 //               shoehorning them into a matrix.  In this way, we avoid
 //               the need for a separate routine to fetch these values.
@@ -756,7 +773,7 @@ fetch_specified_value(ShaderContext::ShaderMatSpec &spec, bool altered) {
   const LMatrix4f *val2;
   static LMatrix4f t1;
   static LMatrix4f t2;
-  
+
   switch(spec._func) {
   case ShaderContext::SMF_compose:
     val1 = fetch_specified_part(spec._part[0], spec._arg[0], t1);
@@ -881,6 +898,14 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
   }
   case ShaderContext::SMO_view_x_to_view: {
     const ShaderInput *input = _target._shader->get_shader_input(name);
+
+    if (input->get_nodepath().is_empty()) {
+      gsg_cat.error()
+        << "SHADER INPUT ASSERT: "
+        << name
+        << "\n";
+    }
+
     nassertr(!input->get_nodepath().is_empty(), &LMatrix4f::ident_mat());
     t = input->get_nodepath().get_net_transform()->get_mat() *
       get_scene()->get_world_transform()->get_mat();
@@ -888,6 +913,14 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
   }
   case ShaderContext::SMO_view_to_view_x: {
     const ShaderInput *input = _target._shader->get_shader_input(name);
+
+    if (input->get_nodepath().is_empty()) {
+      gsg_cat.error()
+        << "SHADER INPUT ASSERT: "
+        << name
+        << "\n";
+    }
+
     nassertr(!input->get_nodepath().is_empty(),  &LMatrix4f::ident_mat());
     t = get_scene()->get_camera_transform()->get_mat() *
       invert(input->get_nodepath().get_net_transform()->get_mat());
@@ -1032,7 +1065,7 @@ begin_frame(Thread *current_thread) {
   // be accurately updated.
   _state_rs = 0;
   _state.clear_to_zero();
-  
+
   return true;
 }
 
@@ -1068,11 +1101,11 @@ begin_scene() {
 void GraphicsStateGuardian::
 end_scene() {
   // We should clear this pointer now, so that we don't keep unneeded
-  // reference counts dangling.  We keep around a "null" scene setup 
+  // reference counts dangling.  We keep around a "null" scene setup
   // object instead of using a null pointer to avoid special-case code
   // in set_state_and_transform.
   _scene_setup = _scene_null;
-  
+
   // Undo any lighting we had enabled last scene, to force the lights
   // to be reissued, in case their parameters or positions have
   // changed between scenes.
@@ -1255,7 +1288,7 @@ finish_decal() {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-begin_draw_primitives(const GeomPipelineReader *geom_reader, 
+begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader) {
   _munger = munger;
@@ -1360,7 +1393,7 @@ do_issue_clip_plane() {
   for (i = 0; i < cur_max_planes; i++) {
     _clip_plane_info[i]._next_enabled = false;
   }
-  
+
   CPT(ClipPlaneAttrib) new_attrib = attrib->filter_to_max(_max_clip_planes);
 
   bool any_bound = false;
@@ -1391,7 +1424,7 @@ do_issue_clip_plane() {
         break;
       }
     }
-        
+
     // See if there are any unbound plane ids
     if (cur_plane_id == -1) {
       for (i = 0; i < cur_max_planes; i++) {
@@ -1402,7 +1435,7 @@ do_issue_clip_plane() {
         }
       }
     }
-        
+
     // If there were no unbound plane ids, see if we can replace
     // a currently unused but previously bound id
     if (cur_plane_id == -1) {
@@ -1424,21 +1457,21 @@ do_issue_clip_plane() {
         nassertv(cur_max_planes == (int)_clip_plane_info.size());
       }
     }
-        
+
     if (cur_plane_id >= 0) {
       enable_clip_plane(cur_plane_id, true);
       _clip_plane_info[cur_plane_id]._enabled = true;
       _clip_plane_info[cur_plane_id]._next_enabled = true;
-      
+
       if (!any_bound) {
         begin_bind_clip_planes();
         any_bound = true;
       }
-      
+
       // This is the first time this frame that this plane has been
       // bound to this particular id.
       bind_clip_plane(plane, cur_plane_id);
-      
+
     } else if (cur_plane_id == -1) {
       gsg_cat.warning()
         << "Failed to bind " << plane << " to id.\n";
@@ -1523,7 +1556,7 @@ do_issue_color_scale() {
   const ColorScaleAttrib *attrib = _target._color_scale;
   _color_scale_enabled = attrib->has_scale();
   _current_color_scale = attrib->get_scale();
-  
+
   if (_color_blend_involves_color_scale) {
     _state_rs = 0;
     _state._transparency = 0;
@@ -1583,19 +1616,19 @@ do_issue_light() {
       NodePath light = new_light->get_on_light(li);
       nassertv(!light.is_empty() && light.node()->as_light() != (Light *)NULL);
       Light *light_obj = light.node()->as_light();
-      
+
       num_enabled++;
-      
+
       // Lighting should be enabled before we apply any lights.
       enable_lighting(true);
       _lighting_enabled = true;
       _lighting_enabled_this_frame = true;
-      
+
       if (light_obj->get_type() == AmbientLight::get_class_type()) {
         // Ambient lights don't require specific light ids; simply add
         // in the ambient contribution to the current total
         cur_ambient_light += light_obj->get_color();
-        
+
       } else {
         // Check to see if this light has already been bound to an id
         int cur_light_id = -1;
@@ -1606,7 +1639,7 @@ do_issue_light() {
             enable_light(i, true);
             _light_info[i]._enabled = true;
             _light_info[i]._next_enabled = true;
-          
+
             if (!any_bound) {
               begin_bind_lights();
               any_bound = true;
@@ -1615,7 +1648,7 @@ do_issue_light() {
             break;
           }
         }
-        
+
         // See if there are any unbound light ids
         if (cur_light_id == -1) {
           for (i = 0; i < cur_max_lights; i++) {
@@ -1626,7 +1659,7 @@ do_issue_light() {
             }
           }
         }
-        
+
         // If there were no unbound light ids, see if we can replace
         // a currently unused but previously bound id
         if (cur_light_id == -1) {
@@ -1638,7 +1671,7 @@ do_issue_light() {
             }
           }
         }
-        
+
         // If we *still* don't have a light id, slot a new one.
         if (cur_light_id == -1) {
           if (_max_lights < 0 || cur_max_lights < _max_lights) {
@@ -1648,21 +1681,21 @@ do_issue_light() {
             nassertv(cur_max_lights == (int)_light_info.size());
           }
         }
-        
+
         if (cur_light_id >= 0) {
           enable_light(cur_light_id, true);
           _light_info[cur_light_id]._enabled = true;
           _light_info[cur_light_id]._next_enabled = true;
-          
+
           if (!any_bound) {
             begin_bind_lights();
             any_bound = true;
           }
-          
+
           // This is the first time this frame that this light has been
           // bound to this particular id.
           light_obj->bind(this, light, cur_light_id);
-          
+
         } else if (cur_light_id == -1) {
           gsg_cat.warning()
             << "Failed to bind " << light << " to id.\n";
@@ -1670,7 +1703,7 @@ do_issue_light() {
       }
     }
   }
-    
+
   // Disable all unused lights
   for (i = 0; i < cur_max_lights; i++) {
     if (!_light_info[i]._next_enabled) {
@@ -1973,7 +2006,7 @@ init_frame_pstats() {
     _data_transferred_pcollector.clear_level();
     _vertex_buffer_switch_pcollector.clear_level();
     _index_buffer_switch_pcollector.clear_level();
-    
+
     _primitive_batches_pcollector.clear_level();
     _primitive_batches_tristrip_pcollector.clear_level();
     _primitive_batches_trifan_pcollector.clear_level();
@@ -1983,7 +2016,7 @@ init_frame_pstats() {
     _vertices_trifan_pcollector.clear_level();
     _vertices_tri_pcollector.clear_level();
     _vertices_other_pcollector.clear_level();
-    
+
     _state_pcollector.clear_level();
     _transform_state_pcollector.clear_level();
     _texture_state_pcollector.clear_level();
@@ -1994,7 +2027,7 @@ init_frame_pstats() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_unlit_state
 //       Access: Protected, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) GraphicsStateGuardian::
 get_unlit_state() {
@@ -2008,7 +2041,7 @@ get_unlit_state() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_unclipped_state
 //       Access: Protected, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) GraphicsStateGuardian::
 get_unclipped_state() {
@@ -2022,7 +2055,7 @@ get_unclipped_state() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_untextured_state
 //       Access: Protected, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) GraphicsStateGuardian::
 get_untextured_state() {
@@ -2043,7 +2076,7 @@ get_untextured_state() {
 void GraphicsStateGuardian::
 traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg) {
   PreparedGraphicsObjects::Textures::const_iterator ti;
-  for (ti = _prepared_objects->_prepared_textures.begin(); 
+  for (ti = _prepared_objects->_prepared_textures.begin();
        ti != _prepared_objects->_prepared_textures.end();
        ++ti) {
     bool bResult=(*pertex_callbackfn)(*ti,callback_arg);
@@ -2068,7 +2101,7 @@ calc_projection_mat(const Lens *lens) {
   if (!lens->is_linear()) {
     return NULL;
   }
-  
+
   return TransformState::make_identity();
 }
 

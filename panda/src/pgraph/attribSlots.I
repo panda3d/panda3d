@@ -43,6 +43,7 @@ clear_to_zero() {
   _rescale_normal = NULL;
   _shade_model    = NULL;
   _shader         = NULL;
+  _stencil        = NULL;
   _tex_gen        = NULL;
   _tex_matrix     = NULL;
   _texture        = NULL;

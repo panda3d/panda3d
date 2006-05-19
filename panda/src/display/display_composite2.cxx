@@ -9,3 +9,4 @@
 #include "graphicsOutput.cxx"
 #include "parasiteBuffer.cxx"
 #include "lru.cxx"
+#include "stencilRenderStates.cxx"

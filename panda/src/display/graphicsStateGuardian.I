@@ -539,6 +539,17 @@ get_supports_basic_shaders() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_two_sided_stencil
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               two sided stencil.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_two_sided_stencil() const {
+  return _supports_two_sided_stencil;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_color_scale_via_lighting
 //       Access: Published
 //  Description: Returns true if this particular GSG can implement (or
@@ -737,5 +748,25 @@ get_clip_plane(int plane_id) const {
 INLINE void GraphicsStateGuardian::
 set_current_properties(FrameBufferProperties *prop) {
   _current_properties = prop;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_stencil_clear_value
+//       Access: Public
+//  Description: Set current stencil clear value.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_stencil_clear_value(unsigned int stencil_clear_value) {
+  _stencil_clear_value = stencil_clear_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_stencil_clear_value
+//       Access: Public
+//  Description: Get current stencil clear value.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int GraphicsStateGuardian::
+get_stencil_clear_value() {
+  return _stencil_clear_value;
 }
 

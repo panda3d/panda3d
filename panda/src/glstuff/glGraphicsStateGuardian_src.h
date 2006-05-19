@@ -78,6 +78,7 @@ typedef void (APIENTRYP PFNGLCOMPRESSEDTEXIMAGE1DPROC) (GLenum target, GLint lev
 typedef void (APIENTRYP PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid *data);
 typedef void (APIENTRYP PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid *data);
 typedef void (APIENTRYP PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC) (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const GLvoid *data);
+typedef void (APIENTRY * PFNGLACTIVESTENCILFACEEXTPROC) (GLenum face);
 #endif  // __EDG__
 
 ////////////////////////////////////////////////////////////////////
@@ -90,12 +91,12 @@ class EXPCL_GL CLP(GraphicsStateGuardian) : public GraphicsStateGuardian {
 public:
   CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties);
   virtual ~CLP(GraphicsStateGuardian)();
-  
+
   virtual void reset();
 
   virtual void do_clear(const RenderBuffer &buffer);
 
-  virtual void prepare_display_region(DisplayRegionPipelineReader *dr, 
+  virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
                                       Lens::StereoChannel stereo_channel);
   virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
   virtual bool prepare_lens();
@@ -103,7 +104,7 @@ public:
   virtual bool begin_frame(Thread *current_thread);
   virtual void end_frame(Thread *current_thread);
 
-  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader, 
+  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomMunger *munger,
                                      const GeomVertexDataPipelineReader *data_reader);
   virtual void draw_triangles(const GeomPrimitivePipelineReader *reader);
@@ -125,7 +126,7 @@ public:
 
   virtual ShaderContext *prepare_shader(ShaderExpansion *shader);
   virtual void release_shader(ShaderContext *sc);
-  
+
   void record_deleted_display_list(GLuint index);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
@@ -153,11 +154,11 @@ public:
 
   void apply_fog(Fog *fog);
 
-  virtual void bind_light(PointLight *light_obj, const NodePath &light, 
+  virtual void bind_light(PointLight *light_obj, const NodePath &light,
                           int light_id);
-  virtual void bind_light(DirectionalLight *light_obj, const NodePath &light, 
+  virtual void bind_light(DirectionalLight *light_obj, const NodePath &light,
                           int light_id);
-  virtual void bind_light(Spotlight *light_obj, const NodePath &light, 
+  virtual void bind_light(Spotlight *light_obj, const NodePath &light,
                           int light_id);
 
   void print_gfx_visual();
@@ -186,7 +187,7 @@ public:
                                        const TransformState *transform);
 
   void bind_fbo(GLuint fbo);
-  
+
 protected:
   void do_issue_transform();
   void do_issue_render_mode();
@@ -207,7 +208,7 @@ protected:
   void do_issue_tex_gen();
   void do_issue_tex_matrix();
 
-  static bool report_errors_loop(int line, const char *source_file, 
+  static bool report_errors_loop(int line, const char *source_file,
                                  GLenum error_code, int &error_count);
   static string get_error_string(GLenum error_code);
   string show_gl_string(const string &name, GLenum id);
@@ -260,7 +261,7 @@ protected:
   GLenum get_texture_target(Texture::TextureType texture_type) const;
   GLenum get_texture_wrap_mode(Texture::WrapMode wm) const;
   static Texture::WrapMode get_panda_wrap_mode(GLenum wm);
-  static GLenum get_texture_filter_type(Texture::FilterType ft, 
+  static GLenum get_texture_filter_type(Texture::FilterType ft,
                              Texture::Format fmt, bool ignore_mipmaps);
   static Texture::FilterType get_panda_filter_type(GLenum ft);
   static GLenum get_component_type(Texture::ComponentType component_type);
@@ -271,7 +272,7 @@ protected:
   static GLint get_texture_apply_mode_type(TextureStage::Mode am);
   static GLint get_texture_combine_type(TextureStage::CombineMode cm);
   GLint get_texture_src_type(TextureStage::CombineSource cs,
-                             int last_stage, int last_saved_result, 
+                             int last_stage, int last_saved_result,
                              int this_stage) const;
   static GLint get_texture_operand_type(TextureStage::CombineOperand co);
   static GLenum get_fog_mode_type(Fog::Mode m);
@@ -288,19 +289,19 @@ protected:
   void specify_texture(Texture *tex);
   void apply_texture(TextureContext *tc);
   bool upload_texture(CLP(TextureContext) *gtc);
-  bool upload_texture_image(CLP(TextureContext) *gtc, bool uses_mipmaps, 
-                            GLenum target, GLint internal_format, 
+  bool upload_texture_image(CLP(TextureContext) *gtc, bool uses_mipmaps,
+                            GLenum target, GLint internal_format,
                             int width, int height, int depth,
-                            GLint external_format, GLenum component_type, 
+                            GLint external_format, GLenum component_type,
                             bool one_page_only, int z,
-			    Texture::CompressionMode image_compression);
+          Texture::CompressionMode image_compression);
 
   size_t get_texture_memory_size(Texture *tex);
   void check_nonresident_texture(BufferContextChain &chain);
   bool extract_texture_image(PTA_uchar &image, size_t &page_size,
-			     Texture *tex, GLenum target, GLenum page_target,
-			     Texture::ComponentType type, 
-			     Texture::CompressionMode compression, int n);
+           Texture *tex, GLenum target, GLenum page_target,
+           Texture::ComponentType type,
+           Texture::CompressionMode compression, int n);
 
   void do_point_size();
 
@@ -329,7 +330,7 @@ protected:
   bool _polygon_offset_enabled;
   bool _flat_shade_model;
   int _decal_level;
-  
+
   bool _dithering_enabled;
 
   int _viewport_width;
@@ -339,14 +340,14 @@ protected:
   float _point_size;
   bool _point_perspective;
   bool _vertex_blending_enabled;
-  
+
   PT(ShaderExpansion)  _current_shader_expansion;
   CLP(ShaderContext)  *_current_shader_context;
   PT(ShaderExpansion)  _vertex_array_shader_expansion;
   CLP(ShaderContext)  *_vertex_array_shader_context;
   PT(ShaderExpansion)  _texture_binding_shader_expansion;
   CLP(ShaderContext)  *_texture_binding_shader_context;
-  
+
 #ifdef SUPPORT_IMMEDIATE_MODE
   CLP(ImmediateModeSender) _sender;
   bool _use_sender;
@@ -358,7 +359,7 @@ protected:
   GLuint _current_vbuffer_index;
   GLuint _current_ibuffer_index;
   GLuint _current_fbo;
-  
+
   int _error_count;
 
   string _gl_vendor;
@@ -435,7 +436,7 @@ public:
   PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC _glFramebufferRenderbuffer;
   PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC _glGetFramebufferAttachmentParameteriv;
   PFNGLGENERATEMIPMAPEXTPROC _glGenerateMipmap;
-  
+
   PFNGLDRAWBUFFERSPROC _glDrawBuffers;
 
   PFNGLGENQUERIESPROC _glGenQueries;
@@ -443,6 +444,8 @@ public:
   PFNGLENDQUERYPROC _glEndQuery;
   PFNGLDELETEQUERIESPROC _glDeleteQueries;
   PFNGLGETQUERYOBJECTUIVPROC _glGetQueryObjectuiv;
+
+  PFNGLACTIVESTENCILFACEEXTPROC _glActiveStencilFaceEXT;
 
   GLenum _edge_clamp;
   GLenum _border_clamp;

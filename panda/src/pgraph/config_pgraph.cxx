@@ -247,8 +247,8 @@ ConfigVariableBool m_dual_transparent
 ConfigVariableBool m_dual_flash
 ("m-dual-flash", false,
  PRC_DESC("Set this true to flash any objects that use M_dual, for debugging."));
- 
- 
+
+
 ConfigVariableBool asynchronous_loads
 ("asynchronous-loads", false,
  PRC_DESC("Set this true to support actual asynchronous loads via the "
@@ -258,7 +258,7 @@ ConfigVariableBool asynchronous_loads
           "this false for now."));
 
 ConfigVariableList load_file_type
-("load-file-type", 
+("load-file-type",
  PRC_DESC("List the model loader modules that Panda will automatically "
           "import when a new, unknown model type is loaded.  This may be "
           "either the name of a module, or a space-separate list of filename "
@@ -344,6 +344,7 @@ init_libpgraph() {
   ShowBoundsEffect::init_type();
   Spotlight::init_type();
   StateMunger::init_type();
+  StencilAttrib::init_type();
   SwitchNode::init_type();
   TexMatrixAttrib::init_type();
   TexProjectorEffect::init_type();
@@ -385,7 +386,7 @@ init_libpgraph() {
   LensNode::register_with_read_factory();
   LightAttrib::register_with_read_factory();
   LODNode::register_with_read_factory();
-  MaterialAttrib::register_with_read_factory();  
+  MaterialAttrib::register_with_read_factory();
   ModelNode::register_with_read_factory();
   ModelRoot::register_with_read_factory();
   PandaNode::register_with_read_factory();

@@ -52,6 +52,8 @@
 
 #include <algorithm>
 
+#define DEBUG_BUFFERS false
+
 TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
 
 PStatCollector CLP(GraphicsStateGuardian)::_load_display_list_pcollector("Draw:Transfer data:Display lists");
@@ -271,6 +273,183 @@ CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties) :
 CLP(GraphicsStateGuardian)::
 ~CLP(GraphicsStateGuardian)() {
   close_gsg();
+
+  if (_stencil_render_states) {
+    delete _stencil_render_states;
+    _stencil_render_states = 0;
+  }
+
+  GraphicsStateGuardian::~GraphicsStateGuardian();
+}
+
+////////////////////////////////////////////////////////////////////
+//  GL stencil code section
+////////////////////////////////////////////////////////////////////
+
+static int gl_stencil_comparison_function_array [ ] =
+{
+  GL_NEVER,
+  GL_LESS,
+  GL_EQUAL,
+  GL_LEQUAL,
+  GL_GREATER,
+  GL_NOTEQUAL,
+  GL_GEQUAL,
+  GL_ALWAYS,
+};
+
+static int gl_stencil_operations_array [ ] =
+{
+  GL_KEEP,
+  GL_ZERO,
+  GL_REPLACE,
+  GL_INCR_WRAP,
+  GL_DECR_WRAP,
+  GL_INVERT,
+
+  GL_INCR,
+  GL_DECR,
+};
+
+void __glActiveStencilFace (GraphicsStateGuardian *gsg, GLenum face) {
+  CLP(GraphicsStateGuardian) *glgsg;
+
+  glgsg = (CLP(GraphicsStateGuardian) *) gsg;
+  if (gsg -> get_supports_two_sided_stencil ( ) &&
+      glgsg -> _glActiveStencilFaceEXT) {
+    if (face == GL_FRONT) {
+      // glActiveStencilFaceEXT (GL_FRONT);
+      glgsg -> _glActiveStencilFaceEXT (GL_FRONT);
+    }
+    else {
+      // glActiveStencilFaceEXT (GL_BACK);
+      glgsg -> _glActiveStencilFaceEXT (GL_BACK);
+    }
+  }
+}
+
+void gl_front_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+
+  __glActiveStencilFace (stencil_render_states -> _gsg, GL_FRONT);
+  glStencilFunc
+  (
+    gl_stencil_comparison_function_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_front_comparison_function)],
+    stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_reference),
+    stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_read_mask)
+  );
+}
+void gl_front_stencil_operation (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+  __glActiveStencilFace (stencil_render_states -> _gsg, GL_FRONT);
+  glStencilOp
+  (
+    gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_front_stencil_fail_operation)],
+    gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_front_stencil_pass_z_fail_operation)],
+    gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_front_stencil_pass_z_pass_operation)]
+  );
+}
+
+void gl_back_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+
+  bool supports_two_sided_stencil;
+
+  supports_two_sided_stencil = stencil_render_states -> _gsg -> get_supports_two_sided_stencil ( );
+  if (supports_two_sided_stencil) {
+    __glActiveStencilFace (stencil_render_states -> _gsg, GL_BACK);
+    glStencilFunc
+    (
+      gl_stencil_comparison_function_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_back_comparison_function)],
+      stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_reference),
+      stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_read_mask)
+    );
+  }
+}
+
+void gl_back_stencil_operation (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+
+  bool supports_two_sided_stencil;
+
+  supports_two_sided_stencil = stencil_render_states -> _gsg -> get_supports_two_sided_stencil ( );
+  if (supports_two_sided_stencil) {
+    __glActiveStencilFace (stencil_render_states -> _gsg, GL_BACK);
+    glStencilOp
+    (
+      gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_back_stencil_fail_operation)],
+      gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_back_stencil_pass_z_fail_operation)],
+      gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_back_stencil_pass_z_pass_operation)]
+    );
+  }
+}
+
+void gl_front_back_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+  gl_front_stencil_function (stencil_render_state, stencil_render_states);
+  gl_back_stencil_function (stencil_render_state, stencil_render_states);
+}
+
+void gl_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+
+  StencilType render_state_value;
+  bool supports_two_sided_stencil;
+
+  supports_two_sided_stencil = stencil_render_states -> _gsg -> get_supports_two_sided_stencil ( );
+
+  render_state_value = stencil_render_states -> get_stencil_render_state (stencil_render_state);
+  switch (stencil_render_state)
+  {
+    case StencilRenderStates::SRS_clear_value:
+      stencil_render_states -> _gsg -> set_stencil_clear_value (render_state_value);
+      break;
+
+    case StencilRenderStates::SRS_write_mask:
+      glStencilMask (render_state_value);
+      break;
+    case StencilRenderStates::SRS_front_enable:
+      if (render_state_value) {
+        glEnable (GL_STENCIL_TEST);
+      }
+      else {
+        glDisable (GL_STENCIL_TEST);
+      }
+      break;
+    case StencilRenderStates::SRS_back_enable:
+      if (supports_two_sided_stencil) {
+        if (render_state_value) {
+          glEnable (GL_STENCIL_TEST_TWO_SIDE_EXT);
+        }
+        else {
+          glDisable (GL_STENCIL_TEST_TWO_SIDE_EXT);
+        }
+      }
+      break;
+
+    default:
+      break;
+  }
+}
+
+void gl_set_stencil_functions (StencilRenderStates *stencil_render_states) {
+
+  if (stencil_render_states) {
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_clear_value, gl_stencil_function);
+
+    // GL seems to support different read masks and/or reference values for front and back, but DX does not.
+    // This needs to be cross-platform so do it the DX way by setting the same read mask and reference for both front and back.
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_reference, gl_front_back_stencil_function);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_read_mask, gl_front_back_stencil_function);
+
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_write_mask, gl_stencil_function);
+
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_enable, gl_stencil_function);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_comparison_function, gl_front_stencil_function);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_stencil_fail_operation,  gl_front_stencil_operation);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_stencil_pass_z_fail_operation, gl_front_stencil_operation);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_stencil_pass_z_pass_operation, gl_front_stencil_operation);
+
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_enable, gl_stencil_function);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_comparison_function, gl_back_stencil_function);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_stencil_fail_operation, gl_back_stencil_operation);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_stencil_pass_z_fail_operation, gl_back_stencil_operation);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_stencil_pass_z_pass_operation, gl_back_stencil_operation);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -433,7 +612,7 @@ reset() {
     _glDrawRangeElements = null_glDrawRangeElements;
   }
 
-  _supports_depth_texture = 
+  _supports_depth_texture =
     has_extension("GL_ARB_depth_texture") || is_at_least_version(1, 4);
 
   _supports_3d_texture = false;
@@ -505,13 +684,13 @@ reset() {
   }
 
   if (_supports_compressed_texture) {
-    if (_glCompressedTexImage1D == NULL || 
-        _glCompressedTexImage2D == NULL || 
-        _glCompressedTexImage3D == NULL || 
-	_glCompressedTexSubImage1D == NULL || 
-	_glCompressedTexSubImage2D == NULL || 
-	_glCompressedTexSubImage3D == NULL || 
-	_glGetCompressedTexImage == NULL) {
+    if (_glCompressedTexImage1D == NULL ||
+        _glCompressedTexImage2D == NULL ||
+        _glCompressedTexImage3D == NULL ||
+  _glCompressedTexSubImage1D == NULL ||
+  _glCompressedTexSubImage2D == NULL ||
+  _glCompressedTexSubImage3D == NULL ||
+  _glGetCompressedTexImage == NULL) {
       GLCAT.warning()
         << "Compressed textures advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_compressed_texture = false;
@@ -568,7 +747,7 @@ reset() {
 
   _supports_tex_non_pow2 =
     has_extension("GL_ARB_texture_non_power_of_two");
-  
+
   if (is_at_least_version(1, 3)) {
     _supports_multitexture = true;
 
@@ -758,8 +937,8 @@ reset() {
     }
   }
 
-  if (_supports_occlusion_query && 
-      (_glGenQueries == NULL || _glBeginQuery == NULL || 
+  if (_supports_occlusion_query &&
+      (_glGenQueries == NULL || _glBeginQuery == NULL ||
        _glEndQuery == NULL || _glDeleteQueries == NULL ||
        _glGetQueryObjectuiv == NULL)) {
     GLCAT.warning()
@@ -920,27 +1099,27 @@ reset() {
           case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
             GLCAT.debug(false) << "  GL_COMPRESSED_RGB_S3TC_DXT1_EXT\n";
             break;
-            
+
           case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
             GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT1_EXT\n";
             break;
-            
+
           case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
             GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT3_EXT\n";
             break;
-            
+
           case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
             GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT\n";
             break;
-            
+
           case GL_COMPRESSED_RGB_FXT1_3DFX:
             GLCAT.debug(false) << "  GL_COMPRESSED_RGB_FXT1_3DFX\n";
             break;
-            
+
           case GL_COMPRESSED_RGBA_FXT1_3DFX:
             GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_FXT1_3DFX\n";
             break;
-            
+
           default:
             GLCAT.debug(false)
               << "  Unknown compressed format 0x" << hex << formats[i]
@@ -953,6 +1132,16 @@ reset() {
   }
 
   report_my_gl_errors();
+
+  _supports_stencil_wrap = has_extension("GL_EXT_stencil_wrap");
+  _supports_two_sided_stencil = has_extension("GL_EXT_stencil_two_side");
+  if (_supports_two_sided_stencil) {
+    _glActiveStencilFaceEXT = (PFNGLACTIVESTENCILFACEEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "ActiveStencilFaceEXT");
+  }
+  else {
+    _glActiveStencilFaceEXT = 0;
+  }
 
   _auto_rescale_normal = false;
 
@@ -1074,6 +1263,8 @@ reset() {
   _error_count = 0;
 
   report_my_gl_errors();
+
+  gl_set_stencil_functions (_stencil_render_states);
 }
 
 
@@ -1146,7 +1337,7 @@ do_clear(const RenderBuffer &buffer) {
 //               scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-prepare_display_region(DisplayRegionPipelineReader *dr, 
+prepare_display_region(DisplayRegionPipelineReader *dr,
                        Lens::StereoChannel stereo_channel) {
   nassertv(dr != (DisplayRegionPipelineReader *)NULL);
   GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
@@ -1165,7 +1356,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
   enable_scissor(true);
   GLP(Scissor)(x, y, width, height);
   GLP(Viewport)(x, y, width, height);
-  
+
   report_my_gl_errors();
   do_point_size();
 }
@@ -1287,7 +1478,7 @@ end_frame(Thread *current_thread) {
   if (PStatClient::is_connected()) {
     check_nonresident_texture(_prepared_objects->_texture_residency.get_inactive_resident());
     check_nonresident_texture(_prepared_objects->_texture_residency.get_active_resident());
-    
+
     // OpenGL provides no methods for querying whether a buffer object
     // (vertex buffer) is resident.  In fact, the API appears geared
     // towards the assumption that such buffers are always resident.
@@ -1346,7 +1537,7 @@ end_frame(Thread *current_thread) {
 
   report_my_gl_errors();
 }
-    
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::begin_draw_primitives
@@ -2330,7 +2521,7 @@ extract_texture_data(Texture *tex) {
   Texture::ComponentType type = Texture::T_unsigned_byte;
   Texture::Format format = Texture::F_rgb;
   Texture::CompressionMode compression = Texture::CM_off;
-    
+
   switch (internal_format) {
   case GL_COLOR_INDEX:
     format = Texture::F_color_index;
@@ -2464,8 +2655,8 @@ extract_texture_data(Texture *tex) {
   tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
   tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
   tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
-  tex->set_border_color(Colorf(border_color[0], border_color[1], 
-			       border_color[2], border_color[3]));
+  tex->set_border_color(Colorf(border_color[0], border_color[1],
+             border_color[2], border_color[3]));
 
   tex->set_minfilter(get_panda_filter_type(minfilter));
   //  tex->set_magfilter(get_panda_filter_type(magfilter));
@@ -2474,10 +2665,10 @@ extract_texture_data(Texture *tex) {
   size_t page_size = 0;
 
   if (!extract_texture_image(image, page_size, tex, target, page_target,
-			     type, compression, 0)) {
+           type, compression, 0)) {
     return false;
   }
-  
+
   tex->set_ram_image(image, compression, page_size);
 
   if (tex->uses_mipmaps()) {
@@ -2488,8 +2679,8 @@ extract_texture_data(Texture *tex) {
     highest_level = min(highest_level, num_expected_levels);
     for (int n = 1; n <= highest_level; ++n) {
       if (!extract_texture_image(image, page_size, tex, target, page_target,
-				 type, compression, n)) {
-	return false;
+         type, compression, n)) {
+  return false;
       }
       tex->set_ram_mipmap_image(n, image, page_size);
     }
@@ -2590,7 +2781,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
     CLP(VertexBufferContext) *gvbc = new CLP(VertexBufferContext)(_prepared_objects, data);
     _glGenBuffers(1, &gvbc->_index);
 
-    if (GLCAT.is_debug()) {
+    if (DEBUG_BUFFERS && GLCAT.is_debug()) {
       GLCAT.debug()
         << "creating vertex buffer " << gvbc->_index << ": "
         << data->get_num_rows() << " vertices "
@@ -2669,7 +2860,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
-  if (GLCAT.is_debug()) {
+  if (DEBUG_BUFFERS && GLCAT.is_debug()) {
     GLCAT.debug()
       << "deleting vertex buffer " << gvbc->_index << "\n";
   }
@@ -2758,7 +2949,7 @@ prepare_index_buffer(GeomPrimitive *data) {
     CLP(IndexBufferContext) *gibc = new CLP(IndexBufferContext)(_prepared_objects, data);
     _glGenBuffers(1, &gibc->_index);
 
-    if (GLCAT.is_debug()) {
+    if (DEBUG_BUFFERS && GLCAT.is_debug()) {
       GLCAT.debug()
         << "creating index buffer " << gibc->_index << ": "
         << data->get_num_vertices() << " indices ("
@@ -2837,7 +3028,7 @@ release_index_buffer(IndexBufferContext *ibc) {
 
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 
-  if (GLCAT.is_debug()) {
+  if (DEBUG_BUFFERS && GLCAT.is_debug()) {
     GLCAT.debug()
       << "deleting index buffer " << gibc->_index << "\n";
   }
@@ -2990,7 +3181,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
     tex->set_x_size(Texture::up_to_power_2(w));
     tex->set_y_size(Texture::up_to_power_2(h));
   }
-  
+
   // Sanity check everything.
   if (z >= 0) {
     if (!_supports_cube_map) {
@@ -3681,7 +3872,7 @@ do_issue_blending() {
   // all the other blending-related stuff doesn't matter.  If the
   // device doesn't support color-write, we use blending tricks
   // to effectively disable color write.
-  unsigned int color_channels = 
+  unsigned int color_channels =
     _target._color_write->get_channels() & _color_write_mask;
   if (color_channels == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
@@ -4179,7 +4370,16 @@ report_extensions() const {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 has_extension(const string &extension) const {
-  return (_extensions.find(extension) != _extensions.end());
+
+  bool state;
+
+  state = _extensions.find(extension) != _extensions.end();
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "HAS EXT " << extension << " " << state << "\n";
+  }
+
+  return state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4254,39 +4454,39 @@ set_draw_buffer(const RenderBuffer &rb) {
     case RenderBuffer::T_front:
       GLP(DrawBuffer)(GL_FRONT);
       break;
-      
+
     case RenderBuffer::T_back:
       GLP(DrawBuffer)(GL_BACK);
       break;
-      
+
     case RenderBuffer::T_right:
       GLP(DrawBuffer)(GL_RIGHT);
       break;
-      
+
     case RenderBuffer::T_left:
       GLP(DrawBuffer)(GL_LEFT);
       break;
-      
+
     case RenderBuffer::T_front_right:
       nassertv(_current_properties->is_stereo());
       GLP(DrawBuffer)(GL_FRONT_RIGHT);
       break;
-      
+
     case RenderBuffer::T_front_left:
       nassertv(_current_properties->is_stereo());
       GLP(DrawBuffer)(GL_FRONT_LEFT);
       break;
-      
+
     case RenderBuffer::T_back_right:
       nassertv(_current_properties->is_stereo());
       GLP(DrawBuffer)(GL_BACK_RIGHT);
       break;
-      
+
     case RenderBuffer::T_back_left:
       nassertv(_current_properties->is_stereo());
       GLP(DrawBuffer)(GL_BACK_LEFT);
       break;
-      
+
     default:
       GLP(DrawBuffer)(GL_FRONT_AND_BACK);
     }
@@ -4297,7 +4497,7 @@ set_draw_buffer(const RenderBuffer &rb) {
                  (_color_write_mask & ColorWriteAttrib::C_green) != 0,
                  (_color_write_mask & ColorWriteAttrib::C_blue) != 0,
                  (_color_write_mask & ColorWriteAttrib::C_alpha) != 0);
-  
+
   report_my_gl_errors();
 }
 
@@ -4342,40 +4542,40 @@ set_read_buffer(const RenderBuffer &rb) {
     case RenderBuffer::T_front:
       GLP(ReadBuffer)(GL_FRONT);
       break;
-      
+
     case RenderBuffer::T_back:
       GLP(ReadBuffer)(GL_BACK);
       break;
-      
+
     case RenderBuffer::T_right:
       GLP(ReadBuffer)(GL_RIGHT);
       break;
-      
+
     case RenderBuffer::T_left:
       GLP(ReadBuffer)(GL_LEFT);
       break;
-      
+
     case RenderBuffer::T_front_right:
       GLP(ReadBuffer)(GL_FRONT_RIGHT);
       break;
-      
+
     case RenderBuffer::T_front_left:
       GLP(ReadBuffer)(GL_FRONT_LEFT);
       break;
-      
+
     case RenderBuffer::T_back_right:
       GLP(ReadBuffer)(GL_BACK_RIGHT);
       break;
-      
+
     case RenderBuffer::T_back_left:
       GLP(ReadBuffer)(GL_BACK_LEFT);
       break;
-      
+
     default:
       GLP(ReadBuffer)(GL_FRONT_AND_BACK);
     }
   }
-  
+
   report_my_gl_errors();
 }
 
@@ -4639,16 +4839,16 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_color_index:
       case Texture::F_stencil_index:
       case Texture::F_depth_component:
-	// This shouldn't be possible.
-	nassertr(false, GL_RGB);
-	break;
+  // This shouldn't be possible.
+  nassertr(false, GL_RGB);
+  break;
 
       case Texture::F_rgba:
       case Texture::F_rgbm:
       case Texture::F_rgba4:
       case Texture::F_rgba8:
       case Texture::F_rgba12:
-	return GL_COMPRESSED_RGBA;
+  return GL_COMPRESSED_RGBA;
 
       case Texture::F_rgb:
       case Texture::F_rgb5:
@@ -4656,20 +4856,20 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgb8:
       case Texture::F_rgb12:
       case Texture::F_rgb332:
-	return GL_COMPRESSED_RGB;
+  return GL_COMPRESSED_RGB;
 
       case Texture::F_alpha:
-	return GL_COMPRESSED_ALPHA;
+  return GL_COMPRESSED_ALPHA;
 
       case Texture::F_red:
       case Texture::F_green:
       case Texture::F_blue:
       case Texture::F_luminance:
-	return GL_COMPRESSED_LUMINANCE;
+  return GL_COMPRESSED_LUMINANCE;
 
       case Texture::F_luminance_alpha:
       case Texture::F_luminance_alphamask:
-	return GL_COMPRESSED_LUMINANCE_ALPHA;
+  return GL_COMPRESSED_LUMINANCE_ALPHA;
       }
       break;
 
@@ -4679,13 +4879,13 @@ get_external_image_format(Texture *tex) const {
       } else {
         return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
       }
-      
+
     case Texture::CM_dxt3:
       return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-      
+
     case Texture::CM_dxt5:
       return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-      
+
     case Texture::CM_fxt1:
       if (Texture::has_alpha(tex->get_format())) {
         return GL_COMPRESSED_RGBA_FXT1_3DFX;
@@ -4772,37 +4972,37 @@ get_internal_image_format(Texture *tex) const {
       case Texture::F_color_index:
       case Texture::F_stencil_index:
       case Texture::F_depth_component:
-	// Unsupported; fall through to below.
-	break;
+  // Unsupported; fall through to below.
+  break;
 
       case Texture::F_rgbm:
-	if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
-	  return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-	} else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
-	  return GL_COMPRESSED_RGBA_FXT1_3DFX;
-	} else {
-	  return GL_COMPRESSED_RGBA;
-	}
+  if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
+    return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+  } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+    return GL_COMPRESSED_RGBA_FXT1_3DFX;
+  } else {
+    return GL_COMPRESSED_RGBA;
+  }
 
       case Texture::F_rgba4:
-	if (get_supports_compressed_texture_format(Texture::CM_dxt3) && !is_3d) {
-	  return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-	} else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
-	  return GL_COMPRESSED_RGBA_FXT1_3DFX;
-	} else {
-	  return GL_COMPRESSED_RGBA;
-	}
+  if (get_supports_compressed_texture_format(Texture::CM_dxt3) && !is_3d) {
+    return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+  } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+    return GL_COMPRESSED_RGBA_FXT1_3DFX;
+  } else {
+    return GL_COMPRESSED_RGBA;
+  }
 
       case Texture::F_rgba:
       case Texture::F_rgba8:
       case Texture::F_rgba12:
-	if (get_supports_compressed_texture_format(Texture::CM_dxt5) && !is_3d) {
-	  return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-	} else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
-	  return GL_COMPRESSED_RGBA_FXT1_3DFX;
-	} else {
-	  return GL_COMPRESSED_RGBA;
-	}
+  if (get_supports_compressed_texture_format(Texture::CM_dxt5) && !is_3d) {
+    return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+  } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+    return GL_COMPRESSED_RGBA_FXT1_3DFX;
+  } else {
+    return GL_COMPRESSED_RGBA;
+  }
 
       case Texture::F_rgb:
       case Texture::F_rgb5:
@@ -4810,26 +5010,26 @@ get_internal_image_format(Texture *tex) const {
       case Texture::F_rgb8:
       case Texture::F_rgb12:
       case Texture::F_rgb332:
-	if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
-	  return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-	} else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
-	  return GL_COMPRESSED_RGB_FXT1_3DFX;
-	} else {
-	  return GL_COMPRESSED_RGB;
-	}
+  if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
+    return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+  } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+    return GL_COMPRESSED_RGB_FXT1_3DFX;
+  } else {
+    return GL_COMPRESSED_RGB;
+  }
 
       case Texture::F_alpha:
-	return GL_COMPRESSED_ALPHA;
+  return GL_COMPRESSED_ALPHA;
 
       case Texture::F_red:
       case Texture::F_green:
       case Texture::F_blue:
       case Texture::F_luminance:
-	return GL_COMPRESSED_LUMINANCE;
+  return GL_COMPRESSED_LUMINANCE;
 
       case Texture::F_luminance_alpha:
       case Texture::F_luminance_alphamask:
-	return GL_COMPRESSED_LUMINANCE_ALPHA;
+  return GL_COMPRESSED_LUMINANCE_ALPHA;
       }
       break;
 
@@ -4839,20 +5039,20 @@ get_internal_image_format(Texture *tex) const {
       } else {
         return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
       }
-      
+
     case Texture::CM_dxt3:
       return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-      
+
     case Texture::CM_dxt5:
       return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-      
+
     case Texture::CM_fxt1:
       if (Texture::has_alpha(tex->get_format())) {
         return GL_COMPRESSED_RGBA_FXT1_3DFX;
       } else {
         return GL_COMPRESSED_RGB_FXT1_3DFX;
       }
-      
+
     case Texture::CM_default:
     case Texture::CM_off:
     case Texture::CM_dxt2:
@@ -6416,7 +6616,7 @@ upload_texture(CLP(TextureContext) *gtc) {
   } else {
     image_compression = tex->get_ram_image_compression();
   }
-  
+
   int width = tex->get_x_size();
   int height = tex->get_y_size();
   int depth = tex->get_z_size();
@@ -6500,7 +6700,7 @@ upload_texture(CLP(TextureContext) *gtc) {
         depth = new_depth;
       }
     }
-    
+
     if (!_supports_bgr) {
       // If the GL doesn't claim to support BGR, we may have to reverse
       // the component ordering of the image.
@@ -6612,10 +6812,10 @@ upload_texture_image(CLP(TextureContext) *gtc,
                      int width, int height, int depth,
                      GLint external_format, GLenum component_type,
                      bool one_page_only, int z,
-		     Texture::CompressionMode image_compression) {
+         Texture::CompressionMode image_compression) {
   // Make sure the error stack is cleared out before we begin.
   report_my_gl_errors();
-  
+
   if (target == GL_NONE) {
     // Unsupported target (e.g. 3-d texturing on GL 1.1).
     return false;
@@ -6631,10 +6831,10 @@ upload_texture_image(CLP(TextureContext) *gtc,
   if (GLCAT.is_debug()) {
     if (image_compression != Texture::CM_off) {
       GLCAT.debug()
-	<< "loading pre-compressed texture " << tex->get_name() << "\n";
+  << "loading pre-compressed texture " << tex->get_name() << "\n";
     } else if (is_compressed_format(internal_format)) {
       GLCAT.debug()
-	<< "compressing texture " << tex->get_name() << "\n";
+  << "compressing texture " << tex->get_name() << "\n";
     }
   }
 
@@ -6655,17 +6855,17 @@ upload_texture_image(CLP(TextureContext) *gtc,
     num_ram_mipmap_levels = 1;
     if (uses_mipmaps) {
       num_ram_mipmap_levels = tex->get_num_ram_mipmap_images();
-    
+
       if (num_ram_mipmap_levels == 1) {
         // No RAM mipmap levels available.  Should we generate some?
-        if (!_supports_generate_mipmap || 
+        if (!_supports_generate_mipmap ||
             (!auto_generate_mipmaps && image_compression == Texture::CM_off)) {
           // Yes, the GL won't generate them, so we need to.
           tex->generate_ram_mipmap_images();
           num_ram_mipmap_levels = tex->get_num_ram_mipmap_images();
         }
       }
-      
+
       if (num_ram_mipmap_levels != 1) {
         // We will load the mipmap levels from RAM.  Don't ask the GL to
         // generate them.
@@ -6673,7 +6873,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
           GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, false);
         }
         load_ram_mipmaps = true;
-        
+
       } else {
         // We don't have mipmap levels in RAM.  Ask the GL to generate
         // them if it can.
@@ -6687,10 +6887,10 @@ upload_texture_image(CLP(TextureContext) *gtc,
       }
     }
   }
-  
+
   int highest_level = 0;
-  
-  
+
+
   if (!gtc->_already_applied ||
       gtc->_uses_mipmaps != uses_mipmaps ||
       gtc->_internal_format != internal_format ||
@@ -6716,7 +6916,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
                       external_format, GL_UNSIGNED_BYTE, blank_image);
       delete blank_image;
     }
-    
+
     for (int n = 0; n < num_ram_mipmap_levels; ++n) {
       const unsigned char *image = tex->get_ram_mipmap_image(n);
       if (image == (const unsigned char *)NULL) {
@@ -6746,7 +6946,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
                                   0, image_size, image);
         }
         break;
-        
+
       case GL_TEXTURE_3D:
         if (_supports_3d_texture) {
           if (image_compression == Texture::CM_off) {
@@ -6754,7 +6954,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
                           width, height, depth, 0,
                           external_format, component_type, image);
           } else {
-            _glCompressedTexImage3D(target, n, external_format, width, 
+            _glCompressedTexImage3D(target, n, external_format, width,
                                     height, depth,
                                     0, image_size, image);
           }
@@ -6763,14 +6963,14 @@ upload_texture_image(CLP(TextureContext) *gtc,
           return false;
         }
         break;
-        
+
       default:
         if (image_compression == Texture::CM_off) {
           GLP(TexImage2D)(target, n, internal_format,
                           width, height, 0,
                           external_format, component_type, image);
         } else {
-          _glCompressedTexImage2D(target, n, external_format, width, height, 
+          _glCompressedTexImage2D(target, n, external_format, width, height,
                                   0, image_size, image);
         }
       }
@@ -6827,7 +7027,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
           return false;
         }
         break;
-        
+
       default:
         if (image_compression == Texture::CM_off) {
           GLP(TexSubImage2D)(target, n, 0, 0, width, height,
@@ -6905,15 +7105,15 @@ get_texture_memory_size(Texture *tex) {
   if (is_compressed_format(internal_format)) {
     // Try to get the compressed size.
     GLint image_size;
-    GLP(GetTexLevelParameteriv)(page_target, 0, 
+    GLP(GetTexLevelParameteriv)(page_target, 0,
                                 GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
-    
+
     GLenum error_code = GLP(GetError)();
     if (error_code != GL_NO_ERROR) {
       if (GLCAT.is_debug()) {
-	GLCAT.debug()
-	  << "Couldn't get compressed size for " << tex->get_name()
-	  << " : " << get_error_string(error_code) << "\n";
+  GLCAT.debug()
+    << "Couldn't get compressed size for " << tex->get_name()
+    << " : " << get_error_string(error_code) << "\n";
       }
       // Fall through to the noncompressed case.
     } else {
@@ -6922,26 +7122,26 @@ get_texture_memory_size(Texture *tex) {
   }
 
   // OK, get the noncompressed size.
-  GLint red_size, green_size, blue_size, alpha_size, 
+  GLint red_size, green_size, blue_size, alpha_size,
     luminance_size, intensity_size;
   GLint depth_size = 0;
-  GLP(GetTexLevelParameteriv)(page_target, 0, 
+  GLP(GetTexLevelParameteriv)(page_target, 0,
                               GL_TEXTURE_RED_SIZE, &red_size);
-  GLP(GetTexLevelParameteriv)(page_target, 0, 
+  GLP(GetTexLevelParameteriv)(page_target, 0,
                               GL_TEXTURE_GREEN_SIZE, &green_size);
-  GLP(GetTexLevelParameteriv)(page_target, 0, 
+  GLP(GetTexLevelParameteriv)(page_target, 0,
                               GL_TEXTURE_BLUE_SIZE, &blue_size);
-  GLP(GetTexLevelParameteriv)(page_target, 0, 
+  GLP(GetTexLevelParameteriv)(page_target, 0,
                               GL_TEXTURE_ALPHA_SIZE, &alpha_size);
-  GLP(GetTexLevelParameteriv)(page_target, 0, 
+  GLP(GetTexLevelParameteriv)(page_target, 0,
                               GL_TEXTURE_LUMINANCE_SIZE, &luminance_size);
-  GLP(GetTexLevelParameteriv)(page_target, 0, 
+  GLP(GetTexLevelParameteriv)(page_target, 0,
                               GL_TEXTURE_INTENSITY_SIZE, &intensity_size);
   if (_supports_depth_texture) {
     // Actually, this seems to cause problems on some Mesa versions,
     // even though they advertise GL_ARB_depth_texture.  Who needs it.
-    //    GLP(GetTexLevelParameteriv)(page_target, 0, 
-    //				GL_TEXTURE_DEPTH_SIZE, &depth_size);
+    //    GLP(GetTexLevelParameteriv)(page_target, 0,
+    //        GL_TEXTURE_DEPTH_SIZE, &depth_size);
   }
 
   GLint width = 1, height = 1, depth = 1;
@@ -7013,9 +7213,9 @@ check_nonresident_texture(BufferContextChain &chain) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 extract_texture_image(PTA_uchar &image, size_t &page_size,
-		      Texture *tex, GLenum target, GLenum page_target,
-		      Texture::ComponentType type, 
-		      Texture::CompressionMode compression, int n) {
+          Texture *tex, GLenum target, GLenum page_target,
+          Texture::ComponentType type,
+          Texture::CompressionMode compression, int n) {
   if (target == GL_TEXTURE_CUBE_MAP) {
     // A cube map, compressed or uncompressed.  This we must extract
     // one page at a time.
@@ -7034,8 +7234,8 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
 
     if (compression != Texture::CM_off) {
       GLint image_size;
-      GLP(GetTexLevelParameteriv)(page_target, n, 
-				  GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
+      GLP(GetTexLevelParameteriv)(page_target, n,
+          GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
       nassertr(image_size <= (int)page_size, false);
       page_size = image_size;
     }
@@ -7044,12 +7244,12 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
 
     for (int z = 0; z < 6; ++z) {
       page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
-      
+
       if (compression == Texture::CM_off) {
-	GLP(GetTexImage)(page_target, n, external_format, pixel_type, 
-			 image.p() + z * page_size);
+  GLP(GetTexImage)(page_target, n, external_format, pixel_type,
+       image.p() + z * page_size);
       } else {
-	_glGetCompressedTexImage(page_target, 0, image.p() + z * page_size);
+  _glGetCompressedTexImage(page_target, 0, image.p() + z * page_size);
       }
     }
 

@@ -43,6 +43,7 @@
 #include "rescaleNormalAttrib.h"
 #include "shadeModelAttrib.h"
 #include "shaderAttrib.h"
+#include "stencilAttrib.h"
 #include "texMatrixAttrib.h"
 #include "texGenAttrib.h"
 #include "textureAttrib.h"
@@ -76,11 +77,12 @@ class EXPCL_PANDA AttribSlots
   CPT(RescaleNormalAttrib)   _rescale_normal;
   CPT(ShadeModelAttrib)      _shade_model;
   CPT(ShaderAttrib)          _shader;
+  CPT(StencilAttrib)         _stencil;
   CPT(TexGenAttrib)          _tex_gen;
   CPT(TexMatrixAttrib)       _tex_matrix;
   CPT(TextureAttrib)         _texture;
   CPT(TransparencyAttrib)    _transparency;
-  
+
  public:
   AttribSlots();
   AttribSlots(const AttribSlots &copy);
@@ -91,10 +93,10 @@ class EXPCL_PANDA AttribSlots
 
  public:
   // Each "array" reference requires a switch and a DCAST, so it's not overly fast.
-  enum { slot_count=23 };
+  enum { slot_count=24 };
   const RenderAttrib *get_slot(int n) const;
   void set_slot(int n, const RenderAttrib *attrib);
-  
+
  private:
   static AttribSlots _defvals;
   static void initialize_defvals();

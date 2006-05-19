@@ -47,6 +47,7 @@
 #include "bitMask.h"
 #include "texture.h"
 #include "occlusionQueryContext.h"
+#include "stencilRenderStates.h"
 
 class DrawableRegion;
 class GraphicsEngine;
@@ -120,11 +121,12 @@ PUBLISHED:
   INLINE bool get_supports_depth_texture() const;
   INLINE bool get_supports_shadow_filter() const;
   INLINE bool get_supports_basic_shaders() const;
-  
+  INLINE bool get_supports_two_sided_stencil() const;
+
   virtual int get_supported_geom_rendering() const;
 
   INLINE bool get_color_scale_via_lighting() const;
-  
+
   void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
   virtual CoordinateSystem get_internal_coordinate_system() const;
@@ -147,7 +149,7 @@ public:
 
   virtual ShaderContext *prepare_shader(ShaderExpansion *shader);
   virtual void release_shader(ShaderContext *sc);
-  
+
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
@@ -158,7 +160,7 @@ public:
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
 
-  virtual PT(GeomMunger) get_geom_munger(const RenderState *state, 
+  virtual PT(GeomMunger) get_geom_munger(const RenderState *state,
                                          Thread *current_thread);
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
@@ -176,7 +178,7 @@ public:
 
   const LMatrix4f *fetch_specified_value(ShaderContext::ShaderMatSpec &spec, bool altered);
   const LMatrix4f *fetch_specified_part(ShaderContext::ShaderMatInput input, InternalName *name, LMatrix4f &t);
-  
+
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
                                       Lens::StereoChannel stereo_channel);
 
@@ -189,14 +191,14 @@ public:
   virtual void end_frame(Thread *current_thread);
 
   void set_current_properties(FrameBufferProperties *properties);
-  
+
   virtual bool depth_offset_decals();
   virtual CPT(RenderState) begin_decal_base_first();
   virtual CPT(RenderState) begin_decal_nested();
   virtual CPT(RenderState) begin_decal_base_second();
   virtual void finish_decal();
 
-  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader, 
+  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomMunger *munger,
                                      const GeomVertexDataPipelineReader *data_reader);
   virtual void draw_triangles(const GeomPrimitivePipelineReader *reader);
@@ -213,27 +215,30 @@ public:
 
   INLINE CPT(TransformState) get_external_transform() const;
   INLINE CPT(TransformState) get_internal_transform() const;
-  
+
   RenderBuffer get_render_buffer(int buffer_type, const FrameBufferProperties &prop);
-  
+
   INLINE const DisplayRegion *get_current_display_region() const;
   INLINE Lens::StereoChannel get_current_stereo_channel() const;
   INLINE const Lens *get_current_lens() const;
 
   virtual const TransformState *get_cs_transform() const;
   INLINE const TransformState *get_inv_cs_transform() const;
-  
+
   void do_issue_clip_plane();
   void do_issue_color();
   void do_issue_color_scale();
   void do_issue_light();
-  
-  virtual void bind_light(PointLight *light_obj, const NodePath &light, 
+
+  virtual void bind_light(PointLight *light_obj, const NodePath &light,
                           int light_id);
   virtual void bind_light(DirectionalLight *light_obj, const NodePath &light,
                           int light_id);
   virtual void bind_light(Spotlight *light_obj, const NodePath &light,
                           int light_id);
+
+  INLINE void set_stencil_clear_value(unsigned int stencil_clear_value);
+  INLINE unsigned int get_stencil_clear_value();
 
 protected:
   INLINE NodePath get_light(int light_id) const;
@@ -267,7 +272,7 @@ protected:
 protected:
   PT(SceneSetup) _scene_null;
   PT(SceneSetup) _scene_setup;
-  
+
   AttribSlots _state;
   AttribSlots _target;
   CPT(RenderState) _state_rs;
@@ -282,7 +287,7 @@ protected:
   unsigned int _color_write_mask;
   Colorf _color_clear_value;
   float _depth_clear_value;
-  bool _stencil_clear_value;
+  unsigned int _stencil_clear_value;
   Colorf _accum_clear_value;
 
   CPT(DisplayRegion) _current_display_region;
@@ -291,7 +296,7 @@ protected:
   CPT(TransformState) _projection_mat;
   CPT(TransformState) _projection_mat_inv;
   FrameBufferProperties *_current_properties;
-  
+
   CoordinateSystem _coordinate_system;
   CoordinateSystem _internal_coordinate_system;
   CPT(TransformState) _cs_transform;
@@ -342,7 +347,7 @@ protected:
 
   bool _supports_compressed_texture;
   BitMask32 _compressed_texture_formats;
-  
+
   int _max_lights;
   int _max_clip_planes;
 
@@ -359,10 +364,16 @@ protected:
   bool _supports_depth_texture;
   bool _supports_shadow_filter;
   bool _supports_basic_shaders;
+
+  bool _supports_stencil_wrap;
+  bool _supports_two_sided_stencil;
+
   int _supported_geom_rendering;
   bool _color_scale_via_lighting;
 
   int _stereo_buffer_mask;
+
+  StencilRenderStates *_stencil_render_states;
 
 public:
   // Statistics
@@ -384,7 +395,7 @@ public:
   static PStatCollector _vertices_tristrip_pcollector;
   static PStatCollector _vertices_trifan_pcollector;
   static PStatCollector _vertices_tri_pcollector;
-  static PStatCollector _vertices_other_pcollector; 
+  static PStatCollector _vertices_other_pcollector;
   static PStatCollector _vertices_indexed_tristrip_pcollector;
   static PStatCollector _state_pcollector;
   static PStatCollector _transform_state_pcollector;

@@ -16,6 +16,7 @@
 #include "showBoundsEffect.cxx"
 #include "spotlight.cxx"
 #include "stateMunger.cxx"
+#include "stencilAttrib.cxx"
 #include "switchNode.cxx"
 #include "texMatrixAttrib.cxx"
 #include "texProjectorEffect.cxx"

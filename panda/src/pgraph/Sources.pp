@@ -100,6 +100,7 @@
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
     stateMunger.I stateMunger.h \
+    stencilAttrib.I stencilAttrib.h \
     switchNode.I switchNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     texProjectorEffect.I texProjectorEffect.h \
@@ -202,6 +203,7 @@
     showBoundsEffect.cxx \
     spotlight.cxx \
     stateMunger.cxx \
+    stencilAttrib.cxx \
     switchNode.cxx \
     texMatrixAttrib.cxx \
     texProjectorEffect.cxx \
@@ -301,6 +303,7 @@
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
     stateMunger.I stateMunger.h \
+    stencilAttrib.I stencilAttrib.h \
     switchNode.I switchNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     texProjectorEffect.I texProjectorEffect.h \
