@@ -41,7 +41,7 @@ get_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AlphaTestAttrib::get_mode
+//     Function: AlphaTestAttrib::get_reference_alpha
 //       Access: Published
 //  Description: Returns the alpha reference value.
 ////////////////////////////////////////////////////////////////////
