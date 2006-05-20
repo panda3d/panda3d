@@ -1988,7 +1988,9 @@ def gcDebugOn():
 
 class ScratchPad:
     """empty class to stick values onto"""
-    pass
+    def __init__(self, **kArgs):
+        for key, value in kArgs.items():
+            setattr(self, key, value)
 
 import __builtin__
 __builtin__.Functor = Functor
