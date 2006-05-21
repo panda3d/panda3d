@@ -278,8 +278,6 @@ CLP(GraphicsStateGuardian)::
     delete _stencil_render_states;
     _stencil_render_states = 0;
   }
-
-  GraphicsStateGuardian::~GraphicsStateGuardian();
 }
 
 ////////////////////////////////////////////////////////////////////
