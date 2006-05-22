@@ -30,6 +30,7 @@ TypeHandle ExternalThread::_type_handle;
 ////////////////////////////////////////////////////////////////////
 ExternalThread::
 ExternalThread() : Thread("External", "External") {
+  init_type();  // in case static init comes in the wrong order
   _started = true;
 }
 

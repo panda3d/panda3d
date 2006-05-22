@@ -27,6 +27,7 @@ TypeHandle MainThread::_type_handle;
 ////////////////////////////////////////////////////////////////////
 MainThread::
 MainThread() : Thread("Main", "Main") {
+  init_type();  // in case static init comes in the wrong order
   _started = true;
 }
  
