@@ -250,7 +250,7 @@ operator_new_handler(size_t size) {
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
 operator_delete_handler(void *ptr) {
-  cerr << "delete(" << ptr << ")\n";
+  //  cerr << "delete(" << ptr << ")\n";
   if (_recursion_protect) {
     if (express_cat.is_spam()) {
       express_cat.spam()
