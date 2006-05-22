@@ -9,20 +9,31 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
   #define SOURCES \
-    config_audio.h audioManager.h \
-    audioSound.h nullAudioManager.h nullAudioSound.h
+    config_audio.h \
+    audioDSP.h \
+    audioManager.h \
+    audioSound.h \
+    nullAudioDSP.h \
+    nullAudioManager.h \
+    nullAudioSound.h
     
   #define INCLUDED_SOURCES \
-    config_audio.cxx audioManager.cxx audioSound.cxx \
-    nullAudioManager.cxx nullAudioSound.cxx
+    config_audio.cxx \
+    audioDSP.cxx \
+    audioManager.cxx \
+    audioSound.cxx \
+    nullAudioDSP.cxx \
+    nullAudioManager.cxx \
+    nullAudioSound.cxx
 
   #define INSTALL_HEADERS \
     config_audio.h \
-    audio.h \
+    audioDSP.h \
     audioManager.h \
     audioSound.h \
+    nullAudioDSP.h \
     nullAudioManager.h \
-    nullAudioSound.h \
+    nullAudioSound.h
 
   #define IGATESCAN audio.h
 #end lib_target
