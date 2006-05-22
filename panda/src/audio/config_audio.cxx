@@ -24,8 +24,18 @@
 Configure(config_audio);
 NotifyCategoryDef(audio, "");
 
+ConfigVariableBool audio_active 
+("audio-active", true);
+
+ConfigVariableInt audio_cache_limit 
+("audio-cache-limit", 15,
+ PRC_DESC("The number of sounds in the cache."));
+
 ConfigVariableString audio_library_name
 ("audio-library-name", "miles_audio");
+
+ConfigVariableDouble audio_volume 
+("audio-volume", 1.0f);
 
 // Config variables for Fmod:
 
@@ -54,7 +64,16 @@ ConfigVariableBool audio_software_midi
 
 ConfigVariableFilename audio_dls_file
 ("audio-dls-file", "");
- 
+
+ConfigVariableBool audio_play_midi 
+("audio-play-midi", true);
+
+ConfigVariableBool audio_play_wave 
+("audio-play-wave", true);
+
+ConfigVariableBool audio_play_mp3 
+("audio-play-mp3", true);
+
 ConfigVariableInt audio_output_rate 
 ("audio-output-rate", 22050);
  
