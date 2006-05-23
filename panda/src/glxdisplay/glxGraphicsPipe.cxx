@@ -30,6 +30,8 @@ bool glxGraphicsPipe::_error_handlers_installed = false;
 glxGraphicsPipe::ErrorHandlerFunc *glxGraphicsPipe::_prev_error_handler;
 glxGraphicsPipe::IOErrorHandlerFunc *glxGraphicsPipe::_prev_io_error_handler;
 
+Mutex glxGraphicsPipe::_x_mutex;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsPipe::Constructor
 //       Access: Public

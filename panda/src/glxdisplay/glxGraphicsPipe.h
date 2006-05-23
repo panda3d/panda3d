@@ -23,6 +23,7 @@
 #include "graphicsWindow.h"
 #include "graphicsPipe.h"
 #include "glgsg.h"
+#include "pmutex.h"
 
 class FrameBufferProperties;
 
@@ -159,6 +160,11 @@ private:
   static bool _error_handlers_installed;
   static ErrorHandlerFunc *_prev_error_handler;
   static IOErrorHandlerFunc *_prev_io_error_handler;
+
+public:
+  // This Mutex protects any X library calls, which all have to be
+  // single-threaded.  In particular, it protects glXMakeCurrent().
+  static Mutex _x_mutex;
 
 public:
   static TypeHandle get_class_type() {

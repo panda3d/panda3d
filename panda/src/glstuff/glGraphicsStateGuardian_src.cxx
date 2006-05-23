@@ -1524,14 +1524,11 @@ end_frame(Thread *current_thread) {
     }
   }
 
-  {
-    PStatTimer timer(_flush_pcollector);
-    // Calling glFlush() at the end of the frame is particularly
-    // necessary if this is a single-buffered visual, so that the frame
-    // will be finished drawing before we return to the application.
-    // It's not clear what effect this has on our total frame time.
-    GLP(Flush)();
-  }
+  // Calling glFlush() at the end of the frame is particularly
+  // necessary if this is a single-buffered visual, so that the frame
+  // will be finished drawing before we return to the application.
+  // It's not clear what effect this has on our total frame time.
+  gl_flush();
 
   report_my_gl_errors();
 }
@@ -4187,6 +4184,27 @@ draw_immediate_composite_primitives(const GeomPrimitivePipelineReader *reader, G
   }
 }
 #endif  // SUPPORT_IMMEDIATE_MODE
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::gl_flush
+//       Access: Protected, Virtual
+//  Description: Calls glFlush().
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+gl_flush() const {
+  PStatTimer timer(_flush_pcollector);
+  GLP(Flush)();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::gl_get_error
+//       Access: Protected, Virtual
+//  Description: Returns the result of glGetError().
+////////////////////////////////////////////////////////////////////
+GLenum CLP(GraphicsStateGuardian)::
+gl_get_error() const {
+  return GLP(GetError)();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::report_errors_loop

@@ -208,6 +208,9 @@ protected:
   void do_issue_tex_gen();
   void do_issue_tex_matrix();
 
+  virtual void gl_flush() const;
+  virtual GLenum gl_get_error() const;
+
   static bool report_errors_loop(int line, const char *source_file,
                                  GLenum error_code, int &error_count);
   static string get_error_string(GLenum error_code);

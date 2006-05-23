@@ -131,7 +131,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   glxGraphicsStateGuardian *glxgsg;
   DCAST_INTO_R(glxgsg, _gsg, false);
-  glXMakeCurrent(_display, _xwindow, glxgsg->_context);
+  {
+    MutexHolder holder(glxGraphicsPipe::_x_mutex);
+    glXMakeCurrent(_display, _xwindow, glxgsg->_context);
+  }
   
   // Now that we have made the context current to a window, we can
   // reset the GSG state if this is the first time it has been used.
@@ -200,6 +203,7 @@ begin_flip() {
 
     //make_current();
 
+    MutexHolder holder(glxGraphicsPipe::_x_mutex);
     glXSwapBuffers(_display, _xwindow);
   }
 }
@@ -216,6 +220,8 @@ begin_flip() {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
 process_events() {
+  MutexHolder holder(glxGraphicsPipe::_x_mutex);
+
   GraphicsWindow::process_events();
 
   if (_xwindow == (Window)0) {

@@ -104,6 +104,9 @@ public:
   PFNGLXSWAPINTERVALSGIPROC _glXSwapIntervalSGI;
 
 protected:
+  virtual void gl_flush() const;
+  virtual GLenum gl_get_error() const;
+
   virtual void query_gl_version();
   virtual void get_extra_extensions();
   virtual void *get_extension_func(const char *prefix, const char *name);

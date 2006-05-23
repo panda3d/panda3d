@@ -184,6 +184,30 @@ glx_is_at_least_version(int major_version, int minor_version) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsStateGuardian::gl_flush
+//       Access: Protected, Virtual
+//  Description: Calls glFlush().
+////////////////////////////////////////////////////////////////////
+void glxGraphicsStateGuardian::
+gl_flush() const {
+  // This call requires synchronization with X.
+  MutexHolder holder(glxGraphicsPipe::_x_mutex);
+  GLGraphicsStateGuardian::gl_flush();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsStateGuardian::gl_get_error
+//       Access: Protected, Virtual
+//  Description: Returns the result of glGetError().
+////////////////////////////////////////////////////////////////////
+GLenum glxGraphicsStateGuardian::
+gl_get_error() const {
+  // This call requires synchronization with X.
+  MutexHolder holder(glxGraphicsPipe::_x_mutex);
+  return GLGraphicsStateGuardian::gl_get_error();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsStateGuardian::query_gl_version
 //       Access: Protected, Virtual
 //  Description: Queries the runtime version of OpenGL in use.
