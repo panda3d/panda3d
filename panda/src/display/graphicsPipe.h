@@ -90,6 +90,7 @@ PUBLISHED:
     BF_size_track_host     = 0x0100, // Buffer should track the host size.
     BF_rtt_cumulative      = 0x0200, // Buffer supports cumulative render-to-texture.
     BF_fb_props_optional   = 0x0400, // FrameBufferProperties can be ignored.
+    BF_size_square         = 0x0800, // x_size must equal y_size (e.g. for cube maps)
   };
 
   INLINE bool is_valid() const;

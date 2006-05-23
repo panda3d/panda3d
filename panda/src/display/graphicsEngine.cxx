@@ -308,6 +308,9 @@ make_output(GraphicsPipe *pipe,
   if ((x_size==0) || (y_size == 0)) {
     flags |= GraphicsPipe::BF_size_track_host;
   }
+  if (flags & GraphicsPipe::BF_size_square) {
+    x_size = y_size = min(x_size, y_size);
+  }
   if (host != 0) {
     host = host->get_host();
   }
@@ -419,6 +422,9 @@ make_output(GraphicsPipe *pipe,
     }
     if (y_size > host->get_y_size()) {
       y_size = Texture::down_to_power_2(host->get_y_size());
+    }
+    if (flags & GraphicsPipe::BF_size_square) {
+      x_size = y_size = min(x_size, y_size);
     }
     ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size, flags);
     buffer->_sort = sort;
