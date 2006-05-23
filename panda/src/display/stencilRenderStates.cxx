@@ -4,7 +4,8 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights
+// reserved.
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -19,6 +20,10 @@
 #include "graphicsStateGuardian.h"
 #include "stencilRenderStates.h"
 
+////////////////////////////////////////////////////////////////////
+//     Function: StencilRenderStates::Constructor
+//  Description: Constructor.  All data is set to the default.
+////////////////////////////////////////////////////////////////////
 StencilRenderStates::
 StencilRenderStates (GraphicsStateGuardian *gsg) {
 
@@ -31,8 +36,6 @@ StencilRenderStates (GraphicsStateGuardian *gsg) {
   }
 
   // set default render states
-  set_stencil_render_state (false, SRS_clear_value, 0);
-
   set_stencil_render_state (false, SRS_reference, 0);
 
   set_stencil_render_state (false, SRS_read_mask, ~0);
@@ -53,13 +56,32 @@ StencilRenderStates (GraphicsStateGuardian *gsg) {
   _gsg = gsg;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: StencilRenderStates::Destructor
+//  Description:
+////////////////////////////////////////////////////////////////////
 StencilRenderStates::
 ~StencilRenderStates (void) {
 
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: StencilRenderStates::set_stencil_render_state
+//  Description: Sets the current render state for the specified
+//               stencil render state. The execute_function
+//               parameter can be used to defer the actual setting
+//               of the render state at the API level.  This is
+//               useful for the OpenGL API where certain render
+//               states are not independent/atomic (i.e.
+//               glStencilFunc and glStencilOp).
+////////////////////////////////////////////////////////////////////
 void StencilRenderStates::
 set_stencil_render_state (bool execute_function, StencilRenderStates::StencilRenderState stencil_render_state, StencilType value) {
+
+  // DEBUG
+  if (false) {
+    printf ("SRS %d %d %d \n", execute_function, stencil_render_state, value);
+  }
 
   _stencil_render_state_array [stencil_render_state] = value;
 
@@ -73,13 +95,22 @@ set_stencil_render_state (bool execute_function, StencilRenderStates::StencilRen
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: StencilRenderStates::get_stencil_render_state
+//  Description: Gets the current render state for the specified
+//               stencil render state.
+////////////////////////////////////////////////////////////////////
 StencilType StencilRenderStates::
 get_stencil_render_state (StencilRenderStates::StencilRenderState stencil_render_state) {
   return _stencil_render_state_array [stencil_render_state];
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: StencilRenderStates::set_stencil_function
+//  Description: Registers an API specific callback for setting a
+//               specified stencil render state.
+////////////////////////////////////////////////////////////////////
 void StencilRenderStates::
 set_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilFunction stencil_function) {
   _stencil_function_array [stencil_render_state] = stencil_function;
 }
-
