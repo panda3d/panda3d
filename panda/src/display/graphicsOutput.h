@@ -28,6 +28,7 @@
 #include "renderBuffer.h"
 
 #include "typedWritableReferenceCount.h"
+#include "pandaNode.h"
 #include "pStatCollector.h"
 #include "pnotify.h"
 #include "pmutex.h"
@@ -176,7 +177,7 @@ PUBLISHED:
       Texture *tex = NULL, bool to_ram = false);
   GraphicsOutput *make_cube_map(const string &name, int size,
                                 NodePath &camera_rig,
-                                DrawMask camera_mask = DrawMask::all_on(),
+                                DrawMask camera_mask = PandaNode::get_all_camera_mask(),
                                 bool to_ram = false);
 
   INLINE static Filename make_screenshot_filename(
