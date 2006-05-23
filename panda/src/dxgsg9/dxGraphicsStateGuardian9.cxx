@@ -177,8 +177,6 @@ DXGraphicsStateGuardian9::
     _cg_context = 0;
   }
 #endif
-
-  GraphicsStateGuardian::~GraphicsStateGuardian();
 }
 
 ////////////////////////////////////////////////////////////////////
