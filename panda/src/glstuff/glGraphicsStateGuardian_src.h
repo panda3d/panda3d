@@ -207,6 +207,7 @@ protected:
   void do_issue_blending();
   void do_issue_tex_gen();
   void do_issue_tex_matrix();
+  void do_issue_stencil();
 
   virtual void gl_flush() const;
   virtual GLenum gl_get_error() const;

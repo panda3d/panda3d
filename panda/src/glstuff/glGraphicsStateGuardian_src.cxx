@@ -281,176 +281,6 @@ CLP(GraphicsStateGuardian)::
 }
 
 ////////////////////////////////////////////////////////////////////
-//  GL stencil code section
-////////////////////////////////////////////////////////////////////
-
-static int gl_stencil_comparison_function_array [ ] =
-{
-  GL_NEVER,
-  GL_LESS,
-  GL_EQUAL,
-  GL_LEQUAL,
-  GL_GREATER,
-  GL_NOTEQUAL,
-  GL_GEQUAL,
-  GL_ALWAYS,
-};
-
-static int gl_stencil_operations_array [ ] =
-{
-  GL_KEEP,
-  GL_ZERO,
-  GL_REPLACE,
-  GL_INCR_WRAP,
-  GL_DECR_WRAP,
-  GL_INVERT,
-
-  GL_INCR,
-  GL_DECR,
-};
-
-void __glActiveStencilFace (GraphicsStateGuardian *gsg, GLenum face) {
-  CLP(GraphicsStateGuardian) *glgsg;
-
-  glgsg = (CLP(GraphicsStateGuardian) *) gsg;
-  if (gsg -> get_supports_two_sided_stencil ( ) &&
-      glgsg -> _glActiveStencilFaceEXT) {
-    if (face == GL_FRONT) {
-      // glActiveStencilFaceEXT (GL_FRONT);
-      glgsg -> _glActiveStencilFaceEXT (GL_FRONT);
-    }
-    else {
-      // glActiveStencilFaceEXT (GL_BACK);
-      glgsg -> _glActiveStencilFaceEXT (GL_BACK);
-    }
-  }
-}
-
-void gl_front_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
-
-  __glActiveStencilFace (stencil_render_states -> _gsg, GL_FRONT);
-  glStencilFunc
-  (
-    gl_stencil_comparison_function_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_front_comparison_function)],
-    stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_reference),
-    stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_read_mask)
-  );
-}
-void gl_front_stencil_operation (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
-  __glActiveStencilFace (stencil_render_states -> _gsg, GL_FRONT);
-  glStencilOp
-  (
-    gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_front_stencil_fail_operation)],
-    gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_front_stencil_pass_z_fail_operation)],
-    gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_front_stencil_pass_z_pass_operation)]
-  );
-}
-
-void gl_back_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
-
-  bool supports_two_sided_stencil;
-
-  supports_two_sided_stencil = stencil_render_states -> _gsg -> get_supports_two_sided_stencil ( );
-  if (supports_two_sided_stencil) {
-    __glActiveStencilFace (stencil_render_states -> _gsg, GL_BACK);
-    glStencilFunc
-    (
-      gl_stencil_comparison_function_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_back_comparison_function)],
-      stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_reference),
-      stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_read_mask)
-    );
-  }
-}
-
-void gl_back_stencil_operation (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
-
-  bool supports_two_sided_stencil;
-
-  supports_two_sided_stencil = stencil_render_states -> _gsg -> get_supports_two_sided_stencil ( );
-  if (supports_two_sided_stencil) {
-    __glActiveStencilFace (stencil_render_states -> _gsg, GL_BACK);
-    glStencilOp
-    (
-      gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_back_stencil_fail_operation)],
-      gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_back_stencil_pass_z_fail_operation)],
-      gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_back_stencil_pass_z_pass_operation)]
-    );
-  }
-}
-
-void gl_front_back_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
-  gl_front_stencil_function (stencil_render_state, stencil_render_states);
-  gl_back_stencil_function (stencil_render_state, stencil_render_states);
-}
-
-void gl_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
-
-  StencilType render_state_value;
-  bool supports_two_sided_stencil;
-
-  supports_two_sided_stencil = stencil_render_states -> _gsg -> get_supports_two_sided_stencil ( );
-
-  render_state_value = stencil_render_states -> get_stencil_render_state (stencil_render_state);
-  switch (stencil_render_state)
-  {
-    case StencilRenderStates::SRS_clear_value:
-      stencil_render_states -> _gsg -> set_stencil_clear_value (render_state_value);
-      break;
-
-    case StencilRenderStates::SRS_write_mask:
-      glStencilMask (render_state_value);
-      break;
-    case StencilRenderStates::SRS_front_enable:
-      if (render_state_value) {
-        glEnable (GL_STENCIL_TEST);
-      }
-      else {
-        glDisable (GL_STENCIL_TEST);
-      }
-      break;
-    case StencilRenderStates::SRS_back_enable:
-      if (supports_two_sided_stencil) {
-        if (render_state_value) {
-          glEnable (GL_STENCIL_TEST_TWO_SIDE_EXT);
-        }
-        else {
-          glDisable (GL_STENCIL_TEST_TWO_SIDE_EXT);
-        }
-      }
-      break;
-
-    default:
-      break;
-  }
-}
-
-void gl_set_stencil_functions (StencilRenderStates *stencil_render_states) {
-
-  if (stencil_render_states) {
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_clear_value, gl_stencil_function);
-
-    // GL seems to support different read masks and/or reference values for front and back, but DX does not.
-    // This needs to be cross-platform so do it the DX way by setting the same read mask and reference for both front and back.
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_reference, gl_front_back_stencil_function);
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_read_mask, gl_front_back_stencil_function);
-
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_write_mask, gl_stencil_function);
-
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_enable, gl_stencil_function);
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_comparison_function, gl_front_stencil_function);
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_stencil_fail_operation,  gl_front_stencil_operation);
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_stencil_pass_z_fail_operation, gl_front_stencil_operation);
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_stencil_pass_z_pass_operation, gl_front_stencil_operation);
-
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_enable, gl_stencil_function);
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_comparison_function, gl_back_stencil_function);
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_stencil_fail_operation, gl_back_stencil_operation);
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_stencil_pass_z_fail_operation, gl_back_stencil_operation);
-    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_stencil_pass_z_pass_operation, gl_back_stencil_operation);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::reset
 //       Access: Public, Virtual
 //  Description: Resets all internal state as if the gsg were newly
@@ -1262,6 +1092,7 @@ reset() {
 
   report_my_gl_errors();
 
+  void gl_set_stencil_functions (StencilRenderStates *stencil_render_states);
   gl_set_stencil_functions (_stencil_render_states);
 }
 
@@ -1295,7 +1126,7 @@ do_clear(const RenderBuffer &buffer) {
   }
 
   if (buffer_type & RenderBuffer::T_stencil) {
-    GLP(ClearStencil)(_stencil_clear_value != false);
+    GLP(ClearStencil)(_stencil_clear_value);
     mask |= GL_STENCIL_BUFFER_BIT;
   }
 
@@ -5848,6 +5679,11 @@ set_state_and_transform(const RenderState *target,
     _state._tex_gen = _target._tex_gen;
   }
 
+  if (_target._stencil != _state._stencil) {
+    do_issue_stencil();
+    _state._stencil = _target._stencil;
+  }
+
   _state_rs = _target_rs;
 }
 
@@ -7352,3 +7188,251 @@ bind_fbo(GLuint fbo) {
   _current_fbo = fbo;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//  GL stencil code section
+////////////////////////////////////////////////////////////////////
+
+static int gl_stencil_comparison_function_array [ ] =
+{
+  GL_NEVER,
+  GL_LESS,
+  GL_EQUAL,
+  GL_LEQUAL,
+  GL_GREATER,
+  GL_NOTEQUAL,
+  GL_GEQUAL,
+  GL_ALWAYS,
+};
+
+static int gl_stencil_operations_array [ ] =
+{
+  GL_KEEP,
+  GL_ZERO,
+  GL_REPLACE,
+  GL_INCR_WRAP,
+  GL_DECR_WRAP,
+  GL_INVERT,
+
+  GL_INCR,
+  GL_DECR,
+};
+
+void __glActiveStencilFace (GraphicsStateGuardian *gsg, GLenum face) {
+  CLP(GraphicsStateGuardian) *glgsg;
+
+  glgsg = (CLP(GraphicsStateGuardian) *) gsg;
+  if (gsg -> get_supports_two_sided_stencil ( ) &&
+      glgsg -> _glActiveStencilFaceEXT) {
+    if (face == GL_FRONT) {
+      // glActiveStencilFaceEXT (GL_FRONT);
+      glgsg -> _glActiveStencilFaceEXT (GL_FRONT);
+    }
+    else {
+      // glActiveStencilFaceEXT (GL_BACK);
+      glgsg -> _glActiveStencilFaceEXT (GL_BACK);
+    }
+  }
+}
+
+void gl_front_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+
+  __glActiveStencilFace (stencil_render_states -> _gsg, GL_FRONT);
+  glStencilFunc
+  (
+    gl_stencil_comparison_function_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_front_comparison_function)],
+    stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_reference),
+    stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_read_mask)
+  );
+}
+void gl_front_stencil_operation (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+  __glActiveStencilFace (stencil_render_states -> _gsg, GL_FRONT);
+  glStencilOp
+  (
+    gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_front_stencil_fail_operation)],
+    gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_front_stencil_pass_z_fail_operation)],
+    gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_front_stencil_pass_z_pass_operation)]
+  );
+}
+
+void gl_back_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+
+  bool supports_two_sided_stencil;
+
+  supports_two_sided_stencil = stencil_render_states -> _gsg -> get_supports_two_sided_stencil ( );
+  if (supports_two_sided_stencil) {
+    __glActiveStencilFace (stencil_render_states -> _gsg, GL_BACK);
+    glStencilFunc
+    (
+      gl_stencil_comparison_function_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_back_comparison_function)],
+      stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_reference),
+      stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_read_mask)
+    );
+  }
+}
+
+void gl_back_stencil_operation (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+
+  bool supports_two_sided_stencil;
+
+  supports_two_sided_stencil = stencil_render_states -> _gsg -> get_supports_two_sided_stencil ( );
+  if (supports_two_sided_stencil) {
+    __glActiveStencilFace (stencil_render_states -> _gsg, GL_BACK);
+    glStencilOp
+    (
+      gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_back_stencil_fail_operation)],
+      gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_back_stencil_pass_z_fail_operation)],
+      gl_stencil_operations_array [stencil_render_states -> get_stencil_render_state (StencilRenderStates::SRS_back_stencil_pass_z_pass_operation)]
+    );
+  }
+}
+
+void gl_front_back_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+  gl_front_stencil_function (stencil_render_state, stencil_render_states);
+  gl_back_stencil_function (stencil_render_state, stencil_render_states);
+}
+
+void gl_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
+
+  StencilType render_state_value;
+  bool supports_two_sided_stencil;
+
+  supports_two_sided_stencil = stencil_render_states -> _gsg -> get_supports_two_sided_stencil ( );
+
+  render_state_value = stencil_render_states -> get_stencil_render_state (stencil_render_state);
+  switch (stencil_render_state)
+  {
+    case StencilRenderStates::SRS_front_enable:
+      if (render_state_value) {
+        glEnable (GL_STENCIL_TEST);
+      }
+      else {
+        glDisable (GL_STENCIL_TEST);
+      }
+      break;
+    case StencilRenderStates::SRS_back_enable:
+      if (supports_two_sided_stencil) {
+        if (render_state_value) {
+          glEnable (GL_STENCIL_TEST_TWO_SIDE_EXT);
+        }
+        else {
+          glDisable (GL_STENCIL_TEST_TWO_SIDE_EXT);
+        }
+      }
+      break;
+
+    case StencilRenderStates::SRS_write_mask:
+      glStencilMask (render_state_value);
+      break;
+
+    default:
+      break;
+  }
+}
+
+void gl_set_stencil_functions (StencilRenderStates *stencil_render_states) {
+
+  if (stencil_render_states) {
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_enable, gl_stencil_function);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_enable, gl_stencil_function);
+
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_comparison_function, gl_front_stencil_function);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_stencil_fail_operation,  gl_front_stencil_operation);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_stencil_pass_z_fail_operation, gl_front_stencil_operation);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_front_stencil_pass_z_pass_operation, gl_front_stencil_operation);
+
+    // GL seems to support different read masks and/or reference values for front and back, but DX does not.
+    // This needs to be cross-platform so do it the DX way by setting the same read mask and reference for both front and back.
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_reference, gl_front_back_stencil_function);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_read_mask, gl_front_back_stencil_function);
+
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_write_mask, gl_stencil_function);
+
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_comparison_function, gl_back_stencil_function);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_stencil_fail_operation, gl_back_stencil_operation);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_stencil_pass_z_fail_operation, gl_back_stencil_operation);
+    stencil_render_states -> set_stencil_function (StencilRenderStates::SRS_back_stencil_pass_z_pass_operation, gl_back_stencil_operation);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::do_issue_stencil
+//       Access: Protected
+//  Description: Set stencil render states.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+do_issue_stencil() {
+  const StencilAttrib *stencil;
+  StencilRenderStates *stencil_render_states;
+
+  stencil = _target._stencil;
+  stencil_render_states = this -> _stencil_render_states;
+  if (stencil && stencil_render_states) {
+
+#ifndef NDEBUG
+    // DEBUG ONLY
+    if (stencil -> _pre) {
+      GLCAT.error() << "Invalid StencilAttrib\n";
+    }
+#endif
+
+    // DEBUG
+    if (false) {
+      GLCAT.debug() << "STENCIL STATE CHANGE\n";
+      GLCAT.debug() << "\n"
+        << "SRS_front_enable " << stencil -> get_render_state (StencilAttrib::SRS_front_enable) << "\n"
+        << "SRS_back_enable " << stencil -> get_render_state (StencilAttrib::SRS_back_enable) << "\n"
+        << "SRS_front_comparison_function " << stencil -> get_render_state (StencilAttrib::SRS_front_comparison_function) << "\n"
+        << "SRS_front_stencil_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_fail_operation) << "\n"
+        << "SRS_front_stencil_pass_z_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_fail_operation) << "\n"
+        << "SRS_front_stencil_pass_z_pass_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_pass_operation) << "\n"
+        << "SRS_reference " << stencil -> get_render_state (StencilAttrib::SRS_reference) << "\n"
+        << "SRS_read_mask " << stencil -> get_render_state (StencilAttrib::SRS_read_mask) << "\n"
+        << "SRS_write_mask " << stencil -> get_render_state (StencilAttrib::SRS_write_mask) << "\n"
+        << "SRS_back_comparison_function " << stencil -> get_render_state (StencilAttrib::SRS_back_comparison_function) << "\n"
+        << "SRS_back_stencil_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_fail_operation) << "\n"
+        << "SRS_back_stencil_pass_z_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_fail_operation) << "\n"
+        << "SRS_back_stencil_pass_z_pass_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_pass_operation) << "\n";
+    }
+
+    bool on;
+
+    on = false;
+
+    // SRS_reference and SRS_read_mask are set when SRS_front_comparison_function is set
+    stencil_render_states -> set_stencil_render_state (false, StencilRenderStates::SRS_reference, stencil -> get_render_state (StencilAttrib::SRS_reference));
+    stencil_render_states -> set_stencil_render_state (false, StencilRenderStates::SRS_read_mask, stencil -> get_render_state (StencilAttrib::SRS_read_mask));
+
+    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_enable, stencil -> get_render_state (StencilAttrib::SRS_front_enable));
+    if (stencil -> get_render_state (StencilAttrib::SRS_front_enable)) {
+      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_comparison_function, stencil -> get_render_state (StencilAttrib::SRS_front_comparison_function));
+
+      // setting 2 operation states can be defered since all three must be set at once
+      stencil_render_states -> set_stencil_render_state (false, StencilRenderStates::SRS_front_stencil_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_fail_operation));
+      stencil_render_states -> set_stencil_render_state (false, StencilRenderStates::SRS_front_stencil_pass_z_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_fail_operation));
+      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_stencil_pass_z_pass_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_pass_operation));
+
+      on = true;
+    }
+
+    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_enable, stencil -> get_render_state (StencilAttrib::SRS_back_enable));
+    if (stencil -> get_render_state (StencilAttrib::SRS_back_enable)) {
+      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_comparison_function, stencil -> get_render_state (StencilAttrib::SRS_back_comparison_function));
+
+      // setting 2 operation states can be defered since all three must be set at once
+      stencil_render_states -> set_stencil_render_state (false, StencilRenderStates::SRS_back_stencil_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_back_stencil_fail_operation));
+      stencil_render_states -> set_stencil_render_state (false, StencilRenderStates::SRS_back_stencil_pass_z_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_fail_operation));
+      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_stencil_pass_z_pass_operation, stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_pass_operation));
+
+      on = true;
+    }
+
+    if (on) {
+      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_write_mask, stencil -> get_render_state (StencilAttrib::SRS_write_mask));
+    }
+  }
+  else {
+    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_enable, 0);
+    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_enable, 0);
+  }
+}

@@ -4,7 +4,8 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2006, Disney Enterprises, Inc.  All rights
+// reserved.
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -24,29 +25,29 @@ typedef unsigned int StencilType;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : StencilRenderStates
-// Description : An abstract cross-platform class for stencil buffer
-//               render states.  Each gsg needs to create its own
-//               low-level functions on how to set each render state.
+// Description : An abstract cross-platform class for setting stencil
+//               buffer render states.  Each gsg needs to create its
+//               own low-level API specific functions on how to set
+//               each render state. The "set_stencil_render_state"
+//               function can be used in an immediate-mode fashion.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA StencilRenderStates {
 
 PUBLISHED:
   enum StencilRenderState
   {
-    SRS_clear_value,
-
-    SRS_reference,
-
-    SRS_read_mask,
-    SRS_write_mask,
-
     SRS_front_enable,
+    SRS_back_enable,
+
     SRS_front_comparison_function,
     SRS_front_stencil_fail_operation,
     SRS_front_stencil_pass_z_fail_operation,
     SRS_front_stencil_pass_z_pass_operation,
 
-    SRS_back_enable,
+    SRS_reference,
+    SRS_read_mask,
+    SRS_write_mask,
+
     SRS_back_comparison_function,
     SRS_back_stencil_fail_operation,
     SRS_back_stencil_pass_z_fail_operation,

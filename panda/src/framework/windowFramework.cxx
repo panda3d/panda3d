@@ -78,7 +78,7 @@ TypeHandle WindowFramework::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WindowFramework::
 WindowFramework(PandaFramework *panda_framework) :
@@ -102,7 +102,7 @@ WindowFramework(PandaFramework *panda_framework) :
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::Copy Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WindowFramework::
 WindowFramework(const WindowFramework &copy, DisplayRegion *display_region) :
@@ -133,7 +133,7 @@ WindowFramework(const WindowFramework &copy, DisplayRegion *display_region) :
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WindowFramework::
 ~WindowFramework() {
@@ -173,7 +173,7 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
   _window = engine->make_window(ptgsg, name, 0);
   if (_window != (GraphicsWindow *)NULL) {
     _window->request_properties(props);
-    
+
     // Create a display region that covers the entire window.
     _display_region_3d = _window->make_display_region();
 
@@ -181,6 +181,7 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
     // so we can have multiple DisplayRegions of different colors.
     _window->set_clear_color_active(false);
     _window->set_clear_depth_active(false);
+    _window->set_clear_stencil_active(false);
 
     // Set up a 3-d camera for the window by default.
     NodePath camera_np = make_camera();
@@ -192,7 +193,7 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
     }
 
     set_background_type(_background_type);
-    
+
     if (show_frame_rate_meter) {
       _frame_rate_meter = new FrameRateMeter("frame_rate_meter");
       _frame_rate_meter->setup_window(_window);
@@ -286,18 +287,18 @@ get_render_2d() {
     _render_2d.set_two_sided(1);
 
     // Now set up a 2-d camera to view render_2d.
-    
+
     // Create a display region that matches the size of the 3-d
     // display region.
     float l, r, b, t;
     _display_region_3d->get_dimensions(l, r, b, t);
     _display_region_2d = _window->make_display_region(l, r, b, t);
     _display_region_2d->set_sort(10);
-    
+
     // Finally, we need a camera to associate with the display region.
     PT(Camera) camera = new Camera("camera2d");
     NodePath camera_np = _render_2d.attach_new_node(camera);
-    
+
     PT(Lens) lens = new OrthographicLens;
 
     static const float left = -1.0f;
@@ -344,7 +345,7 @@ get_aspect_2d() {
         properties = _window->get_requested_properties();
       }
       if (properties.has_size() && properties.get_y_size() != 0.0f) {
-        this_aspect_ratio = 
+        this_aspect_ratio =
           (float)properties.get_x_size() / (float)properties.get_y_size();
       }
     }
@@ -429,7 +430,7 @@ setup_trackball() {
     _trackball = new Trackball("trackball");
     _trackball->set_pos(LVector3f::forward() * 50.0);
     mouse.attach_new_node(_trackball);
-    
+
     PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
     tball2cam->set_node(camera.node());
     _trackball->add_child(tball2cam);
@@ -455,7 +456,7 @@ center_trackball(const NodePath &object) {
   nassertv(volume != (BoundingVolume *)NULL);
   nassertv(volume->is_of_type(GeometricBoundingVolume::get_class_type()));
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, volume);
-  
+
   // Determine the bounding sphere around the world.  The topmost
   // BoundingVolume might itself be a sphere (it's likely), but since
   // it might not, we'll take no chances and make our own sphere.
@@ -502,11 +503,11 @@ center_trackball(const NodePath &object) {
 
     // Ensure the far plane is far enough back to see the entire object.
     float ideal_far_plane = distance + radius;
-    lens->set_far(max(lens->get_default_far(), ideal_far_plane)); 
+    lens->set_far(max(lens->get_default_far(), ideal_far_plane));
 
     // And that the near plane is far enough forward.
     float ideal_near_plane = distance - radius;
-    lens->set_near(min(lens->get_default_near(), ideal_near_plane)); 
+    lens->set_near(min(lens->get_default_near(), ideal_near_plane));
   }
 
   _trackball->set_origin(center);
@@ -596,20 +597,20 @@ load_model(const NodePath &parent, Filename filename) {
       // The extension isn't a known model file type; is it a known
       // image file extension?
       if (extension == "txo") {
-	// A texture object.  Not exactly an image, but certainly a
-	// texture.
-	is_image = true;
-	
+  // A texture object.  Not exactly an image, but certainly a
+  // texture.
+  is_image = true;
+
       } else {
-	TexturePool *texture_pool = TexturePool::get_global_ptr();
-	if (texture_pool->get_texture_type(extension) != NULL) {
-	  // It is a known image file extension.
-	  is_image = true;
-	}
+  TexturePool *texture_pool = TexturePool::get_global_ptr();
+  if (texture_pool->get_texture_type(extension) != NULL) {
+    // It is a known image file extension.
+    is_image = true;
+  }
       }
     }
   }
-  
+
   LoaderOptions options = PandaFramework::_loader_options;
   if (search) {
     options.set_flags(options.get_flags() | LoaderOptions::LF_search);
@@ -628,7 +629,7 @@ load_model(const NodePath &parent, Filename filename) {
   if (node == (PandaNode *)NULL) {
     nout << "Unable to load " << filename << "\n";
     return NodePath::not_found();
-  }    
+  }
 
   return parent.attach_new_node(node);
 }
@@ -658,7 +659,7 @@ load_default_model(const NodePath &parent) {
     tex->set_magfilter(Texture::FT_linear);
     state = state->add_attrib(TextureAttrib::make(tex));
   }
-  
+
   GeomNode *geomnode = new GeomNode("tri");
 
   PT(GeomVertexData) vdata = new GeomVertexData
@@ -668,30 +669,30 @@ load_default_model(const NodePath &parent) {
   GeomVertexWriter normal(vdata, InternalName::get_normal());
   GeomVertexWriter color(vdata, InternalName::get_color());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-  
+
   vertex.add_data3f(Vertexf::rfu(0.0, 0.0, 0.0));
   vertex.add_data3f(Vertexf::rfu(1.0, 0.0, 0.0));
   vertex.add_data3f(Vertexf::rfu(0.0, 0.0, 1.0));
-  
+
   normal.add_data3f(Normalf::back());
   normal.add_data3f(Normalf::back());
   normal.add_data3f(Normalf::back());
-  
+
   color.add_data4f(0.5, 0.5, 1.0, 1.0);
   color.add_data4f(0.5, 0.5, 1.0, 1.0);
   color.add_data4f(0.5, 0.5, 1.0, 1.0);
-  
+
   texcoord.add_data2f(0.0, 0.0);
   texcoord.add_data2f(1.0, 0.0);
   texcoord.add_data2f(0.0, 1.0);
-  
+
   PT(GeomTriangles) tri = new GeomTriangles(Geom::UH_static);
   tri->add_consecutive_vertices(0, 3);
   tri->close_primitive();
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(tri);
-  
+
   geomnode->add_geom(geom, state);
 
   return parent.attach_new_node(geomnode);
@@ -774,15 +775,15 @@ split_window(SplitType split_type) {
   if (split_type == ST_default) {
     // Choose either horizontal or vertical according to the largest
     // dimension.
-    
-    if (_display_region_3d->get_pixel_width() > 
+
+    if (_display_region_3d->get_pixel_width() >
         _display_region_3d->get_pixel_height()) {
       split_type = ST_horizontal;
     } else {
       split_type = ST_vertical;
     }
   }
-  
+
   float left, right, bottom, top;
   _display_region_3d->get_dimensions(left, right, bottom, top);
   new_region = _display_region_3d->get_window()->make_display_region();
@@ -792,9 +793,9 @@ split_window(SplitType split_type) {
     if (_display_region_2d != (DisplayRegion *)NULL) {
       _display_region_2d->set_dimensions(left, right, bottom, (top + bottom) / 2.0f);
     }
-      
+
     new_region->set_dimensions(left, right, (top + bottom) / 2.0f, top);
-    
+
   } else {
     _display_region_3d->set_dimensions(left, (left + right) / 2.0f, bottom, top);
     if (_display_region_2d != (DisplayRegion *)NULL) {
@@ -967,34 +968,43 @@ set_background_type(WindowFramework::BackgroundType type) {
   case BT_default:
     _display_region_3d->set_clear_color_active(true);
     _display_region_3d->set_clear_depth_active(true);
+    _display_region_3d->set_clear_stencil_active(true);
     _display_region_3d->set_clear_color(_window->get_clear_color());
     _display_region_3d->set_clear_depth(_window->get_clear_depth());
+    _display_region_3d->set_clear_stencil(_window->get_clear_stencil());
     break;
-    
+
   case BT_black:
     _display_region_3d->set_clear_color_active(true);
     _display_region_3d->set_clear_depth_active(true);
+    _display_region_3d->set_clear_stencil_active(true);
     _display_region_3d->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
+    _display_region_3d->set_clear_stencil(0);
     break;
-    
+
   case BT_gray:
     _display_region_3d->set_clear_color_active(true);
     _display_region_3d->set_clear_depth_active(true);
+    _display_region_3d->set_clear_stencil_active(true);
     _display_region_3d->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
+    _display_region_3d->set_clear_stencil(0);
     break;
-    
+
   case BT_white:
     _display_region_3d->set_clear_color_active(true);
     _display_region_3d->set_clear_depth_active(true);
+    _display_region_3d->set_clear_stencil_active(true);
     _display_region_3d->set_clear_color(Colorf(1.0f, 1.0f, 1.0f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
+    _display_region_3d->set_clear_stencil(0);
     break;
 
   case BT_none:
     _display_region_3d->set_clear_color_active(false);
     _display_region_3d->set_clear_depth_active(false);
+    _display_region_3d->set_clear_stencil_active(false);
     break;
   }
 }
@@ -1009,7 +1019,7 @@ TextFont *WindowFramework::
 get_shuttle_controls_font() {
   if (_shuttle_controls_font == (TextFont *)NULL) {
     PT(TextFont) font;
-  
+
     string shuttle_controls_string((const char *)shuttle_controls, shuttle_controls_len);
     istringstream in(shuttle_controls_string);
     BamFile bam_file;
@@ -1080,7 +1090,7 @@ setup_lights() {
 
   _alight = light_group.attach_new_node(alight);
   _dlight = light_group.attach_new_node(dlight);
-  
+
   _got_lights = true;
 }
 
@@ -1144,24 +1154,24 @@ load_image_as_model(const Filename &filename) {
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-  
+
   vertex.add_data3f(Vertexf::rfu(left, 0.02f, top));
   vertex.add_data3f(Vertexf::rfu(left, 0.02f, bottom));
   vertex.add_data3f(Vertexf::rfu(right, 0.02f, top));
   vertex.add_data3f(Vertexf::rfu(right, 0.02f, bottom));
-  
+
   texcoord.add_data2f(0.0f, tex_scale[1]);
   texcoord.add_data2f(0.0f, 0.0f);
   texcoord.add_data2f(tex_scale[0], tex_scale[1]);
   texcoord.add_data2f(tex_scale[0], 0.0f);
-  
+
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   strip->add_consecutive_vertices(0, 4);
   strip->close_primitive();
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
-  
+
   card_node->add_geom(geom);
 
   return card_node.p();
@@ -1196,7 +1206,7 @@ create_anim_controls() {
     NodePath tnp = _anim_controls_group.attach_new_node(label);
     tnp.set_pos(0.0f, 0.0f, 0.07f);
     tnp.set_scale(0.1f);
-    
+
     return;
   }
 
@@ -1290,7 +1300,7 @@ update_anim_controls() {
 //               event (play, pause, etc.).
 ////////////////////////////////////////////////////////////////////
 void WindowFramework::
-setup_shuttle_button(const string &label, int index, 
+setup_shuttle_button(const string &label, int index,
                      EventHandler::EventCallbackFunction *func) {
   PT(PGButton) button = new PGButton(label);
   button->set_frame(-0.05f, 0.05f, 0.0f, 0.07f);

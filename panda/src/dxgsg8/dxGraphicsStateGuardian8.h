@@ -69,7 +69,7 @@ public:
 
   virtual void do_clear(const RenderBuffer &buffer);
 
-  virtual void prepare_display_region(DisplayRegionPipelineReader *dr, 
+  virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
                                       Lens::StereoChannel stereo_channel);
   virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
   virtual bool prepare_lens();
@@ -79,7 +79,7 @@ public:
   virtual void end_scene();
   virtual void end_frame(Thread *current_thread);
 
-  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader, 
+  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomMunger *munger,
                                      const GeomVertexDataPipelineReader *data_reader);
   virtual void draw_triangles(const GeomPrimitivePipelineReader *reader);
@@ -111,6 +111,7 @@ public:
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
+  LPDIRECT3DDEVICE8 get_d3d_device();
 
 protected:
   void do_issue_transform();
@@ -128,6 +129,7 @@ protected:
   void do_issue_material();
   void do_issue_texture();
   void do_issue_blending();
+  void do_issue_stencil();
 
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
