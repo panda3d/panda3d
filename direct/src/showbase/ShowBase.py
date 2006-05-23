@@ -1692,7 +1692,7 @@ class ShowBase(DirectObject.DirectObject):
 
         if isinstance(source, Texture):
             if source.getZSize() > 1:
-                saved = source.writePages(filename)
+                saved = source.write(filename, 0, 0, 1, 0)
             else:
                 saved = source.write(filename)
         else:
@@ -1706,7 +1706,7 @@ class ShowBase(DirectObject.DirectObject):
     def saveCubeMap(self, namePrefix = 'cube_map_#.png',
                     defaultFilename = 0, source = None,
                     camera = None, size = 128,
-                    cameraMask = BitMask32.allOn()):
+                    cameraMask = PandaNode.getAllCameraMask()):
 
         """
         Similar to screenshot(), this sets up a temporary cube map
@@ -1760,7 +1760,7 @@ class ShowBase(DirectObject.DirectObject):
     def saveSphereMap(self, namePrefix = 'spheremap.png',
                       defaultFilename = 0, source = None,
                       camera = None, size = 256,
-                      cameraMask = BitMask32.allOn(),
+                      cameraMask = PandaNode.getAllCameraMask(),
                       numVertices = 1000):
         """
         This works much like saveCubeMap(), and uses the graphics
@@ -1826,6 +1826,9 @@ class ShowBase(DirectObject.DirectObject):
         # then apply it to the the card in the toSphere buffer.
         rig.reparentTo(camera)
         base.graphicsEngine.openWindows()
+        base.graphicsEngine.renderFrame()
+
+        # One more frame for luck.
         base.graphicsEngine.renderFrame()
 
         saved = self.screenshot(namePrefix = namePrefix,
