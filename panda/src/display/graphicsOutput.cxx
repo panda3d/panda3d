@@ -127,6 +127,7 @@ GraphicsOutput(GraphicsPipe *pipe,
   // depth.
   set_clear_color_active(true);
   set_clear_depth_active(true);
+  set_clear_stencil_active(true);
 
   switch (background_color.get_num_words()) {
   case 1:
@@ -241,7 +242,7 @@ clear_render_textures() {
 //               * RTP_aux_rgba_2
 //               * RTP_aux_rgba_3
 //
-//               If you do not specify a bitplane to attach the 
+//               If you do not specify a bitplane to attach the
 //               texture to, this routine will use a default based
 //               on the texture's format:
 //
@@ -254,7 +255,7 @@ clear_render_textures() {
 //               For example, if you pass in an F_rgba texture and
 //               order that it be attached to RTP_depth, it will turn
 //               into an F_depth_component texture.
-//               
+//
 //               Also see make_texture_buffer(), which is a
 //               higher-level interface for preparing
 //               render-to-a-texture mode.
@@ -268,7 +269,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   MutexHolder holder(_lock);
 
   throw_event("render-texture-targets-changed");
-  
+
   // Create texture if necessary.
   if (tex == (Texture *)NULL) {
     tex = new Texture(get_name());
@@ -288,7 +289,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
       plane = RTP_color;
     }
   }
-  
+
   // Set the texture's format to match the bitplane.
   // (And validate the bitplane, while we're at it).
 
@@ -602,12 +603,12 @@ create_texture_card_vdata(int x, int y)
   vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f, -1.0f));
   vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f,  1.0f));
   vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f, -1.0f));
-  
+
   texcoord.add_data2f( 0.0f,  yhi);
   texcoord.add_data2f( 0.0f, 0.0f);
   texcoord.add_data2f(  xhi,  yhi);
   texcoord.add_data2f(  xhi, 0.0f);
-  
+
   normal.add_data3f(LVector3f::back());
   normal.add_data3f(LVector3f::back());
   normal.add_data3f(LVector3f::back());
@@ -738,8 +739,8 @@ make_texture_buffer(const string &name, int x_size, int y_size,
     FrameBufferProperties::FM_multisample |
     FrameBufferProperties::FM_hardware |
     FrameBufferProperties::FM_software;
-  props.set_frame_buffer_mode(props.get_frame_buffer_mode() & (~clear));  
-  
+  props.set_frame_buffer_mode(props.get_frame_buffer_mode() & (~clear));
+
   GraphicsOutput *buffer = get_gsg()->get_engine()->
     make_output(get_gsg()->get_pipe(),
                 name, get_sort()-1,
@@ -815,6 +816,7 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
   // each display region.
   buffer->set_clear_color_active(false);
   buffer->set_clear_depth_active(false);
+  buffer->set_clear_stencil_active(false);
 
   PT(Lens) lens = new PerspectiveLens;
   lens->set_fov(90.0f);

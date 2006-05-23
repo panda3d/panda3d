@@ -725,6 +725,10 @@ clear(DrawableRegion *clearable) {
     clear_buffer_type |= RenderBuffer::T_depth;
     set_depth_clear_value(clearable->get_clear_depth());
   }
+  if (clearable->get_clear_stencil_active()) {
+    clear_buffer_type |= RenderBuffer::T_stencil;
+    set_stencil_clear_value(clearable->get_clear_stencil());
+  }
 
   if (clear_buffer_type != 0) {
     do_clear(get_render_buffer(clear_buffer_type,

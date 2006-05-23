@@ -49,11 +49,17 @@ PUBLISHED:
   INLINE void set_clear_depth_active(bool clear_depth_active);
   INLINE bool get_clear_depth_active() const;
 
+  INLINE void set_clear_stencil_active(bool clear_stencil_active);
+  INLINE bool get_clear_stencil_active() const;
+
   INLINE void set_clear_color(const Colorf &color);
   INLINE const Colorf &get_clear_color() const;
 
   INLINE void set_clear_depth(float depth);
   INLINE float get_clear_depth() const;
+
+  INLINE void set_clear_stencil(unsigned int stencil);
+  INLINE unsigned int get_clear_stencil() const;
 
   INLINE void disable_clears();
 
@@ -70,14 +76,16 @@ protected:
 private:
   // This data needs to be cycled.
   enum Flags {
-    F_clear_color_active = 0x0001,
-    F_clear_depth_active = 0x0002,
-    F_clear_all          = 0x0003, // = all of the above
+    F_clear_color_active   = 0x0001,
+    F_clear_depth_active   = 0x0002,
+    F_clear_stencil_active = 0x0004,
+    F_clear_all            = 0x0007, // = all of the above
   };
   int _flags;
 
   Colorf _clear_color;
   float _clear_depth;
+  unsigned int _clear_stencil;
 };
 
 #include "drawableRegion.I"

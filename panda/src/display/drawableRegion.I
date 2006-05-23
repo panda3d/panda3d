@@ -20,22 +20,23 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: DrawableRegion::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DrawableRegion::
-DrawableRegion() : 
+DrawableRegion() :
   _screenshot_buffer_type(RenderBuffer::T_front),
   _draw_buffer_type(RenderBuffer::T_back),
   _flags(0),
   _clear_color(0.0f, 0.0f, 0.0f, 0.0f),
-  _clear_depth(1.0f)
+  _clear_depth(1.0f),
+  _clear_stencil(0)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DrawableRegion::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DrawableRegion::
 DrawableRegion(const DrawableRegion &copy) :
@@ -43,14 +44,15 @@ DrawableRegion(const DrawableRegion &copy) :
   _draw_buffer_type(copy._draw_buffer_type),
   _flags(copy._flags),
   _clear_color(copy._clear_color),
-  _clear_depth(copy._clear_depth)
+  _clear_depth(copy._clear_depth),
+  _clear_stencil(copy._clear_stencil)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DrawableRegion::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 operator = (const DrawableRegion &copy) {
@@ -59,6 +61,7 @@ operator = (const DrawableRegion &copy) {
   _flags = copy._flags;
   _clear_color = copy._clear_color;
   _clear_depth = copy._clear_depth;
+  _clear_stencil = copy._clear_stencil;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,6 +75,7 @@ copy_clear_settings(const DrawableRegion &copy) {
   _flags = (_flags & ~F_clear_all) | (copy._flags & F_clear_all);
   _clear_color = copy._clear_color;
   _clear_depth = copy._clear_depth;
+  _clear_stencil = copy._clear_stencil;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,6 +139,36 @@ get_clear_depth_active() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::set_clear_stencil_active
+//       Access: Published
+//  Description: Toggles the flag that indicates whether the stencil
+//               buffer should be cleared every frame.  If this is
+//               true, the stencil buffer will be cleared to the value
+//               indicated by set_clear_stencil(); otherwise, it will be
+//               left alone.
+////////////////////////////////////////////////////////////////////
+INLINE void DrawableRegion::
+set_clear_stencil_active(bool clear_stencil_active) {
+  if (clear_stencil_active) {
+    _flags |= F_clear_stencil_active;
+  } else {
+    _flags &= ~F_clear_stencil_active;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::get_clear_stencil_active
+//       Access: Published
+//  Description: Returns the current setting of the flag that
+//               indicates whether the color buffer should be cleared
+//               every frame.  See set_clear_stencil_active().
+////////////////////////////////////////////////////////////////////
+INLINE bool DrawableRegion::
+get_clear_stencil_active() const {
+  return ((_flags & F_clear_stencil_active) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DrawableRegion::set_clear_color
 //       Access: Published
 //  Description: Sets the clear color to the indicated value.  This is
@@ -189,6 +223,33 @@ INLINE float DrawableRegion::
 get_clear_depth() const {
   return _clear_depth;
 }
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::set_clear_stencil
+//       Access: Published
+//  Description: Sets the clear stencil to the indicated value.  This is
+//               the value that will be used to clear the stencil buffer
+//               every frame, but only if get_clear_color_active()
+//               returns true.  If get_clear_stencil_active() returns
+//               false, this is meaningless.
+////////////////////////////////////////////////////////////////////
+INLINE void DrawableRegion::
+set_clear_stencil(const unsigned int stencil) {
+  _clear_stencil = stencil;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::get_clear_stencil
+//       Access: Published
+//  Description: Returns the current clear stencil value.  This is
+//               the value that will be used to clear the stencil buffer
+//               every frame, but only if get_clear_stencil_active()
+//               returns true.  If get_clear_stencil_active() returns
+//               false, this is meaningless.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int DrawableRegion::
+get_clear_stencil() const {
+  return _clear_stencil;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DrawableRegion::disable_clears
@@ -200,6 +261,7 @@ INLINE void DrawableRegion::
 disable_clears() {
   set_clear_color_active(false);
   set_clear_depth_active(false);
+  set_clear_stencil_active(false);
 }
 
 ////////////////////////////////////////////////////////////////////
