@@ -200,6 +200,7 @@ PUBLISHED:
   void list_tags(ostream &out, const string &separator = "\n") const;
 
   INLINE static DrawMask get_overall_bit();
+  INLINE static DrawMask get_all_camera_mask();
   INLINE bool is_overall_hidden() const;
   INLINE void set_overall_hidden(bool overall_hidden);
 

@@ -471,6 +471,17 @@ get_overall_bit() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_all_camera_mask
+//       Access: Published, Static
+//  Description: Returns a DrawMask that is appropriate for rendering
+//               to all cameras.
+////////////////////////////////////////////////////////////////////
+INLINE DrawMask PandaNode::
+get_all_camera_mask() {
+  return ~_overall_bit;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::is_overall_hidden
 //       Access: Published, Static
 //  Description: Returns true if the node has been hidden to all
