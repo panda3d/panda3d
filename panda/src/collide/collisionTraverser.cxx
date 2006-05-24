@@ -514,9 +514,10 @@ prepare_colliders(CollisionTraverser::LevelStates &level_states,
           level_state.reserve(min(num_colliders, max_colliders));
         }
       }
-      --num_colliders;
-      nassertv(num_colliders >= 0);
     }
+
+    --num_colliders;
+    nassertv(num_colliders >= 0);
   }
 
   if (level_state.get_num_colliders() != 0) {
