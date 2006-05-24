@@ -1,3 +1,16 @@
+------------------------  RELEASE 1.2.3  ------------------------
+
+The last release was a disaster:
+
+* I failed to fix packpanda.
+* I broke the tcl/tk stuff.
+* I added ppythonw, and it wasn't reliable.
+
+So basically, this release fixes packpanda and tcl/tk.  It doesn't
+fix ppythonw yet (I don't know what's wrong), but it does disable
+it temporarily.  It keeps the few things from 1.2.2 that were worth
+keeping.
+
 ------------------------  RELEASE 1.2.2  ------------------------
 
 This is a minor bugfix release.
