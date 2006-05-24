@@ -414,6 +414,8 @@ close_buffer() {
       dx_texture_context9 -> _d3d_2d_texture = NULL;
       dx_texture_context9 -> _d3d_volume_texture = NULL;
       dx_texture_context9 -> _d3d_cube_texture = NULL;
+
+      _dx_texture_context9 = NULL;
     }
 
     // release new depth stencil buffer if one was created

@@ -94,7 +94,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     begin_render_texture();
     clear_cube_map_selection();
   }
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
@@ -378,6 +378,8 @@ close_buffer() {
       dx_texture_context8 -> _d3d_2d_texture = NULL;
       dx_texture_context8 -> _d3d_volume_texture = NULL;
       dx_texture_context8 -> _d3d_cube_texture = NULL;
+
+      _dx_texture_context8 = NULL;
     }
 
     // release new depth stencil buffer if one was created
@@ -385,7 +387,7 @@ close_buffer() {
       this -> _new_z_stencil_surface -> Release ( );
       this -> _new_z_stencil_surface = NULL;
     }
-    
+
     _gsg.clear();
     _active = false;
   }
