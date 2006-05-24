@@ -38,20 +38,18 @@ PUBLISHED:
   // enums are duplicated here from class StencilRenderStates for use in Python
   enum StencilRenderState
   {
-    SRS_clear_value,
-
-    SRS_reference,
-
-    SRS_read_mask,
-    SRS_write_mask,
-
     SRS_front_enable,
+    SRS_back_enable,
+
     SRS_front_comparison_function,
     SRS_front_stencil_fail_operation,
     SRS_front_stencil_pass_z_fail_operation,
     SRS_front_stencil_pass_z_pass_operation,
 
-    SRS_back_enable,
+    SRS_reference,
+    SRS_read_mask,
+    SRS_write_mask,
+
     SRS_back_comparison_function,
     SRS_back_stencil_fail_operation,
     SRS_back_stencil_pass_z_fail_operation,
@@ -86,11 +84,15 @@ PUBLISHED:
     SO_decrement_saturate,
   };
 
+  static CPT(RenderAttrib) make_begin();
   static CPT(RenderAttrib) make();
+  CPT(RenderAttrib) make_end();
   INLINE void set_render_state (unsigned int render_state_identifier, unsigned int render_state);
   INLINE unsigned int get_render_state (unsigned int render_state_identifier) const;
 
 public:
+  static char *stencil_render_state_name_array [SRS_total];
+
   virtual void output(ostream &out) const;
   virtual void store_into_slot(AttribSlots *slots) const;
 
@@ -100,7 +102,8 @@ protected:
 
 private:
   unsigned int _stencil_render_states [SRS_total];
-  bool _default;
+public:
+  bool _pre;
 
 public:
   static void register_with_read_factory();

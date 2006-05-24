@@ -26,26 +26,24 @@
 INLINE StencilAttrib::
 StencilAttrib() {
 
-  _stencil_render_states [SRS_clear_value] = 0;
-
-  _stencil_render_states [SRS_reference] = 0;
-
-  _stencil_render_states [SRS_read_mask] = ~0;
-  _stencil_render_states [SRS_write_mask] = ~0;
-
   _stencil_render_states [SRS_front_enable] = 0;
+  _stencil_render_states [SRS_back_enable] = 0;
+
   _stencil_render_states [SRS_front_comparison_function] = SCF_always;
   _stencil_render_states [SRS_front_stencil_fail_operation] = SO_keep;
   _stencil_render_states [SRS_front_stencil_pass_z_fail_operation] = SO_keep;
   _stencil_render_states [SRS_front_stencil_pass_z_pass_operation] = SO_keep;
 
-  _stencil_render_states [SRS_back_enable] = 0;
+  _stencil_render_states [SRS_reference] = 0;
+  _stencil_render_states [SRS_read_mask] = ~0;
+  _stencil_render_states [SRS_write_mask] = ~0;
+
   _stencil_render_states [SRS_back_comparison_function] = SCF_always;
   _stencil_render_states [SRS_back_stencil_fail_operation] = SO_keep;
   _stencil_render_states [SRS_back_stencil_pass_z_fail_operation] = SO_keep;
   _stencil_render_states [SRS_back_stencil_pass_z_pass_operation] = SO_keep;
 
-  _default = true;
+  _pre = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,8 +53,13 @@ StencilAttrib() {
 ////////////////////////////////////////////////////////////////////
 INLINE void StencilAttrib::
 set_render_state(unsigned int render_state_identifier, unsigned int render_state) {
-  _stencil_render_states [render_state_identifier] = render_state;
-  _default = false;
+  if (_pre) {
+    _stencil_render_states [render_state_identifier] = render_state;
+  }
+  else {
+    // ERROR: set_render_state can only be called with a pre_make StencilAttrib
+    printf ("ERROR: set_render_state can only be called with a StencilAttrib.make_begin\n");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

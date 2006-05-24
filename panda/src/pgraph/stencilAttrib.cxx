@@ -27,14 +27,76 @@
 
 TypeHandle StencilAttrib::_type_handle;
 
+char *StencilAttrib::
+stencil_render_state_name_array [StencilAttrib::SRS_total] =
+{
+  "SRS_front_enable",
+  "SRS_back_enable",
+
+  "SRS_front_comparison_function",
+  "SRS_front_stencil_fail_operation",
+  "SRS_front_stencil_pass_z_fail_operation",
+  "SRS_front_stencil_pass_z_pass_operation",
+
+  "SRS_reference",
+  "SRS_read_mask",
+  "SRS_write_mask",
+
+  "SRS_back_comparison_function",
+  "SRS_back_stencil_fail_operation",
+  "SRS_back_stencil_pass_z_fail_operation",
+  "SRS_back_stencil_pass_z_pass_operation",
+};
+
+////////////////////////////////////////////////////////////////////
+//     Function: StencilAttrib::make_begin
+//       Access: Published, Static
+//  Description: Constructs a new default and writable StencilAttrib.
+//               set_render_state can be called.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) StencilAttrib::
+make_begin() {
+  StencilAttrib *attrib = new StencilAttrib;
+  attrib -> _pre = true;
+
+  CPT(RenderAttrib) pt_attrib = attrib;
+
+  return pt_attrib;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilAttrib::make
 //       Access: Published, Static
-//  Description: Constructs a new StencilAttrib object.
+//  Description: Constructs a new default read-only StencilAttrib.
+//               set_render_state can not be called on the created
+//               object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) StencilAttrib::
 make() {
   StencilAttrib *attrib = new StencilAttrib;
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StencilAttrib::make_end
+//       Access: Published
+//  Description: Constructs a final read-only StencilAttrib object
+//               from an existing StencilAttrib.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) StencilAttrib::
+make_end() {
+
+  StencilAttrib *attrib = new StencilAttrib;
+  StencilAttrib *original_attrib;
+
+  original_attrib = this;
+
+  int index;
+  for (index = 0; index < SRS_total; index++) {
+    attrib -> _stencil_render_states [index] =
+      original_attrib -> _stencil_render_states [index];
+  }
+
   return return_new(attrib);
 }
 
@@ -45,9 +107,12 @@ make() {
 ////////////////////////////////////////////////////////////////////
 void StencilAttrib::
 output(ostream &out) const {
+
   int index;
   for (index = 0; index < SRS_total; index++) {
-    out << "(" << index << "," << _stencil_render_states [index] << ")";
+    out
+      << "(" << stencil_render_state_name_array [index]
+      << ", " << _stencil_render_states [index] << ")";
   }
 }
 
@@ -71,22 +136,16 @@ compare_to_impl(const RenderAttrib *other) const {
   const StencilAttrib *sa;
   DCAST_INTO_R(sa, other, 0);
 
+  int a;
+  int b;
+  int index;
   int compare_result = 0;
 
-  // quick test to see if both are default states
-  // which should be the most common case
-  if (_default && (_default == sa -> _default)) {
-
-  }
-  else {
-    int index;
-    for (index = 0; index < SRS_total; index++) {
-      if (_stencil_render_states [index] - sa -> _stencil_render_states [index]) {
-
-  // ?????
-        compare_result = -(index + 1);
-        break;
-      }
+  for (index = 0; index < SRS_total; index++) {
+    a = (int) sa -> _stencil_render_states [index];
+    b = (int) _stencil_render_states [index];
+    if (compare_result = (a - b)) {
+      break;
     }
   }
 
@@ -182,5 +241,4 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (index = 0; index < SRS_total; index++) {
     _stencil_render_states [index] = scan.get_int32();
   }
-  _default = false;
 }
