@@ -19,6 +19,9 @@ class BulletinBoard:
     def getEvent(self, postName):
         return 'bboard-%s' % postName
 
+    def getRemoveEvent(self, postName):
+        return 'bboard-remove-%s' % postName
+
     def post(self, postName, value=None):
         if postName in self._dict:
             BulletinBoard.notify.warning('changing %s from %s to %s' % (
@@ -35,6 +38,7 @@ class BulletinBoard:
     def remove(self, postName):
         if postName in self._dict:
             del self._dict[postName]
+            messenger.send(self.getRemoveEvent(postName))
 
     def removeIfEqual(self, postName, value):
         # only remove the post if its value is a particular value
