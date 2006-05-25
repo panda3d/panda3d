@@ -1986,6 +1986,12 @@ def gcDebugOn():
     import gc
     return (gc.get_debug() & gc.DEBUG_SAVEALL) == gc.DEBUG_SAVEALL
 
+def safeRepr(obj):
+    try:
+        return repr(obj)
+    except:
+        return '<** FAILED REPR OF %s **>' % obj.__class__.__name__
+
 class ScratchPad:
     """empty class to stick values onto"""
     def __init__(self, **kArgs):
