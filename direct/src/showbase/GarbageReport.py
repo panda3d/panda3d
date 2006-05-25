@@ -1,5 +1,5 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase import PythonUtil
+from direct.showbase.PythonUtil import gcDebugOn, safeRepr
 from direct.showbase.TaskThreaded import TaskThreaded, TaskThread
 import gc
 
@@ -32,7 +32,7 @@ class GarbageReport(TaskThreaded):
                                 findCycles=findCycles, doneCallback=doneCallback)
 
         # do the garbage collection
-        wasOn = PythonUtil.gcDebugOn()
+        wasOn = gcDebugOn()
         oldFlags = gc.get_debug()
         if not wasOn:
             gc.set_debug(gc.DEBUG_SAVEALL)
@@ -162,7 +162,12 @@ class GarbageReport(TaskThreaded):
                         self.format = '%0' + '%s' % digits + 'i:%s \t%s'
                     for i in xrange(self.index, self.numGarbage):
                         id = self.garbageIds[i]
-                        self.s.append(self.format % (id, type(self.parent.garbage[id]), self.parent.garbage[id]))
+                        objStr = safeRepr(self.parent.garbage[id])
+                        maxLen = 500
+                        if len(objStr) > maxLen:
+                            snip = '<SNIP>'
+                            objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
+                        self.s.append(self.format % (id, type(self.parent.garbage[id]), objStr))
                         if (not (i & 0x7F)) and (not self.timeLeft()):
                             # we've run out of time, save the index
                             self.index = i+1
