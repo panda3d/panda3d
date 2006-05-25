@@ -9,10 +9,12 @@ class TaskThreaded:
 
     _Serial = SerialNum()
     
-    def __init__(self, name, threaded=True, timeslice=.01):
+    def __init__(self, name, threaded=True, timeslice=None):
         # timeslice is how long this thread should take every frame.
         self.__name = name
         self.__threaded=threaded
+        if timeslice is None:
+            timeslice = .01
         self.__timeslice = timeslice
         self.__taskNames = set()
         self._taskStartTime = None

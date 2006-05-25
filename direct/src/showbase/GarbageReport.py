@@ -21,11 +21,11 @@ class GarbageReport(TaskThreaded):
     NotGarbage = 'NG'
 
     def __init__(self, name, log=True, verbose=False, fullReport=False, findCycles=True,
-                 threaded=False, doneCallback=None):
+                 threaded=False, timeslice=None, doneCallback=None):
         # if log is True, GarbageReport will self-destroy after logging
         # if false, caller is responsible for calling destroy()
         # if threaded is True, processing will be performed over multiple frames
-        TaskThreaded.__init__(self, name, threaded)
+        TaskThreaded.__init__(self, name, threaded, timeslice=timeslice)
         # stick the arguments onto a ScratchPad so we can access them from the thread
         # functions and delete them all at once
         self._args = ScratchPad(name=name, log=log, verbose=verbose, fullReport=fullReport,
@@ -57,6 +57,7 @@ class GarbageReport(TaskThreaded):
 
         self.cycles = []
         self.cycleSets = []
+        self.cycleIds = set()
 
         # grab the referrers (pointing to garbage)
         class GetReferrers(TaskThread):
@@ -116,6 +117,9 @@ class GarbageReport(TaskThreaded):
             def run(self):
                 for i in xrange(self.index, self.parent.numGarbage):
                     self.parent.cycles.extend(self.parent._getCycles(i, self.parent.cycleSets))
+                    # if we're not doing a full report, add this cycle's IDs to the master set
+                    if not self.parent._args.fullReport:
+                        self.parent.cycleIds.update(set(self.parent.cycles[-1]))
                     if (not (i & 0x0F)) and (not self.timeLeft()):
                         # we've run out of time, save the index
                         self.index = i+1
@@ -133,11 +137,22 @@ class GarbageReport(TaskThreaded):
                 else:
                     self.curPhase = 0
                     self.index = 0
+                    # make a list of the ids we will actually be printing
+                    if self.parent._args.fullReport:
+                        self.garbageIds = range(self.parent.numGarbage)
+                    else:
+                        self.garbageIds = list(self.parent.cycleIds)
+                        self.garbageIds.sort()
+                    self.numGarbage = len(self.garbageIds)
             def run(self):
                 if self.curPhase == 0:
                     # log each individual item with a number in front of it
                     if self.index == 0:
-                        self.s.append('\n===== Garbage Items =====')
+                        if not self.parent._args.fullReport:
+                            abbrev = '(abbreviated) '
+                        else:
+                            abbrev = ''
+                        self.s.append('\n===== Garbage Items %s=====' % abbrev)
                         digits = 0
                         n = self.parent.numGarbage
                         while n > 0:
@@ -145,8 +160,9 @@ class GarbageReport(TaskThreaded):
                             n /= 10
                         self.digits = digits
                         self.format = '%0' + '%s' % digits + 'i:%s \t%s'
-                    for i in xrange(self.index, self.parent.numGarbage):
-                        self.s.append(self.format % (i, type(self.parent.garbage[i]), self.parent.garbage[i]))
+                    for i in xrange(self.index, self.numGarbage):
+                        id = self.garbageIds[i]
+                        self.s.append(self.format % (id, type(self.parent.garbage[id]), self.parent.garbage[id]))
                         if (not (i & 0x7F)) and (not self.timeLeft()):
                             # we've run out of time, save the index
                             self.index = i+1
