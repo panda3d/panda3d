@@ -134,6 +134,8 @@
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1
 
+#define HAVE_POSIX_THREADS 1
+
 // Must global operator new and delete functions throw exceptions?
 #define GLOBAL_OPERATOR_NEW_EXCEPTIONS 1
 
