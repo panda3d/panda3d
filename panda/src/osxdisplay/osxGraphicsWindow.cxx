@@ -303,6 +303,7 @@ static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef even
 		case kEventClassKeyboard:
 			{
 			switch (kind) {
+                                case kEventRawKeyRepeat:
 				case kEventRawKeyDown:
 					result = osx_win->handleKeyInput  (myHandler, event, true);
 					break;
@@ -762,6 +763,7 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties )
             { kEventClassMouse, kEventMouseWheelMoved } ,
             { kEventClassKeyboard, kEventRawKeyDown },
             { kEventClassKeyboard, kEventRawKeyUp } ,
+	    { kEventClassKeyboard, kEventRawKeyRepeat },
             { kEventClassKeyboard, kEventRawKeyModifiersChanged }	,
             {kEventClassTextInput,	kEventTextInputUnicodeForKeyEvent},				   
         };
