@@ -31,8 +31,9 @@ class BulletinBoardWatcher(DirectObject.DirectObject):
 
     def destroy(self):
         self.ignoreAll()
-        del self.callback
-        del self.waitingOn
+        if hasattr(self, 'callback'):
+            del self.callback
+            del self.waitingOn
 
     def isDone(self):
         return len(self.waitingOn) == 0
@@ -41,6 +42,7 @@ class BulletinBoardWatcher(DirectObject.DirectObject):
         if self.isDone():
             self.notify.debug('%s: done' % self.name)
             self.callback()
+            self.destroy()
 
     def _handleEvent(self, eventName):
         self.notify.debug('%s: handlePost(%s)' % (self.name, eventName))
