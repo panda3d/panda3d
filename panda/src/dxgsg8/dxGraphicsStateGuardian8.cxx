@@ -4012,13 +4012,6 @@ do_issue_stencil() {
   stencil_render_states = this -> _stencil_render_states;
   if (stencil && stencil_render_states) {
 
-#ifndef NDEBUG
-    // DEBUG ONLY
-    if (stencil -> _pre) {
-      dxgsg8_cat.error() << "Invalid StencilAttrib\n";
-    }
-#endif
-
     // DEBUG
     if (false) {
       dxgsg8_cat.debug() << "STENCIL STATE CHANGE\n";

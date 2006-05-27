@@ -31,7 +31,7 @@ class FactoryParams;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA StencilAttrib : public RenderAttrib {
 private:
-  INLINE StencilAttrib();
+  StencilAttrib();
 
 PUBLISHED:
 
@@ -84,10 +84,38 @@ PUBLISHED:
     SO_decrement_saturate,
   };
 
-  static CPT(RenderAttrib) make_begin();
-  static CPT(RenderAttrib) make();
-  CPT(RenderAttrib) make_end();
-  INLINE void set_render_state (unsigned int render_state_identifier, unsigned int render_state);
+  enum StencilMask
+  {
+    SM_default = ~0,
+  };
+
+  static CPT(RenderAttrib) make_off();
+
+  static CPT(RenderAttrib) make(
+    unsigned int front_enable,
+    unsigned int front_comparison_function,
+    unsigned int stencil_fail_operation,
+    unsigned int stencil_pass_z_fail_operation,
+    unsigned int front_stencil_pass_z_pass_operation,
+    unsigned int reference,
+    unsigned int read_mask,
+    unsigned int write_mask);
+
+  static CPT(RenderAttrib) make_2_sided(
+    unsigned int front_enable,
+    unsigned int back_enable,
+    unsigned int front_comparison_function,
+    unsigned int stencil_fail_operation,
+    unsigned int stencil_pass_z_fail_operation,
+    unsigned int front_stencil_pass_z_pass_operation,
+    unsigned int reference,
+    unsigned int read_mask,
+    unsigned int write_mask,
+    unsigned int back_comparison_function,
+    unsigned int back_stencil_fail_operation,
+    unsigned int back_stencil_pass_z_fail_operation,
+    unsigned int back_stencil_pass_z_pass_operation);
+
   INLINE unsigned int get_render_state (unsigned int render_state_identifier) const;
 
 public:
@@ -102,8 +130,6 @@ protected:
 
 private:
   unsigned int _stencil_render_states [SRS_total];
-public:
-  bool _pre;
 
 public:
   static void register_with_read_factory();

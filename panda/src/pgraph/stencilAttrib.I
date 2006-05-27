@@ -16,52 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::Constructor
-//       Access: Private
-//  Description: Use StencilAttrib::make() to construct a new
-//               StencilAttrib object.
-////////////////////////////////////////////////////////////////////
-INLINE StencilAttrib::
-StencilAttrib() {
-
-  _stencil_render_states [SRS_front_enable] = 0;
-  _stencil_render_states [SRS_back_enable] = 0;
-
-  _stencil_render_states [SRS_front_comparison_function] = SCF_always;
-  _stencil_render_states [SRS_front_stencil_fail_operation] = SO_keep;
-  _stencil_render_states [SRS_front_stencil_pass_z_fail_operation] = SO_keep;
-  _stencil_render_states [SRS_front_stencil_pass_z_pass_operation] = SO_keep;
-
-  _stencil_render_states [SRS_reference] = 0;
-  _stencil_render_states [SRS_read_mask] = ~0;
-  _stencil_render_states [SRS_write_mask] = ~0;
-
-  _stencil_render_states [SRS_back_comparison_function] = SCF_always;
-  _stencil_render_states [SRS_back_stencil_fail_operation] = SO_keep;
-  _stencil_render_states [SRS_back_stencil_pass_z_fail_operation] = SO_keep;
-  _stencil_render_states [SRS_back_stencil_pass_z_pass_operation] = SO_keep;
-
-  _pre = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::set_render_state
-//       Access: Published
-//  Description: Sets the render state.
-////////////////////////////////////////////////////////////////////
-INLINE void StencilAttrib::
-set_render_state(unsigned int render_state_identifier, unsigned int render_state) {
-  if (_pre) {
-    _stencil_render_states [render_state_identifier] = render_state;
-  }
-  else {
-    // ERROR: set_render_state can only be called with a pre_make StencilAttrib
-    printf ("ERROR: set_render_state can only be called with a StencilAttrib.make_begin\n");
-  }
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilAttrib::get_render_state
 //       Access: Published

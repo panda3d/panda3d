@@ -7369,13 +7369,6 @@ do_issue_stencil() {
   stencil_render_states = this -> _stencil_render_states;
   if (stencil && stencil_render_states) {
 
-#ifndef NDEBUG
-    // DEBUG ONLY
-    if (stencil -> _pre) {
-      GLCAT.error() << "Invalid StencilAttrib\n";
-    }
-#endif
-
     // DEBUG
     if (false) {
       GLCAT.debug() << "STENCIL STATE CHANGE\n";

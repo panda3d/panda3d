@@ -51,7 +51,7 @@ initialize_defvals() {
   _defvals._rescale_normal = DCAST(RescaleNormalAttrib,RescaleNormalAttrib::make_default());
   _defvals._shade_model    = DCAST(ShadeModelAttrib,ShadeModelAttrib::make(ShadeModelAttrib::M_smooth));
   _defvals._shader         = DCAST(ShaderAttrib,ShaderAttrib::make_off());
-  _defvals._stencil        = DCAST(StencilAttrib,StencilAttrib::make());
+  _defvals._stencil        = DCAST(StencilAttrib,StencilAttrib::make_off());
   _defvals._tex_gen        = DCAST(TexGenAttrib,TexGenAttrib::make());
   _defvals._tex_matrix     = DCAST(TexMatrixAttrib,TexMatrixAttrib::make());
   _defvals._texture        = DCAST(TextureAttrib,TextureAttrib::make_all_off());

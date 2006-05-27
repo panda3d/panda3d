@@ -49,53 +49,122 @@ stencil_render_state_name_array [StencilAttrib::SRS_total] =
 };
 
 ////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::make_begin
+//     Function: StencilAttrib::Constructor
+//       Access: Private
+//  Description: Use StencilAttrib::make() to construct a new
+//               StencilAttrib object.
+////////////////////////////////////////////////////////////////////
+StencilAttrib::
+StencilAttrib() {
+
+  _stencil_render_states [SRS_front_enable] = 0;
+  _stencil_render_states [SRS_back_enable] = 0;
+
+  _stencil_render_states [SRS_front_comparison_function] = SCF_always;
+  _stencil_render_states [SRS_front_stencil_fail_operation] = SO_keep;
+  _stencil_render_states [SRS_front_stencil_pass_z_fail_operation] = SO_keep;
+  _stencil_render_states [SRS_front_stencil_pass_z_pass_operation] = SO_keep;
+
+  _stencil_render_states [SRS_reference] = 0;
+  _stencil_render_states [SRS_read_mask] = ~0;
+  _stencil_render_states [SRS_write_mask] = ~0;
+
+  _stencil_render_states [SRS_back_comparison_function] = SCF_always;
+  _stencil_render_states [SRS_back_stencil_fail_operation] = SO_keep;
+  _stencil_render_states [SRS_back_stencil_pass_z_fail_operation] = SO_keep;
+  _stencil_render_states [SRS_back_stencil_pass_z_pass_operation] = SO_keep;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StencilAttrib::make_off
 //       Access: Published, Static
-//  Description: Constructs a new default and writable StencilAttrib.
-//               set_render_state can be called.
+//  Description: Constructs a front face StencilAttrib.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) StencilAttrib::
-make_begin() {
+make_off()
+{
   StencilAttrib *attrib = new StencilAttrib;
-  attrib -> _pre = true;
 
-  CPT(RenderAttrib) pt_attrib = attrib;
-
-  return pt_attrib;
+  return return_new(attrib);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilAttrib::make
 //       Access: Published, Static
-//  Description: Constructs a new default read-only StencilAttrib.
-//               set_render_state can not be called on the created
-//               object.
+//  Description: Constructs a front face StencilAttrib.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) StencilAttrib::
-make() {
+make(
+  unsigned int front_enable,
+  unsigned int front_comparison_function,
+  unsigned int stencil_fail_operation,
+  unsigned int stencil_pass_z_fail_operation,
+  unsigned int front_stencil_pass_z_pass_operation,
+  unsigned int reference,
+  unsigned int read_mask,
+  unsigned int write_mask)
+{
   StencilAttrib *attrib = new StencilAttrib;
+
+  attrib->_stencil_render_states [SRS_front_enable] = front_enable;
+  attrib->_stencil_render_states [SRS_back_enable] = 0;
+
+  attrib->_stencil_render_states [SRS_front_comparison_function] = front_comparison_function;
+  attrib->_stencil_render_states [SRS_front_stencil_fail_operation] = stencil_fail_operation;
+  attrib->_stencil_render_states [SRS_front_stencil_pass_z_fail_operation] = stencil_pass_z_fail_operation;
+  attrib->_stencil_render_states [SRS_front_stencil_pass_z_pass_operation] = front_stencil_pass_z_pass_operation;
+
+  attrib->_stencil_render_states [SRS_reference] = reference;
+  attrib->_stencil_render_states [SRS_read_mask] = read_mask;
+  attrib->_stencil_render_states [SRS_write_mask] = write_mask;
+
+  attrib->_stencil_render_states [SRS_back_comparison_function] = SCF_always;
+  attrib->_stencil_render_states [SRS_back_stencil_fail_operation] = SO_keep;
+  attrib->_stencil_render_states [SRS_back_stencil_pass_z_fail_operation] = SO_keep;
+  attrib->_stencil_render_states [SRS_back_stencil_pass_z_pass_operation] = SO_keep;
+
   return return_new(attrib);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::make_end
-//       Access: Published
-//  Description: Constructs a final read-only StencilAttrib object
-//               from an existing StencilAttrib.
+//     Function: StencilAttrib::make_2_sided
+//       Access: Published, Static
+//  Description: Constructs a two-sided StencilAttrib.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) StencilAttrib::
-make_end() {
-
+make_2_sided(
+  unsigned int front_enable,
+  unsigned int back_enable,
+  unsigned int front_comparison_function,
+  unsigned int stencil_fail_operation,
+  unsigned int stencil_pass_z_fail_operation,
+  unsigned int front_stencil_pass_z_pass_operation,
+  unsigned int reference,
+  unsigned int read_mask,
+  unsigned int write_mask,
+  unsigned int back_comparison_function,
+  unsigned int back_stencil_fail_operation,
+  unsigned int back_stencil_pass_z_fail_operation,
+  unsigned int back_stencil_pass_z_pass_operation)
+{
   StencilAttrib *attrib = new StencilAttrib;
-  StencilAttrib *original_attrib;
 
-  original_attrib = this;
+  attrib->_stencil_render_states [SRS_front_enable] = front_enable;
+  attrib->_stencil_render_states [SRS_back_enable] = back_enable;
 
-  int index;
-  for (index = 0; index < SRS_total; index++) {
-    attrib -> _stencil_render_states [index] =
-      original_attrib -> _stencil_render_states [index];
-  }
+  attrib->_stencil_render_states [SRS_front_comparison_function] = front_comparison_function;
+  attrib->_stencil_render_states [SRS_front_stencil_fail_operation] = stencil_fail_operation;
+  attrib->_stencil_render_states [SRS_front_stencil_pass_z_fail_operation] = stencil_pass_z_fail_operation;
+  attrib->_stencil_render_states [SRS_front_stencil_pass_z_pass_operation] = front_stencil_pass_z_pass_operation;
+
+  attrib->_stencil_render_states [SRS_reference] = reference;
+  attrib->_stencil_render_states [SRS_read_mask] = read_mask;
+  attrib->_stencil_render_states [SRS_write_mask] = write_mask;
+
+  attrib->_stencil_render_states [SRS_back_comparison_function] = back_comparison_function;
+  attrib->_stencil_render_states [SRS_back_stencil_fail_operation] = back_stencil_fail_operation;
+  attrib->_stencil_render_states [SRS_back_stencil_pass_z_fail_operation] = back_stencil_pass_z_fail_operation;
+  attrib->_stencil_render_states [SRS_back_stencil_pass_z_pass_operation] = back_stencil_pass_z_pass_operation;
 
   return return_new(attrib);
 }
