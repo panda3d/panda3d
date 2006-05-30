@@ -7,11 +7,7 @@ from direct.showbase.DirectObject import DirectObject
 
 def remove_task ( ):
     if (MotionTrail.task_added):
-        try:
-            total_motion_trails = len (MotionTrail.motion_trail_list)
-        except:
-            print "ERROR: len ( ) exception 0"
-            total_motion_trails = 0
+        total_motion_trails = len (MotionTrail.motion_trail_list)
 
         if (total_motion_trails > 0):
             print "warning", total_motion_trails, "motion trails still exist when motion trail task is removed"
@@ -140,12 +136,7 @@ class MotionTrail(NodePath, DirectObject):
 
         current_time = task.time
 
-        try:
-            total_motion_trails = len (MotionTrail.motion_trail_list)
-        except:
-            print "ERROR: len ( ) exception 1"
-            total_motion_trails = 0
-            MotionTrail.motion_trail_list = [ ]
+        total_motion_trails = len (MotionTrail.motion_trail_list)
 
         index = 0
         while (index < total_motion_trails):
@@ -250,21 +241,11 @@ class MotionTrail(NodePath, DirectObject):
     def add_vertex (self, vertex_id, vertex_function, context):
 
         motion_trail_vertex = MotionTrailVertex (vertex_id, vertex_function, context)
-        try:
-            total_vertices = len (self.vertex_list)
-        except:
-            print "ERROR: len ( ) exception 2"
-            total_vertices = 0
-            self.vertex_list = [ ]
+        total_vertices = len (self.vertex_list)
             
         self.vertex_list [total_vertices : total_vertices] = [motion_trail_vertex]
 
-        try:
-            self.total_vertices = len (self.vertex_list)
-        except:
-            print "ERROR: len ( ) exception 3"
-            self.total_vertices = 0
-            self.vertex_list = [ ]
+        self.total_vertices = len (self.vertex_list)
         
         return motion_trail_vertex
 
@@ -286,12 +267,7 @@ class MotionTrail(NodePath, DirectObject):
 
     def update_vertices (self):
 
-        try:
-            total_vertices = len (self.vertex_list)
-        except:
-            print "ERROR: len ( ) exception 4"
-            total_vertices = 0
-            self.vertex_list = [ ]
+        total_vertices = len (self.vertex_list)
             
         self.total_vertices = total_vertices
         if (total_vertices >= 2):        
@@ -427,12 +403,7 @@ class MotionTrail(NodePath, DirectObject):
             
             index = 0
 
-            try:
-                last_frame_index = len (self.frame_list) - 1
-            except:
-                print "ERROR: len ( ) exception 5"
-                last_frame_index = -1
-                self.frame_list = [ ]
+            last_frame_index = len (self.frame_list) - 1
                 
             while (index <= last_frame_index):
                 motion_trail_frame = self.frame_list [last_frame_index - index]
@@ -448,12 +419,7 @@ class MotionTrail(NodePath, DirectObject):
             self.frame_list = [motion_trail_frame] + self.frame_list
             
             # convert frames and vertices to geometry
-            try:
-                total_frames = len (self.frame_list)
-            except:
-                print "ERROR: len ( ) exception 6"
-                total_frames = 0
-                self.frame_list = [ ]
+            total_frames = len (self.frame_list)
             
             """
             print "total_frames", total_frames
