@@ -92,7 +92,7 @@ public: // do not call direct ..
   void SystemCloseWindow();	
   void SystemSetWindowForground(bool forground);	
   void SystemPointToLocalPoint(Point &qdGlobalPoint);
-
+  void LocalPointToSystemPoint(Point &qdLocalPoint);
   AGLContext  get_ggs_context(void);
   AGLContext  get_context(void);
   OSStatus	  buildGL(bool full_screen);

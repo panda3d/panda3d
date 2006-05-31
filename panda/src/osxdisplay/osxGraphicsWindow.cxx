@@ -1360,10 +1360,26 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
 //               may fail if the mouse is not currently within the
 //               window, or if the API doesn't support this operation.
 ////////////////////////////////////////////////////////////////////
-bool osxGraphicsWindow::move_pointer(int device, int x, int y)
-{
-	return true;
-};
+bool osxGraphicsWindow::move_pointer(int device, int x, int y) 
+{ 
+    if(_osx_window == NULL) 
+        return false; 
+    
+if (osxdisplay_cat.is_debug())    
+        osxdisplay_cat.debug() << "move_pointer " << device <<" "<<  x <<" "<< y <<"\n"; 
+    
+    Point pt = {0, 0}; 
+    pt.h = x; 
+    pt.v = y; 
+    _input_devices[0].set_pointer_in_window(x, y);  
+    LocalPointToSystemPoint(pt); 
+    CGPoint newCursorPosition = {0, 0}; 
+    newCursorPosition.x = pt.h; 
+    newCursorPosition.y = pt.v; 
+    CGWarpMouseCursorPosition(newCursorPosition); 
+  
+    return true; 
+}; 
 
 bool osxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool has_origin,int x_size, int y_size)
 {
@@ -1508,11 +1524,23 @@ void osxGraphicsWindow::set_properties_now(WindowProperties &properties)
   }
   
   // cursor managment..
-  if(properties.has_cursor_hidden())
-  {
-		_properties.set_cursor_hidden(properties.get_cursor_hidden());
-		properties.clear_cursor_hidden();
-  }
+  //if(properties.has_cursor_hidden())
+  //{
+//		_properties.set_cursor_hidden(properties.get_cursor_hidden());
+//		properties.clear_cursor_hidden();
+//  }
+
+if(properties.has_cursor_hidden()) 
+  { 
+      _properties.set_cursor_hidden(properties.get_cursor_hidden()); 
+                if (properties.get_cursor_hidden()) { 
+                    CGDisplayHideCursor(kCGDirectMainDisplay); 
+                } else { 
+                    CGDisplayShowCursor(kCGDirectMainDisplay); 
+                } 
+      properties.clear_cursor_hidden(); 
+  } 
+
 	//
 	// icons
 	if(properties.has_icon_filename())
@@ -1569,5 +1597,19 @@ void osxGraphicsWindow::set_properties_now(WindowProperties &properties)
 
 	return;
 }
+//////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
+void osxGraphicsWindow::LocalPointToSystemPoint(Point &qdLocalPoint) 
+ { 
+   if(_osx_window != NULL) 
+   { 
+      GrafPtr savePort;    
+      GetPort( &savePort ); 
+      SetPortWindowPort(_osx_window ); 
+      LocalToGlobal( &qdLocalPoint ); 
+      SetPort( savePort ); 
+   } 
+                
+ }; 
 
