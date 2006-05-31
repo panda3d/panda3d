@@ -92,7 +92,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     begin_render_texture();
     clear_cube_map_selection();
   }
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
@@ -402,28 +402,14 @@ close_buffer() {
     DXGraphicsStateGuardian9 *dxgsg;
     DCAST_INTO_V(dxgsg, _gsg);
 
-    DXTextureContext9 *dx_texture_context9;
-
-    dx_texture_context9 = _dx_texture_context9;
-    if (dx_texture_context9) {
-      // release render texture
-      if (dx_texture_context9 -> _d3d_texture) {
-        dx_texture_context9 -> _d3d_texture -> Release ( );
-      }
-      dx_texture_context9 -> _d3d_texture = NULL;
-      dx_texture_context9 -> _d3d_2d_texture = NULL;
-      dx_texture_context9 -> _d3d_volume_texture = NULL;
-      dx_texture_context9 -> _d3d_cube_texture = NULL;
-
-      _dx_texture_context9 = NULL;
-    }
+    _dx_texture_context9 = NULL;
 
     // release new depth stencil buffer if one was created
     if (this -> _new_z_stencil_surface) {
       this -> _new_z_stencil_surface -> Release ( );
       this -> _new_z_stencil_surface = NULL;
     }
-    
+
     _gsg.clear();
     _active = false;
   }

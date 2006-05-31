@@ -366,21 +366,7 @@ close_buffer() {
     DXGraphicsStateGuardian8 *dxgsg;
     DCAST_INTO_V(dxgsg, _gsg);
 
-    DXTextureContext8 *dx_texture_context8;
-
-    dx_texture_context8 = _dx_texture_context8;
-    if (dx_texture_context8) {
-      // release render texture
-      if (dx_texture_context8 -> _d3d_texture) {
-        dx_texture_context8 -> _d3d_texture -> Release ( );
-      }
-      dx_texture_context8 -> _d3d_texture = NULL;
-      dx_texture_context8 -> _d3d_2d_texture = NULL;
-      dx_texture_context8 -> _d3d_volume_texture = NULL;
-      dx_texture_context8 -> _d3d_cube_texture = NULL;
-
-      _dx_texture_context8 = NULL;
-    }
+    _dx_texture_context8 = NULL;
 
     // release new depth stencil buffer if one was created
     if (this -> _new_z_stencil_surface) {
