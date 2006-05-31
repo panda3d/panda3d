@@ -213,7 +213,8 @@ compare_to_impl(const RenderAttrib *other) const {
   for (index = 0; index < SRS_total; index++) {
     a = (int) sa -> _stencil_render_states [index];
     b = (int) _stencil_render_states [index];
-    if (compare_result = (a - b)) {
+    compare_result = (a - b);
+    if (compare_result) {
       break;
     }
   }
