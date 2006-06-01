@@ -163,7 +163,7 @@ class GarbageReport(TaskThreaded):
                     for i in xrange(self.index, self.numGarbage):
                         id = self.garbageIds[i]
                         objStr = safeRepr(self.parent.garbage[id])
-                        maxLen = 500
+                        maxLen = 5000
                         if len(objStr) > maxLen:
                             snip = '<SNIP>'
                             objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
