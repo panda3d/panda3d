@@ -34,6 +34,8 @@ class ConnectionRepository(
 
         self.config = config
 
+        self.setVerbose(self.config.GetBool('verbose-repository', 0))
+
         # Set this to 'http' to establish a connection to the server
         # using the HTTPClient interface, which ultimately uses the
         # OpenSSL socket library (even though SSL is not involved).
