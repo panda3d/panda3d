@@ -45,6 +45,19 @@ class InterestState:
         return 'InterestState(desc=%s, state=%s, scope=%s, event=%s, parentId=%s, zoneIdList=%s)' % (
             self.desc, self.state, self.scope, self.events, self.parentId, self.zoneIdList)
 
+class InterestHandle:
+    """This class helps to ensure that valid handles get passed in to DoInterestManager funcs"""
+    def __init__(self, id):
+        self._id = id
+    def asInt(self):
+        return self._id
+    def __eq__(self, other):
+        if type(self) == type(other):
+            return self._id == other._id
+        return self._id == other
+    def __repr__(self):
+        return '%s(%s)' % (self.__class__.__name__, self._id)
+
 # scope value for interest changes that have no complete event
 NO_SCOPE = 0
 
@@ -117,7 +130,7 @@ class DoInterestManager(DirectObject.DirectObject):
         if event:
             messenger.send(self._getAddInterestEvent(), [event])
         assert self.printInterestsIfDebug()
-        return handle
+        return InterestHandle(handle)
 
     def countOpenInterests(self):
         openInterestsCount = 0
@@ -135,9 +148,11 @@ class DoInterestManager(DirectObject.DirectObject):
         Stop looking in a (set of) zone(s)
         """
         assert DoInterestManager.notify.debugCall()
+        assert isinstance(handle, InterestHandle)
         existed = False
         if event is None:
             event = self._getAnonymousEvent('removeInterest')
+        handle = handle.asInt()
         if DoInterestManager._interests.has_key(handle):
             existed = True
             intState = DoInterestManager._interests[handle]
@@ -187,7 +202,9 @@ class DoInterestManager(DirectObject.DirectObject):
         If this is a problem, consider opening multiple interests.
         """
         assert DoInterestManager.notify.debugCall()
+        assert isinstance(handle, InterestHandle)
         #assert not self._noNewInterests
+        handle = handle.asInt()
         if self._noNewInterests:
             DoInterestManager.notify.warning(
                 "alterInterest: addingInterests on delete: %s" % (handle))
@@ -208,6 +225,7 @@ class DoInterestManager(DirectObject.DirectObject):
 
             scopeId = self._getNextScopeId()
             DoInterestManager._interests[handle].scope = scopeId
+            DoInterestManager._interests[handle].zoneIdList = zoneIdList
             DoInterestManager._interests[handle].addEvent(event)
 
             if self.InterestDebug:
