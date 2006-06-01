@@ -93,8 +93,8 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
     def setParentStr(self, parentTokenStr):
         assert self.notify.debug('setParentStr: %s' % parentTokenStr)
         assert self.notify.debug('isGenerated: %s' % self.isGenerated())
-        self.do_setParent(parentTokenStr)
         if len(parentTokenStr) > 0:
+            self.do_setParent(parentTokenStr)
             self.gotStringParentToken = 1
 
     def setParent(self, parentToken):

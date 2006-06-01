@@ -60,7 +60,8 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
 
     def setParentStr(self, parentToken):
         self.notify.debug('setParentStr(%s): %s' % (self.doId, parentToken))
-        self.do_setParent(parentToken)
+        if len(parentTokenStr) > 0:
+            self.do_setParent(parentToken)
 
     def setParent(self, parentToken):
         self.notify.debug('setParent(%s): %s' % (self.doId, parentToken))
