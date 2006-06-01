@@ -19,10 +19,11 @@ class TaskThreaded:
         self.__taskNames = set()
         self._taskStartTime = None
         self.__threads = set()
+        self._callback = callback
 
     def finished(self):
-        if self.callback:
-            self.callback()
+        if self._callback:
+            self._callback()
 
     def destroy(self):
         for taskName in self.__taskNames:
@@ -32,6 +33,8 @@ class TaskThreaded:
             thread.tearDown()
             thread._destroy()
         del self.__threads
+        del self._callback
+        self.ignoreAll()
 
     def getTimeslice(self):
         return self.___timeslice
