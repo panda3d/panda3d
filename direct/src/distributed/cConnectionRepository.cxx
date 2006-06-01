@@ -655,6 +655,7 @@ describe_message(ostream &out, const string &prefix,
   CHANNEL_TYPE do_id;
   int msg_type;
   bool is_update = false;
+  string full_prefix = "CR::" + prefix;
 
   if (!_client_datagram) 
   {
@@ -672,7 +673,7 @@ describe_message(ostream &out, const string &prefix,
   }
 
   if (!is_update) {
-    out << prefix << "message " << msg_type << "\n";
+    out << full_prefix << "message " << msg_type << "\n";
 
   } else {
     // It's an update message.  Figure out what dclass the object is
@@ -712,11 +713,11 @@ describe_message(ostream &out, const string &prefix,
     int field_id = packer.raw_unpack_uint16();
 
     if (dclass == (DCClass *)NULL) {
-      out << prefix << "update for unknown object " << do_id 
+      out << full_prefix << "update for unknown object " << do_id 
           << ", field " << field_id << "\n";
 
     } else {
-      out << prefix << "update for " << dclass->get_name()
+      out << full_prefix << "update for " << dclass->get_name()
           << " " << do_id << ": ";
       DCField *field = dclass->get_field_by_index(field_id);
       if (field == (DCField *)NULL) {
