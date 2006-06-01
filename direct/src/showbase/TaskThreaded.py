@@ -9,7 +9,7 @@ class TaskThreaded:
 
     _Serial = SerialNum()
     
-    def __init__(self, name, threaded=True, timeslice=None):
+    def __init__(self, name, threaded=True, timeslice=None, callback=None):
         # timeslice is how long this thread should take every frame.
         self.__name = name
         self.__threaded=threaded
@@ -19,6 +19,10 @@ class TaskThreaded:
         self.__taskNames = set()
         self._taskStartTime = None
         self.__threads = set()
+
+    def finished(self):
+        if self.callback:
+            self.callback()
 
     def destroy(self):
         for taskName in self.__taskNames:
@@ -56,7 +60,8 @@ class TaskThreaded:
             thread._destroy()
         else:
             if not self.__threaded:
-                thread.run()
+                while not thread.isFinished():
+                    thread.run()
                 thread._destroy()
             else:
                 assert not thread in self.__threads
