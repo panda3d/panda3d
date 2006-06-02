@@ -217,13 +217,17 @@ class DoCollectionManager:
         distObj = self.doId2do.get(self.getMsgChannel())
         if distObj is not None:
             distObj.setLocation(parentId, zoneId)
+        else:
+            self.notify.warning('handleSetLocation: object %s not present' % self.getMsgChannel())
 
     def storeObjectLocation(self, doId, parentId, zoneId, object=None):
         if (object == None):
             obj = self.doId2do.get(doId)
         else:
             obj = object
-        if obj is not None:
+        if obj is None:
+            self.notify.warning('storeObjectLocation: object %s not present' % doId)
+        else:
             oldParentId = obj.parentId
             oldZoneId = obj.zoneId
             if oldParentId != parentId:
@@ -253,6 +257,9 @@ class DoCollectionManager:
                     parentObj = self.doId2do.get(parentId)
                     if parentObj is not None:
                         parentObj.handleChildArrive(obj, zoneId)
+                    elif parentId not in (0, self.getGameDoId()):
+                        self.notify.warning('storeObjectLocation(%s): parent %s not present' %
+                                            (doId, parentId))
 
     def deleteObjectLocation(self, doId, parentId, zoneId):
         # Do not worry about null values
