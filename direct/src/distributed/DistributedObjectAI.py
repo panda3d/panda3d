@@ -387,7 +387,6 @@ class DistributedObjectAI(DistributedObjectBase):
         other networked info in this function.
         """
         assert self.notify.debugStateCall(self)
-        self.air.storeObjectLocation(self.doId, self.parentId, self.zoneId)
 
     def generateInit(self, repository=None):
         """
