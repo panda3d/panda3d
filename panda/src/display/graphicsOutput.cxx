@@ -736,6 +736,10 @@ make_texture_buffer(const string &name, int x_size, int y_size,
     FrameBufferProperties::FM_buffer |
     FrameBufferProperties::FM_stereo |
     FrameBufferProperties::FM_accum |
+
+// DO NOT USE STENCIL FOR NOW FOR TEXTURE BUFFERS
+    FrameBufferProperties::FM_stencil |
+
     FrameBufferProperties::FM_multisample |
     FrameBufferProperties::FM_hardware |
     FrameBufferProperties::FM_software;
