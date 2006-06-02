@@ -279,8 +279,8 @@ void FFMpegTexture::update_frame(int frame) {
         unsigned char *dest = _ram_images[0]._image.p() + get_expected_ram_page_size() * z;
         int dest_row_width = (_x_size * _num_components * _component_width);
         
-        int source_row_width= page._color.pCodecCtx->width * 3;
-        unsigned char * source=(unsigned char *)page._color.pFrameOut->data[0]
+        int source_row_width= page._alpha.pCodecCtx->width * 3;
+        unsigned char * source=(unsigned char *)page._alpha.pFrameOut->data[0]
                                 +source_row_width*(get_video_height()-1);
         for (int y = 0; y < get_video_height(); ++y) {
           int dx = 3;
