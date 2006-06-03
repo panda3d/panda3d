@@ -240,7 +240,7 @@ apply_texture(int i, TextureContext *tc) {
     if (!get_supports_compressed_texture_format(tc->get_texture()->get_ram_image_compression())) {
       dxgsg9_cat.error()
         << *dtc->get_texture() << " is stored in an unsupported compressed format.\n";
-      _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
+      set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
       return;
     }
 
