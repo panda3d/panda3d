@@ -149,6 +149,8 @@ get_safe_buffer_start() {
   return _safe_buffer_start;
 }
 
+#define ALWAYS_SET_RENDER_STATE true
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::set_render_state
 //       Access:
@@ -162,7 +164,7 @@ set_render_state (D3DRENDERSTATETYPE state, DWORD value)
   HRESULT hr;
 
   hr = D3D_OK;
-  if (_render_state_array [state] != value)
+  if (ALWAYS_SET_RENDER_STATE || _render_state_array [state] != value)
   {
     hr = _d3d_device->SetRenderState(state, value);
     _render_state_array [state] = value;
@@ -184,7 +186,7 @@ set_texture_stage_state (DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value
   HRESULT hr;
 
   hr = D3D_OK;
-  if (_texture_stage_states_array [stage].state_array [type] != value)
+  if (ALWAYS_SET_RENDER_STATE || _texture_stage_states_array [stage].state_array [type] != value)
   {
     hr = _d3d_device->SetTextureStageState(stage, type, value);
     _texture_stage_states_array [stage].state_array [type] = value;
@@ -206,7 +208,7 @@ set_sampler_state (DWORD sampler, D3DSAMPLERSTATETYPE type, DWORD value)
   HRESULT hr;
 
   hr = D3D_OK;
-  if (_texture_render_states_array [sampler].state_array [type] != value)
+  if (ALWAYS_SET_RENDER_STATE || _texture_render_states_array [sampler].state_array [type] != value)
   {
     hr = _d3d_device->SetSamplerState(sampler, type, value);
     _texture_render_states_array [sampler].state_array [type] = value;
