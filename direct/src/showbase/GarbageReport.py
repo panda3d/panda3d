@@ -116,10 +116,12 @@ class GarbageReport(TaskThreaded):
                     self.finished()
             def run(self):
                 for i in xrange(self.index, self.parent.numGarbage):
-                    self.parent.cycles.extend(self.parent._getCycles(i, self.parent.cycleSets))
+                    newCycles = self.parent._getCycles(i, self.parent.cycleSets)
+                    self.parent.cycles.extend(newCycles)
                     # if we're not doing a full report, add this cycle's IDs to the master set
                     if not self.parent._args.fullReport:
-                        self.parent.cycleIds.update(set(self.parent.cycles[-1]))
+                        for cycle in newCycles:
+                            self.parent.cycleIds.update(set(cycle))
                     if (not (i & 0x0F)) and (not self.timeLeft()):
                         # we've run out of time, save the index
                         self.index = i+1
