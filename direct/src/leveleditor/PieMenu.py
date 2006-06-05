@@ -6,7 +6,7 @@ from direct.task import Task
 
 class PieMenu(NodePath, DirectObject):
     def __init__(self, visibleMenu, menuItems,
-                 action = None, fUpdateOnlyOnChange = 1):
+                 action = None, fUpdateOnlyOnChange = 1, selectedSF = 1):
         NodePath.__init__(self)
         # Create a toplevel node for aspect ratio scaling
         self.assign(hidden.attachNewNode('PieMenu'))
@@ -21,7 +21,7 @@ class PieMenu(NodePath, DirectObject):
         self.menuItems = menuItems
         self.numItems = len(self.menuItems)
         if self.numItems == 0:
-            self.degreesPerItem = 0.0
+            self.degreesPerItem = 360.0
         else:
             self.degreesPerItem = 360.0/self.numItems
         self.itemOffset = self.degreesPerItem / 2.0
@@ -69,7 +69,12 @@ class PieMenu(NodePath, DirectObject):
         self.currItem = -1
         taskMgr.add(self.pieMenuTask, 'pieMenuTask')
 
-    def pieMenuTask(self, state):
+    def pieMenuTask(self,state):
+        # Don't do anything if nothing in the menu
+        if self.numItems == 0:
+            self.currItem = -1
+            return Task.cont
+        
         mouseX = self.dr.mouseX
         mouseY = self.dr.mouseY
         deltaX = mouseX - self.originX
@@ -98,7 +103,6 @@ class PieMenu(NodePath, DirectObject):
                 menuAngle = menuAngle + 360.0
             menuAngle = menuAngle % 360.0
             newItem = int(math.floor(menuAngle / self.degreesPerItem))
-
             if self.fUpdateOnlyOnChange:
                 if (self.currItem != newItem):
                     self.performAction(self.menuItems[newItem])
