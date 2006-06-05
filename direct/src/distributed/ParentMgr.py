@@ -1,6 +1,7 @@
 """ParentMgr module: contains the ParentMgr class"""
 
 from direct.directnotify import DirectNotifyGlobal
+from direct.showbase.PythonUtil import isDefaultValue
 
 class ParentMgr:
     # This is now used on the AI as well.
@@ -24,7 +25,7 @@ class ParentMgr:
     """
 
     notify = DirectNotifyGlobal.directNotify.newCategory('ParentMgr')
-    
+
     def __init__(self):
         self.token2nodepath = {}
         # these are nodepaths that have requested to be parented to
@@ -64,6 +65,8 @@ class ParentMgr:
                               (repr(child), parentToken))
             child.wrtReparentTo(self.token2nodepath[parentToken])
         else:
+            if isDefaultValue(parentToken):
+                self.notify.error('child %s requested reparent to default-value token: %s' % (repr(child), parentToken))
             self.notify.debug(
                 "child %s requested reparent to parent '%s' that is not (yet) registered" %
                 (repr(child), parentToken))
@@ -82,6 +85,9 @@ class ParentMgr:
             self.notify.error(
                 "registerParent: token '%s' already registered, referencing %s" %
                 (token, repr(self.token2nodepath[token])))
+
+        if isDefaultValue(token):
+            self.notify.error('parent token (for %s) cannot be a default value (%s)' % (repr(parent), token))
 
         self.notify.debug("registering %s as '%s'" % (repr(parent), token))
         self.token2nodepath[token] = parent
