@@ -1992,6 +1992,9 @@ def safeRepr(obj):
     except:
         return '<** FAILED REPR OF %s **>' % obj.__class__.__name__
 
+def isDefaultValue(x):
+    return x == type(x)()
+
 class ScratchPad:
     """empty class to stick values onto"""
     def __init__(self, **kArgs):
