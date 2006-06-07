@@ -24,42 +24,6 @@
 
 TypeHandle GraphicsPipe::_type_handle;
 
-// This array keeps the bitmasks of options that we pull out of the
-// requested frame_buffer_mode, in order.  This is used by derived
-// classes to find a suitable pixel format (or fbconfig, or whatever
-// the backend calls it) that comes as close as possible to the
-// requested configuration.
-
-const int GraphicsPipe::strip_properties[] = {
-  // One esoteric option removed.
-  FrameBufferProperties::FM_multisample,
-  FrameBufferProperties::FM_stencil,
-  FrameBufferProperties::FM_accum,
-  FrameBufferProperties::FM_alpha,
-  FrameBufferProperties::FM_stereo,
-  
-  // Two esoteric options removed.
-  FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_multisample,
-  FrameBufferProperties::FM_accum | FrameBufferProperties::FM_multisample,
-  FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_multisample,
-  FrameBufferProperties::FM_stereo | FrameBufferProperties::FM_multisample,
-  FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_accum,
-  FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_stereo,
-  FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_accum | FrameBufferProperties::FM_multisample,
-  FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_stereo | FrameBufferProperties::FM_multisample,
-  
-  // All esoteric options removed.
-  FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_accum | FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_stereo | FrameBufferProperties::FM_multisample,
-  
-  // All esoteric options, plus some we'd really really prefer,
-  // removed.
-  FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_accum | FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_stereo | FrameBufferProperties::FM_multisample | FrameBufferProperties::FM_double_buffer,
-  
-  // A zero marks the end of the array.
-  0
-};
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsPipe::Constructor
 //       Access: Protected
@@ -151,21 +115,6 @@ PT(GraphicsDevice) GraphicsPipe::
 make_device(void *scrn) {
   display_cat.error() 
     << "make_device() unimplemented by " << get_type() << "\n";
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipe::make_gsg
-//       Access: Protected, Virtual
-//  Description: Creates a new GSG to use the pipe (but no windows
-//               have been created yet for the GSG).  This method will
-//               be called in the draw thread for the GSG.
-////////////////////////////////////////////////////////////////////
-PT(GraphicsStateGuardian) GraphicsPipe::
-make_gsg(const FrameBufferProperties &properties, 
-         GraphicsStateGuardian *share_with) {
-  display_cat.error()
-    << "make_gsg() unimplemented by " << get_type() << "\n";
   return NULL;
 }
 

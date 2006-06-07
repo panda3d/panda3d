@@ -435,19 +435,13 @@ make_buffer() {
 
   // Some graphics drivers can only create single-buffered offscreen
   // buffers.  So request that.
-  fbprops.set_frame_buffer_mode((fbprops.get_frame_buffer_mode() & ~FrameBufferProperties::FM_buffer) | FrameBufferProperties::FM_single_buffer);
-
-  PT(GraphicsStateGuardian) gsg = 
-    _engine->make_gsg(_pipe, fbprops);
-  if (gsg == (GraphicsStateGuardian *)NULL) {
-    nout << "Unable to create GraphicsStateGuardian.\n";
-    return false;
-  }
-  _gsg = gsg;
+  fbprops.set_back_buffers(0);
 
   // We don't care how big the buffer is; we just need it to manifest
   // the GSG.
-  _buffer = _engine->make_buffer(_gsg, "buffer", 0, 1, 1);
+  _buffer = _engine->make_output(_pipe, "buffer", 0, fbprops, 1, 1, 
+                                 GraphicsPipe::BF_refuse_window |
+                                 GraphicsPipe::BF_fb_props_optional);
   _engine->open_windows();
   if (_buffer == (GraphicsOutput *)NULL || !_buffer->is_valid()) {
     if (_buffer != (GraphicsOutput *)NULL) {
@@ -455,7 +449,11 @@ make_buffer() {
     }
 
     // Couldn't create a buffer; try for a window instead.
-    GraphicsWindow *window = _engine->make_window(_gsg, "window", 0);
+    fbprops = FrameBufferProperties::get_default();
+    _buffer = _engine->make_output(_pipe, "window", 0, fbprops, 1, 1,
+                                   GraphicsPipe::BF_require_window |
+                                   GraphicsPipe::BF_fb_props_optional);
+    GraphicsWindow *window = (GraphicsWindow*)_buffer;
     if (window == (GraphicsWindow *)NULL) {
       nout << "Unable to create graphics window.\n";
       return false;
@@ -470,6 +468,7 @@ make_buffer() {
     _buffer = window;
     _engine->open_windows();
   }
+  _gsg = _buffer->get_gsg();
 
   return true;
 }

@@ -68,47 +68,6 @@ pipe_constructor() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsPipe::make_gsg
-//       Access: Protected, Virtual
-//  Description: Creates a new GSG to use the pipe (but no windows
-//               have been created yet for the GSG).  This method will
-//               be called in the draw thread for the GSG.
-////////////////////////////////////////////////////////////////////
-PT(GraphicsStateGuardian) osxGraphicsPipe::
-make_gsg(const FrameBufferProperties &properties, 
-         GraphicsStateGuardian *share_with) {
-		 
-		 
-  if (!_is_valid) {
-    return NULL;
-  }
-
-  osxGraphicsStateGuardian *share_gsg = NULL;
-
-  if (share_with != (GraphicsStateGuardian *)NULL) {
-    if (!share_with->is_exact_type(osxGraphicsStateGuardian::get_class_type())) 
-	{
-      osxdisplay_cat.error()
-        << "Cannot share context between osxGraphicsStateGuardian and "
-        << share_with->get_type() << "\n";
-      return NULL;
-    }
-
-    DCAST_INTO_R(share_gsg, share_with, NULL);
-  }
-
-  int frame_buffer_mode = 0;
-  if (properties.has_frame_buffer_mode()) {
-    frame_buffer_mode = properties.get_frame_buffer_mode();
-  }
-
-
-	PT(osxGraphicsStateGuardian) gsg1 = new osxGraphicsStateGuardian(properties,(osxGraphicsStateGuardian *)  share_with, 1);
-                          
-    return gsg1.p();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsPipe::make_output
 //       Access: Protected, Virtual
 //  Description: Creates a new window on the pipe, if possible.
@@ -136,9 +95,7 @@ make_output(const string &name,
         ((flags&BF_refuse_window)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_color)!=0)||
-        ((flags&BF_can_bind_every)!=0)
- //       ||(properties != gsg->get_default_properties())
-		) {
+        ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
     return new osxGraphicsWindow(this, name, properties,
@@ -168,8 +125,7 @@ make_output(const string &name,
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
         ((flags&BF_size_track_host)!=0)||
-        ((flags&BF_can_bind_every)!=0)||
-        (properties != gsg->get_default_properties())) {
+        ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
     return new osxGraphicsBuffer(this, name, properties,

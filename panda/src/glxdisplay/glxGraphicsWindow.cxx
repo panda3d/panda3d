@@ -519,14 +519,31 @@ bool glxGraphicsWindow::
 open_window() {
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_R(glx_pipe, _pipe, false);
-  glxGraphicsStateGuardian *glxgsg;
-  DCAST_INTO_R(glxgsg, _gsg, false);
 
+  // GSG Creation/Initialization
+  glxGraphicsStateGuardian *glxgsg;
+  if (_gsg == 0) {
+    // There is no old gsg.  Create a new one.
+    glxgsg = new glxGraphicsStateGuardian(_pipe, NULL);
+    glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), false);
+    _gsg = glxgsg;
+  } else {
+    // If the old gsg has the wrong pixel format, create a
+    // new one that shares with the old gsg.
+    DCAST_INTO_R(glxgsg, _gsg, false);
+    if (!glxgsg->get_fb_properties().subsumes(_fb_properties)) {
+      glxgsg = new glxGraphicsStateGuardian(_pipe, glxgsg);
+      glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), false);
+      _gsg = glxgsg;
+    }
+  }
+  
+  
   XVisualInfo *visual_info = glxgsg->_visual;
   if (visual_info == NULL) {
     // No X visual for this fbconfig; how can we open the window?
     glxdisplay_cat.error()
-      << "Cannot open window without an X visual.\n";
+      << "Cannot open window.\n";
     return false;
   }
   Visual *visual = visual_info->visual;
@@ -600,6 +617,19 @@ open_window() {
     XDefineCursor(_display, _xwindow, glx_pipe->get_hidden_cursor());
   }
 
+  glXMakeCurrent(_display, _xwindow, glxgsg->_context);
+  glxgsg->reset_if_new();
+  if (!glxgsg->is_valid()) {
+    close_window();
+    return false;
+  }
+  if (!glxgsg->get_fb_properties().verify_hardware_software
+      (_fb_properties, glxgsg->get_gl_renderer())) {
+    close_window();
+    return false;
+  }
+  _fb_properties = glxgsg->get_fb_properties();
+  
   XMapWindow(_display, _xwindow);
 
   return true;

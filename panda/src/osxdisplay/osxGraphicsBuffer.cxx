@@ -141,6 +141,10 @@ close_buffer() {
 bool osxGraphicsBuffer::
 open_buffer() {
 
+  if (_gsg == 0) {
+    _gsg = new osxGraphicsStateGuardian(_pipe, NULL);
+  }
+  
   return false;
 }
 

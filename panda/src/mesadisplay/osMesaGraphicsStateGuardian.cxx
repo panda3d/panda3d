@@ -26,9 +26,9 @@ TypeHandle OSMesaGraphicsStateGuardian::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 OSMesaGraphicsStateGuardian::
-OSMesaGraphicsStateGuardian(const FrameBufferProperties &properties,
-                            OSMesaGraphicsStateGuardian *share_with) : 
-  MesaGraphicsStateGuardian(properties)
+OSMesaGraphicsStateGuardian(GraphicsPipe *pipe,
+			    OSMesaGraphicsStateGuardian *share_with) : 
+  MesaGraphicsStateGuardian(pipe)
 {
   OSMesaContext share_context = NULL;
   if (share_with != (OSMesaGraphicsStateGuardian *)NULL) {

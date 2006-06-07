@@ -151,26 +151,13 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
             GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
   nassertr(_window == (GraphicsWindow *)NULL, _window);
 
-  PT(GraphicsStateGuardian) ptgsg = gsg;
-
-  // If we were not given a gsg in the arguments, create a new one
-  // just for this window.
-  if (ptgsg == (GraphicsStateGuardian *)NULL) {
-    ptgsg = engine->make_gsg(pipe);
-    if (ptgsg == (GraphicsStateGuardian *)NULL) {
-      // No GSG, no window.
-      framework_cat.fatal() << "open_window: failed to create gsg object!\n";
-      return NULL;
-    }
-  }
-
   static int next_window_index = 1;
   ostringstream stream;
   stream << "window" << next_window_index;
   next_window_index++;
   string name = stream.str();
 
-  _window = engine->make_window(ptgsg, name, 0);
+  _window = engine->make_window(gsg, name, 0);
   if (_window != (GraphicsWindow *)NULL) {
     _window->request_properties(props);
 

@@ -78,7 +78,7 @@ class DXIndexBufferContext9;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXGraphicsStateGuardian9 : public GraphicsStateGuardian {
 public:
-  DXGraphicsStateGuardian9(const FrameBufferProperties &properties);
+  DXGraphicsStateGuardian9(GraphicsPipe *pipe);
   ~DXGraphicsStateGuardian9();
 
   virtual TextureContext *prepare_texture(Texture *tex);

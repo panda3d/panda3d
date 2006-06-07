@@ -3022,16 +3022,33 @@ EnqueueLink(dll='libpandaegg.dll', opts=['ADVAPI', 'NSPR'], obj=[
 ])
 
 #
+# DIRECTORY: panda/src/mesadisplay/
+#
+
+if (sys.platform != "win32"):
+    IPATH=['panda/src/mesadisplay', 'panda/src/glstuff']
+    OPTS=['BUILDING_PANDAGLUT', 'NSPR', 'GLUT']
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='mesadisplay_composite.cxx', obj='mesadisplay_composite.obj')
+    IPATH=['panda/metalibs/pandagl']
+    EnqueueLink(opts=['GLUT', 'NSPR'], dll='libpandamesa.dll', obj=[
+      'mesadisplay_composite.obj',
+      'libpanda.dll',
+      'libpandaexpress.dll',
+      'libglstuff.dll',
+      'libpandafx.dll',
+      'libdtoolconfig.dll',
+      'libdtool.dll',
+      ])
+
+#
 # DIRECTORY: panda/src/glxdisplay/
 #
 
 if (sys.platform != "win32"):
-    IPATH=['panda/src/glxdisplay', 'panda/src/gobj']
+    IPATH=['panda/src/glxdisplay']
     OPTS=['BUILDING_PANDAGLUT', 'NSPR', 'GLUT', 'NVIDIACG', 'CGGL']
-#     CopyAllHeaders('panda/src/glxdisplay')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='glxdisplay_composite.cxx', obj='glxdisplay_composite.obj')
     IPATH=['panda/metalibs/pandagl']
-#     CopyAllHeaders('panda/metalibs/pandagl')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandagl.cxx', obj='pandagl_pandagl.obj')
     EnqueueLink(opts=['GLUT', 'NVIDIACG', 'CGGL', 'NSPR'], dll='libpandagl.dll', obj=[
       'pandagl_pandagl.obj',
@@ -3051,12 +3068,10 @@ if (sys.platform != "win32"):
 #
 
 if (sys.platform == "win32"):
-    IPATH=['panda/src/wgldisplay', 'panda/src/glstuff', 'panda/src/gobj']
+    IPATH=['panda/src/wgldisplay', 'panda/src/glstuff']
     OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
-#     CopyAllHeaders('panda/src/wgldisplay')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='wgldisplay_composite.cxx', obj='wgldisplay_composite.obj')
     IPATH=['panda/metalibs/pandagl']
-#     CopyAllHeaders('panda/metalibs/pandagl')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandagl.cxx', obj='pandagl_pandagl.obj')
     EnqueueLink(opts=['WINGDI', 'GLUT', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'NSPR', 'NVIDIACG', 'CGGL'],
                 dll='libpandagl.dll', obj=[

@@ -112,8 +112,6 @@ public:
   Atom _net_wm_window_type_fullscreen;
 
 protected:
-  virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties,
-                                             GraphicsStateGuardian *share_with);
   virtual PT(GraphicsOutput) make_output(const string &name,
                                          const FrameBufferProperties &properties,
                                          int x_size, int y_size, int flags,
@@ -123,24 +121,6 @@ protected:
                                          bool &precertify);
 
 private:
-#ifdef HAVE_GLXFBCONFIG
-  GLXFBConfig choose_fbconfig(FrameBufferProperties &properties) const;
-  GLXFBConfig try_for_fbconfig(int framebuffer_mode,
-                               int want_depth_bits = 1, 
-                               int want_color_bits = 1,
-                               int want_alpha_bits = 1, 
-                               int want_stencil_bits = 1,
-                               int want_multisamples = 1) const;
-#endif
-
-  XVisualInfo *choose_visual(FrameBufferProperties &properties) const;
-  XVisualInfo *try_for_visual(int framebuffer_mode,
-                              int want_depth_bits = 1, 
-                              int want_color_bits = 1,
-                              int want_alpha_bits = 1, 
-                              int want_stencil_bits = 1,
-                              int want_multisamples = 1) const;
-
   void make_hidden_cursor();
   void release_hidden_cursor();
 

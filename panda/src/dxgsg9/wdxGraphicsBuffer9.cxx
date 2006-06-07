@@ -429,8 +429,12 @@ close_buffer() {
 bool wdxGraphicsBuffer9::
 open_buffer() {
   bool state;
-  DXGraphicsStateGuardian9 *dxgsg;
-  DCAST_INTO_R(dxgsg, _gsg, false);
+
+  // GSG creation/initialization.
+  if (_gsg == 0) {
+    _dxgsg = new DXGraphicsStateGuardian9(_pipe);
+    _gsg = _dxgsg;
+  }
 
   // create texture
   int tex_index;
@@ -454,7 +458,7 @@ open_buffer() {
     _dx_texture_context9 = DCAST (DXTextureContext9, tc);
 
     // create a depth stencil buffer if needed
-    hr = dxgsg -> _d3d_device -> GetDepthStencilSurface (&_depth_stencil_surface);
+    hr = _dxgsg -> _d3d_device -> GetDepthStencilSurface (&_depth_stencil_surface);
     if (SUCCEEDED  (hr))
     {
       D3DSURFACE_DESC surface_description;
@@ -480,7 +484,7 @@ open_buffer() {
           multisample_quality = surface_description.MultiSampleQuality;
           discard = false;
 
-          hr = dxgsg -> _d3d_device -> CreateDepthStencilSurface (
+          hr = _dxgsg -> _d3d_device -> CreateDepthStencilSurface (
             width, height, format, multisample_type, multisample_quality,
             discard, &this -> _new_z_stencil_surface, NULL);
           if (SUCCEEDED  (hr)) {

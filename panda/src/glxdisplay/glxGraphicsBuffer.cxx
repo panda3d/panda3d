@@ -161,11 +161,28 @@ close_buffer() {
 ////////////////////////////////////////////////////////////////////
 bool glxGraphicsBuffer::
 open_buffer() {
+
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_R(glx_pipe, _pipe, false);
-  glxGraphicsStateGuardian *glxgsg;
-  DCAST_INTO_R(glxgsg, _gsg, false);
 
+  // GSG Creation/Initialization
+  glxGraphicsStateGuardian *glxgsg;
+  if (_gsg == 0) {
+    // There is no old gsg.  Create a new one.
+    glxgsg = new glxGraphicsStateGuardian(_pipe, NULL);
+    glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), true);
+    _gsg = glxgsg;
+  } else {
+    // If the old gsg has the wrong pixel format, create a
+    // new one that shares with the old gsg.
+    DCAST_INTO_R(glxgsg, _gsg, false);
+    if (!glxgsg->get_fb_properties().subsumes(_fb_properties)) {
+      glxgsg = new glxGraphicsStateGuardian(_pipe, glxgsg);
+      glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), true);
+      _gsg = glxgsg;
+    }
+  }
+  
   if (glxgsg->_fbconfig == None) {
     // If we didn't use an fbconfig to create the GSG, we can't create
     // a PBuffer.
@@ -203,6 +220,19 @@ open_buffer() {
     return false;
   }
 
+  glXMakeCurrent(_display, _pbuffer, glxgsg->_context);
+  glxgsg->reset_if_new();
+  if (!glxgsg->is_valid()) {
+    close_buffer();
+    return false;
+  }
+  if (!glxgsg->get_fb_properties().verify_hardware_software
+      (_fb_properties, glxgsg->get_gl_renderer())) {
+    close_buffer();
+    return false;
+  }
+  _fb_properties = glxgsg->get_fb_properties();
+  
   _is_valid = true;
   return true;
 }

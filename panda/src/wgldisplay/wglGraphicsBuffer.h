@@ -61,16 +61,20 @@ protected:
   virtual bool open_buffer();
 
 private:
-  void begin_render_texture();
-  void end_render_texture();
-  bool make_pbuffer(HDC window_dc);
-  int choose_pbuffer_format(HDC twindow_dc, bool draw_to_texture);
+  void bind_texture_to_pbuffer();
+  bool rebuild_bitplanes();
+  void release_pbuffer();
 
   static void process_1_event();
 
   HPBUFFERARB _pbuffer;
   HDC _pbuffer_dc;
-
+  bool _pbuffer_mipmap;
+  Texture::TextureType _pbuffer_type;
+  int _pbuffer_sizex;
+  int _pbuffer_sizey;
+  PT(Texture) _pbuffer_bound;
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

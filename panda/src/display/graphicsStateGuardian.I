@@ -133,19 +133,6 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_properties
-//       Access: Published
-//  Description: Returns the default frame buffer properties for
-//               this GSG.  All windows created for this GSG will be
-//               created with these properties, unless explicitly
-//               overridden.
-////////////////////////////////////////////////////////////////////
-INLINE const FrameBufferProperties &GraphicsStateGuardian::
-get_default_properties() const {
-  return _default_properties;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_pipe
 //       Access: Published
 //  Description: Returns the graphics pipe on which this GSG was

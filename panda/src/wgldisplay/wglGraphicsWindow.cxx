@@ -276,18 +276,28 @@ open_window() {
     return false;
   }
 
+  // GSG creation/initialization.
+
   wglGraphicsStateGuardian *wglgsg;
-  DCAST_INTO_R(wglgsg, _gsg, false);
+  if (_gsg == 0) {
+    // There is no old gsg.  Create a new one.
+    wglgsg = new wglGraphicsStateGuardian(_pipe, NULL);
+    wglgsg->choose_pixel_format(_fb_properties, false);
+    _gsg = wglgsg;
+  } else {
+    // If the old gsg has the wrong pixel format, create a
+    // new one that shares with the old gsg.
+    DCAST_INTO_R(wglgsg, _gsg, false);
+    if (!wglgsg->get_fb_properties().subsumes(_fb_properties)) {
+      wglgsg = new wglGraphicsStateGuardian(_pipe, wglgsg);
+      wglgsg->choose_pixel_format(_fb_properties, false);
+      _gsg = wglgsg;
+    }
+  }
+  
+  // Set up the pixel format of the window appropriately for GL.
 
   _hdc = GetDC(_hWnd);
-
-  // Make sure a pixel format is chosen, and take its properties.
-  if (wglgsg->get_pfnum() < 0) {
-    wglgsg->choose_pixel_format(_fb_properties);
-  }
-  _fb_properties = wglgsg->get_pfnum_properties();
-
-  // Set up the pixel format of the window appropriately for GL.
   int pfnum = wglgsg->get_pfnum();
   PIXELFORMATDESCRIPTOR pixelformat;
   DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), 
@@ -317,6 +327,17 @@ open_window() {
 
   // Initializes _colormap
   setup_colormap(pixelformat);
+
+  // Initialize the gsg.
+  wglGraphicsPipe::wgl_make_current(_hdc, wglgsg->get_context(_hdc), &_make_current_pcollector);
+  wglgsg->reset_if_new();
+  wglgsg->report_my_gl_errors();
+  if (!wglgsg->get_fb_properties().verify_hardware_software
+      (_fb_properties,wglgsg->get_gl_renderer())) {
+    close_window();
+    return false;
+  }
+  _fb_properties = wglgsg->get_fb_properties();
 
   return true;
 }

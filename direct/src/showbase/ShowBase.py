@@ -420,15 +420,6 @@ class ShowBase(DirectObject.DirectObject):
                 # We couldn't get a pipe.
                 return None
 
-        if gsg == None:
-            # If we weren't given a gsg, create a new one just for
-            # this window.
-            gsg = self.graphicsEngine.makeGsg(pipe)
-
-            if gsg == None:
-                # Couldn't make a gsg.
-                return None
-
         if type == None:
             type = self.windowType
 
@@ -446,11 +437,17 @@ class ShowBase(DirectObject.DirectObject):
             self.nextWindowIndex += 1
 
         win = None
+
+        fbprops = FrameBufferProperties.getDefault()
+
+        flags = GraphicsPipe.BFFbPropsOptional
         if type == 'onscreen':
-            win = self.graphicsEngine.makeWindow(gsg, name, 0)
+            flags = flags | GraphicsPipe.BFRequireWindow
         elif type == 'offscreen':
-            win = self.graphicsEngine.makeBuffer(
-                gsg, name, 0, props.getXSize(), props.getYSize())
+            flags = flags | GraphicsPipe.BFRefuseWindow
+
+        win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
+                                             props.getXSize(), props.getYSize(), flags)
 
         if win == None:
             # Couldn't create a window!

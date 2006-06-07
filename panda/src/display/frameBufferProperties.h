@@ -29,132 +29,98 @@
 //               create a GSG.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FrameBufferProperties {
+
+private:
+  enum FrameBufferProperty {
+    // This section has to start with "depth" and end with "accum"
+    FBP_depth_bits,
+    FBP_color_bits,
+    FBP_alpha_bits,
+    FBP_stencil_bits,
+    FBP_accum_bits,
+
+    // This section has to start with "rgba" and end with "float"
+    FBP_aux_rgba,
+    FBP_aux_hrgba,
+    FBP_aux_float,
+
+    // This section can be in any order.
+    FBP_multisamples,
+    FBP_back_buffers,
+    FBP_indexed_color,
+    FBP_rgb_color,
+    FBP_stereo,
+    FBP_force_hardware,
+    FBP_force_software,
+    
+    // This is a sentinel value.
+    FBP_COUNT
+  };
+  
+  int _property[FBP_COUNT];
+  int _specified[FBP_COUNT];
+
 PUBLISHED:
+
+  // Individual queries.
+  INLINE int get_depth_bits() const;
+  INLINE int get_color_bits() const;
+  INLINE int get_alpha_bits() const;
+  INLINE int get_stencil_bits() const;
+  INLINE int get_accum_bits() const;
+  INLINE int get_aux_rgba() const;
+  INLINE int get_aux_hrgba() const;
+  INLINE int get_aux_float() const;
+  INLINE int get_multisamples() const;
+  INLINE int get_back_buffers() const;
+  INLINE int get_indexed_color() const;
+  INLINE int get_rgb_color() const;
+  INLINE int get_stereo() const;
+  INLINE int get_force_hardware() const;
+  INLINE int get_force_software() const;
+
+  // Individual assigners.
+  INLINE void set_depth_bits(int n);
+  INLINE void set_color_bits(int n);
+  INLINE void set_alpha_bits(int n);
+  INLINE void set_stencil_bits(int n);
+  INLINE void set_accum_bits(int n);
+  INLINE void set_aux_rgba(int n);
+  INLINE void set_aux_hrgba(int n);
+  INLINE void set_aux_float(int n);
+  INLINE void set_multisamples(int n);
+  INLINE void set_back_buffers(int n);
+  INLINE void set_indexed_color(int n);
+  INLINE void set_rgb_color(int n);
+  INLINE void set_stereo(int n);
+  INLINE void set_force_hardware(int n);
+  INLINE void set_force_software(int n);
+
+  // Other.
+
   FrameBufferProperties();
   INLINE FrameBufferProperties(const FrameBufferProperties &copy);
-  void operator = (const FrameBufferProperties &copy);
   INLINE ~FrameBufferProperties();
-
-  static FrameBufferProperties get_default();
-
+  void operator = (const FrameBufferProperties &copy);
+  static const FrameBufferProperties &get_default();
   bool operator == (const FrameBufferProperties &other) const;
   INLINE bool operator != (const FrameBufferProperties &other) const;
 
-  enum FrameBufferMode {
-    FM_rgb            = 0x0000,
-    FM_index          = 0x0001,
-    FM_single_buffer  = 0x0000,
-    FM_double_buffer  = 0x0002,
-    FM_triple_buffer  = 0x0006,
-    FM_buffer         = 0x0006,  // == (FM_single_buffer | FM_double_buffer | FM_triple_buffer)
-    FM_accum          = 0x0008,
-    FM_alpha          = 0x0010,
-    FM_rgba           = 0x0010,  // == (FM_rgb | FM_alpha)
-    FM_depth          = 0x0020,
-    FM_stencil        = 0x0040,
-    FM_multisample    = 0x0080,
-    FM_stereo         = 0x0100,
-    FM_software       = 0x0200,
-    FM_hardware       = 0x0400,
-  };
-
-  // This bitmask indicates which of the parameters in the properties
-  // structure have been filled in by the user, and which remain
-  // unspecified.
-  enum Specified {
-    S_frame_buffer_mode = 0x0001,
-    S_depth_bits        = 0x0002,
-    S_color_bits        = 0x0004,
-    S_alpha_bits        = 0x0008,
-    S_stencil_bits      = 0x0010,
-    S_multisamples      = 0x0020,
-    S_aux_rgba          = 0x0040,
-    S_aux_hrgba         = 0x0080,
-    S_aux_float         = 0x0100,
-    S_ALL_SPECIFIED     = 0x01FF,
-  };
-  
   void clear();
-  INLINE void set_specified();
-  INLINE int get_specified() const;
-  INLINE int get_buffer_mask() const;
-  INLINE bool is_any_specified() const;
-  INLINE bool specifies_mode(int bit) const;
-  INLINE bool is_single_buffered() const;
-  INLINE bool is_stereo() const;
-  INLINE bool is_basic() const;
-  
-  bool subsumes(const FrameBufferProperties &prop) const;
-  
-  INLINE void set_frame_buffer_mode(int frameBuffer_mode);
-  INLINE int get_frame_buffer_mode() const;
-  INLINE bool has_frame_buffer_mode() const;
-  INLINE void clear_frame_buffer_mode();
-
-  INLINE void set_depth_bits(int depth_bits);
-  INLINE int get_depth_bits() const;
-  INLINE bool has_depth_bits() const;
-  INLINE void clear_depth_bits();
-
-  INLINE void set_color_bits(int color_bits);
-  INLINE int get_color_bits() const;
-  INLINE bool has_color_bits() const;
-  INLINE void clear_color_bits();
-
-  INLINE void set_alpha_bits(int alpha_bits);
-  INLINE int get_alpha_bits() const;
-  INLINE bool has_alpha_bits() const;
-  INLINE void clear_alpha_bits();
-
-  INLINE void set_stencil_bits(int stencil_bits);
-  INLINE int get_stencil_bits() const;
-  INLINE bool has_stencil_bits() const;
-  INLINE void clear_stencil_bits();
-
-  INLINE void set_multisamples(int multisamples);
-  INLINE int get_multisamples() const;
-  INLINE bool has_multisamples() const;
-  INLINE void clear_multisamples();
-
-  INLINE void set_aux_rgba(int naux);
-  INLINE int get_aux_rgba() const;
-  INLINE bool has_aux_rgba() const;
-  INLINE void clear_aux_rgba();
-  
-  INLINE void set_aux_hrgba(int naux);
-  INLINE int get_aux_hrgba() const;
-  INLINE bool has_aux_hrgba() const;
-  INLINE void clear_aux_hrgba();
-
-  INLINE void set_aux_float(int naux);
-  INLINE int get_aux_float() const;
-  INLINE bool has_aux_float() const;
-  INLINE void clear_aux_float();
-
+  void set_all_specified();
+  bool subsumes(const FrameBufferProperties &other) const;
   void add_properties(const FrameBufferProperties &other);
   void output(ostream &out) const;
-
-public:
-  INLINE void buffer_mask_add(int bits);
-  INLINE void buffer_mask_remove(int bits);
-
-private:
-  void recalc_buffer_mask();
-
-private:
-
-  int _specified;
-  int _flags;
-  int _frame_buffer_mode;
-  int _depth_bits;
-  int _color_bits;
-  int _alpha_bits;
-  int _stencil_bits;
-  int _multisamples;
-  int _aux_rgba;
-  int _aux_hrgba;
-  int _aux_float;
-  int _buffer_mask;
+  void set_one_bit_per_channel();
+  
+  bool is_stereo() const;
+  bool is_single_buffered() const;
+  int get_quality(const FrameBufferProperties &reqs) const;
+  bool is_any_specified() const;
+  bool is_basic() const;
+  int get_buffer_mask() const;
+  int get_property_set() const;
+  bool verify_hardware_software(const FrameBufferProperties &props, const string &renderer) const;
 };
 
 INLINE ostream &operator << (ostream &out, const FrameBufferProperties &properties);

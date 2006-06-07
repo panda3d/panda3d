@@ -92,31 +92,6 @@ close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::make_gsg
-//       Access: Published
-//  Description: Creates a new gsg using the indicated GraphicsPipe
-//               and returns it.  The GraphicsEngine does not
-//               officially own the pointer to the gsg; but if any
-//               windows are created using this GSG, the
-//               GraphicsEngine will own the pointers to these
-//               windows, which in turn will own the pointer to the
-//               GSG.
-//
-//               There is no explicit way to release a GSG, but it
-//               will be destructed when all windows that reference it
-//               are destructed, and the draw thread that owns the GSG
-//               runs one more time.
-//
-//               This flavor of make_gsg() uses the default
-//               frame buffer properties, specified via
-//               set_frame_buffer_properties().
-////////////////////////////////////////////////////////////////////
-INLINE PT(GraphicsStateGuardian) GraphicsEngine::
-make_gsg(GraphicsPipe *pipe) {
-  return make_gsg(pipe, get_frame_buffer_properties(), NULL);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::make_window
 //       Access: Published
 //  Description: Syntactic shorthand for make_output
@@ -124,8 +99,9 @@ make_gsg(GraphicsPipe *pipe) {
 INLINE GraphicsWindow *GraphicsEngine::
 make_window(GraphicsStateGuardian *gsg, const string &name, int sort) {
   // The hardwired size here is never used.
+  FrameBufferProperties fbprops = FrameBufferProperties::get_default();
   GraphicsOutput *result = make_output(gsg->get_pipe(), name, sort,
-                                       gsg->get_default_properties(), 50, 50,
+                                       fbprops, 50, 50,
                                        GraphicsPipe::BF_require_window |
                                        GraphicsPipe::BF_fb_props_optional,
                                        gsg, NULL);
@@ -140,17 +116,15 @@ make_window(GraphicsStateGuardian *gsg, const string &name, int sort) {
 INLINE GraphicsOutput *GraphicsEngine::
 make_buffer(GraphicsStateGuardian *gsg, const string &name,
             int sort, int x_size, int y_size) {
-  FrameBufferProperties props = gsg->get_default_properties();
-  int clear =
-        FrameBufferProperties::FM_buffer |
-        FrameBufferProperties::FM_stereo |
-        FrameBufferProperties::FM_accum |
-        FrameBufferProperties::FM_multisample |
-        FrameBufferProperties::FM_hardware |
-        FrameBufferProperties::FM_software;
-  props.set_frame_buffer_mode(props.get_frame_buffer_mode() & (~clear));
+  FrameBufferProperties props = FrameBufferProperties::get_default();
+  props.set_back_buffers(0);
+  props.set_stereo(0);
+  props.set_accum_bits(0);
+  props.set_multisamples(0);
+  props.set_force_hardware(0);
+  props.set_force_software(0);
   GraphicsOutput *result = make_output(gsg->get_pipe(), name, sort,
-                                       gsg->get_default_properties(), x_size, y_size,
+                                       props, x_size, y_size,
                                        GraphicsPipe::BF_refuse_window |
                                        GraphicsPipe::BF_fb_props_optional,
                                        gsg, NULL);

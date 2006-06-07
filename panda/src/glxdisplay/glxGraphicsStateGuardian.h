@@ -73,15 +73,24 @@ typedef int (* PFNGLXSWAPINTERVALSGIPROC) (int interval);
 ////////////////////////////////////////////////////////////////////
 class glxGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
-  glxGraphicsStateGuardian(const FrameBufferProperties &properties,
-                           glxGraphicsStateGuardian *share_with,
-                           int want_hardware,
-                           GLXContext context, XVisualInfo *visual,
-                           Display *display, int screen
 #ifdef HAVE_GLXFBCONFIG
-                           , GLXFBConfig fbconfig
-#endif  // HAVE_GLXFBCONFIG
-                           );
+  typedef GLXFBConfig fbconfig;
+#else
+  typedef int         fbconfig;
+#endif
+
+  INLINE const FrameBufferProperties &get_fb_properties() const;
+  void get_properties(FrameBufferProperties &properties, XVisualInfo *visual);
+  void get_properties_advanced(FrameBufferProperties &properties,
+			       bool &supports_pbuffer, bool &slow,
+			       fbconfig config);
+  void choose_pixel_format(const FrameBufferProperties &properties, 
+			   Display *_display,
+			   int _screen,
+			   bool need_pbuffer);
+  
+  glxGraphicsStateGuardian(GraphicsPipe *pipe,
+			   glxGraphicsStateGuardian *share_with);
 
   virtual ~glxGraphicsStateGuardian();
 
@@ -89,15 +98,14 @@ public:
 
   bool glx_is_at_least_version(int major_version, int minor_version) const;
 
-  int _want_hardware;
+  GLXContext _share_context;
   GLXContext _context;
-  XVisualInfo *_visual;
   Display *_display;
   int _screen;
-
-#ifdef HAVE_GLXFBCONFIG
-  GLXFBConfig _fbconfig;
-#endif  // HAVE_GLXFBCONFIG
+  XVisualInfo *_visual;
+  XVisualInfo *_visuals;
+  fbconfig _fbconfig;
+  FrameBufferProperties _fbprops;
 
 public:
   bool _supports_swap_control;

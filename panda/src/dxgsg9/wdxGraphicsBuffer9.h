@@ -60,6 +60,7 @@ private:
   static void process_1_event();
 
   int _cube_map_index;
+  DXGraphicsStateGuardian9 *_dxgsg;
   IDirect3DSurface9 *_back_buffer;
   IDirect3DSurface9 *_z_stencil_buffer;
   IDirect3DSurface9 *_direct_3d_surface;

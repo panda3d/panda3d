@@ -89,7 +89,7 @@ typedef void (APIENTRY * PFNGLACTIVESTENCILFACEEXTPROC) (GLenum face);
 ////////////////////////////////////////////////////////////////////
 class EXPCL_GL CLP(GraphicsStateGuardian) : public GraphicsStateGuardian {
 public:
-  CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties);
+  CLP(GraphicsStateGuardian)(GraphicsPipe *pipe);
   virtual ~CLP(GraphicsStateGuardian)();
 
   virtual void reset();

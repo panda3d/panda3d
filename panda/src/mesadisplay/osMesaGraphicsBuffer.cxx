@@ -129,6 +129,10 @@ close_buffer() {
 ////////////////////////////////////////////////////////////////////
 bool OsMesaGraphicsBuffer::
 open_buffer() {
+  if (_gsg == 0) {
+    _gsg = new OSMesaGraphicsStateGuardian(_pipe, NULL);
+  }
+  
   _image = PTA_uchar::empty_array(_x_size * _y_size * 4);
   _is_valid = true;
   return true;

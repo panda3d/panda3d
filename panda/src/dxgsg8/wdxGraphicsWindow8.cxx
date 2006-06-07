@@ -141,15 +141,13 @@ void wdxGraphicsWindow8::
 make_current() {
   PStatTimer timer(_make_current_pcollector);
 
-  DXGraphicsStateGuardian8 *dxgsg;
-  DCAST_INTO_V(dxgsg, _gsg);
-  dxgsg->set_context(&_wcontext);
+  _dxgsg->set_context(&_wcontext);
 
   // Now that we have made the context current to a window, we can
   // reset the GSG state if this is the first time it has been used.
   // (We can't just call reset() when we construct the GSG, because
   // reset() requires having a current context.)
-  dxgsg->reset_if_new();
+  _dxgsg->reset_if_new();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -270,11 +268,15 @@ close_window() {
 bool wdxGraphicsWindow8::
 open_window() {
   PT(DXGraphicsDevice8) dxdev;
-  DXGraphicsStateGuardian8 *dxgsg;
-  DCAST_INTO_R(dxgsg, _gsg, false);
   WindowProperties props;
   bool discard_device = false;
 
+  // GSG creation/initialization.
+  if (_gsg == 0) {
+    _dxgsg = new DXGraphicsStateGuardian8(_pipe);
+    _gsg = _dxgsg;
+  }
+  
   if (!choose_device()) {
     return false;
   }
@@ -292,12 +294,12 @@ open_window() {
   // In that case just create an additional swapchain for this window
 
   while (true) {
-    if (dxgsg->get_pipe()->get_device() == NULL || discard_device) {
+    if (_dxgsg->get_pipe()->get_device() == NULL || discard_device) {
       wdxdisplay8_cat.debug() << "device is null or fullscreen\n";
 
       // If device exists, free it
-      if (dxgsg->get_pipe()->get_device()) {
-        dxgsg->dx_cleanup();
+      if (_dxgsg->get_pipe()->get_device()) {
+        _dxgsg->dx_cleanup();
       }
 
       wdxdisplay8_cat.debug() << "device width " << _wcontext._display_mode.Width << "\n";
@@ -306,9 +308,9 @@ open_window() {
         wdxdisplay8_cat.error() << "fatal: must be trying to create two fullscreen windows: not supported\n";
         return false;
       }
-      dxgsg->get_pipe()->make_device((void*)(&_wcontext));
-      dxgsg->copy_pres_reset(&_wcontext);
-      dxgsg->create_swap_chain(&_wcontext);
+      _dxgsg->get_pipe()->make_device((void*)(&_wcontext));
+      _dxgsg->copy_pres_reset(&_wcontext);
+      _dxgsg->create_swap_chain(&_wcontext);
       break;
 
     } else {
@@ -316,7 +318,7 @@ open_window() {
       // reference to _window.
       wdxdisplay8_cat.debug() << "device is not null\n";
 
-      dxdev = (DXGraphicsDevice8*)dxgsg->get_pipe()->get_device();
+      dxdev = (DXGraphicsDevice8*)(_dxgsg->get_pipe()->get_device());
       props = get_properties();
       memcpy(&_wcontext, &dxdev->_Scrn, sizeof(DXScreenData));
 
@@ -326,7 +328,7 @@ open_window() {
       _wcontext._presentation_params.BackBufferHeight = _wcontext._display_mode.Height = props.get_y_size();
 
       wdxdisplay8_cat.debug() << "device width " << _wcontext._presentation_params.BackBufferWidth << "\n";
-      if (!dxgsg->create_swap_chain(&_wcontext)) {
+      if (!_dxgsg->create_swap_chain(&_wcontext)) {
         discard_device = true;
         continue; // try again
       }
@@ -349,17 +351,15 @@ open_window() {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow8::
 reset_window(bool swapchain) {
-  DXGraphicsStateGuardian8 *dxgsg;
-  DCAST_INTO_V(dxgsg, _gsg);
   if (swapchain) {
     if (_wcontext._swap_chain) {
-      dxgsg->create_swap_chain(&_wcontext);
+      _dxgsg->create_swap_chain(&_wcontext);
       wdxdisplay8_cat.debug() << "created swapchain " << _wcontext._swap_chain << "\n";
     }
   }
   else {
     if (_wcontext._swap_chain) {
-      dxgsg->release_swap_chain(&_wcontext);
+      _dxgsg->release_swap_chain(&_wcontext);
       wdxdisplay8_cat.debug() << "released swapchain " << _wcontext._swap_chain << "\n";
     }
   }
@@ -528,10 +528,7 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
 
   wdxdisplay8_cat.debug() << "Display Width " << dwRenderWidth << " and PresParam Width " << _wcontext._presentation_params.BackBufferWidth << "\n";
 
-  // BUGBUG: need to change panda to put frame buffer properties with GraphicsWindow, not GSG!!
-  // Update: Did I fix the bug? - Josh
-  int frame_buffer_mode = _fb_properties.get_frame_buffer_mode();
-  bool bWantStencil = ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0);
+  bool bWantStencil = (_fb_properties.get_stencil_bits() > 0);
 
   PRINT_REFCNT(wdxdisplay8, _d3d8);
 
@@ -710,15 +707,15 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   PRINT_REFCNT(wdxdisplay8, _wcontext._d3d_device);
 
   if (presentation_params->EnableAutoDepthStencil) {
-    _fb_properties.buffer_mask_add(RenderBuffer::T_depth);
+    _fb_properties.set_depth_bits(1);
     if (IS_STENCIL_FORMAT(presentation_params->AutoDepthStencilFormat)) {
-      _fb_properties.buffer_mask_add(RenderBuffer::T_stencil);
+      _fb_properties.set_stencil_bits(1);
     } else {
-      _fb_properties.buffer_mask_remove(RenderBuffer::T_stencil);
+      _fb_properties.set_stencil_bits(0);
     }
   } else {
-    _fb_properties.buffer_mask_remove(RenderBuffer::T_depth);
-    _fb_properties.buffer_mask_remove(RenderBuffer::T_stencil);
+    _fb_properties.set_depth_bits(0);
+    _fb_properties.set_stencil_bits(0);
   }
 
   init_resized_window();
@@ -882,8 +879,7 @@ search_for_device(wdxGraphicsPipe8 *dxpipe, DXDeviceInfo *device_info) {
   _wcontext._is_dx8_1 = dxpipe->__is_dx8_1;
   _wcontext._card_id = device_info->cardID;  // could this change by end?
 
-  int frame_buffer_mode = _fb_properties.get_frame_buffer_mode();
-  bool bWantStencil = ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0);
+  bool bWantStencil = (_fb_properties.get_stencil_bits() > 0);
 
   hr = _d3d8->GetAdapterIdentifier(device_info->cardID, D3DENUM_NO_WHQL_LEVEL,
                                    &_wcontext._dx_device_id);
@@ -964,7 +960,7 @@ search_for_device(wdxGraphicsPipe8 *dxpipe, DXDeviceInfo *device_info) {
 
   bool bNeedZBuffer =
     ((!(_d3dcaps.RasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) &&
-     ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0));
+     (_fb_properties.get_depth_bits() > 0));
 
   _wcontext._presentation_params.EnableAutoDepthStencil = bNeedZBuffer;
 

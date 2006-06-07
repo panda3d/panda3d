@@ -33,7 +33,18 @@ get_pfnum() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::get_pfnum_properties
+//     Function: wglGraphicsStateGuardian::pfnum_supports_pbuffer
+//       Access: Public
+//  Description: Returns true if the gsg's pixel format is capable
+//               of supporting a pbuffer.
+////////////////////////////////////////////////////////////////////
+INLINE bool wglGraphicsStateGuardian::
+pfnum_supports_pbuffer() const {
+  return _pfnum_supports_pbuffer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::get_fb_properties
 //       Access: Public
 //  Description: Returns the properties of the pixel format that
 //               was chosen for this gsg.  In OpenGL under Microsoft
@@ -44,7 +55,7 @@ get_pfnum() const {
 //               context must also share the same pixel format.
 ////////////////////////////////////////////////////////////////////
 INLINE const FrameBufferProperties &wglGraphicsStateGuardian::
-get_pfnum_properties() const {
+get_fb_properties() const {
   return _pfnum_properties;
 }
 

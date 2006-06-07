@@ -98,9 +98,11 @@ make_output(const string &name,
     return NULL;
   }
 
-  DXGraphicsStateGuardian9 *wdxgsg;
-  DCAST_INTO_R(wdxgsg, gsg, NULL);
-
+  DXGraphicsStateGuardian9 *wdxgsg = 0;
+  if (gsg != 0) {
+    DCAST_INTO_R(wdxgsg, gsg, NULL);
+  }
+  
   // First thing to try: a visible window.
 
   if (retry == 0) {
@@ -109,8 +111,7 @@ make_output(const string &name,
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
-        ((flags&BF_can_bind_every)!=0)||
-        (prop != gsg->get_default_properties())) {
+        ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
     return new wdxGraphicsWindow9(this, name, prop,
@@ -125,8 +126,7 @@ make_output(const string &name,
         ((flags&BF_require_window)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_rtt_cumulative)!=0)||
-        ((flags&BF_can_bind_every)!=0)||
-        (prop != gsg->get_default_properties())) {
+        ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
     if ((gsg != 0)&&
@@ -819,31 +819,6 @@ make_device(void *scrn) {
   wdxdisplay9_cat.info() << "walla: device" << device << "\n";
 
   return device.p();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipew9::make_gsg
-//       Access: Public, Virtual
-//  Description: Creates a new empty GSG.  Can do no real initialization
-//               until window is opened, and we know the full device requirements
-////////////////////////////////////////////////////////////////////
-
-PT(GraphicsStateGuardian) wdxGraphicsPipe9::
-make_gsg(const FrameBufferProperties &properties,
-         GraphicsStateGuardian *share_with) {
-  if (share_with != (GraphicsStateGuardian *)NULL) {
-    wdxdisplay9_cat.error()
-      << "wdxGraphicsPipe9 does not presently support sharing texture contexts.\n";
-    return NULL;
-  }
-
-  // DX never supports stereo.  We should also remove other properties
-  // we don't have, but we don't know enough right now.
-  FrameBufferProperties new_properties = properties;
-  new_properties.set_frame_buffer_mode(properties.get_frame_buffer_mode() & ~FrameBufferProperties::FM_stereo);
-
-  PT(DXGraphicsStateGuardian9) gsg = new DXGraphicsStateGuardian9(new_properties);
-  return gsg.p();
 }
 
 pmap<D3DFORMAT_FLAG, D3DFORMAT> g_D3DFORMATmap;

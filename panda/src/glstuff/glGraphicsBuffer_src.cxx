@@ -439,6 +439,9 @@ select_cube_map(int cube_map_index) {
 bool CLP(GraphicsBuffer)::
 open_buffer() {
 
+  // Double check that we have a host
+  nassertr(_host != 0, false);
+
   // Check for support of relevant extensions.
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_R(glgsg, _gsg, false);
@@ -446,7 +449,29 @@ open_buffer() {
       (glgsg->_glDrawBuffers == 0)) {
     return false;
   }
+  
+  // Describe the framebuffer properties of the FBO.  
+  // 
+  // The rule is that the properties should be as close
+  // as possible to those requested, subject to the limits
+  // of the implementation.  This particular implementation
+  // is fairly limited.  But that's okay, we just have to
+  // tell the truth about what we actually provide by setting
+  // the _fb_properties accurately.
 
+  _fb_properties.set_depth_bits(1);
+  _fb_properties.set_color_bits(1);
+  _fb_properties.set_alpha_bits(1);
+  _fb_properties.set_stencil_bits(0);
+  _fb_properties.set_accum_bits(0);
+  _fb_properties.set_multisamples(0);
+  _fb_properties.set_back_buffers(0);
+  _fb_properties.set_indexed_color(0);
+  _fb_properties.set_rgb_color(1);
+  _fb_properties.set_stereo(0);
+  _fb_properties.set_force_hardware(_host->get_fb_properties().get_force_hardware());
+  _fb_properties.set_force_software(_host->get_fb_properties().get_force_software());
+  
   _is_valid = true;
   return true;
 }

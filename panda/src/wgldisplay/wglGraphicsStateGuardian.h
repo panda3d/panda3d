@@ -34,16 +34,18 @@
 ////////////////////////////////////////////////////////////////////
 class wglGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
-  wglGraphicsStateGuardian(const FrameBufferProperties &properties, 
-                           wglGraphicsStateGuardian *share_with,
-                           int pfnum);
+  wglGraphicsStateGuardian(GraphicsPipe *pipe,
+                           wglGraphicsStateGuardian *share_with);
   virtual ~wglGraphicsStateGuardian();
 
   INLINE int get_pfnum() const;
-  INLINE const FrameBufferProperties &get_pfnum_properties() const;
+  INLINE bool pfnum_supports_pbuffer() const;
+  INLINE const FrameBufferProperties &get_fb_properties() const;
   INLINE bool made_context() const;
   INLINE HGLRC get_context(HDC hdc);
-  bool choose_pixel_format(const FrameBufferProperties &properties);
+  void get_properties(FrameBufferProperties &properties, HDC hdc, int pfnum);
+  bool get_properties_advanced(FrameBufferProperties &properties, HDC hdc, int pfnum);
+  void choose_pixel_format(const FrameBufferProperties &properties, bool need_pbuffer);
   virtual void reset();
 
   INLINE HDC get_twindow_dc();
@@ -56,6 +58,7 @@ private:
   void make_context(HDC hdc);
   HGLRC get_share_context() const;
   void redirect_share_pool(wglGraphicsStateGuardian *share_with);
+  
 
   bool make_twindow();
   void release_twindow();
@@ -67,12 +70,11 @@ private:
   // constructor.
   PT(wglGraphicsStateGuardian) _share_with;
 
-  // All windows that share a particular GL context must also share
-  // the same pixel format; therefore, we store the pixel format
-  // number and the actual properties in the GSG.
+  // These properties are for all wglGraphicsWindow that use this gsg.
   FrameBufferProperties _pfnum_properties;
+  bool _pfnum_supports_pbuffer;
   int _pfnum;
-
+  
   bool _made_context;
   HGLRC _context;
 

@@ -29,8 +29,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAMESA OSMesaGraphicsStateGuardian : public MesaGraphicsStateGuardian {
 public:
-  OSMesaGraphicsStateGuardian(const FrameBufferProperties &properties,
-                              OSMesaGraphicsStateGuardian *share_with);
+  OSMesaGraphicsStateGuardian(GraphicsPipe *pipe,
+			      OSMesaGraphicsStateGuardian *share_with);
   virtual ~OSMesaGraphicsStateGuardian();
 
   OSMesaContext _context;

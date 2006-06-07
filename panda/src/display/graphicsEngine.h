@@ -60,9 +60,6 @@ PUBLISHED:
   GraphicsEngine(Pipeline *pipeline = NULL);
   ~GraphicsEngine();
 
-  void set_frame_buffer_properties(const FrameBufferProperties &properties);
-  FrameBufferProperties get_frame_buffer_properties() const; 
-
   void set_threading_model(const GraphicsThreadingModel &threading_model);
   GraphicsThreadingModel get_threading_model() const;
 
@@ -72,12 +69,6 @@ PUBLISHED:
   INLINE void set_portal_cull(bool value);
   INLINE bool get_portal_cull() const;
 
-
-  INLINE PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe);
-  PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe,
-                                     const FrameBufferProperties &properties,
-                                     GraphicsStateGuardian *share_with = NULL);
-  
   GraphicsOutput *make_output(GraphicsPipe *pipe,
                               const string &name, int sort,
                               const FrameBufferProperties &prop,
@@ -175,8 +166,10 @@ private:
   void do_draw(CullResult *cull_result, SceneSetup *scene_setup,
                GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread);
 
-  void do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
+  void do_add_window(GraphicsOutput *window,
                      const GraphicsThreadingModel &threading_model);
+  void do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
+                  const GraphicsThreadingModel &threading_model);
   void do_remove_window(GraphicsOutput *window, Thread *current_thread);
   void do_resort_windows();
   void terminate_threads(Thread *current_thread);
@@ -328,7 +321,6 @@ private:
   WindowRenderer _app;
   typedef pmap<string, PT(RenderThread) > Threads;
   Threads _threads;
-  FrameBufferProperties _frame_buffer_properties;
   GraphicsThreadingModel _threading_model;
   bool _auto_flip;
   bool _portal_enabled; //toggle to portal culling on/off

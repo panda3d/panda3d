@@ -67,8 +67,8 @@ class EXPCL_PANDA GraphicsStateGuardian : public GraphicsStateGuardianBase {
   // Interfaces all GSGs should have
   //
 public:
-  GraphicsStateGuardian(const FrameBufferProperties &properties,
-                        CoordinateSystem internal_coordinate_system);
+  GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
+                        GraphicsPipe *pipe);
   virtual ~GraphicsStateGuardian();
 
 PUBLISHED:
@@ -83,7 +83,6 @@ PUBLISHED:
   INLINE bool is_valid() const;
   INLINE bool needs_reset() const;
 
-  INLINE const FrameBufferProperties &get_default_properties() const;
   INLINE GraphicsPipe *get_pipe() const;
   INLINE GraphicsEngine *get_engine() const;
   INLINE const GraphicsThreadingModel &get_threading_model() const;
@@ -427,7 +426,6 @@ private:
   pvector<ClipPlaneInfo> _clip_plane_info;
   bool _clip_planes_enabled_this_frame;
 
-  FrameBufferProperties _default_properties;
   PT(GraphicsPipe) _pipe;
   GraphicsEngine *_engine;
   GraphicsThreadingModel _threading_model;

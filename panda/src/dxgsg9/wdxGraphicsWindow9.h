@@ -83,7 +83,6 @@ private:
   DXGraphicsStateGuardian9 *_dxgsg;
   DXScreenData _wcontext;
 
-  int _buffer_mask;
   int _depth_buffer_bpp;
   bool _awaiting_restore;
 

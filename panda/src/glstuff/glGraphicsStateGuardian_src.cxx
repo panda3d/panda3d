@@ -259,8 +259,8 @@ fix_component_ordering(CPTA_uchar orig_image, GLenum external_format,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CLP(GraphicsStateGuardian)::
-CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties) :
-  GraphicsStateGuardian(properties, CS_yup_right)
+CLP(GraphicsStateGuardian)(GraphicsPipe *pipe) :
+  GraphicsStateGuardian(CS_yup_right, pipe)
 {
   _error_count = 0;
 }
@@ -972,17 +972,6 @@ reset() {
   }
 
   _auto_rescale_normal = false;
-
-  // If we don't have double-buffering, don't attempt to write to the
-  // back buffer.
-  // Update: this code has been disabled.  Instead, the code that
-  // creates the window needs to make sure it created a back buffer
-  // in those cases where a back buffer was requested. - Josh
-  // GLboolean has_back;
-  // GLP(GetBooleanv)(GL_DOUBLEBUFFER, &has_back);
-  // if (!has_back) {
-  //   _buffer_mask &= ~RenderBuffer::T_back;
-  // }
 
   // Ensure the initial state is what we say it should be (in some
   // cases, we don't want the GL default settings; in others, we have
@@ -3026,7 +3015,6 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   // Match framebuffer format if necessary.
   if (tex->get_match_framebuffer_format()) {
-    int mode = _current_properties->get_frame_buffer_mode();
 
     switch (tex->get_format()) {
     case Texture::F_depth_component:
@@ -3036,7 +3024,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
       break;
 
     default:
-      if (mode & FrameBufferProperties::FM_alpha) {
+      if (_current_properties->get_alpha_bits()) {
         tex->set_format(Texture::F_rgba);
       } else {
         tex->set_format(Texture::F_rgb);
@@ -3092,12 +3080,10 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
 
-  int mode = _current_properties->get_frame_buffer_mode();
-
-  Texture::Format format = tex->get_format();
   Texture::ComponentType component_type = tex->get_component_type();
   bool color_mode = false;
 
+  Texture::Format format = tex->get_format();
   switch (format) {
   case Texture::F_depth_component:
     if (_current_properties->get_depth_bits() <= 8) {
@@ -3117,7 +3103,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 
   default:
     color_mode = true;
-    if (mode & FrameBufferProperties::FM_alpha) {
+    if (_current_properties->get_alpha_bits()) {
       format = Texture::F_rgba;
     } else {
       format = Texture::F_rgb;
@@ -4369,13 +4355,13 @@ set_read_buffer(const RenderBuffer &rb) {
       }
       index += 1;
     }
-    for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
+    for (int i=0; i<_current_properties->get_aux_hrgba(); i++) {
       if (rb._buffer_type & (RenderBuffer::T_aux_hrgba_0 << i)) {
         buffer = GL_COLOR_ATTACHMENT0_EXT + index;
       }
       index += 1;
     }
-    for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
+    for (int i=0; i<_current_properties->get_aux_float(); i++) {
       if (rb._buffer_type & (RenderBuffer::T_aux_float_0 << i)) {
         buffer = GL_COLOR_ATTACHMENT0_EXT + index;
       }

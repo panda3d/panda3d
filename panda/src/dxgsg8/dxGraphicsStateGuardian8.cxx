@@ -81,8 +81,8 @@ unsigned char *DXGraphicsStateGuardian8::_safe_buffer_start = NULL;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DXGraphicsStateGuardian8::
-DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
-  GraphicsStateGuardian(properties, CS_yup_left)
+DXGraphicsStateGuardian8(GraphicsPipe *pipe) :
+  GraphicsStateGuardian(CS_yup_left, pipe)
 {
   _screen = NULL;
   _d3d_device = NULL;
@@ -531,7 +531,7 @@ do_clear(const RenderBuffer &buffer) {
           if (FAILED(hr2)) {
             dxgsg8_cat.error()
               << "Unable to clear depth buffer; removing.\n";
-            _current_properties->buffer_mask_remove(RenderBuffer::T_depth);
+            _current_properties->set_depth_bits(0);
           }
         }
         if (buffer_type & RenderBuffer::T_stencil) {
@@ -541,7 +541,7 @@ do_clear(const RenderBuffer &buffer) {
           if (FAILED(hr2)) {
             dxgsg8_cat.error()
               << "Unable to clear stencil buffer; removing.\n";
-            _current_properties->buffer_mask_remove(RenderBuffer::T_stencil);
+            _current_properties->set_stencil_bits(0);
           }
         }
       }

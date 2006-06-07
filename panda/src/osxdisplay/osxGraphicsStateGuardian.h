@@ -36,31 +36,30 @@ class osxGraphicsWindow;
 ////////////////////////////////////////////////////////////////////
 class osxGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
-  osxGraphicsStateGuardian(const FrameBufferProperties &properties, 
-                           osxGraphicsStateGuardian *share_with,
-                           int pfnum);
-   virtual ~osxGraphicsStateGuardian();
-   virtual void reset();
+  osxGraphicsStateGuardian(GraphicsPipe *pipe,
+                           osxGraphicsStateGuardian *share_with);
+  virtual ~osxGraphicsStateGuardian();
+  virtual void reset();
 	
 protected:
   virtual void *get_extension_func(const char *prefix, const char *name);
   
 public:
-	OSStatus buildGL (osxGraphicsWindow  &window);
-	AGLContext  get_context(void) { return _aglcontext; };
+  OSStatus buildGL (osxGraphicsWindow  &window);
+  AGLContext  get_context(void) { return _aglcontext; };
 
   // We have to save a pointer to the GSG we intend to share texture
   // context with, since we don't create our own context in the
   // constructor.
-    PT(osxGraphicsStateGuardian) _share_with;
-  	AGLPixelFormat	_aglPixFmt;
-	AGLContext		_aglcontext;
-
-
-	const AGLPixelFormat  getAGlPixelFormat() const { return _aglPixFmt; };
+  PT(osxGraphicsStateGuardian) _share_with;
+  AGLPixelFormat	_aglPixFmt;
+  AGLContext		_aglcontext;
+  
+  const AGLPixelFormat  getAGlPixelFormat() const { return _aglPixFmt; };
 
 public:
-	GLint   SharedBuffer;
+  GLint   SharedBuffer;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -47,580 +47,347 @@ operator != (const FrameBufferProperties &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::is_any_specified
-//       Access: Published
-//  Description: Returns true if any properties have been specified,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool FrameBufferProperties::
-is_any_specified() const {
-  return (_specified != 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_frame_buffer_mode
-//       Access: Published
-//  Description: Specifies the set of graphics properties that are
-//               required for the context associated with the window.
-//               This should be the union of the appropriate bits
-//               defined in FrameBufferMode.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-set_frame_buffer_mode(int frameBuffer_mode) {
-  _frame_buffer_mode = frameBuffer_mode;
-  _specified |= S_frame_buffer_mode;
-  recalc_buffer_mask();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::get_frame_buffer_mode
-//       Access: Published
-//  Description: Returns the set of graphics properties that are
-//               in effect for the window.  This will be the union of
-//               the corresponding bits from FrameBufferMode.
-////////////////////////////////////////////////////////////////////
-INLINE int FrameBufferProperties::
-get_frame_buffer_mode() const {
-  nassertr(has_frame_buffer_mode(), false);
-  return _frame_buffer_mode;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::has_frame_buffer_mode
-//       Access: Published
-//  Description: Returns true if the frameBuffer mode has been
-//               specified, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool FrameBufferProperties::
-has_frame_buffer_mode() const {
-  return ((_specified & S_frame_buffer_mode) != 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::clear_frame_buffer_mode
-//       Access: Published
-//  Description: Removes the frameBuffer_mode specification from the
-//               properties.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-clear_frame_buffer_mode() {
-  _specified &= ~S_frame_buffer_mode;
-  _frame_buffer_mode = 0;
-  recalc_buffer_mask();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::is_single_buffered
 //       Access: Published
-//  Description: Returns true if the frame buffer indicates a
-//               single-buffered mode, false if it indicates double-
-//               or triple-buffering.  This is a convenience function
-//               to access this useful tidbit of data.
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool FrameBufferProperties::
 is_single_buffered() const {
-  nassertr(has_frame_buffer_mode(), false);
-  return (_frame_buffer_mode & FM_buffer) == FM_single_buffer;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::specifies_mode
-//       Access: Published
-//  Description: Returns true if the frame buffer mode, logically
-//               anded with the given mask, is nonzero and the frame
-//               buffer mode is specified.  This is a
-//               convenience function to access this useful tidbit of
-//               data.
-////////////////////////////////////////////////////////////////////
-INLINE bool FrameBufferProperties::
-specifies_mode(int bits) const {
-  if ((_specified & S_frame_buffer_mode)==0) {
-    return false;
-  }
-  return (_frame_buffer_mode & bits) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::is_basic
-//       Access: Published
-//  Description: Returns true if the properties are extremely basic.
-//               The following count as basic: rgb or rgba, depth.
-//               If anything else is specified, the properties are
-//               non-basic.
-////////////////////////////////////////////////////////////////////
-INLINE bool FrameBufferProperties::
-is_basic() const {
-  if (_frame_buffer_mode & (~(FM_alpha | FM_depth))) {
-    return false;
-  }
-  if (_depth_bits || _color_bits || _alpha_bits || _stencil_bits) {
-    return false;
-  }
-  if (_multisamples) {
-    return false;
-  }
-  if (_aux_rgba || _aux_hrgba || _aux_float) {
-    return false;
-  }
-  return true;
+  return (_property[FBP_back_buffers] == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::is_stereo
 //       Access: Published
-//  Description: Returns true if the frame buffer indicates a
-//               hardware stereo mode, false otherwise.  This is a
-//               convenience function to access this useful tidbit of
-//               data.
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool FrameBufferProperties::
 is_stereo() const {
-  nassertr(has_frame_buffer_mode(), false);
-  return (_frame_buffer_mode & FM_stereo) != 0;
+  return (_property[FBP_stereo] != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_depth_bits
-//       Access: Published
-//  Description: Specifies the minimum number of bits that are
-//               required for the depth buffer.
+//     Function: FrameBufferProperties::operator <<
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-set_depth_bits(int depth_bits) {
-  _depth_bits = depth_bits;
-  _specified |= S_depth_bits;
+INLINE ostream &
+operator << (ostream &out, const FrameBufferProperties &properties) {
+  properties.output(out);
+  return out;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::get_depth_bits
 //       Access: Published
-//  Description: Returns the number of bits specified for the depth
-//               buffer.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int FrameBufferProperties::
 get_depth_bits() const {
-  return _depth_bits;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::has_depth_bits
-//       Access: Published
-//  Description: Returns true if the number of bits for the depth
-//               buffer has been specified, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool FrameBufferProperties::
-has_depth_bits() const {
-  return ((_specified & S_depth_bits) != 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::clear_depth_bits
-//       Access: Published
-//  Description: Removes the depth_bits specification from the
-//               properties.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-clear_depth_bits() {
-  _specified &= ~S_depth_bits;
-  _depth_bits = 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_color_bits
-//       Access: Published
-//  Description: Specifies the minimum number of bits that are
-//               required for all three channels of the color buffer.
-//               That is, this is the per-channel color requirement
-//               times three.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-set_color_bits(int color_bits) {
-  _color_bits = color_bits;
-  _specified |= S_color_bits;
+  return _property[FBP_depth_bits];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::get_color_bits
 //       Access: Published
-//  Description: Returns the number of bits specified for the color
-//               buffer.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int FrameBufferProperties::
 get_color_bits() const {
-  return _color_bits;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::has_color_bits
-//       Access: Published
-//  Description: Returns true if the number of bits for the color
-//               buffer has been specified, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool FrameBufferProperties::
-has_color_bits() const {
-  return ((_specified & S_color_bits) != 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::clear_color_bits
-//       Access: Published
-//  Description: Removes the color_bits specification from the
-//               properties.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-clear_color_bits() {
-  _specified &= ~S_color_bits;
-  _color_bits = 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_alpha_bits
-//       Access: Published
-//  Description: Specifies the minimum number of bits that are
-//               required of the alpha buffer.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-set_alpha_bits(int alpha_bits) {
-  _alpha_bits = alpha_bits;
-  _specified |= S_alpha_bits;
+  return _property[FBP_color_bits];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::get_alpha_bits
 //       Access: Published
-//  Description: Returns the number of bits specified for the alpha
-//               buffer.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int FrameBufferProperties::
 get_alpha_bits() const {
-  return _alpha_bits;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::has_alpha_bits
-//       Access: Published
-//  Description: Returns true if the number of bits for the alpha
-//               buffer has been specified, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool FrameBufferProperties::
-has_alpha_bits() const {
-  return ((_specified & S_alpha_bits) != 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::clear_alpha_bits
-//       Access: Published
-//  Description: Removes the alpha_bits specification from the
-//               properties.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-clear_alpha_bits() {
-  _specified &= ~S_alpha_bits;
-  _alpha_bits = 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_stencil_bits
-//       Access: Published
-//  Description: Specifies the minimum number of bits that are
-//               required for the stencil buffer.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-set_stencil_bits(int stencil_bits) {
-  _stencil_bits = stencil_bits;
-  _specified |= S_stencil_bits;
+  return _property[FBP_alpha_bits];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::get_stencil_bits
 //       Access: Published
-//  Description: Returns the number of bits specified for the stencil
-//               buffer.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int FrameBufferProperties::
 get_stencil_bits() const {
-  return _stencil_bits;
+  return _property[FBP_stencil_bits];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::has_stencil_bits
+//     Function: FrameBufferProperties::get_accum_bits
 //       Access: Published
-//  Description: Returns true if the number of bits for the stencil
-//               buffer has been specified, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool FrameBufferProperties::
-has_stencil_bits() const {
-  return ((_specified & S_stencil_bits) != 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::clear_stencil_bits
-//       Access: Published
-//  Description: Removes the stencil_bits specification from the
-//               properties.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-clear_stencil_bits() {
-  _specified &= ~S_stencil_bits;
-  _stencil_bits = 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_multisamples
-//       Access: Published
-//  Description: Specifies the minimum number of samples that are
-//               required for the multisample buffer.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-set_multisamples(int multisamples) {
-  _multisamples = multisamples;
-  _specified |= S_multisamples;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::get_multisamples
-//       Access: Published
-//  Description: Returns the number of samples specified for the
-//               multisample buffer.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int FrameBufferProperties::
-get_multisamples() const {
-  return _multisamples;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::has_multisamples
-//       Access: Published
-//  Description: Returns true if the number of bits for the multisample
-//               buffer has been specified, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool FrameBufferProperties::
-has_multisamples() const {
-  return ((_specified & S_multisamples) != 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::clear_multisamples
-//       Access: Published
-//  Description: Removes the multisamples specification from the
-//               properties.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-clear_multisamples() {
-  _specified &= ~S_multisamples;
-  _multisamples = 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_aux_rgba
-//       Access: Published
-//  Description: Specifies the exact number of auxiliary RGBA
-//               bitplanes that are required.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-set_aux_rgba(int aux_rgba) {
-  _aux_rgba = aux_rgba;
-  _specified |= S_aux_rgba;
-  recalc_buffer_mask();
+get_accum_bits() const {
+  return _property[FBP_accum_bits];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::get_aux_rgba
 //       Access: Published
-//  Description: Returns the exact number of auxiliary RGBA
-//               bitplanes that are required.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int FrameBufferProperties::
 get_aux_rgba() const {
-  return _aux_rgba;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::has_aux_rgba
-//       Access: Published
-//  Description: Returns true if the number auxiliary RGBA
-//               bitplanes has been specified, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool FrameBufferProperties::
-has_aux_rgba() const {
-  return ((_specified & S_aux_rgba) != 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::clear_aux_rgba
-//       Access: Published
-//  Description: Removes the aux_rgba specification from the
-//               properties.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-clear_aux_rgba() {
-  _specified &= ~S_aux_rgba;
-  _aux_rgba = 0;
-  recalc_buffer_mask();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_aux_hrgba
-//       Access: Published
-//  Description: Specifies the exact number of auxiliary half-float
-//               RGBA bitplanes that are required.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-set_aux_hrgba(int aux_hrgba) {
-  _aux_hrgba = aux_hrgba;
-  _specified |= S_aux_hrgba;
-  recalc_buffer_mask();
+  return _property[FBP_aux_rgba];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::get_aux_hrgba
 //       Access: Published
-//  Description: Returns the exact number of auxiliary half-float
-//               RGBA bitplanes that are required.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int FrameBufferProperties::
 get_aux_hrgba() const {
-  return _aux_hrgba;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::has_aux_hrgba
-//       Access: Published
-//  Description: Returns true if the number of auxiliary half-float
-//               RGBA bitplanes has been specified, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool FrameBufferProperties::
-has_aux_hrgba() const {
-  return ((_specified & S_aux_hrgba) != 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::clear_aux_hrgba
-//       Access: Published
-//  Description: Removes the aux_hrgba specification from the
-//               properties.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-clear_aux_hrgba() {
-  _specified &= ~S_aux_hrgba;
-  _aux_hrgba = 0;
-  recalc_buffer_mask();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_aux_float
-//       Access: Published
-//  Description: Specifies the exact number of auxiliary float
-//               single-channel bitplanes that are required.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-set_aux_float(int aux_float) {
-  _aux_float = aux_float;
-  _specified |= S_aux_float;
-  recalc_buffer_mask();
+  return _property[FBP_aux_hrgba];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::get_aux_float
 //       Access: Published
-//  Description: Returns the exact number of auxiliary float
-//               single-channel bitplanes that are required.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int FrameBufferProperties::
 get_aux_float() const {
-  return _aux_float;
+  return _property[FBP_aux_float];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::has_aux_float
+//     Function: FrameBufferProperties::get_multisamples
 //       Access: Published
-//  Description: Returns true if the number of auxiliary float
-//               single-channel bitplanes has been specified, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool FrameBufferProperties::
-has_aux_float() const {
-  return ((_specified & S_aux_float) != 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::clear_aux_float
-//       Access: Published
-//  Description: Removes the aux_float specification from the
-//               properties.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-clear_aux_float() {
-  _specified &= ~S_aux_float;
-  _aux_float = 0;
-  recalc_buffer_mask();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_specified
-//       Access: Published
-//  Description: Sets all the specified bits.  Effectively, this
-//               causes the default values to be specified for all
-//               not-yet-specified fields.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameBufferProperties::
-set_specified() {
-  _specified = S_ALL_SPECIFIED;
-  recalc_buffer_mask();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::get_specified
-//       Access: Public
-//  Description: Returns the specified flags.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int FrameBufferProperties::
-get_specified() const {
-  return _specified;
+get_multisamples() const {
+  return _property[FBP_multisamples];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::get_buffer_mask
-//       Access: Public
-//  Description: Returns the buffer mask for the bitplanes
-//               in the frame buffer.
+//     Function: FrameBufferProperties::get_back_buffers
+//       Access: Published
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int FrameBufferProperties::
-get_buffer_mask() const {
-  return _buffer_mask;
+get_back_buffers() const {
+  return _property[FBP_back_buffers];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::buffer_mask_remove
-//       Access: Public
-//  Description: Removes one or more bits from the buffer mask.
-//               This is generally called by the gsg when one of the
-//               bitplanes is failing for some implementation-
-//               dependent reason.  Changing the properties will
-//               cause the _buffer_mask information to be lost.
+//     Function: FrameBufferProperties::get_indexed_color
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_indexed_color() const {
+  return _property[FBP_indexed_color];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_rgb_color
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_rgb_color() const {
+  return _property[FBP_rgb_color];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_stereo
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_stereo() const {
+  return _property[FBP_stereo];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_force_hardware
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_force_hardware() const {
+  return _property[FBP_force_hardware];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_force_software
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_force_software() const {
+  return _property[FBP_force_software];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_depth_bits
+//       Access: Published
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameBufferProperties::
-buffer_mask_remove(int bits) {
-  _buffer_mask &= (~bits);
+set_depth_bits(int n) {
+  _property[FBP_depth_bits] = n;
+  _specified[FBP_depth_bits] = true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::buffer_mask_add
-//       Access: Public
-//  Description: Adds one or more bits to the buffer mask.
-//               This is generally called by the gsg when the
-//               implementation supplies a bitplane that was not
-//               specifically requested (say, a freebie stencil
-//               buffer). Changing the properties will
-//               cause the _buffer_mask information to be lost.
+//     Function: FrameBufferProperties::set_color_bits
+//       Access: Published
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameBufferProperties::
-buffer_mask_add(int bits) {
-  _buffer_mask |= bits;
+set_color_bits(int n) {
+  _property[FBP_color_bits] = n;
+  _specified[FBP_color_bits] = true;
 }
 
-INLINE ostream &
-operator << (ostream &out, const FrameBufferProperties &properties) {
-  properties.output(out);
-  return out;
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_alpha_bits
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_alpha_bits(int n) {
+  _property[FBP_alpha_bits] = n;
+  _specified[FBP_alpha_bits] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_stencil_bits
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_stencil_bits(int n) {
+  _property[FBP_stencil_bits] = n;
+  _specified[FBP_stencil_bits] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_accum_bits
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_accum_bits(int n) {
+  _property[FBP_accum_bits] = n;
+  _specified[FBP_accum_bits] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_aux_rgba
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_aux_rgba(int n) {
+  _property[FBP_aux_rgba] = n;
+  _specified[FBP_aux_rgba] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_aux_hrgba
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_aux_hrgba(int n) {
+  _property[FBP_aux_hrgba] = n;
+  _specified[FBP_aux_hrgba] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_aux_float
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_aux_float(int n) {
+  _property[FBP_aux_float] = n;
+  _specified[FBP_aux_float] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_multisamples
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_multisamples(int n) {
+  _property[FBP_multisamples] = n;
+  _specified[FBP_multisamples] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_back_buffers
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_back_buffers(int n) {
+  _property[FBP_back_buffers] = n;
+  _specified[FBP_back_buffers] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_indexed_color
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_indexed_color(int n) {
+  _property[FBP_indexed_color] = n;
+  _specified[FBP_indexed_color] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_rgb_color
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_rgb_color(int n) {
+  _property[FBP_rgb_color] = n;
+  _specified[FBP_rgb_color] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_stereo
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_stereo(int n) {
+  _property[FBP_stereo] = n;
+  _specified[FBP_stereo] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_force_hardware
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_force_hardware(int n) {
+  _property[FBP_force_hardware] = n;
+  _specified[FBP_force_hardware] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_force_software
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_force_software(int n) {
+  _property[FBP_force_software] = n;
+  _specified[FBP_force_software] = true;
 }

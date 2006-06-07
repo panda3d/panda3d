@@ -735,10 +735,14 @@ extern OSErr CPSSetFrontProcess( struct CPSProcessSerNum *psn);
 ////////////////////////////////////////////////////////////////////
 bool osxGraphicsWindow::open_window()
 {
-	WindowProperties req_properties  = _properties;
-	_properties.clear();
-		
-	return OSOpenWindow(req_properties);
+  WindowProperties req_properties  = _properties;
+  _properties.clear();
+  
+  if (_gsg == 0) {
+    _gsg = new osxGraphicsStateGuardian(_pipe, NULL);
+  }
+  
+  return OSOpenWindow(req_properties);
 }
 
 

@@ -78,10 +78,10 @@ TypeHandle GraphicsStateGuardian::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
-GraphicsStateGuardian(const FrameBufferProperties &properties,
-                      CoordinateSystem internal_coordinate_system) :
+GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
+                      GraphicsPipe *pipe) :
   _internal_coordinate_system(internal_coordinate_system),
-  _default_properties(properties)
+  _pipe(pipe)
 {
   _coordinate_system = CS_invalid;
   _internal_transform = TransformState::make_identity();

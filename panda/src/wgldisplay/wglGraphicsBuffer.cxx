@@ -43,7 +43,8 @@ wglGraphicsBuffer(GraphicsPipe *pipe,
 {
   _pbuffer = (HPBUFFERARB)0;
   _pbuffer_dc = (HDC)0;
-
+  release_pbuffer();
+  
   // Since the pbuffer never gets flipped, we get screenshots from the
   // same buffer we draw into.
   _screenshot_buffer_type = _draw_buffer_type;
@@ -78,24 +79,21 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_R(wglgsg, _gsg, false);
 
-  if (_pbuffer_dc) {
-    int flag = 0;
-    wglgsg->_wglQueryPbufferARB(_pbuffer, WGL_PBUFFER_LOST_ARB, &flag);
-    if (flag != 0) {
-      // The pbuffer was lost, due to a mode change or something
-      // silly like that.  We must therefore recreate the pbuffer.
-      close_buffer();
-      if (!open_buffer()) {
-        return false;
-      }
-    }
+  if (_fb_properties.is_single_buffered()) {
+    wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
+  } else {
+    wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_BACK_LEFT_ARB);
   }
 
+  if (!rebuild_bitplanes()) {
+    wglGraphicsPipe::wgl_make_current(0, 0, &_make_current_pcollector);
+    return false;
+  }
+  
   wglGraphicsPipe::wgl_make_current(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc),
                                     &_make_current_pcollector);
   
   if (mode == FM_render) {
-    begin_render_texture();
     clear_cube_map_selection();
   }
 
@@ -116,7 +114,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
   if (mode == FM_render) {
-    end_render_texture();
+    bind_texture_to_pbuffer();
     copy_to_textures();
   }
   
@@ -132,42 +130,19 @@ end_frame(FrameMode mode, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::begin_render_texture
+//     Function: GraphicsOutput::bind_texture_to_pbuffer
 //       Access: Private
-//  Description: If the GraphicsOutput supports direct render-to-texture,
-//               and if any setup needs to be done during begin_frame,
-//               then the setup code should go here.  Any textures that
-//               can not be rendered to directly should be reflagged
-//               as RTM_copy_texture.
+//  Description: Looks for the appropriate texture,
+//               and binds that texture to the pbuffer.
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsBuffer::
-begin_render_texture() {
-  wglGraphicsStateGuardian *wglgsg;
-  DCAST_INTO_V(wglgsg, _gsg);
-  
-  if (_fb_properties.is_single_buffered()) {
-    wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
-  } else {
-    wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_BACK_LEFT_ARB);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::end_render_texture
-//       Access: Private
-//  Description: If the GraphicsOutput supports direct render-to-texture,
-//               and if any setup needs to be done during end_frame,
-//               then the setup code should go here.  Any textures that
-//               could not be rendered to directly should be reflagged
-//               as RTM_copy_texture.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsBuffer::
-end_render_texture() {
+bind_texture_to_pbuffer() {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
 
   // Find the color texture, if there is one. That one can be bound to
   // the framebuffer.  All others must be marked RTM_copy_to_texture.
+
   int tex_index = -1;
   for (int i=0; i<count_textures(); i++) {
     if (get_rtm_mode(i) == RTM_bind_or_copy) {
@@ -183,6 +158,25 @@ end_render_texture() {
   
   if (tex_index >= 0) {
     Texture *tex = get_texture(tex_index);
+    if ((_pbuffer_bound != 0)&&(_pbuffer_bound != tex)) {
+      _pbuffer_bound->release(wglgsg->get_prepared_objects());
+      _pbuffer_bound = 0;
+    }
+    int tex_x = _x_size;
+    int tex_y = _y_size;
+    if (!wglgsg->get_supports_tex_non_pow2()) {
+      tex_x = Texture::up_to_power_2(tex_x);
+      tex_y = Texture::up_to_power_2(tex_y);
+    }
+    tex->set_x_size(tex_x);
+    tex->set_y_size(tex_y);
+    if (tex->get_match_framebuffer_format()) {
+      if (_fb_properties.get_alpha_bits()) {
+        tex->set_format(Texture::F_rgba);
+      } else {
+        tex->set_format(Texture::F_rgb);
+      }
+    }
     TextureContext *tc = tex->prepare_now(_gsg->get_prepared_objects(), _gsg);
     nassertv(tc != (TextureContext *)NULL);
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
@@ -196,6 +190,12 @@ end_render_texture() {
       wglgsg->_wglBindTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
     } else {
       wglgsg->_wglBindTexImageARB(_pbuffer, WGL_BACK_LEFT_ARB);
+    }
+    _pbuffer_bound = tex;
+  } else {
+    if (_pbuffer_bound != 0) {
+      _pbuffer_bound->release(wglgsg->get_prepared_objects());
+      _pbuffer_bound = 0;
     }
   }
 }
@@ -266,20 +266,12 @@ close_buffer() {
     wglGraphicsStateGuardian *wglgsg;
     DCAST_INTO_V(wglgsg, _gsg);
 
-    if (_pbuffer_dc) {
-      wglgsg->_wglReleasePbufferDCARB(_pbuffer, _pbuffer_dc);
-    }
-    if (_pbuffer) {
-      wglgsg->_wglDestroyPbufferARB(_pbuffer);
-    }
-    
     _gsg.clear();
     _active = false;
   }
-
-  _pbuffer_dc = 0;
-  _pbuffer = 0;
-
+  
+  release_pbuffer();
+  
   _is_valid = false;
 }
 
@@ -292,39 +284,59 @@ close_buffer() {
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsBuffer::
 open_buffer() {
+
+  // pbuffers don't seem to work correctly in double-buffered
+  // mode. Besides, the back buffer is a pointless waste of space.  
+  // So always use a single-buffered gsg.
+  
+  _fb_properties.set_back_buffers(0);
+  
+  // GSG creation/initialization.
+
   wglGraphicsStateGuardian *wglgsg;
-  DCAST_INTO_R(wglgsg, _gsg, false);
-
-  // Make sure a pixel format is chosen, and take its properties.
-  if (wglgsg->get_pfnum() < 0) {
-    wglgsg->choose_pixel_format(_fb_properties);
+  if (_gsg == 0) {
+    // There is no old gsg.  Create a new one.
+    wglgsg = new wglGraphicsStateGuardian(_pipe, NULL);
+    wglgsg->choose_pixel_format(_fb_properties, true);
+    _gsg = wglgsg;
+  } else {
+    // If the old gsg has the wrong pixel format, create a
+    // new one that shares with the old gsg.
+    DCAST_INTO_R(wglgsg, _gsg, false);
+    if ((!wglgsg->get_fb_properties().subsumes(_fb_properties))||
+        (!wglgsg->get_fb_properties().is_single_buffered())||
+        (!wglgsg->pfnum_supports_pbuffer())) {
+      wglgsg = new wglGraphicsStateGuardian(_pipe, wglgsg);
+      wglgsg->choose_pixel_format(_fb_properties, true);
+      _gsg = wglgsg;
+    }
   }
-  _fb_properties = wglgsg->get_pfnum_properties();
-
+  
+  // Use the temp window to initialize the gsg.
+  
   HDC twindow_dc = wglgsg->get_twindow_dc();
   if (twindow_dc == 0) {
     // If we couldn't make a window, we can't get a GL context.
     return false;
   }
-
   wglGraphicsPipe::wgl_make_current(twindow_dc, wglgsg->get_context(twindow_dc),
                                     &_make_current_pcollector);
   wglgsg->reset_if_new();
-
+  wglgsg->report_my_gl_errors();
+  if (!wglgsg->get_fb_properties().verify_hardware_software
+      (_fb_properties,wglgsg->get_gl_renderer())) {
+    return false;
+  }
+  _fb_properties = wglgsg->get_fb_properties();
+  
   // Now that we have fully made a window and used that window to
   // create a rendering context, we can attempt to create a pbuffer.
   // This might fail if the pbuffer extensions are not supported.
 
-  if (!make_pbuffer(twindow_dc)) {
+  if (!rebuild_bitplanes()) {
     wglGraphicsPipe::wgl_make_current(0, 0, &_make_current_pcollector);
     return false;
   }
-
-  _pbuffer_dc = wglgsg->_wglGetPbufferDCARB(_pbuffer);
-  
-  wglGraphicsPipe::wgl_make_current(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc),
-                                    &_make_current_pcollector);
-  wglgsg->report_my_gl_errors();
   
   _is_valid = true;
 
@@ -332,7 +344,38 @@ open_buffer() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::make_pbuffer
+//     Function: wglGraphicsBuffer::release_pbuffer
+//       Access: Private
+//  Description: Destroys the pbuffer if it has been created.  The
+//               intent is that this may allow it to be recreated
+//               with different options.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsBuffer::
+release_pbuffer() {
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_V(wglgsg, _gsg);
+
+  if (_pbuffer_bound != 0) {
+    _pbuffer_bound->release(wglgsg->get_prepared_objects());
+    _pbuffer_bound = 0;
+  }
+  wglGraphicsPipe::wgl_make_current(0, 0, NULL);
+  if (_pbuffer_dc) {
+    wglgsg->_wglReleasePbufferDCARB(_pbuffer, _pbuffer_dc);
+  }
+  if (_pbuffer) {
+    wglgsg->_wglDestroyPbufferARB(_pbuffer);
+  }
+  _pbuffer = (HPBUFFERARB)0;
+  _pbuffer_dc = (HDC)0;
+  _pbuffer_mipmap = false;
+  _pbuffer_sizex = 0;
+  _pbuffer_sizey = 0;
+  _pbuffer_type = Texture::TT_2d_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsBuffer::rebuild_bitplanes
 //       Access: Private
 //  Description: Once the GL context has been fully realized, attempts
 //               to create an offscreen pbuffer if the graphics API
@@ -340,7 +383,7 @@ open_buffer() {
 //               failure.
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsBuffer::
-make_pbuffer(HDC twindow_dc) {
+rebuild_bitplanes() {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_R(wglgsg, _gsg, false);
 
@@ -349,57 +392,6 @@ make_pbuffer(HDC twindow_dc) {
       << "PBuffers not supported by GL implementation.\n";
     return false;
   }
-
-  int pbformat = wglgsg->get_pfnum();
-
-  if (wglgsg->_supports_pixel_format) {
-    bool got_pbuffer_format = false;
-    bool any_binds = false;
-    
-    for (int i=0; i<count_textures(); i++) {
-      if (get_rtm_mode(i) == RTM_bind_or_copy) {
-        any_binds = true;
-      }
-    }
-
-    if (any_binds && wglgsg->_supports_render_texture) {
-      // First, try to get a pbuffer format that supports
-      // render-to-texture.
-      int new_pbformat = choose_pbuffer_format(twindow_dc, true);
-      if (new_pbformat != 0) {
-        pbformat = new_pbformat;
-        got_pbuffer_format = true;
-      }
-    }
-
-    if (!got_pbuffer_format) {
-      // Failing that, just get a matching pbuffer format,
-      // and disable RTM_bind_or_copy.
-      for (int i=0; i<count_textures(); i++) {
-        if (get_rtm_mode(i) == RTM_bind_or_copy) {
-          _textures[i]._rtm_mode = RTM_copy_texture;
-        }
-      }
-      int new_pbformat = choose_pbuffer_format(twindow_dc, false);
-      if (new_pbformat != 0) {
-        pbformat = new_pbformat;
-        got_pbuffer_format = true;
-      }
-    }
-
-    if (wgldisplay_cat.is_debug()) {
-      FrameBufferProperties properties;
-      wglGraphicsPipe::get_properties_advanced(properties, wglgsg, 
-                                               twindow_dc, pbformat);
-      wgldisplay_cat.debug()
-        << "Chose pixfmt #" << pbformat << " for pbuffer = " 
-        << properties << "\n";
-    }
-  }
-
-  static const int max_attrib_list = 64;
-  int iattrib_list[max_attrib_list];
-  int ni = 0;
 
   // Find the texture to bind to the color buffer.
   Texture *bindtexture = NULL;
@@ -411,227 +403,119 @@ make_pbuffer(HDC twindow_dc) {
       break;
     }
   }
+
+  // If we already have a pbuffer, and if it's lost, then 
+  // force the rebuild.
+
+  if (_pbuffer_dc) {
+    int flag = 0;
+    wglgsg->_wglQueryPbufferARB(_pbuffer, WGL_PBUFFER_LOST_ARB, &flag);
+    if (flag != 0) {
+      release_pbuffer();
+    }
+  }
   
+  // Determine what pbuffer attributes are needed
+  // for currently-applicable textures.
+
+  if (_creation_flags & GraphicsPipe::BF_size_track_host) {
+    if ((_host->get_x_size() != _x_size)||
+        (_host->get_y_size() != _y_size)) {
+      set_size_and_recalc(_host->get_x_size(),
+                          _host->get_y_size());
+    }
+  }
+  int desired_x = _x_size;
+  int desired_y = _y_size;
+  if ((bindtexture != 0)&&(!wglgsg->get_supports_tex_non_pow2())) {
+    desired_x = Texture::up_to_power_2(desired_x);
+    desired_y = Texture::up_to_power_2(desired_y);
+  }
+  bool desired_mipmap = false;
+  Texture::TextureType desired_type = Texture::TT_2d_texture;
   if (bindtexture != 0) {
+    desired_mipmap = bindtexture->uses_mipmaps();
+    desired_type = bindtexture->get_texture_type();
+  }
 
-    if (_fb_properties.get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) {
-      iattrib_list[ni++] = WGL_TEXTURE_FORMAT_ARB;
-      iattrib_list[ni++] = WGL_TEXTURE_RGBA_ARB;
-    } else {
-      iattrib_list[ni++] = WGL_TEXTURE_FORMAT_ARB;
-      iattrib_list[ni++] = WGL_TEXTURE_RGB_ARB;
-    }
+  if ((_pbuffer != 0)&&
+      (_pbuffer_sizex == desired_x)&&
+      (_pbuffer_sizey == desired_y)&&
+      (_pbuffer_mipmap == desired_mipmap)&&
+      (_pbuffer_type == desired_type)) {
+    // the pbuffer we already have is fine. Do not rebuild.
+    return true;
+  }
 
-    if (bindtexture->uses_mipmaps()) {
-      iattrib_list[ni++] = WGL_MIPMAP_TEXTURE_ARB;
-      iattrib_list[ni++] = 1;
-    }
+  // Release the old pbuffer, if there was one.
+  
+  release_pbuffer();
 
-    switch (bindtexture->get_texture_type()) {
-    case Texture::TT_cube_map:
-      iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
-      iattrib_list[ni++] = WGL_TEXTURE_CUBE_MAP_ARB;
-      break;
+  // Allocate the new pbuffer.
 
-    case Texture::TT_1d_texture:
-      iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
-      iattrib_list[ni++] = WGL_TEXTURE_1D_ARB;
-      break;
+  int pfnum = wglgsg->get_pfnum();
 
-    default:
-      iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
-      iattrib_list[ni++] = WGL_TEXTURE_2D_ARB;
-    }
-  }  
+  static const int max_attrib_list = 64;
+  int iattrib_list[max_attrib_list];
+  int ni = 0;
+  
+  if (_fb_properties.get_alpha_bits()) {
+    iattrib_list[ni++] = WGL_TEXTURE_FORMAT_ARB;
+    iattrib_list[ni++] = WGL_TEXTURE_RGBA_ARB;
+  } else {
+    iattrib_list[ni++] = WGL_TEXTURE_FORMAT_ARB;
+    iattrib_list[ni++] = WGL_TEXTURE_RGB_ARB;
+  }
 
+  if (desired_mipmap) {
+    iattrib_list[ni++] = WGL_MIPMAP_TEXTURE_ARB;
+    iattrib_list[ni++] = 1;
+  }
+
+  switch (desired_type) {
+  case Texture::TT_cube_map:
+    iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
+    iattrib_list[ni++] = WGL_TEXTURE_CUBE_MAP_ARB;
+    break;
+    
+  case Texture::TT_1d_texture:
+    iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
+    iattrib_list[ni++] = WGL_TEXTURE_1D_ARB;
+    break;
+    
+  default:
+    iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
+    iattrib_list[ni++] = WGL_TEXTURE_2D_ARB;
+  }
+  
   // Terminate the list.
   nassertr(ni <= max_attrib_list, false);
   iattrib_list[ni] = 0;
-  
-  _pbuffer = wglgsg->_wglCreatePbufferARB(twindow_dc, pbformat, 
-                                          _x_size, _y_size, iattrib_list);
 
+  HDC twindow_dc = wglgsg->get_twindow_dc();
+  if (twindow_dc == 0) {
+    return false;
+  }
+  
+  wglGraphicsPipe::wgl_make_current(twindow_dc, wglgsg->get_context(twindow_dc),
+                                    &_make_current_pcollector);
+
+  _pbuffer = wglgsg->_wglCreatePbufferARB(twindow_dc, pfnum, 
+                                          desired_x, desired_y, iattrib_list);
+  
   if (_pbuffer == 0) {
     wgldisplay_cat.info()
       << "Attempt to create pbuffer failed.\n";
     return false;
   }
 
+  _pbuffer_dc = wglgsg->_wglGetPbufferDCARB(_pbuffer);
+  _pbuffer_mipmap = desired_mipmap;
+  _pbuffer_type = desired_type;
+  _pbuffer_sizex = desired_x;
+  _pbuffer_sizey = desired_y;
+  
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::choose_pbuffer_format
-//       Access: Private
-//  Description: Select a suitable pixel format that matches the GSG's
-//               existing format, and also is appropriate for a pixel
-//               buffer.  Returns the selected pfnum if successful, or
-//               0 on failure.
-////////////////////////////////////////////////////////////////////
-int wglGraphicsBuffer::
-choose_pbuffer_format(HDC twindow_dc, bool draw_to_texture) {
-  if (wgldisplay_cat.is_debug()) {
-    wgldisplay_cat.debug()
-      << "choose_pbuffer_format(twindow_dc, draw_to_texture = " 
-      << draw_to_texture << ")\n";
-  }
-
-  wglGraphicsStateGuardian *wglgsg;
-  DCAST_INTO_R(wglgsg, _gsg, false);
-
-  int pbformat = wglgsg->get_pfnum();
-
-  static const int max_attrib_list = 64;
-  int iattrib_list[max_attrib_list];
-  int ivalue_list[max_attrib_list];
-  int ni = 0;
-  
-  int acceleration_i, pixel_type_i, double_buffer_i, stereo_i,
-    red_bits_i, green_bits_i, blue_bits_i, alpha_bits_i, 
-    accum_red_bits_i, accum_green_bits_i, accum_blue_bits_i,
-    accum_alpha_bits_i, depth_bits_i, 
-    stencil_bits_i, sample_buffers_i, multisamples_i;
-  
-  iattrib_list[acceleration_i = ni++] = WGL_ACCELERATION_ARB;
-  iattrib_list[pixel_type_i = ni++] = WGL_PIXEL_TYPE_ARB;
-  iattrib_list[double_buffer_i = ni++] = WGL_DOUBLE_BUFFER_ARB;
-  iattrib_list[stereo_i = ni++] = WGL_STEREO_ARB;
-  iattrib_list[red_bits_i = ni++] = WGL_RED_BITS_ARB;
-  iattrib_list[green_bits_i = ni++] = WGL_GREEN_BITS_ARB;
-  iattrib_list[blue_bits_i = ni++] = WGL_BLUE_BITS_ARB;
-  iattrib_list[alpha_bits_i = ni++] = WGL_ALPHA_BITS_ARB;
-  iattrib_list[accum_red_bits_i = ni++] = WGL_ACCUM_RED_BITS_ARB;
-  iattrib_list[accum_green_bits_i = ni++] = WGL_ACCUM_GREEN_BITS_ARB;
-  iattrib_list[accum_blue_bits_i = ni++] = WGL_ACCUM_BLUE_BITS_ARB;
-  iattrib_list[accum_alpha_bits_i = ni++] = WGL_ACCUM_ALPHA_BITS_ARB;
-  iattrib_list[depth_bits_i = ni++] = WGL_DEPTH_BITS_ARB;
-  iattrib_list[stencil_bits_i = ni++] = WGL_STENCIL_BITS_ARB;
-  
-  if (wglgsg->_supports_wgl_multisample) {
-    iattrib_list[sample_buffers_i = ni++] = WGL_SAMPLE_BUFFERS_ARB;
-    iattrib_list[multisamples_i = ni++] = WGL_SAMPLES_ARB;
-  }
-  
-  // Terminate the list.
-  nassertr(ni <= max_attrib_list, false);
-  
-  if (!wglgsg->_wglGetPixelFormatAttribivARB(twindow_dc, pbformat, 0,
-                                             ni, iattrib_list, ivalue_list)) {
-    if (wgldisplay_cat.is_debug()) {
-      wgldisplay_cat.debug()
-        << "Could not query old format " << pbformat << ".\n";
-    }
-    return 0;
-  }
-  
-  ni = 0;
-  float fattrib_list[max_attrib_list];
-  int nf = 0;
-  
-  // Since we are trying to create a pbuffer, the pixel format we
-  // request (and subsequently use) must be "pbuffer capable".
-  iattrib_list[ni++] = WGL_DRAW_TO_PBUFFER_ARB;
-  iattrib_list[ni++] = true;
-  iattrib_list[ni++] = WGL_SUPPORT_OPENGL_ARB;
-  iattrib_list[ni++] = true;
-
-  if (draw_to_texture) {
-    // If we want to be able to render-to-texture, request that.
-    if (_fb_properties.get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) {
-      iattrib_list[ni++] = WGL_BIND_TO_TEXTURE_RGBA_ARB;
-      iattrib_list[ni++] = true;
-    } else {
-      iattrib_list[ni++] = WGL_BIND_TO_TEXTURE_RGB_ARB;
-      iattrib_list[ni++] = true;
-    }
-  }    
-  
-  // Match up the framebuffer bits.
-  iattrib_list[ni++] = WGL_RED_BITS_ARB;
-  iattrib_list[ni++] = ivalue_list[red_bits_i];
-  iattrib_list[ni++] = WGL_GREEN_BITS_ARB;
-  iattrib_list[ni++] = ivalue_list[green_bits_i];
-  iattrib_list[ni++] = WGL_BLUE_BITS_ARB;
-  iattrib_list[ni++] = ivalue_list[blue_bits_i];
-  iattrib_list[ni++] = WGL_ALPHA_BITS_ARB;
-  iattrib_list[ni++] = ivalue_list[alpha_bits_i];
-  
-  iattrib_list[ni++] = WGL_ACCUM_RED_BITS_ARB;
-  iattrib_list[ni++] = ivalue_list[accum_red_bits_i];
-  iattrib_list[ni++] = WGL_ACCUM_GREEN_BITS_ARB;
-  iattrib_list[ni++] = ivalue_list[accum_green_bits_i];
-  iattrib_list[ni++] = WGL_ACCUM_BLUE_BITS_ARB;
-  iattrib_list[ni++] = ivalue_list[accum_blue_bits_i];
-  iattrib_list[ni++] = WGL_ACCUM_ALPHA_BITS_ARB;
-  iattrib_list[ni++] = ivalue_list[accum_alpha_bits_i];
-  
-  iattrib_list[ni++] = WGL_DEPTH_BITS_ARB;
-  iattrib_list[ni++] = ivalue_list[depth_bits_i];
-  
-  iattrib_list[ni++] = WGL_STENCIL_BITS_ARB;
-  iattrib_list[ni++] = ivalue_list[stencil_bits_i];
-  
-  if (wglgsg->_supports_wgl_multisample) {
-    iattrib_list[ni++] = WGL_SAMPLE_BUFFERS_ARB;
-    iattrib_list[ni++] = ivalue_list[sample_buffers_i];
-    iattrib_list[ni++] = WGL_SAMPLES_ARB;
-    iattrib_list[ni++] = ivalue_list[multisamples_i];
-  }
-  
-  // Match up properties.
-  iattrib_list[ni++] = WGL_DOUBLE_BUFFER_ARB;
-  iattrib_list[ni++] = ivalue_list[double_buffer_i];
-  iattrib_list[ni++] = WGL_STEREO_ARB;
-  iattrib_list[ni++] = ivalue_list[stereo_i];
-  
-  // Terminate the lists.
-  nassertr(ni < max_attrib_list && nf < max_attrib_list, NULL);
-  iattrib_list[ni] = 0;
-  fattrib_list[nf] = 0;
-  
-  // Now obtain a list of pixel formats that meet these minimum
-  // requirements.
-  static const unsigned int max_pformats = 32;
-  int pformat[max_pformats];
-  memset(pformat, 0, sizeof(pformat));
-  unsigned int nformats = 0;
-  if (!wglgsg->_wglChoosePixelFormatARB(twindow_dc, iattrib_list, fattrib_list,
-                                        max_pformats, pformat, &nformats)
-      || nformats == 0) {
-    if (wgldisplay_cat.is_debug()) {
-      wgldisplay_cat.debug()
-        << "No formats meet the criteria.\n";
-    }
-    return 0;
-  }
-  
-  nformats = min(nformats, max_pformats);
-  
-  if (wgldisplay_cat.is_debug()) {
-    wgldisplay_cat.debug()
-      << "Found " << nformats << " pbuffer formats: [";
-    for (unsigned int i = 0; i < nformats; i++) {
-      wgldisplay_cat.debug(false)
-        << " " << pformat[i];
-    }
-    wgldisplay_cat.debug(false)
-      << " ]\n";
-  }
-  
-  // If one of the options is the original pixfmt, keep it.
-  bool found_pbformat = false;
-  for (unsigned int i = 0; i < nformats && !found_pbformat; i++) {
-    if (pformat[i] == pbformat) {
-      found_pbformat = true;
-    }
-  }
-  
-  if (!found_pbformat) {
-    // Otherwise, pick any of them.
-    pbformat = pformat[0];
-  }
-
-  return pbformat;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -731,20 +731,10 @@ get_texture_card() {
 GraphicsOutput *GraphicsOutput::
 make_texture_buffer(const string &name, int x_size, int y_size,
                     Texture *tex, bool to_ram) {
-  FrameBufferProperties props = get_gsg()->get_default_properties();
-  int clear =
-    FrameBufferProperties::FM_buffer |
-    FrameBufferProperties::FM_stereo |
-    FrameBufferProperties::FM_accum |
-
-// DO NOT USE STENCIL FOR NOW FOR TEXTURE BUFFERS
-    FrameBufferProperties::FM_stencil |
-
-    FrameBufferProperties::FM_multisample |
-    FrameBufferProperties::FM_hardware |
-    FrameBufferProperties::FM_software;
-  props.set_frame_buffer_mode(props.get_frame_buffer_mode() & (~clear));
-
+  FrameBufferProperties props;
+  props.set_rgb_color(1);
+  props.set_depth_bits(1);
+  
   GraphicsOutput *buffer = get_gsg()->get_engine()->
     make_output(get_gsg()->get_pipe(),
                 name, get_sort()-1,

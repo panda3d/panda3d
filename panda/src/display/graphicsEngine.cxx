@@ -113,9 +113,6 @@ GraphicsEngine(Pipeline *pipeline) :
   _windows_sorted = true;
   _window_sort_index = 0;
   
-  // Default frame buffer properties.
-  _frame_buffer_properties = FrameBufferProperties::get_default();
-
   set_threading_model(GraphicsThreadingModel(threading_model));
   if (!_threading_model.is_default()) {
     display_cat.info()
@@ -141,35 +138,6 @@ GraphicsEngine::
 #endif
 
   remove_all_windows();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::set_frame_buffer_properties
-//       Access: Published
-//  Description: Specifies the default frame buffer properties for
-//               future gsg's created using the one-parameter
-//               make_gsg() method.
-////////////////////////////////////////////////////////////////////
-void GraphicsEngine::
-set_frame_buffer_properties(const FrameBufferProperties &properties) {
-  MutexHolder holder(_lock);
-  _frame_buffer_properties = properties;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::get_frame_buffer_properties
-//       Access: Published
-//  Description: Returns the frame buffer properties for future gsg's.
-//               See set_frame_buffer_properties().
-////////////////////////////////////////////////////////////////////
-FrameBufferProperties GraphicsEngine::
-get_frame_buffer_properties() const {
-  FrameBufferProperties result;
-  {
-    MutexHolder holder(_lock);
-    result = _frame_buffer_properties;
-  }
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -215,40 +183,10 @@ get_threading_model() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::make_gsg
-//       Access: Published
-//  Description: Creates a new gsg using the indicated GraphicsPipe
-//               and returns it.  The GraphicsEngine does not
-//               officially own the pointer to the gsg; but if any
-//               windows are created using this GSG, the
-//               GraphicsEngine will own the pointers to these
-//               windows, which in turn will own the pointer to the
-//               GSG.
-//
-//               There is no explicit way to release a GSG, but it
-//               will be destructed when all windows that reference it
-//               are destructed, and the draw thread that owns the GSG
-//               runs one more time.
-////////////////////////////////////////////////////////////////////
-PT(GraphicsStateGuardian) GraphicsEngine::
-make_gsg(GraphicsPipe *pipe, const FrameBufferProperties &properties,
-         GraphicsStateGuardian *share_with) {
-  // TODO: ask the draw thread to make the GSG.
-  PT(GraphicsStateGuardian) gsg = pipe->make_gsg(properties, share_with);
-  if (gsg != (GraphicsStateGuardian *)NULL) {
-    gsg->_threading_model = get_threading_model();
-    gsg->_pipe = pipe;
-    gsg->_engine = this;
+// THIS IS THE OLD CODE FOR make_gsg
+//  PT(GraphicsStateGuardian) gsg = pipe->make_gsg(properties, share_with);
 
-    // If there was no global GSG previously, this becomes the one.
-    if (GraphicsStateGuardian::get_global_gsg() == NULL) {
-      gsg->make_global_gsg();
-    }
-  }
 
-  return gsg;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::make_output
@@ -315,6 +253,37 @@ make_output(GraphicsPipe *pipe,
     host = host->get_host();
   }
 
+  // If a gsg or host was supplied, and either is not yet initialized,
+  // then call open_windows to get both ready.  If that fails,
+  // give up on using the supplied gsg and host.
+
+  if (host == (GraphicsOutput *)NULL) {
+    if (gsg != (GraphicsStateGuardian*)NULL) {
+      if ((!gsg->is_valid())||(gsg->needs_reset())) {
+        open_windows();
+      }
+      if ((!gsg->is_valid())||(gsg->needs_reset())) {
+        gsg = NULL;
+      }
+    }
+  } else {
+    if ((host->get_gsg()==0)||
+        (!host->is_valid())||
+        (!host->get_gsg()->is_valid())||
+        (host->get_gsg()->needs_reset())) {
+      open_windows();
+    }
+    if ((host->get_gsg()==0)||
+        (!host->is_valid())||
+        (!host->get_gsg()->is_valid())||
+        (host->get_gsg()->needs_reset())) {
+      host = NULL;
+      gsg = NULL;
+    } else {
+      gsg = host->get_gsg();
+    }
+  }
+
   // Sanity check everything.
 
   GraphicsThreadingModel threading_model = get_threading_model();
@@ -325,33 +294,7 @@ make_output(GraphicsPipe *pipe,
     nassertr(threading_model.get_draw_name() ==
              gsg->get_threading_model().get_draw_name(), NULL);
   }
-  if (host != (GraphicsOutput *)NULL) {
-    nassertr(gsg == host->get_gsg(), NULL);
-  }
   
-  // If the gsg is null, then create one.
-  
-  if (gsg == (GraphicsStateGuardian *)NULL) {
-    gsg = make_gsg(pipe, prop);
-  }
-  
-  // If there is a host window, and it is not yet initialized,
-  // then call open_windows to get the host ready.  If that 
-  // fails, give up on using the host window.
-
-  if (host != (GraphicsOutput *)NULL) {
-    if ((!host->is_valid())||
-        (!host->get_gsg()->is_valid())||
-        (host->get_gsg()->needs_reset())) {
-      open_windows();
-    }
-    if ((!host->is_valid())||
-        (!host->get_gsg()->is_valid())||
-        (host->get_gsg()->needs_reset())) {
-      host = NULL;
-    }
-  }
-
   // Determine if a parasite buffer meets the user's specs.
 
   bool can_use_parasite = false;
@@ -379,7 +322,8 @@ make_output(GraphicsPipe *pipe,
       (host->get_fb_properties().subsumes(prop))) {
     ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size, flags);
     buffer->_sort = sort;
-    do_add_window(buffer, gsg, threading_model);
+    do_add_window(buffer, threading_model);
+    do_add_gsg(host->get_gsg(), pipe, threading_model);
     return buffer;
   }
 
@@ -391,12 +335,15 @@ make_output(GraphicsPipe *pipe,
       pipe->make_output(name, prop, x_size, y_size, flags, gsg, host, retry, precertify);
     if (window != (GraphicsOutput *)NULL) {
       window->_sort = sort;
-      do_add_window(window, gsg, threading_model);
-      if (precertify) {
+      if ((precertify) && (gsg != 0) && (window->get_gsg()==gsg)) {
+        do_add_window(window, threading_model);
+        do_add_gsg(window->get_gsg(), pipe, threading_model);
         return window;
       }
+      do_add_window(window, threading_model);
       open_windows();
       if (window->is_valid()) {
+        do_add_gsg(window->get_gsg(), pipe, threading_model);
         if (window->get_fb_properties().subsumes(prop)) {
           return window;
         } else {
@@ -428,7 +375,8 @@ make_output(GraphicsPipe *pipe,
     }
     ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size, flags);
     buffer->_sort = sort;
-    do_add_window(buffer, gsg, threading_model);
+    do_add_window(buffer, threading_model);
+    do_add_gsg(host->get_gsg(), pipe, threading_model);
     return buffer;
   }
 
@@ -1590,7 +1538,7 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
 //               opened.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
+do_add_window(GraphicsOutput *window,
               const GraphicsThreadingModel &threading_model) {
   MutexHolder holder(_lock);
 
@@ -1602,14 +1550,13 @@ do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
 
   _windows_sorted = false;
   _windows.push_back(window);
-  
+
   WindowRenderer *cull = 
     get_window_renderer(threading_model.get_cull_name(),
                         threading_model.get_cull_stage());
   WindowRenderer *draw = 
     get_window_renderer(threading_model.get_draw_name(),
                         threading_model.get_draw_stage());
-  draw->add_gsg(gsg);
   
   if (threading_model.get_cull_sorting()) {
     cull->add_window(cull->_cull, window);
@@ -1625,16 +1572,42 @@ do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
   // pipes might prefer this to be done in draw, for instance.  For
   // now, we assume this is the app thread.
   _app.add_window(_app._window, window);
-  
+
   if (display_cat.is_debug()) {
     display_cat.debug()
       << "Created " << window->get_type() << " " << (void *)window << "\n";
   }
-  
-  // By default, try to open each window as it is added.
+
   window->request_open();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::do_add_gsg
+//       Access: Private
+//  Description: An internal function called by make_output to add
+//               the newly-created gsg object to the engine's
+//               list of gsg's.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
+           const GraphicsThreadingModel &threading_model) {
+  MutexHolder holder(_lock);
+
+  gsg->_threading_model = get_threading_model();
+  gsg->_pipe = pipe;
+  gsg->_engine = this;
+
+  // If there was no global GSG previously, this becomes the one.
+  if (GraphicsStateGuardian::get_global_gsg() == NULL) {
+    gsg->make_global_gsg();
+  }
+
+  WindowRenderer *draw = 
+    get_window_renderer(threading_model.get_draw_name(),
+                        threading_model.get_draw_stage());
+
+  draw->add_gsg(gsg);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::do_remove_window

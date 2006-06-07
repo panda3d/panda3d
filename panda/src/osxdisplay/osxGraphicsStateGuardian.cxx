@@ -57,9 +57,8 @@ void *osxGraphicsStateGuardian::get_extension_func(const char *prefix, const cha
 //  Description:
 ////////////////////////////////////////////////////////////////////
 osxGraphicsStateGuardian::
-osxGraphicsStateGuardian(const FrameBufferProperties &properties,
-                         osxGraphicsStateGuardian *share_with,
-                         int pfnum) : 
+osxGraphicsStateGuardian(GraphicsPipe *pipe,
+                         osxGraphicsStateGuardian *share_with) :
   GLGraphicsStateGuardian(properties),
   _share_with(share_with),
   _aglPixFmt(NULL),

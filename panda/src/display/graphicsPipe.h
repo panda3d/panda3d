@@ -80,10 +80,6 @@ PUBLISHED:
     BF_refuse_window       = 0x0004,
     BF_require_window      = 0x0008,
 
-    // Flags that control gsg creation.
-    BF_share_gsg           = 0x0010, // New window must use the old gsg.
-    BF_share_textures      = 0x0020, // New window must share textures with old gsg.
-
     // Miscellaneous control flags.
     BF_can_bind_color      = 0x0040, // Need capability: bind the color bitplane to a tex.
     BF_can_bind_every      = 0x0080, // Need capability: bind all bitplanes to a tex.
@@ -110,11 +106,6 @@ public:
   virtual PT(GraphicsDevice) make_device(void *scrn = NULL);
 
 protected:
-  // The make_output() and make_gsg() interfaces on GraphicsPipe are
-  // protected; don't try to call them directly.  Instead, use
-  // the interface on GraphicsEngine to make a new window or buffer.
-  virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties,
-                                             GraphicsStateGuardian *share_with);
   virtual void close_gsg(GraphicsStateGuardian *gsg);
   
   virtual PT(GraphicsOutput) make_output(const string &name,

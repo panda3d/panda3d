@@ -31,27 +31,21 @@ TypeHandle glxGraphicsStateGuardian::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 glxGraphicsStateGuardian::
-glxGraphicsStateGuardian(const FrameBufferProperties &properties,
-                         glxGraphicsStateGuardian *share_with,
-                         int want_hardware,
-                         GLXContext context, XVisualInfo *visual, 
-                         Display *display, int screen
-#ifdef HAVE_GLXFBCONFIG
-                         , GLXFBConfig fbconfig
-#endif  // HAVE_GLXFBCONFIG
-                         ) :
-  GLGraphicsStateGuardian(properties),
-  _want_hardware(want_hardware),
-  _context(context),
-  _visual(visual),
-  _display(display),
-  _screen(screen)
-#ifdef HAVE_GLXFBCONFIG
-  , _fbconfig(fbconfig)
-#endif  // HAVE_GLXFBCONFIG
+glxGraphicsStateGuardian(GraphicsPipe *pipe,
+			 glxGraphicsStateGuardian *share_with) :
+  GLGraphicsStateGuardian(pipe)
 {
+  _share_context=0;
+  _context=0;
+  _display=0;
+  _screen=0;
+  _visual=0;
+  _visuals=0;
+  _fbconfig=0;
+  
   if (share_with != (glxGraphicsStateGuardian *)NULL) {
     _prepared_objects = share_with->get_prepared_objects();
+    _share_context = share_with->_context;
   }
   
   _libgl_handle = NULL;
@@ -66,8 +60,8 @@ glxGraphicsStateGuardian(const FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 glxGraphicsStateGuardian::
 ~glxGraphicsStateGuardian() {
-  if (_visual != (XVisualInfo *)NULL) {
-    XFree(_visual);
+  if (_visuals != (XVisualInfo *)NULL) {
+    XFree(_visuals);
   }
   if (_context != (GLXContext)NULL) {
     glXDestroyContext(_display, _context);
@@ -76,6 +70,258 @@ glxGraphicsStateGuardian::
   if (_libgl_handle != (void *)NULL) {
     dlclose(_libgl_handle);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsStateGuardian::get_properties
+//       Access: Private
+//  Description: Gets the FrameBufferProperties to match the
+//               indicated visual.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsStateGuardian::
+get_properties(FrameBufferProperties &properties, XVisualInfo *visual) {
+
+  int use_gl, render_mode, double_buffer, stereo,
+    red_size, green_size, blue_size,
+    alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
+    depth_size, stencil_size;
+  
+  glXGetConfig(_display, visual, GLX_USE_GL, &use_gl);
+  glXGetConfig(_display, visual, GLX_RGBA, &render_mode);
+  glXGetConfig(_display, visual, GLX_DOUBLEBUFFER, &double_buffer);
+  glXGetConfig(_display, visual, GLX_STEREO, &stereo);
+  glXGetConfig(_display, visual, GLX_RED_SIZE, &red_size);
+  glXGetConfig(_display, visual, GLX_GREEN_SIZE, &green_size);
+  glXGetConfig(_display, visual, GLX_BLUE_SIZE, &blue_size);
+  glXGetConfig(_display, visual, GLX_ALPHA_SIZE, &alpha_size);
+  glXGetConfig(_display, visual, GLX_ACCUM_RED_SIZE, &ared_size);
+  glXGetConfig(_display, visual, GLX_ACCUM_GREEN_SIZE, &agreen_size);
+  glXGetConfig(_display, visual, GLX_ACCUM_BLUE_SIZE, &ablue_size);
+  glXGetConfig(_display, visual, GLX_ACCUM_ALPHA_SIZE, &aalpha_size);
+  glXGetConfig(_display, visual, GLX_DEPTH_SIZE, &depth_size);
+  glXGetConfig(_display, visual, GLX_STENCIL_SIZE, &stencil_size);
+
+  properties.clear();
+
+  if (use_gl == 0) {
+    // If we return a set of properties without setting either
+    // rgb_color or indexed_color, then this indicates a visual
+    // that's no good for any kind of rendering.
+    return;
+  }
+
+  if (double_buffer) {
+    properties.set_back_buffers(1);
+  }
+  if (stereo) {
+    properties.set_stereo(1);
+  }
+  if (render_mode) {
+    properties.set_rgb_color(1);
+  } else {
+    properties.set_indexed_color(1);
+  }
+  properties.set_color_bits(red_size+green_size+blue_size);
+  properties.set_stencil_bits(stencil_size);
+  properties.set_depth_bits(depth_size);
+  properties.set_alpha_bits(alpha_size);
+  properties.set_accum_bits(ared_size+agreen_size+ablue_size+aalpha_size);
+  
+  // Set both hardware and software bits, indicating not-yet-known.
+  properties.set_force_software(1);
+  properties.set_force_hardware(1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsStateGuardian::get_properties_advanced
+//       Access: Private
+//  Description: Gets the FrameBufferProperties to match the
+//               indicated GLXFBConfig
+////////////////////////////////////////////////////////////////////
+void glxGraphicsStateGuardian::
+get_properties_advanced(FrameBufferProperties &properties, 
+			bool &pbuffer_supported, bool &slow,
+                        fbconfig config) {
+
+  properties.clear();
+
+#ifdef HAVE_GLXFBCONFIG
+  // Now update our framebuffer_mode and bit depth appropriately.
+  int render_mode, double_buffer, stereo, red_size, green_size, blue_size,
+    alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
+    depth_size, stencil_size, samples, drawable_type, caveat;
+  
+  glXGetFBConfigAttrib(_display, config, GLX_RGBA, &render_mode);
+  glXGetFBConfigAttrib(_display, config, GLX_DOUBLEBUFFER, &double_buffer);
+  glXGetFBConfigAttrib(_display, config, GLX_STEREO, &stereo);
+  glXGetFBConfigAttrib(_display, config, GLX_RED_SIZE, &red_size);
+  glXGetFBConfigAttrib(_display, config, GLX_GREEN_SIZE, &green_size);
+  glXGetFBConfigAttrib(_display, config, GLX_BLUE_SIZE, &blue_size);
+  glXGetFBConfigAttrib(_display, config, GLX_ALPHA_SIZE, &alpha_size);
+  glXGetFBConfigAttrib(_display, config, GLX_ACCUM_RED_SIZE, &ared_size);
+  glXGetFBConfigAttrib(_display, config, GLX_ACCUM_GREEN_SIZE, &agreen_size);
+  glXGetFBConfigAttrib(_display, config, GLX_ACCUM_BLUE_SIZE, &ablue_size);
+  glXGetFBConfigAttrib(_display, config, GLX_ACCUM_ALPHA_SIZE, &aalpha_size);
+  glXGetFBConfigAttrib(_display, config, GLX_DEPTH_SIZE, &depth_size);
+  glXGetFBConfigAttrib(_display, config, GLX_STENCIL_SIZE, &stencil_size);
+  glXGetFBConfigAttrib(_display, config, GLX_SAMPLES, &samples);
+  glXGetFBConfigAttrib(_display, config, GLX_DRAWABLE_TYPE, &drawable_type);
+  glXGetFBConfigAttrib(_display, config, GLX_CONFIG_CAVEAT, &caveat);
+
+  if ((drawable_type & GLX_WINDOW_BIT)==0) {
+    // If we return a set of properties without setting either
+    // rgb_color or indexed_color, then this indicates a visual
+    // that's no good for any kind of rendering.
+    return;
+  }
+  pbuffer_supported = false;
+  if ((drawable_type & GLX_PBUFFER_BIT)!=0) {
+    pbuffer_supported = true;
+  }
+  
+  if (caveat & GLX_SLOW_CONFIG) {
+    slow = true;
+  } else {
+    slow = false;
+  }
+  
+  if (double_buffer) {
+    properties.set_back_buffers(1);
+  }
+  if (stereo) {
+    properties.set_stereo(1);
+  }
+  if (render_mode) {
+    properties.set_rgb_color(1);
+  } else {
+    properties.set_indexed_color(1);
+  }
+  properties.set_color_bits(red_size+green_size+blue_size);
+  properties.set_stencil_bits(stencil_size);
+  properties.set_depth_bits(depth_size);
+  properties.set_alpha_bits(alpha_size);
+  properties.set_accum_bits(ared_size+agreen_size+ablue_size+aalpha_size);
+  properties.set_multisamples(samples);
+
+  // Set both hardware and software bits, indicating not-yet-known.
+  properties.set_force_software(1);
+  properties.set_force_hardware(1);
+#endif // HAVE_GLXFBCONFIG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsStateGuardian::choose_pixel_format
+//       Access: Private
+//  Description: Selects a visual or fbconfig for all the windows
+//               and buffers that use this gsg.  Also creates the GL
+//               context and obtains the visual.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsStateGuardian::
+choose_pixel_format(const FrameBufferProperties &properties,
+		    Display *display,
+		    int screen,
+                    bool need_pbuffer) {
+
+  _display = display;
+  _screen = screen;
+  _context = 0;
+  _fbconfig = 0;
+  _visual = 0;
+  _visuals = 0;
+  _fbprops.clear();
+
+#ifdef HAVE_GLXFBCONFIG  
+  //// Choose best format available using GLXFBConfig
+
+  static const int max_attrib_list = 32;
+  int attrib_list[max_attrib_list];
+  int n = 0;
+  attrib_list[n++] = GLX_STEREO;
+  attrib_list[n++] = GLX_DONT_CARE;
+  attrib_list[n++] = GLX_RENDER_TYPE;
+  attrib_list[n++] = GLX_DONT_CARE;
+  attrib_list[n++] = GLX_DRAWABLE_TYPE;
+  attrib_list[n++] = GLX_DONT_CARE;
+  attrib_list[n] = (int)None;
+
+  int num_configs = 0;
+  GLXFBConfig *configs =
+    glXChooseFBConfig(_display, _screen, attrib_list, &num_configs);
+
+  int best_quality = 0;
+  int best_result = 0;
+  FrameBufferProperties best_props;
+
+  if (configs != 0) {
+    for (int i=0; i<num_configs; i++) {
+      FrameBufferProperties fbprops;
+      bool pbuffer_supported, slow;
+      get_properties_advanced(fbprops, pbuffer_supported, slow, configs[i]);
+      int quality = fbprops.get_quality(properties);
+      if ((quality > 0)&&(slow)) quality -= 10000000;
+      if ((need_pbuffer==0)||(pbuffer_supported)) {
+	if (quality > best_quality) {
+	  best_quality = quality;
+	  best_result = i;
+	  best_props = fbprops;
+	}
+      }
+    }
+  }
+  
+  if (best_quality > 0) {
+    _fbconfig = configs[best_result];
+    _context = 
+      glXCreateNewContext(_display, _fbconfig, GLX_RGBA_TYPE, _share_context,
+                          GL_TRUE);
+    if (_context) {
+      _visuals = glXGetVisualFromFBConfig(_display, _fbconfig);
+      _visual = _visuals;
+      if (_visual) {
+	_fbprops = best_props;
+	return;
+      }
+    }
+    // This really shouldn't happen, so I'm not too careful about cleanup.
+    _fbconfig = 0;
+    _context = 0;
+    _visual = 0;
+    _visuals = 0;
+  }
+#endif // HAVE_GLXFBCONFIG
+  
+  if (need_pbuffer) {
+    // The xvisual interface cannot create pbuffers.
+    return;
+  }
+
+  // Scan available visuals.
+  int nvisuals=0;
+  _visuals = XGetVisualInfo(_display, 0, 0, &nvisuals);
+  if (_visuals != 0) {
+    for (int i=0; i<nvisuals; i++) {
+      FrameBufferProperties fbprops;
+      get_properties(fbprops, _visuals+i);
+      int quality = fbprops.get_quality(properties);
+      if (quality > best_quality) {
+	best_quality = quality;
+	best_result = i;
+	best_props = fbprops;
+      }
+    }
+  }
+  
+  if (best_quality > 0) {
+    _visual = _visuals+best_result;
+    _context = glXCreateContext(_display, _visual, None, GL_TRUE);    
+    if (_context) {
+      _fbprops = best_props;
+      return;
+    }
+  }
+
+  glxdisplay_cat.error() <<
+    "Could not find a usable pixel format.\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,64 +352,18 @@ reset() {
     _glXSwapIntervalSGI(sync_video ? 1 : 0);
   }
 
-  // Finally, check that the context is the right kind of context:
-  // hardware or software.  This really means examining the
-  // _gl_renderer string for "Mesa" (see the comment in
-  // glxGraphicsPipe).
-
-  bool hardware = ((_want_hardware & FrameBufferProperties::FM_hardware) != 0);
-  bool software = ((_want_hardware & FrameBufferProperties::FM_software) != 0);
-  // If the user specified neither hardware nor software frame buffer,
-  // he gets either one.
-  if (!hardware && !software) {
-    hardware = true;
-    software = true;
-  }
-
-  // FIXME: should these properties be taken from the window?
-  FrameBufferProperties properties = get_default_properties();
-  int frame_buffer_mode = properties.get_frame_buffer_mode();
-
   // If "Mesa" is present, assume software.  However, if "Mesa DRI" is
   // found, it's actually a Mesa-based OpenGL layer running over a
   // hardware driver.
   if (_gl_renderer.find("Mesa") != string::npos &&
       _gl_renderer.find("Mesa DRI") == string::npos) {
     // It's Mesa, therefore probably a software context.
-    if (!software) {
-      glxdisplay_cat.error()
-        << "The application requested harware acceleration, but your OpenGL\n";
-      glxdisplay_cat.error()
-        << "driver, " << _gl_renderer << ", only supports software rendering.\n";
-      glxdisplay_cat.error()
-        << "You need to install a hardware-accelerated OpenGL driver, or,\n";
-      glxdisplay_cat.error()
-        << "if you actually *want* to use a software renderer, then\n";
-      glxdisplay_cat.error()
-        << "change the word 'hardware' to 'software' in the Config.prc file.\n";
-      _is_valid = false;
-    }
-    frame_buffer_mode = (frame_buffer_mode | FrameBufferProperties::FM_software) & ~FrameBufferProperties::FM_hardware;
-
+    _fbprops.set_force_software(1);
+    _fbprops.set_force_hardware(0);
   } else {
-    // It's some other renderer, therefore probably a hardware context.
-    if (!hardware) {
-      glxdisplay_cat.error()
-        << "Using GL renderer " << _gl_renderer << "; it is probably hardware-accelerated.\n";
-      glxdisplay_cat.error()
-        << "To allow use of this display add FM_hardware to your frame buffer mode.\n";
-      _is_valid = false;
-    }
-    frame_buffer_mode = (frame_buffer_mode | FrameBufferProperties::FM_hardware) & ~FrameBufferProperties::FM_software;
+    _fbprops.set_force_hardware(1);
+    _fbprops.set_force_software(0);
   }
-
-  // FIXME: we need a place to store this now.
-  /*
-  // Update the GSG's record to indicate whether we believe it is a
-  // hardware or software renderer.
-  properties.set_frame_buffer_mode(frame_buffer_mode);
-  set_properties(properties);
-  */
 }
 
 ////////////////////////////////////////////////////////////////////

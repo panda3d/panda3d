@@ -73,52 +73,6 @@ pipe_constructor() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OsMesaGraphicsPipe::make_gsg
-//       Access: Protected, Virtual
-//  Description: Creates a new GSG to use the pipe (but no windows
-//               have been created yet for the GSG).  This method will
-//               be called in the draw thread for the GSG.
-////////////////////////////////////////////////////////////////////
-PT(GraphicsStateGuardian) OsMesaGraphicsPipe::
-make_gsg(const FrameBufferProperties &properties, 
-         GraphicsStateGuardian *share_with) {
-
-  OSMesaGraphicsStateGuardian *share_gsg = NULL;
-
-  if (share_with != (GraphicsStateGuardian *)NULL) {
-    if (!share_with->is_exact_type(OSMesaGraphicsStateGuardian::get_class_type())) {
-      mesadisplay_cat.error()
-        << "Cannot share context between OSMesaGraphicsStateGuardian and "
-        << share_with->get_type() << "\n";
-      return NULL;
-    }
-
-    DCAST_INTO_R(share_gsg, share_with, NULL);
-  }
-
-  // We ignore the requested properties; OSMesa contexts are all the
-  // same.
-
-  FrameBufferProperties mesa_props;
-
-  int frame_buffer_mode = 
-    FrameBufferProperties::FM_rgba | 
-    FrameBufferProperties::FM_single_buffer | 
-    FrameBufferProperties::FM_accum | 
-    FrameBufferProperties::FM_depth | 
-    FrameBufferProperties::FM_stencil | 
-    FrameBufferProperties::FM_software;
-
-  mesa_props.set_frame_buffer_mode(frame_buffer_mode);
-  mesa_props.set_color_bits(24);
-  mesa_props.set_alpha_bits(8);
-  mesa_props.set_stencil_bits(8);
-  mesa_props.set_depth_bits(8);
-
-  return new OSMesaGraphicsStateGuardian(mesa_props, share_gsg);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: OsMesaGraphicsPipe::make_output
 //       Access: Protected, Virtual
 //  Description: Creates a new window on the pipe, if possible.
@@ -144,8 +98,7 @@ make_output(const string &name,
         ((flags&BF_require_window)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_every)!=0)||
-        ((flags&BF_rtt_cumulative)!=0)||
-        (properties != gsg->get_default_properties())) {
+        ((flags&BF_rtt_cumulative)!=0)) {
       return NULL;
     }
     return new OsMesaGraphicsBuffer(this, name, properties,
