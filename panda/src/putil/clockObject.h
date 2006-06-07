@@ -105,7 +105,7 @@ PUBLISHED:
   INLINE double get_average_frame_rate(Thread *current_thread = Thread::get_current_thread()) const;
 
   void tick(Thread *current_thread = Thread::get_current_thread());
-  void sync_frame_time(Thread *current_thread);
+  void sync_frame_time(Thread *current_thread = Thread::get_current_thread());
 
   INLINE bool check_errors(Thread *current_thread);
 
