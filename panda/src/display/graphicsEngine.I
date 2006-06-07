@@ -92,23 +92,6 @@ close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::make_window
-//       Access: Published
-//  Description: Syntactic shorthand for make_output
-////////////////////////////////////////////////////////////////////
-INLINE GraphicsWindow *GraphicsEngine::
-make_window(GraphicsStateGuardian *gsg, const string &name, int sort) {
-  // The hardwired size here is never used.
-  FrameBufferProperties fbprops = FrameBufferProperties::get_default();
-  GraphicsOutput *result = make_output(gsg->get_pipe(), name, sort,
-                                       fbprops, 50, 50,
-                                       GraphicsPipe::BF_require_window |
-                                       GraphicsPipe::BF_fb_props_optional,
-                                       gsg, NULL);
-  return DCAST(GraphicsWindow, result);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::make_buffer
 //       Access: Published
 //  Description: Syntactic shorthand for make_output

@@ -77,8 +77,6 @@ PUBLISHED:
                               GraphicsOutput *host = 0);
   
   // Syntactic shorthand versions of make_output
-  INLINE GraphicsWindow *make_window(GraphicsStateGuardian *gsg,
-                                     const string &name, int sort);
   INLINE GraphicsOutput *make_buffer(GraphicsStateGuardian *gsg,
                                      const string &name, int sort,
                                      int x_size, int y_size);

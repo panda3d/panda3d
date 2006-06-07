@@ -157,8 +157,15 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
   next_window_index++;
   string name = stream.str();
 
-  _window = engine->make_window(gsg, name, 0);
-  if (_window != (GraphicsWindow *)NULL) {
+  _window = 0;
+  GraphicsOutput *winout = 
+    engine->make_output(pipe, name, 0,
+                        FrameBufferProperties::get_default(),
+                        100, 100, GraphicsPipe::BF_require_window,
+                        gsg, NULL);
+  
+  if (winout != (GraphicsOutput *)NULL) {
+    _window = DCAST(GraphicsWindow, winout);
     _window->request_properties(props);
 
     // Create a display region that covers the entire window.
