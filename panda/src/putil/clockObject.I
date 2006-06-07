@@ -42,6 +42,12 @@ INLINE ClockObject::
 //               to tick().  You may set the value of dt with
 //               set_dt().
 //
+//               M_limited - the clock will run as fast as it can, as
+//               in M_normal, but will not run faster than the rate
+//               specified by set_dt().  If the application would run
+//               faster than this rate, the clock will slow down the
+//               application.
+//
 //               M_forced - the clock forces the application to run at
 //               the rate specified by set_dt().  If the application
 //               would run faster than this rate, the clock will slow
@@ -193,12 +199,13 @@ get_dt(Thread *current_thread) const {
 //       Access: Published
 //  Description: In non-real-time mode, sets the number of seconds
 //               that should appear to elapse between frames.  In
-//               forced mode, sets our target dt.  In normal mode,
-//               this has no effect.
+//               forced mode or limited mode, sets our target dt.  In
+//               normal mode, this has no effect.
 ////////////////////////////////////////////////////////////////////
 INLINE void ClockObject::
 set_dt(double dt, Thread *current_thread) {
   nassertv(current_thread->get_pipeline_stage() == 0);
+  _set_dt = dt;
   CDWriter cdata(_cycler, current_thread);
   cdata->_dt = dt;
 }

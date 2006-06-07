@@ -46,6 +46,9 @@ ClockObject() {
   _average_frame_rate_interval = average_frame_rate_interval;
 
   _error_count = _true_clock->get_error_count();
+
+  CDReader cdata(_cycler);
+  _set_dt = cdata->_dt;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,15 +148,22 @@ tick(Thread *current_thread) {
     case M_non_real_time:
       // Ignore real time.  We always report the same interval having
       // elapsed each frame.
-      cdata->_reported_frame_time += cdata->_dt;
+      cdata->_reported_frame_time += _set_dt;
+      break;
+      
+    case M_limited:
+      // If we are running faster than the desired interval, slow down.
+      wait_until(old_time + _set_dt);
+      cdata->_dt = _actual_frame_time - old_time;
+      cdata->_reported_frame_time = _actual_frame_time;
       break;
       
     case M_forced:
       // If we are running faster than the desired interval, slow down.
       // If we are running slower than the desired interval, ignore that
       // and pretend we're running at the specified rate.
-      wait_until(old_time + cdata->_dt);
-      cdata->_reported_frame_time += cdata->_dt;
+      wait_until(old_time + _set_dt);
+      cdata->_reported_frame_time += _set_dt;
       break;
       
     case M_degrade:
@@ -291,6 +301,9 @@ operator << (ostream &out, ClockObject::Mode mode) {
   case ClockObject::M_non_real_time:
     return out << "non-real-time";
 
+  case ClockObject::M_limited:
+    return out << "limited";
+
   case ClockObject::M_forced:
     return out << "forced";
 
@@ -317,6 +330,8 @@ operator >> (istream &in, ClockObject::Mode &mode) {
     mode = ClockObject::M_normal;
   } else if (word == "non-real-time") {
     mode = ClockObject::M_non_real_time;
+  } else if (word == "limited") {
+    mode = ClockObject::M_limited;
   } else if (word == "forced") {
     mode = ClockObject::M_forced;
   } else if (word == "degrade") {

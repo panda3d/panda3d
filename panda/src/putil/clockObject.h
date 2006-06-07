@@ -71,6 +71,7 @@ PUBLISHED:
     M_forced,
     M_degrade,
     M_slave,
+    M_limited,
   };
 
   ClockObject();
@@ -121,6 +122,7 @@ private:
   double _start_long_time;
   double _actual_frame_time;
   double _max_dt;
+  double _set_dt;
   double _degrade_factor;
   int _error_count;
 
