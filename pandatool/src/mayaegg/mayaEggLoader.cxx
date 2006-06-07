@@ -169,7 +169,8 @@ MayaEggTex *MayaEggLoader::GetTex(const string &name, const string &fn)
     if (status != MStatus::kSuccess) status.perror("Connecting shader");
     if (fn != "") {
       filetex.create("file",&status);
-      filetex.findPlug("fileTextureName").setValue(MString(fn.c_str()));
+      MString fn_str(fn.c_str());
+      filetex.findPlug("fileTextureName").setValue(fn_str);
       dgmod.connect(filetex.findPlug("outColor"),shader.findPlug("color"));
     }
     status = dgmod.doIt();
