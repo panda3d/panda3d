@@ -36,8 +36,6 @@ GraphicsBuffer(GraphicsPipe *pipe,
                GraphicsOutput *host) :
   GraphicsOutput(pipe, name, properties, x_size, y_size, flags, gsg, host)
 {
-  nassertv(gsg != (GraphicsStateGuardian *)NULL);
-
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
@@ -49,8 +47,6 @@ GraphicsBuffer(GraphicsPipe *pipe,
 
   _default_display_region->compute_pixels(_x_size, _y_size);
   _open_request = OR_none;
-
-  set_inverted(gsg->get_copy_texture_inverted());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,6 +120,7 @@ process_events() {
 
   case OR_open:
     open_buffer();
+    set_inverted(_gsg->get_copy_texture_inverted());
     break;
 
   case OR_close:

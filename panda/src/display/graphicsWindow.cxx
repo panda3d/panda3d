@@ -554,6 +554,7 @@ set_properties_now(WindowProperties &properties) {
         // When the window is first opened, force its size to be
         // broadcast to its display regions.
         _is_valid = true;
+        set_inverted(_gsg->get_copy_texture_inverted());
         set_size_and_recalc(_properties.get_x_size(),
                             _properties.get_y_size());
       } else {

@@ -352,6 +352,10 @@ open_buffer() {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsBuffer::
 release_pbuffer() {
+  if (_gsg == 0) {
+    return;
+  }
+  
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
 
