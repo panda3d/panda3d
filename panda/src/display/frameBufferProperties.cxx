@@ -339,22 +339,6 @@ set_all_specified() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::get_property_set
-//       Access: Published
-//  Description: returns a summary of which properties are nonzero.
-////////////////////////////////////////////////////////////////////
-int FrameBufferProperties::
-get_property_set() const {
-  int result = 0;
-  for (int i=0; i<FBP_COUNT; i++) {
-    if (_property[i]) {
-      result |= (1<<i);
-    }
-  }
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::is_basic
 //       Access: Published
 //  Description: Returns true if the properties are extremely basic.

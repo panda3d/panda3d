@@ -119,7 +119,6 @@ PUBLISHED:
   bool is_any_specified() const;
   bool is_basic() const;
   int get_buffer_mask() const;
-  int get_property_set() const;
   bool verify_hardware_software(const FrameBufferProperties &props, const string &renderer) const;
 };
 
