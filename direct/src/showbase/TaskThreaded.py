@@ -7,7 +7,7 @@ class TaskThreaded:
     up the processing over multiple frames """
     notify = directNotify.newCategory("TaskThreaded")
 
-    _Serial = SerialNum()
+    _Serial = SerialNumGen()
     
     def __init__(self, name, threaded=True, timeslice=None, callback=None):
         # timeslice is how long this thread should take every frame.
