@@ -56,18 +56,21 @@ protected:
   virtual bool open_buffer();
 
 private:
-  void begin_render_texture();
-  void end_render_texture();
+  bool save_bitplanes();
+  bool rebuild_bitplanes();
+  void restore_bitplanes();
   static void process_1_event();
 
   int _cube_map_index;
   DXGraphicsStateGuardian8 *_dxgsg;
-  IDirect3DSurface8 *_back_buffer;
-  IDirect3DSurface8 *_z_stencil_buffer;
-  IDirect3DSurface8 *_direct_3d_surface;
-  DXTextureContext8 *_dx_texture_context8;
-
-  IDirect3DSurface8 *_new_z_stencil_surface;
+  IDirect3DSurface8 *_saved_color_buffer;
+  IDirect3DSurface8 *_saved_depth_buffer;
+  D3DSURFACE_DESC    _saved_color_desc;
+  D3DSURFACE_DESC    _saved_depth_desc;
+  IDirect3DSurface8 *_color_backing_store;
+  IDirect3DSurface8 *_depth_backing_store;
+  int _backing_sizex;
+  int _backing_sizey;
 
 public:
   static TypeHandle get_class_type() {

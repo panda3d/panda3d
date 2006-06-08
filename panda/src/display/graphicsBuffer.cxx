@@ -119,8 +119,10 @@ process_events() {
     return;
 
   case OR_open:
-    open_buffer();
-    set_inverted(_gsg->get_copy_texture_inverted());
+    if (open_buffer()) {
+      _is_valid = true;
+      set_inverted(_gsg->get_copy_texture_inverted());
+    }
     break;
 
   case OR_close:

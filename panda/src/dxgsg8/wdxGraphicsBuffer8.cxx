@@ -51,13 +51,12 @@ wdxGraphicsBuffer8(GraphicsPipe *pipe,
 {
   // initialize all class members
   _cube_map_index = -1;
-  _back_buffer = NULL;
-  _z_stencil_buffer = NULL;
-  _direct_3d_surface = NULL;
-  _dx_texture_context8 = NULL;
-  _new_z_stencil_surface = NULL;
+  _saved_color_buffer = NULL;
+  _saved_depth_buffer = NULL;
+  _color_backing_store = NULL;
+  _depth_backing_store = NULL;
 
-// is this correct ???
+  // is this correct ???
   // Since the pbuffer never gets flipped, we get screenshots from the
   // same buffer we draw into.
   _screenshot_buffer_type = _draw_buffer_type;
@@ -89,9 +88,18 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
-
+  if (_dxgsg -> _d3d_device == 0) {
+    return false;
+  }
+  
   if (mode == FM_render) {
-    begin_render_texture();
+    if (!save_bitplanes()) {
+      return false;
+    }
+    if (!rebuild_bitplanes()) {
+      restore_bitplanes();
+      return false;
+    }
     clear_cube_map_selection();
   }
 
@@ -113,7 +121,6 @@ end_frame(FrameMode mode, Thread *current_thread) {
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
   if (mode == FM_render) {
-    end_render_texture();
     copy_to_textures();
   }
 
@@ -125,138 +132,232 @@ end_frame(FrameMode mode, Thread *current_thread) {
       prepare_for_deletion();
     }
     clear_cube_map_selection();
+    restore_bitplanes();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::begin_render_texture
+//     Function: wglGraphicsStateGuardian::save_bitplanes
 //       Access: Public
-//  Description: If the GraphicsOutput supports direct render-to-texture,
-//               and if any setup needs to be done during begin_frame,
-//               then the setup code should go here.  Any textures that
-//               can not be rendered to directly should be reflagged
-//               as RTM_copy_texture.
+//  Description: After rendering, d3d_device will need to be restored 
+//               to its initial state.  This function saves the state.
 ////////////////////////////////////////////////////////////////////
-void wdxGraphicsBuffer8::
-begin_render_texture() {
+bool wdxGraphicsBuffer8::
+save_bitplanes() {
+  HRESULT hr;
 
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-
-    DXGraphicsStateGuardian8 *dxgsg;
-    DCAST_INTO_V(dxgsg, _gsg);
-
-    HRESULT hr;
-    bool state;
-
-    state = false;
-
-    if (dxgsg -> _d3d_device) {
-      Texture *tex = get_texture(0);
-      tex->set_render_to_texture(true);
-      TextureContext *tc = tex->prepare_now(_gsg->get_prepared_objects(), _gsg);
-
-      _dx_texture_context8 = DCAST (DXTextureContext8, tc);
-
-      // save render context
-      hr = dxgsg -> _d3d_device -> GetRenderTarget (&_back_buffer);
-      if (SUCCEEDED (hr)) {
-        hr = dxgsg -> _d3d_device -> GetDepthStencilSurface (&_z_stencil_buffer);
-        if (SUCCEEDED (hr)) {
-          state = true;
-        }
-        else {
-          dxgsg8_cat.error ( ) << "GetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
-        }
-      }
-      else {
-        dxgsg8_cat.error ( ) << "GetRenderTarget " << D3DERRORSTRING(hr) FL;
-      }
-
-      // set render context
-      if (state && _dx_texture_context8)
-      {
-        DXTextureContext8 *dx_texture_context8;
-
-        // use saved dx_texture_context8
-        dx_texture_context8 = _dx_texture_context8;
-
-        UINT mipmap_level;
-
-        mipmap_level = 0;
-        _direct_3d_surface = NULL;
-
-        // render to texture 2D
-        IDirect3DTexture8 *direct_3d_texture;
-
-        direct_3d_texture = dx_texture_context8 -> _d3d_2d_texture;
-        if (direct_3d_texture) {
-          hr = direct_3d_texture -> GetSurfaceLevel (mipmap_level, &_direct_3d_surface);
-          if (SUCCEEDED (hr)) {
-            IDirect3DSurface8 *z_stencil_buffer;
-
-            if (this -> _new_z_stencil_surface) {
-              z_stencil_buffer = this -> _new_z_stencil_surface;
-            }
-            else {
-              z_stencil_buffer = _z_stencil_buffer;
-            }
-
-            hr = dxgsg -> _d3d_device -> SetRenderTarget (_direct_3d_surface, z_stencil_buffer);
-            if (SUCCEEDED (hr)) {
-
-            } else {
-              dxgsg8_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
-            }
-          } else {
-            dxgsg8_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
-          }
-        }
-      }
-    }
+  hr = _dxgsg -> _d3d_device -> GetRenderTarget (&_saved_color_buffer);
+  if (!SUCCEEDED (hr)) {
+    dxgsg8_cat.error ( ) << "GetRenderTarget " << D3DERRORSTRING(hr) FL;
+    return false;
   }
+  hr = _saved_color_buffer -> GetDesc (&_saved_color_desc);
+  if (!SUCCEEDED (hr)) {
+    dxgsg8_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
+    return false;
+  }
+  hr = _dxgsg -> _d3d_device -> GetDepthStencilSurface (&_saved_depth_buffer);
+  if (!SUCCEEDED (hr)) {
+    dxgsg8_cat.error ( ) << "GetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
+    return false;
+  }
+  hr = _saved_depth_buffer -> GetDesc (&_saved_depth_desc);
+  if (!SUCCEEDED (hr)) {
+    dxgsg8_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
+    return false;
+  }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::end_render_texture
+//     Function: wglGraphicsStateGuardian::restore_bitplanes
 //       Access: Public
-//  Description: If the GraphicsOutput supports direct render-to-texture,
-//               and if any setup needs to be done during end_frame,
-//               then the setup code should go here.  Any textures that
-//               could not be rendered to directly should be reflagged
-//               as RTM_copy_texture.
+//  Description: After rendering, d3d_device will need to be restored 
+//               to its initial state.  This function restores the state.
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsBuffer8::
-end_render_texture() {
+restore_bitplanes() {
+  DXGraphicsStateGuardian8 *dxgsg;
+  DCAST_INTO_V(dxgsg, _gsg);
 
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  HRESULT hr;
+  
+  hr = dxgsg -> _d3d_device ->
+    SetRenderTarget (_saved_color_buffer, _saved_depth_buffer);
+  
+  if (!SUCCEEDED (hr)) {
+    dxgsg8_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
+  }
+  
+  _saved_color_buffer->Release();
+  _saved_depth_buffer->Release();
+  _saved_color_buffer = NULL;
+  _saved_depth_buffer = NULL;
+}
 
-    DXGraphicsStateGuardian8 *dxgsg;
-    DCAST_INTO_V(dxgsg, _gsg);
 
-    if (dxgsg -> _d3d_device) {
-      // restore render context
-      HRESULT hr;
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::rebuild_bitplanes
+//       Access: Public
+//  Description: If necessary, reallocates (or allocates) the 
+//               bitplanes for the buffer.
+////////////////////////////////////////////////////////////////////
+bool wdxGraphicsBuffer8::
+rebuild_bitplanes() {
 
-      if (_back_buffer) {
-        hr = dxgsg -> _d3d_device -> SetRenderTarget (_back_buffer,
-          _z_stencil_buffer);
-        if (SUCCEEDED (hr)) {
-          _back_buffer -> Release ( );
-        } else {
-          dxgsg8_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
-        }
-        _back_buffer = NULL;
-      }
-      if (_z_stencil_buffer) {
-        _z_stencil_buffer -> Release ( );
-        _z_stencil_buffer = NULL;
-      }
-      if (_direct_3d_surface) {
-        _direct_3d_surface -> Release ( );
-        _direct_3d_surface = NULL;
+  HRESULT hr;
+  Texture *color_tex = 0;
+  Texture *depth_tex = 0;
+  DXTextureContext8 *color_ctx = 0;
+  DXTextureContext8 *depth_ctx = 0;
+  IDirect3DTexture8 *color_d3d_tex = 0;
+  IDirect3DTexture8 *depth_d3d_tex = 0;
+  IDirect3DCubeTexture8 *color_cube = 0;
+  IDirect3DCubeTexture8 *depth_cube = 0;
+  IDirect3DSurface8 *color_surf = 0;
+  IDirect3DSurface8 *depth_surf = 0;
+
+  // Decide how big the bitplanes should be.
+
+  int bitplane_x = _x_size;
+  int bitplane_y = _y_size;
+  if (!_gsg->get_supports_tex_non_pow2()) {
+    bitplane_x = Texture::up_to_power_2(bitplane_x);
+    bitplane_y = Texture::up_to_power_2(bitplane_y);
+  }
+
+  // Find the color and depth textures.  Either may be present,
+  // or neither.  
+  //
+  // NOTE: Currently, depth-stencil textures are not implemented,
+  // but since it's coming soon, we're structuring for it.
+  
+  int color_tex_index = -1;
+  int depth_tex_index = -1;
+  for (int i=0; i<count_textures(); i++) {
+    if (get_rtm_mode(i) == RTM_bind_or_copy) {
+      if ((get_texture(i)->get_format() != Texture::F_depth_component)&&
+          (get_texture(i)->get_format() != Texture::F_stencil_index)&&
+          (color_tex_index < 0)) {
+        color_tex_index = i;
+      } else {
+        _textures[i]._rtm_mode = RTM_copy_texture;
       }
     }
   }
+  
+
+  if (color_tex_index < 0) {
+    // Maintain the backing color surface.
+    if ((_color_backing_store)&&
+        ((bitplane_x != _backing_sizex)||(bitplane_y != _backing_sizey))) {
+      _color_backing_store->Release();
+      _color_backing_store = NULL;
+    }
+    if (!_color_backing_store) {
+      hr = _dxgsg -> _d3d_device ->
+        CreateImageSurface(bitplane_x, bitplane_y, _saved_color_desc.Format, &_color_backing_store);
+      if (!SUCCEEDED(hr)) {
+        dxgsg8_cat.error ( ) << "CreateImageSurface " << D3DERRORSTRING(hr) FL;
+      }
+    }
+    color_surf = _color_backing_store;
+  } else {
+    // Maintain the color texture.
+    if (_color_backing_store) {
+      _color_backing_store->Release();
+      _color_backing_store = NULL;
+    }
+    color_tex = get_texture(color_tex_index);
+    color_tex->set_x_size(bitplane_x);
+    color_tex->set_y_size(bitplane_y);
+    color_tex->set_format(Texture::F_rgba);
+    color_ctx = 
+      DCAST(DXTextureContext8,
+            color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+    if (color_tex->get_texture_type() == Texture::TT_2d_texture) {
+      color_d3d_tex = color_ctx->_d3d_2d_texture;
+      nassertr(color_d3d_tex != 0, false);
+      hr = color_d3d_tex -> GetSurfaceLevel(0, &color_surf);
+      if (!SUCCEEDED(hr)) {
+        dxgsg8_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
+      }
+    } else {
+      color_cube = color_ctx->_d3d_cube_texture;
+      nassertr(color_cube != 0, false);
+      hr = color_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &color_surf);
+      if (!SUCCEEDED(hr)) {
+        dxgsg8_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
+      }
+    }
+  }
+
+  if (depth_tex_index < 0) {
+    // Maintain the backing depth surface.
+    if ((_depth_backing_store)&&
+        ((bitplane_x != _backing_sizex)||(bitplane_y != _backing_sizey))) {
+      _depth_backing_store->Release();
+      _depth_backing_store = NULL;
+    }
+    if (!_depth_backing_store) {
+      hr = _dxgsg -> _d3d_device ->
+        CreateDepthStencilSurface (bitplane_x, bitplane_y, _saved_depth_desc.Format, 
+                                   _saved_depth_desc.MultiSampleType, &_depth_backing_store);
+      if (!SUCCEEDED(hr)) {
+        dxgsg8_cat.error ( ) << "CreateDepthStencilSurface " << D3DERRORSTRING(hr) FL;
+      }
+    }
+    depth_surf = _depth_backing_store;
+  } else {
+    // Maintain the depth texture.
+    if (_depth_backing_store) {
+      _depth_backing_store->Release();
+      _depth_backing_store = NULL;
+    }
+    depth_tex = get_texture(depth_tex_index);
+    depth_tex->set_x_size(bitplane_x);
+    depth_tex->set_y_size(bitplane_y);
+    depth_tex->set_format(Texture::F_depth_component); // Should say depth_stencil
+    depth_ctx = 
+      DCAST(DXTextureContext8,
+            depth_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+    if (depth_tex->get_texture_type() == Texture::TT_2d_texture) {
+      depth_d3d_tex = depth_ctx->_d3d_2d_texture;
+      nassertr(depth_d3d_tex != 0, false);
+      hr = color_d3d_tex -> GetSurfaceLevel(0, &depth_surf);
+      if (!SUCCEEDED(hr)) {
+        dxgsg8_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
+      }
+    } else {
+      depth_cube = depth_ctx->_d3d_cube_texture;
+      nassertr(depth_cube != 0, false);
+      hr = depth_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &depth_surf);
+      if (!SUCCEEDED(hr)) {
+        dxgsg8_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
+      }
+    }
+  }
+
+  _backing_sizex = bitplane_x;
+  _backing_sizey = bitplane_y;
+
+  // Load up the bitplanes.
+  
+  hr = _dxgsg -> _d3d_device -> SetRenderTarget (color_surf, depth_surf);
+  if (!SUCCEEDED (hr)) {
+    dxgsg8_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
+  }
+  
+  // Decrement the reference counts on these surfaces. The refcounts
+  // were incremented earlier when we called GetSurfaceLevel.
+
+  if ((color_surf != 0)&&(color_surf != _color_backing_store)) {
+    color_surf->Release();
+  }
+  if ((depth_surf != 0)&&(depth_surf != _depth_backing_store)) {
+    depth_surf->Release();
+  }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -270,63 +371,7 @@ end_render_texture() {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsBuffer8::
 select_cube_map(int cube_map_index) {
-
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-
-    DXGraphicsStateGuardian8 *dxgsg;
-    DCAST_INTO_V(dxgsg, _gsg);
-
-    _cube_map_index = cube_map_index;
-
-    HRESULT hr;
-    UINT mipmap_level;
-    int render_target_index;
-    DXTextureContext8 *dx_texture_context8;
-
-    mipmap_level = 0;
-    render_target_index = 0;
-    dx_texture_context8 = _dx_texture_context8;
-
-    if (_direct_3d_surface) {
-        _direct_3d_surface -> Release ( );
-        _direct_3d_surface = NULL;
-    }
-
-    if (dxgsg -> _d3d_device) {
-
-      // render to cubemap face
-      IDirect3DCubeTexture8 *direct_3d_cube_texture;
-
-      direct_3d_cube_texture = dx_texture_context8 -> _d3d_cube_texture;
-      if (direct_3d_cube_texture) {
-        if (_cube_map_index >= 0 && _cube_map_index < 6) {
-          hr = direct_3d_cube_texture -> GetCubeMapSurface (
-            (D3DCUBEMAP_FACES) _cube_map_index, mipmap_level, &_direct_3d_surface);
-          if (SUCCEEDED (hr)) {
-            IDirect3DSurface8 *z_stencil_buffer;
-
-            if (this -> _new_z_stencil_surface) {
-              z_stencil_buffer = this -> _new_z_stencil_surface;
-            }
-            else {
-              z_stencil_buffer = _z_stencil_buffer;
-            }
-
-            hr = dxgsg -> _d3d_device -> SetRenderTarget (_direct_3d_surface, z_stencil_buffer);
-            if (SUCCEEDED (hr)) {
-
-            } else {
-              dxgsg8_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
-            }
-          } else {
-            dxgsg8_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
-          }
-        } else {
-          dxgsg8_cat.error ( ) << "Invalid Cube Map Face Index " << _cube_map_index FL;
-        }
-      }
-    }
-  }
+  _cube_map_index = cube_map_index;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -363,23 +408,20 @@ void wdxGraphicsBuffer8::
 close_buffer() {
 
   if (_gsg != (GraphicsStateGuardian *)NULL) {
-    DXGraphicsStateGuardian8 *dxgsg;
-    DCAST_INTO_V(dxgsg, _gsg);
-
-    _dx_texture_context8 = NULL;
-
-    // release new depth stencil buffer if one was created
-    if (this -> _new_z_stencil_surface) {
-      this -> _new_z_stencil_surface -> Release ( );
-      this -> _new_z_stencil_surface = NULL;
-    }
-
     _gsg.clear();
-    _active = false;
+  }
+  
+  if (_color_backing_store) {
+    _color_backing_store->Release();
+    _color_backing_store = NULL;
+  }
+  if (_depth_backing_store) {
+    _depth_backing_store->Release();
+    _depth_backing_store = NULL;
   }
 
+  _active = false;
   _cube_map_index = -1;
-
   _is_valid = false;
 }
 
@@ -392,97 +434,26 @@ close_buffer() {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsBuffer8::
 open_buffer() {
-  bool state;
 
   // GSG creation/initialization.
   if (_gsg == 0) {
     _dxgsg = new DXGraphicsStateGuardian8(_pipe);
     _gsg = _dxgsg;
+  } else {
+    DCAST_INTO_R(_dxgsg, _gsg, false);
+  }
+  
+  if (!save_bitplanes()) {
+    return false;
   }
 
-  // create texture
-  int tex_index;
-
-  state = false;
-  _is_valid = false;
-
-  // assume tex_index is 0
-  tex_index = 0;
-
-  Texture *tex = get_texture(tex_index);
-
-  // render to texture must be set
-  tex->set_render_to_texture(true);
-
-  TextureContext *tc = tex->prepare_now(_gsg->get_prepared_objects(), _gsg);
-  if (tc != NULL) {
-    HRESULT hr;
-    IDirect3DSurface8 *_depth_stencil_surface;
-
-    _dx_texture_context8 = DCAST (DXTextureContext8, tc);
-
-    // create a depth stencil buffer if needed
-    hr = _dxgsg -> _d3d_device -> GetDepthStencilSurface (&_depth_stencil_surface);
-    if (SUCCEEDED  (hr))
-    {
-      D3DSURFACE_DESC surface_description;
-
-      // get and copy the current depth stencil's parameters for the new buffer
-      hr = _depth_stencil_surface -> GetDesc (&surface_description);
-      if (SUCCEEDED  (hr)) {
-        UINT width;
-        UINT height;
-        D3DFORMAT format;
-        D3DMULTISAMPLE_TYPE multisample_type;
-//        DWORD multisample_quality;
-        BOOL discard;
-
-        width = tex -> get_x_size ( );
-        height = tex -> get_y_size ( );
-
-//        dxgsg8_cat.error ( ) << "-------------RTT SIZE " << "t width " << width << " t height " << height << "\n";
-
-        if (surface_description.Width < width || surface_description.Height < height) {
-          format = surface_description.Format;
-          multisample_type = surface_description.MultiSampleType;
-//          multisample_quality = surface_description.MultiSampleQuality;
-          discard = false;
-
-          hr = _dxgsg -> _d3d_device -> CreateDepthStencilSurface (
-            width, height, format, multisample_type, /* multisample_quality,
-            discard, */ &this -> _new_z_stencil_surface);
-          if (SUCCEEDED  (hr)) {
-
-//            dxgsg8_cat.error ( ) << "-------------CreatedDepthStencilSurface for RTT \n";
-
-            state = true;
-
-          } else {
-            dxgsg8_cat.error ( ) << "CreateDepthStencilSurface " << D3DERRORSTRING(hr) FL;
-          }
-        }
-        else {
-          // no need to create a separate depth stencil buffer since
-          // the current depth stencil buffer size is big enough
-          state = true;
-        }
-      }
-      else {
-        dxgsg8_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
-      }
-
-      _depth_stencil_surface -> Release ( );
-    }
-    else {
-      dxgsg8_cat.error ( ) << "GetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
-    }
-
-    if (state) {
-      _is_valid = true;
-    }
+  if (!rebuild_bitplanes()) {
+    restore_bitplanes();
+    return false;
   }
-
-  return state;
+  
+  restore_bitplanes();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

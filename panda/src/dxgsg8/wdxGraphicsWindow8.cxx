@@ -275,6 +275,8 @@ open_window() {
   if (_gsg == 0) {
     _dxgsg = new DXGraphicsStateGuardian8(_pipe);
     _gsg = _dxgsg;
+  } else {
+    DCAST_INTO_R(_dxgsg, _gsg, false);
   }
   
   if (!choose_device()) {
