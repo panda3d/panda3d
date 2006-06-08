@@ -137,7 +137,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::save_bitplanes
+//     Function: wdxGraphicsBuffer8::save_bitplanes
 //       Access: Public
 //  Description: After rendering, d3d_device will need to be restored 
 //               to its initial state.  This function saves the state.
@@ -151,26 +151,16 @@ save_bitplanes() {
     dxgsg8_cat.error ( ) << "GetRenderTarget " << D3DERRORSTRING(hr) FL;
     return false;
   }
-  hr = _saved_color_buffer -> GetDesc (&_saved_color_desc);
-  if (!SUCCEEDED (hr)) {
-    dxgsg8_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
-    return false;
-  }
   hr = _dxgsg -> _d3d_device -> GetDepthStencilSurface (&_saved_depth_buffer);
   if (!SUCCEEDED (hr)) {
     dxgsg8_cat.error ( ) << "GetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
-    return false;
-  }
-  hr = _saved_depth_buffer -> GetDesc (&_saved_depth_desc);
-  if (!SUCCEEDED (hr)) {
-    dxgsg8_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
     return false;
   }
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::restore_bitplanes
+//     Function: wdxGraphicsBuffer8::restore_bitplanes
 //       Access: Public
 //  Description: After rendering, d3d_device will need to be restored 
 //               to its initial state.  This function restores the state.
@@ -197,7 +187,7 @@ restore_bitplanes() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::rebuild_bitplanes
+//     Function: wdxGraphicsBuffer8::rebuild_bitplanes
 //       Access: Public
 //  Description: If necessary, reallocates (or allocates) the 
 //               bitplanes for the buffer.
@@ -446,6 +436,23 @@ open_buffer() {
   if (!save_bitplanes()) {
     return false;
   }
+
+  HRESULT hr;
+  hr = _saved_color_buffer -> GetDesc (&_saved_color_desc);
+  if (!SUCCEEDED (hr)) {
+    dxgsg8_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
+    return false;
+  }
+  hr = _saved_depth_buffer -> GetDesc (&_saved_depth_desc);
+  if (!SUCCEEDED (hr)) {
+    dxgsg8_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
+    return false;
+  }
+  _fb_properties = _dxgsg->
+    calc_fb_properties(_saved_color_desc.Format,
+                       _saved_depth_desc.Format,
+                       _saved_depth_desc.MultiSampleType);
+  _fb_properties.set_force_hardware(1); // Wild guess.
 
   if (!rebuild_bitplanes()) {
     restore_bitplanes();

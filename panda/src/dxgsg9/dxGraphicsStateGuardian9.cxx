@@ -5199,3 +5199,61 @@ do_issue_stencil() {
     stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_enable, 0);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: dxGraphicsStateGuardian9::calc_fb_properties
+//       Access: Public
+//  Description: Convert DirectX framebuffer format ids into a
+//               FrameBufferProperties structure.
+////////////////////////////////////////////////////////////////////
+FrameBufferProperties DXGraphicsStateGuardian9::
+calc_fb_properties(DWORD cformat, DWORD dformat,
+                   DWORD multisampletype, DWORD multisamplequality) {
+  FrameBufferProperties props;
+  int index=0;
+  int alpha=0;
+  int color=0;
+  switch (cformat) {
+  case D3DFMT_R8G8B8:      index=0; color=24; alpha=0; break;
+  case D3DFMT_A8R8G8B8:    index=0; color=24; alpha=8; break;
+  case D3DFMT_X8R8G8B8:    index=0; color=24; alpha=0; break;
+  case D3DFMT_R5G6B5:      index=0; color=16; alpha=0; break;
+  case D3DFMT_X1R5G5B5:    index=0; color=15; alpha=0; break;
+  case D3DFMT_A1R5G5B5:    index=0; color=15; alpha=1; break;
+  case D3DFMT_A4R4G4B4:    index=0; color=12; alpha=4; break;
+  case D3DFMT_R3G3B2:      index=0; color= 8; alpha=0; break;
+  case D3DFMT_A8R3G3B2:    index=0; color= 8; alpha=8; break;
+  case D3DFMT_X4R4G4B4:    index=0; color=12; alpha=0; break;
+  case D3DFMT_A2B10G10R10: index=0; color=30; alpha=2; break;
+  case D3DFMT_A8P8:        index=1; color= 8; alpha=8; break;
+  case D3DFMT_P8:          index=1; color= 8; alpha=0; break;
+  }
+  props.set_color_bits(color);
+  props.set_alpha_bits(alpha);
+  if (index) {
+    props.set_rgb_color(0);
+    props.set_indexed_color(1);
+  } else if (color) {
+    props.set_rgb_color(1);
+    props.set_indexed_color(0);
+  }
+  int depth=0;
+  int stencil=0;
+  switch (dformat) {
+  case D3DFMT_D32:     depth=32; stencil=0; break;
+  case D3DFMT_D15S1:   depth=15; stencil=1; break;
+  case D3DFMT_D24S8:   depth=24; stencil=8; break;
+  case D3DFMT_D16:     depth=16; stencil=0; break;
+  case D3DFMT_D24X8:   depth=24; stencil=0; break;
+  case D3DFMT_D24X4S4: depth=24; stencil=4; break;
+  }
+  props.set_depth_bits(depth);
+  props.set_stencil_bits(stencil);
+  if (multisampletype == D3DMULTISAMPLE_NONMASKABLE) {
+    props.set_multisamples(2);
+  } else {
+    props.set_multisamples(multisampletype);
+  }
+  return props;
+}
+

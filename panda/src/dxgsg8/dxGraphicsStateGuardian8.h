@@ -48,6 +48,9 @@ public:
   DXGraphicsStateGuardian8(GraphicsPipe *pipe);
   ~DXGraphicsStateGuardian8();
 
+  FrameBufferProperties
+    calc_fb_properties(DWORD cformat, DWORD dformat, DWORD multisampletype);
+
   virtual TextureContext *prepare_texture(Texture *tex);
   void apply_texture(int i, TextureContext *tc);
   virtual void release_texture(TextureContext *tc);

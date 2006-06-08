@@ -151,19 +151,9 @@ save_bitplanes() {
     dxgsg9_cat.error ( ) << "GetRenderTarget " << D3DERRORSTRING(hr) FL;
     return false;
   }
-  hr = _saved_color_buffer -> GetDesc (&_saved_color_desc);
-  if (!SUCCEEDED (hr)) {
-    dxgsg9_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
-    return false;
-  }
   hr = _dxgsg -> _d3d_device -> GetDepthStencilSurface (&_saved_depth_buffer);
   if (!SUCCEEDED (hr)) {
     dxgsg9_cat.error ( ) << "GetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
-    return false;
-  }
-  hr = _saved_depth_buffer -> GetDesc (&_saved_depth_desc);
-  if (!SUCCEEDED (hr)) {
-    dxgsg9_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
     return false;
   }
   return true;
@@ -456,6 +446,25 @@ open_buffer() {
   if (!save_bitplanes()) {
     return false;
   }
+
+  HRESULT hr;
+  hr = _saved_color_buffer -> GetDesc (&_saved_color_desc);
+  if (!SUCCEEDED (hr)) {
+    dxgsg9_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
+    return false;
+  }
+  hr = _saved_depth_buffer -> GetDesc (&_saved_depth_desc);
+  if (!SUCCEEDED (hr)) {
+    dxgsg9_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
+    return false;
+  }
+  _fb_properties = _dxgsg->
+    calc_fb_properties(_saved_color_desc.Format,
+                       _saved_depth_desc.Format,
+                       _saved_depth_desc.MultiSampleType,
+                       _saved_depth_desc.MultiSampleQuality);
+  _fb_properties.set_force_hardware(1); // Wild guess.
+  
 
   if (!rebuild_bitplanes()) {
     restore_bitplanes();
