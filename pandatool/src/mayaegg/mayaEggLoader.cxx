@@ -87,11 +87,8 @@ public:
   void          CreateSkinCluster(MayaEggMesh *M);
 
   typedef phash_map<EggVertexPool *, MayaEggMesh *> MeshTable;
-  typedef second_of_pair_iterator<MeshTable::const_iterator> MeshIterator;
   typedef phash_map<EggGroup *, MayaEggJoint *> JointTable;
-  typedef second_of_pair_iterator<JointTable::const_iterator> JointIterator;
   typedef phash_map<string, MayaEggTex *> TexTable;
-  typedef second_of_pair_iterator<TexTable::const_iterator> TexIterator;
 
   MeshTable        _mesh_tab;
   JointTable       _joint_tab;
@@ -745,9 +742,9 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     return false;
   }
 
-  MeshIterator ci;
-  JointIterator ji;
-  TexIterator ti;
+  MeshTable::const_iterator ci;
+  JointTable::const_iterator ji;
+  TexTable::const_iterator ti;
 
   if (MGlobal::isYAxisUp()) {
     data->set_coordinate_system(CS_yup_right);
@@ -758,7 +755,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   TraverseEggNode(data, NULL);
 
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
-    MayaEggMesh *mesh = (*ci);
+    MayaEggMesh *mesh = (*ci).second;
     if (mesh->_face_count==0) continue;
 
     MStatus status;
@@ -778,29 +775,29 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   
   double thickness = 0.0;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
-    double dfo = ((*ji)->GetPos()).length();
+    double dfo = ((*ji).second->GetPos()).length();
     if (dfo > thickness) thickness = dfo;
   }
   thickness = thickness * 0.025;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
-    MayaEggJoint *joint = *ji;
+    MayaEggJoint *joint = (*ji).second;
     joint->ChooseEndPos(thickness);
     joint->CreateMayaBone();
   }
   
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
-    MayaEggMesh *mesh = (*ci);
+    MayaEggMesh *mesh = (*ci).second;
     EggGroup *joint = mesh->GetControlJoint();
     if (joint) CreateSkinCluster(mesh);
   }
   
-  for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) (*ci)->AssignNames();
-  for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) (*ji)->AssignNames();
-  for (ti = _tex_tab.begin();   ti != _tex_tab.end();   ++ti) (*ti)->AssignNames();
+  for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) (*ci).second->AssignNames();
+  for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) (*ji).second->AssignNames();
+  for (ti = _tex_tab.begin();   ti != _tex_tab.end();   ++ti) (*ti).second->AssignNames();
 
-  for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) delete *ci;
-  for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) delete *ji;
-  for (ti = _tex_tab.begin();   ti != _tex_tab.end();   ++ti) delete *ti;
+  for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) delete (*ci).second;
+  for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) delete (*ji).second;
+  for (ti = _tex_tab.begin();   ti != _tex_tab.end();   ++ti) delete (*ti).second;
   
   //  ResumeSetKeyMode();
   //  ResumeAnimate();
