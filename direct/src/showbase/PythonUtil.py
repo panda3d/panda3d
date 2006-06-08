@@ -1785,7 +1785,7 @@ def randUint32(rng=random.random):
     rng must return float in [0..1]"""
     return long(rng() * 0xFFFFFFFFL)
 
-class SerialNum:
+class SerialNumGen:
     """generates serial numbers"""
     def __init__(self, start=None):
         if start is None:
@@ -1795,10 +1795,13 @@ class SerialNum:
         self.__counter += 1
         return self.__counter
 
-_uname = SerialNum()
+_serialGen = SerialNumGen()
+def serialNum():
+    global _serialGen
+    return _serialGen.next()
 def uniqueName(name):
-    global _uname
-    return '%s-%s' % (name, _uname.next())
+    global _serialGen
+    return '%s-%s' % (name, _serialGen.next())
 
 def beginExports(modname):
     """The beginExports/endExports construct is used to bracket
@@ -1995,6 +1998,69 @@ def safeRepr(obj):
 def isDefaultValue(x):
     return x == type(x)()
 
+# debugging functions that conditionally bring up the debugger in __dev__
+# all can be used with assert, as in 'assert _equal(a,b)'
+def setTrace():
+    if __dev__:
+        print StackTrace()
+        import pdb;pdb.set_trace()
+        # setTrace
+    return True
+def _equal(a,b):
+    if a != b:
+        if __dev__:
+            print StackTrace()
+            import pdb;pdb.set_trace()
+            # setTrace
+        else:
+            assert a == b
+    return True
+def _notEqual(a,b):
+    if a == b:
+        if __dev__:
+            print StackTrace()
+            import pdb;pdb.set_trace()
+            # setTrace
+        else:
+            assert a != b
+    return True
+def _isNone(a):
+    if a is not None:
+        if __dev__:
+            print StackTrace()
+            import pdb;pdb.set_trace()
+            # setTrace
+        else:
+            assert a is None
+    return True
+def _notNone(a):
+    if a is None:
+        if __dev__:
+            print StackTrace()
+            import pdb;pdb.set_trace()
+            pass # import pdb;pdb.set_trace()
+        else:
+            assert a is not None
+    return True
+def _contains(container,item):
+    if item not in container:
+        if __dev__:
+            print StackTrace()
+            import pdb;pdb.set_trace()
+            # setTrace
+        else:
+            assert item in container
+    return True
+def _notIn(container,item):
+    if item in container:
+        if __dev__:
+            print StackTrace()
+            import pdb;pdb.set_trace()
+            # setTrace
+        else:
+            assert item not in container
+    return True
+
 class ScratchPad:
     """empty class to stick values onto"""
     def __init__(self, **kArgs):
@@ -2005,7 +2071,15 @@ import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
 __builtin__.Queue = Queue
-__builtin__.SerialNum = SerialNum
+__builtin__.SerialNumGen = SerialNumGen
 __builtin__.ScratchPad = ScratchPad
 __builtin__.uniqueName = uniqueName
+__builtin__.serialNum = serialNum
 __builtin__.profiled = profiled
+__builtin__.setTrace = setTrace
+__builtin__._equal = _equal
+__builtin__._notEqual = _notEqual
+__builtin__._isNone = _isNone
+__builtin__._notNone = _notNone
+__builtin__._contains = _contains
+__builtin__._notIn = _notIn
