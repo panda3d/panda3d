@@ -139,6 +139,25 @@ get_default() {
     }
   }
 
+  if (framebuffer_hardware) {
+    default_props.set_force_hardware(1);
+  }
+  if (framebuffer_software) {
+    default_props.set_force_software(1);
+  }
+  if (framebuffer_multisample) {
+    default_props.set_multisamples(1);
+  }
+  if (framebuffer_depth) {
+    default_props.set_depth_bits(1);
+  }
+  if (framebuffer_alpha) {
+    default_props.set_alpha_bits(1);
+  }
+  if (framebuffer_stereo) {
+    default_props.set_stereo(1);
+  }
+  
   if ((default_props._property[FBP_force_software])&&
       (default_props._property[FBP_force_hardware])) {
     default_props._property[FBP_force_software] = 0;
