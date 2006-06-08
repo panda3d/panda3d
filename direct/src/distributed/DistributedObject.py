@@ -1,5 +1,6 @@
 """DistributedObject module: contains the DistributedObject class"""
 
+from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
 #from PyDatagram import PyDatagram
@@ -95,6 +96,38 @@ class DistributedObject(DistributedObjectBase):
                 print
             except Exception, e: print "%serror printing status"%(spaces,), e
 
+    def getAutoInterests(self):
+        # returns the sub-zones under this object that are automatically
+        # opened for us by the server.
+        # have we already cached it?
+        def _getAutoInterests(cls):
+            # returns set of auto-interests for this class and all derived
+            # have we already computed this class's autoInterests?
+            if 'autoInterests' in cls.__dict__:
+                autoInterests = cls.autoInterests
+            else:
+                autoInterests = set()
+                # grab autoInterests from base classes
+                for base in cls.__bases__:
+                    autoInterests.update(_getAutoInterests(base))
+                # grab autoInterests from this class
+                if cls.__name__ in self.cr.dclassesByName:
+                    dclass = self.cr.dclassesByName[cls.__name__]
+                    field = dclass.getFieldByName('AutoInterest')
+                    if field is not None:
+                        p = DCPacker()
+                        p.setUnpackData(field.getDefaultValue())
+                        len = p.rawUnpackUint16()/4
+                        for i in xrange(len):
+                            zone = int(p.rawUnpackUint32())
+                            autoInterests.add(zone)
+                    autoInterests.update(autoInterests)
+                    cls.autoInterests = autoInterests
+            return set(autoInterests)
+        autoInterests = _getAutoInterests(self.__class__)
+        _getAutoInterests = None
+        return list(autoInterests)
+
     def setNeverDisable(self, bool):
         assert bool == 1 or bool == 0
         self.neverDisable = bool
@@ -182,6 +215,7 @@ class DistributedObject(DistributedObjectBase):
         if self.activeState != ESDisabled:
             self.activeState = ESDisabled
             self.__callbacks = {}
+            self.cr.closeAutoInterests(self)
             #self.cr.deleteObjectLocation(self.doId, self.parentId, self.zoneId)
             self.setLocation(0,0)
             # TODO: disable my children
@@ -221,6 +255,9 @@ class DistributedObject(DistributedObjectBase):
         self.activeState = ESGenerating
         # this has already been set at this point
         #self.cr.storeObjectLocation(self.doId, self.parentId, self.zoneId)
+        # HACK: we seem to be calling generate() more than once for objects that multiply-inherit
+        if not hasattr(self, '_autoInterestHandle'):
+            self.cr.openAutoInterests(self)
 
     def generateInit(self):
         """

@@ -1,12 +1,12 @@
 from direct.showbase import DirectObject
-from direct.showbase.PythonUtil import SerialNum, Functor
+from direct.showbase.PythonUtil import SerialNumGen, Functor
 
 class EventGroup(DirectObject.DirectObject):
     """This class allows you to group together multiple events and treat
     them as a single event. The EventGroup will not send out its event until
     all of its sub-events have occured."""
 
-    _SerialNum = SerialNum()
+    _SerialNumGen = SerialNumGen()
 
     def __init__(self, name, subEvents=None, doneEvent=None):
         """
@@ -34,7 +34,7 @@ class EventGroup(DirectObject.DirectObject):
         if doneEvent is None:
             # no doneEvent provided, allocate a unique event name
             doneEvent = 'EventGroup-%s-%s-Done' % (
-                EventGroup._SerialNum.next(), self._name)
+                EventGroup._SerialNumGen.next(), self._name)
         self._doneEvent = doneEvent
         self._completed = False
 
@@ -81,7 +81,7 @@ class EventGroup(DirectObject.DirectObject):
         name that is already in the name of the EventGroup object.
         Returns the new event name. """
         return self.addEvent('%s-SubEvent-%s-%s' % (
-            self._name, EventGroup._SerialNum.next(), name))
+            self._name, EventGroup._SerialNumGen.next(), name))
 
     def _subEventComplete(self, subEventName, *args, **kwArgs):
         if subEventName in self._completedEvents:

@@ -11,13 +11,15 @@ from pandac.PandaModules import *
 from MsgTypes import *
 from direct.showbase.PythonUtil import *
 from direct.showbase import DirectObject
+from direct.showbase.DelayedCallback import DelayedCallback
 from PyDatagram import PyDatagram
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
 class InterestState:
     StateActive = 'Active'
     StatePendingDel = 'PendingDel'
-    def __init__(self, desc, state, scope, event, parentId, zoneIdList):
+    def __init__(self, desc, state, scope, event, parentId, zoneIdList,
+                 eventCounter, auto=False):
         self.desc = desc
         self.state = state
         self.scope = scope
@@ -26,14 +28,21 @@ class InterestState:
         # for removal of the same interest before we get a response for the
         # first interest removal, we now have two parts of the codebase
         # waiting for a response on the removal of a single interest.
-        self.events = [event]
+        self.events = []
+        self.eventCounter = eventCounter
+        if event is not None:
+            self.addEvent(event)
         self.parentId = parentId
         self.zoneIdList = zoneIdList
+        self.auto = auto
     def addEvent(self, event):
         self.events.append(event)
+        self.eventCounter.num += 1
     def getEvents(self):
         return list(self.events)
     def clearEvents(self):
+        self.eventCounter.num -= len(self.events)
+        assert self.eventCounter.num >= 0
         self.events = []
     def sendEvents(self):
         for event in self.events:
@@ -86,9 +95,10 @@ class DoInterestManager(DirectObject.DirectObject):
     _interests = {}
     if __debug__:
         _debug_interestHistory = []
-        _debug_maxDescriptionLen = 20
+        _debug_maxDescriptionLen = 35
 
-    _Serial = SerialNum()
+    _SerialGen = SerialNumGen()
+    _SerialNum = serialNum()
 
     def __init__(self):
         assert DoInterestManager.notify.debugCall()
@@ -96,9 +106,13 @@ class DoInterestManager(DirectObject.DirectObject):
         self._addInterestEvent = uniqueName('DoInterestManager-Add')
         self._removeInterestEvent = uniqueName('DoInterestManager-Remove')
         self._noNewInterests = False
+        self._completeDelayedCallback = None
+        # keep track of request scopes that have not completed
+        self._outstandingScopes = set()
+        self._completeEventCount = ScratchPad(num=0)
 
     def _getAnonymousEvent(self, desc):
-        return 'anonymous-%s-%s' % (desc, DoInterestManager._Serial.next())
+        return 'anonymous-%s-%s' % (desc, DoInterestManager._SerialGen.next())
 
     def setNoNewInterests(self, flag):
         self._noNewInterests = flag
@@ -106,7 +120,10 @@ class DoInterestManager(DirectObject.DirectObject):
     def noNewInterests(self):
         return self._noNewInterests
 
-    def addInterest(self, parentId, zoneIdList, description, event=None):
+    def getAllInterestsCompleteEvent(self):
+        return 'allInterestsComplete-%s' % DoInterestManager._SerialNum
+
+    def addInterest(self, parentId, zoneIdList, description, event=None, auto=False):
         """
         Look into a (set of) zone(s).
         """
@@ -117,33 +134,28 @@ class DoInterestManager(DirectObject.DirectObject):
             DoInterestManager.notify.warning(
                 "addInterest: addingInterests on delete: %s" % (handle))
             return
-        
-        scopeId = self._getNextScopeId()
-        if event is None:
-            event = self._getAnonymousEvent('addInterest')
+
+        if auto:
+            scopeId = 0
+            event = None
+        else:
+            scopeId = self._getNextScopeId()
+            self._outstandingScopes.add(scopeId)
+            if event is None:
+                event = self._getAnonymousEvent('addInterest')
         DoInterestManager._interests[handle] = InterestState(
-            description, InterestState.StateActive, scopeId, event, parentId, zoneIdList)
+            description, InterestState.StateActive, scopeId, event, parentId, zoneIdList, self._completeEventCount)
         if self.InterestDebug:
-            print 'INTEREST DEBUG: addInterest(): handle=%s, parent=%s, zoneIds=%s, description=%s, event=%s' % (
-                handle, parentId, zoneIdList, description, event)
-        self._sendAddInterest(handle, scopeId, parentId, zoneIdList, description)
+            print 'INTEREST DEBUG: addInterest(): handle=%s, parent=%s, zoneIds=%s, description=%s, event=%s, auto=%s' % (
+                handle, parentId, zoneIdList, description, event, auto)
+        if not auto:
+            self._sendAddInterest(handle, scopeId, parentId, zoneIdList, description)
         if event:
             messenger.send(self._getAddInterestEvent(), [event])
         assert self.printInterestsIfDebug()
         return InterestHandle(handle)
 
-    def countOpenInterests(self):
-        openInterestsCount = 0
-        for interest in DoInterestManager._interests.values():
-            # I'm only getting NO_SCOPE interests, so for now I'll key off
-            # of events
-            #if interest.scope != NO_SCOPE:     
-            #    openInterestsCount += 1
-            #if len(interest.events) != 0:
-                openInterestsCount += 1
-        return openInterestsCount
-
-    def removeInterest(self, handle, event=None):
+    def removeInterest(self, handle, event=None, auto=False):
         """
         Stop looking in a (set of) zone(s)
         """
@@ -183,7 +195,8 @@ class DoInterestManager(DirectObject.DirectObject):
                 if self.InterestDebug:
                     print 'INTEREST DEBUG: removeInterest(): handle=%s, event=%s' % (
                         handle, event)
-                self._sendRemoveInterest(handle, scopeId)
+                if not auto:
+                    self._sendRemoveInterest(handle, scopeId)
                 if event is None:
                     self._considerRemoveInterest(handle)
         else:
@@ -239,6 +252,25 @@ class DoInterestManager(DirectObject.DirectObject):
                 "alterInterest: handle not found: %s" % (handle))
         return exists
 
+    def openAutoInterests(self, obj):
+        if hasattr(obj, '_autoInterestHandle'):
+            # must be multiple inheritance
+            self.notify.warning('openAutoInterests(%s): interests already open' % obj.__class__.__name__)
+            return
+        autoInterests = obj.getAutoInterests()
+        obj._autoInterestHandle = None
+        if not len(autoInterests):
+            return
+        obj._autoInterestHandle = self.addInterest(obj.doId, autoInterests, '%s-autoInterest' % obj.__class__.__name__, auto=True)
+    def closeAutoInterests(self, obj):
+        if not hasattr(obj, '_autoInterestHandle'):
+            # must be multiple inheritance
+            self.notify.warning('closeAutoInterests(%s): interests already closed' % obj)
+            return
+        if obj._autoInterestHandle is not None:
+            self.removeInterest(obj._autoInterestHandle, auto=True)
+        del obj._autoInterestHandle
+
     # events for InterestWatcher
     def _getAddInterestEvent(self):
         return self._addInterestEvent
@@ -278,6 +310,7 @@ class DoInterestManager(DirectObject.DirectObject):
             if DoInterestManager._interests[handle].isPendingDelete():
                 # make sure there is no pending event for this interest
                 if DoInterestManager._interests[handle].scope == NO_SCOPE:
+                    assert len(DoInterestManager._interests[handle].events) == 0
                     del DoInterestManager._interests[handle]
 
     if __debug__:
@@ -413,6 +446,21 @@ class DoInterestManager(DirectObject.DirectObject):
         self._considerRemoveInterest(handle)
         for event in eventsToSend:
             messenger.send(event)
+        # if there are no more outstanding interest-completes, send out global all-done event
+        if self._completeEventCount.num == 0:
+            # wait for 3 frames, if no new interests, send out all-done event
+            def checkMoreInterests():
+                return self._completeEventCount.num > 0
+            def sendEvent():
+                messenger.send(self.getAllInterestsCompleteEvent())
+            if self._completeDelayedCallback is not None:
+                self._completeDelayedCallback.destroy()
+            self._completeDelayedCallback = DelayedCallback(
+                3,
+                callback=sendEvent,
+                cancelFunc=checkMoreInterests)
+            checkMoreInterests = None
+            sendEvent = None
         assert self.printInterestsIfDebug()
 
 if __debug__:
