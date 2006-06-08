@@ -388,6 +388,31 @@ extract_files(int argc, char *argv[]) {
   return true;
 }
 
+const char *
+format_timestamp(time_t timestamp) {
+  static const size_t buffer_size = 512;
+  static char buffer[buffer_size];
+
+  if (timestamp == 0) {
+    // A zero timestamp is a special case.
+    return "  (no date) ";
+  }
+
+  time_t now = time(NULL);
+  struct tm *tm_p = localtime(&timestamp);
+
+  if (timestamp > now || (now - timestamp > 86400 * 365)) {
+    // A timestamp in the future, or more than a year in the past,
+    // gets a year appended.
+    strftime(buffer, buffer_size, "%b %d  %Y", tm_p);
+  } else {
+    // Otherwise, within the past year, show the date and time.
+    strftime(buffer, buffer_size, "%b %d %H:%M", tm_p);
+  }
+
+  return buffer;
+}
+
 bool
 list_files(int argc, char *argv[]) {
   if (!multifile_name.exists()) {
@@ -419,23 +444,28 @@ list_files(int argc, char *argv[]) {
             ratio = (double)internal_length / (double)orig_length;
           }
           if (ratio > 1.0) {
-            printf("%12d worse %c %s\n",
+            printf("%12d worse %c %s %s\n",
                    multifile->get_subfile_length(i),
                    encrypted_symbol,
+                   format_timestamp(multifile->get_subfile_timestamp(i)),
                    subfile_name.c_str());
           } else {
-            printf("%12d  %3.0f%% %c %s\n",
+            printf("%12d  %3.0f%% %c %s %s\n",
                    multifile->get_subfile_length(i),
                    100.0 - ratio * 100.0, encrypted_symbol,
+                   format_timestamp(multifile->get_subfile_timestamp(i)),
                    subfile_name.c_str());
           }
         } else {
-          printf("%12d       %c %s\n", 
+          printf("%12d       %c %s %s\n", 
                  multifile->get_subfile_length(i),
-                 encrypted_symbol, subfile_name.c_str());
+                 encrypted_symbol,
+                 format_timestamp(multifile->get_subfile_timestamp(i)),
+                 subfile_name.c_str());
         }
       }
     }
+    cout << "Last modification " << format_timestamp(multifile->get_timestamp()) << "\n";
     fflush(stdout);
     if (multifile->get_scale_factor() != 1) {
       cout << "Scale factor is " << multifile->get_scale_factor() << "\n";

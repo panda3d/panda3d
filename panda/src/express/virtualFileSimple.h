@@ -45,6 +45,7 @@ public:
 
   virtual istream *open_read_file(bool auto_unwrap) const;
   virtual streampos get_file_size(istream *stream) const;
+  virtual time_t get_timestamp() const;
 
 protected:
   virtual bool scan_local_directory(VirtualFileList *file_list, 

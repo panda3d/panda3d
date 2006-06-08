@@ -1167,6 +1167,41 @@ compare_timestamps(const Filename &other,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_timestamp
+//       Access: Published
+//  Description: Returns a time_t value that represents the time the
+//               file was last modified, to within whatever precision
+//               the operating system records this information (on a
+//               Windows95 system, for instance, this may only be
+//               accurate to within 2 seconds).
+//
+//               If the timestamp cannot be determined, either because
+//               it is not supported by the operating system or
+//               because there is some error (such as file not found),
+//               returns 0.
+////////////////////////////////////////////////////////////////////
+time_t Filename::
+get_timestamp() const {
+  string os_specific = get_filename_index(0).to_os_specific();
+
+#ifdef WIN32_VC
+  struct _stat this_buf;
+
+  if (_stat(os_specific.c_str(), &this_buf) == 0) {
+    return this_buf.st_mtime;
+  }
+#else  // WIN32_VC
+  struct stat this_buf;
+
+  if (stat(os_specific.c_str(), &this_buf) == 0) {
+    return this_buf.st_mtime;
+  }
+#endif
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::resolve_filename
 //       Access: Published
 //  Description: Searches the given search path for the filename.  If

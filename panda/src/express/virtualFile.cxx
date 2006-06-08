@@ -178,6 +178,25 @@ get_file_size(istream *stream) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::get_timestamp
+//       Access: Published, Virtual
+//  Description: Returns a time_t value that represents the time the
+//               file was last modified, to within whatever precision
+//               the operating system records this information (on a
+//               Windows95 system, for instance, this may only be
+//               accurate to within 2 seconds).
+//
+//               If the timestamp cannot be determined, either because
+//               it is not supported by the operating system or
+//               because there is some error (such as file not found),
+//               returns 0.
+////////////////////////////////////////////////////////////////////
+time_t VirtualFile::
+get_timestamp() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::close_read_file
 //       Access: Public
 //  Description: Closes a file opened by a previous call to

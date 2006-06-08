@@ -64,6 +64,21 @@ needs_repack() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_timestamp
+//       Access: Published
+//  Description: Returns the modification timestamp of the overall
+//               Multifile.  This indicates the most recent date at
+//               which subfiles were added or removed from the
+//               Multifile.  Note that it is logically possible for an
+//               individual subfile to have a more recent timestamp
+//               than the overall timestamp.
+////////////////////////////////////////////////////////////////////
+INLINE time_t Multifile::
+get_timestamp() const {
+  return _timestamp;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::get_scale_factor
 //       Access: Published
 //  Description: Returns the internal scale factor for this Multifile.
@@ -197,6 +212,7 @@ Subfile() {
   _index_start = 0;
   _data_start = 0;
   _data_length = 0;
+  _timestamp = 0;
   _source = (istream *)NULL;
   _flags = 0;
   _compression_level = 0;

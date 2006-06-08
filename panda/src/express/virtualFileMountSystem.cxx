@@ -142,6 +142,26 @@ get_file_size(const Filename &, istream *stream) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::get_timestamp
+//       Access: Published, Virtual
+//  Description: Returns a time_t value that represents the time the
+//               file was last modified, to within whatever precision
+//               the operating system records this information (on a
+//               Windows95 system, for instance, this may only be
+//               accurate to within 2 seconds).
+//
+//               If the timestamp cannot be determined, either because
+//               it is not supported by the operating system or
+//               because there is some error (such as file not found),
+//               returns 0.
+////////////////////////////////////////////////////////////////////
+time_t VirtualFileMountSystem::
+get_timestamp(const Filename &file) const {
+  Filename pathname(_physical_filename, file);
+  return pathname.get_timestamp();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountSystem::scan_directory
 //       Access: Public, Virtual
 //  Description: Fills the given vector up with the list of filenames

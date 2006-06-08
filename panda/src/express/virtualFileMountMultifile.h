@@ -46,6 +46,7 @@ public:
 
   virtual istream *open_read_file(const Filename &file) const;
   virtual streampos get_file_size(const Filename &file, istream *stream) const;
+  virtual time_t get_timestamp(const Filename &file) const;
 
   virtual bool scan_directory(vector_string &contents, 
                               const Filename &dir) const;

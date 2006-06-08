@@ -58,6 +58,7 @@ PUBLISHED:
   virtual istream *open_read_file(bool auto_unwrap) const;
   void close_read_file(istream *stream) const;
   virtual streampos get_file_size(istream *stream) const;
+  virtual time_t get_timestamp() const;
 
 public:
   INLINE void set_original_filename(const Filename &filename);

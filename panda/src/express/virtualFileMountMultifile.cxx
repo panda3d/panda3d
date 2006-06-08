@@ -103,6 +103,29 @@ get_file_size(const Filename &file, istream *) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountMultifile::get_timestamp
+//       Access: Published, Virtual
+//  Description: Returns a time_t value that represents the time the
+//               file was last modified, to within whatever precision
+//               the operating system records this information (on a
+//               Windows95 system, for instance, this may only be
+//               accurate to within 2 seconds).
+//
+//               If the timestamp cannot be determined, either because
+//               it is not supported by the operating system or
+//               because there is some error (such as file not found),
+//               returns 0.
+////////////////////////////////////////////////////////////////////
+time_t VirtualFileMountMultifile::
+get_timestamp(const Filename &file) const {
+  int subfile_index = _multifile->find_subfile(file);
+  if (subfile_index < 0) {
+    return 0;
+  }
+  return _multifile->get_subfile_timestamp(subfile_index);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountMultifile::scan_directory
 //       Access: Public, Virtual
 //  Description: Fills the given vector up with the list of filenames

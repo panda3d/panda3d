@@ -54,6 +54,8 @@ PUBLISHED:
   INLINE bool is_write_valid() const;
   INLINE bool needs_repack() const;
 
+  INLINE time_t get_timestamp() const;
+
   void set_scale_factor(size_t scale_factor);
   INLINE size_t get_scale_factor() const;
 
@@ -77,6 +79,7 @@ PUBLISHED:
   void remove_subfile(int index);
   const string &get_subfile_name(int index) const;
   size_t get_subfile_length(int index) const;
+  time_t get_subfile_timestamp(int index) const;
   bool is_subfile_compressed(int index) const;
   bool is_subfile_encrypted(int index) const;
   size_t get_subfile_internal_length(int index) const;
@@ -131,6 +134,7 @@ private:
     streampos _data_start;
     size_t _data_length;
     size_t _uncompressed_length;
+    time_t _timestamp;
     istream *_source;
     Filename _source_filename;
     int _flags;
@@ -162,6 +166,8 @@ private:
   streampos _last_index;
 
   bool _needs_repack;
+  time_t _timestamp;
+  bool _timestamp_dirty;
   size_t _scale_factor;
   size_t _new_scale_factor;
 

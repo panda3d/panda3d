@@ -159,6 +159,8 @@ PUBLISHED:
   int compare_timestamps(const Filename &other,
                          bool this_missing_is_old = true,
                          bool other_missing_is_old = true) const;
+  time_t get_timestamp() const;
+
   bool resolve_filename(const DSearchPath &searchpath,
                         const string &default_extension = string());
   bool make_relative_to(Filename directory, bool allow_backups = true);

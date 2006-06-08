@@ -36,7 +36,9 @@ const size_t Multifile::_header_size = 6;
 // change in the major version is intolerable; while a Multifile with
 // an older minor version may still be read.
 const int Multifile::_current_major_ver = 1;
-const int Multifile::_current_minor_ver = 0;
+
+const int Multifile::_current_minor_ver = 1;
+// Bumped to version 1.1 on 6/8/06 to add timestamps.
 
 // To confirm that the supplied password matches, we write the
 // Mutifile magic header at the beginning of the encrypted stream.
@@ -63,6 +65,7 @@ const size_t Multifile::_encrypt_header_size = 6;
 //   uint32     Scale factor.  This scales all address references within
 //              the file.  Normally 1, this may be set larger to
 //              support Multifiles larger than 4GB.
+//   uint32     An overall modification timestamp for the entire multifile.
 
 //
 // (2) Zero or more index entries, one for each subfile within the
@@ -82,6 +85,7 @@ const size_t Multifile::_encrypt_header_size = 6;
 //               subfile, if it is compressed or encrypted.  This field
 //               is only present if one or both of the SF_compressed
 //               or SF_encrypted bits are set in _flags.
+//   uint32     A modification timestamp for the subfile.
 //   uint16     The length in bytes of the subfile's name.
 //   char[n]    The subfile's name.
 //
@@ -105,6 +109,8 @@ Multifile() {
   _next_index = 0;
   _last_index = 0;
   _needs_repack = false;
+  _timestamp = 0;
+  _timestamp_dirty = false;
   _scale_factor = 1;
   _new_scale_factor = 1;
   _encryption_flag = false;
@@ -162,6 +168,8 @@ open_read(const Filename &multifile_name) {
   if (!fname.open_read(_read_file)) {
     return false;
   }
+  _timestamp = fname.get_timestamp();
+  _timestamp_dirty = true;
   _read = &_read_file;
   _multifile_name = multifile_name;
   return read_index();
@@ -188,6 +196,8 @@ open_write(const Filename &multifile_name) {
   if (!fname.open_write(_write_file, true)) {
     return false;
   }
+  _timestamp = time(NULL);
+  _timestamp_dirty = true;
   _write = &_write_file;
   _multifile_name = multifile_name;
   return true;
@@ -215,6 +225,12 @@ open_read_write(const Filename &multifile_name) {
   if (!fname.open_read_write(_read_write_file)) {
     return false;
   }
+  if (exists) {
+    _timestamp = fname.get_timestamp();
+  } else {
+    _timestamp = time(NULL);
+  }
+  _timestamp_dirty = true;
   _read = &_read_write_file;
   _write = &_read_write_file;
   _multifile_name = multifile_name;
@@ -248,8 +264,11 @@ close() {
   _next_index = 0;
   _last_index = 0;
   _needs_repack = false;
+  _timestamp = 0;
+  _timestamp_dirty = false;
   _scale_factor = 1;
   _new_scale_factor = 1;
+  _encryption_flag = false;
   _file_major_ver = 0;
   _file_minor_ver = 0;
 
@@ -335,6 +354,9 @@ add_subfile(const string &subfile_name, const Filename &filename,
     add_new_subfile(subfile, compression_level);
   }
 
+  _timestamp = time(NULL);
+  _timestamp_dirty = true;
+
   return name;
 }
 
@@ -343,9 +365,9 @@ add_subfile(const string &subfile_name, const Filename &filename,
 //       Access: Published
 //  Description: Adds a file on disk to the subfile.  If a subfile
 //               already exists with the same name, its contents are
-//               compared to the disk file, and it is replaced only if
-//               it is different; otherwise, the multifile is left
-//               unchanged.
+//               compared byte-for-byte to the disk file, and it is
+//               replaced only if it is different; otherwise, the
+//               multifile is left unchanged.
 ////////////////////////////////////////////////////////////////////
 string Multifile::
 update_subfile(const string &subfile_name, const Filename &filename,
@@ -375,6 +397,9 @@ update_subfile(const string &subfile_name, const Filename &filename,
 
     add_new_subfile(subfile, compression_level);
   }
+
+  _timestamp = time(NULL);
+  _timestamp_dirty = true;
 
   return name;
 }
@@ -411,6 +436,13 @@ flush() {
     // the header.
     if (!write_header()) {
       return false;
+    }
+
+  } else {
+    if (_file_minor_ver != _current_minor_ver) {
+      // If we *do* have an index already, but this is an old version
+      // multifile, we have to completely rewrite it anyway.
+      return repack();
     }
   }
 
@@ -484,14 +516,26 @@ flush() {
     
     // Now go back and fill in the proper addresses for the data start.
     // We didn't do it in the first pass, because we don't really want
-    // to keep all those pile handles open, and so we didn't have to
-    // determine each pile's length ahead of time.
+    // to keep all those file handles open, and so we didn't have to
+    // determine each file's length ahead of time.
     for (pi = _new_subfiles.begin(); pi != _new_subfiles.end(); ++pi) {
       Subfile *subfile = (*pi);
       subfile->rewrite_index_data_start(*_write, this);
     }
 
     _new_subfiles.clear();
+  }
+
+  // Also update the overall timestamp.
+  if (_timestamp_dirty) {
+    nassertr(!_write->fail(), false);
+    static const size_t timestamp_pos = _header_size + 2 + 2 + 4;
+    _write->seekp(timestamp_pos);
+    nassertr(!_write->fail(), false);
+    
+    StreamWriter writer(*_write);
+    writer.add_uint32(_timestamp);
+    _timestamp_dirty = false;
   }
 
   _write->flush();
@@ -725,6 +769,9 @@ remove_subfile(int index) {
   _removed_subfiles.push_back(subfile);
   _subfiles.erase(_subfiles.begin() + index);
 
+  _timestamp = time(NULL);
+  _timestamp_dirty = true;
+
   _needs_repack = true;
 }
 
@@ -754,6 +801,21 @@ size_t Multifile::
 get_subfile_length(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
   return _subfiles[index]->_uncompressed_length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_subfile_timestamp
+//       Access: Published
+//  Description: Returns the modification time of the nth
+//               subfile.  If this is called on an older .mf file,
+//               which did not store individual timestamps in the
+//               file, this will return the modification time of the
+//               overall multifile.
+////////////////////////////////////////////////////////////////////
+time_t Multifile::
+get_subfile_timestamp(int index) const {
+  nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
+  return _subfiles[index]->_timestamp;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -951,6 +1013,18 @@ compare_subfile(int index, const Filename &filename) {
     return false;
   }
 
+  // Check the file size.
+  in2.seekg(0, ios::end);
+  streampos file_size = in2.tellg();
+
+  if (file_size != (streampos)get_subfile_length(index)) {
+    // The files have different sizes.
+    delete in1;
+    return false;
+  }
+
+  // Check the file data, byte-for-byte.
+  in2.seekg(0);
   int byte1 = in1->get();
   int byte2 = in2.get();
   while (!in1->fail() && !in1->eof() &&
@@ -967,6 +1041,7 @@ compare_subfile(int index, const Filename &filename) {
   delete in1;
 
   nassertr(!failed, false);
+
   return true;
 }
 
@@ -1036,6 +1111,8 @@ read_subfile(int index, string &result) {
 bool Multifile::
 open_read(istream *multifile_stream) {
   close();
+  _timestamp = time(NULL);
+  _timestamp_dirty = true;
   _read = multifile_stream;
   return read_index();
 }
@@ -1053,6 +1130,8 @@ open_read(istream *multifile_stream) {
 bool Multifile::
 open_write(ostream *multifile_stream) {
   close();
+  _timestamp = time(NULL);
+  _timestamp_dirty = true;
   _write = multifile_stream;
   return true;
 }
@@ -1071,6 +1150,8 @@ open_write(ostream *multifile_stream) {
 bool Multifile::
 open_read_write(iostream *multifile_stream) {
   close();
+  _timestamp = time(NULL);
+  _timestamp_dirty = true;
   _read = multifile_stream;
   _write = multifile_stream;
 
@@ -1303,6 +1384,10 @@ read_index() {
     return false;
   }
 
+  if (_file_minor_ver >= 1) {
+    _timestamp = reader.get_uint32();
+    _timestamp_dirty = false;
+  }
 
   // Now read the index out.
   _next_index = _read->tellg();
@@ -1360,6 +1445,9 @@ read_index() {
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
 write_header() {
+  _file_major_ver = _current_major_ver;
+  _file_minor_ver = _current_minor_ver;
+
   nassertr(_write != (ostream *)NULL, false);
   nassertr(_write->tellp() == (streampos)0, false);
   _write->write(_header, _header_size);
@@ -1367,6 +1455,8 @@ write_header() {
   writer.add_int16(_current_major_ver);
   writer.add_int16(_current_minor_ver);
   writer.add_uint32(_scale_factor);
+
+  writer.add_uint32(_timestamp);
 
   _next_index = _write->tellp();
   _next_index = pad_to_streampos(_next_index);
@@ -1421,6 +1511,12 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
   } else {
     _uncompressed_length = _data_length;
   }
+  if (multifile->_file_minor_ver < 1) {
+    _timestamp = multifile->get_timestamp();
+  } else {
+    _timestamp = reader.get_uint32();
+  }
+
   size_t name_length = reader.get_uint16();
   if (read.eof() || read.fail()) {
     _flags |= SF_index_invalid;
@@ -1471,6 +1567,7 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
   if ((_flags & (SF_compressed | SF_encrypted)) != 0) {
     dg.add_uint32(_uncompressed_length);
   }
+  dg.add_uint32(_timestamp);
   dg.add_uint16(_name.length());
 
   // For no real good reason, we'll invert all the bits in the name.
@@ -1497,7 +1594,7 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Subfile::write_index
+//     Function: Multifile::Subfile::write_data
 //       Access: Public
 //  Description: Writes the data record for the Subfile to the
 //               indicated ostream: the actual contents of the
@@ -1621,6 +1718,16 @@ write_data(ostream &write, istream *read, streampos fpos,
   // Subfile.  (In case we are running during repack()).
   _data_start = fpos;
 
+  // Get the modification timestamp for this subfile.  This is read
+  // from the source file, if we have a filename; otherwise, it's the
+  // current time.
+  if (!_source_filename.empty()) {
+    _timestamp = _source_filename.get_timestamp();
+  }
+  if (_timestamp == 0) {
+    _timestamp = time(NULL);
+  }
+
   _source = (istream *)NULL;
   _source_filename = Filename();
   source_file.close();
@@ -1651,6 +1758,7 @@ rewrite_index_data_start(ostream &write, Multifile *multifile) {
   if ((_flags & (SF_compressed | SF_encrypted)) != 0) {
     writer.add_uint32(_uncompressed_length);
   }
+  writer.add_uint32(_timestamp);
 }
 
 ////////////////////////////////////////////////////////////////////
