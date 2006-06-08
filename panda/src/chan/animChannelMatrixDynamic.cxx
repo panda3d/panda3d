@@ -38,7 +38,9 @@ AnimChannelMatrixDynamic::
 AnimChannelMatrixDynamic(AnimGroup *parent, const string &name)
   : AnimChannelMatrix(parent, name) 
 {
-  _last_value = _value = TransformState::make_identity();
+  _value = TransformState::make_identity();
+  _last_value = NULL;  // This is impossible; thus, has_changed() will
+                       // always return true the first time.
 }
 
 ////////////////////////////////////////////////////////////////////
