@@ -258,8 +258,12 @@ ConfigVariableBool framebuffer_depth
           "properties, which requests a depth buffer."));
 ConfigVariableBool framebuffer_alpha
 ("framebuffer-alpha", true,
- PRC_DESC("True if FM_depth should be added to the default framebuffer "
+ PRC_DESC("True if FM_alpha should be added to the default framebuffer "
           "properties, which requests an alpha channel if possible."));
+ConfigVariableBool framebuffer_stencil
+("framebuffer-stencil", false,
+ PRC_DESC("True if FM_stencil should be added to the default framebuffer "
+          "properties, which requests an stencil buffer if possible."));
 ConfigVariableBool framebuffer_stereo
 ("framebuffer-stereo", false,
  PRC_DESC("True if FM_stereo should be added to the default framebuffer "

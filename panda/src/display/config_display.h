@@ -78,6 +78,7 @@ extern EXPCL_PANDA ConfigVariableBool framebuffer_software;
 extern EXPCL_PANDA ConfigVariableBool framebuffer_multisample;
 extern EXPCL_PANDA ConfigVariableBool framebuffer_depth;
 extern EXPCL_PANDA ConfigVariableBool framebuffer_alpha;
+extern EXPCL_PANDA ConfigVariableBool framebuffer_stencil;
 extern EXPCL_PANDA ConfigVariableBool framebuffer_stereo;
 extern EXPCL_PANDA ConfigVariableInt depth_bits;
 extern EXPCL_PANDA ConfigVariableInt color_bits;

@@ -84,6 +84,7 @@ get_default() {
     string word = framebuffer_mode.get_word(i);
     if (cmp_nocase_uh(word, "rgb") == 0) {
       default_props._property[FBP_indexed_color] = 0;
+      default_props._property[FBP_color_bits] = color_bits;
       default_props._property[FBP_rgb_color] = 1;
 
     } else if (cmp_nocase_uh(word, "index") == 0) {
@@ -108,21 +109,22 @@ get_default() {
     } else if (cmp_nocase_uh(word, "alpha") == 0) {
       default_props._property[FBP_indexed_color] = 0;
       default_props._property[FBP_rgb_color] = 1;
-      default_props._property[FBP_alpha_bits] = 1;
+      default_props._property[FBP_alpha_bits] = alpha_bits;
       
     } else if (cmp_nocase_uh(word, "rgba") == 0) {
       default_props._property[FBP_indexed_color] = 0;
       default_props._property[FBP_rgb_color] = 1;
-      default_props._property[FBP_alpha_bits] = 1;
+      default_props._property[FBP_color_bits] = color_bits;
+      default_props._property[FBP_alpha_bits] = alpha_bits;
       
     } else if (cmp_nocase_uh(word, "depth") == 0) {
-      default_props._property[FBP_depth_bits] = 1;
+      default_props._property[FBP_depth_bits] = depth_bits;
 
     } else if (cmp_nocase_uh(word, "stencil") == 0) {
-      default_props._property[FBP_stencil_bits] = 1;
+      default_props._property[FBP_stencil_bits] = stencil_bits;
 
     } else if (cmp_nocase_uh(word, "multisample") == 0) {
-      default_props._property[FBP_multisamples] = 1;
+      default_props._property[FBP_multisamples] = multisamples;
 
     } else if (cmp_nocase_uh(word, "stereo") == 0) {
       default_props._property[FBP_stereo] = 1;
@@ -149,10 +151,13 @@ get_default() {
     default_props.set_multisamples(1);
   }
   if (framebuffer_depth) {
-    default_props.set_depth_bits(1);
+    default_props.set_depth_bits(depth_bits);
   }
   if (framebuffer_alpha) {
-    default_props.set_alpha_bits(1);
+    default_props.set_alpha_bits(alpha_bits);
+  }
+  if (framebuffer_stencil) {
+    default_props.set_stencil_bits(stencil_bits);
   }
   if (framebuffer_stereo) {
     default_props.set_stereo(1);
