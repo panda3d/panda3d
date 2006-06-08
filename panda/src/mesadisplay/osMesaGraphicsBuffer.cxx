@@ -135,5 +135,16 @@ open_buffer() {
   
   _image = PTA_uchar::empty_array(_x_size * _y_size * 4);
   _is_valid = true;
+
+  // All OSMesa buffers (that we create) always have the same format.
+  _fb_properties.clear();
+  _fb_properties.set_rgb_color(1);
+  _fb_properties.set_color_bits(24);
+  _fb_properties.set_alpha_bits(8);
+  _fb_properties.set_stencil_bits(8);
+  _fb_properties.set_depth_bits(16);
+  _fb_properties.set_accum_bits(8);
+  _fb_properties.set_force_software(1);
+
   return true;
 }
