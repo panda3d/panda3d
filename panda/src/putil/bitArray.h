@@ -25,6 +25,7 @@
 #include "numeric_types.h"
 #include "typedObject.h"
 #include "indent.h"
+#include "pointerToArray.h"
 
 #include "checksumHashGenerator.h"
 
@@ -121,11 +122,12 @@ public:
   void generate_hash(ChecksumHashGenerator &hashgen) const;
 
 private:
+  INLINE void copy_on_write();
   void ensure_has_word(int n);
   void normalize();
 
 private:
-  typedef pvector<MaskType> Array;
+  typedef PTA(MaskType) Array;
   Array _array;
   int _highest_bits;  // Either 0 or 1.
 

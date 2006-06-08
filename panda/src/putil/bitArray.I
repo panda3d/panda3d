@@ -518,3 +518,20 @@ operator >> (int shift) const {
   result >>= shift;
   return result;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitArray::copy_on_write
+//       Access: Private
+//  Description: Called internally just before writing to the _array
+//               member, this makes a new copy of _array if it appears
+//               to be shared with any other objects--thus achieving
+//               copy-on-write.
+////////////////////////////////////////////////////////////////////
+INLINE void BitArray::
+copy_on_write() {
+  if (_array.get_ref_count() > 1) {
+    PTA(MaskType) new_array;
+    new_array.v() = _array.v();
+    _array = new_array;
+  }
+}

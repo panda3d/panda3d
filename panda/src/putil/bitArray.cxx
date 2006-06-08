@@ -35,7 +35,7 @@ is_zero() const {
   }
 
   // Start from the high end, since that's more likely to be nonzero.
-  Array::const_reverse_iterator ai;
+  Array::reverse_iterator ai;
   for (ai = _array.rbegin(); ai != _array.rend(); ++ai) {
     if ((*ai) != 0) {
       return false;
@@ -157,6 +157,7 @@ clear_range(int low_bit, int size) {
 void BitArray::
 invert_in_place() {
   _highest_bits = !_highest_bits;
+  copy_on_write();
   Array::iterator ai;
   for (ai = _array.begin(); ai != _array.end(); ++ai) {
     (*ai) = ~(*ai);
@@ -328,6 +329,8 @@ void BitArray::
 operator &= (const BitArray &other) {
   size_t num_common_words = min(_array.size(), other._array.size());
 
+  copy_on_write();
+
   // Consider the words that are on top of either array.
   if (other._array.size() < _array.size() && !other._highest_bits) {
     // The other array has fewer actual words, and the top n words of
@@ -365,6 +368,8 @@ void BitArray::
 operator |= (const BitArray &other) {
   size_t num_common_words = min(_array.size(), other._array.size());
 
+  copy_on_write();
+
   // Consider the words that are on top of either array.
   if (other._array.size() < _array.size() && other._highest_bits) {
     // The other array has fewer actual words, and the top n words of
@@ -401,6 +406,8 @@ operator |= (const BitArray &other) {
 void BitArray::
 operator ^= (const BitArray &other) {
   size_t num_common_words = min(_array.size(), other._array.size());
+
+  copy_on_write();
 
   // Consider the words that are on top of either array.
   if (other._array.size() < _array.size() && other._highest_bits) {
@@ -478,7 +485,7 @@ operator <<= (int shift) {
     for (ai = _array.begin(); ai != _array.end(); ++ai) {
       new_array.push_back(*ai);
     }
-    _array.swap(new_array);
+    _array = new_array;
 
   } else {
     // Harder case--we have to shuffle bits between words.
@@ -508,7 +515,7 @@ operator <<= (int shift) {
       next_bits |= ~MaskType::lower_on(b);
     }
     new_array.push_back(next_bits);
-    _array.swap(new_array);
+    _array = new_array;
   }
 
   normalize();
@@ -549,7 +556,7 @@ operator >>= (int shift) {
     for (ai = _array.begin() + w; ai != _array.end(); ++ai) {
       new_array.push_back(*ai);
     }
-    _array.swap(new_array);
+    _array = new_array;
 
   } else {
     // Harder case--we have to shuffle bits between words.
@@ -576,7 +583,7 @@ operator >>= (int shift) {
       next_bits |= ~MaskType::lower_on(upshift_count);
     }
     new_array.push_back(next_bits);
-    _array.swap(new_array);
+    _array = new_array;
   }
 
   normalize();
@@ -604,6 +611,8 @@ generate_hash(ChecksumHashGenerator &hashgen) const {
 ////////////////////////////////////////////////////////////////////
 void BitArray::
 ensure_has_word(int n) {
+  copy_on_write();
+
   if (_highest_bits) {
     while (n >= (int)_array.size()) {
       _array.push_back(MaskType::all_on());
@@ -625,12 +634,20 @@ ensure_has_word(int n) {
 void BitArray::
 normalize() {
   if (_highest_bits) {
-    while (!_array.empty() && _array.back() == MaskType::all_on()) {
+    if (!_array.empty() && _array.back() == MaskType::all_on()) {
+      copy_on_write();
       _array.pop_back();
+      while (!_array.empty() && _array.back() == MaskType::all_on()) {
+        _array.pop_back();
+      }
     }
   } else {
-    while (!_array.empty() && _array.back().is_zero()) {
+    if (!_array.empty() && _array.back().is_zero()) {
+      copy_on_write();
       _array.pop_back();
+      while (!_array.empty() && _array.back().is_zero()) {
+        _array.pop_back();
+      }
     }
   }
 }
