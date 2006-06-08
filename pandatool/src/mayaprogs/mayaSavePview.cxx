@@ -92,7 +92,7 @@ doIt(const MArgList &args) {
   // On non-Windows (e.g. Unix), we just use the system function,
   // which runs synchronously.  We could fork a process, but no one's
   // asked for this yet.
-  MString command = MString("pview " + pview_args + MString(" \"") + filename + MString("\"");
+  MString command = MString("pview " + pview_args + MString(" \"") + filename + MString("\""));
 
   int command_result = system(command.asChar());
   if (command_result != 0) {
