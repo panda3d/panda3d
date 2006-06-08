@@ -150,7 +150,7 @@ MPxFileTranslator::MFileKind MayaEggImporter::identifyFile (
   const char * name = fileName.name().asChar();
   int   nameLength = strlen(name);
   
-  if ((nameLength > 4) && !stricmp(name+nameLength-4, ".egg"))
+  if ((nameLength > 4) && !strcmp(name+nameLength-4, ".egg"))
     return kCouldBeMyFileType;
   else
     return kNotMyFileType;

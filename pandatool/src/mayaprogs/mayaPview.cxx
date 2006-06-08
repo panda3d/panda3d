@@ -183,8 +183,8 @@ doIt(const MArgList &args) {
 
   // Allow a couple of frames to go by so the window will be fully
   // created and the text will be visible.
-  framework.do_frame();
-  framework.do_frame();
+  framework.do_frame(Thread::get_current_thread());
+  framework.do_frame(Thread::get_current_thread());
 
   window->enable_keyboard();
   window->setup_trackball();
