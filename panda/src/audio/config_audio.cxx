@@ -20,6 +20,8 @@
 #include "dconfig.h"
 #include "audioManager.h"
 #include "audioSound.h"
+#include "nullAudioManager.h"
+#include "nullAudioSound.h"
 
 Configure(config_audio);
 NotifyCategoryDef(audio, "");
@@ -89,6 +91,8 @@ ConfigureFn(config_audio) {
   AudioManager::init_type();
   AudioSound::init_type();
   AudioDSP::init_type();
+  NullAudioManager::init_type();
+  NullAudioSound::init_type();
 }
 
 

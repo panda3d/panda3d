@@ -76,6 +76,23 @@ public:
   virtual void audio_3d_set_drop_off_factor(float factor);
   virtual float audio_3d_get_drop_off_factor() const;
 
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    AudioManager::init_type();
+    register_type(_type_handle, "NullAudioManager",
+                  AudioManager::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #endif /* __NULL_AUDIO_MANAGER_H__ */

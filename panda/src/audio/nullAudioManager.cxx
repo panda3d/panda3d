@@ -19,6 +19,7 @@
 
 #include "nullAudioManager.h"
 
+TypeHandle NullAudioManager::_type_handle;
 
 //namespace {
     //static const string blank="";

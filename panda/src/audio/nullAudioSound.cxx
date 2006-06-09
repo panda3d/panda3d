@@ -19,6 +19,7 @@
 
 #include "nullAudioSound.h"
 
+TypeHandle NullAudioSound::_type_handle;
 
 namespace {
   static const string blank="";
