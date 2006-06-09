@@ -85,9 +85,11 @@ make_output(const string &name,
     return NULL;
   }
   
-  osxGraphicsStateGuardian *osxgsg;
-  DCAST_INTO_R(osxgsg, gsg, NULL);
-
+  osxGraphicsStateGuardian *osxgsg = 0;
+  if (gsg != 0) {
+    DCAST_INTO_R(osxgsg, gsg, NULL);
+  }
+  
   // First thing to try: a osxGraphicsWindow
 
   if (retry == 0) {
