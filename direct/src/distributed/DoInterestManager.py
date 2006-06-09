@@ -135,6 +135,18 @@ class DoInterestManager(DirectObject.DirectObject):
                 "addInterest: addingInterests on delete: %s" % (handle))
             return
 
+        # make sure we've got parenting rules set in the DC
+        if parentId not in (self.getGameDoId(),):
+            parent = self.getDo(parentId)
+            if not parent:
+                DoInterestManager.notify.error(
+                    'addInterest: attempting to add interest under unknown object %s' % parentId)
+            else:
+                if not parent.hasParentingRules():
+                    DoInterestManager.notify.error(
+                        'addInterest: no setParentingRules defined in the DC for object %s (%s)'
+                        '' % (parentId, parent.__class__.__name__))
+
         if auto:
             scopeId = 0
             event = None
