@@ -119,9 +119,20 @@ open_read_file(bool auto_unwrap) const {
 //               implementations may require this stream to determine
 //               the size.
 ////////////////////////////////////////////////////////////////////
-streampos VirtualFileSimple::
+off_t VirtualFileSimple::
 get_file_size(istream *stream) const {
   return _mount->get_file_size(_local_filename, stream);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::get_file_size
+//       Access: Published, Virtual
+//  Description: Returns the current size on disk (or wherever it is)
+//               of the file before it has been opened.
+////////////////////////////////////////////////////////////////////
+off_t VirtualFileSimple::
+get_file_size() const {
+  return _mount->get_file_size(_local_filename);
 }
 
 ////////////////////////////////////////////////////////////////////

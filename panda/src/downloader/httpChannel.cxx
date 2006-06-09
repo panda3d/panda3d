@@ -282,7 +282,7 @@ get_header_value(const string &key) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::get_file_size
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Returns the size of the file, if it is known.
 //               Returns the value set by set_expected_file_size() if
 //               the file size is not known, or 0 if this value was
@@ -296,7 +296,7 @@ get_header_value(const string &key) const {
 //               their minds midstream about how much data they're
 //               sending you.
 ////////////////////////////////////////////////////////////////////
-size_t HTTPChannel::
+off_t HTTPChannel::
 get_file_size() const {
   if (_got_file_size) {
     return _file_size;

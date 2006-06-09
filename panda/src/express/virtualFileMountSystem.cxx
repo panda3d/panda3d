@@ -126,7 +126,7 @@ open_read_file(const Filename &file) const {
 //               implementations may require this stream to determine
 //               the size.
 ////////////////////////////////////////////////////////////////////
-streampos VirtualFileMountSystem::
+off_t VirtualFileMountSystem::
 get_file_size(const Filename &, istream *stream) const {
   // First, save the original stream position.
   streampos orig = stream->tellg();
@@ -139,6 +139,18 @@ get_file_size(const Filename &, istream *stream) const {
   stream->seekg(orig, ios::beg);
 
   return size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::get_file_size
+//       Access: Published, Virtual
+//  Description: Returns the current size on disk (or wherever it is)
+//               of the file before it has been opened.
+////////////////////////////////////////////////////////////////////
+off_t VirtualFileMountSystem::
+get_file_size(const Filename &file) const {
+  Filename pathname(_physical_filename, file);
+  return pathname.get_file_size();
 }
 
 ////////////////////////////////////////////////////////////////////

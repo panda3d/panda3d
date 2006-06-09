@@ -147,7 +147,7 @@ PUBLISHED:
   INLINE double get_max_updates_per_second() const;
 
   INLINE void set_expected_file_size(size_t file_size);
-  size_t get_file_size() const;
+  virtual off_t get_file_size() const;
   INLINE bool is_file_size_known() const;
 
   void write_headers(ostream &out) const;

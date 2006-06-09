@@ -44,7 +44,8 @@ public:
   INLINE bool is_implicit_pz_file() const;
 
   virtual istream *open_read_file(bool auto_unwrap) const;
-  virtual streampos get_file_size(istream *stream) const;
+  virtual off_t get_file_size(istream *stream) const;
+  virtual off_t get_file_size() const;
   virtual time_t get_timestamp() const;
 
 protected:

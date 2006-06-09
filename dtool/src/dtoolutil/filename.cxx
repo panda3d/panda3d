@@ -1202,6 +1202,33 @@ get_timestamp() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_file_size
+//       Access: Published
+//  Description: Returns the size of the file in bytes, or 0 if there
+//               is an error.
+////////////////////////////////////////////////////////////////////
+off_t Filename::
+get_file_size() const {
+  string os_specific = get_filename_index(0).to_os_specific();
+
+#ifdef WIN32_VC
+  struct _stat this_buf;
+
+  if (_stat(os_specific.c_str(), &this_buf) == 0) {
+    return this_buf.st_size;
+  }
+#else  // WIN32_VC
+  struct stat this_buf;
+
+  if (stat(os_specific.c_str(), &this_buf) == 0) {
+    return this_buf.st_size;
+  }
+#endif
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::resolve_filename
 //       Access: Published
 //  Description: Searches the given search path for the filename.  If
