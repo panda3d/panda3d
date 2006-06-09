@@ -4336,7 +4336,7 @@ set_draw_buffer(const RenderBuffer &rb) {
       break;
 
     default:
-      GLP(DrawBuffer)(GL_FRONT_AND_BACK);
+      break;
     }
   }
 
