@@ -100,7 +100,7 @@ get_vector_to_light(LVector3f &, const LPoint3f &, const LMatrix4f &) {
 ////////////////////////////////////////////////////////////////////
 GeomNode *Light::
 get_viz() {
-  CDReader cdata(_cycler);
+  CDLockedReader cdata(_cycler);
   if (cdata->_viz_geom_stale) {
     CDWriter cdata_w(_cycler, cdata);
 
