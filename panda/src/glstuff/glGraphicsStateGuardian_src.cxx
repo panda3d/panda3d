@@ -1083,6 +1083,21 @@ reset() {
 
   void gl_set_stencil_functions (StencilRenderStates *stencil_render_states);
   gl_set_stencil_functions (_stencil_render_states);
+
+#ifdef HAVE_CGGL
+  CGprofile vertex_profile;
+  CGprofile pixel_profile;
+
+  vertex_profile = cgGLGetLatestProfile (CG_GL_VERTEX);
+  pixel_profile = cgGLGetLatestProfile (CG_GL_FRAGMENT);
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+//      << "\nshader model = " << _shader_model
+      << "\nCg vertex profile = " << cgGetProfileString(vertex_profile) << "  id = " << vertex_profile
+      << "\nCg pixel profile = " << cgGetProfileString(pixel_profile) << "  id = " << pixel_profile
+      << "\n";
+  }
+#endif
 }
 
 
