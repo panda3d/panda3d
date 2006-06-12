@@ -1836,17 +1836,18 @@ make_dir() const {
   if (empty()) {
     return false;
   }
-  Filename path = *this;
-  path.standardize();
-  string dirname;
+  Filename path;
   if (_filename[_filename.length() - 1] == '/') {
     // The Filename ends in a slash; it represents a directory.
-    dirname = path.get_fullpath();
+    path = (*this);
 
   } else {
     // The Filename does not end in a slash; it represents a file.
-    dirname = path.get_dirname();
+    path = get_dirname();
   }
+
+  path.standardize();
+  string dirname = path.get_fullpath();
 
   // First, make sure everything up to the last path is known.  We
   // don't care too much if any of these fail; maybe they failed
