@@ -1846,7 +1846,9 @@ make_dir() const {
     path = get_dirname();
   }
 
-  path.standardize();
+  if (path.empty()) {
+    return false;
+  }
   string dirname = path.get_fullpath();
 
   // First, make sure everything up to the last path is known.  We
