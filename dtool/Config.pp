@@ -260,8 +260,8 @@
 
 // Is Python installed, and should Python interfaces be generated?  If
 // Python is installed, which directory is it in?
-#define PYTHON_IPATH c:\python24\include
-#define PYTHON_LPATH c:\python24\libs
+#define PYTHON_IPATH /usr/include/python2.4
+#define PYTHON_LPATH
 #define PYTHON_FPATH
 #define PYTHON_COMMAND python
 #defer PYTHON_DEBUG_COMMAND $[PYTHON_COMMAND]$[if $[WINDOWS_PLATFORM],_d]
