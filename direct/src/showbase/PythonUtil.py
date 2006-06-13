@@ -702,7 +702,7 @@ PyUtilProfileDefaultFilename = 'profiledata'
 PyUtilProfileDefaultLines = 80
 PyUtilProfileDefaultSorts = ['cumulative', 'time', 'calls']
 
-def profile(callback, name):
+def profile(callback, name, terse):
     import __builtin__
     if 'globalProfileFunc' in __builtin__.__dict__:
         # rats. Python profiler is not re-entrant...
@@ -715,11 +715,11 @@ def profile(callback, name):
         return
     __builtin__.globalProfileFunc = callback
     print '***** START PROFILE: %s *****' % name
-    startProfile(cmd='globalProfileFunc()')
+    startProfile(cmd='globalProfileFunc()', callInfo=(not terse))
     print '***** END PROFILE: %s *****' % name
     del __builtin__.__dict__['globalProfileFunc']
 
-def profiled(category):
+def profiled(category, terse=False):
     """ decorator for profiling functions
     turn categories on and off via "want-profile-categoryName 1"
     
@@ -750,7 +750,7 @@ def profiled(category):
             except:
                 _base = simbase
             if _base.config.GetBool('want-profile-%s' % category, 0):
-                return profile(Functor(f, *args, **kArgs), name)
+                return profile(Functor(f, *args, **kArgs), name, terse)
             else:
                 return f(*args, **kArgs)
         #import pdb;pdb.set_trace()
@@ -778,10 +778,14 @@ def startProfile(filename=PyUtilProfileDefaultFilename,
                  silent=0,
                  callInfo=1,
                  cmd='run()'):
+    # uniquify the filename to allow multiple processes to profile simultaneously
+    filename = '%s.%s' % (filename, randUint31())
     import profile
     profile.run(cmd, filename)
     if not silent:
         printProfile(filename, lines, sorts, callInfo)
+    import os
+    os.remove(filename)
 
 # call this to see the results again
 def printProfile(filename=PyUtilProfileDefaultFilename,
