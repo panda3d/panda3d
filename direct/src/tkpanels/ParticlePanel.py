@@ -2044,12 +2044,12 @@ class ParticlePanel(AppShell):
             lFrame, 'Sprite Renderer', segName + ' Enabled',
             ('On: Enabled\n' +
              'Off: Disabled'),
-            command = setSegEnabled, initialState = 1)
+            command = setSegEnabled, initialState = seg.isEnabled())
         self.createCheckbutton(
             lFrame, 'Sprite Renderer', segName + ' isModulated',
             ('On: Modulate\n' +
              'Off: Add'),
-            command = setIsModulated, initialState = 1)
+            command = setIsModulated, initialState = seg.isModulated())
         lFrame.pack(fill = X, expand = 1)
 
         f = Frame(frame)
