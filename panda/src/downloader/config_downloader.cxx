@@ -144,7 +144,7 @@ ConfigVariableList http_username
           "will present this username/password when asked to authenticate a request "
           "for a particular server and/or realm.  The username is of the form "
           "server:realm:username:password, where either or both of server and "
-          "realm may be empty, or just server:username:password or username:password.  "
+          "realm may be empty, or just realm:username:password or username:password.  "
           "If the server or realm is empty, they will match anything."));
 
 ConfigureFn(config_downloader) {
