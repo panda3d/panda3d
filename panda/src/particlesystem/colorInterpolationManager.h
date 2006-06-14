@@ -244,7 +244,7 @@ private:
 
 class ColorInterpolationSegment : public ReferenceCount {
 PUBLISHED:
-  ColorInterpolationSegment(ColorInterpolationFunction* function, const float &time_begin, const float &time_end, const int id);
+  ColorInterpolationSegment(ColorInterpolationFunction* function, const float &time_begin, const float &time_end, const bool is_modulated, const int id);
   ColorInterpolationSegment(const ColorInterpolationSegment &s);
   virtual ~ColorInterpolationSegment();
 
@@ -291,10 +291,10 @@ ColorInterpolationManager();
   ColorInterpolationManager(const ColorInterpolationManager& copy);    
   virtual ~ColorInterpolationManager();
 
-  int add_constant(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color = Colorf(1.0f,1.0f,1.0f,1.0f));
-  int add_linear(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f));
-  int add_stepwave(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f), const float width_a = 0.5f, const float width_b = 0.5f);
-  int add_sinusoid(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f), const float period = 1.0f);
+  int add_constant(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color = Colorf(1.0f,1.0f,1.0f,1.0f), const bool is_modulated = true);
+  int add_linear(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f), const bool is_modulated = true);
+  int add_stepwave(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f), const float width_a = 0.5f, const float width_b = 0.5f, const bool is_modulated = true);
+  int add_sinusoid(const float time_begin = 0.0f, const float time_end = 1.0f, const Colorf color_a = Colorf(1.0f,0.0f,0.0f,1.0f), const Colorf color_b = Colorf(0.0f,1.0f,0.0f,1.0f), const float period = 1.0f, const bool is_modulated = true);
 
   INLINE void set_default_color(const Colorf &c);
   INLINE ColorInterpolationSegment* get_segment(const int seg_id);

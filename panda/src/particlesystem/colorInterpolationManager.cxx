@@ -203,12 +203,13 @@ ColorInterpolationSegment::
 ColorInterpolationSegment(ColorInterpolationFunction* function,
                           const float &time_begin,
                           const float &time_end,
+                          const bool is_modulated,
                           const int id) :
   _color_inter_func(function),
   _t_begin(time_begin),
   _t_end(time_end),
   _t_total(time_end-time_begin),
-  _is_modulated(true),
+  _is_modulated(is_modulated),
   _enabled(true),
   _id(id) {
 }
@@ -310,9 +311,9 @@ ColorInterpolationManager::
 ////////////////////////////////////////////////////////////////////
 
 int ColorInterpolationManager::
-add_constant(const float time_begin, const float time_end, const Colorf color) {
+add_constant(const float time_begin, const float time_end, const Colorf color, const bool is_modulated) {
   PT(ColorInterpolationFunctionConstant) fPtr = new ColorInterpolationFunctionConstant(color);
-  PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,_id_generator);
+  PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,is_modulated,_id_generator);
 
   _i_segs.push_back(sPtr);
 
@@ -327,9 +328,9 @@ add_constant(const float time_begin, const float time_end, const Colorf color) {
 ////////////////////////////////////////////////////////////////////
 
 int ColorInterpolationManager::
-add_linear(const float time_begin, const float time_end, const Colorf color_a, const Colorf color_b) {
+add_linear(const float time_begin, const float time_end, const Colorf color_a, const Colorf color_b, const bool is_modulated) {
   PT(ColorInterpolationFunctionLinear) fPtr = new ColorInterpolationFunctionLinear(color_a, color_b);
-  PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,_id_generator);
+  PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,is_modulated,_id_generator);
 
   _i_segs.push_back(sPtr);
 
@@ -344,9 +345,9 @@ add_linear(const float time_begin, const float time_end, const Colorf color_a, c
 ////////////////////////////////////////////////////////////////////
 
 int ColorInterpolationManager::
-add_stepwave(const float time_begin, const float time_end, const Colorf color_a, const Colorf color_b, const float width_a, const float width_b) {
+add_stepwave(const float time_begin, const float time_end, const Colorf color_a, const Colorf color_b, const float width_a, const float width_b,const bool is_modulated) {
   PT(ColorInterpolationFunctionStepwave) fPtr = new ColorInterpolationFunctionStepwave(color_a, color_b, width_a, width_b);
-  PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,_id_generator);
+  PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,is_modulated,_id_generator);
 
   _i_segs.push_back(sPtr);
 
@@ -362,9 +363,9 @@ add_stepwave(const float time_begin, const float time_end, const Colorf color_a,
 ////////////////////////////////////////////////////////////////////
 
 int ColorInterpolationManager::
-add_sinusoid(const float time_begin, const float time_end, const Colorf color_a, const Colorf color_b, const float period) {
+add_sinusoid(const float time_begin, const float time_end, const Colorf color_a, const Colorf color_b, const float period,const bool is_modulated) {
   PT(ColorInterpolationFunctionSinusoid) fPtr = new ColorInterpolationFunctionSinusoid(color_a, color_b, period);
-  PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,_id_generator);
+  PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,is_modulated,_id_generator);
 
   _i_segs.push_back(sPtr);
 
