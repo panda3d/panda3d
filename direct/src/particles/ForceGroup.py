@@ -115,6 +115,8 @@ class ForceGroup(DirectObject):
                 elif isinstance(f, LinearVectorForce):
                     vec = f.getLocalVector()
                     file.write(fname + ' = LinearVectorForce(Vec3(%.4f, %.4f, %.4f), %.4f, %d)\n' % (vec[0], vec[1], vec[2], amplitude, massDependent))
+                mask = f.getVectorMasks()
+                file.write(fname + '.setVectorMasks(%d, %d, %d)\n' % (mask[0],mask[1],mask[2]))
             elif isinstance(f, AngularForce):
                 if isinstance(f, AngularVectorForce):
                     vec = f.getQuat()
