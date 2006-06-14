@@ -596,9 +596,7 @@ class ParticlePanel(AppShell):
 
         self.rendererGeomSegmentFrame = sf.interior()
         self.rendererGeomSegmentFrame.pack(fill = BOTH, expand = 1)
-        self.rendererGeomSegmentWidgetList = []
-
-
+        self.rendererSegmentWidgetList = []
 
         rendererGeomNotebook.setnaturalsize()
 
@@ -803,7 +801,7 @@ class ParticlePanel(AppShell):
 
         self.rendererSpriteSegmentFrame = sf.interior()
         self.rendererSpriteSegmentFrame.pack(fill = BOTH, expand = 1)
-        self.rendererSpriteSegmentWidgetList = []
+        self.rendererSegmentWidgetList = []
 
         rendererSpriteNotebook.setnaturalsize()
         ##########################################################
@@ -1584,10 +1582,13 @@ class ParticlePanel(AppShell):
             else:
                 self.getWidget('Geom Renderer','Incoming Op.').pack_forget()
                 self.getWidget('Geom Renderer','Fbuffer Op.').pack_forget()
-            for x in self.rendererSpriteSegmentWidgetList:
+            for x in self.rendererSegmentWidgetList:
                 x.pack_forget()
                 x.destroy()
-            self.rendererGeomSegmentWidgetList = []
+            self.rendererSegmentWidgetList = []
+            for id in self.particles.renderer.getColorInterpolationManager().getSegmentIdList().split():
+                self.createWidgetForExistingInterpolationSegment(eval(id))
+
         elif isinstance(renderer, PointParticleRenderer):
             pointSize = renderer.getPointSize()
             self.getWidget('Point Renderer', 'Point Size').set(pointSize)
@@ -1673,10 +1674,12 @@ class ParticlePanel(AppShell):
             else:
                 self.getWidget('Sprite Renderer','Incoming Op.').pack_forget()
                 self.getWidget('Sprite Renderer','Fbuffer Op.').pack_forget()
-            for x in self.rendererGeomSegmentWidgetList:
+            for x in self.rendererSegmentWidgetList:
                 x.pack_forget()
                 x.destroy()
-            self.rendererSpriteSegmentWidgetList = []
+            self.rendererSegmentWidgetList = []
+            for id in self.particles.renderer.getColorInterpolationManager().getSegmentIdList().split():
+                self.createWidgetForExistingInterpolationSegment(eval(id))
 
     def selectRendererPage(self):
         type = self.particles.renderer.__class__.__name__
@@ -1783,22 +1786,6 @@ class ParticlePanel(AppShell):
             self.rendererSpriteTextureEntry['background'] = '#C0C0C0'
             self.rendererSpriteFileEntry['background'] = '#FFFFFF'
             self.rendererSpriteNodeEntry['background'] = '#FFFFFF'
-    def addConstantInterpolationSegment(self):
-        ren = self.particles.getRenderer()
-        cim = ren.getColorInterpolationManager()
-        seg = cim.getSegment(cim.addConstant())
-
-        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
-            parent = self.rendererSpriteSegmentFrame
-            segName = `len(self.rendererSpriteSegmentWidgetList)`+':Constant'
-            self.rendererSpriteSegmentWidgetList.append(
-                self.createConstantInterpolationSegmentWidget(parent, segName, seg))
-        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
-            parent = self.rendererGeomSegmentFrame
-            segName = `len(self.rendererGeomSegmentWidgetList)`+':Constant'
-            self.rendererGeomSegmentWidgetList.append(
-                self.createConstantInterpolationSegmentWidget(parent, segName, seg))
-        parent.pack(fill=BOTH, expand=1)
 
     def setRendererSpriteAnimationFrameRate(self, rate):
         self.particles.renderer.setAnimateFramesRate(rate)
@@ -1933,74 +1920,102 @@ class ParticlePanel(AppShell):
         fbufferOperandStr = operand
         self.setRendererColorBlendAttrib('Geom Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
 
-    def addConstantInterpolationSegment(self):
+    def addConstantInterpolationSegment(self, id = None):
         ren = self.particles.getRenderer()
         cim = ren.getColorInterpolationManager()
-        seg = cim.getSegment(cim.addConstant())
+        if id is None:
+            seg = cim.getSegment(cim.addConstant())
+        else:
+            seg = cim.getSegment(id)
 
         if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
             parent = self.rendererSpriteSegmentFrame
-            segName = `len(self.rendererSpriteSegmentWidgetList)`+':Constant'
-            self.rendererSpriteSegmentWidgetList.append(
+            segName = `len(self.rendererSegmentWidgetList)`+':Constant'
+            self.rendererSegmentWidgetList.append(
                 self.createConstantInterpolationSegmentWidget(parent, segName, seg))
         elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
             parent = self.rendererGeomSegmentFrame
-            segName = `len(self.rendererGeomSegmentWidgetList)`+':Constant'
-            self.rendererGeomSegmentWidgetList.append(
+            segName = `len(self.rendererSegmentWidgetList)`+':Constant'
+            self.rendererSegmentWidgetList.append(
                 self.createConstantInterpolationSegmentWidget(parent, segName, seg))
         parent.pack(fill=BOTH, expand=1)
 
-    def addLinearInterpolationSegment(self):
+    def addLinearInterpolationSegment(self, id = None):
         ren = self.particles.getRenderer()
         cim = ren.getColorInterpolationManager()
-        seg = cim.getSegment(cim.addLinear())
-
+        if id is None:
+            seg = cim.getSegment(cim.addLinear())
+        else:
+            seg = cim.getSegment(id)
+            
         if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
             parent = self.rendererSpriteSegmentFrame
-            segName = `len(self.rendererSpriteSegmentWidgetList)`+':Linear'
-            self.rendererSpriteSegmentWidgetList.append(
+            segName = `len(self.rendererSegmentWidgetList)`+':Linear'
+            self.rendererSegmentWidgetList.append(
                 self.createLinearInterpolationSegmentWidget(parent, segName, seg))
         elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
             parent = self.rendererGeomSegmentFrame
-            segName = `len(self.rendererGeomSegmentWidgetList)`+':Linear'
-            self.rendererGeomSegmentWidgetList.append(
+            segName = `len(self.rendererSegmentWidgetList)`+':Linear'
+            self.rendererSegmentWidgetList.append(
                 self.createLinearInterpolationSegmentWidget(parent, segName, seg))
         parent.pack(fill=BOTH, expand=1)
 
-    def addStepwaveInterpolationSegment(self):
+    def addStepwaveInterpolationSegment(self, id = None):
         ren = self.particles.getRenderer()
         cim = ren.getColorInterpolationManager()
-        seg = cim.getSegment(cim.addStepwave())
-
+        if id is None:
+            seg = cim.getSegment(cim.addStepwave())
+        else:
+            seg = cim.getSegment(id)
+            
         if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
             parent = self.rendererSpriteSegmentFrame
-            segName = `len(self.rendererSpriteSegmentWidgetList)`+':Stepwave'
-            self.rendererSpriteSegmentWidgetList.append(
+            segName = `len(self.rendererSegmentWidgetList)`+':Stepwave'
+            self.rendererSegmentWidgetList.append(
                 self.createStepwaveInterpolationSegmentWidget(parent, segName, seg))
         elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
             parent = self.rendererGeomSegmentFrame
-            segName = `len(self.rendererGeomSegmentWidgetList)`+':Stepwave'
-            self.rendererGeomSegmentWidgetList.append(
+            segName = `len(self.rendererSegmentWidgetList)`+':Stepwave'
+            self.rendererSegmentWidgetList.append(
                 self.createStepwaveInterpolationSegmentWidget(parent, segName, seg))
         parent.pack(fill=BOTH, expand=1)
 
-    def addSinusoidInterpolationSegment(self):
+    def addSinusoidInterpolationSegment(self, id = None):
         ren = self.particles.getRenderer()
         cim = ren.getColorInterpolationManager()
-        seg = cim.getSegment(cim.addSinusoid())
-
+        if id is None:
+            seg = cim.getSegment(cim.addSinusoid())
+        else:
+            seg = cim.getSegment(id)
+            
         if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
             parent = self.rendererSpriteSegmentFrame
-            segName = `len(self.rendererSpriteSegmentWidgetList)`+':Sinusoid'
-            self.rendererSpriteSegmentWidgetList.append(
+            segName = `len(self.rendererSegmentWidgetList)`+':Sinusoid'
+            self.rendererSegmentWidgetList.append(
                 self.createSinusoidInterpolationSegmentWidget(parent, segName, seg))
         elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
             parent = self.rendererGeomSegmentFrame
-            segName = `len(self.rendererGeomSegmentWidgetList)`+':Sinusoid'
-            self.rendererGeomSegmentWidgetList.append(
+            segName = `len(self.rendererSegmentWidgetList)`+':Sinusoid'
+            self.rendererSegmentWidgetList.append(
                 self.createSinusoidInterpolationSegmentWidget(parent, segName, seg))
         parent.pack(fill=BOTH, expand=1)
 
+    def createWidgetForExistingInterpolationSegment(self, id):
+        ren = self.particles.getRenderer()
+        cim = ren.getColorInterpolationManager()
+        seg = cim.getSegment(id)
+        assert seg
+
+        fun = seg.getFunction()
+        if isinstance(fun,ColorInterpolationFunctionSinusoid):
+            self.addSinusoidInterpolationSegment(id)
+        elif isinstance(fun,ColorInterpolationFunctionStepwave):
+            self.addStepwaveInterpolationSegment(id)
+        elif isinstance(fun,ColorInterpolationFunctionLinear):
+            self.addLinearInterpolationSegment(id)
+        elif isinstance(fun,ColorInterpolationFunctionConstant):
+            self.addConstantInterpolationSegment(id)
+        
     def createInterpolationSegmentFrame(self, parent, segName, seg):
         frame = Frame(parent, relief = RAISED, borderwidth = 2)
         lFrame = Frame(frame, relief = FLAT)
@@ -2010,6 +2025,9 @@ class ParticlePanel(AppShell):
         def setSegEnabled(s=self, n=segName):
             enabled = s.getVariable('Sprite Renderer', n+' Enabled')
             seg.setEnabled(enabled.get())
+        def setIsModulated(s=self, n=segName):
+            modulated = s.getVariable('Sprite Renderer', n+' isModulated')
+            seg.setIsModulated(modulated.get())
         def setSegBegin(time):
             seg.setTimeBegin(time)
         def setSegEnd(time):
@@ -2026,8 +2044,12 @@ class ParticlePanel(AppShell):
             lFrame, 'Sprite Renderer', segName + ' Enabled',
             ('On: Enabled\n' +
              'Off: Disabled'),
-
             command = setSegEnabled, initialState = 1)
+        self.createCheckbutton(
+            lFrame, 'Sprite Renderer', segName + ' isModulated',
+            ('On: Modulate\n' +
+             'Off: Add'),
+            command = setIsModulated, initialState = 1)
         lFrame.pack(fill = X, expand = 1)
 
         f = Frame(frame)
@@ -2381,7 +2403,15 @@ class ParticlePanel(AppShell):
         name = askstring('Particle Panel', 'Effect Name:',
                          parent = self.parent)
         if name:
-            effect = ParticleEffect.ParticleEffect(name)
+            particles = Particles.Particles()
+            particles.setBirthRate(0.02)
+            particles.setLitterSize(10)
+            particles.setLitterSpread(0)
+            particles.setFactory("PointParticleFactory")
+            particles.setRenderer("PointParticleRenderer")
+            particles.setEmitter("SphereVolumeEmitter")
+            particles.enable()
+            effect = ParticleEffect.ParticleEffect(name, particles)
             self.effectsDict[name] = effect
             self.updateMenusAndLabels()
             self.selectEffectNamed(name)
