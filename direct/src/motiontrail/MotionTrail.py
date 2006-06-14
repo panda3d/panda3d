@@ -118,6 +118,10 @@ class MotionTrail(NodePath, DirectObject):
             self.acceptOnce ("clientLogout", remove_task)
             
             MotionTrail.task_added = True
+            
+            
+        self.relative_to_render = False
+        
         return
 
     def delete(self):
@@ -226,7 +230,11 @@ class MotionTrail(NodePath, DirectObject):
                 print "relative_matrix 222", relative_matrix.__repr__ ( )
                 """
                 
-                transform = Mat4 (motion_trail.getNetTransform ( ).getMat ( ))
+                if (motion_trail.root_node_path and (motion_trail.relative_to_render == False)):
+                    transform = motion_trail.getMat(motion_trail.root_node_path)
+                else:
+                    transform = Mat4 (motion_trail.getNetTransform ( ).getMat ( ))
+ 
                 if (transform != None):
                     motion_trail.update_motion_trail (current_time, transform)
     
