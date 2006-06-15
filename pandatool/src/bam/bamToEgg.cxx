@@ -35,6 +35,7 @@
 #include "geomVertexReader.h"
 #include "string_utils.h"
 #include "bamFile.h"
+#include "bamCacheRecord.h"
 #include "eggGroup.h"
 #include "eggVertexPool.h"
 #include "eggVertex.h"
@@ -93,6 +94,16 @@ run() {
   typedef pvector<TypedWritable *> Objects;
   Objects objects;
   TypedWritable *object = bam_file.read_object();
+
+  if (object != (TypedWritable *)NULL && 
+      object->is_exact_type(BamCacheRecord::get_class_type())) {
+    // Here's a special case: if the first object in the file is a
+    // BamCacheRecord, it's really a cache data file and not a true
+    // bam file; but skip over the cache data record and let the user
+    // treat it like an ordinary bam file.
+    object = bam_file.read_object();
+  }
+
   while (object != (TypedWritable *)NULL || !bam_file.is_eof()) {
     if (object != (TypedWritable *)NULL) {
       objects.push_back(object);
@@ -467,8 +478,6 @@ get_egg_texture(Texture *tex) {
       }
 
       switch (tex->get_minfilter()) {
-      case Texture::FT_invalid:
-        break;
       case Texture::FT_nearest:
         temp.set_minfilter(EggTexture::FT_nearest);
         break;
@@ -487,6 +496,9 @@ get_egg_texture(Texture *tex) {
       case Texture::FT_linear_mipmap_linear:
         temp.set_minfilter(EggTexture::FT_linear_mipmap_linear);
         break;
+
+      default:
+        break;
       }
 
       switch (tex->get_magfilter()) {
@@ -496,6 +508,7 @@ get_egg_texture(Texture *tex) {
       case Texture::FT_linear:
         temp.set_magfilter(EggTexture::FT_linear);
         break;
+
       default:
         break;
       }

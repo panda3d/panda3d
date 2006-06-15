@@ -27,6 +27,7 @@
 #include "recorderTable.h"
 #include "dcast.h"
 #include "pvector.h"
+#include "bamCacheRecord.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamInfo::Constructor
@@ -131,6 +132,17 @@ get_info(const Filename &filename) {
 
   Objects objects;
   TypedWritable *object = bam_file.read_object();
+
+  if (object != (TypedWritable *)NULL && 
+      object->is_exact_type(BamCacheRecord::get_class_type())) {
+    // Here's a special case: if the first object in the file is a
+    // BamCacheRecord, it's a cache data file; in this case, we output
+    // the cache record, and then pretend it doesn't exist.
+    DCAST(BamCacheRecord, object)->write(nout, 2);
+    nout << "\n";
+    object = bam_file.read_object();
+  }
+
   while (object != (TypedWritable *)NULL || !bam_file.is_eof()) {
     if (object != (TypedWritable *)NULL) {
       objects.push_back(object);
