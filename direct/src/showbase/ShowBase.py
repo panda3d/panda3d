@@ -447,7 +447,7 @@ class ShowBase(DirectObject.DirectObject):
             flags = flags | GraphicsPipe.BFRefuseWindow
 
         win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
-                                             props.getXSize(), props.getYSize(), flags)
+                                             props, flags)
 
         if win == None:
             # Couldn't create a window!
