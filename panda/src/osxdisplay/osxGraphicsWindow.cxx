@@ -435,11 +435,12 @@ static int id_seed = 100;
 osxGraphicsWindow::
 osxGraphicsWindow(GraphicsPipe *pipe, 
                   const string &name,
-                  const FrameBufferProperties &properties,
-                  int x_size, int y_size, int flags,
+                  const FrameBufferProperties &fb_prop,
+                  const WindowProperties &win_prop,
+                  int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  GraphicsWindow(pipe, name, properties, x_size, y_size, flags, gsg, host),
+  GraphicsWindow(pipe, name, fb_prop, win_prop, flags, gsg, host),
   _osx_window(NULL),
   _is_fullsreen(false),
 #ifdef HACK_SCREEN_HASH_CONTEXT  

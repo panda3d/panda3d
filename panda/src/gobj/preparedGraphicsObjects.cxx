@@ -839,12 +839,18 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
 
   // First, release all the textures, geoms, and buffers awaiting
   // release.
-  Textures::iterator tci;
-  for (tci = _released_textures.begin();
-       tci != _released_textures.end();
-       ++tci) {
-    TextureContext *tc = (*tci);
-    gsg->release_texture(tc);
+  if (!_released_textures.empty()) {
+    cerr << "releasing " << _released_textures.size() 
+         << " textures, gsg = " << gsg << "\n";
+    Textures::iterator tci;
+    for (tci = _released_textures.begin();
+         tci != _released_textures.end();
+         ++tci) {
+      TextureContext *tc = (*tci);
+      cerr << "releasing texture " << tc << ": " << tc->_texture << "\n";
+      gsg->release_texture(tc);
+    }
+    cerr << "done releasing textures\n";
   }
 
   _released_textures.clear();

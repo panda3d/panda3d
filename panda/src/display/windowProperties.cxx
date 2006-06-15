@@ -90,6 +90,20 @@ get_default() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::size
+//       Access: Published, Static
+//  Description: Returns a WindowProperties structure with only the
+//               size specified.  The size is the only property that
+//               matters to buffers.
+////////////////////////////////////////////////////////////////////
+WindowProperties WindowProperties::
+size(int x_size, int y_size) {
+  WindowProperties props;
+  props.set_size(x_size, y_size);
+  return props;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowProperties::operator == 
 //       Access: Published
 //  Description:

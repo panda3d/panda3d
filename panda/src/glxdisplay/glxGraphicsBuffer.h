@@ -37,8 +37,9 @@ class glxGraphicsBuffer : public GraphicsBuffer {
 public:
   glxGraphicsBuffer(GraphicsPipe *pipe, 
                     const string &name,
-                    const FrameBufferProperties &properties,
-                    int x_size, int y_size, int flags,
+                    const FrameBufferProperties &fb_prop,
+                    const WindowProperties &win_prop,
+                    int flags,
                     GraphicsStateGuardian *gsg,
                     GraphicsOutput *host);
   virtual ~glxGraphicsBuffer();

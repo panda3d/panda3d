@@ -82,11 +82,12 @@ static tRegisterRawInputDevices  pRegisterRawInputDevices;
 WinGraphicsWindow::
 WinGraphicsWindow(GraphicsPipe *pipe,
                   const string &name,
-                  const FrameBufferProperties &properties,
-                  int x_size, int y_size, int flags,
+                  const FrameBufferProperties &fb_prop,
+                  const WindowProperties &win_prop,
+                  int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) : 
-  GraphicsWindow(pipe, name, properties, x_size, y_size, flags, gsg, host)
+  GraphicsWindow(pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   initialize_input_devices();
   _hWnd = (HWND)0;

@@ -74,8 +74,9 @@ pipe_constructor() {
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsOutput) osxGraphicsPipe::
 make_output(const string &name,
-            const FrameBufferProperties &properties,
-            int x_size, int y_size, int flags,
+            const FrameBufferProperties &fb_prop,
+            const WindowProperties &win_prop,
+            int flags,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
             int retry,
@@ -100,8 +101,8 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new osxGraphicsWindow(this, name, properties,
-                                 x_size, y_size, flags, gsg, host);
+    return new osxGraphicsWindow(this, name, fb_prop, win_prop,
+                                 flags, gsg, host);
   }
   
   //  // Second thing to try: a glGraphicsBuffer
@@ -117,7 +118,7 @@ make_output(const string &name,
   //        return NULL;
   //      }
   //    }
-  //    return new glGraphicsBuffer(this, name, x_size, y_size, flags, gsg, host);
+  //    return new glGraphicsBuffer(this, name, fb_prop, win_prop, flags, gsg, host);
   //  }
   
   // Third thing to try: an osxGraphicsBuffer
@@ -130,8 +131,8 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new osxGraphicsBuffer(this, name, properties,
-                                 x_size, y_size, flags, gsg, host);
+    return new osxGraphicsBuffer(this, name, fb_prop, win_prop,
+                                 flags, gsg, host);
   }
   */
   // Nothing else left to try.

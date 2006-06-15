@@ -44,6 +44,7 @@ PUBLISHED:
   INLINE ~WindowProperties();
 
   static WindowProperties get_default();
+  static WindowProperties size(int x_size, int y_size);
 
   bool operator == (const WindowProperties &other) const;
   INLINE bool operator != (const WindowProperties &other) const;

@@ -71,10 +71,10 @@ PUBLISHED:
 
   GraphicsOutput *make_output(GraphicsPipe *pipe,
                               const string &name, int sort,
-                              const FrameBufferProperties &prop,
-                              int x_size, int y_size, int flags,
-                              GraphicsStateGuardian *gsg = 0,
-                              GraphicsOutput *host = 0);
+                              const FrameBufferProperties &fb_prop,
+                              const WindowProperties &win_prop,
+                              int flags, GraphicsStateGuardian *gsg = NULL,
+                              GraphicsOutput *host = NULL);
   
   // Syntactic shorthand versions of make_output
   INLINE GraphicsOutput *make_buffer(GraphicsStateGuardian *gsg,

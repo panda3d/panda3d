@@ -32,6 +32,7 @@ class GraphicsWindow;
 class GraphicsBuffer;
 class GraphicsStateGuardian;
 class FrameBufferProperties;
+class WindowProperties;
 class Texture;
 
 ////////////////////////////////////////////////////////////////////
@@ -109,8 +110,9 @@ protected:
   virtual void close_gsg(GraphicsStateGuardian *gsg);
   
   virtual PT(GraphicsOutput) make_output(const string &name,
-                                         const FrameBufferProperties &properties,
-                                         int x_size, int y_size, int flags,
+                                         const FrameBufferProperties &fb_prop,
+                                         const WindowProperties &win_prop,
+                                         int flags,
                                          GraphicsStateGuardian *gsg,
                                          GraphicsOutput *host,
                                          int retry,

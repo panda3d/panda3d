@@ -205,8 +205,9 @@ get_threading_model() const {
 GraphicsOutput *GraphicsEngine::
 make_output(GraphicsPipe *pipe,
             const string &name, int sort,
-            const FrameBufferProperties &prop,
-            int x_size, int y_size, int flags,
+            const FrameBufferProperties &fb_prop,
+            const WindowProperties &win_prop,
+            int flags,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host) {
 
@@ -243,11 +244,12 @@ make_output(GraphicsPipe *pipe,
 
   // Simplify the input parameters.
   
-  if ((x_size==0) || (y_size == 0)) {
+  int x_size = 0, y_size = 0;
+  if (win_prop.has_size()) {
+    x_size = win_prop.get_x_size();
+    y_size = win_prop.get_y_size();
+  } else {
     flags |= GraphicsPipe::BF_size_track_host;
-  }
-  if (flags & GraphicsPipe::BF_size_square) {
-    x_size = y_size = min(x_size, y_size);
   }
   if (host != 0) {
     host = host->get_host();
@@ -305,7 +307,7 @@ make_output(GraphicsPipe *pipe,
       ((flags&GraphicsPipe::BF_can_bind_every)==0)&&
       ((flags&GraphicsPipe::BF_rtt_cumulative)==0)) {
     if ((flags&GraphicsPipe::BF_fb_props_optional) ||
-        (host->get_fb_properties().subsumes(prop))) {
+        (host->get_fb_properties().subsumes(fb_prop))) {
       can_use_parasite = true;
     }
   }
@@ -319,7 +321,7 @@ make_output(GraphicsPipe *pipe,
       (can_use_parasite) &&
       (x_size <= host->get_x_size())&&
       (y_size <= host->get_y_size())&&
-      (host->get_fb_properties().subsumes(prop))) {
+      (host->get_fb_properties().subsumes(fb_prop))) {
     ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size, flags);
     buffer->_sort = sort;
     do_add_window(buffer, threading_model);
@@ -332,7 +334,7 @@ make_output(GraphicsPipe *pipe,
   for (int retry=0; retry<10; retry++) {
     bool precertify = false;
     PT(GraphicsOutput) window = 
-      pipe->make_output(name, prop, x_size, y_size, flags, gsg, host, retry, precertify);
+      pipe->make_output(name, fb_prop, win_prop, flags, gsg, host, retry, precertify);
     if (window != (GraphicsOutput *)NULL) {
       window->_sort = sort;
       if ((precertify) && (gsg != 0) && (window->get_gsg()==gsg)) {
@@ -344,7 +346,7 @@ make_output(GraphicsPipe *pipe,
       open_windows();
       if (window->is_valid()) {
         do_add_gsg(window->get_gsg(), pipe, threading_model);
-        if (window->get_fb_properties().subsumes(prop)) {
+        if (window->get_fb_properties().subsumes(fb_prop)) {
           return window;
         } else {
           if (flags & GraphicsPipe::BF_fb_props_optional) {

@@ -73,8 +73,9 @@ static CubeFaceDef cube_faces[6] = {
 GraphicsOutput::
 GraphicsOutput(GraphicsPipe *pipe,
                const string &name,
-               const FrameBufferProperties &properties,
-               int x_size, int y_size, int flags,
+               const FrameBufferProperties &fb_prop,
+               const WindowProperties &win_prop,
+               int flags,
                GraphicsStateGuardian *gsg,
                GraphicsOutput *host) :
   _lock("GraphicsOutput"),
@@ -87,12 +88,15 @@ GraphicsOutput(GraphicsPipe *pipe,
   _pipe = pipe;
   _gsg = gsg;
   _host = host;
-  _fb_properties = properties;
+  _fb_properties = fb_prop;
   _name = name;
   _creation_flags = flags;
-  _x_size = x_size;
-  _y_size = y_size;
-  _has_size = false; // Need to look into what this does.
+  _x_size = _y_size = 0;
+  _has_size = win_prop.has_size();
+  if (_has_size) {
+    _x_size = win_prop.get_x_size();
+    _y_size = win_prop.get_y_size();
+  }
   _is_valid = false;
   _flip_ready = false;
   _cube_map_index = -1;
@@ -738,7 +742,8 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   GraphicsOutput *buffer = get_gsg()->get_engine()->
     make_output(get_gsg()->get_pipe(),
                 name, get_sort()-1,
-                props, x_size, y_size, GraphicsPipe::BF_refuse_window,
+                props, WindowProperties::size(x_size, y_size),
+                GraphicsPipe::BF_refuse_window,
                 get_gsg(), get_host());
 
   if (buffer != (GraphicsOutput *)NULL) {

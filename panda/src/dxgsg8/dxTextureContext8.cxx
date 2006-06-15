@@ -57,10 +57,6 @@ DXTextureContext8(PreparedGraphicsObjects *pgo, Texture *tex) :
 ////////////////////////////////////////////////////////////////////
 DXTextureContext8::
 ~DXTextureContext8() {
-  if (dxgsg8_cat.is_spam()) {
-    dxgsg8_cat.spam()
-      << "Deleting texture context for " << get_texture()->get_name() << "\n";
-  }
   delete_texture();
 }
 

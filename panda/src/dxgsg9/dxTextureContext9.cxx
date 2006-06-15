@@ -61,11 +61,6 @@ DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex) :
 ////////////////////////////////////////////////////////////////////
 DXTextureContext9::
 ~DXTextureContext9() {
-  if (dxgsg9_cat.is_spam()) {
-    dxgsg9_cat.spam()
-      << "Deleting texture context for " << get_texture()->get_name() << "\n";
-  }
-
   if (_lru_page)
   {
     _lru_page -> _m.lru -> remove_page (_lru_page);

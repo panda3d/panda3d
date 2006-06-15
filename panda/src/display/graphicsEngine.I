@@ -99,15 +99,16 @@ close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
 INLINE GraphicsOutput *GraphicsEngine::
 make_buffer(GraphicsStateGuardian *gsg, const string &name,
             int sort, int x_size, int y_size) {
-  FrameBufferProperties props = FrameBufferProperties::get_default();
-  props.set_back_buffers(0);
-  props.set_stereo(0);
-  props.set_accum_bits(0);
-  props.set_multisamples(0);
-  props.set_force_hardware(0);
-  props.set_force_software(0);
+  FrameBufferProperties fb_props = FrameBufferProperties::get_default();
+  fb_props.set_back_buffers(0);
+  fb_props.set_stereo(0);
+  fb_props.set_accum_bits(0);
+  fb_props.set_multisamples(0);
+  fb_props.set_force_hardware(0);
+  fb_props.set_force_software(0);
   GraphicsOutput *result = make_output(gsg->get_pipe(), name, sort,
-                                       props, x_size, y_size,
+                                       fb_props, 
+                                       WindowProperties::size(x_size, y_size),
                                        GraphicsPipe::BF_refuse_window |
                                        GraphicsPipe::BF_fb_props_optional,
                                        gsg, NULL);
@@ -122,9 +123,9 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
 INLINE GraphicsOutput *GraphicsEngine::
 make_parasite(GraphicsOutput *host, const string &name, 
               int sort, int x_size, int y_size) {
-  FrameBufferProperties props;
   GraphicsOutput *result = make_output(host->get_pipe(), name, sort,
-                                       props, x_size, y_size,
+                                       FrameBufferProperties(),
+                                       WindowProperties::size(x_size, y_size),
                                        GraphicsPipe::BF_require_parasite |
                                        GraphicsPipe::BF_fb_props_optional,
                                        host->get_gsg(), host);

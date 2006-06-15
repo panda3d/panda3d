@@ -38,11 +38,12 @@ TypeHandle GraphicsWindow::_type_handle;
 GraphicsWindow::
 GraphicsWindow(GraphicsPipe *pipe,
                const string &name,
-               const FrameBufferProperties &properties,
-               int x_size, int y_size, int flags,
+               const FrameBufferProperties &fb_prop,
+               const WindowProperties &win_prop,
+               int flags,
                GraphicsStateGuardian *gsg,
                GraphicsOutput *host) :
-  GraphicsOutput(pipe, name, properties, x_size, y_size, flags, gsg, host),
+  GraphicsOutput(pipe, name, fb_prop, win_prop, flags, gsg, host),
   _input_lock("GraphicsWindow::_input_lock")
 {
 #ifdef DO_MEMORY_USAGE
@@ -54,7 +55,7 @@ GraphicsWindow(GraphicsPipe *pipe,
       << "Creating new window " << get_name() << "\n";
   }
 
-  _red_blue_stereo = red_blue_stereo && !properties.is_stereo();
+  _red_blue_stereo = red_blue_stereo && !fb_prop.is_stereo();
   if (_red_blue_stereo) {
     _left_eye_color_mask = parse_color_mask(red_blue_stereo_colors.get_word(0));    _right_eye_color_mask = parse_color_mask(red_blue_stereo_colors.get_word(1));
   }
@@ -66,6 +67,7 @@ GraphicsWindow(GraphicsPipe *pipe,
   _properties.set_cursor_hidden(false);
 
   request_properties(WindowProperties::get_default());
+  request_properties(win_prop);
 
   _window_event = "window-event";
 }

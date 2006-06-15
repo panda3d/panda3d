@@ -32,7 +32,8 @@ ParasiteBuffer::
 ParasiteBuffer(GraphicsOutput *host, const string &name,
                int x_size, int y_size, int flags) :
   GraphicsOutput(host->get_pipe(), name, host->get_fb_properties(),
-                 x_size, y_size, flags, host->get_gsg(), host)
+                 WindowProperties::size(x_size, y_size), flags, 
+                 host->get_gsg(), host)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);

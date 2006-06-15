@@ -161,7 +161,7 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
   GraphicsOutput *winout = 
     engine->make_output(pipe, name, 0,
                         FrameBufferProperties::get_default(),
-                        100, 100, GraphicsPipe::BF_require_window,
+                        props, GraphicsPipe::BF_require_window,
                         gsg, NULL);
   
   if (winout != (GraphicsOutput *)NULL) {

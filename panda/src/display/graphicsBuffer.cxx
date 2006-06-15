@@ -30,11 +30,11 @@ TypeHandle GraphicsBuffer::_type_handle;
 GraphicsBuffer::
 GraphicsBuffer(GraphicsPipe *pipe,
                const string &name,
-               const FrameBufferProperties &properties,
-               int x_size, int y_size, int flags,
+               const FrameBufferProperties &fb_prop,
+               const WindowProperties &win_prop, int flags,
                GraphicsStateGuardian *gsg,
                GraphicsOutput *host) :
-  GraphicsOutput(pipe, name, properties, x_size, y_size, flags, gsg, host)
+  GraphicsOutput(pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);

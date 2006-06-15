@@ -173,8 +173,9 @@ pipe_constructor() {
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsOutput) glxGraphicsPipe::
 make_output(const string &name,
-            const FrameBufferProperties &properties,
-            int x_size, int y_size, int flags,
+            const FrameBufferProperties &fb_prop,
+            const WindowProperties &win_prop,
+            int flags,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
             int retry,
@@ -200,8 +201,8 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new glxGraphicsWindow(this, name, properties,
-                                 x_size, y_size, flags, gsg, host);
+    return new glxGraphicsWindow(this, name, fb_prop, win_prop,
+                                 flags, gsg, host);
   }
   
   // Second thing to try: a GLGraphicsBuffer
@@ -217,10 +218,10 @@ make_output(const string &name,
     // Early failure - if we are sure that this buffer WONT
     // meet specs, we can bail out early.
     if ((flags & BF_fb_props_optional)==0) {
-      if ((properties.get_indexed_color() > 0)||
-          (properties.get_back_buffers() > 0)||
-          (properties.get_accum_bits() > 0)||
-          (properties.get_multisamples() > 0)) {
+      if ((fb_prop.get_indexed_color() > 0)||
+          (fb_prop.get_back_buffers() > 0)||
+          (fb_prop.get_accum_bits() > 0)||
+          (fb_prop.get_multisamples() > 0)) {
         return NULL;
       }
     }
@@ -231,11 +232,11 @@ make_output(const string &name,
         (!glxgsg->needs_reset()) &&
         (glxgsg->_supports_framebuffer_object) &&
         (glxgsg->_glDrawBuffers != 0)&&
-        (properties.is_basic())) {
+        (fb_prop.is_basic())) {
       precertify = true;
     }
-    return new GLGraphicsBuffer(this, name, properties,
-                                x_size, y_size, flags, gsg, host);
+    return new GLGraphicsBuffer(this, name, fb_prop, win_prop,
+                                flags, gsg, host);
   }
   
 #ifdef HAVE_GLXFBCONFIG
@@ -250,8 +251,8 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new glxGraphicsBuffer(this, name, properties,
-                                 x_size, y_size, flags, gsg, host);
+    return new glxGraphicsBuffer(this, name, fb_prop, win_prop,
+                                 flags, gsg, host);
   }
 #endif  // HAVE_GLXFBCONFIG
   
