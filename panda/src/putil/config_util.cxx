@@ -18,6 +18,7 @@
 
 #include "config_util.h"
 #include "animInterface.h"
+#include "bamCacheRecord.h"
 #include "bamReader.h"
 #include "bamReaderParam.h"
 #include "bitArray.h"
@@ -79,6 +80,7 @@ ConfigVariableSearchPath sound_path
 
 ConfigureFn(config_util) {
   AnimInterface::init_type();
+  BamCacheRecord::init_type();
   BamReaderParam::init_type();
   BitArray::init_type();
   BitMask32::init_type();
@@ -104,6 +106,8 @@ ConfigureFn(config_util) {
   NonDeletor::register_deletor();
 
   register_type(BamReader::_remove_flag, "remove");
+
+  BamCacheRecord::register_with_read_factory();
 }
 
 

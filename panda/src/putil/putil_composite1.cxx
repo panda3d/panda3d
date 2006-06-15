@@ -1,4 +1,6 @@
 #include "animInterface.cxx"
+#include "bamCache.cxx"
+#include "bamCacheRecord.cxx"
 #include "bamEndian.cxx"
 #include "bamReader.cxx"
 #include "bamReaderParam.cxx"

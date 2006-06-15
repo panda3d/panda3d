@@ -293,10 +293,11 @@ protected:
   void specify_texture(Texture *tex);
   void apply_texture(TextureContext *tc);
   bool upload_texture(CLP(TextureContext) *gtc);
-  bool upload_texture_image(CLP(TextureContext) *gtc, bool uses_mipmaps,
-                            GLenum target, GLint internal_format,
-                            int width, int height, int depth,
-                            GLint external_format, GLenum component_type,
+  bool upload_texture_image(CLP(TextureContext) *gtc,
+                            bool uses_mipmaps, int mipmap_bias,
+                            GLenum texture_target, GLenum page_target, 
+                            GLint internal_format, GLint external_format, 
+                            GLenum component_type,
                             bool one_page_only, int z,
           Texture::CompressionMode image_compression);
 

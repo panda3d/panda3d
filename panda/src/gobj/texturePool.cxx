@@ -22,6 +22,8 @@
 #include "config_express.h"
 #include "string_utils.h"
 #include "virtualFileSystem.h"
+#include "bamCache.h"
+#include "bamCacheRecord.h"
 #include "pnmFileTypeRegistry.h"
 
 
@@ -225,20 +227,51 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
     return (*ti).second;
   }
 
-  gobj_cat.info()
-    << "Loading texture " << filename << "\n";
-  PT(Texture) tex = make_texture(filename.get_extension());
-  if (!tex->read(filename, Filename(), primary_file_num_channels, 0,
-                 0, 0, false, read_mipmaps)) {
-    // This texture was not found or could not be read.
-    report_texture_unreadable(filename);
-    return NULL;
+  PT(Texture) tex;
+  PT(BamCacheRecord) record;
+  bool store_record = false;
+
+  BamCache *cache = BamCache::get_global_ptr();
+  if (cache->get_active() && !textures_header_only) {
+    // See if the texture can be found in the on-disk cache, if it is
+    // active.
+    record = cache->lookup(filename, "txo");
+    if (record != (BamCacheRecord *)NULL) {
+      if (record->has_data()) {
+        gobj_cat.info()
+          << "Texture " << filename << " found in disk cache.\n";
+        tex = DCAST(Texture, record->extract_data());
+      }
+    }
+  }
+
+  if (tex == (Texture *)NULL) {
+    // The texture was neither in the pool, nor found in the on-disk
+    // cache; it needs to be loaded from its source image(s).
+    gobj_cat.info()
+      << "Loading texture " << filename << "\n";
+    tex = make_texture(filename.get_extension());
+    if (!tex->read(filename, Filename(), primary_file_num_channels, 0,
+                   0, 0, false, read_mipmaps, record)) {
+      // This texture was not found or could not be read.
+      report_texture_unreadable(filename);
+      return NULL;
+    }
+    store_record = (record != (BamCacheRecord *)NULL);
   }
 
   // Set the original filename, before we searched along the path.
+  nassertr(tex != (Texture *)NULL, false);
   tex->set_filename(orig_filename);
   tex->_texture_pool_key = filename;
   _textures[filename] = tex;
+
+  if (store_record) {
+    // Store the on-disk cache record for next time.
+    record->set_data(tex, false);
+    cache->store(record);
+  }
+
   return tex;
 }
 
@@ -275,22 +308,53 @@ ns_load_texture(const Filename &orig_filename,
     return (*ti).second;
   }
 
-  gobj_cat.info()
-    << "Loading texture " << filename << " and alpha component "
-    << alpha_filename << endl;
-  PT(Texture) tex = make_texture(filename.get_extension());
-  if (!tex->read(filename, alpha_filename, primary_file_num_channels,
-                 alpha_file_channel, 0, 0, false, read_mipmaps)) {
-    // This texture was not found or could not be read.
-    report_texture_unreadable(filename);
-    return NULL;
+  PT(Texture) tex;
+  PT(BamCacheRecord) record;
+  bool store_record = false;
+
+  BamCache *cache = BamCache::get_global_ptr();
+  if (cache->get_active() && !textures_header_only) {
+    // See if the texture can be found in the on-disk cache, if it is
+    // active.
+    record = cache->lookup(filename, "txo");
+    if (record != (BamCacheRecord *)NULL) {
+      if (record->has_data()) {
+        gobj_cat.info()
+          << "Texture " << filename << " found in disk cache.\n";
+        tex = DCAST(Texture, record->extract_data());
+      }
+    }
+  }
+
+  if (tex == (Texture *)NULL) {
+    // The texture was neither in the pool, nor found in the on-disk
+    // cache; it needs to be loaded from its source image(s).
+    gobj_cat.info()
+      << "Loading texture " << filename << " and alpha component "
+      << alpha_filename << endl;
+    tex = make_texture(filename.get_extension());
+    if (!tex->read(filename, alpha_filename, primary_file_num_channels,
+                   alpha_file_channel, 0, 0, false, read_mipmaps)) {
+      // This texture was not found or could not be read.
+      report_texture_unreadable(filename);
+      return NULL;
+    }
+    store_record = (record != (BamCacheRecord *)NULL);
   }
 
   // Set the original filenames, before we searched along the path.
+  nassertr(tex != (Texture *)NULL, false);
   tex->set_filename(orig_filename);
   tex->set_alpha_filename(orig_alpha_filename);
   tex->_texture_pool_key = filename;
   _textures[filename] = tex;
+
+  if (store_record) {
+    // Store the on-disk cache record for next time.
+    record->set_data(tex, false);
+    cache->store(record);
+  }
+
   return tex;
 }
 
@@ -316,20 +380,52 @@ ns_load_3d_texture(const Filename &filename_pattern,
     return (*ti).second;
   }
 
-  gobj_cat.info()
-    << "Loading 3-d texture " << filename << "\n";
-  PT(Texture) tex = make_texture(filename.get_extension());
-  tex->setup_3d_texture();
-  if (!tex->read(filename, 0, 0, true, read_mipmaps)) {
-    // This texture was not found or could not be read.
-    report_texture_unreadable(filename);
-    return NULL;
+  PT(Texture) tex;
+  PT(BamCacheRecord) record;
+  bool store_record = false;
+
+  BamCache *cache = BamCache::get_global_ptr();
+  if (cache->get_active() && !textures_header_only) {
+    // See if the texture can be found in the on-disk cache, if it is
+    // active.
+    record = cache->lookup(filename, "txo");
+    if (record != (BamCacheRecord *)NULL) {
+      if (record->has_data()) {
+        gobj_cat.info()
+          << "Texture " << filename << " found in disk cache.\n";
+        tex = DCAST(Texture, record->extract_data());
+      }
+    }
+  }
+
+  if (tex == (Texture *)NULL || 
+      tex->get_texture_type() != Texture::TT_3d_texture) {
+    // The texture was neither in the pool, nor found in the on-disk
+    // cache; it needs to be loaded from its source image(s).
+    gobj_cat.info()
+      << "Loading 3-d texture " << filename << "\n";
+    tex = make_texture(filename.get_extension());
+    tex->setup_3d_texture();
+    if (!tex->read(filename, 0, 0, true, read_mipmaps)) {
+      // This texture was not found or could not be read.
+      report_texture_unreadable(filename);
+      return NULL;
+    }
+    store_record = (record != (BamCacheRecord *)NULL);
   }
 
   // Set the original filename, before we searched along the path.
+  nassertr(tex != (Texture *)NULL, false);
   tex->set_filename(filename_pattern);
   tex->_texture_pool_key = filename;
   _textures[filename] = tex;
+
+  if (store_record) {
+    // Store the on-disk cache record for next time.
+    record->set_data(tex, false);
+    cache->store(record);
+  }
+
   return tex;
 }
 
@@ -354,20 +450,52 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps) {
     return (*ti).second;
   }
 
-  gobj_cat.info()
-    << "Loading cube map texture " << filename << "\n";
-  PT(Texture) tex = make_texture(filename.get_extension());
-  tex->setup_cube_map();
-  if (!tex->read(filename, 0, 0, true, read_mipmaps)) {
-    // This texture was not found or could not be read.
-    report_texture_unreadable(filename);
-    return NULL;
+  PT(Texture) tex;
+  PT(BamCacheRecord) record;
+  bool store_record = false;
+
+  BamCache *cache = BamCache::get_global_ptr();
+  if (cache->get_active() && !textures_header_only) {
+    // See if the texture can be found in the on-disk cache, if it is
+    // active.
+    record = cache->lookup(filename, "txo");
+    if (record != (BamCacheRecord *)NULL) {
+      if (record->has_data()) {
+        gobj_cat.info()
+          << "Texture " << filename << " found in disk cache.\n";
+        tex = DCAST(Texture, record->extract_data());
+      }
+    }
   }
 
+  if (tex == (Texture *)NULL || 
+      tex->get_texture_type() != Texture::TT_cube_map) {
+    // The texture was neither in the pool, nor found in the on-disk
+    // cache; it needs to be loaded from its source image(s).
+    gobj_cat.info()
+      << "Loading cube map texture " << filename << "\n";
+    tex = make_texture(filename.get_extension());
+    tex->setup_cube_map();
+    if (!tex->read(filename, 0, 0, true, read_mipmaps)) {
+      // This texture was not found or could not be read.
+      report_texture_unreadable(filename);
+      return NULL;
+    }
+    store_record = (record != (BamCacheRecord *)NULL);
+  }
+    
   // Set the original filename, before we searched along the path.
+  nassertr(tex != (Texture *)NULL, false);
   tex->set_filename(filename_pattern);
   tex->_texture_pool_key = filename;
   _textures[filename] = tex;
+
+  if (store_record) {
+    // Store the on-disk cache record for next time.
+    record->set_data(tex, false);
+    cache->store(record);
+  }
+
   return tex;
 }
 

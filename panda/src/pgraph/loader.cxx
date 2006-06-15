@@ -34,6 +34,8 @@
 #include "string_utils.h"
 #include "plist.h"
 #include "pvector.h"
+#include "bamCache.h"
+#include "bamCacheRecord.h"
 
 #include <algorithm>
 
@@ -463,11 +465,33 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
     return NULL;
   }
 
+  BamCache *cache = BamCache::get_global_ptr();
   for (int i = 0; i < num_files; ++i) {
     const Filename &path = results.get_file(i);
+
+    PT(BamCacheRecord) record;
+
+    if (cache->get_active()) {
+      // See if the texture can be found in the on-disk cache, if it is
+      // active.
+      record = cache->lookup(path, "bam");
+      if (record != (BamCacheRecord *)NULL) {
+        if (record->has_data()) {
+          loader_cat.info()
+            << "Model " << path << " found in disk cache.\n";
+          return DCAST(PandaNode, record->extract_data());
+        }
+      }
+    }
+
     LoaderFileType *type = results.get_file_type(i);
     PT(PandaNode) result = type->load_file(path, options);
-    if (result != (PandaNode *)NULL) {
+    if (result != (PandaNode *)NULL){ 
+      if (record != (BamCacheRecord *)NULL) {
+        record->set_data(result, false);
+        cache->store(record);
+      }
+
       return result;
     }
   }

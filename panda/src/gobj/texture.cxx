@@ -22,6 +22,8 @@
 #include "config_util.h"
 #include "texturePool.h"
 #include "textureContext.h"
+#include "bamCache.h"
+#include "bamCacheRecord.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
@@ -447,6 +449,16 @@ read_txo(istream &in, const string &filename) {
   }
 
   TypedWritable *object = reader.read_object();
+
+  if (object != (TypedWritable *)NULL && 
+      object->is_exact_type(BamCacheRecord::get_class_type())) {
+    // Here's a special case: if the first object in the file is a
+    // BamCacheRecord, it's really a cache data file and not a true
+    // txo file; but skip over the cache data record and let the user
+    // treat it like an ordinary txo file.
+    object = reader.read_object();
+  }
+
   if (object == (TypedWritable *)NULL) {
     gobj_cat.error()
       << "Texture object " << filename << " is empty.\n";
@@ -1629,7 +1641,8 @@ make_texture() {
 bool Texture::
 do_read(const Filename &fullpath, const Filename &alpha_fullpath,
 	int primary_file_num_channels, int alpha_file_channel,
-	int z, int n, bool read_pages, bool read_mipmaps) {
+	int z, int n, bool read_pages, bool read_mipmaps,
+        BamCacheRecord *record) {
   if ((z == 0 || read_pages) && (n == 0 || read_mipmaps)) {
     // When we re-read the page 0 of the base image, we clear
     // everything and start over.
@@ -1637,6 +1650,9 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
   }
   
   if (is_txo_filename(fullpath)) {
+    if (record != (BamCacheRecord *)NULL) {
+      record->add_dependent_file(fullpath);
+    }
     return read_txo_file(fullpath);
   }
 
@@ -1708,7 +1724,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
       while ((z_size == 0 && (vfs->exists(file) || z == 0)) ||
 	     (z_size != 0 && z < z_size)) {
 	if (!do_read_one(file, alpha_file, z, n, primary_file_num_channels,
-			 alpha_file_channel)) {
+			 alpha_file_channel, record)) {
 	  return false;
 	}
 	++z;
@@ -1745,7 +1761,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     while ((z_size == 0 && (vfs->exists(file) || z == 0)) ||
 	   (z_size != 0 && z < z_size)) {
       if (!do_read_one(file, alpha_file, z, 0, primary_file_num_channels,
-		       alpha_file_channel)) {
+		       alpha_file_channel, record)) {
 	return false;
       }
       ++z;
@@ -1768,19 +1784,21 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     n = 0;
     Filename file = fullpath_pattern.get_filename_index(n);
     Filename alpha_file = alpha_fullpath_pattern.get_filename_index(n);
+
     while ((n_size == 0 && (vfs->exists(file) || n == 0)) ||
 	   (n_size != 0 && n < n_size)) {
       if (!do_read_one(file, alpha_file, z, n, 
-		       primary_file_num_channels, alpha_file_channel)) {
+		       primary_file_num_channels, alpha_file_channel,
+                       record)) {
         return false;
       }
-      if (n == 0 && n_size == 0) {
-	// If n_size is not specified, it gets implicitly set after we
-	// read the base texture image (which determines the size of
-	// the texture).
-	n_size = get_expected_num_mipmap_levels();
-      }
       ++n;
+
+      if (n_size == 0 && n >= get_expected_num_mipmap_levels()) {
+        // Don't try to read more than the requisite number of mipmap
+        // levels (unless the user insisted on it for some reason).
+        break;
+      }
 
       file = fullpath_pattern.get_filename_index(n);
       alpha_file = alpha_fullpath_pattern.get_filename_index(n);
@@ -1789,7 +1807,8 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
   } else {
     // Just an ordinary read of one file.
     if (!do_read_one(fullpath, alpha_fullpath, z, n, 
-		     primary_file_num_channels, alpha_file_channel)) {
+		     primary_file_num_channels, alpha_file_channel,
+                     record)) {
       return false;
     }
   }    
@@ -1810,7 +1829,12 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
-	    int z, int n, int primary_file_num_channels, int alpha_file_channel) {
+	    int z, int n, int primary_file_num_channels, int alpha_file_channel,
+            BamCacheRecord *record) {
+  if (record != (BamCacheRecord *)NULL) {
+    record->add_dependent_file(fullpath);
+  }
+
   PNMImage image;
   if (textures_header_only) {
     if (!image.read_header(fullpath)) {
@@ -1835,6 +1859,10 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 
   PNMImage alpha_image;
   if (!alpha_fullpath.empty()) {
+    if (record != (BamCacheRecord *)NULL) {
+      record->add_dependent_file(alpha_fullpath);
+    }
+
     if (textures_header_only) {
       if (!alpha_image.read_header(alpha_fullpath)) {
 	gobj_cat.error()
@@ -1875,7 +1903,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     set_fullpath(fullpath);
     set_alpha_fullpath(alpha_fullpath);
     
-    consider_rescale(image);
+    consider_rescale(image, fullpath.get_basename());
   }
 
   if (!alpha_fullpath.empty()) {
@@ -1939,7 +1967,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     }
   }
 
-  return do_load_one(image, z, n);
+  return do_load_one(image, fullpath.get_basename(), z, n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2063,7 +2091,7 @@ do_write_one(const Filename &fullpath, int z, int n) const {
 //               level.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-do_load_one(const PNMImage &pnmimage, int z, int n) {
+do_load_one(const PNMImage &pnmimage, const string &name, int z, int n) {
   if (_ram_images.size() <= 1 && n == 0) {
     // A special case for mipmap level 0.  When we load mipmap level
     // 0, unless we already have mipmap levels, it determines the
@@ -2073,18 +2101,20 @@ do_load_one(const PNMImage &pnmimage, int z, int n) {
     }
     nassertr(z >= 0 && z < _z_size, false);
 
-    ComponentType component_type = T_unsigned_byte;
-    xelval maxval = pnmimage.get_maxval();
-    if (maxval > 255) {
-      component_type = T_unsigned_short;
+    if (z == 0) {
+      ComponentType component_type = T_unsigned_byte;
+      xelval maxval = pnmimage.get_maxval();
+      if (maxval > 255) {
+        component_type = T_unsigned_short;
+      }
+      
+      if (!reconsider_image_properties(pnmimage.get_x_size(), pnmimage.get_y_size(),
+                                       pnmimage.get_num_channels(), component_type,
+                                       z)) {
+        return false;
+      }
     }
-    
-    if (!reconsider_image_properties(pnmimage.get_x_size(), pnmimage.get_y_size(),
-				     pnmimage.get_num_channels(), component_type,
-				     z)) {
-      return false;
-    }
-
+      
     do_modify_ram_image();
     _loaded_from_image = true;
   }
@@ -2097,8 +2127,13 @@ do_load_one(const PNMImage &pnmimage, int z, int n) {
   if (pnmimage.get_x_size() != x_size ||
       pnmimage.get_y_size() != y_size) {
     gobj_cat.info()
-      << "Automatically rescaling " << get_name() << " mipmap level " 
-      << n << " from " << pnmimage.get_x_size() << " by "
+      << "Automatically rescaling " << name;
+    if (n != 0) {
+      gobj_cat.info(false)
+        << " mipmap level " << n;
+    }
+    gobj_cat.info(false)
+      << " from " << pnmimage.get_x_size() << " by "
       << pnmimage.get_y_size() << " to " << x_size << " by "
       << y_size << "\n";
 
@@ -2159,6 +2194,21 @@ reconsider_dirty() {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 reload_ram_image() {
+  BamCache *cache = BamCache::get_global_ptr();
+  if (cache->get_active() && !textures_header_only) {
+    // See if the texture can be found in the on-disk cache, if it is
+    // active.
+    PT(BamCacheRecord) record = cache->lookup(get_fullpath(), "txo");
+    if (record != (BamCacheRecord *)NULL && 
+        record->has_data()) {
+      gobj_cat.info()
+        << "Texture " << get_name() << " reloaded from disk cache.\n";
+      PT(Texture) tex = DCAST(Texture, record->extract_data());
+      (*this) = (*tex);
+      return;
+    }
+  }
+
   gobj_cat.info()
     << "Reloading texture " << get_name() << "\n";
   do_make_ram_image();
@@ -2175,7 +2225,7 @@ reload_ram_image() {
 
   do_read(get_fullpath(), get_alpha_fullpath(),
 	  _primary_file_num_channels, _alpha_file_channel,
-	  z, n, _has_read_pages, _has_read_mipmaps);
+	  z, n, _has_read_pages, _has_read_mipmaps, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2390,7 +2440,7 @@ reconsider_image_properties(int x_size, int y_size, int num_components,
         _component_type != component_type) {
       gobj_cat.error()
         << "Texture properties have changed for texture " << get_name()
-        << " level " << z << ".\n";
+        << " page " << z << ".\n";
       return false;
     }
   }
@@ -2607,7 +2657,7 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 //               Config.prc file.
 ////////////////////////////////////////////////////////////////////
 void Texture::
-consider_rescale(PNMImage &pnmimage) {
+consider_rescale(PNMImage &pnmimage, const string &name) {
   int new_x_size = pnmimage.get_x_size();
   int new_y_size = pnmimage.get_y_size();
 
@@ -2647,7 +2697,7 @@ consider_rescale(PNMImage &pnmimage) {
   if (pnmimage.get_x_size() != new_x_size ||
       pnmimage.get_y_size() != new_y_size) {
     gobj_cat.info()
-      << "Automatically rescaling " << get_name() << " from "
+      << "Automatically rescaling " << name << " from "
       << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << " to "
       << new_x_size << " by " << new_y_size << "\n";
 
@@ -3125,7 +3175,11 @@ make_from_bam(const FactoryParams &params) {
     // and don't load from the file.
     me = new Texture(name);
     me->_filename = filename;
+    me->_fullpath = filename;
+    me->_fullpath.make_absolute();
     me->_alpha_filename = alpha_filename;
+    me->_alpha_fullpath = alpha_filename;
+    me->_alpha_fullpath.make_absolute();
     me->_primary_file_num_channels = primary_file_num_channels;
     me->_alpha_file_channel = alpha_file_channel;
     me->_texture_type = texture_type;

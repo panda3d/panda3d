@@ -165,47 +165,25 @@ ushort_bgra_to_rgba(unsigned short *dest, const unsigned short *source,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: reduce_image
-//  Description: Reduces an image to an acceptable size by sampling
-//               pixels.  This is just a cheap and dirty trick to load
-//               an image that the GL says is too large.
-//
-//               The implementation copies byte_chunk bytes every
-//               byte_chunk * stride bytes.
-////////////////////////////////////////////////////////////////////
-static PTA_uchar
-reduce_image(CPTA_uchar orig_image, int byte_chunk, int stride) {
-  size_t orig_image_size = orig_image.size();
-  size_t new_image_size = orig_image_size / stride;
-  PTA_uchar new_image = PTA_uchar::empty_array(new_image_size);
-  const unsigned char *from = orig_image.p();
-  unsigned char *to = new_image.p();
-
-  const unsigned char *from_end = from + orig_image_size;
-  const unsigned char *to_end = to + new_image_size;
-
-  while (from + byte_chunk <= from_end) {
-    nassertr(to + byte_chunk <= to_end, new_image);
-    memcpy(to, from, byte_chunk);
-    from += stride * byte_chunk;
-    to += byte_chunk;
-  }
-
-  return new_image;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: fix_component_ordering
 //  Description: Reverses the order of the components within the
 //               image, to convert (for instance) GL_BGR to GL_RGB.
-//               Returns the CPTA_uchar representing the converted
+//               Returns the byte pointer representing the converted
 //               image, or the original image if it is unchanged.
+//
+//               new_image must be supplied; it is the PTA_uchar that
+//               will be used to hold the converted image if required.
+//               It will be modified only if the conversion is
+//               necessary, in which case the data will be stored
+//               there, and this pointer will be returned.  If the
+//               conversion is not necessary, this pointer will be
+//               left unchanged.
 ////////////////////////////////////////////////////////////////////
-static PTA_uchar
-fix_component_ordering(CPTA_uchar orig_image, GLenum external_format,
-                       Texture *tex) {
-  size_t orig_image_size = orig_image.size();
-  PTA_uchar new_image = (PTA_uchar &)orig_image;
+static const unsigned char *
+fix_component_ordering(PTA_uchar &new_image, 
+                       const unsigned char *orig_image, size_t orig_image_size,
+                       GLenum external_format, Texture *tex) {
+  const unsigned char *result = orig_image;
 
   switch (external_format) {
   case GL_RGB:
@@ -213,13 +191,15 @@ fix_component_ordering(CPTA_uchar orig_image, GLenum external_format,
     case Texture::T_unsigned_byte:
       new_image = PTA_uchar::empty_array(orig_image_size);
       uchar_bgr_to_rgb(new_image, orig_image, orig_image_size / 3);
+      result = new_image;
       break;
 
     case Texture::T_unsigned_short:
       new_image = PTA_uchar::empty_array(orig_image_size);
       ushort_bgr_to_rgb((unsigned short *)new_image.p(),
-                        (const unsigned short *)orig_image.p(),
+                        (const unsigned short *)orig_image,
                         orig_image_size / 6);
+      result = new_image;
       break;
 
     default:
@@ -232,13 +212,15 @@ fix_component_ordering(CPTA_uchar orig_image, GLenum external_format,
     case Texture::T_unsigned_byte:
       new_image = PTA_uchar::empty_array(orig_image_size);
       uchar_bgra_to_rgba(new_image, orig_image, orig_image_size / 4);
+      result = new_image;
       break;
 
     case Texture::T_unsigned_short:
       new_image = PTA_uchar::empty_array(orig_image_size);
       ushort_bgra_to_rgba((unsigned short *)new_image.p(),
-                          (const unsigned short *)orig_image.p(),
+                          (const unsigned short *)orig_image,
                           orig_image_size / 8);
+      result = new_image;
       break;
 
     default:
@@ -250,7 +232,7 @@ fix_component_ordering(CPTA_uchar orig_image, GLenum external_format,
     break;
   }
 
-  return new_image;
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -561,6 +543,7 @@ reset() {
 
   _supports_bgr =
     has_extension("GL_EXT_bgra") || is_at_least_version(1, 2);
+
   _supports_rescale_normal =
     CLP(support_rescale_normal) &&
     (has_extension("GL_EXT_rescale_normal") || is_at_least_version(1, 2));
@@ -3189,23 +3172,28 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
       << ")" << endl;
   }
 
-  unsigned char *image = tex->modify_ram_image();
+  size_t image_size = tex->get_ram_image_size();
+  unsigned char *image_ptr = tex->modify_ram_image();
   if (z >= 0) {
     nassertr(z < tex->get_z_size(), false);
-    image += z * tex->get_expected_ram_page_size();
+    image_size = tex->get_expected_ram_page_size();
+    image_ptr += z * image_size;
   }
 
   GLP(ReadPixels)(xo, yo, w, h,
                   external_format, get_component_type(component_type),
-                  image);
+                  image_ptr);
 
   // We may have to reverse the byte ordering of the image if GL
-  // didn't do it for us.  This assumes we render out the six faces of
-  // a cube map in ascending order, since we can't do this until we
-  // have rendered the last face.
-  if (color_mode && !_supports_bgr && (z == -1 || z == 5)) {
-    tex->set_ram_image(fix_component_ordering(tex->get_ram_image(),
-                                              external_format, tex));
+  // didn't do it for us.
+  if (color_mode && !_supports_bgr) {
+    PTA_uchar new_image;
+    const unsigned char *result = 
+      fix_component_ordering(new_image, image_ptr, image_size,
+                             external_format, tex);
+    if (result != image_ptr) {
+      memcpy(image_ptr, result, image_size);
+    }
   }
 
   report_my_gl_errors();
@@ -6359,6 +6347,7 @@ specify_texture(Texture *tex) {
   report_my_gl_errors();
 }
 
+/*
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: compute_gl_image_size
@@ -6421,6 +6410,7 @@ compute_gl_image_size(int x_size, int y_size, int z_size,
   return x_size * y_size * z_size * pixel_width;
 }
 #endif  // NDEBUG
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::apply_texture
@@ -6470,6 +6460,8 @@ upload_texture(CLP(TextureContext) *gtc) {
     image_compression = tex->get_ram_image_compression();
   }
 
+  int mipmap_bias = 0;
+
   int width = tex->get_x_size();
   int height = tex->get_y_size();
   int depth = tex->get_z_size();
@@ -6499,74 +6491,41 @@ upload_texture(CLP(TextureContext) *gtc) {
     return false;
   }
 
-  if (!image.is_null()) {
-
-    // If it doesn't fit, we have to reduce it on-the-fly.  This is kind
-    // of expensive and it doesn't look great; it would have been better
-    // if the user had specified max-texture-dimension to reduce the
-    // texture at load time instead.  Of course, the user doesn't always
-    // know ahead of time what the hardware limits are.
-    if (max_dimension > 0 && image_compression == Texture::CM_off) {
-      if (width > max_dimension) {
-        int texel_size = tex->get_num_components() * tex->get_component_width();
-        int byte_chunk = texel_size;
-        int stride = 1;
-        int new_width = width;
-        while (new_width > max_dimension) {
-          stride <<= 1;
-          new_width >>= 1;
+  // If it doesn't fit, we have to reduce it on-the-fly.  We do this
+  // by incrementing the mipmap_bias, so we're effectively loading a
+  // lower mipmap level.  This requires generating the mipmaps on
+  // the CPU if they haven't already been generated.  It would have
+  // been better if the user had specified max-texture-dimension to
+  // reduce the texture at load time instead; of course, the user
+  // doesn't always know ahead of time what the hardware limits are.
+  
+  if (max_dimension > 0 && image_compression == Texture::CM_off) {
+    while (tex->get_expected_mipmap_x_size(mipmap_bias) > max_dimension ||
+           tex->get_expected_mipmap_y_size(mipmap_bias) > max_dimension ||
+           tex->get_expected_mipmap_z_size(mipmap_bias) > max_dimension) {
+      ++mipmap_bias;
+    }
+    
+    if (mipmap_bias >= tex->get_num_ram_mipmap_images()) {
+      // We need to generate some more mipmap images.
+      if (tex->has_ram_image()) {
+        tex->generate_ram_mipmap_images();
+        if (mipmap_bias >= tex->get_num_ram_mipmap_images()) {
+          // It didn't work.  Send the smallest we've got, and hope
+          // for the best.
+          mipmap_bias = tex->get_num_ram_mipmap_images() - 1;
         }
-        GLCAT.info()
-          << "Reducing width of " << tex->get_name()
-          << " from " << width << " to " << new_width << "\n";
-        image = reduce_image(image, byte_chunk, stride);
-        width = new_width;
-      }
-      if (height > max_dimension) {
-        int texel_size = tex->get_num_components() * tex->get_component_width();
-        int byte_chunk = width * texel_size;
-        int stride = 1;
-        int new_height = height;
-        while (new_height > max_dimension) {
-          stride <<= 1;
-          new_height >>= 1;
-        }
-        GLCAT.info()
-          << "Reducing height of " << tex->get_name()
-          << " from " << height << " to " << new_height << "\n";
-        image = reduce_image(image, byte_chunk, stride);
-        height = new_height;
-      }
-      if (depth > max_dimension) {
-        int texel_size = tex->get_num_components() * tex->get_component_width();
-        int byte_chunk = height * width * texel_size;
-        int stride = 1;
-        int new_depth = depth;
-        while (new_depth > max_dimension) {
-          stride <<= 1;
-          new_depth >>= 1;
-        }
-        GLCAT.info()
-          << "Reducing depth of " << tex->get_name()
-          << " from " << depth << " to " << new_depth << "\n";
-        image = reduce_image(image, byte_chunk, stride);
-        depth = new_depth;
       }
     }
-
-    if (!_supports_bgr) {
-      // If the GL doesn't claim to support BGR, we may have to reverse
-      // the component ordering of the image.
-      image = fix_component_ordering(image, external_format, tex);
+    
+    if (mipmap_bias != 0) {
+      GLCAT.info()
+        << "Reducing image " << tex->get_name()
+        << " from " << width << " x " << height << " x " << depth << " to "
+        << tex->get_expected_mipmap_x_size(mipmap_bias) << " x "
+        << tex->get_expected_mipmap_y_size(mipmap_bias) << " x "
+        << tex->get_expected_mipmap_z_size(mipmap_bias) << "\n";
     }
-
-#ifndef NDEBUG
-    if (image_compression == Texture::CM_off) {
-      int wanted_size =
-        compute_gl_image_size(width, height, depth, external_format, component_type);
-      nassertr(wanted_size == (int)image.size(), false);
-    }
-#endif  // NDEBUG
   }
 
   GLP(PixelStorei)(GL_UNPACK_ALIGNMENT, 1);
@@ -6590,40 +6549,47 @@ upload_texture(CLP(TextureContext) *gtc) {
     }
 
     success = success && upload_texture_image
-      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-       internal_format, width, height, depth, external_format, component_type,
+      (gtc, uses_mipmaps, mipmap_bias, 
+       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+       internal_format, external_format, component_type,
        true, 0, image_compression);
 
     success = success && upload_texture_image
-      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-       internal_format, width, height, depth, external_format, component_type,
+      (gtc, uses_mipmaps, mipmap_bias, 
+       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+       internal_format, external_format, component_type,
        true, 1, image_compression);
 
     success = success && upload_texture_image
-      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-       internal_format, width, height, depth, external_format, component_type,
+      (gtc, uses_mipmaps, mipmap_bias, 
+       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+       internal_format, external_format, component_type,
        true, 2, image_compression);
 
     success = success && upload_texture_image
-      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-       internal_format, width, height, depth, external_format, component_type,
+      (gtc, uses_mipmaps, mipmap_bias, 
+       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+       internal_format, external_format, component_type,
        true, 3, image_compression);
 
     success = success && upload_texture_image
-      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-       internal_format, width, height, depth, external_format, component_type,
+      (gtc, uses_mipmaps, mipmap_bias, 
+       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+       internal_format, external_format, component_type,
        true, 4, image_compression);
 
     success = success && upload_texture_image
-      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-       internal_format, width, height, depth, external_format, component_type,
+      (gtc, uses_mipmaps, mipmap_bias,
+       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+       internal_format, external_format, component_type,
        true, 5, image_compression);
 
   } else {
     // Any other kind of texture can be loaded all at once.
+    GLenum target = get_texture_target(tex->get_texture_type());
     success = upload_texture_image
-      (gtc, uses_mipmaps, get_texture_target(tex->get_texture_type()),
-       internal_format, width, height, depth, external_format, component_type,
+      (gtc, uses_mipmaps, mipmap_bias, target, target,
+       internal_format, external_format, component_type,
        false, 0, image_compression);
   }
 
@@ -6657,19 +6623,29 @@ upload_texture(CLP(TextureContext) *gtc) {
 //       Access: Protected
 //  Description: Loads a texture image, or one page of a cube map
 //               image, from system RAM to texture memory.
+//
+//               texture_target is normally the same thing as
+//               page_target; both represent the GL target onto which
+//               the texture image is loaded, e.g. GL_TEXTURE_1D,
+//               GL_TEXTURE_2D, etc.  The only time they may differ is
+//               in the case of cube mapping, in which case
+//               texture_target will be target for the overall
+//               texture, e.g. GL_TEXTURE_CUBE_MAP, and page_target
+//               will the target for this particular page,
+//               e.g. GL_TEXTURE_CUBE_MAP_POSITIVE_X.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 upload_texture_image(CLP(TextureContext) *gtc,
-                     bool uses_mipmaps,
-                     GLenum target, GLint internal_format,
-                     int width, int height, int depth,
+                     bool uses_mipmaps, int mipmap_bias,
+                     GLenum texture_target, GLenum page_target,
+                     GLint internal_format,
                      GLint external_format, GLenum component_type,
                      bool one_page_only, int z,
-         Texture::CompressionMode image_compression) {
+                     Texture::CompressionMode image_compression) {
   // Make sure the error stack is cleared out before we begin.
   report_my_gl_errors();
 
-  if (target == GL_NONE) {
+  if (texture_target == GL_NONE) {
     // Unsupported target (e.g. 3-d texturing on GL 1.1).
     return false;
   }
@@ -6679,15 +6655,20 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
   PStatTimer timer(_load_texture_pcollector);
   Texture *tex = gtc->get_texture();
-  CPTA_uchar image = tex->get_ram_image();
+  nassertr(tex != (Texture *)NULL, false);
+
+  CPTA_uchar image = tex->get_ram_mipmap_image(mipmap_bias);
+  int width = tex->get_expected_mipmap_x_size(mipmap_bias);
+  int height = tex->get_expected_mipmap_y_size(mipmap_bias);
+  int depth = tex->get_expected_mipmap_z_size(mipmap_bias);
 
   if (GLCAT.is_debug()) {
     if (image_compression != Texture::CM_off) {
       GLCAT.debug()
-  << "loading pre-compressed texture " << tex->get_name() << "\n";
+        << "loading pre-compressed texture " << tex->get_name() << "\n";
     } else if (is_compressed_format(internal_format)) {
       GLCAT.debug()
-  << "compressing texture " << tex->get_name() << "\n";
+        << "compressing texture " << tex->get_name() << "\n";
     }
   }
 
@@ -6697,10 +6678,10 @@ upload_texture_image(CLP(TextureContext) *gtc,
   if (image.is_null()) {
     if (uses_mipmaps) {
       if (_supports_generate_mipmap) {
-        GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, true);
+        GLP(TexParameteri)(texture_target, GL_GENERATE_MIPMAP, true);
       } else {
         // If it can't, do without mipmaps.
-        GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        GLP(TexParameteri)(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         uses_mipmaps = false;
       }
     }
@@ -6723,7 +6704,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
         // We will load the mipmap levels from RAM.  Don't ask the GL to
         // generate them.
         if (_supports_generate_mipmap) {
-          GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, false);
+          GLP(TexParameteri)(texture_target, GL_GENERATE_MIPMAP, false);
         }
         load_ram_mipmaps = true;
 
@@ -6731,10 +6712,10 @@ upload_texture_image(CLP(TextureContext) *gtc,
         // We don't have mipmap levels in RAM.  Ask the GL to generate
         // them if it can.
         if (_supports_generate_mipmap) {
-          GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, true);
+          GLP(TexParameteri)(texture_target, GL_GENERATE_MIPMAP, true);
         } else {
           // If it can't, do without mipmaps.
-          GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+          GLP(TexParameteri)(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
           uses_mipmaps = false;
         }
       }
@@ -6764,52 +6745,65 @@ upload_texture_image(CLP(TextureContext) *gtc,
       case 5: color = 0xFFFF00FF; break;
       }
       for (int i=0; i<width * height; i++) blank_image[i]=color;
-      GLP(TexImage2D)(target, 0, internal_format,
+      GLP(TexImage2D)(page_target, 0, internal_format,
                       width, height, 0,
                       external_format, GL_UNSIGNED_BYTE, blank_image);
       delete blank_image;
     }
 
-    for (int n = 0; n < num_ram_mipmap_levels; ++n) {
-      const unsigned char *image = tex->get_ram_mipmap_image(n);
-      if (image == (const unsigned char *)NULL) {
+    for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
+      const unsigned char *image_ptr = tex->get_ram_mipmap_image(n);
+      if (image_ptr == (const unsigned char *)NULL) {
         GLCAT.warning()
           << "No mipmap level " << n << " defined for " << tex->get_name()
           << "\n";
         // No mipmap level n; stop here.
         break;
       }
+
       size_t image_size = tex->get_ram_mipmap_image_size(n);
       if (one_page_only) {
         image_size = tex->get_ram_mipmap_page_size(n);
-        image += image_size * z;
+        image_ptr += image_size * z;
       }
+
+      PTA_uchar bgr_image;
+      if (!_supports_bgr && image_compression == Texture::CM_off) {
+        // If the GL doesn't claim to support BGR, we may have to reverse
+        // the component ordering of the image.
+        image_ptr = fix_component_ordering(bgr_image, image_ptr, image_size,
+                                           external_format, tex);
+      }
+
+      int width = tex->get_expected_mipmap_x_size(n);
+      int height = tex->get_expected_mipmap_y_size(n);
+      int depth = tex->get_expected_mipmap_z_size(n);
 
 #ifdef DO_PSTATS
       _data_transferred_pcollector.add_level(image_size);
 #endif
-      switch (target) {
+      switch (texture_target) {
       case GL_TEXTURE_1D:
         if (image_compression == Texture::CM_off) {
-          GLP(TexImage1D)(target, n, internal_format,
+          GLP(TexImage1D)(page_target, n - mipmap_bias, internal_format,
                           width, 0,
-                          external_format, component_type, image);
+                          external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexImage1D(target, n, external_format, width,
-                                  0, image_size, image);
+          _glCompressedTexImage1D(page_target, n - mipmap_bias, external_format, width,
+                                  0, image_size, image_ptr);
         }
         break;
 
       case GL_TEXTURE_3D:
         if (_supports_3d_texture) {
           if (image_compression == Texture::CM_off) {
-            _glTexImage3D(target, n, internal_format,
+            _glTexImage3D(page_target, n - mipmap_bias, internal_format,
                           width, height, depth, 0,
-                          external_format, component_type, image);
+                          external_format, component_type, image_ptr);
           } else {
-            _glCompressedTexImage3D(target, n, external_format, width,
+            _glCompressedTexImage3D(page_target, n - mipmap_bias, external_format, width,
                                     height, depth,
-                                    0, image_size, image);
+                                    0, image_size, image_ptr);
           }
         } else {
           report_my_gl_errors();
@@ -6819,61 +6813,70 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
       default:
         if (image_compression == Texture::CM_off) {
-          GLP(TexImage2D)(target, n, internal_format,
+          GLP(TexImage2D)(page_target, n - mipmap_bias, internal_format,
                           width, height, 0,
-                          external_format, component_type, image);
+                          external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexImage2D(target, n, external_format, width, height,
-                                  0, image_size, image);
+          _glCompressedTexImage2D(page_target, n - mipmap_bias, external_format, width, height,
+                                  0, image_size, image_ptr);
         }
       }
 
       highest_level = n;
-
-      width = max(width >> 1, 1);
-      height = max(height >> 1, 1);
-      depth = max(depth >> 1, 1);
     }
   } else {
     // We can reload the image over the previous image, possibly
     // saving on texture memory fragmentation.
-    for (int n = 0; n < num_ram_mipmap_levels; ++n) {
-      const unsigned char *image = tex->get_ram_mipmap_image(n);
-      if (image == (const unsigned char *)NULL) {
+    for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
+      const unsigned char *image_ptr = tex->get_ram_mipmap_image(n);
+      if (image_ptr == (const unsigned char *)NULL) {
         GLCAT.warning()
           << "No mipmap level " << n << " defined for " << tex->get_name()
           << "\n";
         // No mipmap level n; stop here.
         break;
       }
+
       size_t image_size = tex->get_ram_mipmap_image_size(n);
       if (one_page_only) {
         image_size = tex->get_ram_mipmap_page_size(n);
-        image += image_size * z;
+        image_ptr += image_size * z;
       }
+
+      PTA_uchar bgr_image;
+      if (!_supports_bgr && image_compression == Texture::CM_off) {
+        // If the GL doesn't claim to support BGR, we may have to reverse
+        // the component ordering of the image.
+        image_ptr = fix_component_ordering(bgr_image, image_ptr, image_size,
+                                           external_format, tex);
+      }
+
+      int width = tex->get_expected_mipmap_x_size(n);
+      int height = tex->get_expected_mipmap_y_size(n);
+      int depth = tex->get_expected_mipmap_z_size(n);
 
 #ifdef DO_PSTATS
       _data_transferred_pcollector.add_level(image_size);
 #endif
-      switch (target) {
+      switch (texture_target) {
       case GL_TEXTURE_1D:
         if (image_compression == Texture::CM_off) {
-          GLP(TexSubImage1D)(target, n, 0, width,
-                             external_format, component_type, image);
+          GLP(TexSubImage1D)(page_target, n - mipmap_bias, 0, width,
+                             external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexSubImage1D(target, n, 0, width,
-                                     external_format, image_size, image);
+          _glCompressedTexSubImage1D(page_target, n - mipmap_bias, 0, width,
+                                     external_format, image_size, image_ptr);
         }
         break;
 
       case GL_TEXTURE_3D:
         if (_supports_3d_texture) {
           if (image_compression == Texture::CM_off) {
-            _glTexSubImage3D(target, n, 0, 0, 0, width, height, depth,
-                             external_format, component_type, image);
+            _glTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
+                             external_format, component_type, image_ptr);
           } else {
-            _glCompressedTexSubImage3D(target, n, 0, 0, 0, width, height, depth,
-                                       external_format, image_size, image);
+            _glCompressedTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
+                                       external_format, image_size, image_ptr);
           }
         } else {
           report_my_gl_errors();
@@ -6883,20 +6886,16 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
       default:
         if (image_compression == Texture::CM_off) {
-          GLP(TexSubImage2D)(target, n, 0, 0, width, height,
-                             external_format, component_type, image);
+          GLP(TexSubImage2D)(page_target, n - mipmap_bias, 0, 0, width, height,
+                             external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexSubImage2D(target, n, 0, 0, width, height,
-                                     external_format, image_size, image);
+          _glCompressedTexSubImage2D(page_target, n - mipmap_bias, 0, 0, width, height,
+                                     external_format, image_size, image_ptr);
         }
         break;
       }
 
       highest_level = n;
-
-      width = max(width >> 1, 1);
-      height = max(height >> 1, 1);
-      depth = max(depth >> 1, 1);
     }
   }
 
@@ -6904,14 +6903,14 @@ upload_texture_image(CLP(TextureContext) *gtc,
     // By the time we get here, we have successfully loaded a certain
     // number of mipmap levels.  Tell the GL that's all it's going to
     // get.
-    GLP(TexParameteri)(target, GL_TEXTURE_MAX_LEVEL, highest_level);
+    GLP(TexParameteri)(texture_target, GL_TEXTURE_MAX_LEVEL, highest_level - mipmap_bias);
 
   } else if (uses_mipmaps) {
     // Since the mipmap levels were auto-generated and are therefore
     // complete, make sure the GL doesn't remember some previous value
     // for GL_TEXTURE_MAX_LEVEL from the above call--set it to the
     // full count of mipmap levels.
-    GLP(TexParameteri)(target, GL_TEXTURE_MAX_LEVEL, tex->get_expected_num_mipmap_levels() - 1);
+    GLP(TexParameteri)(texture_target, GL_TEXTURE_MAX_LEVEL, tex->get_expected_num_mipmap_levels() - mipmap_bias - 1);
   }
 
   // Report the error message explicitly if the GL texture creation

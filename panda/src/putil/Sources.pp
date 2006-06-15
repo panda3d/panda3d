@@ -10,7 +10,10 @@
   
   #define SOURCES \
     animInterface.h animInterface.I \
-    bam.h bamEndian.h \
+    bam.h \
+    bamCache.h bamCache.I \
+    bamCacheRecord.h bamCacheRecord.I \
+    bamEndian.h \
     bamReader.I bamReader.N bamReader.h bamReaderParam.I \
     bamReaderParam.h \
     bamTextureMode.h \
@@ -61,6 +64,8 @@
     
  #define INCLUDED_SOURCES \
     animInterface.cxx \
+    bamCache.cxx \
+    bamCacheRecord.cxx \
     bamEndian.cxx \
     bamReader.cxx bamReaderParam.cxx \
     bamTextureMode.cxx \
@@ -97,7 +102,10 @@
 
   #define INSTALL_HEADERS \
     animInterface.h animInterface.I \
-    bam.h bamEndian.h \
+    bam.h \
+    bamCache.h bamCache.I \
+    bamCacheRecord.h bamCacheRecord.I \
+    bamEndian.h \
     bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \
     bamTextureMode.h \
     bamWriter.I bamWriter.h \

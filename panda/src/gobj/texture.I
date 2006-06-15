@@ -134,7 +134,7 @@ setup_cube_map(int size, ComponentType component_type,
 INLINE bool Texture::
 read(const Filename &fullpath) {
   ++_modified;
-  return do_read(fullpath, Filename(), 0, 0, 0, 0, false, false);
+  return do_read(fullpath, Filename(), 0, 0, 0, 0, false, false, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,7 +153,7 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
      int primary_file_num_channels, int alpha_file_channel) {
   ++_modified;
   return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
-		 alpha_file_channel, 0, 0, false, false);
+		 alpha_file_channel, 0, 0, false, false, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -170,7 +170,8 @@ INLINE bool Texture::
 read(const Filename &fullpath, int z, int n, 
      bool read_pages, bool read_mipmaps) {
   ++_modified;
-  return do_read(fullpath, Filename(), 0, 0, z, n, read_pages, read_mipmaps);
+  return do_read(fullpath, Filename(), 0, 0, z, n, read_pages, read_mipmaps,
+                 NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -245,10 +246,12 @@ read(const Filename &fullpath, int z, int n,
 INLINE bool Texture::
 read(const Filename &fullpath, const Filename &alpha_fullpath,
      int primary_file_num_channels, int alpha_file_channel,
-     int z, int n, bool read_pages, bool read_mipmaps) {
+     int z, int n, bool read_pages, bool read_mipmaps,
+     BamCacheRecord *record) {
   ++_modified;
   return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
-		 alpha_file_channel, z, n, read_pages, read_mipmaps);
+		 alpha_file_channel, z, n, read_pages, read_mipmaps,
+                 record);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -329,7 +332,7 @@ write(const Filename &fullpath, int z, int n,
 INLINE bool Texture::
 load(const PNMImage &pnmimage) {
   ++_modified;
-  return do_load_one(pnmimage, 0, 0);
+  return do_load_one(pnmimage, get_name(), 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -341,7 +344,7 @@ load(const PNMImage &pnmimage) {
 INLINE bool Texture::
 load(const PNMImage &pnmimage, int z, int n) {
   ++_modified;
-  return do_load_one(pnmimage, z, n);
+  return do_load_one(pnmimage, get_name(), z, n);
 }
 
 ////////////////////////////////////////////////////////////////////

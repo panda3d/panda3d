@@ -20,6 +20,7 @@
 #include "config_pgraph.h"
 
 #include "bam.h"
+#include "bamCacheRecord.h"
 #include "config_util.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -174,6 +175,16 @@ read_node(bool report_errors) {
   PT(PandaNode) result;
 
   TypedWritable *object = read_object();
+
+  if (object != (TypedWritable *)NULL && 
+      object->is_exact_type(BamCacheRecord::get_class_type())) {
+    // Here's a special case: if the first object in the file is a
+    // BamCacheRecord, it's really a cache data file and not a true
+    // bam file; but skip over the cache data record and let the user
+    // treat it like an ordinary bam file.
+    object = read_object();
+  }
+
   if (object == TypedWritable::Null) {
     if (report_errors) {
       loader_cat.error() << "Bam file " << _bam_filename << " is empty.\n";

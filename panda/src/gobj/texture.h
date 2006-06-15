@@ -35,6 +35,7 @@ class FactoryParams;
 class PreparedGraphicsObjects;
 class CullTraverser;
 class CullTraverserData;
+class BamCacheRecord;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Texture
@@ -206,7 +207,8 @@ PUBLISHED:
 		   bool read_pages, bool read_mipmaps);
   INLINE bool read(const Filename &fullpath, const Filename &alpha_fullpath,
 		   int primary_file_num_channels, int alpha_file_channel,
-		   int z, int n, bool read_pages, bool read_mipmaps);
+		   int z, int n, bool read_pages, bool read_mipmaps,
+                   BamCacheRecord *record = NULL);
 
   INLINE bool write(const Filename &fullpath);
   INLINE bool write(const Filename &fullpath, int z, int n, 
@@ -362,14 +364,17 @@ public:
 protected:
   virtual bool do_read(const Filename &fullpath, const Filename &alpha_fullpath,
 		       int primary_file_num_channels, int alpha_file_channel,
-		       int z, int n, bool read_pages, bool read_mipmaps);
+		       int z, int n, bool read_pages, bool read_mipmaps,
+                       BamCacheRecord *record);
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
-			   int z, int n, int primary_file_num_channels, int alpha_file_channel);
+			   int z, int n, int primary_file_num_channels, int alpha_file_channel,
+                           BamCacheRecord *record);
   bool do_write(const Filename &fullpath, int z, int n, 
 		bool write_pages, bool write_mipmaps) const;
   bool do_write_one(const Filename &fullpath, int z, int n) const;
 
-  virtual bool do_load_one(const PNMImage &pnmimage, int z, int n);
+  virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
+                           int z, int n);
   bool do_store_one(PNMImage &pnmimage, int z, int n) const;
 
   virtual void reconsider_dirty();
@@ -397,7 +402,7 @@ private:
                            CPTA_uchar image, size_t page_size, int z) const;
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
-  void consider_rescale(PNMImage &pnmimage);
+  void consider_rescale(PNMImage &pnmimage, const string &name);
   void consider_downgrade(PNMImage &pnmimage, int num_channels);
 
   INLINE static void store_unscaled_byte(unsigned char *&p, int value);
