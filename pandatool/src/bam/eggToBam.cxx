@@ -437,36 +437,22 @@ make_buffer() {
   // buffers.  So request that.
   fbprops.set_back_buffers(0);
 
+  WindowProperties winprops;
+  winprops.set_size(1, 1);
+  winprops.set_origin(0, 0);
+  winprops.set_undecorated(true);
+  winprops.set_open(true);
+  winprops.set_z_order(WindowProperties::Z_bottom);
+
   // We don't care how big the buffer is; we just need it to manifest
   // the GSG.
-  _buffer = _engine->make_output(_pipe, "buffer", 0, fbprops, 1, 1, 
-                                 GraphicsPipe::BF_refuse_window |
+  _buffer = _engine->make_output(_pipe, "buffer", 0, 
+                                 fbprops, winprops,
                                  GraphicsPipe::BF_fb_props_optional);
   _engine->open_windows();
   if (_buffer == (GraphicsOutput *)NULL || !_buffer->is_valid()) {
-    if (_buffer != (GraphicsOutput *)NULL) {
-      _engine->remove_window(_buffer);
-    }
-
-    // Couldn't create a buffer; try for a window instead.
-    fbprops = FrameBufferProperties::get_default();
-    _buffer = _engine->make_output(_pipe, "window", 0, fbprops, 1, 1,
-                                   GraphicsPipe::BF_require_window |
-                                   GraphicsPipe::BF_fb_props_optional);
-    GraphicsWindow *window = (GraphicsWindow*)_buffer;
-    if (window == (GraphicsWindow *)NULL) {
-      nout << "Unable to create graphics window.\n";
-      return false;
-    }
-    WindowProperties props;
-    props.set_size(1, 1);
-    props.set_origin(0, 0);
-    props.set_undecorated(true);
-    props.set_open(true);
-    props.set_z_order(WindowProperties::Z_bottom);
-    window->request_properties(props);
-    _buffer = window;
-    _engine->open_windows();
+    nout << "Unable to create graphics window.\n";
+    return false;
   }
   _gsg = _buffer->get_gsg();
 
