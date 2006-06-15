@@ -4,8 +4,9 @@
 # http://www.python.org/~jeremy/weblog/030410.html
 
 # Before you chase down leaks, make sure you Config:
-# fsm-redefine 0
 # want-dev 0
+
+# You may also want to run pyo-shell so __debug__ is False and assert code is removed.
 
 import gc
 gc.set_debug(gc.DEBUG_LEAK)
