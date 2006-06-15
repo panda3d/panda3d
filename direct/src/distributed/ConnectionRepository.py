@@ -227,15 +227,10 @@ class ConnectionRepository(
                         self.notify.error("Module %s does not define class %s." % (className, className))
                     classDef = getattr(classDef, className)
 
-                # rhh this seems to fail with new system not sure why ?
-                #print "---classname " +className
-                #print type(classDef)
-                #print types.ClassType
-                #if type(classDef) != types.ClassType:
-                #    self.notify.error("Symbol %s is not a class name." % (className))
-                #else:
-                #    dclass.setClassDef(classDef)
-                dclass.setClassDef(classDef)
+                if type(classDef) != types.ClassType and type(classDef) != types.TypeType:
+                    self.notify.error("Symbol %s is not a class name." % (className))
+                else:
+                    dclass.setClassDef(classDef)
 
             self.dclassesByName[className] = dclass
             if number >= 0:

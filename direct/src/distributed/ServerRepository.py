@@ -149,7 +149,7 @@ class ServerRepository:
                         self.notify.error("Module %s does not define class %s." % (className, className))
                     classDef = getattr(classDef, className)
 
-                if type(classDef) != types.ClassType:
+                if type(classDef) != types.ClassType and type(classDef) != types.TypeType:
                     self.notify.error("Symbol %s is not a class name." % (className))
                 else:
                     dclass.setClassDef(classDef)
