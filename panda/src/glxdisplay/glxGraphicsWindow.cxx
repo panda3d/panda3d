@@ -29,6 +29,7 @@
 #include "pStatTimer.h"
 #include "textEncoder.h"
 #include "throw_event.h"
+#include "reMutexHolder.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -132,7 +133,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   glxGraphicsStateGuardian *glxgsg;
   DCAST_INTO_R(glxgsg, _gsg, false);
   {
-    MutexHolder holder(glxGraphicsPipe::_x_mutex);
+    ReMutexHolder holder(glxGraphicsPipe::_x_mutex);
     glXMakeCurrent(_display, _xwindow, glxgsg->_context);
   }
   
@@ -203,7 +204,7 @@ begin_flip() {
 
     //make_current();
 
-    MutexHolder holder(glxGraphicsPipe::_x_mutex);
+    ReMutexHolder holder(glxGraphicsPipe::_x_mutex);
     glXSwapBuffers(_display, _xwindow);
   }
 }
@@ -220,7 +221,7 @@ begin_flip() {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
 process_events() {
-  MutexHolder holder(glxGraphicsPipe::_x_mutex);
+  ReMutexHolder holder(glxGraphicsPipe::_x_mutex);
 
   GraphicsWindow::process_events();
 

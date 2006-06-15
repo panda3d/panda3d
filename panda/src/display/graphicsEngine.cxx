@@ -1593,7 +1593,7 @@ do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
            const GraphicsThreadingModel &threading_model) {
   MutexHolder holder(_lock);
 
-  gsg->_threading_model = get_threading_model();
+  gsg->_threading_model = threading_model;
   gsg->_pipe = pipe;
   gsg->_engine = this;
 
