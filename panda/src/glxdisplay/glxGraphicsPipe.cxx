@@ -167,6 +167,19 @@ pipe_constructor() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::get_preferred_window_thread
+//       Access: Public, Virtual
+//  Description: Returns an indication of the thread in which this
+//               GraphicsPipe requires its window processing to be
+//               performed: typically either the app thread (e.g. X)
+//               or the draw thread (Windows).
+////////////////////////////////////////////////////////////////////
+GraphicsPipe::PreferredWindowThread 
+glxGraphicsPipe::get_preferred_window_thread() const {
+  return PWT_app;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsPipe::make_output
 //       Access: Protected, Virtual
 //  Description: Creates a new window on the pipe, if possible.

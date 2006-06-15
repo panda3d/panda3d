@@ -106,6 +106,9 @@ public:
   INLINE Cursor get_hidden_cursor();
 
 public:
+  virtual PreferredWindowThread get_preferred_window_thread() const;
+
+public:
   // Atom specifications.
   Atom _wm_delete_window;
   Atom _net_wm_window_type;
