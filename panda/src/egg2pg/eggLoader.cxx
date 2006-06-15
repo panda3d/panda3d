@@ -874,7 +874,7 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
     break;
 
   case EggTexture::F_unspecified:
-    break;
+    wanted_alpha = egg_tex->has_alpha_filename();
   }
 
   PT(Texture) tex;
