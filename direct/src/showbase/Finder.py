@@ -16,7 +16,11 @@ def findClassInModule(module, className, visited):
     classObj = module.__dict__.get(className)
     if classObj and ((type(classObj) == types.ClassType) or
                      (type(classObj) == types.TypeType)):
-        return [classObj, module.__dict__]
+        if classObj.__module__ == module.__name__:
+            return [classObj, module.__dict__]
+        else:
+            # print "Must have found a module that imported this class", classObj, module
+            pass
 
     # Now filter out all the modules and iterate through them
     moduleList = filter(lambda value: type(value) == types.ModuleType, module.__dict__.values())
