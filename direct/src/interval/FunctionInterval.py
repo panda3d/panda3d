@@ -17,6 +17,30 @@ class FunctionInterval(Interval.Interval):
     # Name counter
     functionIntervalNum = 1
 
+    # Keep a list of function intervals currently in memory for
+    # Control-C-Control-V redefining. These are just weakrefs so they
+    # should not cause any leaks. 
+    if __debug__:
+        import weakref
+        FunctionIntervals = weakref.WeakKeyDictionary()
+
+        @classmethod
+        def replaceMethod(self, oldFunction, newFunction):
+            import new
+            import types
+            count = 0        
+            for ival in self.FunctionIntervals:
+                # print 'testing: ', ival.function, oldFunction
+                # Note: you can only replace methods currently
+                if type(ival.function) == types.MethodType:
+                    if (ival.function.im_func == oldFunction):
+                        # print 'found: ', ival.function, oldFunction
+                        ival.function = new.instancemethod(newFunction,
+                                                           ival.function.im_self,
+                                                           ival.function.im_class)
+                        count += 1
+            return count
+
     # create FunctionInterval DirectNotify category
     notify = directNotify.newCategory('FunctionInterval')
 
@@ -36,6 +60,7 @@ class FunctionInterval(Interval.Interval):
 
         # Record instance variables
         self.function = function
+            
         # Create a unique name for the interval if necessary
         if (name == None):
             name = 'Func-%s-%d' % (function.__name__, FunctionInterval.functionIntervalNum)
@@ -51,12 +76,18 @@ class FunctionInterval(Interval.Interval):
         # Parent, Pos, Hpr, etc intervals default to openEnded = 1
         Interval.Interval.__init__(self, name, duration = 0.0, openEnded = openEnded)
 
+        # For rebinding, let's remember this function interval on the class
+        if __debug__:
+            self.FunctionIntervals[self] = 1
+
+
     def privInstant(self):
         # Evaluate the function
         self.function(*self.extraArgs, **self.kw)
         # Print debug information
         self.notify.debug(
             'updateFunc() - %s: executing Function' % self.name)
+
 
 ### FunctionInterval subclass for throwing events ###
 class EventInterval(FunctionInterval):
