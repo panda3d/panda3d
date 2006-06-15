@@ -1,68 +1,30 @@
-
+import time
 import types
 import os
 import new
+import sys
 
-def findClassInModule(module, className, visited):
-    # Make sure you have not already visited this module
-    # to prevent recursion
-    if visited.has_key(module):
-        return None
-    # Ok, clear to proceed, add this module to the visited list
-    visited[module] = 1
-    # print ('visiting: ' + `module`)
-
-    # First see if we are in the dict at this level
-    classObj = module.__dict__.get(className)
-    if classObj and ((type(classObj) == types.ClassType) or
-                     (type(classObj) == types.TypeType)):
-        if classObj.__module__ == module.__name__:
-            return [classObj, module.__dict__]
-        else:
-            # print "Must have found a module that imported this class", classObj, module
-            pass
-
-    # Now filter out all the modules and iterate through them
-    moduleList = filter(lambda value: type(value) == types.ModuleType, module.__dict__.values())
-    for moduleObj in moduleList:
-        ret =  findClassInModule(moduleObj, className, visited)
-        # If that recursion found it, return the goodies
-        if ret:
-            return ret
-            
-    # Well, after all that we did not find anything
+def findClass(className):
+    """
+    Look in sys.modules dictionary for a module that defines a class
+    with this className.
+    """
+    for moduleName, module in sys.modules.items():
+        # Some modules are None for some reason
+        if module:
+            # print "Searching in ", moduleName
+            classObj = module.__dict__.get(className)
+            # If this modules defines some object called classname and the
+            # object is a class or type definition and that class's module
+            # is the same as the module we are looking in, then we found
+            # the matching class and a good module namespace to redefine
+            # our class in.
+            if (classObj and
+                ((type(classObj) == types.ClassType) or
+                 (type(classObj) == types.TypeType)) and
+                (classObj.__module__ == moduleName)):
+                return [classObj, module.__dict__]
     return None
-
-
-# Find a class named className somewhere in this namespace
-def findClass(namespace, className):
-
-    # First see if we are in the namespace
-    classObj = namespace.get(className)
-    # print classObj, type(classObj)
-    if classObj and ((type(classObj) == types.ClassType) or
-                     (type(classObj) == types.TypeType)):
-        return [classObj, namespace]
-    
-    for key in namespace.keys():
-        value = namespace[key]
-        # If we found a class, see if it matches classname
-        # Make sure we do not match "_"
-        if ((key != "_") and ((type(value) == types.ClassType) or
-                              (type(value) == types.TypeType))):
-            if value.__name__ == className:
-                # It does, that was easy!
-                return [value, namespace]
-        # Look in all the modules in this namespace
-        elif (type(value) == types.ModuleType):
-            ret = findClassInModule(value, className, {})
-            # If we found it return the goodies
-            if ret:
-                return ret
-            # Otherwise keep looking
-    # Nope, not in there
-    return None
-
 
 def rebindClass(builtinGlobals, filename):
     file = open(filename, 'r')
@@ -83,96 +45,135 @@ def rebindClass(builtinGlobals, filename):
                     className = classHeader[:colonLoc]
                 else:
                     print 'error: className not found'
+                    # Remove that temp file
+                    file.close()
+                    os.remove(filename)
                     return
             print 'Rebinding class name: ' + className
             break
 
-    # Store the original real class
-    res = findClass(builtinGlobals, className)
-    if res:
-        realClass, realNameSpace = res
-    else:
-        # print ('Warning: could not find class, defining new class in builtins: ' + className)
-        # Now execute that class def
-        # execfile(filename, builtinGlobals)
-        print ('Warning: Finder could not find class, try importing the file first')
-        # Remove that temp file
+    # Try to find the original class with this class name
+    res = findClass(className)
+
+    if not res:
+        print ('Warning: Finder could not find class')
+        # Remove the temp file we made
         file.close()
         os.remove(filename)
         return
 
-    # Now execute that class def
-    execfile(filename, realNameSpace)
-    # Remove that temp file
-    file.close()
-    os.remove(filename)
+    # Store the original real class
+    realClass, realNameSpace = res
 
+    # Now execute that class def in this namespace
+    execfile(filename, realNameSpace)
+
+    # That execfile should have created a new class obj in that namespace
     tmpClass = realNameSpace[className]
 
     # Copy the functions that we just redefined into the real class
     copyFuncs(tmpClass, realClass)
 
-    # Now make sure the original class is in that namespace, not our temp one
+    # Now make sure the original class is in that namespace,
+    # not our temp one from the execfile. This will help us preserve
+    # class variables and other state on the original class.
     realNameSpace[className] = realClass
+    
+    # Remove the temp file we made
+    file.close()
+    os.remove(filename)
 
     print ('    Finished rebind')
 
 
 def copyFuncs(fromClass, toClass):
+    replaceFuncList = []
+    newFuncList = []
+    
     # Copy the functions from fromClass into toClass dictionary
-    for key in fromClass.__dict__.keys():
-        value = fromClass.__dict__[key]
-        if (type(value) == types.FunctionType):
-            newFunc = value
+    for funcName, newFunc in fromClass.__dict__.items():
+        # Filter out for functions
+        if (type(newFunc) == types.FunctionType):
             # See if we already have a function with this name
-            if toClass.__dict__.has_key(key):
-                # Look in the messenger and taskMgr to see if this
-                # old function pointer is stored there,
-                # and update it to the new function pointer
-                oldFunc = toClass.__dict__[key]
-                replaceMessengerFunc(oldFunc, newFunc)
-                replaceTaskMgrFunc(oldFunc, newFunc)
-                replaceStateFunc(oldFunc, newFunc)
-                replaceTcrFunc(oldFunc, newFunc)
-            # You cannot assign directly to the dict with new style classes
-            # toClass.__dict__[key] = newFunc
-            # Instead we will use setattr
-            setattr(toClass, key, newFunc)
+            oldFunc = toClass.__dict__.get(funcName)
+            if oldFunc:
+                replaceFuncList.append((oldFunc, funcName, newFunc))
+            else:
+                newFuncList.append((funcName, newFunc))
 
-def replaceMessengerFunc(oldFunc, newFunc):
+    # Look in the messenger, taskMgr, and other globals that store func
+    # pointers to see if this old function pointer is stored there, and
+    # update it to the new function pointer.
+    replaceMessengerFunc(replaceFuncList)
+    replaceTaskMgrFunc(replaceFuncList)
+    replaceStateFunc(replaceFuncList)
+    replaceCRFunc(replaceFuncList)
+    replaceAIRFunc(replaceFuncList)
+    replaceIvalFunc(replaceFuncList)
+
+    # Now that we've the globals funcs, actually swap the pointers in
+    # the new class to the new functions
+    for oldFunc, funcName, newFunc in replaceFuncList:
+        # print "replacing old func: ", oldFunc, funcName, newFunc
+        setattr(toClass, funcName, newFunc)
+    # Add the brand new functions too
+    for funcName, newFunc in newFuncList:
+        # print "adding new func: ", oldFunc, funcName, newFunc
+        setattr(toClass, funcName, newFunc)
+
+def replaceMessengerFunc(replaceFuncList):
     try:
         messenger
     except:
         return
-    res = messenger.replaceMethod(oldFunc, newFunc)
-    if res:
-        print 'replaced %d messenger functions: %s' % (res, newFunc.__name__)
+    for oldFunc, funcName, newFunc in replaceFuncList:    
+        res = messenger.replaceMethod(oldFunc, newFunc)
+        if res:
+            print ('replaced %s messenger function(s): %s' % (res, funcName))
 
-def replaceTaskMgrFunc(oldFunc, newFunc):
+def replaceTaskMgrFunc(replaceFuncList):
     try:
         taskMgr
     except:
         return
-    res = taskMgr.replaceMethod(oldFunc, newFunc)
-    if res:
-        print ('replaced taskMgr function: ' + newFunc.__name__)
+    for oldFunc, funcName, newFunc in replaceFuncList:    
+        if taskMgr.replaceMethod(oldFunc, newFunc):
+            print ('replaced taskMgr function: %s' % funcName)
 
-def replaceStateFunc(oldFunc, newFunc):
-    from direct.fsm import State
-    res = State.redefineEnterFunc(oldFunc, newFunc)
-    if res:
-        print ('replaced state enter function: ' + newFunc.__name__)
-    res = State.redefineExitFunc(oldFunc, newFunc)
-    if res:
-        print ('replaced state exit function: ' + newFunc.__name__)
+def replaceStateFunc(replaceFuncList):
+    if not sys.modules.get('direct.fsm.State'):
+        return
+    from direct.fsm.State import State
+    for oldFunc, funcName, newFunc in replaceFuncList:
+        res = State.replaceMethod(oldFunc, newFunc)
+        if res:
+            print ('replaced %s FSM transition function(s): %s' % (res, funcName))
 
-def replaceTcrFunc(oldFunc, newFunc):
+def replaceCRFunc(replaceFuncList):
     try:
-        res = base.cr.replaceMethod(oldFunc, newFunc)
+        base.cr
     except:
-        try:
-            res = simbase.air.replaceMethod(oldFunc, newFunc)
-        except:
-            res = None
-    if res:
-        print ('replaced DistributedObject function: ' + newFunc.__name__)
+        return
+    for oldFunc, funcName, newFunc in replaceFuncList:        
+        if base.cr.replaceMethod(oldFunc, newFunc):
+            print ('replaced DistributedObject function: %s' % funcName)
+
+def replaceAIRFunc(replaceFuncList):
+    try:
+        simbase.air
+    except:
+        return
+    for oldFunc, funcName, newFunc in replaceFuncList:        
+        if simbase.air.replaceMethod(oldFunc, newFunc):
+            print ('replaced DistributedObject function: %s' % funcName)
+
+def replaceIvalFunc(replaceFuncList):
+    # Make sure we have imported IntervalManager and thus created
+    # a global ivalMgr.
+    if not sys.modules.get('direct.interval.IntervalManager'):
+        return
+    from direct.interval.FunctionInterval import FunctionInterval
+    for oldFunc, funcName, newFunc in replaceFuncList:    
+        res = FunctionInterval.replaceMethod(oldFunc, newFunc)
+        if res:
+            print ('replaced %s interval function(s): %s' % (res, funcName))
