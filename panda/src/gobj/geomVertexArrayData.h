@@ -193,8 +193,9 @@ protected:
   INLINE GeomVertexArrayDataPipelineBase(GeomVertexArrayData *object, 
                                          Thread *current_thread,
                                          GeomVertexArrayData::CData *cdata);
-
 public:
+  INLINE ~GeomVertexArrayDataPipelineBase();
+
   INLINE Thread *get_current_thread() const;
 
   INLINE const GeomVertexArrayFormat *get_array_format() const;
@@ -208,11 +209,7 @@ public:
 protected:
   GeomVertexArrayData *_object;
   Thread *_current_thread;
-#ifdef DO_PIPELINING
-  PT(GeomVertexArrayData::CData) _cdata;
-#else
   GeomVertexArrayData::CData *_cdata;
-#endif  // DO_PIPELINING
 };
 
 ////////////////////////////////////////////////////////////////////

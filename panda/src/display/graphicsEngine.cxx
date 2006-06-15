@@ -1567,13 +1567,25 @@ do_add_window(GraphicsOutput *window,
     cull->add_window(cull->_cdraw, window);
   }
   
-  // We should ask the pipe which thread it prefers to run its
-  // windowing commands in (the "window thread").  This is the
-  // thread that handles the commands to open, resize, etc. the
-  // window.  X requires this to be done in the app thread, but some
-  // pipes might prefer this to be done in draw, for instance.  For
-  // now, we assume this is the app thread.
-  _app.add_window(_app._window, window);
+  // Ask the pipe which thread it prefers to run its windowing
+  // commands in (the "window thread").  This is the thread that
+  // handles the commands to open, resize, etc. the window.  X
+  // requires this to be done in the app thread (along with all the
+  // other windows, since X is strictly single-threaded), but Windows
+  // requires this to be done in draw (because once an OpenGL context
+  // has been bound in a given thread, it cannot subsequently be bound
+  // in any other thread, and we have to bind a context in
+  // open_window()).
+  
+  switch (window->get_pipe()->get_preferred_window_thread()) {
+  case GraphicsPipe::PWT_app:
+    _app.add_window(_app._window, window);
+    break;
+
+  case GraphicsPipe::PWT_draw:
+    draw->add_window(draw->_window, window);
+    break;
+  }
 
   if (display_cat.is_debug()) {
     display_cat.debug()

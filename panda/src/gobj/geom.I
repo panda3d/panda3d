@@ -467,10 +467,10 @@ GeomPipelineReader(const Geom *object, Thread *current_thread) :
 {
 #ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
 #endif // _DEBUG
+#ifdef DO_PIPELINING
+  _cdata->ref();
+#endif  // DO_PIPELINING
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -502,11 +502,12 @@ INLINE GeomPipelineReader::
 ~GeomPipelineReader() {
 #ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
 #endif // _DEBUG
   //  _object->_cycler.release_read(_cdata);
+
+#ifdef DO_PIPELINING
+  unref_delete((CycleData *)_cdata);
+#endif  // DO_PIPELINING
 
 #ifdef _DEBUG
   _object = NULL;

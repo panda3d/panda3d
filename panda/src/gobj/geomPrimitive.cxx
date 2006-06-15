@@ -1514,7 +1514,13 @@ check_minmax() const {
       }
 
       // Save the new pointer, and then let the lock release itself.
+#ifdef DO_PIPELINING
+      unref_delete((CycleData *)_cdata);
+#endif
       ((GeomPrimitivePipelineReader *)this)->_cdata = fresh_cdata;
+#ifdef DO_PIPELINING
+      _cdata->ref();
+#endif
     }
   }
 

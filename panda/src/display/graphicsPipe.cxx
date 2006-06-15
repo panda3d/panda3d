@@ -76,33 +76,16 @@ GraphicsPipe::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipe::get_num_hw_channels
+//     Function: GraphicsPipe::get_preferred_window_thread
 //       Access: Public, Virtual
-//  Description: Returns the number of hardware channels available for
-//               pipes of this type.  See get_hw_channel().
+//  Description: Returns an indication of the thread in which this
+//               GraphicsPipe requires its window processing to be
+//               performed: typically either the app thread (e.g. X)
+//               or the draw thread (Windows).
 ////////////////////////////////////////////////////////////////////
-int GraphicsPipe::
-get_num_hw_channels() {
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipe::get_hw_channel
-//       Access: Public, Virtual
-//  Description: Creates and returns an accessor to the
-//               HardwareChannel at the given index number, which must
-//               be in the range 0 <= index < get_num_hw_channels().
-//               This function will return NULL if the index number is
-//               out of range or the hardware channel at that index is
-//               unavailable.
-//
-//               Most kinds of GraphicsPipes do not have any special
-//               hardware channels available, and this function will
-//               always return NULL.
-////////////////////////////////////////////////////////////////////
-HardwareChannel *GraphicsPipe::
-get_hw_channel(GraphicsOutput *, int) {
-  return (HardwareChannel*)0L;
+GraphicsPipe::PreferredWindowThread 
+GraphicsPipe::get_preferred_window_thread() const {
+  return PWT_draw;
 }
 
 ////////////////////////////////////////////////////////////////////

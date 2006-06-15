@@ -213,6 +213,33 @@ GeomVertexArrayDataPipelineBase(GeomVertexArrayData *object,
   _current_thread(current_thread),
   _cdata(cdata)
 {
+#ifdef _DEBUG
+  nassertv(_object->test_ref_count_nonzero());
+#endif // _DEBUG
+#ifdef DO_PIPELINING
+  _cdata->ref();
+#endif  // DO_PIPELINING
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataPipelineBase::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexArrayDataPipelineBase::
+~GeomVertexArrayDataPipelineBase() {
+#ifdef _DEBUG
+  nassertv(_object->test_ref_count_nonzero());
+#endif // _DEBUG
+
+#ifdef DO_PIPELINING
+  unref_delete((CycleData *)_cdata);
+#endif  // DO_PIPELINING
+
+#ifdef _DEBUG
+  _object = NULL;
+  _cdata = NULL;
+#endif  // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -297,12 +324,6 @@ GeomVertexArrayDataPipelineReader(const GeomVertexArrayData *object,
                                   current_thread,
                                   (GeomVertexArrayData::CData *)object->_cycler.read_unlocked(current_thread))
 {
-#ifdef _DEBUG
-  nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
-#endif // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -334,18 +355,7 @@ operator = (const GeomVertexArrayDataPipelineReader &) {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayDataPipelineReader::
 ~GeomVertexArrayDataPipelineReader() {
-#ifdef _DEBUG
-  nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
-#endif // _DEBUG
   //  _object->_cycler.release_read(_cdata);
-
-#ifdef _DEBUG
-  _object = NULL;
-  _cdata = NULL;
-#endif  // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -369,12 +379,6 @@ GeomVertexArrayDataPipelineWriter(GeomVertexArrayData *object, bool force_to_0,
   GeomVertexArrayDataPipelineBase(object, current_thread,
                                   object->_cycler.write_upstream(force_to_0, current_thread))
 {
-#ifdef _DEBUG
-  nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
-#endif // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -406,18 +410,7 @@ operator = (const GeomVertexArrayDataPipelineWriter &) {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayDataPipelineWriter::
 ~GeomVertexArrayDataPipelineWriter() {
-#ifdef _DEBUG
-  nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
-#endif // _DEBUG
   _object->_cycler.release_write(_cdata);
-
-#ifdef _DEBUG
-  _object = NULL;
-  _cdata = NULL;
-#endif  // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////

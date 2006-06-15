@@ -478,6 +478,33 @@ GeomVertexDataPipelineBase(GeomVertexData *object,
   _current_thread(current_thread),
   _cdata(cdata)
 {
+#ifdef _DEBUG
+  nassertv(_object->test_ref_count_nonzero());
+#endif // _DEBUG
+#ifdef DO_PIPELINING
+  _cdata->ref();
+#endif  // DO_PIPELINING
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineBase::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexDataPipelineBase::
+~GeomVertexDataPipelineBase() {
+#ifdef _DEBUG
+  nassertv(_object->test_ref_count_nonzero());
+#endif // _DEBUG
+
+#ifdef DO_PIPELINING
+  unref_delete((CycleData *)_cdata);
+#endif  // DO_PIPELINING
+
+#ifdef _DEBUG
+  _object = NULL;
+  _cdata = NULL;
+#endif  // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -593,10 +620,6 @@ GeomVertexDataPipelineReader(const GeomVertexData *object,
                              (GeomVertexData::CData *)object->_cycler.read_unlocked(current_thread)),
   _got_array_readers(false)
 {
-  nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -631,18 +654,7 @@ INLINE GeomVertexDataPipelineReader::
   if (_got_array_readers) {
     delete_array_readers();
   }
-#ifdef _DEBUG
-  nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
-#endif // _DEBUG
   //  _object->_cycler.release_read(_cdata);
-
-#ifdef _DEBUG
-  _object = NULL;
-  _cdata = NULL;
-#endif  // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -777,18 +789,7 @@ INLINE GeomVertexDataPipelineWriter::
   if (_got_array_writers) {
     delete_array_writers();
   }
-#ifdef _DEBUG
-  nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
-#endif // _DEBUG
   _object->_cycler.release_write(_cdata);
-
-#ifdef _DEBUG
-  _object = NULL;
-  _cdata = NULL;
-#endif  // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////

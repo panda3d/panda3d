@@ -3645,6 +3645,9 @@ check_bounds() const {
     // We'll need to get a fresh read pointer, since another thread
     // might already have modified the pointer on the object since we
     // queried it.
+#ifdef DO_PIPELINING
+    node_unref_delete((CycleData *)_cdata);
+#endif  // DO_PIPELINING
     ((PandaNodePipelineReader *)this)->_cdata = NULL;
     int pipeline_stage = _current_thread->get_pipeline_stage();
     PandaNode::CDLockedStageReader fresh_cdata(_object->_cycler, pipeline_stage, _current_thread);
@@ -3652,7 +3655,12 @@ check_bounds() const {
       // What luck, some other thread has already freshened the
       // cache for us.  Save the new pointer, and let the lock
       // release itself.
-      ((PandaNodePipelineReader *)this)->_cdata = fresh_cdata;
+      if (_cdata != (const PandaNode::CData *)fresh_cdata) {
+        ((PandaNodePipelineReader *)this)->_cdata = fresh_cdata;
+#ifdef DO_PIPELINING
+        _cdata->node_ref();
+#endif  // DO_PIPELINING
+      }
       
     } else {
       // No, the cache is still stale.  We have to do the work of
@@ -3661,7 +3669,12 @@ check_bounds() const {
       nassertv(cdataw->_last_update == cdataw->_next_update);
       // As above, we save the new pointer, and then let the lock
       // release itself.
-      ((PandaNodePipelineReader *)this)->_cdata = cdataw;
+      if (_cdata != (const PandaNode::CData *)cdataw) {
+        ((PandaNodePipelineReader *)this)->_cdata = cdataw;
+#ifdef DO_PIPELINING
+        _cdata->node_ref();
+#endif  // DO_PIPELINING
+      }
     }
   }
 

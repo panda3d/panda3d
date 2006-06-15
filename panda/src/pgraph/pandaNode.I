@@ -1176,10 +1176,14 @@ PandaNodePipelineReader(const PandaNode *object, Thread *current_thread) :
 {
 #ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
 #endif // _DEBUG
+
+#ifdef DO_PIPELINING
+  // We node_ref the CData pointer, so that if anyone makes changes to
+  // the PandaNode while we hold this pointer, it will force a
+  // copy--so that this object will remain unchanged (if out-of-date).
+  _cdata->node_ref();
+#endif  // DO_PIPELINING
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1193,6 +1197,10 @@ PandaNodePipelineReader(const PandaNodePipelineReader &copy) :
   _current_thread(copy._current_thread),
   _cdata(copy._cdata)
 {
+#ifdef DO_PIPELINING
+  _cdata->node_ref();
+#endif  // DO_PIPELINING
+
   /*
   if (_cdata != (PandaNode::CData *)NULL) {
     _object->_cycler.increment_read(_cdata);
@@ -1215,8 +1223,16 @@ operator = (const PandaNodePipelineReader &copy) {
   }
   */
 
+#ifdef DO_PIPELINING
+  node_unref_delete((CycleData *)_cdata);
+#endif  // DO_PIPELINING
+
   _object = copy._object;
   _cdata = copy._cdata;
+
+#ifdef DO_PIPELINING
+  _cdata->node_ref();
+#endif  // DO_PIPELINING
 
   /*
   if (_cdata != (PandaNode::CData *)NULL) {
@@ -1237,6 +1253,10 @@ INLINE PandaNodePipelineReader::
     _object->_cycler.release_read(_cdata);
   }
   */
+
+#ifdef DO_PIPELINING
+  node_unref_delete((CycleData *)_cdata);
+#endif  // DO_PIPELINING
 
 #ifdef _DEBUG
   _object = NULL;

@@ -483,7 +483,7 @@ GeomPrimitivePipelineReader(const GeomPrimitive *object,
 {
   nassertv(_object->test_ref_count_nonzero());
 #ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
+  _cdata->ref();
 #endif  // DO_PIPELINING
   if (_cdata->_vertices != (GeomVertexArrayData *)NULL) {
     _vertices_reader =
@@ -525,11 +525,12 @@ INLINE GeomPrimitivePipelineReader::
   }
 #ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
-#ifdef DO_PIPELINING
-  nassertv(_cdata->test_ref_count_nonzero());
-#endif  // DO_PIPELINING
 #endif // _DEBUG
   //  _object->_cycler.release_read(_cdata);
+
+#ifdef DO_PIPELINING
+  unref_delete((CycleData *)_cdata);
+#endif  // DO_PIPELINING
 
 #ifdef _DEBUG
   _vertices_reader = NULL;

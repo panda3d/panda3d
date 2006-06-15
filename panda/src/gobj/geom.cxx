@@ -1369,7 +1369,13 @@ check_usage_hint() const {
       }
 
       // Save the new pointer, and then let the lock release itself.
+#ifdef DO_PIPELINING
+      unref_delete((CycleData *)_cdata);
+#endif
       ((GeomPipelineReader *)this)->_cdata = fresh_cdata;
+#ifdef DO_PIPELINING
+      _cdata->ref();
+#endif
     }
   }
 

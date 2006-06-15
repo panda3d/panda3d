@@ -334,11 +334,7 @@ public:
 private:
   const GeomPrimitive *_object;
   Thread *_current_thread;
-#ifdef DO_PIPELINING
-  CPT(GeomPrimitive::CData) _cdata;
-#else
   const GeomPrimitive::CData *_cdata;
-#endif  // DO_PIPELINING
 
   GeomVertexArrayDataPipelineReader *_vertices_reader;
 };

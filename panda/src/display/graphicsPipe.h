@@ -26,7 +26,6 @@
 #include "pointerTo.h"
 #include "pmutex.h"
 
-class HardwareChannel;
 class GraphicsOutput;
 class GraphicsWindow;
 class GraphicsBuffer;
@@ -100,8 +99,11 @@ PUBLISHED:
   virtual string get_interface_name() const=0;
 
 public:
-  virtual int get_num_hw_channels();
-  virtual HardwareChannel *get_hw_channel(GraphicsOutput *window, int index);
+  enum PreferredWindowThread {
+    PWT_app,
+    PWT_draw
+  };
+  virtual PreferredWindowThread get_preferred_window_thread() const;
 
   INLINE GraphicsDevice *get_device() const;
   virtual PT(GraphicsDevice) make_device(void *scrn = NULL);

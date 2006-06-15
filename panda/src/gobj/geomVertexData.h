@@ -326,6 +326,9 @@ protected:
                                     GeomVertexData::CData *cdata);
 
 public:
+  INLINE ~GeomVertexDataPipelineBase();
+
+public:
   INLINE Thread *get_current_thread() const;
 
   INLINE const GeomVertexFormat *get_format() const;
@@ -343,11 +346,7 @@ public:
 protected:
   GeomVertexData *_object;
   Thread *_current_thread;
-#ifdef DO_PIPELINING
-  PT(GeomVertexData::CData) _cdata;
-#else
   GeomVertexData::CData *_cdata;
-#endif  // DO_PIPELINING
 };
 
 ////////////////////////////////////////////////////////////////////

@@ -675,14 +675,7 @@ private:
   const PandaNode *_object;
   Thread *_current_thread;
 
-#ifdef DO_PIPELINING
-  // We node_ref the CData pointer, so that if anyone makes changes to
-  // the PandaNode while we hold this pointer, it will force a
-  // copy--so that this object will remain unchanged (if out-of-date).
-  NCPT(PandaNode::CData) _cdata;
-#else
   const PandaNode::CData *_cdata;
-#endif  // DO_PIPELINING
 };
 
 INLINE ostream &operator << (ostream &out, const PandaNode &node) {
