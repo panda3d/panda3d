@@ -393,13 +393,13 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 //               texture) to the indicated static image.
 ////////////////////////////////////////////////////////////////////
 bool FFMpegTexture::
-do_load_one(const PNMImage &pnmimage, int z, int n) {
+do_load_one(const PNMImage &pnmimage, const string &name, int z, int n) {
   if (z <= (int)_pages.size()) {
     VideoPage &page = modify_page(z);
     page._color.clear();
   }
 
-  return Texture::do_load_one(pnmimage, z, n);
+  return Texture::do_load_one(pnmimage, name, z, n);
 }
 
 
