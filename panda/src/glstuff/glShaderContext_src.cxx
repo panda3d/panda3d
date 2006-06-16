@@ -258,7 +258,7 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
          parameter = cgGetNextLeafParameter(parameter)) {
       CGenum vbl = cgGetParameterVariability(parameter);
       if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)) {
-        success &= compile_parameter(parameter, 
+        success &= compile_parameter(parameter,
                                      cgGetParameterName(parameter),
                                      cg_type_to_panda_type(cgGetParameterType(parameter)),
                                      cg_dir_to_panda_dir(cgGetParameterDirection(parameter)),
@@ -274,6 +274,18 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
   if (!success) {
     release_resources();
     return false;
+  }
+
+  // DEBUG: output the generated program
+  if (GLCAT.is_debug()) {
+    const char *vertex_program;
+    const char *pixel_program;
+
+    vertex_program = cgGetProgramString (_cg_program[0], CG_COMPILED_PROGRAM);
+    pixel_program = cgGetProgramString (_cg_program[1], CG_COMPILED_PROGRAM);
+
+    GLCAT.debug() << vertex_program << "\n";
+    GLCAT.debug() << pixel_program << "\n";
   }
 
   // The following code is present to work around a bug in the Cg compiler.
@@ -350,7 +362,9 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
   }
 
   cgGLLoadProgram(_cg_program[SHADER_type_vert]);
+  report_cg_compile_errors(s->get_name(), _cg_context);
   cgGLLoadProgram(_cg_program[SHADER_type_frag]);
+  report_cg_compile_errors(s->get_name(), _cg_context);
 
   _state = true;
 
@@ -449,7 +463,7 @@ issue_parameters(GSG *gsg, bool altered) {
   if (_cg_context == 0) {
     return;
   }
-  
+
   for (int i=0; i<(int)_mat_spec.size(); i++) {
     if (altered || _mat_spec[i]._trans_dependent) {
       CGparameter p = (CGparameter)(_mat_spec[i]._parameter);
@@ -485,7 +499,7 @@ disable_shader_vertex_arrays(GSG *gsg) {
   if (_cg_context == 0) {
     return;
   }
-  
+
   for (int i=0; i<(int)_var_spec.size(); i++) {
     CGparameter p = (CGparameter)(_var_spec[i]._parameter);
     cgGLDisableClientState(p);
@@ -511,7 +525,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg) {
   if (_cg_context == 0) {
     return;
   }
-  
+
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (gsg->_use_sender) {
     GLCAT.error() << "immediate mode shaders not implemented yet\n";
@@ -632,17 +646,17 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
     if (tc == (TextureContext*)NULL) {
       continue;
     }
-    
+
     int texunit = cgGetParameterResourceIndex(p);
     gsg->_glActiveTexture(GL_TEXTURE0 + texunit);
-    
+
     GLenum target = gsg->get_texture_target(tex->get_texture_type());
     if (target == GL_NONE) {
       // Unsupported texture mode.
       continue;
     }
     GLP(Enable)(target);
-    
+
     gsg->apply_texture(tc);
   }
 #endif
