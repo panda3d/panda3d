@@ -180,7 +180,7 @@ ushort_bgra_to_rgba(unsigned short *dest, const unsigned short *source,
 //               left unchanged.
 ////////////////////////////////////////////////////////////////////
 static const unsigned char *
-fix_component_ordering(PTA_uchar &new_image, 
+fix_component_ordering(PTA_uchar &new_image,
                        const unsigned char *orig_image, size_t orig_image_size,
                        GLenum external_format, Texture *tex) {
   const unsigned char *result = orig_image;
@@ -1068,6 +1068,51 @@ reset() {
   gl_set_stencil_functions (_stencil_render_states);
 
 #ifdef HAVE_CGGL
+
+  typedef struct
+  {
+    CGprofile cg_profile;
+    int shader_model;
+  }
+  CG_PROFILE_TO_SHADER_MODEL;
+
+  static CG_PROFILE_TO_SHADER_MODEL cg_profile_to_shader_model_array [ ] =
+  {
+    // fp40 - OpenGL fragment profile for NV4x (GeForce 6xxx and 7xxx Series, NV4x-based Quadro FX, etc.)
+    CG_PROFILE_FP40,
+    SM_30,
+
+    // fp30 - OpenGL fragment profile for NV3x (GeForce FX, Quadro FX, etc.)
+    CG_PROFILE_FP30,
+    SM_2X,
+
+    // This OpenGL profile corresponds to the per-fragment functionality introduced by GeForce FX and other DirectX 9 GPUs.
+    CG_PROFILE_ARBFP1,
+    SM_20,
+
+    // fp20 - OpenGL fragment profile for NV2x (GeForce3, GeForce4 Ti, Quadro DCC, etc.)
+    CG_PROFILE_FP20,
+    SM_11,
+
+    // no shader support
+    CG_PROFILE_UNKNOWN,
+    SM_00,
+  };
+
+  int index;
+  CG_PROFILE_TO_SHADER_MODEL *cg_profile_to_shader_model;
+
+  index = 0;
+  cg_profile_to_shader_model = cg_profile_to_shader_model_array;
+  while (cg_profile_to_shader_model -> shader_model != SM_00) {
+    if (cgGLIsProfileSupported(cg_profile_to_shader_model -> cg_profile)) {
+      _shader_model = cg_profile_to_shader_model -> shader_model;
+      break;
+    }
+    cg_profile_to_shader_model++;
+  }
+  _auto_detect_shader_model = _shader_model;
+
   CGprofile vertex_profile;
   CGprofile pixel_profile;
 
@@ -1075,11 +1120,12 @@ reset() {
   pixel_profile = cgGLGetLatestProfile (CG_GL_FRAGMENT);
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-//      << "\nshader model = " << _shader_model
       << "\nCg vertex profile = " << cgGetProfileString(vertex_profile) << "  id = " << vertex_profile
       << "\nCg pixel profile = " << cgGetProfileString(pixel_profile) << "  id = " << pixel_profile
+      << "\nshader model = " << _shader_model
       << "\n";
   }
+
 #endif
 }
 
@@ -3188,7 +3234,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   // didn't do it for us.
   if (color_mode && !_supports_bgr) {
     PTA_uchar new_image;
-    const unsigned char *result = 
+    const unsigned char *result =
       fix_component_ordering(new_image, image_ptr, image_size,
                              external_format, tex);
     if (result != image_ptr) {
@@ -6498,14 +6544,14 @@ upload_texture(CLP(TextureContext) *gtc) {
   // been better if the user had specified max-texture-dimension to
   // reduce the texture at load time instead; of course, the user
   // doesn't always know ahead of time what the hardware limits are.
-  
+
   if (max_dimension > 0 && image_compression == Texture::CM_off) {
     while (tex->get_expected_mipmap_x_size(mipmap_bias) > max_dimension ||
            tex->get_expected_mipmap_y_size(mipmap_bias) > max_dimension ||
            tex->get_expected_mipmap_z_size(mipmap_bias) > max_dimension) {
       ++mipmap_bias;
     }
-    
+
     if (mipmap_bias >= tex->get_num_ram_mipmap_images()) {
       // We need to generate some more mipmap images.
       if (tex->has_ram_image()) {
@@ -6517,7 +6563,7 @@ upload_texture(CLP(TextureContext) *gtc) {
         }
       }
     }
-    
+
     if (mipmap_bias != 0) {
       GLCAT.info()
         << "Reducing image " << tex->get_name()
@@ -6549,31 +6595,31 @@ upload_texture(CLP(TextureContext) *gtc) {
     }
 
     success = success && upload_texture_image
-      (gtc, uses_mipmaps, mipmap_bias, 
+      (gtc, uses_mipmaps, mipmap_bias,
        GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
        internal_format, external_format, component_type,
        true, 0, image_compression);
 
     success = success && upload_texture_image
-      (gtc, uses_mipmaps, mipmap_bias, 
+      (gtc, uses_mipmaps, mipmap_bias,
        GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
        internal_format, external_format, component_type,
        true, 1, image_compression);
 
     success = success && upload_texture_image
-      (gtc, uses_mipmaps, mipmap_bias, 
+      (gtc, uses_mipmaps, mipmap_bias,
        GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
        internal_format, external_format, component_type,
        true, 2, image_compression);
 
     success = success && upload_texture_image
-      (gtc, uses_mipmaps, mipmap_bias, 
+      (gtc, uses_mipmaps, mipmap_bias,
        GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
        internal_format, external_format, component_type,
        true, 3, image_compression);
 
     success = success && upload_texture_image
-      (gtc, uses_mipmaps, mipmap_bias, 
+      (gtc, uses_mipmaps, mipmap_bias,
        GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
        internal_format, external_format, component_type,
        true, 4, image_compression);

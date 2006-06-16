@@ -2394,6 +2394,31 @@ reset() {
 
   _vertex_shader_maximum_constants = d3d_caps.MaxVertexShaderConst;
 
+  switch (_pixel_shader_version_major)
+  {
+    case 0:
+      _shader_model = SM_00;
+      break;
+    case 1:
+      _shader_model = SM_11;
+      break;
+    case 2:
+      // minimim specification for pixel shader 2.0 is 96 instruction slots
+      _shader_model = SM_20;
+      if (d3d_caps.PS20Caps.NumInstructionSlots >= 512) {
+        _shader_model = SM_2X;
+      }
+      break;
+    case 3:
+      _shader_model = SM_30;
+      break;
+    case 4:
+    default:
+      _shader_model = SM_40;
+      break;
+  }
+  _auto_detect_shader_model = _shader_model;
+
   _supports_stream_offset = (d3d_caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET) != 0;
   _screen->_supports_dynamic_textures = ((d3d_caps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) != 0);
   _screen->_supports_automatic_mipmap_generation = ((d3d_caps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP) != 0);
@@ -2441,9 +2466,10 @@ reset() {
 
   this -> reset_render_states ( );
 
-  // minimum shader requirements
+  // duplicates OpenGL version (ARB_vertex_program extension and
+  // ARB_fragment_program extension)
   if (_vertex_shader_version_major >= 1 &&
-      _pixel_shader_version_major >= 1) {
+      _pixel_shader_version_major >= 2) {
     _supports_basic_shaders = true;
   }
 
@@ -2454,6 +2480,23 @@ reset() {
   }
   else {
     cgD3D9SetDevice (_d3d_device);
+  }
+
+  if (_cg_context) {
+    if (dxgsg9_cat.is_debug()) {
+
+      CGprofile vertex_profile;
+      CGprofile pixel_profile;
+
+      vertex_profile = cgD3D9GetLatestVertexProfile( );
+      pixel_profile = cgD3D9GetLatestPixelProfile( );
+
+      dxgsg9_cat.debug()
+        << "\nCg vertex profile = " << cgGetProfileString(vertex_profile) << "  id = " << vertex_profile
+        << "\nCg pixel profile = " << cgGetProfileString(pixel_profile) << "  id = " << pixel_profile
+        << "\nshader model = " << _shader_model
+        << "\n";
+    }
   }
 #endif
 
