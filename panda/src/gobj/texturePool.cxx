@@ -224,7 +224,9 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   ti = _textures.find(filename);
   if (ti != _textures.end()) {
     // This texture was previously loaded.
-    return (*ti).second;
+    Texture *tex = (*ti).second;
+    nassertr(!tex->get_fullpath().empty(), tex);
+    return tex;
   }
 
   PT(Texture) tex;
@@ -261,8 +263,9 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   }
 
   // Set the original filename, before we searched along the path.
-  nassertr(tex != (Texture *)NULL, false);
+  nassertr(tex != (Texture *)NULL, NULL);
   tex->set_filename(orig_filename);
+  tex->set_fullpath(filename);
   tex->_texture_pool_key = filename;
   _textures[filename] = tex;
 
@@ -272,6 +275,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
     cache->store(record);
   }
 
+  nassertr(!tex->get_fullpath().empty(), tex);
   return tex;
 }
 
@@ -305,7 +309,9 @@ ns_load_texture(const Filename &orig_filename,
   ti = _textures.find(filename);
   if (ti != _textures.end()) {
     // This texture was previously loaded.
-    return (*ti).second;
+    Texture *tex = (*ti).second;
+    nassertr(!tex->get_fullpath().empty(), tex);
+    return tex;
   }
 
   PT(Texture) tex;
@@ -343,9 +349,11 @@ ns_load_texture(const Filename &orig_filename,
   }
 
   // Set the original filenames, before we searched along the path.
-  nassertr(tex != (Texture *)NULL, false);
+  nassertr(tex != (Texture *)NULL, NULL);
   tex->set_filename(orig_filename);
+  tex->set_fullpath(filename);
   tex->set_alpha_filename(orig_alpha_filename);
+  tex->set_alpha_fullpath(alpha_filename);
   tex->_texture_pool_key = filename;
   _textures[filename] = tex;
 
@@ -355,6 +363,7 @@ ns_load_texture(const Filename &orig_filename,
     cache->store(record);
   }
 
+  nassertr(!tex->get_fullpath().empty(), tex);
   return tex;
 }
 
@@ -417,6 +426,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
   // Set the original filename, before we searched along the path.
   nassertr(tex != (Texture *)NULL, false);
   tex->set_filename(filename_pattern);
+  tex->set_fullpath(filename);
   tex->_texture_pool_key = filename;
   _textures[filename] = tex;
 
@@ -426,6 +436,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
     cache->store(record);
   }
 
+  nassertr(!tex->get_fullpath().empty(), tex);
   return tex;
 }
 
@@ -487,6 +498,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps) {
   // Set the original filename, before we searched along the path.
   nassertr(tex != (Texture *)NULL, false);
   tex->set_filename(filename_pattern);
+  tex->set_fullpath(filename);
   tex->_texture_pool_key = filename;
   _textures[filename] = tex;
 
@@ -496,6 +508,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps) {
     cache->store(record);
   }
 
+  nassertr(!tex->get_fullpath().empty(), tex);
   return tex;
 }
 
@@ -536,6 +549,7 @@ ns_add_texture(Texture *tex) {
   // We blow away whatever texture was there previously, if any.
   tex->_texture_pool_key = filename;
   _textures[filename] = tex;
+  nassertv(!tex->get_fullpath().empty());
 }
 
 ////////////////////////////////////////////////////////////////////

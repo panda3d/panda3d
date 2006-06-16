@@ -138,8 +138,12 @@ operator = (const Texture &copy) {
   Namable::operator = (copy);
   _filename = copy._filename;
   _alpha_filename = copy._alpha_filename;
-  _fullpath = copy._fullpath;
-  _alpha_fullpath = copy._alpha_fullpath;
+  if (!copy._fullpath.empty()) {
+    // Since the fullpath is often empty on a file loaded directly
+    // from a txo, we only assign the fullpath if it is not empty.
+    _fullpath = copy._fullpath;
+    _alpha_fullpath = copy._alpha_fullpath;
+  }
   _primary_file_num_channels = copy._primary_file_num_channels;
   _alpha_file_channel = copy._alpha_file_channel;
   _x_size = copy._x_size;
@@ -3175,11 +3179,7 @@ make_from_bam(const FactoryParams &params) {
     // and don't load from the file.
     me = new Texture(name);
     me->_filename = filename;
-    me->_fullpath = filename;
-    me->_fullpath.make_absolute();
     me->_alpha_filename = alpha_filename;
-    me->_alpha_fullpath = alpha_filename;
-    me->_alpha_fullpath.make_absolute();
     me->_primary_file_num_channels = primary_file_num_channels;
     me->_alpha_file_channel = alpha_file_channel;
     me->_texture_type = texture_type;
@@ -3393,6 +3393,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
   default:
     gobj_cat.error()
       << "Unsupported bam-texture-mode: " << (int)file_texture_mode << "\n";
+  }
+
+  if (filename.empty()) {
+    // If we don't have a filename, we have to store rawdata anyway.
+    has_rawdata = true;
   }
 
   me.add_string(get_name());
