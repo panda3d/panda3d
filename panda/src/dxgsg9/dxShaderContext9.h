@@ -77,7 +77,7 @@ public:
   ~CLP(ShaderContext)();
 
   INLINE bool valid(GSG *gsg);
-  void bind(GSG *gsg);
+  bool bind(GSG *gsg);
   void unbind(GSG *gsg);
 
   void issue_parameters(GSG *gsg, bool altered);

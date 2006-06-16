@@ -26,6 +26,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#define DEBUG_SHADER 0
+
 TypeHandle CLP(ShaderContext)::_type_handle;
 
 static char *vertex_shader_function_name = "vshader";
@@ -116,7 +118,7 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
 
     // Parse any directives in the source.
     // IGNORE SPECIFIC PROFILES IN DX
-    if (false) {
+    if (!false) {
       string directive;
       while (!s->parse_eof()) {
         s->parse_line(directive, true, true);
@@ -226,7 +228,7 @@ suggest_cg_profile(const string &vpro, const string &fpro)
     return;
   }
 
-// NO EQUIVALENT FUNCTIONALITY IN DX
+// NO EQUIVALENT FUNCTIONALITY FROM GL TO DX
 /*
   // If the suggestion is parseable, but not supported, ignore silently.
   if ((!cgGLIsProfileSupported(_cg_profile[SHADER_type_vert]))||
@@ -249,21 +251,27 @@ suggest_cg_profile(const string &vpro, const string &fpro)
 CGprofile CLP(ShaderContext)::
 parse_cg_profile(const string &id, bool vertex)
 {
-  int nvprofiles = 4;
-  int nfprofiles = 4;
-  CGprofile vprofiles[] = { CG_PROFILE_ARBVP1, CG_PROFILE_VP20, CG_PROFILE_VP30, CG_PROFILE_VP40 };
-  CGprofile fprofiles[] = { CG_PROFILE_ARBFP1, CG_PROFILE_FP20, CG_PROFILE_FP30, CG_PROFILE_FP40 };
+  int i = 0;
+  CGprofile vprofiles[] = { CG_PROFILE_ARBVP1, CG_PROFILE_VP20, CG_PROFILE_VP30, CG_PROFILE_VP40, CG_PROFILE_UNKNOWN };
+  CGprofile fprofiles[] = { CG_PROFILE_ARBFP1, CG_PROFILE_FP20, CG_PROFILE_FP30, CG_PROFILE_FP40, CG_PROFILE_UNKNOWN };
+
+  // near equivalent DX profiles
+  CGprofile dx_vprofiles[] = { CG_PROFILE_VS_2_0, CG_PROFILE_VS_1_1, CG_PROFILE_VS_2_X, CG_PROFILE_VS_3_0, CG_PROFILE_UNKNOWN };
+  CGprofile dx_fprofiles[] = { CG_PROFILE_PS_2_0, CG_PROFILE_PS_1_1, CG_PROFILE_PS_2_X, CG_PROFILE_PS_3_0, CG_PROFILE_UNKNOWN };
+
   if (vertex) {
-    for (int i=0; i<nvprofiles; i++) {
+    while (vprofiles[i] != CG_PROFILE_UNKNOWN) {
       if (id == cgGetProfileString(vprofiles[i])) {
-        return vprofiles[i];
+        return dx_vprofiles[i];
       }
+      i++;
     }
   } else {
-    for (int i=0; i<nfprofiles; i++) {
+    while (fprofiles[i] != CG_PROFILE_UNKNOWN) {
       if (id == cgGetProfileString(fprofiles[i])) {
-        return fprofiles[i];
+        return dx_fprofiles[i];
       }
+      i++;
     }
   }
   return CG_PROFILE_UNKNOWN;
@@ -313,19 +321,18 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
     return false;
   }
 
-  const char *vertex_program;
-  const char *pixel_program;
-  vertex_program = cgGetProgramString (_cg_program[0], CG_COMPILED_PROGRAM);
-  pixel_program = cgGetProgramString (_cg_program[1], CG_COMPILED_PROGRAM);
-
-  DBG_SH3
+  if (dxgsg9_cat.is_debug()) {
     // DEBUG: output the generated program
-    dxgsg9_cat.debug ( ) << vertex_program << "\n";
-    dxgsg9_cat.debug ( ) << pixel_program << "\n";
-  DBG_E
+    const char *vertex_program;
+    const char *pixel_program;
 
-  DBG_SH1
-    // DEBUG: save the generated program to a file
+    vertex_program = cgGetProgramString (_cg_program[0], CG_COMPILED_PROGRAM);
+    pixel_program = cgGetProgramString (_cg_program[1], CG_COMPILED_PROGRAM);
+
+    dxgsg9_cat.debug() << vertex_program << "\n";
+    dxgsg9_cat.debug() << pixel_program << "\n";
+
+    // save the generated program to a file
     int size;
     char file_path [512];
 
@@ -343,8 +350,7 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
     size = strlen (pixel_program);
     sprintf (file_path, "%s.pasm", fname);
     save_file (size, (void *) pixel_program, file_path);
-
-  DBG_E
+  }
 
   // The following code is present to work around a bug in the Cg compiler.
   // It does not generate correct code for shadow map lookups when using arbfp1.
@@ -451,8 +457,41 @@ try_cg_compile(ShaderExpansion *s, GSG *gsg)
   paramater_shadowing = FALSE;
   assembly_flags = 0;
 
-  cgD3D9LoadProgram(_cg_program[SHADER_type_vert], paramater_shadowing, assembly_flags);
-  cgD3D9LoadProgram(_cg_program[SHADER_type_frag], paramater_shadowing, assembly_flags);
+  #if DEBUG_SHADER
+  assembly_flags |= D3DXSHADER_DEBUG;
+  #endif
+
+  HRESULT hr;
+
+  hr = cgD3D9LoadProgram(_cg_program[SHADER_type_vert], paramater_shadowing, assembly_flags);
+  if (FAILED (hr)) {
+    dxgsg9_cat.error()
+      << "vertex shader cgD3D9LoadProgram failed "
+      << D3DERRORSTRING(hr);
+
+    CGerror error = cgGetError();
+    if (error != CG_NO_ERROR) {
+      dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
+    }
+
+    release_resources();
+    return false;
+  }
+
+  hr = cgD3D9LoadProgram(_cg_program[SHADER_type_frag], paramater_shadowing, assembly_flags);
+  if (FAILED (hr)) {
+    dxgsg9_cat.error()
+      << "pixel shader cgD3D9LoadProgram failed "
+      << D3DERRORSTRING(hr);
+
+    CGerror error = cgGetError();
+    if (error != CG_NO_ERROR) {
+      dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
+    }
+
+    release_resources();
+    return false;
+  }
 
   DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: end try_cg_compile \n"; DBG_E
 
@@ -487,9 +526,12 @@ release_resources() {
 //               shader.  It also initializes all of the shader's
 //               input parameters.
 ////////////////////////////////////////////////////////////////////
-void CLP(ShaderContext)::
+bool CLP(ShaderContext)::
 bind(GSG *gsg) {
 
+  bool bind_state;
+
+  bind_state = false;
 #ifdef HAVE_CGDX9
   if (_state) {
     if (gsg -> _cg_context != 0) {
@@ -505,24 +547,35 @@ bind(GSG *gsg) {
 
       if (_cg_shader) {
         // Bind the shaders.
+        bind_state = true;
         hr = cgD3D9BindProgram(_cg_program[SHADER_type_vert]);
         if (FAILED (hr)) {
-          dxgsg9_cat.error() << "cgD3D9BindProgram vertex shader failed\n";
-        }
-        hr = cgD3D9BindProgram(_cg_program[SHADER_type_frag]);
-        if (FAILED (hr)) {
-          dxgsg9_cat.error() << "cgD3D9BindProgram pixel shader failed\n";
+          dxgsg9_cat.error() << "cgD3D9BindProgram vertex shader failed " << D3DERRORSTRING(hr);
 
           CGerror error = cgGetError();
           if (error != CG_NO_ERROR) {
             dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
           }
+
+          bind_state = false;
+        }
+        hr = cgD3D9BindProgram(_cg_program[SHADER_type_frag]);
+        if (FAILED (hr)) {
+          dxgsg9_cat.error() << "cgD3D9BindProgram pixel shader failed " << D3DERRORSTRING(hr);
+
+          CGerror error = cgGetError();
+          if (error != CG_NO_ERROR) {
+            dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
+          }
+
+          bind_state = false;
         }
       }
     }
   }
 #endif
 
+  return bind_state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -569,6 +622,14 @@ unbind(GSG *gsg) {
 //               state has changed except the external and internal
 //               transforms.
 ////////////////////////////////////////////////////////////////////
+
+#if DEBUG_SHADER
+float *global_data = 0;
+ShaderContext::ShaderMatSpec *global_shader_mat_spec = 0;
+InternalName *global_internal_name_0 = 0;
+InternalName *global_internal_name_1 = 0;
+#endif
+
 void CLP(ShaderContext)::
 issue_parameters(GSG *gsg, bool altered)
 {
@@ -589,11 +650,20 @@ issue_parameters(GSG *gsg, bool altered)
 
           data = val -> get_data ( );
 
+          #if DEBUG_SHADER
+          // DEBUG
+          global_data = (float *) data;
+          global_shader_mat_spec = &_mat_spec[i];
+          global_internal_name_0 = global_shader_mat_spec -> _arg [0];
+          global_internal_name_1 = global_shader_mat_spec -> _arg [1];
+          #endif
+
           switch (_mat_spec[i]._piece) {
           case SMP_whole:
             // TRANSPOSE REQUIRED
             temp_matrix.transpose_from (*val);
             data = temp_matrix.get_data();
+
             hr = cgD3D9SetUniform (p, data);
 
             DBG_SH2
@@ -648,7 +718,15 @@ issue_parameters(GSG *gsg, bool altered)
           }
 
           if (FAILED (hr)) {
+
+            string name = "unnamed";
+
+            if (_mat_spec[i]._arg [0]) {
+              name = _mat_spec[i]._arg [0] -> get_basename ( );
+            }
+
             dxgsg9_cat.error()
+              << "NAME  " << name << "\n"
               << "MAT TYPE  "
               << _mat_spec[i]._piece
               << " cgD3D9SetUniform failed "
@@ -697,6 +775,12 @@ disable_shader_vertex_arrays(GSG *gsg)
 //               it may unnecessarily disable arrays then immediately
 //               reenable them.  We may optimize this someday.
 ////////////////////////////////////////////////////////////////////
+
+// DEBUG
+#if DEBUG_SHADER
+VertexElementArray *global_vertex_element_array = 0;
+#endif
+
 void CLP(ShaderContext)::
 update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 {
@@ -726,6 +810,11 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
         // SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER?
         stream_index = 0;
         vertex_element_array = new VertexElementArray (nvarying + 2);
+
+        #if DEBUG_SHADER
+        // DEBUG
+        global_vertex_element_array = vertex_element_array;
+        #endif
 
         for (int i=0; i<nvarying; i++) {
           CGparameter p = (CGparameter)(_var_spec[i]._parameter);
@@ -1004,3 +1093,32 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
 #endif
 }
 
+// DEBUG CODE TO TEST ASM CODE GENERATED BY Cg
+void assemble_shader_test(char *file_path)
+{
+  int flags;
+  D3DXMACRO *defines;
+  LPD3DXINCLUDE include;
+  LPD3DXBUFFER shader;
+  LPD3DXBUFFER error_messages;
+
+  flags = 0;
+  defines = 0;
+  include = 0;
+  shader = 0;
+  error_messages = 0;
+
+  D3DXAssembleShaderFromFile (file_path, defines, include, flags, &shader, &error_messages);
+  if (error_messages)
+  {
+    char *error_message;
+
+    error_message = (char *) (error_messages -> GetBufferPointer ( ));
+    if (error_message)
+    {
+      dxgsg9_cat.error() << error_message;
+    }
+
+    error_messages -> Release ( );
+  }
+}
