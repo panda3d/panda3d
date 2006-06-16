@@ -176,7 +176,18 @@ pipe_constructor() {
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe::PreferredWindowThread 
 glxGraphicsPipe::get_preferred_window_thread() const {
-  return PWT_app;
+  // Actually, since we're creating the graphics context in
+  // open_window() now, it appears we need to ensure the open_window()
+  // call is performed in the draw thread for now, even though X wants
+  // all of its calls to be single-threaded.
+
+  // This means that all X windows may have to be handled by the same
+  // draw thread, which we didn't intend (though the global _x_mutex
+  // may allow them to be technically served by different threads,
+  // even though the actual X calls will be serialized).  There might
+  // be a better way.
+
+  return PWT_draw;
 }
 
 ////////////////////////////////////////////////////////////////////
