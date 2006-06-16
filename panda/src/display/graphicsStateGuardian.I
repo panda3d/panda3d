@@ -537,6 +537,30 @@ get_supports_two_sided_stencil() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_shader_model
+//       Access: Published
+//  Description: Returns the ShaderModel
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_shader_model() const {
+  return _shader_model;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_shader_model
+//       Access: Published
+//  Description: Sets the ShaderModel.  This will override the auto-
+//               detected shader model during GSG reset.  Useful for
+//               testing lower-end shaders.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_shader_model(int shader_model) {
+  if (shader_model <= _auto_detect_shader_model) {
+    _shader_model = shader_model;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_color_scale_via_lighting
 //       Access: Published
 //  Description: Returns true if this particular GSG can implement (or

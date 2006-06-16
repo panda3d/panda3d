@@ -164,6 +164,10 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _color_scale_via_lighting = color_scale_via_lighting;
 
   _stencil_render_states = 0;
+
+  // The default is no shader support.
+  _auto_detect_shader_model = SM_00;
+  _shader_model = SM_00;
 }
 
 ////////////////////////////////////////////////////////////////////

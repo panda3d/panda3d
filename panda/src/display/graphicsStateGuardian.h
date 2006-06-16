@@ -72,6 +72,17 @@ public:
   virtual ~GraphicsStateGuardian();
 
 PUBLISHED:
+
+  enum ShaderModel
+  {
+    SM_00,
+    SM_11,
+    SM_20,
+    SM_2X,
+    SM_30,
+    SM_40,
+  };
+
   INLINE void release_all();
   INLINE int release_all_textures();
   INLINE int release_all_geoms();
@@ -121,6 +132,9 @@ PUBLISHED:
   INLINE bool get_supports_shadow_filter() const;
   INLINE bool get_supports_basic_shaders() const;
   INLINE bool get_supports_two_sided_stencil() const;
+
+  INLINE int get_shader_model() const;
+  INLINE void set_shader_model(int shader_model);
 
   virtual int get_supported_geom_rendering() const;
 
@@ -373,6 +387,9 @@ protected:
   int _stereo_buffer_mask;
 
   StencilRenderStates *_stencil_render_states;
+
+  int _auto_detect_shader_model;
+  int _shader_model;
 
 public:
   // Statistics
