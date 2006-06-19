@@ -24,6 +24,7 @@
 #include "config_gobj.h"
 #include "config_grutil.h"
 #include "bamReader.h"
+#include "bamCacheRecord.h"
 
 TypeHandle OpenCVTexture::_type_handle;
 
@@ -295,7 +296,12 @@ update_frame(int frame) {
 ////////////////////////////////////////////////////////////////////
 bool OpenCVTexture::
 do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
-	    int z, int n, int primary_file_num_channels, int alpha_file_channel) {
+            int z, int n, int primary_file_num_channels, int alpha_file_channel,
+            BamCacheRecord *record) {
+  if (record != (BamCacheRecord *)NULL) {
+    record->add_dependent_file(fullpath);
+  }
+
   nassertr(n == 0, false);
   nassertr(z >= 0 && z < get_z_size(), false);
 
@@ -367,14 +373,14 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 //               texture) to the indicated static image.
 ////////////////////////////////////////////////////////////////////
 bool OpenCVTexture::
-do_load_one(const PNMImage &pnmimage, int z, int n) {
+do_load_one(const PNMImage &pnmimage, const string &name, int z, int n) {
   if (z <= (int)_pages.size()) {
     VideoPage &page = modify_page(z);
     page._color.clear();
     page._alpha.clear();
   }
 
-  return Texture::do_load_one(pnmimage, z, n);
+  return Texture::do_load_one(pnmimage, name, z, n);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -591,16 +591,16 @@ load_model(const NodePath &parent, Filename filename) {
       // The extension isn't a known model file type; is it a known
       // image file extension?
       if (extension == "txo") {
-  // A texture object.  Not exactly an image, but certainly a
-  // texture.
-  is_image = true;
-
+        // A texture object.  Not exactly an image, but certainly a
+        // texture.
+        is_image = true;
+        
       } else {
-  TexturePool *texture_pool = TexturePool::get_global_ptr();
-  if (texture_pool->get_texture_type(extension) != NULL) {
-    // It is a known image file extension.
-    is_image = true;
-  }
+        TexturePool *texture_pool = TexturePool::get_global_ptr();
+        if (texture_pool->get_texture_type(extension) != NULL) {
+          // It is a known image file extension.
+          is_image = true;
+        }
       }
     }
   }

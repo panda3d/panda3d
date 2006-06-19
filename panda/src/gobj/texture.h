@@ -202,17 +202,17 @@ PUBLISHED:
 
   INLINE bool read(const Filename &fullpath);
   INLINE bool read(const Filename &fullpath, const Filename &alpha_fullpath,
-		   int primary_file_num_channels, int alpha_file_channel);
+                   int primary_file_num_channels, int alpha_file_channel);
   INLINE bool read(const Filename &fullpath, int z, int n, 
-		   bool read_pages, bool read_mipmaps);
+                   bool read_pages, bool read_mipmaps);
   INLINE bool read(const Filename &fullpath, const Filename &alpha_fullpath,
-		   int primary_file_num_channels, int alpha_file_channel,
-		   int z, int n, bool read_pages, bool read_mipmaps,
+                   int primary_file_num_channels, int alpha_file_channel,
+                   int z, int n, bool read_pages, bool read_mipmaps,
                    BamCacheRecord *record = NULL);
 
   INLINE bool write(const Filename &fullpath);
   INLINE bool write(const Filename &fullpath, int z, int n, 
-		    bool write_pages, bool write_mipmaps);
+                    bool write_pages, bool write_mipmaps);
 
   bool read_txo(istream &in, const string &filename = "stream");
   bool write_txo(ostream &out, const string &filename = "stream") const;
@@ -281,7 +281,7 @@ PUBLISHED:
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
   void set_ram_image(PTA_uchar image, CompressionMode compression = CM_off,
-		     size_t page_size = 0);
+                     size_t page_size = 0);
   void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
@@ -363,14 +363,14 @@ public:
 
 protected:
   virtual bool do_read(const Filename &fullpath, const Filename &alpha_fullpath,
-		       int primary_file_num_channels, int alpha_file_channel,
-		       int z, int n, bool read_pages, bool read_mipmaps,
+                       int primary_file_num_channels, int alpha_file_channel,
+                       int z, int n, bool read_pages, bool read_mipmaps,
                        BamCacheRecord *record);
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
-			   int z, int n, int primary_file_num_channels, int alpha_file_channel,
+                           int z, int n, int primary_file_num_channels, int alpha_file_channel,
                            BamCacheRecord *record);
   bool do_write(const Filename &fullpath, int z, int n, 
-		bool write_pages, bool write_mipmaps) const;
+                bool write_pages, bool write_mipmaps) const;
   bool do_write_one(const Filename &fullpath, int z, int n) const;
 
   virtual bool do_load_one(const PNMImage &pnmimage, const string &name,

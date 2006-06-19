@@ -895,7 +895,7 @@ get_ram_image() {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
-	      size_t page_size) {
+              size_t page_size) {
   nassertv(compression != CM_default);
   nassertv(compression != CM_off || image.size() == get_expected_ram_image_size());
   if (_ram_images.empty()) {
@@ -1232,7 +1232,7 @@ write(ostream &out, int indent_level) const {
 
   case TT_3d_texture:
     out << "3-d, " << get_x_size() << " x " << get_y_size()
-	<< " x " << get_z_size();
+        << " x " << get_z_size();
     break;
 
   case TT_cube_map:
@@ -1344,7 +1344,7 @@ write(ostream &out, int indent_level) const {
 
   case TT_3d_texture:
     out << get_wrap_u() << " x " << get_wrap_v() 
-	<< " x " << get_wrap_w() << ", ";
+        << " x " << get_wrap_w() << ", ";
     break;
 
   case TT_cube_map:
@@ -1367,18 +1367,18 @@ write(ostream &out, int indent_level) const {
       int count = 0;
       size_t total_size = 0;
       for (int n = 1; n < num_ram_mipmap_images; ++n) {
-	if (has_ram_mipmap_image(n)) {
-	  ++count;
-	  total_size += get_ram_mipmap_image_size(n);
-	} else {
-	  // Stop at the first gap.
-	  break;
-	}
+        if (has_ram_mipmap_image(n)) {
+          ++count;
+          total_size += get_ram_mipmap_image_size(n);
+        } else {
+          // Stop at the first gap.
+          break;
+        }
       }
       indent(out, indent_level + 2)
         << count
         << " mipmap levels also present in ram (" << total_size
-	<< " bytes).\n";
+        << " bytes).\n";
     }
   
   } else {
@@ -1644,8 +1644,8 @@ make_texture() {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_read(const Filename &fullpath, const Filename &alpha_fullpath,
-	int primary_file_num_channels, int alpha_file_channel,
-	int z, int n, bool read_pages, bool read_mipmaps,
+        int primary_file_num_channels, int alpha_file_channel,
+        int z, int n, bool read_pages, bool read_mipmaps,
         BamCacheRecord *record) {
   if ((z == 0 || read_pages) && (n == 0 || read_mipmaps)) {
     // When we re-read the page 0 of the base image, we clear
@@ -1699,7 +1699,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
       // determined by the number of files we find.  After mipmap
       // level 0, though, the number of pages is predetermined.
       if (n != 0) {
-	z_size = get_expected_mipmap_z_size(n);
+        z_size = get_expected_mipmap_z_size(n);
       }
 
       z = 0;
@@ -1708,41 +1708,41 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
       Filename alpha_n_pattern = Filename::pattern_filename(alpha_fullpath_pattern.get_filename_index(z));
       
       if (!n_pattern.has_hash()) {
-	gobj_cat.error()
-	  << "Filename requires two different hash sequences: " << fullpath
-	  << "\n";
-	return false;
+        gobj_cat.error()
+          << "Filename requires two different hash sequences: " << fullpath
+          << "\n";
+        return false;
       }
 
       Filename file = n_pattern.get_filename_index(n);
       Filename alpha_file = alpha_n_pattern.get_filename_index(n);
 
       if ((n_size == 0 && (vfs->exists(file) || n == 0)) ||
-	  (n_size != 0 && n < n_size)) {
-	// Continue through the loop.
+          (n_size != 0 && n < n_size)) {
+        // Continue through the loop.
       } else {
-	// We've reached the end of the mipmap sequence.
-	break;
+        // We've reached the end of the mipmap sequence.
+        break;
       }
 
       while ((z_size == 0 && (vfs->exists(file) || z == 0)) ||
-	     (z_size != 0 && z < z_size)) {
-	if (!do_read_one(file, alpha_file, z, n, primary_file_num_channels,
-			 alpha_file_channel, record)) {
-	  return false;
-	}
-	++z;
-	
-	n_pattern = Filename::pattern_filename(fullpath_pattern.get_filename_index(z));
-	file = n_pattern.get_filename_index(n);
-	alpha_file = alpha_n_pattern.get_filename_index(n);
+             (z_size != 0 && z < z_size)) {
+        if (!do_read_one(file, alpha_file, z, n, primary_file_num_channels,
+                         alpha_file_channel, record)) {
+          return false;
+        }
+        ++z;
+        
+        n_pattern = Filename::pattern_filename(fullpath_pattern.get_filename_index(z));
+        file = n_pattern.get_filename_index(n);
+        alpha_file = alpha_n_pattern.get_filename_index(n);
       }
 
       if (n == 0 && n_size == 0) {
-	// If n_size is not specified, it gets implicitly set after we
-	// read the base texture image (which determines the size of
-	// the texture).
-	n_size = get_expected_num_mipmap_levels();
+        // If n_size is not specified, it gets implicitly set after we
+        // read the base texture image (which determines the size of
+        // the texture).
+        n_size = get_expected_num_mipmap_levels();
       }
       ++n;
     }
@@ -1753,8 +1753,8 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     Filename alpha_fullpath_pattern = Filename::pattern_filename(alpha_fullpath);
     if (!fullpath_pattern.has_hash()) {
       gobj_cat.error()
-	<< "Filename requires a hash mark: " << fullpath
-	<< "\n";
+        << "Filename requires a hash mark: " << fullpath
+        << "\n";
       return false;
     }
 
@@ -1763,10 +1763,10 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     Filename file = fullpath_pattern.get_filename_index(z);
     Filename alpha_file = alpha_fullpath_pattern.get_filename_index(z);
     while ((z_size == 0 && (vfs->exists(file) || z == 0)) ||
-	   (z_size != 0 && z < z_size)) {
+           (z_size != 0 && z < z_size)) {
       if (!do_read_one(file, alpha_file, z, 0, primary_file_num_channels,
-		       alpha_file_channel, record)) {
-	return false;
+                       alpha_file_channel, record)) {
+        return false;
       }
       ++z;
       
@@ -1780,8 +1780,8 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     Filename alpha_fullpath_pattern = Filename::pattern_filename(alpha_fullpath);
     if (!fullpath_pattern.has_hash()) {
       gobj_cat.error()
-	<< "Filename requires a hash mark: " << fullpath
-	<< "\n";
+        << "Filename requires a hash mark: " << fullpath
+        << "\n";
       return false;
     }
 
@@ -1790,9 +1790,9 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     Filename alpha_file = alpha_fullpath_pattern.get_filename_index(n);
 
     while ((n_size == 0 && (vfs->exists(file) || n == 0)) ||
-	   (n_size != 0 && n < n_size)) {
+           (n_size != 0 && n < n_size)) {
       if (!do_read_one(file, alpha_file, z, n, 
-		       primary_file_num_channels, alpha_file_channel,
+                       primary_file_num_channels, alpha_file_channel,
                        record)) {
         return false;
       }
@@ -1811,7 +1811,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
   } else {
     // Just an ordinary read of one file.
     if (!do_read_one(fullpath, alpha_fullpath, z, n, 
-		     primary_file_num_channels, alpha_file_channel,
+                     primary_file_num_channels, alpha_file_channel,
                      record)) {
       return false;
     }
@@ -1833,7 +1833,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
-	    int z, int n, int primary_file_num_channels, int alpha_file_channel,
+            int z, int n, int primary_file_num_channels, int alpha_file_channel,
             BamCacheRecord *record) {
   if (record != (BamCacheRecord *)NULL) {
     record->add_dependent_file(fullpath);
@@ -1869,23 +1869,23 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 
     if (textures_header_only) {
       if (!alpha_image.read_header(alpha_fullpath)) {
-	gobj_cat.error()
-	  << "Texture::read() - couldn't read: " << alpha_fullpath << endl;
-	return false;
+        gobj_cat.error()
+          << "Texture::read() - couldn't read: " << alpha_fullpath << endl;
+        return false;
       }
       alpha_image = PNMImage(1, 1, alpha_image.get_num_channels(),
-			     alpha_image.get_maxval(),
-			     alpha_image.get_type());
+                             alpha_image.get_maxval(),
+                             alpha_image.get_type());
       alpha_image.fill(1.0);
       if (alpha_image.has_alpha()) {
-	alpha_image.alpha_fill(1.0);
+        alpha_image.alpha_fill(1.0);
       }
       
     } else {
       if (!alpha_image.read(alpha_fullpath, NULL, true)) {
-	gobj_cat.error()
-	  << "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
-	return false;
+        gobj_cat.error()
+          << "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
+        return false;
       }
     }
   }
@@ -1914,16 +1914,16 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     // The grayscale (alpha channel) image must be the same size as the
     // main image.
     if (image.get_x_size() != alpha_image.get_x_size() ||
-	image.get_y_size() != alpha_image.get_y_size()) {
+        image.get_y_size() != alpha_image.get_y_size()) {
       gobj_cat.info()
-	<< "Automatically rescaling " << alpha_fullpath.get_basename()
-	<< " from " << alpha_image.get_x_size() << " by "
-	<< alpha_image.get_y_size() << " to " << image.get_x_size()
-	<< " by " << image.get_y_size() << "\n";
+        << "Automatically rescaling " << alpha_fullpath.get_basename()
+        << " from " << alpha_image.get_x_size() << " by "
+        << alpha_image.get_y_size() << " to " << image.get_x_size()
+        << " by " << image.get_y_size() << "\n";
       
       PNMImage scaled(image.get_x_size(), image.get_y_size(),
-		      alpha_image.get_num_channels(),
-		      alpha_image.get_maxval(), alpha_image.get_type());
+                      alpha_image.get_num_channels(),
+                      alpha_image.get_maxval(), alpha_image.get_type());
       scaled.quick_filter_from(alpha_image);
       alpha_image = scaled;
     }
@@ -1941,31 +1941,31 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     image.add_alpha();
     
     if (alpha_file_channel == 4 ||
-	(alpha_file_channel == 2 && alpha_image.get_num_channels() == 2)) {
+        (alpha_file_channel == 2 && alpha_image.get_num_channels() == 2)) {
       // Use the alpha channel.
       for (int x = 0; x < image.get_x_size(); x++) {
-	for (int y = 0; y < image.get_y_size(); y++) {
-	  image.set_alpha(x, y, alpha_image.get_alpha(x, y));
-	}
+        for (int y = 0; y < image.get_y_size(); y++) {
+          image.set_alpha(x, y, alpha_image.get_alpha(x, y));
+        }
       }
       _alpha_file_channel = alpha_image.get_num_channels();
       
     } else if (alpha_file_channel >= 1 && alpha_file_channel <= 3 &&
-	       alpha_image.get_num_channels() >= 3) {
+               alpha_image.get_num_channels() >= 3) {
       // Use the appropriate red, green, or blue channel.
       for (int x = 0; x < image.get_x_size(); x++) {
-	for (int y = 0; y < image.get_y_size(); y++) {
-	  image.set_alpha(x, y, alpha_image.get_channel_val(x, y, alpha_file_channel - 1));
-	}
+        for (int y = 0; y < image.get_y_size(); y++) {
+          image.set_alpha(x, y, alpha_image.get_channel_val(x, y, alpha_file_channel - 1));
+        }
       }
       _alpha_file_channel = alpha_file_channel;
       
     } else {
       // Use the grayscale channel.
       for (int x = 0; x < image.get_x_size(); x++) {
-	for (int y = 0; y < image.get_y_size(); y++) {
-	  image.set_alpha(x, y, alpha_image.get_gray(x, y));
-	}
+        for (int y = 0; y < image.get_y_size(); y++) {
+          image.set_alpha(x, y, alpha_image.get_gray(x, y));
+        }
       }
       _alpha_file_channel = 0;
     }
@@ -2003,18 +2003,18 @@ do_write(const Filename &fullpath, int z, int n, bool write_pages, bool write_mi
       int z_size = get_expected_mipmap_z_size(n);
 
       for (z = 0; z < z_size; ++z) {
-	Filename n_pattern = Filename::pattern_filename(fullpath_pattern.get_filename_index(z));
+        Filename n_pattern = Filename::pattern_filename(fullpath_pattern.get_filename_index(z));
       
-	if (!n_pattern.has_hash()) {
-	  gobj_cat.error()
-	    << "Filename requires two different hash sequences: " << fullpath
-	    << "\n";
-	  return false;
-	}
+        if (!n_pattern.has_hash()) {
+          gobj_cat.error()
+            << "Filename requires two different hash sequences: " << fullpath
+            << "\n";
+          return false;
+        }
 
-	if (!do_write_one(n_pattern.get_filename_index(n), z, n)) {
-	  return false;
-	}
+        if (!do_write_one(n_pattern.get_filename_index(n), z, n)) {
+          return false;
+        }
       }
     }
 
@@ -2023,14 +2023,14 @@ do_write(const Filename &fullpath, int z, int n, bool write_pages, bool write_mi
     Filename fullpath_pattern = Filename::pattern_filename(fullpath);
     if (!fullpath_pattern.has_hash()) {
       gobj_cat.error()
-	<< "Filename requires a hash mark: " << fullpath
-	<< "\n";
+        << "Filename requires a hash mark: " << fullpath
+        << "\n";
       return false;
     }
 
     for (z = 0; z < _z_size; ++z) {
       if (!do_write_one(fullpath_pattern.get_filename_index(z), z, n)) {
-	return false;
+        return false;
       }
     }
 
@@ -2039,15 +2039,15 @@ do_write(const Filename &fullpath, int z, int n, bool write_pages, bool write_mi
     Filename fullpath_pattern = Filename::pattern_filename(fullpath);
     if (!fullpath_pattern.has_hash()) {
       gobj_cat.error()
-	<< "Filename requires a hash mark: " << fullpath
-	<< "\n";
+        << "Filename requires a hash mark: " << fullpath
+        << "\n";
       return false;
     }
 
     int num_levels = get_num_ram_mipmap_images();
     for (int n = 0; n < num_levels; ++n) {
       if (!do_write_one(fullpath_pattern.get_filename_index(n), z, n)) {
-	return false;
+        return false;
       }
     }
 
@@ -2228,8 +2228,8 @@ reload_ram_image() {
   }
 
   do_read(get_fullpath(), get_alpha_fullpath(),
-	  _primary_file_num_channels, _alpha_file_channel,
-	  z, n, _has_read_pages, _has_read_mipmaps, NULL);
+          _primary_file_num_channels, _alpha_file_channel,
+          z, n, _has_read_pages, _has_read_mipmaps, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2827,58 +2827,58 @@ filter_2d_mipmap_pages(Texture::RamImage &to, const Texture::RamImage &from,
     if (y_size != 1) {
       int y;
       for (y = 0; y < y_size - 1; y += 2) {
-	// For each row.
-	nassertv(p == to._image.p() + z * to._page_size + (y / 2) * to_row_size);
-	nassertv(q == from._image.p() + z * from._page_size + y * row_size);
-	if (x_size != 1) {
-	  int x;
-	  for (x = 0; x < x_size - 1; x += 2) {
-	    // For each pixel.
-	    for (int c = 0; c < _num_components; ++c) {
-	      // For each component.
-	      filter_component(p, q, pixel_size, row_size);
-	    }
-	    q += pixel_size;
-	  }
-	  if (x < x_size) {
-	    // Skip the last odd pixel.
-	    q += pixel_size;
-	  }
-	} else {
-	  // Just one pixel.
-	  for (int c = 0; c < _num_components; ++c) {
-	    // For each component.
-	    filter_component(p, q, 0, row_size);
-	  }
-	}
-	q += row_size;
+        // For each row.
+        nassertv(p == to._image.p() + z * to._page_size + (y / 2) * to_row_size);
+        nassertv(q == from._image.p() + z * from._page_size + y * row_size);
+        if (x_size != 1) {
+          int x;
+          for (x = 0; x < x_size - 1; x += 2) {
+            // For each pixel.
+            for (int c = 0; c < _num_components; ++c) {
+              // For each component.
+              filter_component(p, q, pixel_size, row_size);
+            }
+            q += pixel_size;
+          }
+          if (x < x_size) {
+            // Skip the last odd pixel.
+            q += pixel_size;
+          }
+        } else {
+          // Just one pixel.
+          for (int c = 0; c < _num_components; ++c) {
+            // For each component.
+            filter_component(p, q, 0, row_size);
+          }
+        }
+        q += row_size;
       }
       if (y < y_size) {
-	// Skip the last odd row.
-	q += row_size;
+        // Skip the last odd row.
+        q += row_size;
       }
     } else {
       // Just one row.
       if (x_size != 1) {
-	int x;
-	for (x = 0; x < x_size - 1; x += 2) {
-	  // For each pixel.
-	  for (int c = 0; c < _num_components; ++c) {
-	    // For each component.
-	    filter_component(p, q, pixel_size, 0);
-	  }
-	  q += pixel_size;
-	}
-	if (x < x_size) {
-	  // Skip the last odd pixel.
-	  q += pixel_size;
-	}
+        int x;
+        for (x = 0; x < x_size - 1; x += 2) {
+          // For each pixel.
+          for (int c = 0; c < _num_components; ++c) {
+            // For each component.
+            filter_component(p, q, pixel_size, 0);
+          }
+          q += pixel_size;
+        }
+        if (x < x_size) {
+          // Skip the last odd pixel.
+          q += pixel_size;
+        }
       } else {
-	// Just one pixel.
-	for (int c = 0; c < _num_components; ++c) {
-	  // For each component.
-	  filter_component(p, q, 0, 0);
-	}
+        // Just one pixel.
+        for (int c = 0; c < _num_components; ++c) {
+          // For each component.
+          filter_component(p, q, 0, 0);
+        }
       }
     }
 
@@ -2925,61 +2925,61 @@ filter_3d_mipmap_level(Texture::RamImage &to, const Texture::RamImage &from,
       nassertv(p == to._image.p() + (z / 2) * to_page_size);
       nassertv(q == from._image.p() + z * page_size);
       if (y_size != 1) {
-	int y;
-	for (y = 0; y < y_size - 1; y += 2) {
-	  // For each row.
-	  nassertv(p == to._image.p() + (z / 2) * to_page_size + (y / 2) * to_row_size);
-	  nassertv(q == from._image.p() + z * page_size + y * row_size);
-	  if (x_size != 1) {
-	    int x;
-	    for (x = 0; x < x_size - 1; x += 2) {
-	      // For each pixel.
-	      for (int c = 0; c < _num_components; ++c) {
-		// For each component.
-		filter_component(p, q, pixel_size, row_size, page_size);
-	      }
-	      q += pixel_size;
-	    }
-	    if (x < x_size) {
-	      // Skip the last odd pixel.
-	      q += pixel_size;
-	    }
-	  } else {
-	    // Just one pixel.
-	    for (int c = 0; c < _num_components; ++c) {
-	      // For each component.
-	      filter_component(p, q, 0, row_size, page_size);
-	    }
-	  }
-	  q += row_size;
-	}
-	if (y < y_size) {
-	  // Skip the last odd row.
-	  q += row_size;
-	}
+        int y;
+        for (y = 0; y < y_size - 1; y += 2) {
+          // For each row.
+          nassertv(p == to._image.p() + (z / 2) * to_page_size + (y / 2) * to_row_size);
+          nassertv(q == from._image.p() + z * page_size + y * row_size);
+          if (x_size != 1) {
+            int x;
+            for (x = 0; x < x_size - 1; x += 2) {
+              // For each pixel.
+              for (int c = 0; c < _num_components; ++c) {
+                // For each component.
+                filter_component(p, q, pixel_size, row_size, page_size);
+              }
+              q += pixel_size;
+            }
+            if (x < x_size) {
+              // Skip the last odd pixel.
+              q += pixel_size;
+            }
+          } else {
+            // Just one pixel.
+            for (int c = 0; c < _num_components; ++c) {
+              // For each component.
+              filter_component(p, q, 0, row_size, page_size);
+            }
+          }
+          q += row_size;
+        }
+        if (y < y_size) {
+          // Skip the last odd row.
+          q += row_size;
+        }
       } else {
-	// Just one row.
-	if (x_size != 1) {
-	  int x;
-	  for (x = 0; x < x_size - 1; x += 2) {
-	    // For each pixel.
-	    for (int c = 0; c < _num_components; ++c) {
-	      // For each component.
-	      filter_component(p, q, pixel_size, 0, page_size);
-	    }
-	    q += pixel_size;
-	  }
-	  if (x < x_size) {
-	    // Skip the last odd pixel.
-	    q += pixel_size;
-	  }
-	} else {
-	  // Just one pixel.
-	  for (int c = 0; c < _num_components; ++c) {
-	    // For each component.
-	    filter_component(p, q, 0, 0, page_size);
-	  }
-	}
+        // Just one row.
+        if (x_size != 1) {
+          int x;
+          for (x = 0; x < x_size - 1; x += 2) {
+            // For each pixel.
+            for (int c = 0; c < _num_components; ++c) {
+              // For each component.
+              filter_component(p, q, pixel_size, 0, page_size);
+            }
+            q += pixel_size;
+          }
+          if (x < x_size) {
+            // Skip the last odd pixel.
+            q += pixel_size;
+          }
+        } else {
+          // Just one pixel.
+          for (int c = 0; c < _num_components; ++c) {
+            // For each component.
+            filter_component(p, q, 0, 0, page_size);
+          }
+        }
       }
       q += page_size;
     }
@@ -2992,58 +2992,58 @@ filter_3d_mipmap_level(Texture::RamImage &to, const Texture::RamImage &from,
     if (y_size != 1) {
       int y;
       for (y = 0; y < y_size - 1; y += 2) {
-	// For each row.
-	nassertv(p == to._image.p() + (y / 2) * to_row_size);
-	nassertv(q == from._image.p() + y * row_size);
-	if (x_size != 1) {
-	  int x;
-	  for (x = 0; x < x_size - 1; x += 2) {
-	    // For each pixel.
-	    for (int c = 0; c < _num_components; ++c) {
-	      // For each component.
-	      filter_component(p, q, pixel_size, row_size, 0);
-	    }
-	    q += pixel_size;
-	  }
-	  if (x < x_size) {
-	    // Skip the last odd pixel.
-	    q += pixel_size;
-	  }
-	} else {
-	  // Just one pixel.
-	  for (int c = 0; c < _num_components; ++c) {
-	    // For each component.
-	    filter_component(p, q, 0, row_size, 0);
-	  }
-	}
-	q += row_size;
+        // For each row.
+        nassertv(p == to._image.p() + (y / 2) * to_row_size);
+        nassertv(q == from._image.p() + y * row_size);
+        if (x_size != 1) {
+          int x;
+          for (x = 0; x < x_size - 1; x += 2) {
+            // For each pixel.
+            for (int c = 0; c < _num_components; ++c) {
+              // For each component.
+              filter_component(p, q, pixel_size, row_size, 0);
+            }
+            q += pixel_size;
+          }
+          if (x < x_size) {
+            // Skip the last odd pixel.
+            q += pixel_size;
+          }
+        } else {
+          // Just one pixel.
+          for (int c = 0; c < _num_components; ++c) {
+            // For each component.
+            filter_component(p, q, 0, row_size, 0);
+          }
+        }
+        q += row_size;
       }
       if (y < y_size) {
-	// Skip the last odd row.
-	q += row_size;
+        // Skip the last odd row.
+        q += row_size;
       }
     } else {
       // Just one row.
       if (x_size != 1) {
-	int x;
-	for (x = 0; x < x_size - 1; x += 2) {
-	  // For each pixel.
-	  for (int c = 0; c < _num_components; ++c) {
-	    // For each component.
-	    filter_component(p, q, pixel_size, 0, 0);
-	  }
-	  q += pixel_size;
-	}
-	if (x < x_size) {
-	  // Skip the last odd pixel.
-	  q += pixel_size;
-	}
+        int x;
+        for (x = 0; x < x_size - 1; x += 2) {
+          // For each pixel.
+          for (int c = 0; c < _num_components; ++c) {
+            // For each component.
+            filter_component(p, q, pixel_size, 0, 0);
+          }
+          q += pixel_size;
+        }
+        if (x < x_size) {
+          // Skip the last odd pixel.
+          q += pixel_size;
+        }
       } else {
-	// Just one pixel.
-	for (int c = 0; c < _num_components; ++c) {
-	  // For each component.
-	  filter_component(p, q, 0, 0, 0);
-	}
+        // Just one pixel.
+        for (int c = 0; c < _num_components; ++c) {
+          // For each component.
+          filter_component(p, q, 0, 0, 0);
+        }
       }
     }
   }
@@ -3299,7 +3299,7 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
       _ram_images.push_back(RamImage());
       _ram_images[n]._page_size = get_expected_ram_page_size();
       if (manager->get_file_minor_ver() >= 1) {
-	_ram_images[n]._page_size = scan.get_uint32();
+        _ram_images[n]._page_size = scan.get_uint32();
       }
 
       size_t u_size = scan.get_uint32();
@@ -3307,7 +3307,7 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
       // fill the _image buffer with image data
       PTA_uchar image = PTA_uchar::empty_array(u_size);
       for (size_t u_idx = 0; u_idx < u_size; ++u_idx) {
-	image[(int)u_idx] = scan.get_uint8();
+        image[(int)u_idx] = scan.get_uint8();
       }
       _ram_images[n]._image = image;
     }

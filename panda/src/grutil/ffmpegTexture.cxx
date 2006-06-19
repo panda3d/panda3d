@@ -23,6 +23,7 @@
 #include "clockObject.h"
 #include "config_gobj.h"
 #include "config_grutil.h"
+#include "bamCacheRecord.h"
 
 TypeHandle FFMpegTexture::_type_handle;
 
@@ -127,7 +128,7 @@ reconsider_video_properties(const FFMpegTexture::VideoStream &stream,
       //Number of frames is a little questionable if we've got variable 
       //frame rate. Duration comes in as a generic timestamp, 
       //and is therefore multiplied by AV_TIME_BASE.
-      num_frames = (int(stream.pFormatCtx->duration*frame_rate))/AV_TIME_BASE;
+      num_frames = (int)((stream.pFormatCtx->duration*frame_rate)/AV_TIME_BASE);
       if (grutil_cat.is_debug()) {
         grutil_cat.debug()
           << "Loaded " << stream._filename << ", " << num_frames << " frames at "
@@ -196,7 +197,8 @@ make_texture() {
 //  Description: Called once per frame, as needed, to load the new
 //               image contents.
 ////////////////////////////////////////////////////////////////////
-void FFMpegTexture::update_frame(int frame) {
+void FFMpegTexture::
+update_frame(int frame) {
   int max_z = max(_z_size, (int)_pages.size());
   for (int z = 0; z < max_z; ++z) {
     VideoPage &page = _pages[z];
@@ -310,7 +312,12 @@ void FFMpegTexture::update_frame(int frame) {
 ////////////////////////////////////////////////////////////////////
 bool FFMpegTexture::
 do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
-      int z, int n, int primary_file_num_channels, int alpha_file_channel) {
+            int z, int n, int primary_file_num_channels, int alpha_file_channel,
+            BamCacheRecord *record) {
+  if (record != (BamCacheRecord *)NULL) {
+    record->add_dependent_file(fullpath);
+  }
+
   nassertr(n == 0, false);
   nassertr(z >= 0 && z < get_z_size(), false);
 
@@ -324,7 +331,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
   if (!alpha_fullpath.empty()) {
     if (!page._alpha.read(alpha_fullpath)) {
       grutil_cat.error()
-  << "FFMPEG couldn't read " << alpha_fullpath << " as video.\n";
+        << "FFMPEG couldn't read " << alpha_fullpath << " as video.\n";
       page._color.clear();
       return false;
     }
@@ -492,9 +499,6 @@ get_frame_data(int frame) {
   AVStream* vstream=pFormatCtx->streams[streamNumber];
   
   int gotFrame;
-  
-  long long timeStamp=(AV_TIME_BASE/vstream->r_frame_rate.num)*(frame *vstream->r_frame_rate.den);
-  long long currTimeStamp;
                   
   //first find out where to go
   if(frame==comingFrom)
@@ -507,9 +511,12 @@ get_frame_data(int frame) {
   }
   else
   {
+    double timeStamp=((double)AV_TIME_BASE*frame *vstream->r_frame_rate.den)/vstream->r_frame_rate.num;
+    double currTimeStamp;
+
     //find point in time
-    int res=av_seek_frame( pFormatCtx,-1, timeStamp,AVSEEK_FLAG_BACKWARD );
-    
+    int res=av_seek_frame( pFormatCtx,-1, (long long)timeStamp,AVSEEK_FLAG_BACKWARD );
+
     //Okay, now we're at the nearest keyframe behind our timestamp.
     //Hurry up and move through frames until we find a frame just after it.
     pCodecCtx->hurry_up = 1;
@@ -517,9 +524,8 @@ get_frame_data(int frame) {
       av_read_frame( pFormatCtx, &packet );
       
       // should really be checking that this is a video packet
-      currTimeStamp = (long long)(packet.pts / packet.duration *
-                                  AV_TIME_BASE / av_q2d( vstream->r_frame_rate));
-      
+      currTimeStamp = (((double)AV_TIME_BASE * packet.pts) / 
+                       ((double)packet.duration * av_q2d( vstream->r_frame_rate)));
       if( currTimeStamp > timeStamp )
           break;
       
