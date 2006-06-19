@@ -117,8 +117,8 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
     }
 
     // Parse any directives in the source.
-    // IGNORE SPECIFIC PROFILES IN DX
-    if (!false) {
+    // IGNORE SPECIFIC PROFILES IN DX FOR NOW
+    if (false) {
       string directive;
       while (!s->parse_eof()) {
         s->parse_line(directive, true, true);
@@ -256,8 +256,13 @@ parse_cg_profile(const string &id, bool vertex)
   CGprofile fprofiles[] = { CG_PROFILE_ARBFP1, CG_PROFILE_FP20, CG_PROFILE_FP30, CG_PROFILE_FP40, CG_PROFILE_UNKNOWN };
 
   // near equivalent DX profiles
+#if (CG_VERSION_NUM >= 1502)
   CGprofile dx_vprofiles[] = { CG_PROFILE_VS_2_0, CG_PROFILE_VS_1_1, CG_PROFILE_VS_2_X, CG_PROFILE_VS_3_0, CG_PROFILE_UNKNOWN };
   CGprofile dx_fprofiles[] = { CG_PROFILE_PS_2_0, CG_PROFILE_PS_1_1, CG_PROFILE_PS_2_X, CG_PROFILE_PS_3_0, CG_PROFILE_UNKNOWN };
+#else
+  CGprofile dx_vprofiles[] = { CG_PROFILE_VS_2_0, CG_PROFILE_VS_1_1, CG_PROFILE_VS_2_X, CG_PROFILE_VS_2_X, CG_PROFILE_UNKNOWN };
+  CGprofile dx_fprofiles[] = { CG_PROFILE_PS_2_0, CG_PROFILE_PS_1_1, CG_PROFILE_PS_2_X, CG_PROFILE_PS_2_X, CG_PROFILE_UNKNOWN };
+#endif
 
   if (vertex) {
     while (vprofiles[i] != CG_PROFILE_UNKNOWN) {
