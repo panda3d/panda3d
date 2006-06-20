@@ -28,6 +28,7 @@
 #include "dcast.h"
 #include "pvector.h"
 #include "bamCacheRecord.h"
+#include "bamCacheIndex.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamInfo::Constructor
@@ -162,6 +163,10 @@ get_info(const Filename &filename) {
       objects[0]->is_of_type(Texture::get_class_type())) {
     describe_texture(DCAST(Texture, objects[0]));
 
+  } else if (objects.size() == 1 && 
+      objects[0]->is_of_type(BamCacheIndex::get_class_type())) {
+    describe_cache_index(DCAST(BamCacheIndex, objects[0]));
+
   } else if (!objects.empty() && objects[0]->is_of_type(RecorderHeader::get_class_type())) {
     describe_session(DCAST(RecorderHeader, objects[0]), objects);
 
@@ -214,6 +219,17 @@ describe_scene_graph(PandaNode *node) {
 void BamInfo::
 describe_texture(Texture *tex) {
   tex->write(nout, 2);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamInfo::describe_cache_index
+//       Access: Private
+//  Description: Called for Bam files that contain a BamCacheIndex
+//               object.
+////////////////////////////////////////////////////////////////////
+void BamInfo::
+describe_cache_index(BamCacheIndex *index) {
+  index->write(nout, 2);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -28,6 +28,9 @@
 #include "pvector.h"
 
 class TypedWritable;
+class PandaNode;
+class Texture;
+class BamCacheIndex;
 class RecorderHeader;
 
 ////////////////////////////////////////////////////////////////////
@@ -49,6 +52,7 @@ private:
   bool get_info(const Filename &filename);
   void describe_scene_graph(PandaNode *node);
   void describe_texture(Texture *tex);
+  void describe_cache_index(BamCacheIndex *index);
   void describe_session(RecorderHeader *header, const Objects &objects);
   void describe_general_object(TypedWritable *object);
   void list_hierarchy(PandaNode *node, int indent_level);

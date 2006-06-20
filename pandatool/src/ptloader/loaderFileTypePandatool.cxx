@@ -109,7 +109,8 @@ resolve_filename(Filename &path) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) LoaderFileTypePandatool::
-load_file(const Filename &path, const LoaderOptions &options) const {
+load_file(const Filename &path, const LoaderOptions &options,
+          BamCacheRecord *record) const {
   PT(PandaNode) result;
 
   PT(EggData) egg_data = new EggData;

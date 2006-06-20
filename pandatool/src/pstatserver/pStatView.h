@@ -24,8 +24,9 @@
 #include "pStatClientData.h"
 #include "pStatThreadData.h"
 #include "pStatViewLevel.h"
-
 #include "pointerTo.h"
+#include "pvector.h"
+#include "plist.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PStatView
@@ -68,6 +69,37 @@ private:
 
   void clear_levels();
   bool reset_level(PStatViewLevel *level);
+
+  // FrameSample is used to help collect event data out of the
+  // PStatFrameData object and boil it down to a list of elapsed
+  // times.
+  class FrameSample;
+  typedef plist<FrameSample *> Started;
+
+  class FrameSample {
+  public:
+    FrameSample();
+    void data_point(float time, bool is_start, Started &started);
+    void push(float time);
+    void pop(float time);
+
+    void push_all(float time, Started &started);
+    void pop_one(float time, Started &started);
+
+    void initialize(float start_time, Started &started);
+    void finalize(float end_time, Started &started);
+
+    bool _touched;
+    bool _started;
+    bool _pushed;
+    bool _initially_pushed;
+    bool _initially_started;
+    bool _reset_initially_started;
+    float _net_time;
+  };
+  typedef pvector<FrameSample> Samples;
+
+  void fill_samples(Samples &samples, const PStatFrameData &frame_data);
 
   int _constraint;
   bool _show_level;

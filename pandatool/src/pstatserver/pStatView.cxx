@@ -27,105 +27,6 @@
 #include <algorithm>
 
 
-
-////////////////////////////////////////////////////////////////////
-//       Class : FrameSample
-// Description : This class is used within this module only--in fact,
-//               within PStatView::set_to_frame() only--to help
-//               collect event data out of the PStatFrameData object
-//               and boil it down to a list of elapsed times.
-////////////////////////////////////////////////////////////////////
-class FrameSample {
-public:
-  typedef plist<FrameSample *> Started;
-
-  FrameSample() {
-    _touched = false;
-    _is_started = false;
-    _pushed = false;
-    _net_time = 0.0;
-  }
-  void data_point(float time, bool is_start, Started &started) {
-    _touched = true;
-
-    // We only consider events that change the start/stop state.
-    // With two consecutive 'start' events, for instance, we ignore
-    // the second one.
-
-    // *** That's not quite the right thing to do.  We should keep
-    // track of the nesting level and bracket things correctly, so
-    // that we ignore the second start and the *first* stop, but
-    // respect the outer start/stop.  For the short term, this
-    // works, because the client is already doing this logic and
-    // won't send us nested start/stop pairs, but we'd like to
-    // generalize this in the future so we can deal with these
-    // nested pairs properly.
-    nassertv(is_start != _is_started);
-
-    _is_started = is_start;
-
-    if (_pushed) {
-      nassertv(!_is_started);
-      Started::iterator si = find(started.begin(), started.end(), this);
-      nassertv(si != started.end());
-      started.erase(si);
-
-    } else {
-      if (_is_started) {
-        _net_time -= time;
-        push_all(time, started);
-        started.push_back(this);
-      } else {
-        _net_time += time;
-        Started::iterator si = find(started.begin(), started.end(), this);
-        nassertv(si != started.end());
-        started.erase(si);
-        pop_one(time, started);
-      }
-    }
-  }
-  void push(float time) {
-    if (!_pushed) {
-      _pushed = true;
-      if (_is_started) {
-        _net_time += time;
-      }
-    }
-  }
-  void pop(float time) {
-    if (_pushed) {
-      _pushed = false;
-      if (_is_started) {
-        _net_time -= time;
-      }
-    }
-  }
-
-  void push_all(float time, Started &started) {
-    Started::iterator si;
-    for (si = started.begin(); si != started.end(); ++si) {
-      (*si)->push(time);
-    }
-  }
-
-  void pop_one(float time, Started &started) {
-    Started::reverse_iterator si;
-    for (si = started.rbegin(); si != started.rend(); ++si) {
-      if ((*si)->_pushed) {
-        (*si)->pop(time);
-        return;
-      }
-    }
-  }
-
-  bool _touched;
-  bool _is_started;
-  bool _pushed;
-  float _net_time;
-};
-
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatView::Constructor
 //       Access: Public
@@ -322,66 +223,10 @@ get_level(int collector) {
 ////////////////////////////////////////////////////////////////////
 void PStatView::
 update_time_data(const PStatFrameData &frame_data) {
-  int num_events = frame_data.get_num_events();
-
-  typedef pvector<FrameSample> Samples;
-  Samples samples(_client_data->get_num_collectors());
-
-  FrameSample::Started started;
-
   _all_collectors_known = true;
 
-
-  // This tracks the set of samples we actually care about.
-  typedef pset<int> GotSamples;
-  GotSamples got_samples;
-
-  int i;
-  for (i = 0; i < num_events; i++) {
-    int collector_index = frame_data.get_time_collector(i);
-    bool is_start = frame_data.is_start(i);
-
-    if (!_client_data->has_collector(collector_index)) {
-      _all_collectors_known = false;
-
-    } else {
-      nassertv(collector_index >= 0 && collector_index < (int)samples.size());
-
-      if (_client_data->get_child_distance(_constraint, collector_index) >= 0) {
-        // Here's a data point we care about: anything at constraint
-        // level or below.
-        if (is_start == samples[collector_index]._is_started) {
-          if (!is_start) {
-            // A "stop" in the middle of a frame implies a "start"
-            // since time 0 (that is, since the first data point in
-            // the frame).
-            samples[collector_index].data_point(frame_data.get_time(0), true, started);
-            samples[collector_index].data_point(frame_data.get_time(i), is_start, started);
-          } else {
-            // An extra "start" for a collector that's already started
-            // is an error.
-            nout << "Unexpected data point for " 
-                 << _client_data->get_collector_fullname(collector_index)
-                 << "\n";
-          }
-        } else {
-          samples[collector_index].data_point(frame_data.get_time(i), is_start, started);
-          got_samples.insert(collector_index);
-        }
-      }
-    }
-  }
-
-  // Make sure everything is stopped.
-
-  Samples::iterator si;
-  for (i = 0, si = samples.begin(); si != samples.end(); ++i, ++si) {
-    if ((*si)._is_started) {
-      (*si).data_point(frame_data.get_end(), false, started);
-    }
-  }
-
-  nassertv(started.empty());
+  Samples samples(_client_data->get_num_collectors());
+  fill_samples(samples, frame_data);
 
   bool any_new_levels = false;
 
@@ -401,32 +246,125 @@ update_time_data(const PStatFrameData &frame_data) {
     }
 
     int collector_index = level->_collector;
-    GotSamples::iterator gi;
-    gi = got_samples.find(collector_index);
-    if (gi != got_samples.end()) {
+    if (samples[collector_index]._touched) {
       level->_value_alone = samples[collector_index]._net_time;
-      got_samples.erase(gi);
+      samples[collector_index]._touched = false;
     }
 
     li = lnext;
   }
 
-  // Finally, any samples left over in the got_samples set are new
+  // Finally, any samples left over in the samples list are new
   // collectors that we need to add to the Levels list.
-  if (!got_samples.empty()) {
-    any_new_levels = true;
-
-    GotSamples::const_iterator gi;
-    for (gi = got_samples.begin(); gi != got_samples.end(); ++gi) {
-      int collector_index = (*gi);
+  for (int collector_index = 0; 
+       collector_index < (int)samples.size(); 
+       ++collector_index) {
+    if (samples[collector_index]._touched) {
+      any_new_levels = true;
       PStatViewLevel *level = get_level(collector_index);
-      level->_value_alone = samples[*gi]._net_time;
+      level->_value_alone = samples[collector_index]._net_time;
     }
   }
 
   if (any_new_levels) {
     _level_index++;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatView::fill_samples
+//       Access: Private
+//  Description: Fills up samples with the net time accumulated
+//               uniquely in each collector.
+////////////////////////////////////////////////////////////////////
+void PStatView::
+fill_samples(Samples &samples, const PStatFrameData &frame_data) {
+  int num_events = frame_data.get_num_events();
+  if (num_events == 0) {
+    return;
+  }
+
+  cerr << "start fill_samples\n";
+
+  Started started;
+
+  Samples::iterator si;
+  for (si = samples.begin(); si != samples.end(); ++si) {
+    (*si).initialize(frame_data.get_start(), started);
+    int collector_index = si - samples.begin();
+    cerr << "  " << _client_data->get_collector_fullname(collector_index)
+         << " " << (*si)._started << " " << (*si)._pushed
+         << " " << (*si)._net_time << "\n";
+  }
+
+  for (int i = 0; i < num_events; i++) {
+    int collector_index = frame_data.get_time_collector(i);
+    bool is_start = frame_data.is_start(i);
+
+    cerr << "  event: " 
+         << _client_data->get_collector_fullname(collector_index)
+         << " " << is_start << " " << frame_data.get_time(i) << "\n";
+
+    if (!_client_data->has_collector(collector_index)) {
+      _all_collectors_known = false;
+
+    } else {
+      nassertv(collector_index >= 0 && collector_index < (int)samples.size());
+
+      if (_client_data->get_child_distance(_constraint, collector_index) >= 0) {
+        // Here's a data point we care about: anything at constraint
+        // level or below.
+        if (is_start == samples[collector_index]._started) {
+          if (!is_start && !samples[collector_index]._touched) {
+            // A "stop" in the middle of a frame probably means the
+            // collector wrapped around the end of the frame and back
+            // to the beginning.  This is very difficult to record
+            // properly--which collectors did it shadow from the
+            // beginning the frame?  This will require going back and
+            // re-interpreting the frame from the beginning.  For now,
+            // we'll set a flag; when we later encounter this
+            // collector's "start" time, we'll interpret this flag.
+            samples[collector_index]._reset_initially_started = true;
+            
+          } else {
+            // An extra "start" for a collector that's already started
+            // is an error.
+            nout << "Unexpected data point for " 
+                 << _client_data->get_collector_fullname(collector_index)
+                 << "\n";
+          }
+        } else {
+          if (is_start && samples[collector_index]._reset_initially_started) {
+            // OK, here's the initial start for this collector.  This
+            // means that we push all of the collectors that are
+            // currently active now.  It also means that all of these
+            // collectors will still be pushed at the beginning of the
+            // next frame (or, assuming the frames are largely
+            // similar, at the beginning of this frame).
+            Started::iterator sti;
+            for (sti = started.begin(); sti != started.end(); ++sti) {
+              (*sti)->_initially_pushed = true;
+            }
+            samples[collector_index]._initially_started = true;
+            // Now go back and try again, re-examining the data from
+            // the beginning of the frame.
+            cerr << "recurse on " 
+                 << _client_data->get_collector_fullname(collector_index)
+                 << "\n";
+            fill_samples(samples, frame_data);
+            return;
+          }
+          samples[collector_index].data_point(frame_data.get_time(i), is_start, started);
+        }
+      }
+    }
+  }
+
+  for (si = samples.begin(); si != samples.end(); ++si) {
+    (*si).finalize(frame_data.get_end(), started);
+  }
+
+  nassertv(started.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -614,3 +552,185 @@ reset_level(PStatViewLevel *level) {
 }
 
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatView::FrameSample::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+PStatView::FrameSample::
+FrameSample() {
+  _touched = false;
+  _started = false;
+  _pushed = false;
+  _initially_pushed = false;
+  _initially_started = false;
+  _reset_initially_started = false;
+  _net_time = 0.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatView::FrameSample::data_point
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PStatView::FrameSample::
+data_point(float time, bool is_start, PStatView::Started &started) {
+  cerr << "data_point(" << time << ", " << is_start << ",)\n";
+  _touched = true;
+  nassertv(is_start != _started);
+  
+  // The _net_time value has two possible different meanings,
+  // according to the current state of the frame.  When the
+  // collector is not actively accumulating time, then _net_start
+  // represents the total time already accumulated towards the
+  // collector.  However, while the collector is actively
+  // accumulating time, then _net_start is a stange value, liable to
+  // be negative, which is actually the total time accumulated so
+  // far less the start time of the collector.
+  
+  // You can tell which state _net_time is in by examining
+  // _started and _pushed.  The four cases are:
+  
+  // When !_started && !_pushed, _net_time is valid.
+  // When !_started && _pushed, _net_time is valid.
+  // When _started && !_pushed, _net_time is invalid (the
+  // collector is running).
+  // When _started && _pushed, _net_time is valid.
+  
+  _started = is_start;
+  
+  if (_started) {
+    // Starting the collector.
+    if (!_pushed) {
+      // (!_started && !_pushed) -> (_started && !_pushed)
+      _net_time -= time;
+      
+      // Starting a new collector obscures, or "pushes", all of the
+      // collectors already started.
+      push_all(time, started);
+    }
+    started.push_back(this);
+    
+  } else {
+    // Stopping the collector.
+    if (_pushed) {
+      // We have been pushed below some other collector.  In this
+      // case, the time has already been stopped.  Just remove
+      // this collector from the pushed stack.
+      Started::iterator si = find(started.begin(), started.end(), this);
+      nassertv(si != started.end());
+      started.erase(si);
+      
+      // (_started && _pushed) -> (!_started && _pushed)
+      nassertv(_net_time >= 0.0);
+      
+    } else {
+      // We are still active.  Accumulate the time since we started.
+      // (_started && !_pushed) -> (!_started && !_pushed)
+      _net_time += time;
+      nassertv(_net_time >= 0.0);
+      
+      // Now reveal, or "pop", the topmost of the collectors that
+      // were previously obscured.
+      Started::iterator si = find(started.begin(), started.end(), this);
+      nassertv(si != started.end());
+      started.erase(si);
+      pop_one(time, started);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatView::FrameSample::push
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PStatView::FrameSample::
+push(float time) {
+  if (!_pushed) {
+    _pushed = true;
+    if (_started) {
+      // (_started && !_pushed) -> (_started && _pushed)
+      _net_time += time;
+      nassertv(_net_time >= 0.0);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatView::FrameSample::pop
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PStatView::FrameSample::
+pop(float time) {
+  nassertv(_pushed);
+  _pushed = false;
+  if (_started) {
+    // (_started && _pushed) -> (_started && !_pushed)
+    _net_time -= time;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatView::FrameSample::push_all
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PStatView::FrameSample::
+push_all(float time, PStatView::Started &started) {
+  Started::iterator si;
+  for (si = started.begin(); si != started.end(); ++si) {
+    (*si)->push(time);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatView::FrameSample::pop_one
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PStatView::FrameSample::
+pop_one(float time, PStatView::Started &started) {
+  Started::reverse_iterator si;
+  for (si = started.rbegin(); si != started.rend(); ++si) {
+    if ((*si)->_pushed) {
+      (*si)->pop(time);
+      return;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatView::FrameSample::initialize
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PStatView::FrameSample::
+initialize(float start_time, PStatView::Started &started) {
+  _touched = false;
+  _pushed = _initially_pushed;
+  _started = _initially_started;
+  _reset_initially_started = false;
+  _net_time = 0.0;
+
+  if (_started) {
+    started.push_back(this);
+    if (!_pushed) {
+      _net_time -= start_time;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatView::FrameSample::finalize
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PStatView::FrameSample::
+finalize(float end_time, PStatView::Started &started) {
+  if (_started) {
+    data_point(end_time, false, started);
+  }
+}

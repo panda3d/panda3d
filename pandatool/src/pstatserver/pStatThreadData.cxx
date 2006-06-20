@@ -313,6 +313,7 @@ void PStatThreadData::
 record_new_frame(int frame_number, PStatFrameData *frame_data) {
   nassertv(frame_data != (PStatFrameData *)NULL);
   nassertv(!frame_data->is_empty());
+  //  frame_data->sort_time();
   float time = frame_data->get_start();
 
   // First, remove all the old frames that fall outside of our
@@ -342,16 +343,18 @@ record_new_frame(int frame_number, PStatFrameData *frame_data) {
     }
   }
 
-  int index = frame_number - _first_frame_number;
-  nassertv(index >= 0 && index < (int)_frames.size());
-
-  if (_frames[index] != (PStatFrameData *)NULL) {
-    nout << "Got repeated frame data for frame " << frame_number << "\n";
-    delete _frames[index];
+  if (frame_number >= _first_frame_number) {
+    int index = frame_number - _first_frame_number;
+    nassertv(index >= 0 && index < (int)_frames.size());
+    
+    if (_frames[index] != (PStatFrameData *)NULL) {
+      nout << "Got repeated frame data for frame " << frame_number << "\n";
+      delete _frames[index];
+    }
+    
+    _frames[index] = frame_data;
+    _computed_elapsed_frames = false;
   }
-
-  _frames[index] = frame_data;
-  _computed_elapsed_frames = false;
 }
 
 ////////////////////////////////////////////////////////////////////

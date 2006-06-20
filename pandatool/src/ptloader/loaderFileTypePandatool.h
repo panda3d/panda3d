@@ -43,7 +43,8 @@ public:
   virtual bool supports_compressed() const;
 
   virtual void resolve_filename(Filename &path) const;
-  virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options) const;
+  virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options,
+                                  BamCacheRecord *record) const;
 
 private:
   SomethingToEggConverter *_converter;
