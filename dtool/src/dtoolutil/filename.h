@@ -83,6 +83,7 @@ PUBLISHED:
   static Filename expand_from(const string &user_string, 
                               Type type = T_general);
   static Filename temporary(const string &dirname, const string &prefix,
+                            const string &suffix = string(),
                             Type type = T_general);
 
   // Assignment is via the = operator.
@@ -160,6 +161,7 @@ PUBLISHED:
                          bool this_missing_is_old = true,
                          bool other_missing_is_old = true) const;
   time_t get_timestamp() const;
+  time_t get_access_timestamp() const;
   off_t get_file_size() const;
 
   bool resolve_filename(const DSearchPath &searchpath,
@@ -187,6 +189,10 @@ PUBLISHED:
   INLINE bool operator < (const string &other) const;
 
   INLINE void output(ostream &out) const;
+
+public:
+  bool atomic_compare_and_exchange_contents(string &orig_contents, const string &old_contents, const string &new_contents) const;
+  bool atomic_read_contents(string &contents) const;
 
 protected:
   void locate_basename();

@@ -392,7 +392,7 @@ expand_from(const string &os_specific, Filename::Type type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::temporary
-//       Access: Published
+//       Access: Published, Static
 //  Description: Generates a temporary filename within the indicated
 //               directory, using the indicated prefix.  If the
 //               directory is empty, a system-defined directory is
@@ -404,7 +404,8 @@ expand_from(const string &os_specific, Filename::Type type) {
 //               could simultaneously create a file by the same name.
 ////////////////////////////////////////////////////////////////////
 Filename Filename::
-temporary(const string &dirname, const string &prefix, Type type) {
+temporary(const string &dirname, const string &prefix, const string &suffix,
+          Type type) {
   if (dirname.empty()) {
     // If we are not given a dirname, use the system tempnam()
     // function to create a system-defined temporary filename.
@@ -419,8 +420,7 @@ temporary(const string &dirname, const string &prefix, Type type) {
   // up a filename within that dirname.  We do that because the system
   // tempnam() (for instance, under Windows) may ignore the dirname.
 
-  Filename result(dirname, "");
-  result.set_type(type);
+  Filename result;
   do {
     // We take the time of day and multiply it by the process time.
     // This will give us a very large number, of which we take the
@@ -428,7 +428,8 @@ temporary(const string &dirname, const string &prefix, Type type) {
     int hash = (clock() * time(NULL)) & 0xffffff;
     char hex_code[10];
     sprintf(hex_code, "%06x", hash);
-    result.set_basename(prefix + hex_code);
+    result = Filename(dirname, Filename(prefix + hex_code + suffix));
+    result.set_type(type);
   } while (result.exists());
 
   return result;
@@ -1202,6 +1203,35 @@ get_timestamp() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_access_timestamp
+//       Access: Published
+//  Description: Returns a time_t value that represents the time the
+//               file was last accessed, if this information is
+//               available.  See also get_timestamp(), which returns
+//               the last modification time.
+////////////////////////////////////////////////////////////////////
+time_t Filename::
+get_access_timestamp() const {
+  string os_specific = get_filename_index(0).to_os_specific();
+
+#ifdef WIN32_VC
+  struct _stat this_buf;
+
+  if (_stat(os_specific.c_str(), &this_buf) == 0) {
+    return this_buf.st_atime;
+  }
+#else  // WIN32_VC
+  struct stat this_buf;
+
+  if (stat(os_specific.c_str(), &this_buf) == 0) {
+    return this_buf.st_atime;
+  }
+#endif
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_file_size
 //       Access: Published
 //  Description: Returns the size of the file in bytes, or 0 if there
@@ -1878,6 +1908,156 @@ make_dir() const {
   return (result == 0);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::atomic_compare_and_exchange_contents
+//       Access: Public
+//  Description: Uses native file-locking mechanisms to atomically
+//               replace the contents of a (small) file with the
+//               specified contents, assuming it hasn't changed since
+//               the last time the file was read.
+//
+//               This is designed to be similar to
+//               AtomicAdjust::compare_and_exchange().  The method
+//               writes new_contents to the file, completely replacing
+//               the original contents; but only if the original
+//               contents exactly matched old_contents.  If the file
+//               was modified, returns true.  If, however, the
+//               original contents of the file did not exactly match
+//               old_contents, then the file is not modified, and
+//               false is returned.  In either case, orig_contents is
+//               filled with the original contents of the file.
+//
+//               If the file does not exist, it is implicitly created,
+//               and its original contents are empty.
+//
+//               If an I/O error occurs on write, some of the file may
+//               or may not have been written, and false is returned.
+//
+//               Expressed in pseudo-code, the logic is:
+//
+//                 orig_contents = file.read();
+//                 if (orig_contents == old_contents) {
+//                   file.write(new_contents);
+//                   return true;
+//                 }
+//                 return false;
+//
+//               The operation is guaranteed to be atomic only if the
+//               only operations that read and write to this file are
+//               atomic_compare_and_exchange_contents() and
+//               atomic_read_contents().
+////////////////////////////////////////////////////////////////////
+bool Filename::
+atomic_compare_and_exchange_contents(string &orig_contents, 
+                                     const string &old_contents, 
+                                     const string &new_contents) const {
+#ifdef WIN32_VC
+  // Todo.
+  return false;
+
+#else  // WIN32_VC
+  string os_specific = to_os_specific();
+  int fd = open(os_specific.c_str(), O_RDWR | O_CREAT, 0666);
+  if (fd < 0) {
+    perror(os_specific.c_str());
+    return false;
+  }
+
+  static const size_t buf_size = 512;
+  char buf[buf_size];
+
+  orig_contents = string();
+
+  lockf(fd, F_LOCK, 0);
+    
+  size_t bytes_read = read(fd, buf, buf_size);
+  while (bytes_read > 0) {
+    orig_contents += string(buf, bytes_read);
+    bytes_read = read(fd, buf, buf_size);
+  }
+
+  if (bytes_read < 0) {
+    perror(os_specific.c_str());
+    close(fd);
+    return false;
+  }
+
+  bool match = false;
+  if (orig_contents == old_contents) {
+    match = true;
+    lseek(fd, 0, SEEK_SET);
+    ssize_t bytes_written = write(fd, new_contents.data(), new_contents.size());
+    if (bytes_written < 0) {
+      perror(os_specific.c_str());
+      close(fd);
+      return false;
+    }
+  }
+
+  if (close(fd) < 0) {
+    perror(os_specific.c_str());
+    return false;
+  }
+  
+  return match;
+#endif  // WIN32_VC
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::atomic_compare_and_exchange_contents
+//       Access: Public
+//  Description: Uses native file-locking mechanisms to atomically
+//               read the contents of a (small) file.  This is the
+//               only way to read a file protected by
+//               atomic_compare_and_exchange_contents(), and be
+//               confident that the read operation is actually atomic
+//               with respect to that method.
+//
+//               If the file does not exist, it is implicitly created,
+//               and its contents are empty.
+//
+//               If the file is read successfully, fills its contents
+//               in the indicated string, and returns true.  If the
+//               file cannot be read, returns false.
+////////////////////////////////////////////////////////////////////
+bool Filename::
+atomic_read_contents(string &contents) const {
+#ifdef WIN32_VC
+  // Todo.
+  return false;
+
+#else  // WIN32_VC
+  string os_specific = to_os_specific();
+  int fd = open(os_specific.c_str(), O_RDONLY | O_CREAT, 0666);
+  if (fd < 0) {
+    perror(os_specific.c_str());
+    return false;
+  }
+
+  static const size_t buf_size = 512;
+  char buf[buf_size];
+
+  contents = string();
+
+  lockf(fd, F_LOCK, 0);
+    
+  size_t bytes_read = read(fd, buf, buf_size);
+  while (bytes_read > 0) {
+    contents += string(buf, bytes_read);
+    bytes_read = read(fd, buf, buf_size);
+  }
+
+  if (bytes_read < 0) {
+    perror(os_specific.c_str());
+    close(fd);
+    return false;
+  }
+
+  close(fd);
+  return true;
+#endif  // WIN32_VC
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::locate_basename
