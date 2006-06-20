@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
+#include "linkedListNode.h"
 
 class BamWriter;
 class BamReader;
@@ -36,7 +37,8 @@ class FactoryParams;
 //               contains information needed to test the validity of
 //               the cache.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BamCacheRecord : public TypedWritableReferenceCount {
+class EXPCL_PANDA BamCacheRecord : public TypedWritableReferenceCount,
+                                   public LinkedListNode {
 private:
   BamCacheRecord();
   BamCacheRecord(const Filename &source_pathname, 
@@ -71,6 +73,12 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
 private:
+  // This class is used to sort BamCacheRecords by access time.
+  class SortByAccessTime {
+  public:
+    INLINE bool operator () (const BamCacheRecord *a, const BamCacheRecord *b) const;
+  };
+
   static string format_timestamp(time_t timestamp);
 
   Filename _source_pathname;
@@ -126,6 +134,7 @@ private:
 
   friend class BamCache;
   friend class BamCacheIndex;
+  friend class BamCacheRecord::SortByAccessTime;
 };
 
 INLINE ostream &operator << (ostream &out, const BamCacheRecord &record) {

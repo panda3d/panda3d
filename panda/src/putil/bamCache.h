@@ -49,11 +49,17 @@ PUBLISHED:
   BamCache();
   ~BamCache();
 
-  INLINE bool get_active() const;
   INLINE void set_active(bool flag);
+  INLINE bool get_active() const;
 
-  INLINE const Filename &get_root() const;
   void set_root(const Filename &root);
+  INLINE const Filename &get_root() const;
+
+  INLINE void set_flush_time(int flush_time);
+  INLINE int get_flush_time() const;
+
+  INLINE void set_cache_max_kbytes(int max_kbytes);
+  INLINE int get_cache_max_kbytes() const;
 
   PT(BamCacheRecord) lookup(const Filename &source_filename, 
                             const string &cache_extension);
@@ -75,6 +81,8 @@ private:
   void add_to_index(const BamCacheRecord *record);
   void remove_from_index(const Filename &source_filename);
 
+  void check_cache_size();
+
   static BamCacheIndex *do_read_index(Filename &index_pathname);
   static bool do_write_index(Filename &index_pathname, const BamCacheIndex *index);
 
@@ -90,6 +98,8 @@ private:
 
   bool _active;
   Filename _root;
+  int _flush_time;
+  int _max_kbytes;
   static BamCache *_global_ptr;
 
   BamCacheIndex *_index;

@@ -25,6 +25,8 @@
 #include "bam.h"
 #include "typeRegistry.h"
 #include "string_utils.h"
+#include "configVariableInt.h"
+#include "configVariableString.h"
 
 BamCache *BamCache::_global_ptr = NULL;
 
@@ -39,6 +41,28 @@ BamCache() :
   _index(new BamCacheIndex),
   _index_stale_since(0)
 {
+  ConfigVariableFilename model_cache_dir
+    ("model-cache-dir", Filename(), 
+     PRC_DESC("The full path to a directory, local to this computer, in which "
+              "model and texture files will be cached on load.  If a directory "
+              "name is specified here, files may be loaded from the cache "
+              "instead of from their actual pathnames, which may save load time, "
+              "especially if you are loading egg files instead of bam files, "
+              "or if you are loading models from a shared network drive.  "
+              "If this is the empty string, no cache will be used."));
+  
+  ConfigVariableInt model_cache_flush
+    ("model-cache-flush", 30,
+     PRC_DESC("This is the amount of time, in seconds, between automatic "
+              "flushes of the model-cache index."));
+  
+  ConfigVariableInt model_cache_max_kbytes
+    ("model-cache-max-kbytes", 1048576,
+     PRC_DESC("This is the maximum size of the model cache, in kilobytes."));
+
+  _flush_time = model_cache_flush;
+  _max_kbytes = model_cache_max_kbytes;
+  set_root(model_cache_dir);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,6 +109,7 @@ set_root(const Filename &root) {
   _index = new BamCacheIndex;
   _index_stale_since = 0;
   read_index();
+  check_cache_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -242,7 +267,7 @@ void BamCache::
 consider_flush_index() {
   if (_index_stale_since != 0) {
     int elapsed = (int)time(NULL) - (int)_index_stale_since;
-    if (elapsed > model_cache_flush) {
+    if (elapsed > _flush_time) {
       flush_index();
     }
   }
@@ -292,6 +317,7 @@ flush_index() {
     _index_ref_contents = orig_index;
     read_index();
   }
+  check_cache_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -380,6 +406,8 @@ merge_index(BamCacheIndex *new_index) {
   }
 
   BamCacheIndex *old_index = _index;
+  old_index->release_records();
+  new_index->release_records();
   _index = new BamCacheIndex;
 
   BamCacheIndex::Records::const_iterator ai = old_index->_records.begin();
@@ -394,7 +422,6 @@ merge_index(BamCacheIndex *new_index) {
       Filename cache_pathname(_root, record->get_cache_filename());
       if (cache_pathname.exists()) {
         // The file exists; keep it.
-        _index->_cache_size += record->_record_size;
         _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(record->get_source_pathname(), record));
       }
       ++ai;
@@ -405,7 +432,6 @@ merge_index(BamCacheIndex *new_index) {
       Filename cache_pathname(_root, record->get_cache_filename());
       if (cache_pathname.exists()) {
         // The file exists; keep it.
-        _index->_cache_size += record->_record_size;
         _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(record->get_source_pathname(), record));
       }
       ++bi;
@@ -417,7 +443,6 @@ merge_index(BamCacheIndex *new_index) {
       if (*a_record == *b_record) {
         // They're the same entry.  It doesn't really matter which one
         // we keep.
-        _index->_cache_size += a_record->_record_size;
         _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(a_record->get_source_pathname(), a_record));
 
       } else {
@@ -429,7 +454,6 @@ merge_index(BamCacheIndex *new_index) {
         if (cache_pathname.exists()) {
           PT(BamCacheRecord) record = do_read_record(cache_pathname, false);
           if (record != (BamCacheRecord *)NULL) {
-            _index->_cache_size += record->_record_size;
             _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(record->get_source_pathname(), record));
           }
         }
@@ -447,7 +471,6 @@ merge_index(BamCacheIndex *new_index) {
     Filename cache_pathname(_root, record->get_cache_filename());
     if (cache_pathname.exists()) {
       // The file exists; keep it.
-      _index->_cache_size += record->_record_size;
       _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(record->get_source_pathname(), record));
     }
     ++ai;
@@ -459,11 +482,12 @@ merge_index(BamCacheIndex *new_index) {
     Filename cache_pathname(_root, record->get_cache_filename());
     if (cache_pathname.exists()) {
       // The file exists; keep it.
-      _index->_cache_size += record->_record_size;
       _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(record->get_source_pathname(), record));
     }
     ++bi;
   }
+
+  _index->process_new_records();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -505,13 +529,14 @@ rebuild_index() {
           util_cat.info()
             << "Multiple cache files defining " << record->get_source_pathname() << "\n";
           pathname.unlink();
-        } else {
-          _index->_cache_size += record->_record_size;
         }
       }
     }
   }
+  _index->process_new_records();
+
   _index_stale_since = time(NULL);
+  check_cache_size();
   flush_index();
 }
 
@@ -519,27 +544,16 @@ rebuild_index() {
 //     Function: BamCache::add_to_index
 //       Access: Private
 //  Description: Updates the index entry for the indicated record.
+//               Note that a copy of the record is made first.
 ////////////////////////////////////////////////////////////////////
 void BamCache::
 add_to_index(const BamCacheRecord *record) {
   PT(BamCacheRecord) new_record = record->make_copy();
 
-  pair<BamCacheIndex::Records::iterator, bool> result = 
-    _index->_records.insert(BamCacheIndex::Records::value_type(new_record->get_source_pathname(), new_record));
-  if (!result.second) {
-    // We already had a record for this filename; it gets replaced.
-    PT(BamCacheRecord) orig_record = (*result.first).second;
-    if (*orig_record == *record) {
-      // Well, never mind.  The record hasn't changed.
-      return;
-    }
-
-    _index->_cache_size -= orig_record->_record_size;
-    (*result.first).second = new_record;
+  if (_index->add_record(new_record)) {
+    mark_index_stale();
+    check_cache_size();
   }
-
-  _index->_cache_size += new_record->_record_size;
-  mark_index_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -550,16 +564,33 @@ add_to_index(const BamCacheRecord *record) {
 ////////////////////////////////////////////////////////////////////
 void BamCache::
 remove_from_index(const Filename &source_pathname) {
-  BamCacheIndex::Records::iterator ri = _index->_records.find(source_pathname);
-  if (ri == _index->_records.end()) {
-    // No entry for this record; no problem.
+  if (_index->remove_record(source_pathname)) {
+    mark_index_stale();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::check_cache_size
+//       Access: Private
+//  Description: If the cache size has exceeded its specified size
+//               limit, removes an old file.
+////////////////////////////////////////////////////////////////////
+void BamCache::
+check_cache_size() {
+  if (_index->_cache_size == 0) {
+    // 0 means no limit.
     return;
   }
 
-  PT(BamCacheRecord) record = (*ri).second;
-  _index->_cache_size -= record->_record_size;
-  _index->_records.erase(ri);
-  mark_index_stale();
+  if (_index->_cache_size > _max_kbytes * 1024) {
+    while (_index->_cache_size > _max_kbytes * 1024) {
+      PT(BamCacheRecord) record = _index->evict_old_file();
+      nassertv(record != (BamCacheRecord *)NULL);
+      Filename cache_pathname(_root, record->get_cache_filename());
+      cache_pathname.unlink();
+    }
+    mark_index_stale();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -894,20 +925,7 @@ void BamCache::
 make_global() {
   _global_ptr = new BamCache;
 
-  ConfigVariableFilename model_cache_dir
-    ("model-cache-dir", Filename(), 
-     PRC_DESC("The full path to a directory, local to this computer, in which "
-              "model and texture files will be cached on load.  If a directory "
-              "name is specified here, files may be loaded from the cache "
-              "instead of from their actual pathnames, which may save load time, "
-              "especially if you are loading egg files instead of bam files, "
-              "or if you are loading models from a shared network drive.  "
-              "If this is the empty string, no cache will be used."));
-  if (model_cache_dir.empty()) {
+  if (_global_ptr->get_root().empty()) {
     _global_ptr->set_active(false);
-
-  } else {
-    _global_ptr->set_active(true);
-    _global_ptr->set_root(model_cache_dir);
   }
 }

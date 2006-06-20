@@ -24,7 +24,6 @@
 #include "configVariableSearchPath.h"
 #include "configVariableEnum.h"
 #include "configVariableDouble.h"
-#include "configVariableInt.h"
 #include "bamEndian.h"
 #include "bamTextureMode.h"
 #include "dconfig.h"
@@ -61,7 +60,5 @@ extern ConfigVariableDouble clock_degrade_factor;
 extern ConfigVariableDouble max_dt;
 extern ConfigVariableDouble sleep_precision;
 extern ConfigVariableDouble average_frame_rate_interval;
-
-extern ConfigVariableInt model_cache_flush;
 
 #endif /* __CONFIG_UTIL_H__ */

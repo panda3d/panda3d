@@ -18,8 +18,24 @@
 
 #include "bamCacheIndex.h"
 #include "indent.h"
+#include <algorithm>
 
 TypeHandle BamCacheIndex::_type_handle;
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCacheIndex::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+BamCacheIndex::
+~BamCacheIndex() {
+#ifndef NDEBUG
+  // We need to "empty" the linked list to make the LinkedListNode
+  // destructors happy.
+  release_records();
+#endif
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamCacheIndex::write
@@ -33,7 +49,7 @@ write(ostream &out, int indent_level) const {
 
   Records::const_iterator ri;
   for (ri = _records.begin(); ri != _records.end(); ++ri) {
-    PT(BamCacheRecord) record = (*ri).second;
+    BamCacheRecord *record = (*ri).second;
     indent(out, indent_level + 2)
       << setw(10) << record->_record_size << " "
       << record->get_cache_filename() << " "
@@ -42,6 +58,133 @@ write(ostream &out, int indent_level) const {
   out << "\n";
   indent(out, indent_level)
     << setw(12) << _cache_size << " bytes total\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCacheIndex::process_new_records
+//       Access: Private
+//  Description: Should be called after the _records index has been
+//               filled externally, this will sort the records by
+//               access time and calculate _cache_size.
+////////////////////////////////////////////////////////////////////
+void BamCacheIndex::
+process_new_records() {
+  nassertv(_cache_size == 0);
+
+  // Fill up a vector so we can sort the records into order by access
+  // time.
+  RecordVector rv;
+  rv.reserve(_records.size());
+
+  Records::const_iterator ri;
+  for (ri = _records.begin(); ri != _records.end(); ++ri) {
+    BamCacheRecord *record = (*ri).second;
+    _cache_size += record->_record_size;
+    rv.push_back(record);
+  }
+
+  sort(rv.begin(), rv.end(), BamCacheRecord::SortByAccessTime());
+
+  // Now put them into the linked list.
+  RecordVector::const_iterator rvi;
+  for (rvi = rv.begin(); rvi != rv.end(); ++rvi) {
+    BamCacheRecord *record = *rvi;
+    record->insert_before(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCacheIndex::release_records
+//       Access: Private
+//  Description: This is the inverse of process_new_records: it
+//               releases the records from the linked list, so that
+//               they may be added to another index or whatever.
+//               Calling this, of course, invalidates the index until
+//               process_new_records() is called again.
+////////////////////////////////////////////////////////////////////
+void BamCacheIndex::
+release_records() {
+  Records::const_iterator ri;
+  for (ri = _records.begin(); ri != _records.end(); ++ri) {
+    BamCacheRecord *record = (*ri).second;
+    record->_next = NULL;
+    record->_prev = NULL;
+  }
+  _next = this;
+  _prev = this;
+  _cache_size = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCacheIndex::evict_old_file
+//       Access: Private
+//  Description: Evicts an old file from the cache.  Records the record.
+////////////////////////////////////////////////////////////////////
+PT(BamCacheRecord) BamCacheIndex::
+evict_old_file() {
+  // The first record in the linked list is the least-recently-used
+  // one.
+  nassertr(_next != this, NULL);
+  PT(BamCacheRecord) record = (BamCacheRecord *)_next;
+  bool removed = remove_record(record->get_source_pathname());
+  nassertr(removed, NULL);
+
+  return record;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCacheIndex::add_record
+//       Access: Private
+//  Description: Adds a newly-created BamCacheRecord into the index.
+//               If a matching record is already in the index, it is
+//               replaced with the new record.  Returns true if the
+//               record was added, or false if the equivalent record
+//               was already there and the index is unchanged.
+////////////////////////////////////////////////////////////////////
+bool BamCacheIndex::
+add_record(BamCacheRecord *record) {
+  pair<Records::iterator, bool> result = 
+    _records.insert(Records::value_type(record->get_source_pathname(), record));
+  if (!result.second) {
+    // We already had a record for this filename; it gets replaced.
+    BamCacheRecord *orig_record = (*result.first).second;
+    orig_record->remove_from_list();
+    if (*orig_record == *record) {
+      // Well, never mind.  The record hasn't changed.
+      orig_record->insert_before(this);
+      return false;
+    }
+
+    _cache_size -= orig_record->_record_size;
+    (*result.first).second = record;
+  }
+  record->insert_before(this);
+
+  _cache_size += record->_record_size;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCacheIndex::remove_record
+//       Access: Private
+//  Description: Searches for the matching record in the index and
+//               removes it if it is found.  Returns true if the
+//               record was found and removed, or false if there was
+//               no such record and the index is unchanged.
+////////////////////////////////////////////////////////////////////
+bool BamCacheIndex::
+remove_record(const Filename &source_pathname) {
+  Records::iterator ri = _records.find(source_pathname);
+  if (ri == _records.end()) {
+    // No entry for this record; no problem.
+    return false;
+  }
+
+  BamCacheRecord *record = (*ri).second;
+  record->remove_from_list();
+  _cache_size -= record->_record_size;
+  _records.erase(ri);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -113,12 +256,12 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
       util_cat.info()
         << "Multiple cache files defining " << record->get_source_pathname()
         << " in index.\n";
-    } else {
-      _cache_size += record->_record_size;
     }
   }
 
   _record_vector.clear();
+
+  process_new_records();
 
   return pi;
 }

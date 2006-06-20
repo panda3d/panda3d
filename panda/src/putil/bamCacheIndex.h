@@ -24,6 +24,7 @@
 #include "pointerTo.h"
 #include "filename.h"
 #include "typedWritable.h"
+#include "linkedListNode.h"
 #include "pmap.h"
 #include "pvector.h"
 
@@ -37,12 +38,21 @@
 //               For the most part, this class is used only by the
 //               BamCache class.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BamCacheIndex : public TypedWritable {
+class EXPCL_PANDA BamCacheIndex : public TypedWritable, public LinkedListNode {
 private:
   INLINE BamCacheIndex();
+  ~BamCacheIndex();
 
 public:
   void write(ostream &out, int indent_level = 0) const;
+
+private:
+  void process_new_records();
+  void release_records();
+  PT(BamCacheRecord) evict_old_file();
+
+  bool add_record(BamCacheRecord *record);
+  bool remove_record(const Filename &source_pathname);
 
 private:
   typedef pmap<Filename, PT(BamCacheRecord) > Records;

@@ -158,9 +158,3 @@ ConfigVariableDouble sleep_precision
 
 ConfigVariableDouble average_frame_rate_interval
 ("average-frame-rate-interval", 1.0);
-
-ConfigVariableInt model_cache_flush
-("model-cache-flush", 30,
- PRC_DESC("This is the amount of time, in seconds, between automatic "
-          "flushes of the model-cache index, if model-cache-dir is "
-          "in effect."));

@@ -23,7 +23,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE BamCacheIndex::
-BamCacheIndex() :
+BamCacheIndex() : 
+  LinkedListNode(true),
   _cache_size(0)
 {
 }

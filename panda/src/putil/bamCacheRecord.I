@@ -180,3 +180,13 @@ set_data(TypedWritable *data, bool owns_pointer) {
   _data = data;
   _owns_pointer = owns_pointer;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCacheRecord::SortByAccessTime::operator ()
+//       Access: Public
+//  Description: Returns true if a sorts before b, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool BamCacheRecord::SortByAccessTime::
+operator () (const BamCacheRecord *a, const BamCacheRecord *b) const {
+  return (a->_record_access_time < b->_record_access_time);
+}
