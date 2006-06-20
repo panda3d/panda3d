@@ -36,6 +36,7 @@ class EggPolygon;
 class EggVertex;
 class EggVertexPool;
 class DSearchPath;
+class BamCacheRecord;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggGroupNode
@@ -174,7 +175,8 @@ protected:
   int find_textures(EggTextureCollection *collection);
   int find_materials(EggMaterialCollection *collection);
   bool r_load_externals(const DSearchPath &searchpath, 
-                        CoordinateSystem coordsys);
+                        CoordinateSystem coordsys,
+                        BamCacheRecord *record);
 
 private:
   INLINE static bool is_right(const LVector2d &v1, const LVector2d &v2);

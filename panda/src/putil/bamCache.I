@@ -69,3 +69,16 @@ get_global_ptr() {
   }
   return _global_ptr;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::mark_index_stale
+//       Access: Private
+//  Description: Indicates that the index has been modified and will
+//               need to be written to disk eventually.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCache::
+mark_index_stale() {
+  if (_index_stale_since == 0) {
+    _index_stale_since = time(NULL);
+  }
+}

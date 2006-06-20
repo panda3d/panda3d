@@ -72,7 +72,12 @@ supports_compressed() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) LoaderFileTypeBam::
-load_file(const Filename &path, const LoaderOptions &options) const {
+load_file(const Filename &path, const LoaderOptions &options,
+          BamCacheRecord *record) const {
+  if (record != (BamCacheRecord *)NULL) {
+    record->add_dependent_file(path);
+  }
+
   bool report_errors = (options.get_flags() & LoaderOptions::LF_report_errors) != 0;
   BamFile bam_file;
   if (!bam_file.open_read(path, report_errors)) {

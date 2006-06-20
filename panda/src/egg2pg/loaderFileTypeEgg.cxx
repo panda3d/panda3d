@@ -70,7 +70,8 @@ supports_compressed() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) LoaderFileTypeEgg::
-load_file(const Filename &path, const LoaderOptions &) const {
-  PT(PandaNode) result = load_egg_file(path);
+load_file(const Filename &path, const LoaderOptions &, 
+          BamCacheRecord *record) const {
+  PT(PandaNode) result = load_egg_file(path, CS_default, record);
   return result;
 }

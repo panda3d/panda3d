@@ -27,6 +27,8 @@
 #include "pnotify.h"
 #include "dSearchPath.h"
 
+class BamCacheRecord;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : EggData
 // Description : This is the primary interface into all the egg data,
@@ -54,6 +56,7 @@ PUBLISHED:
   void merge(EggData &other);
 
   bool load_externals(const DSearchPath &searchpath = DSearchPath());
+  bool load_externals(const DSearchPath &searchpath, BamCacheRecord *record);
   int collapse_equivalent_textures();
   int collapse_equivalent_materials();
 

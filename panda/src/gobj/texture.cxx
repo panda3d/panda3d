@@ -470,7 +470,7 @@ read_txo(istream &in, const string &filename) {
 
   } else if (!object->is_of_type(Texture::get_class_type())) {
     gobj_cat.error()
-      << "Texture object " << filename << "contains a "
+      << "Texture object " << filename << " contains a "
       << object->get_type() << ", not a Texture.\n";
     return false;
   }

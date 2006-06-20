@@ -22,6 +22,11 @@
 #include "pandabase.h"
 #include "bamCacheRecord.h"
 #include "pointerTo.h"
+#include "filename.h"
+#include "pmap.h"
+#include "pvector.h"
+
+class BamCacheIndex;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BamCache
@@ -29,6 +34,15 @@
 //               objects generated from model files and texture images
 //               (as well as possibly other kinds of loadable objects
 //               that can be stored in bam file format).
+//
+//               This class also maintains a persistent index that
+//               lists all of the cached objects (see BamCacheIndex).
+//               We go through some considerable effort to make sure
+//               this index gets saved correctly to disk, even in the
+//               presence of multiple different processes writing to
+//               the same index, and without relying too heavily on
+//               low-level os-provided file locks (which work poorly
+//               with C++ iostreams).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BamCache {
 PUBLISHED:
@@ -45,14 +59,31 @@ PUBLISHED:
                             const string &cache_extension);
   bool store(BamCacheRecord *record);
 
+  void consider_flush_index();
+  void flush_index();
+
   INLINE static BamCache *get_global_ptr();
 
 private:
+  void read_index();
+  bool read_index_pathname(Filename &index_pathname,
+                           string &index_ref_contents) const;
+  void merge_index(BamCacheIndex *new_index);
+  void rebuild_index();
+  INLINE void mark_index_stale();
+
+  void add_to_index(const BamCacheRecord *record);
+  void remove_from_index(const Filename &source_filename);
+
+  static BamCacheIndex *do_read_index(Filename &index_pathname);
+  static bool do_write_index(Filename &index_pathname, const BamCacheIndex *index);
+
   PT(BamCacheRecord) find_and_read_record(const Filename &source_pathname,
-                                          const Filename &cache_filename) const;
+                                          const Filename &cache_filename);
   PT(BamCacheRecord) read_record(const Filename &source_pathname,
                                  const Filename &cache_filename,
-                                 int pass) const;
+                                 int pass);
+  static PT(BamCacheRecord) do_read_record(Filename &cache_pathname, bool read_data);
 
   static string hash_filename(const string &filename);
   static void make_global();
@@ -60,6 +91,12 @@ private:
   bool _active;
   Filename _root;
   static BamCache *_global_ptr;
+
+  BamCacheIndex *_index;
+  time_t _index_stale_since;
+
+  Filename _index_pathname;
+  string _index_ref_contents;
 };
 
 #include "bamCache.I"

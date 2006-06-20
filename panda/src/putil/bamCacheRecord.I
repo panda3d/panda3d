@@ -18,6 +18,34 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamCacheRecord::make_copy
+//       Access: Published
+//  Description: Returns a duplicate of the BamCacheRecord.  The
+//               duplicate will not have a data pointer set, even
+//               though one may have been assigned to the original via
+//               set_data().
+////////////////////////////////////////////////////////////////////
+INLINE PT(BamCacheRecord) BamCacheRecord::
+make_copy() const {
+  return new BamCacheRecord(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCacheRecord::operator == 
+//       Access: Published
+//  Description: Returns true if the record matches the other record
+//               in those attributes which get written to disk.  Does
+//               not compare the data pointer.
+////////////////////////////////////////////////////////////////////
+INLINE bool BamCacheRecord::
+operator == (const BamCacheRecord &other) const {
+  return (_source_pathname == other._source_pathname &&
+          _cache_filename == other._cache_filename &&
+          _recorded_time == other._recorded_time &&
+          _record_size == other._record_size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamCacheRecord::get_source_pathname
 //       Access: Published
 //  Description: Returns the full pathname to the source file that

@@ -41,9 +41,14 @@ private:
   BamCacheRecord();
   BamCacheRecord(const Filename &source_pathname, 
                  const Filename &cache_filename);
+  BamCacheRecord(const BamCacheRecord &copy);
 
 PUBLISHED:
   virtual ~BamCacheRecord();
+
+  INLINE PT(BamCacheRecord) make_copy() const;
+
+  INLINE bool operator == (const BamCacheRecord &other) const;
 
   INLINE const Filename &get_source_pathname() const;
   INLINE const Filename &get_cache_filename() const;
@@ -71,6 +76,7 @@ private:
   Filename _source_pathname;
   Filename _cache_filename;
   time_t _recorded_time;
+  off_t _record_size;  // this is accurate only in the index file.
 
   class DependentFile {
   public:
@@ -87,6 +93,11 @@ private:
   Filename _cache_pathname;
   TypedWritable *_data;
   bool _owns_pointer;
+
+  // The following are not recorded to disk, nor even returned by the
+  // BamCache interface.  They are strictly meaningful to the
+  // BamCacheRecords stored internally within the BamCache object.
+  time_t _record_access_time;
 
 public:
   static void register_with_read_factory();
@@ -114,6 +125,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class BamCache;
+  friend class BamCacheIndex;
 };
 
 INLINE ostream &operator << (ostream &out, const BamCacheRecord &record) {

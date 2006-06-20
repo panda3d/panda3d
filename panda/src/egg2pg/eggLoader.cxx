@@ -877,6 +877,17 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
     wanted_alpha = egg_tex->has_alpha_filename();
   }
 
+  // Since some properties of the textures are inferred from the
+  // texture files themselves (if the properties are not explicitly
+  // specified in the egg file), then we add the textures as
+  // dependents for the egg file.
+  if (_record != (BamCacheRecord *)NULL) {
+    _record->add_dependent_file(egg_tex->get_fullpath());
+    if (egg_tex->has_alpha_filename() && wanted_alpha) {
+      _record->add_dependent_file(egg_tex->get_alpha_fullpath());
+    }
+  }
+
   PT(Texture) tex;
   switch (egg_tex->get_texture_type()) {
   case EggTexture::TT_unspecified:

@@ -17,12 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "bamCache.h"
+#include "bamCacheIndex.h"
 #include "hashVal.h"
 #include "datagramInputFile.h"
 #include "datagramOutputFile.h"
 #include "config_util.h"
 #include "bam.h"
 #include "typeRegistry.h"
+#include "string_utils.h"
 
 BamCache *BamCache::_global_ptr = NULL;
 
@@ -33,7 +35,9 @@ BamCache *BamCache::_global_ptr = NULL;
 ////////////////////////////////////////////////////////////////////
 BamCache::
 BamCache() :
-  _active(true)
+  _active(true),
+  _index(new BamCacheIndex),
+  _index_stale_since(0)
 {
 }
 
@@ -44,6 +48,9 @@ BamCache() :
 ////////////////////////////////////////////////////////////////////
 BamCache::
 ~BamCache() {
+  flush_index();
+  delete _index;
+  _index = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,6 +67,7 @@ BamCache::
 ////////////////////////////////////////////////////////////////////
 void BamCache::
 set_root(const Filename &root) {
+  flush_index();
   _root = root;
 
   // For now, the filename must be a directory.  Maybe eventually we
@@ -72,6 +80,11 @@ set_root(const Filename &root) {
     dirname.make_dir();
   }
   nassertv(root.is_directory());
+
+  delete _index;
+  _index = new BamCacheIndex;
+  _index_stale_since = 0;
+  read_index();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,6 +111,8 @@ set_root(const Filename &root) {
 ////////////////////////////////////////////////////////////////////
 PT(BamCacheRecord) BamCache::
 lookup(const Filename &source_filename, const string &cache_extension) {
+  consider_flush_index();
+
   Filename source_pathname(source_filename);
   source_pathname.make_absolute();
 
@@ -129,6 +144,8 @@ store(BamCacheRecord *record) {
   nassertr(!record->_cache_pathname.empty(), false);
   nassertr(record->has_data(), false);
 
+  consider_flush_index();
+
 #ifndef NDEBUG
   // Ensure that the cache_pathname is within the _root directory tree.
   Filename rel_pathname(record->_cache_pathname);
@@ -138,30 +155,40 @@ store(BamCacheRecord *record) {
 
   record->_recorded_time = time(NULL);
 
-  ofstream cache_file;
+  Filename cache_pathname = Filename::binary_filename(record->_cache_pathname);
 
-  Filename filename = Filename::binary_filename(record->_cache_pathname);
-  if (!filename.open_write(cache_file)) {
+  // We actually do the write to a temporary filename first, and then
+  // move it into place, so that no one attempts to read the file
+  // while it is in the process of being written.
+  Filename temp_pathname = cache_pathname;
+  temp_pathname.set_extension("tmp");
+  temp_pathname.set_binary();
+
+  ofstream temp_file;
+  if (!temp_pathname.open_write(temp_file)) {
     util_cat.error()
-      << "Could not open cache file: " << filename << "\n";
+      << "Could not open cache file: " << temp_pathname << "\n";
     return false;
   }
 
   DatagramOutputFile dout;
-  if (!dout.open(cache_file)) {
+  if (!dout.open(temp_file)) {
     util_cat.error()
-      << "Could not write cache file: " << filename << "\n";
+      << "Could not write cache file: " << temp_pathname << "\n";
+    temp_pathname.unlink();
     return false;
   }
 
   if (!dout.write_header(_bam_header)) {
     util_cat.error()
-      << "Unable to write to " << filename << "\n";
+      << "Unable to write to " << temp_pathname << "\n";
+    temp_pathname.unlink();
     return false;
   }
 
-  BamWriter writer(&dout, filename);
+  BamWriter writer(&dout, temp_pathname);
   if (!writer.init()) {
+    temp_pathname.unlink();
     return false;
   }
 
@@ -176,13 +203,478 @@ store(BamCacheRecord *record) {
   }
 
   if (!writer.write_object(record)) {
+    temp_pathname.unlink();
     return false;
   }
 
   if (!writer.write_object(record->get_data())) {
+    temp_pathname.unlink();
     return false;
   }
 
+  record->_record_size = temp_file.tellp();
+  temp_file.close();
+
+  // Now move the file into place.
+  if (!temp_pathname.rename_to(cache_pathname)) {
+    cache_pathname.unlink();
+    if (!temp_pathname.rename_to(cache_pathname)) {
+      util_cat.error()
+        << "Unable to rename " << temp_pathname << " to " 
+        << cache_pathname << "\n";
+      temp_pathname.unlink();
+      return false;
+    }
+  }
+
+  add_to_index(record);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::consider_flush_index
+//       Access: Published
+//  Description: Flushes the index if enough time has elapsed since
+//               the index was last flushed.
+////////////////////////////////////////////////////////////////////
+void BamCache::
+consider_flush_index() {
+  if (_index_stale_since != 0) {
+    int elapsed = (int)time(NULL) - (int)_index_stale_since;
+    if (elapsed > model_cache_flush) {
+      flush_index();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::flush_index
+//       Access: Published
+//  Description: Ensures the index is written to disk.
+////////////////////////////////////////////////////////////////////
+void BamCache::
+flush_index() {
+  if (_index_stale_since == 0) {
+    // Never mind.
+    return;
+  }
+
+  while (true) {
+    Filename temp_pathname = Filename::temporary(_root, "index-", ".boo");
+    
+    if (!do_write_index(temp_pathname, _index)) {
+      return;
+    }
+    
+    // Now atomically write the name of this index file to the index
+    // reference file.
+    Filename index_ref_pathname(_root, Filename("index_name.txt"));
+    string old_index = _index_ref_contents;
+    string new_index = temp_pathname.get_basename() + "\n";
+    string orig_index;
+    if (index_ref_pathname.atomic_compare_and_exchange_contents(orig_index, old_index, new_index)) {
+      // We successfully wrote our version of the index, and no other
+      // process beat us to it.  Our index is now the official one.
+      // Remove the old index.
+      _index_pathname.unlink();
+      _index_pathname = temp_pathname;
+      _index_ref_contents = new_index;
+      _index_stale_since = 0;
+      return;
+    }
+
+    // Shoot, some other process updated the index while we were
+    // trying to update it, and they beat us to it.  We have to merge,
+    // and try again.
+    temp_pathname.unlink();
+    _index_pathname = Filename(_root, Filename(trim(orig_index)));
+    _index_ref_contents = orig_index;
+    read_index();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::read_index
+//       Access: Private
+//  Description: Reads, or re-reads the index file from disk.  If
+//               _index_stale_since is nonzero, the index file is read
+//               and then merged with our current index.
+////////////////////////////////////////////////////////////////////
+void BamCache::
+read_index() {
+  if (!read_index_pathname(_index_pathname, _index_ref_contents)) {
+    // Couldn't read the index ref; rebuild the index.
+    rebuild_index();
+    return;
+  }
+
+  while (true) {
+    BamCacheIndex *new_index = do_read_index(_index_pathname);
+    if (new_index != (BamCacheIndex *)NULL) {
+      merge_index(new_index);
+      return;
+    }
+
+    // We couldn't read the index.  Maybe it's been removed already.
+    // See if the index_pathname has changed.
+    Filename old_index_pathname = _index_pathname;
+    if (!read_index_pathname(_index_pathname, _index_ref_contents)) {
+      // Couldn't read the index ref; rebuild the index.
+      rebuild_index();
+      return;
+    }
+
+    if (old_index_pathname == _index_pathname) {
+      // Nope, we just couldn't read it.  Delete it and build a new
+      // one.
+      _index_pathname.unlink();
+      rebuild_index();
+      flush_index();
+      return;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::read_index_pathname
+//       Access: Private
+//  Description: Atomically reads the current index filename from the
+//               index reference file.  The index filename moves
+//               around as different processes update the index.
+////////////////////////////////////////////////////////////////////
+bool BamCache::
+read_index_pathname(Filename &index_pathname, string &index_ref_contents) const {
+  index_ref_contents.clear();
+  Filename index_ref_pathname(_root, Filename("index_name.txt"));
+  if (!index_ref_pathname.atomic_read_contents(index_ref_contents)) {
+    return false;
+  }
+
+  string trimmed = trim(index_ref_contents);
+  if (trimmed.empty()) {
+    index_pathname = Filename();
+  } else {
+    index_pathname = Filename(_root, Filename(trimmed));
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::merge_index
+//       Access: Private
+//  Description: The supplied index file has been updated by some other
+//               process.  Merge it with our current index.
+//
+//               Ownership of the pointer is transferred with this
+//               call.  The caller should assume that new_index will
+//               be deleted by this method.
+////////////////////////////////////////////////////////////////////
+void BamCache::
+merge_index(BamCacheIndex *new_index) {
+  if (_index_stale_since == 0) {
+    // If our index isn't stale, just replace it.
+    delete _index;
+    _index = new_index;
+    return;
+  }
+
+  BamCacheIndex *old_index = _index;
+  _index = new BamCacheIndex;
+
+  BamCacheIndex::Records::const_iterator ai = old_index->_records.begin();
+  BamCacheIndex::Records::const_iterator bi = new_index->_records.begin();
+  
+  while (ai != old_index->_records.end() && 
+         bi != new_index->_records.end()) {
+    if ((*ai).first < (*bi).first) {
+      // Here is an entry we have in our index, not present in the new
+      // index.
+      PT(BamCacheRecord) record = (*ai).second;
+      Filename cache_pathname(_root, record->get_cache_filename());
+      if (cache_pathname.exists()) {
+        // The file exists; keep it.
+        _index->_cache_size += record->_record_size;
+        _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(record->get_source_pathname(), record));
+      }
+      ++ai;
+
+    } else if ((*bi).first < (*ai).first) {
+      // Here is an entry in the new index, not present in our index.
+      PT(BamCacheRecord) record = (*bi).second;
+      Filename cache_pathname(_root, record->get_cache_filename());
+      if (cache_pathname.exists()) {
+        // The file exists; keep it.
+        _index->_cache_size += record->_record_size;
+        _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(record->get_source_pathname(), record));
+      }
+      ++bi;
+
+    } else {
+      // Here is an entry we have in both.
+      PT(BamCacheRecord) a_record = (*ai).second;
+      PT(BamCacheRecord) b_record = (*bi).second;
+      if (*a_record == *b_record) {
+        // They're the same entry.  It doesn't really matter which one
+        // we keep.
+        _index->_cache_size += a_record->_record_size;
+        _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(a_record->get_source_pathname(), a_record));
+
+      } else {
+        // They're different.  Just throw them both away, and re-read
+        // the current data from the cache file.
+
+        Filename cache_pathname(_root, a_record->get_cache_filename());
+
+        if (cache_pathname.exists()) {
+          PT(BamCacheRecord) record = do_read_record(cache_pathname, false);
+          if (record != (BamCacheRecord *)NULL) {
+            _index->_cache_size += record->_record_size;
+            _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(record->get_source_pathname(), record));
+          }
+        }
+      }
+
+      ++ai;
+      ++bi;
+    }
+  }
+
+  while (ai != old_index->_records.end()) {
+    // Here is an entry we have in our index, not present in the new
+    // index.
+    PT(BamCacheRecord) record = (*ai).second;
+    Filename cache_pathname(_root, record->get_cache_filename());
+    if (cache_pathname.exists()) {
+      // The file exists; keep it.
+      _index->_cache_size += record->_record_size;
+      _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(record->get_source_pathname(), record));
+    }
+    ++ai;
+  }
+   
+  while (bi != new_index->_records.end()) {
+    // Here is an entry in the new index, not present in our index.
+    PT(BamCacheRecord) record = (*bi).second;
+    Filename cache_pathname(_root, record->get_cache_filename());
+    if (cache_pathname.exists()) {
+      // The file exists; keep it.
+      _index->_cache_size += record->_record_size;
+      _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(record->get_source_pathname(), record));
+    }
+    ++bi;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::rebuild_index
+//       Access: Private
+//  Description: Regenerates the index from scratch by scanning the
+//               directory.
+////////////////////////////////////////////////////////////////////
+void BamCache::
+rebuild_index() {
+  vector_string contents;
+  if (!_root.scan_directory(contents)) {
+    util_cat.error()
+      << "Unable to read directory " << _root << ", caching disabled.\n";
+    set_active(false);
+    return;
+  }
+
+  delete _index;
+  _index = new BamCacheIndex;
+
+  vector_string::const_iterator ci;
+  for (ci = contents.begin(); ci != contents.end(); ++ci) {
+    Filename filename(*ci);
+    if (filename.get_extension() == "bam" ||
+        filename.get_extension() == "txo") {
+      Filename pathname(_root, filename);
+
+      PT(BamCacheRecord) record = do_read_record(pathname, false);
+      if (record == (BamCacheRecord *)NULL) {
+        // Well, it was invalid, so blow it away.
+        pathname.unlink();
+
+      } else {
+        record->_record_access_time = record->_recorded_time;
+
+        bool inserted = _index->_records.insert(BamCacheIndex::Records::value_type(record->get_source_pathname(), record)).second;
+        if (!inserted) {
+          util_cat.info()
+            << "Multiple cache files defining " << record->get_source_pathname() << "\n";
+          pathname.unlink();
+        } else {
+          _index->_cache_size += record->_record_size;
+        }
+      }
+    }
+  }
+  _index_stale_since = time(NULL);
+  flush_index();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::add_to_index
+//       Access: Private
+//  Description: Updates the index entry for the indicated record.
+////////////////////////////////////////////////////////////////////
+void BamCache::
+add_to_index(const BamCacheRecord *record) {
+  PT(BamCacheRecord) new_record = record->make_copy();
+
+  pair<BamCacheIndex::Records::iterator, bool> result = 
+    _index->_records.insert(BamCacheIndex::Records::value_type(new_record->get_source_pathname(), new_record));
+  if (!result.second) {
+    // We already had a record for this filename; it gets replaced.
+    PT(BamCacheRecord) orig_record = (*result.first).second;
+    if (*orig_record == *record) {
+      // Well, never mind.  The record hasn't changed.
+      return;
+    }
+
+    _index->_cache_size -= orig_record->_record_size;
+    (*result.first).second = new_record;
+  }
+
+  _index->_cache_size += new_record->_record_size;
+  mark_index_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::remove_from_index
+//       Access: Private
+//  Description: Removes the index entry for the indicated record, if
+//               there is one.
+////////////////////////////////////////////////////////////////////
+void BamCache::
+remove_from_index(const Filename &source_pathname) {
+  BamCacheIndex::Records::iterator ri = _index->_records.find(source_pathname);
+  if (ri == _index->_records.end()) {
+    // No entry for this record; no problem.
+    return;
+  }
+
+  PT(BamCacheRecord) record = (*ri).second;
+  _index->_cache_size -= record->_record_size;
+  _index->_records.erase(ri);
+  mark_index_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::do_read_index
+//       Access: Private, Static
+//  Description: Reads the index data from the specified filename.
+//               Returns a newly-allocated BamCacheIndex object on
+//               success, or NULL on failure.
+////////////////////////////////////////////////////////////////////
+BamCacheIndex *BamCache::
+do_read_index(Filename &index_pathname) {
+  if (index_pathname.empty()) {
+    return NULL;
+  }
+
+  index_pathname.set_binary();
+  ifstream index_file;
+  if (!index_pathname.open_read(index_file)) {
+    util_cat.error()
+      << "Could not open index file: " << index_pathname << "\n";
+    return NULL;
+  }
+
+  DatagramInputFile din;
+    
+  if (!din.open(index_file)) {
+    util_cat.debug()
+      << "Could not read index file: " << index_pathname << "\n";
+    return NULL;
+  }
+  
+  string head;
+  if (!din.read_header(head, _bam_header.size())) {
+    util_cat.debug()
+      << index_pathname << " is not an index file.\n";
+    return NULL;
+  }
+  
+  if (head != _bam_header) {
+    util_cat.debug()
+      << index_pathname << " is not an index file.\n";
+    return NULL;
+  }
+  
+  BamReader reader(&din, index_pathname);
+  if (!reader.init()) {
+    return NULL;
+  }
+
+  TypedWritable *object = reader.read_object();
+
+  if (object == (TypedWritable *)NULL) {
+    util_cat.error()
+      << "Cache index " << index_pathname << " is empty.\n";
+    return NULL;
+
+  } else if (!object->is_of_type(BamCacheIndex::get_class_type())) {
+    util_cat.error()
+      << "Cache index " << index_pathname << " contains a "
+      << object->get_type() << ", not a BamCacheIndex.\n";
+    return NULL;
+  }
+
+  BamCacheIndex *index = DCAST(BamCacheIndex, object);
+  if (!reader.resolve()) {
+    util_cat.error()
+      << "Unable to fully resolve cache index file.\n";
+    return NULL;
+  }
+
+  return index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::do_write_index
+//       Access: Private, Static
+//  Description: Writes the given index data to the specified filename.
+////////////////////////////////////////////////////////////////////
+bool BamCache::
+do_write_index(Filename &index_pathname, const BamCacheIndex *index) {
+  index_pathname.set_binary();
+  ofstream index_file;
+  if (!index_pathname.open_write(index_file)) {
+    util_cat.error()
+      << "Could not open index file: " << index_pathname << "\n";
+    return false;
+  }
+
+  DatagramOutputFile dout;
+  if (!dout.open(index_file)) {
+    util_cat.error()
+      << "Could not write index file: " << index_pathname << "\n";
+    index_pathname.unlink();
+    return false;
+  }
+
+  if (!dout.write_header(_bam_header)) {
+    util_cat.error()
+      << "Unable to write to " << index_pathname << "\n";
+    index_pathname.unlink();
+    return false;
+  }
+
+  BamWriter writer(&dout, index_pathname);
+  if (!writer.init()) {
+    index_pathname.unlink();
+    return false;
+  }
+
+  if (!writer.write_object(index)) {
+    index_pathname.unlink();
+    return false;
+  }
+
+  index_file.close();
   return true;
 }
 
@@ -197,12 +689,13 @@ store(BamCacheRecord *record) {
 ////////////////////////////////////////////////////////////////////
 PT(BamCacheRecord) BamCache::
 find_and_read_record(const Filename &source_pathname, 
-                     const Filename &cache_filename) const {
+                     const Filename &cache_filename) {
   int pass = 0;
   while (true) {
     PT(BamCacheRecord) record = 
       read_record(source_pathname, cache_filename, pass);
     if (record != (BamCacheRecord *)NULL) {
+      add_to_index(record);
       return record;
     }
     ++pass;
@@ -219,28 +712,64 @@ find_and_read_record(const Filename &source_pathname,
 PT(BamCacheRecord) BamCache::
 read_record(const Filename &source_pathname, 
             const Filename &cache_filename,
-            int pass) const {
-  Filename filename(_root, cache_filename);
+            int pass) {
+  Filename cache_pathname(_root, cache_filename);
   if (pass != 0) {
     ostringstream strm;
-    strm << filename.get_basename_wo_extension() << "_" << pass;
-    filename.set_basename_wo_extension(strm.str());
+    strm << cache_pathname.get_basename_wo_extension() << "_" << pass;
+    cache_pathname.set_basename_wo_extension(strm.str());
   }
   
-  if (!filename.exists()) {
+  if (!cache_pathname.exists()) {
     // There is no such cache file already.  Declare it.
-    filename.touch();
     PT(BamCacheRecord) record =
       new BamCacheRecord(source_pathname, cache_filename);
-    record->_cache_pathname = filename;
+    record->_cache_pathname = cache_pathname;
     return record;
   }
 
-  filename.set_binary();
-  ifstream cache_file;
-  if (!filename.open_read(cache_file)) {
+  PT(BamCacheRecord) record = do_read_record(cache_pathname, true);
+  if (record == (BamCacheRecord *)NULL) {
+    // Well, it was invalid, so blow it away, and make a new one.
+    cache_pathname.unlink();
+    remove_from_index(source_pathname);
+
+    PT(BamCacheRecord) record =
+      new BamCacheRecord(source_pathname, cache_filename);
+    record->_cache_pathname = cache_pathname;
+    return record;
+  }
+
+  if (record->get_source_pathname() != source_pathname) {
+    // This might be just a hash conflict.
     util_cat.debug()
-      << "Could not open cache file: " << filename << "\n";
+      << "Cache file " << cache_pathname << " references "
+      << record->get_source_pathname() << ", not "
+      << source_pathname << "\n";
+    return NULL;
+  }
+
+  if (!record->has_data()) {
+    // If we didn't find any data, the caller will have to reload it.
+    record->clear_dependent_files();
+  }
+
+  record->_cache_pathname = cache_pathname;
+  return record;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::do_read_record
+//       Access: Private, Static
+//  Description: Actually reads a record from the file.
+////////////////////////////////////////////////////////////////////
+PT(BamCacheRecord) BamCache::
+do_read_record(Filename &cache_pathname, bool read_data) {
+  cache_pathname.set_binary();
+  ifstream cache_file;
+  if (!cache_pathname.open_read(cache_file)) {
+    util_cat.debug()
+      << "Could not open cache file: " << cache_pathname << "\n";
     return NULL;
   }
 
@@ -248,24 +777,24 @@ read_record(const Filename &source_pathname,
     
   if (!din.open(cache_file)) {
     util_cat.debug()
-      << "Could not read cache file: " << filename << "\n";
+      << "Could not read cache file: " << cache_pathname << "\n";
     return NULL;
   }
   
   string head;
   if (!din.read_header(head, _bam_header.size())) {
     util_cat.debug()
-      << filename << " is not a cache file.\n";
+      << cache_pathname << " is not a cache file.\n";
     return NULL;
   }
   
   if (head != _bam_header) {
     util_cat.debug()
-      << filename << " is not a cache file.\n";
+      << cache_pathname << " is not a cache file.\n";
     return NULL;
   }
   
-  BamReader reader(&din, filename);
+  BamReader reader(&din, cache_pathname);
   if (!reader.init()) {
     return NULL;
   }
@@ -273,12 +802,12 @@ read_record(const Filename &source_pathname,
   TypedWritable *object = reader.read_object();
   if (object == (TypedWritable *)NULL) {
     util_cat.debug()
-      << filename << " is empty.\n";
+      << cache_pathname << " is empty.\n";
     return NULL;
     
   } else if (!object->is_of_type(BamCacheRecord::get_class_type())) {
     util_cat.debug()
-      << "Cache file " << filename << "contains a "
+      << "Cache file " << cache_pathname << " contains a "
       << object->get_type() << ", not a BamCacheRecord.\n";
     return NULL;
   }
@@ -286,15 +815,7 @@ read_record(const Filename &source_pathname,
   PT(BamCacheRecord) record = DCAST(BamCacheRecord, object);
   if (!reader.resolve()) {
     util_cat.debug()
-      << "Unable to fully resolve cache record in " << filename << "\n";
-    return NULL;
-  }
-
-  if (record->get_source_pathname() != source_pathname) {
-    util_cat.debug()
-      << "Cache file " << filename << " references "
-      << record->get_source_pathname() << ", not "
-      << source_pathname << "\n";
+      << "Unable to fully resolve cache record in " << cache_pathname << "\n";
     return NULL;
   }
 
@@ -303,7 +824,7 @@ read_record(const Filename &source_pathname,
   // and therefore the cache record will be returned.
 
   // We still need to decide whether the cache record is stale.
-  if (record->dependents_unchanged()) {
+  if (read_data && record->dependents_unchanged()) {
     // The cache record doesn't appear to be stale.  Load the cached
     // object.
     object = reader.read_object();
@@ -311,7 +832,7 @@ read_record(const Filename &source_pathname,
     if (object != (TypedWritable *)NULL) {
       if (!reader.resolve()) {
         util_cat.debug()
-          << "Unable to fully resolve cached object in " << filename << "\n";
+          << "Unable to fully resolve cached object in " << cache_pathname << "\n";
         delete object;
       } else {
         // The object is valid.  Store it in the record.
@@ -319,13 +840,15 @@ read_record(const Filename &source_pathname,
       }
     }
   }
+  
+  // Also get the file size.
+  cache_file.clear();
+  cache_file.seekg(0, ios::end);
+  record->_record_size = cache_file.tellg();
 
-  if (!record->has_data()) {
-    // If we didn't find any data, the caller will have to reload it.
-    record->clear_dependent_files();
-  }
+  // And the last access time is now, duh.
+  record->_record_access_time = time(NULL);
 
-  record->_cache_pathname = filename;
   return record;
 }
 

@@ -35,7 +35,8 @@ public:
   virtual string get_extension() const;
   virtual bool supports_compressed() const;
 
-  virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &optoins) const;
+  virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &optoins,
+                                  BamCacheRecord *record) const;
 
 public:
   static TypeHandle get_class_type() {

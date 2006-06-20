@@ -22,10 +22,11 @@
 #include "sceneGraphReducer.h"
 #include "virtualFileSystem.h"
 #include "config_util.h"
+#include "bamCacheRecord.h"
 
 static PT(PandaNode)
 load_from_loader(EggLoader &loader) {
-  loader._data->load_externals();
+  loader._data->load_externals(DSearchPath(), loader._record);
 
   loader.build_graph();
 
@@ -71,7 +72,8 @@ load_from_loader(EggLoader &loader) {
 //               required.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode)
-load_egg_file(const string &filename, CoordinateSystem cs) {
+load_egg_file(const string &filename, CoordinateSystem cs,
+              BamCacheRecord *record) {
   Filename egg_filename = Filename::text_filename(filename);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   if (!vfs->exists(egg_filename)) {
@@ -83,10 +85,15 @@ load_egg_file(const string &filename, CoordinateSystem cs) {
   egg2pg_cat.info()
     << "Reading " << egg_filename << "\n";
 
+  if (record != (BamCacheRecord *)NULL) {
+    record->add_dependent_file(egg_filename);
+  }
+
   EggLoader loader;
   loader._data->set_egg_filename(egg_filename);
   loader._data->set_auto_resolve_externals(true);
   loader._data->set_coordinate_system(cs);
+  loader._record = record;
 
   bool okflag;
   istream *istr = vfs->open_read_file(egg_filename, true);

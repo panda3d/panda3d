@@ -30,8 +30,11 @@ TypeHandle BamCacheRecord::_type_handle;
 ////////////////////////////////////////////////////////////////////
 BamCacheRecord::
 BamCacheRecord() :
+  _recorded_time(0),
+  _record_size(0),
   _data(NULL),
-  _owns_pointer(false)
+  _owns_pointer(false),
+  _record_access_time(0)
 {
 }
 
@@ -45,8 +48,29 @@ BamCacheRecord(const Filename &source_pathname,
                const Filename &cache_filename) :
   _source_pathname(source_pathname),
   _cache_filename(cache_filename),
+  _recorded_time(0),
+  _record_size(0),
   _data(NULL),
-  _owns_pointer(false)
+  _owns_pointer(false),
+  _record_access_time(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCacheRecord::Copy Constructor
+//       Access: Private
+//  Description: Use make_copy() to make a copy.  The copy does not
+//               share the data pointer.
+////////////////////////////////////////////////////////////////////
+BamCacheRecord::
+BamCacheRecord(const BamCacheRecord &copy) :
+  _source_pathname(copy._source_pathname),
+  _cache_filename(copy._cache_filename),
+  _recorded_time(copy._recorded_time),
+  _record_size(copy._record_size),
+  _data(NULL),
+  _owns_pointer(false),
+  _record_access_time(copy._record_access_time)
 {
 }
 
@@ -160,8 +184,7 @@ write(ostream &out, int indent_level) const {
   DependentFiles::const_iterator fi;
   for (fi = _files.begin(); fi != _files.end(); ++fi) {
     const DependentFile &dfile = (*fi);
-    indent(out, indent_level)
-      << "  " 
+    indent(out, indent_level + 2)
       << setw(10) << dfile._size << " "
       << format_timestamp(dfile._timestamp) << " "
       << dfile._pathname << "\n";
@@ -222,6 +245,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_string(_source_pathname);
   dg.add_string(_cache_filename);
   dg.add_uint32(_recorded_time);
+  dg.add_uint64(_record_size);
 
   dg.add_uint16(_files.size());
   DependentFiles::const_iterator fi;
@@ -267,6 +291,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _source_pathname = scan.get_string();
   _cache_filename = scan.get_string();
   _recorded_time = scan.get_uint32();
+  _record_size = scan.get_uint64();
 
   unsigned int num_files = scan.get_uint16();
   _files.reserve(num_files);

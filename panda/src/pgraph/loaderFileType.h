@@ -28,6 +28,7 @@
 #include "dSearchPath.h"
 
 class LoaderOptions;
+class BamCacheRecord;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LoaderFileType
@@ -50,7 +51,8 @@ PUBLISHED:
   virtual bool supports_compressed() const;
 
 public:
-  virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options) const;
+  virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options,
+                                  BamCacheRecord *record) const;
 
 public:
   static TypeHandle get_class_type() {

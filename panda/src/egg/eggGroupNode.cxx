@@ -36,6 +36,7 @@
 #include "dSearchPath.h"
 #include "deg_2_rad.h"
 #include "dcast.h"
+#include "bamCacheRecord.h"
 
 #include <algorithm>
 
@@ -1545,7 +1546,8 @@ find_materials(EggMaterialCollection *collection) {
 //               EggData::load_externals().
 ////////////////////////////////////////////////////////////////////
 bool EggGroupNode::
-r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys) {
+r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys,
+                 BamCacheRecord *record) {
   bool success = true;
 
   Children::iterator ci;
@@ -1576,8 +1578,12 @@ r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys) {
         if (ext_data.read(filename)) {
           // The external file was read correctly.  Add its contents
           // into the tree at this point.
+          if (record != (BamCacheRecord *)NULL) {
+            record->add_dependent_file(filename);
+          }
+
           success =
-            ext_data.load_externals(searchpath)
+            ext_data.load_externals(searchpath, record)
             && success;
           new_node->steal_children(ext_data);
         }
@@ -1586,7 +1592,7 @@ r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys) {
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       EggGroupNode *group_child = DCAST(EggGroupNode, child);
       success =
-        group_child->r_load_externals(searchpath, coordsys)
+        group_child->r_load_externals(searchpath, coordsys, record)
         && success;
     }
   }

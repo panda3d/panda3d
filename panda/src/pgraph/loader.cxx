@@ -485,7 +485,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
     }
 
     LoaderFileType *type = results.get_file_type(i);
-    PT(PandaNode) result = type->load_file(path, options);
+    PT(PandaNode) result = type->load_file(path, options, record);
     if (result != (PandaNode *)NULL){ 
       if (record != (BamCacheRecord *)NULL) {
         record->set_data(result, false);

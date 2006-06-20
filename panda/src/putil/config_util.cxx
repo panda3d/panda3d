@@ -18,6 +18,7 @@
 
 #include "config_util.h"
 #include "animInterface.h"
+#include "bamCacheIndex.h"
 #include "bamCacheRecord.h"
 #include "bamReader.h"
 #include "bamReaderParam.h"
@@ -80,6 +81,7 @@ ConfigVariableSearchPath sound_path
 
 ConfigureFn(config_util) {
   AnimInterface::init_type();
+  BamCacheIndex::init_type();
   BamCacheRecord::init_type();
   BamReaderParam::init_type();
   BitArray::init_type();
@@ -107,6 +109,7 @@ ConfigureFn(config_util) {
 
   register_type(BamReader::_remove_flag, "remove");
 
+  BamCacheIndex::register_with_read_factory();
   BamCacheRecord::register_with_read_factory();
 }
 
@@ -155,3 +158,9 @@ ConfigVariableDouble sleep_precision
 
 ConfigVariableDouble average_frame_rate_interval
 ("average-frame-rate-interval", 1.0);
+
+ConfigVariableInt model_cache_flush
+("model-cache-flush", 30,
+ PRC_DESC("This is the amount of time, in seconds, between automatic "
+          "flushes of the model-cache index, if model-cache-dir is "
+          "in effect."));

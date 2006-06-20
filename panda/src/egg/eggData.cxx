@@ -170,7 +170,24 @@ merge(EggData &other) {
 bool EggData::
 load_externals(const DSearchPath &searchpath) {
   return
-    r_load_externals(searchpath, get_coordinate_system());
+    r_load_externals(searchpath, get_coordinate_system(), NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggData::load_externals
+//       Access: Public
+//  Description: Loads up all the egg files referenced by <File>
+//               entries within the egg structure, and inserts their
+//               contents in place of the <File> entries.  Searches
+//               for files in the searchpath, if not found directly,
+//               and writes error messages to the indicated output
+//               stream.  Returns true if all externals were loaded
+//               successfully, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggData::
+load_externals(const DSearchPath &searchpath, BamCacheRecord *record) {
+  return
+    r_load_externals(searchpath, get_coordinate_system(), record);
 }
 
 ////////////////////////////////////////////////////////////////////

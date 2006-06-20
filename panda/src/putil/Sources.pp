@@ -12,6 +12,7 @@
     animInterface.h animInterface.I \
     bam.h \
     bamCache.h bamCache.I \
+    bamCacheIndex.h bamCacheIndex.I \
     bamCacheRecord.h bamCacheRecord.I \
     bamEndian.h \
     bamReader.I bamReader.N bamReader.h bamReaderParam.I \
@@ -65,6 +66,7 @@
  #define INCLUDED_SOURCES \
     animInterface.cxx \
     bamCache.cxx \
+    bamCacheIndex.cxx \
     bamCacheRecord.cxx \
     bamEndian.cxx \
     bamReader.cxx bamReaderParam.cxx \
@@ -104,6 +106,7 @@
     animInterface.h animInterface.I \
     bam.h \
     bamCache.h bamCache.I \
+    bamCacheIndex.h bamCacheIndex.I \
     bamCacheRecord.h bamCacheRecord.I \
     bamEndian.h \
     bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \

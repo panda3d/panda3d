@@ -25,6 +25,7 @@
 #include "sceneGraphReducer.h"
 #include "partGroup.h"
 #include "cardMaker.h"
+#include "bamCache.h"
 
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to run pview will fail if it inadvertently links with the
@@ -142,6 +143,11 @@ event_2(CPT_Event event, void *) {
 void
 event_0(CPT_Event event, void *) {
   // 0: run hacky test.
+
+  BamCache *cache = BamCache::get_global_ptr();
+  cache->flush_index();
+
+  return;
 
   EventParameter param = event->get_parameter(0);
   WindowFramework *wf;

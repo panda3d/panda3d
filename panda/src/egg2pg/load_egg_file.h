@@ -25,6 +25,8 @@
 #include "coordinateSystem.h"
 #include "eggData.h"
 
+class BamCacheRecord;
+
 BEGIN_PUBLISH
 ////////////////////////////////////////////////////////////////////
 //     Function: load_egg_file
@@ -37,7 +39,8 @@ BEGIN_PUBLISH
 //               bit more manual control over the loading process.
 ////////////////////////////////////////////////////////////////////
 EXPCL_PANDAEGG PT(PandaNode)
-load_egg_file(const string &filename, CoordinateSystem cs = CS_default);
+load_egg_file(const string &filename, CoordinateSystem cs = CS_default,
+              BamCacheRecord *record = NULL);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: load_egg_data

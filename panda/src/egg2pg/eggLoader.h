@@ -41,6 +41,7 @@
 #include "eggTransform.h"
 #include "geomVertexData.h"
 #include "geomPrimitive.h"
+#include "bamCacheRecord.h"
 
 class EggNode;
 class EggBin;
@@ -237,6 +238,7 @@ private:
 public:
   PT(PandaNode) _root;
   PT(EggData) _data;
+  PT(BamCacheRecord) _record;
   bool _error;
 
   friend class EggRenderState;

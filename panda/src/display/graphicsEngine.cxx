@@ -40,6 +40,7 @@
 #include "pipeline.h"
 #include "throw_event.h"
 #include "objectDeletor.h"
+#include "bamCache.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -458,6 +459,14 @@ remove_all_windows() {
   _app.do_close(this, current_thread);
   _app.do_pending(this, current_thread);
   terminate_threads(current_thread);
+
+  // It seems a safe assumption that we're about to exit the
+  // application or otherwise shut down Panda.  Although it's a bit of
+  // a hack, since it's not really related to removing windows, this
+  // would nevertheless be a fine time to ensure the model cache (if
+  // any) has been flushed to disk.
+  BamCache *cache = BamCache::get_global_ptr();
+  cache->flush_index();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -526,6 +535,11 @@ get_window(int n) const {
 void GraphicsEngine::
 render_frame() {
   Thread *current_thread = Thread::get_current_thread();
+
+  // Since this gets called every frame, we should take advantage of
+  // the opportunity to flush the cache if necessary.
+  BamCache *cache = BamCache::get_global_ptr();
+  cache->consider_flush_index();
 
   // Anything that happens outside of GraphicsEngine::render_frame()
   // is deemed to be App.
