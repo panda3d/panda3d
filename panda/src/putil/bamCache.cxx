@@ -62,7 +62,10 @@ BamCache() :
 
   _flush_time = model_cache_flush;
   _max_kbytes = model_cache_max_kbytes;
-  set_root(model_cache_dir);
+
+  if (!model_cache_dir.empty()) {
+    set_root(model_cache_dir);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
