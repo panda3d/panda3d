@@ -1953,8 +1953,70 @@ atomic_compare_and_exchange_contents(string &orig_contents,
                                      const string &old_contents, 
                                      const string &new_contents) const {
 #ifdef WIN32_VC
-  // Todo.
-  return false;
+  string os_specific = to_os_specific();
+  HANDLE hfile = CreateFile(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE, 
+                            0, NULL, OPEN_ALWAYS,
+                            FILE_ATTRIBUTE_NORMAL, NULL);
+  while (hfile == INVALID_HANDLE_VALUE) {
+    DWORD error = GetLastError();
+    if (error == ERROR_SHARING_VIOLATION) {
+      // If the file is locked by another process, yield and try again.
+      Sleep(0);
+      hfile = CreateFile(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE, 
+                         0, NULL, OPEN_ALWAYS,
+                         FILE_ATTRIBUTE_NORMAL, NULL);
+    } else {
+      cerr << "Couldn't open file: " << os_specific 
+           << ", error " << error << "\n";
+      return false;
+    }
+  }
+
+  if (hfile == INVALID_HANDLE_VALUE) {
+    cerr << "Couldn't open file: " << os_specific 
+         << ", error " << GetLastError() << "\n";
+    return false;
+  }
+
+  static const size_t buf_size = 512;
+  char buf[buf_size];
+
+  orig_contents = string();
+
+  DWORD bytes_read;
+  if (!ReadFile(hfile, buf, buf_size, &bytes_read, NULL)) {
+    cerr << "Error reading file: " << os_specific 
+         << ", error " << GetLastError() << "\n";
+    CloseHandle(hfile);
+    return false;
+  }
+  while (bytes_read > 0) {
+    orig_contents += string(buf, bytes_read);
+
+    if (!ReadFile(hfile, buf, buf_size, &bytes_read, NULL)) {
+      cerr << "Error reading file: " << os_specific 
+           << ", error " << GetLastError() << "\n";
+      CloseHandle(hfile);
+      return false;
+    }
+  }
+
+  bool match = false;
+  if (orig_contents == old_contents) {
+    match = true;
+    SetFilePointer(hfile, 0, 0, FILE_BEGIN);
+    DWORD bytes_written;
+    if (!WriteFile(hfile, new_contents.data(), new_contents.size(),
+                   &bytes_written, NULL)) {
+      cerr << "Error writing file: " << os_specific 
+           << ", error " << GetLastError() << "\n";
+      CloseHandle(hfile);
+      return false;
+    }
+  }
+
+  CloseHandle(hfile);
+  return match;
 
 #else  // WIN32_VC
   string os_specific = to_os_specific();
@@ -2005,7 +2067,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Filename::atomic_compare_and_exchange_contents
+//     Function: Filename::atomic_read_contents
 //       Access: Public
 //  Description: Uses native file-locking mechanisms to atomically
 //               read the contents of a (small) file.  This is the
@@ -2024,8 +2086,50 @@ atomic_compare_and_exchange_contents(string &orig_contents,
 bool Filename::
 atomic_read_contents(string &contents) const {
 #ifdef WIN32_VC
-  // Todo.
-  return false;
+  string os_specific = to_os_specific();
+  HANDLE hfile = CreateFile(os_specific.c_str(), GENERIC_READ, 
+                            FILE_SHARE_READ, NULL, OPEN_ALWAYS,
+                            FILE_ATTRIBUTE_NORMAL, NULL);
+  while (hfile == INVALID_HANDLE_VALUE) {
+    DWORD error = GetLastError();
+    if (error == ERROR_SHARING_VIOLATION) {
+      // If the file is locked by another process, yield and try again.
+      Sleep(0);
+      hfile = CreateFile(os_specific.c_str(), GENERIC_READ, 
+                         FILE_SHARE_READ, NULL, OPEN_ALWAYS,
+                         FILE_ATTRIBUTE_NORMAL, NULL);      
+    } else {
+      cerr << "Couldn't open file: " << os_specific 
+           << ", error " << error << "\n";
+      return false;
+    }
+  }
+
+  static const size_t buf_size = 512;
+  char buf[buf_size];
+
+  contents = string();
+
+  DWORD bytes_read;
+  if (!ReadFile(hfile, buf, buf_size, &bytes_read, NULL)) {
+    cerr << "Error reading file: " << os_specific 
+         << ", error " << GetLastError() << "\n";
+    CloseHandle(hfile);
+    return false;
+  }
+  while (bytes_read > 0) {
+    contents += string(buf, bytes_read);
+
+    if (!ReadFile(hfile, buf, buf_size, &bytes_read, NULL)) {
+      cerr << "Error reading file: " << os_specific 
+           << ", error " << GetLastError() << "\n";
+      CloseHandle(hfile);
+      return false;
+    }
+  }
+
+  CloseHandle(hfile);
+  return true;
 
 #else  // WIN32_VC
   string os_specific = to_os_specific();
