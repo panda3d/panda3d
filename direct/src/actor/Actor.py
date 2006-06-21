@@ -401,6 +401,16 @@ class Actor(DirectObject, NodePath):
                         'm':2,
                         'l':1,
                         'f':0}
+
+                """
+                sx = smap.get(x[0],None)
+                sy = smap.get(y[0],None)
+
+                if sx is None:
+                    self.notify.error('Invalid lodName: %s' % x)
+                if sy is None:
+                    self.notify.error('Invalid lodName: %s' % y)
+                """
                 return cmp(smap[y[0]], smap[x[0]])
             else:
                 return cmp (int(y), int(x))
@@ -1164,7 +1174,7 @@ class Actor(DirectObject, NodePath):
         the overall pose.  This controls blending of multiple
         animations; it only makes sense to call this after a previous
         call to enableBlend().
-        """
+        """        
         for control in self.getAnimControls(animName, partName, lodName):
             control.getPart().setControlEffect(control, effect)
 
@@ -1206,7 +1216,6 @@ class Actor(DirectObject, NodePath):
         LOD's are returned.
         """
         controls = []
-
         # build list of lodNames and corresponding animControlDicts
         # requested.
         if lodName == None:
@@ -1238,20 +1247,21 @@ class Actor(DirectObject, NodePath):
                     partNameList = partName
 
                 animDictItems = []
-                for partName in partNameList:
-                    animDict = partDict.get(partName)
+                
+                for pName in partNameList:
+                    animDict = partDict.get(pName)
                     if animDict == None:
                         # Maybe it's a subpart that hasn't been bound yet.
-                        subpartDef = self.__subpartDict.get(partName)
+                        subpartDef = self.__subpartDict.get(pName)
                         if subpartDef:
                             animDict = {}
-                            partDict[partName] = animDict
+                            partDict[pName] = animDict
 
                     if animDict == None:
                         # part was not present
-                        Actor.notify.warning("couldn't find part: %s" % (partName))
+                        Actor.notify.warning("couldn't find part: %s" % (pName))
                     else:
-                        animDictItems.append((partName, animDict))
+                        animDictItems.append((pName, animDict))
 
             if animName == None:
                 # get all playing animations
