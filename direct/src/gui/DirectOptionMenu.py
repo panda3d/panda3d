@@ -21,6 +21,8 @@ class DirectOptionMenu(DirectButton):
             ('popupMarkerBorder', (.1, .1), None),
             # Background color to use to highlight popup menu items
             ('highlightColor', (.5, .5, .5, 1), None),
+            # Extra scale to use on highlight popup menu items
+            ('highlightScale', (1, 1), None),
             # Alignment to use for text on popup menu button
             # Changing this breaks button layout
             ('text_align',  TextNode.ALeft, None),
@@ -216,11 +218,15 @@ class DirectOptionMenu(DirectButton):
     def _highlightItem(self, item, index):
         """ Set frame color of highlighted item, record index """
         item['frameColor'] = self['highlightColor']
+        item['frameSize'] = (self['highlightScale'][0]*self.minX, self['highlightScale'][0]*self.maxX, self['highlightScale'][1]*self.minZ, self['highlightScale'][1]*self.maxZ)
+        item['text_scale'] = self['highlightScale']
         self.highlightedIndex = index
 
     def _unhighlightItem(self, item, frameColor):
         """ Clear frame color, clear highlightedIndex """
         item['frameColor'] = frameColor
+        item['frameSize'] = (self.minX, self.maxX, self.minZ, self.maxZ)
+        item['text_scale'] = (1,1)        
         self.highlightedIndex = None
 
     def selectHighlightedIndex(self, event = None):
