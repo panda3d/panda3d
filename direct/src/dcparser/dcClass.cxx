@@ -57,10 +57,6 @@ ConfigVariableBool dc_sort_inheritance_by_file
           "within the class."));
 
 
-ConfigVariableBool dc_update_multifield
-("dc-update-multifield", false,
- PRC_DESC("Set this true to support Multiple updates in a field update"));
-
 #endif  // WITHIN_PANDA
 
 class SortFieldsByIndex {
@@ -474,57 +470,26 @@ receive_update(PyObject *distobj, DatagramIterator &di) const {
 #ifdef WITHIN_PANDA
   PStatTimer timer(((DCClass *)this)->_class_update_pcollector);
 #endif
-    if(dc_update_multifield)
-    {
-        while(di.get_remaining_size() > 0)
-        {
-
-            DCPacker packer;
-            packer.set_unpack_data(di.get_remaining_bytes());
+    DCPacker packer;
+    packer.set_unpack_data(di.get_remaining_bytes());
 
 
-            int field_id = packer.raw_unpack_uint16();
-            DCField *field = get_field_by_index(field_id);
-            if (field == (DCField *)NULL) {
-                ostringstream strm;
-                strm
-                    << "Received update for field " << field_id << ", not in class "
-                    << get_name();
-                nassert_raise(strm.str());
-                return;
-            }
-
-            packer.begin_unpack(field);
-            field->receive_update(packer, distobj);
-            packer.end_unpack();
-
-            di.skip_bytes(packer.get_num_unpacked_bytes());
-        }
-    }
-    else
-    {
-
-        DCPacker packer;
-        packer.set_unpack_data(di.get_remaining_bytes());
-
-
-        int field_id = packer.raw_unpack_uint16();
-        DCField *field = get_field_by_index(field_id);
-        if (field == (DCField *)NULL) {
+    int field_id = packer.raw_unpack_uint16();
+    DCField *field = get_field_by_index(field_id);
+    if (field == (DCField *)NULL) {
             ostringstream strm;
             strm
                 << "Received update for field " << field_id << ", not in class "
                 << get_name();
             nassert_raise(strm.str());
             return;
-        }
-
-        packer.begin_unpack(field);
-        field->receive_update(packer, distobj);
-        packer.end_unpack();
-
-        di.skip_bytes(packer.get_num_unpacked_bytes());
     }
+
+    packer.begin_unpack(field);
+    field->receive_update(packer, distobj);
+    packer.end_unpack();
+
+    di.skip_bytes(packer.get_num_unpacked_bytes());
 
 }
 #endif  // HAVE_PYTHON
