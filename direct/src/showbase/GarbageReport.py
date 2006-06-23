@@ -169,7 +169,7 @@ class GarbageReport(TaskThreaded):
                         if len(objStr) > maxLen:
                             snip = '<SNIP>'
                             objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
-                        self.s.append(self.format % (id, type(self.parent.garbage[id]), objStr))
+                        self.s.append(self.format % (id, itype(self.parent.garbage[id]), objStr))
                         if (not (i & 0x7F)) and (not self.timeLeft()):
                             # we've run out of time, save the index
                             self.index = i+1
