@@ -8,6 +8,7 @@ import os
 import sys
 import random
 import time
+import new
 if __debug__:
     import traceback
 
@@ -1559,16 +1560,16 @@ def lineInfo(baseFileName=1):
     (answers the question: 'hey lineInfo, where am I in the codebase?')
     see stackEntryInfo, above, for info on 'baseFileName' and return types
     """
-    return stackEntryInfo(1)
+    return stackEntryInfo(1, baseFileName)
 
-def callerInfo(baseFileName=1):
+def callerInfo(baseFileName=1, howFarBack=0):
     """
     returns the sourcefilename, line number, and function name of the
     caller of the function that called this function
     (answers the question: 'hey callerInfo, who called me?')
     see stackEntryInfo, above, for info on 'baseFileName' and return types
     """
-    return stackEntryInfo(2)
+    return stackEntryInfo(2+howFarBack, baseFileName)
 
 def lineTag(baseFileName=1, verbose=0, separator=':'):
     """
@@ -1584,7 +1585,7 @@ def lineTag(baseFileName=1, verbose=0, separator=':'):
 
     returns empty string on error
     """
-    fileName, lineNum, funcName = callerInfo()
+    fileName, lineNum, funcName = callerInfo(baseFileName)
     if fileName is None:
         return ''
     if verbose:
@@ -1999,6 +2000,61 @@ def safeRepr(obj):
     except:
         return '<** FAILED REPR OF %s **>' % obj.__class__.__name__
 
+def fastRepr(obj, maxLen=200, strFactor=10):
+    """ caps the length of iterable types """
+    if type(obj) in (types.TupleType, types.ListType):
+        s = ''
+        s += {types.TupleType: '(',
+              types.ListType:  '[',}[type(obj)]
+        if len(obj) > maxLen:
+            o = obj[:maxLen]
+        else:
+            o = obj
+        for item in o:
+            s += fastRepr(item, maxLen)
+            s += ', '
+        s += '...'
+        s += {types.TupleType: ')',
+              types.ListType:  ']',}[type(obj)]
+        return s
+    elif type(obj) is types.DictType:
+        s = '{'
+        if len(obj) > maxLen:
+            o = obj.keys()[:maxLen]
+        else:
+            o = obj.keys()
+        for key in o:
+            value = obj[key]
+            s += '%s: %s, ' % (fastRepr(key, maxLen), fastRepr(value, maxLen))
+        s += '...}'
+        return s
+    elif type(obj) is types.StringType:
+        maxLen *= strFactor
+        if len(obj) > maxLen:
+            return obj[:maxLen]
+        else:
+            return obj
+    else:
+        return safeRepr(obj)
+
+def tagRepr(obj, tag):
+    """adds a string onto the repr output of an instance"""
+    def reprWithTag(oldRepr, tag, self):
+        return oldRepr() + '::<TAG=' + tag + '>'
+    oldRepr = getattr(obj, '__repr__', None)
+    if oldRepr is None:
+        def stringer(s):
+            return s
+        oldRepr = Functor(stringer, repr(obj))
+        stringer = None
+    obj.__repr__ = new.instancemethod(Functor(reprWithTag, oldRepr, tag), obj, obj.__class__)
+    reprWithTag = None
+    return obj
+
+def tagWithCaller(obj):
+    """add info about the caller of the caller"""
+    tagRepr(obj, str(callerInfo(howFarBack=1)))
+
 def isDefaultValue(x):
     return x == type(x)()
 
@@ -2071,6 +2127,95 @@ class ScratchPad:
         for key, value in kArgs.items():
             setattr(self, key, value)
 
+class Sync:
+    _SeriesGen = SerialNumGen()
+    def __init__(self, name, other=None):
+        self._name = name
+        if other is None:
+            self._series = self._SeriesGen.next()
+            self._value = 0
+        else:
+            self._series = other._series
+            self._value = other._value
+    def invalidate(self):
+        self._value = None
+    def change(self):
+        self._value += 1
+    def sync(self, other):
+        if (self._series != other._series) or (self._value != other._value):
+            self._series = other._series
+            self._value = other._value
+            return True
+        else:
+            return False
+    def isSynced(self, other):
+        return ((self._series == other._series) and
+                (self._value == other._value))
+    def __repr__(self):
+        return '%s(%s)<family=%s,value=%s>' % (self.__class__.__name__,
+                              self._name, self._series, self._value)
+
+class RefCounter:
+    def __init__(self, byId=False):
+        self._byId = byId
+        self._refCounts = {}
+    def _getKey(self, item):
+        if self._byId:
+            key = id(item)
+        else:
+            key = item
+    def inc(self, item):
+        key = self._getKey(item)
+        self._refCounts.setdefault(key, 0)
+        self._refCounts[key] += 1
+    def dec(self, item):
+        """returns True if ref count has hit zero"""
+        key = self._getKey(item)
+        self._refCounts[key] -= 1
+        result = False
+        if self._refCounts[key] == 0:
+            result = True
+            del self._refCounts[key]
+        return result
+
+class VerboseInstanceType(types.InstanceType.__class__):
+    def __init__(self, obj):
+        types.InstanceType(self, obj)
+        self._reprStr = '%s of <class %s>' % (repr(types.InstanceType),
+                                            str(obj.__class__))
+    def __repr__(self):
+        return self._reprStr
+
+def itype(obj):
+    t = type(obj)
+    if t is types.InstanceType:
+        return VerboseInstanceType(obj)
+    else:
+        return t
+
+def getNumberedTypedString(items, maxLen=5000):
+    """get a string that has each item of the list on its own line,
+    and each item is numbered on the left from zero"""
+    digits = 0
+    n = len(items)
+    while n > 0:
+        digits += 1
+        n /= 10
+    digits = digits
+    format = '%0' + '%s' % digits + 'i:%s \t%s'
+    first = True
+    s = ''
+    for i in xrange(len(items)):
+        if not first:
+            s += '\n'
+        first = False
+        objStr = fastRepr(items[i])
+        if len(objStr) > maxLen:
+            snip = '<SNIP>'
+            objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
+        s += format % (i, itype(items[i]), objStr)
+    return s
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
@@ -2087,3 +2232,4 @@ __builtin__._isNone = _isNone
 __builtin__._notNone = _notNone
 __builtin__._contains = _contains
 __builtin__._notIn = _notIn
+__builtin__.itype = itype
