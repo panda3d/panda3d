@@ -1,0 +1,151 @@
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.showbase import DirectObject, ObjectPool
+from direct.showbase.PythonUtil import makeList, Sync
+import gc
+import sys
+
+"""
+>>> from direct.showbase import ObjectReport
+
+>>> o=ObjectReport.ObjectReport('baseline')
+>>> run()
+...
+
+>>> o2=ObjectReport.ObjectReport('')
+>>> o.diff(o2)
+<wait a loooong time>
+"""
+
+class ExclusiveObjectPool(DirectObject.DirectObject):
+    """ObjectPool specialization that excludes particular objects"""
+    # IDs of objects to globally exclude from reporting
+    _ExclObjIds = {}
+    _SyncMaster = Sync('ExclusiveObjectPool.ExcludedObjectList')
+    _SerialNumGen = SerialNumGen()
+
+    @classmethod
+    def addExclObjs(cls, *objs):
+        for obj in makeList(objs):
+            cls._ExclObjIds.setdefault(id(obj), 0)
+            cls._ExclObjIds[id(obj)] += 1
+        cls._SyncMaster.change()
+    @classmethod
+    def removeExclObjs(cls, *objs):
+        for obj in makeList(objs):
+            assert id(obj) in cls._ExclObjIds
+            del cls._ExclObjIds[id(obj)]
+        cls._SyncMaster.change()
+
+    def __init__(self, objects):
+        self._objects = list(objects)
+        self._postFilterObjs = []
+        self._sync = Sync('%s-%s' % (self.__class__.__name__,
+                                     self._SerialNumGen.next()),
+                          self._SyncMaster)
+        self._sync.invalidate()
+        ExclusiveObjectPool.addExclObjs(self._objects, self._postFilterObjs,
+                                        self._sync)
+
+    def destroy(self):
+        self.ignoreAll()
+        ExclusiveObjectPool.removeExclObjs(self._objects, self._postFilterObjs,
+                                           self._sync)
+        del self._objects
+        del self._postFilterObjs
+        del self._sync
+
+    def _resync(self):
+        if self._sync.isSynced(self._SyncMaster):
+            return
+        if hasattr(self, '_filteredPool'):
+            ExclusiveObjectPool.removeExclObjs(*self._filteredPool._getInternalObjs())
+            ExclusiveObjectPool.removeExclObjs(self._filteredPool)
+            del self._filteredPool
+        del self._postFilterObjs[:]
+        for obj in self._objects:
+            if id(obj) not in ExclusiveObjectPool._ExclObjIds:
+                self._postFilterObjs.append(obj)
+        self._filteredPool = ObjectPool.ObjectPool(self._postFilterObjs)
+        ExclusiveObjectPool.addExclObjs(self._filteredPool)
+        ExclusiveObjectPool.addExclObjs(*self._filteredPool._getInternalObjs())
+        self._sync.sync(self._SyncMaster)
+
+    def getObjsOfType(self, type):
+        self._resync()
+        return self._filteredPool.getObjsOfType(type)
+    def printObjsOfType(self, type):
+        self._resync()
+        return self._filteredPool.printObjsOfType(type)
+    def diff(self, other):
+        self._resync()
+        return self._filteredPool.diff(other._filteredPool)
+    def typeFreqStr(self):
+        self._resync()
+        return self._filteredPool.typeFreqStr()
+    def __len__(self):
+        self._resync()
+        return len(self._filteredPool)
+
+class ObjectReport:
+    """report on every Python object in the current process"""
+    notify = directNotify.newCategory('ObjectReport')
+
+    def __init__(self, name, log=True, garbageCollect=True):
+        if not hasattr(sys, 'getobjects'):
+            self.notify.error(
+                '%s only works in debug Python (pyd-shell)' % self.__class__.__name__)
+        if garbageCollect:
+            import gc
+            gc.collect()
+        self._name = name
+        self._pool = ExclusiveObjectPool(self._getObjectList())
+        ExclusiveObjectPool.addExclObjs(self, self._pool, self._name)
+        if log:
+            self.notify.info('===== ObjectReport: \'%s\' =====\n%s' % (self._name, self.typeFreqStr()))
+
+    def destroy(self):
+        ExclusiveObjectPool.removeExclObjs(self, self._pool, self._name)
+        self._pool.destroy()
+        del self._pool
+        del self._name
+
+    def typeFreqStr(self):
+        return self._pool.typeFreqStr()
+
+    def diff(self, other):
+        return self._pool.diff(other._pool)
+
+    def _getObjectList(self):
+        if hasattr(sys, 'getobjects'):
+            return sys.getobjects(0)
+        else:
+            objs = []
+            stateStack = Stack()
+            root = __builtins__
+            objIds = set([id(root)])
+            stateStack.push((root, None, 0))
+            while True:
+                if len(stateStack) == 0:
+                    break
+                obj, adjacents, resumeIndex = stateStack.pop()
+                objs.append(obj)
+                print id(obj)
+                if adjacents is None:
+                    adjacents = gc.get_referents(obj)
+                    adjacents.extend(gc.get_referrers(obj))
+                    # pare the list down to the ones that have not already been visited
+                    # to minimize calls to get_referents/get_referrers
+                    newObjs = []
+                    for adj in adjacents:
+                        adjId = id(adj)
+                        if adjId not in objIds:
+                            objIds.add(adjId)
+                            newObjs.append(adj)
+                    adjacents = newObjs
+                    if len(adjacents) == 0:
+                        print 'DEAD END'
+                for i in xrange(resumeIndex, len(adjacents)):
+                    adj = adjacents[i]
+                    stateStack.push((obj, adjacents, i+1))
+                    stateStack.push((adj, None, 0))
+                    continue
