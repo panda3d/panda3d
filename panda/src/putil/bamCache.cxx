@@ -585,10 +585,13 @@ check_cache_size() {
     return;
   }
 
-  if (_index->_cache_size > _max_kbytes * 1024) {
-    while (_index->_cache_size > _max_kbytes * 1024) {
+  if (_index->_cache_size / 1024 > _max_kbytes) {
+    while (_index->_cache_size / 1024 > _max_kbytes) {
       PT(BamCacheRecord) record = _index->evict_old_file();
-      nassertv(record != (BamCacheRecord *)NULL);
+      if (record == NULL) {
+        // Never mind; the cache is empty.
+        break;
+      }
       Filename cache_pathname(_root, record->get_cache_filename());
       cache_pathname.unlink();
     }

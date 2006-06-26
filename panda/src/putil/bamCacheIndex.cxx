@@ -118,13 +118,18 @@ release_records() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BamCacheIndex::evict_old_file
 //       Access: Private
-//  Description: Evicts an old file from the cache.  Records the record.
+//  Description: Evicts an old file from the cache.  Records the
+//               record.  Returns NULL if the cache is empty.
 ////////////////////////////////////////////////////////////////////
 PT(BamCacheRecord) BamCacheIndex::
 evict_old_file() {
+  if (_next == this) {
+    // Nothing in the cache.
+    return NULL;
+  }
+
   // The first record in the linked list is the least-recently-used
   // one.
-  nassertr(_next != this, NULL);
   PT(BamCacheRecord) record = (BamCacheRecord *)_next;
   bool removed = remove_record(record->get_source_pathname());
   nassertr(removed, NULL);
