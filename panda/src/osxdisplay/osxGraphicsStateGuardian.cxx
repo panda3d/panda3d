@@ -59,7 +59,7 @@ void *osxGraphicsStateGuardian::get_extension_func(const char *prefix, const cha
 osxGraphicsStateGuardian::
 osxGraphicsStateGuardian(GraphicsPipe *pipe,
                          osxGraphicsStateGuardian *share_with) :
-  GLGraphicsStateGuardian(properties),
+  GLGraphicsStateGuardian(pipe),
   _share_with(share_with),
   _aglPixFmt(NULL),
   _aglcontext(NULL)
