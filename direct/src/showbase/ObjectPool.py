@@ -8,15 +8,15 @@ class Diff:
     def __init__(self, lost, gained):
         self.lost=lost
         self.gained=gained
-    def __repr__(self):
-        s  = 'lost %s objects, gained %s objects' % (len(self.lost), len(self.gained))
-        s += '\n\nself.lost\n'
-        s += self.lost.typeFreqStr()
-        s += '\n\nself.gained\n'
-        s += self.gained.typeFreqStr()
-        s += '\n\nGAINED-OBJECT REFERRERS\n'
-        s += self.gained.referrersStr(1)
-        return s
+    def printOut(self):
+        print 'lost %s objects, gained %s objects' % (len(self.lost), len(self.gained))
+        print '\n\nself.lost\n'
+        print self.lost.typeFreqStr()
+        print '\n\nself.gained\n'
+        print self.gained.typeFreqStr()
+        self.gained.printObjsByType()
+        print '\n\nGAINED-OBJECT REFERRERS\n'
+        print self.gained.referrersStr(1)
 
 class ObjectPool:
     """manipulate a pool of Python objects"""
@@ -26,16 +26,18 @@ class ObjectPool:
         self._objs = list(objects)
         self._type2objs = {}
         self._count2types = {}
+        self._len2obj = {}
         type2count = {}
         for obj in self._objs:
-            typ = type(obj)
-            # <type 'instance'> isn't all that useful
-            if typ is types.InstanceType:
-                typ = '%s of %s' % (typ, repr(obj.__class__))
+            typ = itype(obj)
             type2count.setdefault(typ, 0)
             type2count[typ] += 1
             self._type2objs.setdefault(typ, [])
             self._type2objs[typ].append(obj)
+            try:
+                self._len2obj[len(obj)] = obj
+            except:
+                pass
         self._count2types = invertDict(type2count)
 
     def _getInternalObjs(self):
@@ -67,7 +69,6 @@ class ObjectPool:
         thisIds = set(thisId2obj.keys())
         otherIds = set(otherId2obj.keys())
         lostIds = thisIds.difference(otherIds)
-        print 'lost: %s' % lostIds
         gainedIds = otherIds.difference(thisIds)
         del thisIds
         del otherIds
@@ -91,6 +92,27 @@ class ObjectPool:
                 s += '\n%s\t%s' % (count, typ)
         return s
 
+    def printObjsByType(self):
+        print 'Object Pool: Objects By Type'
+        print '\n============================'
+        counts = list(set(self._count2types.keys()))
+        counts.sort()
+        counts.reverse()
+        for count in counts:
+            types = makeList(self._count2types[count])
+            for typ in types:
+                print 'TYPE: %s' % typ
+                print getNumberedTypedString(self._type2objs[typ])
+
+    def containerLenStr(self):
+        s  =   'Object Pool: Container Lengths'
+        s += '\n=============================='
+        lengths = list(self._len2obj.keys())
+        lengths.sort()
+        lengths.reverse()
+        for count in counts:
+            pass
+
     def referrersStr(self, numEach=3):
         """referrers of the first few of each type of object"""
         s = ''
@@ -106,7 +128,7 @@ class ObjectPool:
                     s += '\nOBJ: %s\n' % safeRepr(obj)
                     referrers = gc.get_referrers(obj)
                     if len(referrers):
-                        s += getNumberedTypedString(referrers)
+                        s += getNumberedTypedString(referrers, maxLen=80)
                     else:
                         s += '<No Referrers>'
         return s

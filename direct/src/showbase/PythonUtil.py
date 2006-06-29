@@ -2000,20 +2000,27 @@ def safeRepr(obj):
     except:
         return '<** FAILED REPR OF %s **>' % obj.__class__.__name__
 
-def fastRepr(obj, maxLen=200, strFactor=10):
+def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
     """ caps the length of iterable types """
+    if _visitedIds is None:
+        _visitedIds = set()
+    if id(obj) in _visitedIds:
+        return '<ALREADY-VISITED %s>' % itype(obj)
+    _visitedIds.add(id(obj))
     if type(obj) in (types.TupleType, types.ListType):
         s = ''
         s += {types.TupleType: '(',
               types.ListType:  '[',}[type(obj)]
         if len(obj) > maxLen:
             o = obj[:maxLen]
+            ellips = '...'
         else:
             o = obj
+            ellips = ''
         for item in o:
-            s += fastRepr(item, maxLen)
+            s += fastRepr(item, maxLen, _visitedIds=_visitedIds)
             s += ', '
-        s += '...'
+        s += ellips
         s += {types.TupleType: ')',
               types.ListType:  ']',}[type(obj)]
         return s
@@ -2025,7 +2032,8 @@ def fastRepr(obj, maxLen=200, strFactor=10):
             o = obj.keys()
         for key in o:
             value = obj[key]
-            s += '%s: %s, ' % (fastRepr(key, maxLen), fastRepr(value, maxLen))
+            s += '%s: %s, ' % (fastRepr(key, maxLen, _visitedIds=_visitedIds),
+                               fastRepr(value, maxLen, _visitedIds=_visitedIds))
         s += '...}'
         return s
     elif type(obj) is types.StringType:
@@ -2178,18 +2186,11 @@ class RefCounter:
             del self._refCounts[key]
         return result
 
-class VerboseInstanceType(types.InstanceType.__class__):
-    def __init__(self, obj):
-        types.InstanceType(self, obj)
-        self._reprStr = '%s of <class %s>' % (repr(types.InstanceType),
-                                            str(obj.__class__))
-    def __repr__(self):
-        return self._reprStr
-
 def itype(obj):
     t = type(obj)
     if t is types.InstanceType:
-        return VerboseInstanceType(obj)
+        return '%s of <class %s>' % (repr(types.InstanceType),
+                                     str(obj.__class__))
     else:
         return t
 
@@ -2215,6 +2216,25 @@ def getNumberedTypedString(items, maxLen=5000):
             objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
         s += format % (i, itype(items[i]), objStr)
     return s
+
+def printNumberedTyped(items, maxLen=5000):
+    """print out each item of the list on its own line,
+    with each item numbered on the left from zero"""
+    digits = 0
+    n = len(items)
+    while n > 0:
+        digits += 1
+        n /= 10
+    digits = digits
+    format = '%0' + '%s' % digits + 'i:%s \t%s'
+    first = True
+    for i in xrange(len(items)):
+        first = False
+        objStr = fastRepr(items[i])
+        if len(objStr) > maxLen:
+            snip = '<SNIP>'
+            objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
+        print format % (i, itype(items[i]), objStr)
 
 import __builtin__
 __builtin__.Functor = Functor

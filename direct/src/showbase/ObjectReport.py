@@ -19,6 +19,7 @@ import sys
 class ExclusiveObjectPool(DirectObject.DirectObject):
     """ObjectPool specialization that excludes particular objects"""
     # IDs of objects to globally exclude from reporting
+    _ExclObjs = []
     _ExclObjIds = {}
     _SyncMaster = Sync('ExclusiveObjectPool.ExcludedObjectList')
     _SerialNumGen = SerialNumGen()
@@ -26,6 +27,8 @@ class ExclusiveObjectPool(DirectObject.DirectObject):
     @classmethod
     def addExclObjs(cls, *objs):
         for obj in makeList(objs):
+            if id(obj) not in cls._ExclObjIds:
+                cls._ExclObjs.append(obj)
             cls._ExclObjIds.setdefault(id(obj), 0)
             cls._ExclObjIds[id(obj)] += 1
         cls._SyncMaster.change()
@@ -33,7 +36,10 @@ class ExclusiveObjectPool(DirectObject.DirectObject):
     def removeExclObjs(cls, *objs):
         for obj in makeList(objs):
             assert id(obj) in cls._ExclObjIds
-            del cls._ExclObjIds[id(obj)]
+            cls._ExclObjIds[id(obj)] -= 1
+            if cls._ExclObjIds[id(obj)] == 0:
+                del cls._ExclObjIds[id(obj)]
+                cls._ExclObjs.remove(obj)
         cls._SyncMaster.change()
 
     def __init__(self, objects):
@@ -116,6 +122,8 @@ class ObjectReport:
         return self._pool.diff(other._pool)
 
     def _getObjectList(self):
+        return sys.getobjects(0)
+        """
         if hasattr(sys, 'getobjects'):
             return sys.getobjects(0)
         else:
@@ -149,3 +157,5 @@ class ObjectReport:
                     stateStack.push((obj, adjacents, i+1))
                     stateStack.push((adj, None, 0))
                     continue
+                    """
+            

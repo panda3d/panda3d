@@ -1,5 +1,5 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import gcDebugOn, safeRepr
+from direct.showbase.PythonUtil import gcDebugOn, safeRepr, fastRepr
 from direct.showbase.TaskThreaded import TaskThreaded, TaskThread
 import gc
 
@@ -37,7 +37,7 @@ class GarbageReport(TaskThreaded):
         if not wasOn:
             gc.set_debug(gc.DEBUG_SAVEALL)
         gc.collect()
-        self.notify.debug('gc.garbage == %s' % gc.garbage)
+        self.notify.debug('gc.garbage == %s' % fastRepr(gc.garbage))
         self.garbage = list(gc.garbage)
         self.notify.debug('self.garbage == %s' % self.garbage)
         del gc.garbage[:]
