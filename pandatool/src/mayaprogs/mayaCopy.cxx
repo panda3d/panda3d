@@ -239,19 +239,21 @@ copy_maya_file(const Filename &source, const Filename &dest,
     status  = MGlobal::executeCommand(MString(_exec_string.c_str()));
   }
 
-  // Get all the shaders so we can determine the set of textures.
-  _shaders.clear();
-  collect_shaders();
-  int num_shaders = _shaders.get_num_shaders();
-  for (int i = 0; i < num_shaders; i++) {
-    MayaShader *shader = _shaders.get_shader(i);
-    for (size_t j = 0; j < shader->_color.size(); j++) {
-      if (!extract_texture(*shader->get_color_def(j), dir)) {
+  if (!_omit_tex) {
+    // Get all the shaders so we can determine the set of textures.
+    _shaders.clear();
+    collect_shaders();
+    int num_shaders = _shaders.get_num_shaders();
+    for (int i = 0; i < num_shaders; i++) {
+      MayaShader *shader = _shaders.get_shader(i);
+      for (size_t j = 0; j < shader->_color.size(); j++) {
+        if (!extract_texture(*shader->get_color_def(j), dir)) {
+          return false;
+        }
+      }
+      if (!extract_texture(shader->_transparency, dir)) {
         return false;
       }
-    }
-    if (!extract_texture(shader->_transparency, dir)) {
-      return false;
     }
   }
 
