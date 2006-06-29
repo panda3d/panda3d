@@ -2039,9 +2039,9 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
     elif type(obj) is types.StringType:
         maxLen *= strFactor
         if len(obj) > maxLen:
-            return obj[:maxLen]
+            return repr(obj[:maxLen])
         else:
-            return obj
+            return repr(obj)
     else:
         return safeRepr(obj)
 
@@ -2194,7 +2194,7 @@ def itype(obj):
     else:
         return t
 
-def getNumberedTypedString(items, maxLen=5000):
+def getNumberedTypedString(items, maxLen=5000, numPrefix=''):
     """get a string that has each item of the list on its own line,
     and each item is numbered on the left from zero"""
     digits = 0
@@ -2203,7 +2203,7 @@ def getNumberedTypedString(items, maxLen=5000):
         digits += 1
         n /= 10
     digits = digits
-    format = '%0' + '%s' % digits + 'i:%s \t%s'
+    format = numPrefix + '%0' + '%s' % digits + 'i:%s \t%s'
     first = True
     s = ''
     for i in xrange(len(items)):

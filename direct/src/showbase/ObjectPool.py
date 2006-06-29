@@ -127,8 +127,10 @@ class ObjectPool:
                     obj = self._type2objs[typ][i]
                     s += '\nOBJ: %s\n' % safeRepr(obj)
                     referrers = gc.get_referrers(obj)
+                    s += '%s REFERRERS:\n' % len(referrers)
                     if len(referrers):
-                        s += getNumberedTypedString(referrers, maxLen=80)
+                        s += getNumberedTypedString(referrers, maxLen=80,
+                                                    numPrefix='REF')
                     else:
                         s += '<No Referrers>'
         return s
