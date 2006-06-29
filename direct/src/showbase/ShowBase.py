@@ -85,9 +85,6 @@ class ShowBase(DirectObject.DirectObject):
         # has to run before libpanda is even loaded).
         taskMgr.resumeFunc = PStatClient.resumeAfterPause
 
-        fsmRedefine = self.config.GetBool('fsm-redefine', 0)
-        State.FsmRedefine = fsmRedefine
-
         # If the aspect ratio is 0 or None, it means to infer the
         # aspect ratio from the window size.
         # If you need to know the actual aspect ratio call base.getAspectRatio()
