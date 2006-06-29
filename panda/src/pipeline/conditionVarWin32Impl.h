@@ -27,8 +27,6 @@
 #include "mutexWin32Impl.h"
 #include "pnotify.h"
 
-#include <prcvar.h>
-
 class MutexWin32Impl;
 
 ////////////////////////////////////////////////////////////////////
