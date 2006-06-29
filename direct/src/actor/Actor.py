@@ -1582,6 +1582,7 @@ class Actor(DirectObject, NodePath):
 
         # Are there any controls requested for joints in this bundle?
         # If so, apply them.
+        print 'actor bundle %s, %s'% (bundle,bundle.this)
         controlDict = self.__controlJoints.get(bundle.this, None)
         if controlDict:
             for jointName, node in controlDict.items():
