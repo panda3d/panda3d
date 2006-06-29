@@ -68,6 +68,12 @@ MayaCopy() {
      "source filename before it is copied into the tree.",
      &CVSCopy::dispatch_vector_string, NULL, &_replace_prefix);
 
+  add_option
+    ("omittex", "", 0,
+     "Character animation files do not need to copy the texures. This option omits the "
+     "textures of the models to be re-mayacopied",
+     &CVSCopy::dispatch_none, &_omit_tex);
+
   add_path_replace_options();
 }
 
@@ -115,6 +121,9 @@ copy_file(const Filename &source, const Filename &dest,
     return copy_maya_file(source, dest, dir);
 
   case FT_texture:
+    if (_omit_tex) {
+      return true;
+    }
     return copy_texture(source, dest, dir);
   }
 

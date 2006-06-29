@@ -72,6 +72,7 @@ private:
   bool collect_shader_for_node(const MDagPath &dag_path);
 
   bool _keep_ver;
+  bool _omit_tex;
   int _curr_idx;
   vector_string _replace_prefix;
 
