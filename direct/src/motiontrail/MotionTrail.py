@@ -125,8 +125,8 @@ class MotionTrail(NodePath, DirectObject):
         return
 
     def delete(self):
-        del self.root_node_path
-        del self.parent_node_path
+        self.root_node_path = None
+        self.parent_node_path = None
         self.removeNode()
         
     def print_matrix (self, matrix):
@@ -146,12 +146,12 @@ class MotionTrail(NodePath, DirectObject):
         while (index < total_motion_trails):
             motion_trail = MotionTrail.motion_trail_list [index]
             if (motion_trail.active and motion_trail.check_for_update (current_time)):
-
+                
                 transform = None
-
-                if (motion_trail.root_node_path != None):
+                
+                if (motion_trail.root_node_path != None) and (motion_trail.root_node_path != render):
                     motion_trail.root_node_path.update ( )
-
+                    
                 """
                 transform = motion_trail.getNetTransform ( ).getMat ( )
                 print "net matrix", transform.__repr__ ( )
