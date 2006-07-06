@@ -549,10 +549,10 @@ def list2dict(L, value=None):
     """creates dict using elements of list, all assigned to same value"""
     return dict([(k, value) for k in L])
 
-def invertDict(D):
+def invertDict(D, lossy=False):
     """creates a dictionary by 'inverting' D; keys are placed in the new
     dictionary under their corresponding value in the old dictionary.
-    Data will be lost if D contains any duplicate values.
+    It is an error if D contains any duplicate values.
 
     >>> old = {'key1':1, 'key2':2}
     >>> invertDict(old)
@@ -560,6 +560,8 @@ def invertDict(D):
     """
     n = {}
     for key, value in D.items():
+        if not lossy and value in n:
+            raise 'duplicate key in invertDict: %s' % value
         n[value] = key
     return n
 
@@ -2006,7 +2008,6 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
         _visitedIds = set()
     if id(obj) in _visitedIds:
         return '<ALREADY-VISITED %s>' % itype(obj)
-    _visitedIds.add(id(obj))
     if type(obj) in (types.TupleType, types.ListType):
         s = ''
         s += {types.TupleType: '(',
@@ -2017,9 +2018,11 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
         else:
             o = obj
             ellips = ''
+        _visitedIds.add(id(obj))
         for item in o:
             s += fastRepr(item, maxLen, _visitedIds=_visitedIds)
             s += ', '
+        _visitedIds.remove(id(obj))
         s += ellips
         s += {types.TupleType: ')',
               types.ListType:  ']',}[type(obj)]
@@ -2028,13 +2031,18 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
         s = '{'
         if len(obj) > maxLen:
             o = obj.keys()[:maxLen]
+            ellips = '...'
         else:
             o = obj.keys()
+            ellips = ''
+        _visitedIds.add(id(obj))
         for key in o:
             value = obj[key]
             s += '%s: %s, ' % (fastRepr(key, maxLen, _visitedIds=_visitedIds),
                                fastRepr(value, maxLen, _visitedIds=_visitedIds))
-        s += '...}'
+        _visitedIds.remove(id(obj))
+        s += ellips
+        s += '}'
         return s
     elif type(obj) is types.StringType:
         maxLen *= strFactor
