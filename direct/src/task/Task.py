@@ -5,10 +5,7 @@
 # subset of PandaModules that we know is available immediately.
 # Methods that require more advanced C++ methods may import the
 # appropriate files within their own scope.
-#from pandac.libpandaexpressModules import *
-
-# Temporary hack to get developers working again.  This can't remain.
-from pandac.PandaModules import *
+from pandac.libpandaexpressModules import *
 
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.PythonUtil import *
@@ -22,10 +19,6 @@ from libheapq import heappush, heappop, heapify
 if __debug__:
     # For pstats
     from pandac.PandaModules import PStatCollector
-
-# Task needs this because it might run before __builtin__.globalClock
-# can be set.
-globalClock = ClockObject.getGlobalClock()
 
 def print_exc_plus():
     """
@@ -330,6 +323,19 @@ class TaskManager:
         self.pendingTaskDict = {}
         # List of tasks scheduled to execute in the future
         self.__doLaterList = []
+
+        # We copy this value in from __builtins__ when it gets set.
+        # But since the TaskManager might have to run before it gets
+        # set--before it can even be available--we also have to have
+        # special-case code that handles the possibility that we don't
+        # have a globalClock yet.
+        self.globalClock = None
+
+        # To help cope with the possibly-missing globalClock, we get a
+        # handle to Panda's low-level TrueClock object for measuring
+        # small intervals.
+        self.trueClock = TrueClock.getGlobalPtr()
+
         self.currentTime, self.currentFrame = self.__getTimeFrame()
         if (TaskManager.notify == None):
             TaskManager.notify = directNotify.newCategory("TaskManager")
@@ -339,6 +345,8 @@ class TaskManager:
         self.fVerbose = 0
         # Dictionary of task name to list of tasks with that name
         self.nameDict = {}
+
+        # A default task.
         self.add(self.__doLaterProcessor, "doLaterProcessor", -10)
 
     def stepping(self, value):
@@ -448,10 +456,7 @@ class TaskManager:
             nameList.append(task)
         else:
             self.nameDict[name] = [task]
-        # be sure to ask the globalClock for the current frame time
-        # rather than use a cached value; globalClock's frame time may
-        # have been synced since the start of this frame
-        currentTime = globalClock.getFrameTime()
+        currentTime = self.__getTime()
         # Cache the time we should wake up for easier sorting
         task.delayTime = delayTime
         task.wakeTime = currentTime + delayTime
@@ -481,10 +486,7 @@ class TaskManager:
         task.extraArgs = extraArgs
         if uponDeath:
             task.uponDeath = uponDeath
-        # be sure to ask the globalClock for the current frame time
-        # rather than use a cached value; globalClock's frame time may
-        # have been synced since the start of this frame
-        currentTime = globalClock.getFrameTime()
+        currentTime = self.__getTime()
         task.setStartTimeFrame(currentTime, self.currentFrame)
         nameList = self.nameDict.get(name)
         if nameList:
@@ -632,12 +634,12 @@ class TaskManager:
             # Run the task and check the return value
             if task.pstats:
                 task.pstats.start()
-            startTime = globalClock.getRealTime()
+            startTime = self.trueClock.getShortTime()
             if task.extraArgs != None:
                 ret = task(*task.extraArgs)
             else:
                 ret = task(task)
-            endTime = globalClock.getRealTime()
+            endTime = self.trueClock.getShortTime()
             if task.pstats:
                 task.pstats.stop()
 
@@ -667,7 +669,7 @@ class TaskManager:
             # be sure to ask the globalClock for the current frame time
             # rather than use a cached value; globalClock's frame time may
             # have been synced since the start of this frame
-            currentTime = globalClock.getFrameTime()
+            currentTime = self.__getTime()
             # Cache the time we should wake up for easier sorting
             task.wakeTime = currentTime + task.delayTime
             # Push this onto the doLaterList. The heap maintains the sorting.
@@ -800,11 +802,11 @@ class TaskManager:
     def run(self):
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time
-        t = globalClock.getFrameTime()
-        timeDelta = t - globalClock.getRealTime()
-        globalClock.setRealTime(t)
-
-        messenger.send("resetClock", [timeDelta])
+        if self.globalClock:
+            t = self.globalClock.getFrameTime()
+            timeDelta = t - globalClock.getRealTime()
+            self.globalClock.setRealTime(t)
+            messenger.send("resetClock", [timeDelta])
 
         if self.resumeFunc != None:
             self.resumeFunc()
@@ -981,7 +983,16 @@ class TaskManager:
         # WARNING: If you are testing tasks without an igLoop,
         # you must manually tick the clock
         # Ask for the time last frame
-        return globalClock.getFrameTime(), globalClock.getFrameCount()
+        if self.globalClock:
+            return self.globalClock.getFrameTime(), self.globalClock.getFrameCount()
+        # OK, we don't have a globalClock yet.  This is therefore
+        # running before the first frame.
+        return self.trueClock.getShortTime(), 0
+
+    def __getTime(self):
+        if self.globalClock:
+            return self.globalClock.getFrameTime()
+        return self.trueClock.getShortTime()
 
     def startOsd(self):
         self.add(self.doOsd, 'taskMgr.doOsd')

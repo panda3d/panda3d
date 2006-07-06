@@ -212,6 +212,22 @@ class ShowBase(DirectObject.DirectObject):
 
         self.AppHasAudioFocus = 1
 
+        # Get a pointer to Panda's global ClockObject, used for
+        # synchronizing events between Python and C.
+        # object is exactly in sync with the TrueClock.
+        globalClock = ClockObject.getGlobalClock()
+
+        # Since we have already started up a TaskManager, and probably
+        # a number of tasks; and since the TaskManager had to use the
+        # TrueClock to tell time until this moment, make sure the
+        # globalClock
+        trueClock = TrueClock.getGlobalPtr()
+        globalClock.setRealTime(trueClock.getShortTime())
+        globalClock.tick()
+
+        # Now we can make the TaskManager start using the new globalClock.
+        taskMgr.globalClock = globalClock
+
         __builtins__["base"] = self
         __builtins__["render2d"] = self.render2d
         __builtins__["aspect2d"] = self.aspect2d
@@ -228,7 +244,7 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["run"] = self.run
         __builtins__["ostream"] = Notify.out()
         __builtins__["directNotify"] = directNotify
-        __builtins__["globalClock"] = ClockObject.getGlobalClock()
+        __builtins__["globalClock"] = globalClock
         __builtins__["vfs"] = vfs
         __builtins__["cpMgr"] = ConfigPageManager.getGlobalPtr()
         __builtins__["cvMgr"] = ConfigVariableManager.getGlobalPtr()
