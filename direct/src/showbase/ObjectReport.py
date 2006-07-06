@@ -1,5 +1,5 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase import DirectObject, ObjectPool
+from direct.showbase import DirectObject, ObjectPool, GarbageReport
 from direct.showbase.PythonUtil import makeList, Sync
 import gc
 import sys
@@ -13,11 +13,10 @@ import sys
 
 >>> o2=ObjectReport.ObjectReport('')
 >>> o.diff(o2)
-<wait a loooong time>
 """
 
 class ExclusiveObjectPool(DirectObject.DirectObject):
-    """ObjectPool specialization that excludes particular objects"""
+    # ObjectPool specialization that excludes particular objects
     # IDs of objects to globally exclude from reporting
     _ExclObjs = []
     _ExclObjIds = {}
@@ -71,7 +70,7 @@ class ExclusiveObjectPool(DirectObject.DirectObject):
         for obj in self._objects:
             if id(obj) not in ExclusiveObjectPool._ExclObjIds:
                 self._postFilterObjs.append(obj)
-        self._filteredPool = ObjectPool.ObjectPool(self._postFilterObjs)
+        self._filteredPool = ExclusiveObjectPool(self._postFilterObjs)
         ExclusiveObjectPool.addExclObjs(self._filteredPool)
         ExclusiveObjectPool.addExclObjs(*self._filteredPool._getInternalObjs())
         self._sync.sync(self._SyncMaster)
@@ -96,21 +95,21 @@ class ObjectReport:
     """report on every Python object in the current process"""
     notify = directNotify.newCategory('ObjectReport')
 
-    def __init__(self, name, log=True, garbageCollect=True):
+    def __init__(self, name, log=True):
         if not hasattr(sys, 'getobjects'):
             self.notify.error(
                 '%s only works in debug Python (pyd-shell)' % self.__class__.__name__)
-        if garbageCollect:
-            import gc
-            gc.collect()
+        gr = GarbageReport.GarbageReport('ObjectReport\'s GarbageReport: %s' % name, log=log)
+        gr.destroy()
+        del gr
         self._name = name
-        self._pool = ExclusiveObjectPool(self._getObjectList())
-        ExclusiveObjectPool.addExclObjs(self, self._pool, self._name)
+        self._pool = ObjectPool.ObjectPool(self._getObjectList())
+        #ExclusiveObjectPool.addExclObjs(self, self._pool, self._name)
         if log:
             self.notify.info('===== ObjectReport: \'%s\' =====\n%s' % (self._name, self.typeFreqStr()))
 
     def destroy(self):
-        ExclusiveObjectPool.removeExclObjs(self, self._pool, self._name)
+        #ExclusiveObjectPool.removeExclObjs(self, self._pool, self._name)
         self._pool.destroy()
         del self._pool
         del self._name
