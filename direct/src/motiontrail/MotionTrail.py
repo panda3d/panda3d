@@ -11,7 +11,7 @@ def remove_task ( ):
 
         if (total_motion_trails > 0):
             print "warning", total_motion_trails, "motion trails still exist when motion trail task is removed"
-
+            
         MotionTrail.motion_trail_list = [ ]
 
         taskMgr.remove (MotionTrail.motion_trail_task_name)
