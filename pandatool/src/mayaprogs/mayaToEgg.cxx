@@ -85,6 +85,16 @@ MayaToEgg() :
      &MayaToEgg::dispatch_transform_type, NULL, &_transform_type);
 
   add_option
+    ("subroot", "name", 0,
+     "Specifies that only a subroot of the hierarchy in the Maya file should "
+     "be converted; specifically, the animation under the node or nodes whose "
+     "name matches the parameter (which may include globbing characters "
+     "like * or ?).  This parameter may not be repeated multiple times to name "
+     "multiple roots.  If it is omitted altogether, the entire file is "
+     "converted.",
+     &MayaToEgg::dispatch_string, NULL, &_subroot);
+
+  add_option
     ("subset", "name", 0,
      "Specifies that only a subset of the geometry in the Maya file should "
      "be converted; specifically, the geometry under the node or nodes whose "
@@ -165,6 +175,8 @@ run() {
   converter._respect_maya_double_sided = _respect_maya_double_sided;
   converter._always_show_vertex_color = !_suppress_vertex_color;
   converter._transform_type = _transform_type;
+
+  converter.set_subroot(_subroot);
 
   vector_string::const_iterator si;
   if (!_subsets.empty()) {

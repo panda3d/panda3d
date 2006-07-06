@@ -80,6 +80,8 @@ public:
   virtual bool convert_file(const Filename &filename);
   virtual DistanceUnit get_input_units();
 
+  void set_subroot(const string &subroot);
+
   void clear_subsets();
   void add_subset(const GlobPattern &glob);
 
@@ -160,6 +162,7 @@ private:
   vector_string _tex_names;
 
   bool _from_selection;
+  string _subroot;
   typedef pvector<GlobPattern> Globs;
   Globs _subsets;
   Globs _ignore_sliders;

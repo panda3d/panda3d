@@ -370,7 +370,9 @@ check_pseudo_joints(bool joint_above) {
       if (all_joints) {
         // Finally, if all children are joints, then we are too.
         if (_joint_type == JT_joint_parent) {
-          _joint_type = JT_pseudo_joint;
+          if (!get_name().empty()) { // make sure parent of root is not a joint
+            _joint_type = JT_pseudo_joint;
+          }
         }
       }
     }

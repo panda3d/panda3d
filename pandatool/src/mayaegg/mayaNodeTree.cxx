@@ -71,18 +71,46 @@ build_node(const MDagPath &dag_path) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeTree::build_hierarchy
 //       Access: Public
-//  Description: Walks through the complete Maya hierarchy and builds
+//  Description: Walks through the complete Maya hierarchy if subroot
+//               is empty() else walks from the subroot down and builds
 //               up the corresponding tree, but does not tag any nodes
 //               for conversion.
 ////////////////////////////////////////////////////////////////////
 bool MayaNodeTree::
-build_hierarchy() {
+build_hierarchy(const string &subroot) {
   MStatus status;
 
   MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
   if (!status) {
     status.perror("MItDag constructor");
     return false;
+  }
+
+  // if a subtree is specified ignore other nodes until the subtree
+  if (!subroot.empty()){
+    mayaegg_cat.info() << "subroot name: " << subroot << endl;
+    while (!dag_iterator.isDone()) {
+      string node_name;
+      string path = dag_iterator.fullPathName(&status).asChar();
+      if (!status) {
+        status.perror("MItDag::getPath");
+      } else {
+        size_t bar = path.rfind("|");
+        if (bar != string::npos) {
+          node_name = path.substr(bar + 1);
+          if (node_name == subroot) {
+            mayaegg_cat.info() << "node name: " << node_name << endl;
+            status = dag_iterator.reset(dag_iterator.item(),MItDag::kDepthFirst, MFn::kTransform);
+            if (!status) {
+              status.perror("MItDag constructor");
+              return false;
+            }
+            break;
+          }
+        }
+      }
+      dag_iterator.next();
+    }
   }
 
   // Get the entire Maya scene.
@@ -588,12 +616,16 @@ r_build_node(const string &path) {
     string parent_path, local_name;
     if (bar != string::npos) {
       parent_path = path.substr(0, bar);
+      //mayaegg_cat.info() << "parent_path: " << parent_path << endl;
       local_name = path.substr(bar + 1);
     } else {
       local_name = path;
     }
+    //mayaegg_cat.info() << "local_name: " << local_name << endl;
 
     MayaNodeDesc *parent_node_desc = r_build_node(parent_path);
+    if (parent_node_desc == (MayaNodeDesc *)NULL)
+      mayaegg_cat.info() << "empty parent: " << local_name << endl;
     node_desc = new MayaNodeDesc(this, parent_node_desc, local_name);
     _nodes.push_back(node_desc);
   }

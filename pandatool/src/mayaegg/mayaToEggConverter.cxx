@@ -111,6 +111,7 @@ MayaToEggConverter(const MayaToEggConverter &copy) :
   _subsets(copy._subsets),
   _ignore_sliders(copy._ignore_sliders),
   _force_joints(copy._force_joints),
+  _subroot(copy._subroot),
   _tree(this),
   _maya(copy._maya),
   _polygon_output(copy._polygon_output),
@@ -211,6 +212,19 @@ convert_file(const Filename &filename) {
   }
 
   return convert_maya();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::set_subroot
+//       Access: Public
+//  Description: Sets a name pattern to the subroot node.  If
+//               the subroot node is not empty, then only the
+//               subroot node in the maya file will be
+//               converted.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+set_subroot(const string &subroot) {
+  _subroot = subroot;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -414,7 +428,7 @@ convert_maya() {
 
   frame_inc = frame_inc * input_frame_rate / output_frame_rate;
 
-  bool all_ok = _tree.build_hierarchy();
+  bool all_ok = _tree.build_hierarchy(_subroot);
 
   if (all_ok) {
     if (_from_selection) {
@@ -907,6 +921,28 @@ process_model_node(MayaNodeDesc *node_desc) {
       get_transform(node_desc, dag_path, egg_group);
       make_locator(dag_path, dag_node, egg_group);
     }
+
+  } else if (dag_path.hasFn(MFn::kCamera)) {
+    MFnCamera camera (dag_path, &status);
+    if ( !status ) {
+      status.perror("MFnCamera constructor");
+      mayaegg_cat.error() << "camera extraction failed" << endl;
+      return false;
+    }
+    
+    // Extract some interesting Camera data
+    mayaegg_cat.info() << "  eyePoint: "
+         << camera.eyePoint(MSpace::kWorld) << endl;
+    mayaegg_cat.info() << "  upDirection: "
+         << camera.upDirection(MSpace::kWorld) << endl;
+    mayaegg_cat.info() << "  viewDirection: "
+         << camera.viewDirection(MSpace::kWorld) << endl;
+    mayaegg_cat.info() << "  aspectRatio: " << camera.aspectRatio() << endl;
+    mayaegg_cat.info() << "  horizontalFilmAperture: "
+         << camera.horizontalFilmAperture() << endl;
+    mayaegg_cat.info() << "  verticalFilmAperture: "
+         << camera.verticalFilmAperture() << endl;
+
   } else {
     // Just a generic node.
     if (_animation_convert == AC_none) {
