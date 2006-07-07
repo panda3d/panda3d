@@ -1,3 +1,5 @@
+from direct.distributed import DoHierarchy
+
 #hack:
 BAD_DO_ID = BAD_ZONE_ID = 0 # 0xFFFFFFFF
 BAD_CHANNEL_ID = 0 # 0xFFFFFFFFFFFFFFFF
@@ -15,7 +17,7 @@ class DoCollectionManager:
         # Dict of {
         #   parent DistributedObject id:
         #     { zoneIds: [child DistributedObject ids] }}
-        self.__doHierarchy = {}
+        self._doHierarchy = DoHierarchy.DoHierarchy()
 
     def getDo(self, doId):
         return self.doId2do.get(doId)
@@ -64,9 +66,6 @@ class DoCollectionManager:
                 matches.append(value)
         return matches
 
-    def getDoHierarchy(self):
-        return self.__doHierarchy
-
     if __debug__:
         def printObjects(self):
             format="%10s %10s %10s %30s %20s"
@@ -98,36 +97,7 @@ class DoCollectionManager:
             for i in self.getDoIdList(parentId, zoneId, classType)]
 
     def getDoIdList(self, parentId, zoneId=None, classType=None):
-        """
-        parentId is any distributed object id.
-        zoneId is a uint32, defaults to None (all zones).  Try zone 2 if
-            you're not sure which zone to use (0 is a bad/null zone and
-            1 has had reserved use in the past as a no messages zone, while
-            2 has traditionally been a global, uber, misc stuff zone).
-        dclassType is a distributed class type filter, defaults
-            to None (no filter).
-
-        If dclassName is None then all objects in the zone are returned;
-        otherwise the list is filtered to only include objects of that type.
-        """
-        parent=self.__doHierarchy.get(parentId)
-        if parent is None:
-            return []
-        if zoneId is None:
-            r = []
-            for zone in parent.values():
-                for obj in zone:
-                    r.append(obj)
-        else:
-            r = parent.get(zoneId, [])
-        if classType is not None:
-            a = []
-            for doId in r:
-                obj = self.getDo(doId)
-                if isinstance(obj, classType):
-                    a.append(doId)
-            r = a
-        return r
+        return self._doHierarchy.getDoIds(parentId, zoneId, classType)
 
     def getOwnerViewDoList(self, classType):
         assert self.hasOwnerView()
@@ -186,10 +156,10 @@ class DoCollectionManager:
         self.deleteObjects()
 
         # the zoneId2doIds table should be empty now
-        if len(self.__doHierarchy) > 0:
+        if not self._doHierarchy.isEmpty():
             self.notify.warning(
-                '__doHierarchy table not empty: %s' % self.__doHierarchy)
-            self.__doHierarchy = {}
+                '_doHierarchy table not empty: %s' % self._doHierarchy)
+            self._doHierarchy.clear()
 
     def handleObjectLocation(self, di):
         # CLIENT_OBJECT_LOCATION
@@ -203,7 +173,7 @@ class DoCollectionManager:
                 (doId, parentId, zoneId))
             # Let the object finish the job
             obj.setLocation(parentId, zoneId)
-            self.storeObjectLocation(doId, parentId, zoneId)
+            #self.storeObjectLocation(doId, parentId, zoneId)
         else:
             self.notify.warning(
                 "handleObjectLocation: Asked to update non-existent obj: %s" % (doId))
@@ -222,31 +192,31 @@ class DoCollectionManager:
 
     def storeObjectLocation(self, doId, parentId, zoneId, object=None):
         if (object == None):
-            obj = self.doId2do.get(doId)
+            object = self.doId2do.get(doId)
+        if object is None:
+            self.notify.error('storeObjectLocation: object %s not present' % doId)
         else:
-            obj = object
-        if obj is None:
-            self.notify.warning('storeObjectLocation: object %s not present' % doId)
-        else:
-            oldParentId = obj.parentId
-            oldZoneId = obj.zoneId
-            if oldParentId != parentId:
+            oldParentId = object.parentId
+            oldZoneId = object.zoneId
+            if ((None not in (oldParentId, oldZoneId)) and
+                ((oldParentId != parentId) or (oldZoneId != zoneId))):
                 # Remove old location
                 self.deleteObjectLocation(doId, oldParentId, oldZoneId)
-            if oldParentId == parentId and oldZoneId == zoneId:
+            elif oldParentId == parentId and oldZoneId == zoneId:
                 # object is already at that parent and zone
                 return
             if (parentId is None) or (zoneId is None):
                 # Do not store null values
                 return
             # Add to new location
-            parentZoneDict = self.__doHierarchy.setdefault(parentId, {})
-            zoneDoSet = parentZoneDict.setdefault(zoneId, set())
-            zoneDoSet.add(doId)
+            self._doHierarchy.storeObjectLocation(doId, parentId, zoneId)
+            # this check doesn't work because of global UD objects;
+            # should they have a location?
+            #assert len(self._doHierarchy) == len(self.doId2do)
 
             # Set the new parent and zone on the object
-            obj.parentId = parentId
-            obj.zoneId = zoneId
+            object.parentId = parentId
+            object.zoneId = zoneId
 
             if 1:
                 # Do we still need this
@@ -256,11 +226,11 @@ class DoCollectionManager:
                     # scene graph reparent the child to some subnode it owns.
                     parentObj = self.doId2do.get(parentId)
                     if parentObj is not None:
-                        parentObj.handleChildArrive(obj, zoneId)
+                        parentObj.handleChildArrive(object, zoneId)
                     elif parentId not in (0, self.getGameDoId()):
                         self.notify.warning('storeObjectLocation(%s): parent %s not present' %
                                             (doId, parentId))
-
+            
     def deleteObjectLocation(self, doId, parentId, zoneId):
         # Do not worry about null values
         if (parentId is None) or (zoneId is None):
@@ -274,23 +244,7 @@ class DoCollectionManager:
             if oldParentObj is not None and obj is not None:
                 oldParentObj.handleChildLeave(obj, zoneId)
 
-        parentZoneDict = self.__doHierarchy.get(parentId)
-        if parentZoneDict is not None:
-            zoneDoSet = parentZoneDict.get(zoneId)
-            if zoneDoSet is not None:
-                if doId in zoneDoSet:
-                    zoneDoSet.remove(doId)
-                    if len(zoneDoSet) == 0:
-                        del parentZoneDict[zoneId]
-                else:
-                    self.notify.warning(
-                        "deleteObjectLocation: objId: %s not found"%(doId,))
-            else:
-                self.notify.warning(
-                    "deleteObjectLocation: zoneId: %s not found"%(zoneId,))
-        else:
-            self.notify.warning(
-                "deleteObjectLocation: parentId: %s not found"%(parentId,))
+        self._doHierarchy.deleteObjectLocation(doId, parentId, zoneId)
 
     def addDOToTables(self, do, location=None, ownerView=False):
         assert self.notify.debugStateCall(self)
@@ -328,15 +282,7 @@ class DoCollectionManager:
     if __debug__:
         def isInDoTables(self, doId):
             assert self.notify.debugStateCall(self)
-            inDoHierarchy = False
-            for parentId, parentZoneDict in self.__doHierarchy.items():
-                for zoneId, zoneDoSet in parentZoneDict.items():
-                    if doId in zoneDoSet:
-                        inDoHierarchy = True
-                        print "isInDoTables found " \
-                            "%s in parentId:%s zoneId:%s"%(
-                            doId, parentId, zoneId)
-            return inDoHierarchy or (doId in self.doId2do)
+            return doId in self.doId2do
 
     def removeDOFromTables(self, do):
         assert self.notify.debugStateCall(self)

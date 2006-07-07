@@ -219,8 +219,8 @@ class DistributedObject(DistributedObjectBase):
             self.activeState = ESDisabled
             self.__callbacks = {}
             self.cr.closeAutoInterests(self)
-            #self.cr.deleteObjectLocation(self.doId, self.parentId, self.zoneId)
             self.setLocation(0,0)
+            self.cr.deleteObjectLocation(self.doId, self.parentId, self.zoneId)
             # TODO: disable my children
 
     def isDisabled(self):

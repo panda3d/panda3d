@@ -335,8 +335,6 @@ class DistributedObjectAI(DistributedObjectBase):
 
         # The repository is the one that really does the work
         parentId = self.air.districtId
-        self.parentId = parentId
-        self.zoneId = zoneId
         self.air.generateWithRequired(self, parentId, zoneId, optionalFields)
         self.generate()
         self.announceGenerate()
@@ -352,8 +350,6 @@ class DistributedObjectAI(DistributedObjectBase):
 
         # The repository is the one that really does the work
         self.air.generateWithRequiredAndId(self, doId, parentId, zoneId, optionalFields)
-        self.parentId = parentId
-        self.zoneId = zoneId
         self.generate()
         self.announceGenerate()
 
@@ -374,10 +370,6 @@ class DistributedObjectAI(DistributedObjectBase):
         self.air.addDOToTables(self, location=(parentId, zoneId))
         # Send a generate message
         self.sendGenerateWithRequired(self.air, parentId, zoneId, optionalFields)
-
-        ## assert not hasattr(self, 'parentId') or self.parentId is None
-        ## self.parentId = parentId
-        ## self.zoneId = zoneId
         self.generate()
         self.announceGenerate()
 
