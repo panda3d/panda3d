@@ -194,7 +194,7 @@ class DoCollectionManager:
         if (object == None):
             object = self.doId2do.get(doId)
         if object is None:
-            self.notify.error('storeObjectLocation: object %s not present' % doId)
+            self.notify.warning('storeObjectLocation: object %s not present' % doId)
         else:
             oldParentId = object.parentId
             oldZoneId = object.zoneId
