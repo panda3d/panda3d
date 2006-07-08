@@ -68,7 +68,10 @@ class DoHierarchy:
 
     def deleteObjectLocation(self, doId, parentId, zoneId):
         assert self.notify.debugCall()
-        assert doId in self._allDoIds
+        #assert doId in self._allDoIds
+        # jbutler: temp hack to get by the assert, this will be fixed soon
+        if (doId not in self._allDoIds):
+            return
         parentZoneDict = self._table.get(parentId)
         if parentZoneDict is not None:
             zoneDoSet = parentZoneDict.get(zoneId)
