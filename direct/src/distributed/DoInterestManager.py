@@ -340,30 +340,30 @@ class DoInterestManager(DirectObject.DirectObject):
             DoInterestManager._debug_maxDescriptionLen = max(
                 DoInterestManager._debug_maxDescriptionLen, len(description))
 
-        def printInterests(self):
-            print "***************** Interest History *************"
-            format = '%9s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %6s %6s %9s %s'
-            print format % (
-                "Action", "Description", "Handle", "Scope", "ParentId",
-                "ZoneIdList")
-            for i in DoInterestManager._debug_interestHistory:
-                print format % tuple(i)
-            print "Note: interests with a Scope of 0 do not get" \
-                " done/finished notices."
-            print "******************* Interest Sets **************"
-            format = '%6s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %10s %5s %9s %9s %10s'
-            print format % (
-                "Handle", "Description", "State", "Scope", 
-                "ParentId", "ZoneIdList", "Event")
-            for id, state in DoInterestManager._interests.items():
-                if len(state.events) == 0:
-                    event = ''
-                elif len(state.events) == 1:
-                    event = state.events[0]
-                else:
-                    event = state.events
-                print format % (id, state.desc, state.state, state.scope,
-                                state.parentId, state.zoneIdList, event)
+    def printInterests(self):
+        print "***************** Interest History *************"
+        format = '%9s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %6s %6s %9s %s'
+        print format % (
+            "Action", "Description", "Handle", "Scope", "ParentId",
+            "ZoneIdList")
+        for i in DoInterestManager._debug_interestHistory:
+            print format % tuple(i)
+        print "Note: interests with a Scope of 0 do not get" \
+            " done/finished notices."
+        print "******************* Interest Sets **************"
+        format = '%6s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %10s %5s %9s %9s %10s'
+        print format % (
+            "Handle", "Description", "State", "Scope", 
+            "ParentId", "ZoneIdList", "Event")
+        for id, state in DoInterestManager._interests.items():
+            if len(state.events) == 0:
+                event = ''
+            elif len(state.events) == 1:
+                event = state.events[0]
+            else:
+                event = state.events
+            print format % (id, state.desc, state.state, state.scope,
+                            state.parentId, state.zoneIdList, event)
             print "************************************************"
 
     def _sendAddInterest(self, handle, scopeId, parentId, zoneIdList, description,
