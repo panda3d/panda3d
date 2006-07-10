@@ -179,6 +179,18 @@ ConfigVariableInt dx_lru_debug_frames_til_output
 ConfigVariableBool dx_use_dynamic_textures
 ("dx-use-dynamic-textures", true);
 
+// DX device option
+ConfigVariableBool dx_use_multithread
+("dx-use-multithread", false);
+
+// DX device option
+ConfigVariableBool dx_use_puredevice
+("dx-use-puredevice", false);
+
+// nVidia's performace heads up display
+ConfigVariableBool dx_use_nvperfhud
+("dx-use-nvperfhud", false);
+
 ConfigureFn(config_dxgsg9) {
   init_libdxgsg9();
 }

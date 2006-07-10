@@ -73,6 +73,15 @@ extern ConfigVariableInt dx_lru_maximum_page_updates_per_frame;
 extern ConfigVariableBool dx_lru_debug;
 extern ConfigVariableInt dx_lru_debug_frames_til_output;
 
+extern ConfigVariableBool dx_use_dynamic_textures;
+
+// DX device options
+extern ConfigVariableBool dx_use_multithread;
+extern ConfigVariableBool dx_use_puredevice;
+
+// nVidia's performace heads up display
+extern ConfigVariableBool dx_use_nvperfhud;
+
 extern EXPCL_PANDADX void init_libdxgsg9();
 
 #endif
