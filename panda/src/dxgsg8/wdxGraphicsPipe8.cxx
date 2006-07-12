@@ -94,7 +94,7 @@ make_output(const string &name,
             GraphicsOutput *host,
             int retry,
             bool &precertify) {
-  
+
   if (!_is_valid) {
     return NULL;
   }
@@ -103,7 +103,7 @@ make_output(const string &name,
   if (gsg != 0) {
     DCAST_INTO_R(wdxgsg, gsg, NULL);
   }
-  
+
   // First thing to try: a visible window.
 
   if (retry == 0) {
@@ -118,7 +118,7 @@ make_output(const string &name,
     return new wdxGraphicsWindow8(this, name, fb_prop, win_prop,
                                   flags, gsg, host);
   }
-  
+
   // Second thing to try: a wdxGraphicsBuffer8
 
   if (retry == 1) {
@@ -139,7 +139,7 @@ make_output(const string &name,
     return new wdxGraphicsBuffer8(this, name, fb_prop, win_prop,
                                   flags, gsg, host);
   }
-  
+
   // Nothing else left to try.
   return NULL;
 }
@@ -631,7 +631,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
     }
 
     bool bIs16bppRenderTgt = IS_16BPP_DISPLAY_FORMAT(dispmode.Format);
-    float RendTgtMinMemReqmt;
+    float RendTgtMinMemReqmt = 0.0f;
 
     // if we have a valid memavail value, try to determine if we have
     // enough space
@@ -703,25 +703,28 @@ search_for_valid_displaymode(DXScreenData &scrn,
         }
       }
 
-      if ((!bDoMemBasedChecks) || (MinMemReqmt<scrn._max_available_video_memory)) {
-        if (!IS_16BPP_ZBUFFER(zformat)) {
-          // see if things fit with a 16bpp zbuffer
+//      Optimizing for 16-bit depth does not work in all cases so turn it off.
+      if (false) {
+        if ((!bDoMemBasedChecks) || (MinMemReqmt<scrn._max_available_video_memory)) {
+          if (!IS_16BPP_ZBUFFER(zformat)) {
+            // see if things fit with a 16bpp zbuffer
 
-          if (!find_best_depth_format(scrn, dispmode, &zformat,
-                                      bWantStencil, true, bVerboseMode)) {
-            if (bVerboseMode)
-              wdxdisplay8_cat.info()
-                << "FindBestDepthFmt rejected Mode[" << i << "] ("
-                << RequestedX_Size << "x" << RequestedY_Size
-                << ", " << D3DFormatStr(dispmode.Format) << endl;
-            *pCouldntFindAnyValidZBuf = true;
-            continue;
+            if (!find_best_depth_format(scrn, dispmode, &zformat,
+                                        bWantStencil, true, bVerboseMode)) {
+              if (bVerboseMode)
+                wdxdisplay8_cat.info()
+                  << "FindBestDepthFmt rejected Mode[" << i << "] ("
+                  << RequestedX_Size << "x" << RequestedY_Size
+                  << ", " << D3DFormatStr(dispmode.Format) << endl;
+              *pCouldntFindAnyValidZBuf = true;
+              continue;
+            }
+
+            // right now I'm not going to use these flags, just let the
+            // create fail out-of-mem and retry at 16bpp
+            *p_supported_screen_depths_mask |=
+              (IS_16BPP_DISPLAY_FORMAT(dispmode.Format) ? DISPLAY_16BPP_REQUIRES_16BPP_ZBUFFER_FLAG : DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG);
           }
-
-          // right now I'm not going to use these flags, just let the
-          // create fail out-of-mem and retry at 16bpp
-          *p_supported_screen_depths_mask |=
-            (IS_16BPP_DISPLAY_FORMAT(dispmode.Format) ? DISPLAY_16BPP_REQUIRES_16BPP_ZBUFFER_FLAG : DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG);
         }
       }
     }
