@@ -92,7 +92,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (_dxgsg -> _d3d_device == 0) {
     return false;
   }
-  
+
   if (mode == FM_render) {
     if (!save_bitplanes()) {
       return false;
@@ -140,7 +140,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsBuffer8::save_bitplanes
 //       Access: Public
-//  Description: After rendering, d3d_device will need to be restored 
+//  Description: After rendering, d3d_device will need to be restored
 //               to its initial state.  This function saves the state.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsBuffer8::
@@ -163,7 +163,7 @@ save_bitplanes() {
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsBuffer8::restore_bitplanes
 //       Access: Public
-//  Description: After rendering, d3d_device will need to be restored 
+//  Description: After rendering, d3d_device will need to be restored
 //               to its initial state.  This function restores the state.
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsBuffer8::
@@ -172,14 +172,14 @@ restore_bitplanes() {
   DCAST_INTO_V(dxgsg, _gsg);
 
   HRESULT hr;
-  
+
   hr = dxgsg -> _d3d_device ->
     SetRenderTarget (_saved_color_buffer, _saved_depth_buffer);
-  
+
   if (!SUCCEEDED (hr)) {
     dxgsg8_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
   }
-  
+
   _saved_color_buffer->Release();
   _saved_depth_buffer->Release();
   _saved_color_buffer = NULL;
@@ -190,7 +190,7 @@ restore_bitplanes() {
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsBuffer8::rebuild_bitplanes
 //       Access: Public
-//  Description: If necessary, reallocates (or allocates) the 
+//  Description: If necessary, reallocates (or allocates) the
 //               bitplanes for the buffer.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsBuffer8::
@@ -218,11 +218,11 @@ rebuild_bitplanes() {
   }
 
   // Find the color and depth textures.  Either may be present,
-  // or neither.  
+  // or neither.
   //
   // NOTE: Currently, depth-stencil textures are not implemented,
   // but since it's coming soon, we're structuring for it.
-  
+
   int color_tex_index = -1;
   int depth_tex_index = -1;
   for (int i=0; i<count_textures(); i++) {
@@ -236,7 +236,7 @@ rebuild_bitplanes() {
       }
     }
   }
-  
+
 
   if (color_tex_index < 0) {
     // Maintain the backing color surface.
@@ -263,7 +263,7 @@ rebuild_bitplanes() {
     color_tex->set_x_size(bitplane_x);
     color_tex->set_y_size(bitplane_y);
     color_tex->set_format(Texture::F_rgba);
-    color_ctx = 
+    color_ctx =
       DCAST(DXTextureContext8,
             color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
     if (color_tex->get_texture_type() == Texture::TT_2d_texture) {
@@ -276,9 +276,11 @@ rebuild_bitplanes() {
     } else {
       color_cube = color_ctx->_d3d_cube_texture;
       nassertr(color_cube != 0, false);
-      hr = color_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &color_surf);
-      if (!SUCCEEDED(hr)) {
-        dxgsg8_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
+      if (_cube_map_index >= 0 && _cube_map_index < 6) {
+        hr = color_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &color_surf);
+        if (!SUCCEEDED(hr)) {
+          dxgsg8_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
+        }
       }
     }
   }
@@ -292,7 +294,7 @@ rebuild_bitplanes() {
     }
     if (!_depth_backing_store) {
       hr = _dxgsg -> _d3d_device ->
-        CreateDepthStencilSurface (bitplane_x, bitplane_y, _saved_depth_desc.Format, 
+        CreateDepthStencilSurface (bitplane_x, bitplane_y, _saved_depth_desc.Format,
                                    _saved_depth_desc.MultiSampleType, &_depth_backing_store);
       if (!SUCCEEDED(hr)) {
         dxgsg8_cat.error ( ) << "CreateDepthStencilSurface " << D3DERRORSTRING(hr) FL;
@@ -309,7 +311,7 @@ rebuild_bitplanes() {
     depth_tex->set_x_size(bitplane_x);
     depth_tex->set_y_size(bitplane_y);
     depth_tex->set_format(Texture::F_depth_component); // Should say depth_stencil
-    depth_ctx = 
+    depth_ctx =
       DCAST(DXTextureContext8,
             depth_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
     if (depth_tex->get_texture_type() == Texture::TT_2d_texture) {
@@ -333,12 +335,14 @@ rebuild_bitplanes() {
   _backing_sizey = bitplane_y;
 
   // Load up the bitplanes.
-  
-  hr = _dxgsg -> _d3d_device -> SetRenderTarget (color_surf, depth_surf);
-  if (!SUCCEEDED (hr)) {
-    dxgsg8_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
+
+  if (color_surf && depth_surf) {
+    hr = _dxgsg -> _d3d_device -> SetRenderTarget (color_surf, depth_surf);
+    if (!SUCCEEDED (hr)) {
+      dxgsg8_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
+    }
   }
-  
+
   // Decrement the reference counts on these surfaces. The refcounts
   // were incremented earlier when we called GetSurfaceLevel.
 
@@ -363,6 +367,49 @@ rebuild_bitplanes() {
 void wdxGraphicsBuffer8::
 select_cube_map(int cube_map_index) {
   _cube_map_index = cube_map_index;
+
+  HRESULT hr;
+  Texture *color_tex = 0;
+  DXTextureContext8 *color_ctx = 0;
+  IDirect3DCubeTexture8 *color_cube = 0;
+  IDirect3DSurface8 *color_surf = 0;
+  int color_tex_index = -1;
+
+  for (int i=0; i<count_textures(); i++) {
+    if (get_rtm_mode(i) == RTM_bind_or_copy) {
+      if ((get_texture(i)->get_format() != Texture::F_depth_component)&&
+          (get_texture(i)->get_format() != Texture::F_stencil_index)&&
+          (color_tex_index < 0)) {
+        color_tex_index = i;
+      } else {
+        _textures[i]._rtm_mode = RTM_copy_texture;
+      }
+    }
+  }
+
+  color_tex = get_texture(color_tex_index);
+  if (color_tex) {
+    color_ctx =
+      DCAST(DXTextureContext8,
+            color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+
+    color_cube = color_ctx->_d3d_cube_texture;
+
+    if (color_cube && _cube_map_index >= 0 && _cube_map_index < 6) {
+      hr = color_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &color_surf);
+      if (!SUCCEEDED(hr)) {
+        dxgsg8_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
+      }
+
+      hr = _dxgsg -> _d3d_device -> SetRenderTarget (color_surf, 0);
+      if (!SUCCEEDED (hr)) {
+        dxgsg8_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
+      }
+      else {
+        color_surf->Release();
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -401,7 +448,7 @@ close_buffer() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     _gsg.clear();
   }
-  
+
   if (_color_backing_store) {
     _color_backing_store->Release();
     _color_backing_store = NULL;
@@ -433,7 +480,7 @@ open_buffer() {
   } else {
     DCAST_INTO_R(_dxgsg, _gsg, false);
   }
-  
+
   if (!save_bitplanes()) {
     return false;
   }
@@ -459,7 +506,7 @@ open_buffer() {
     restore_bitplanes();
     return false;
   }
-  
+
   restore_bitplanes();
   return true;
 }
