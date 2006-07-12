@@ -97,7 +97,8 @@ class DoCollectionManager:
             for i in self.getDoIdList(parentId, zoneId, classType)]
 
     def getDoIdList(self, parentId, zoneId=None, classType=None):
-        return self._doHierarchy.getDoIds(parentId, zoneId, classType)
+        return self._doHierarchy.getDoIds(self.getDo,
+                                          parentId, zoneId, classType)
 
     def getOwnerViewDoList(self, classType):
         assert self.hasOwnerView()

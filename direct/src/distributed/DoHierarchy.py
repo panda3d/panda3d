@@ -24,7 +24,7 @@ class DoHierarchy:
         self._table = {}
         self._allDoIds = set()
 
-    def getDoIds(self, parentId, zoneId=None, classType=None):
+    def getDoIds(self, getDo, parentId, zoneId=None, classType=None):
         """
         Moved from DoCollectionManager
         ==============================
@@ -52,7 +52,7 @@ class DoHierarchy:
         if classType is not None:
             a = []
             for doId in r:
-                obj = self.getDo(doId)
+                obj = getDo(doId)
                 if isinstance(obj, classType):
                     a.append(doId)
             r = a
