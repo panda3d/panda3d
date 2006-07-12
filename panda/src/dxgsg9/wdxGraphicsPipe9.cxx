@@ -94,7 +94,7 @@ make_output(const string &name,
             GraphicsOutput *host,
             int retry,
             bool &precertify) {
-  
+
   if (!_is_valid) {
     return NULL;
   }
@@ -103,7 +103,7 @@ make_output(const string &name,
   if (gsg != 0) {
     DCAST_INTO_R(wdxgsg, gsg, NULL);
   }
-  
+
   // First thing to try: a visible window.
 
   if (retry == 0) {
@@ -118,7 +118,7 @@ make_output(const string &name,
     return new wdxGraphicsWindow9(this, name, fb_prop, win_prop,
                                   flags, gsg, host);
   }
-  
+
   // Second thing to try: a wdxGraphicsBuffer9
 
   if (retry == 1) {
@@ -139,7 +139,7 @@ make_output(const string &name,
     return new wdxGraphicsBuffer9(this, name, fb_prop, win_prop,
                                   flags, gsg, host);
   }
-  
+
   // Nothing else left to try.
   return NULL;
 }
@@ -553,15 +553,14 @@ search_for_valid_displaymode(DXScreenData &scrn,
   *p_supported_screen_depths_mask = 0x0;
   *pCouldntFindAnyValidZBuf = false;
 
-  #define TOTAL_D3D_FORMATS 6
+  #define TOTAL_D3D_FORMATS 5
   static D3DFORMAT d3d_format_array [TOTAL_D3D_FORMATS] =
   {
     D3DFMT_X8R8G8B8,
     D3DFMT_A8R8G8B8,
     D3DFMT_R5G6B5,
     D3DFMT_X1R5G5B5,
-    D3DFMT_A1R5G5B5,
-    D3DFMT_A2R10G10B10,  // we may want this first in the list for XBOX 360 and HDR
+    D3DFMT_A2R10G10B10,  // we may want this first in the list for XBOX 360 or HDR
   };
 
   // search for an adapter with a valid D3DFORMAT
@@ -653,7 +652,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
       }
 
       bool bIs16bppRenderTgt = IS_16BPP_DISPLAY_FORMAT(dispmode.Format);
-      float RendTgtMinMemReqmt;
+      float RendTgtMinMemReqmt = 0.0f;
 
       // if we have a valid memavail value, try to determine if we have
       // enough space
@@ -725,25 +724,28 @@ search_for_valid_displaymode(DXScreenData &scrn,
           }
         }
 
-        if ((!bDoMemBasedChecks) || (MinMemReqmt<scrn._max_available_video_memory)) {
-          if (!IS_16BPP_ZBUFFER(zformat)) {
-            // see if things fit with a 16bpp zbuffer
+//      Optimizing for 16-bit depth does not work in all cases so turn it off.
+        if (false) {
+          if ((!bDoMemBasedChecks) || (MinMemReqmt<scrn._max_available_video_memory)) {
+            if (!IS_16BPP_ZBUFFER(zformat)) {
+              // see if things fit with a 16bpp zbuffer
 
-            if (!find_best_depth_format(scrn, dispmode, &zformat,
-                                        bWantStencil, true, bVerboseMode)) {
-              if (bVerboseMode)
-                wdxdisplay9_cat.info()
-                  << "FindBestDepthFmt rejected Mode[" << i << "] ("
-                  << RequestedX_Size << "x" << RequestedY_Size
-                  << ", " << D3DFormatStr(dispmode.Format) << endl;
-              *pCouldntFindAnyValidZBuf = true;
-              continue;
+              if (!find_best_depth_format(scrn, dispmode, &zformat,
+                                          bWantStencil, true, bVerboseMode)) {
+                if (bVerboseMode)
+                  wdxdisplay9_cat.info()
+                    << "FindBestDepthFmt rejected Mode[" << i << "] ("
+                    << RequestedX_Size << "x" << RequestedY_Size
+                    << ", " << D3DFormatStr(dispmode.Format) << endl;
+                *pCouldntFindAnyValidZBuf = true;
+                continue;
+              }
+
+              // right now I'm not going to use these flags, just let the
+              // create fail out-of-mem and retry at 16bpp
+              *p_supported_screen_depths_mask |=
+                (IS_16BPP_DISPLAY_FORMAT(dispmode.Format) ? DISPLAY_16BPP_REQUIRES_16BPP_ZBUFFER_FLAG : DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG);
             }
-
-            // right now I'm not going to use these flags, just let the
-            // create fail out-of-mem and retry at 16bpp
-            *p_supported_screen_depths_mask |=
-              (IS_16BPP_DISPLAY_FORMAT(dispmode.Format) ? DISPLAY_16BPP_REQUIRES_16BPP_ZBUFFER_FLAG : DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG);
           }
         }
       }
@@ -755,7 +757,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
 
       /*
       // dx9 valid display modes for render targets.
-      D3DFMT_X1R5G5B5, D3DFMT_R5G6B5, D3DFMT_X8R8G8B8, and D3DFMT_A8R8G8B8
+      D3DFMT_X1R5G5B5, D3DFMT_R5G6B5, D3DFMT_X8R8G8B8, D3DFMT_A8R8G8B8, D3DFMT_A2R10G10B10
       */
 
       switch (dispmode.Format) {
@@ -771,9 +773,10 @@ search_for_valid_displaymode(DXScreenData &scrn,
       case D3DFMT_R5G6B5:
         *p_supported_screen_depths_mask |= R5G6B5_FLAG;
         break;
+      case D3DFMT_A2R10G10B10:
+        *p_supported_screen_depths_mask |= A2B10G10R10_FLAG;
+        break;
       default:
-        // Render target formats should be only D3DFMT_X1R5G5B5,
-        // D3DFMT_R5G6B5, D3DFMT_X8R8G8B8 and D3DFMT_A8R8G8B8
         wdxdisplay9_cat.error()
           << "unrecognized supported fmt " << D3DFormatStr(dispmode.Format)
           << " returned by EnumAdapter_display_modes!\n";
@@ -790,6 +793,8 @@ search_for_valid_displaymode(DXScreenData &scrn,
       *pSuggestedPixFmt = D3DFMT_R5G6B5;
     } else if (*p_supported_screen_depths_mask & X1R5G5B5_FLAG) {
       *pSuggestedPixFmt = D3DFMT_X1R5G5B5;
+    } else if (*p_supported_screen_depths_mask & A2B10G10R10_FLAG) {
+      *pSuggestedPixFmt = D3DFMT_A2R10G10B10;
     }
 
     if (bVerboseMode || wdxdisplay9_cat.is_spam()) {
