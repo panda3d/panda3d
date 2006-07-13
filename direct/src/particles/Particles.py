@@ -556,9 +556,27 @@ class Particles(ParticleSystem):
                          self.factory.getLifespanBase()+self.factory.getLifespanSpread()]
         birthRateRange = [self.getBirthRate()] * 3
 
-        print litterRange
-        print lifespanRange
-        print birthRateRange
+        print 'Litter Ranges:    ',litterRange
+        print 'LifeSpan Ranges:  ',lifespanRange
+        print 'BirthRate Ranges: ',birthRateRange
         
         return dict(zip(('min','median','max'),[l*s/b for l,s,b in zip(litterRange,lifespanRange,birthRateRange)]))
             
+
+    def accelerate(self,time,stepCount = 1,stepTime=0.0):
+        if stepTime == 0.0:
+            stepTime = float(time)/stepCount
+            remainder = 0.0
+        else:
+            stepCount = int(float(time)/stepTime)
+            remainder = time-stepCount*stepTime
+
+        for step in range(stepCount):
+            self.update(stepTime)
+            base.physicsMgr.doPhysics(stepTime,self)
+
+        if(remainder):
+            self.update(remainder)
+            base.physicsMgr.doPhysics(remainder,self)
+
+        
