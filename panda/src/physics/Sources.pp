@@ -27,7 +27,8 @@
      physical.h physicalNode.I physicalNode.h \
      physicsCollisionHandler.I physicsCollisionHandler.h \
      physicsManager.I physicsManager.h \
-     physicsObject.I physicsObject.h
+     physicsObject.I physicsObject.h \
+     physicsObjectCollection.I physicsObjectCollection.h 
 
   #define INCLUDED_SOURCES \
      actorNode.cxx angularEulerIntegrator.cxx angularForce.cxx \
@@ -41,7 +42,8 @@
      linearRandomForce.cxx linearSinkForce.cxx \
      linearSourceForce.cxx linearUserDefinedForce.cxx \
      linearVectorForce.cxx physical.cxx physicalNode.cxx \
-     physicsCollisionHandler.cxx physicsManager.cxx physicsObject.cxx 
+     physicsCollisionHandler.cxx physicsManager.cxx physicsObject.cxx \
+     physicsObjectCollection.cxx 
 
   #define INSTALL_HEADERS \
     actorNode.I actorNode.h angularEulerIntegrator.h angularForce.h \
@@ -60,7 +62,8 @@
     physicalNode.I physicalNode.h \
     physicsCollisionHandler.I physicsCollisionHandler.h \
     physicsManager.I physicsManager.h \
-    physicsObject.I physicsObject.h
+    physicsObject.I physicsObject.h \
+    physicsObjectCollection.h
 
   #define IGATESCAN all
 

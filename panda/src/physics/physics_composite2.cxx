@@ -12,3 +12,4 @@
 #include "physicsCollisionHandler.cxx"
 #include "physicsManager.cxx"
 #include "physicsObject.cxx"
+#include "physicsObjectCollection.cxx"
