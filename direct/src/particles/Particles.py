@@ -396,7 +396,7 @@ class Particles(ParticleSystem):
                 file.write(targ + '.renderer.setAnimateFramesEnable(True)\n')
                 rate = self.renderer.getAnimateFramesRate()
                 if(rate):
-                    file.write(targ + '.renderer.setAnimationFrameRate(%.3f)\n'%rate)
+                    file.write(targ + '.renderer.setAnimateFramesRate(%.3f)\n'%rate)
             animCount = self.renderer.getNumAnims()
             for x in range(animCount):
                 anim = self.renderer.getAnim(x)
