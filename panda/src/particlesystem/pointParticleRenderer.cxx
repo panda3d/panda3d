@@ -286,7 +286,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   BoundingSphere sphere(aabb_center, radius);
   _point_primitive->set_bounds(&sphere);
-  get_render_node()->mark_bounds_stale();
+  get_render_node()->mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -766,7 +766,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     }
   }
 
-  get_render_node()->mark_bounds_stale();
+  get_render_node()->mark_internal_bounds_stale();
   nassertv(render_node->check_valid());
   _animation_removed = false;
 }

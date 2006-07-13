@@ -243,6 +243,7 @@ PUBLISHED:
   INLINE CPT(BoundingVolume) get_internal_bounds() const;
 
   void mark_bounds_stale(Thread *current_thread = Thread::get_current_thread()) const;
+  void mark_internal_bounds_stale(Thread *current_thread = Thread::get_current_thread());
 
   INLINE void set_final(bool flag);
   INLINE bool is_final(Thread *current_thread = Thread::get_current_thread()) const;
@@ -259,7 +260,6 @@ protected:
   INLINE void mark_bounds_stale(int pipeline_stage, Thread *current_thread) const;
   void force_bounds_stale(Thread *current_thread = Thread::get_current_thread());
   void force_bounds_stale(int pipeline_stage, Thread *current_thread);
-  void mark_internal_bounds_stale(Thread *current_thread = Thread::get_current_thread());
   INLINE void mark_internal_bounds_stale(int pipeline_stage, Thread *current_thread);
 
   virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;

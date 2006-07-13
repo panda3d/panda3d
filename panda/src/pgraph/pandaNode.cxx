@@ -1848,6 +1848,30 @@ mark_bounds_stale(Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::mark_internal_bounds_stale
+//       Access: Published
+//  Description: Should be called by a derived class to mark the
+//               internal bounding volume stale, so that
+//               compute_internal_bounds() will be called when the
+//               bounding volume is next requested.
+//
+//               With no parameters, this means to iterate through all
+//               stages including and upstream of the current pipeline
+//               stage.
+//
+//               It is normally not necessary to call this method
+//               directly; each node should be responsible for calling
+//               it when its internals have changed.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+mark_internal_bounds_stale(Thread *current_thread) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler, current_thread) {
+    mark_internal_bounds_stale(pipeline_stage, current_thread);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::is_geom_node
 //       Access: Published, Virtual
 //  Description: A simple downcast check.  Returns true if this kind
@@ -1984,26 +2008,6 @@ force_bounds_stale(int pipeline_stage, Thread *current_thread) {
     PandaNode *parent = parents.get_parent(i);
     parent->mark_bounds_stale(pipeline_stage, current_thread);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::mark_internal_bounds_stale
-//       Access: Protected
-//  Description: Should be called by a derived class to mark the
-//               internal bounding volume stale, so that
-//               compute_internal_bounds() will be called when the
-//               bounding volume is next requested.
-//
-//               With no parameters, this means to iterate through all
-//               stages including and upstream of the current pipeline
-//               stage.
-////////////////////////////////////////////////////////////////////
-void PandaNode::
-mark_internal_bounds_stale(Thread *current_thread) {
-  OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler, current_thread) {
-    mark_internal_bounds_stale(pipeline_stage, current_thread);
-  }
-  CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
