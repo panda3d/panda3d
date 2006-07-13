@@ -76,6 +76,7 @@ PUBLISHED:
   void remove_linear_force(LinearForce *f);
   void remove_angular_force(AngularForce *f);
   void do_physics(float dt);
+  void do_physics(float dt, Physical *p);
   void init_random_seed();
   
   virtual void output(ostream &out) const;

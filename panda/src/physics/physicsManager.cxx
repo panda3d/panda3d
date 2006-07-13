@@ -172,6 +172,36 @@ do_physics(float dt) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function : DoPhysics
+//       Access : Public
+//  Description : This is the main high-level API call.  Performs
+//                integration on every attached Physical.
+////////////////////////////////////////////////////////////////////
+void PhysicsManager::
+do_physics(float dt, Physical *physical) {
+  nassertv(physical);
+  
+  // do linear
+  //if (_linear_integrator.is_null() == false) {
+  if (_linear_integrator) {
+    _linear_integrator->integrate(physical, _linear_forces, dt);
+  }
+  
+  // do angular
+  //if (_angular_integrator.is_null() == false) {
+  if (_angular_integrator) {
+    _angular_integrator->integrate(physical, _angular_forces, dt);
+  }
+  
+  // if it's an actor node, tell it to update itself.
+  PhysicalNode *pn = physical->get_physical_node();
+  if (pn && pn->is_of_type(ActorNode::get_class_type())) {
+    ActorNode *an = (ActorNode *) pn;
+    an->update_transform();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function : output
 //       Access : Public
 //  Description : Write a string representation of this instance to
