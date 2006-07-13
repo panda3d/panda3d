@@ -322,11 +322,13 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
     return;
   }
 
-  // Generate an optimal vertex pool for the polygons within just the
-  // bin (which translates directly to an optimal GeomVertexData
-  // structure).
-  PT(EggVertexPool) vertex_pool = new EggVertexPool("bin");
-  egg_bin->rebuild_vertex_pool(vertex_pool, false);
+  // Generate an optimal vertex pool (or multiple vertex pools, if we
+  // have a lot of vertex) for the polygons within just the bin.  Each
+  // EggVertexPool translates directly to an optimal GeomVertexData
+  // structure.
+  EggVertexPools vertex_pools;
+  egg_bin->rebuild_vertex_pools(vertex_pools, (unsigned int)egg_max_vertices, 
+                                false);
 
   if (egg_mesh) {
     // If we're using the mesher, mesh now.
@@ -342,67 +344,87 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
   // vertices, so we can copy them to the GeomVertexData.
   egg_bin->apply_first_attribute(false);
   egg_bin->post_apply_flat_attribute(false);
-  vertex_pool->remove_unused_vertices();
 
-  //  vertex_pool->write(cerr, 0);
   //  egg_bin->write(cerr, 0);
 
-  // Now create a handful of GeomPrimitives corresponding to the
-  // various types of primitives we have.
-  Primitives primitives;
-  for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
-    EggPrimitive *egg_prim;
-    DCAST_INTO_V(egg_prim, (*ci));
-    make_primitive(render_state, egg_prim, primitives);
-  }
+  PT(GeomNode) geom_node;
 
-  if (!primitives.empty()) {
-    LMatrix4d mat;
-    if (transform != NULL) {
-      mat = (*transform);
-    } else {
-      mat = egg_bin->get_vertex_to_node();
-    }
-
-    // Now convert the vertex pool to a GeomVertexData.
-    nassertv(vertex_pool != (EggVertexPool *)NULL);
-    PT(GeomVertexData) vertex_data = 
-      make_vertex_data(render_state, vertex_pool, egg_bin, mat,
-                       is_dynamic, character_maker);
-    nassertv(vertex_data != (GeomVertexData *)NULL);
-
-    // And create a Geom to hold the primitives.
-    PT(Geom) geom = new Geom(vertex_data);
-
-    // Add each new primitive to the Geom.
-    Primitives::const_iterator pi;
-    for (pi = primitives.begin(); pi != primitives.end(); ++pi) {
-      GeomPrimitive *primitive = (*pi).second;
-      geom->add_primitive(primitive);
-    }
-
-    //    vertex_data->write(cerr);
-    //    geom->write(cerr);
-    //    render_state->_state->write(cerr, 0);
+  // Now iterate through each EggVertexPool.  Normally, there's only
+  // one, but if we have a really big mesh, it might have been split
+  // into multiple vertex pools (to keep each one within the
+  // egg_max_vertices constraint).
+  EggVertexPools::iterator vpi;
+  for (vpi = vertex_pools.begin(); vpi != vertex_pools.end(); ++vpi) {
+    EggVertexPool *vertex_pool = (*vpi);
+    vertex_pool->remove_unused_vertices();
+    //  vertex_pool->write(cerr, 0);
     
-    // Now, is our parent node a GeomNode, or just an ordinary
-    // PandaNode?  If it's a GeomNode, we can add the new Geom directly
-    // to our parent; otherwise, we need to create a new node.
-    PT(GeomNode) geom_node;
-    if (parent->is_geom_node() && !render_state->_hidden) {
-      geom_node = DCAST(GeomNode, parent);
-      
-    } else {
-      geom_node = new GeomNode(egg_bin->get_name());
-      if (render_state->_hidden) {
-        parent->add_stashed(geom_node);
-      } else {
-        parent->add_child(geom_node);
+    // Create a handful of GeomPrimitives corresponding to the various
+    // types of primitives that reference this vertex pool.
+    UniquePrimitives unique_primitives;
+    Primitives primitives;
+    for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
+      EggPrimitive *egg_prim;
+      DCAST_INTO_V(egg_prim, (*ci));
+      if (egg_prim->get_pool() == vertex_pool) {
+        make_primitive(render_state, egg_prim, unique_primitives, primitives);
       }
     }
 
-    geom_node->add_geom(geom, render_state->_state);
-    if (egg_show_normals) {
+    if (!primitives.empty()) {
+      LMatrix4d mat;
+      if (transform != NULL) {
+        mat = (*transform);
+      } else {
+        mat = egg_bin->get_vertex_to_node();
+      }
+      
+      // Now convert this vertex pool to a GeomVertexData.
+      PT(GeomVertexData) vertex_data = 
+        make_vertex_data(render_state, vertex_pool, egg_bin, mat,
+                         is_dynamic, character_maker);
+      nassertv(vertex_data != (GeomVertexData *)NULL);
+
+      // And create a Geom to hold the primitives.
+      PT(Geom) geom = new Geom(vertex_data);
+      
+      // Add each new primitive to the Geom.
+      Primitives::const_iterator pi;
+      for (pi = primitives.begin(); pi != primitives.end(); ++pi) {
+        GeomPrimitive *primitive = (*pi);
+        geom->add_primitive(primitive);
+      }
+      
+        //    vertex_data->write(cerr);
+        //    geom->write(cerr);
+        //    render_state->_state->write(cerr, 0);
+
+      // Create a new GeomNode if we haven't already.
+      if (geom_node == (GeomNode *)NULL) {
+        // Now, is our parent node a GeomNode, or just an ordinary
+        // PandaNode?  If it's a GeomNode, we can add the new Geom directly
+        // to our parent; otherwise, we need to create a new node.
+        if (parent->is_geom_node() && !render_state->_hidden) {
+          geom_node = DCAST(GeomNode, parent);
+          
+        } else {
+          geom_node = new GeomNode(egg_bin->get_name());
+          if (render_state->_hidden) {
+            parent->add_stashed(geom_node);
+          } else {
+            parent->add_child(geom_node);
+          }
+        }
+      }
+      
+      geom_node->add_geom(geom, render_state->_state);
+    }
+  }
+   
+  if (geom_node != (GeomNode *)NULL && egg_show_normals) {
+    // Create some more geometry to visualize each normal.
+    for (vpi = vertex_pools.begin(); vpi != vertex_pools.end(); ++vpi) {
+      EggVertexPool *vertex_pool = (*vpi);
       show_normals(vertex_pool, geom_node);
     }
   }
@@ -2243,6 +2265,7 @@ record_morph(GeomVertexArrayFormat *array_format,
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim, 
+               EggLoader::UniquePrimitives &unique_primitives,
                EggLoader::Primitives &primitives) {
   PT(GeomPrimitive) primitive;
   if (egg_prim->is_of_type(EggPolygon::get_class_type())) {
@@ -2287,9 +2310,27 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
   // Insert the primitive into the set, but if we already have a
   // primitive of that type, reset the pointer to that one instead.
   PrimitiveUnifier pu(primitive);
-  pair<Primitives::iterator, bool> result =
-    primitives.insert(Primitives::value_type(pu, primitive));
-  primitive = (*result.first).second;
+  pair<UniquePrimitives::iterator, bool> result =
+    unique_primitives.insert(UniquePrimitives::value_type(pu, primitive));
+
+  if (result.second) {
+    // This was the first primitive of this type.  Store it.
+    primitives.push_back(primitive);
+  }
+
+  GeomPrimitive *orig_prim = (*result.first).second;
+
+  // Make sure we don't try to put more than egg_max_indices into any
+  // one GeomPrimitive.
+  if (orig_prim->get_num_vertices() + egg_prim->size() <= (unsigned int)egg_max_indices) {
+    primitive = orig_prim;
+
+  } else if (orig_prim != primitive) {
+    // If the old primitive is full, keep the new primitive from now
+    // on.
+    (*result.first).second = primitive;
+    primitives.push_back(primitive);
+  }
 
   // Now add the vertices.
   EggPrimitive::const_iterator vi;

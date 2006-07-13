@@ -135,6 +135,16 @@ ConfigVariableEnum<EggRenderMode::AlphaMode> egg_alpha_mode
           "transparent, because of a <RGBA> that involves a non-unity alpha, "
           "or because of a four-channel texture."));
 
+ConfigVariableInt egg_max_vertices
+("egg-max-vertices", 65535,
+ PRC_DESC("Specifies the maximum number of vertices that will be "
+          "added to any one GeomVertexData by the egg loader."));
+
+ConfigVariableInt egg_max_indices
+("egg-max-indices", 65535,
+ PRC_DESC("Specifies the maximum number of vertex indices that will be "
+          "added to any one GeomPrimitive by the egg loader."));
+
 ConfigureFn(config_egg2pg) {
   init_libegg2pg();
 }

@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "eggNode.h"
+#include "eggVertexPool.h"
 
 #include "coordinateSystem.h"
 #include "typedObject.h"
@@ -150,7 +151,6 @@ PUBLISHED:
   int remove_invalid_primitives(bool recurse);
   void clear_connected_shading();
   void get_connected_shading();
-  void rebuild_vertex_pool(EggVertexPool *vertex_pool, bool recurse);
   void unify_attributes(bool use_connected_shading, bool allow_per_primitive,
 			bool recurse);
   void apply_last_attribute(bool recurse);
@@ -159,6 +159,11 @@ PUBLISHED:
   virtual bool has_primitives() const;
   virtual bool joint_has_primitives() const;
   virtual bool has_normals() const;
+
+public:
+  void rebuild_vertex_pools(EggVertexPools &vertex_pools, 
+                            unsigned int max_vertices,
+                            bool recurse);
 
 protected:
   virtual void update_under(int depth_offset);

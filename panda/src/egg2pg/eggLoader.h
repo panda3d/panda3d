@@ -109,7 +109,8 @@ private:
     TypeHandle _type;
     GeomPrimitive::ShadeModel _shade_model;
   };
-  typedef pmap<PrimitiveUnifier, PT(GeomPrimitive) > Primitives;
+  typedef pmap<PrimitiveUnifier, PT(GeomPrimitive) > UniquePrimitives;
+  typedef pvector< PT(GeomPrimitive) > Primitives;
 
   void show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node);  
 
@@ -151,7 +152,9 @@ private:
    InternalName *column_name, int num_components);
 
   void make_primitive(const EggRenderState *render_state, 
-                      EggPrimitive *egg_prim, Primitives &primitives);
+                      EggPrimitive *egg_prim, 
+                      UniquePrimitives &unique_primitives,
+                      Primitives &primitives);
 
   void set_portal_polygon(EggGroup *egg_group, PortalNode *pnode);
   PT(EggPolygon) find_first_polygon(EggGroup *egg_group);

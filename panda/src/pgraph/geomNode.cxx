@@ -432,13 +432,16 @@ check_valid() const {
 //               triangle strips and triangle fans, being decomposed
 //               into triangles.  See also Geom::unify().
 //
+//               max_indices represents the maximum number of indices
+//               that will be put in any one GeomPrimitive.
+//
 //               In order for this to be successful, the primitives
 //               must reference the same GeomVertexData, have the same
 //               fundamental primitive type, and have compatible shade
 //               models.
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
-unify() {
+unify(int max_indices) {
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
@@ -479,7 +482,7 @@ unify() {
     // Finally, go back through and unify the resulting geom(s).
     for (gi = new_geoms->begin(); gi != new_geoms->end(); ++gi) {
       const GeomEntry &entry = (*gi);
-      entry._geom->unify_in_place();
+      entry._geom->unify_in_place(max_indices);
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);

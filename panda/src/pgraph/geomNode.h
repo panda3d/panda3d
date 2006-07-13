@@ -72,7 +72,7 @@ PUBLISHED:
   INLINE void remove_all_geoms();
   bool check_valid() const;
 
-  void unify();
+  void unify(int max_indices);
 
   void write_geoms(ostream &out, int indent_level) const;
   void write_verbose(ostream &out, int indent_level) const;

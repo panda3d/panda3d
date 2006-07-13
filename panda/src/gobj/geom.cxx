@@ -512,17 +512,21 @@ rotate_in_place() {
 //     Function: Geom::unify_in_place
 //       Access: Published
 //  Description: Unifies all of the primitives contained within this
-//               Geom into a single primitive object.  This may
-//               require decomposing the primitives if, for instance,
-//               the Geom contains both triangle strips and triangle
-//               fans.
+//               Geom into a single (or as few as possible, within the
+//               constraints of max_indices) primitive objects.  This
+//               may require decomposing the primitives if, for
+//               instance, the Geom contains both triangle strips and
+//               triangle fans.
+//
+//               max_indices represents the maximum number of indices
+//               that will be put in any one GeomPrimitive.
 //
 //               Don't call this in a downstream thread unless you
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 void Geom::
-unify_in_place() {
+unify_in_place(int max_indices) {
   Thread *current_thread = Thread::get_current_thread();
   if (get_num_primitives() <= 1) {
     // If we don't have more than one primitive to start with, no need
@@ -564,8 +568,7 @@ unify_in_place() {
     }
   }
 
-  // At the end of the day, we have just one primitive, which becomes
-  // the one primitive in our list of primitives.
+  // Now we have just one primitive.
   nassertv(new_prim->check_valid(cdata->_data));
 
   // The new primitive, naturally, inherits the Geom's overall shade
@@ -573,7 +576,36 @@ unify_in_place() {
   new_prim->set_shade_model(cdata->_shade_model);
 
   cdata->_primitives.clear();
-  cdata->_primitives.push_back(new_prim);
+
+  // Should we split it up again to satisfy max_indices?
+  if (new_prim->get_num_vertices() > max_indices) {
+    // Copy new_prim into smaller prims, no one of which has more than
+    // max_indices vertices.
+
+    int i = 0;
+
+    while (i < new_prim->get_num_primitives()) {
+      PT(GeomPrimitive) smaller = new_prim->make_copy();
+      smaller->clear_vertices();
+      while (i < new_prim->get_num_primitives() && 
+             smaller->get_num_vertices() + new_prim->get_primitive_num_vertices(i) < max_indices) {
+        int start = new_prim->get_primitive_start(i);
+        int end = new_prim->get_primitive_end(i);
+        for (int n = start; n < end; ++n) {
+          smaller->add_vertex(new_prim->get_vertex(n));
+        }
+        smaller->close_primitive();
+
+        ++i;
+      }
+
+      cdata->_primitives.push_back(smaller);
+    }
+
+  } else {
+    // The new_prim has few enough vertices; keep it.
+    cdata->_primitives.push_back(new_prim);
+  }
 
   cdata->_modified = Geom::get_next_modified();
   clear_cache_stage(current_thread);

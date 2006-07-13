@@ -175,8 +175,8 @@ set_index_type(GeomPrimitive::NumericType index_type) {
 //       Access: Published
 //  Description: Adds the indicated vertex to the list of vertex
 //               indices used by the graphics primitive type.  To
-//               define primitive, you must call add_vertex() for each
-//               vertex of the new primitve, and then call
+//               define a primitive, you must call add_vertex() for
+//               each vertex of the new primitive, and then call
 //               close_primitive() after you have specified the last
 //               vertex of each primitive.
 //

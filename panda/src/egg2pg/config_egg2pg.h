@@ -51,6 +51,8 @@ extern EXPCL_PANDAEGG ConfigVariableBool egg_load_classic_nurbs_curves;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_accept_errors;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_suppress_hidden;
 extern EXPCL_PANDAEGG ConfigVariableEnum<EggRenderMode::AlphaMode> egg_alpha_mode;
+extern EXPCL_PANDAEGG ConfigVariableInt egg_max_vertices;
+extern EXPCL_PANDAEGG ConfigVariableInt egg_max_indices;
 
 extern EXPCL_PANDAEGG void init_libegg2pg();
 

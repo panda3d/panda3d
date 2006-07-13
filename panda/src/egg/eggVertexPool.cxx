@@ -467,6 +467,28 @@ create_unique_vertex(const EggVertex &copy) {
   return add_vertex(new EggVertex(copy));
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::find_matching_vertex
+//       Access: Public
+//  Description: If the EggVertexPool already has a vertex matching
+//               the indicated vertex, returns it; otherwise, returns
+//               NULL.  This is similar to create_unique_vertex()
+//               except that a new vertex is never created.
+////////////////////////////////////////////////////////////////////
+EggVertex *EggVertexPool::
+find_matching_vertex(const EggVertex &copy) {
+  UniqueVertices::iterator uvi;
+  uvi = _unique_vertices.find((EggVertex *)&copy);
+
+  if (uvi != _unique_vertices.end()) {
+    // There was already such a vertex.  Return it.
+    return (*uvi);
+  }
+
+  // No matching vertex.
+  return NULL;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::remove_vertex

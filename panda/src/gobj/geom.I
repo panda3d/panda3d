@@ -177,15 +177,19 @@ rotate() const {
 //     Function: Geom::unify
 //       Access: Published
 //  Description: Unifies all of the primitives contained within this
-//               Geom into a single primitive object.  This may
-//               require decomposing the primitives if, for instance,
-//               the Geom contains both triangle strips and triangle
-//               fans.
+//               Geom into a single (or as few as possible, within the
+//               constraints of max_indices) primitive objects.  This
+//               may require decomposing the primitives if, for
+//               instance, the Geom contains both triangle strips and
+//               triangle fans.
+//
+//               max_indices represents the maximum number of indices
+//               that will be put in any one GeomPrimitive.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(Geom) Geom::
-unify() const {
+unify(int max_indices) const {
   PT(Geom) new_geom = make_copy();
-  new_geom->unify_in_place();
+  new_geom->unify_in_place(max_indices);
   return new_geom;
 }
 

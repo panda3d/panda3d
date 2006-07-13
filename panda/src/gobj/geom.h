@@ -93,11 +93,11 @@ PUBLISHED:
 
   INLINE PT(Geom) decompose() const;
   INLINE PT(Geom) rotate() const;
-  INLINE PT(Geom) unify() const;
+  INLINE PT(Geom) unify(int max_indices) const;
 
   void decompose_in_place();
   void rotate_in_place();
-  void unify_in_place();
+  void unify_in_place(int max_indices);
 
   virtual bool copy_primitives_from(const Geom *other);
 

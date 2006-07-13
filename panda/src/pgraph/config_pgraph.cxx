@@ -188,7 +188,7 @@ ConfigVariableBool retransform_sprites
           "necessary in order for fog to work correctly on the sprites."));
 
 ConfigVariableInt max_collect_vertices
-("max-collect-vertices", 1024,
+("max-collect-vertices", 65535,
  PRC_DESC("Specifies the maximum number of vertices that are allowed to be "
           "accumulated into any one GeomVertexData structure as a result "
           "of collecting objects together during a flatten operation.  "
@@ -198,7 +198,7 @@ ConfigVariableInt max_collect_vertices
           "GeomVertexData structure."));
 
 ConfigVariableInt max_collect_indices
-("max-collect-indices", 1024,
+("max-collect-indices", 65535,
  PRC_DESC("Specifies the maximum number of vertex indices that are allowed "
           "to be accumulated into any one GeomPrimitive as a result "
           "of collecting objects together during a flatten operation.  "

@@ -27,6 +27,7 @@
 
 #include "pointerTo.h"
 #include "pset.h"
+#include "pvector.h"
 #include "pmap.h"
 #include "lmatrix.h"
 #include "iterator_types.h"
@@ -125,6 +126,7 @@ PUBLISHED:
   // already one identical to the indicated vertex, or returns the
   // existing one if there is.
   EggVertex *create_unique_vertex(const EggVertex &copy);
+  EggVertex *find_matching_vertex(const EggVertex &copy);
 
   void remove_vertex(EggVertex *vertex);
   int remove_unused_vertices();
@@ -164,6 +166,8 @@ private:
 
 friend class EggVertex;
 };
+
+typedef pvector< PT(EggVertexPool) > EggVertexPools;
 
 #include "eggVertexPool.I"
 

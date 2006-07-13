@@ -980,80 +980,6 @@ get_connected_shading() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::rebuild_vertex_pool
-//       Access: Published
-//  Description: Copies vertices used by the primitives at this group
-//               node (and below, if recurse is true) into the
-//               indicated vertex pool, and updates the primitives to
-//               reference this pool.  It is up to the caller to
-//               parent the new vertex pool somewhere appropriate in
-//               the egg hierarchy.
-////////////////////////////////////////////////////////////////////
-void EggGroupNode::
-rebuild_vertex_pool(EggVertexPool *vertex_pool, bool recurse) {
-  Children::iterator ci;
-  for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    EggNode *child = *ci;
-
-    if (child->is_of_type(EggCompositePrimitive::get_class_type())) {
-      typedef pvector< PT(EggVertex) > Vertices;
-      typedef pvector<EggAttributes> Attributes;
-      Vertices vertices;
-      Attributes attributes;
-
-      EggCompositePrimitive *prim = DCAST(EggCompositePrimitive, child);
-      EggPrimitive::const_iterator pi;
-      for (pi = prim->begin(); pi != prim->end(); ++pi) {
-        vertices.push_back(*pi);
-      }
-      int i;
-      int num_components = prim->get_num_components();
-      for (i = 0; i < num_components; i++) {
-        attributes.push_back(*prim->get_component(i));
-      }
-
-      prim->clear();
-
-      Vertices::const_iterator vi;
-      for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
-        EggVertex *vertex = (*vi);
-        EggVertex *new_vertex = vertex_pool->create_unique_vertex(*vertex);
-        new_vertex->copy_grefs_from(*vertex);
-        prim->add_vertex(new_vertex);
-      }
-      for (i = 0; i < num_components; i++) {
-        prim->set_component(i, &attributes[i]);
-      }
-
-    } else if (child->is_of_type(EggPrimitive::get_class_type())) {
-      typedef pvector< PT(EggVertex) > Vertices;
-      Vertices vertices;
-
-      EggPrimitive *prim = DCAST(EggPrimitive, child);
-      EggPrimitive::const_iterator pi;
-      for (pi = prim->begin(); pi != prim->end(); ++pi) {
-        vertices.push_back(*pi);
-      }
-
-      prim->clear();
-
-      Vertices::const_iterator vi;
-      for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
-        EggVertex *vertex = (*vi);
-        EggVertex *new_vertex = vertex_pool->create_unique_vertex(*vertex);
-        new_vertex->copy_grefs_from(*vertex);
-        prim->add_vertex(new_vertex);
-      }
-
-    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
-      if (recurse) {
-        DCAST(EggGroupNode, child)->rebuild_vertex_pool(vertex_pool, recurse);
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::unify_attributes
 //       Access: Published
 //  Description: Applies per-vertex normal and color to all vertices,
@@ -1266,6 +1192,145 @@ has_normals() const {
   }
 
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::rebuild_vertex_pools
+//       Access: Published
+//  Description: Copies vertices used by the primitives at this group
+//               node (and below, if recurse is true) into one or more
+//               new vertex pools, and updates the primitives to
+//               reference these pools.  It is up to the caller to
+//               parent the newly-created vertex pools somewhere
+//               appropriate in the egg hierarchy.
+//
+//               No more than max_vertices will be placed into any one
+//               vertex pool.  This is the sole criteria for splitting
+//               vertex pools.
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
+                     bool recurse) {
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggNode *child = *ci;
+
+    if (child->is_of_type(EggPrimitive::get_class_type())) {
+      typedef pvector< PT(EggVertex) > Vertices;
+      Vertices vertices;
+      EggPrimitive *prim = DCAST(EggPrimitive, child);
+
+      // Copy all of the vertices out.
+      EggPrimitive::const_iterator pi;
+      for (pi = prim->begin(); pi != prim->end(); ++pi) {
+        vertices.push_back(*pi);
+      }
+
+      if (prim->is_of_type(EggCompositePrimitive::get_class_type())) {
+        // A compositive primitive has the additional complication of
+        // dealing with its attributes.
+        typedef pvector<EggAttributes> Attributes;
+        Attributes attributes;
+
+        EggCompositePrimitive *cprim = DCAST(EggCompositePrimitive, prim);
+        int i;
+        int num_components = cprim->get_num_components();
+        for (i = 0; i < num_components; i++) {
+          attributes.push_back(*cprim->get_component(i));
+        }
+
+        cprim->clear();
+
+        for (i = 0; i < num_components; i++) {
+          cprim->set_component(i, &attributes[i]);
+        }
+
+      } else {
+        prim->clear();
+      }
+
+      // Now look for a new home for the vertices.  First, see if any
+      // of the vertex pools we've already created already have a copy
+      // of each one of the vertices.
+      bool found_pool = false;
+      EggVertexPool *best_pool = NULL;
+      int best_new_vertices = 0;
+
+      Vertices new_vertices;
+      EggVertexPools::iterator vpi;
+      for (vpi = vertex_pools.begin(); 
+           vpi != vertex_pools.end() && !found_pool;
+           ++vpi) {
+        EggVertexPool *vertex_pool = (*vpi);
+        int num_new_vertices = 0;
+
+        new_vertices.clear();
+        new_vertices.reserve(vertices.size());
+
+        Vertices::const_iterator vi;
+        for (vi = vertices.begin(); 
+             vi != vertices.end() && !found_pool; 
+             ++vi) {
+          EggVertex *vertex = (*vi);
+          EggVertex *new_vertex = vertex_pool->find_matching_vertex(*vertex);
+          new_vertices.push_back(new_vertex);
+          if (new_vertex == (EggVertex *)NULL) {
+            ++num_new_vertices;
+          }
+        }
+
+        if (num_new_vertices == 0) {
+          // Great, we found a vertex pool that already shares all
+          // these vertices.  No need to look any further.
+          found_pool = true;
+
+        } else if (vertex_pool->size() + num_new_vertices <= max_vertices) {
+          // We would have to add some vertices to this pool, so this
+          // vertex pool qualifies only if the number of vertices we
+          // have to add would still keep it within our limit.
+          if (best_pool == (EggVertexPool *)NULL ||
+              num_new_vertices < best_new_vertices) {
+            // This is currently our most favorable vertex pool.
+            best_pool = vertex_pool;
+            best_new_vertices = num_new_vertices;
+          }
+        }
+      }
+
+      if (!found_pool) {
+        if (best_pool == (EggVertexPool *)NULL) {
+          // There was no vertex pool that qualified.  We will have to
+          // create a new vertex pool.
+          best_pool = new EggVertexPool("");
+          vertex_pools.push_back(best_pool);
+        }
+
+        new_vertices.clear();
+        new_vertices.reserve(vertices.size());
+
+        Vertices::const_iterator vi;
+        for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
+          EggVertex *vertex = (*vi);
+          EggVertex *new_vertex = best_pool->create_unique_vertex(*vertex);
+          new_vertex->copy_grefs_from(*vertex);
+          new_vertices.push_back(new_vertex);
+        }
+      }
+
+      Vertices::const_iterator vi;
+      nassertv(new_vertices.size() == vertices.size());
+      for (vi = new_vertices.begin(); vi != new_vertices.end(); ++vi) {
+        EggVertex *new_vertex = (*vi);
+        nassertv(new_vertex != (EggVertex *)NULL);
+        prim->add_vertex(new_vertex);
+      }
+        
+    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
+      if (recurse) {
+        DCAST(EggGroupNode, child)->rebuild_vertex_pools(vertex_pools, max_vertices, recurse);
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

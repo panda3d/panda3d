@@ -739,7 +739,7 @@ void SceneGraphReducer::
 r_unify(PandaNode *node) {
   if (node->is_geom_node()) {
     GeomNode *geom_node = DCAST(GeomNode, node);
-    geom_node->unify();
+    geom_node->unify(max_collect_indices);
   }
 
   PandaNode::Children children = node->get_children();
