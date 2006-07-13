@@ -27,6 +27,7 @@
 #include "plist.h"
 
 #include "physicsObject.h"
+#include "physicsObjectCollection.h"
 #include "linearForce.h"
 #include "angularForce.h"
 
@@ -73,6 +74,8 @@ PUBLISHED:
   INLINE void set_viscosity(float viscosity);
   INLINE float get_viscosity() const;
   
+  const PhysicsObjectCollection get_objects() const;
+
   virtual void output(ostream &out = cout) const;
   virtual void write_physics_objects(
     ostream &out = cout, unsigned int indent=0) const;

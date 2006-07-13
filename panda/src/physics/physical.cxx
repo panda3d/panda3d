@@ -121,6 +121,23 @@ Physical::
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : get_objects
+//      Access : Public
+////////////////////////////////////////////////////////////////////
+const PhysicsObjectCollection Physical::
+get_objects() const{
+  PhysicsObjectCollection poc;
+
+  for (PhysicsObject::Vector::const_iterator i=_physics_objects.begin();
+       i != _physics_objects.end();
+       ++i) {
+    poc.add_physics_object((PhysicsObject*)(*i));
+  }
+
+  return poc;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function : output
 //       Access : Public
 //  Description : Write a string representation of this instance to
