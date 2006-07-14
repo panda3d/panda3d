@@ -1715,3 +1715,10 @@ class Actor(DirectObject, NodePath):
             else:
                 if onScreenDebug.has(itemName):
                     onScreenDebug.remove(itemName)
+
+    # these functions compensate for actors that are modeled facing the viewer but need
+    # to face away from the camera in the game
+    def faceAwayFromViewer(self):
+        self.getGeomNode().setH(180)
+    def faceTowardsViewer(self):
+        self.getGeomNode().setH(0)
