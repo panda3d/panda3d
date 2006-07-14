@@ -75,21 +75,25 @@ private:
     INLINE bool is_valid() const;
     INLINE bool is_from_file() const;
     bool get_frame_data(int frame);
-    AVFormatContext *pFormatCtx; 
-    AVCodecContext *pCodecCtx; 
+
+  private:
+    int read_video_frame(AVPacket *packet);
+
+  public:
+    AVCodecContext *_codec_context; 
+    AVFormatContext *_format_context; 
     
-    int streamNumber;
-    AVFrame *pFrame;
-    AVFrame *pFrameOut;
+    int _stream_number;
+    AVFrame *_frame;
+    AVFrame *_frame_out;
 
     Filename _filename;
-    int _next_frame;
-    int imageSizeBytes;
-  private:
-    unsigned char * rawData;
-    AVCodec *pCodec;
+    int _next_frame_number;
+    int _image_size_bytes;
 
-    
+  private:
+    unsigned char * _raw_data;
+    AVCodec *_codec;
   };
 
   class VideoPage {
