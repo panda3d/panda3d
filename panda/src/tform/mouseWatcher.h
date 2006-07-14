@@ -127,7 +127,8 @@ protected:
   void clear_current_regions();
 
 #ifndef NDEBUG
-  virtual void do_show_regions(const NodePath &render2d);
+  virtual void do_show_regions(const NodePath &render2d,
+                               const string &bin_name, int draw_order);
   virtual void do_hide_regions();
 #endif  // NDEBUG
 
@@ -201,6 +202,8 @@ private:
 
 #ifndef NDEBUG
   NodePath _show_regions_render2d;
+  string _show_regions_bin_name;
+  int _show_regions_draw_order;
 #endif
 
 protected:

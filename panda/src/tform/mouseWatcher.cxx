@@ -102,6 +102,9 @@ remove_region(MouseWatcherRegion *region) {
 
   remove_region_from(_current_regions, region);
   if (region == _preferred_region) {
+    if (_preferred_region != (MouseWatcherRegion *)NULL) {
+      exit_region(_preferred_region, MouseWatcherParameter());
+    }
     _preferred_region = (MouseWatcherRegion *)NULL;
   }
   if (region == _preferred_button_down_region) {
@@ -160,7 +163,8 @@ add_group(MouseWatcherGroup *group) {
 
 #ifndef NDEBUG
   if (!_show_regions_render2d.is_empty()) {
-    group->show_regions(_show_regions_render2d);
+    group->show_regions(_show_regions_render2d, _show_regions_bin_name,
+                        _show_regions_draw_order);
   }
 #endif  // NDEBUG
 
@@ -188,6 +192,9 @@ remove_group(MouseWatcherGroup *group) {
   _current_regions.swap(only_a);
 
   if (has_region_in(both, _preferred_region)) {
+    if (_preferred_region != (MouseWatcherRegion *)NULL) {
+      exit_region(_preferred_region, MouseWatcherParameter());
+    }
     _preferred_region = (MouseWatcherRegion *)NULL;
   }
   if (has_region_in(both, _preferred_button_down_region)) {
@@ -241,7 +248,8 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
 #ifndef NDEBUG
   if (!_show_regions_render2d.is_empty()) {
     old_group->do_hide_regions();
-    new_group->do_show_regions(_show_regions_render2d);
+    new_group->do_show_regions(_show_regions_render2d, _show_regions_bin_name, 
+                               _show_regions_draw_order);
   }
 #endif  // NDEBUG
 
@@ -258,6 +266,9 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
     _current_regions.swap(only_a);
 
     if (has_region_in(both, _preferred_region)) {
+      if (_preferred_region != (MouseWatcherRegion *)NULL) {
+        exit_region(_preferred_region, MouseWatcherParameter());
+      }
       _preferred_region = (MouseWatcherRegion *)NULL;
     }
     if (has_region_in(both, _preferred_button_down_region)) {
@@ -598,14 +609,17 @@ clear_current_regions() {
 //               assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
-do_show_regions(const NodePath &render2d) {
-  MouseWatcherGroup::do_show_regions(render2d);
+do_show_regions(const NodePath &render2d, const string &bin_name, 
+                int draw_order) {
+  MouseWatcherGroup::do_show_regions(render2d, bin_name, draw_order);
   _show_regions_render2d = render2d;
+  _show_regions_bin_name = bin_name;
+  _show_regions_draw_order = draw_order;
 
   Groups::const_iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
     MouseWatcherGroup *group = (*gi);
-    group->show_regions(render2d);
+    group->show_regions(render2d, bin_name, draw_order);
   }
 }
 #endif  // NDEBUG
@@ -621,6 +635,8 @@ void MouseWatcher::
 do_hide_regions() {
   MouseWatcherGroup::do_hide_regions();
   _show_regions_render2d = NodePath();
+  _show_regions_bin_name = string();
+  _show_regions_draw_order = 0;
 
   Groups::const_iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {

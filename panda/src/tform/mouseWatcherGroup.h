@@ -52,7 +52,8 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
 #ifndef NDEBUG
-  void show_regions(const NodePath &render2d);
+  void show_regions(const NodePath &render2d, 
+                    const string &bin_name, int draw_order);
   void set_color(const Colorf &color);
   void hide_regions();
 
@@ -63,7 +64,8 @@ protected:
   bool do_remove_region(MouseWatcherRegion *region);
 
 #ifndef NDEBUG
-  virtual void do_show_regions(const NodePath &render2d);
+  virtual void do_show_regions(const NodePath &render2d, 
+                               const string &bin_name, int draw_order);
   virtual void do_hide_regions();
   void do_update_regions();
 #endif  // NDEBUG

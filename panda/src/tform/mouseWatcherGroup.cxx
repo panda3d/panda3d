@@ -220,9 +220,9 @@ write(ostream &out, int indent_level) const {
 //               for the window.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
-show_regions(const NodePath &render2d) {
+show_regions(const NodePath &render2d, const string &bin_name, int draw_order) {
   MutexHolder holder(_lock);
-  do_show_regions(render2d);
+  do_show_regions(render2d, bin_name, draw_order);
 }
 #endif  // NDEBUG
 
@@ -313,11 +313,12 @@ do_remove_region(MouseWatcherRegion *region) {
 //               assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
-do_show_regions(const NodePath &render2d) {
+do_show_regions(const NodePath &render2d, const string &bin_name, 
+                int draw_order) {
   do_hide_regions();
   _show_regions = true;
   _show_regions_root = render2d.attach_new_node("show_regions");
-  _show_regions_root.set_bin("unsorted", 0);
+  _show_regions_root.set_bin(bin_name, draw_order);
   do_update_regions();
 }
 #endif  // NDEBUG
