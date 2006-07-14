@@ -28,6 +28,7 @@
 #include "pointerTo.h"
 #include "thread.h"
 #include "pmutex.h"
+#include "reMutex.h"
 #include "conditionVar.h"
 #include "pStatCollector.h"
 #include "pset.h"
@@ -294,7 +295,7 @@ private:
     GSGs _gsgs;       // draw stage
 
     Callbacks _callbacks[CB_len];
-    Mutex _wl_lock;
+    ReMutex _wl_lock;
   };
 
   class RenderThread : public Thread, public WindowRenderer {
@@ -329,7 +330,7 @@ private:
     FS_flip,  // All windows are done drawing and have flipped.
   };
   FlipState _flip_state;
-  Mutex _lock;
+  ReMutex _lock;
 
   static PStatCollector _wait_pcollector;
   static PStatCollector _cycle_pcollector;
