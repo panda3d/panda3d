@@ -71,7 +71,7 @@ def writeFsmTree(instance, indent = 0):
 
 
 #if __debug__: #RAU accdg to Darren its's ok that StackTrace is not protected by __debug__
-# DCR if somebody ends up using StackTrace in production, either
+# DCR: if somebody ends up using StackTrace in production, either
 # A) it will be OK because it hardly ever gets called, or
 # B) it will be easy to track it down (grep for StackTrace)
 class StackTrace:
@@ -2243,6 +2243,43 @@ def printNumberedTyped(items, maxLen=5000):
             snip = '<SNIP>'
             objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
         print format % (i, itype(items[i]), objStr)
+
+class DelayedCall:
+    """ calls a func after a specified delay """
+    def __init__(self, func, name=None, delay=None):
+        if name is None:
+            name = 'anonymous'
+        if delay is None:
+            delay = .01
+        self._func = func
+        taskMgr.doMethodLater(delay, self._doCallback, 'DelayedCallback-%s' % name)
+    def _doCallback(self, task):
+        func = self._func
+        del self._func
+        func()
+
+class DelayedCallback:
+    """ waits for this object to be called, then calls your callback after a delay """
+    def __init__(self, callback, name=None, delay=None):
+        self._callback = callback
+        self._name = name
+        # FunctionInterval requires __name__
+        self.__name__ = self._name
+        self._delay = delay
+    def _doCallback(self):
+        cb = Functor(self._callback, *self._args, **self._kwArgs)
+        del self._callback
+        del self._name
+        del self._delay
+        del self._args
+        del self._kwArgs
+        del self._delayedCall
+        del self.__name__
+        cb()
+    def __call__(self, *args, **kwArgs):
+        self._args = args
+        self._kwArgs = kwArgs
+        self._delayedCall = DelayedCall(self._doCallback, self._name, self._delay)
 
 import __builtin__
 __builtin__.Functor = Functor
