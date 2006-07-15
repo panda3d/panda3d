@@ -61,6 +61,14 @@ wdxGraphicsBuffer8(GraphicsPipe *pipe,
   // Since the pbuffer never gets flipped, we get screenshots from the
   // same buffer we draw into.
   _screenshot_buffer_type = _draw_buffer_type;
+
+  if (_gsg) {
+    // save to GSG list to handle device lost issues
+    DXGraphicsStateGuardian8 *dxgsg;
+
+    dxgsg = DCAST (DXGraphicsStateGuardian8, _gsg);
+    dxgsg -> _graphics_buffer_list.push_back(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,6 +79,14 @@ wdxGraphicsBuffer8(GraphicsPipe *pipe,
 wdxGraphicsBuffer8::
 ~wdxGraphicsBuffer8() {
   this -> close_buffer ( );
+
+  if (_gsg) {
+    // remove from GSG list
+    DXGraphicsStateGuardian8 *dxgsg;
+
+    dxgsg = DCAST (DXGraphicsStateGuardian8, _gsg);
+    dxgsg -> _graphics_buffer_list.remove(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -61,6 +61,7 @@
 #include "pStatTimer.h"
 #include "pStatCollector.h"
 #include "dxgsg8base.h"
+#include "wdxGraphicsBuffer8.h"
 
 #include <mmsystem.h>
 
@@ -3436,6 +3437,27 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
 
     Thread *current_thread = Thread::get_current_thread();
     _prepared_objects->begin_frame(this, current_thread);
+
+    // release graphics buffer surfaces
+    {
+      wdxGraphicsBuffer8 *graphics_buffer;
+      list <wdxGraphicsBuffer8 *>::iterator graphics_buffer_iterator;
+
+      for (graphics_buffer_iterator = _graphics_buffer_list.begin( ); graphics_buffer_iterator != _graphics_buffer_list.end( ); graphics_buffer_iterator++)
+      {
+        graphics_buffer = (*graphics_buffer_iterator);
+        if (graphics_buffer -> _color_backing_store)
+        {
+          graphics_buffer -> _color_backing_store -> Release ( );
+          graphics_buffer -> _color_backing_store = 0;
+        }
+        if (graphics_buffer -> _depth_backing_store)
+        {
+          graphics_buffer -> _depth_backing_store -> Release ( );
+          graphics_buffer -> _depth_backing_store = 0;
+        }
+      }
+    }
 
     hr = _d3d_device->Reset(&_presentation_reset);
     if (FAILED(hr)) {

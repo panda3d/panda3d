@@ -242,6 +242,8 @@ protected:
   static unsigned char *_temp_buffer;
   static unsigned char *_safe_buffer_start;
 
+  list <wdxGraphicsBuffer8 *> _graphics_buffer_list;
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();

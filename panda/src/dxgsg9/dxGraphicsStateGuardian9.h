@@ -82,7 +82,7 @@ public:
   ~DXGraphicsStateGuardian9();
 
   FrameBufferProperties
-    calc_fb_properties(DWORD cformat, DWORD dformat, 
+    calc_fb_properties(DWORD cformat, DWORD dformat,
                        DWORD multisampletype, DWORD multisamplequality);
 
   virtual TextureContext *prepare_texture(Texture *tex);
@@ -354,6 +354,8 @@ protected:
   int _vertex_shader_maximum_constants;
 
   bool _supports_stream_offset;
+
+  list <wdxGraphicsBuffer9 *> _graphics_buffer_list;
 
 public:
   virtual TypeHandle get_type() const {

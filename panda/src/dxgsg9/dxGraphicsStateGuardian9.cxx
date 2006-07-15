@@ -60,6 +60,7 @@
 #include "dxIndexBufferContext9.h"
 #include "pStatTimer.h"
 #include "pStatCollector.h"
+#include "wdxGraphicsBuffer9.h"
 
 #include <mmsystem.h>
 
@@ -150,7 +151,6 @@ DXGraphicsStateGuardian9(GraphicsPipe *pipe) :
 #ifdef HAVE_CGDX9
   _cg_context = 0;
 #endif
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4554,6 +4554,27 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     Thread *current_thread = Thread::get_current_thread();
     _prepared_objects->begin_frame(this, current_thread);
 
+    // release graphics buffer surfaces
+    {
+      wdxGraphicsBuffer9 *graphics_buffer;
+      list <wdxGraphicsBuffer9 *>::iterator graphics_buffer_iterator;
+
+      for (graphics_buffer_iterator = _graphics_buffer_list.begin( ); graphics_buffer_iterator != _graphics_buffer_list.end( ); graphics_buffer_iterator++)
+      {
+        graphics_buffer = (*graphics_buffer_iterator);
+        if (graphics_buffer -> _color_backing_store)
+        {
+          graphics_buffer -> _color_backing_store -> Release ( );
+          graphics_buffer -> _color_backing_store = 0;
+        }
+        if (graphics_buffer -> _depth_backing_store)
+        {
+          graphics_buffer -> _depth_backing_store -> Release ( );
+          graphics_buffer -> _depth_backing_store = 0;
+        }
+      }
+    }
+
     hr = _d3d_device->Reset(&_presentation_reset);
     if (FAILED(hr)) {
       return hr;
@@ -4658,6 +4679,15 @@ show_frame() {
   }
 
 DBG_S dxgsg9_cat.debug ( ) << "- - - - - DXGraphicsStateGuardian9::show_frame\n"; DBG_E
+
+  // DEBUG
+  /*
+    EXPCL_DTOOL void reset_memory_stats (void);
+    EXPCL_DTOOL void print_memory_stats (void);
+
+    print_memory_stats ( );
+    reset_memory_stats ( );
+  */
 
   HRESULT hr;
 
@@ -5299,4 +5329,3 @@ calc_fb_properties(DWORD cformat, DWORD dformat,
   }
   return props;
 }
-

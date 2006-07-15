@@ -21,14 +21,6 @@
 #include "dxGraphicsStateGuardian9.h"
 #include "pStatTimer.h"
 
-// ISSUES:
-  // render to texure format
-    // can be specified via the DXGraphicsStateGuardian8 member
-    // _render_to_texture_d3d_format  default = D3DFMT_X8R8G8B8
-
-  // should check texture creation with CheckDepthStencilMatch
-  // support copy from texture to ram?
-    // check D3DCAPS2_DYNAMICTEXTURES
 
 #define FL << "\n" << __FILE__ << " " << __LINE__ << "\n"
 
@@ -61,6 +53,14 @@ wdxGraphicsBuffer9(GraphicsPipe *pipe,
   // Since the pbuffer never gets flipped, we get screenshots from the
   // same buffer we draw into.
   _screenshot_buffer_type = _draw_buffer_type;
+
+  if (_gsg) {
+    // save to GSG list to handle device lost issues
+    DXGraphicsStateGuardian9 *dxgsg;
+
+    dxgsg = DCAST (DXGraphicsStateGuardian9, _gsg);
+    dxgsg -> _graphics_buffer_list.push_back(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,6 +71,14 @@ wdxGraphicsBuffer9(GraphicsPipe *pipe,
 wdxGraphicsBuffer9::
 ~wdxGraphicsBuffer9() {
   this -> close_buffer ( );
+
+  if (_gsg) {
+    // remove from GSG list
+    DXGraphicsStateGuardian9 *dxgsg;
+
+    dxgsg = DCAST (DXGraphicsStateGuardian9, _gsg);
+    dxgsg -> _graphics_buffer_list.remove(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
