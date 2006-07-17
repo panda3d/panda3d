@@ -30,8 +30,8 @@ BEGIN_PUBLISH
 //  Description: A convenience function for loading explicit prc files
 //               from a disk file or from within a multifile (via the
 //               virtual file system).  Save the return value and pass
-//               it to unload_prc_file() if you ever want to load this
-//               file later.
+//               it to unload_prc_file() if you ever want to unload
+//               this file later.
 //
 //               The filename is first searched along the default prc
 //               search path, and then also along the model path, for
@@ -67,6 +67,10 @@ load_prc_file_data(const string &name, const string &data);
 //               prc file that was previously loaded by
 //               load_prc_file().  Returns true if successful, false
 //               if the file was unknown.
+//
+//               After this function has been called, the ConfigPage
+//               pointer is no longer valid and should not be used
+//               again.
 ////////////////////////////////////////////////////////////////////
 EXPCL_PANDA bool
 unload_prc_file(ConfigPage *page);
