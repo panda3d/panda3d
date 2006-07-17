@@ -184,6 +184,7 @@ protected:
 
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
+  static int get_highest_index_value(NumericType index_type);
 
 public:
   virtual void draw(GraphicsStateGuardianBase *gsg,
@@ -207,6 +208,8 @@ private:
 
   void recompute_minmax(CData *cdata);
   void do_make_indexed(CData *cdata);
+  void consider_elevate_index_type(CData *cdata, int vertex);
+  void do_set_index_type(CData *cdata, NumericType index_type);
 
 private:
   // A GeomPrimitive keeps a list (actually, a map) of all the

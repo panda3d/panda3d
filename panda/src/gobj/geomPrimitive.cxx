@@ -142,32 +142,23 @@ set_usage_hint(GeomPrimitive::UsageHint usage_hint) {
 //               Normally, this should be either NT_uint16 or
 //               NT_uint32.
 //
+//               The index type must be large enough to include all of
+//               the index values in the primitive.  It may be
+//               automatically elevated, if necessary, to a larger
+//               index type, by a subsequent call to add_index() that
+//               names an index value that does not fit in the index
+//               type you specify.
+//
 //               Don't call this in a downstream thread unless you
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 set_index_type(GeomPrimitive::NumericType index_type) {
+  nassertv(get_max_vertex() <= get_highest_index_value(index_type));
+
   CDWriter cdata(_cycler, true);
-  cdata->_index_type = index_type;
-
-  if (cdata->_vertices != (GeomVertexArrayData *)NULL) {
-    CPT(GeomVertexArrayFormat) new_format = get_index_format();
-    
-    if (cdata->_vertices->get_array_format() != new_format) {
-      PT(GeomVertexArrayData) new_vertices = make_index_data();
-      new_vertices->set_num_rows(cdata->_vertices->get_num_rows());
-
-      GeomVertexReader from(cdata->_vertices, 0);
-      GeomVertexWriter to(new_vertices, 0);
-      
-      while (!from.is_at_end()) {
-        to.set_data1i(from.get_data1i());
-      }
-      cdata->_vertices = new_vertices;
-      cdata->_got_minmax = false;
-    }
-  }
+  do_set_index_type(cdata, index_type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,6 +178,8 @@ set_index_type(GeomPrimitive::NumericType index_type) {
 void GeomPrimitive::
 add_vertex(int vertex) {
   CDWriter cdata(_cycler, true);
+
+  consider_elevate_index_type(cdata, vertex);
 
   int num_primitives = get_num_primitives();
   if (num_primitives > 0 &&
@@ -248,6 +241,8 @@ add_consecutive_vertices(int start, int num_vertices) {
   int end = (start + num_vertices) - 1;
 
   CDWriter cdata(_cycler, true);
+
+  consider_elevate_index_type(cdata, end);
 
   int num_primitives = get_num_primitives();
   if (num_primitives > 0 &&
@@ -382,6 +377,12 @@ clear_vertices() {
   CDWriter cdata(_cycler, true);
   cdata->_first_vertex = 0;
   cdata->_num_vertices = 0;
+
+  // Since we might have automatically elevated the index type by
+  // adding vertices, we should automatically lower it again when we
+  // call clear_vertices().
+  cdata->_index_type = NT_uint16;
+
   cdata->_vertices.clear();
   cdata->_ends.clear();
   cdata->_mins.clear();
@@ -403,6 +404,11 @@ clear_vertices() {
 void GeomPrimitive::
 offset_vertices(int offset) {
   if (is_indexed()) {
+    {
+      CDWriter cdata(_cycler, true);
+      consider_elevate_index_type(cdata, get_max_vertex() + offset);
+    }
+
     GeomVertexRewriter index(modify_vertices(), 0);
     while (!index.is_at_end()) {
       index.set_data1i(index.get_data1i() + offset);
@@ -410,9 +416,13 @@ offset_vertices(int offset) {
 
   } else {
     CDWriter cdata(_cycler, true);
+
     cdata->_first_vertex += offset;
     cdata->_modified = Geom::get_next_modified();
     cdata->_got_minmax = false;
+
+    consider_elevate_index_type(cdata, 
+                                cdata->_first_vertex + cdata->_num_vertices - 1);
   }
 }
 
@@ -1112,6 +1122,31 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::get_highest_index_value
+//       Access: Private, Static
+//  Description: Returns the largest index value that can be stored in
+//               an index of the indicated type.
+////////////////////////////////////////////////////////////////////
+int GeomPrimitive::
+get_highest_index_value(NumericType index_type) {
+  switch (index_type) {
+  case NT_uint8:
+    return 0xff;
+
+  case NT_uint16:
+    return 0xffff;
+
+  case NT_uint32:
+    // We don't actually allow use of the sign bit, since all of our
+    // functions receive an "int" instead of an "unsigned int".
+    return 0x7fffffff;
+
+  default:
+    return 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::calc_tight_bounds
 //       Access: Public, Virtual
 //  Description: Expands min_point and max_point to include all of the
@@ -1378,6 +1413,66 @@ do_make_indexed(CData *cdata) {
     GeomVertexWriter index(cdata->_vertices, 0);
     for (int i = 0; i < cdata->_num_vertices; ++i) {
       index.add_data1i(i + cdata->_first_vertex);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::consider_elevate_index_type
+//       Access: Private
+//  Description: If the indicated new vertex index won't fit in the
+//               specified index type, automatically elevates the
+//               index type to the next available size.
+////////////////////////////////////////////////////////////////////
+void GeomPrimitive::
+consider_elevate_index_type(CData *cdata, int vertex) {
+  switch (cdata->_index_type) {
+  case NT_uint8:
+    if (vertex > 0xff) {
+      do_set_index_type(cdata, NT_uint16);
+    }
+    break;
+
+  case NT_uint16:
+    if (vertex > 0xffff) {
+      do_set_index_type(cdata, NT_uint32);
+    }
+    break;
+
+  case NT_uint32:
+    // Not much we can do here.
+    nassertv(vertex <= 0x7fffffff);
+    break;
+
+  default:
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::do_set_index_type
+//       Access: Private
+//  Description: The private implementation of set_index_type().
+////////////////////////////////////////////////////////////////////
+void GeomPrimitive::
+do_set_index_type(CData *cdata, GeomPrimitive::NumericType index_type) {
+  cdata->_index_type = index_type;
+
+  if (cdata->_vertices != (GeomVertexArrayData *)NULL) {
+    CPT(GeomVertexArrayFormat) new_format = get_index_format();
+    
+    if (cdata->_vertices->get_array_format() != new_format) {
+      PT(GeomVertexArrayData) new_vertices = make_index_data();
+      new_vertices->set_num_rows(cdata->_vertices->get_num_rows());
+
+      GeomVertexReader from(cdata->_vertices, 0);
+      GeomVertexWriter to(new_vertices, 0);
+      
+      while (!from.is_at_end()) {
+        to.set_data1i(from.get_data1i());
+      }
+      cdata->_vertices = new_vertices;
+      cdata->_got_minmax = false;
     }
   }
 }
