@@ -2167,6 +2167,9 @@ do_load_one(const PNMImage &pnmimage, const string &name, int z, int n) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_store_one(PNMImage &pnmimage, int z, int n) const {
+  // First, reload the ram image if necessary.
+  ((Texture *)this)->get_ram_image();
+
   nassertr(has_ram_mipmap_image(n), false);
   nassertr(z >= 0 && z < get_expected_mipmap_z_size(n), false);
   nassertr(_ram_image_compression == CM_off, false);
