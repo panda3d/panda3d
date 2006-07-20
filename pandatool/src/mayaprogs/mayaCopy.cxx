@@ -62,16 +62,18 @@ MayaCopy() {
      "source filename before it is copied into the tree.",
      &CVSCopy::dispatch_none, &_keep_ver);
 
+  /*
   add_option
     ("rp", "replace_prefix", 80,
      "use these prefixes when replacing reference with the recently copied file from the  "
      "source filename before it is copied into the tree.",
      &CVSCopy::dispatch_vector_string, NULL, &_replace_prefix);
+  */
 
   add_option
     ("omittex", "", 0,
-     "Character animation files do not need to copy the texures. This option omits the "
-     "textures of the models to be re-mayacopied",
+     "Character animation files do not need to copy the texures nor its references. "
+     "This option omits the textures and references of the models to be re-mayacopied",
      &CVSCopy::dispatch_none, &_omit_tex);
 
   add_path_replace_options();
@@ -191,30 +193,10 @@ copy_maya_file(const Filename &source, const Filename &dest,
   // Finally, copy in any referenced Maya files.
   unsigned int num_refs = refs.length();
 
-  /*
-  if (num_refs != 0) {
-    maya_cat.warning()
-      << "External references are not yet properly supported by mayacopy!\n";
+  if (num_refs > 0) {
+    _omit_tex = true;
   }
-  */
 
-  if (num_refs != 0) {
-    if (_replace_prefix.empty()) {
-      // try to put the first word of the file name as the replace prefix
-      size_t idx = source.get_basename().find("_",0);
-      if (idx != string::npos) {
-        string st = source.get_basename().substr(0, idx);
-        _replace_prefix.push_back(st);
-        maya_cat.info() << "replace_prefix = " << st << endl;
-      }
-      else {
-        maya_cat.error()
-          << "External references exist: " 
-          << "please make sure to specify a _replace_prefix with -rp option\n";
-        exit(1);
-      }
-    }
-  }
   unsigned int ref_index;
   maya_cat.info() << "num_refs = " << num_refs << endl;
   for (ref_index = 0; ref_index < num_refs; ref_index++) {
@@ -227,33 +209,50 @@ copy_maya_file(const Filename &source, const Filename &dest,
     // file -loadReference "mtpRN" -type "mayaBinary" -options "v=0"
     // "m_t_pear_zero.mb";
     string lookup = refs[ref_index].asChar();
+
+    string blah = "file -q -referenceNode \"" + lookup + "\";";
+    //maya_cat.info() << blah << endl;
+    MString result;
+    status = MGlobal::executeCommand(MString(blah.c_str()), result);
+    //maya_cat.info() << "result = " << result.asChar() << endl;
+
+    // for multiple reference of the same model. maya throws in a {#} at the end, ignore that
+    size_t dup = lookup.find('{');
+    if (dup != string::npos){
+      lookup.erase(dup);
+    }
+
     Filename filename = 
-      _path_replace->convert_path(Filename::from_os_specific(refs[ref_index].asChar()));
+      _path_replace->convert_path(Filename::from_os_specific(lookup));
 
     CVSSourceTree::FilePath path =
       _tree.choose_directory(filename.get_basename(), dir, _force, _interactive);
     Filename new_filename = path.get_rel_from(dir);
-    _exec_string = "file -loadReference \"" + _replace_prefix[_curr_idx++] + "RN\" -type \"mayaBinary\" -options \"v=0\" \"" + new_filename.to_os_generic() + "\";";
-    maya_cat.info() << "executing command: " << _exec_string << "\n";
+
+    //maya_cat.info() << "curr_idx " << _curr_idx << endl;
+    _exec_string.push_back("file -loadReference \"" + string(result.asChar()) + "\" -type \"mayaBinary\" -options \"v=0\" \"" + new_filename.to_os_generic() + "\";");
+    maya_cat.info() << "executing command: " << _exec_string[_curr_idx] << "\n";
     //MGlobal::executeCommand("file -loadReference \"mtpRN\" -type \"mayaBinary\" -options \"v=0\" \"m_t_pear_zero.mb\";");
-    status  = MGlobal::executeCommand(MString(_exec_string.c_str()));
+    status  = MGlobal::executeCommand(MString(_exec_string[ref_index].c_str()));
+    if (!status) {
+      status.perror("loadReference failed");
+    }
+    _curr_idx++;
   }
 
-  if (!_omit_tex) {
-    // Get all the shaders so we can determine the set of textures.
-    _shaders.clear();
-    collect_shaders();
-    int num_shaders = _shaders.get_num_shaders();
-    for (int i = 0; i < num_shaders; i++) {
-      MayaShader *shader = _shaders.get_shader(i);
-      for (size_t j = 0; j < shader->_color.size(); j++) {
-        if (!extract_texture(*shader->get_color_def(j), dir)) {
-          return false;
-        }
-      }
-      if (!extract_texture(shader->_transparency, dir)) {
+  // Get all the shaders so we can determine the set of textures.
+  _shaders.clear();
+  collect_shaders();
+  int num_shaders = _shaders.get_num_shaders();
+  for (int i = 0; i < num_shaders; i++) {
+    MayaShader *shader = _shaders.get_shader(i);
+    for (size_t j = 0; j < shader->_color.size(); j++) {
+      if (!extract_texture(*shader->get_color_def(j), dir)) {
         return false;
       }
+    }
+    if (!extract_texture(shader->_transparency, dir)) {
+      return false;
     }
   }
 
@@ -265,47 +264,32 @@ copy_maya_file(const Filename &source, const Filename &dest,
   }
   
   for (ref_index = 0; ref_index < num_refs; ref_index++) {
-    //maya_cat.info() << "refs filename: " << refs[ref_index].asChar() << "\n";
-    //maya_cat.info() << "os_specific filename: " << Filename::from_os_specific(refs[ref_index].asChar()) << "\n";
+    if (1) { // we may want an option later to pull in all the referenced files
+      continue;
+    }
 
-    //maya_cat.info() << "-----------exec_string = " << _exec_string << endl;
-    string original("loadReference");
-    string replace("unloadReference");
-    size_t index = _exec_string.find("loadReference");
-    _exec_string.replace(index, original.length(), replace, 0, replace.length());
-    maya_cat.info() << "executing command: " << _exec_string << "\n";
-    status  = MGlobal::executeCommand(MString(_exec_string.c_str()));
+    string lookup = refs[ref_index].asChar();
+    // for multiple reference of the same model. maya throws in a {#} at the end, ignore that
+    size_t dup = lookup.find('{');
+    if (dup != string::npos){
+      lookup.erase(dup);
+    }
 
     Filename filename = 
-      _path_replace->convert_path(Filename::from_os_specific(refs[ref_index].asChar()));
+      _path_replace->convert_path(Filename::from_os_specific(lookup));
 
     maya_cat.info()
       << "External ref: " << filename << "\n";
-
+    
     // Now import the file
     ExtraData ed;
     ed._type = FT_maya;
-
+    
     CVSSourceTree::FilePath path = import(filename, &ed, _model_dir);
     if (!path.is_valid()) {
       exit(1);
     }
   }
-
-  /*
-  for (unsigned int ref_index = 0; ref_index < num_refs; ref_index++) {
-    Filename filename = 
-      _path_replace->convert_path(Filename::from_os_specific(refs[ref_index].asChar()));
-    status = MFileIO::reference(MString(filename.get_basename().c_str()));
-    if (!status) {
-      status.perror("MFileIO reference");
-    }
-    status = MFileIO::removeReference(refs[ref_index].asChar());
-    if (!status) {
-      status.perror("MFileIO removeReference");
-    }
-  }
-  */
 
   return true;
 }

@@ -74,9 +74,11 @@ private:
   bool _keep_ver;
   bool _omit_tex;
   int _curr_idx;
+  /*
   vector_string _replace_prefix;
+  */
 
-  string _exec_string;
+  vector_string _exec_string;
 
   PT(MayaApi) _maya;
   MayaShaders _shaders;
