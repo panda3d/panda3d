@@ -18,24 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BufferContext::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE BufferContext::
-BufferContext(BufferResidencyTracker *residency) :
-  _residency(residency),
-  _residency_state(0),
-  _data_size_bytes(0),
-  _owning_chain(&residency->_chains[0])
-{
-#ifdef DO_PSTATS
-  ++(_owning_chain->_count);
-  insert_before(_owning_chain);
-#endif  // DO_PSTATS
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BufferContext::get_data_size_bytes
 //       Access: Public
 //  Description: Returns the number of bytes previously reported for
@@ -110,6 +92,7 @@ set_resident(bool flag) {
 ////////////////////////////////////////////////////////////////////
 INLINE BufferContext *BufferContext::
 get_next() const {
+  nassertr(_owning_chain != (BufferContextChain *)NULL, NULL);
   if ((BufferContextChain *)_next == _owning_chain) {
     return NULL;
   }
@@ -124,7 +107,9 @@ get_next() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void BufferContext::
 update_data_size_bytes(size_t new_data_size_bytes) {
-  _owning_chain->adjust_bytes((int)new_data_size_bytes - (int)_data_size_bytes);
+  if (_owning_chain != (BufferContextChain *)NULL) {
+    _owning_chain->adjust_bytes((int)new_data_size_bytes - (int)_data_size_bytes);
+  }
   _data_size_bytes = new_data_size_bytes;
 }
 
@@ -137,22 +122,4 @@ update_data_size_bytes(size_t new_data_size_bytes) {
 INLINE void BufferContext::
 update_modified(UpdateSeq new_modified) {
   _modified = new_modified;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BufferContext::set_owning_chain
-//       Access: Private
-//  Description: Moves this object to a different BufferContextChain.
-////////////////////////////////////////////////////////////////////
-INLINE void BufferContext::
-set_owning_chain(BufferContextChain *chain) {
-  if (chain != _owning_chain) {
-    --(_owning_chain->_count);
-    _owning_chain->adjust_bytes(-(int)_data_size_bytes);
-    remove_from_list();
-    _owning_chain = chain;
-    ++(_owning_chain->_count);
-    _owning_chain->adjust_bytes((int)_data_size_bytes);
-    insert_before(_owning_chain);
-  }
 }

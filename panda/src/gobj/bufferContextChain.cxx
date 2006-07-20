@@ -54,6 +54,7 @@ take_from(BufferContextChain &other) {
 
   LinkedListNode *llnode = other._next;
   while (llnode != &other) {
+    nassertv(((BufferContext *)llnode)->_owning_chain == &other);
     ((BufferContext *)llnode)->_owning_chain = this;
     llnode = ((BufferContext *)llnode)->_next;
   }

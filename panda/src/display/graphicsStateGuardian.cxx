@@ -1932,19 +1932,16 @@ close_gsg() {
   _closing_gsg = true;
   free_pointers();
 
-  // If we're not sharing the prepared objects list with any other
-  // GSG, go ahead and release all the textures and geoms now.  This
-  // isn't really a reliable test of whether we are sharing this list,
-  // but it's not too important if we get this wrong since this ought
-  // to be an optional cleanup anyway.  (Presumably, the underlying
-  // graphics API will properly clean up outstanding textures and
-  // geoms when the last context using them is released.)
-  if (_prepared_objects->get_ref_count() == 1) {
-    release_all_textures();
-    release_all_geoms();
-    release_all_vertex_buffers();
-    release_all_index_buffers();
-  }
+  // As tempting as it may be to try to release all the textures and
+  // geoms now, we can't, because we might not be the currently-active
+  // GSG (this is particularly important in OpenGL, which maintains
+  // one currently-active GL state in each thread).  If we start
+  // deleting textures, we'll be inadvertently deleting textures from
+  // some other OpenGL state.
+
+  // Fortunately, it doesn't really matter, since the graphics API
+  // will be responsible for cleaning up anything we don't clean up
+  // explicitly.  We'll just let them drop.
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -56,7 +56,6 @@ PreparedGraphicsObjects::
   // If this is so, then all of the GSG's that own them have already
   // destructed, so we can assume their resources were internally
   // cleaned up.  Quietly erase these remaining objects.
-
   ReMutexHolder holder(_lock);
 
   Textures::iterator tci;
@@ -65,6 +64,7 @@ PreparedGraphicsObjects::
        ++tci) {
     TextureContext *tc = (*tci);
     tc->get_texture()->clear_prepared(this);
+    tc->set_owning_chain(NULL);
   }
 
   _prepared_textures.clear();
@@ -101,6 +101,7 @@ PreparedGraphicsObjects::
        ++vbci) {
     VertexBufferContext *vbc = (*vbci);
     vbc->_data->clear_prepared(this);
+    vbc->set_owning_chain(NULL);
   }
 
   _prepared_vertex_buffers.clear();
@@ -113,6 +114,7 @@ PreparedGraphicsObjects::
        ++ibci) {
     IndexBufferContext *ibc = (*ibci);
     ibc->_data->clear_prepared(this);
+    ibc->set_owning_chain(NULL);
   }
 
   _prepared_index_buffers.clear();
@@ -840,17 +842,13 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   // First, release all the textures, geoms, and buffers awaiting
   // release.
   if (!_released_textures.empty()) {
-    cerr << "releasing " << _released_textures.size() 
-         << " textures, gsg = " << gsg << "\n";
     Textures::iterator tci;
     for (tci = _released_textures.begin();
          tci != _released_textures.end();
          ++tci) {
       TextureContext *tc = (*tci);
-      cerr << "releasing texture " << tc << ": " << tc->_texture << "\n";
       gsg->release_texture(tc);
     }
-    cerr << "done releasing textures\n";
   }
 
   _released_textures.clear();

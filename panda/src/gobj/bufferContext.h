@@ -44,7 +44,7 @@ class PreparedGraphicsObjects;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BufferContext : public SavedContext, private LinkedListNode {
 public:
-  INLINE BufferContext(BufferResidencyTracker *residency);
+  BufferContext(BufferResidencyTracker *residency);
   virtual ~BufferContext();
 
   INLINE size_t get_data_size_bytes() const;
@@ -59,7 +59,7 @@ public:
   INLINE void update_modified(UpdateSeq new_modified);
 
 private:
-  INLINE void set_owning_chain(BufferContextChain *chain);
+  void set_owning_chain(BufferContextChain *chain);
 
 private:
   BufferResidencyTracker *_residency;
