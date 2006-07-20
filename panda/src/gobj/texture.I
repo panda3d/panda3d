@@ -133,7 +133,7 @@ setup_cube_map(int size, ComponentType component_type,
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 read(const Filename &fullpath) {
-  ++_modified;
+  clear();
   return do_read(fullpath, Filename(), 0, 0, 0, 0, false, false, NULL);
 }
 
@@ -151,7 +151,7 @@ read(const Filename &fullpath) {
 INLINE bool Texture::
 read(const Filename &fullpath, const Filename &alpha_fullpath,
      int primary_file_num_channels, int alpha_file_channel) {
-  ++_modified;
+  clear();
   return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
 		 alpha_file_channel, 0, 0, false, false, NULL);
 }
@@ -331,7 +331,7 @@ write(const Filename &fullpath, int z, int n,
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 load(const PNMImage &pnmimage) {
-  ++_modified;
+  clear();
   return do_load_one(pnmimage, get_name(), 0, 0);
 }
 
