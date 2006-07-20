@@ -3997,6 +3997,34 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::close_gsg
+//       Access: Protected, Virtual
+//  Description: This is called by the associated GraphicsWindow when
+//               close_window() is called.  It should null out the
+//               _win pointer and possibly free any open resources
+//               associated with the GSG.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian9::
+close_gsg() {
+  GraphicsStateGuardian::close_gsg();
+
+  // Unlike in OpenGL, in DX9 it is safe to try to explicitly release
+  // any textures here.  And it may even be a good idea.
+  if (_prepared_objects->get_ref_count() == 1) {
+    release_all_textures();
+    release_all_geoms();
+    release_all_vertex_buffers();
+    release_all_index_buffers();
+
+    // Now we need to actually delete all of the objects we just
+    // released.
+    Thread *current_thread = Thread::get_current_thread();
+    _prepared_objects->begin_frame(this, current_thread);
+    _prepared_objects->end_frame(current_thread);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::free_nondx_resources
 //       Access: Public
 //  Description: Frees some memory that was explicitly allocated

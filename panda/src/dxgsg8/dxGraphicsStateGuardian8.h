@@ -141,6 +141,7 @@ protected:
   virtual void enable_clip_plane(int plane_id, bool enable);
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
 
+  virtual void close_gsg();
   void free_nondx_resources();
   void free_d3d_device();
 
