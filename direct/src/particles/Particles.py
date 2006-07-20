@@ -564,19 +564,21 @@ class Particles(ParticleSystem):
             
 
     def accelerate(self,time,stepCount = 1,stepTime=0.0):
-        if stepTime == 0.0:
-            stepTime = float(time)/stepCount
-            remainder = 0.0
-        else:
-            stepCount = int(float(time)/stepTime)
-            remainder = time-stepCount*stepTime
-
-        for step in range(stepCount):
-            self.update(stepTime)
-            base.physicsMgr.doPhysics(stepTime,self)
-
-        if(remainder):
-            self.update(remainder)
-            base.physicsMgr.doPhysics(remainder,self)
-
+        if time > 0.0:
+            if stepTime == 0.0:
+                stepTime = float(time)/stepCount
+                remainder = 0.0
+            else:
+                stepCount = int(float(time)/stepTime)
+                remainder = time-stepCount*stepTime
+                
+            for step in range(stepCount):
+                base.particleMgr.doParticles(stepTime,self,False)
+                base.physicsMgr.doPhysics(stepTime,self)
+                
+            if(remainder):
+                base.particleMgr.doParticles(remainder,self,False)
+                base.physicsMgr.doPhysics(remainder,self)
+                
+            self.render()
         
