@@ -200,11 +200,10 @@ class ParticleEffect(NodePath):
         except:
             self.notify.error('loadConfig: failed to load particle file: '+ repr(filename))
 
+    def accelerate(self,time,stepCount = 1,stepTime=0.0):
+        for particles in self.getParticlesList():
+            particles.accelerate(time,stepCount,stepTime)
 
-
-
-
-
-
-
-
+    def clearToInitial(self):
+        for particles in self.getParticlesList():
+            particles.clearToInitial()
