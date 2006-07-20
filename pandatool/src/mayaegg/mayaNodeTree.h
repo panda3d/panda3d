@@ -71,6 +71,7 @@ public:
   void reset_sliders();
 
 public:
+  string _subroot_parent_name;
   PT(MayaNodeDesc) _root;
   float _fps;
 

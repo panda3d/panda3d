@@ -99,7 +99,13 @@ build_hierarchy(const string &subroot) {
         if (bar != string::npos) {
           node_name = path.substr(bar + 1);
           if (node_name == subroot) {
-            mayaegg_cat.info() << "node name: " << node_name << endl;
+            // mark its parent node name
+            //mayaegg_cat.info() << path.substr(0,bar) << endl;
+            size_t new_bar = path.substr(0,bar).rfind("|");
+            if (new_bar != string::npos) {
+              _subroot_parent_name = path.substr(new_bar+1,bar-(new_bar+1));
+              mayaegg_cat.info() << "subroot parent name: " << _subroot_parent_name << endl;
+            }
             status = dag_iterator.reset(dag_iterator.item(),MItDag::kDepthFirst, MFn::kTransform);
             if (!status) {
               status.perror("MItDag constructor");
@@ -604,8 +610,10 @@ r_build_node(const string &path) {
   // create each node along the path.
   MayaNodeDesc *node_desc;
 
+  //mayaegg_cat.info() << "path: " << path << endl;
   if (path.empty()) {
     // This is the top.
+    //mayaegg_cat.info() << "found empty path: " << path << endl;
     node_desc = _root;
 
   } else {
@@ -618,16 +626,21 @@ r_build_node(const string &path) {
       parent_path = path.substr(0, bar);
       //mayaegg_cat.info() << "parent_path: " << parent_path << endl;
       local_name = path.substr(bar + 1);
+      if (local_name == _subroot_parent_name) {
+        node_desc = _root;
+      }
     } else {
       local_name = path;
     }
     //mayaegg_cat.info() << "local_name: " << local_name << endl;
 
-    MayaNodeDesc *parent_node_desc = r_build_node(parent_path);
-    if (parent_node_desc == (MayaNodeDesc *)NULL)
-      mayaegg_cat.info() << "empty parent: " << local_name << endl;
-    node_desc = new MayaNodeDesc(this, parent_node_desc, local_name);
-    _nodes.push_back(node_desc);
+    if (node_desc != _root) {
+      MayaNodeDesc *parent_node_desc = r_build_node(parent_path);
+      if (parent_node_desc == (MayaNodeDesc *)NULL)
+        mayaegg_cat.info() << "empty parent: " << local_name << endl;
+      node_desc = new MayaNodeDesc(this, parent_node_desc, local_name);
+      _nodes.push_back(node_desc);
+    }
   }
 
   _nodes_by_path.insert(NodesByPath::value_type(path, node_desc));
