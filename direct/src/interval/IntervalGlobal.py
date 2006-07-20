@@ -14,3 +14,4 @@ from pandac.PandaModules import *
 from ProjectileInterval import *
 from MetaInterval import *
 from IntervalManager import *
+from TestInterval import *
