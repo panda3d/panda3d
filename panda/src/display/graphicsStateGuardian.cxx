@@ -1942,6 +1942,12 @@ close_gsg() {
   // Fortunately, it doesn't really matter, since the graphics API
   // will be responsible for cleaning up anything we don't clean up
   // explicitly.  We'll just let them drop.
+
+  // However, if any objects have recently been released, we have to
+  // ensure they are actually deleted properly.
+  Thread *current_thread = Thread::get_current_thread();
+  _prepared_objects->begin_frame(this, current_thread);
+  _prepared_objects->end_frame(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
