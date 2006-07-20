@@ -40,9 +40,10 @@ class Pool:
         """
         if item in self.__free:
             self.__free.remove(item)
-        if item in self.__used:
+        elif item in self.__used:
             self.__used.remove(item)
-        self.notify.error("item not in pool")
+        else:
+            self.notify.error("item not in pool")
 
     def checkout(self):
         """
