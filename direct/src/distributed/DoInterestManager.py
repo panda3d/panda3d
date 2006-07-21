@@ -11,7 +11,6 @@ from pandac.PandaModules import *
 from MsgTypes import *
 from direct.showbase.PythonUtil import *
 from direct.showbase import DirectObject
-from direct.showbase.DelayedCallback import DelayedCallback
 from PyDatagram import PyDatagram
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
@@ -467,8 +466,8 @@ class DoInterestManager(DirectObject.DirectObject):
                 messenger.send(self.getAllInterestsCompleteEvent())
             if self._completeDelayedCallback is not None:
                 self._completeDelayedCallback.destroy()
-            self._completeDelayedCallback = DelayedCallback(
-                3,
+            self._completeDelayedCallback = FrameDelayedCallback(
+                frames=3,
                 callback=sendEvent,
                 cancelFunc=checkMoreInterests)
             checkMoreInterests = None
