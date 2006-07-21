@@ -2258,17 +2258,18 @@ class DelayedCall:
         del self._func
         func()
 
-class DelayedCallback:
-    """ waits for this object to be called, then calls your callback after a delay """
-    def __init__(self, callback, name=None, delay=None):
-        self._callback = callback
+class DelayedFunctor:
+    """ Waits for this object to be called, then calls supplied functor after a delay.
+    Effectively inserts a time delay between the caller and the functor. """
+    def __init__(self, functor, name=None, delay=None):
+        self._functor = functor
         self._name = name
         # FunctionInterval requires __name__
         self.__name__ = self._name
         self._delay = delay
-    def _doCallback(self):
-        cb = Functor(self._callback, *self._args, **self._kwArgs)
-        del self._callback
+    def _callFunctor(self):
+        cb = Functor(self._functor, *self._args, **self._kwArgs)
+        del self._functor
         del self._name
         del self._delay
         del self._args
@@ -2279,7 +2280,37 @@ class DelayedCallback:
     def __call__(self, *args, **kwArgs):
         self._args = args
         self._kwArgs = kwArgs
-        self._delayedCall = DelayedCall(self._doCallback, self._name, self._delay)
+        self._delayedCall = DelayedCall(self._callFunctor, self._name, self._delay)
+
+class FrameDelayedCallback:
+    """ waits N frames and then calls a callback """
+    def __init__(self, frames, callback, cancelFunc=None):
+        # checkFunc is optional; called every frame, if returns True, FrameDelay is cancelled
+        # and callback is not called
+        self._frames = frames
+        self._callback = callback
+        self._cancelFunc = cancelFunc
+        self._taskName = uniqueName(self.__class__.__name__)
+        self._startTask()
+    def destroy(self):
+        self._stopTask()
+    def finish(self):
+        self._callback()
+        self.destroy()
+    def _startTask(self):
+        taskMgr.add(self._frameTask, self._taskName)
+        self._counter = 0
+    def _stopTask(self):
+        taskMgr.remove(self._taskName)
+    def _frameTask(self, task):
+        if self._cancelFunc():
+            self.destroy()
+            return task.done
+        self._counter += 1
+        if self._counter >= self._frames:
+            self.finish()
+            return task.done
+        return task.cont
 
 import __builtin__
 __builtin__.Functor = Functor
