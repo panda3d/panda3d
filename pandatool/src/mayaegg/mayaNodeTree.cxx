@@ -71,13 +71,11 @@ build_node(const MDagPath &dag_path) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeTree::build_hierarchy
 //       Access: Public
-//  Description: Walks through the complete Maya hierarchy if subroot
-//               is empty() else walks from the subroot down and builds
-//               up the corresponding tree, but does not tag any nodes
-//               for conversion.
+//  Description: Walks through the complete Maya hierarchy but does 
+//               not tag any nodes for conversion.
 ////////////////////////////////////////////////////////////////////
 bool MayaNodeTree::
-build_hierarchy(const string &subroot) {
+build_hierarchy() {
   MStatus status;
 
   MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
@@ -86,39 +84,10 @@ build_hierarchy(const string &subroot) {
     return false;
   }
 
-  // if a subtree is specified ignore other nodes until the subtree
-  if (!subroot.empty()){
-    mayaegg_cat.info() << "subroot name: " << subroot << endl;
-    while (!dag_iterator.isDone()) {
-      string node_name;
-      string path = dag_iterator.fullPathName(&status).asChar();
-      if (!status) {
-        status.perror("MItDag::getPath");
-      } else {
-        size_t bar = path.rfind("|");
-        if (bar != string::npos) {
-          node_name = path.substr(bar + 1);
-          if (node_name == subroot) {
-            // mark its parent node name
-            //mayaegg_cat.info() << path.substr(0,bar) << endl;
-            size_t new_bar = path.substr(0,bar).rfind("|");
-            if (new_bar != string::npos) {
-              _subroot_parent_name = path.substr(new_bar+1,bar-(new_bar+1));
-              mayaegg_cat.info() << "subroot parent name: " << _subroot_parent_name << endl;
-            }
-            status = dag_iterator.reset(dag_iterator.item(),MItDag::kDepthFirst, MFn::kTransform);
-            if (!status) {
-              status.perror("MItDag constructor");
-              return false;
-            }
-            break;
-          }
-        }
-      }
-      dag_iterator.next();
-    }
-  }
-
+  /*
+    // this is how you can reset the traverser to a specific node
+    status = dag_iterator.reset(dag_iterator.item(),MItDag::kDepthFirst, MFn::kTransform);
+  */
   // Get the entire Maya scene.
     
   // This while loop walks through the entire Maya hierarchy, one
@@ -147,6 +116,43 @@ build_hierarchy(const string &subroot) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::tag_joint_all
+//       Access: Public
+//  Description: Tags the entire hierarchy for conversion.  This is
+//               the normal behavior.
+////////////////////////////////////////////////////////////////////
+void MayaNodeTree::
+tag_joint_all() {
+  _root->tag_joint_recursively();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::tag_joint_named
+//       Access: Public
+//  Description: Tags nodes matching the indicated glob (and all of
+//               their children) for conversion.  Returns true on
+//               success, false otherwise (e.g. the named node does
+//               not exist).
+////////////////////////////////////////////////////////////////////
+bool MayaNodeTree::
+tag_joint_named(const GlobPattern &glob) {
+  // There might be multiple nodes matching the name; search for all
+  // of them.
+  bool found_any = false;
+
+  Nodes::iterator ni;
+  for (ni = _nodes.begin(); ni != _nodes.end(); ++ni) {
+    MayaNodeDesc *node = (*ni);
+    if (glob.matches(node->get_name())) {
+      node->tag_joint_recursively();
+      found_any = true;
+    }
+  }
+
+  return found_any;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeTree::tag_all
 //       Access: Public
 //  Description: Tags the entire hierarchy for conversion.  This is
@@ -155,6 +161,32 @@ build_hierarchy(const string &subroot) {
 void MayaNodeTree::
 tag_all() {
   _root->tag_recursively();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::tag_named
+//       Access: Public
+//  Description: Tags nodes matching the indicated glob (and all of
+//               their children) for conversion.  Returns true on
+//               success, false otherwise (e.g. the named node does
+//               not exist).
+////////////////////////////////////////////////////////////////////
+bool MayaNodeTree::
+tag_named(const GlobPattern &glob) {
+  // There might be multiple nodes matching the name; search for all
+  // of them.
+  bool found_any = false;
+
+  Nodes::iterator ni;
+  for (ni = _nodes.begin(); ni != _nodes.end(); ++ni) {
+    MayaNodeDesc *node = (*ni);
+    if (glob.matches(node->get_name())) {
+      node->tag_recursively();
+      found_any = true;
+    }
+  }
+
+  return found_any;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -218,32 +250,6 @@ tag_selected() {
   }
 
   return all_ok;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::tag_named
-//       Access: Public
-//  Description: Tags nodes matching the indicated glob (and all of
-//               their children) for conversion.  Returns true on
-//               success, false otherwise (e.g. the named node does
-//               not exist).
-////////////////////////////////////////////////////////////////////
-bool MayaNodeTree::
-tag_named(const GlobPattern &glob) {
-  // There might be multiple nodes matching the name; search for all
-  // of them.
-  bool found_any = false;
-
-  Nodes::iterator ni;
-  for (ni = _nodes.begin(); ni != _nodes.end(); ++ni) {
-    MayaNodeDesc *node = (*ni);
-    if (glob.matches(node->get_name())) {
-      node->tag_recursively();
-      found_any = true;
-    }
-  }
-
-  return found_any;
 }
 
 ////////////////////////////////////////////////////////////////////

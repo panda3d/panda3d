@@ -61,6 +61,7 @@ public:
   bool is_joint_parent() const;
 
   bool is_tagged() const;
+  bool is_joint_tagged() const;
   bool has_object_type(string object_type) const;
 
   MayaNodeTree *_tree;
@@ -71,6 +72,8 @@ public:
 private:
   void tag();
   void tag_recursively();
+  void tag_joint();
+  void tag_joint_recursively();
 
   void clear_egg();
   void mark_joint_parent();
@@ -101,7 +104,7 @@ private:
   double _switch_in, _switch_out;
 
   bool _tagged;
-
+  bool _joint_tagged;
 
 public:
   static TypeHandle get_class_type() {

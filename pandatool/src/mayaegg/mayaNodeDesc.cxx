@@ -65,6 +65,7 @@ MayaNodeDesc(MayaNodeTree *tree, MayaNodeDesc *parent, const string &name) :
   _joint_type = JT_none;
   _is_lod = false;
   _tagged = false;
+  _joint_tagged = false;
 
   // Add ourselves to our parent.
   if (_parent != (MayaNodeDesc *)NULL) {
@@ -209,7 +210,8 @@ get_blend_desc(int n) const {
 ////////////////////////////////////////////////////////////////////
 bool MayaNodeDesc::
 is_joint() const {
-  return _joint_type == JT_joint || _joint_type == JT_pseudo_joint;
+  //return _joint_type == JT_joint || _joint_type == JT_pseudo_joint;
+  return _joint_tagged && (_joint_type == JT_joint || _joint_type == JT_pseudo_joint);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,6 +223,46 @@ is_joint() const {
 bool MayaNodeDesc::
 is_joint_parent() const {
   return _joint_type == JT_joint_parent;
+  //return _joint_tagged && (_joint_type == JT_joint_parent);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::is_joint_tagged
+//       Access: Public
+//  Description: Returns true if the node has been joint_tagged to be
+//               converted, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool MayaNodeDesc::
+is_joint_tagged() const {
+  return _joint_tagged;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::tag_joint
+//       Access: Private
+//  Description: Tags this node for conversion, but does not tag child
+//               nodes.
+////////////////////////////////////////////////////////////////////
+void MayaNodeDesc::
+tag_joint() {
+  _joint_tagged = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::tag_joint_recursively
+//       Access: Private
+//  Description: Tags this node and all descendant nodes for
+//               conversion.
+////////////////////////////////////////////////////////////////////
+void MayaNodeDesc::
+tag_joint_recursively() {
+  _joint_tagged = true;
+  //mayaegg_cat.info() << "tjr: " << get_name() << endl;
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    MayaNodeDesc *child = (*ci);
+    child->tag_joint_recursively();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -246,6 +288,23 @@ tag() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::tag_recursively
+//       Access: Private
+//  Description: Tags this node and all descendant nodes for
+//               conversion.
+////////////////////////////////////////////////////////////////////
+void MayaNodeDesc::
+tag_recursively() {
+  _tagged = true;
+
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    MayaNodeDesc *child = (*ci);
+    child->tag_recursively();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeDesc::has_object_type
 //       Access: Public
 //  Description: Returns true if this node or any of its parent
@@ -263,24 +322,6 @@ has_object_type(string object_type) const {
   }
   return ret;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::tag_recursively
-//       Access: Private
-//  Description: Tags this node and all descendant nodes for
-//               conversion.
-////////////////////////////////////////////////////////////////////
-void MayaNodeDesc::
-tag_recursively() {
-  _tagged = true;
-
-  Children::const_iterator ci;
-  for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    MayaNodeDesc *child = (*ci);
-    child->tag_recursively();
-  }
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeDesc::clear_egg
@@ -327,6 +368,14 @@ mark_joint_parent() {
 ////////////////////////////////////////////////////////////////////
 void MayaNodeDesc::
 check_pseudo_joints(bool joint_above) {
+  static uint32 space_count = 0;
+  if (mayaegg_cat.is_spam()) {
+    string space;
+    for (uint32 idx=0; idx<space_count; ++idx) {
+      space.append(" ");
+    }
+    mayaegg_cat.spam() << "cpj:" << space << get_name() << " joint_type: " << _joint_type << endl;
+  }
   if (_joint_type == JT_joint_parent && joint_above) {
     // This is one such node: it is the parent of a joint
     // (JT_joint_parent is set), and it is the child of a joint
@@ -348,8 +397,12 @@ check_pseudo_joints(bool joint_above) {
     Children::const_iterator ci;
     for (ci = _children.begin(); ci != _children.end(); ++ci) {
       MayaNodeDesc *child = (*ci);
+      if (mayaegg_cat.is_spam()) {
+        ++space_count;
+      }
       child->check_pseudo_joints(joint_above);
-      if (child->is_joint()) {
+      //if (child->is_joint()) {
+      if (child->_joint_type == JT_joint || child->_joint_type == JT_pseudo_joint) {
         any_joints = true;
       }
     }
@@ -363,7 +416,8 @@ check_pseudo_joints(bool joint_above) {
         if (child->_joint_type == JT_joint_parent) {
           child->_joint_type = JT_pseudo_joint;
         } else if (child->_joint_type == JT_none) {
-          all_joints = false;
+          if (!child->get_dag_path().hasFn(MFn::kCamera))
+            all_joints = false;
         }
       }
 
@@ -376,6 +430,10 @@ check_pseudo_joints(bool joint_above) {
         }
       }
     }
+  }
+  if (mayaegg_cat.is_spam()) {
+    if (space_count > 0)
+      --space_count;
   }
 }
 

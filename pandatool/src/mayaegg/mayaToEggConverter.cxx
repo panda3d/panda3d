@@ -109,9 +109,9 @@ MayaToEggConverter(const MayaToEggConverter &copy) :
   _program_name(copy._program_name),
   _from_selection(copy._from_selection),
   _subsets(copy._subsets),
+  _subroots(copy._subroots),
   _ignore_sliders(copy._ignore_sliders),
   _force_joints(copy._force_joints),
-  _subroot(copy._subroot),
   _tree(this),
   _maya(copy._maya),
   _polygon_output(copy._polygon_output),
@@ -215,16 +215,29 @@ convert_file(const Filename &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::set_subroot
+//     Function: MayaToEggConverter::clear_subroots
 //       Access: Public
-//  Description: Sets a name pattern to the subroot node.  If
-//               the subroot node is not empty, then only the
-//               subroot node in the maya file will be
+//  Description: Empties the list of subroot nodes added via
+//               add_subroot().  The entire file will once again be
 //               converted.
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
-set_subroot(const string &subroot) {
-  _subroot = subroot;
+clear_subroots() {
+  _subroots.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::add_subroot
+//       Access: Public
+//  Description: Adds a name pattern to the list of subroot nodes.  If
+//               the list of subroot nodes is not empty, then only a
+//               subroot of the nodes in the maya file will be
+//               converted: those whose names match one of the
+//               patterns given on this list.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+add_subroot(const GlobPattern &glob) {
+  _subroots.push_back(glob);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -428,7 +441,22 @@ convert_maya() {
 
   frame_inc = frame_inc * input_frame_rate / output_frame_rate;
 
-  bool all_ok = _tree.build_hierarchy(_subroot);
+  bool all_ok = _tree.build_hierarchy();
+
+  if (all_ok) {
+    if (!_subroots.empty()) {
+      Globs::const_iterator gi;
+      for (gi = _subroots.begin(); gi != _subroots.end(); ++gi) {
+        if (!_tree.tag_joint_named(*gi)) {
+          mayaegg_cat.info()
+            << "No node matching " << *gi << " found.\n";
+        }
+      }
+
+    } else {
+      _tree.tag_joint_all();
+    }
+  }
 
   if (all_ok) {
     if (_from_selection) {
@@ -690,7 +718,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
       if (node_desc->is_joint()) {
         if (mayaegg_cat.is_spam()) {
           mayaegg_cat.spam()
-            << "joint " << node_desc->get_name() << "\n";
+          << "joint " << node_desc->get_name() << "\n";
         }
         get_joint_transform(node_desc->get_dag_path(), tgroup);
         EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
@@ -823,6 +851,26 @@ process_model_node(MayaNodeDesc *node_desc) {
         << "\n";
     }
 
+    MFnCamera camera (dag_path, &status);
+    if ( !status ) {
+      status.perror("MFnCamera constructor");
+      mayaegg_cat.error() << "camera extraction failed" << endl;
+      return false;
+    }
+    
+    // Extract some interesting Camera data
+    mayaegg_cat.info() << "  eyePoint: "
+         << camera.eyePoint(MSpace::kWorld) << endl;
+    mayaegg_cat.info() << "  upDirection: "
+         << camera.upDirection(MSpace::kWorld) << endl;
+    mayaegg_cat.info() << "  viewDirection: "
+         << camera.viewDirection(MSpace::kWorld) << endl;
+    mayaegg_cat.info() << "  aspectRatio: " << camera.aspectRatio() << endl;
+    mayaegg_cat.info() << "  horizontalFilmAperture: "
+         << camera.horizontalFilmAperture() << endl;
+    mayaegg_cat.info() << "  verticalFilmAperture: "
+         << camera.verticalFilmAperture() << endl;
+
   } else if (dag_path.hasFn(MFn::kLight)) {
     if (mayaegg_cat.is_debug()) {
       mayaegg_cat.debug()
@@ -922,27 +970,6 @@ process_model_node(MayaNodeDesc *node_desc) {
       make_locator(dag_path, dag_node, egg_group);
     }
 
-  } else if (dag_path.hasFn(MFn::kCamera)) {
-    MFnCamera camera (dag_path, &status);
-    if ( !status ) {
-      status.perror("MFnCamera constructor");
-      mayaegg_cat.error() << "camera extraction failed" << endl;
-      return false;
-    }
-    
-    // Extract some interesting Camera data
-    mayaegg_cat.info() << "  eyePoint: "
-         << camera.eyePoint(MSpace::kWorld) << endl;
-    mayaegg_cat.info() << "  upDirection: "
-         << camera.upDirection(MSpace::kWorld) << endl;
-    mayaegg_cat.info() << "  viewDirection: "
-         << camera.viewDirection(MSpace::kWorld) << endl;
-    mayaegg_cat.info() << "  aspectRatio: " << camera.aspectRatio() << endl;
-    mayaegg_cat.info() << "  horizontalFilmAperture: "
-         << camera.horizontalFilmAperture() << endl;
-    mayaegg_cat.info() << "  verticalFilmAperture: "
-         << camera.verticalFilmAperture() << endl;
-
   } else {
     // Just a generic node.
     if (_animation_convert == AC_none) {
@@ -970,7 +997,8 @@ get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     // When we're getting an animated model, we only get transforms
     // for joints, and they get converted in a special way.
 
-    if (node_desc->is_joint()) { 
+    if (node_desc->is_joint()) {
+      //mayaegg_cat.info() << "gt: " << node_desc->get_name() << endl;
       get_joint_transform(dag_path, egg_group);
     }
     return;

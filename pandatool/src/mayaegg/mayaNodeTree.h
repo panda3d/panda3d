@@ -44,7 +44,11 @@ class MayaNodeTree {
 public:
   MayaNodeTree(MayaToEggConverter *converter);
   MayaNodeDesc *build_node(const MDagPath &dag_path);
-  bool build_hierarchy(const string &subroot);
+  bool build_hierarchy();
+
+  void tag_joint_all();
+  //  bool tag_joint_selected();
+  bool tag_joint_named(const GlobPattern &glob);
 
   void tag_all();
   bool tag_selected();
