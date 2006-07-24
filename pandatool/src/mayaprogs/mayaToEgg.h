@@ -42,7 +42,7 @@ protected:
   bool _respect_maya_double_sided;
   bool _suppress_vertex_color;
   MayaToEggConverter::TransformType _transform_type;
-  string _subroot;
+  vector_string _subroots; 
   vector_string _subsets;
   vector_string _ignore_sliders;
   vector_string _force_joints;
