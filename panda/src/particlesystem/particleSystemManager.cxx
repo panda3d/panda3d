@@ -130,11 +130,9 @@ do_particles(float dt) {
 ////////////////////////////////////////////////////////////////////
 //    Function : do_particles
 //      Access : public
-// Description : does an update and render for each ps in the list.
-//               this is probably the one you want to use.  Rendering
-//               is the expensive operation, and particles REALLY
-//               should at least be updated every frame, so nth_frame
-//               stepping applies only to rendering.
+// Description : does an update and an optional render for a specific
+//               ps.  Since rendering is the expensive operation, multiple
+//               updates could be applied before calling the final render.
 ////////////////////////////////////////////////////////////////////
 void ParticleSystemManager::
 do_particles(float dt, ParticleSystem *ps, bool do_render) {
