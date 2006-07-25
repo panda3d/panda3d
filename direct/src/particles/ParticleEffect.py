@@ -25,13 +25,6 @@ class ParticleEffect(NodePath):
             self.addParticles(particles)
         self.renderParent = None
 
-    def start(self, parent=None, renderParent=None):
-        assert self.notify.debug('start() - name: %s' % self.name)
-        self.renderParent = renderParent
-        self.enable()
-        if parent != None:
-            self.reparentTo(parent)
-
     def cleanup(self):
         self.removeNode()
         self.disable()
@@ -50,6 +43,13 @@ class ParticleEffect(NodePath):
         self.removeAllParticles()
         self.forceGroupDict = {}
         self.particlesDict = {}
+
+    def start(self, parent=None, renderParent=None):
+        assert self.notify.debug('start() - name: %s' % self.name)
+        self.renderParent = renderParent
+        self.enable()
+        if parent != None:
+            self.reparentTo(parent)
 
     def enable(self):
         # band-aid added for client crash - grw
@@ -72,7 +72,7 @@ class ParticleEffect(NodePath):
         for p in self.particlesDict.values():
             p.disable()
         self.fEnabled = 0
-
+        
     def isEnabled(self):
         """
         Note: this may be misleading if enable(), disable() not used
@@ -207,3 +207,11 @@ class ParticleEffect(NodePath):
     def clearToInitial(self):
         for particles in self.getParticlesList():
             particles.clearToInitial()
+
+    def softStop(self):
+        for particles in self.getParticlesList():
+            particles.softStop()
+
+    def softStart(self):
+        for particles in self.getParticlesList():
+            particles.softStart()
