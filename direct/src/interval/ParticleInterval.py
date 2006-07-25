@@ -14,26 +14,16 @@ class ParticleInterval(Interval):
     # create ParticleInterval DirectNotify category
     notify = directNotify.newCategory('ParticleInterval')
     # Class methods
-    def __init__(self,
-                 particleEffect,
-                 parent,
-                 worldRelative=1,
-                 renderParent = None,
-                 duration=0.0,
-                 softStopT = 0.0,
-                 cleanup = False,
-                 name=None):
+    def __init__(self, particleEffect, parent, worldRelative=1, loop=0, 
+            duration=0.0, name=None):
         """
-        particleEffect is a ParticleEffect
-        parent is a NodePath
+        particleEffect is ??
+        parent is ??
         worldRelative is a boolean
-        renderParent is a NodePath
+        loop is a boolean
         duration is a float for the time
-        softStopT is a float
-        cleanup is a boolean
-        name is a string
+        name is ??
         """
-        
         # Generate unique name
         id = 'Particle-%d' % ParticleInterval.particleNum
         ParticleInterval.particleNum += 1
@@ -41,39 +31,25 @@ class ParticleInterval(Interval):
             name = id
         # Record instance variables
         self.particleEffect = particleEffect 
-        self.softStopT = softStopT
-        self.cleanup = cleanup
-        
-        if parent != None:
-            self.particleEffect.reparentTo(parent)
-        if worldRelative:
-            self.particleEffect.setRenderParent(render.node())
-        
+        self.parent = parent
+        self.worldRelative = worldRelative
+        self.fLoop = loop
+        assert duration > 0.0 or loop == 1
         # Initialize superclass
         Interval.__init__(self, name, duration)
 
-    def __step(self,dt):
+    def __del__(self):
         if self.particleEffect:
-            self.particleEffect.accelerate(dt,1,0.05)
-
-    def start(self, *args, **kwargs):
-        self.state = CInterval.SInitial
-        if self.particleEffect:
-            self.particleEffect.softStart()
-        Interval.start(self, *args, **kwargs)        
+            self.particleEffect.cleanup()
+            self.particleEffect = None
 
     def privInitialize(self, t):
-        if self.state == CInterval.SInitial:
-            if self.particleEffect:
-                self.particleEffect.clearToInitial()
-            self.currT = 0
-
+        renderParent = None
+        if self.worldRelative:
+            renderParent = render
         if self.particleEffect:
-            for f in self.particleEffect.forceGroupDict.values():
-                f.enable()
-
-        self.state = CInterval.SStarted        
-        self.__step(t-self.currT)
+            self.particleEffect.start(self.parent, renderParent)
+        self.state = CInterval.SStarted
         self.currT = t
 
     def privStep(self, t):
@@ -82,16 +58,22 @@ class ParticleInterval(Interval):
             self.privInitialize(t)
         else:
             self.state = CInterval.SStarted
-            self.__step(t-self.currT)
             self.currT = t
 
-        if self.currT > (self.getDuration() - self.softStopT):
-            if self.particleEffect:
-                self.particleEffect.softStop()
-
     def privFinalize(self):
-        Interval.privFinalize(self)
-        if self.cleanup and self.particleEffect:
+        if self.particleEffect:
             self.particleEffect.cleanup()
             self.particleEffect = None
-            
+        self.currT = self.getDuration()
+        self.state = CInterval.SFinal
+
+    def privInstant(self):
+        if self.particleEffect:
+            self.particleEffect.cleanup()
+            self.particleEffect = None
+        self.currT = self.getDuration()
+        self.state = CInterval.SFinal
+
+    def privInterrupt(self):
+        self.particleEffect.disable()
+        self.state = CInterval.SPaused
