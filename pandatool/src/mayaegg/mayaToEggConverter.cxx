@@ -859,17 +859,19 @@ process_model_node(MayaNodeDesc *node_desc) {
     }
     
     // Extract some interesting Camera data
-    mayaegg_cat.info() << "  eyePoint: "
-         << camera.eyePoint(MSpace::kWorld) << endl;
-    mayaegg_cat.info() << "  upDirection: "
-         << camera.upDirection(MSpace::kWorld) << endl;
-    mayaegg_cat.info() << "  viewDirection: "
-         << camera.viewDirection(MSpace::kWorld) << endl;
-    mayaegg_cat.info() << "  aspectRatio: " << camera.aspectRatio() << endl;
-    mayaegg_cat.info() << "  horizontalFilmAperture: "
-         << camera.horizontalFilmAperture() << endl;
-    mayaegg_cat.info() << "  verticalFilmAperture: "
-         << camera.verticalFilmAperture() << endl;
+    if (mayaegg_cat.is_spam()) {
+      mayaegg_cat.info() << "  eyePoint: "
+                         << camera.eyePoint(MSpace::kWorld) << endl;
+      mayaegg_cat.info() << "  upDirection: "
+                         << camera.upDirection(MSpace::kWorld) << endl;
+      mayaegg_cat.info() << "  viewDirection: "
+                         << camera.viewDirection(MSpace::kWorld) << endl;
+      mayaegg_cat.info() << "  aspectRatio: " << camera.aspectRatio() << endl;
+      mayaegg_cat.info() << "  horizontalFilmAperture: "
+                         << camera.horizontalFilmAperture() << endl;
+      mayaegg_cat.info() << "  verticalFilmAperture: "
+                         << camera.verticalFilmAperture() << endl;
+    }
 
   } else if (dag_path.hasFn(MFn::kLight)) {
     if (mayaegg_cat.is_debug()) {
