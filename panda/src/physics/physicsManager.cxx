@@ -175,7 +175,8 @@ do_physics(float dt) {
 //     Function : DoPhysics
 //       Access : Public
 //  Description : This is the main high-level API call.  Performs
-//                integration on every attached Physical.
+//                integration on a single physical.  Make sure its 
+//                associated forces are active.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 do_physics(float dt, Physical *physical) {
