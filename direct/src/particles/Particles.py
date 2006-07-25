@@ -1,5 +1,5 @@
 from pandac.PandaModules import *
-from ParticleManagerGlobal import *
+from direct.particles.ParticleManagerGlobal import *
 from direct.showbase.PhysicsManagerGlobal import *
 
 from pandac.PandaModules import ParticleSystem
