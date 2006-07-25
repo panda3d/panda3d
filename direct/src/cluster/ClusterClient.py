@@ -17,32 +17,32 @@ class ClusterClient(DirectObject.DirectObject):
         self.__name__ = 'cluster'
         # First start up servers using direct daemon
         # What is the name of the client machine?
-        clusterDaemonClient = base.config.GetString(
-            'cluster-daemon-client', 'None')
-        if clusterDaemonClient == 'None':
-            clusterDaemonClient = os.popen('uname -n').read()
-            clusterDaemonClient = clusterDaemonClient.replace('\n', '')
+        clusterClientDaemonHost = base.config.GetString(
+            'cluster-client-daemon', 'None')
+        if clusterClientDaemonHost == 'None':
+            clusterClientDaemonHost = os.popen('uname -n').read()
+            clusterClientDaemonHost = clusterClientDaemonHost.replace('\n', '')
         # What daemon port are we using to communicate between client/servers
-        clusterDaemonPort = base.config.GetInt(
-            'cluster-daemon-port', CLUSTER_DAEMON_PORT)
+        clusterClientDaemonPort = base.config.GetInt(
+            'cluster-client-daemon-port', CLUSTER_DAEMON_PORT)
         # Create a daemon
         self.daemon = DirectD()
         # Start listening for the response
-        self.daemon.listenTo(clusterDaemonPort)
+        self.daemon.listenTo(clusterClientDaemonPort)
         # Contact server daemons and start up remote server application
         for serverConfig in configList:
             # First kill existing application
             self.daemon.tellServer(serverConfig.serverName,
-                                   clusterDaemonPort,
+                                   serverConfig.serverDaemonPort,
                                    'ka')
             # Now start up new application
             serverCommand = (SERVER_STARTUP_STRING %
-                             (serverConfig.serverPort,
+                             (serverConfig.serverMsgPort,
                               clusterSyncFlag,
-                              clusterDaemonClient,
-                              clusterDaemonPort))
+                              clusterClientDaemonHost,
+                              clusterClientDaemonPort))
             self.daemon.tellServer(serverConfig.serverName,
-                                   clusterDaemonPort,
+                                   serverConfig.serverDaemonPort,
                                    serverCommand)
         print 'Begin waitForServers'
         if not self.daemon.waitForServers(len(configList)):
@@ -52,13 +52,14 @@ class ClusterClient(DirectObject.DirectObject):
         self.serverList = []
         self.msgHandler = ClusterMsgHandler(ClusterClient.MGR_NUM, self.notify)
         for serverConfig in configList:
-            server = DisplayConnection(self.qcm, serverConfig.serverName,
-                                       serverConfig.serverPort, self.msgHandler)
+            server = DisplayConnection(
+                self.qcm, serverConfig.serverName,
+                serverConfig.serverMsgPort, self.msgHandler)
             if server == None:
                 self.notify.error('Could not open %s on %s port %d' %
                                   (serverConfig.serverConfigName,
                                    serverConfig.serverName,
-                                   serverConfig.serverPort))
+                                   serverConfig.serverMsgPort))
             else:
                 self.notify.debug('send cam pos')
                 #server.sendMoveCam(Point3(0), Vec3(0))
@@ -300,10 +301,12 @@ class DisplayConnection:
         self.cw.send(datagram, self.tcpConn)
 
 class ClusterConfigItem:
-    def __init__(self, serverConfigName, serverName, serverPort):
+    def __init__(self, serverConfigName, serverName,
+                 serverDaemonPort, serverMsgPort):
         self.serverConfigName = serverConfigName
         self.serverName = serverName
-        self.serverPort = serverPort
+        self.serverDaemonPort = serverDaemonPort
+        self.serverMsgPort = serverMsgPort
         # Camera Offset
         self.xyz = Vec3(0)
         self.hpr = Vec3(0)
@@ -347,9 +350,10 @@ def createClusterClient():
         fs = configData.get('film size', None)
         fo = configData.get('film offset', None)
         if displayMode == 'client':
+            #lens.setInterocularDistance(pos[0])
+            base.cam.setPos(pos)
             lens = base.cam.node().getLens()
             lens.setViewHpr(hpr)
-            lens.setIodOffset(pos[0])
             if fl is not None:
                 lens.setFocalLength(fl)
             if fs is not None:
@@ -365,14 +369,22 @@ def createClusterClient():
                     (serverConfigName, clusterConfig))
                 base.notify.warning('%s will not be used.' % serverConfigName)
             else:
-                # Server port
-                serverPortConfigName = 'cluster-server-port-%s' % displayName
-                serverPort = base.config.GetInt(serverPortConfigName,
-                                                CLUSTER_SERVER_PORT)
+                # Daemon port
+                serverDaemonPortConfigName = (
+                    'cluster-server-daemon-port-%s' % displayName)
+                serverDaemonPort = base.config.GetInt(
+                    serverDaemonPortConfigName,
+                    CLUSTER_DAEMON_PORT)
+                # TCP Server port
+                serverMsgPortConfigName = (
+                    'cluster-server-msg-port-%s' % displayName)
+                serverMsgPort = base.config.GetInt(serverMsgPortConfigName,
+                                                   CLUSTER_SERVER_PORT)
                 cci = ClusterConfigItem(
                     serverConfigName,
                     serverName,
-                    serverPort)
+                    serverDaemonPort,
+                    serverMsgPort)
                 # Init cam offset
                 cci.setCamOffset(pos, hpr)
                 # Init frustum if specified

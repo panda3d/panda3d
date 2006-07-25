@@ -179,7 +179,7 @@ class ClusterServer(DirectObject.DirectObject):
     def handleCamOffset(self, dgi):
         """ Set offset of camera from cameraJig """
         (x, y, z, h, p, r) = self.msgHandler.parseCamOffsetDatagram(dgi)
-        self.lens.setIodOffset(x)
+        self.camera.setPos(x,y,z)
         self.lens.setViewHpr(h, p, r)
 
     def handleCamFrustum(self, dgi):

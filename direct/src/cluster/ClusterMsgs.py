@@ -21,8 +21,12 @@ CLUSTER_TIME_DATA = 8
 CLUSTER_EXIT = 100
 
 #Port number for cluster rendering
-CLUSTER_SERVER_PORT = 1970
+# DAEMON PORT IS PORT USED FOR STARTUP MESSAGE EXCHANGE
+# CAN BE OVERRIDEN WITH cluster-daemon-client-port for client
+# and cluster-daemon-server-port for server
 CLUSTER_DAEMON_PORT = 8001
+# THIS IS THE TCP PORT USED FOR EXCHANGE OF DATA ONCE STARTUP IS COMPLETE
+CLUSTER_SERVER_PORT = 1970
 
 # Precede command string with ! to tell server to execute command string
 # NOTE: Had to stick with the import __builtin__ scheme, at startup,
