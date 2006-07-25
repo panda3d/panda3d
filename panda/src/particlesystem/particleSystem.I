@@ -38,7 +38,7 @@ render() {
 
 INLINE void ParticleSystem::
 induce_labor() {
-  _tics_since_birth = _birth_rate;
+  _tics_since_birth = _cur_birth_rate;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,6 +59,35 @@ clear_to_initial() {
       kill_particle(i);
     }
   }
+  _tics_since_birth = 0.0f;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : soft_start
+//      Access : Public
+// Description : Causes system to use birth rate set by set_birth_rate()
+////////////////////////////////////////////////////////////////////
+
+INLINE void ParticleSystem::
+soft_start(float br) {
+  if (br > 0.0)
+    set_birth_rate(br);
+  _cur_birth_rate = _birth_rate;
+  _tics_since_birth = 0.0f;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : soft_stop
+//      Access : Public
+// Description : Causes system to use birth rate set by 
+//               set_soft_birth_rate()
+////////////////////////////////////////////////////////////////////
+
+INLINE void ParticleSystem::
+soft_stop(float br) {
+  if (br > 0.0)
+    set_soft_birth_rate(br);
+  _cur_birth_rate = _soft_birth_rate;
   _tics_since_birth = 0.0f;
 }
 
@@ -84,7 +113,19 @@ set_pool_size(int size) {
 INLINE void ParticleSystem::
 set_birth_rate(float new_br) {
   _birth_rate = new_br;
+  _cur_birth_rate = _birth_rate;
   if(IS_NEARLY_ZERO(_birth_rate)) _birth_rate = NEARLY_ZERO(float);
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : set_soft_birth_rate
+//      Access : Public
+////////////////////////////////////////////////////////////////////
+
+INLINE void ParticleSystem::
+set_soft_birth_rate(float new_br) {
+  _soft_birth_rate = new_br;
+  if(IS_NEARLY_ZERO(_soft_birth_rate)) _soft_birth_rate = NEARLY_ZERO(float);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -292,6 +333,15 @@ get_pool_size() const {
 INLINE float ParticleSystem::
 get_birth_rate() const {
   return _birth_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_soft_birth_rate
+//      Access : Public
+////////////////////////////////////////////////////////////////////
+INLINE float ParticleSystem::
+get_soft_birth_rate() const {
+  return _soft_birth_rate;
 }
 
 ////////////////////////////////////////////////////////////////////

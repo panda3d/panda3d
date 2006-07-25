@@ -46,7 +46,9 @@ ParticleSystem(int pool_size) :
   Physical(pool_size, false)
 {
   _birth_rate = 0.5f;
-  _tics_since_birth = _birth_rate;
+  _cur_birth_rate = _birth_rate;
+  _soft_birth_rate = HUGE_VAL;
+  _tics_since_birth = 0.0;
   _litter_size = 1;
   _litter_spread = 0;
   _living_particles = 0;
@@ -91,6 +93,7 @@ ParticleSystem(const ParticleSystem& copy) :
   _template_system_flag(false)
 {
   _birth_rate = copy._birth_rate;
+  _cur_birth_rate = copy._cur_birth_rate;
   _litter_size = copy._litter_size;
   _litter_spread = copy._litter_spread;
   _active_system_flag = copy._active_system_flag;
@@ -106,7 +109,7 @@ ParticleSystem(const ParticleSystem& copy) :
   _render_node = _renderer->get_render_node();
   _render_parent->add_child(_render_node);
 
-  _tics_since_birth = _birth_rate;
+  _tics_since_birth = 0.0;
   _system_lifespan = copy._system_lifespan;
   _living_particles = 0;
 
@@ -534,9 +537,9 @@ update(float dt) {
   // generate new particles if necessary.
   _tics_since_birth += dt;
 
-  while (_tics_since_birth >= _birth_rate) {
+  while (_tics_since_birth >= _cur_birth_rate) {
     birth_litter();
-    _tics_since_birth -= _birth_rate;
+    _tics_since_birth -= _cur_birth_rate;
   }
 
   #ifdef PARTICLE_SYSTEM_UPDATE_SENTRIES

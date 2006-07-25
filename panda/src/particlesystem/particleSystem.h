@@ -55,6 +55,7 @@ PUBLISHED:
   // access/queries
   INLINE void set_pool_size(int size);
   INLINE void set_birth_rate(float new_br);
+  INLINE void set_soft_birth_rate(float new_br);
   INLINE void set_litter_size(int new_ls);
   INLINE void set_litter_spread(int new_ls);
   INLINE void set_local_velocity_flag(bool lv);
@@ -75,6 +76,7 @@ PUBLISHED:
 
   INLINE int get_pool_size() const;
   INLINE float get_birth_rate() const;
+  INLINE float get_soft_birth_rate() const;
   INLINE int get_litter_size() const;
   INLINE int get_litter_spread() const;
   INLINE bool get_local_velocity_flag() const;
@@ -102,6 +104,8 @@ PUBLISHED:
   INLINE void render();
   INLINE void induce_labor();
   INLINE void clear_to_initial();
+  INLINE void soft_stop(float br = 0.0);
+  INLINE void soft_start(float br = 0.0);
   void update(float dt);
 
   virtual void output(ostream &out) const;
@@ -123,7 +127,9 @@ private:
 
   int _particle_pool_size;
   int _living_particles;
+  float _cur_birth_rate;
   float _birth_rate;
+  float _soft_birth_rate;
   float _tics_since_birth;
   int _litter_size;
   int _litter_spread;
