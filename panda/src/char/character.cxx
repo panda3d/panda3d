@@ -74,6 +74,7 @@ Character(const string &name) :
 ////////////////////////////////////////////////////////////////////
 Character::
 ~Character() {
+  r_clear_joint_characters(get_bundle());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -251,6 +252,9 @@ copy_joints(PartGroup *copy, PartGroup *orig) {
   for (ci = orig->_children.begin(); ci != orig->_children.end(); ++ci) {
     PartGroup *orig_child = (*ci);
     PartGroup *copy_child = orig_child->make_copy();
+    if (copy_child->is_of_type(CharacterJoint::get_class_type())) {
+      DCAST(CharacterJoint, copy_child)->set_character(this);
+    }
     copy->_children.push_back(copy_child);
     copy_joints(copy_child, orig_child);
   }
@@ -449,6 +453,7 @@ copy_node_pointers(const Character *from, const Character::NodeMap &node_map) {
           // Here's an internal joint that the source Character was
           // animating directly.  We'll animate our corresponding
           // joint the same way.
+          dest_joint->set_character(this);
           dest_joint->add_net_transform(dest_node);
         }
       }
@@ -466,6 +471,7 @@ copy_node_pointers(const Character *from, const Character::NodeMap &node_map) {
           // Here's an internal joint that the source Character was
           // animating directly.  We'll animate our corresponding
           // joint the same way.
+          dest_joint->set_character(this);
           dest_joint->add_local_transform(dest_node);
         }
       }
@@ -631,6 +637,29 @@ redirect_slider(const VertexSlider *vs, Character::GeomSliderMap &gsmap) {
 
   gsmap[vs] = new_cvs;
   return new_cvs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::r_clear_joint_characters
+//       Access: Private
+//  Description: Recursively walks through the joint hierarchy and
+//               clears any _character pointers on all the joints.
+//               Intended to be called just before Character
+//               destruction.
+////////////////////////////////////////////////////////////////////
+void Character::
+r_clear_joint_characters(PartGroup *part) {
+  if (part->is_of_type(CharacterJoint::get_class_type())) {
+    CharacterJoint *joint = DCAST(CharacterJoint, part);
+    nassertv(joint->get_character() == this);
+    joint->set_character(NULL);
+  }
+
+  int num_children = part->get_num_children();
+  for (int i = 0; i < num_children; ++i) {
+    PartGroup *child = part->get_child(i);
+    r_clear_joint_characters(child);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

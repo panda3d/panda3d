@@ -197,7 +197,8 @@ has_adjust_transform() const {
 ////////////////////////////////////////////////////////////////////
 void BillboardEffect::
 adjust_transform(CPT(TransformState) &net_transform,
-                 CPT(TransformState) &node_transform) const {
+                 CPT(TransformState) &node_transform,
+                 PandaNode *) const {
   // A BillboardEffect can only affect the net transform when it is to
   // a particular node.  A billboard to a camera is camera-dependent,
   // of course, so it has no effect in the absence of any particular

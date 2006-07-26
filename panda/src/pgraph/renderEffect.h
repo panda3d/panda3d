@@ -31,6 +31,7 @@
 
 class CullTraverser;
 class CullTraverserData;
+class PandaNode;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderEffect
@@ -78,7 +79,8 @@ public:
 
   virtual bool has_adjust_transform() const;
   virtual void adjust_transform(CPT(TransformState) &net_transform,
-                                CPT(TransformState) &node_transform) const;
+                                CPT(TransformState) &node_transform,
+                                PandaNode *node) const;
 
 PUBLISHED:
   INLINE int compare_to(const RenderEffect &other) const;

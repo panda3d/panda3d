@@ -5805,11 +5805,12 @@ r_get_net_transform(NodePathComponent *comp, Thread *current_thread) const {
   } else {
     int pipeline_stage = current_thread->get_pipeline_stage();
     CPT(TransformState) net_transform = r_get_net_transform(comp->get_next(pipeline_stage, current_thread), current_thread);
-    CPT(TransformState) transform = comp->get_node()->get_transform(current_thread);
+    PandaNode *node = comp->get_node();
+    CPT(TransformState) transform = node->get_transform(current_thread);
 
-    CPT(RenderEffects) effects = comp->get_node()->get_effects(current_thread);
+    CPT(RenderEffects) effects = node->get_effects(current_thread);
     if (effects->has_adjust_transform()) {
-      effects->adjust_transform(net_transform, transform);
+      effects->adjust_transform(net_transform, transform, node);
     }
       
     return net_transform->compose(transform);

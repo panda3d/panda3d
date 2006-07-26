@@ -107,6 +107,8 @@ private:
                                           GeomJointMap &gjmap);
   PT(CharacterVertexSlider) redirect_slider(const VertexSlider *vs, GeomSliderMap &gsmap);
 
+  void r_clear_joint_characters(PartGroup *part);
+
   // This vector is used by the ComputedVertices object to index back
   // into our joints and sliders.
   typedef vector_PartGroupStar Parts;

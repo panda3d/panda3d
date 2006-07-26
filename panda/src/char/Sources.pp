@@ -12,7 +12,9 @@
   #define SOURCES \
     character.I character.h \
     characterJoint.h characterJointBundle.I  \
-    characterJointBundle.h characterSlider.h \
+    characterJointBundle.h \
+    characterJointEffect.h characterJointEffect.I \
+    characterSlider.h \
     characterVertexSlider.I characterVertexSlider.h \
     config_char.h \
     jointVertexTransform.I jointVertexTransform.h
@@ -20,6 +22,7 @@
   #define INCLUDED_SOURCES \
     character.cxx \
     characterJoint.cxx characterJointBundle.cxx  \
+    characterJointEffect.cxx \
     characterSlider.cxx \
     characterVertexSlider.cxx \
     config_char.cxx  \
@@ -28,7 +31,9 @@
   #define INSTALL_HEADERS \
     character.I character.h \
     characterJoint.h characterJointBundle.I \
-    characterJointBundle.h characterSlider.h \
+    characterJointBundle.h \
+    characterJointEffect.h characterJointEffect.I \
+    characterSlider.h \
     characterVertexSlider.I characterVertexSlider.h \
     config_char.h \
     jointVertexTransform.I jointVertexTransform.h

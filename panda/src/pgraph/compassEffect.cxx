@@ -145,7 +145,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
 
   CPT(TransformState) true_net_transform = data.get_net_transform(trav);
   CPT(TransformState) want_net_transform = true_net_transform;
-  adjust_transform(want_net_transform, node_transform);
+  adjust_transform(want_net_transform, node_transform, data.node());
 
   // Now compute the transform that will convert true_net_transform to
   // want_transform.  This is inv(true_net_transform) * want_transform.
@@ -185,7 +185,8 @@ has_adjust_transform() const {
 ////////////////////////////////////////////////////////////////////
 void CompassEffect::
 adjust_transform(CPT(TransformState) &net_transform,
-                 CPT(TransformState) &node_transform) const {
+                 CPT(TransformState) &node_transform,
+                 PandaNode *) const {
   if (_properties == 0) {
     // Nothing to do.
     return;

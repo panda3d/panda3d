@@ -520,10 +520,11 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
 adjust_transform(CPT(TransformState) &net_transform,
-                 CPT(TransformState) &node_transform) const {
+                 CPT(TransformState) &node_transform,
+                 PandaNode *node) const {
   Effects::const_iterator ei;
   for (ei = _effects.begin(); ei != _effects.end(); ++ei) {
-    (*ei)._effect->adjust_transform(net_transform, node_transform);
+    (*ei)._effect->adjust_transform(net_transform, node_transform, node);
   }
 }
   

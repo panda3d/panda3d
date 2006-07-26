@@ -199,7 +199,8 @@ has_adjust_transform() const {
 //               modified in-place by the RenderEffect.
 ////////////////////////////////////////////////////////////////////
 void RenderEffect::
-adjust_transform(CPT(TransformState) &, CPT(TransformState) &) const {
+adjust_transform(CPT(TransformState) &, CPT(TransformState) &,
+                 PandaNode *) const {
 }
 
 ////////////////////////////////////////////////////////////////////

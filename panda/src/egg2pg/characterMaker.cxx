@@ -261,7 +261,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
       LMatrix4f matf = LCAST(float, matd);
 
       CharacterJoint *joint =
-        new CharacterJoint(part, egg_group->get_name(), matf);
+        new CharacterJoint(_character_node, part, egg_group->get_name(), matf);
       index = _parts.size();
       _parts.push_back(joint);
 

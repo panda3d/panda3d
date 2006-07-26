@@ -1,5 +1,5 @@
-// Filename: billboardEffect.h
-// Created by:  drose (14Mar02)
+// Filename: characterJointEffect.h
+// Created by:  drose (26Jul06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,47 +16,38 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef BILLBOARDEFFECT_H
-#define BILLBOARDEFFECT_H
+#ifndef CHARACTERJOINTEFFECT_H
+#define CHARACTERJOINTEFFECT_H
 
 #include "pandabase.h"
 
 #include "renderEffect.h"
 #include "luse.h"
 #include "nodePath.h"
+#include "character.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : BillboardEffect
-// Description : Indicates that geometry at this node should
-//               automatically rotate to face the camera, or any other
-//               arbitrary node.
+//       Class : CharacterJointEffect
+// Description : This effect will be added automatically to a node by
+//               CharacterJoint::add_net_transform() and
+//               CharacterJoint::add_local_transform().
+//
+//               The effect binds the node back to the character, so
+//               that querying the relative transform of the affected
+//               node will automatically force the indicated character
+//               to be updated first.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BillboardEffect : public RenderEffect {
+class EXPCL_PANDA CharacterJointEffect : public RenderEffect {
 private:
-  INLINE BillboardEffect();
+  INLINE CharacterJointEffect();
 
 PUBLISHED:
-  static CPT(RenderEffect) make(const LVector3f &up_vector,
-                                bool eye_relative,
-                                bool axial_rotate,
-                                float offset,
-                                const NodePath &look_at,
-                                const LPoint3f &look_at_point);
-  INLINE static CPT(RenderEffect) make_axis();
-  INLINE static CPT(RenderEffect) make_point_eye();
-  INLINE static CPT(RenderEffect) make_point_world();
+  static CPT(RenderEffect) make(Character *character);
 
-  INLINE bool is_off() const;
-  INLINE const LVector3f &get_up_vector() const;
-  INLINE bool get_eye_relative() const;
-  INLINE bool get_axial_rotate() const;
-  INLINE float get_offset() const;
-  INLINE const NodePath &get_look_at() const;
-  INLINE const LPoint3f &get_look_at_point() const;
+  INLINE Character *get_character() const;
 
 public:
   virtual bool safe_to_transform() const;
-  virtual CPT(TransformState) prepare_flatten_transform(const TransformState *net_transform) const;
   virtual void output(ostream &out) const;
 
   virtual bool has_cull_callback() const;
@@ -73,22 +64,13 @@ protected:
   virtual int compare_to_impl(const RenderEffect *other) const;
 
 private:
-  void compute_billboard(CPT(TransformState) &node_transform, 
-                         const TransformState *net_transform, 
-                         const TransformState *camera_transform) const;
-
-private:
-  bool _off;
-  LVector3f _up_vector;
-  bool _eye_relative;
-  bool _axial_rotate;
-  float _offset;
-  NodePath _look_at;
-  LPoint3f _look_at_point;
+  PT(Character) _character;
 
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist,
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
@@ -100,7 +82,7 @@ public:
   }
   static void init_type() {
     RenderEffect::init_type();
-    register_type(_type_handle, "BillboardEffect",
+    register_type(_type_handle, "CharacterJointEffect",
                   RenderEffect::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -112,7 +94,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "billboardEffect.I"
+#include "characterJointEffect.I"
 
 #endif
 

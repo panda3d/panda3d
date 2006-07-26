@@ -25,6 +25,7 @@
 #include "pandaNode.h"
 
 class JointVertexTransform;
+class Character;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CharacterJoint
@@ -37,7 +38,8 @@ protected:
   CharacterJoint(const CharacterJoint &copy);
 
 public:
-  CharacterJoint(PartGroup *parent, const string &name,
+  CharacterJoint(Character *character,
+                 PartGroup *parent, const string &name,
                  const LMatrix4f &initial_value);
   virtual ~CharacterJoint();
 
@@ -60,7 +62,15 @@ PUBLISHED:
   void get_transform(LMatrix4f &transform) const;
   void get_net_transform(LMatrix4f &transform) const;
 
+  Character *get_character() const;
+
 private:
+  void set_character(Character *character);
+
+private:
+  // Not a reference-counted pointer.
+  Character *_character;
+
   typedef pset< PT(PandaNode) > NodeList;
   NodeList _net_transform_nodes;
   NodeList _local_transform_nodes;

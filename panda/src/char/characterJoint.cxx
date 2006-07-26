@@ -19,7 +19,7 @@
 #include "characterJoint.h"
 #include "config_char.h"
 #include "jointVertexTransform.h"
-
+#include "characterJointEffect.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
@@ -33,7 +33,9 @@ TypeHandle CharacterJoint::_type_handle;
 //  Description: For internal use only.
 ////////////////////////////////////////////////////////////////////
 CharacterJoint::
-CharacterJoint() {
+CharacterJoint() :
+  _character(NULL)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +46,7 @@ CharacterJoint() {
 CharacterJoint::
 CharacterJoint(const CharacterJoint &copy) :
   MovingPartMatrix(copy),
+  _character(NULL),
   _net_transform(copy._net_transform),
   _initial_net_transform_inverse(copy._initial_net_transform_inverse)
 {
@@ -56,9 +59,11 @@ CharacterJoint(const CharacterJoint &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CharacterJoint::
-CharacterJoint(PartGroup *parent, const string &name,
-               const LMatrix4f &initial_value)
-  : MovingPartMatrix(parent, name, initial_value)
+CharacterJoint(Character *character,
+               PartGroup *parent, const string &name,
+               const LMatrix4f &initial_value) :
+  MovingPartMatrix(parent, name, initial_value),
+  _character(character)
 {
   Thread *current_thread = Thread::get_current_thread();
 
@@ -79,6 +84,7 @@ CharacterJoint(PartGroup *parent, const string &name,
 CharacterJoint::
 ~CharacterJoint() {
   nassertv(_vertex_transforms.empty());
+  nassertv(_character == (Character *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,9 +185,15 @@ update_internals(PartGroup *parent, bool self_changed, bool parent_changed,
 //               from the root.  Returns true if the node is
 //               successfully added, false if it had already been
 //               added.
+//
+//               A CharacterJointEffect for this joint's Character
+//               will automatically be added to the specified node.
 ////////////////////////////////////////////////////////////////////
 bool CharacterJoint::
 add_net_transform(PandaNode *node) {
+  if (_character != (Character *)NULL) {
+    node->set_effect(CharacterJointEffect::make(_character));
+  }
   return _net_transform_nodes.insert(node).second;
 }
 
@@ -193,9 +205,18 @@ add_net_transform(PandaNode *node) {
 //               transform from the root.  Returns true if the node is
 //               successfully removed, false if it was not on the
 //               list.
+//
+//               If the node has a CharacterJointEffect that matches
+//               this joint's Character, it will be cleared.
 ////////////////////////////////////////////////////////////////////
 bool CharacterJoint::
 remove_net_transform(PandaNode *node) {
+  CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
+  if (effect != (RenderEffect *)NULL &&
+      DCAST(CharacterJointEffect, effect)->get_character() == _character) {
+    node->clear_effect(CharacterJointEffect::get_class_type());
+  }
+
   return (_net_transform_nodes.erase(node) > 0);
 }
 
@@ -220,6 +241,19 @@ has_net_transform(PandaNode *node) const {
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
 clear_net_transforms() {
+  NodeList::iterator ai;
+  for (ai = _net_transform_nodes.begin();
+       ai != _net_transform_nodes.end();
+       ++ai) {
+    PandaNode *node = *ai;
+
+    CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
+    if (effect != (RenderEffect *)NULL &&
+        DCAST(CharacterJointEffect, effect)->get_character() == _character) {
+      node->clear_effect(CharacterJointEffect::get_class_type());
+    }
+  }
+
   _net_transform_nodes.clear();
 }
 
@@ -231,9 +265,20 @@ clear_net_transforms() {
 //               transform from its parent.  Returns true if the node
 //               is successfully added, false if it had already been
 //               added.
+//
+//               The Character pointer should be the Character object
+//               that owns this joint; this will be used to create a
+//               CharacterJointEffect for this node.  If it is NULL,
+//               no such effect will be created.
+//
+//               A CharacterJointEffect for this joint's Character
+//               will automatically be added to the specified node.
 ////////////////////////////////////////////////////////////////////
 bool CharacterJoint::
 add_local_transform(PandaNode *node) {
+  if (_character != (Character *)NULL) {
+    node->set_effect(CharacterJointEffect::make(_character));
+  }
   return _local_transform_nodes.insert(node).second;
 }
 
@@ -245,9 +290,18 @@ add_local_transform(PandaNode *node) {
 //               transform from its parent.  Returns true if the node
 //               is successfully removed, false if it was not on the
 //               list.
+//
+//               If the node has a CharacterJointEffect that matches
+//               this joint's Character, it will be cleared.
 ////////////////////////////////////////////////////////////////////
 bool CharacterJoint::
 remove_local_transform(PandaNode *node) {
+  CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
+  if (effect != (RenderEffect *)NULL &&
+      DCAST(CharacterJointEffect, effect)->get_character() == _character) {
+    node->clear_effect(CharacterJointEffect::get_class_type());
+  }
+
   return (_local_transform_nodes.erase(node) > 0);
 }
 
@@ -272,6 +326,19 @@ has_local_transform(PandaNode *node) const {
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
 clear_local_transforms() {
+  NodeList::iterator ai;
+  for (ai = _local_transform_nodes.begin();
+       ai != _local_transform_nodes.end();
+       ++ai) {
+    PandaNode *node = *ai;
+
+    CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
+    if (effect != (RenderEffect *)NULL &&
+        DCAST(CharacterJointEffect, effect)->get_character() == _character) {
+      node->clear_effect(CharacterJointEffect::get_class_type());
+    }
+  }
+
   _local_transform_nodes.clear();
 }
 
@@ -299,28 +366,96 @@ get_net_transform(LMatrix4f &transform) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::get_character
+//       Access: Published
+//  Description: Returns the Character that owns this joint.
+////////////////////////////////////////////////////////////////////
+Character *CharacterJoint::
+get_character() const {
+  return _character;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::set_character
+//       Access: Private
+//  Description: Changes the Character that owns this joint.
+////////////////////////////////////////////////////////////////////
+void CharacterJoint::
+set_character(Character *character) {
+  if (character != _character) {
+
+    if (character != (Character *)NULL) {
+      // Change or set a _character pointer on each joint's exposed
+      // node.
+      NodeList::iterator ai;
+      for (ai = _net_transform_nodes.begin();
+           ai != _net_transform_nodes.end();
+           ++ai) {
+        PandaNode *node = *ai;
+        node->set_effect(CharacterJointEffect::make(character));
+      }
+      for (ai = _local_transform_nodes.begin();
+           ai != _local_transform_nodes.end();
+           ++ai) {
+        PandaNode *node = *ai;
+        node->set_effect(CharacterJointEffect::make(character));
+      }
+
+    } else {  // (character == (Character *)NULL)
+      // Clear the _character pointer on each joint's exposed node.
+      NodeList::iterator ai;
+      for (ai = _net_transform_nodes.begin();
+           ai != _net_transform_nodes.end();
+           ++ai) {
+        PandaNode *node = *ai;
+        
+        CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
+        if (effect != (RenderEffect *)NULL &&
+            DCAST(CharacterJointEffect, effect)->get_character() == _character) {
+          node->clear_effect(CharacterJointEffect::get_class_type());
+        }
+      }
+      for (ai = _local_transform_nodes.begin();
+           ai != _local_transform_nodes.end();
+           ++ai) {
+        PandaNode *node = *ai;
+        
+        CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
+        if (effect != (RenderEffect *)NULL &&
+            DCAST(CharacterJointEffect, effect)->get_character() == _character) {
+          node->clear_effect(CharacterJointEffect::get_class_type());
+        }
+      }
+    }
+  }
+    
+  _character = character;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::write_datagram
 //       Access: Public
 //  Description: Function to write the important information in
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
-write_datagram(BamWriter *manager, Datagram &me)
-{
+write_datagram(BamWriter *manager, Datagram &me) {
   NodeList::iterator ni;
   MovingPartMatrix::write_datagram(manager, me);
 
+  manager->write_pointer(me, _character);
+
   me.add_uint16(_net_transform_nodes.size());
-  for(ni = _net_transform_nodes.begin(); 
-      ni != _net_transform_nodes.end(); 
-      ni++) {
+  for (ni = _net_transform_nodes.begin(); 
+       ni != _net_transform_nodes.end(); 
+       ni++) {
     manager->write_pointer(me, (*ni));
   }
 
   me.add_uint16(_local_transform_nodes.size());
-  for(ni = _local_transform_nodes.begin(); 
-      ni != _local_transform_nodes.end(); 
-      ni++) {
+  for (ni = _local_transform_nodes.begin(); 
+       ni != _local_transform_nodes.end(); 
+       ni++) {
     manager->write_pointer(me, (*ni));
   }
 
@@ -340,6 +475,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   int i;
   MovingPartMatrix::fillin(scan, manager);
 
+  if (manager->get_file_minor_ver() >= 4) {
+    manager->read_pointer(scan);
+  }
+
   _num_net_nodes = scan.get_uint16();
   for(i = 0; i < _num_net_nodes; i++) {
     manager->read_pointer(scan);
@@ -356,14 +495,19 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointes to TypedWritable
+//  Description: Takes in a vector of pointers to TypedWritable
 //               objects that correspond to all the requests for
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int CharacterJoint::
-complete_pointers(TypedWritable **p_list, BamReader* manager)
-{
+complete_pointers(TypedWritable **p_list, BamReader* manager) {
   int pi = MovingPartMatrix::complete_pointers(p_list, manager);
+
+  if (manager->get_file_minor_ver() >= 4) {
+    _character = DCAST(Character, p_list[pi++]);
+  } else {
+    _character = NULL;
+  }
 
   int i;
   for (i = 0; i < _num_net_nodes; i++) {
@@ -383,8 +527,7 @@ complete_pointers(TypedWritable **p_list, BamReader* manager)
 //  Description: Factory method to generate a CharacterJoint object
 ////////////////////////////////////////////////////////////////////
 TypedWritable* CharacterJoint::
-make_CharacterJoint(const FactoryParams &params)
-{
+make_CharacterJoint(const FactoryParams &params) {
   CharacterJoint *me = new CharacterJoint;
   DatagramIterator scan;
   BamReader *manager;
@@ -400,8 +543,7 @@ make_CharacterJoint(const FactoryParams &params)
 //  Description: Factory method to generate a CharacterJoint object
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
-register_with_read_factory()
-{
+register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_CharacterJoint);
 }
 
