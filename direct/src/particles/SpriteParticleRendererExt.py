@@ -19,7 +19,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
     def getSourceTextureName(self):
         if self.sourceTextureName == None:
             SpriteParticleRendererExt.sourceTextureName = base.config.GetString(
-                'particle-sprite-texture', 'phase_3/maps/eyes.jpg')
+                'particle-sprite-texture', 'maps/lightbulb.rgb')
         # Return instance copy of class variable
         return self.sourceTextureName
 
@@ -58,7 +58,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
     def getSourceFileName(self):
         if self.sourceFileName == None:
             SpriteParticleRendererExt.sourceFileName = base.config.GetString(
-                'particle-sprite-model', 'phase_3.5/models/props/suit-particles')
+                'particle-sprite-model', 'models/misc/smiley')
         # Return instance copy of class variable
         return self.sourceFileName
 
@@ -69,7 +69,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
     def getSourceNodeName(self):
         if self.sourceNodeName == None:
             SpriteParticleRendererExt.sourceNodeName = base.config.GetString(
-                'particle-sprite-node', '**/fire')
+                'particle-sprite-node', '**/*')
         # Return instance copy of class variable
         return self.sourceNodeName
 
