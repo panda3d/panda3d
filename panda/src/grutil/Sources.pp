@@ -15,6 +15,7 @@
     fisheyeMaker.I fisheyeMaker.h \
     config_grutil.h \
     frameRateMeter.I frameRateMeter.h \
+    heightfieldTesselator.I heightfieldTesselator.h \
     lineSegs.I lineSegs.h \
     multitexReducer.I multitexReducer.h multitexReducer.cxx \
     openCVTexture.h openCVTexture.I ffmpegTexture.h ffmpegTexture.I 
@@ -24,6 +25,7 @@
     fisheyeMaker.cxx \
     config_grutil.cxx \
     frameRateMeter.cxx \
+    heightfieldTesselator.cxx \
     openCVTexture.cxx \    	 
     lineSegs.cxx \
     ffmpegTexture.cxx
@@ -33,6 +35,7 @@
     cardMaker.I cardMaker.h \
     fisheyeMaker.I fisheyeMaker.h \
     frameRateMeter.I frameRateMeter.h \
+    heightfieldTesselator.I heightfieldTesselator.h \
     lineSegs.I lineSegs.h \
     multitexReducer.I multitexReducer.h \
     openCVTexture.I openCVTexture.h\
