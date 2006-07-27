@@ -210,6 +210,7 @@ private:
   void do_make_indexed(CData *cdata);
   void consider_elevate_index_type(CData *cdata, int vertex);
   void do_set_index_type(CData *cdata, NumericType index_type);
+  GeomVertexArrayData *do_modify_vertices(CData *cdata);
 
 private:
   // A GeomPrimitive keeps a list (actually, a map) of all the

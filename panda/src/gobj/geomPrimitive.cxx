@@ -404,12 +404,16 @@ clear_vertices() {
 void GeomPrimitive::
 offset_vertices(int offset) {
   if (is_indexed()) {
-    {
-      CDWriter cdata(_cycler, true);
-      consider_elevate_index_type(cdata, get_max_vertex() + offset);
-    }
+    CDWriter cdata(_cycler, true);
 
-    GeomVertexRewriter index(modify_vertices(), 0);
+    if (!cdata->_got_minmax) {
+      recompute_minmax(cdata);
+      nassertv(cdata->_got_minmax);
+    }
+    
+    consider_elevate_index_type(cdata, cdata->_max_vertex + offset);
+
+    GeomVertexRewriter index(do_modify_vertices(cdata), 0);
     while (!index.is_at_end()) {
       index.set_data1i(index.get_data1i() + offset);
     }
@@ -849,18 +853,7 @@ write(ostream &out, int indent_level) const {
 GeomVertexArrayData *GeomPrimitive::
 modify_vertices() {
   CDWriter cdata(_cycler, true);
-
-  if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
-    do_make_indexed(cdata);
-  }
-
-  if (cdata->_vertices->get_ref_count() > 1) {
-    cdata->_vertices = new GeomVertexArrayData(*cdata->_vertices);
-  }
-
-  cdata->_modified = Geom::get_next_modified();
-  cdata->_got_minmax = false;
-  return cdata->_vertices;
+  return do_modify_vertices(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1475,6 +1468,26 @@ do_set_index_type(CData *cdata, GeomPrimitive::NumericType index_type) {
       cdata->_got_minmax = false;
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::do_modify_vertices
+//       Access: Private
+//  Description: The private implementation of modify_vertices().
+////////////////////////////////////////////////////////////////////
+GeomVertexArrayData *GeomPrimitive::
+do_modify_vertices(GeomPrimitive::CData *cdata) {
+  if (cdata->_vertices == (GeomVertexArrayData *)NULL) {
+    do_make_indexed(cdata);
+  }
+
+  if (cdata->_vertices->get_ref_count() > 1) {
+    cdata->_vertices = new GeomVertexArrayData(*cdata->_vertices);
+  }
+
+  cdata->_modified = Geom::get_next_modified();
+  cdata->_got_minmax = false;
+  return cdata->_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////
