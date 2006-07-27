@@ -25,7 +25,7 @@
 #include "renderState.h"
 #include "geomNode.h"
 #include "colorBlendAttrib.h"
-
+#include "nodePath.h"
 #include "particleCommonFuncs.h"
 #include "baseParticle.h"
 
@@ -55,6 +55,7 @@ PUBLISHED:
   virtual ~BaseParticleRenderer();
 
   INLINE GeomNode *get_render_node() const;
+  INLINE NodePath get_render_node_path() const;
 
   INLINE void set_alpha_mode(ParticleRendererAlphaMode am);
   INLINE ParticleRendererAlphaMode get_alpha_mode() const;
@@ -92,6 +93,7 @@ protected:
 
 private:
   PT(GeomNode) _render_node;
+  NodePath _render_node_path;
 
   float _user_alpha;
   bool _ignore_scale;

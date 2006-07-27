@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "baseForce.h"
+#include "indent.h"
 
 TypeHandle BaseForce::_type_handle;
 
@@ -27,7 +28,9 @@ TypeHandle BaseForce::_type_handle;
 ////////////////////////////////////////////////////////////////////
 BaseForce::
 BaseForce(bool active) :
-  _force_node(NULL), _active(active) {
+  _force_node(NULL), 
+  _active(active) 
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -37,7 +40,8 @@ BaseForce(bool active) :
 ////////////////////////////////////////////////////////////////////
 BaseForce::
 BaseForce(const BaseForce &copy) :
-  TypedReferenceCount(copy) {
+  TypedReferenceCount(copy) 
+{
   _active = copy._active;
   _force_node = (ForceNode *) NULL;
 }
@@ -59,9 +63,7 @@ BaseForce::
 ////////////////////////////////////////////////////////////////////
 void BaseForce::
 output(ostream &out) const {
-  #ifndef NDEBUG //[
-  out<<"BaseForce (id "<<this<<")";
-  #endif //] NDEBUG
+  out << "BaseForce (id " << this << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,19 +73,18 @@ output(ostream &out) const {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseForce::
-write(ostream &out, unsigned int indent) const {
-  #ifndef NDEBUG //[
-  out.width(indent); out<<""; out<<"BaseForce (id "<<this<<"):\n";
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level)
+    << "BaseForce (id " << this << "):\n";
   
-  out.width(indent+2); out<<""; out<<"_force_node ";
+  indent(out, indent_level + 2)
+    << "_force_node ";
   if (_force_node) {
-    out<<_force_node<<"\n";
-    //_force_node->write(out, indent+4);
+    out << _force_node_path << "\n";
   } else {
-    out.width(indent+4); out<<""<<"null\n";
+    out << "null\n";
   }
   
-  out.width(indent+2); out<<""; out<<"_active "<<_active<<"\n";
-  //TypedReferenceCount::write(out);
-  #endif //] NDEBUG
+  indent(out, indent_level + 2)
+    << "_active " << _active << "\n";
 }

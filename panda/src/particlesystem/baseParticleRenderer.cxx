@@ -31,6 +31,7 @@ BaseParticleRenderer::
 BaseParticleRenderer(ParticleRendererAlphaMode alpha_mode) :
   _alpha_mode(PR_NOT_INITIALIZED_YET) {
   _render_node = new GeomNode("BaseParticleRenderer render node");
+  _render_node_path = NodePath(_render_node);
 
   _user_alpha = 1.0f;
   _ignore_scale = false;
@@ -47,6 +48,7 @@ BaseParticleRenderer::
 BaseParticleRenderer(const BaseParticleRenderer& copy) :
   _alpha_mode(PR_ALPHA_NONE) {
   _render_node = new GeomNode("BaseParticleRenderer render node");
+  _render_node_path = NodePath(_render_node);
 
   _user_alpha = copy._user_alpha;
   set_ignore_scale(copy._ignore_scale);
@@ -110,7 +112,7 @@ void BaseParticleRenderer::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"BaseParticleRenderer:\n";
-  out.width(indent+2); out<<""; out<<"_render_node "<<_render_node<<"\n";
+  out.width(indent+2); out<<""; out<<"_render_node "<<_render_node_path<<"\n";
   out.width(indent+2); out<<""; out<<"_user_alpha "<<_user_alpha<<"\n";
   //ReferenceCount::write(out, indent+2);
   #endif //] NDEBUG

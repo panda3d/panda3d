@@ -156,11 +156,9 @@ set_renderer(BaseParticleRenderer *r) {
   _renderer = r;
   _renderer->resize_pool(_particle_pool_size);
 
-  if (!_render_node.is_null())
-    _render_parent->remove_child(_render_node);
-
-  _render_node = _renderer->get_render_node();
-  _render_parent->add_child(_render_node);
+  _render_node_path.remove_node();
+  _render_node_path = _renderer->get_render_node_path();
+  _render_node_path.reparent_to(_render_parent);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -254,25 +252,40 @@ set_system_age(float age) {
 //    Function : set_spawn_render_node
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void ParticleSystem::
 set_spawn_render_node(PandaNode *node) {
-  _spawn_render_node = node;
+  set_spawn_render_node_path(NodePath(node));
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : set_spawn_render_node_path
+//      Access : public
+////////////////////////////////////////////////////////////////////
+INLINE void ParticleSystem::
+set_spawn_render_node_path(const NodePath &node) {
+  _spawn_render_node_path = node;
 }
 
 ////////////////////////////////////////////////////////////////////
 //    Function : set_render_parent
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void ParticleSystem::
 set_render_parent(PandaNode *node) {
-  if (!_render_node.is_null())
-    _render_parent->remove_child(_render_node);
+  set_render_parent(NodePath(node));
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : set_render_parent
+//      Access : public
+////////////////////////////////////////////////////////////////////
+INLINE void ParticleSystem::
+set_render_parent(const NodePath &node) {
+  _render_node_path.remove_node();
 
   _render_parent = node;
-  _render_node = _renderer->get_render_node();
-  _render_parent->add_child(_render_node);
+  _render_node_path = _renderer->get_render_node_path();
+  _render_node_path.reparent_to(_render_parent);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -476,14 +489,23 @@ get_i_was_spawned_flag() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *ParticleSystem::
 get_spawn_render_node() const {
-  return _spawn_render_node;
+  return _spawn_render_node_path.node();
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_spawn_render_node_path
+//      Access : public
+////////////////////////////////////////////////////////////////////
+INLINE NodePath ParticleSystem::
+get_spawn_render_node_path() const {
+  return _spawn_render_node_path;
 }
 
 ////////////////////////////////////////////////////////////////////
 //    Function : get_render_parent
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode *ParticleSystem::
+INLINE NodePath ParticleSystem::
 get_render_parent() const {
   return _render_parent;
 }

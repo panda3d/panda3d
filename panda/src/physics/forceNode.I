@@ -53,4 +53,5 @@ INLINE void ForceNode::
 add_force(BaseForce *force) {
   _forces.push_back(force);
   force->_force_node = this;
+  force->_force_node_path = NodePath(this);
 }

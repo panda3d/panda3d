@@ -67,8 +67,8 @@ ParticleSystem(int pool_size) :
   // set_emitter(), etc...) forces them to set themselves up for the
   // system, keeping the pool sizes consistent.
 
-  _render_node.clear();
-  _render_parent = new PandaNode("ParticleSystem default render parent");
+  _render_node_path = NodePath();
+  _render_parent = NodePath("ParticleSystem default render parent");
 
   set_emitter(new SphereSurfaceEmitter);
 
@@ -106,8 +106,8 @@ ParticleSystem(const ParticleSystem& copy) :
   _factory = copy._factory;
 
   _render_parent = copy._render_parent;
-  _render_node = _renderer->get_render_node();
-  _render_parent->add_child(_render_node);
+  _render_node_path = _renderer->get_render_node_path();
+  _render_node_path.reparent_to(_render_parent);
 
   _tics_since_birth = 0.0;
   _system_lifespan = copy._system_lifespan;
@@ -127,9 +127,7 @@ ParticleSystem::
 
   if (!_template_system_flag) {
     _renderer.clear();
-
-    if (!_render_node.is_null())
-      _render_parent->remove_child(_render_node);
+    _render_node_path.remove_node();
   }
 }
 
@@ -176,14 +174,12 @@ birth_particle() {
   // get the location of the new particle.
   LPoint3f new_pos, world_pos;
   LVector3f new_vel;
-  GeomNode *render_node;
 
   _emitter->generate(new_pos, new_vel);
-  render_node = _renderer->get_render_node();
 
   // go from birth space to render space
-  NodePath physical_np(get_physical_node());
-  NodePath render_np(render_node);
+  NodePath physical_np = get_physical_node_path();
+  NodePath render_np = _renderer->get_render_node_path();
 
   CPT(TransformState) transform = physical_np.get_transform(render_np);
   const LMatrix4f &birth_to_render_xform = transform->get_mat();
@@ -252,7 +248,10 @@ spawn_child_system(BaseParticle *bp) {
     return;
   }
 
-  PandaNode *parent = this_pn->get_parent(0);
+  NodePath physical_np = get_physical_node_path();
+  NodePath parent_np = physical_np.get_parent();
+
+  PandaNode *parent = parent_np.node();
 
   // handle the spawn templates
   int new_ps_index = rand() % _spawn_templates.size();
@@ -263,9 +262,9 @@ spawn_child_system(BaseParticle *bp) {
   new_ps->_i_was_spawned_flag = true;
 
   // first, set up the render node info.
-  new_ps->_render_parent = _spawn_render_node;
-  new_ps->_render_node = new_ps->_renderer->get_render_node();
-  new_ps->_render_parent->add_child(new_ps->_render_node);
+  new_ps->_render_parent = _spawn_render_node_path;
+  new_ps->_render_node_path = new_ps->_renderer->get_render_node_path();
+  new_ps->_render_node_path.reparent_to(new_ps->_render_parent);
 
   // now set up the new system's PhysicalNode.
   PT(PhysicalNode) new_pn = new PhysicalNode("new_pn");
@@ -275,9 +274,6 @@ spawn_child_system(BaseParticle *bp) {
   // from the current system up to its parent, and then subsequently
   // down to the new child.
   parent->add_child(new_pn);
-
-  NodePath parent_np(parent);
-  NodePath physical_np(get_physical_node());
 
   CPT(TransformState) transform = physical_np.get_transform(parent_np);
   const LMatrix4f &old_system_to_parent_xform = transform->get_mat();
@@ -769,12 +765,12 @@ write(ostream &out, int indent) const {
   out.width(indent+2); out<<""; out<<"_manager "<<_manager<<"\n";
   out.width(indent+2); out<<""; out<<"_template_system_flag "<<_template_system_flag<<"\n";
   out.width(indent+2); out<<""; out<<"_render_parent "<<_render_parent<<"\n";
-  out.width(indent+2); out<<""; out<<"_render_node "<<_render_node<<"\n";
+  out.width(indent+2); out<<""; out<<"_render_node "<<_render_node_path<<"\n";
   out.width(indent+2); out<<""; out<<"_active_system_flag "<<_active_system_flag<<"\n";
   out.width(indent+2); out<<""; out<<"_local_velocity_flag "<<_local_velocity_flag<<"\n";
   out.width(indent+2); out<<""; out<<"_system_grows_older_flag "<<_system_grows_older_flag<<"\n";
   out.width(indent+2); out<<""; out<<"_spawn_on_death_flag "<<_spawn_on_death_flag<<"\n";
-  out.width(indent+2); out<<""; out<<"_spawn_render_node "<<_spawn_render_node<<"\n";
+  out.width(indent+2); out<<""; out<<"_spawn_render_node "<<_spawn_render_node_path<<"\n";
   out.width(indent+2); out<<""; out<<"_i_was_spawned_flag "<<_i_was_spawned_flag<<"\n";
   write_free_particle_fifo(out, indent+2);
   write_spawn_templates(out, indent+2);

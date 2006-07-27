@@ -72,8 +72,10 @@ add_forces_from(const ForceNode &other) {
   _forces.insert(_forces.end(),
                  other._forces.begin(), other._forces.end());
 
+  NodePath node_path(this);
   for (; last != _forces.end(); last++) {
     (*last)->_force_node = this;
+    (*last)->_force_node_path = node_path;
   }
 }
 
@@ -104,6 +106,7 @@ remove_force(int index) {
   pvector< PT(BaseForce) >::iterator remove;
   remove = _forces.begin() + index;
   (*remove)->_force_node = (ForceNode *) NULL;
+  (*remove)->_force_node_path = NodePath();
 
   _forces.erase(remove);
 }

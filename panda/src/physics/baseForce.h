@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "typedReferenceCount.h"
 #include "luse.h"
+#include "nodePath.h"
 
 #include "physicsObject.h"
 
@@ -41,9 +42,10 @@ PUBLISHED:
   virtual bool is_linear() const = 0;
 
   INLINE ForceNode *get_force_node() const;
+  INLINE NodePath get_force_node_path() const;
 
   virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void write(ostream &out, int indent_level=0) const;
 
 protected:
   BaseForce(bool active = true);
@@ -51,6 +53,7 @@ protected:
 
 private:
   ForceNode *_force_node;
+  NodePath _force_node_path;
   bool _active;
 
 public:

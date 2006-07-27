@@ -30,6 +30,7 @@
 #include "physicsObjectCollection.h"
 #include "linearForce.h"
 #include "angularForce.h"
+#include "nodePath.h"
 
 class PhysicalNode;
 class PhysicsManager;
@@ -55,6 +56,7 @@ PUBLISHED:
   // helpers
   INLINE PhysicsManager *get_physics_manager() const;
   INLINE PhysicalNode *get_physical_node() const;
+  INLINE NodePath get_physical_node_path() const;
   INLINE PhysicsObject *get_phys_body() const;
 
   INLINE void clear_linear_forces();
@@ -110,6 +112,7 @@ protected:
 private:
   PhysicsManager *_physics_manager;
   PhysicalNode *_physical_node;
+  NodePath _physical_node_path;
 
 public:
   static TypeHandle get_class_type() {
