@@ -651,7 +651,7 @@ void Character::
 r_clear_joint_characters(PartGroup *part) {
   if (part->is_of_type(CharacterJoint::get_class_type())) {
     CharacterJoint *joint = DCAST(CharacterJoint, part);
-    nassertv(joint->get_character() == this);
+    nassertv(joint->get_character() == this || joint->get_character() == NULL);
     joint->set_character(NULL);
   }
 
