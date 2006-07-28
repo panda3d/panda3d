@@ -25,10 +25,11 @@
 #include "bamCache.h"
 #include "bamCacheRecord.h"
 #include "pnmFileTypeRegistry.h"
+#include "texturePoolFilter.h"
+#include "configVariableList.h"
+#include "load_dso.h"
 
-
-TexturePool *TexturePool::_global_ptr = (TexturePool *)NULL;
-
+TexturePool *TexturePool::_global_ptr;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::write
@@ -60,6 +61,19 @@ register_texture_type(MakeTextureFunc *func, const string &extensions) {
   for (wi = words.begin(); wi != words.end(); ++wi) {
     _type_registry[*wi] = func;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::register_filter
+//       Access: Public
+//  Description: Records a TexturePoolFilter object that may operate
+//               on texture images as they are loaded from disk.
+////////////////////////////////////////////////////////////////////
+void TexturePool::
+register_filter(TexturePoolFilter *filter) {
+  gobj_cat.info()
+    << "Registering Texture filter " << *filter << "\n";
+  _filter_registry.push_back(filter);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -152,6 +166,11 @@ TexturePool *TexturePool::
 get_global_ptr() {
   if (_global_ptr == (TexturePool *)NULL) {
     _global_ptr = new TexturePool;
+
+    // We have to call this here, not in the constructor, so that the
+    // _global_ptr is safely assigned by the time the filters begin to
+    // load.
+    _global_ptr->load_filters();
   }
   return _global_ptr;
 }
@@ -229,20 +248,27 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
     return tex;
   }
 
+  // The texture was not found in the pool.
   PT(Texture) tex;
   PT(BamCacheRecord) record;
   bool store_record = false;
 
+  // Can one of our texture filters supply the texture?
+  tex = pre_load(orig_filename, Filename(), primary_file_num_channels, 0,
+                 read_mipmaps);
+
   BamCache *cache = BamCache::get_global_ptr();
-  if (cache->get_active() && !textures_header_only) {
-    // See if the texture can be found in the on-disk cache, if it is
-    // active.
-    record = cache->lookup(filename, "txo");
-    if (record != (BamCacheRecord *)NULL) {
-      if (record->has_data()) {
-        gobj_cat.info()
-          << "Texture " << filename << " found in disk cache.\n";
-        tex = DCAST(Texture, record->extract_data());
+  if (tex == (Texture *)NULL) {
+    // The texture was not supplied by a texture filter.  See if it
+    // can be found in the on-disk cache, if it is active.
+    if (cache->get_active() && !textures_header_only) {
+      record = cache->lookup(filename, "txo");
+      if (record != (BamCacheRecord *)NULL) {
+        if (record->has_data()) {
+          gobj_cat.info()
+            << "Texture " << filename << " found in disk cache.\n";
+          tex = DCAST(Texture, record->extract_data());
+        }
       }
     }
   }
@@ -276,6 +302,10 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);
+
+  // Finally, apply any post-loading texture filters.
+  tex = post_load(tex);
+
   return tex;
 }
 
@@ -318,16 +348,24 @@ ns_load_texture(const Filename &orig_filename,
   PT(BamCacheRecord) record;
   bool store_record = false;
 
+  // Can one of our texture filters supply the texture?
+  tex = pre_load(orig_filename, alpha_filename, primary_file_num_channels, 
+                 alpha_file_channel, read_mipmaps);
+
   BamCache *cache = BamCache::get_global_ptr();
-  if (cache->get_active() && !textures_header_only) {
-    // See if the texture can be found in the on-disk cache, if it is
-    // active.
-    record = cache->lookup(filename, "txo");
-    if (record != (BamCacheRecord *)NULL) {
-      if (record->has_data()) {
-        gobj_cat.info()
-          << "Texture " << filename << " found in disk cache.\n";
-        tex = DCAST(Texture, record->extract_data());
+  if (tex == (Texture *)NULL) {
+    // The texture was not supplied by a texture filter.  See if it
+    // can be found in the on-disk cache, if it is active.
+    if (cache->get_active() && !textures_header_only) {
+      // See if the texture can be found in the on-disk cache, if it is
+      // active.
+      record = cache->lookup(filename, "txo");
+      if (record != (BamCacheRecord *)NULL) {
+        if (record->has_data()) {
+          gobj_cat.info()
+            << "Texture " << filename << " found in disk cache.\n";
+          tex = DCAST(Texture, record->extract_data());
+        }
       }
     }
   }
@@ -364,6 +402,10 @@ ns_load_texture(const Filename &orig_filename,
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);
+
+  // Finally, apply any post-loading texture filters.
+  tex = post_load(tex);
+
   return tex;
 }
 
@@ -681,6 +723,85 @@ report_texture_unreadable(const Filename &filename) const {
         << "Texture extension \"" << filename.get_extension() 
         << "\" is unknown.  Supported texture types:\n";
       write_texture_types(gobj_cat.error(false), 2);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::pre_load
+//       Access: Private
+//  Description: Invokes pre_load() on all registered filters until
+//               one returns non-NULL; returns NULL if there are no
+//               registered filters or if all registered filters
+//               returned NULL.
+////////////////////////////////////////////////////////////////////
+PT(Texture) TexturePool::
+pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
+         int primary_file_num_channels, int alpha_file_channel,
+         bool read_mipmaps) {
+  PT(Texture) tex;
+
+  FilterRegistry::iterator fi;
+  for (fi = _filter_registry.begin();
+       fi != _filter_registry.end();
+       ++fi) {
+    tex = (*fi)->pre_load(orig_filename, orig_alpha_filename,
+                          primary_file_num_channels, alpha_file_channel,
+                          read_mipmaps);
+    if (tex != (Texture *)NULL) {
+      return tex;
+    }
+  }
+
+  return tex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::post_load
+//       Access: Public, Virtual
+//  Description: Invokes post_load() on all registered filters.
+////////////////////////////////////////////////////////////////////
+PT(Texture) TexturePool::
+post_load(Texture *tex) {
+  PT(Texture) result = tex;
+
+  FilterRegistry::iterator fi;
+  for (fi = _filter_registry.begin();
+       fi != _filter_registry.end();
+       ++fi) {
+    result = (*fi)->post_load(result);
+  }
+
+  return result;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::load_filters
+//       Access: Private
+//  Description: Loads up all of the dll's named by the texture-filter
+//               Config.prc variable.
+////////////////////////////////////////////////////////////////////
+void TexturePool::
+load_filters() {
+  ConfigVariableList texture_filter
+    ("texture-filter",
+     PRC_DESC("Names one or more external libraries that should be loaded for the "
+              "purposes of performing texture filtering.  This variable may be repeated several "
+              "times.  As in load-display, the actual library filename is derived by "
+              "prefixing 'lib' to the specified name."));
+  
+  int num_aux = texture_filter.get_num_unique_values();
+  for (int i = 0; i < num_aux; i++) {
+    string name = texture_filter.get_unique_value(i);
+    
+    Filename dlname = Filename::dso_filename("lib" + name + ".so");
+    gobj_cat.info()
+      << "loading texture filter: " << dlname.to_os_specific() << endl;
+    void *tmp = load_dso(dlname);
+    if (tmp == (void *)NULL) {
+      gobj_cat.info()
+        << "Unable to load: " << load_dso_error() << endl;
     }
   }
 }

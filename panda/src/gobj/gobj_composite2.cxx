@@ -15,6 +15,7 @@
 #include "texture.cxx"
 #include "textureContext.cxx"
 #include "texturePool.cxx"
+#include "texturePoolFilter.cxx"
 #include "textureStage.cxx"
 #include "shaderExpansion.cxx"
 #include "shaderContext.cxx"

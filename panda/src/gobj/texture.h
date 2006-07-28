@@ -311,6 +311,10 @@ PUBLISHED:
 
   size_t estimate_texture_memory() const;
 
+  void set_aux_data(const string &key, TypedReferenceCount *aux_data);
+  void clear_aux_data(const string &key);
+  TypedReferenceCount *get_aux_data(const string &key) const;
+
 PUBLISHED:
   // These are published, but in general, you shouldn't be mucking
   // with these values; they are set automatically when a texture is
@@ -360,6 +364,7 @@ public:
 
   static bool is_specific(CompressionMode compression);
   static bool has_alpha(Format format);
+  static bool has_binary_alpha(Format format);
 
 protected:
   virtual bool do_read(const Filename &fullpath, const Filename &alpha_fullpath,
@@ -515,6 +520,11 @@ protected:
   RamImages _ram_images;
 
   UpdateSeq _modified;
+
+private:
+  // The auxiliary data is not recorded to a bam file.
+  typedef pmap<string, PT(TypedReferenceCount) > AuxData;
+  AuxData _aux_data;
 
   // Datagram stuff
 public:

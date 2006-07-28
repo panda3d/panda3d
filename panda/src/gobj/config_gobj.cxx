@@ -41,6 +41,7 @@
 #include "queryContext.h"
 #include "sliderTable.h"
 #include "texture.h"
+#include "texturePoolFilter.h"
 #include "textureStage.h"
 #include "textureContext.h"
 #include "shaderExpansion.h"
@@ -248,60 +249,62 @@ ConfigVariableDouble default_keystone
 ConfigureFn(config_gobj) {
   BufferContext::init_type();
   Geom::init_type();
-  GeomMunger::init_type();
-  GeomPrimitive::init_type();
-  GeomTriangles::init_type();
-  GeomTristrips::init_type();
-  GeomTrifans::init_type();
+  GeomContext::init_type();
   GeomLines::init_type();
   GeomLinestrips::init_type();
+  GeomMunger::init_type();
   GeomPoints::init_type();
+  GeomPrimitive::init_type();
+  GeomTriangles::init_type();
+  GeomTrifans::init_type();
+  GeomTristrips::init_type();
   GeomVertexArrayData::init_type();
   GeomVertexArrayFormat::init_type();
   GeomVertexData::init_type();
   GeomVertexFormat::init_type();
-  TextureContext::init_type();
-  GeomContext::init_type();
-  VertexBufferContext::init_type();
   IndexBufferContext::init_type();
+  InternalName::init_type();
+  Lens::init_type();
   Material::init_type();
+  MatrixLens::init_type();
   OcclusionQueryContext::init_type();
   OrthographicLens::init_type();
-  MatrixLens::init_type();
   PerspectiveLens::init_type();
-  Lens::init_type();
   QueryContext::init_type();
+  ShaderContext::init_type();
+  ShaderExpansion::init_type();
   SliderTable::init_type();
   Texture::init_type();
+  TextureContext::init_type();
+  TexturePoolFilter::init_type();
   TextureStage::init_type();
-  ShaderExpansion::init_type();
-  ShaderContext::init_type();
   TransformBlend::init_type();
   TransformBlendTable::init_type();
   TransformTable::init_type();
   UserVertexSlider::init_type();
   UserVertexTransform::init_type();
-  VertexTransform::init_type();
+  VertexBufferContext::init_type();
   VertexSlider::init_type();
+  VertexTransform::init_type();
   VideoTexture::init_type();
-  InternalName::init_type();
 
   //Registration of writeable object's creation
   //functions with BamReader's factory
   Geom::register_with_read_factory();
-  GeomTriangles::register_with_read_factory();
-  GeomTristrips::register_with_read_factory();
-  GeomTrifans::register_with_read_factory();
   GeomLines::register_with_read_factory();
   GeomLinestrips::register_with_read_factory();
   GeomPoints::register_with_read_factory();
+  GeomTriangles::register_with_read_factory();
+  GeomTrifans::register_with_read_factory();
+  GeomTristrips::register_with_read_factory();
   GeomVertexArrayData::register_with_read_factory();
   GeomVertexArrayFormat::register_with_read_factory();
   GeomVertexData::register_with_read_factory();
   GeomVertexFormat::register_with_read_factory();
+  InternalName::register_with_read_factory();
   Material::register_with_read_factory();
-  OrthographicLens::register_with_read_factory();
   MatrixLens::register_with_read_factory();
+  OrthographicLens::register_with_read_factory();
   PerspectiveLens::register_with_read_factory();
   SliderTable::register_with_read_factory();
   Texture::register_with_read_factory();
@@ -310,7 +313,6 @@ ConfigureFn(config_gobj) {
   TransformTable::register_with_read_factory();
   UserVertexSlider::register_with_read_factory();
   UserVertexTransform::register_with_read_factory();
-  InternalName::register_with_read_factory();
 }
 
 ostream &

@@ -26,6 +26,8 @@
 
 #include "pmap.h"
 
+class TexturePoolFilter;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : TexturePool
 // Description : This is the preferred interface for loading textures
@@ -68,12 +70,13 @@ PUBLISHED:
   INLINE static void clear_fake_texture_image();
   INLINE static bool has_fake_texture_image();
   INLINE static const string &get_fake_texture_image();
-  
+
   static void write(ostream &out);
 
 public:
   typedef PT(Texture) MakeTextureFunc();
   void register_texture_type(MakeTextureFunc *func, const string &extensions);
+  void register_filter(TexturePoolFilter *filter);
   
   MakeTextureFunc *get_texture_type(const string &extension) const;
   PT(Texture) make_texture(const string &extension) const;
@@ -107,6 +110,16 @@ private:
 
   void report_texture_unreadable(const Filename &filename) const;
 
+  // Methods to invoke a TexturePoolFilter.
+  PT(Texture) pre_load(const Filename &orig_filename, 
+                       const Filename &orig_alpha_filename,
+                       int primary_file_num_channels,
+                       int alpha_file_channel,
+                       bool read_mipmaps);
+  PT(Texture) post_load(Texture *tex);
+
+  void load_filters();
+
   static TexturePool *_global_ptr;
   typedef phash_map<string,  PT(Texture), string_hash> Textures;
   Textures _textures;
@@ -116,6 +129,9 @@ private:
 
   typedef pmap<string, MakeTextureFunc *> TypeRegistry;
   TypeRegistry _type_registry;
+
+  typedef pvector<TexturePoolFilter *> FilterRegistry;
+  FilterRegistry _filter_registry;
 };
 
 #include "texturePool.I"

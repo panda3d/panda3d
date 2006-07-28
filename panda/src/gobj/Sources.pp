@@ -54,6 +54,7 @@
     texture.I texture.h \
     textureContext.I textureContext.h \
     texturePool.I texturePool.h \
+    texturePoolFilter.I texturePoolFilter.h \
     textureStage.I textureStage.h \
     transformBlend.I transformBlend.h \
     transformBlendTable.I transformBlendTable.h \
@@ -107,6 +108,7 @@
     shaderExpansion.cxx \
     sliderTable.cxx \
     texture.cxx textureContext.cxx texturePool.cxx \
+    texturePoolFilter.cxx \
     textureStage.cxx \
     transformBlend.cxx \
     transformBlendTable.cxx \
@@ -164,6 +166,7 @@
     texture.I texture.h \
     textureContext.I textureContext.h \
     texturePool.I texturePool.h \
+    texturePoolFilter.I texturePoolFilter.h \
     textureStage.I textureStage.h \
     transformBlend.I transformBlend.h \
     transformBlendTable.I transformBlendTable.h \

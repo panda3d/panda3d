@@ -60,6 +60,7 @@ fill_state(EggPrimitive *egg_prim) {
   EggRenderMode::DepthTestMode dtm = EggRenderMode::DTM_unspecified;
   EggRenderMode::VisibilityMode vm = EggRenderMode::VM_unspecified;
   bool implicit_alpha = false;
+  bool binary_alpha_only = true;  // true if all alpha sources are binary alpha.
   bool has_draw_order = false;
   int draw_order = 0;
   bool has_bin = false;
@@ -111,18 +112,26 @@ fill_state(EggPrimitive *egg_prim) {
         texture_attrib = texture_attrib->compose(def._texture);
       }
 
-      // If neither the primitive nor the texture specified an alpha
-      // mode, assume it should be alpha'ed if the texture has an
-      // alpha channel (unless the texture environment type is one
-      // that doesn't apply its alpha to the result).
-      if (egg_tex->affects_polygon_alpha() &&
-          am == EggRenderMode::AM_unspecified) {
+      if (egg_tex->affects_polygon_alpha()) {
         const TextureAttrib *tex_attrib = DCAST(TextureAttrib, def._texture);
         Texture *tex = tex_attrib->get_texture();
         nassertv(tex != (Texture *)NULL);
-        int num_components = tex->get_num_components();
-        if (egg_tex->has_alpha_channel(num_components)) {
-          implicit_alpha = true;
+
+        Texture::Format format = tex->get_format();
+        if (Texture::has_alpha(format) && !Texture::has_binary_alpha(format)) {
+          // This texture specifies a gradient alpha format.
+          binary_alpha_only = false;
+        }
+
+        if (am == EggRenderMode::AM_unspecified) {
+          // If neither the primitive nor the texture specified an
+          // alpha mode, assume it should be alpha'ed if the texture
+          // has an alpha channel (unless the texture environment type
+          // is one that doesn't apply its alpha to the result).
+          int num_components = tex->get_num_components();
+          if (egg_tex->has_alpha_channel(num_components)) {
+            implicit_alpha = true;
+          }
         }
       }
 
@@ -247,6 +256,7 @@ fill_state(EggPrimitive *egg_prim) {
     if (egg_prim->has_color()) {
       if (egg_prim->get_color()[3] != 1.0) {
         implicit_alpha = true;
+        binary_alpha_only = false;
       }
     }
     EggPrimitive::const_iterator vi;
@@ -256,6 +266,7 @@ fill_state(EggPrimitive *egg_prim) {
       if ((*vi)->has_color()) {
         if ((*vi)->get_color()[3] != 1.0) {
           implicit_alpha = true;
+          binary_alpha_only = false;
         }
       }
     }
@@ -265,10 +276,30 @@ fill_state(EggPrimitive *egg_prim) {
     }
   }
 
-  if (am == EggRenderMode::AM_on && 
-      egg_alpha_mode != EggRenderMode::AM_unspecified) {
+  switch (am) {
+  case EggRenderMode::AM_on:
     // Alpha type "on" means to get the default transparency type.
-    am = egg_alpha_mode;
+    if (binary_alpha_only) {
+      am = EggRenderMode::AM_binary;
+    } else if (egg_alpha_mode != EggRenderMode::AM_unspecified) {
+      am = egg_alpha_mode;
+    }
+    break;
+
+  case EggRenderMode::AM_blend:
+  case EggRenderMode::AM_ms:
+  case EggRenderMode::AM_ms_mask:
+  case EggRenderMode::AM_dual:
+    // Any of these modes gets implicitly downgraded to AM_binary, if
+    // all of the alpha sources only contribute a binary value to
+    // alpha.
+    if (binary_alpha_only) {
+      am = EggRenderMode::AM_binary;
+    }
+    break;
+
+  default:
+    break;
   }
 
   switch (am) {

@@ -416,6 +416,50 @@ estimate_texture_memory() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_aux_data
+//       Access: Published
+//  Description: Records an arbitrary object in the Texture,
+//               associated with a specified key.  The object may
+//               later be retrieved by calling get_aux_data() with the
+//               same key.
+//
+//               These data objects are not recorded to a bam or txo
+//               file.
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_aux_data(const string &key, TypedReferenceCount *aux_data) {
+  _aux_data[key] = aux_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::clear_aux_data
+//       Access: Published
+//  Description: Removes a record previously recorded via
+//               set_aux_data().
+////////////////////////////////////////////////////////////////////
+void Texture::
+clear_aux_data(const string &key) {
+  _aux_data.erase(key);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_aux_data
+//       Access: Published
+//  Description: Returns a record previously recorded via
+//               set_aux_data().  Returns NULL if there was no record
+//               associated with the indicated key.
+////////////////////////////////////////////////////////////////////
+TypedReferenceCount *Texture::
+get_aux_data(const string &key) const {
+  AuxData::const_iterator di;
+  di = _aux_data.find(key);
+  if (di != _aux_data.end()) {
+    return (*di).second;
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::read_txo
 //       Access: Published
 //  Description: Reads the texture from a Panda texture object.  This
@@ -2350,6 +2394,23 @@ has_alpha(Format format) {
   case F_rgba12:
   case F_luminance_alpha:
   case F_luminance_alphamask:
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_binary_alpha
+//       Access: Public, Static
+//  Description: Returns true if the indicated format includes a
+//               binary alpha only, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+has_binary_alpha(Format format) {
+  switch (format) {
+  case F_rgbm:
     return true;
 
   default:

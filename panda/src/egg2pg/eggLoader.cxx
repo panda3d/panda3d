@@ -855,7 +855,7 @@ load_textures() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool EggLoader::
-load_texture(TextureDef &def, const EggTexture *egg_tex) {
+load_texture(TextureDef &def, EggTexture *egg_tex) {
   // Check to see if we should reduce the number of channels in
   // the texture.
   int wanted_channels = 0;
@@ -949,6 +949,30 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
   tex->set_filename(egg_tex->get_filename());
   if (egg_tex->has_alpha_filename() && wanted_alpha) {
     tex->set_alpha_filename(egg_tex->get_alpha_filename());
+  }
+
+  // See if there is some egg data hanging on the texture.  In
+  // particular, the TxaFileFilter might have left that here for us.
+  TypedReferenceCount *aux = tex->get_aux_data("egg");
+  if (aux != (TypedReferenceCount *)NULL &&
+      aux->is_of_type(EggTexture::get_class_type())) {
+    EggTexture *aux_egg_tex = DCAST(EggTexture, aux);
+
+    if (aux_egg_tex->get_alpha_mode() != EggTexture::AM_unspecified) {
+      egg_tex->set_alpha_mode(aux_egg_tex->get_alpha_mode());
+    }
+    if (aux_egg_tex->get_format() != EggTexture::F_unspecified) {
+      egg_tex->set_format(aux_egg_tex->get_format());
+    }
+    if (aux_egg_tex->get_minfilter() != EggTexture::FT_unspecified) {
+      egg_tex->set_minfilter(aux_egg_tex->get_minfilter());
+    }
+    if (aux_egg_tex->get_magfilter() != EggTexture::FT_unspecified) {
+      egg_tex->set_magfilter(aux_egg_tex->get_magfilter());
+    }
+    if (aux_egg_tex->has_anisotropic_degree()) {
+      egg_tex->set_anisotropic_degree(aux_egg_tex->get_anisotropic_degree());
+    }
   }
 
   apply_texture_attributes(tex, egg_tex);

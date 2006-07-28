@@ -15,3 +15,13 @@
 
 #end bin_target
 
+#begin lib_target
+  #define TARGET txafile
+  #define LOCAL_LIBS \
+    palettizer
+
+  #define SOURCES \
+    txaFileFilter.h txaFileFilter.I txaFileFilter.cxx
+
+#end lib_target
+
