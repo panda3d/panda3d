@@ -17,8 +17,15 @@
 
 #begin lib_target
   #define TARGET txafile
+  #define BUILDING_DLL BUILDING_MISC
   #define LOCAL_LIBS \
     palettizer
+  #define OTHER_LIBS \
+    egg:c pgraph:c downloader:c gobj:c lerp:c linmath:c putil:c \
+    express:c pnmimage:c pnmimagetypes:c \
+    event:c mathutil:c \
+    pandaegg:m panda:m pandaexpress:m \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     txaFileFilter.h txaFileFilter.I txaFileFilter.cxx

@@ -21,6 +21,7 @@
 
 #include "pandatoolbase.h"
 #include "texturePoolFilter.h"
+#include "pt_EggTexture.h"
 
 class TxaFile;
 
@@ -46,7 +47,7 @@ class TxaFile;
 //               that filters for which this might be a problem should
 //               call tex->set_keep_ram_image(true).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TxaFileFilter : public TexturePoolFilter {
+class EXPCL_MISC TxaFileFilter : public TexturePoolFilter {
 public:
   virtual PT(Texture) post_load(Texture *tex);
 

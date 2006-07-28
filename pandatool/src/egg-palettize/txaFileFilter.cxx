@@ -97,7 +97,7 @@ post_load(Texture *tex) {
   // Create an EggTexture to pass back the requested alpha mode to
   // the egg loader, if the texture is now being loaded from an egg
   // file.
-  PT(EggTexture) egg_tex = new EggTexture(tex->get_name(), tex->get_fullpath());
+  PT_EggTexture egg_tex = new EggTexture(tex->get_name(), tex->get_fullpath());
   const TextureProperties &props = tex_image.get_properties();
 
   egg_tex->set_alpha_mode(tex_image.get_alpha_mode());
