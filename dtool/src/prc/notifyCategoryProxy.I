@@ -44,7 +44,10 @@ init() {
 template<class GetCategory>
 INLINE NotifyCategory *NotifyCategoryProxy<GetCategory>::
 get_unsafe_ptr() {
-  nassertr(_ptr != (NotifyCategory *)NULL, init());
+  nassertd(_ptr != (NotifyCategory *)NULL) {
+    init();
+    nout << "Uninitialized notify proxy: " << _ptr->get_fullname() << "\n";
+  }
   return _ptr;
 }
 
