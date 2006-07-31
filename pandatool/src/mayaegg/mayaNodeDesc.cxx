@@ -369,11 +369,11 @@ mark_joint_parent() {
 void MayaNodeDesc::
 check_pseudo_joints(bool joint_above) {
   static uint32 space_count = 0;
+  string space;
+  for (uint32 idx=0; idx<space_count; ++idx) {
+    space.append(" ");
+  }
   if (mayaegg_cat.is_spam()) {
-    string space;
-    for (uint32 idx=0; idx<space_count; ++idx) {
-      space.append(" ");
-    }
     mayaegg_cat.spam() << "cpj:" << space << get_name() << " joint_type: " << _joint_type << endl;
   }
   if (_joint_type == JT_joint_parent && joint_above) {
@@ -413,11 +413,24 @@ check_pseudo_joints(bool joint_above) {
       bool all_joints = true;
       for (ci = _children.begin(); ci != _children.end(); ++ci) {
         MayaNodeDesc *child = (*ci);
+        MStatus status;
+        MFnDagNode dag_node(child->get_dag_path(), &status);
+        if (!status) {
+          status.perror("MFnDagNode constructor");
+        }
+        string type_name = dag_node.typeName().asChar();
         if (child->_joint_type == JT_joint_parent) {
           child->_joint_type = JT_pseudo_joint;
         } else if (child->_joint_type == JT_none) {
-          if (!child->get_dag_path().hasFn(MFn::kCamera))
+          if (mayaegg_cat.is_spam()) {
+            mayaegg_cat.spam() << "cpj: " << space << "jt_none for " << child->get_name() << endl;
+          }
+          if (type_name.find("transform") == string::npos) {
+            if (mayaegg_cat.is_spam()) {
+              mayaegg_cat.spam() << "cpj: " << space << "all_joints false for " << get_name() << endl;
+            }
             all_joints = false;
+          }
         }
       }
 

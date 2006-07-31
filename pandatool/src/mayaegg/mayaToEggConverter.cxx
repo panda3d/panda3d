@@ -860,16 +860,16 @@ process_model_node(MayaNodeDesc *node_desc) {
     
     // Extract some interesting Camera data
     if (mayaegg_cat.is_spam()) {
-      mayaegg_cat.info() << "  eyePoint: "
+      mayaegg_cat.spam() << "  eyePoint: "
                          << camera.eyePoint(MSpace::kWorld) << endl;
-      mayaegg_cat.info() << "  upDirection: "
+      mayaegg_cat.spam() << "  upDirection: "
                          << camera.upDirection(MSpace::kWorld) << endl;
-      mayaegg_cat.info() << "  viewDirection: "
+      mayaegg_cat.spam() << "  viewDirection: "
                          << camera.viewDirection(MSpace::kWorld) << endl;
-      mayaegg_cat.info() << "  aspectRatio: " << camera.aspectRatio() << endl;
-      mayaegg_cat.info() << "  horizontalFilmAperture: "
+      mayaegg_cat.spam() << "  aspectRatio: " << camera.aspectRatio() << endl;
+      mayaegg_cat.spam() << "  horizontalFilmAperture: "
                          << camera.horizontalFilmAperture() << endl;
-      mayaegg_cat.info() << "  verticalFilmAperture: "
+      mayaegg_cat.spam() << "  verticalFilmAperture: "
                          << camera.verticalFilmAperture() << endl;
     }
 
@@ -1000,7 +1000,10 @@ get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     // for joints, and they get converted in a special way.
 
     if (node_desc->is_joint()) {
-      //mayaegg_cat.info() << "gt: " << node_desc->get_name() << endl;
+      if (mayaegg_cat.is_spam()) {
+        mayaegg_cat.spam()
+          << "gt: joint " << node_desc->get_name() << "\n";
+      }
       get_joint_transform(dag_path, egg_group);
     }
     return;
