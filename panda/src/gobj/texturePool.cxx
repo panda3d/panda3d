@@ -796,7 +796,7 @@ load_filters() {
     string name = texture_filter.get_unique_value(i);
     
     Filename dlname = Filename::dso_filename("lib" + name + ".so");
-    gobj_cat.info()
+    gobj_cat->info()
       << "loading texture filter: " << dlname.to_os_specific() << endl;
     void *tmp = load_dso(dlname);
     if (tmp == (void *)NULL) {
