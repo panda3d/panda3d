@@ -139,6 +139,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
     case TransparencyAttrib::M_dual:
 #ifndef NDEBUG
       check_flash_transparency(object->_state, flash_dual_color);
+      state = object->_state;
 #endif
       if (!m_dual) {
         // If m_dual is configured off, it becomes M_alpha.

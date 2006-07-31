@@ -222,14 +222,14 @@ ConfigVariableBool show_vertex_animation
 ("show-vertex-animation", false,
  PRC_DESC("Set this true to flash any objects whose vertices are animated "
           "by Panda on the CPU (flash red) or by hardware (flash blue).  "
-          "This only has effect when NDEBUG is defined."));
+          "This only has effect when NDEBUG is not defined."));
 
 ConfigVariableBool show_transparency
 ("show-transparency", false,
  PRC_DESC("Set this true to flash any objects that are rendered in "
           "some transparency mode.  The color chosen is based on the  "
           "particular transparency mode in effect.  This only has effect "
-          "when NDEBUG is defined."));
+          "when NDEBUG is not defined."));
 
 ConfigVariableBool m_dual
 ("m-dual", true,
