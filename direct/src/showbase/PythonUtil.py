@@ -2312,6 +2312,13 @@ class FrameDelayedCallback:
             return task.done
         return task.cont
 
+class ArgumentEater:
+    def __init__(self, numToEat, func):
+        self._numToEat = numToEat
+        self._func = func
+    def __call__(self, *args, **kwArgs):
+        self._func(*args[self._numToEat:], **kwArgs)
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
