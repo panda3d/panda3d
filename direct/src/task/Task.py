@@ -77,8 +77,8 @@ class Task:
         self.__call__ = callback
         self.__priority = priority
         self.__removed = 0
+        self.dt = 0.0
         if TaskManager.taskTimerVerbose:
-            self.dt = 0.0
             self.avgDt = 0.0
             self.maxDt = 0.0
             self.runningTotal = 0.0
@@ -625,11 +625,20 @@ class TaskManager:
     def __executeTask(self, task):
         task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
         if not self.taskTimerVerbose:
+            startTime = self.trueClock.getShortTime()
+            
             # don't record timing info
             if task.extraArgs != None:
                 ret = task(*task.extraArgs)
             else:
                 ret = task(task)
+
+            endTime = self.trueClock.getShortTime()
+            
+            # Record the dt
+            dt = endTime - startTime
+            task.dt = dt
+            
         else:
             # Run the task and check the return value
             if task.pstats:
