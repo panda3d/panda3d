@@ -62,7 +62,7 @@ class GarbageReport(TaskThreaded):
         # grab the referrers (pointing to garbage)
         class GetReferrers(TaskThread):
             def setUp(self):
-                if self.parent._args.fullReport and (self.parent.numGarbage == 0):
+                if self.parent._args.fullReport and (self.parent.numGarbage != 0):
                     if self.parent._args.verbose:
                         self.parent.notify.info('getting referrers...')
                     self.index = 0
@@ -227,7 +227,7 @@ class GarbageReport(TaskThreaded):
                         if self.index == 0:
                             self.s.append('\n===== Referents (what is garbage item referring to?) =====')
                         for i in xrange(self.index, self.parent.numGarbage):
-                            self.s.append(format % (i, self.referentsByReference[i]))
+                            self.s.append(format % (i, self.parent.referentsByReference[i]))
                             if (not (i & 0x7F)) and (not self.timeLeft()):
                                 # we've run out of time, save the index
                                 self.index = i+1
@@ -268,6 +268,7 @@ class GarbageReport(TaskThreaded):
         self.scheduleThread(self.getReferrers)
 
     def destroy(self):
+        print 'GarbageReport.destroy'
         del self.getReferrers
         del self.getReferents
         del self.getCycles
@@ -377,6 +378,3 @@ class GarbageLogger(GarbageReport):
     def __init__(self, name, *args, **kArgs):
         kArgs['log'] = True
         GarbageReport.__init__(self, name, *args, **kArgs)
-    def T_completed(self):
-        GarbageReport.T_completed(self)
-        self.destroy()
