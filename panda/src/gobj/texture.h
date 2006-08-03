@@ -223,7 +223,7 @@ PUBLISHED:
   INLINE bool store(PNMImage &pnmimage, int z, int n) const;
 
   bool reload();
-  Texture *load_related(const PT(InternalName) &suffix) const;
+  Texture *load_related(const InternalName *suffix) const;
 
   INLINE bool has_filename() const;
   INLINE const Filename &get_filename() const;
@@ -508,7 +508,7 @@ protected:
   // of the special maps are derived by concatenating a suffix to
   // the name of the diffuse map.  The following table enables
   // lookup of the special maps given the diffuse map and the suffix.
-  typedef pmap<PT(InternalName), PT(Texture)> RelatedTextures;
+  typedef pmap<CPT(InternalName), PT(Texture)> RelatedTextures;
   RelatedTextures _related_textures;
 
   CompressionMode _ram_image_compression;

@@ -611,7 +611,7 @@ reload() {
 //               texture doesn't have a filename.
 ////////////////////////////////////////////////////////////////////
 Texture *Texture::
-load_related(const PT(InternalName) &suffix) const {
+load_related(const InternalName *suffix) const {
   RelatedTextures::const_iterator ti;
   ti = _related_textures.find(suffix);
   if (ti != _related_textures.end()) {
@@ -628,13 +628,25 @@ load_related(const PT(InternalName) &suffix) const {
     Filename alph = get_alpha_fullpath();
     alph.set_basename_wo_extension(alph.get_basename_wo_extension() +
                                    suffix->get_name());
-    res = TexturePool::load_texture(main, alph,
-                                    _primary_file_num_channels,
-                                    _alpha_file_channel);
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    if (vfs->exists(alph)) {
+      // The alpha variant of the filename, with the suffix, exists.
+      // Use it to load the texture.
+      res = TexturePool::load_texture(main, alph,
+                                      _primary_file_num_channels,
+                                      _alpha_file_channel);
+    } else {
+      // If the alpha variant of the filename doesn't exist, just go
+      // ahead and load the related texture without alpha.
+      res = TexturePool::load_texture(main);
+    }
+
   } else {
-    res = TexturePool::load_texture(main,
-                                    _primary_file_num_channels);
+    // No alpha filename--just load the single file.  It doesn't
+    // necessarily have the same number of channels as this one.
+    res = TexturePool::load_texture(main);
   }
+
   // I'm casting away the const-ness of 'this' because this
   // field is only a cache.
   ((Texture *)this)->_related_textures.insert(RelatedTextures::value_type(suffix, res));
