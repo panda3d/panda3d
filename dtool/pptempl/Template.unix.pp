@@ -679,9 +679,9 @@ $[TAB] cp $[target_prebuilt] $[target]
 // file.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
+#forscopes static_lib_target bin_target noinst_bin_target test_bin_target
 
-// Rules to compile ordinary C files.
+// Rules to compile ordinary C files (static objects).
 #foreach file $[sort $[c_sources]]
 #define target $[$[file]_obj]
 #define source $[file]
@@ -698,7 +698,7 @@ $[TAB] $[compile_c]
 
 #end file
 
-// Rules to compile C++ files.
+// Rules to compile C++ files (static objects).
 
 #foreach file $[sort $[cxx_sources]]
 #define target $[$[file]_obj]
@@ -718,7 +718,48 @@ $[TAB] $[compile_c++]
 
 #end file
 
-#end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
+#end static_lib_target bin_target noinst_bin_target test_bin_target
+
+#forscopes metalib_target lib_target noinst_lib_target ss_lib_target
+
+// Rules to compile ordinary C files (shared objects).
+#foreach file $[sort $[c_sources]]
+#define target $[$[file]_obj]
+#define source $[file]
+#define ipath $[target_ipath]
+#define flags $[cflags] $[CFLAGS_SHARED]
+#if $[ne $[file], $[notdir $file]]
+  // If the source file is not in the current directory, tack on "."
+  // to front of the ipath.
+  #set ipath . $[ipath]
+#endif
+
+$[target] : $[source] $[get_depends $[source]]
+$[TAB] $[compile_c]
+
+#end file
+
+// Rules to compile C++ files (shared objects).
+
+#foreach file $[sort $[cxx_sources]]
+#define target $[$[file]_obj]
+#define source $[file]
+#define ipath $[target_ipath]
+#define flags $[c++flags] $[CFLAGS_SHARED]
+#if $[ne $[file], $[notdir $file]]
+  // If the source file is not in the current directory, tack on "."
+  // to front of the ipath.
+  #set ipath . $[ipath]
+#endif
+
+// Yacc must run before some files can be compiled, so all files
+// depend on yacc having run.
+$[target] : $[source] $[get_depends $[source]] $[yxx_sources:%.yxx=%.h]
+$[TAB] $[compile_c++]
+
+#end file
+
+#end metalib_target lib_target noinst_lib_target ss_lib_target
 
 // And now the rules to install the auxiliary files, like headers and
 // data files.
