@@ -31,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS ChecksumHashGenerator : public HashGeneratorBase {
 public:
-  INLINE void add_int(int num);
+  INLINE void add_int(long num);
   INLINE void add_bool(bool flag);
   INLINE void add_fp(float num, float threshold);
   INLINE void add_fp(double num, double threshold);

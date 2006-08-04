@@ -25,7 +25,7 @@
 //               is the principle implementation of the HashGenerator.
 ////////////////////////////////////////////////////////////////////
 INLINE void ChecksumHashGenerator::
-add_int(int sum) {
+add_int(long sum) {
   _hash += (size_t)sum;
 }
 
@@ -48,7 +48,7 @@ add_bool(bool flag) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ChecksumHashGenerator::
 add_fp(float number, float threshold) {
-  add_int((int)(number / threshold));
+  add_int((long)(number / threshold));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ add_fp(float number, float threshold) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ChecksumHashGenerator::
 add_fp(double number, double threshold) {
-  add_int((int)(number / threshold));
+  add_int((long)(number / threshold));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,5 +72,5 @@ add_fp(double number, double threshold) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ChecksumHashGenerator::
 add_pointer(void *ptr) {
-  add_int((int)ptr);
+  add_int((long)ptr);
 }
