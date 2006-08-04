@@ -52,11 +52,15 @@ typedef float PN_float32;
 #else // HAVE_NSPR
 
 // Without NSPR, and without any other information, we need some
-// fallback.  For now, we'll just assume a typical 32-bit environment.
+// fallback.  For now, we'll just assume a typical environment.
 
 typedef signed char PN_int8;
 typedef short PN_int16;
-typedef long PN_int32;
+typedef int PN_int32;
+
+typedef unsigned char PN_uint8;
+typedef unsigned short PN_uint16;
+typedef unsigned int PN_uint32;
 
 #ifdef WIN32_VC
 typedef __int64 PN_int64;
@@ -65,10 +69,6 @@ typedef unsigned __int64 PN_uint64;
 typedef long long PN_int64;
 typedef unsigned long long PN_uint64;
 #endif
-
-typedef unsigned char PN_uint8;
-typedef unsigned short PN_uint16;
-typedef unsigned long PN_uint32;
 
 typedef double PN_float64;
 typedef float PN_float32;
