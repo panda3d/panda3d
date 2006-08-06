@@ -136,7 +136,9 @@ EggMakeFont() : EggWriter(true, false) {
   add_option
     ("tm", "n", 0,
      "The number of extra pixels around each character in the texture map.  "
-     "This may only be an integer.  The default is 2.",
+     "This may only be an integer.  The default is 2.  This is meaningful "
+     "when -nopal is also used; in the normal case, use -pm to control "
+     "both the polygon size and the texture map spacing.",
      &EggMakeFont::dispatch_int, NULL, &_tex_margin);
 
   add_option
@@ -371,14 +373,14 @@ run() {
   // TextureImage pointers.
   pal = new Palettizer;
   pal->_generated_image_pattern = _output_palette_pattern;
-  pal->_omit_solitary = true;
+  pal->_omit_solitary = false;
   pal->_round_uvs = false;
 
   // Generate a txa script for the palettizer.  We have the palettizer
   // reduce all of the texture images by the inverse of our scale
   // factor.
   char buffer[1024];
-  sprintf(buffer, ":margin 0;:background %f %f %f %f;:palette %d %d;*: %f%% keep-format", 
+  sprintf(buffer, ":margin 0;:coverage 1000;:background %f %f %f %f;:palette %d %d;*: %f%% keep-format", 
           _bg[0], _bg[1], _bg[2], _bg[3],
           _palette_size[0], _palette_size[1],
           100.0 / _palettize_scale_factor);
@@ -450,6 +452,7 @@ run() {
     if (!pal->write_eggs()) {
       exit(1);
     }
+    //    pal->report_pi();
   }
 }
 
