@@ -82,6 +82,8 @@ PUBLISHED:
   INLINE void set_horizontal_scale(double h);
   INLINE void set_vertical_scale(double v);
   INLINE void set_max_triangles(int n);
+
+  double get_elevation(double x, double y);
   
   NodePath generate();
 

@@ -67,6 +67,42 @@ fix_heightfield(int size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HeightfieldTesselator::get_elevation
+//       Access: Private
+//  Description: Fetches the elevation at (x,y), where the input
+//               coordinate is specified in pixels.  This ignores the
+//               current tesselation level and instead provides an
+//               accurate number.  Linear blending is used for 
+//               non-integral coordinates.  The current vertical
+//               scale is taken into account.
+////////////////////////////////////////////////////////////////////
+double HeightfieldTesselator::
+get_elevation(double x, double y) {
+  int scale = 7;
+  int size = 1 << scale;
+  fix_heightfield(size);
+  int xlo = (int)x;
+  int ylo = (int)y;
+  if (xlo < 0) xlo = 0;
+  if (ylo < 0) ylo = 0;
+  if (xlo > _heightfield.get_x_size()-2)
+    xlo = _heightfield.get_x_size()-2;
+  if (ylo > _heightfield.get_y_size()-2)
+    ylo = _heightfield.get_y_size()-2;
+  int xhi = xlo+1;
+  int yhi = ylo+1;
+  double xoffs = x - xlo;
+  double yoffs = y - ylo;
+  double grayxlyl = _heightfield.get_gray(xlo,ylo);
+  double grayxhyl = _heightfield.get_gray(xhi,ylo);
+  double grayxlyh = _heightfield.get_gray(xlo,yhi);
+  double grayxhyh = _heightfield.get_gray(xhi,yhi);
+  double lerpyl = grayxhyl * xoffs + grayxlyl * (1.0 - xoffs);
+  double lerpyh = grayxhyh * xoffs + grayxlyh * (1.0 - xoffs);
+  return lerpyh * yoffs + lerpyl * (1.0 - yoffs);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HeightfieldTesselator::get_vertex
 //       Access: Private
 //  Description: Fetches the vertex at (x,y), or if the vertex
@@ -342,10 +378,10 @@ count_triangles(int scale, int x, int y) {
 void HeightfieldTesselator::
 add_quad_to_strip(int v1, int v2, int v3, int v4) {
   if ((v1 != v2)&&(v2 != v3)&&(v1 != v3)) {
-    _triangles->add_vertices(v1,v2,v3);
+    _triangles->add_vertices(v1,v3,v2);
   }
   if ((v3 != v2)&&(v2 != v4)&&(v4 != v3)) {
-    _triangles->add_vertices(v3,v2,v4);
+    _triangles->add_vertices(v3,v4,v2);
   }
   //  if ((v1 == _last_vertex_a)&&(v2 == _last_vertex_b)) {
   //    _tristrip->add_vertices(v3,v4);
