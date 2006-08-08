@@ -360,7 +360,7 @@ class Actor(DirectObject, NodePath):
         """
         Actor cleanup function
         """
-        self.stop()
+        self.stop(None)
         self.flush()
         self.__geomNode.removeNode()
         if not self.isEmpty():
