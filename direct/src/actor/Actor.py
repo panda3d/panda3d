@@ -1,5 +1,7 @@
 """Actor module: contains the Actor class"""
 
+__all__ = ['Actor']
+
 from pandac.PandaModules import *
 from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import LODNode

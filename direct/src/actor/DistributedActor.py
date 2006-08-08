@@ -1,5 +1,7 @@
 """DistributedActor module: contains the DistributedActor class"""
 
+__all__ = ['DistributedActor']
+
 from direct.distributed import DistributedNode
 
 import Actor

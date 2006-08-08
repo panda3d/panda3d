@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['ClassicFSM']
+
 """Finite State Machine module: contains the ClassicFSM class.
 
 This module and class exist only for backward compatibility with

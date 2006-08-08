@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['Timer']
+
 from pandac.PandaModules import *
 import Task
 

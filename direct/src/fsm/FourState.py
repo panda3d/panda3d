@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['FourState']
+
 
 
 from direct.directnotify import DirectNotifyGlobal

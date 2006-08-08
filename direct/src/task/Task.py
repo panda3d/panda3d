@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['Task', 'TaskPriorityList', 'TaskManager']
+
 
 # This module may not import pandac.PandaModules, since it is imported
 # by the Toontown Launcher before the complete PandaModules have been

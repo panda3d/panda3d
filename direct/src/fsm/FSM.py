@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['FSMException', 'FSM']
+
 """
 The new Finite State Machine module.  This replaces the modules
 previously called FSM.py (now called ClassicFSM.py).

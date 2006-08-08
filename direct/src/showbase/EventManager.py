@@ -1,7 +1,8 @@
 
 from MessengerGlobal import *
-from direct.task.TaskManagerGlobal import *
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.directnotify.DirectNotifyGlobal import *
+from direct.task.Task import Task
 
 class EventManager:
 

@@ -1,5 +1,6 @@
-
 """State module: contains State class"""
+
+__all__ = ['State']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject

@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = []
+
 from direct.task.TaskManagerGlobal import *
 import direct.task.Task
 import random
