@@ -72,7 +72,7 @@ class Transitions:
                 relief = None,
                 image = self.fadeModel,
                 image_scale = 2 * base.getAspectRatio(),
-                state = NORMAL,
+                state = DGG.NORMAL,
                 )
 
             def rescaleFade():

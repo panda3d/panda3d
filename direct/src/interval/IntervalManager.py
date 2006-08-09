@@ -1,6 +1,6 @@
 """Undocumented Module"""
 
-__all__ = ['IntervalManager']
+__all__ = ['IntervalManager', 'ivalMgr']
 
 from pandac.PandaModules import *
 from pandac import PandaModules

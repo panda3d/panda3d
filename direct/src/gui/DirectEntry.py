@@ -5,6 +5,7 @@ __all__ = ['DirectEntry']
 from pandac.PandaModules import *
 import DirectGuiGlobals as DGG
 from DirectFrame import *
+from OnscreenText import OnscreenText
 import string,types
 
 # DirectEntry States:

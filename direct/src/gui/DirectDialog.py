@@ -6,6 +6,7 @@ from pandac.PandaModules import *
 import DirectGuiGlobals as DGG
 from DirectFrame import *
 from DirectButton import *
+import types
 
 def findDialog(uniqueName):
     """findPanel(string uniqueName)
@@ -93,7 +94,7 @@ class DirectDialog(DirectFrame):
             ('text',              '',            None),
             ('text_align',        TextNode.ALeft,   None),
             ('text_scale',        0.06,          None),
-            ('image',  getDefaultDialogGeom(),   None),
+            ('image',  DGG.getDefaultDialogGeom(),   None),
             ('relief',            None,          None),
             ('buttonTextList',    [],            DGG.INITOPT),
             ('buttonGeomList',    [],            DGG.INITOPT),

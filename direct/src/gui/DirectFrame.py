@@ -5,7 +5,8 @@ __all__ = ['DirectFrame']
 from pandac.PandaModules import *
 import DirectGuiGlobals as DGG
 from DirectGuiBase import *
-from OnscreenImage import *
+from OnscreenImage import OnscreenImage
+from OnscreenGeom import OnscreenGeom
 import string, types
 
 class DirectFrame(DirectGuiWidget):

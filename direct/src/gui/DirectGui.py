@@ -1,6 +1,6 @@
 """Undocumented Module"""
 
-import DirectGuiGlobals
+import DirectGuiGlobals as DGG
 from OnscreenText import *
 from OnscreenGeom import *
 from OnscreenImage import *

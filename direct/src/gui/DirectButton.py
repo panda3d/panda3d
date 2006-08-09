@@ -6,12 +6,6 @@ from pandac.PandaModules import *
 import DirectGuiGlobals as DGG
 from DirectFrame import *
 
-# DirectButton States:
-BUTTON_READY_STATE     = PGButton.SReady       # 0
-BUTTON_DEPRESSED_STATE = PGButton.SDepressed   # 1
-BUTTON_ROLLOVER_STATE  = PGButton.SRollover    # 2
-BUTTON_INACTIVE_STATE  = PGButton.SInactive    # 3
-
 class DirectButton(DirectFrame):
     """
     DirectButton(parent) - Create a DirectGuiWidget which responds
