@@ -1,3 +1,9 @@
+"""Undocumented Module"""
+
+__all__ = ['DirectOptionMenu']
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from DirectButton import *
 from DirectLabel import *
 
@@ -16,7 +22,7 @@ class DirectOptionMenu(DirectButton):
             ('items',       [],             self.setItems),
             # Initial item to display on menu button
             # Can be an interger index or the same string as the button
-            ('initialitem', None,           INITOPT),
+            ('initialitem', None,           DGG.INITOPT),
             # Amount of padding to place around popup button indicator
             ('popupMarkerBorder', (.1, .1), None),
             # Background color to use to highlight popup menu items
@@ -27,7 +33,7 @@ class DirectOptionMenu(DirectButton):
             # Changing this breaks button layout
             ('text_align',  TextNode.ALeft, None),
             # Remove press effect because it looks a bit funny
-            ('pressEffect',     0,          INITOPT),
+            ('pressEffect',     0,          DGG.INITOPT),
            )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -42,14 +48,14 @@ class DirectOptionMenu(DirectButton):
             DirectFrame, (self,),
             frameSize = (-0.5, 0.5, -0.2, 0.2),
             scale = 0.4,
-            relief = RAISED)
+            relief = DGG.RAISED)
         # This needs to popup the menu too
-        self.popupMarker.bind(B1PRESS, self.showPopupMenu)
+        self.popupMarker.bind(DGG.B1PRESS, self.showPopupMenu)
         # Check if item is highlighted on release and select it if it is
-        self.popupMarker.bind(B1RELEASE, self.selectHighlightedIndex)
+        self.popupMarker.bind(DGG.B1RELEASE, self.selectHighlightedIndex)
         # Make popup marker have the same click sound
         self.popupMarker.guiItem.setSound(
-            B1PRESS + self.popupMarker.guiId, self['clickSound'])
+            DGG.B1PRESS + self.popupMarker.guiId, self['clickSound'])
         # This is created when you set the menu's items
         self.popupMenu = None
         self.selectedIndex = None
@@ -63,11 +69,11 @@ class DirectOptionMenu(DirectButton):
             state = 'normal')
         # Make sure this is on top of all the other widgets
         self.cancelFrame.setBin('gui-popup', 0)
-        self.cancelFrame.bind(B1PRESS, self.hidePopupMenu)
+        self.cancelFrame.bind(DGG.B1PRESS, self.hidePopupMenu)
         # Default action on press is to show popup menu
-        self.bind(B1PRESS, self.showPopupMenu)
+        self.bind(DGG.B1PRESS, self.showPopupMenu)
         # Check if item is highlighted on release and select it if it is
-        self.bind(B1RELEASE, self.selectHighlightedIndex)
+        self.bind(DGG.B1RELEASE, self.selectHighlightedIndex)
         # Call option initialization functions
         self.initialiseoptions(DirectOptionMenu)
         # Need to call this since we explicitly set frame size
@@ -129,13 +135,13 @@ class DirectOptionMenu(DirectButton):
             item['frameSize'] = (self.minX, self.maxX, self.minZ, self.maxZ)
             # Move it to its correct position on the popup
             item.setPos(-self.minX, 0, -self.maxZ - i * self.maxHeight)
-            item.bind(B1RELEASE, self.hidePopupMenu)
+            item.bind(DGG.B1RELEASE, self.hidePopupMenu)
             # Highlight background when mouse is in item
-            item.bind(WITHIN,
+            item.bind(DGG.WITHIN,
                       lambda x, i=i, item=item:self._highlightItem(item, i))
             # Restore specified color upon exiting
             fc = item['frameColor']
-            item.bind(WITHOUT,
+            item.bind(DGG.WITHOUT,
                       lambda x, item=item, fc=fc: self._unhighlightItem(item, fc))
         # Set popup menu frame size to encompass all items
         f = self.component('popupMenu')

@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['MetaInterval', 'Sequence', 'Parallel', 'ParallelEndTogether', 'Track']
+
 from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import *
 from IntervalManager import ivalMgr

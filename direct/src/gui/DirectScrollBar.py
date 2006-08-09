@@ -1,6 +1,11 @@
+"""Undocumented Module"""
+
+__all__ = ['DirectScrollBar']
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from DirectFrame import *
 from DirectButton import *
-from DirectGuiBase import _OPT_VALUE
 
 """
 import DirectScrollBar
@@ -17,14 +22,14 @@ class DirectScrollBar(DirectFrame):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('pgFunc',         PGSliderBar,        None),
-            ('state',          NORMAL,             None),
-            ('frameColor',     (0.6, 0.6, 0.6, 1),    None),
+            ('state',          DGG.NORMAL,         None),
+            ('frameColor',     (0.6, 0.6, 0.6, 1), None),
 
             ('range',          (0, 1),             self.setRange),
             ('value',          0,                  self.__setValue),
             ('scrollSize',     0.01,               self.setScrollSize),
             ('pageSize',       0.1,                self.setPageSize),
-            ('orientation',    HORIZONTAL,         self.setOrientation),
+            ('orientation',    DGG.HORIZONTAL,     self.setOrientation),
             ('manageButtons',  1,                  self.setManageButtons),
             ('resizeThumb',    1,                  self.setResizeThumb),
 
@@ -33,7 +38,7 @@ class DirectScrollBar(DirectFrame):
             ('extraArgs',      [],                 None),
             )
 
-        if kw.get('orientation') == VERTICAL:
+        if kw.get('orientation') == DGG.VERTICAL:
             # These are the default options for a vertical layout.
             optiondefs += (
                 ('frameSize',      (-0.04, 0.04, -0.5, 0.5),   None),
@@ -68,7 +73,7 @@ class DirectScrollBar(DirectFrame):
         self.guiItem.setRightButton(self.incButton.guiItem)
 
         # Bind command function
-        self.bind(ADJUST, self.commandFunc)
+        self.bind(DGG.ADJUST, self.commandFunc)
 
         # Call option initialization functions
         self.initialiseoptions(DirectScrollBar)
@@ -104,9 +109,9 @@ class DirectScrollBar(DirectFrame):
         self.guiItem.setPageSize(self['pageSize'])
 
     def setOrientation(self):
-        if self['orientation'] == HORIZONTAL:
+        if self['orientation'] == DGG.HORIZONTAL:
             self.guiItem.setAxis(Vec3(1, 0, 0))
-        elif self['orientation'] == VERTICAL:
+        elif self['orientation'] == DGG.VERTICAL:
             self.guiItem.setAxis(Vec3(0, 0, -1))
         else:
             raise ValueError, 'Invalid value for orientation: %s' % (self['orientation'])
@@ -122,7 +127,7 @@ class DirectScrollBar(DirectFrame):
 
     def commandFunc(self):
         # Store the updated value in self['value']
-        self._optionInfo['value'][_OPT_VALUE] = self.guiItem.getValue()
+        self._optionInfo['value'][DGG._OPT_VALUE] = self.guiItem.getValue()
 
         if self['command']:
             apply(self['command'], self['extraArgs'])

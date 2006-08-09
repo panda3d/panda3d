@@ -1,8 +1,14 @@
+"""Undocumented Module"""
+
+__all__ = ['DirectScrolledListItem', 'DirectScrolledList']
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from direct.directnotify import DirectNotifyGlobal
+from direct.task.Task import Task
 from DirectFrame import *
 from DirectButton import *
-from direct.task import Task
-import types
+import string, types
 
 
 class DirectScrolledListItem(DirectButton):
@@ -68,8 +74,8 @@ class DirectScrolledList(DirectFrame):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('items',              [],        None),
-            ('itemsAlign',  TextNode.ACenter, INITOPT),
-            ('itemsWordwrap',      None,      INITOPT),
+            ('itemsAlign',  TextNode.ACenter, DGG.INITOPT),
+            ('itemsWordwrap',      None,      DGG.INITOPT),
             ('command',            None,      None),
             ('extraArgs',          [],        None),
             ('itemMakeFunction',   None,      None),
@@ -87,13 +93,13 @@ class DirectScrolledList(DirectFrame):
         self.incButton = self.createcomponent("incButton", (), None,
                                               DirectButton, (self,),
                                               )
-        self.incButton.bind(B1PRESS, self.__incButtonDown)
-        self.incButton.bind(B1RELEASE, self.__buttonUp)
+        self.incButton.bind(DGG.B1PRESS, self.__incButtonDown)
+        self.incButton.bind(DGG.B1RELEASE, self.__buttonUp)
         self.decButton = self.createcomponent("decButton", (), None,
                                               DirectButton, (self,),
                                               )
-        self.decButton.bind(B1PRESS, self.__decButtonDown)
-        self.decButton.bind(B1RELEASE, self.__buttonUp)
+        self.decButton.bind(DGG.B1PRESS, self.__decButtonDown)
+        self.decButton.bind(DGG.B1RELEASE, self.__buttonUp)
         self.itemFrame = self.createcomponent("itemFrame", (), None,
                                               DirectFrame, (self,),
                                               )
@@ -143,8 +149,8 @@ class DirectScrolledList(DirectFrame):
     def selectListItem(self, item):
         assert self.notify.debugStateCall(self)
         if hasattr(self, "currentSelected"):
-            self.currentSelected['state']=NORMAL
-        item['state']=DISABLED
+            self.currentSelected['state']=DGG.NORMAL
+        item['state']=DGG.DISABLED
         self.currentSelected=item
 
     def scrollBy(self, delta):
@@ -189,26 +195,26 @@ class DirectScrolledList(DirectFrame):
         # Not enough items to even worry about scrolling,
         # just disable the buttons and do nothing
         if (len(self["items"]) <= numItemsVisible):
-            self.incButton['state'] = DISABLED
-            self.decButton['state'] = DISABLED
+            self.incButton['state'] = DGG.DISABLED
+            self.decButton['state'] = DGG.DISABLED
             # Hmm.. just reset self.index to 0 and bail out
             self.index = 0
             ret = 0
         else:
             if (self.index <= 0):
                 self.index = 0
-                self.decButton['state'] = DISABLED
-                self.incButton['state'] = NORMAL
+                self.decButton['state'] = DGG.DISABLED
+                self.incButton['state'] = DGG.NORMAL
                 ret = 0
             elif (self.index >= (numItemsTotal - numItemsVisible)):
                 self.index = numItemsTotal - numItemsVisible
                 # print "at list end, ", len(self["items"]),"  ", self["numItemsVisible"]
-                self.incButton['state'] = DISABLED
-                self.decButton['state'] = NORMAL
+                self.incButton['state'] = DGG.DISABLED
+                self.decButton['state'] = DGG.NORMAL
                 ret = 0
             else:
-                self.incButton['state'] = NORMAL
-                self.decButton['state'] = NORMAL
+                self.incButton['state'] = DGG.NORMAL
+                self.decButton['state'] = DGG.NORMAL
                 ret = 1
 
         # print "self.index set to ", self.index
@@ -286,7 +292,7 @@ class DirectScrolledList(DirectFrame):
 
     def __incButtonDown(self, event):
         assert self.notify.debugStateCall(self)
-        task = Task.Task(self.__scrollByTask)
+        task = Task(self.__scrollByTask)
         task.delayTime = (1.0 / self.scrollSpeed)
         task.prevTime = 0.0
         task.delta = 1
@@ -296,7 +302,7 @@ class DirectScrolledList(DirectFrame):
 
     def __decButtonDown(self, event):
         assert self.notify.debugStateCall(self)
-        task = Task.Task(self.__scrollByTask)
+        task = Task(self.__scrollByTask)
         task.delayTime = (1.0 / self.scrollSpeed)
         task.prevTime = 0.0
         task.delta = -1
@@ -370,7 +376,7 @@ def makeButton(itemName, itemNum, *extraArgs):
     def buttonCommand():
         print itemName, itemNum
     return DirectButton(text = itemName,
-                        relief = RAISED,
+                        relief = DGG.RAISED,
                         frameSize = (-3.5, 3.5, -0.2, 0.8),
                         scale = 0.85,
                         command = buttonCommand)
@@ -379,7 +385,7 @@ s = scrollList = DirectScrolledList(
     parent = aspect2d,
     relief = None,
     # Use the default dialog box image as the background
-    image = getDefaultDialogGeom(),
+    image = DGG.getDefaultDialogGeom(),
     # Scale it to fit around everyting
     image_scale = (0.7, 1, .8),
     # Give it a label
@@ -392,12 +398,12 @@ s = scrollList = DirectScrolledList(
     # They can contain a combination of text, geometry and images
     # Just a simple text one for now
     incButton_text = 'Increment',
-    incButton_relief = RAISED,
+    incButton_relief = DGG.RAISED,
     incButton_pos = (0.0, 0.0, -0.36),
     incButton_scale = 0.1,
     # Same for the decrement button
     decButton_text = 'Decrement',
-    decButton_relief = RAISED,
+    decButton_relief = DGG.RAISED,
     decButton_pos = (0.0, 0.0, 0.175),
     decButton_scale = 0.1,
     # each item is a button with text on it
@@ -411,6 +417,6 @@ s = scrollList = DirectScrolledList(
     itemFrame_pos = (0, 0, 0.06),
     itemFrame_scale = 0.1,
     itemFrame_frameSize = (-3.1, 3.1, -3.3, 0.8),
-    itemFrame_relief = GROOVE,
+    itemFrame_relief = DGG.GROOVE,
     )
 """

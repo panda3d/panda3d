@@ -1,4 +1,9 @@
-from DirectGuiGlobals import *
+"""Undocumented Module"""
+
+__all__ = ['findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog', 'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog']
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from DirectFrame import *
 from DirectButton import *
 
@@ -79,7 +84,7 @@ class DirectDialog(DirectFrame):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('dialogName',        'DirectDialog_' + `DirectDialog.PanelIndex`,  INITOPT),
+            ('dialogName',        'DirectDialog_' + `DirectDialog.PanelIndex`,  DGG.INITOPT),
             # Default position is slightly forward in Y, so as not to
             # intersect the near plane, which is incorrectly set to 0
             # in DX for some reason.
@@ -90,20 +95,20 @@ class DirectDialog(DirectFrame):
             ('text_scale',        0.06,          None),
             ('image',  getDefaultDialogGeom(),   None),
             ('relief',            None,          None),
-            ('buttonTextList',    [],            INITOPT),
-            ('buttonGeomList',    [],            INITOPT),
-            ('buttonImageList',   [],            INITOPT),
-            ('buttonValueList',   [],            INITOPT),
-            ('buttonHotKeyList',  [],            INITOPT),
-            ('button_borderWidth', (.01, .01),     None),
-            ('button_pad',        (.01, .01),     None),
-            ('button_relief',     RAISED,        None),
-            ('button_text_scale', 0.06,        None),
-            ('buttonSize',        None,          INITOPT),
-            ('topPad',            0.06,          INITOPT),
-            ('midPad',            0.12,          INITOPT),
-            ('sidePad',           0.,            INITOPT),
-            ('buttonPadSF',       1.1,          INITOPT),
+            ('buttonTextList',    [],            DGG.INITOPT),
+            ('buttonGeomList',    [],            DGG.INITOPT),
+            ('buttonImageList',   [],            DGG.INITOPT),
+            ('buttonValueList',   [],            DGG.INITOPT),
+            ('buttonHotKeyList',  [],            DGG.INITOPT),
+            ('button_borderWidth', (.01, .01),   None),
+            ('button_pad',        (.01, .01),    None),
+            ('button_relief',     DGG.RAISED,    None),
+            ('button_text_scale', 0.06,          None),
+            ('buttonSize',        None,          DGG.INITOPT),
+            ('topPad',            0.06,          DGG.INITOPT),
+            ('midPad',            0.12,          DGG.INITOPT),
+            ('sidePad',           0.,            DGG.INITOPT),
+            ('buttonPadSF',       1.1,           DGG.INITOPT),
             # Alpha of fade screen behind dialog
             ('fadeScreen',        0,             None),
             ('command',           None,          None),
@@ -334,8 +339,8 @@ class OkDialog(DirectDialog):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('buttonTextList',  ['OK'],       INITOPT),
-            ('buttonValueList', [DIALOG_OK],          INITOPT),
+            ('buttonTextList',  ['OK'],       DGG.INITOPT),
+            ('buttonValueList', [DGG.DIALOG_OK],          DGG.INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -347,8 +352,8 @@ class OkCancelDialog(DirectDialog):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('buttonTextList',  ['OK','Cancel'],       INITOPT),
-            ('buttonValueList', [DIALOG_OK, DIALOG_CANCEL], INITOPT),
+            ('buttonTextList',  ['OK','Cancel'],       DGG.INITOPT),
+            ('buttonValueList', [DGG.DIALOG_OK, DGG.DIALOG_CANCEL], DGG.INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -360,8 +365,8 @@ class YesNoDialog(DirectDialog):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('buttonTextList',  ['Yes', 'No'],       INITOPT),
-            ('buttonValueList', [DIALOG_YES, DIALOG_NO], INITOPT),
+            ('buttonTextList',  ['Yes', 'No'],       DGG.INITOPT),
+            ('buttonValueList', [DGG.DIALOG_YES, DGG.DIALOG_NO], DGG.INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -373,9 +378,9 @@ class YesNoCancelDialog(DirectDialog):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('buttonTextList',  ['Yes', 'No', 'Cancel'],  INITOPT),
-            ('buttonValueList', [DIALOG_YES, DIALOG_NO, DIALOG_CANCEL],
-             INITOPT),
+            ('buttonTextList',  ['Yes', 'No', 'Cancel'],  DGG.INITOPT),
+            ('buttonValueList', [DGG.DIALOG_YES, DGG.DIALOG_NO, DGG.DIALOG_CANCEL],
+             DGG.INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -387,8 +392,8 @@ class RetryCancelDialog(DirectDialog):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('buttonTextList',  ['Retry','Cancel'],   INITOPT),
-            ('buttonValueList', [DIALOG_RETRY, DIALOG_CANCEL], INITOPT),
+            ('buttonTextList',  ['Retry','Cancel'],   DGG.INITOPT),
+            ('buttonValueList', [DGG.DIALOG_RETRY, DGG.DIALOG_CANCEL], DGG.INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)

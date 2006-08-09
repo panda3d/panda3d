@@ -1,6 +1,11 @@
+"""Undocumented Module"""
+
+__all__ = ['DirectSlider']
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from DirectFrame import *
 from DirectButton import *
-from DirectGuiBase import _OPT_VALUE
 
 """
 import DirectSlider
@@ -17,20 +22,20 @@ class DirectSlider(DirectFrame):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('pgFunc',         PGSliderBar,        None),
-            ('state',          NORMAL,             None),
-            ('frameColor',     (0.6, 0.6, 0.6, 1),    None),
+            ('state',          DGG.NORMAL,         None),
+            ('frameColor',     (0.6, 0.6, 0.6, 1), None),
 
             ('range',          (0, 1),             self.setRange),
             ('value',          0,                  self.__setValue),
             ('pageSize',       0.1,                self.setPageSize),
-            ('orientation',    HORIZONTAL,         self.setOrientation),
+            ('orientation',    DGG.HORIZONTAL,     self.setOrientation),
 
             # Function to be called repeatedly as slider is moved
             ('command',        None,               None),
             ('extraArgs',      [],                 None),
             )
 
-        if kw.get('orientation') == VERTICAL:
+        if kw.get('orientation') == DGG.VERTICAL:
             # These are the default options for a vertical layout.
             optiondefs += (
                 ('frameSize',      (-0.08, 0.08, -1, 1),   None),
@@ -56,7 +61,7 @@ class DirectSlider(DirectFrame):
            self.thumb.bounds == [0.0, 0.0, 0.0, 0.0]:
             # Compute a default frameSize for the thumb.
             f = self['frameSize']
-            if self['orientation'] == HORIZONTAL:
+            if self['orientation'] == DGG.HORIZONTAL:
                 self.thumb['frameSize'] = (f[0]*0.05, f[1]*0.05, f[2], f[3])
             else:
                 self.thumb['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
@@ -64,7 +69,7 @@ class DirectSlider(DirectFrame):
         self.guiItem.setThumbButton(self.thumb.guiItem)
 
         # Bind command function
-        self.bind(ADJUST, self.commandFunc)
+        self.bind(DGG.ADJUST, self.commandFunc)
 
         # Call option initialization functions
         self.initialiseoptions(DirectSlider)
@@ -97,9 +102,9 @@ class DirectSlider(DirectFrame):
         self.guiItem.setPageSize(self['pageSize'])
 
     def setOrientation(self):
-        if self['orientation'] == HORIZONTAL:
+        if self['orientation'] == DGG.HORIZONTAL:
             self.guiItem.setAxis(Vec3(1, 0, 0))
-        elif self['orientation'] == VERTICAL:
+        elif self['orientation'] == DGG.VERTICAL:
             self.guiItem.setAxis(Vec3(0, 0, 1))
         else:
             raise ValueError, 'Invalid value for orientation: %s' % (self['orientation'])
@@ -109,7 +114,7 @@ class DirectSlider(DirectFrame):
 
     def commandFunc(self):
         # Store the updated value in self['value']
-        self._optionInfo['value'][_OPT_VALUE] = self.guiItem.getValue()
+        self._optionInfo['value'][DGG._OPT_VALUE] = self.guiItem.getValue()
 
         if self['command']:
             apply(self['command'], self['extraArgs'])

@@ -3,7 +3,7 @@ from pandac.PandaModules import *
 from direct.directbase.DirectStart import *
 from direct.showbase.DirectObject import DirectObject
 from PieMenu import *
-from direct.gui.DirectGuiGlobals import *
+import direct.gui.DirectGuiGlobals
 from direct.showbase.TkGlobal import *
 from direct.directtools.DirectUtil import *
 from direct.directtools.DirectGeometry import *
@@ -4634,7 +4634,7 @@ class LevelStyleManager:
         for i in range (numItems):
             # Create a text node--just a card, really--of the right color.
             tn = TextNode('colorChip')
-            tn.setFont(getDefaultFont())
+            tn.setFont(DirectGuiGlobals.getDefaultFont())
             tn.setTransform(Mat4.scaleMat(0.07, 0.07, 0.07 * aspectRatio))
             tn.setCardColor(colorList[i])
             tn.setCardActual(0, 1.1111, 0, 0.8333)
@@ -4760,7 +4760,7 @@ class LevelStyleManager:
             # Create text node for each item
             if (textList[i] != None):
                 tn = TextNode('TextItem')
-                tn.setFont(getDefaultFont())
+                tn.setFont(DirectGuiGlobals.getDefaultFont())
                 tn.setTransform(Mat4.scaleMat(0.07, 0.07, 0.07 * aspectRatio))
                 tn.setTextColor(0, 0, 0, 1)
                 tn.setCardColor(1, 1, 1, 1)

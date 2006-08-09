@@ -1,5 +1,7 @@
 """ActorInterval module: contains the ActorInterval class"""
 
+__all__ = ['ActorInterval', 'LerpAnimInterval']
+
 from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import *
 import Interval

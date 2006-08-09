@@ -1,4 +1,12 @@
+"""Undocumented Module"""
+
+__all__ = ['DirectFrame']
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from DirectGuiBase import *
+from OnscreenImage import *
+import string, types
 
 class DirectFrame(DirectGuiWidget):
     def __init__(self, parent = None, **kw):
@@ -76,7 +84,7 @@ class DirectFrame(DirectGuiWidget):
                         OnscreenText,
                         (), parent = self.stateNodePath[i],
                         text = text, scale = 1, mayChange = self['textMayChange'],
-                        sort = TEXT_SORT_INDEX,
+                        sort = DGG.TEXT_SORT_INDEX,
                         )
 
     def setGeom(self):
@@ -119,7 +127,7 @@ class DirectFrame(DirectGuiWidget):
                         OnscreenGeom,
                         (), parent = self.stateNodePath[i],
                         geom = geom, scale = 1,
-                        sort = GEOM_SORT_INDEX)
+                        sort = DGG.GEOM_SORT_INDEX)
 
     def setImage(self):
         # Determine argument type
@@ -167,4 +175,4 @@ class DirectFrame(DirectGuiWidget):
                         OnscreenImage,
                         (), parent = self.stateNodePath[i],
                         image = image, scale = 1,
-                        sort = IMAGE_SORT_INDEX)
+                        sort = DGG.IMAGE_SORT_INDEX)

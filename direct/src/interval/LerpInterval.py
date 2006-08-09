@@ -1,5 +1,7 @@
 """LerpInterval module: contains the LerpInterval class"""
 
+__all__ = ['LerpNodePathInterval', 'LerpPosInterval', 'LerpHprInterval', 'LerpQuatInterval', 'LerpScaleInterval', 'LerpShearInterval', 'LerpPosHprInterval', 'LerpPosQuatInterval', 'LerpHprScaleInterval', 'LerpQuatScaleInterval', 'LerpPosHprScaleInterval', 'LerpPosQuatScaleInterval', 'LerpPosHprScaleShearInterval', 'LerpPosQuatScaleShearInterval', 'LerpColorScaleInterval', 'LerpColorInterval', 'LerpFunctionInterval', 'LerpFunc']
+
 from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import *
 import Interval

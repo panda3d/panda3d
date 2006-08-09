@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['ParticleInterval']
+
 """
 Contains the ParticleInterval class
 """

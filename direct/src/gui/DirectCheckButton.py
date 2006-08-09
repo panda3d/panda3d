@@ -1,3 +1,9 @@
+"""Undocumented Module"""
+
+__all__ = ['DirectCheckButton']
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from DirectButton import *
 from DirectLabel import *
 

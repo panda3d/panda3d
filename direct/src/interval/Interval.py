@@ -1,5 +1,7 @@
 """Interval module: contains the Interval class"""
 
+__all__ = ['Interval']
+
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import *

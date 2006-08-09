@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = []
+
 
 if __name__ == "__main__":
     from direct.directbase import DirectStart
@@ -63,8 +67,8 @@ if __name__ == "__main__":
                           # Here is an example of a component group option
                           text_pos = (.6, -.8),
                           # Set audio characteristics
-                          clickSound = getDefaultClickSound(),
-                          rolloverSound = getDefaultRolloverSound()
+                          clickSound = DirectGuiGlobals.getDefaultClickSound(),
+                          rolloverSound = DirectGuiGlobals.getDefaultRolloverSound()
                           )
 
         # You can set component or component group options after a gui item
@@ -73,11 +77,11 @@ if __name__ == "__main__":
         db['command'] = lambda i = i: dummyCmd(i)
 
         # Bind the commands
-        db.bind(ENTER, lambda x, db = db: shrink(db))
-        db.bind(EXIT, lambda x, db = db: expand(db))
-        db.bind(B1PRESS, lambda x, db = db: ouch(db))
+        db.bind(DirectGuiGlobals.ENTER, lambda x, db = db: shrink(db))
+        db.bind(DirectGuiGlobals.EXIT, lambda x, db = db: expand(db))
+        db.bind(DirectGuiGlobals.B1PRESS, lambda x, db = db: ouch(db))
         # Pop up placer when button 2 is pressed
-        db.bind(B3PRESS, lambda x, db = db: db.place())
+        db.bind(DirectGuiGlobals.B3PRESS, lambda x, db = db: db.place())
 
         dbArray.append(db)
 

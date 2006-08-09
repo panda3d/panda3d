@@ -1,5 +1,7 @@
 """MopathInterval module: contains the MopathInterval class"""
 
+__all__ = ['MopathInterval']
+
 import LerpInterval
 from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import *

@@ -1,10 +1,11 @@
 """OnscreenText module: contains the OnscreenText class"""
 
+__all__ = ['OnscreenText']
+
 from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from direct.showbase.DirectObject import DirectObject
-import DirectGuiGlobals
-import types
-import string
+import string,types
 
 ## These are the styles of text we might commonly see.  They set the
 ## overall appearance of the text according to one of a number of
@@ -165,7 +166,7 @@ class OnscreenText(DirectObject, NodePath):
             textNode.setCardDecal(1)
 
         if font == None:
-            font = DirectGuiGlobals.getDefaultFont()
+            font = DGG.getDefaultFont()
 
         textNode.setFont(font)
         textNode.setTextColor(fg[0], fg[1], fg[2], fg[3])

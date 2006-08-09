@@ -1,5 +1,7 @@
 """FunctionInterval module: contains the FunctionInterval class"""
 
+__all__ = ['FunctionInterval', 'EventInterval', 'AcceptInterval', 'IgnoreInterval', 'ParentInterval', 'WrtParentInterval', 'PosInterval', 'HprInterval', 'ScaleInterval', 'PosHprInterval', 'HprScaleInterval', 'PosHprScaleInterval', 'Func', 'Wait']
+
 from pandac.PandaModules import *
 from direct.showbase.MessengerGlobal import *
 from direct.directnotify.DirectNotifyGlobal import directNotify

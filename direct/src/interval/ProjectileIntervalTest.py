@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['doTest']
+
 from pandac.PandaModules import *
 from direct.directbase.DirectStart import *
 from IntervalGlobal import *

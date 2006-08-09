@@ -1,22 +1,23 @@
-from DirectGuiGlobals import *
+"""Undocumented Module"""
+
+__all__ = ['DirectGuiBase', 'DirectGuiWidget']
+
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from OnscreenText import *
 from OnscreenGeom import *
 from OnscreenImage import *
 from direct.directtools.DirectUtil import ROUND_TO
 from direct.showbase import DirectObject
 from direct.task import Task
-import string
 from direct.showbase import ShowBase
+import string, types
 
 """
 Base class for all Direct Gui items.  Handles composite widgets and
 command line argument parsing.
 """
-
-# Symbolic constants for the indexes into an optionInfo list.
-_OPT_DEFAULT         = 0
-_OPT_VALUE           = 1
-_OPT_FUNCTION        = 2
 
 """
 Code Overview:
@@ -190,7 +191,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         optionInfo_has_key = optionInfo.has_key
         keywords = self._constructorKeywords
         keywords_has_key = keywords.has_key
-        FUNCTION = _OPT_FUNCTION
+        FUNCTION = DGG._OPT_FUNCTION
 
         for name, default, function in optionDefs:
             if '_' not in name:
@@ -228,11 +229,11 @@ class DirectGuiBase(DirectObject.DirectObject):
         # the most specific class in the class hierarchy
         if self.__class__ is myClass:
             # Call the configuration callback function for every option.
-            FUNCTION = _OPT_FUNCTION
+            FUNCTION = DGG._OPT_FUNCTION
             self.fInit = 1
             for info in self._optionInfo.values():
                 func = info[FUNCTION]
-                if func is not None and func is not INITOPT:
+                if func is not None and func is not DGG.INITOPT:
                     func()
             self.fInit = 0
 
@@ -267,7 +268,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         """
         Is this opition one that can only be specified at construction?
         """
-        return self._optionInfo[option][_OPT_FUNCTION] is INITOPT
+        return self._optionInfo[option][DGG._OPT_FUNCTION] is DGG.INITOPT
 
     def options(self):
         """
@@ -277,8 +278,8 @@ class DirectGuiBase(DirectObject.DirectObject):
         options = []
         if hasattr(self, '_optionInfo'):
             for option, info in self._optionInfo.items():
-                isinit = info[_OPT_FUNCTION] is INITOPT
-                default = info[_OPT_DEFAULT]
+                isinit = info[DGG._OPT_FUNCTION] is DGG.INITOPT
+                default = info[DGG._OPT_DEFAULT]
                 options.append((option, default, isinit))
             options.sort()
         return options
@@ -311,12 +312,12 @@ class DirectGuiBase(DirectObject.DirectObject):
                 rtn = {}
                 for option, config in self._optionInfo.items():
                     rtn[option] = (option,
-                                   config[_OPT_DEFAULT],
-                                   config[_OPT_VALUE])
+                                   config[DGG._OPT_DEFAULT],
+                                   config[DGG._OPT_VALUE])
                 return rtn
             else:
                 config = self._optionInfo[option]
-                return (option, config[_OPT_DEFAULT], config[_OPT_VALUE])
+                return (option, config[DGG._OPT_DEFAULT], config[DGG._OPT_VALUE])
 
         # optimizations:
         optionInfo = self._optionInfo
@@ -325,8 +326,8 @@ class DirectGuiBase(DirectObject.DirectObject):
         componentInfo_has_key = componentInfo.has_key
         componentAliases = self.__componentAliases
         componentAliases_has_key = componentAliases.has_key
-        VALUE = _OPT_VALUE
-        FUNCTION = _OPT_FUNCTION
+        VALUE = DGG._OPT_VALUE
+        FUNCTION = DGG._OPT_FUNCTION
 
         # This will contain a list of options in *kw* which
         # are known to this gui item.
@@ -345,7 +346,7 @@ class DirectGuiBase(DirectObject.DirectObject):
             if optionInfo_has_key(option):
                 # This is one of the options of this gui item.
                 # Check it is an initialisation option.
-                if optionInfo[option][FUNCTION] is INITOPT:
+                if optionInfo[option][FUNCTION] is DGG.INITOPT:
                     print 'Cannot configure initialisation option "' \
                           + option + '" for ' + self.__class__.__name__
                     break
@@ -420,7 +421,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         # Call the configuration callback function for each option.
         for option in directOptions:
             info = optionInfo[option]
-            func = info[_OPT_FUNCTION]
+            func = info[DGG._OPT_FUNCTION]
             if func is not None:
               func()
 
@@ -434,7 +435,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         """
         # Return the value of an option, for example myWidget['font'].
         if self._optionInfo.has_key(option):
-            return self._optionInfo[option][_OPT_VALUE]
+            return self._optionInfo[option][DGG._OPT_VALUE]
         else:
             index = string.find(option, '_')
             if index >= 0:
@@ -657,9 +658,9 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     #guiEdit = base.config.GetBool('direct-gui-edit', 0)
     guiEdit = config.GetBool('direct-gui-edit', 0)
     if guiEdit:
-        inactiveInitState = NORMAL
+        inactiveInitState = DGG.NORMAL
     else:
-        inactiveInitState = DISABLED
+        inactiveInitState = DGG.DISABLED
 
     guiDict = {}
 
@@ -682,26 +683,26 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             ('invertedFrames', (),           None),
             ('sortOrder',      0,            None),
             # Widget's initial state
-            ('state',          NORMAL,       self.setState),
+            ('state',          DGG.NORMAL,   self.setState),
             # Widget's frame characteristics
-            ('relief',         FLAT,         self.setRelief),
-            ('borderWidth',    (.1, .1),      self.setBorderWidth),
+            ('relief',         DGG.FLAT,     self.setRelief),
+            ('borderWidth',    (.1, .1),     self.setBorderWidth),
             ('frameSize',      None,         self.setFrameSize),
             ('frameColor',     (.8, .8, .8, 1), self.setFrameColor),
             ('frameTexture',   None,         self.setFrameTexture),
             ('frameVisibleScale', (1, 1),     self.setFrameVisibleScale),
             ('pad',            (0, 0),        self.resetFrameSize),
             # Override button id (beware! your name may not be unique!)
-            ('guiId',          None,         INITOPT),
+            ('guiId',          None,         DGG.INITOPT),
             # Initial pos/scale of the widget
-            ('pos',            None,         INITOPT),
-            ('hpr',            None,         INITOPT),
-            ('scale',          None,         INITOPT),
-            ('color',          None,         INITOPT),
+            ('pos',            None,         DGG.INITOPT),
+            ('hpr',            None,         DGG.INITOPT),
+            ('scale',          None,         DGG.INITOPT),
+            ('color',          None,         DGG.INITOPT),
             # Do events pass through this widget?
-            ('suppressMouse',  1,            INITOPT),
-            ('suppressKeys',   0,            INITOPT),
-            ('enableEdit',     1,            INITOPT),
+            ('suppressMouse',  1,            DGG.INITOPT),
+            ('suppressKeys',   0,            DGG.INITOPT),
+            ('enableEdit',     1,            DGG.INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -787,7 +788,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
 
         # Bind destroy hook
         self.guiDict[self.guiId] = self
-        # self.bind(DESTROY, self.destroy)
+        # self.bind(DGG.DESTROY, self.destroy)
 
         # Update frame when everything has been initialized
         self.postInitialiseFuncList.append(self.frameInitialiseFunc)
@@ -802,9 +803,9 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             self.resetFrameSize()
 
     def enableEdit(self):
-        self.bind(B2PRESS, self.editStart)
-        self.bind(B2RELEASE, self.editStop)
-        self.bind(PRINT, self.printConfig)
+        self.bind(DGG.B2PRESS, self.editStart)
+        self.bind(DGG.B2RELEASE, self.editStop)
+        self.bind(DGG.PRINT, self.printConfig)
         # Can we move this to showbase
         # Certainly we don't need to do this for every button!
         #mb = base.mouseWatcherNode.getModifierButtons()
@@ -812,9 +813,9 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         #base.mouseWatcherNode.setModifierButtons(mb)
 
     def disableEdit(self):
-        self.unbind(B2PRESS)
-        self.unbind(B2RELEASE)
-        self.unbind(PRINT)
+        self.unbind(DGG.B2PRESS)
+        self.unbind(DGG.B2RELEASE)
+        self.unbind(DGG.PRINT)
         #mb = base.mouseWatcherNode.getModifierButtons()
         #mb.removeButton(KeyboardButton.control())
         #base.mouseWatcherNode.setModifierButtons(mb)
@@ -863,7 +864,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setState(self):
         if type(self['state']) == type(0):
             self.guiItem.setActive(self['state'])
-        elif (self['state'] == NORMAL) or (self['state'] == 'normal'):
+        elif (self['state'] == DGG.NORMAL) or (self['state'] == 'normal'):
             self.guiItem.setActive(1)
         else:
             self.guiItem.setActive(0)
@@ -945,18 +946,18 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             # Convert string to frame style int
             relief = FrameStyleDict[relief]
         # Set style
-        if relief == RAISED:
+        if relief == DGG.RAISED:
             for i in range(self['numStates']):
                 if i in self['invertedFrames']:
-                    self.frameStyle[1].setType(SUNKEN)
+                    self.frameStyle[1].setType(DGG.SUNKEN)
                 else:
-                    self.frameStyle[i].setType(RAISED)
-        elif relief == SUNKEN:
+                    self.frameStyle[i].setType(DGG.RAISED)
+        elif relief == DGG.SUNKEN:
             for i in range(self['numStates']):
                 if i in self['invertedFrames']:
-                    self.frameStyle[1].setType(RAISED)
+                    self.frameStyle[1].setType(DGG.RAISED)
                 else:
-                    self.frameStyle[i].setType(SUNKEN)
+                    self.frameStyle[i].setType(DGG.SUNKEN)
         else:
             for i in range(self['numStates']):
                 self.frameStyle[i].setType(relief)

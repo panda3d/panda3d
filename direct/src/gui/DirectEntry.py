@@ -1,5 +1,11 @@
+"""Undocumented Module"""
+
+__all__ = ['DirectEntry']
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from DirectFrame import *
-import types
+import string,types
 
 # DirectEntry States:
 ENTRY_FOCUS_STATE    = PGEntry.SFocus      # 0
@@ -29,8 +35,8 @@ class DirectEntry(DirectFrame):
             # Define type of DirectGuiWidget
             ('pgFunc',          PGEntry,          None),
             ('numStates',       3,                None),
-            ('state',           NORMAL,           None),
-            ('entryFont',       None,             INITOPT),
+            ('state',           DGG.NORMAL,       None),
+            ('entryFont',       None,             DGG.INITOPT),
             ('width',           10,               self.setup),
             ('numLines',        1,                self.setup),
             ('focus',           0,                self.setFocus),
@@ -42,18 +48,18 @@ class DirectEntry(DirectFrame):
             ('backgroundFocus', 0,                self.setBackgroundFocus),
             # Text used for the PGEntry text node
             # NOTE: This overrides the DirectFrame text option
-            ('initialText',     '',               INITOPT),
+            ('initialText',     '',               DGG.INITOPT),
             # Command to be called on hitting Enter
             ('command',        None,              None),
             ('extraArgs',      [],                None),
             # commands to be called when focus is gained or lost
             ('focusInCommand', None,              None),
             ('focusInExtraArgs', [],              None),
-            ('focusOutCommand', None,              None),
-            ('focusOutExtraArgs', [],              None),
+            ('focusOutCommand', None,             None),
+            ('focusOutExtraArgs', [],             None),
             # Sounds to be used for button events
-            ('rolloverSound',   getDefaultRolloverSound(), self.setRolloverSound),
-            ('clickSound',    getDefaultClickSound(),    self.setClickSound),
+            ('rolloverSound',   DGG.getDefaultRolloverSound(), self.setRolloverSound),
+            ('clickSound',      DGG.getDefaultClickSound(),    self.setClickSound),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -62,7 +68,7 @@ class DirectEntry(DirectFrame):
         DirectFrame.__init__(self, parent)
 
         if self['entryFont'] == None:
-            font = getDefaultFont()
+            font = DGG.getDefaultFont()
         else:
             font = self['entryFont']
 
@@ -87,7 +93,7 @@ class DirectEntry(DirectFrame):
         self.onscreenText.removeNode()
 
         # Bind command function
-        self.bind(ACCEPT, self.commandFunc)
+        self.bind(DGG.ACCEPT, self.commandFunc)
 
         self.accept(self.guiItem.getFocusInEvent(), self.focusInCommandFunc)
         self.accept(self.guiItem.getFocusOutEvent(), self.focusOutCommandFunc)
@@ -127,16 +133,16 @@ class DirectEntry(DirectFrame):
     def setRolloverSound(self):
         rolloverSound = self['rolloverSound']
         if rolloverSound:
-            self.guiItem.setSound(ENTER + self.guiId, rolloverSound)
+            self.guiItem.setSound(DGG.ENTER + self.guiId, rolloverSound)
         else:
-            self.guiItem.clearSound(ENTER + self.guiId)
+            self.guiItem.clearSound(DGG.ENTER + self.guiId)
 
     def setClickSound(self):
         clickSound = self['clickSound']
         if clickSound:
-            self.guiItem.setSound(ACCEPT + self.guiId, clickSound)
+            self.guiItem.setSound(DGG.ACCEPT + self.guiId, clickSound)
         else:
-            self.guiItem.clearSound(ACCEPT + self.guiId)
+            self.guiItem.clearSound(DGG.ACCEPT + self.guiId)
 
     def commandFunc(self, event):
         if self['command']:

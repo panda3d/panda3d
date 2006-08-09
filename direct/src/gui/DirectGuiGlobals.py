@@ -1,8 +1,21 @@
+"""Undocumented Module"""
+
+__all__ = []
+
+
 """
 Global definitions used by Direct Gui Classes and handy constants
 that can be used during widget construction
 """
 from pandac.PandaModules import *
+
+defaultFont = None
+defaultFontFunc = TextNode.getDefaultFont
+defaultClickSound = None
+defaultRolloverSound = None
+defaultDialogGeom = None
+drawOrder = 100
+panel = None
 
 # USEFUL GUI CONSTANTS
 # Constant used to indicate that an option can only be set by a call
@@ -73,13 +86,10 @@ BACKGROUND_SORT_INDEX = -100
 MIDGROUND_SORT_INDEX = 0
 FOREGROUND_SORT_INDEX = 100
 
-defaultFont = None
-defaultFontFunc = TextNode.getDefaultFont
-defaultClickSound = None
-defaultRolloverSound = None
-defaultDialogGeom = None
-drawOrder = 100
-panel = None
+# Symbolic constants for the indexes into an optionInfo list.
+_OPT_DEFAULT         = 0
+_OPT_VALUE           = 1
+_OPT_FUNCTION        = 2
 
 def getDefaultRolloverSound():
     global defaultRolloverSound

@@ -1,10 +1,15 @@
+"""Undocumented Module"""
+
+__all__ = ['DirectScrolledFrame']
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from DirectFrame import *
 from DirectScrollBar import *
 
 """
 import DirectScrolledFrame
 d = DirectScrolledFrame(borderWidth=(0, 0))
-
 """
 
 class DirectScrolledFrame(DirectFrame):
@@ -49,14 +54,14 @@ class DirectScrolledFrame(DirectFrame):
             DirectScrollBar, (self,),
             borderWidth = self['borderWidth'],
             frameSize = (-w / 2.0, w / 2.0, -1, 1),
-            orientation = VERTICAL)
+            orientation = DGG.VERTICAL)
 
         self.horizontalScroll = self.createcomponent(
             "horizontalScroll", (), None,
             DirectScrollBar, (self,),
             borderWidth = self['borderWidth'],
             frameSize = (-1, 1, -w / 2.0, w / 2.0),
-            orientation = HORIZONTAL)
+            orientation = DGG.HORIZONTAL)
 
         self.guiItem.setVerticalSlider(self.verticalScroll.guiItem)
         self.guiItem.setHorizontalSlider(self.horizontalScroll.guiItem)

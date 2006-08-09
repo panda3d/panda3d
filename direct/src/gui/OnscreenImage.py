@@ -1,9 +1,11 @@
 """OnscreenImage module: contains the OnscreenImage class"""
 
+__all__ = ['OnscreenImage']
+
 from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from direct.showbase.DirectObject import DirectObject
-import types
-import string
+import string,types
 
 class OnscreenImage(DirectObject, NodePath):
     def __init__(self, image = None,

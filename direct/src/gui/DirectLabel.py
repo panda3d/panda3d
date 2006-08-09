@@ -1,3 +1,9 @@
+"""Undocumented Module"""
+
+__all__ = ['DirectLabel']
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from DirectFrame import *
 
 class DirectLabel(DirectFrame):

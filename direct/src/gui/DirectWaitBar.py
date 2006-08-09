@@ -1,9 +1,14 @@
+"""Undocumented Module"""
+
+__all__ = ['DirectWaitBar']
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from DirectFrame import *
 
 """
 import DirectWaitBar
 d = DirectWaitBar(borderWidth=(0, 0))
-
 """
 
 class DirectWaitBar(DirectFrame):
@@ -24,9 +29,9 @@ class DirectWaitBar(DirectFrame):
             ('borderWidth',    (0, 0),              None),
             ('range',          100,                self.setRange),
             ('value',          0,                  self.setValue),
-            ('barBorderWidth', (0, 0),              self.setBarBorderWidth),
-            ('barColor',       (1, 0, 0, 1),          self.setBarColor),
-            ('barRelief',      FLAT,               self.setBarRelief),
+            ('barBorderWidth', (0, 0),             self.setBarBorderWidth),
+            ('barColor',       (1, 0, 0, 1),       self.setBarColor),
+            ('barRelief',      DGG.FLAT,           self.setBarRelief),
             ('sortOrder',      NO_FADE_SORT_INDEX, None),
             )
         if kw.has_key('text'):

@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['IntervalManager']
+
 from pandac.PandaModules import *
 from pandac import PandaModules
 from direct.directnotify.DirectNotifyGlobal import *

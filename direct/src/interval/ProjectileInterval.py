@@ -1,5 +1,7 @@
 """ProjectileInterval module: contains the ProjectileInterval class"""
 
+__all__ = ['ProjectileInterval']
+
 from pandac.PandaModules import *
 from Interval import Interval
 from direct.showbase.PythonUtil import lerp

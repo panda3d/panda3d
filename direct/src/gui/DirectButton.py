@@ -1,3 +1,9 @@
+"""Undocumented Module"""
+
+__all__ = ['DirectButton']
+
+from pandac.PandaModules import *
+import DirectGuiGlobals as DGG
 from DirectFrame import *
 
 # DirectButton States:
@@ -27,20 +33,20 @@ class DirectButton(DirectFrame):
             # Define type of DirectGuiWidget
             ('pgFunc',         PGButton,   None),
             ('numStates',      4,          None),
-            ('state',          NORMAL,     None),
-            ('relief',         RAISED,     None),
+            ('state',          DGG.NORMAL, None),
+            ('relief',         DGG.RAISED, None),
             ('invertedFrames', (1,),       None),
             # Command to be called on button click
             ('command',        None,       None),
             ('extraArgs',      [],         None),
             # Which mouse buttons can be used to click the button
-            ('commandButtons', (LMB,),     self.setCommandButtons),
+            ('commandButtons', (DGG.LMB,),     self.setCommandButtons),
             # Sounds to be used for button events
-            ('rolloverSound', getDefaultRolloverSound(), self.setRolloverSound),
-            ('clickSound',    getDefaultClickSound(),    self.setClickSound),
+            ('rolloverSound', DGG.getDefaultRolloverSound(), self.setRolloverSound),
+            ('clickSound',    DGG.getDefaultClickSound(),    self.setClickSound),
             # Can only be specified at time of widget contruction
             # Do the text/graphics appear to move when the button is clicked
-            ('pressEffect',     1,          INITOPT),
+            ('pressEffect',     1,         DGG.INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -76,25 +82,25 @@ class DirectButton(DirectFrame):
     def setCommandButtons(self):
         # Attach command function to specified buttons
         # Left mouse button
-        if LMB in self['commandButtons']:
+        if DGG.LMB in self['commandButtons']:
             self.guiItem.addClickButton(MouseButton.one())
-            self.bind(B1CLICK, self.commandFunc)
+            self.bind(DGG.B1CLICK, self.commandFunc)
         else:
-            self.unbind(B1CLICK)
+            self.unbind(DGG.B1CLICK)
             self.guiItem.removeClickButton(MouseButton.one())
         # Middle mouse button
-        if MMB in self['commandButtons']:
+        if DGG.MMB in self['commandButtons']:
             self.guiItem.addClickButton(MouseButton.two())
-            self.bind(B2CLICK, self.commandFunc)
+            self.bind(DGG.B2CLICK, self.commandFunc)
         else:
-            self.unbind(B2CLICK)
+            self.unbind(DGG.B2CLICK)
             self.guiItem.removeClickButton(MouseButton.two())
         # Right mouse button
-        if RMB in self['commandButtons']:
+        if DGG.RMB in self['commandButtons']:
             self.guiItem.addClickButton(MouseButton.three())
-            self.bind(B3CLICK, self.commandFunc)
+            self.bind(DGG.B3CLICK, self.commandFunc)
         else:
-            self.unbind(B3CLICK)
+            self.unbind(DGG.B3CLICK)
             self.guiItem.removeClickButton(MouseButton.three())
 
     def commandFunc(self, event):
@@ -105,22 +111,22 @@ class DirectButton(DirectFrame):
     def setClickSound(self):
         clickSound = self['clickSound']
         # Clear out sounds
-        self.guiItem.clearSound(B1PRESS + self.guiId)
-        self.guiItem.clearSound(B2PRESS + self.guiId)
-        self.guiItem.clearSound(B3PRESS + self.guiId)
+        self.guiItem.clearSound(DGG.B1PRESS + self.guiId)
+        self.guiItem.clearSound(DGG.B2PRESS + self.guiId)
+        self.guiItem.clearSound(DGG.B3PRESS + self.guiId)
         if clickSound:
-            if LMB in self['commandButtons']:
-                self.guiItem.setSound(B1PRESS + self.guiId, clickSound)
-            if MMB in self['commandButtons']:
-                self.guiItem.setSound(B2PRESS + self.guiId, clickSound)
-            if RMB in self['commandButtons']:
-                self.guiItem.setSound(B3PRESS + self.guiId, clickSound)
+            if DGG.LMB in self['commandButtons']:
+                self.guiItem.setSound(DGG.B1PRESS + self.guiId, clickSound)
+            if DGG.MMB in self['commandButtons']:
+                self.guiItem.setSound(DGG.B2PRESS + self.guiId, clickSound)
+            if DGG.RMB in self['commandButtons']:
+                self.guiItem.setSound(DGG.B3PRESS + self.guiId, clickSound)
 
     def setRolloverSound(self):
         rolloverSound = self['rolloverSound']
         if rolloverSound:
-            self.guiItem.setSound(ENTER + self.guiId, rolloverSound)
+            self.guiItem.setSound(DGG.ENTER + self.guiId, rolloverSound)
         else:
-            self.guiItem.clearSound(ENTER + self.guiId)
+            self.guiItem.clearSound(DGG.ENTER + self.guiId)
 
 
