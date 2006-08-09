@@ -92,6 +92,7 @@ class Task:
         self.wakeTime = 0.0
         # for repeating doLaters
         self.delayTime = 0.0
+        self.time = 0.0
 
 #     # Used for putting into the doLaterList
 #     # the heapq calls __cmp__ via the rich compare function
