@@ -944,7 +944,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             relief = PGFrameStyle.TNone
         elif isinstance(relief, types.StringTypes):
             # Convert string to frame style int
-            relief = FrameStyleDict[relief]
+            relief = DGG.FrameStyleDict[relief]
         # Set style
         if relief == DGG.RAISED:
             for i in range(self['numStates']):
