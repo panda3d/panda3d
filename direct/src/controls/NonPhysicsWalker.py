@@ -199,8 +199,8 @@ class NonPhysicsWalker(DirectObject.DirectObject):
                     reverse and -self.avatarControlReverseSpeed)
         # Should fSlide be renamed slideButton?
         self.slideSpeed=slide and (
-                (turnLeft and -self.avatarControlForwardSpeed) or
-                (turnRight and self.avatarControlForwardSpeed))
+                (turnLeft and -self.avatarControlForwardSpeed*0.75) or
+                (turnRight and self.avatarControlForwardSpeed*0.75))
         self.rotationSpeed=not slide and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))

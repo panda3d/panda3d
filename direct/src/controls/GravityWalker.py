@@ -460,8 +460,8 @@ class GravityWalker(DirectObject.DirectObject):
         # Slide speed is a scaled down version of forward speed
         # Note: you can multiply a factor in here if you want slide to
         # be slower than normal walk/run. Let's try full speed.
-        self.slideSpeed=(slideLeft and -self.avatarControlForwardSpeed or
-                         slideRight and self.avatarControlForwardSpeed)
+        self.slideSpeed=(slideLeft and -self.avatarControlForwardSpeed*0.75 or
+                         slideRight and self.avatarControlForwardSpeed*0.75)
         self.rotationSpeed=not (slideLeft or slideRight) and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))

@@ -31,21 +31,21 @@ class ControlManager:
         self.isEnabled = 1
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
         inputState.watch("run", "running-on", "running-off")
-
+        
         inputState.watchWithModifiers("forward", "arrow_up")
         inputState.watch("forward", "force-forward", "force-forward-stop")
-
+        
         inputState.watchWithModifiers("reverse", "arrow_down")
         inputState.watchWithModifiers("reverse", "mouse4")
-
+        
         inputState.watchWithModifiers("turnLeft", "arrow_left")
         inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done")
         inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop")
-
+        
         inputState.watchWithModifiers("turnRight", "arrow_right")
         inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done")
         inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop")
-
+        
         if self.wantWASD:
             inputState.watchWithModifiers("forward", "w")
             inputState.watchWithModifiers("reverse", "s")
@@ -53,15 +53,13 @@ class ControlManager:
             inputState.watchWithModifiers("slideRight", "d")
             inputState.watchWithModifiers("turnLeft", "q")
             inputState.watchWithModifiers("turnRight", "e")
-
+            
         # Jump controls
         if self.wantWASD:
             inputState.watchWithModifiers("jump", "space")
         else:
             inputState.watch("jump", "control", "control-up")
-
-
-
+            
     def add(self, controls, name="basic"):
         """
         controls is an avatar control system.
@@ -143,7 +141,7 @@ class ControlManager:
             print "Unkown controls:", name
 
     def setSpeeds(self, forwardSpeed, jumpForce,
-            reverseSpeed, rotateSpeed):
+            reverseSpeed, rotateSpeed, strafeLeft=0, strafeRight=0):
         assert self.notify.debugCall(id(self))
         for controls in self.controls.values():
             controls.setWalkSpeed(
@@ -233,4 +231,6 @@ class ControlManager:
             onScreenDebug.add("InputState reverse", "%d"%(inputState.isSet("reverse")))
             onScreenDebug.add("InputState turnLeft", "%d"%(inputState.isSet("turnLeft")))
             onScreenDebug.add("InputState turnRight", "%d"%(inputState.isSet("turnRight")))
+            onScreenDebug.add("InputState slideLeft", "%d"%(inputState.isSet("slideLeft")))
+            onScreenDebug.add("InputState slideRight", "%d"%(inputState.isSet("slideRight")))
         return Task.cont
