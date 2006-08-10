@@ -5,6 +5,8 @@
 
 import string
 from direct.showbase.TkGlobal import *
+from Tkinter import *
+import Pmw
 
 ### public API
 

@@ -6,9 +6,8 @@
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
 from tkSimpleDialog import askfloat
-import string
-import math
-import types
+from Tkinter import *
+import Pmw, string, math, types
 from direct.task import Task
 
 FRAMES = 0

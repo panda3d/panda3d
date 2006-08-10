@@ -3,10 +3,11 @@ Slider Class: Velocity style controller for floating point values with
                a label, entry (validated), and min/max slider
 """
 from direct.showbase.TkGlobal import *
+from Tkinter import *
 from Valuator import *
 from direct.task import Task
 import math, sys, string
-import operator
+import operator, Pmw
 from pandac.PandaModules import ClockObject
 
 class Slider(Valuator):

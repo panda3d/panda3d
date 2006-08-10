@@ -3,7 +3,8 @@ EntryScale Class: Scale with a label, and a linked and validated entry
 """
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
-import string
+from Tkinter import *
+import string, Pmw
 import tkColorChooser
 from tkSimpleDialog import *
 

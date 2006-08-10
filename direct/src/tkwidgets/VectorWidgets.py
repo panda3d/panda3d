@@ -1,10 +1,12 @@
 from direct.showbase.TkGlobal import *
+from Tkinter import *
 import Valuator
 import Floater
 import Slider
 import string
 import tkColorChooser
 import types
+import Pmw
 
 class VectorEntry(Pmw.MegaWidget):
     def __init__(self, parent = None, **kw):

@@ -3,9 +3,10 @@ Floater Class: Velocity style controller for floating point values with
                 a label, entry (validated), and scale
 """
 from direct.showbase.TkGlobal import *
+from Tkinter import *
 from Valuator import *
 from direct.task import Task
-import math, sys, string
+import math, sys, string, Pmw
 
 FLOATER_WIDTH = 22
 FLOATER_HEIGHT = 18

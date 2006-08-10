@@ -12,7 +12,8 @@ from direct.tkwidgets import VectorWidgets
 from direct.particles import ForceGroup
 from direct.particles import Particles
 from direct.particles import ParticleEffect
-import os,Placer
+from Tkinter import *
+import Pmw, os,Placer
 
 from pandac.PandaModules import *
 

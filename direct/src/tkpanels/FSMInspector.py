@@ -2,8 +2,8 @@
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
 from tkSimpleDialog import askstring
-import math
-import operator
+from Tkinter import *
+import Pmw, math, operator
 
 DELTA = (5.0 / 360.) * 2.0 * math.pi
 

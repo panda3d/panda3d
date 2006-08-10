@@ -1,8 +1,9 @@
 from direct.showbase.DirectObject import *
 from direct.showbase.TkGlobal import *
+from Tkinter import *
 import tkColorChooser
 import WidgetPropertiesDialog
-import string
+import string, Pmw
 from direct.directtools.DirectUtil import getTkColorString
 
 VALUATOR_MINI = 'mini'

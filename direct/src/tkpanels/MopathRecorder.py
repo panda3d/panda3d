@@ -10,8 +10,8 @@ from direct.directtools.DirectUtil import *
 from direct.directtools.DirectGeometry import *
 from direct.directtools.DirectSelection import *
 from tkFileDialog import *
-import os
-import string
+from Tkinter import *
+import Pmw, os, string
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider

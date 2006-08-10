@@ -2,6 +2,7 @@
 A  basic widget for showing the progress being made in a task.
 """
 from direct.showbase.TkGlobal import *
+from Tkinter import *
 
 class ProgressBar:
     def __init__(self, master=None, orientation="horizontal",

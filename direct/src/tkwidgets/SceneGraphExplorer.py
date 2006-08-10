@@ -1,5 +1,6 @@
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
+from Tkinter import *
 from Tree import *
 
 # changing these strings requires changing DirectSession.py SGE_ strs too!

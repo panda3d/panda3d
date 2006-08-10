@@ -3,9 +3,9 @@
 # Import Tkinter, Pmw, and the dial code
 from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *
+from Tkinter import *
 from pandac.PandaModules import *
-
-import string
+import Pmw, string
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider

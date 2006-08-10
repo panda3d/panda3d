@@ -7,6 +7,8 @@ created by Doug Hellmann (doughellmann@mindspring.com).
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
 from tkFileDialog import *
+from Tkinter import *
+import Pmw
 import Dial
 import Floater
 import Slider

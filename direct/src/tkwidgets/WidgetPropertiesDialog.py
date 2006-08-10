@@ -1,6 +1,6 @@
 from direct.showbase.TkGlobal import *
-import types
-import string
+from Tkinter import *
+import types, string, Pmw
 
 """
 TODO:

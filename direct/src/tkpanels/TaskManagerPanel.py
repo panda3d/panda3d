@@ -1,4 +1,6 @@
 from direct.tkwidgets.AppShell import *
+from Tkinter import *
+import Pmw
 
 class TaskManagerPanel(AppShell):
     # Override class variables here
