@@ -1,6 +1,7 @@
 from Tkinter import *
 import Pmw
 import sys
+from direct.task import Task
 # This is required by the ihooks.py module used by Squeeze (used by
 # pandaSqueezer.py) so that Pmw initializes properly
 sys.modules['_Pmw'].__name__ = '_Pmw'

@@ -276,8 +276,8 @@ class Transitions:
             self.letterboxTop = DirectFrame(
                 parent = self.letterbox,
                 guiId = 'letterboxTop',
-                relief = FLAT,
-                state = NORMAL,
+                relief = DGG.FLAT,
+                state = DGG.NORMAL,
                 frameColor = (0, 0, 0, 1),
                 borderWidth = (0, 0),
                 frameSize = (-1, 1, 0, 0.2),
@@ -286,8 +286,8 @@ class Transitions:
             self.letterboxBottom = DirectFrame(
                 parent = self.letterbox,
                 guiId = 'letterboxBottom',
-                relief = FLAT,
-                state = NORMAL,
+                relief = DGG.FLAT,
+                state = DGG.NORMAL,
                 frameColor = (0, 0, 0, 1),
                 borderWidth = (0, 0),
                 frameSize = (-1, 1, 0, 0.2),
