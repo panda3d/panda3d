@@ -1,5 +1,7 @@
 """Loader module: contains the Loader class"""
 
+__all__ = ['Loader']
+
 from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import *
 

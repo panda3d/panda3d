@@ -1,5 +1,7 @@
 """RandomNumGen module: contains the RandomNumGen class"""
 
+__all__ = ['randHash', 'RandomNumGen']
+
 from direct.directnotify import DirectNotifyGlobal
 from pandac.PandaModules import Mersenne
 

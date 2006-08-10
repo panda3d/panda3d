@@ -1,7 +1,13 @@
+"""Undocumented Module"""
+
+__all__ = ['taskMgr']
+
 from Tkinter import *
+from direct.task.TaskManagerGlobal import *
+from direct.task.Task import Task
 import Pmw
 import sys
-from direct.task import Task
+
 # This is required by the ihooks.py module used by Squeeze (used by
 # pandaSqueezer.py) so that Pmw initializes properly
 sys.modules['_Pmw'].__name__ = '_Pmw'
@@ -17,9 +23,6 @@ def tkLoop(self):
         pass
     # Run forever
     return Task.cont
-
-# Get the taskMgr
-from direct.task.TaskManagerGlobal import *
 
 def spawnTkLoop():
     # Spawn this task

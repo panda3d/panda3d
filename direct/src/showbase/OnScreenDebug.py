@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['OnScreenDebug']
+
 
 
 from pandac.PandaModules import *

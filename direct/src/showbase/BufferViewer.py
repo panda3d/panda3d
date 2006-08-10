@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['BufferViewer']
+
 from pandac.PandaModules import *
 from direct.task import Task
 from direct.directnotify.DirectNotifyGlobal import *

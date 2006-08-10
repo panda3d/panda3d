@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['Diff', 'ObjectPool']
+
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import invertDictLossless, makeList, safeRepr
 from direct.showbase.PythonUtil import getNumberedTypedString

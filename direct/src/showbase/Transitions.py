@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['Transitions']
+
 
 from pandac.PandaModules import *
 from direct.gui.DirectGui import *

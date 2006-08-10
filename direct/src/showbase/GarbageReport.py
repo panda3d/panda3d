@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['FakeObject', '_createGarbage', 'GarbageReport', 'GarbageLogger']
+
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import gcDebugOn, safeRepr, fastRepr
 from direct.showbase.TaskThreaded import TaskThreaded, TaskThread

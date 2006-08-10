@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['SfxPlayer']
+
 
 import math
 from pandac.PandaModules import *

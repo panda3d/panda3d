@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['DirectObject']
+
 
 from MessengerGlobal import messenger
 

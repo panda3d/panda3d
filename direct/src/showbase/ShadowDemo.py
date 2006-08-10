@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['ShadowCaster', 'avatarShadow', 'piratesAvatarShadow', 'arbitraryShadow']
+
 
 """Create a cheesy shadow effect by rendering the view of an
 object (e.g. the local avatar) from a special camera as seen from

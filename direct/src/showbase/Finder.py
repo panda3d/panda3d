@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['findClass', 'rebindClass', 'copyFuncs', 'replaceMessengerFunc', 'replaceTaskMgrFunc', 'replaceStateFunc', 'replaceCRFunc', 'replaceAIRFunc', 'replaceIvalFunc']
+
 import time
 import types
 import os

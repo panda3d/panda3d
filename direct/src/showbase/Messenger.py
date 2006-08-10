@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['Messenger']
+
 
 from PythonUtil import *
 from direct.directnotify import DirectNotifyGlobal

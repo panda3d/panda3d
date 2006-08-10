@@ -13,6 +13,7 @@ from direct.showbase.PythonUtil import *
 from direct.showbase import DirectObject
 from PyDatagram import PyDatagram
 from direct.directnotify.DirectNotifyGlobal import directNotify
+import types
 
 class InterestState:
     StateActive = 'Active'

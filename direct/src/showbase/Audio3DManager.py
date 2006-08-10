@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['Audio3DManager']
+
 from pandac.PandaModules import VBase3
 from direct.task import Task
 #

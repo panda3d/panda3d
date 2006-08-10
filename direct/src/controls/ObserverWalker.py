@@ -15,7 +15,7 @@ animations based on walker events.
 """
 
 from direct.showbase.ShowBaseGlobal import *
-
+from pandac.PandaModules import *
 from direct.directnotify import DirectNotifyGlobal
 import NonPhysicsWalker
 

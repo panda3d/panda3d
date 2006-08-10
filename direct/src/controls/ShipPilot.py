@@ -15,10 +15,12 @@ although it does send messeges that allow a listener to play sounds or
 animations based on control events.
 """
 
-from direct.showbase.ShowBaseGlobal import *
-
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from pandac.PandaModules import PhysicsManager
+from direct.controls.ControlManager import CollisionHandlerRayStart
+from direct.showbase.InputStateGlobal import inputState
+from direct.task.Task import Task
+from pandac.PandaModules import *
 import math
 
 from PhysicsWalker import PhysicsWalker

@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['ShowBase', 'WindowControls']
+
 # This module redefines the builtin import function with one
 # that prints out every import it does in a hierarchical form
 # Annoying and very noisy, but sometimes useful
@@ -21,6 +25,7 @@ from direct.interval import IntervalManager
 from InputStateGlobal import inputState
 from direct.showbase.BufferViewer import BufferViewer
 from direct.task import Task
+from direct.directutil import Verify
 import EventManager
 import math
 import sys

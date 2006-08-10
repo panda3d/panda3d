@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['ExcelHandler']
+
 """
 A simple XML parser for Excel XML data. Built on top of xml.sax
 

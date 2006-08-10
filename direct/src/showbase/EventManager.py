@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['EventManager']
+
 
 from MessengerGlobal import *
 from direct.task.TaskManagerGlobal import taskMgr

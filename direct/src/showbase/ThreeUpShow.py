@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['ThreeUpShow']
+
 
 import ShowBase
 

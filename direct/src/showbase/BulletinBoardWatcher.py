@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['BulletinBoardWatcher']
+
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.PythonUtil import Functor, makeList
 from direct.showbase import DirectObject

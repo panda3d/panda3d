@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['setupMirror', 'showFrustum']
+
 """This file demonstrates one way to create a mirror effect in Panda.
 Call setupMirror() to create a mirror in the world that reflects
 everything in front of it.

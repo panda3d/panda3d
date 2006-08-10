@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['ExclusiveObjectPool', 'ObjectReport']
+
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase import DirectObject, ObjectPool, GarbageReport
 from direct.showbase.PythonUtil import makeList, Sync

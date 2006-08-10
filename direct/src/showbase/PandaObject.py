@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = []
+
 ## from DirectObject import *
 ## from pandac.PandaModules import *
 ## 

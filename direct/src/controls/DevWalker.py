@@ -14,10 +14,11 @@ although it does send messeges that allow a listener to play sounds or
 animations based on walker events.
 """
 
-from direct.showbase.ShowBaseGlobal import *
-
+from direct.showbase.InputStateGlobal import inputState
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
+from direct.task.Task import Task
+from pandac.PandaModules import *
 
 class DevWalker(DirectObject.DirectObject):
 

@@ -1,8 +1,8 @@
 """instantiate global ShowBase object"""
 
-from ShowBase import *
+__all__ = []
 
-CollisionHandlerRayStart = 4000.0 # This is a hack, it may be better to use a line instead of a ray.
+from ShowBase import *
 
 # Create the showbase instance
 # This should be created by the game specific "start" file

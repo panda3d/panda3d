@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['Pool']
+
 """
 
 Pool is a collection of python objects that you can checkin and

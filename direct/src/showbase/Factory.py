@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['Factory']
+
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
 class Factory:

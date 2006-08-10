@@ -1,5 +1,7 @@
 """LerpBlendHelpers module: contains LerpBlendHelpers class"""
 
+__all__ = ['getBlend']
+
 from pandac.PandaModules import *
 
 """global lerp blend types for lerp function"""

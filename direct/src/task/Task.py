@@ -171,9 +171,11 @@ def pause(delayTime):
     task.name = 'pause'
     task.delayTime = delayTime
     return task
+Task.pause = staticmethod(pause)
 
 def sequence(*taskList):
     return make_sequence(taskList)
+Task.sequence = staticmethod(sequence)
 
 
 def make_sequence(taskList):
@@ -232,6 +234,7 @@ def resetSequence(task):
 
 def loop(*taskList):
     return make_loop(taskList)
+Task.loop = staticmethod(loop)
 
 def make_loop(taskList):
     def func(self):

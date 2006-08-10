@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['usage', 'Squeezer', 'Loader', 'boot', 'open', 'explode', 'getloader', 'squeeze', 'searchPath']
+
 #!/usr/bin/env python
 #
 # SQUEEZE

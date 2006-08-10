@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['EventGroup']
+
 from direct.showbase import DirectObject
 from direct.showbase.PythonUtil import SerialNumGen, Functor
 

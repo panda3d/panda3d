@@ -1,5 +1,5 @@
 
-from direct.showbase.ShowBaseGlobal import *
+from direct.showbase.InputStateGlobal import inputState
 #from DirectGui import *
 #from PythonUtil import *
 #from IntervalGlobal import *
@@ -14,6 +14,7 @@ from direct.directnotify import DirectNotifyGlobal
 #    import DevWalker
 from direct.task import Task
 
+CollisionHandlerRayStart = 4000.0 # This is a hack, it may be better to use a line instead of a ray.
 
 class ControlManager:
     notify = DirectNotifyGlobal.directNotify.newCategory("ControlManager")

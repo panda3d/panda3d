@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['deCygwinify', 'getPaths']
+
 """This module is used only by the VR Studio programmers who are using
 the ctattach tools.  It is imported before any other package, and its
 job is to figure out the correct paths to each of the packages.
