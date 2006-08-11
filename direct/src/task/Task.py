@@ -19,6 +19,7 @@ import fnmatch
 import string
 import signal
 from libheapq import heappush, heappop, heapify
+import types
 
 if __debug__:
     # For pstats
