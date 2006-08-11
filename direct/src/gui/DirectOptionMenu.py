@@ -2,10 +2,13 @@
 
 __all__ = ['DirectOptionMenu']
 
+import types
+
 from pandac.PandaModules import *
 import DirectGuiGlobals as DGG
 from DirectButton import *
 from DirectLabel import *
+from DirectFrame import *
 
 class DirectOptionMenu(DirectButton):
     """
