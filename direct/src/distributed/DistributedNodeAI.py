@@ -2,6 +2,7 @@ from otp.ai.AIBaseGlobal import *
 from pandac.PandaModules import NodePath
 import DistributedObjectAI
 import GridParent
+import types
 
 class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
     def __init__(self, air, name=None):
