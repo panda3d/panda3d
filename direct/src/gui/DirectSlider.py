@@ -27,6 +27,7 @@ class DirectSlider(DirectFrame):
 
             ('range',          (0, 1),             self.setRange),
             ('value',          0,                  self.__setValue),
+            ('scrollSize',     0.01,               self.setScrollSize),
             ('pageSize',       0.1,                self.setPageSize),
             ('orientation',    DGG.HORIZONTAL,     self.setOrientation),
 
@@ -97,6 +98,9 @@ class DirectSlider(DirectFrame):
 
     def getRatio(self):
         return self.guiItem.getRatio()
+
+    def setScrollSize(self):
+        self.guiItem.setScrollSize(self['scrollSize'])
 
     def setPageSize(self):
         self.guiItem.setPageSize(self['pageSize'])
