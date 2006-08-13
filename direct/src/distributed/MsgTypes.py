@@ -91,6 +91,9 @@ CLIENT_REMOVE_INTEREST =                     99
 CLIENT_OBJECT_LOCATION =                    102
 #Roger wants to remove this CLIENT_QUERY_ONE_FIELD_RESP =               103
 
+CLIENT_LOGIN_3 =                             111
+CLIENT_LOGIN_3_RESP =                        110
+
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [
 
@@ -110,4 +113,4 @@ QUIET_ZONE_IGNORED_LIST = [
 CLIENT_LOGIN_2_GREEN = 1       # Disney's GoReg subscription token, not used.
 CLIENT_LOGIN_2_PLAY_TOKEN = 2  # VR Studio PlayToken.
 CLIENT_LOGIN_2_BLUE = 3        # The international GoReg token.
-
+CLIENT_LOGIN_3_DISL_TOKEN = 4  # SSL encoded blob from DISL system.
