@@ -56,7 +56,7 @@ public:
 
   void clear();
   void reserve(int num_colliders);
-  void prepare_collider(const ColliderDef &def);
+  void prepare_collider(const ColliderDef &def, const NodePath &root);
 
   INLINE static int get_max_colliders();
 

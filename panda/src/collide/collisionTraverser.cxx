@@ -504,7 +504,7 @@ prepare_colliders(CollisionTraverser::LevelStates &level_states,
       for (int s = 0; s < num_solids; ++s) {
         CollisionSolid *collider = cnode->get_solid(s);
         def._collider = collider;
-        level_state.prepare_collider(def);
+        level_state.prepare_collider(def, root);
 
         if (level_state.get_num_colliders() == max_colliders) {
           // That's the limit.  Save off this level state and make a

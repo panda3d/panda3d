@@ -56,7 +56,7 @@ reserve(int num_colliders) {
 //               in the current level state.
 ////////////////////////////////////////////////////////////////////
 void CollisionLevelState::
-prepare_collider(const ColliderDef &def) {
+prepare_collider(const ColliderDef &def, const NodePath &root) {
   int index = (int)_colliders.size();
   nassertv(index < get_max_colliders());
   _colliders.push_back(def);
@@ -88,7 +88,8 @@ prepare_collider(const ColliderDef &def) {
     }
     */
 
-    gbv->xform(def._node_path.get_net_transform()->get_mat());
+    CPT(TransformState) rel_transform = def._node_path.get_transform(root);
+    gbv->xform(rel_transform->get_mat());
     _local_bounds.push_back(gbv);
   }
   
