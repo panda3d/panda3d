@@ -37,7 +37,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCAtomicField : public DCField {
 public:
-  DCAtomicField(const string &name, DCClass *dclass);
+  DCAtomicField(const string &name, DCClass *dclass, bool bogus_field);
   virtual ~DCAtomicField();
 
 PUBLISHED:
@@ -53,7 +53,7 @@ PUBLISHED:
   string get_element_name(int n) const;
   DCSubatomicType get_element_type(int n) const;
   int get_element_divisor(int n) const;
-  
+
 public:
   void add_element(DCParameter *element);
 
@@ -73,5 +73,7 @@ private:
   typedef pvector<DCParameter *> Elements;
   Elements _elements;
 };
+
+#include "dcAtomicField.I"
 
 #endif

@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 DCMolecularField::
 DCMolecularField(const string &name, DCClass *dclass) : DCField(name, dclass) {
+  _got_keywords = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,8 +95,12 @@ get_atomic(int n) const {
 ////////////////////////////////////////////////////////////////////
 void DCMolecularField::
 add_atomic(DCAtomicField *atomic) {
-  if (_fields.empty()) {
-    copy_keywords(*atomic);
+  if (!atomic->is_bogus_field()) {
+    if (!_got_keywords) {
+      // The first non-bogus atomic field determines our keywords.
+      copy_keywords(*atomic);
+      _got_keywords = true;
+    }
   }
   _fields.push_back(atomic);
 

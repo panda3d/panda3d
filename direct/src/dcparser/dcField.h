@@ -60,13 +60,15 @@ PUBLISHED:
   virtual DCParameter *as_parameter();
   virtual const DCParameter *as_parameter() const;
 
-  string format_data(const string &packed_data);
+  string format_data(const string &packed_data, bool show_field_names = true);
   string parse_string(const string &formatted_string);
 
   bool validate_ranges(const string &packed_data) const;
 
   INLINE bool has_default_value() const;
   INLINE const string &get_default_value() const;
+
+  INLINE bool is_bogus_field() const;
 
   INLINE bool is_required() const;
   INLINE bool is_broadcast() const;
@@ -111,6 +113,7 @@ protected:
   int _number;
   bool _default_value_stale;
   bool _has_default_value;
+  bool _bogus_field;
 
 private:
   string _default_value;

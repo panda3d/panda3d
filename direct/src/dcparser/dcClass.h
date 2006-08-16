@@ -80,6 +80,7 @@ PUBLISHED:
 
   INLINE bool is_struct() const;
   INLINE bool is_bogus_class() const;
+  bool inherits_from_bogus_class() const;
 
   INLINE void start_generate();
   INLINE void stop_generate();

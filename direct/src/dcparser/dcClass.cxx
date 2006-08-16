@@ -290,7 +290,8 @@ get_num_inherited_fields() const {
     if (_inherited_fields.empty()) {
       ((DCClass *)this)->rebuild_inherited_fields();
     }
-    nassertr(!_inherited_fields.empty(), 0);
+
+    nassertr(is_bogus_class() || !_inherited_fields.empty(), 0);
     return (int)_inherited_fields.size();
 
   } else {
@@ -341,6 +342,30 @@ get_inherited_field(int n) const {
     
     return get_field(n);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : DCClass::inherits_from_bogus_class
+//       Access : Published
+//  Description : Returns true if this class, or any class in the
+//                inheritance heirarchy for this class, is a "bogus"
+//                class--a forward reference to an as-yet-undefined
+//                class.
+////////////////////////////////////////////////////////////////////
+bool DCClass::
+inherits_from_bogus_class() const {
+  if (is_bogus_class()) {
+    return true;
+  }
+
+  Parents::const_iterator pi;
+  for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
+    if ((*pi)->inherits_from_bogus_class()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1190,21 +1215,23 @@ write(ostream &out, bool brief, int indent_level) const {
 
   Fields::const_iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
-    (*fi)->write(out, brief, indent_level + 2);
+    if (!(*fi)->is_bogus_field()) {
+      (*fi)->write(out, brief, indent_level + 2);
 
-    /*
-    if (true || (*fi)->has_default_value()) {
-      indent(out, indent_level + 2) << "// = ";
-      DCPacker packer;
-      packer.set_unpack_data((*fi)->get_default_value());
-      packer.begin_unpack(*fi);
-      packer.unpack_and_format(out, false);
-      if (!packer.end_unpack()) {
-        out << "<error>";
+      /*
+      if (true || (*fi)->has_default_value()) {
+	indent(out, indent_level + 2) << "// = ";
+	DCPacker packer;
+	packer.set_unpack_data((*fi)->get_default_value());
+	packer.begin_unpack(*fi);
+	packer.unpack_and_format(out, false);
+	if (!packer.end_unpack()) {
+	  out << "<error>";
+	}
+	out << "\n";
       }
-      out << "\n";
+      */
     }
-    */
   }
 
   indent(out, indent_level) << "};\n";
@@ -1247,8 +1274,10 @@ output_instance(ostream &out, bool brief, const string &prename,
 
   Fields::const_iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
-    (*fi)->output(out, brief);
-    out << "; ";
+    if (!(*fi)->is_bogus_field()) {
+      (*fi)->output(out, brief);
+      out << "; ";
+    }
   }
 
   out << "}";

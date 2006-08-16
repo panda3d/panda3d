@@ -402,7 +402,7 @@ output_instance(ostream &out, bool brief, const string &prename,
       last_fields->output(out, brief);
     }
     last_fields = dcase->_fields;
-    out << "case " << _key_parameter->format_data(dcase->_value) << ": ";
+    out << "case " << _key_parameter->format_data(dcase->_value, false) << ": ";
   }
 
   if (_default_case != (SwitchFields *)NULL) {
@@ -451,7 +451,7 @@ write_instance(ostream &out, bool brief, int indent_level,
     }
     last_fields = dcase->_fields;
     indent(out, indent_level)
-      << "case " << _key_parameter->format_data(dcase->_value) << ":\n";
+      << "case " << _key_parameter->format_data(dcase->_value, false) << ":\n";
   }
 
   if (_default_case != (SwitchFields *)NULL) {

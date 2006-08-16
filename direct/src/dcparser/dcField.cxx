@@ -41,8 +41,10 @@ DCField() :
 #endif
 {
   _number = -1;
-  _has_default_value = false;
   _default_value_stale = true;
+  _has_default_value = false;
+
+  _bogus_field = false;
 
   _has_nested_fields = true;
   _num_nested_fields = 0;
@@ -185,11 +187,11 @@ as_parameter() const {
 //               consumption.  Returns empty string if there is an error.
 ////////////////////////////////////////////////////////////////////
 string DCField::
-format_data(const string &packed_data) {
+format_data(const string &packed_data, bool show_field_names) {
   DCPacker packer;
   packer.set_unpack_data(packed_data);
   packer.begin_unpack(this);
-  string result = packer.unpack_and_format(true);
+  string result = packer.unpack_and_format(show_field_names);
   if (!packer.end_unpack()) {
     return string();
   }

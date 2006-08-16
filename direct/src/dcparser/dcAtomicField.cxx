@@ -30,7 +30,11 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DCAtomicField::
-DCAtomicField(const string &name, DCClass *dclass) : DCField(name, dclass) {
+DCAtomicField(const string &name, DCClass *dclass,
+	      bool bogus_field) : 
+  DCField(name, dclass)
+{
+  _bogus_field = bogus_field;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -488,9 +488,9 @@ atomic_field:
   if (current_class == (DCClass *)NULL) {
     yyerror("Cannot define a method outside of a struct or class.");
     DCClass *temp_class = new DCClass(dc_file, "temp", false, false);  // memory leak.
-    current_atomic = new DCAtomicField($1, temp_class);
+    current_atomic = new DCAtomicField($1, temp_class, false);
   } else {
-    current_atomic = new DCAtomicField($1, current_class);
+    current_atomic = new DCAtomicField($1, current_class, false);
   }
 }
         parameter_list ')'
@@ -1190,7 +1190,18 @@ atomic_name:
   DCField *field = current_class->get_field_by_name($1);
   $$ = (DCAtomicField *)NULL;
   if (field == (DCField *)NULL) {
-    yyerror("Unknown field: " + $1);
+    // Maybe the field is unknown because the class is partially
+    // bogus.  In that case, allow it for now; create a bogus field as
+    // a placeholder.
+    if (current_class->inherits_from_bogus_class()) {
+      $$ = new DCAtomicField($1, current_class, true);
+      current_class->add_field($$);
+
+    } else {
+      // Nope, it's a fully-defined class, so this is a real error.
+      yyerror("Unknown field: " + $1);
+    }
+
   } else {
     $$ = field->as_atomic_field();
     if ($$ == (DCAtomicField *)NULL) {
@@ -1211,7 +1222,7 @@ molecular_atom_list:
 {
   if ($3 != (DCAtomicField *)NULL) {
     current_molecular->add_atomic($3);
-    if (!current_molecular->compare_keywords(*$3)) {
+    if (!$3->is_bogus_field() && !current_molecular->compare_keywords(*$3)) {
       yyerror("Mismatched keywords in molecule between " + 
               current_molecular->get_atomic(0)->get_name() + " and " +
               $3->get_name());

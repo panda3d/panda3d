@@ -18,7 +18,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx
 
   #define SOURCES \
-     dcAtomicField.h dcClass.h dcClass.I \
+     dcAtomicField.h dcAtomicField.I dcClass.h dcClass.I \
      dcDeclaration.h \
      dcField.h dcField.I \
      dcFile.h dcFile.I \

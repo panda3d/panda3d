@@ -61,6 +61,7 @@ private:
   // definition as read from the file.
   typedef pvector<DCAtomicField *> Fields;
   Fields _fields;
+  bool _got_keywords;
 
   DCParameter *get_next_pack_element();
 
