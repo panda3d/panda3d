@@ -19,7 +19,6 @@
 #include "filename.h"
 #include "zStream.h"
 #include "pnotify.h"
-#include "config_util.h"
 
 #ifndef HAVE_GETOPT
   #include "gnu_getopt.h"

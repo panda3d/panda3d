@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c prc:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m pystub prc:c
-#define LOCAL_LIBS downloader express event
+#define LOCAL_LIBS downloader express
 #define USE_PACKAGES openssl zlib
 
 #begin bin_target
