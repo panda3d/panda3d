@@ -471,17 +471,20 @@ class Actor(DirectObject, NodePath):
         """
         # make sure we don't call this twice in a row
         # and pollute the the switches dictionary
-        self.resetLOD()
-        # store the data in the switches for later use
         sortedKeys = self.switches.keys()
         sortedKeys.sort()
-        for eachLod in sortedKeys:
-            index = sortedKeys.index(eachLod)
-            # set the switches to not display ever
-            self.__LODNode.node().setSwitch(index, 0, 10000)
-        # turn the given LOD on 'always'
         index = sortedKeys.index(lodName)
-        self.__LODNode.node().setSwitch(index, 10000, 0)
+        self.__LODNode.node().forceSwitch(index)
+##         self.resetLOD()
+##         # store the data in the switches for later use
+##         sortedKeys = self.switches.keys()
+##         for eachLod in sortedKeys:
+##             index = sortedKeys.index(eachLod)
+##             # set the switches to not display ever
+##             self.__LODNode.node().setSwitch(index, 0, 10000)
+##         # turn the given LOD on 'always'
+##         index = sortedKeys.index(lodName)
+##         self.__LODNode.node().setSwitch(index, 10000, 0)
 
     def printLOD(self):
         sortedKeys = self.switches.keys()
@@ -501,12 +504,13 @@ class Actor(DirectObject, NodePath):
     def resetLOD(self):
         """
         Restore all switch distance info (usually after a useLOD call)"""
-        sortedKeys = self.switches.keys()
-        sortedKeys.sort()
-        for eachLod in sortedKeys:
-            index = sortedKeys.index(eachLod)
-            self.__LODNode.node().setSwitch(index, self.switches[eachLod][0],
-                                     self.switches[eachLod][1])
+        self.__LODNode.node().clearForceSwitch()
+##         sortedKeys = self.switches.keys()
+##         sortedKeys.sort()
+##         for eachLod in sortedKeys:
+##             index = sortedKeys.index(eachLod)
+##             self.__LODNode.node().setSwitch(index, self.switches[eachLod][0],
+##                                      self.switches[eachLod][1])
 
     def addLOD(self, lodName, inDist=0, outDist=0):
         """addLOD(self, string)
