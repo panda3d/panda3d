@@ -785,7 +785,7 @@ PUBLISHED:
   void force_recompute_bounds();
   void write_bounds(ostream &out) const;
   bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
-                         Thread *current_thread = Thread::get_current_thread());
+                         Thread *current_thread = Thread::get_current_thread()) const;
 
   void analyze() const;
 

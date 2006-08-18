@@ -5512,7 +5512,7 @@ write_bounds(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
-                  Thread *current_thread) {
+                  Thread *current_thread) const {
   min_point.set(0.0f, 0.0f, 0.0f);
   max_point.set(0.0f, 0.0f, 0.0f);
   nassertr_always(!is_empty(), false);
