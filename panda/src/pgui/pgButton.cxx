@@ -57,7 +57,8 @@ PGButton::
 ////////////////////////////////////////////////////////////////////
 PGButton::
 PGButton(const PGButton &copy) :
-  PGItem(copy)
+  PGItem(copy),
+  _click_buttons(copy._click_buttons)
 {
   _button_down = false;
 }

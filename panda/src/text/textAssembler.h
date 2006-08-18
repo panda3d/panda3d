@@ -31,6 +31,7 @@
 #include "geom.h"
 
 class TextEncoder;
+class TextGraphic;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextAssembler
@@ -63,6 +64,7 @@ public:
   INLINE const LVector2f &get_lr() const;
 
   static float calc_width(wchar_t character, const TextProperties &properties);
+  static float calc_width(const TextGraphic *graphic, const TextProperties &properties);
 
 private:
   // These structures are built up and operated on by scan_wtext() and
@@ -74,7 +76,9 @@ private:
   class TextCharacter {
   public:
     INLINE TextCharacter(wchar_t character, const TextProperties *properties);
+    INLINE TextCharacter(const TextGraphic *graphic, const TextProperties *properties);
     wchar_t _character;
+    const TextGraphic *_graphic;
     const TextProperties *_properties;
   };
   typedef pvector<TextCharacter> TextString;
@@ -112,9 +116,12 @@ private:
                            bool &found_any, Thread *current_thread) const;
     void assign_to(GeomNode *geom_node, const RenderState *state) const;
     void assign_copy_to(GeomNode *geom_node, const RenderState *state, 
-                        const LMatrix4f &xform) const;
+                        const LMatrix4f &extra_xform) const;
+    void copy_graphic_to(PandaNode *node, const RenderState *state,
+                         const LMatrix4f &extra_xform) const;
 
     Pieces _pieces;
+    PT(PandaNode) _graphic_model;
     LMatrix4f _xform;
     const TextProperties *_properties;
   };

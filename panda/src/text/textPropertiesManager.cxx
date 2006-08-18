@@ -119,6 +119,105 @@ clear_properties(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextPropertiesManager::set_graphic
+//       Access: Published
+//  Description: Defines the TextGraphic associated with the
+//               indicated name.  When the name is subsequently
+//               encountered in text embedded between \5 characters in
+//               a TextNode string, the specified graphic will be
+//               embedded in the text at that point.
+//
+//               If there was already a TextGraphic structure
+//               associated with this name, it is quietly replaced
+//               with the new definition.
+////////////////////////////////////////////////////////////////////
+void TextPropertiesManager::
+set_graphic(const string &name, const TextGraphic &graphic) {
+  _graphics[name] = graphic;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextPropertiesManager::set_graphic
+//       Access: Published
+//  Description: This flavor of set_graphic implicitly creates a frame
+//               for the model using the model's actual computed
+//               bounding volume, as derived from
+//               NodePath::calc_tight_bounds().  Create a TextGraphic
+//               object first if you want to have explicit control of
+//               the frame.
+////////////////////////////////////////////////////////////////////
+void TextPropertiesManager::
+set_graphic(const string &name, const NodePath &model) {
+  LPoint3f min_point, max_point;
+  model.calc_tight_bounds(min_point, max_point);
+
+  TextGraphic graphic(model, 
+                      min_point.dot(LVector3f::right()),
+                      max_point.dot(LVector3f::right()),
+                      min_point.dot(LVector3f::up()), 
+                      max_point.dot(LVector3f::up()));
+
+  _graphics[name] = graphic;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextPropertiesManager::get_graphic
+//       Access: Published
+//  Description: Returns the TextGraphic associated with the
+//               indicated name.  If there was not previously a
+//               TextGraphic associated with this name, a warning
+//               is printed and then a default TextGraphic
+//               structure is associated with the name, and returned.
+//
+//               Call has_graphic() instead to check whether a
+//               particular name has been defined.
+////////////////////////////////////////////////////////////////////
+TextGraphic TextPropertiesManager::
+get_graphic(const string &name) {
+  Graphics::const_iterator pi;
+  pi = _graphics.find(name);
+  if (pi != _graphics.end()) {
+    return (*pi).second;
+  }
+
+  text_cat.warning()
+    << "Creating default TextGraphic for name '" << name << "'\n";
+
+  TextGraphic default_graphic;
+  _graphics[name] = default_graphic;
+  return default_graphic;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextPropertiesManager::has_graphic
+//       Access: Published
+//  Description: Returns true if a TextGraphic structure has been
+//               associated with the indicated name, false otherwise.
+//               Normally this means set_graphic() has been called
+//               with this name, but because get_graphic() will
+//               implicitly create a default TextGraphic structure,
+//               it may also mean simply that get_graphic() has
+//               been called with the indicated name.
+////////////////////////////////////////////////////////////////////
+bool TextPropertiesManager::
+has_graphic(const string &name) const {
+  Graphics::const_iterator pi;
+  pi = _graphics.find(name);
+  return (pi != _graphics.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextPropertiesManager::clear_graphic
+//       Access: Published
+//  Description: Removes the named TextGraphic structure from the
+//               manager.
+////////////////////////////////////////////////////////////////////
+void TextPropertiesManager::
+clear_graphic(const string &name) {
+  _graphics.erase(name);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextPropertiesManager::write
 //       Access: Published
 //  Description: 
@@ -145,4 +244,38 @@ get_global_ptr() {
     _global_ptr = new TextPropertiesManager;
   }
   return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextPropertiesManager::get_properties_ptr
+//       Access: Public
+//  Description: Returns a pointer to the TextProperties with the
+//               indicated name, or NULL if there is no properties
+//               with that name.
+////////////////////////////////////////////////////////////////////
+const TextProperties *TextPropertiesManager::
+get_properties_ptr(const string &name) {
+  Properties::const_iterator pi;
+  pi = _properties.find(name);
+  if (pi != _properties.end()) {
+    return &(*pi).second;
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextPropertiesManager::get_graphic_ptr
+//       Access: Public
+//  Description: Returns a pointer to the TextGraphic with the
+//               indicated name, or NULL if there is no graphic
+//               with that name.
+////////////////////////////////////////////////////////////////////
+const TextGraphic *TextPropertiesManager::
+get_graphic_ptr(const string &name) {
+  Graphics::const_iterator pi;
+  pi = _graphics.find(name);
+  if (pi != _graphics.end()) {
+    return &(*pi).second;
+  }
+  return NULL;
 }

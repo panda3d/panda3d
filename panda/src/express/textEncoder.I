@@ -33,6 +33,20 @@ TextEncoder() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE TextEncoder::
+TextEncoder(const TextEncoder &copy) :
+  _flags(copy._flags),
+  _encoding(copy._encoding),
+  _text(copy._text),
+  _wtext(copy._wtext)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::set_encoding
 //       Access: Published
 //  Description: Specifies how the string set via set_text() is to be

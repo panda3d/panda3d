@@ -100,10 +100,34 @@ PGItem(const PGItem &copy) :
   _has_frame(copy._has_frame),
   _frame(copy._frame),
   _state(copy._state),
-  _flags(copy._flags)
+  _flags(copy._flags),
+  _sounds(copy._sounds)
 {
   _notify = NULL;
   _region = new PGMouseWatcherRegion(this);
+  
+  // We give our region the same name as the region for the PGItem
+  // we're copying--so that this PGItem will generate the same event
+  // names when the user interacts with it.
+  _region->set_name(copy._region->get_name());
+
+  // Make a deep copy of all of the original PGItem's StateDefs.
+  size_t num_state_defs = copy._state_defs.size();
+  _state_defs.reserve(num_state_defs);
+  for (size_t i = 0; i < num_state_defs; ++i) {
+    // We cheat and cast away the const, because the frame is just a
+    // cache.  But we have to get the frame out of the source before we
+    // can safely copy it.
+    StateDef &old_sd = (StateDef &)(copy._state_defs[i]);
+    old_sd._frame.remove_node();
+    old_sd._frame_stale = true;
+
+    StateDef new_sd;
+    new_sd._root = old_sd._root.copy_to(NodePath());
+    new_sd._frame_style = old_sd._frame_style;
+
+    _state_defs.push_back(new_sd);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1135,9 +1159,7 @@ frame_changed() {
 void PGItem::
 slot_state_def(int state) {
   while (state >= (int)_state_defs.size()) {
-    StateDef def;
-    def._frame_stale = true;
-    _state_defs.push_back(def);
+    _state_defs.push_back(StateDef());
   }
 }
 

@@ -45,6 +45,7 @@ extern ConfigVariableInt text_push_properties_key;
 extern ConfigVariableInt text_pop_properties_key;
 extern ConfigVariableInt text_soft_hyphen_key;
 extern ConfigVariableInt text_soft_break_key;
+extern ConfigVariableInt text_embed_graphic_key;
 extern wstring get_text_soft_hyphen_output();
 extern ConfigVariableDouble text_hyphen_ratio;
 extern wstring get_text_never_break_before();

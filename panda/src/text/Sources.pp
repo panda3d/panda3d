@@ -23,6 +23,7 @@
     textAssembler.I textAssembler.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
+    textGraphic.I textGraphic.h \
     textNode.I textNode.h \
     textProperties.I textProperties.h \
     textPropertiesManager.I textPropertiesManager.h
@@ -38,6 +39,7 @@
     staticTextFont.cxx \
     textAssembler.cxx \
     textFont.cxx textGlyph.cxx \
+    textGraphic.cxx \
     textNode.cxx \
     textProperties.cxx \
     textPropertiesManager.cxx
@@ -53,6 +55,7 @@
     textAssembler.I textAssembler.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
+    textGraphic.I textGraphic.h \
     textNode.I textNode.h \
     textProperties.I textProperties.h \
     textPropertiesManager.I textPropertiesManager.h

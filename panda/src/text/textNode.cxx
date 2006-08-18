@@ -121,6 +121,50 @@ TextNode(const string &name, const TextProperties &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::Copy Constructor
+//       Access: Published
+//  Description: OK, this is a true copy constructor.
+////////////////////////////////////////////////////////////////////
+TextNode::
+TextNode(const TextNode &copy) : 
+  PandaNode(copy), 
+  TextEncoder(copy),
+  TextProperties(copy),
+  _card_texture(copy._card_texture),
+  _frame_color(copy._frame_color),
+  _card_color(copy._card_color),
+  _flags(copy._flags),
+  _max_rows(copy._max_rows),
+  _frame_width(copy._frame_width),
+  _card_border_size(copy._card_border_size),
+  _card_border_uv_portion(copy._card_border_uv_portion),
+  _frame_ul(copy._frame_ul),
+  _frame_lr(copy._frame_lr),
+  _card_ul(copy._card_ul),
+  _card_lr(copy._card_lr),
+  _transform(copy._transform),
+  _coordinate_system(copy._coordinate_system),
+  _ul3d(copy._ul3d),
+  _lr3d(copy._lr3d),
+  _assembler(this) 
+{
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::make_copy
+//       Access: Protected, Virtual
+//  Description: Returns a newly-allocated Node that is a shallow copy
+//               of this one.  It will be a different Node pointer,
+//               but its internal data may or may not be shared with
+//               that of the original Node.
+////////////////////////////////////////////////////////////////////
+PandaNode *TextNode::
+make_copy() const {
+  return new TextNode(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::Destructor
 //       Access: Published
 //  Description:
@@ -267,8 +311,7 @@ generate() {
 
   PT(PandaNode) text_root = _assembler.assemble_text();
 
-  // Parent the text in.  We create an intermediate node so we can
-  // choose to reinstance the text_root as the shadow, below.
+  // Parent the text in.
   PT(PandaNode) text = new PandaNode("text");
   root->add_child(text, get_draw_order() + 2);
   text->add_child(text_root);

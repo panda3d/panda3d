@@ -177,7 +177,9 @@ get_wordwrapped_wtext() const {
   for (ti = _wordwrapped_string.begin(); 
        ti != _wordwrapped_string.end(); 
        ++ti) {
-    wtext += (*ti)._character;
+    if ((*ti)._graphic != (TextGraphic *)NULL) {
+      wtext += (*ti)._character;
+    }
   }
 
   return wtext;
@@ -203,8 +205,13 @@ assemble_text() {
   // and put them under a common node.
   PT(PandaNode) parent_node = new PandaNode("common");
 
-  PT(GeomNode) shadow_node = new GeomNode("shadow");
-  PT(GeomNode) text_node = new GeomNode("text");
+  PT(PandaNode) shadow_node = new PandaNode("shadow");
+  PT(GeomNode) shadow_geom_node = new GeomNode("shadow_geom");
+  shadow_node->add_child(shadow_geom_node);
+
+  PT(PandaNode) text_node = new PandaNode("text");
+  PT(GeomNode) text_geom_node = new GeomNode("text_geom");
+  text_node->add_child(text_geom_node);
 
   const TextProperties *properties = NULL;
   CPT(RenderState) text_state;
@@ -256,16 +263,18 @@ assemble_text() {
     // goes, while the place-text function just stomps on the
     // vertices.
     if (properties->has_shadow()) {
-      placement->assign_copy_to(shadow_node, shadow_state, shadow_xform);
+      placement->assign_copy_to(shadow_geom_node, shadow_state, shadow_xform);
+      placement->copy_graphic_to(shadow_node, shadow_state, shadow_xform);
       any_shadow = true;
     }
-    placement->assign_to(text_node, text_state);
+    placement->assign_to(text_geom_node, text_state);
+    placement->copy_graphic_to(text_node, text_state, LMatrix4f::ident_mat());
     delete placement;
   }  
   placed_glyphs.clear();
 
   if (any_shadow) {
-    // The shadow_node must appear first to guarantee the correct
+    // The shadow_geom_node must appear first to guarantee the correct
     // rendering order.
     parent_node->add_child(shadow_node);
   }
@@ -314,6 +323,17 @@ calc_width(wchar_t character, const TextProperties &properties) {
   glyph_scale *= properties.get_glyph_scale();
 
   return advance * glyph_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::calc_width
+//       Access: Private, Static
+//  Description: Returns the width of a single TextGraphic image.
+////////////////////////////////////////////////////////////////////
+float TextAssembler::
+calc_width(const TextGraphic *graphic, const TextProperties &properties) {
+  LVecBase4f frame = graphic->get_frame();
+  return (frame[1] - frame[0]) * properties.get_glyph_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -368,7 +388,13 @@ scan_wtext(wstring::const_iterator &si,
       
       // Define the new properties by extending the current properties.
       TextProperties *new_properties = new TextProperties(*current_properties);
-      new_properties->add_properties(manager->get_properties(name));
+      const TextProperties *named_props = manager->get_properties_ptr(name);
+      if (named_props != (TextProperties *)NULL) {
+        new_properties->add_properties(*named_props);
+      } else {
+        text_cat.warning()
+          << "Unknown TextProperties: " << name << "\n";
+      }
       _properties_list.push_back(new_properties);
       
       // And recursively scan with the nested properties.
@@ -389,6 +415,45 @@ scan_wtext(wstring::const_iterator &si,
       // We simply return to the previous level.
       ++si;
       return;
+
+    } else if ((*si) == text_embed_graphic_key) {
+      // This indicates an embedded graphic.  Pull off the name of the
+      // TextGraphic structure, which is everything until the next
+      // text_embed_graphic_key.
+
+      wstring wname;
+      ++si;
+      while (si != send && (*si) != text_embed_graphic_key) {
+        wname += (*si);
+        ++si;
+      }
+
+      if (si == send) {
+        // We didn't close the text_embed_graphic_key.  That's an
+        // error.
+        text_cat.warning()
+          << "Unclosed embed_graphic in text.\n";
+        return;
+      }
+
+      ++si;
+
+      // Now we have to encode the wstring into a string, for lookup
+      // in the TextPropertiesManager.
+      string name = _encoder->encode_wtext(wname);
+      
+      TextPropertiesManager *manager = 
+        TextPropertiesManager::get_global_ptr();
+      
+      // Get the graphic image.
+      const TextGraphic *named_graphic = manager->get_graphic_ptr(name);
+      if (named_graphic != (TextGraphic *)NULL) {
+        text_string.push_back(TextCharacter(named_graphic, current_properties));
+
+      } else {
+        text_cat.warning()
+          << "Unknown TextGraphic: " << name << "\n";
+      }
 
     } else {
       // A normal character.  Apply it.
@@ -771,6 +836,7 @@ assemble_row(TextAssembler::TextString::const_iterator &si,
 
   while (si != send) {
     wchar_t character = (*si)._character;
+    const TextGraphic *graphic = (*si)._graphic;
     const TextProperties *properties = (*si)._properties;
 
     TextFont *font = properties->get_font();
@@ -782,7 +848,12 @@ assemble_row(TextAssembler::TextString::const_iterator &si,
 
     // And the height of the row is the maximum of all the fonts used
     // within the row.
-    line_height = max(line_height, font->get_line_height());
+    if (graphic != (TextGraphic *)NULL) {
+      LVecBase4f frame = graphic->get_frame();
+      line_height = max(line_height, frame[3] - frame[2]);
+    } else {
+      line_height = max(line_height, font->get_line_height());
+    }
 
     if (character == '\n') {
       // The newline character marks the end of the row.
@@ -802,6 +873,38 @@ assemble_row(TextAssembler::TextString::const_iterator &si,
 
     } else if (character == text_soft_hyphen_key) {
       // And so is the 'soft-hyphen' key character.
+
+    } else if (graphic != (TextGraphic *)NULL) {
+      // A special embedded graphic.
+      GlyphPlacement *placement = new GlyphPlacement;
+      row_placed_glyphs.push_back(placement);
+
+      placement->_graphic_model = graphic->get_model().node();
+
+      LVecBase4f frame = graphic->get_frame();
+      float glyph_scale = properties->get_glyph_scale();
+
+      float advance = (frame[1] - frame[0]);
+
+      // Now compute the matrix that will transform the glyph (or
+      // glyphs) into position.
+      LMatrix4f glyph_xform = LMatrix4f::scale_mat(glyph_scale);
+
+      glyph_xform(3, 0) += (xpos - frame[0]);
+      glyph_xform(3, 2) += (properties->get_glyph_shift() - frame[2]);
+
+      if (properties->has_slant()) {
+        LMatrix4f shear(1.0f, 0.0f, 0.0f, 0.0f,
+                        0.0f, 1.0f, 0.0f, 0.0f,
+                        properties->get_slant(), 0.0f, 1.0f, 0.0f,
+                        0.0f, 0.0f, 0.0f, 1.0f);
+        glyph_xform = shear * glyph_xform;
+      }
+      
+      placement->_xform = glyph_xform;
+      placement->_properties = properties;
+
+      xpos += advance * glyph_scale;
 
     } else {
       // A printable character.
@@ -1479,6 +1582,28 @@ assign_copy_to(GeomNode *geom_node, const RenderState *state,
     PT(Geom) new_geom = geom->make_copy();
     new_geom->transform_vertices(new_xform);
     geom_node->add_geom(new_geom, state->compose((*pi)._state));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::GlyphPlacement::copy_graphic_to
+//       Access: Private
+//  Description: If the GlyphPlacement includes a special graphic,
+//               copies it to the indicated node.
+////////////////////////////////////////////////////////////////////
+void TextAssembler::GlyphPlacement::
+copy_graphic_to(PandaNode *node, const RenderState *state,
+                const LMatrix4f &extra_xform) const {
+  if (_graphic_model != (PandaNode *)NULL) {
+    LMatrix4f new_xform = _xform * extra_xform;
+
+    // We need an intermediate node to hold the transform and state.
+    PT(PandaNode) intermediate_node = new PandaNode("");
+    node->add_child(intermediate_node);
+
+    intermediate_node->set_transform(TransformState::make_mat(new_xform));
+    intermediate_node->set_state(state);
+    intermediate_node->add_child(_graphic_model->copy_subgraph());
   }
 }
 

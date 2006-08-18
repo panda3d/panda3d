@@ -552,3 +552,14 @@ compare_largest(const LVecBase4f *&largest, float &largest_area,
     largest_area = new_area;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::StateDef::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PGItem::StateDef::
+StateDef() :
+  _frame_stale(true)
+{
+}

@@ -84,7 +84,11 @@ get_num_rows() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float TextAssembler::
 calc_width(const TextCharacter &tch) {
-  return calc_width(tch._character, *tch._properties);
+  if (tch._graphic != (TextGraphic *)NULL) {
+    return calc_width(tch._graphic, *tch._properties);
+  } else {
+    return calc_width(tch._character, *tch._properties);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,6 +99,20 @@ calc_width(const TextCharacter &tch) {
 INLINE TextAssembler::TextCharacter::
 TextCharacter(wchar_t character, const TextProperties *properties) :
   _character(character),
+  _graphic(NULL),
+  _properties(properties)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::TextCharacter::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE TextAssembler::TextCharacter::
+TextCharacter(const TextGraphic *graphic, const TextProperties *properties) :
+  _character(0),
+  _graphic(graphic),
   _properties(properties)
 {
 }

@@ -207,6 +207,7 @@ private:
 
   class StateDef {
   public:
+    INLINE StateDef();
     NodePath _root;
     PGFrameStyle _frame_style;
     NodePath _frame;

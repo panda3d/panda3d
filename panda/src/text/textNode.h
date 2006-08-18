@@ -57,6 +57,11 @@ class EXPCL_PANDA TextNode : public PandaNode, public TextEncoder, public TextPr
 PUBLISHED:
   TextNode(const string &name);
   TextNode(const string &name, const TextProperties &copy);
+protected:
+  TextNode(const TextNode &copy);
+  virtual PandaNode *make_copy() const;
+
+PUBLISHED:
   ~TextNode();
 
   INLINE float get_line_height() const;

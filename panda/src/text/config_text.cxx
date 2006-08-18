@@ -118,6 +118,13 @@ ConfigVariableInt text_soft_break_key
           "when it is used as a break point, no character is "
           "introduced in its place."));
 
+ConfigVariableInt text_embed_graphic_key
+("text-embed-graphic-key", 5,
+ PRC_DESC("This is the decimal character number that, embedded in "
+          "a string, is used to bracket the name of a model "
+          "added to the TextPropertiesManager object, to "
+          "embed an arbitrary graphic image within a paragraph."));
+
 wstring
 get_text_soft_hyphen_output() {
   static wstring *text_soft_hyphen_output = NULL;

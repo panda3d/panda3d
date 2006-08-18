@@ -1,6 +1,7 @@
 #include "textAssembler.cxx"
 #include "textFont.cxx"
 #include "textGlyph.cxx"
+#include "textGraphic.cxx"
 #include "textNode.cxx"
 #include "textProperties.cxx"
 #include "textPropertiesManager.cxx"
