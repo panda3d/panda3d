@@ -183,7 +183,8 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 //     Function: LVector::angle_rad
 //       Access: Published
 //  Description: Returns the angle between this vector and the other
-//               one, expressed in radians.
+//               one, expressed in radians.  Both vectors should be
+//               initially normalized.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 angle_rad(const FLOATNAME(LVector3) &other) const {
@@ -202,7 +203,8 @@ angle_rad(const FLOATNAME(LVector3) &other) const {
 //     Function: LVector::angle_deg
 //       Access: Published
 //  Description: Returns the angle between this vector and the other
-//               one, expressed in degrees.
+//               one, expressed in degrees.  Both vectors should be
+//               initially normalized.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 angle_deg(const FLOATNAME(LVector3) &other) const {
