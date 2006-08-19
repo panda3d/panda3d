@@ -198,13 +198,14 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.speed=(forward and self.avatarControlForwardSpeed or
                     reverse and -self.avatarControlReverseSpeed)
         # Should fSlide be renamed slideButton?
-        self.slideSpeed=slide and (
-                (turnLeft and -self.avatarControlForwardSpeed*0.75) or
-                (turnRight and self.avatarControlForwardSpeed*0.75))
+        self.slideSpeed=slide and ((reverse and turnLeft and -self.avatarControlReverseSpeed*(0.75)) or
+                                   (reverse and turnRight and self.avatarControlReverseSpeed*(0.75)) or
+                                   (turnLeft and -self.avatarControlForwardSpeed*(0.75)) or
+                                   (turnRight and self.avatarControlForwardSpeed*(0.75)))
         self.rotationSpeed=not slide and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
-
+        
     def handleAvatarControls(self, task):
         """
         Check on the arrow keys and update the avatar.
