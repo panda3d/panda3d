@@ -177,7 +177,7 @@ get_wordwrapped_wtext() const {
   for (ti = _wordwrapped_string.begin(); 
        ti != _wordwrapped_string.end(); 
        ++ti) {
-    if ((*ti)._graphic != (TextGraphic *)NULL) {
+    if ((*ti)._graphic == (TextGraphic *)NULL) {
       wtext += (*ti)._character;
     }
   }
