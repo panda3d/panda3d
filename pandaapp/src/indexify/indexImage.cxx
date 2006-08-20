@@ -68,7 +68,7 @@ add_photo(int photo_index) {
   int xi = count - (yi * thumb_count_x);
 
   int x = thumb_x_space + xi * (thumb_width + thumb_x_space);
-  int y = thumb_y_space + yi * (thumb_width + thumb_caption_height + thumb_x_space);
+  int y = thumb_y_space + yi * (thumb_height + thumb_caption_height + thumb_y_space);
 
   PhotoInfo pinfo;
   pinfo._photo_index = photo_index;

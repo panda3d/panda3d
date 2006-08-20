@@ -34,7 +34,7 @@
 // row).  It will never be larger than this.
 extern int max_index_size_array[2];
 #define max_index_width (max_index_size_array[0])
-#define max_index_height (max_index_size_array[0])
+#define max_index_height (max_index_size_array[1])
 
 // The size of the individual thumbnail images, including the frames
 // (if present).  Thumbnail images are scaled to fit within this box.
