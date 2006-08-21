@@ -751,6 +751,14 @@ void DCSimpleParameter::
 pack_int(DCPackData &pack_data, int value,
          bool &pack_error, bool &range_error) const {
   int int_value = value * _divisor;
+
+  if (value != 0 && (int_value / value) != _divisor) {
+    // If we've experienced overflow after applying the divisor, pack
+    // it as an int64 instead.
+    pack_int64(pack_data, (PN_int64)value, pack_error, range_error);
+    return;
+  }
+
   if (_has_modulus && _uint_modulus != 0) {
     if (int_value < 0) {
       int_value = _uint_modulus - 1 - (-int_value - 1) % _uint_modulus;
@@ -802,11 +810,16 @@ pack_int(DCPackData &pack_data, int value,
     break;
 
   case ST_uint32:
+    cerr << "validating " << int_value << ", range_error = " << range_error
+         << "\n";
     if (int_value < 0) {
       range_error = true;
     }
+    cerr << "sign test, range_error = " << range_error << "\n";
     _uint_range.validate((unsigned int)int_value, range_error);
+    cerr << "_uint_range test, range_error = " << range_error << "\n";
     do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value);
+    cerr << "packed, range_error = " << range_error << "\n";
     break;
 
   case ST_uint64:
