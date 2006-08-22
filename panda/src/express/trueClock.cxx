@@ -132,6 +132,8 @@ get_short_time() {
 //       Access: Protected
 //  Description: 
 ////////////////////////////////////////////////////////////////////
+typedef BOOL (WINAPI * PFNSETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR);
+
 TrueClock::
 TrueClock() {
   _error_count = 0;
@@ -144,6 +146,17 @@ TrueClock() {
   _last_reported_time_scale = 1.0;
   _report_time_scale_time = 0.0;
 
+  if (lock_to_one_cpu) {
+    HMODULE hker = GetModuleHandle("kernel32");
+    if (hker != 0) {
+      PFNSETPROCESSAFFINITYMASK sp = (PFNSETPROCESSAFFINITYMASK)
+        GetProcAddress(hker, "SetProcessAffinityMask");
+      if (sp != 0) {
+        sp(GetCurrentProcess(), 1);
+      }
+    }
+  }
+  
   if (get_use_high_res_clock()) {
     PN_int64 int_frequency;
     _has_high_res = 

@@ -63,6 +63,8 @@ extern ConfigVariableInt patchfile_zone_size;
 
 extern ConfigVariableBool keep_temporary_files;
 
+extern ConfigVariableBool lock_to_one_cpu;
+
 extern ConfigVariableString encryption_algorithm;
 extern ConfigVariableInt encryption_key_length;
 extern ConfigVariableInt encryption_iteration_count;
