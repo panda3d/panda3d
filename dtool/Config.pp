@@ -339,9 +339,13 @@
 // However, compiling this option in does add some additional runtime
 // overhead even if it is not used.  By default, we enable pipelining
 // whenever threads are enabled, assuming that if you have threads,
-// you also want to use piplining.  We also enable it at OPTIMIZE
+// you also want to use pipelining.  We also enable it at OPTIMIZE
 // level 1, since that enables additional runtime checks.
-#defer DO_PIPELINING $[or $[<= $[OPTIMIZE], 1],$[HAVE_THREADS]]
+//#defer DO_PIPELINING $[or $[<= $[OPTIMIZE], 1],$[HAVE_THREADS]]
+
+// Actually, let's *not* assume that threading implies pipelining, at
+// least not until pipelining is less of a performance hit.
+#defer DO_PIPELINING $[<= $[OPTIMIZE], 1]
 
 // Do you want to use one of the alternative malloc implementations?
 // This is almost always a good idea on Windows, where the standard
