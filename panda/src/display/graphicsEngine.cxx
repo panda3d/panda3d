@@ -250,7 +250,8 @@ make_output(GraphicsPipe *pipe,
   if (win_prop.has_size()) {
     x_size = win_prop.get_x_size();
     y_size = win_prop.get_y_size();
-  } else {
+  }
+  if ((x_size == 0)&&(y_size == 0)) {
     flags |= GraphicsPipe::BF_size_track_host;
   }
   if (host != 0) {
