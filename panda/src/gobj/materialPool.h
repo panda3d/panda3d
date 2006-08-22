@@ -20,11 +20,9 @@
 #define MATERIALPOOL_H
 
 #include "pandabase.h"
-
 #include "material.h"
-
 #include "pointerTo.h"
-
+#include "pmutex.h"
 #include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -62,6 +60,8 @@ private:
   static MaterialPool *get_ptr();
 
   static MaterialPool *_global_ptr;
+
+  Mutex _lock;
 
   // We store a map of CPT(Material) to PT(Material).  These are two
   // equivalent structures, but different pointers.  The first pointer

@@ -52,8 +52,7 @@
     textEncoder.h textEncoder.I \
     threadSafePointerTo.I threadSafePointerTo.h \
     threadSafePointerToBase.I threadSafePointerToBase.h \
-    tokenBoard.I \
-    tokenBoard.h trueClock.I trueClock.h \
+    trueClock.I trueClock.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
     unicodeLatinMap.h \
     vector_uchar.h \
@@ -164,8 +163,7 @@
     textEncoder.h textEncoder.I \
     threadSafePointerTo.I threadSafePointerTo.h \
     threadSafePointerToBase.I threadSafePointerToBase.h \
-    tokenBoard.I \
-    tokenBoard.h trueClock.I trueClock.h \
+    trueClock.I trueClock.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
     unicodeLatinMap.h \
     vector_uchar.h \

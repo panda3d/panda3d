@@ -10,7 +10,6 @@
 
   #define SOURCES \
     config_downloader.h \
-    asyncUtility.I asyncUtility.h \
     bioPtr.I bioPtr.h \
     bioStreamPtr.I bioStreamPtr.h \
     bioStream.I bioStream.h bioStreamBuf.h \
@@ -39,7 +38,6 @@
     
   #define INCLUDED_SOURCES                 \
     config_downloader.cxx \
-    asyncUtility.cxx \
     bioPtr.cxx \
     bioStreamPtr.cxx \
     bioStream.cxx bioStreamBuf.cxx \
@@ -66,7 +64,6 @@
     urlSpec.cxx
 
   #define INSTALL_HEADERS \
-    asyncUtility.h asyncUtility.I \
     bioPtr.I bioPtr.h \
     bioStreamPtr.I bioStreamPtr.h \
     bioStream.I bioStream.h bioStreamBuf.h \

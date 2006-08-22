@@ -79,6 +79,8 @@ PUBLISHED:
   virtual void output(ostream &out) const;
 
 public:
+  INLINE bool is_started() const;
+
   bool start(ThreadPriority priority, bool global, bool joinable);
   INLINE void interrupt();
   INLINE void join();

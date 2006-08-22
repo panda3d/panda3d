@@ -23,7 +23,7 @@
 #include "texture.h"
 #include "filename.h"
 #include "config_gobj.h"
-
+#include "pmutex.h"
 #include "pmap.h"
 
 class TexturePoolFilter;
@@ -121,6 +121,8 @@ private:
   void load_filters();
 
   static TexturePool *_global_ptr;
+
+  Mutex _lock;
   typedef phash_map<string,  PT(Texture), string_hash> Textures;
   Textures _textures;
   string _fake_texture_image;

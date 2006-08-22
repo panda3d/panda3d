@@ -20,10 +20,9 @@
 #define SHADERPOOL_H
 
 #include "pandabase.h"
-
 #include "shader.h"
-
 #include "filename.h"
+#include "pmutex.h"
 #include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -65,8 +64,9 @@ private:
                               Filename &filename, int &face_index);
 
   static ShaderPool *get_ptr();
-
   static ShaderPool *_global_ptr;
+
+  Mutex _lock;
   typedef pmap<string,  CPT(Shader) > Shaders;
   Shaders _shaders;
 };

@@ -28,6 +28,7 @@
 #include "texturePoolFilter.h"
 #include "configVariableList.h"
 #include "load_dso.h"
+#include "mutexHolder.h"
 
 TexturePool *TexturePool::_global_ptr;
 
@@ -54,6 +55,8 @@ write(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 register_texture_type(MakeTextureFunc *func, const string &extensions) {
+  MutexHolder holder(_lock);
+
   vector_string words;
   extract_words(downcase(extensions), words);
 
@@ -71,6 +74,8 @@ register_texture_type(MakeTextureFunc *func, const string &extensions) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 register_filter(TexturePoolFilter *filter) {
+  MutexHolder holder(_lock);
+
   gobj_cat.info()
     << "Registering Texture filter " << *filter << "\n";
   _filter_registry.push_back(filter);
@@ -86,6 +91,8 @@ register_filter(TexturePoolFilter *filter) {
 ////////////////////////////////////////////////////////////////////
 TexturePool::MakeTextureFunc *TexturePool::
 get_texture_type(const string &extension) const {
+  MutexHolder holder(_lock);
+
   string c = downcase(extension);
   TypeRegistry::const_iterator ti;
   ti = _type_registry.find(extension);
@@ -136,6 +143,8 @@ make_texture(const string &extension) const {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 write_texture_types(ostream &out, int indent_level) const {
+  MutexHolder holder(_lock);
+
   PNMFileTypeRegistry *pnm_reg = PNMFileTypeRegistry::get_global_ptr();
   pnm_reg->write(out, indent_level);
 
@@ -201,6 +210,8 @@ TexturePool() {
 ////////////////////////////////////////////////////////////////////
 bool TexturePool::
 ns_has_texture(const Filename &orig_filename) {
+  MutexHolder holder(_lock);
+
   Filename filename(orig_filename);
 
   if (!_fake_texture_image.empty()) {
@@ -239,13 +250,16 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   vfs->resolve_filename(filename, get_texture_path()) ||
     vfs->resolve_filename(filename, get_model_path());
 
-  Textures::const_iterator ti;
-  ti = _textures.find(filename);
-  if (ti != _textures.end()) {
-    // This texture was previously loaded.
-    Texture *tex = (*ti).second;
-    nassertr(!tex->get_fullpath().empty(), tex);
-    return tex;
+  {
+    MutexHolder holder(_lock);
+    Textures::const_iterator ti;
+    ti = _textures.find(filename);
+    if (ti != _textures.end()) {
+      // This texture was previously loaded.
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
+    }
   }
 
   // The texture was not found in the pool.
@@ -293,7 +307,23 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   tex->set_filename(orig_filename);
   tex->set_fullpath(filename);
   tex->_texture_pool_key = filename;
-  _textures[filename] = tex;
+
+  {
+    MutexHolder holder(_lock);
+
+    // Now look again--someone may have just loaded this texture in
+    // another thread.
+    Textures::const_iterator ti;
+    ti = _textures.find(filename);
+    if (ti != _textures.end()) {
+      // This texture was previously loaded.
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
+    }
+
+    _textures[filename] = tex;
+  }
 
   if (store_record) {
     // Store the on-disk cache record for next time.
@@ -335,13 +365,17 @@ ns_load_texture(const Filename &orig_filename,
   vfs->resolve_filename(alpha_filename, get_texture_path()) ||
     vfs->resolve_filename(alpha_filename, get_model_path());
 
-  Textures::const_iterator ti;
-  ti = _textures.find(filename);
-  if (ti != _textures.end()) {
-    // This texture was previously loaded.
-    Texture *tex = (*ti).second;
-    nassertr(!tex->get_fullpath().empty(), tex);
-    return tex;
+  {
+    MutexHolder holder(_lock);
+
+    Textures::const_iterator ti;
+    ti = _textures.find(filename);
+    if (ti != _textures.end()) {
+      // This texture was previously loaded.
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
+    }
   }
 
   PT(Texture) tex;
@@ -393,7 +427,22 @@ ns_load_texture(const Filename &orig_filename,
   tex->set_alpha_filename(orig_alpha_filename);
   tex->set_alpha_fullpath(alpha_filename);
   tex->_texture_pool_key = filename;
-  _textures[filename] = tex;
+
+  {
+    MutexHolder holder(_lock);
+
+    // Now look again.
+    Textures::const_iterator ti;
+    ti = _textures.find(filename);
+    if (ti != _textures.end()) {
+      // This texture was previously loaded.
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
+    }
+    
+    _textures[filename] = tex;
+  }
 
   if (store_record) {
     // Store the on-disk cache record for next time.
@@ -424,11 +473,15 @@ ns_load_3d_texture(const Filename &filename_pattern,
   vfs->resolve_filename(filename, get_texture_path()) ||
     vfs->resolve_filename(filename, get_model_path());
 
-  Textures::const_iterator ti;
-  ti = _textures.find(filename);
-  if (ti != _textures.end()) {
-    // This texture was previously loaded.
-    return (*ti).second;
+  {
+    MutexHolder holder(_lock);
+
+    Textures::const_iterator ti;
+    ti = _textures.find(filename);
+    if (ti != _textures.end()) {
+      // This texture was previously loaded.
+      return (*ti).second;
+    }
   }
 
   PT(Texture) tex;
@@ -470,7 +523,20 @@ ns_load_3d_texture(const Filename &filename_pattern,
   tex->set_filename(filename_pattern);
   tex->set_fullpath(filename);
   tex->_texture_pool_key = filename;
-  _textures[filename] = tex;
+
+  {
+    MutexHolder holder(_lock);
+
+    // Now look again.
+    Textures::const_iterator ti;
+    ti = _textures.find(filename);
+    if (ti != _textures.end()) {
+      // This texture was previously loaded.
+      return (*ti).second;
+    }
+
+    _textures[filename] = tex;
+  }
 
   if (store_record) {
     // Store the on-disk cache record for next time.
@@ -496,11 +562,15 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps) {
   vfs->resolve_filename(filename, get_texture_path()) ||
     vfs->resolve_filename(filename, get_model_path());
 
-  Textures::const_iterator ti;
-  ti = _textures.find(filename);
-  if (ti != _textures.end()) {
-    // This texture was previously loaded.
-    return (*ti).second;
+  {
+    MutexHolder holder(_lock);
+
+    Textures::const_iterator ti;
+    ti = _textures.find(filename);
+    if (ti != _textures.end()) {
+      // This texture was previously loaded.
+      return (*ti).second;
+    }
   }
 
   PT(Texture) tex;
@@ -542,7 +612,20 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps) {
   tex->set_filename(filename_pattern);
   tex->set_fullpath(filename);
   tex->_texture_pool_key = filename;
-  _textures[filename] = tex;
+
+  {
+    MutexHolder holder(_lock);
+
+    // Now look again.
+    Textures::const_iterator ti;
+    ti = _textures.find(filename);
+    if (ti != _textures.end()) {
+      // This texture was previously loaded.
+      return (*ti).second;
+    }
+
+    _textures[filename] = tex;
+  }
 
   if (store_record) {
     // Store the on-disk cache record for next time.
@@ -561,6 +644,8 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps) {
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_get_normalization_cube_map(int size) {
+  MutexHolder holder(_lock);
+
   if (_normalization_cube_map == (Texture *)NULL) {
     _normalization_cube_map = new Texture("normalization_cube_map");
   }
@@ -580,6 +665,8 @@ ns_get_normalization_cube_map(int size) {
 void TexturePool::
 ns_add_texture(Texture *tex) {
   PT(Texture) keep = tex;
+  MutexHolder holder(_lock);
+
   if (!tex->_texture_pool_key.empty()) {
     ns_release_texture(tex);
   }
@@ -601,6 +688,8 @@ ns_add_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_release_texture(Texture *tex) {
+  MutexHolder holder(_lock);
+
   if (!tex->_texture_pool_key.empty()) {
     Textures::iterator ti;
     ti = _textures.find(tex->_texture_pool_key);
@@ -618,6 +707,8 @@ ns_release_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_release_all_textures() {
+  MutexHolder holder(_lock);
+
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     Texture *tex = (*ti).second;
@@ -635,6 +726,8 @@ ns_release_all_textures() {
 ////////////////////////////////////////////////////////////////////
 int TexturePool::
 ns_garbage_collect() {
+  MutexHolder holder(_lock);
+
   int num_released = 0;
   Textures new_set;
 
@@ -675,6 +768,8 @@ ns_garbage_collect() {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_list_contents(ostream &out) const {
+  MutexHolder holder(_lock);
+
   out << _textures.size() << " textures:\n";
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
@@ -741,6 +836,8 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
          bool read_mipmaps) {
   PT(Texture) tex;
 
+  MutexHolder holder(_lock);
+
   FilterRegistry::iterator fi;
   for (fi = _filter_registry.begin();
        fi != _filter_registry.end();
@@ -765,6 +862,8 @@ PT(Texture) TexturePool::
 post_load(Texture *tex) {
   PT(Texture) result = tex;
 
+  MutexHolder holder(_lock);
+
   FilterRegistry::iterator fi;
   for (fi = _filter_registry.begin();
        fi != _filter_registry.end();
@@ -784,6 +883,8 @@ post_load(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 load_filters() {
+  MutexHolder holder(_lock);
+
   ConfigVariableList texture_filter
     ("texture-filter",
      PRC_DESC("Names one or more external libraries that should be loaded for the "

@@ -19,6 +19,7 @@
 #include "modelPool.h"
 #include "loader.h"
 #include "config_pgraph.h"
+#include "mutexHolder.h"
 
 
 ModelPool *ModelPool::_global_ptr = (ModelPool *)NULL;
@@ -44,6 +45,7 @@ write(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 bool ModelPool::
 ns_has_model(const string &filename) {
+  MutexHolder holder(_lock);
   Models::const_iterator ti;
   ti = _models.find(filename);
   if (ti != _models.end()) {
@@ -60,23 +62,44 @@ ns_has_model(const string &filename) {
 //  Description: The nonstatic implementation of load_model().
 ////////////////////////////////////////////////////////////////////
 PandaNode *ModelPool::
-ns_load_model(const string &filename) {
-  Models::const_iterator ti;
-  ti = _models.find(filename);
-  if (ti != _models.end()) {
-    // This model was previously loaded.
-    return (*ti).second;
+ns_load_model(const string &filename, const LoaderOptions &options) {
+  {
+    MutexHolder holder(_lock);
+    Models::const_iterator ti;
+    ti = _models.find(filename);
+    if (ti != _models.end()) {
+      // This model was previously loaded.
+      return (*ti).second;
+    }
   }
 
   loader_cat.info()
     << "Loading model " << filename << "\n";
-  PT(PandaNode) node = model_loader.load_sync(filename);
+  LoaderOptions new_options(options);
+  new_options.set_flags(new_options.get_flags() | LoaderOptions::LF_no_ram_cache);
+
+  PT(PandaNode) node = model_loader.load_sync(filename, new_options);
+
   if (node.is_null()) {
     // This model was not found.
     return (PandaNode *)NULL;
   }
 
-  _models[filename] = node;
+  {
+    MutexHolder holder(_lock);
+
+    // Look again, in case someone has just loaded the model in
+    // another thread.
+    Models::const_iterator ti;
+    ti = _models.find(filename);
+    if (ti != _models.end()) {
+      // This model was previously loaded.
+      return (*ti).second;
+    }
+
+    _models[filename] = node;
+  }
+
   return node;
 }
 
@@ -87,6 +110,7 @@ ns_load_model(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
 ns_add_model(const string &filename, PandaNode *model) {
+  MutexHolder holder(_lock);
   // We blow away whatever model was there previously, if any.
   _models[filename] = model;
 }
@@ -98,6 +122,7 @@ ns_add_model(const string &filename, PandaNode *model) {
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
 ns_release_model(const string &filename) {
+  MutexHolder holder(_lock);
   Models::iterator ti;
   ti = _models.find(filename);
   if (ti != _models.end()) {
@@ -112,6 +137,7 @@ ns_release_model(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
 ns_release_all_models() {
+  MutexHolder holder(_lock);
   _models.clear();
 }
 
@@ -122,6 +148,8 @@ ns_release_all_models() {
 ////////////////////////////////////////////////////////////////////
 int ModelPool::
 ns_garbage_collect() {
+  MutexHolder holder(_lock);
+
   int num_released = 0;
   Models new_set;
 
@@ -150,6 +178,8 @@ ns_garbage_collect() {
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
 ns_list_contents(ostream &out) const {
+  MutexHolder holder(_lock);
+
   out << _models.size() << " models:\n";
   Models::const_iterator ti;
   for (ti = _models.begin(); ti != _models.end(); ++ti) {

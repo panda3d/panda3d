@@ -53,8 +53,8 @@ verify_model(const string &filename) {
 //               file cannot be found, returns NULL.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *ModelPool::
-load_model(const string &filename) {
-  return get_ptr()->ns_load_model(filename);
+load_model(const string &filename, const LoaderOptions &options) {
+  return get_ptr()->ns_load_model(filename, options);
 }
 
 ////////////////////////////////////////////////////////////////////

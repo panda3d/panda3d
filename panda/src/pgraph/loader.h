@@ -21,23 +21,36 @@
 
 #include "pandabase.h"
 
+#include "namable.h"
 #include "loaderOptions.h"
 #include "pnotify.h"
 #include "pandaNode.h"
 #include "filename.h"
-#include "tokenBoard.h"
-#include "asyncUtility.h"
 #include "dSearchPath.h"
+#include "thread.h"
+#include "pmutex.h"
+#include "conditionVar.h"
+#include "pvector.h"
+#include "pdeque.h"
 
-class LoaderToken;
 class LoaderFileType;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Loader
-// Description : Handles database loading through asynchronous
-//               threading
+// Description : A convenient class for loading models from disk, in
+//               bam or egg format (or any of a number of other
+//               formats implemented by a LoaderFileType, such as
+//               ptloader).
+//
+//               This class supports synchronous as well as
+//               asynchronous loading.  In asynchronous loading, the
+//               model is loaded in the background by a thread, and an
+//               event will be generated when the model is available.
+//               If threading is not available, the asynchronous
+//               loading interface may be used, but it loads
+//               synchronously.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Loader : public AsyncUtility {
+class EXPCL_PANDA Loader : public Namable {
 private:
   class ConsiderFile {
   public:
@@ -66,8 +79,9 @@ PUBLISHED:
     Files _files;
   };
 
-  Loader();
-  ~Loader();
+  Loader(const string &name = "loader",
+         int num_threads = -1);
+  virtual ~Loader();
 
   int find_all_files(const Filename &filename, const DSearchPath &search_path,
                      Results &results) const;
@@ -75,19 +89,64 @@ PUBLISHED:
   INLINE PT(PandaNode) load_sync(const Filename &filename, 
                                  const LoaderOptions &options = LoaderOptions()) const;
 
-  uint request_load(const string &event_name, const Filename &filename, bool search = true);
-  bool check_load(uint id);
-  PT(PandaNode) fetch_load(uint id);
+  int begin_request(const string &event_name);
+  void request_load(int id, const Filename &filename,
+                    const LoaderOptions &options = LoaderOptions());
+  bool check_load(int id);
+  PT(PandaNode) fetch_load(int id);
+
+  virtual void output(ostream &out) const;
 
 private:
+  void poll_loader();
+  PT(PandaNode) load_file(const Filename &filename, const LoaderOptions &options) const;
+
   static void load_file_types();
   static bool _file_types_loaded;
 
-  virtual bool process_request();
-  PT(PandaNode) load_file(const Filename &filename, const LoaderOptions &options) const;
+private:
+  class LoaderThread : public Thread {
+  public:
+    LoaderThread(Loader *loader);
+    virtual void thread_main();
+    Loader *_loader;
+  };
 
-  typedef TokenBoard<LoaderToken> LoaderTokenBoard;
-  LoaderTokenBoard *_token_board;
+  typedef pvector< PT(LoaderThread) > Threads;
+
+  class LoaderRequest {
+  public:
+    int _id;
+    string _event_name;
+    Filename _filename;
+    LoaderOptions _options;
+    PT(PandaNode) _model;
+  };
+
+  // We declare this a deque rather than a vector, on the assumption
+  // that we will usually be popping requests from the front (although
+  // the interface does not require this).
+  typedef pdeque<LoaderRequest *> Requests;
+
+  static int find_id(const Requests &requests, int id);
+
+  int _num_threads;
+
+  Mutex _lock;  // Protects all the following members.
+  ConditionVar _cvar;  // condition: _pending.empty()
+
+  enum State {
+    S_initial,
+    S_started,
+    S_shutdown
+  };
+
+  Requests _initial, _pending, _finished;
+  int _next_id;
+  Threads _threads;
+  State _state;
+
+  friend class LoaderThread;
 };
 
 #include "loader.I"

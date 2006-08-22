@@ -20,7 +20,7 @@
 #include "loaderFileType.h"
 #include "loaderFileTypeRegistry.h"
 #include "config_pgraph.h"
-
+#include "modelPool.h"
 #include "config_express.h"
 #include "config_util.h"
 #include "virtualFileSystem.h"
@@ -28,14 +28,12 @@
 #include "pt_Event.h"
 #include "throw_event.h"
 #include "eventParameter.h"
-#include "circBuffer.h"
 #include "filename.h"
 #include "load_dso.h"
 #include "string_utils.h"
-#include "plist.h"
-#include "pvector.h"
 #include "bamCache.h"
 #include "bamCacheRecord.h"
+#include "mutexHolder.h"
 
 #include <algorithm>
 
@@ -43,47 +41,55 @@
 bool Loader::_file_types_loaded = false;
 
 ////////////////////////////////////////////////////////////////////
-//      Struct : LoaderToken
-// Description : Holds a request for the loader (load or delete), as
-//               well as the return information after the request has
-//               completed.
-////////////////////////////////////////////////////////////////////
-class LoaderToken : public ReferenceCount {
-public:
-  INLINE LoaderToken(uint id, const string &event_name, const Filename &path, 
-                     bool search, PandaNode *node=NULL) : 
-    _id(id), 
-    _event_name(event_name), 
-    _path(path),
-    _search(search),
-    _node(node) 
-  { }
-  uint _id;
-  string _event_name;
-  Filename _path;
-  bool _search;
-  PT(PandaNode) _node;
-};
-
-////////////////////////////////////////////////////////////////////
 //     Function: Loader::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Loader::
-Loader() : AsyncUtility() {
-  _token_board = new LoaderTokenBoard;
+Loader(const string &name, int num_threads) :
+  Namable(name),
+  _cvar(_lock) 
+{
+  _num_threads = num_threads;
+  if (_num_threads < 0) {
+    // -1 means the default number of threads.
+
+    ConfigVariableInt loader_num_threads
+      ("loader-num-threads", 1,
+       PRC_DESC("The number of threads that will be started by the Loader class "
+                "to load models asynchronously.  These threads will only be "
+                "started if the asynchronous interface is used, and if threading "
+                "support is compiled into Panda.  The default is one thread, "
+                "which allows models to be loaded one at a time in a single "
+                "asychronous thread.  You can set this higher, particularly if "
+                "you have many CPU's available, to allow loading multiple models "
+                "simultaneously."));
+
+    _num_threads = loader_num_threads;
+  }
+
+  _next_id = 1;
+  _state = S_initial;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::Destructor
-//       Access: Published
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Loader::
 ~Loader() {
-  destroy_thread();
-  delete _token_board;
+  if (_state == S_started) {
+    // Clean up all of the threads.
+    MutexHolder holder(_lock);
+    _state = S_shutdown;
+    _cvar.signal();
+
+    Threads::iterator ti;
+    for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+      (*ti)->join();
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -189,83 +195,98 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Loader::request_load
+//     Function: Loader::begin_request
 //       Access: Published
-//  Description: Requests an asynchronous load of a file.  The request
-//               will be queued and served by the asynchronous thread.
-//               If event_name is nonempty, it is the name of the
-//               event that will be thrown (with the uint id as its
-//               single parameter) when the loading is completed later.
+//  Description: The first step of an asynchronous load request.  This
+//               method slots a record to hold a new request for a
+//               model load, and returns a unique ID corresponding to
+//               that record.
 //
-//               The return value is an integer which can be used to
-//               identify this particular request later to
-//               fetch_load(), or 0 if there has been an error.
+//               The parameter is the event name that is to be
+//               generated when the model is successfully loaded.
 //
-//               If search is true, the file is searched for along the
-//               model path; otherwise, only the exact filename is
-//               loaded.
+//               The caller should record the new ID, and then call
+//               request_load() with the same ID.
 ////////////////////////////////////////////////////////////////////
-uint Loader::
-request_load(const string &event_name, const Filename &filename, bool search) {
+int Loader::
+begin_request(const string &event_name) {
   if (!_file_types_loaded) {
     load_file_types();
   }
 
-  PT(LoaderToken) tok;
-  if (asynchronous_loads) {
+  LoaderRequest *request = new LoaderRequest;
+  request->_event_name = event_name;
 
-    // Make sure we actually are threaded
-    if (!_threaded) {
-      loader_cat.info()
-        << "Loader::request_load() - create_thread() was "
-        << "never called!  Calling it now..." << endl;
-      create_thread();
-    }
-
-    // We need to grab the lock in order to signal the condition variable
-#ifdef OLD_HAVE_IPC
-    _lock.lock();
-#endif
-
-      if (_token_board->_waiting.full()) {
-        loader_cat.error()
-          << "Loader::request_load() - Too many pending requests\n";
-        return 0;
-      }
-
-      if (loader_cat.is_debug()) {
-        loader_cat.debug()
-          << "Load requested for file: " << filename << "\n";
-      }
-
-      tok = new LoaderToken(_next_token++, event_name, filename, search);
-      _token_board->_waiting.push_back(tok);
-
-#ifdef OLD_HAVE_IPC
-      _request_cond->signal();
-    _lock.unlock();
-#endif
-
-  } else {
-    // If we're not running asynchronously, process the load request
-    // directly now.
-    if (_token_board->_waiting.full()) {
-      loader_cat.error()
-        << "Loader::request_load() - Too many pending requests\n";
-      return 0;
-    }
-
-    if (loader_cat.is_debug()) {
-      loader_cat.debug()
-        << "Load requested for file: " << filename << "\n";
-    }
-
-    tok = new LoaderToken(_next_token++, event_name, filename, search);
-    _token_board->_waiting.push_back(tok);
-    process_request();
+  {
+    MutexHolder holder(_lock);
+    request->_id = _next_id;
+    ++_next_id;
+    _initial.push_back(request);
   }
 
-  return tok->_id;
+  return request->_id;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::request_load
+//       Access: Published
+//  Description: The second step of an asychronous load request.  Once
+//               the caller has obtained a unique ID with
+//               begin_request(), it should then call request_load()
+//               to specify the actual filename that should be loaded.
+//
+//               The model will be loaded in the background.  When it
+//               is successfully loaded, the event name (specified to
+//               begin_request) will be generated, with one parameter:
+//               the ID of this request.  At any point after that, the
+//               caller must then call fetch_load() to retrieve the
+//               requested model.
+//
+//               Note that it is possible that the loaded event will
+//               be generated even before this function returns.
+//               Thus, it is necessary for the caller to save the ID
+//               and prepare its to receive the loaded event before
+//               making this call.
+////////////////////////////////////////////////////////////////////
+void Loader::
+request_load(int id, const Filename &filename, 
+             const LoaderOptions &options) {
+  MutexHolder holder(_lock);
+
+  int index = find_id(_initial, id);
+  if (index == -1) {
+    nassert_raise("No such loader ID.");
+    return;
+  }
+  
+  LoaderRequest *request = _initial[index];
+  _initial.erase(_initial.begin() + index);
+  
+  request->_filename = filename;
+  request->_options = options;
+  
+  _pending.push_back(request);
+  _cvar.signal();
+  
+  // Now try to start the thread(s).
+  if (_state == S_initial) {
+    _state = S_started;
+    if (Thread::is_threading_supported()) {
+      for (int i = 0; i < _num_threads; ++i) {
+        PT(LoaderThread) thread = new LoaderThread(this);
+        if (thread->start(TP_low, true, true)) {
+          _threads.push_back(thread);
+        }
+      }
+    }
+  }
+   
+  if (_threads.empty()) {
+    // For some reason, we still have no threads--maybe we don't
+    // even have threading available.  In that case, load the model
+    // by hand.
+    poll_loader();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -275,126 +296,83 @@ request_load(const string &event_name, const Filename &filename, bool search) {
 //               completed and not yet been fetched, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool Loader::
-check_load(uint id) {
-  return _token_board->is_done_token(id);
+check_load(int id) {
+  MutexHolder holder(_lock);
+
+  int index = find_id(_finished, id);
+  return (index != -1);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::fetch_load
 //       Access: Published
-//  Description: Returns the Node associated with the indicated id
+//  Description: Returns the node associated with the indicated id
 //               number (returned by a previous call to request_load),
-//               or NULL if the request has not yet completed.
+//               or NULL if there was an error loading the model.  It
+//               is illegal to call this if check_load() does not
+//               return true (and the caller has not received the
+//               finished event for this id).
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) Loader::
-fetch_load(uint id) {
-  PT(LoaderToken) tok = _token_board->get_done_token(id);
-  if (tok.is_null()) {
-    loader_cat.debug()
-      << "Request to fetch id " << id << " which has not yet completed.\n";
+fetch_load(int id) {
+  MutexHolder holder(_lock);
+
+  int index = find_id(_finished, id);
+  if (index == -1) {
+    nassert_raise("No such loader ID.");
     return NULL;
   }
-  PT(PandaNode) node = tok->_node;
-  return node;
+
+  LoaderRequest *request = _finished[index];
+  _finished.erase(_finished.begin() + index);
+
+  PT(PandaNode) model = request->_model;
+  delete request;
+
+  return model;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Loader::load_file_types
-//       Access: Private, Static
-//  Description: Loads up all of the dynamic libraries named in a
-//               load-file-type Configure variable.  Presumably this
-//               will make the various file types available for
-//               runtime loading.
+//     Function: Loader::output
+//       Access: Published, Virtual
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void Loader::
-load_file_types() {
-  if (!_file_types_loaded) {
-    int num_unique_values = load_file_type.get_num_unique_values();
+output(ostream &out) const {
+  out << "Loader " << get_name();
 
-    for (int i = 0; i < num_unique_values; i++) {
-      string param = load_file_type.get_unique_value(i);
-
-      vector_string words;
-      extract_words(param, words);
-
-      if (words.size() == 1) {
-        // Exactly one word: load the named library immediately.
-        string name = words[0];
-        Filename dlname = Filename::dso_filename("lib" + name + ".so");
-        loader_cat.info()
-          << "loading file type module: " << name << endl;
-        void *tmp = load_dso(dlname);
-        if (tmp == (void *)NULL) {
-          loader_cat.warning()
-            << "Unable to load " << dlname.to_os_specific()
-            << ": " << load_dso_error() << endl;
-        }
-        
-      } else if (words.size() > 1) {
-        // Multiple words: the first n words are filename extensions,
-        // and the last word is the name of the library to load should
-        // any of those filename extensions be encountered.
-        LoaderFileTypeRegistry *registry = LoaderFileTypeRegistry::get_global_ptr();
-        size_t num_extensions = words.size() - 1;
-        string library_name = words[num_extensions];
-        
-        for (size_t i = 0; i < num_extensions; i++) {
-          string extension = words[i];
-          if (extension[0] == '.') {
-            extension = extension.substr(1);
-          }
-          
-          registry->register_deferred_type(extension, library_name);
-        }
-      }
-    }
-
-    _file_types_loaded = true;
+  if (_state == S_started) {
+    MutexHolder holder(_lock);
+    out << " " << _pending.size() << " pending, "
+        << " " << _finished.size() << " finished.";
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Loader::process_request
+//     Function: Loader::poll_loader
 //       Access: Private
-//  Description: Serves any requests on the token board, moving them
-//               to the done queue.
+//  Description: Called internally to empty the requests from the
+//               _pending queue.  Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
-bool Loader::
-process_request() {
-  if (_shutdown) {
-    if (loader_cat.is_debug())
-      loader_cat.debug()
-          << "Loader shutting down...\n";
-    return false;
+void Loader::
+poll_loader() {
+  while (!_pending.empty()) {
+    LoaderRequest *request = _pending[0];
+    _pending.pop_front();
+    
+    // Now release the lock while we load the model.
+    _lock.release();
+    
+    request->_model = load_file(request->_filename, request->_options);
+    
+    // Grab the lock again.
+    _lock.lock();
+    _finished.push_back(request);
+    
+    PT_Event event = new Event(request->_event_name);
+    event->add_parameter(EventParameter(request->_id));
+    throw_event(event);
   }
-
-  // If there is actually a request token - process it
-  while (!_token_board->_waiting.empty()) {
-    PT(LoaderToken) tok = _token_board->_waiting.front();
-    _token_board->_waiting.pop_front();
-    tok->_node = load_file(tok->_path, tok->_search);
-    if (tok->_node == (PandaNode *)NULL) {
-      loader_cat.error()
-        << "Loader::callback() - couldn't find file: "
-        << tok->_path << "\n";
-    } else {
-      _token_board->_done.push_back(tok);
-
-      // Throw a "done" event now.
-      if (!tok->_event_name.empty()) {
-        PT_Event done = new Event(tok->_event_name);
-        done->add_parameter(EventParameter((int)tok->_id));
-        throw_event(done);
-      }
-    }
-
-    if (loader_cat.is_debug()) {
-      loader_cat.debug()
-        << "loading complete for " << tok->_path << "\n";
-    }
-  }
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -410,6 +388,17 @@ process_request() {
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) Loader::
 load_file(const Filename &filename, const LoaderOptions &options) const {
+  if (options.allow_ram_cache()) {
+    // If we're allowing a RAM cache (and we don't have any other
+    // funny options), use the ModelPool to load the file.
+    PT(PandaNode) node = ModelPool::load_model(filename, options);
+    if (node != (PandaNode *)NULL) {
+      // But return a deep copy of the shared model.
+      node = node->copy_subgraph();
+    }
+    return node;
+  }
+
   Results results;
   int num_files;
 
@@ -471,7 +460,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
 
     PT(BamCacheRecord) record;
 
-    if (cache->get_active()) {
+    if (cache->get_active() && options.allow_disk_cache()) {
       // See if the texture can be found in the on-disk cache, if it is
       // active.
       record = cache->lookup(path, "bam");
@@ -508,5 +497,108 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
       << ": invalid.\n";
   }
   return NULL;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::load_file_types
+//       Access: Private, Static
+//  Description: Loads up all of the dynamic libraries named in a
+//               load-file-type Configure variable.  Presumably this
+//               will make the various file types available for
+//               runtime loading.
+////////////////////////////////////////////////////////////////////
+void Loader::
+load_file_types() {
+  if (!_file_types_loaded) {
+    int num_unique_values = load_file_type.get_num_unique_values();
+
+    for (int i = 0; i < num_unique_values; i++) {
+      string param = load_file_type.get_unique_value(i);
+
+      vector_string words;
+      extract_words(param, words);
+
+      if (words.size() == 1) {
+        // Exactly one word: load the named library immediately.
+        string name = words[0];
+        Filename dlname = Filename::dso_filename("lib" + name + ".so");
+        loader_cat.info()
+          << "loading file type module: " << name << endl;
+        void *tmp = load_dso(dlname);
+        if (tmp == (void *)NULL) {
+          loader_cat.warning()
+            << "Unable to load " << dlname.to_os_specific()
+            << ": " << load_dso_error() << endl;
+        }
+        
+      } else if (words.size() > 1) {
+        // Multiple words: the first n words are filename extensions,
+        // and the last word is the name of the library to load should
+        // any of those filename extensions be encountered.
+        LoaderFileTypeRegistry *registry = LoaderFileTypeRegistry::get_global_ptr();
+        size_t num_extensions = words.size() - 1;
+        string library_name = words[num_extensions];
+        
+        for (size_t i = 0; i < num_extensions; i++) {
+          string extension = words[i];
+          if (extension[0] == '.') {
+            extension = extension.substr(1);
+          }
+          
+          registry->register_deferred_type(extension, library_name);
+        }
+      }
+    }
+
+    _file_types_loaded = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::find_id
+//       Access: Private, Static
+//  Description: Returns the index number within the given request
+//               queue of the request with the indicated ID, or -1 if
+//               no request in the queue has this ID.
+////////////////////////////////////////////////////////////////////
+int Loader::
+find_id(const Requests &requests, int id) {
+  for (int i = 0; i < (int)requests.size(); ++i) {
+    if (requests[i]->_id == id) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::LoaderThread::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+Loader::LoaderThread::
+LoaderThread(Loader *loader) :
+  Thread(loader->get_name(), loader->get_name()),
+  _loader(loader)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::LoaderThread::thread_main
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Loader::LoaderThread::
+thread_main() {
+  MutexHolder holder(_loader->_lock);
+  while (_loader->_state != Loader::S_shutdown) {
+    _loader->poll_loader();
+    _loader->_cvar.wait();
+  }
+
+  // We're going down.  Signal the next thread, if there is one.
+  _loader->_cvar.signal();
 }
 

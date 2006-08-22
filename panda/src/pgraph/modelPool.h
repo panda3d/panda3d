@@ -24,8 +24,9 @@
 #include "filename.h"
 #include "pandaNode.h"
 #include "pointerTo.h"
-
+#include "pmutex.h"
 #include "pmap.h"
+#include "loaderOptions.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ModelPool
@@ -50,7 +51,8 @@ class EXPCL_PANDA ModelPool {
 PUBLISHED:
   INLINE static bool has_model(const string &filename);
   INLINE static bool verify_model(const string &filename);
-  INLINE static PandaNode *load_model(const string &filename);
+  INLINE static PandaNode *load_model(const string &filename,
+                                      const LoaderOptions &options = LoaderOptions());
 
   INLINE static void add_model(const string &filename, PandaNode *model);
   INLINE static void release_model(const string &filename);
@@ -65,7 +67,8 @@ private:
   INLINE ModelPool();
 
   bool ns_has_model(const string &filename);
-  PandaNode *ns_load_model(const string &filename);
+  PandaNode *ns_load_model(const string &filename,
+                           const LoaderOptions &options);
   void ns_add_model(const string &filename, PandaNode *model);
   void ns_release_model(const string &filename);
   void ns_release_all_models();
@@ -75,6 +78,8 @@ private:
   static ModelPool *get_ptr();
 
   static ModelPool *_global_ptr;
+
+  Mutex _lock;
   typedef pmap<string,  PT(PandaNode) > Models;
   Models _models;
 };

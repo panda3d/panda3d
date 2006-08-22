@@ -43,6 +43,8 @@ write(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 bool ShaderPool::
 ns_has_shader(const string &str) {
+  MutexHolder holder(_lock);
+
   string index_str;
   Filename filename;
   int face_index;
@@ -70,11 +72,15 @@ ns_load_shader(const string &str) {
   int face_index;
   lookup_filename(str, index_str, filename, face_index);
 
-  Shaders::const_iterator ti;
-  ti = _shaders.find(index_str);
-  if (ti != _shaders.end()) {
-    // This shader was previously loaded.
-    return (*ti).second;
+  {
+    MutexHolder holder(_lock);
+
+    Shaders::const_iterator ti;
+    ti = _shaders.find(index_str);
+    if (ti != _shaders.end()) {
+      // This shader was previously loaded.
+      return (*ti).second;
+    }
   }
 
 /*
@@ -111,7 +117,21 @@ ns_load_shader(const string &str) {
     return NULL;
   }
 
-  _shaders[index_str] = shader;
+  {
+    MutexHolder holder(_lock);
+
+    // Now try again.  Someone may have loaded the shader in another
+    // thread.
+    Shaders::const_iterator ti;
+    ti = _shaders.find(index_str);
+    if (ti != _shaders.end()) {
+      // This shader was previously loaded.
+      return (*ti).second;
+    }
+
+    _shaders[index_str] = shader;
+  }
+
   return shader;
 }
 
@@ -122,6 +142,8 @@ ns_load_shader(const string &str) {
 ////////////////////////////////////////////////////////////////////
 void ShaderPool::
 ns_add_shader(const string &str, Shader *shader) {
+  MutexHolder holder(_lock);
+
   string index_str;
   Filename filename;
   int face_index;
@@ -138,6 +160,8 @@ ns_add_shader(const string &str, Shader *shader) {
 ////////////////////////////////////////////////////////////////////
 void ShaderPool::
 ns_release_shader(const string &filename) {
+  MutexHolder holder(_lock);
+
   Shaders::iterator ti;
   ti = _shaders.find(filename);
   if (ti != _shaders.end()) {
@@ -152,6 +176,8 @@ ns_release_shader(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 void ShaderPool::
 ns_release_all_shaders() {
+  MutexHolder holder(_lock);
+
   _shaders.clear();
 }
 
@@ -162,6 +188,8 @@ ns_release_all_shaders() {
 ////////////////////////////////////////////////////////////////////
 int ShaderPool::
 ns_garbage_collect() {
+  MutexHolder holder(_lock);
+
   int num_released = 0;
   Shaders new_set;
 
@@ -192,6 +220,8 @@ ns_garbage_collect() {
 ////////////////////////////////////////////////////////////////////
 void ShaderPool::
 ns_list_contents(ostream &out) const {
+  MutexHolder holder(_lock);
+
   out << _shaders.size() << " shaders:\n";
   Shaders::const_iterator ti;
   for (ti = _shaders.begin(); ti != _shaders.end(); ++ti) {

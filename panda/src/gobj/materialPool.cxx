@@ -18,7 +18,7 @@
 
 #include "materialPool.h"
 #include "config_gobj.h"
-
+#include "mutexHolder.h"
 
 MaterialPool *MaterialPool::_global_ptr = (MaterialPool *)NULL;
 
@@ -41,6 +41,8 @@ write(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 Material *MaterialPool::
 ns_get_material(Material *temp) {
+  MutexHolder holder(_lock);
+
   CPT(Material) cpttemp = temp;
   Materials::iterator mi = _materials.find(cpttemp);
   if (mi == _materials.end()) {
@@ -62,6 +64,8 @@ ns_get_material(Material *temp) {
 ////////////////////////////////////////////////////////////////////
 int MaterialPool::
 ns_garbage_collect() {
+  MutexHolder holder(_lock);
+
   int num_released = 0;
   Materials new_set;
 
@@ -91,6 +95,8 @@ ns_garbage_collect() {
 ////////////////////////////////////////////////////////////////////
 void MaterialPool::
 ns_list_contents(ostream &out) const {
+  MutexHolder holder(_lock);
+
   out << _materials.size() << " materials:\n";
   Materials::const_iterator mi;
   for (mi = _materials.begin(); mi != _materials.end(); ++mi) {

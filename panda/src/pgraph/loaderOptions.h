@@ -36,6 +36,9 @@ PUBLISHED:
     LF_convert_skeleton  = 0x0004,
     LF_convert_channels  = 0x0008,
     LF_convert_anim      = 0x000c,  // skeleton + channels
+    LF_no_disk_cache     = 0x0010,  // disallow BamCache
+    LF_no_ram_cache      = 0x0020,  // disallow ModelPool
+    LF_no_cache          = 0x0030,  // no_disk + no_ram
   };
 
   INLINE LoaderOptions(int flags = LF_search | LF_report_errors);
@@ -44,6 +47,9 @@ PUBLISHED:
 
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;
+
+  INLINE bool allow_disk_cache() const;
+  INLINE bool allow_ram_cache() const;
 
 private:  
   int _flags;

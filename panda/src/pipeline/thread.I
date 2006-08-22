@@ -250,6 +250,17 @@ sleep(double seconds) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::is_started
+//       Access: Public
+//  Description: Returns true if the thread has been started, false if
+//               it has not, or if join() has already been called.
+////////////////////////////////////////////////////////////////////
+INLINE bool Thread::
+is_started() const {
+  return _started;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::interrupt
 //       Access: Public
 //  Description: Sends an interrupt message to the thread.  This will
@@ -260,6 +271,7 @@ sleep(double seconds) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Thread::
 interrupt() {
+  nassertv(_started);
   _impl.interrupt();
 }
 
@@ -273,7 +285,10 @@ interrupt() {
 INLINE void Thread::
 join() {
   TAU_PROFILE("void Thread::join()", " ", TAU_USER);
-  _impl.join();
+  if (_started) {
+    _impl.join();
+    _started = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
