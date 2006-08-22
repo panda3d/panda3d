@@ -4,50 +4,155 @@ __all__ = ['Loader']
 
 from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import *
+from direct.showbase.DirectObject import DirectObject
+import types
 
 # You can specify a phaseChecker callback to check
 # a modelPath to see if it is being loaded in the correct
 # phase
 phaseChecker = None
 
-class Loader:
+class Loader(DirectObject):
     """
     Load models, textures, sounds, and code.
     """
     notify = directNotify.newCategory("Loader")
-    modelCount = 0
+    loaderIndex = 0
+
+    class Callback:
+        def __init__(self, numModels, callback, extraArgs):
+            self.models = [None] * numModels
+            self.callback = callback
+            self.extraArgs = extraArgs
+            self.numRemaining = numModels
+
+        def gotModel(self, index, model):
+            self.models[index] = model
+            self.numRemaining -= 1
+
+            if self.numRemaining == 0:
+                self.callback(*(self.models + self.extraArgs))
 
     # special methods
     def __init__(self, base):
         self.base = base
         self.loader = PandaLoader()
+        self.pendingCallbacks = {}
+
+        self.hook = "async_loader_%s" % (Loader.loaderIndex)
+        Loader.loaderIndex += 1
+        self.accept(self.hook, self.__gotAsyncModel)
 
     def destroy(self):
+        self.ignore(self.hook)
         del self.base
         del self.loader
 
     # model loading funcs
-    def loadModel(self, modelPath, fMakeNodeNamesUnique = 0,
-                  loaderOptions = None):
+    def loadModel(self, modelPath, loaderOptions = None, noCache = None,
+                  callback = None, extraArgs = []):
         """
-        modelPath is a string.
+        Attempts to load a model or models from one or more relative
+        pathnames.  If the input modelPath is a string (a single model
+        pathname), the return value will be a NodePath to the model
+        loaded if the load was successful, or None otherwise.  If the
+        input modelPath is a list of pathnames, the return value will
+        be a list of NodePaths and/or Nones.
 
-        Attempt to load a model from given file path, return
-        a nodepath to the model if successful or None otherwise.
+        loaderOptions may optionally be passed in to control details
+        about the way the model is searched and loaded.  See the
+        LoaderOptions class for more.
+
+        The default is to look in the ModelPool (RAM) cache first, and
+        return a copy from that if the model can be found there.  If
+        the bam cache is enabled (via the model-cache-dir config
+        variable), then that will be consulted next, and if both
+        caches fail, the file will be loaded from disk.  If noCache is
+        True, then neither cache will be consulted or updated.
+
+        If callback is not None, then the model load will be performed
+        asynchronously.  In this case, loadModel() will initiate a
+        background load and return immediately, with no return value.
+        At some later point, when the requested model(s) have finished
+        loading, the callback function will be invoked with the n
+        loaded models passed as its parameter list.  It is possible
+        that the callback will be invoked immediately, even before
+        loadModel() returns.
+
+        True asynchronous model loading requires Panda to have been
+        compiled with threading support enabled (you can test
+        Thread.isThreadingSupported()).  In the absence of threading
+        support, the asynchronous interface still exists and still
+        behaves exactly as described, except that loadModel() might
+        not return immediately.
+        
         """
+        
         assert Loader.notify.debug("Loading model: %s" % (modelPath))
         if phaseChecker:
             phaseChecker(modelPath)
         if loaderOptions == None:
             loaderOptions = LoaderOptions()
-        node = self.loader.loadSync(Filename(modelPath), loaderOptions)
-        if (node != None):
-            nodePath = NodePath(node)
-            if fMakeNodeNamesUnique:
-                self.makeNodeNamesUnique(nodePath, 0)
         else:
-            nodePath = None
-        return nodePath
+            loaderOptions = LoaderOptions(loaderOptions)
+
+        if noCache is not None:
+            if noCache:
+                loaderOptions.setFlags(loaderOptions.getFlags() | LoaderOptions.LFNoCache)
+            else:
+                loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFNoCache)
+
+        if isinstance(modelPath, types.StringTypes) or \
+           isinstance(modelPath, Filename):
+            # We were given a single model pathname.
+            modelList = [modelPath]
+            gotList = False
+        else:
+            # Assume we were given a list of model pathnames.
+            modelList = modelPath
+            gotList = True
+
+        if callback is None:
+            # We got no callback, so it's a synchronous load.
+
+            result = []
+            for modelPath in modelList:
+                node = self.loader.loadSync(Filename(modelPath), loaderOptions)
+                if (node != None):
+                    nodePath = NodePath(node)
+                else:
+                    nodePath = None
+
+                result.append(nodePath)
+
+            if gotList:
+                return result
+            else:
+                return result[0]
+
+        else:
+            # We got a callback, so we want an asynchronous (threaded)
+            # load.  We'll return immediately, but when all of the
+            # requested models have been loaded, we'll invoke the
+            # callback (passing it the models on the parameter list).
+            
+            cb = Loader.Callback(len(modelList), callback, extraArgs)
+            for i in range(len(modelList)):
+                modelPath = modelList[i]
+                if loaderOptions.allowRamCache() and ModelPool.hasModel(modelPath):
+                    # If it's already in the model pool, we won't
+                    # bother bouncing the load request through the
+                    # thread; and maybe we can just make the callback
+                    # immediately.
+                    node = ModelPool.loadModel(modelPath)
+                    nodePath = NodePath(node)
+                    cb.gotModel(i, nodePath)
+
+                else:
+                    # We do need to go to the thread to load this model.
+                    id = self.loader.beginRequest(self.hook)
+                    self.pendingCallbacks[id] = (cb, i)
+                    self.loader.requestLoad(id, Filename(modelPath), loaderOptions)
 
     def loadModelOnce(self, modelPath):
         """
@@ -57,56 +162,19 @@ class Loader:
         then attempt to load it from disk. Return a nodepath to
         the model if successful or None otherwise
         """
-        assert Loader.notify.debug("Loading model once: %s" % (modelPath))
-        if phaseChecker:
-            phaseChecker(modelPath)
-        node = ModelPool.loadModel(modelPath)
-        if (node != None):
-            nodePath = NodePath.anyPath(node)
-        else:
-            nodePath = None
-        return nodePath
+        Loader.notify.debug("loader.loadModelOnce() is deprecated; use loader.loadModel() instead.")
 
-    def loadModelOnceUnder(self, modelPath, underNode):
-        """loadModelOnceUnder(self, string, string | node | NodePath)
-        Behaves like loadModelOnce, but also implicitly creates a new
-        node to attach the model under, which helps to differentiate
-        different instances.
+        return self.loadModel(modelPath, noCache = False)
 
-        underNode may be either a node name, or a NodePath or a Node
-        to an already-existing node.
-
-        This is useful when you want to load a model once several
-        times before parenting each instance somewhere, or when you
-        want to load a model and immediately set a transform on it.
-        But also consider loadModelCopy().
-        """
-        assert Loader.notify.debug(
-            "Loading model once: %s under %s" % (modelPath, underNode))
-        if phaseChecker:
-            phaseChecker(modelPath)
-        node = ModelPool.loadModel(modelPath)
-        if (node != None):
-            nodePath = NodePath(underNode)
-            nodePath.attachNewNode(node)
-        else:
-            nodePath = None
-        return nodePath
-
-    def loadModelCopy(self, modelPath):
+    def loadModelCopy(self, modelPath, callback = None):
         """loadModelCopy(self, string)
         Attempt to load a model from modelPool, if not present
         then attempt to load it from disk. Return a nodepath to
         a copy of the model if successful or None otherwise
         """
-        assert Loader.notify.debug("Loading model copy: %s" % (modelPath))
-        if phaseChecker:
-            phaseChecker(modelPath)
-        node = ModelPool.loadModel(modelPath)
-        if (node != None):
-            return NodePath(node.copySubgraph())
-        else:
-            return None
+        Loader.notify.debug("loader.loadModelCopy() is deprecated; use loader.loadModel() instead.")
+
+        return self.loadModel(modelPath, noCache = False)
 
     def loadModelNode(self, modelPath):
         """
@@ -122,10 +190,13 @@ class Loader:
 
         However, if you're loading a font, see loadFont(), below.
         """
-        assert Loader.notify.debug("Loading model once node: %s" % (modelPath))
-        if phaseChecker:
-            phaseChecker(modelPath)
-        return ModelPool.loadModel(modelPath)
+        Loader.notify.debug("loader.loadModelNode() is deprecated; use loader.loadModel() instead.")
+
+        model = self.loadModel(modelPath, noCache = False)
+        if model is not None:
+            model = model.node()
+
+        return model
 
     def unloadModel(self, modelPath):
         """
@@ -285,15 +356,14 @@ class Loader:
             Loader.notify.warning("Could not load music file %s." % name)
         return sound
 
-
-    def makeNodeNamesUnique(self, nodePath, nodeCount):
-        if nodeCount == 0:
-            Loader.modelCount += 1
-        nodePath.setName(nodePath.getName() +
-                         ('_%d_%d' % (Loader.modelCount, nodeCount)))
-        for i in range(nodePath.getNumChildren()):
-            nodeCount += 1
-            self.makeNodeNamesUnique(nodePath.getChild(i), nodeCount)
+##     def makeNodeNamesUnique(self, nodePath, nodeCount):
+##         if nodeCount == 0:
+##             Loader.modelCount += 1
+##         nodePath.setName(nodePath.getName() +
+##                          ('_%d_%d' % (Loader.modelCount, nodeCount)))
+##         for i in range(nodePath.getNumChildren()):
+##             nodeCount += 1
+##             self.makeNodeNamesUnique(nodePath.getChild(i), nodeCount)
 
     def loadShader (self, shaderPath):
         shader = ShaderPool.loadShader (shaderPath)
@@ -305,3 +375,18 @@ class Loader:
         if (shaderPath != None):
             ShaderPool.releaseShader(shaderPath)
 
+    def __gotAsyncModel(self, id):
+        """A model has just been loaded asynchronously by the
+        sub-thread.  Add it to the list of loaded models, and call the
+        appropriate callback when it's time."""
+
+        cb, i = self.pendingCallbacks[id]
+        del self.pendingCallbacks[id]
+
+        node = self.loader.fetchLoad(id)
+        if (node != None):
+            nodePath = NodePath(node)
+        else:
+            nodePath = None
+
+        cb.gotModel(i, nodePath)
