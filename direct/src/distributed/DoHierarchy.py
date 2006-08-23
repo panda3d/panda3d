@@ -58,17 +58,25 @@ class DoHierarchy:
             r = a
         return r
 
-    def storeObjectLocation(self, doId, parentId, zoneId):
+    def storeObjectLocation(self, do, parentId, zoneId):
         assert self.notify.debugCall()
-        assert doId not in self._allDoIds
+        doId = do.doId
+        if doId in self._allDoIds:
+            self.notify.error(
+                'storeObjectLocation(%s %s) already in _allDoIds' % (
+                do.__class__.__name__, do.doId))
         parentZoneDict = self._table.setdefault(parentId, {})
         zoneDoSet = parentZoneDict.setdefault(zoneId, set())
         zoneDoSet.add(doId)
         self._allDoIds.add(doId)
 
-    def deleteObjectLocation(self, doId, parentId, zoneId):
+    def deleteObjectLocation(self, do, parentId, zoneId):
         assert self.notify.debugCall()
-        #assert doId in self._allDoIds
+        doId = do.doId
+        if doId not in self._allDoIds:
+            self.notify.warning(
+                'deleteObjectLocation(%s %s) not in _allDoIds' % (
+                do.__class__.__name__, do.doId))
         # jbutler: temp hack to get by the assert, this will be fixed soon
         if (doId not in self._allDoIds):
             return

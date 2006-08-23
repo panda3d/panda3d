@@ -192,7 +192,7 @@ class DistributedObjectAI(DistributedObjectBase):
 
         oldParentId = self.parentId
         oldZoneId = self.zoneId
-        self.air.storeObjectLocation(self.doId, parentId, zoneId)
+        self.air.storeObjectLocation(self, parentId, zoneId)
         if ((oldParentId != parentId) or
             (oldZoneId != zoneId)):
             messenger.send(self.getZoneChangeEvent(), [zoneId, oldZoneId])

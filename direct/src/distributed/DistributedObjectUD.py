@@ -179,7 +179,7 @@ class DistributedObjectUD(DistributedObjectBase):
         self.air.sendSetLocation(self, parentId, zoneId)
 
     def setLocation(self, parentId, zoneId):
-        self.air.storeObjectLocation(self.doId, parentId, zoneId)
+        self.air.storeObjectLocation(self, parentId, zoneId)
 
     def getLocation(self):
         try:
@@ -330,7 +330,7 @@ class DistributedObjectUD(DistributedObjectBase):
         other networked info in this function.
         """
         assert self.notify.debugStateCall(self)
-        self.air.storeObjectLocation(self.doId, self.parentId, self.zoneId)
+        self.air.storeObjectLocation(self, self.parentId, self.zoneId)
 
     def generateInit(self, repository=None):
         """
