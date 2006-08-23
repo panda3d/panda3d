@@ -66,14 +66,18 @@ class IntervalManager(CIntervalManager):
         index = self.findCInterval(interval.getName())
         if index >= 0:
             self.removeCInterval(index)
-            self.ivals[index] = None
+            if index < len(self.ivals):
+                self.ivals[index] = None
             return 1
         return 0
 
     def getInterval(self, name):
         index = self.findCInterval(name)
         if index >= 0:
-            return self.ivals[index]
+            if index < len(self.ivals) and self.ivals[index]:
+                return self.ivals[index]
+            # It must be a C-only interval.
+            return self.getCInterval(index)
         return None
 
     def finishIntervalsMatching(self, pattern):
@@ -86,7 +90,7 @@ class IntervalManager(CIntervalManager):
                 # Finish and remove this interval.  Finishing it
                 # automatically removes it.
                 count += 1
-                if self.ivals[index]:
+                if index < len(self.ivals) and self.ivals[index]:
                     # Finish the python version if we have it
                     self.ivals[index].finish()
                 else:
