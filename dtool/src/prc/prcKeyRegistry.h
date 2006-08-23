@@ -27,7 +27,7 @@
 
 #ifdef HAVE_OPENSSL
 
-#include "pvector.h"
+#include <vector>
 #include "openssl/evp.h"
 
 // Some versions of OpenSSL appear to define this as a macro.  Yucky.
@@ -74,7 +74,7 @@ private:
     time_t _generated_time;
   };
 
-  typedef pvector<Key> Keys;
+  typedef vector<Key> Keys;
   Keys _keys;
 
   static PrcKeyRegistry *_global_ptr;

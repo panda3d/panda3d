@@ -20,7 +20,8 @@
 #define CONFIGPAGE_H
 
 #include "dtoolbase.h"
-#include "pvector.h"
+
+#include <vector>
 
 class ConfigDeclaration;
 class ConfigVariableCore;
@@ -81,7 +82,7 @@ private:
   int _next_decl_seq;
   int _trust_level;
 
-  typedef pvector<ConfigDeclaration *> Declarations;
+  typedef vector<ConfigDeclaration *> Declarations;
   Declarations _declarations;
 
   string _signature;

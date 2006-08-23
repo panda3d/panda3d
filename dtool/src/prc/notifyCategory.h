@@ -24,7 +24,8 @@
 #include "notifySeverity.h"
 #include "configVariableEnum.h"
 #include "configFlags.h"
-#include "pvector.h"
+
+#include <vector>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NotifyCategory
@@ -89,7 +90,7 @@ private:
   string _basename;
   NotifyCategory *_parent;
   ConfigVariableEnum<NotifySeverity> _severity;
-  typedef pvector<NotifyCategory *> Children;
+  typedef vector<NotifyCategory *> Children;
   Children _children;
 
   static long _server_delta; // not a time_t because server delta may be signed.

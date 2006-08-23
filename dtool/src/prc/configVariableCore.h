@@ -23,8 +23,8 @@
 #include "configFlags.h"
 #include "configPageManager.h"
 #include "pnotify.h"
-#include "pvector.h"
-#include "pmap.h"
+
+#include <vector>
 
 class ConfigDeclaration;
 
@@ -99,7 +99,7 @@ private:
   ConfigDeclaration *_default_value;
   ConfigDeclaration *_local_value;
 
-  typedef pvector<const ConfigDeclaration *> Declarations;
+  typedef vector<const ConfigDeclaration *> Declarations;
   Declarations _declarations;
   Declarations _trusted_declarations;
   Declarations _untrusted_declarations;

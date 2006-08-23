@@ -24,6 +24,8 @@
 #include "configPage.h"
 #include "vector_string.h"
 
+#include <vector>
+
 class ConfigVariableCore;
 
 ////////////////////////////////////////////////////////////////////
@@ -106,7 +108,7 @@ private:
     short _flags;
   };
 
-  typedef pvector<Word> Words;
+  typedef vector<Word> Words;
   Words _words;
   bool _got_words;
 

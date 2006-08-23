@@ -22,7 +22,7 @@
 #include "dtoolbase.h"
 
 #include "notifySeverity.h"
-#include "pmap.h"
+#include <map>
 
 class NotifyCategory;
 
@@ -93,7 +93,9 @@ private:
   bool _assert_failed;
   string _assert_error_message;
 
-  typedef pmap<string, NotifyCategory *> Categories;
+  // This shouldn't be a pmap, since it might be invoked before we
+  // initialize the global malloc pointers.
+  typedef map<string, NotifyCategory *> Categories;
   Categories _categories;
 
   static Notify *_global_ptr;

@@ -21,10 +21,11 @@
 
 #include "dtoolbase.h"
 #include "configFlags.h"
-#include "pvector.h"
 #include "dSearchPath.h"
 #include "globPattern.h"
 #include "pnotify.h"
+
+#include <vector>
 
 class ConfigPage;
 
@@ -74,7 +75,7 @@ private:
   bool scan_up_from(Filename &result, const Filename &dir, 
                     const Filename &suffix) const;
 
-  typedef pvector<ConfigPage *> Pages;
+  typedef vector<ConfigPage *> Pages;
   Pages _implicit_pages;
   Pages _explicit_pages;
   bool _pages_sorted;
@@ -85,7 +86,7 @@ private:
 
   DSearchPath _search_path;
 
-  typedef pvector<GlobPattern> Globs;
+  typedef vector<GlobPattern> Globs;
   Globs _prc_patterns;
   Globs _prc_executable_patterns;
 
@@ -101,7 +102,7 @@ private:
     int _file_flags;
     Filename _filename;
   };
-  typedef pvector<ConfigFile> ConfigFiles;
+  typedef vector<ConfigFile> ConfigFiles;
 
   static ConfigPageManager *_global_ptr;
 };

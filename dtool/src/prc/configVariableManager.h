@@ -23,8 +23,8 @@
 #include "configFlags.h"
 #include "pnotify.h"
 #include "globPattern.h"
-#include "pvector.h"
-#include "pmap.h"
+#include <vector>
+#include <map>
 
 class ConfigVariableCore;
 
@@ -69,13 +69,15 @@ private:
   void list_variable(const ConfigVariableCore *variable,
                      bool include_descriptions) const;
 
-  typedef pvector<ConfigVariableCore *> Variables;
+  // We have to avoid pmap and pvector, due to the very low-level
+  // nature of this stuff.
+  typedef vector<ConfigVariableCore *> Variables;
   Variables _variables;
 
-  typedef pmap<string, ConfigVariableCore *> VariablesByName;
+  typedef map<string, ConfigVariableCore *> VariablesByName;
   VariablesByName _variables_by_name;
 
-  typedef pmap<GlobPattern, ConfigVariableCore *> VariableTemplates;
+  typedef map<GlobPattern, ConfigVariableCore *> VariableTemplates;
   VariableTemplates _variable_templates;
 
   static ConfigVariableManager *_global_ptr;
@@ -86,3 +88,4 @@ INLINE ostream &operator << (ostream &out, const ConfigVariableManager &variable
 #include "configVariableManager.I"
 
 #endif
+
