@@ -220,7 +220,7 @@ class DistributedObject(DistributedObjectBase):
             self.__callbacks = {}
             self.cr.closeAutoInterests(self)
             self.setLocation(0,0)
-            self.cr.deleteObjectLocation(self.doId, self.parentId, self.zoneId)
+            self.cr.deleteObjectLocation(self, self.parentId, self.zoneId)
             # TODO: disable my children
 
     def isDisabled(self):
@@ -423,7 +423,7 @@ class DistributedObject(DistributedObjectBase):
         self.cr.sendSetLocation(self.doId, parentId, zoneId)
 
     def setLocation(self, parentId, zoneId):
-        self.cr.storeObjectLocation(self.doId, parentId, zoneId, self)
+        self.cr.storeObjectLocation(self, parentId, zoneId)
 
     def getLocation(self):
         try:
