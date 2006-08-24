@@ -193,10 +193,6 @@ copy_maya_file(const Filename &source, const Filename &dest,
   // Finally, copy in any referenced Maya files.
   unsigned int num_refs = refs.length();
 
-  if (num_refs > 0) {
-    _omit_tex = true;
-  }
-
   unsigned int ref_index;
   maya_cat.info() << "num_refs = " << num_refs << endl;
   for (ref_index = 0; ref_index < num_refs; ref_index++) {
