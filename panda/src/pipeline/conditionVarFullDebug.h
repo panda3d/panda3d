@@ -1,5 +1,5 @@
-// Filename: conditionVar.h
-// Created by:  drose (09Aug02)
+// Filename: conditionVarFullDebug.h
+// Created by:  drose (28Aug06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,52 +16,56 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONDITIONVAR_H
-#define CONDITIONVAR_H
+#ifndef CONDITIONVARFULLDEBUG_H
+#define CONDITIONVARFULLDEBUG_H
 
 #include "pandabase.h"
-#include "conditionVarDebug.h"
-#include "conditionVarDirect.h"
+#include "pmutex.h"
+#include "conditionVarImpl.h"
+
+#ifdef DEBUG_THREADS
 
 ////////////////////////////////////////////////////////////////////
-//       Class : ConditionVar
+//       Class : ConditionVarFullDebug
 // Description : A condition variable, usually used to communicate
 //               information about changing state to a thread that is
 //               waiting for something to happen.  A condition
 //               variable can be used to "wake up" a thread when some
 //               arbitrary condition has changed.
-
-//               The ConditionVar class does not support the full
-//               semantics of POSIX condition variables.  In
-//               particular, it does not support the broadcast or
-//               signal_all function.  See ConditionVarFull for a more
-//               complete (but possibly more expensive) API.
 //
 //               A condition variable is associated with a single
 //               mutex, and several condition variables may share the
 //               same mutex.
-//
-//               This class inherits its implementation either from
-//               ConditionVarDebug or ConditionVarDirect, depending on
-//               the definition of DEBUG_THREADS.
 ////////////////////////////////////////////////////////////////////
-#ifdef DEBUG_THREADS
-class EXPCL_PANDA ConditionVar : public ConditionVarDebug
-#else
-class EXPCL_PANDA ConditionVar : public ConditionVarDirect
-#endif  // DEBUG_THREADS
-{
+class EXPCL_PANDA ConditionVarFullDebug {
 public:
-  INLINE ConditionVar(Mutex &mutex);
-  INLINE ~ConditionVar();
+  ConditionVarFullDebug(MutexDebug &mutex);
+  virtual ~ConditionVarFullDebug();
 private:
-  INLINE ConditionVar(const ConditionVar &copy);
-  INLINE void operator = (const ConditionVar &copy);
+  INLINE ConditionVarFullDebug(const ConditionVarFullDebug &copy);
+  INLINE void operator = (const ConditionVarFullDebug &copy);
 
 public:
-  INLINE Mutex &get_mutex() const;
+  INLINE MutexDebug &get_mutex() const;
+
+  void wait();
+  void signal();
+  void signal_all();
+  virtual void output(ostream &out) const;
+
+private:
+  MutexDebug &_mutex;
+  ConditionVarFullImpl _impl;
 };
 
-#include "conditionVar.I"
+INLINE ostream &
+operator << (ostream &out, const ConditionVarFullDebug &cv) {
+  cv.output(out);
+  return out;
+}
+
+#include "conditionVarFullDebug.I"
+
+#endif  // DEBUG_THREADS
 
 #endif

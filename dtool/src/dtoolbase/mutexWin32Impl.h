@@ -42,6 +42,7 @@ public:
 private:
   CRITICAL_SECTION _lock;
   friend class ConditionVarWin32Impl;
+  friend class ConditionVarFullWin32Impl;
 };
 
 #include "mutexWin32Impl.I"

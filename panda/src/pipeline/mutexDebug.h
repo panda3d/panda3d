@@ -71,6 +71,7 @@ private:
   static MutexImpl *_global_lock;
 
   friend class ConditionVarDebug;
+  friend class ConditionVarFullDebug;
 };
 
 INLINE ostream &

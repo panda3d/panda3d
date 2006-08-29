@@ -14,9 +14,12 @@
     conditionVarDebug.h conditionVarDebug.I \
     conditionVarDirect.h conditionVarDirect.I \
     conditionVarDummyImpl.h conditionVarDummyImpl.I \
+    conditionVarFull.h conditionVarFull.I \
+    conditionVarFullDebug.h conditionVarFullDebug.I \
+    conditionVarFullDirect.h conditionVarFullDirect.I \
+    conditionVarFullWin32Impl.h conditionVarFullWin32Impl.I \
     conditionVarImpl.h \
     conditionVarNsprImpl.h conditionVarNsprImpl.I \
-    conditionVarLinuxImpl.h conditionVarLinuxImpl.I \
     conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
     conditionVarSpinlockImpl.h conditionVarSpinlockImpl.I \
@@ -47,7 +50,6 @@
     reMutexHolder.I reMutexHolder.h \
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
     threadNsprImpl.h threadNsprImpl.I \
-    threadLinuxImpl.h threadLinuxImpl.I \
     threadPosixImpl.h threadPosixImpl.I \
     threadWin32Impl.h threadWin32Impl.I \
     threadPriority.h
@@ -57,8 +59,11 @@
     conditionVarDebug.cxx \
     conditionVarDirect.cxx \
     conditionVarDummyImpl.cxx \
+    conditionVarFull.cxx \
+    conditionVarFullDebug.cxx \
+    conditionVarFullDirect.cxx \
+    conditionVarFullWin32Impl.cxx \
     conditionVarNsprImpl.cxx \
-    conditionVarLinuxImpl.cxx \
     conditionVarPosixImpl.cxx \
     conditionVarWin32Impl.cxx \
     conditionVarSpinlockImpl.cxx \
@@ -87,7 +92,6 @@
     reMutexHolder.cxx \
     thread.cxx threadDummyImpl.cxx \
     threadNsprImpl.cxx \
-    threadLinuxImpl.cxx \
     threadPosixImpl.cxx \
     threadWin32Impl.cxx
 
@@ -96,9 +100,12 @@
     conditionVarDebug.h conditionVarDebug.I \
     conditionVarDirect.h conditionVarDirect.I \
     conditionVarDummyImpl.h conditionVarDummyImpl.I \
+    conditionVarFull.h conditionVarFull.I \
+    conditionVarFullDebug.h conditionVarFullDebug.I \
+    conditionVarFullDirect.h conditionVarFullDirect.I \
+    conditionVarFullWin32Impl.h conditionVarFullWin32Impl.I \
     conditionVarImpl.h \
     conditionVarNsprImpl.h conditionVarNsprImpl.I \
-    conditionVarLinuxImpl.h conditionVarLinuxImpl.I \
     conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
     conditionVarSpinlockImpl.h conditionVarSpinlockImpl.I \
@@ -129,7 +136,6 @@
     reMutexHolder.I reMutexHolder.h \
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
     threadNsprImpl.h threadNsprImpl.I \
-    threadLinuxImpl.h threadLinuxImpl.I \
     threadPosixImpl.h threadPosixImpl.I \
     threadWin32Impl.h threadWin32Impl.I \
     threadPriority.h

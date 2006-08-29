@@ -1,5 +1,5 @@
-// Filename: conditionVarNsprImpl.I
-// Created by:  drose (09Aug02)
+// Filename: conditionVarFullWin32Impl.I
+// Created by:  drose (28Aug06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,55 +18,60 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::Constructor
+//     Function: ConditionVarFullWin32Impl::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarNsprImpl::
-ConditionVarNsprImpl(MutexNsprImpl &mutex) {
-  _cvar = PR_NewCondVar(mutex._lock);
-  nassertv(_cvar != (PRCondVar *)NULL);
+INLINE ConditionVarFullWin32Impl::
+ConditionVarFullWin32Impl(MutexWin32Impl &mutex) {
+  _external_mutex = &mutex._lock;
+
+  // Create an auto-reset event.
+  _event_signal = CreateEvent(NULL, false, false, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::Destructor
+//     Function: ConditionVarFullWin32Impl::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarNsprImpl::
-~ConditionVarNsprImpl() {
-  PR_DestroyCondVar(_cvar);
+INLINE ConditionVarFullWin32Impl::
+~ConditionVarFullWin32Impl() {
+  CloseHandle(_event_signal);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::wait
+//     Function: ConditionVarFullWin32Impl::wait
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarNsprImpl::
+INLINE void ConditionVarFullWin32Impl::
 wait() {
-  int status = PR_WaitCondVar(_cvar, PR_INTERVAL_NO_TIMEOUT);
-  nassertv(status == PR_SUCCESS);
+  LeaveCriticalSection(_external_mutex);
+
+  DWORD result = WaitForSingleObject(_event_signal, INFINITE);
+  nassertv(result == WAIT_OBJECT_0);
+
+  EnterCriticalSection(_external_mutex);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::signal
+//     Function: ConditionVarFullWin32Impl::signal
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarNsprImpl::
+INLINE void ConditionVarFullWin32Impl::
 signal() {
-  int status = PR_NotifyCondVar(_cvar);
-  nassertv(status == PR_SUCCESS);
+  SetEvent(_event_signal);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarNsprImpl::signal_all
+//     Function: ConditionVarFullWin32Impl::signal_all
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarNsprImpl::
+INLINE void ConditionVarFullWin32Impl::
 signal_all() {
-  int status = PR_NotifyAllCondVar(_cvar);
-  nassertv(status == PR_SUCCESS);
+  // TODO.
+  nassertv(false);
 }

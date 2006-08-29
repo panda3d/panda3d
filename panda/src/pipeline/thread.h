@@ -130,7 +130,6 @@ private:
 
   friend class ThreadDummyImpl;
   friend class ThreadWin32Impl;
-  friend class ThreadLinuxImpl;
   friend class ThreadPosixImpl;
   friend class ThreadNsprImpl;
 };

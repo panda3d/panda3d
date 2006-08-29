@@ -115,7 +115,8 @@ wait() {
 //               blocked on wait() that the relevant condition has
 //               changed.  If multiple threads are currently waiting,
 //               at least one of them will be woken up, although there
-//               is no way to predict which one.
+//               is no way to predict which one.  It is possible that
+//               more than one thread will be woken up.
 //
 //               The caller must be holding the mutex associated with
 //               the condition variable before making this call, which

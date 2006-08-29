@@ -46,6 +46,7 @@ public:
 
   void wait();
   INLINE void signal();
+  INLINE void signal_all();
 
 private:
   MutexSpinlockImpl &_mutex;

@@ -1,5 +1,5 @@
-// Filename: threadImpl.h
-// Created by:  drose (09Aug02)
+// Filename: conditionVarFullWin32Impl.cxx
+// Created by:  drose (28Aug06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,32 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef THREADIMPL_H
-#define THREADIMPL_H
-
-#include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#if defined(THREAD_DUMMY_IMPL)
+#ifdef WIN32_VC
 
-#include "threadDummyImpl.h"
-typedef ThreadDummyImpl ThreadImpl;
+#include "conditionVarFullWin32Impl.h"
 
-#elif defined(THREAD_WIN32_IMPL)
-
-#include "threadWin32Impl.h"
-typedef ThreadWin32Impl ThreadImpl;
-
-#elif defined(THREAD_POSIX_IMPL)
-
-#include "threadPosixImpl.h"
-typedef ThreadPosixImpl ThreadImpl;
-
-#elif defined(THREAD_NSPR_IMPL)
-
-#include "threadNsprImpl.h"
-typedef ThreadNsprImpl ThreadImpl;
-
-#endif
-
-#endif
+#endif  // WIN32_VC

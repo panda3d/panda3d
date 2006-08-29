@@ -1,5 +1,5 @@
-// Filename: conditionVarLinuxImpl.I
-// Created by:  drose (28Mar06)
+// Filename: conditionVarFullDirect.cxx
+// Created by:  drose (28Aug06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,24 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "conditionVarFullDirect.h"
+
+#ifndef DEBUG_THREADS
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarLinuxImpl::Constructor
+//     Function: ConditionVarFullDirect::output
 //       Access: Public
-//  Description:
+//  Description: This method is declared virtual in ConditionVarFullDebug,
+//               but non-virtual in ConditionVarFullDirect.
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarLinuxImpl::
-ConditionVarLinuxImpl(MutexLinuxImpl &mutex) :
-  _mutex(mutex)
-{
-  _counter = 0;
+void ConditionVarFullDirect::
+output(ostream &out) const {
+  out << "ConditionVarFull " << (void *)this << " on " << _mutex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarLinuxImpl::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE ConditionVarLinuxImpl::
-~ConditionVarLinuxImpl() {
-}
+#endif  // !DEBUG_THREADS

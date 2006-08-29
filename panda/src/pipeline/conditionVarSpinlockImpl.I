@@ -46,3 +46,13 @@ signal() {
   // This will wake up all waiters on the lock.  But that's allowed.
   AtomicAdjust::inc(_event);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarSpinlockImpl::signal_all
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ConditionVarSpinlockImpl::
+signal_all() {
+  AtomicAdjust::inc(_event);
+}

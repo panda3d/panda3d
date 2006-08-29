@@ -42,6 +42,7 @@ public:
 
   INLINE void wait();
   INLINE void signal();
+  INLINE void signal_all();
 
 private:
   MutexPosixImpl &_mutex;

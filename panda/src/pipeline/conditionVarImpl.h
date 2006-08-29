@@ -26,31 +26,32 @@
 
 #include "conditionVarDummyImpl.h"
 typedef ConditionVarDummyImpl ConditionVarImpl;
+typedef ConditionVarDummyImpl ConditionVarFullImpl;
 
 #elif defined(MUTEX_SPINLOCK)
 
 #include "conditionVarSpinlockImpl.h"
 typedef ConditionVarSpinlockImpl ConditionVarImpl;
+typedef ConditionVarSpinlockImpl ConditionVarFullImpl;
 
 #elif defined(THREAD_WIN32_IMPL)
 
 #include "conditionVarWin32Impl.h"
+#include "conditionVarFullWin32Impl.h"
 typedef ConditionVarWin32Impl ConditionVarImpl;
-
-#elif defined(THREAD_LINUX_IMPL)
-
-#include "conditionVarLinuxImpl.h"
-typedef ConditionVarLinuxImpl ConditionVarImpl;
+typedef ConditionVarFullWin32Impl ConditionVarFullImpl;
 
 #elif defined(THREAD_POSIX_IMPL)
 
 #include "conditionVarPosixImpl.h"
 typedef ConditionVarPosixImpl ConditionVarImpl;
+typedef ConditionVarPosixImpl ConditionVarFullImpl;
 
 #elif defined(THREAD_NSPR_IMPL)
 
 #include "conditionVarNsprImpl.h"
 typedef ConditionVarNsprImpl ConditionVarImpl;
+typedef ConditionVarNsprImpl ConditionVarFullImpl;
 
 #endif
 

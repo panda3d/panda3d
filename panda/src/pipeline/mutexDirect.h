@@ -52,6 +52,7 @@ private:
   MutexImpl _impl;
 
   friend class ConditionVarDirect;
+  friend class ConditionVarFullDirect;
 };
 
 INLINE ostream &

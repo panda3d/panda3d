@@ -66,3 +66,15 @@ signal() {
   int result = pthread_cond_signal(&_cvar);
   nassertv(result == 0);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarPosixImpl::signal_all
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ConditionVarPosixImpl::
+signal_all() {
+  TAU_PROFILE("ConditionVarPosixImpl::signal()", " ", TAU_USER);
+  int result = pthread_cond_broadcast(&_cvar);
+  nassertv(result == 0);
+}
