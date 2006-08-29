@@ -38,22 +38,31 @@ class ControlManager:
         inputState.watchWithModifiers("reverse", "arrow_down")
         inputState.watchWithModifiers("reverse", "mouse4")
         
-        inputState.watchWithModifiers("turnLeft", "arrow_left")
-        inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done")
-        inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop")
-        
-        inputState.watchWithModifiers("turnRight", "arrow_right")
-        inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done")
-        inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop")
-        
         if self.wantWASD:
+            inputState.watchWithModifiers("slideLeft", "arrow_left")
+            inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done")
+            inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop")
+            
+            inputState.watchWithModifiers("slideRight", "arrow_right")
+            inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done")
+            inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop")
+
             inputState.watchWithModifiers("forward", "w")
             inputState.watchWithModifiers("reverse", "s")
             inputState.watchWithModifiers("slideLeft", "a")
             inputState.watchWithModifiers("slideRight", "d")
             inputState.watchWithModifiers("turnLeft", "q")
             inputState.watchWithModifiers("turnRight", "e")
+        else:
+            inputState.watchWithModifiers("turnLeft", "arrow_left")
+            inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done")
+            inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop")
             
+            inputState.watchWithModifiers("turnRight", "arrow_right")
+            inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done")
+            inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop")
+
+
         # Jump controls
         if self.wantWASD:
             inputState.watchWithModifiers("jump", "space")
