@@ -127,7 +127,7 @@ DXGraphicsStateGuardian9(GraphicsPipe *pipe) :
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
 
-  _gsg_managed_textures = dx_management;
+  _gsg_managed_textures = dx_management | dx_texture_management;
   _gsg_managed_vertex_buffers = dx_management;
   _gsg_managed_index_buffers = dx_management;
 
