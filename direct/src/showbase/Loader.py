@@ -20,28 +20,27 @@ class Loader(DirectObject):
     loaderIndex = 0
 
     class Callback:
-        def __init__(self, numModels, callback, extraArgs):
-            self.models = [None] * numModels
+        def __init__(self, numObjects, callback, extraArgs):
+            self.objects = [None] * numObjects
             self.callback = callback
             self.extraArgs = extraArgs
-            self.numRemaining = numModels
+            self.numRemaining = numObjects
 
-        def gotModel(self, index, model):
-            self.models[index] = model
+        def gotObject(self, index, object):
+            self.objects[index] = object
             self.numRemaining -= 1
 
             if self.numRemaining == 0:
-                self.callback(*(self.models + self.extraArgs))
+                self.callback(*(self.objects + self.extraArgs))
 
     # special methods
     def __init__(self, base):
         self.base = base
         self.loader = PandaLoader()
-        self.pendingCallbacks = {}
 
         self.hook = "async_loader_%s" % (Loader.loaderIndex)
         Loader.loaderIndex += 1
-        self.accept(self.hook, self.__gotAsyncModel)
+        self.accept(self.hook, self.__gotAsyncObject)
 
     def destroy(self):
         self.ignore(self.hook)
@@ -146,13 +145,14 @@ class Loader(DirectObject):
                     # immediately.
                     node = ModelPool.loadModel(modelPath)
                     nodePath = NodePath(node)
-                    cb.gotModel(i, nodePath)
+                    cb.gotObject(i, nodePath)
 
                 else:
                     # We do need to go to the thread to load this model.
-                    id = self.loader.beginRequest(self.hook)
-                    self.pendingCallbacks[id] = (cb, i)
-                    self.loader.requestLoad(id, Filename(modelPath), loaderOptions)
+                    request = ModelLoadRequest(Filename(modelPath), loaderOptions)
+                    request.setDoneEvent(self.hook)
+                    request.setPythonObject((cb, i))
+                    self.loader.loadAsync(request)
 
     def loadModelOnce(self, modelPath):
         """
@@ -166,7 +166,7 @@ class Loader(DirectObject):
 
         return self.loadModel(modelPath, noCache = False)
 
-    def loadModelCopy(self, modelPath, callback = None):
+    def loadModelCopy(self, modelPath):
         """loadModelCopy(self, string)
         Attempt to load a model from modelPool, if not present
         then attempt to load it from disk. Return a nodepath to
@@ -333,28 +333,76 @@ class Loader(DirectObject):
         TexturePool.releaseTexture(texture)
 
     # sound loading funcs
-    def loadSfx(self, name):
-        assert Loader.notify.debug("Loading sound: %s" % (name))
-        if phaseChecker:
-            phaseChecker(name)
-        # should return a valid sound obj even if soundMgr is invalid
-        sound = None
-        if (name):
-            # showbase-created sfxManager should always be at front of list
-            sound=base.sfxManagerList[0].getSound(name)
-        if sound == None:
-            Loader.notify.warning("Could not load sound file %s." % name)
-        return sound
+    def loadSfx(self, *args, **kw):
+        """Loads one or more sound files, specifically designated as a
+        "sound effect" file (that is, uses the sfxManager to load the
+        sound).  There is no distinction between sound effect files
+        and music files other than the particular AudioManager used to
+        load the sound file, but this distinction allows the sound
+        effects and/or the music files to be adjusted as a group,
+        independently of the other group."""
+        
+        # showbase-created sfxManager should always be at front of list
+        return self.loadSound(base.sfxManagerList[0], *args, **kw)
+    
+    def loadMusic(self, *args, **kw):
+        """Loads one or more sound files, specifically designated as a
+        "music" file (that is, uses the musicManager to load the
+        sound).  There is no distinction between sound effect files
+        and music files other than the particular AudioManager used to
+        load the sound file, but this distinction allows the sound
+        effects and/or the music files to be adjusted as a group,
+        independently of the other group."""
 
-    def loadMusic(self, name):
-        assert Loader.notify.debug("Loading sound: %s" % (name))
-        # should return a valid sound obj even if musicMgr is invalid
-        sound = None
-        if (name):
-            sound=base.musicManager.getSound(name)
-        if sound == None:
-            Loader.notify.warning("Could not load music file %s." % name)
-        return sound
+        return self.loadSound(base.musicManager, *args, **kw)
+
+    def loadSound(self, manager, soundPath, positional = False,
+                  callback = None, extraArgs = []):
+
+        """Loads one or more sound files, specifying the particular
+        AudioManager that should be used to load them.  The soundPath
+        may be either a single filename, or a list of filenames.  If a
+        callback is specified, the loading happens in the background,
+        just as in loadModel(); otherwise, the loading happens before
+        loadSound() returns."""
+    
+        if isinstance(soundPath, types.StringTypes) or \
+           isinstance(soundPath, Filename):
+            # We were given a single sound pathname.
+            soundList = [soundPath]
+            gotList = False
+        else:
+            # Assume we were given a list of sound pathnames.
+            soundList = soundPath
+            gotList = True
+
+        if callback is None:
+            # We got no callback, so it's a synchronous load.
+
+            result = []
+            for soundPath in soundList:
+                # should return a valid sound obj even if musicMgr is invalid
+                sound = manager.getSound(soundPath)
+                result.append(sound)
+
+            if gotList:
+                return result
+            else:
+                return result[0]
+
+        else:
+            # We got a callback, so we want an asynchronous (threaded)
+            # load.  We'll return immediately, but when all of the
+            # requested sounds have been loaded, we'll invoke the
+            # callback (passing it the sounds on the parameter list).
+            
+            cb = Loader.Callback(len(soundList), callback, extraArgs)
+            for i in range(len(soundList)):
+                soundPath = soundList[i]
+                request = AudioLoadRequest(manager, soundPath, positional)
+                request.setDoneEvent(self.hook)
+                request.setPythonObject((cb, i))
+                self.loader.loadAsync(request)
 
 ##     def makeNodeNamesUnique(self, nodePath, nodeCount):
 ##         if nodeCount == 0:
@@ -375,18 +423,21 @@ class Loader(DirectObject):
         if (shaderPath != None):
             ShaderPool.releaseShader(shaderPath)
 
-    def __gotAsyncModel(self, id):
-        """A model has just been loaded asynchronously by the
-        sub-thread.  Add it to the list of loaded models, and call the
-        appropriate callback when it's time."""
+    def __gotAsyncObject(self, request):
+        """A model or sound file or some such thing has just been
+        loaded asynchronously by the sub-thread.  Add it to the list
+        of loaded objects, and call the appropriate callback when it's
+        time."""
 
-        cb, i = self.pendingCallbacks[id]
-        del self.pendingCallbacks[id]
+        cb, i = request.getPythonObject()
 
-        node = self.loader.fetchLoad(id)
-        if (node != None):
-            nodePath = NodePath(node)
-        else:
-            nodePath = None
+        object = None
+        if hasattr(request, "getModel"):
+            node = request.getModel()
+            if (node != None):
+                object = NodePath(node)
 
-        cb.gotModel(i, nodePath)
+        elif hasattr(request, "getSound"):
+            object = request.getSound()
+
+        cb.gotObject(i, object)

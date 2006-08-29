@@ -2239,7 +2239,7 @@ get_python_tag(const string &key) const {
   // An empty NodePath quietly returns no tags.  This makes
   // get_net_python_tag() easier to implement.
   if (is_empty()) {
-    return Py_None;
+    Py_RETURN_NONE;
   }
   return node()->get_python_tag(key);
 }

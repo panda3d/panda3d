@@ -43,6 +43,7 @@ class EXPCL_PANDA EventParameter {
 PUBLISHED:
   INLINE EventParameter();
   INLINE EventParameter(const TypedWritableReferenceCount *ptr);
+  EventParameter(const TypedReferenceCount *ptr);
   INLINE EventParameter(int value);
   INLINE EventParameter(double value);
   INLINE EventParameter(const string &value);
@@ -66,6 +67,9 @@ PUBLISHED:
   INLINE string get_string_value() const;
   INLINE bool is_wstring() const;
   INLINE wstring get_wstring_value() const;
+
+  bool is_typed_ref_count() const;
+  TypedReferenceCount *get_typed_ref_count_value() const;
 
   INLINE TypedWritableReferenceCount *get_ptr() const;
 
@@ -170,6 +174,7 @@ typedef EventStoreValue<int> EventStoreInt;
 typedef EventStoreValue<double> EventStoreDouble;
 typedef EventStoreValue<string> EventStoreString;
 typedef EventStoreValue<wstring> EventStoreWstring;
+typedef EventStoreValue< PT(TypedReferenceCount) > EventStoreTypedRefCount;
 
 #include "eventParameter.I"
 

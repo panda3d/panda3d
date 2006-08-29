@@ -66,6 +66,7 @@
     lodNode.I lodNode.h \
     materialAttrib.I materialAttrib.h \
     materialCollection.I materialCollection.h \
+    modelLoadRequest.I modelLoadRequest.h \
     modelNode.I modelNode.h \
     modelPool.I modelPool.h \
     modelRoot.I modelRoot.h \
@@ -170,6 +171,7 @@
     lodNode.cxx \
     materialAttrib.cxx \
     materialCollection.cxx \
+    modelLoadRequest.cxx \
     modelNode.cxx \
     modelPool.cxx \
     modelRoot.cxx \
@@ -269,6 +271,7 @@
     lodNode.I lodNode.h \
     materialAttrib.I materialAttrib.h \
     materialCollection.I materialCollection.h \
+    modelLoadRequest.I modelLoadRequest.h \
     modelNode.I modelNode.h \
     modelPool.I modelPool.h \
     modelRoot.I modelRoot.h \

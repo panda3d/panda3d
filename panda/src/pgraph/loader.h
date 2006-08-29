@@ -27,11 +27,9 @@
 #include "pandaNode.h"
 #include "filename.h"
 #include "dSearchPath.h"
-#include "thread.h"
-#include "pmutex.h"
-#include "conditionVar.h"
 #include "pvector.h"
-#include "pdeque.h"
+#include "asyncTaskManager.h"
+#include "asyncTask.h"
 
 class LoaderFileType;
 
@@ -50,7 +48,7 @@ class LoaderFileType;
 //               loading interface may be used, but it loads
 //               synchronously.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Loader : public Namable {
+class EXPCL_PANDA Loader : public AsyncTaskManager {
 private:
   class ConsiderFile {
   public:
@@ -79,9 +77,7 @@ PUBLISHED:
     Files _files;
   };
 
-  Loader(const string &name = "loader",
-         int num_threads = -1);
-  virtual ~Loader();
+  Loader(const string &name = "loader", int num_threads = -1);
 
   int find_all_files(const Filename &filename, const DSearchPath &search_path,
                      Results &results) const;
@@ -89,64 +85,34 @@ PUBLISHED:
   INLINE PT(PandaNode) load_sync(const Filename &filename, 
                                  const LoaderOptions &options = LoaderOptions()) const;
 
-  int begin_request(const string &event_name);
-  void request_load(int id, const Filename &filename,
-                    const LoaderOptions &options = LoaderOptions());
-  bool check_load(int id);
-  PT(PandaNode) fetch_load(int id);
+  INLINE void load_async(AsyncTask *request);
 
   virtual void output(ostream &out) const;
 
 private:
-  void poll_loader();
   PT(PandaNode) load_file(const Filename &filename, const LoaderOptions &options) const;
 
   static void load_file_types();
   static bool _file_types_loaded;
 
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    AsyncTaskManager::init_type();
+    register_type(_type_handle, "Loader",
+                  AsyncTaskManager::get_class_type());
+    }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  
 private:
-  class LoaderThread : public Thread {
-  public:
-    LoaderThread(Loader *loader);
-    virtual void thread_main();
-    Loader *_loader;
-  };
+  static TypeHandle _type_handle;
 
-  typedef pvector< PT(LoaderThread) > Threads;
-
-  class LoaderRequest {
-  public:
-    int _id;
-    string _event_name;
-    Filename _filename;
-    LoaderOptions _options;
-    PT(PandaNode) _model;
-  };
-
-  // We declare this a deque rather than a vector, on the assumption
-  // that we will usually be popping requests from the front (although
-  // the interface does not require this).
-  typedef pdeque<LoaderRequest *> Requests;
-
-  static int find_id(const Requests &requests, int id);
-
-  int _num_threads;
-
-  Mutex _lock;  // Protects all the following members.
-  ConditionVar _cvar;  // condition: _pending.empty()
-
-  enum State {
-    S_initial,
-    S_started,
-    S_shutdown
-  };
-
-  Requests _initial, _pending, _finished;
-  int _next_id;
-  Threads _threads;
-  State _state;
-
-  friend class LoaderThread;
+  friend class ModelLoadRequest;
 };
 
 #include "loader.I"

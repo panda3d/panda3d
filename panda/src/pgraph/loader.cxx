@@ -24,21 +24,14 @@
 #include "config_express.h"
 #include "config_util.h"
 #include "virtualFileSystem.h"
-#include "event.h"
-#include "pt_Event.h"
-#include "throw_event.h"
-#include "eventParameter.h"
 #include "filename.h"
 #include "load_dso.h"
 #include "string_utils.h"
 #include "bamCache.h"
 #include "bamCacheRecord.h"
-#include "mutexHolder.h"
-
-#include <algorithm>
-
 
 bool Loader::_file_types_loaded = false;
+TypeHandle Loader::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::Constructor
@@ -47,10 +40,8 @@ bool Loader::_file_types_loaded = false;
 ////////////////////////////////////////////////////////////////////
 Loader::
 Loader(const string &name, int num_threads) :
-  Namable(name),
-  _cvar(_lock) 
+  AsyncTaskManager(name, num_threads)
 {
-  _num_threads = num_threads;
   if (_num_threads < 0) {
     // -1 means the default number of threads.
 
@@ -66,29 +57,6 @@ Loader(const string &name, int num_threads) :
                 "simultaneously."));
 
     _num_threads = loader_num_threads;
-  }
-
-  _next_id = 1;
-  _state = S_initial;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-Loader::
-~Loader() {
-  if (_state == S_started) {
-    // Clean up all of the threads.
-    MutexHolder holder(_lock);
-    _state = S_shutdown;
-    _cvar.signal();
-
-    Threads::iterator ti;
-    for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-      (*ti)->join();
-    }
   }
 }
 
@@ -195,183 +163,16 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Loader::begin_request
-//       Access: Published
-//  Description: The first step of an asynchronous load request.  This
-//               method slots a record to hold a new request for a
-//               model load, and returns a unique ID corresponding to
-//               that record.
-//
-//               The parameter is the event name that is to be
-//               generated when the model is successfully loaded.
-//
-//               The caller should record the new ID, and then call
-//               request_load() with the same ID.
-////////////////////////////////////////////////////////////////////
-int Loader::
-begin_request(const string &event_name) {
-  if (!_file_types_loaded) {
-    load_file_types();
-  }
-
-  LoaderRequest *request = new LoaderRequest;
-  request->_event_name = event_name;
-
-  {
-    MutexHolder holder(_lock);
-    request->_id = _next_id;
-    ++_next_id;
-    _initial.push_back(request);
-  }
-
-  return request->_id;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::request_load
-//       Access: Published
-//  Description: The second step of an asychronous load request.  Once
-//               the caller has obtained a unique ID with
-//               begin_request(), it should then call request_load()
-//               to specify the actual filename that should be loaded.
-//
-//               The model will be loaded in the background.  When it
-//               is successfully loaded, the event name (specified to
-//               begin_request) will be generated, with one parameter:
-//               the ID of this request.  At any point after that, the
-//               caller must then call fetch_load() to retrieve the
-//               requested model.
-//
-//               Note that it is possible that the loaded event will
-//               be generated even before this function returns.
-//               Thus, it is necessary for the caller to save the ID
-//               and prepare its to receive the loaded event before
-//               making this call.
-////////////////////////////////////////////////////////////////////
-void Loader::
-request_load(int id, const Filename &filename, 
-             const LoaderOptions &options) {
-  MutexHolder holder(_lock);
-
-  int index = find_id(_initial, id);
-  if (index == -1) {
-    nassert_raise("No such loader ID.");
-    return;
-  }
-  
-  LoaderRequest *request = _initial[index];
-  _initial.erase(_initial.begin() + index);
-  
-  request->_filename = filename;
-  request->_options = options;
-  
-  _pending.push_back(request);
-  _cvar.signal();
-  
-  // Now try to start the thread(s).
-  if (_state == S_initial) {
-    _state = S_started;
-    if (Thread::is_threading_supported()) {
-      for (int i = 0; i < _num_threads; ++i) {
-        PT(LoaderThread) thread = new LoaderThread(this);
-        if (thread->start(TP_low, true, true)) {
-          _threads.push_back(thread);
-        }
-      }
-    }
-  }
-   
-  if (_threads.empty()) {
-    // For some reason, we still have no threads--maybe we don't
-    // even have threading available.  In that case, load the model
-    // by hand.
-    poll_loader();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::check_load
-//       Access: Published
-//  Description: Returns true if the indicated load-request has
-//               completed and not yet been fetched, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool Loader::
-check_load(int id) {
-  MutexHolder holder(_lock);
-
-  int index = find_id(_finished, id);
-  return (index != -1);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::fetch_load
-//       Access: Published
-//  Description: Returns the node associated with the indicated id
-//               number (returned by a previous call to request_load),
-//               or NULL if there was an error loading the model.  It
-//               is illegal to call this if check_load() does not
-//               return true (and the caller has not received the
-//               finished event for this id).
-////////////////////////////////////////////////////////////////////
-PT(PandaNode) Loader::
-fetch_load(int id) {
-  MutexHolder holder(_lock);
-
-  int index = find_id(_finished, id);
-  if (index == -1) {
-    nassert_raise("No such loader ID.");
-    return NULL;
-  }
-
-  LoaderRequest *request = _finished[index];
-  _finished.erase(_finished.begin() + index);
-
-  PT(PandaNode) model = request->_model;
-  delete request;
-
-  return model;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Loader::output
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void Loader::
 output(ostream &out) const {
-  out << "Loader " << get_name();
+  out << get_type() << " " << get_name();
 
-  if (_state == S_started) {
-    MutexHolder holder(_lock);
-    out << " " << _pending.size() << " pending, "
-        << " " << _finished.size() << " finished.";
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::poll_loader
-//       Access: Private
-//  Description: Called internally to empty the requests from the
-//               _pending queue.  Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
-void Loader::
-poll_loader() {
-  while (!_pending.empty()) {
-    LoaderRequest *request = _pending[0];
-    _pending.pop_front();
-    
-    // Now release the lock while we load the model.
-    _lock.release();
-    
-    request->_model = load_file(request->_filename, request->_options);
-    
-    // Grab the lock again.
-    _lock.lock();
-    _finished.push_back(request);
-    
-    PT_Event event = new Event(request->_event_name);
-    event->add_parameter(EventParameter(request->_id));
-    throw_event(event);
+  if (!_threads.empty()) {
+    out << " (" << get_num_tasks() << " models pending)";
   }
 }
 
@@ -553,52 +354,5 @@ load_file_types() {
 
     _file_types_loaded = true;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::find_id
-//       Access: Private, Static
-//  Description: Returns the index number within the given request
-//               queue of the request with the indicated ID, or -1 if
-//               no request in the queue has this ID.
-////////////////////////////////////////////////////////////////////
-int Loader::
-find_id(const Requests &requests, int id) {
-  for (int i = 0; i < (int)requests.size(); ++i) {
-    if (requests[i]->_id == id) {
-      return i;
-    }
-  }
-
-  return -1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::LoaderThread::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-Loader::LoaderThread::
-LoaderThread(Loader *loader) :
-  Thread(loader->get_name(), loader->get_name()),
-  _loader(loader)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::LoaderThread::thread_main
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void Loader::LoaderThread::
-thread_main() {
-  MutexHolder holder(_loader->_lock);
-  while (_loader->_state != Loader::S_shutdown) {
-    _loader->poll_loader();
-    _loader->_cvar.wait();
-  }
-
-  // We're going down.  Signal the next thread, if there is one.
-  _loader->_cvar.signal();
 }
 

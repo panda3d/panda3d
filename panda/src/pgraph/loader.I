@@ -129,3 +129,31 @@ load_sync(const Filename &filename, const LoaderOptions &options) const {
   }
   return load_file(filename, options);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::load_async
+//       Access: Published
+//  Description: Begins an asynchronous load request.  To use this
+//               call, first create a new ModelLoadRequest object with
+//               the filename you wish to load, and then add that
+//               object to the Loader with load_async.  This function
+//               will return immediately, and the model will be loaded
+//               in the background.
+//
+//               To determine when the model has completely loaded,
+//               you may poll request->is_ready() from time to time,
+//               or set the done_event on the request object and
+//               listen for that event.  When the model is ready, you
+//               may retrieve it via request->get_model().
+//
+//               If threading support is not enabled, or the Loader
+//               was created with 0 threads (that is,
+//               get_num_threads() returns 0), then this will be the
+//               same as a load_sync() call: the model will be loaded
+//               within the current thread, and this method will not
+//               return until the model has fully loaded.
+////////////////////////////////////////////////////////////////////
+INLINE void Loader::
+load_async(AsyncTask *request) {
+  add_and_do(request);
+}

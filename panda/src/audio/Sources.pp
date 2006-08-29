@@ -4,13 +4,14 @@
 
 #begin lib_target
   #define TARGET audio
-  #define LOCAL_LIBS putil
+  #define LOCAL_LIBS putil event
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
   #define SOURCES \
     config_audio.h \
     audioDSP.h \
+    audioLoadRequest.h audioLoadRequest.I \
     audioManager.h \
     audioSound.h \
     nullAudioDSP.h \
@@ -20,6 +21,7 @@
   #define INCLUDED_SOURCES \
     config_audio.cxx \
     audioDSP.cxx \
+    audioLoadRequest.cxx \
     audioManager.cxx \
     audioSound.cxx \
     nullAudioDSP.cxx \
@@ -29,13 +31,14 @@
   #define INSTALL_HEADERS \
     config_audio.h \
     audioDSP.h \
+    audioLoadRequest.h audioLoadRequest.I \
     audioManager.h \
     audioSound.h \
     nullAudioDSP.h \
     nullAudioManager.h \
     nullAudioSound.h
 
-  #define IGATESCAN audio.h
+  #define IGATESCAN all
 #end lib_target
 
 #begin test_bin_target

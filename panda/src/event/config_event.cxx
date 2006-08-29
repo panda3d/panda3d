@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_event.h"
+#include "asyncTask.h"
+#include "asyncTaskManager.h"
 #include "buttonEventList.h"
 #include "event.h"
 #include "eventHandler.h"
@@ -28,6 +30,8 @@ Configure(config_event);
 NotifyCategoryDef(event, "");
 
 ConfigureFn(config_event) {
+  AsyncTask::init_type();
+  AsyncTaskManager::init_type();
   ButtonEventList::init_type();
   Event::init_type();
   EventHandler::init_type();
@@ -36,6 +40,7 @@ ConfigureFn(config_event) {
   EventStoreDouble::init_type("EventStoreDouble");
   EventStoreString::init_type("EventStoreString");
   EventStoreWstring::init_type("EventStoreWstring");
+  EventStoreTypedRefCount::init_type("EventStoreTypedRefCount");
 
   ButtonEventList::register_with_read_factory();
   EventStoreInt::register_with_read_factory();

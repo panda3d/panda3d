@@ -49,6 +49,8 @@ class EventManager:
             return eventParameter.getStringValue()
         elif (eventParameter.isWstring()):
             return eventParameter.getWstringValue()
+        elif (eventParameter.isTypedRefCount()):
+            return eventParameter.getTypedRefCountValue()
         else:
             # Must be some user defined type, return the ptr
             # which will be downcast to that type

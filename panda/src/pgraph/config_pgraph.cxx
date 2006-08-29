@@ -51,11 +51,13 @@
 #include "lightAttrib.h"
 #include "lightLensNode.h"
 #include "lightNode.h"
+#include "loader.h"
 #include "loaderFileType.h"
 #include "loaderFileTypeBam.h"
 #include "loaderFileTypeRegistry.h"
 #include "lodNode.h"
 #include "materialAttrib.h"
+#include "modelLoadRequest.h"
 #include "modelNode.h"
 #include "modelRoot.h"
 #include "nodePath.h"
@@ -313,10 +315,12 @@ init_libpgraph() {
   LightAttrib::init_type();
   LightLensNode::init_type();
   LightNode::init_type();
+  Loader::init_type();
   LODNode::init_type();
   LoaderFileType::init_type();
   LoaderFileTypeBam::init_type();
   MaterialAttrib::init_type();
+  ModelLoadRequest::init_type();
   ModelNode::init_type();
 
   ModelRoot::init_type();
