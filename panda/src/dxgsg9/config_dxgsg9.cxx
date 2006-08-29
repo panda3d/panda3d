@@ -136,6 +136,12 @@ ConfigVariableBool dx_management
 ("dx-management", true);
 
 // valid only if dx_management == false
+// true = use DirectX management of texture memory
+// false = lru will manage texture memory
+ConfigVariableBool dx_texture_management
+("dx-texture-management", true);
+
+// valid only if dx_management == false
 // true = enable LRU management of video memory
 // false = no video memory management
 ConfigVariableBool dx_lru_management

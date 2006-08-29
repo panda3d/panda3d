@@ -62,6 +62,7 @@ extern ConfigVariableBool dx_debug_view_mipmaps;
 
 // LRU configuration variables
 extern ConfigVariableBool dx_management;
+extern ConfigVariableBool dx_texture_management;
 extern ConfigVariableBool dx_lru_management;
 extern ConfigVariableInt dx_lru_maximum_pages;
 extern ConfigVariableInt dx_lru_free_memory_requirement;
