@@ -211,9 +211,16 @@ HTTPClient::
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
 init_random_seed() {
-  // This call is sufficient to kick OpenSSL into generating its
-  // random seed if it hasn't already.
-  RAND_status();
+  static bool _initialized = false;
+  if (!_initialized) {
+    _initialized = true;
+
+    // It is necessary to call this before making any other OpenSSL
+    // call, per the docs.  Also, the docs say that making this call
+    // will seed the random number generator.  Apparently you can get
+    // away with not calling it in versions prior to 0.9.8, however.
+    SSL_library_init();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -916,7 +923,13 @@ parse_http_version_string(const string &version) {
 ////////////////////////////////////////////////////////////////////
 bool HTTPClient::
 load_certificates(const Filename &filename) {
-  int result = load_verify_locations(_ssl_ctx, filename);
+  // The line below might be a recursive call, but it should be safe,
+  // since get_ssl_ctx() won't call load_certificates() until after it
+  // has assigned _ssl_ctx--guaranteeing that the second call to
+  // get_ssl_ctx() will be a no-op.
+  SSL_CTX *ctx = get_ssl_ctx();
+
+  int result = load_verify_locations(ctx, filename);
 
   if (result <= 0) {
     downloader_cat.info()
@@ -1066,6 +1079,8 @@ get_ssl_ctx() {
   if (_ssl_ctx != (SSL_CTX *)NULL) {
     return _ssl_ctx;
   }
+
+  init_random_seed();
 
   _ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 
