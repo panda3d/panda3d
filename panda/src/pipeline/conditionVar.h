@@ -58,6 +58,16 @@ private:
   INLINE ConditionVar(const ConditionVar &copy);
   INLINE void operator = (const ConditionVar &copy);
 
+  // These methods are inherited from the base class.
+  // INLINE void wait();
+  // INLINE void signal();
+
+private:
+  // The signal_all() method is specifically *not* provided by
+  // ConditionVar.  Use ConditionVarFull if you need to call this
+  // method.
+  INLINE void signal_all();
+
 public:
   INLINE Mutex &get_mutex() const;
 };

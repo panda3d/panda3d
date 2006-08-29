@@ -26,8 +26,11 @@ INLINE ConditionVarFullWin32Impl::
 ConditionVarFullWin32Impl(MutexWin32Impl &mutex) {
   _external_mutex = &mutex._lock;
 
-  // Create an auto-reset event.
+  // Create an auto-reset event and a manual-reset event.
   _event_signal = CreateEvent(NULL, false, false, NULL);
+  _event_broadcast = CreateEvent(NULL, true, false, NULL);
+
+  _waiters_count = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -38,6 +41,7 @@ ConditionVarFullWin32Impl(MutexWin32Impl &mutex) {
 INLINE ConditionVarFullWin32Impl::
 ~ConditionVarFullWin32Impl() {
   CloseHandle(_event_signal);
+  CloseHandle(_event_broadcast);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,11 +51,28 @@ INLINE ConditionVarFullWin32Impl::
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarFullWin32Impl::
 wait() {
+  AtomicAdjust::inc(_waiters_count);
+
+  // It's ok to release the external_mutex here since Win32
+  // manual-reset events maintain state when used with SetEvent().
+  // This avoids the "lost wakeup" bug...
   LeaveCriticalSection(_external_mutex);
 
-  DWORD result = WaitForSingleObject(_event_signal, INFINITE);
-  nassertv(result == WAIT_OBJECT_0);
+  // Wait for either event to become signaled due to signal() being
+  // called or signal_all() being called.
+  int result = WaitForMultipleObjects(2, &_event_signal, FALSE, INFINITE);
 
+  bool nonzero = AtomicAdjust::dec(_waiters_count);
+  bool last_waiter = (result == WAIT_OBJECT_0 + 1 && !nonzero);
+
+  // Some thread called signal_all().
+  if (last_waiter) {
+    // We're the last waiter to be notified or to stop waiting, so
+    // reset the manual event. 
+    ResetEvent(_event_broadcast); 
+  }
+
+  // Reacquire the <external_mutex>.
   EnterCriticalSection(_external_mutex);
 }
 
@@ -62,7 +83,11 @@ wait() {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarFullWin32Impl::
 signal() {
-  SetEvent(_event_signal);
+  bool have_waiters = AtomicAdjust::get(_waiters_count) > 0;
+
+  if (have_waiters) {
+    SetEvent(_event_signal);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,6 +97,9 @@ signal() {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarFullWin32Impl::
 signal_all() {
-  // TODO.
-  nassertv(false);
+  bool have_waiters = AtomicAdjust::get(_waiters_count) > 0;
+
+  if (have_waiters) {
+    SetEvent(_event_broadcast);
+  }
 }

@@ -37,12 +37,11 @@ class MutexWin32Impl;
 //               The Windows native synchronization primitives don't
 //               actually implement a full POSIX-style condition
 //               variable, but the Event primitive does a fair job if
-//               we disallow POSIX broadcast.  See
-//               http://www.cs.wustl.edu/~schmidt/win32-cv-1.html for
-//               a full implementation that includes broadcast.  This
-//               class is much simpler than that full implementation,
-//               so we can avoid the overhead require to support
-//               broadcast.
+//               we disallow signal_all() (POSIX broadcast).  See
+//               ConditionVarFullWin32Impl for a full implementation
+//               that includes signal_all().  This class is much
+//               simpler than that full implementation, so we can
+//               avoid the overhead required to support broadcast.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ConditionVarWin32Impl {
 public:

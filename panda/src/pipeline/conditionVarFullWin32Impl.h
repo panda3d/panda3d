@@ -26,6 +26,7 @@
 
 #include "mutexWin32Impl.h"
 #include "pnotify.h"
+#include "atomicAdjust.h"
 
 class MutexWin32Impl;
 
@@ -34,15 +35,19 @@ class MutexWin32Impl;
 // Description : Uses Windows native calls to implement a
 //               conditionVarFull.
 //
-//               The Windows native synchronization primitives don't
-//               actually implement a full POSIX-style condition
-//               variable, but the Event primitive does a fair job if
-//               we disallow POSIX broadcast.  See
-//               http://www.cs.wustl.edu/~schmidt/win32-cv-1.html for
-//               a full implementation that includes broadcast.  This
-//               class is much simpler than that full implementation,
-//               so we can avoid the overhead require to support
-//               broadcast.
+//               We follow the "SetEvent" implementation suggested by
+//               http://www.cs.wustl.edu/~schmidt/win32-cv-1.html .
+//               This allows us to implement both signal() and
+//               signal_all(), but it has more overhead than the
+//               simpler implementation of ConditionVarWin32Impl.
+//
+//               As described by the above reference, this
+//               implementation suffers from a few weaknesses; in
+//               particular, it does not necessarily wake up all
+//               threads fairly; and it may sometimes incorrectly wake
+//               up a thread that was not waiting at the time signal()
+//               was called.  But we figure it's good enough for our
+//               purposes.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ConditionVarFullWin32Impl {
 public:
@@ -56,6 +61,8 @@ public:
 private:
   CRITICAL_SECTION *_external_mutex;
   HANDLE _event_signal;
+  HANDLE _event_broadcast;
+  TVOLATILE PN_int32 _waiters_count;
 };
 
 #include "conditionVarFullWin32Impl.I"
