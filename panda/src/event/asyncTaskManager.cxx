@@ -36,8 +36,8 @@ AsyncTaskManager(const string &name, int num_threads) :
   Namable(name),
   _num_threads(num_threads),
   _cvar(_lock),
-  _state(S_initial),
-  _num_tasks(0)
+  _num_tasks(0),
+  _state(S_initial)
 {
 }
 
