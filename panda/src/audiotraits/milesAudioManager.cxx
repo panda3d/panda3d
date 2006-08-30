@@ -399,9 +399,15 @@ get_sound(const string& file_name, bool) {
 
   if (sd == (SoundData *)NULL) {
     // ...the sound was not found in the cache/pool.
-    _lock.release();
+
+    // Ideally, we should release the lock while we're performing the
+    // actual load, so multiple threads can be loading sounds in
+    // parallel.  However, it appears that Miles is internally not
+    // thread-safe, so we can't do that.
+
+    //_lock.release();
     sd = load(path);
-    _lock.lock();
+    //_lock.lock();
 
     if (sd != (SoundData *)NULL) {
       SoundMap::const_iterator si = _sounds.find(path);
