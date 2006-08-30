@@ -216,12 +216,9 @@ protected:
   // best flexibility.
   
   static Create_AudioManager_proc* _create_AudioManager;
-  PT(AudioSound) _null_sound;
+  AudioSound *_null_sound;
 
-  AudioManager() {
-    // intentionally blank.
-  }
-
+  AudioManager();
 
 public:
   static TypeHandle get_class_type() {

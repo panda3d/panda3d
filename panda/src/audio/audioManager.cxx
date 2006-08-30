@@ -19,7 +19,7 @@
 
 #include "config_audio.h"
 #include "audioManager.h"
-
+#include "atomicAdjust.h"
 #include "nullAudioManager.h"
 
 #include "load_dso.h"
@@ -88,7 +88,21 @@ PT(AudioManager) AudioManager::create_AudioManager() {
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-AudioManager::~AudioManager() {
+AudioManager::
+~AudioManager() {
+  if (_null_sound != (AudioSound *)NULL) {
+    unref_delete(_null_sound);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::Constructor
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+AudioManager::
+AudioManager() {
+  _null_sound = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,7 +114,8 @@ AudioManager::~AudioManager() {
 //               change your mind and want to play sounds again, you
 //               will have to recreate all of these objects.
 ////////////////////////////////////////////////////////////////////
-void AudioManager::shutdown() {
+void AudioManager::
+shutdown() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,10 +126,20 @@ void AudioManager::shutdown() {
 //               sound.  This same object may also be returned by
 //               get_sound() if it fails.
 ////////////////////////////////////////////////////////////////////
-PT(AudioSound) AudioManager::get_null_sound() {
+PT(AudioSound) AudioManager::
+get_null_sound() {
   if (_null_sound == (AudioSound *)NULL) {
-    _null_sound = new NullAudioSound;
+    AudioSound *new_sound = new NullAudioSound;
+    new_sound->ref();
+    void *result = AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_null_sound, (void *)NULL, (void *)new_sound);
+    if (result != NULL) {
+      // Someone else must have assigned the AudioSound first.  OK.
+      nassertr(_null_sound != new_sound, NULL);
+      unref_delete(new_sound);
+    }
+    nassertr(_null_sound != NULL, NULL);
   }
+  
   return _null_sound;
 }
 
