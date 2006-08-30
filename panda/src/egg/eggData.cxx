@@ -28,6 +28,7 @@
 #include "string_utils.h"
 #include "dSearchPath.h"
 #include "virtualFileSystem.h"
+#include "mutexHolder.h"
 #include "zStream.h"
 
 extern int eggyyparse();
@@ -122,16 +123,22 @@ read(istream &in) {
   // it with a copy of ourselves, so that it will get our _coordsys
   // value, if the user set it.
   PT(EggData) data = new EggData(*this);
-  egg_init_parser(in, get_egg_filename(), data, data);
-  eggyyparse();
-  egg_cleanup_parser();
+
+  int error_count;
+  {
+    MutexHolder holder(egg_lock);
+    egg_init_parser(in, get_egg_filename(), data, data);
+    eggyyparse();
+    egg_cleanup_parser();
+    error_count = egg_error_count();
+  }
 
   data->post_read();
 
   steal_children(*data);
   (*this) = *data;
 
-  return (egg_error_count() == 0);
+  return (error_count == 0);
 }
 
 ////////////////////////////////////////////////////////////////////

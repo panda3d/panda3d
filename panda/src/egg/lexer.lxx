@@ -6,16 +6,16 @@
 */
 
 %{
+#include "pandabase.h"
 #include "lexerDefs.h"
 #include "parserDefs.h"
 #include "config_egg.h"
 #include "parser.h"
-
 #include "indent.h"
 #include "pnotify.h"
+#include "pmutex.h"
 
 #include <math.h>
-#include "pandabase.h"
 
 extern "C" int eggyywrap(void);  // declared below.
 
@@ -25,6 +25,9 @@ static int yyinput(void);        // declared by flex.
 ////////////////////////////////////////////////////////////////////
 // Static variables
 ////////////////////////////////////////////////////////////////////
+
+// This mutex protects all of these global variables. 
+Mutex egg_lock; 
 
 // We'll increment line_number and col_number as we parse the file, so
 // that we can report the position of an error.
@@ -49,7 +52,6 @@ static string egg_filename;
 // This is the initial token state returned by the lexer.  It allows
 // the yacc grammar to start from initial points.
 static int initial_token;
-
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the lexer.

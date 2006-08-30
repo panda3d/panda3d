@@ -257,6 +257,9 @@ parse_egg(const string &egg_syntax) {
   }
 
   istringstream in(egg_syntax);
+
+  MutexHolder holder(egg_lock);
+
   egg_init_parser(in, "", this, group);
 
   if (!egg_start_parse_body()) {
