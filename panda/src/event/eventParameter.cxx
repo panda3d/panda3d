@@ -25,59 +25,7 @@
 #endif
 
 TypeHandle EventStoreValueBase::_type_handle;
-
-////////////////////////////////////////////////////////////////////
-//     Function: EventParameter::Pointer constructor
-//       Access: Public
-//  Description: Defines an EventParameter that stores a pointer to
-//               a TypedReferenceCount object.  Note that a
-//               TypedReferenceCount is not the same kind of pointer
-//               as a TypedWritableReferenceCount, hence we require
-//               both constructors.
-//
-//               This accepts a const pointer, even though it stores
-//               (and eventually returns) a non-const pointer.  This
-//               is just the simplest way to allow both const and
-//               non-const pointers to be stored, but it does lose the
-//               constness.  Be careful.
-//
-//               This constructor, and the accessors for this type of
-//               event parameter, are declared non-inline so we don't
-//               have to worry about exporting this template class
-//               from this DLL.
-////////////////////////////////////////////////////////////////////
-EventParameter::
-EventParameter(const TypedReferenceCount *ptr) : _ptr(new EventStoreTypedRefCount((TypedReferenceCount *)ptr)) { }
-
-////////////////////////////////////////////////////////////////////
-//     Function: EventParameter::is_typed_ref_count
-//       Access: Public
-//  Description: Returns true if the EventParameter stores a
-//               TypedReferenceCount pointer, false otherwise.  Note
-//               that a TypedReferenceCount is not exactly the same
-//               kind of pointer as a TypedWritableReferenceCount,
-//               hence the need for this separate call.
-////////////////////////////////////////////////////////////////////
-bool EventParameter::
-is_typed_ref_count() const {
-  if (is_empty()) {
-    return false;
-  }
-  return _ptr->is_of_type(EventStoreTypedRefCount::get_class_type());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EventParameter::get_typed_ref_count_value
-//       Access: Public
-//  Description: Retrieves the value stored in the EventParameter.  It
-//               is only valid to call this if is_typed_ref_count()
-//               has already returned true.
-////////////////////////////////////////////////////////////////////
-TypedReferenceCount *EventParameter::
-get_typed_ref_count_value() const {
-  nassertr(is_typed_ref_count(), NULL);
-  return ((const EventStoreTypedRefCount *)_ptr.p())->get_value();
-}
+TypeHandle EventStoreTypedRefCount::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::output
@@ -96,5 +44,20 @@ output(ostream &out) const {
 
   } else {
     out << _ptr->get_type();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventStoreTypedRefCount::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void EventStoreTypedRefCount::
+output(ostream &out) const {
+  if (_value == (TypedReferenceCount *)NULL) {
+    out << "(empty)";
+
+  } else {
+    out << _value->get_type();
   }
 }

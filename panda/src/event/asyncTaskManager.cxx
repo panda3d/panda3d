@@ -330,7 +330,7 @@ find_task(AsyncTask *task) const {
 void AsyncTaskManager::
 service_one_task(AsyncTaskManager::AsyncTaskManagerThread *thread) {
   if (!_active.empty()) {
-    AsyncTask *task = _active.front();
+    PT(AsyncTask) task = _active.front();
     _active.pop_front();
     thread->_servicing = task;
 
@@ -375,6 +375,7 @@ void AsyncTaskManager::
 task_done(AsyncTask *task) {
   task->_state = AsyncTask::S_inactive;
   task->_manager = NULL;
+  --_num_tasks;
 
   if (!task->_done_event.empty()) {
     PT_Event event = new Event(task->_done_event);

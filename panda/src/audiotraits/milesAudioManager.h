@@ -28,6 +28,7 @@
 #include "pset.h"
 #include "pmap.h"
 #include "pdeque.h"
+#include "pmutex.h"
 
 class MilesAudioSound;
 
@@ -65,6 +66,8 @@ public:
   void stop_all_sounds();
 
 private:
+  Mutex _lock; // Protects all the members of this class.
+
   // The sound cache:
   class SoundData : public ReferenceCount {
   public:
@@ -82,16 +85,16 @@ private:
   typedef pmap<string, PT(SoundData) > SoundMap;
   SoundMap _sounds;
 
-  typedef pset<MilesAudioSound* > AudioSet;
+  typedef pset<MilesAudioSound *> AudioSet;
   // The offspring of this manager:
   AudioSet _sounds_on_loan;
 
-  typedef pset<MilesAudioSound* > SoundsPlaying;
+  typedef pset<MilesAudioSound *> SoundsPlaying;
   // The sounds from this manager that are currently playing:
   SoundsPlaying _sounds_playing;
 
   // The Least Recently Used mechanism:
-  typedef pdeque<const string* > LRU;
+  typedef pdeque<const string *> LRU;
   LRU _lru;
   // State:
   float _volume;
@@ -99,25 +102,35 @@ private:
   bool _active;
   int _cache_limit;
   bool _cleanup_required;
-  // keep a count for startup and shutdown:
-  static int _active_managers;
-  static bool _miles_active;
+
   unsigned int _concurrent_sound_limit;
   
   bool _is_valid;
   bool _hasMidiSounds;
+
+private:
+  // Static members.  Protected by the following lock.
+  static Mutex *_static_lock;
+
+  // keep a count for startup and shutdown:
+  static int _active_managers;
+  static bool _miles_active;
 
   // Optional Downloadable Sound field for software midi
   static HDLSFILEID _dls_field;
 
   typedef pset<MilesAudioManager *> Managers;
   static Managers *_managers;
-  
+
+private:  
+  bool do_is_valid();
+  void do_clear_cache();
+
   PT(SoundData) load(Filename file_name);
   // Tell the manager that the sound dtor was called.
   void release_sound(MilesAudioSound* audioSound);
   
-  void most_recently_used(const string& path);
+  void most_recently_used(const string *path);
   void uncache_a_sound();
 
   void starting_sound(MilesAudioSound* audio);
@@ -133,6 +146,7 @@ private:
 
   void force_midi_reset();
   void cleanup();
+  static void deactivate();
 
   friend class MilesAudioSound;
 

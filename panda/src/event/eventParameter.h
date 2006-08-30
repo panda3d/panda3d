@@ -43,7 +43,7 @@ class EXPCL_PANDA EventParameter {
 PUBLISHED:
   INLINE EventParameter();
   INLINE EventParameter(const TypedWritableReferenceCount *ptr);
-  EventParameter(const TypedReferenceCount *ptr);
+  INLINE EventParameter(const TypedReferenceCount *ptr);
   INLINE EventParameter(int value);
   INLINE EventParameter(double value);
   INLINE EventParameter(const string &value);
@@ -68,8 +68,8 @@ PUBLISHED:
   INLINE bool is_wstring() const;
   INLINE wstring get_wstring_value() const;
 
-  bool is_typed_ref_count() const;
-  TypedReferenceCount *get_typed_ref_count_value() const;
+  INLINE bool is_typed_ref_count() const;
+  INLINE TypedReferenceCount *get_typed_ref_count_value() const;
 
   INLINE TypedWritableReferenceCount *get_ptr() const;
 
@@ -105,6 +105,41 @@ public:
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "EventStoreValueBase",
                   TypedWritableReferenceCount::get_class_type());
+  }
+
+private:
+  static TypeHandle _type_handle;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : EventStoreTypedRefCount
+// Description : A class object for storing specifically objects of
+//               type TypedReferenceCount, which is different than
+//               TypedWritableReferenceCount.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA EventStoreTypedRefCount : public EventStoreValueBase {
+public:
+  INLINE EventStoreTypedRefCount(const TypedReferenceCount *value);
+
+  INLINE void set_value(const TypedReferenceCount *value);
+  INLINE TypedReferenceCount *get_value() const;
+
+  virtual void output(ostream &out) const;
+
+  PT(TypedReferenceCount) _value;
+
+public:
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    EventStoreValueBase::init_type();
+    register_type(_type_handle, "EventStoreTypedRefCount",
+                  EventStoreValueBase::get_class_type());
   }
 
 private:
@@ -174,7 +209,6 @@ typedef EventStoreValue<int> EventStoreInt;
 typedef EventStoreValue<double> EventStoreDouble;
 typedef EventStoreValue<string> EventStoreString;
 typedef EventStoreValue<wstring> EventStoreWstring;
-typedef EventStoreValue< PT(TypedReferenceCount) > EventStoreTypedRefCount;
 
 #include "eventParameter.I"
 
