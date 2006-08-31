@@ -188,7 +188,6 @@ MilesAudioManager::
     if (mi != _managers->end()) {
       // The manager might already have been removed from the list, if
       // the user has already called shutdown().
-      nassertv(!_cleanup_required);
       _managers->erase(mi);
     }
   }
