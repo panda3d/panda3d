@@ -301,13 +301,13 @@ process_events() {
 
     case ButtonPress:
       // This refers to the mouse buttons.
-      button = MouseButton::button(event.xbutton.button - 1);
+      button = get_mouse_button(event.xbutton);
       _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
       _input_devices[0].button_down(button);
       break;
       
     case ButtonRelease:
-      button = MouseButton::button(event.xbutton.button - 1);
+      button = get_mouse_button(event.xbutton);
       _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
       _input_devices[0].button_up(button);
       break;
@@ -903,7 +903,7 @@ handle_keypress(XKeyEvent &event) {
   _input_devices[0].set_pointer_in_window(event.x, event.y);
 
   // Now get the raw unshifted button.
-  ButtonHandle button = get_button(&event);
+  ButtonHandle button = get_button(event);
   if (button != ButtonHandle::none()) {
     _input_devices[0].button_down(button);
   }
@@ -920,7 +920,7 @@ handle_keyrelease(XKeyEvent &event) {
   _input_devices[0].set_pointer_in_window(event.x, event.y);
 
   // Now get the raw unshifted button.
-  ButtonHandle button = get_button(&event);
+  ButtonHandle button = get_button(event);
   if (button != ButtonHandle::none()) {
     _input_devices[0].button_up(button);
   }
@@ -933,8 +933,8 @@ handle_keyrelease(XKeyEvent &event) {
 //               keyboard button indicated by the given key event.
 ////////////////////////////////////////////////////////////////////
 ButtonHandle glxGraphicsWindow::
-get_button(XKeyEvent *key_event) {
-  KeySym key = XLookupKeysym(key_event, 0);
+get_button(XKeyEvent &key_event) {
+  KeySym key = XLookupKeysym(&key_event, 0);
 
   switch (key) {
   case XK_BackSpace:
@@ -1210,6 +1210,23 @@ get_button(XKeyEvent *key_event) {
   return ButtonHandle::none();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::get_mouse_button
+//       Access: Private
+//  Description: Returns the Panda ButtonHandle corresponding to the
+//               mouse button indicated by the given button event.
+////////////////////////////////////////////////////////////////////
+ButtonHandle glxGraphicsWindow::
+get_mouse_button(XButtonEvent &button_event) {
+  int index = button_event.button;
+  if (index == glx_wheel_up_button) {
+    return MouseButton::wheel_up();
+  } else if (index == glx_wheel_down_button) {
+    return MouseButton::wheel_down();
+  } else {
+    return MouseButton::button(index - 1);
+  }
+}
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsWindow::check_event
 //       Access: Private, Static

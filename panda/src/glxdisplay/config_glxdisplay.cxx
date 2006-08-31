@@ -51,7 +51,18 @@ ConfigVariableBool glx_get_os_address
 	  "directly using standard operating system calls to locate "
 	  "addresses of extension functions.  This will be done only "
 	  "if glxGetProcAddress() cannot be used for some reason."));
-	  
+
+ConfigVariableInt glx_wheel_up_button
+("glx-wheel-up-button", 4,
+ PRC_DESC("This is the mouse button index of the wheel_up event: which "
+          "mouse button number does the system report when the mouse wheel "
+          "is rolled one notch up?"));
+
+ConfigVariableInt glx_wheel_down_button
+("glx-wheel-down-button", 5,
+ PRC_DESC("This is the mouse button index of the wheel_down event: which "
+          "mouse button number does the system report when the mouse wheel "
+          "is rolled one notch down?"));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libglxdisplay

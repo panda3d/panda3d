@@ -64,7 +64,8 @@ private:
   void handle_keypress(XKeyEvent &event);
   void handle_keyrelease(XKeyEvent &event);
 
-  ButtonHandle get_button(XKeyEvent *key_event);
+  ButtonHandle get_button(XKeyEvent &key_event);
+  ButtonHandle get_mouse_button(XButtonEvent &button_event);
 
   static Bool check_event(Display *display, XEvent *event, char *arg);
 
