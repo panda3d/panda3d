@@ -157,12 +157,17 @@ private:
 
   LVecBase3f _scale;
 
+public:
+  // This internal class is declared public to work around compiler
+  // issues.
   class SamplePoint {
   public:
     LPoint3f _pos;
     LVecBase3f _hpr;
     double _timestamp;
   };
+
+private:
   SamplePoint _sample;
 
   LPoint3f _smooth_pos;
