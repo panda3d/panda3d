@@ -184,7 +184,7 @@ matches_substr(string::const_iterator pi, string::const_iterator pend,
     // A special exception: we allow ci to reach the end before pi,
     // only if pi is one character before the end and that last
     // character is '*'.
-    if ((ci == cend) && (pi + 1 == pend) && (*pi) == '*') {
+    if ((ci == cend) && (std::distance(pi, pend) == 1) && (*pi) == '*') {
       return true;
     }
     return (pi == pend && ci == cend);
