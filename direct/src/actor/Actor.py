@@ -1508,15 +1508,18 @@ class Actor(DirectObject, NodePath):
             for partName in partNames:
                 for animName in anims:
                     # delete the anim control
-                    animControlPair = self.__animControlDict[lodName][partName][animName]
-                    if animControlPair[1] != None:
-                        # Try to clear any control effects before we let
-                        # our handle on them go. This is especially
-                        # important if the anim control was blending
-                        # animations.
-                        animControlPair[1].getPart().clearControlEffects()
-                        del(animControlPair[1])
-                        animControlPair.append(None)
+                    try:
+                        animControlPair = self.__animControlDict[lodName][partName][animName]
+                        if animControlPair[1] != None:
+                            # Try to clear any control effects before we let
+                            # our handle on them go. This is especially
+                            # important if the anim control was blending
+                            # animations.
+                            animControlPair[1].getPart().clearControlEffects()
+                            del(animControlPair[1])
+                            animControlPair.append(None)
+                    except:
+                        return
 
     def bindAnim(self, animName, partName="modelRoot", lodName="lodRoot"):
         """bindAnim(self, string, string='modelRoot', string='lodRoot')
