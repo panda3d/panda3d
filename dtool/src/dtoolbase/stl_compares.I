@@ -91,7 +91,8 @@ operator () (const Key &a, const Key &b) const {
 template<class Key, class Compare>
 INLINE size_t integer_hash<Key, Compare>::
 add_hash(size_t hash, const Key &key) {
-  return (hash * 31) + (size_t)key;
+  PN_uint32 key32 = (PN_uint32)key;
+  return AddHash::add_hash(hash, &key32, 1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,7 +137,8 @@ operator () (const Key &a, const Key &b) const {
 template<class Key>
 INLINE size_t floating_point_hash<Key>::
 add_hash(size_t hash, const Key &key) const {
-  return (hash * 31) + (size_t)(cfloor(key / _threshold + 0.5f));
+  PN_uint32 key32 = (PN_uint32)(key / _threshold + 0.5f);
+  return AddHash::add_hash(hash, &key32, 1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -160,11 +162,12 @@ operator () (const Key &key) const {
 template<class Key, class Compare>
 INLINE size_t sequence_hash<Key, Compare>::
 add_hash(size_t hash, const Key &key) {
-  TYPENAME Key::const_iterator ki;
-  for (ki = key.begin(); ki != key.end(); ++ki) {
-    hash = (hash * 31) + (size_t)(*ki);
-  }
-  return hash;
+#ifdef _DEBUG
+  // We assume that the sequence is laid out sequentially in memory.
+  assert(&(*key.end()) - &key[0] == key.size());
+#endif
+  size_t num_bytes = (key.size() * sizeof(key[0]));
+  return AddHash::add_hash(hash, (const PN_uint8 *)&key[0], num_bytes);
 }
 
 ////////////////////////////////////////////////////////////////////

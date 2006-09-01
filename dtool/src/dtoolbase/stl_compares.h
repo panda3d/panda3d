@@ -22,11 +22,14 @@
 #include "dtoolbase.h"
 #include "cmath.h"
 #include "nearly_zero.h"
+#include "addHash.h"
+
+#include <assert.h>
 
 #ifdef HAVE_STL_HASH
 #include <hash_map>  // for hash_compare
 
-#define stl_hash_compare hash_compare
+#define stl_hash_compare stdext::hash_compare
 
 #else
 

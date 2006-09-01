@@ -139,6 +139,26 @@ operator < (const RenderState &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_hash
+//       Access: Published
+//  Description: Returns a suitable hash value for phash_map.
+////////////////////////////////////////////////////////////////////
+size_t RenderState::
+get_hash() const {
+  size_t hash = 0;
+
+  //  hash = sequence_hash<Attributes>::add_hash(hash, _attributes);
+  Attributes::const_iterator ai;
+  for (ai = _attributes.begin(); ai != _attributes.end(); ++ai) {
+    const Attribute &attrib = *ai;
+    hash = pointer_hash::add_hash(hash, attrib._attrib);
+    hash = int_hash::add_hash(hash, attrib._override);
+  }
+
+  return hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::cull_callback
 //       Access: Published
 //  Description: Calls cull_callback() on each attrib.  If any attrib

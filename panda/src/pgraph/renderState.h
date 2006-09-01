@@ -74,6 +74,7 @@ public:
 
 PUBLISHED:
   bool operator < (const RenderState &other) const;
+  size_t get_hash() const;
 
   INLINE bool is_empty() const;
   INLINE int get_num_attribs() const;
@@ -211,7 +212,7 @@ private:
   // to the cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static ReMutex *_states_lock;
-  typedef pset<const RenderState *, indirect_less<const RenderState *> > States;
+  typedef phash_set<const RenderState *, indirect_less_hash<const RenderState *> > States;
   static States *_states;
   static CPT(RenderState) _empty_state;
 

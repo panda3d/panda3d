@@ -32,7 +32,7 @@
 //
 //               pvector, pmap, etc. are all defined in this directory
 //               to use a pallocator.
-
+//
 //               pallocator actually comes it two flavors now:
 //               pallocator_single, which can only allocate single
 //               instances of an object, and pallocator_array, which

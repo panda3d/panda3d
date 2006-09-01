@@ -35,8 +35,8 @@
 #define pmultiset multiset
 
 #ifdef HAVE_STL_HASH
-#define phash_set hash_set
-#define phash_multiset hash_multiset
+#define phash_set stdext::hash_set
+#define phash_multiset stdext::hash_multiset
 #else  // HAVE_STL_HASH
 #define phash_set set
 #define phash_multiset multiset
@@ -129,11 +129,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare = method_hash<Key, less<Key> > >
-class phash_set : public hash_set<Key, Compare, pallocator_single<Key> > {
+class phash_set : public stdext::hash_set<Key, Compare, pallocator_array<Key> > {
 public:
-  phash_set() : hash_set<Key, Compare, pallocator_single<Key> >() { }
-  phash_set(const phash_set<Key, Compare> &copy) : hash_set<Key, Compare, pallocator_single<Key> >(copy) { }
-  phash_set(const Compare &comp) : hash_set<Key, Compare, pallocator_single<Key> >(comp) { }
+  phash_set() : stdext::hash_set<Key, Compare, pallocator_array<Key> >() { }
+  phash_set(const phash_set<Key, Compare> &copy) : stdext::hash_set<Key, Compare, pallocator_array<Key> >(copy) { }
+  phash_set(const Compare &comp) : stdext::hash_set<Key, Compare, pallocator_array<Key> >(comp) { }
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -144,11 +144,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare = method_hash<Key, less<Key> > >
-class phash_multiset : public hash_multiset<Key, Compare, pallocator_single<Key> > {
+class phash_multiset : public stdext::hash_multiset<Key, Compare, pallocator_array<Key> > {
 public:
-  phash_multiset() : hash_multiset<Key, Compare, pallocator_single<Key> >() { }
-  phash_multiset(const phash_multiset<Key, Compare> &copy) : hash_multiset<Key, Compare, pallocator_single<Key> >(copy) { }
-  phash_multiset(const Compare &comp) : hash_multiset<Key, Compare, pallocator_single<Key> >(comp) { }
+  phash_multiset() : stdext::hash_multiset<Key, Compare, pallocator_array<Key> >() { }
+  phash_multiset(const phash_multiset<Key, Compare> &copy) : stdext::hash_multiset<Key, Compare, pallocator_array<Key> >(copy) { }
+  phash_multiset(const Compare &comp) : stdext::hash_multiset<Key, Compare, pallocator_array<Key> >(comp) { }
 };
 
 #else // HAVE_STL_HASH

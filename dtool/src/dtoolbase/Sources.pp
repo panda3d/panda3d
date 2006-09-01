@@ -6,6 +6,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
   
   #define SOURCES \
+    addHash.I addHash.h \
     atomicAdjust.h \
     atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I \
     atomicAdjustI386Impl.h atomicAdjustI386Impl.I \
@@ -31,9 +32,10 @@
     stl_compares.I stl_compares.h \
     pallocator.T pallocator.h \
     pdeque.h plist.h pmap.h pset.h pvector.h \
-    dlmalloc.c
+    dlmalloc.c lookup3.h lookup3.c
 
  #define INCLUDED_SOURCES  \
+    addHash.cxx \
     atomicAdjustDummyImpl.cxx \
     atomicAdjustI386Impl.cxx \
     atomicAdjustNsprImpl.cxx \
@@ -48,6 +50,7 @@
     mutexSpinlockImpl.cxx
 
   #define INSTALL_HEADERS \
+    addHash.I addHash.h \
     atomicAdjust.h \
     atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I \
     atomicAdjustI386Impl.h atomicAdjustI386Impl.I \
@@ -71,6 +74,7 @@
     selectThreadImpl.h \
     stl_compares.I stl_compares.h \
     pallocator.T pallocator.h \
-    pdeque.h plist.h pmap.h pset.h pvector.h
+    pdeque.h plist.h pmap.h pset.h pvector.h \
+    lookup3.h
 
 #end lib_target

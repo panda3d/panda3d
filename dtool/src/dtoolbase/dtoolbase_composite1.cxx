@@ -1,3 +1,4 @@
+#include "addHash.cxx"
 #include "atomicAdjustDummyImpl.cxx"
 #include "atomicAdjustI386Impl.cxx"
 #include "atomicAdjustNsprImpl.cxx"

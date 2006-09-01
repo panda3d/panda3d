@@ -34,6 +34,17 @@ operator < (const TransformState &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_hash
+//       Access: Published
+//  Description: Returns a suitable hash value for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE size_t TransformState::
+get_hash() const {
+  check_hash();
+  return _hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::make_pos
 //       Access: Published, Static
 //  Description: Makes a new TransformState with the specified
@@ -752,6 +763,20 @@ flush_level() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::check_hash
+//       Access: Private
+//  Description: Ensures that we know the hash value.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+check_hash() const {
+  // This pretends to be a const function, even though it's not,
+  // because it only updates a transparent cache value.
+  if ((_flags & F_hash_known) == 0) {
+    ((TransformState *)this)->calc_hash();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::check_singular
 //       Access: Private
 //  Description: Ensures that we know whether the matrix is singular.
@@ -822,6 +847,17 @@ check_mat() const {
   if ((_flags & F_mat_known) == 0) {
     ((TransformState *)this)->calc_mat();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::calc_hash
+//       Access: Private
+//  Description: Computes the hash value.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+calc_hash() {
+  MutexHolder holder(_lock);
+  do_calc_hash();
 }
 
 ////////////////////////////////////////////////////////////////////

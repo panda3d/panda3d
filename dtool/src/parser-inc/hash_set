@@ -27,29 +27,33 @@
 #include <stdtypedefs.h>
 #include <stdcompare.h>
 
-template<class key, class compare = hash_compare<key, less<key> > >
-class hash_set {
-public:
-  typedef key key_type;
-  typedef key value_type;
-  typedef compare key_compare;
-  typedef compare value_compare;
+namespace stdext {
 
-  typedef key *pointer;
-  typedef const key *const_pointer;
-  typedef key &reference;
-  typedef const key &const_reference;
+  template<class key, class compare = hash_compare<key, less<key> > >
+  class hash_set {
+  public:
+    typedef key key_type;
+    typedef key value_type;
+    typedef compare key_compare;
+    typedef compare value_compare;
 
-  class iterator;
-  class const_iterator;
-  class reverse_iterator;
-  class const_reverse_iterator;
-  typedef size_t size_type;
-  class difference_type;
-};
+    typedef key *pointer;
+    typedef const key *const_pointer;
+    typedef key &reference;
+    typedef const key &const_reference;
 
-template<class key, class compare = hash_compare<key, less<key> > >
-class hash_multiset : public hash_set<key, compare> {
+    class iterator;
+    class const_iterator;
+    class reverse_iterator;
+    class const_reverse_iterator;
+    typedef size_t size_type;
+    class difference_type;
+  };
+
+  template<class key, class compare = hash_compare<key, less<key> > >
+  class hash_multiset : public hash_set<key, compare> {
+  };
+
 };
 
 #endif

@@ -35,8 +35,8 @@
 #define pmultimap multimap
 
 #ifdef HAVE_STL_HASH
-#define phash_map hash_map
-#define phash_multimap hash_multimap
+#define phash_map stdext::hash_map
+#define phash_multimap stdext::hash_multimap
 #else  // HAVE_STL_HASH
 #define phash_map map
 #define phash_multimap multimap
@@ -137,11 +137,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
-class phash_map : public hash_map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > {
+class phash_map : public stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > > {
 public:
-  phash_map() : hash_map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >() { }
-  phash_map(const phash_map<Key, Value, Compare> &copy) : hash_map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >(copy) { }
-  phash_map(const Compare &comp) : hash_map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >(comp) { }
+  phash_map() : stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >() { }
+  phash_map(const phash_map<Key, Value, Compare> &copy) : stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >(copy) { }
+  phash_map(const Compare &comp) : stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >(comp) { }
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -152,11 +152,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
-class phash_multimap : public hash_multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > {
+class phash_multimap : public stdext::hash_multimap<Key, Value, Compare, pallocator_array<pair<const Key, Value> > > {
 public:
-  phash_multimap() : hash_multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >() { }
-  phash_multimap(const phash_multimap<Key, Value, Compare> &copy) : hash_multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >(copy) { }
-  phash_multimap(const Compare &comp) : hash_multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >(comp) { }
+  phash_multimap() : stdext::hash_multimap<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >() { }
+  phash_multimap(const phash_multimap<Key, Value, Compare> &copy) : stdext::hash_multimap<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >(copy) { }
+  phash_multimap(const Compare &comp) : stdext::hash_multimap<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >(comp) { }
 };
 
 #else // HAVE_STL_HASH

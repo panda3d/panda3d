@@ -74,7 +74,7 @@ public:
 PUBLISHED:
   INLINE bool operator < (const TransformState &other) const;
   bool sorts_less(const TransformState &other, bool uniquify_matrix) const;
-  size_t get_hash() const;
+  INLINE size_t get_hash() const;
 
   static CPT(TransformState) make_identity();
   static CPT(TransformState) make_invalid();
@@ -266,11 +266,14 @@ private:
 
 private:
   // This is the actual data within the TransformState.
+  INLINE void check_hash() const;
   INLINE void check_singular() const;
   INLINE void check_components() const;
   INLINE void check_hpr() const;
   INLINE void check_quat() const;
   INLINE void check_mat() const;
+  INLINE void calc_hash();
+  void do_calc_hash();
   void calc_singular();
   INLINE void calc_components();
   void do_calc_components();
@@ -307,12 +310,14 @@ private:
     F_has_nonzero_shear  = 0x00004000,
     F_is_destructing     = 0x00008000,
     F_is_2d              = 0x00010000,
+    F_hash_known         = 0x00020000,
   };
   LPoint3f _pos;
   LVecBase3f _hpr, _scale, _shear;
   LQuaternionf _quat;
   LMatrix4f _mat;
   LMatrix4f *_inv_mat;
+  size_t _hash;
   
   unsigned int _flags;
 
