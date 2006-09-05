@@ -77,6 +77,9 @@ read(istream &in, const string &filename) {
       } else if (words[0] == ":coverage") {
         okflag = parse_coverage_line(words);
 
+      } else if (words[0] == ":powertwo") {
+        okflag = parse_powertwo_line(words);
+
       } else if (words[0] == ":imagetype") {
         okflag = parse_imagetype_line(words);
 
@@ -396,6 +399,37 @@ parse_coverage_line(const vector_string &words) {
     nout << "Invalid coverage threshold: " << pal->_coverage_threshold << "\n";
     return false;
   }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TxaFile::parse_powertwo_line
+//       Access: Private
+//  Description: Handles the line in a .txa file that begins with the
+//               keyword ":powertwo" and indicates whether textures
+//               should by default be forced to a power of two.
+////////////////////////////////////////////////////////////////////
+bool TxaFile::
+parse_powertwo_line(const vector_string &words) {
+  if (words.size() != 2) {
+    nout << "Exactly one parameter required for :powertwo, either a 0 "
+         << "or a 1.\n";
+    return false;
+  }
+
+  int flag;
+  if (!string_to_int(words[1], flag)) {
+    nout << "Invalid powertwo flag: " << words[1] << "\n";
+    return false;
+  }
+
+  if (flag != 0 && flag != 1) {
+    nout << "Invalid powertwo flag: " << flag << "\n";
+    return false;
+  }
+
+  pal->_force_power_2 = (flag != 0);
 
   return true;
 }

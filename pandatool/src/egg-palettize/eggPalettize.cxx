@@ -430,6 +430,12 @@ describe_input_file() {
             "also be overridden for a particular texture using the 'coverage' "
             "keyword on the texture line.\n\n");
 
+  show_text("  :powertwo flag", 10,
+            "Specifies whether textures should be forced to a power of two "
+            "size when they are not placed within a palette.  Use 1 for true, "
+            "to force textures to a power of two; or 0 to leave them exactly "
+            "the size they are specified.  The default is true.\n\n");
+
   show_text("  :round fraction fuzz", 10,
             "When the coverage area is computed, it may optionally be "
             "rounded up to the next sizeable unit before placing the "
