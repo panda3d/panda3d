@@ -1054,6 +1054,9 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def taskName(self, idString):
         return (idString + "-" + str(self.guiId))
 
+    def uniqueName(self, idString):
+        return (idString + "-" + str(self.guiId))
+
     def setProp(self, propString, value):
         """
         Allows you to set a property like frame['text'] = 'Joe' in
