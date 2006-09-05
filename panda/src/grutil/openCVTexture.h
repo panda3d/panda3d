@@ -54,8 +54,8 @@ protected:
   virtual void update_frame(int frame);
 
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
-			   int z, int n, int primary_file_num_channels, int alpha_file_channel);
-
+                           int z, int n, int primary_file_num_channels, int alpha_file_channel,
+                           BamCacheRecord *record);
   virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
                            int z, int n);
 
