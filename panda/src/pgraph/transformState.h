@@ -142,6 +142,7 @@ PUBLISHED:
   INLINE const LPoint3f &get_pos() const;
   INLINE const LVecBase3f &get_hpr() const;
   INLINE const LQuaternionf &get_quat() const;
+  INLINE const LQuaternionf &get_norm_quat() const;
   INLINE const LVecBase3f &get_scale() const;
   INLINE float get_uniform_scale() const;
   INLINE const LVecBase3f &get_shear() const;
@@ -271,6 +272,7 @@ private:
   INLINE void check_components() const;
   INLINE void check_hpr() const;
   INLINE void check_quat() const;
+  INLINE void check_norm_quat() const;
   INLINE void check_mat() const;
   INLINE void calc_hash();
   void do_calc_hash();
@@ -280,6 +282,7 @@ private:
   INLINE void calc_hpr();
   void do_calc_hpr();
   void calc_quat();
+  void calc_norm_quat();
   INLINE void calc_mat();
   void do_calc_mat();
 
@@ -311,10 +314,11 @@ private:
     F_is_destructing     = 0x00008000,
     F_is_2d              = 0x00010000,
     F_hash_known         = 0x00020000,
+    F_norm_quat_known    = 0x00040000,
   };
   LPoint3f _pos;
   LVecBase3f _hpr, _scale, _shear;
-  LQuaternionf _quat;
+  LQuaternionf _quat, _norm_quat;
   LMatrix4f _mat;
   LMatrix4f *_inv_mat;
   size_t _hash;

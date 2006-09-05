@@ -1327,7 +1327,7 @@ do_compose(const TransformState *other) const {
       // Do a 2-d compose.
       LVecBase2f pos = get_pos2d();
       float rotate = get_rotate2d();
-      LQuaternionf quat = get_quat();
+      LQuaternionf quat = get_norm_quat();
       float scale = get_uniform_scale();
 
       LPoint3f op = quat.xform(other->get_pos());
@@ -1341,12 +1341,11 @@ do_compose(const TransformState *other) const {
     } else {
       // A normal 3-d compose.
       LVecBase3f pos = get_pos();
-      LQuaternionf quat = get_quat();
+      LQuaternionf quat = get_norm_quat();
       float scale = get_uniform_scale();
       
       pos += quat.xform(other->get_pos()) * scale;
-      quat = other->get_quat() * quat;
-      quat.normalize();
+      quat = other->get_norm_quat() * quat;
       LVecBase3f new_scale = other->get_scale() * scale;
       
       result = make_pos_quat_scale(pos, quat, new_scale);
@@ -1406,7 +1405,7 @@ do_invert_compose(const TransformState *other) const {
       // Do a 2-d invert compose.
       LVecBase2f pos = get_pos2d();
       float rotate = get_rotate2d();
-      LQuaternionf quat = get_quat();
+      LQuaternionf quat = get_norm_quat();
       float scale = get_uniform_scale();
       
       // First, invert our own transform.
@@ -1435,7 +1434,7 @@ do_invert_compose(const TransformState *other) const {
     } else {
       // Do a normal, 3-d invert compose.
       LVecBase3f pos = get_pos();
-      LQuaternionf quat = get_quat();
+      LQuaternionf quat = get_norm_quat();
       float scale = get_uniform_scale();
       
       // First, invert our own transform.
@@ -1451,8 +1450,7 @@ do_invert_compose(const TransformState *other) const {
       // Now compose the inverted transform with the other transform.
       if (!other->is_identity()) {
         pos += quat.xform(other->get_pos()) * scale;
-        quat = other->get_quat() * quat;
-        quat.normalize();
+        quat = other->get_norm_quat() * quat;
         new_scale = other->get_scale() * scale;
       }
 
@@ -1871,6 +1869,20 @@ calc_quat() {
     _quat.set_hpr(_hpr);
     _flags |= F_quat_known;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::calc_norm_quat
+//       Access: Private
+//  Description: Derives the normalized quat from the quat.
+////////////////////////////////////////////////////////////////////
+void TransformState::
+calc_norm_quat() {
+  LQuaternionf quat = get_quat();
+  MutexHolder holder(_lock);
+  _norm_quat = quat;
+  _norm_quat.normalize();
+  _flags |= F_norm_quat_known;
 }
 
 ////////////////////////////////////////////////////////////////////

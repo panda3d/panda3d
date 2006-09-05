@@ -504,14 +504,37 @@ get_hpr() const {
 //     Function: TransformState::get_quat
 //       Access: Published
 //  Description: Returns the rotation component of the transform as a
-//               quaternion.  It is an error to call this if
-//               has_components() returned false.
+//               quaternion.  The return value will be normalized if a
+//               normalized quaternion was given to the constructor
+//               (or if the quaternion was computed implicitly); it
+//               will be non-normalized if a non-normalized quaternion
+//               was given to the constructor.  See also
+//               get_norm_quat().
+//
+//               It is an error to call this if has_components()
+//               returned false.
 ////////////////////////////////////////////////////////////////////
 INLINE const LQuaternionf &TransformState::
 get_quat() const {
   check_quat();
   nassertr(!is_invalid(), _quat);
   return _quat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_norm_quat
+//       Access: Published
+//  Description: Returns the rotation component of the transform as a
+//               quaternion.  Unlike the result of get_quat(), the
+//               return value of this method is guaranteed to be
+//               normalized.  It is an error to call this if
+//               has_components() returned false.
+////////////////////////////////////////////////////////////////////
+INLINE const LQuaternionf &TransformState::
+get_norm_quat() const {
+  check_norm_quat();
+  nassertr(!is_invalid(), _norm_quat);
+  return _norm_quat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -832,6 +855,21 @@ check_quat() const {
   // because it only updates a transparent cache value.
   if ((_flags & F_quat_known) == 0) {
     ((TransformState *)this)->calc_quat();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::check_norm_quat
+//       Access: Private
+//  Description: Ensures that we know the normalized quat of the transform
+//               (or that we know they cannot be derived).
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+check_norm_quat() const {
+  // This pretends to be a const function, even though it's not,
+  // because it only updates a transparent cache value.
+  if ((_flags & F_norm_quat_known) == 0) {
+    ((TransformState *)this)->calc_norm_quat();
   }
 }
 
