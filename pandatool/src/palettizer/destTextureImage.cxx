@@ -53,11 +53,14 @@ DestTextureImage(TexturePlacement *placement) {
   if (_size_known) {
     _x_size = texture->get_x_size();
     _y_size = texture->get_y_size();
-  }
 
-  if (pal->_force_power_2) {
-    _x_size = to_power_2(_x_size);
-    _y_size = to_power_2(_y_size);
+    if (pal->_force_power_2) {
+      _x_size = to_power_2(_x_size);
+      _y_size = to_power_2(_y_size);
+    } else {
+      _x_size = max(_x_size, 1);
+      _y_size = max(_y_size, 1);
+    }
   }
 
   set_filename(placement->get_group(), texture->get_name());
