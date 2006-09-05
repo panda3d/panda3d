@@ -261,7 +261,11 @@ class AsyncRequest(DirectObject):
         assert not self.__deleted
         isInDoId2do = doId in self.air.doId2do
         distObj = self.air.generateGlobalObject(doId, className, values)
-        if not isInDoId2do:
+        if not isInDoId2do and game.name == 'uberDog':
+            # only remove doId if this is the uberdog?, in pirates this was
+            # causing traded inventory objects to be generated twice, once
+            # here and again later when it was noticed the doId was not in
+            # the doId2do list yet.
             self.air.doId2do.pop(doId, None)
         self._checkCompletion(name, None, distObj)
 
