@@ -2871,6 +2871,10 @@ bool   InterfaceMakerPythonNative::DoesInheritFromIsClass( const CPPStructType *
     if(inclass == NULL)
         return false;
 
+    std::string scoped_name = inclass->get_fully_scoped_name();
+    if(scoped_name == name)
+      return true;
+
     CPPStructType::Derivation::const_iterator bi;
     for (bi = inclass->_derivation.begin();
         bi != inclass->_derivation.end();
@@ -2882,10 +2886,6 @@ bool   InterfaceMakerPythonNative::DoesInheritFromIsClass( const CPPStructType *
         CPPStructType *base_type = TypeManager::resolve_type(base._base)->as_struct_type();
         if(base_type != NULL)
         {
-            std::string scoped_name = base_type->get_fully_scoped_name();
-            if(scoped_name == name)
-                return true;
-
             if(DoesInheritFromIsClass(base_type,name) == true)
                 return true;
         }
