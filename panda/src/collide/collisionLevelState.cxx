@@ -88,7 +88,7 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
     }
     */
 
-    CPT(TransformState) rel_transform = def._node_path.get_transform(root);
+    CPT(TransformState) rel_transform = def._node_path.get_transform(root.get_parent());
     gbv->xform(rel_transform->get_mat());
     _local_bounds.push_back(gbv);
   }
