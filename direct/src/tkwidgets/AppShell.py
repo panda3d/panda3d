@@ -4,6 +4,9 @@ This is an adaption of AppShell.py found in Python and Tkinter Programming
 by John E. Grayson which is a streamlined adaptation of GuiAppD.py, originally
 created by Doug Hellmann (doughellmann@mindspring.com).
 """
+
+__all__ = ['AppShell']
+
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
 from tkFileDialog import *

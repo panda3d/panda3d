@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['NotifyPanel']
+
 
 class NotifyPanel:
     """NotifyPanel class: this class contains methods for creating

@@ -1,5 +1,7 @@
 """ DIRECT Session Main panel """
 
+__all__ = ['DirectSessionPanel']
+
 # Import Tkinter, Pmw, and the dial code
 from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *

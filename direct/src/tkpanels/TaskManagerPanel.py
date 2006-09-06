@@ -1,5 +1,10 @@
+"""Undocumented Module"""
+
+__all__ = ['TaskManagerPanel', 'TaskManagerWidget']
+
 from direct.tkwidgets.AppShell import *
 from Tkinter import *
+from direct.showbase.DirectObject import DirectObject
 import Pmw
 
 class TaskManagerPanel(AppShell):

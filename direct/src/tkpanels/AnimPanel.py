@@ -1,4 +1,8 @@
-"DIRECT Animation Control Panel"
+"""DIRECT Animation Control Panel"""
+
+__all__ = ['AnimPanel', 'ActorControl']
+
+
 
 ### SEE END OF FILE FOR EXAMPLE USEAGE ###
 

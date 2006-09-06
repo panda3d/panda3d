@@ -1,7 +1,11 @@
-### Inspectors allow you to visually browse through the members of various python objects.
-### To open an inspector, import this module, and execute inspector.inspect(anObject)
-### I start IDLE with this command line: idle.py -c "from inspector import inspect"
-### so that I can just type: inspect(anObject) any time.
+"""Inspectors allow you to visually browse through the members of
+various python objects.  To open an inspector, import this module, and
+execute inspector.inspect(anObject) I start IDLE with this command
+line: idle.py -c "from inspector import inspect"
+so that I can just type: inspect(anObject) any time."""
+
+
+__all__ = ['inspect', 'inspectorFor', 'Inspector', 'ModuleInspector', 'ClassInspector', 'InstanceInspector', 'FunctionInspector', 'InstanceMethodInspector', 'CodeInspector', 'ComplexInspector', 'DictionaryInspector', 'SequenceInspector', 'SliceInspector', 'InspectorWindow']
 
 import string
 from direct.showbase.TkGlobal import *

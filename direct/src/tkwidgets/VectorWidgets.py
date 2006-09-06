@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['VectorEntry', 'Vector2Entry', 'Vector3Entry', 'Vector4Entry', 'ColorEntry']
+
 from direct.showbase.TkGlobal import *
 from Tkinter import *
 import Valuator

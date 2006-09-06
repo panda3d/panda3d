@@ -1,5 +1,7 @@
 """ DIRECT Nine DoF Manipulation Panel """
 
+__all__ = ['Placer', 'place']
+
 # Import Tkinter, Pmw, and the dial code from this directory tree.
 from pandac.PandaModules import *
 from direct.showbase.TkGlobal import *

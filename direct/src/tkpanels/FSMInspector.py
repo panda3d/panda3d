@@ -1,4 +1,7 @@
 """ Finite State Machine Inspector module """
+
+__all__ = ['FSMInspector', 'StateInspector']
+
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
 from tkSimpleDialog import askstring

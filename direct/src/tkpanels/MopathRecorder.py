@@ -1,5 +1,7 @@
 """ Mopath Recorder Panel Module """
 
+__all__ = ['MopathRecorder']
+
 # Import Tkinter, Pmw, and the dial code from this directory tree.
 from pandac.PandaModules import *
 from direct.showbase.DirectObject import DirectObject

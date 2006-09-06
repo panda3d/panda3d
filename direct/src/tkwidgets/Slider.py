@@ -2,9 +2,12 @@
 Slider Class: Velocity style controller for floating point values with
                a label, entry (validated), and min/max slider
 """
+
+__all__ = ['Slider', 'SliderWidget', 'rgbPanel']
+
 from direct.showbase.TkGlobal import *
 from Tkinter import *
-from Valuator import *
+from Valuator import Valuator, rgbPanel, VALUATOR_MINI, VALUATOR_FULL
 from direct.task import Task
 import math, sys, string
 import operator, Pmw

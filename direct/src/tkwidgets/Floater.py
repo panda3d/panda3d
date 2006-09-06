@@ -2,9 +2,12 @@
 Floater Class: Velocity style controller for floating point values with
                 a label, entry (validated), and scale
 """
+
+__all__ = ['Floater', 'FloaterWidget', 'FloaterGroup']
+
 from direct.showbase.TkGlobal import *
 from Tkinter import *
-from Valuator import *
+from Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
 from direct.task import Task
 import math, sys, string, Pmw
 

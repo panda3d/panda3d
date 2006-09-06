@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['WidgetPropertiesDialog']
+
 from direct.showbase.TkGlobal import *
 from Tkinter import *
 import types, string, Pmw

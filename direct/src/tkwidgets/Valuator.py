@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['Valuator', 'ValuatorGroup', 'ValuatorGroupPanel']
+
 from direct.showbase.DirectObject import *
 from direct.showbase.TkGlobal import *
 from Tkinter import *

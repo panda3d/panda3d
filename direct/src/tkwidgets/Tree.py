@@ -1,3 +1,7 @@
+"""Undocumented Module"""
+
+__all__ = ['TreeNode', 'TreeItem']
+
 # ADAPTED FROM IDLE TreeWidget.py
 # XXX TO DO:
 # - popup menu

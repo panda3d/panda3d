@@ -1,6 +1,9 @@
 """
 EntryScale Class: Scale with a label, and a linked and validated entry
 """
+
+__all__ = ['EntryScale', 'EntryScaleGroup']
+
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
 from Tkinter import *

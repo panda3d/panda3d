@@ -1,5 +1,7 @@
 """PANDA3D Particle Panel"""
 
+__all__ = ['ParticlePanel']
+
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
