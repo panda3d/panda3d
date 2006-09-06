@@ -63,6 +63,8 @@ PUBLISHED:
 
   void clear();
 
+  void output(ostream &out) const;
+
 private:
   void add_entry(ReferenceCount *ref_ptr, TypedObject *typed_ptr,
                  TypeHandle type, double age);
@@ -90,6 +92,11 @@ private:
   Entries _entries;
   friend class MemoryUsage;
 };
+
+INLINE ostream &operator << (ostream &out, const MemoryUsagePointers &mup) {
+  mup.output(out);
+  return out;
+}
 
 #include "memoryUsagePointers.I"
 

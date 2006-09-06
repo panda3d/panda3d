@@ -26,7 +26,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 MemoryUsagePointers::
@@ -35,7 +35,7 @@ MemoryUsagePointers() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 MemoryUsagePointers::
@@ -44,7 +44,7 @@ MemoryUsagePointers::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::get_num_pointers
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of pointers in the set.
 ////////////////////////////////////////////////////////////////////
 int MemoryUsagePointers::
@@ -54,7 +54,7 @@ get_num_pointers() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::get_pointer
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth pointer of the set.
 ////////////////////////////////////////////////////////////////////
 ReferenceCount *MemoryUsagePointers::
@@ -65,7 +65,7 @@ get_pointer(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::get_typed_pointer
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth pointer of the set, typecast to a
 //               TypedObject if possible.  If the pointer is not a
 //               TypedObject or if the cast cannot be made, returns
@@ -105,7 +105,7 @@ get_typed_pointer(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::get_type
-//       Access: Public
+//       Access: Published
 //  Description: Returns the actual type of the nth pointer, if it is
 //               known.
 ////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ get_type(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::get_type_name
-//       Access: Public
+//       Access: Published
 //  Description: Returns the type name of the nth pointer, if it is
 //               known.
 ////////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ get_type_name(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::get_age
-//       Access: Public
+//       Access: Published
 //  Description: Returns the age of the nth pointer: the number of
 //               seconds elapsed between the time it was allocated and
 //               the time it was added to this set via a call to
@@ -143,12 +143,22 @@ get_age(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::clear
-//       Access: Public
+//       Access: Published
 //  Description: Empties the set of pointers.
 ////////////////////////////////////////////////////////////////////
 void MemoryUsagePointers::
 clear() {
   _entries.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsagePointers::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MemoryUsagePointers::
+output(ostream &out) const {
+  out << _entries.size() << " pointers.";
 }
 
 ////////////////////////////////////////////////////////////////////
