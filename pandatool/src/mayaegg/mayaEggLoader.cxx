@@ -86,9 +86,9 @@ public:
   MayaEggTex   *GetTex(const string &name, const string &fn);
   void          CreateSkinCluster(MayaEggMesh *M);
 
-  typedef phash_map<EggVertexPool *, MayaEggMesh *> MeshTable;
-  typedef phash_map<EggGroup *, MayaEggJoint *> JointTable;
-  typedef phash_map<string, MayaEggTex *> TexTable;
+  typedef phash_map<EggVertexPool *, MayaEggMesh *, pointer_hash> MeshTable;
+  typedef phash_map<EggGroup *, MayaEggJoint *, pointer_hash> JointTable;
+  typedef phash_map<string, MayaEggTex *, string_hash> TexTable;
 
   MeshTable        _mesh_tab;
   JointTable       _joint_tab;
