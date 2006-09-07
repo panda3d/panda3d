@@ -52,7 +52,8 @@ CollisionVisualizer(const string &name) : PandaNode(name) {
   // We always want to render the CollisionVisualizer node itself
   // (even if it doesn't appear to have any geometry within it).
   set_internal_bounds(new OmniBoundingVolume());
-  _viz_scale = 1.0f;
+  _point_scale = 1.0f;
+  _normal_scale = 1.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,6 +138,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // always renders its objects according to their appropriate net
     // transform.
     xform_data._net_transform = TransformState::make_identity();
+    xform_data._view_frustum = trav->get_view_frustum();
+    xform_data._guard_band = trav->get_guard_band();
     xform_data.apply_transform_and_state(trav, net_transform, 
                                          RenderState::make_empty(),
                                          RenderEffects::make_empty(),
@@ -167,7 +170,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // Now draw all of the detected points.
     if (!viz_info._points.empty()) {
       CPT(RenderState) empty_state = RenderState::make_empty();
-      CPT(RenderState) point_state = RenderState::make(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, 1.0f, true));
+      CPT(RenderState) point_state = RenderState::make(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, 1.0f, false));
 
       PT(GeomVertexArrayFormat) point_array_format = 
         new GeomVertexArrayFormat(InternalName::get_vertex(), 3,
@@ -197,14 +200,14 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
           vertex.add_data3f(point._surface_point);
           color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
-          size.add_data1f(0.1f * _viz_scale);
+          size.add_data1f(16.0f * _point_scale);
           points->add_next_vertices(1);
           points->close_primitive();
 
           if (point._interior_point != point._surface_point) {
             vertex.add_data3f(point._interior_point);
             color.add_data4f(1.0f, 1.0f, 1.0f, 1.0f);
-            size.add_data1f(0.05f * _viz_scale);
+            size.add_data1f(8.0f * _point_scale);
             points->add_next_vertices(1);
             points->close_primitive();
           }
@@ -234,7 +237,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
           vertex.add_data3f(point._surface_point);
           vertex.add_data3f(point._surface_point + 
-                            point._surface_normal * _viz_scale);
+                            point._surface_normal * _normal_scale);
           color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
           color.add_data4f(1.0f, 1.0f, 1.0f, 1.0f);
           lines->add_next_vertices(2);

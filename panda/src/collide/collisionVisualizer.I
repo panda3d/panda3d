@@ -30,27 +30,83 @@ SolidInfo() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::set_viz_scale
+//     Function: CollisionVisualizer::set_point_scale
 //       Access: Published
-//  Description: Scales the objects that are drawn to represent the
-//               normals and points of the collisions.  By default,
-//               these objects are drawn at an arbitrary scale which
-//               is appropriate if the scene units are measured in
-//               feet.  Change this scale accordinatly if the scene
-//               units are measured on some other scale or if you need
-//               to observe these objects from farther away.
+//  Description: Scales the points that are drawn to represent the
+//               surface and interior intersection points of the
+//               collisions.  By default, these objects are drawn at
+//               an arbitrary scale which is appropriate if the window
+//               units are the default range -1 .. 1.  Change this
+//               scale accordinatly if the window units are measured
+//               on some other scale or if you need to observe these
+//               objects in a smaller window.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionVisualizer::
-set_viz_scale(float viz_scale) {
-  _viz_scale = viz_scale;
+set_point_scale(float point_scale) {
+  _point_scale = point_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::get_viz_scale
+//     Function: CollisionVisualizer::get_point_scale
 //       Access: Published
-//  Description: Returns the value last set by set_viz_scale().
+//  Description: Returns the value last set by set_point_scale().
 ////////////////////////////////////////////////////////////////////
 INLINE float CollisionVisualizer::
-get_viz_scale() const {
-  return _viz_scale;
+get_point_scale() const {
+  return _point_scale;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionVisualizer::set_normal_scale
+//       Access: Published
+//  Description: Scales the line segments that are drawn to represent
+//               the normals of the collisions.  By default, these
+//               objects are drawn at an arbitrary scale which is
+//               appropriate if the scene units are measured in feet.
+//               Change this scale accordinatly if the scene units are
+//               measured on some other scale or if you need to
+//               observe these normals from farther away.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionVisualizer::
+set_normal_scale(float normal_scale) {
+  _normal_scale = normal_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionVisualizer::get_normal_scale
+//       Access: Published
+//  Description: Returns the value last set by set_normal_scale().
+////////////////////////////////////////////////////////////////////
+INLINE float CollisionVisualizer::
+get_normal_scale() const {
+  return _normal_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionVisualizer::as_typed_object
+//       Access: Public
+//  Description: This is provided to disambiguate the typecast to
+//               TypedObject, since we have two TypedObjects in our
+//               inheritance chain.
+////////////////////////////////////////////////////////////////////
+INLINE TypedObject *CollisionVisualizer::
+as_typed_object() {
+  // In fact, it really doesn't matter which one we pick.  Arbitrarily
+  // pick the one that goes through PandaNode.
+  return PandaNode::as_typed_object();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionVisualizer::as_typed_object
+//       Access: Public
+//  Description: This is provided to disambiguate the typecast to
+//               TypedObject, since we have two TypedObjects in our
+//               inheritance chain.
+////////////////////////////////////////////////////////////////////
+INLINE const TypedObject * CollisionVisualizer::
+as_typed_object() const {
+  // In fact, it really doesn't matter which one we pick.  Arbitrarily
+  // pick the one that goes through PandaNode.
+  return PandaNode::as_typed_object();
+}
+

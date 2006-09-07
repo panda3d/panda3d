@@ -48,6 +48,9 @@ PUBLISHED:
   int get_num_entries() const;
   CollisionEntry *get_entry(int n) const;
 
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
+
 private:
   typedef pvector< PT(CollisionEntry) > Entries;
   Entries _entries;
@@ -69,6 +72,11 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE ostream &operator << (ostream &out, const CollisionHandlerQueue &chq) {
+  chq.output(out);
+  return out;
+}
 
 #endif
 

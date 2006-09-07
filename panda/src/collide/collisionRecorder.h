@@ -35,7 +35,7 @@ class CollisionEntry;
 //               class that just provides an interface for recording
 //               collisions tested and detected each frame.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionRecorder {
+class EXPCL_PANDA CollisionRecorder : public TypedObject {
 protected:
   CollisionRecorder();
 public:
@@ -58,18 +58,15 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-
   static void init_type() {
-    register_type(_type_handle, "CollisionRecorder");
+    TypedObject::init_type();
+    register_type(_type_handle, "CollisionRecorder",
+                  TypedObject::get_class_type());
   }
-
-PUBLISHED:
-  // We have to publish this explicitly because the CollisionRecorder
-  // object does not inherit from TypedObject.
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  INLINE int get_type_index() const;
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;

@@ -43,8 +43,11 @@ PUBLISHED:
   CollisionVisualizer(const string &name);
   virtual ~CollisionVisualizer();
 
-  INLINE void set_viz_scale(float viz_scale);
-  INLINE float get_viz_scale() const;
+  INLINE void set_point_scale(float point_scale);
+  INLINE float get_point_scale() const;
+
+  INLINE void set_normal_scale(float normal_scale);
+  INLINE float get_normal_scale() const;
 
   void clear();
 
@@ -58,6 +61,10 @@ public:
   // from parent class CollisionRecorder.
   virtual void begin_traversal();
   virtual void collision_tested(const CollisionEntry &entry, bool detected);
+
+  // To disambiguate the multiple inheritance from TypedObject.
+  INLINE TypedObject *as_typed_object();
+  INLINE const TypedObject *as_typed_object() const;
 
 private:
   CPT(RenderState) get_viz_state();
@@ -88,7 +95,8 @@ private:
   typedef pmap<CPT(TransformState), VizInfo> Data;
   Data _data;
 
-  float _viz_scale;
+  float _point_scale;
+  float _normal_scale;
 
 public:
   static TypeHandle get_class_type() {
