@@ -46,7 +46,7 @@ operator = (const TypedObject &) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypedObject::get_type_index
-//       Access: Public
+//       Access: Published
 //  Description: Returns the internal index number associated with
 //               this object's TypeHandle, a unique number for each
 //               different type.  This is equivalent to
@@ -59,7 +59,7 @@ get_type_index() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypedObject::is_of_type
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the current object is or derives from
 //               the indicated type.
 ////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ is_of_type(TypeHandle handle) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypedObject::is_exact_type
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the current object is the indicated
 //               type exactly.
 ////////////////////////////////////////////////////////////////////
@@ -84,13 +84,34 @@ is_exact_type(TypeHandle handle) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypedObject::is_exact_type
+//     Function: TypedObject::get_best_parent_from_Set
 //       Access: Public
-//  Description: Returns true if the current object is the indicated
-//               type exactly.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int TypedObject::
-get_best_parent_from_Set(const std::set<int> &inset) const
-{
-    return get_type().get_best_parent_from_Set(inset);
+get_best_parent_from_Set(const std::set<int> &inset) const {
+  return get_type().get_best_parent_from_Set(inset);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedObject::as_typed_object
+//       Access: Public
+//  Description: Returns the object, upcast (if necessary) to a
+//               TypedObject pointer.
+////////////////////////////////////////////////////////////////////
+INLINE TypedObject *TypedObject::
+as_typed_object() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedObject::as_typed_object
+//       Access: Public
+//  Description: Returns the object, upcast (if necessary) to a
+//               TypedObject pointer.
+////////////////////////////////////////////////////////////////////
+INLINE const TypedObject *TypedObject::
+as_typed_object() const {
+  return this;
+}
+

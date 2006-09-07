@@ -121,13 +121,23 @@ PUBLISHED:
   INLINE int get_type_index() const;
   INLINE bool is_of_type(TypeHandle handle) const;
   INLINE bool is_exact_type(TypeHandle handle) const;
-  INLINE int  get_best_parent_from_Set(const std::set<int> &) const;
 
 public:
+  INLINE int get_best_parent_from_Set(const std::set<int> &) const;
+
   // Derived classes should override this function to call
   // init_type().  It will only be called in error situations when the
   // type was for some reason not properly initialized.
   virtual TypeHandle force_init_type()=0;
+
+  // This pair of methods exists mainly for the convenience of
+  // unambiguous upcasting.  Interrogate generates code to call this
+  // method instead of making an explicit cast to (TypedObject *);
+  // this allows classes who multiply inherit from TypedObejct to
+  // override these methods and disambiguate the cast.  It doesn't
+  // have to be a virtual method, since this is just a static upcast.
+  INLINE TypedObject *as_typed_object();
+  INLINE const TypedObject *as_typed_object() const;
 
 public:
   static TypeHandle get_class_type() {

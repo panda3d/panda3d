@@ -429,7 +429,7 @@ void InterfaceMakerPythonNative::WriteReturnInstance(ostream &out, int indent_le
 
         if(IsPandaTypedObject(ctype->as_struct_type()))
         {
-            std::string typestr = "((TypedObject *)" + return_expr + ")->get_type_index()";
+            std::string typestr = "(" + return_expr + ")->as_typed_object()->get_type_index()";
 
             indent(out, indent_level)<<"return DTool_CreatePyInstanceTyped((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(class_name) << ","<< ows_memory_flag<<","<<typestr<<");\n";
 
