@@ -153,6 +153,34 @@ get_cull_center() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Camera::set_lod_center
+//       Access: Published
+//  Description: Specifies the point from which the LOD distances
+//               are measured.  Normally, this is the same as the
+//               camera, and that is the default if this is not
+//               specified; but it may sometimes be useful to perform
+//               the distance test from some other viewpoint.  This
+//               may be used, for instance, to reduce LOD popping when
+//               the camera rotates in a small circle about an avatar.
+////////////////////////////////////////////////////////////////////
+INLINE void Camera::
+set_lod_center(const NodePath &lod_center) {
+  _lod_center = lod_center;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::get_lod_center
+//       Access: Published
+//  Description: Returns the point from which the LOD distances will
+//               be measured, if it was set by set_lod_center(), or
+//               the empty NodePath otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE const NodePath &Camera::
+get_lod_center() const {
+  return _lod_center;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Camera::set_initial_state
 //       Access: Published
 //  Description: Sets the initial state which is applied to all nodes

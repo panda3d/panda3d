@@ -20,81 +20,24 @@
 #include "cullTraverserData.h"
 #include "cullTraverser.h"
 #include "config_pgraph.h"
+#include "geomVertexData.h"
+#include "geomVertexWriter.h"
+#include "geomVertexFormat.h"
+#include "geomTristrips.h"
+#include "mathNumbers.h"
+#include "geom.h"
+#include "geomNode.h"
+#include "transformState.h"
+#include "material.h"
+#include "materialAttrib.h"
+#include "materialPool.h"
+#include "renderState.h"
+#include "cullFaceAttrib.h"
+#include "textureAttrib.h"
+#include "boundingSphere.h"
+#include "look_at.h"
 
 TypeHandle LODNode::_type_handle;
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-CycleData *LODNode::CData::
-make_copy() const {
-  return new CData(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::CData::check_limits
-//       Access: Public
-//  Description: Ensures that the _lowest and _highest members are set
-//               appropriately after a change to the set of switches.
-////////////////////////////////////////////////////////////////////
-void LODNode::CData::
-check_limits() {
-  _lowest = 0;
-  _highest = 0;
-  for (size_t i = 1; i < _switch_vector.size(); ++i) {
-    if (_switch_vector[i].get_out() > _switch_vector[_lowest].get_out()) {
-      _lowest = i;
-    }
-    if (_switch_vector[i].get_in() < _switch_vector[_highest].get_in()) {
-      _highest = i;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
-void LODNode::CData::
-write_datagram(BamWriter *manager, Datagram &dg) const {
-  _center.write_datagram(dg);
-
-  dg.add_uint16(_switch_vector.size());
-
-  SwitchVector::const_iterator si;
-  for (si = _switch_vector.begin();
-       si != _switch_vector.end();
-       ++si) {
-    (*si).write_datagram(dg);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new LODNode.
-////////////////////////////////////////////////////////////////////
-void LODNode::CData::
-fillin(DatagramIterator &scan, BamReader *manager) {
-  _center.read_datagram(scan);
-
-  _switch_vector.clear();
-
-  int num_switches = scan.get_uint16();
-  _switch_vector.reserve(num_switches);
-  for (int i = 0; i < num_switches; i++) {
-    Switch sw(0, 0);
-    sw.read_datagram(scan);
-
-    _switch_vector.push_back(sw);
-  }
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LODNode::make_copy
@@ -185,6 +128,10 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 bool LODNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  if (is_any_shown()) {
+    return show_switches_cull_callback(trav, data);
+  }
+
   int index = compute_child(trav, data);
   if (index >= 0 && index < get_num_children()) {
     CullTraverserData next_data(data, get_child(index));
@@ -236,6 +183,93 @@ is_lod_node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LODNode::show_switch
+//       Access: Published
+//  Description: This is provided as a debugging aid.  show_switch()
+//               will put the LODNode into a special mode where rather
+//               than computing and drawing the appropriate level of
+//               the LOD, a ring is drawn around the LODNode center
+//               indicating the switch distances from the camera for
+//               the indicated level, and the geometry of the
+//               indicated level is drawn in wireframe.
+//
+//               Multiple different levels can be visualized this way
+//               at once.  Call hide_switch() or hide_all_switches() to
+//               undo this mode and restore the LODNode to its normal
+//               behavior.
+////////////////////////////////////////////////////////////////////
+void LODNode::
+show_switch(int index) {
+  CDWriter cdata(_cycler);
+  do_show_switch(cdata, index, get_default_show_color(index));
+  mark_internal_bounds_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::show_switch
+//       Access: Published
+//  Description: This is provided as a debugging aid.  show_switch()
+//               will put the LODNode into a special mode where rather
+//               than computing and drawing the appropriate level of
+//               the LOD, a ring is drawn around the LODNode center
+//               indicating the switch distances from the camera for
+//               the indicated level, and the geometry of the
+//               indicated level is drawn in wireframe.
+//
+//               Multiple different levels can be visualized this way
+//               at once.  Call hide_switch() or hide_all_switches() to
+//               undo this mode and restore the LODNode to its normal
+//               behavior.
+////////////////////////////////////////////////////////////////////
+void LODNode::
+show_switch(int index, const Colorf &color) {
+  CDWriter cdata(_cycler);
+  do_show_switch(cdata, index, color);
+  mark_internal_bounds_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::hide_switch
+//       Access: Published
+//  Description: Disables a previous call to show_switch().
+////////////////////////////////////////////////////////////////////
+void LODNode::
+hide_switch(int index) {
+  CDWriter cdata(_cycler);
+  do_hide_switch(cdata, index);
+  mark_internal_bounds_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::show_all_switches
+//       Access: Published
+//  Description: Shows all levels in their default colors.
+////////////////////////////////////////////////////////////////////
+void LODNode::
+show_all_switches() {
+  CDWriter cdata(_cycler);
+  for (int i = 0; i < (int)cdata->_switch_vector.size(); ++i) {
+    do_show_switch(cdata, i, get_default_show_color(i));
+  }
+  mark_internal_bounds_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::hide_all_switches
+//       Access: Published
+//  Description: Hides all levels, restoring the LODNode to normal
+//               operation.
+////////////////////////////////////////////////////////////////////
+void LODNode::
+hide_all_switches() {
+  CDWriter cdata(_cycler);
+  for (int i = 0; i < (int)cdata->_switch_vector.size(); ++i) {
+    do_hide_switch(cdata, i);
+  }
+  mark_internal_bounds_stale();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LODNode::compute_child
 //       Access: Protected
 //  Description: Determines which child should be visible according to
@@ -255,27 +289,42 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
   if (cdata->_got_force_switch) {
     return cdata->_force_switch;
   }
+
+  // Get a pointer to the camera node.
+  Camera *camera = trav->get_scene()->get_camera_node();
   
-  // Get the LOD center in camera space
-  //  CPT(TransformState) rel_transform =
-  //    trav->get_camera_transform()->invert_compose(data._net_transform);
+  // Get the LOD center in camera space.  If the camera has a special
+  // LOD center defined, use that; otherwise, if it has a cull center,
+  // use that; otherwise, use the modelview transform (which is camera
+  // space).
+  CPT(TransformState) rel_transform;
 
-  //   CPT(TransformState) rel_transform = 
-  //     trav->get_scene()->get_cull_center().get_net_transform()->
-  //     invert_compose(data._net_transform);
+  NodePath lod_center = camera->get_lod_center();
+  if (!lod_center.is_empty()) {
+    rel_transform = 
+      lod_center.get_net_transform()->invert_compose(data.get_net_transform(trav));
+  } else {
+    NodePath cull_center = camera->get_cull_center();
+    if (!cull_center.is_empty()) {
+      rel_transform = 
+        cull_center.get_net_transform()->invert_compose(data.get_net_transform(trav));
+    } else {
+      rel_transform = data.get_modelview_transform(trav);
+    }
+  }
 
-  CPT(TransformState) rel_transform = data.get_modelview_transform(trav);
   LPoint3f center = cdata->_center * rel_transform->get_mat();
 
-  // Determine which child to traverse
-  float dist = fabs(dot(center, LVector3f::forward()));
+  // Now measure the distance to the LOD center, and use that to
+  // determine which child to display.
+  float dist2 = center.dot(center);
 
   for (int index = 0; index < (int)cdata->_switch_vector.size(); index++) {
-    if (cdata->_switch_vector[index].in_range(dist)) { 
+    if (cdata->_switch_vector[index].in_range_2(dist2)) { 
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
-          << data._node_path << " at distance " << dist << ", selected child "
-          << index << "\n";
+          << data._node_path << " at distance " << sqrt(dist2)
+          << ", selected child " << index << "\n";
       }
 
       return index;
@@ -284,11 +333,193 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
 
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
-      << data._node_path << " at distance " << dist << ", no children in range.\n";
+      << data._node_path << " at distance " << sqrt(dist2)
+      << ", no children in range.\n";
   }
 
   return -1;
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::show_switches_cull_callback
+//       Access: Protected
+//  Description: A special version of cull_callback() that is to be
+//               invoked when the LODNode is in show_switch() mode.
+//               This just draws the rings and the wireframe geometry
+//               for the selected switches.
+////////////////////////////////////////////////////////////////////
+bool LODNode::
+show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  CDReader cdata(_cycler);
+
+  // Get a pointer to the camera node.
+  Camera *camera = trav->get_scene()->get_camera_node();
+  
+  // Get the camera space transform.  This bit is the same as the code
+  // in compute_child(), above.
+  CPT(TransformState) rel_transform;
+
+  NodePath lod_center = camera->get_lod_center();
+  if (!lod_center.is_empty()) {
+    rel_transform = 
+      lod_center.get_net_transform()->invert_compose(data.get_net_transform(trav));
+  } else {
+    NodePath cull_center = camera->get_cull_center();
+    if (!cull_center.is_empty()) {
+      rel_transform = 
+        cull_center.get_net_transform()->invert_compose(data.get_net_transform(trav));
+    } else {
+      rel_transform = data.get_modelview_transform(trav);
+    }
+  }
+
+  LPoint3f center = cdata->_center * rel_transform->get_mat();
+  float dist2 = center.dot(center);
+
+  // Now orient the disk(s) in camera space such that their origin is
+  // at center, and the (0, 0, 0) point in camera space is on the disk.
+  LMatrix4f mat;
+  look_at(mat, -center, LVector3f(0.0f, 0.0f, 1.0f));
+  mat.set_row(3, center);
+  CPT(TransformState) viz_transform = TransformState::make_mat(mat);
+
+  viz_transform = rel_transform->invert_compose(viz_transform);
+  viz_transform = data.get_net_transform(trav)->compose(viz_transform);
+
+  SwitchVector::const_iterator si;
+  for (si = cdata->_switch_vector.begin(); 
+       si != cdata->_switch_vector.end(); 
+       ++si) {
+    const Switch &sw = (*si);
+    if (sw.is_shown()) {
+      PT(PandaNode) ring_viz = sw.get_ring_viz();
+      CullTraverserData next_data(data, ring_viz);
+      next_data._net_transform = viz_transform;
+      
+      trav->traverse(next_data);
+
+      if (sw.in_range_2(dist2)) {
+        // This switch level is in range.  Draw its children in the
+        // funny wireframe mode.
+        int index = (si - cdata->_switch_vector.begin());
+        if (index < get_num_children()) {
+          CullTraverserData next_data(data, get_child(index));
+          next_data._state = next_data._state->compose(sw.get_viz_model_state());
+          trav->traverse(next_data);
+        }
+      }
+    }
+  }
+
+  // Finally, draw the visible child(ren) in the appropriate state as
+  // well.
+
+  for (int index = 0; index < (int)cdata->_switch_vector.size(); index++) {
+    if (cdata->_switch_vector[index].in_range_2(dist2)) { 
+    }
+  }
+
+  // Now return false indicating that we have already taken care of
+  // the traversal from here.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::compute_internal_bounds
+//       Access: Protected, Virtual
+//  Description: Returns a newly-allocated BoundingVolume that
+//               represents the internal contents of the node.  Should
+//               be overridden by PandaNode classes that contain
+//               something internally.
+////////////////////////////////////////////////////////////////////
+PT(BoundingVolume) LODNode::
+compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
+  // First, get ourselves a fresh, empty bounding volume.
+  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage, current_thread);
+  nassertr(bound != (BoundingVolume *)NULL, bound);
+
+  // If we have any visible rings, those count in the bounding volume.
+  if (is_any_shown()) {
+    // Now actually compute the bounding volume by putting it around all
+    // of our geoms' bounding volumes.
+    pvector<const BoundingVolume *> child_volumes;
+    pvector<PT(BoundingVolume) > pt_volumes;
+
+    CDStageReader cdata(_cycler, pipeline_stage, current_thread);
+
+    SwitchVector::const_iterator si;
+    for (si = cdata->_switch_vector.begin();
+         si != cdata->_switch_vector.end();
+         ++si) {
+      const Switch &sw = (*si);
+      if (sw.is_shown()) {
+        PT(BoundingVolume) sphere = new BoundingSphere(cdata->_center, sw.get_in());
+        child_volumes.push_back(sphere);
+        pt_volumes.push_back(sphere);
+      }
+    }
+    
+    const BoundingVolume **child_begin = &child_volumes[0];
+    const BoundingVolume **child_end = child_begin + child_volumes.size();
+    
+    bound->around(child_begin, child_end);
+  }
+
+  return bound;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::do_show_switch
+//       Access: Private
+//  Description: The private implementation of show_switch().
+////////////////////////////////////////////////////////////////////
+void LODNode::
+do_show_switch(LODNode::CData *cdata, int index, const Colorf &color) {
+  nassertv(index >= 0 && index < (int)cdata->_switch_vector.size());
+
+  if (!cdata->_switch_vector[index].is_shown()) {
+    ++cdata->_num_shown;
+  }
+  cdata->_switch_vector[index].show(color);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::do_hide_switch
+//       Access: Private
+//  Description: The private implementation of hide_switch().
+////////////////////////////////////////////////////////////////////
+void LODNode::
+do_hide_switch(LODNode::CData *cdata, int index) {
+  nassertv(index >= 0 && index < (int)cdata->_switch_vector.size());
+
+  if (cdata->_switch_vector[index].is_shown()) {
+    --cdata->_num_shown;
+  }
+  cdata->_switch_vector[index].hide();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::get_default_show_color
+//       Access: Private, Static
+//  Description: Returns a default color appropriate for showing the
+//               indicated level.
+////////////////////////////////////////////////////////////////////
+const Colorf &LODNode::
+get_default_show_color(int index) {
+  static Colorf default_colors[] = {
+    Colorf(1.0f, 0.0f, 0.0f, 0.7f),
+    Colorf(0.0f, 1.0f, 0.0f, 0.7f),
+    Colorf(0.0f, 0.0f, 1.0f, 0.7f),
+    Colorf(0.0f, 1.0f, 1.0f, 0.7f),
+    Colorf(1.0f, 0.0f, 1.0f, 0.7f),
+    Colorf(1.0f, 1.0f, 0.0f, 0.7f),
+  };
+  static const int num_default_colors = sizeof(default_colors) / sizeof(Colorf);
+
+  return default_colors[index % num_default_colors];
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LODNode::register_with_read_factory
@@ -344,4 +575,215 @@ void LODNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
   manager->read_cdata(scan, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::CData::make_copy
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CycleData *LODNode::CData::
+make_copy() const {
+  return new CData(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::CData::check_limits
+//       Access: Public
+//  Description: Ensures that the _lowest and _highest members are set
+//               appropriately after a change to the set of switches.
+////////////////////////////////////////////////////////////////////
+void LODNode::CData::
+check_limits() {
+  _lowest = 0;
+  _highest = 0;
+  for (size_t i = 1; i < _switch_vector.size(); ++i) {
+    if (_switch_vector[i].get_out() > _switch_vector[_lowest].get_out()) {
+      _lowest = i;
+    }
+    if (_switch_vector[i].get_in() < _switch_vector[_highest].get_in()) {
+      _highest = i;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::CData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void LODNode::CData::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+  _center.write_datagram(dg);
+
+  dg.add_uint16(_switch_vector.size());
+
+  SwitchVector::const_iterator si;
+  for (si = _switch_vector.begin();
+       si != _switch_vector.end();
+       ++si) {
+    (*si).write_datagram(dg);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::CData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new LODNode.
+////////////////////////////////////////////////////////////////////
+void LODNode::CData::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  _center.read_datagram(scan);
+
+  _switch_vector.clear();
+
+  int num_switches = scan.get_uint16();
+  _switch_vector.reserve(num_switches);
+  for (int i = 0; i < num_switches; i++) {
+    Switch sw(0, 0);
+    sw.read_datagram(scan);
+
+    _switch_vector.push_back(sw);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::compute_ring_viz
+//       Access: Private
+//  Description: Computes a Geom suitable for rendering the ring
+//               associated with this switch.
+////////////////////////////////////////////////////////////////////
+void LODNode::Switch::
+compute_ring_viz() {
+  static const int num_slices = 50;
+  static const int num_rings = 1;
+  static const float edge_ratio = 0.1;  // ratio of edge height to diameter.
+
+  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3cp();
+  PT(GeomVertexData) vdata = new GeomVertexData("LOD", format, Geom::UH_static);
+
+  // Fill up the vertex table with all of the vertices.
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter normal(vdata, InternalName::get_normal());
+  GeomVertexWriter color(vdata, InternalName::get_color());
+
+  // First, the vertices for the flat ring.
+  int ri, si;
+  for (ri = 0; ri <= num_rings; ++ri) {
+    // r is in the range [0.0, 1.0].
+    float r = (float)ri / (float)num_rings;
+
+    // d is in the range [_out, _in].
+    float d = r * (_in - _out) + _out;
+
+    for (si = 0; si < num_slices; ++si) {
+      // s is in the range [0.0, 1.0).
+      float s = (float)si / (float)num_slices;
+
+      // t is in the range [0.0, 2pi).
+      float t = MathNumbers::pi_f * 2.0f * s;
+
+      float x = cosf(t);
+      float y = sinf(t);
+      vertex.add_data3f(x * d, y * d, 0.0f);
+      normal.add_data3f(0.0f, 0.0f, 1.0f);
+      color.add_data4f(_show_color);
+    }
+  }
+
+  // Next, the vertices for the inner and outer edges.
+  for (ri = 0; ri <= 1; ++ri) {
+    float r = (float)ri;
+    float d = r * (_in - _out) + _out;
+
+    // Invert the direction of Z on the outer ring, to invert the
+    // vertex winding order (and thereby invert the facing of the
+    // polygons).  We want the outer ring to face inward, and the
+    // inner ring to face outward.
+    float sign = 1.0f - (ri * 2);
+
+    for (si = 0; si < num_slices; ++si) {
+      float s = (float)si / (float)num_slices;
+      float t = MathNumbers::pi_f * 2.0f * s;
+      
+      float x = cosf(t);
+      float y = sinf(t);
+
+      vertex.add_data3f(x * d, y * d, 0.5f * edge_ratio * d * sign);
+      normal.add_data3f(x * sign, y * sign, 0.0f);
+      color.add_data4f(_show_color);
+    }
+
+    for (si = 0; si < num_slices; ++si) {
+      float s = (float)si / (float)num_slices;
+      float t = MathNumbers::pi_f * 2.0f * s;
+      
+      float x = cosf(t);
+      float y = sinf(t);
+
+      vertex.add_data3f(x * d, y * d, -0.5f * edge_ratio * d * sign);
+      normal.add_data3f(x * sign, y * sign, 0.0f);
+      color.add_data4f(_show_color);
+    }
+  }
+
+  // Now create the triangle strips.  One tristrip for each ring.
+  PT(GeomTristrips) strips = new GeomTristrips(Geom::UH_static);
+  for (ri = 0; ri < num_rings; ++ri) {
+    for (si = 0; si < num_slices; ++si) {
+      strips->add_vertex(ri * num_slices + si);
+      strips->add_vertex((ri + 1) * num_slices + si);
+    }
+    strips->add_vertex(ri * num_slices);
+    strips->add_vertex((ri + 1) * num_slices);
+    strips->close_primitive();
+  }
+
+  // And then one triangle strip for each of the inner and outer
+  // edges.
+  for (ri = 0; ri <= 1; ++ri) {
+    for (si = 0; si < num_slices; ++si) {
+      strips->add_vertex((num_rings + 1 + ri * 2) * num_slices + si);
+      strips->add_vertex((num_rings + 1 + ri * 2 + 1) * num_slices + si);
+    }
+    strips->add_vertex((num_rings + 1 + ri * 2) * num_slices);
+    strips->add_vertex((num_rings + 1 + ri * 2 + 1) * num_slices);
+    strips->close_primitive();
+  }
+
+  PT(Geom) ring_geom = new Geom(vdata);
+  ring_geom->add_primitive(strips);
+
+  PT(GeomNode) geom_node = new GeomNode("ring");
+  geom_node->add_geom(ring_geom);
+
+  // Get a material for two-sided lighting.
+  PT(Material) material = new Material();
+  material->set_twoside(true);
+  material = MaterialPool::get_material(material);
+
+  CPT(RenderState) viz_state = RenderState::make(CullFaceAttrib::make(CullFaceAttrib::M_cull_none),
+                                                 TextureAttrib::make_off(),
+                                                 MaterialAttrib::make(material),
+                                                 RenderState::get_max_priority());
+  if (_show_color[3] != 1.0f) {
+    viz_state = viz_state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha),
+                                      RenderState::get_max_priority());
+  }
+
+  geom_node->set_state(viz_state);
+
+  _ring_viz = geom_node.p();
+
+  // Also compute a RenderState for rendering the children in
+  // wireframe mode.
+
+  _viz_model_state = RenderState::make(RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
+                                       TextureAttrib::make_off(),
+                                       ColorAttrib::make_flat(_show_color),
+                                       TransparencyAttrib::make(TransparencyAttrib::M_none),
+                                       RenderState::get_max_priority());
 }

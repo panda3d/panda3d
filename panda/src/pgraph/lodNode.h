@@ -22,6 +22,8 @@
 #include "pandabase.h"
 
 #include "pandaNode.h"
+#include "luse.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LODNode
@@ -70,8 +72,25 @@ PUBLISHED:
   INLINE void set_center(const LPoint3f &center);
   INLINE const LPoint3f &get_center() const;
 
+  void show_switch(int index);
+  void show_switch(int index, const Colorf &color);
+  void hide_switch(int index);
+  void show_all_switches();
+  void hide_all_switches();
+  INLINE bool is_any_shown() const;
+
 protected:
   int compute_child(CullTraverser *trav, CullTraverserData &data);
+
+  bool show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data);
+  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;
+
+private:
+  class CData;
+  void do_show_switch(CData *cdata, int index, const Colorf &color);
+  void do_hide_switch(CData *cdata, int index);
+
+  static const Colorf &get_default_show_color(int index);
 
 protected:
   class Switch {
@@ -82,18 +101,34 @@ protected:
 
     INLINE void set_range(float in, float out);
     INLINE bool in_range(float dist) const;
-    
+    INLINE bool in_range_2(float dist2) const;
+
     INLINE void rescale(float factor);
+
+    INLINE bool is_shown() const;
+    INLINE void show(const Colorf &color);
+    INLINE void hide();
+
+    INLINE PandaNode *get_ring_viz() const;
+    INLINE const RenderState *get_viz_model_state() const;
 
     INLINE void write_datagram(Datagram &destination) const;
     INLINE void read_datagram(DatagramIterator &source);
 
   private:
+    void compute_ring_viz();
+
+  private:
     float _in;
     float _out;
+    bool _shown;
+    Colorf _show_color;
+    PT(PandaNode) _ring_viz;
+    CPT(RenderState) _viz_model_state;
   };
   typedef pvector<Switch> SwitchVector;
 
+private:
   class EXPCL_PANDA CData : public CycleData {
   public:
     INLINE CData();
@@ -114,11 +149,14 @@ protected:
 
     bool _got_force_switch;
     int _force_switch;
+    int _num_shown;
   };
 
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
 public:
   static void register_with_read_factory();

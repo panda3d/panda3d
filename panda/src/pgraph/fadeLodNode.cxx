@@ -73,6 +73,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool FadeLODNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  if (is_any_shown()) {
+    return show_switches_cull_callback(trav, data);
+  }
+
   Camera *camera = trav->get_scene()->get_camera_node();
   NodePath this_np = data._node_path.get_node_path();
   FadeLODNodeData *ldata = 

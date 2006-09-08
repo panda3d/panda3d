@@ -17,126 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE LODNode::CData::
-CData() :
-  _center(0.0f, 0.0f, 0.0f),
-  _lowest(0),
-  _highest(0),
-  _got_force_switch(false),
-  _force_switch(0)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE LODNode::CData::
-CData(const LODNode::CData &copy) :
-  _center(copy._center),
-  _switch_vector(copy._switch_vector),
-  _lowest(copy._lowest),
-  _highest(copy._highest),
-  _got_force_switch(copy._got_force_switch),
-  _force_switch(copy._force_switch)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE LODNode::Switch::
-Switch(float in, float out) {
-  set_range(in, out);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::get_in
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE float LODNode::Switch::
-get_in() const {
-  return _in;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::get_out
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE float LODNode::Switch::
-get_out() const {
-  return _out;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::set_range
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void LODNode::Switch::
-set_range(float in, float out) {
-  _in = in;
-  _out = out;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::in_range
-//       Access: Public
-//  Description: Computes the distance between two points and returns
-//               true if the result is within the range for the LOD.
-////////////////////////////////////////////////////////////////////
-INLINE bool LODNode::Switch::
-in_range(float dist) const {
-  return (dist >= _out && dist < _in);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::rescale
-//       Access: Public
-//  Description: Scales the switching distances by the indicated factor.
-////////////////////////////////////////////////////////////////////
-INLINE void LODNode::Switch::
-rescale(float factor) {
-  _in *= factor;
-  _out *= factor;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::write_datagram
-//       Access: Public
-//  Description: Writes the contents of the Switch out to the
-//               datagram, presumably in preparation to writing to a
-//               Bam file.
-////////////////////////////////////////////////////////////////////
-INLINE void LODNode::Switch::
-write_datagram(Datagram &destination) const {
-  destination.add_float32(_in);
-  destination.add_float32(_out);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::read_datagram
-//       Access: Public
-//  Description: Reads the contents of the Switch from the datagram,
-//               presumably in response to reading a Bam file.
-////////////////////////////////////////////////////////////////////
-INLINE void LODNode::Switch::
-read_datagram(DatagramIterator &source) {
-  _in = source.get_float32();
-  _out = source.get_float32();
-}
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LODNode::Constructor
@@ -179,6 +59,10 @@ add_switch(float in, float out) {
   CDWriter cdata(_cycler);
   cdata->_switch_vector.push_back(Switch(in, out));
   cdata->check_limits();
+
+  if (cdata->_num_shown != 0) {
+    mark_internal_bounds_stale();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,6 +77,11 @@ set_switch(int index, float in, float out) {
   nassertr(index >= 0 && index < (int)cdata->_switch_vector.size(), false);
   cdata->_switch_vector[index].set_range(in, out);
   cdata->check_limits();
+
+  if (cdata->_num_shown != 0) {
+    mark_internal_bounds_stale();
+  }
+
   return true;
 }
 
@@ -209,6 +98,10 @@ clear_switches() {
   cdata->_switch_vector.clear();
   cdata->_lowest = 0;
   cdata->_highest = 0;
+
+  if (cdata->_num_shown != 0) {
+    mark_internal_bounds_stale();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -319,6 +212,10 @@ INLINE void LODNode::
 set_center(const LPoint3f &center) {
   CDWriter cdata(_cycler);
   cdata->_center = center;
+
+  if (cdata->_num_shown != 0) {
+    mark_internal_bounds_stale();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -333,3 +230,216 @@ get_center() const {
   CDReader cdata(_cycler);
   return cdata->_center;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::is_any_shown
+//       Access: Published
+//  Description: Returns true if any switch has been shown with
+//               show_switch(), indicating the LODNode is in debug
+//               show mode; or false if it is in the normal mode.
+////////////////////////////////////////////////////////////////////
+INLINE bool LODNode::
+is_any_shown() const {
+  CDReader cdata(_cycler);
+  return (cdata->_num_shown != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::CData::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE LODNode::CData::
+CData() :
+  _center(0.0f, 0.0f, 0.0f),
+  _lowest(0),
+  _highest(0),
+  _got_force_switch(false),
+  _force_switch(0),
+  _num_shown(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE LODNode::CData::
+CData(const LODNode::CData &copy) :
+  _center(copy._center),
+  _switch_vector(copy._switch_vector),
+  _lowest(copy._lowest),
+  _highest(copy._highest),
+  _got_force_switch(copy._got_force_switch),
+  _force_switch(copy._force_switch),
+  _num_shown(copy._num_shown)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE LODNode::Switch::
+Switch(float in, float out) : _shown(false) {
+  set_range(in, out);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::get_in
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE float LODNode::Switch::
+get_in() const {
+  return _in;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::get_out
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE float LODNode::Switch::
+get_out() const {
+  return _out;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::set_range
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void LODNode::Switch::
+set_range(float in, float out) {
+  _in = in;
+  _out = out;
+  _ring_viz.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::in_range
+//       Access: Public
+//  Description: Returns true if the indicated distance is within the
+//               range for the LOD.
+////////////////////////////////////////////////////////////////////
+INLINE bool LODNode::Switch::
+in_range(float dist) const {
+  return (dist >= _out && dist < _in);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::in_range_2
+//       Access: Public
+//  Description: Returns true if the indicated distance squared is
+//               within the range for the LOD.  (The distance value is
+//               understood to be the square of the distance from the
+//               camera to the object.)
+////////////////////////////////////////////////////////////////////
+INLINE bool LODNode::Switch::
+in_range_2(float dist2) const {
+  return (dist2 >= _out * _out && dist2 < _in * _in);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::rescale
+//       Access: Public
+//  Description: Scales the switching distances by the indicated factor.
+////////////////////////////////////////////////////////////////////
+INLINE void LODNode::Switch::
+rescale(float factor) {
+  _in *= factor;
+  _out *= factor;
+  _ring_viz.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::is_shown
+//       Access: Public
+//  Description: Returns true if show() has been called.
+////////////////////////////////////////////////////////////////////
+INLINE bool LODNode::Switch::
+is_shown() const {
+  return _shown;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::show
+//       Access: Public
+//  Description: Shows this ring in debug mode using the indicated
+//               color.
+////////////////////////////////////////////////////////////////////
+INLINE void LODNode::Switch::
+show(const Colorf &color) {
+  _shown = true;
+  _show_color = color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::hide
+//       Access: Public
+//  Description: Undoes a previous call to show().
+////////////////////////////////////////////////////////////////////
+INLINE void LODNode::Switch::
+hide() {
+  _shown = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::get_ring_viz
+//       Access: Public
+//  Description: Returns a PandaNode suitable for rendering the ring
+//               associated with this switch.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *LODNode::Switch::
+get_ring_viz() const {
+  if (_ring_viz.is_null()) {
+    ((Switch *)this)->compute_ring_viz();
+  }
+
+  return _ring_viz;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::get_viz_model_state
+//       Access: Public
+//  Description: Returns a RenderState suitable for drawing the
+//               visible children of this switch level when the
+//               show_switch() debugging mode is enabled.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderState *LODNode::Switch::
+get_viz_model_state() const {
+  if (_viz_model_state.is_null()) {
+    ((Switch *)this)->compute_ring_viz();
+  }
+
+  return _viz_model_state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::write_datagram
+//       Access: Public
+//  Description: Writes the contents of the Switch out to the
+//               datagram, presumably in preparation to writing to a
+//               Bam file.
+////////////////////////////////////////////////////////////////////
+INLINE void LODNode::Switch::
+write_datagram(Datagram &destination) const {
+  destination.add_float32(_in);
+  destination.add_float32(_out);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::read_datagram
+//       Access: Public
+//  Description: Reads the contents of the Switch from the datagram,
+//               presumably in response to reading a Bam file.
+////////////////////////////////////////////////////////////////////
+INLINE void LODNode::Switch::
+read_datagram(DatagramIterator &source) {
+  _in = source.get_float32();
+  _out = source.get_float32();
+}
+
