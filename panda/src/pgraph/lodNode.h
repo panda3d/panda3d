@@ -110,13 +110,18 @@ protected:
     INLINE void hide();
 
     INLINE PandaNode *get_ring_viz() const;
+    INLINE PandaNode *get_spindle_viz() const;
     INLINE const RenderState *get_viz_model_state() const;
 
     INLINE void write_datagram(Datagram &destination) const;
     INLINE void read_datagram(DatagramIterator &source);
 
   private:
+    INLINE void clear_ring_viz();
+
     void compute_ring_viz();
+    void compute_spindle_viz();
+    void compute_viz_model_state();
 
   private:
     float _in;
@@ -124,6 +129,7 @@ protected:
     bool _shown;
     Colorf _show_color;
     PT(PandaNode) _ring_viz;
+    PT(PandaNode) _spindle_viz;
     CPT(RenderState) _viz_model_state;
   };
   typedef pvector<Switch> SwitchVector;

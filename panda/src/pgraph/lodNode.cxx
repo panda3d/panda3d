@@ -393,30 +393,25 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
        ++si) {
     const Switch &sw = (*si);
     if (sw.is_shown()) {
-      PT(PandaNode) ring_viz = sw.get_ring_viz();
-      CullTraverserData next_data(data, ring_viz);
+      CullTraverserData next_data(data, sw.get_ring_viz());
       next_data._net_transform = viz_transform;
-      
       trav->traverse(next_data);
 
       if (sw.in_range_2(dist2)) {
-        // This switch level is in range.  Draw its children in the
-        // funny wireframe mode.
+        // This switch level is in range.  Draw the spindle in this
+        // color.
+        CullTraverserData next_data2(data, sw.get_spindle_viz());
+        next_data2._net_transform = viz_transform;
+        trav->traverse(next_data2);
+
+        // And draw its children in the funny wireframe mode.
         int index = (si - cdata->_switch_vector.begin());
         if (index < get_num_children()) {
-          CullTraverserData next_data(data, get_child(index));
-          next_data._state = next_data._state->compose(sw.get_viz_model_state());
-          trav->traverse(next_data);
+          CullTraverserData next_data3(data, get_child(index));
+          next_data3._state = next_data3._state->compose(sw.get_viz_model_state());
+          trav->traverse(next_data3);
         }
       }
-    }
-  }
-
-  // Finally, draw the visible child(ren) in the appropriate state as
-  // well.
-
-  for (int index = 0; index < (int)cdata->_switch_vector.size(); index++) {
-    if (cdata->_switch_vector[index].in_range_2(dist2)) { 
     }
   }
 
@@ -658,12 +653,17 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void LODNode::Switch::
 compute_ring_viz() {
+  // We render the ring as a series of concentric ring-shaped triangle
+  // strips, each of which has num_slices quads.
   static const int num_slices = 50;
   static const int num_rings = 1;
+
+  // There are also two more triangle strips, one for the outer edge,
+  // and one for the inner edge.
   static const float edge_ratio = 0.1;  // ratio of edge height to diameter.
 
   const GeomVertexFormat *format = GeomVertexFormat::get_v3n3cp();
-  PT(GeomVertexData) vdata = new GeomVertexData("LOD", format, Geom::UH_static);
+  PT(GeomVertexData) vdata = new GeomVertexData("LOD_ring", format, Geom::UH_static);
 
   // Fill up the vertex table with all of the vertices.
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
@@ -699,12 +699,6 @@ compute_ring_viz() {
     float r = (float)ri;
     float d = r * (_in - _out) + _out;
 
-    // Invert the direction of Z on the outer ring, to invert the
-    // vertex winding order (and thereby invert the facing of the
-    // polygons).  We want the outer ring to face inward, and the
-    // inner ring to face outward.
-    float sign = 1.0f - (ri * 2);
-
     for (si = 0; si < num_slices; ++si) {
       float s = (float)si / (float)num_slices;
       float t = MathNumbers::pi_f * 2.0f * s;
@@ -712,8 +706,8 @@ compute_ring_viz() {
       float x = cosf(t);
       float y = sinf(t);
 
-      vertex.add_data3f(x * d, y * d, 0.5f * edge_ratio * d * sign);
-      normal.add_data3f(x * sign, y * sign, 0.0f);
+      vertex.add_data3f(x * d, y * d, 0.5f * edge_ratio * d);
+      normal.add_data3f(x, y, 0.0f);
       color.add_data4f(_show_color);
     }
 
@@ -724,8 +718,8 @@ compute_ring_viz() {
       float x = cosf(t);
       float y = sinf(t);
 
-      vertex.add_data3f(x * d, y * d, -0.5f * edge_ratio * d * sign);
-      normal.add_data3f(x * sign, y * sign, 0.0f);
+      vertex.add_data3f(x * d, y * d, -0.5f * edge_ratio * d);
+      normal.add_data3f(x, y, 0.0f);
       color.add_data4f(_show_color);
     }
   }
@@ -765,10 +759,91 @@ compute_ring_viz() {
   material->set_twoside(true);
   material = MaterialPool::get_material(material);
 
-  CPT(RenderState) viz_state = RenderState::make(CullFaceAttrib::make(CullFaceAttrib::M_cull_none),
-                                                 TextureAttrib::make_off(),
-                                                 MaterialAttrib::make(material),
-                                                 RenderState::get_max_priority());
+  CPT(RenderState) viz_state = 
+    RenderState::make(CullFaceAttrib::make(CullFaceAttrib::M_cull_none),
+                      TextureAttrib::make_off(),
+                      ShaderAttrib::make_off(),
+                      MaterialAttrib::make(material),
+                      RenderState::get_max_priority());
+  if (_show_color[3] != 1.0f) {
+    viz_state = viz_state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha),
+                                        RenderState::get_max_priority());
+  }
+
+  geom_node->set_state(viz_state);
+
+  _ring_viz = geom_node.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::compute_spindle_viz
+//       Access: Private
+//  Description: Computes a Geom suitable for rendering the LODNode
+//               spindle in the color of this switch.
+////////////////////////////////////////////////////////////////////
+void LODNode::Switch::
+compute_spindle_viz() {
+  // We render the spindle as a cylinder, which consists of num_rings
+  // rings stacked vertically, each of which is a triangle strip of
+  // num_slices quads.  The scale is -10 .. 10 vertically, with a radius
+  // of 1.0.
+  static const int num_slices = 10;
+  static const int num_rings = 10;
+
+  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3cp();
+  PT(GeomVertexData) vdata = new GeomVertexData("LOD_spindle", format, Geom::UH_static);
+
+  // Fill up the vertex table with all of the vertices.
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter normal(vdata, InternalName::get_normal());
+  GeomVertexWriter color(vdata, InternalName::get_color());
+
+  int ri, si;
+  for (ri = 0; ri <= num_rings; ++ri) {
+    // r is in the range [0.0, 1.0].
+    float r = (float)ri / (float)num_rings;
+
+    // z is in the range [100.0, -100.0]
+    float z = 100.0f - r * 200.0f;
+
+    for (si = 0; si < num_slices; ++si) {
+      // s is in the range [0.0, 1.0).
+      float s = (float)si / (float)num_slices;
+
+      // t is in the range [0.0, 2pi).
+      float t = MathNumbers::pi_f * 2.0f * s;
+
+      float x = cosf(t);
+      float y = sinf(t);
+      vertex.add_data3f(x, y, z);
+      normal.add_data3f(x, y, 0.0f);
+      color.add_data4f(_show_color);
+    }
+  }
+
+  // Now create the triangle strips.  One tristrip for each ring.
+  PT(GeomTristrips) strips = new GeomTristrips(Geom::UH_static);
+  for (ri = 0; ri < num_rings; ++ri) {
+    for (si = 0; si < num_slices; ++si) {
+      strips->add_vertex(ri * num_slices + si);
+      strips->add_vertex((ri + 1) * num_slices + si);
+    }
+    strips->add_vertex(ri * num_slices);
+    strips->add_vertex((ri + 1) * num_slices);
+    strips->close_primitive();
+  }
+
+  PT(Geom) spindle_geom = new Geom(vdata);
+  spindle_geom->add_primitive(strips);
+
+  PT(GeomNode) geom_node = new GeomNode("spindle");
+  geom_node->add_geom(spindle_geom);
+
+  CPT(RenderState) viz_state = 
+    RenderState::make(CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise),
+                      TextureAttrib::make_off(),
+                      ShaderAttrib::make_off(),
+                      RenderState::get_max_priority());
   if (_show_color[3] != 1.0f) {
     viz_state = viz_state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha),
                                       RenderState::get_max_priority());
@@ -776,14 +851,26 @@ compute_ring_viz() {
 
   geom_node->set_state(viz_state);
 
-  _ring_viz = geom_node.p();
+  _spindle_viz = geom_node.p();
+}
 
-  // Also compute a RenderState for rendering the children in
-  // wireframe mode.
-
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::compute_viz_model_state
+//       Access: Private
+//  Description: Computes a RenderState for rendering the children of
+//               this switch in colored wireframe mode.
+////////////////////////////////////////////////////////////////////
+void LODNode::Switch::
+compute_viz_model_state() {
+  // The RenderState::make() function only takes up to four attribs at
+  // once.  Since we need more attribs than that, we have to make up
+  // our state in two steps.
   _viz_model_state = RenderState::make(RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
                                        TextureAttrib::make_off(),
+                                       ShaderAttrib::make_off(),
                                        ColorAttrib::make_flat(_show_color),
-                                       TransparencyAttrib::make(TransparencyAttrib::M_none),
                                        RenderState::get_max_priority());
+  CPT(RenderState) st2 = RenderState::make(TransparencyAttrib::make(TransparencyAttrib::M_none),
+                                           RenderState::get_max_priority());
+  _viz_model_state = _viz_model_state->compose(st2);
 }

@@ -316,7 +316,7 @@ INLINE void LODNode::Switch::
 set_range(float in, float out) {
   _in = in;
   _out = out;
-  _ring_viz.clear();
+  clear_ring_viz();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -352,7 +352,7 @@ INLINE void LODNode::Switch::
 rescale(float factor) {
   _in *= factor;
   _out *= factor;
-  _ring_viz.clear();
+  clear_ring_viz();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -403,6 +403,21 @@ get_ring_viz() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::get_spindle_viz
+//       Access: Public
+//  Description: Returns a PandaNode suitable for rendering the center
+//               spindle of the LODNode, in the color of this switch.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *LODNode::Switch::
+get_spindle_viz() const {
+  if (_spindle_viz.is_null()) {
+    ((Switch *)this)->compute_spindle_viz();
+  }
+
+  return _spindle_viz;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LODNode::Switch::get_viz_model_state
 //       Access: Public
 //  Description: Returns a RenderState suitable for drawing the
@@ -412,7 +427,7 @@ get_ring_viz() const {
 INLINE const RenderState *LODNode::Switch::
 get_viz_model_state() const {
   if (_viz_model_state.is_null()) {
-    ((Switch *)this)->compute_ring_viz();
+    ((Switch *)this)->compute_viz_model_state();
   }
 
   return _viz_model_state;
@@ -443,3 +458,16 @@ read_datagram(DatagramIterator &source) {
   _out = source.get_float32();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::Switch::clear_ring_viz
+//       Access: Private
+//  Description: Resets the internal cache values for the ring and
+//               spindle viz, and related pointers, for the
+//               set_switch() debugging mode.
+////////////////////////////////////////////////////////////////////
+INLINE void LODNode::Switch::
+clear_ring_viz() {
+  _ring_viz.clear();
+  _spindle_viz.clear();
+  _viz_model_state.clear();
+}
