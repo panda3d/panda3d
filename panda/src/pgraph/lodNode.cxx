@@ -152,7 +152,7 @@ void LODNode::
 output(ostream &out) const {
   PandaNode::output(out);
   CDReader cdata(_cycler);
-  out << " ";
+  out << " center(" << cdata->_center << ") ";
   if (cdata->_switch_vector.empty()) {
     out << "no switches.";
   } else {
@@ -397,7 +397,15 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
       next_data._net_transform = viz_transform;
       trav->traverse(next_data);
 
-      if (sw.in_range_2(dist2)) {
+      int index = (si - cdata->_switch_vector.begin());
+      bool in_range;
+      if (cdata->_got_force_switch) {
+        in_range = (cdata->_force_switch == index);
+      } else {
+        in_range = sw.in_range_2(dist2);
+      }
+
+      if (in_range) {
         // This switch level is in range.  Draw the spindle in this
         // color.
         CullTraverserData next_data2(data, sw.get_spindle_viz());
@@ -405,7 +413,6 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
         trav->traverse(next_data2);
 
         // And draw its children in the funny wireframe mode.
-        int index = (si - cdata->_switch_vector.begin());
         if (index < get_num_children()) {
           CullTraverserData next_data3(data, get_child(index));
           next_data3._state = next_data3._state->compose(sw.get_viz_model_state());
