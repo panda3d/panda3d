@@ -35,9 +35,9 @@ GENMAN=0
 VERSION=0
 VERBOSE=1
 COMPRESSOR="zlib"
-PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","FMODEX","NVIDIACG","HELIX","NSPR",
+PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMODEX","NVIDIACG","NSPR",
           "OPENSSL","FREETYPE","FFTW","MILES","MAYA6","MAYA65","MAYA7","MAX6","MAX7","MAX8",
-          "BISON","FLEX","OPENCV","PANDATOOL","PANDAAPP","DX8","DX9"]
+          "BISON","FLEX","FFMPEG","PANDATOOL","PANDAAPP","DX8","DX9"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
 DIRECTXSDK = {}
@@ -625,16 +625,6 @@ if (COMPILER == "MSVC7"):
 #
 ##########################################################################################
 
-if (OMIT.count("HELIX")==0):
-    WARNINGS.append("HELIX is currently nonoperational")
-    WARNINGS.append("I have automatically added this command-line option: --no-helix")
-    OMIT.append("HELIX")
-
-if (sys.platform != "win32") and (OMIT.count("OPENCV")==0):
-    WARNINGS.append("OPENCV currently only works under windows.")
-    WARNINGS.append("I have automatically added this command-line option: --no-opencv")
-    OMIT.append("OPENCV")
-
 if (OMIT.count("MILES")==0):
     WARNINGS.append("makepanda currently does not support miles sound system")
     WARNINGS.append("I have automatically added this command-line option: --no-miles")
@@ -984,7 +974,6 @@ def CompileCxxLINUXA(wobj,fullsrc,ipath,opts):
     if (OMIT.count("PYTHON")==0): cmd = cmd + ' -I"' + PYTHONSDK + '"'
     if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/vrpn/include'
     if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/fftw/include'
-    if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/fmod/include'
     if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -Ithirdparty/linux-libs-a/fmodex/include'
     if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -Ithirdparty/linux-libs-a/nvidiacg/include'
     if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/nspr/include'
@@ -1318,8 +1307,6 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
     if (PkgSelected(opts,"VRPN")):
         cmd = cmd + ' thirdparty/win-libs-vc7/vrpn/lib/vrpn.lib'
         cmd = cmd + ' thirdparty/win-libs-vc7/vrpn/lib/quat.lib'
-    if (PkgSelected(opts,"FMOD")):
-        cmd = cmd + ' thirdparty/win-libs-vc7/fmod/lib/fmod.lib'
     if (PkgSelected(opts,"FMODEX")):
         cmd = cmd + ' thirdparty/win-libs-vc7/fmodex/lib/fmodex_vc.lib'
     if (PkgSelected(opts,"MILES")):
@@ -1330,13 +1317,6 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
         if (opts.count("CGDX9")):
             cmd = cmd + ' thirdparty/win-libs-vc7/nvidiacg/lib/cgD3D9.lib'
         cmd = cmd + ' thirdparty/win-libs-vc7/nvidiacg/lib/cg.lib'
-    if (PkgSelected(opts,"HELIX")):
-        cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/runtlib.lib'
-        cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/syslib.lib'
-        cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/contlib.lib'
-        cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/debuglib.lib'
-        cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/utillib.lib'
-        cmd = cmd + ' thirdparty/win-libs-vc7/helix/lib/stlport_vc7.lib'
     if (PkgSelected(opts,"NSPR")):
         cmd = cmd + ' thirdparty/win-libs-vc7/nspr/lib/nspr4.lib'
     if (PkgSelected(opts,"OPENSSL")):
@@ -1347,6 +1327,10 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
     if (PkgSelected(opts,"FFTW")):
         cmd = cmd + ' thirdparty/win-libs-vc7/fftw/lib/rfftw.lib'
         cmd = cmd + ' thirdparty/win-libs-vc7/fftw/lib/fftw.lib'
+    if (PkgSelected(opts,"FFMPEG")):
+        cmd = cmd + ' thirdparty/win-libs-vc7/ffmpeg/lib/avcodec-51-panda.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/ffmpeg/lib/avformat-50-panda.lib'
+        cmd = cmd + ' thirdparty/win-libs-vc7/ffmpeg/lib/avutil-49-panda.lib'
     for ver in MAYAVERSIONS:
         if (PkgSelected(opts,"MAYA"+ver)):
             cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/Foundation.lib"'
@@ -1362,9 +1346,6 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
             cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/mesh.lib"'
             cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/maxutil.lib"'
             cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/paramblk2.lib"'
-    if (PkgSelected(opts,"OPENCV")):
-        cmd = cmd + " /LIBPATH:thirdparty/win-libs-vc7/opencv/lib"
-        cmd = cmd + " cv.lib cxcore.lib cvaux.lib trs.lib highgui.lib"
     oscmd(cmd)
 
 def CompileLinkLINUXA(wdll, obj, wobj, opts, dll, ldef):
@@ -1376,7 +1357,6 @@ def CompileLinkLINUXA(wdll, obj, wobj, opts, dll, ldef):
         elif (suffix==".dll"): cmd = cmd + ' -l' + x[3:-4]
         elif (suffix==".lib"): cmd = cmd + ' built/lib/' + x[:-4] + '.a'
         elif (suffix==".ilb"): cmd = cmd + ' built/tmp/' + x[:-4] + '.a'
-    if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/fmod/lib -lfmod-3.74'
     if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -Lthirdparty/linux-libs-a/fmodex/lib -lfmod-3.74'
     if (PkgSelected(opts,"NVIDIACG")):
         cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
@@ -1659,7 +1639,6 @@ DTOOLDEFAULTS=[
     ("HAVE_JPEG",                      'UNDEF',                  'UNDEF'),
     ("HAVE_TIFF",                      'UNDEF',                  'UNDEF'),
     ("HAVE_VRPN",                      'UNDEF',                  'UNDEF'),
-    ("HAVE_FMOD",                      'UNDEF',                  'UNDEF'),
     ("HAVE_FMODEX",                    'UNDEF',                  'UNDEF'),
     ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
     ("HAVE_NSPR",                      'UNDEF',                  'UNDEF'),
@@ -1670,7 +1649,7 @@ DTOOLDEFAULTS=[
     ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
     ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),
-    ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
+    ("HAVE_FFMPEG",                    'UNDEF',                  'UNDEF'),
     ]
 
 def CalculateDtoolConfig():
@@ -2032,13 +2011,14 @@ sys.stdout.flush()
 
 IPATH=['dtool/src/dtoolbase']
 OPTS=['BUILDING_DTOOL', 'NSPR', 'OPT3']
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='indent.cxx',    obj='dtoolbase_indent.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase_composite1.cxx', obj='dtoolbase_composite1.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase_composite2.cxx', obj='dtoolbase_composite2.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='lookup3.c',                obj='dtoolbase_lookup3.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='indent.cxx',               obj='dtoolbase_indent.obj')
 if (sys.platform == "win32"):
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dlmalloc.c', obj='dtoolbase_allocator.obj')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase.cxx', obj='dtoolbase_dtoolbase.obj')
 else:
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='null.cxx', obj='dtoolbase_allocator.obj')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase.cxx', obj='dtoolbase_dtoolbase.obj')
 
 
 #
@@ -2064,9 +2044,11 @@ EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT3'], dll='libdtool.dll', obj=[
              'dtoolutil_gnu_getopt.obj',
              'dtoolutil_gnu_getopt1.obj',
              'dtoolutil_composite.obj',
-             'dtoolbase_dtoolbase.obj',
              'dtoolbase_allocator.obj',
+             'dtoolbase_composite1.obj',
+             'dtoolbase_composite2.obj',
              'dtoolbase_indent.obj',
+             'dtoolbase_lookup3.obj'
 ])
 
 #
@@ -2531,7 +2513,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtext.in', obj='libtext_igate.obj',
 #
 
 IPATH=['panda/src/grutil']
-OPTS=['BUILDING_PANDA', 'NSPR', 'OPENCV']
+OPTS=['BUILDING_PANDA', 'NSPR', 'FFMPEG']
 # CopyAllHeaders('panda/src/grutil')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='multitexReducer.cxx', obj='grutil_multitexReducer.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='grutil_composite.cxx', obj='grutil_composite.obj')
@@ -2624,40 +2606,6 @@ if (OMIT.count("VRPN")==0):
                 skip=[], also=["vrpn_composite.cxx"])
 
 #
-# DIRECTORY: panda/src/helix/
-#
-
-if (OMIT.count("HELIX")==0):
-  IPATH=['panda/src/helix']
-  OPTS=['BUILDING_PANDA', 'NSPR', 'HELIX']
-#   CopyAllHeaders('panda/src/helix')
-  EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_helix.cxx', obj='helix_config_helix.obj')
-  EnqueueCxx(ipath=IPATH, opts=OPTS, src='fivemmap.cxx', obj='helix_fivemmap.obj')
-  EnqueueCxx(ipath=IPATH, opts=OPTS, src='HelixClient.cxx', obj='helix_HelixClient.obj')
-  EnqueueCxx(ipath=IPATH, opts=OPTS, src='HxAdviseSink.cxx', obj='helix_HxAdviseSink.obj')
-  EnqueueCxx(ipath=IPATH, opts=OPTS, src='HxAuthenticationManager.cxx', obj='helix_HxAuthenticationManager.obj')
-  EnqueueCxx(ipath=IPATH, opts=OPTS, src='HxClientContext.cxx', obj='helix_HxClientContext.obj')
-  EnqueueCxx(ipath=IPATH, opts=OPTS, src='HxErrorSink.cxx', obj='helix_HxErrorSink.obj')
-  EnqueueCxx(ipath=IPATH, opts=OPTS, src='HxSiteSupplier.cxx', obj='helix_HxSiteSupplier.obj')
-  EnqueueCxx(ipath=IPATH, opts=OPTS, src='iids.cxx', obj='helix_iids.obj')
-  EnqueueCxx(ipath=IPATH, opts=OPTS, src='print.cxx', obj='helix_print.obj')
-  EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libhelix.in', obj='libhelix_igate.obj',
-              src='panda/src/helix',  module='panda', library='libhelix',
-              skip="ALL", also=["HelixClient.cxx"])
-  EnqueueLib(lib='libhelix.ilb', obj=[
-             'helix_config_helix.obj',
-             'helix_fivemmap.obj',
-             'helix_HelixClient.obj',
-             'helix_HxAdviseSink.obj',
-             'helix_HxAuthenticationManager.obj',
-             'helix_HxClientContext.obj',
-             'helix_HxErrorSink.obj',
-             'helix_HxSiteSupplier.obj',
-             'helix_iids.obj',
-             'helix_print.obj',
-             'libhelix_igate.obj'])
-
-#
 # DIRECTORY: panda/metalibs/panda/
 #
 
@@ -2666,8 +2614,8 @@ if (OMIT.count("HELIX")==0):
 # CopyAllHeaders('panda/src/physics')
 # CopyAllHeaders('panda/src/particlesystem')
 IPATH=['panda/metalibs/panda']
-OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'NSPR', 'FREETYPE', 'HELIX', 'FFTW', 'OPENCV',
-      'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
+OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'NSPR', 'FREETYPE', 'FFTW',
+      'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'FFMPEG']
 INFILES=['librecorder.in', 'libpgraph.in', 'libcull.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
          'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libpipeline.in', 'libevent.in',
          'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libparametrics.in',
@@ -2702,9 +2650,6 @@ OBJFILES=['panda_panda.obj', 'libpanda_module.obj',
           'audio_composite.obj', 'libaudio_igate.obj',
           'pgui_composite.obj', 'libpgui_igate.obj',
           'pandabase_pandabase.obj', 'libpandaexpress.dll', 'libdtoolconfig.dll', 'libdtool.dll']
-if OMIT.count("HELIX")==0:
-    OBJFILES.append("libhelix.ilb")
-    INFILES.append("libhelix.in")
 if OMIT.count("VRPN")==0:
     OBJFILES.append("pvrpn_composite.obj")
     OBJFILES.append("libpvrpn_igate.obj")
@@ -2715,11 +2660,6 @@ if OMIT.count("NSPR")==0:
     INFILES.append("libnet.in")
 if OMIT.count("FREETYPE")==0:
     OBJFILES.append("pnmtext_composite.obj")
-#    OBJFILES.append("pnmtext_config_pnmtext.obj")
-#    OBJFILES.append("pnmtext_freetypeFont.obj")
-#    OBJFILES.append("pnmtext_pnmTextGlyph.obj")
-#    OBJFILES.append("pnmtext_pnmTextMaker.obj")
-# CopyAllHeaders('panda/metalibs/panda')
 EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpanda_module.obj',
             module='panda', library='libpanda', files=INFILES)
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='panda.cxx', obj='panda_panda.obj')
