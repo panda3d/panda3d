@@ -9,9 +9,8 @@ from seColorEntry import *
 from direct.tkwidgets import VectorWidgets
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
-import string
-import math
-import types
+from Tkinter import *
+import string, math, types
 
 
 class collisionWindow(AppShell):

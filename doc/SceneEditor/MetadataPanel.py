@@ -1,6 +1,6 @@
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
-
+import Pmw
 
 class MetadataPanel(AppShell,Pmw.MegaWidget):
     appversion      = '1.0'

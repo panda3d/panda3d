@@ -3,15 +3,12 @@
 # Written by Yi-Hong Lin, yihhongl@andrew.cmu.edu, 2004
 #################################################################
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from direct.tkwidgets.AppShell import *
-from direct.showbase.TkGlobal import *
+from direct.tkwidgets.AppShell import AppShell
 from seColorEntry import *
-from direct.tkwidgets import VectorWidgets
-from direct.tkwidgets import Floater
-from direct.tkwidgets import Slider
-import string
-import math
-import types
+from direct.tkwidgets.VectorWidgets import Vector3Entry
+from direct.tkwidgets.Slider import Slider
+from Tkinter import Frame, Button, Menubutton, Menu
+import string, math, types, Pmw, Tkinter
 
 
 class lightingPanel(AppShell):
@@ -54,25 +51,25 @@ class lightingPanel(AppShell):
         mainFrame = Frame(interior)
 
         self.listZone = Pmw.Group(mainFrame,tag_pyclass = None)
-        self.listZone.pack(expand=0, fill=X,padx=3,pady=3)
+        self.listZone.pack(expand=0, fill=Tkinter.X,padx=3,pady=3)
         listFrame = self.listZone.interior()
         
         self.lightEntry = self.createcomponent(
             'Lights List', (), None,
             Pmw.ComboBox, (listFrame,),label_text='Light :',
-            labelpos = W, entry_width = 25, selectioncommand = self.selectLight,
+            labelpos = Tkinter.W, entry_width = 25, selectioncommand = self.selectLight,
             scrolledlist_items = self.lightList)
-        self.lightEntry.pack(side=LEFT)
+        self.lightEntry.pack(side=Tkinter.LEFT)
         
         self.renameButton = self.createcomponent(
             'Rename Light', (), None,
             Button, (listFrame,),
             text = ' Rename ',
             command = self.renameLight)
-        self.renameButton.pack(side=LEFT)
+        self.renameButton.pack(side=Tkinter.LEFT)
 
         self.addLighZone = Pmw.Group(listFrame,tag_pyclass = None)
-        self.addLighZone.pack(side=LEFT)
+        self.addLighZone.pack(side=Tkinter.LEFT)
         insideFrame = self.addLighZone.interior()
         self.lightsButton = Menubutton(insideFrame, text = 'Add light',borderwidth = 3,
                                        activebackground = '#909090')
@@ -94,13 +91,13 @@ class lightingPanel(AppShell):
             Button, (listFrame,),
             text = '  Delete  ',
             command = self.deleteLight)
-        self.deleteButton.pack(side=LEFT)
+        self.deleteButton.pack(side=Tkinter.LEFT)
 
         self.lightColor = seColorEntry(
             mainFrame, text = 'Light Color', value=self.lightColor)
         self.lightColor['command'] = self.setLightingColorVec
         self.lightColor['resetValue'] = [0.3*255,0.3*255,0.3*255,0]
-        self.lightColor.pack(fill=X,expand=0)
+        self.lightColor.pack(fill=Tkinter.X,expand=0)
         self.bind(self.lightColor, 'Set light color')
 
         # Notebook pages for light specific controls
@@ -117,67 +114,67 @@ class lightingPanel(AppShell):
         self.dSpecularColor = seColorEntry(
             directionalPage, text = 'Specular Color')
         self.dSpecularColor['command'] = self.setSpecularColor
-        self.dSpecularColor.pack(fill = X, expand = 0)
+        self.dSpecularColor.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.dSpecularColor,
                   'Set directional light specular color')
-        self.dPosition = VectorWidgets.Vector3Entry(
+        self.dPosition = Vector3Entry(
             directionalPage, text = 'Position')
         self.dPosition['command'] = self.setPosition
         self.dPosition['resetValue'] = [0,0,0,0]
-        self.dPosition.pack(fill = X, expand = 0)
+        self.dPosition.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.dPosition, 'Set directional light position')
-        self.dOrientation = VectorWidgets.Vector3Entry(
+        self.dOrientation = Vector3Entry(
             directionalPage, text = 'Orientation')
         self.dOrientation['command'] = self.setOrientation
         self.dOrientation['resetValue'] = [0,0,0,0]
-        self.dOrientation.pack(fill = X, expand = 0)
+        self.dOrientation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.dOrientation, 'Set directional light orientation')
 
         # Point light controls
         self.pSpecularColor = seColorEntry(
             pointPage, text = 'Specular Color')
         self.pSpecularColor['command'] = self.setSpecularColor
-        self.pSpecularColor.pack(fill = X, expand = 0)
+        self.pSpecularColor.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.pSpecularColor,
                   'Set point light specular color')
 
-        self.pPosition = VectorWidgets.Vector3Entry(
+        self.pPosition = Vector3Entry(
             pointPage, text = 'Position')
         self.pPosition['command'] = self.setPosition
         self.pPosition['resetValue'] = [0,0,0,0]
-        self.pPosition.pack(fill = X, expand = 0)
+        self.pPosition.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.pPosition, 'Set point light position')
 
-        self.pConstantAttenuation = Slider.Slider(
+        self.pConstantAttenuation = Slider(
             pointPage,
             text = 'Constant Attenuation',
             max = 1.0,
             resolution = 0.01,
             value = 1.0)
         self.pConstantAttenuation['command'] = self.setConstantAttenuation
-        self.pConstantAttenuation.pack(fill = X, expand = 0)
+        self.pConstantAttenuation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.pConstantAttenuation,
                   'Set point light constant attenuation')
            
-        self.pLinearAttenuation = Slider.Slider(
+        self.pLinearAttenuation = Slider(
             pointPage,
             text = 'Linear Attenuation',
             max = 1.0,
             resolution = 0.01,
             value = 0.0)
         self.pLinearAttenuation['command'] = self.setLinearAttenuation
-        self.pLinearAttenuation.pack(fill = X, expand = 0)
+        self.pLinearAttenuation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.pLinearAttenuation,
                   'Set point light linear attenuation')
            
-        self.pQuadraticAttenuation = Slider.Slider(
+        self.pQuadraticAttenuation = Slider(
             pointPage,
             text = 'Quadratic Attenuation',
             max = 1.0,
             resolution = 0.01,
             value = 0.0)
         self.pQuadraticAttenuation['command'] = self.setQuadraticAttenuation
-        self.pQuadraticAttenuation.pack(fill = X, expand = 0)
+        self.pQuadraticAttenuation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.pQuadraticAttenuation,
                   'Set point light quadratic attenuation')
            
@@ -185,60 +182,60 @@ class lightingPanel(AppShell):
         self.sSpecularColor = seColorEntry(
             spotPage, text = 'Specular Color')
         self.sSpecularColor['command'] = self.setSpecularColor
-        self.sSpecularColor.pack(fill = X, expand = 0)
+        self.sSpecularColor.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.sSpecularColor,
                   'Set spot light specular color')
 
-        self.sConstantAttenuation = Slider.Slider(
+        self.sConstantAttenuation = Slider(
             spotPage,
             text = 'Constant Attenuation',
             max = 1.0,
             resolution = 0.01,
             value = 1.0)
         self.sConstantAttenuation['command'] = self.setConstantAttenuation
-        self.sConstantAttenuation.pack(fill = X, expand = 0)
+        self.sConstantAttenuation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.sConstantAttenuation,
                   'Set spot light constant attenuation')
            
-        self.sLinearAttenuation = Slider.Slider(
+        self.sLinearAttenuation = Slider(
             spotPage,
             text = 'Linear Attenuation',
             max = 1.0,
             resolution = 0.01,
             value = 0.0)
         self.sLinearAttenuation['command'] = self.setLinearAttenuation
-        self.sLinearAttenuation.pack(fill = X, expand = 0)
+        self.sLinearAttenuation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.sLinearAttenuation,
                   'Set spot light linear attenuation')
            
-        self.sQuadraticAttenuation = Slider.Slider(
+        self.sQuadraticAttenuation = Slider(
             spotPage,
             text = 'Quadratic Attenuation',
             max = 1.0,
             resolution = 0.01,
             value = 0.0)
         self.sQuadraticAttenuation['command'] = self.setQuadraticAttenuation
-        self.sQuadraticAttenuation.pack(fill = X, expand = 0)
+        self.sQuadraticAttenuation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.sQuadraticAttenuation,
                   'Set spot light quadratic attenuation')
            
-        self.sExponent = Slider.Slider(
+        self.sExponent = Slider(
             spotPage,
             text = 'Exponent',
             max = 1.0,
             resolution = 0.01,
             value = 0.0)
         self.sExponent['command'] = self.setExponent
-        self.sExponent.pack(fill = X, expand = 0)
+        self.sExponent.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.sExponent,
                   'Set spot light exponent')
 
         # MRM: Add frustum controls
            
         self.lightNotebook.setnaturalsize()
-        self.lightNotebook.pack(expand = 1, fill = BOTH)
+        self.lightNotebook.pack(expand = 1, fill = Tkinter.BOTH)
 
-        mainFrame.pack(expand=1, fill = BOTH)
+        mainFrame.pack(expand=1, fill = Tkinter.BOTH)
 
     def onDestroy(self, event):
         messenger.send('LP_close')

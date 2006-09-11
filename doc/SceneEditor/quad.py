@@ -8,7 +8,8 @@
 
 from direct.showbase.ShowBaseGlobal import *
 from direct.interval.IntervalGlobal import *
-from direct.showbase import DirectObject
+from direct.showbase.DirectObject import DirectObject
+from pandac.PandaModules import *
 import math
 #Manakel 2/12/2005: replace from pandac import by from pandac.PandaModules import
 from pandac.PandaModules import MouseWatcher 
@@ -142,7 +143,7 @@ class ViewPort:
         return self.cam
         
 
-class QuadView(DirectObject.DirectObject):
+class QuadView(DirectObject):
 #########################################################################################################################################
 # This class sets up four cameras for the scene (ideally we want four instances of render too)
 # and then instatiates a ViewPort class for each of them

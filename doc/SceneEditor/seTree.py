@@ -12,11 +12,10 @@
 #
 #################################################################
 
-import os
-import sys
-import string
-from direct.showbase.TkGlobal import *
-from direct.showbase.DirectObject import *
+import os, sys, string, Pmw, Tkinter
+from direct.showbase.DirectObject import DirectObject
+from Tkinter import IntVar, Menu, PhotoImage, Label, Frame, Entry
+from pandac.PandaModules import *
 
 # Initialize icon directory
 ICONDIR = getModelPath().findFile(Filename('icons')).toOsSpecific()
@@ -188,9 +187,9 @@ class TreeNode:
             oldcursor = self.canvas['cursor']
             self.canvas['cursor'] = "watch"
             self.canvas.update()
-            self.canvas.delete(ALL)     # XXX could be more subtle
+            self.canvas.delete(Tkinter.ALL)     # XXX could be more subtle
             self.draw(7, 2)
-            x0, y0, x1, y1 = self.canvas.bbox(ALL)
+            x0, y0, x1, y1 = self.canvas.bbox(Tkinter.ALL)
             self.canvas.configure(scrollregion=(0, 0, x1, y1))
             self.canvas['cursor'] = oldcursor
 
@@ -310,7 +309,7 @@ class TreeNode:
     def edit(self, event=None):
         self.entry = Entry(self.label, bd=0, highlightthickness=1, width=0)
         self.entry.insert(0, self.label['text'])
-        self.entry.selection_range(0, END)
+        self.entry.selection_range(0, Tkinter.END)
         self.entry.pack(ipadx=5)
         self.entry.focus_set()
         self.entry.bind("<Return>", self.edit_finish)

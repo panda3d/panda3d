@@ -9,12 +9,10 @@
 # So we make one from them.
 #
 #################################################################
-from direct.showbase.TkGlobal import *
 from direct.tkwidgets import Valuator
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
-import string
-import tkColorChooser
+import string, Pmw, Tkinter, tkColorChooser
 from direct.tkwidgets.VectorWidgets import VectorEntry
 
 class seColorEntry(VectorEntry):

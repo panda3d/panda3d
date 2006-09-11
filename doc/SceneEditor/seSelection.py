@@ -11,10 +11,10 @@
 # (If we do change original directools, it will force user has to install the latest version of OUR Panda)
 #
 #################################################################
-from direct.showbase.DirectObject import *
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from seGeometry import *
+from direct.showbase.DirectObject import *
 from quad import *
 COA_ORIGIN = 0
 COA_CENTER = 1

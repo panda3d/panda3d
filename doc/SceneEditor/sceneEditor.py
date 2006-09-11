@@ -5,7 +5,8 @@ except: sys.exit("Please install python module 'Tkinter'")
 
 import direct
 from direct.directbase.DirectStart import*
-from direct.showbase.TkGlobal import*
+from direct.showbase.TkGlobal import *
+from direct.showbase.TkGlobal import spawnTkLoop, Toplevel
 from tkFileDialog import *
 from direct.directtools.DirectGlobals import *
 from direct.tkwidgets.AppShell import*
@@ -38,7 +39,6 @@ from direct.actor import Actor
 import seAnimPanel
 from direct.task import Task
 import math
-from path import path
 
 
 #################################################################

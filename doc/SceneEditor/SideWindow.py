@@ -2,13 +2,12 @@
 # sideWindow.py
 # Written by Yi-Hong Lin, yihhongl@andrew.cmu.edu, 2004
 #################################################################
-from direct.tkwidgets.AppShell import *
-from direct.showbase.TkGlobal import *
-
+from direct.tkwidgets.AppShell import AppShell
+from direct.tkwidgets.VectorWidgets import ColorEntry
+from direct.showbase.TkGlobal import spawnTkLoop, Toplevel
 import seSceneGraphExplorer
-from direct.tkwidgets import Floater
-from direct.tkwidgets import Slider
-from direct.tkwidgets import VectorWidgets
+from Tkinter import Frame, IntVar, Checkbutton
+import Pmw, Tkinter
 
 class sideWindow(AppShell):
     #################################################################
@@ -74,7 +73,7 @@ class sideWindow(AppShell):
         mainFrame = Frame(interior)
         ## Creat NoteBook
         self.notebookFrame = Pmw.NoteBook(mainFrame)
-        self.notebookFrame.pack(fill=BOTH,expand=1)
+        self.notebookFrame.pack(fill=Tkinter.BOTH,expand=1)
         sgePage = self.notebookFrame.add('Tree Graph')
         envPage = self.notebookFrame.add('World Setting')
         self.notebookFrame['raisecommand'] = self.updateInfo
@@ -84,7 +83,7 @@ class sideWindow(AppShell):
             sgePage, nodePath = render,
             scrolledCanvas_hull_width = 270,
             scrolledCanvas_hull_height = 570)
-        self.SGE.pack(fill = BOTH, expand = 0)
+        self.SGE.pack(fill = Tkinter.BOTH, expand = 0)
 
         ## World Setting Page
         envPage = Frame(envPage)
@@ -96,8 +95,8 @@ class sideWindow(AppShell):
             text = 'Enable Lighting',
             variable = self.LightingVar,
             command = self.toggleLights)
-        self.LightingButton.pack(side=LEFT, expand=False)
-        pageFrame.pack(side=TOP, fill=X, expand=True)
+        self.LightingButton.pack(side=Tkinter.LEFT, expand=False)
+        pageFrame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True)
 
         pageFrame = Frame(envPage)
         self.CollisionVar = IntVar()
@@ -107,8 +106,8 @@ class sideWindow(AppShell):
             text = 'Show Collision Object',
             variable = self.CollisionVar,
             command = self.showCollision)
-        self.CollisionButton.pack(side=LEFT, expand=False)
-        pageFrame.pack(side=TOP, fill=X, expand=True)
+        self.CollisionButton.pack(side=Tkinter.LEFT, expand=False)
+        pageFrame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True)
 
         pageFrame = Frame(envPage)
         self.ParticleVar = IntVar()
@@ -118,8 +117,8 @@ class sideWindow(AppShell):
             text = 'Show Particle Dummy',
             variable = self.ParticleVar,
             command = self.enableParticle)
-        self.ParticleButton.pack(side=LEFT, expand=False)
-        pageFrame.pack(side=TOP, fill=X, expand=True)
+        self.ParticleButton.pack(side=Tkinter.LEFT, expand=False)
+        pageFrame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True)
 
         pageFrame = Frame(envPage)
         self.baseUseDriveVar = IntVar()
@@ -129,8 +128,8 @@ class sideWindow(AppShell):
             text = 'Enable base.usedrive',
             variable = self.baseUseDriveVar,
             command = self.enablebaseUseDrive)
-        self.baseUseDriveButton.pack(side=LEFT, expand=False)
-        pageFrame.pack(side=TOP, fill=X, expand=True)
+        self.baseUseDriveButton.pack(side=Tkinter.LEFT, expand=False)
+        pageFrame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True)
 
         pageFrame = Frame(envPage)
         self.backfaceVar = IntVar()
@@ -140,8 +139,8 @@ class sideWindow(AppShell):
             text = 'Enable BackFace',
             variable = self.backfaceVar,
             command = self.toggleBackface)
-        self.backfaceButton.pack(side=LEFT, expand=False)
-        pageFrame.pack(side=TOP, fill=X, expand=True)
+        self.backfaceButton.pack(side=Tkinter.LEFT, expand=False)
+        pageFrame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True)
 
         pageFrame = Frame(envPage)
         self.textureVar = IntVar()
@@ -151,8 +150,8 @@ class sideWindow(AppShell):
             text = 'Enable Texture',
             variable = self.textureVar,
             command = self.toggleTexture)
-        self.textureButton.pack(side=LEFT, expand=False)
-        pageFrame.pack(side=TOP, fill=X, expand=True)
+        self.textureButton.pack(side=Tkinter.LEFT, expand=False)
+        pageFrame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True)
 
         pageFrame = Frame(envPage)
         self.wireframeVar = IntVar()
@@ -162,8 +161,8 @@ class sideWindow(AppShell):
             text = 'Enable Wireframe',
             variable = self.wireframeVar,
             command = self.toggleWireframe)
-        self.wireframeButton.pack(side=LEFT, expand=False)
-        pageFrame.pack(side=TOP, fill=X, expand=True)
+        self.wireframeButton.pack(side=Tkinter.LEFT, expand=False)
+        pageFrame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True)
 
         pageFrame = Frame(envPage)
         self.gridVar = IntVar()
@@ -173,8 +172,8 @@ class sideWindow(AppShell):
             text = 'Enable Grid',
             variable = self.gridVar,
             command = self.toggleGrid)
-        self.gridButton.pack(side=LEFT, expand=False)
-        pageFrame.pack(side=TOP, fill=X, expand=True)
+        self.gridButton.pack(side=Tkinter.LEFT, expand=False)
+        pageFrame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True)
 
         pageFrame = Frame(envPage)
         self.widgetVisVar = IntVar()
@@ -184,8 +183,8 @@ class sideWindow(AppShell):
             text = 'Enable WidgetVisible',
             variable = self.widgetVisVar,
             command = self.togglewidgetVis)
-        self.widgetVisButton.pack(side=LEFT, expand=False)
-        pageFrame.pack(side=TOP, fill=X, expand=True)
+        self.widgetVisButton.pack(side=Tkinter.LEFT, expand=False)
+        pageFrame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True)
 
         pageFrame = Frame(envPage)
         self.enableAutoCameraVar = IntVar()
@@ -195,17 +194,17 @@ class sideWindow(AppShell):
             text = 'Enable Auto Camera Movement for Loading Objects',
             variable = self.enableAutoCameraVar,
             command = self.toggleAutoCamera)
-        self.enableAutoCameraButton.pack(side=LEFT, expand=False)
-        pageFrame.pack(side=TOP, fill=X, expand=True)
+        self.enableAutoCameraButton.pack(side=Tkinter.LEFT, expand=False)
+        pageFrame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True)
 
         pageFrame = Frame(envPage)
-        self.backgroundColor = VectorWidgets.ColorEntry(
+        self.backgroundColor = ColorEntry(
             pageFrame, text = 'BG Color', value=self.worldColor)
         self.backgroundColor['command'] = self.setBackgroundColorVec
         self.backgroundColor['resetValue'] = [0,0,0,0]
-        self.backgroundColor.pack(side=LEFT, expand=False)
+        self.backgroundColor.pack(side=Tkinter.LEFT, expand=False)
         self.bind(self.backgroundColor, 'Set background color')
-        pageFrame.pack(side=TOP, fill=X, expand=True)
+        pageFrame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True)
 
         envPage.pack(expand=False)
 

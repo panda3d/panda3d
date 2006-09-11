@@ -1,15 +1,15 @@
 """PANDA3D Particle Panel"""
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from direct.tkwidgets.AppShell import *
-from direct.showbase.TkGlobal import *
+from direct.tkwidgets.AppShell import AppShell
 from tkFileDialog import *
 from tkSimpleDialog import askstring
-import os
-from direct.tkwidgets import Dial
-from direct.tkwidgets import Floater
-from direct.tkwidgets import Slider
-from direct.tkwidgets import VectorWidgets
+import os, Pmw, Tkinter
+from direct.tkwidgets.Dial import AngleDial
+from direct.tkwidgets.Floater import Floater
+from direct.tkwidgets.Slider import Slider
+from direct.tkwidgets.VectorWidgets import Vector2Entry, Vector3Entry
+from direct.tkwidgets.VectorWidgets import ColorEntry
 import sePlacer
 import seForceGroup
 import seParticles
@@ -774,7 +774,7 @@ class ParticlePanel(AppShell):
         kw['min'] = min
         kw['resolution'] = resolution
         kw['numDigits'] = numDigits
-        widget = apply(Floater.Floater, (parent,), kw)
+        widget = apply(Floater, (parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -786,7 +786,7 @@ class ParticlePanel(AppShell):
                         command = None, **kw):
         kw['text'] = text
         kw['style'] = 'mini'
-        widget = apply(Dial.AngleDial,(parent,), kw)
+        widget = apply(AngleDial,(parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -801,7 +801,7 @@ class ParticlePanel(AppShell):
         kw['min'] = min
         kw['max'] = max
         kw['resolution'] = resolution
-        widget = apply(Slider.Slider, (parent,), kw)
+        widget = apply(Slider, (parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -813,7 +813,7 @@ class ParticlePanel(AppShell):
                            command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(VectorWidgets.Vector2Entry, (parent,), kw)
+        widget = apply(Vector2Entry, (parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -825,7 +825,7 @@ class ParticlePanel(AppShell):
                            command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(VectorWidgets.Vector3Entry, (parent,), kw)
+        widget = apply(Vector3Entry, (parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -837,7 +837,7 @@ class ParticlePanel(AppShell):
                          command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(VectorWidgets.ColorEntry, (parent,) ,kw)
+        widget = apply(ColorEntry, (parent,) ,kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)

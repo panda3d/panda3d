@@ -8,9 +8,10 @@
 # Do forget to check the seTree. 
 #
 #################################################################
-from direct.showbase.DirectObject import *
-from direct.showbase.TkGlobal import *
-from seTree import *
+from direct.showbase.DirectObject import DirectObject
+from Tkinter import IntVar, Frame, Label
+from seTree import TreeNode, TreeItem
+import Pmw, Tkinter
 
 # changing these strings requires changing sceneEditor.py SGE_ strs too!
 # This list of items will be showed on the pop out window when user right click on
@@ -56,7 +57,7 @@ class seSceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         
         # Setup up container
         interior = self.interior()
-        interior.configure(relief = GROOVE, borderwidth = 2)
+        interior.configure(relief = Tkinter.GROOVE, borderwidth = 2)
         
         # Create a label and an entry
         self._scrolledCanvas = self.createcomponent(
@@ -68,7 +69,7 @@ class seSceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         self._canvas = self._scrolledCanvas.component('canvas')
         self._canvas['scrollregion'] = ('0i', '0i', '2i', '4i')
         self._scrolledCanvas.resizescrollregion()
-        self._scrolledCanvas.pack(padx = 3, pady = 3, expand=1, fill = BOTH)
+        self._scrolledCanvas.pack(padx = 3, pady = 3, expand=1, fill = Tkinter.BOTH)
         
         self._canvas.bind('<ButtonPress-2>', self.mouse2Down)
         self._canvas.bind('<B2-Motion>', self.mouse2Motion)
@@ -90,8 +91,8 @@ class seSceneGraphExplorer(Pmw.MegaWidget, DirectObject):
             (), None,
             Label, (interior,),
             text = 'Active Reparent Target: ',
-            anchor = W, justify = LEFT)
-        self._label.pack(fill = X)
+            anchor = Tkinter.W, justify = Tkinter.LEFT)
+        self._label.pack(fill = Tkinter.X)
 
         # Add update parent label
         def updateLabel(nodePath = None, s = self):

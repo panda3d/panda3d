@@ -1,12 +1,13 @@
 """ DIRECT Nine DoF Manipulation Panel """
 
-# Import Tkinter, Pmw, and the dial code from this directory tree.
-from direct.showbase.DirectObject import *
+from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectGlobals import *
-from direct.showbase.TkGlobal import *
-from direct.tkwidgets.AppShell import *
-from direct.tkwidgets import Dial
-from direct.tkwidgets import Floater
+from direct.tkwidgets.AppShell import AppShell
+from direct.tkwidgets.Dial import AngleDial
+from direct.tkwidgets.Floater import Floater
+from Tkinter import Button, Menubutton, Menu, StringVar
+from pandac.PandaModules import *
+import Tkinter, Pmw
 """
 TODO:
 Task to monitor pose
@@ -83,7 +84,7 @@ class Placer(AppShell):
     def createInterface(self):
         # The interior of the toplevel panel
         interior = self.interior()
-        interior['relief'] = FLAT
+        interior['relief'] = Tkinter.FLAT
         # Add placer commands to menubar
         self.menuBar.addmenu('Placer', 'Placer Panel Operations')
         self.menuBar.addmenuitem('Placer', 'command',
@@ -112,7 +113,7 @@ class Placer(AppShell):
         # Get a handle to the menu frame
         menuFrame = self.menuFrame
         self.nodePathMenu = Pmw.ComboBox(
-            menuFrame, labelpos = W, label_text = 'Node Path:',
+            menuFrame, labelpos = Tkinter.W, label_text = 'Node Path:',
             entry_width = 20,
             selectioncommand = self.selectNodePathNamed,
             scrolledlist_items = self.nodePathNames)
@@ -167,7 +168,7 @@ class Placer(AppShell):
                              tag_text = 'Position',
                              tag_font=('MSSansSerif', 14),
                              tag_activebackground = '#909090',
-                             ring_relief = RIDGE)
+                             ring_relief = Tkinter.RIDGE)
         posMenubutton = posGroup.component('tag')
         self.bind(posMenubutton, 'Position menu operations')
         posMenu = Menu(posMenubutton, tearoff = 0)
@@ -180,8 +181,8 @@ class Placer(AppShell):
 
         # Create the dials
         self.posX = self.createcomponent('posX', (), None,
-                                         Floater.Floater, (posInterior,),
-                                         text = 'X', relief = FLAT,
+                                         Floater, (posInterior,),
+                                         text = 'X', relief = Tkinter.FLAT,
                                          value = 0.0,
                                          label_foreground = 'Red')
         self.posX['commandData'] = ['x']
@@ -191,8 +192,8 @@ class Placer(AppShell):
         self.posX.pack(expand=1,fill='both')
         
         self.posY = self.createcomponent('posY', (), None,
-                                         Floater.Floater, (posInterior,),
-                                         text = 'Y', relief = FLAT,
+                                         Floater, (posInterior,),
+                                         text = 'Y', relief = Tkinter.FLAT,
                                          value = 0.0,
                                          label_foreground = '#00A000')
         self.posY['commandData'] = ['y']
@@ -202,8 +203,8 @@ class Placer(AppShell):
         self.posY.pack(expand=1,fill='both')
         
         self.posZ = self.createcomponent('posZ', (), None,
-                                         Floater.Floater, (posInterior,),
-                                         text = 'Z', relief = FLAT,
+                                         Floater, (posInterior,),
+                                         text = 'Z', relief = Tkinter.FLAT,
                                          value = 0.0,
                                          label_foreground = 'Blue')
         self.posZ['commandData'] = ['z']
@@ -218,7 +219,7 @@ class Placer(AppShell):
                              tag_text = 'Orientation',
                              tag_font=('MSSansSerif', 14),
                              tag_activebackground = '#909090',
-                             ring_relief = RIDGE)
+                             ring_relief = Tkinter.RIDGE)
         hprMenubutton = hprGroup.component('tag')
         self.bind(hprMenubutton, 'Orientation menu operations')
         hprMenu = Menu(hprMenubutton, tearoff = 0)
@@ -230,10 +231,10 @@ class Placer(AppShell):
         
         # Create the dials
         self.hprH = self.createcomponent('hprH', (), None,
-                                         Dial.AngleDial, (hprInterior,),
+                                         AngleDial, (hprInterior,),
                                          style = 'mini',
                                          text = 'H', value = 0.0,
-                                         relief = FLAT,
+                                         relief = Tkinter.FLAT,
                                          label_foreground = 'blue')
         self.hprH['commandData'] = ['h']
         self.hprH['preCallback'] = self.xformStart
@@ -242,10 +243,10 @@ class Placer(AppShell):
         self.hprH.pack(expand=1,fill='both')
         
         self.hprP = self.createcomponent('hprP', (), None,
-                                         Dial.AngleDial, (hprInterior,),
+                                         AngleDial, (hprInterior,),
                                          style = 'mini',
                                          text = 'P', value = 0.0,
-                                         relief = FLAT,
+                                         relief = Tkinter.FLAT,
                                          label_foreground = 'red')
         self.hprP['commandData'] = ['p']
         self.hprP['preCallback'] = self.xformStart
@@ -254,10 +255,10 @@ class Placer(AppShell):
         self.hprP.pack(expand=1,fill='both')
         
         self.hprR = self.createcomponent('hprR', (), None,
-                                         Dial.AngleDial, (hprInterior,),
+                                         AngleDial, (hprInterior,),
                                          style = 'mini',
                                          text = 'R', value = 0.0,
-                                         relief = FLAT,
+                                         relief = Tkinter.FLAT,
                                          label_foreground = '#00A000')
         self.hprR['commandData'] = ['r']
         self.hprR['preCallback'] = self.xformStart
@@ -275,7 +276,7 @@ class Placer(AppShell):
                                tag_pyclass = Menubutton,
                                tag_font=('MSSansSerif', 14),
                                tag_activebackground = '#909090',
-                               ring_relief = RIDGE)
+                               ring_relief = Tkinter.RIDGE)
         self.scaleMenubutton = scaleGroup.component('tag')
         self.bind(self.scaleMenubutton, 'Scale menu operations')
         self.scaleMenubutton['textvariable'] = self.scalingMode
@@ -299,9 +300,9 @@ class Placer(AppShell):
         
         # Create the dials
         self.scaleX = self.createcomponent('scaleX', (), None,
-                                           Floater.Floater, (scaleInterior,),
+                                           Floater, (scaleInterior,),
                                            text = 'X Scale',
-                                           relief = FLAT,
+                                           relief = Tkinter.FLAT,
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = 'Red')
@@ -312,9 +313,9 @@ class Placer(AppShell):
         self.scaleX.pack(expand=1,fill='both')
         
         self.scaleY = self.createcomponent('scaleY', (), None,
-                                           Floater.Floater, (scaleInterior,),
+                                           Floater, (scaleInterior,),
                                            text = 'Y Scale',
-                                           relief = FLAT,
+                                           relief = Tkinter.FLAT,
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = '#00A000')
@@ -325,9 +326,9 @@ class Placer(AppShell):
         self.scaleY.pack(expand=1,fill='both')
         
         self.scaleZ = self.createcomponent('scaleZ', (), None,
-                                           Floater.Floater, (scaleInterior,),
+                                           Floater, (scaleInterior,),
                                            text = 'Z Scale',
-                                           relief = FLAT,
+                                           relief = Tkinter.FLAT,
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = 'Blue')

@@ -11,7 +11,9 @@ from direct.tkwidgets import Floater
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Slider
 from direct.tkwidgets import VectorWidgets
-from direct.task import Task
+from pandac.PandaModules import *
+from Tkinter import *
+import Pmw
 
 class propertyWindow(AppShell,Pmw.MegaWidget):
     #################################################################
