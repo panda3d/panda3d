@@ -643,6 +643,14 @@ do_auto_verify_lods(CullTraverser *trav, CullTraverserData &data) {
   UpdateSeq seq;
   get_bounds(seq);
   CDLockedReader cdata(_cycler);
+
+  if (cdata->_got_force_switch) {
+    // If we're forcing a particular switch, don't verify the LOD
+    // sizes, since they don't really apply anymore anyway.  Assume
+    // the user knows what he's doing.
+    return;
+  }
+
   if (seq != cdata->_bounds_seq) {
     // Time to validate the children again.
     for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
