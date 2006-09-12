@@ -628,22 +628,24 @@ read(const Filename &filename) {
   }
   
   // Get a pointer to the codec context for the video stream
-  _codec_context = _format_context->streams[_stream_number]->codec;
+  AVCodecContext *codec_context = _format_context->streams[_stream_number]->codec;
   
   // Find the decoder for the video stream
-  // printf("codec id is %d\n",_codec_context->codec_id);
-  _codec = avcodec_find_decoder(_codec_context->codec_id);
+  // printf("codec id is %d\n",codec_context->codec_id);
+  _codec = avcodec_find_decoder(codec_context->codec_id);
   if (_codec == NULL) {
     clear();
     return false;
   }
   
   if (_codec->capabilities & CODEC_CAP_TRUNCATED) {
-    _codec_context->flags |= CODEC_FLAG_TRUNCATED;
+    codec_context->flags |= CODEC_FLAG_TRUNCATED;
   }
 
   // Open codec
+  _codec_context = codec_context;
   if (avcodec_open(_codec_context, _codec) < 0) {
+    _codec_context = NULL;
     clear();
     return false;
   }
