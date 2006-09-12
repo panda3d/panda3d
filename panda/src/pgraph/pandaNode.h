@@ -240,6 +240,7 @@ PUBLISHED:
   void set_bound(const BoundingVolume *volume);
   INLINE void clear_bounds();
   CPT(BoundingVolume) get_bounds(Thread *current_thread = Thread::get_current_thread()) const;
+  CPT(BoundingVolume) get_bounds(UpdateSeq &seq, Thread *current_thread = Thread::get_current_thread()) const;
   INLINE CPT(BoundingVolume) get_internal_bounds() const;
 
   void mark_bounds_stale(Thread *current_thread = Thread::get_current_thread()) const;

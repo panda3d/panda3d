@@ -77,6 +77,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     return show_switches_cull_callback(trav, data);
   }
 
+  consider_verify_lods(trav, data);
+
   Camera *camera = trav->get_scene()->get_camera_node();
   NodePath this_np = data._node_path.get_node_path();
   FadeLODNodeData *ldata = 
@@ -126,21 +128,27 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         // Fade the new LOD in with z writing off
         // Keep drawing the old LOD opaque with z writing on
         if (ldata->_fade_out >= 0 && ldata->_fade_out < get_num_children()) {
-          CullTraverserData next_data_out(data, get_child(ldata->_fade_out));
-          trav->traverse(next_data_out);
+          PandaNode *child = get_child(ldata->_fade_out);
+          if (child != (PandaNode *)NULL) {
+            CullTraverserData next_data_out(data, child);
+            trav->traverse(next_data_out);
+          }
         }
         
         if (ldata->_fade_in >= 0 && ldata->_fade_in < get_num_children()) {
-          CullTraverserData next_data_in(data, get_child(ldata->_fade_in));
-          
-          float in_alpha = elapsed / half_fade_time;
-          LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, in_alpha);
-          
-          next_data_in._state = 
-            next_data_in._state->compose(get_fade_out_state())->compose
-            (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
-          
-          trav->traverse(next_data_in);
+          PandaNode *child = get_child(ldata->_fade_in);
+          if (child != (PandaNode *)NULL) {
+            CullTraverserData next_data_in(data, child);
+            
+            float in_alpha = elapsed / half_fade_time;
+            LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, in_alpha);
+            
+            next_data_in._state = 
+              next_data_in._state->compose(get_fade_out_state())->compose
+              (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
+            
+            trav->traverse(next_data_in);
+          }
         }
         
       } else if (elapsed < _fade_time) {
@@ -148,21 +156,27 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         //Fade out the old LOD with z write off and 
         //draw the opaque new LOD with z write on
         if (ldata->_fade_in >= 0 && ldata->_fade_in < get_num_children()) {
-          CullTraverserData next_data_in(data, get_child(ldata->_fade_in));
-          trav->traverse(next_data_in);
+          PandaNode *child = get_child(ldata->_fade_in);
+          if (child != (PandaNode *)NULL) {
+            CullTraverserData next_data_in(data, child);
+            trav->traverse(next_data_in);
+          }
         }
         
         if (ldata->_fade_out >= 0 && ldata->_fade_out < get_num_children()) {
-          CullTraverserData next_data_out(data, get_child(ldata->_fade_out));
+          PandaNode *child = get_child(ldata->_fade_out);
+          if (child != (PandaNode *)NULL) {
+            CullTraverserData next_data_out(data, child);
           
-          float out_alpha = 1.0f - (elapsed - half_fade_time) / half_fade_time;  
-          LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, out_alpha);
-          
-          next_data_out._state = 
-            next_data_out._state->compose(get_fade_out_state())->compose
-            (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
-          
-          trav->traverse(next_data_out);
+            float out_alpha = 1.0f - (elapsed - half_fade_time) / half_fade_time;  
+            LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, out_alpha);
+            
+            next_data_out._state = 
+              next_data_out._state->compose(get_fade_out_state())->compose
+              (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
+            
+            trav->traverse(next_data_out);
+          }
         }
         
       } else {
@@ -177,8 +191,11 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // transition; we're just drawing one child of the LOD.
     int index = ldata->_fade_in;
     if (index >= 0 && index < get_num_children()) {
-      CullTraverserData next_data(data, get_child(index));
-      trav->traverse(next_data);
+      PandaNode *child = get_child(index);
+      if (child != (PandaNode *)NULL) {
+        CullTraverserData next_data(data, child);
+        trav->traverse(next_data);
+      }
     }
   }
 

@@ -79,16 +79,25 @@ PUBLISHED:
   void hide_all_switches();
   INLINE bool is_any_shown() const;
 
+  bool verify_child_bounds() const;
+
 protected:
   int compute_child(CullTraverser *trav, CullTraverserData &data);
 
   bool show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;
 
+  INLINE void consider_verify_lods(CullTraverser *trav, CullTraverserData &data);
+
+  CPT(TransformState) get_rel_transform(CullTraverser *trav, CullTraverserData &data);
+
 private:
   class CData;
   void do_show_switch(CData *cdata, int index, const Colorf &color);
   void do_hide_switch(CData *cdata, int index);
+  bool do_verify_child_bounds(const CData *cdata, int index,
+                              float &suggested_radius) const;
+  void do_auto_verify_lods(CullTraverser *trav, CullTraverserData &data);
 
   static const Colorf &get_default_show_color(int index);
 
@@ -152,6 +161,7 @@ private:
     LPoint3f _center;
     SwitchVector _switch_vector;
     size_t _lowest, _highest;
+    UpdateSeq _bounds_seq;
 
     bool _got_force_switch;
     int _force_switch;
@@ -161,6 +171,7 @@ private:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataLockedReader<CData> CDLockedReader;
   typedef CycleDataStageReader<CData> CDStageReader;
   typedef CycleDataStageWriter<CData> CDStageWriter;
 

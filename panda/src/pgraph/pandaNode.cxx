@@ -1822,6 +1822,41 @@ get_bounds(Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_bounds
+//       Access: Published
+//  Description: This flavor of get_bounds() return the external
+//               bounding volume, and also fills in seq with the
+//               bounding volume's current sequence number.  When this
+//               sequence number changes, it indicates that the
+//               bounding volume might have changed, e.g. because some
+//               nested child's bounding volume has changed.
+//
+//               Although this might occasionally increment without
+//               changing the bounding volume, the bounding volume
+//               will never change without incrementing this counter,
+//               so as long as this counter remains unchanged you can
+//               be confident the bounding volume is also unchanged.
+////////////////////////////////////////////////////////////////////
+CPT(BoundingVolume) PandaNode::
+get_bounds(UpdateSeq &seq, Thread *current_thread) const {
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
+  if (cdata->_last_update != cdata->_next_update) {
+    // The cache is stale; it needs to be rebuilt.
+    CPT(BoundingVolume) result;
+    {
+      CDStageWriter cdataw = 
+	((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
+      result = cdataw->_external_bounds;
+      seq = cdataw->_last_update;
+    }
+    return result;
+  }
+  seq = cdata->_last_update;
+  return cdata->_external_bounds;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::mark_bounds_stale
 //       Access: Published
 //  Description: Indicates that the bounding volume, or something that
@@ -3079,6 +3114,7 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
           drawmask_cat.debug(false)
             << "} " << *this << "::update_bounds();\n";
         }
+
 	return cdataw;
       }
       

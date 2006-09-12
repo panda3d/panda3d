@@ -219,6 +219,14 @@ ConfigVariableDouble lod_fade_time
  PRC_DESC("The default amount of time (in seconds) over which a FadeLODNode "
           "transitions between its different levels."));
 
+ConfigVariableBool verify_lods
+("verify-lods", true,
+ PRC_DESC("When this is true, LODNodes will test when they are rendered to "
+          "ensure that each child's geometry fits entirely within the radius "
+          "defined by its switch-out distance.  When it is false, LODNodes "
+          "may have any switch in and out distances, regardless of the "
+          "actual size of their geometry.  This test is only made in NDEBUG "
+          "mode (the variable is ignored in a production build)."));
 
 ConfigVariableBool show_vertex_animation
 ("show-vertex-animation", false,

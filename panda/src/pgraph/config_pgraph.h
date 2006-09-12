@@ -51,6 +51,7 @@ extern ConfigVariableInt max_collect_indices;
 
 extern ConfigVariableBool polylight_info;
 extern ConfigVariableDouble lod_fade_time;
+extern ConfigVariableBool verify_lods;
 
 extern ConfigVariableBool show_vertex_animation;
 extern ConfigVariableBool show_transparency;

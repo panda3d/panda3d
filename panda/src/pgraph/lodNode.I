@@ -56,6 +56,8 @@ LODNode(const LODNode &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void LODNode::
 add_switch(float in, float out) {
+  nassertv(in >= out);
+
   CDWriter cdata(_cycler);
   cdata->_switch_vector.push_back(Switch(in, out));
   cdata->check_limits();
@@ -73,6 +75,8 @@ add_switch(float in, float out) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool LODNode::
 set_switch(int index, float in, float out) {
+  nassertr(in >= out, false);
+
   CDWriter cdata(_cycler);
   nassertr(index >= 0 && index < (int)cdata->_switch_vector.size(), false);
   cdata->_switch_vector[index].set_range(in, out);
@@ -242,6 +246,23 @@ INLINE bool LODNode::
 is_any_shown() const {
   CDReader cdata(_cycler);
   return (cdata->_num_shown != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::consider_verify_lods
+//       Access: Protected
+//  Description: To be called internally when the node is rendered,
+//               this will raise an assertion if verify-lods is
+//               configured true, and verify_child_bounds() returns
+//               false.
+////////////////////////////////////////////////////////////////////
+INLINE void LODNode::
+consider_verify_lods(CullTraverser *trav, CullTraverserData &data) {
+#ifndef NDEBUG
+  if (verify_lods) {
+    do_auto_verify_lods(trav, data);
+  }
+#endif  // NDEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
