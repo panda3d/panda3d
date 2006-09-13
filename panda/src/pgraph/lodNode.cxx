@@ -586,6 +586,7 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
       if (flags == 0) {
         // This child's radius doesn't even come close to containing
         // its volume.
+        nassertr(!gbv->is_infinite(), false);
         sphere.extend_by(gbv);
         suggested_radius = sphere.get_radius();
         return false;
@@ -621,9 +622,13 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
       // So if any part of this inscribed sphere is outside of the
       // radius, then the radius is bad.
       flags = sphere.contains(&box_sphere);
-      if (flags != BoundingVolume::IF_all) {
+      if ((flags & BoundingVolume::IF_all) == 0) {
         // No good.  
-        sphere.extend_by(gbv);
+        if (gbv->is_infinite()) {
+          sphere.extend_by(&box_sphere);
+        } else {
+          sphere.extend_by(gbv);
+        }
         suggested_radius = sphere.get_radius();
         return false;
       }

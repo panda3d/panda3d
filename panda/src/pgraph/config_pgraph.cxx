@@ -220,7 +220,7 @@ ConfigVariableDouble lod_fade_time
           "transitions between its different levels."));
 
 ConfigVariableBool verify_lods
-("verify-lods", false,
+("verify-lods", true,
  PRC_DESC("When this is true, LODNodes will test when they are rendered to "
           "ensure that each child's geometry fits entirely within the radius "
           "defined by its switch-out distance.  When it is false, LODNodes "
