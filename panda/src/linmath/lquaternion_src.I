@@ -316,7 +316,7 @@ get_axis() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::get_axis
+//     Function: LQuaternion::get_axis_normalized
 //       Access: Public
 //  Description: This, along with get_angle(), returns the rotation
 //               represented by the quaternion as an angle about an
@@ -324,8 +324,9 @@ get_axis() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LQuaternion)::
 get_axis_normalized() const {
-  return FLOATNAME(LVector3)(
-      _v.data[1], _v.data[2], _v.data[3]).normalize();
+  FLOATNAME(LVector3) axis = get_axis();
+  axis.normalize();
+  return axis;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -335,6 +336,10 @@ get_axis_normalized() const {
 //               represented by the quaternion as an angle about an
 //               arbitrary axis.  This returns the angle, in radians
 //               counterclockwise about the axis.
+//
+//               It is necessary to ensure the quaternion has been
+//               normalized (for instance, with a call to normalize())
+//               before calling this method.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_angle_rad() const {
@@ -348,6 +353,10 @@ get_angle_rad() const {
 //               represented by the quaternion as an angle about an
 //               arbitrary axis.  This returns the angle, in degrees
 //               counterclockwise about the axis.
+//
+//               It is necessary to ensure the quaternion has been
+//               normalized (for instance, with a call to normalize())
+//               before calling this method.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_angle() const {
