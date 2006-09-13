@@ -140,6 +140,10 @@ protected:
     PT(PandaNode) _ring_viz;
     PT(PandaNode) _spindle_viz;
     CPT(RenderState) _viz_model_state;
+
+  public:
+    UpdateSeq _bounds_seq;
+    bool _verify_ok;
   };
   typedef pvector<Switch> SwitchVector;
 

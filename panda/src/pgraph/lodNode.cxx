@@ -561,11 +561,30 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
   suggested_radius = 0.0f;
 
   if (index < get_num_children()) {
+    const Switch &sw = cdata->_switch_vector[index];
     PandaNode *child = get_child(index);
     if (child != (PandaNode *)NULL) {
-      CPT(BoundingVolume) bv = child->get_bounds();
+      UpdateSeq seq;
+      CPT(BoundingVolume) bv = child->get_bounds(seq);
+
+      if (seq == sw._bounds_seq) {
+        // We previously verified this child, and it hasn't changed
+        // since then.
+        return sw._verify_ok;
+      }
+
+      ((Switch &)sw)._bounds_seq = seq;
+      ((Switch &)sw)._verify_ok = true;
+
       if (bv->is_empty()) {
         // This child has no geometry, so no one cares anyway.
+        return true;
+      }
+      if (bv->is_infinite()) {
+        // To be strict, we ought to look closer if the child has an
+        // infinite bounding volume, but in practice this is probably
+        // just a special case (e.g. the child contains the camera)
+        // that we don't really want to check.
         return true;
       }
       
@@ -589,6 +608,7 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
         nassertr(!gbv->is_infinite(), false);
         sphere.extend_by(gbv);
         suggested_radius = sphere.get_radius();
+        ((Switch &)sw)._verify_ok = false;
         return false;
       }
       
@@ -630,6 +650,7 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
           sphere.extend_by(gbv);
         }
         suggested_radius = sphere.get_radius();
+        ((Switch &)sw)._verify_ok = false;
         return false;
       }
     }

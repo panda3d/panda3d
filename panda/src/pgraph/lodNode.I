@@ -491,4 +491,5 @@ clear_ring_viz() {
   _ring_viz.clear();
   _spindle_viz.clear();
   _viz_model_state.clear();
+  _bounds_seq = UpdateSeq::old();
 }
