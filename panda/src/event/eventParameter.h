@@ -90,6 +90,8 @@ INLINE ostream &operator << (ostream &out, const EventParameter &param);
 class EXPCL_PANDA EventStoreValueBase : public TypedWritableReferenceCount {
 public:
   INLINE EventStoreValueBase();
+
+PUBLISHED:
   virtual ~EventStoreValueBase();
   virtual void output(ostream &out) const=0;
 
@@ -118,7 +120,7 @@ private:
 //               TypedWritableReferenceCount.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA EventStoreTypedRefCount : public EventStoreValueBase {
-public:
+PUBLISHED:
   INLINE EventStoreTypedRefCount(const TypedReferenceCount *value);
   virtual ~EventStoreTypedRefCount();
 
@@ -127,6 +129,7 @@ public:
 
   virtual void output(ostream &out) const;
 
+public:
   PT(TypedReferenceCount) _value;
 
 public:

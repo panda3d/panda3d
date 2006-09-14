@@ -23,7 +23,7 @@ TypeHandle EventStoreValue<Type>::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::Default constructor
-//       Access: Public
+//       Access: Published
 //  Description: Defines an EventParameter that stores nothing: the
 //               "empty" parameter.
 ////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ EventParameter() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::Pointer constructor
-//       Access: Public
+//       Access: Published
 //  Description: Defines an EventParameter that stores a pointer to
 //               any kind of TypedWritableReferenceCount object.  This
 //               is the most general constructor.
@@ -49,7 +49,7 @@ EventParameter(const TypedWritableReferenceCount *ptr) : _ptr((TypedWritableRefe
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::Pointer constructor
-//       Access: Public
+//       Access: Published
 //  Description: Defines an EventParameter that stores a pointer to
 //               a TypedReferenceCount object.  Note that a
 //               TypedReferenceCount is not the same kind of pointer
@@ -68,7 +68,7 @@ EventParameter(const TypedReferenceCount *ptr) : _ptr(new EventStoreTypedRefCoun
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::Integer constructor
-//       Access: Public
+//       Access: Published
 //  Description: Defines an EventParameter that stores an integer
 //               value.
 ////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ EventParameter(int value) : _ptr(new EventStoreInt(value)) { }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::Double constructor
-//       Access: Public
+//       Access: Published
 //  Description: Defines an EventParameter that stores a
 //               floating-point value.
 ////////////////////////////////////////////////////////////////////
@@ -88,7 +88,7 @@ EventParameter(double value) : _ptr(new EventStoreDouble(value)) { }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::String constructor
-//       Access: Public
+//       Access: Published
 //  Description: Defines an EventParameter that stores a string value.
 ////////////////////////////////////////////////////////////////////
 INLINE EventParameter::
@@ -96,7 +96,7 @@ EventParameter(const string &value) : _ptr(new EventStoreString(value)) { }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::Wstring constructor
-//       Access: Public
+//       Access: Published
 //  Description: Defines an EventParameter that stores a wstring value.
 ////////////////////////////////////////////////////////////////////
 INLINE EventParameter::
@@ -105,7 +105,7 @@ EventParameter(const wstring &value) : _ptr(new EventStoreWstring(value)) { }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::Copy constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EventParameter::
@@ -114,7 +114,7 @@ EventParameter(const EventParameter &other) : _ptr(other._ptr) { }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::Copy assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EventParameter &EventParameter::
@@ -125,7 +125,7 @@ operator = (const EventParameter &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EventParameter::
@@ -134,7 +134,7 @@ INLINE EventParameter::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::is_empty
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the EventParameter is the empty
 //               parameter, storing nothing, or false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ is_empty() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::is_int
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the EventParameter stores an integer
 //               value, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -159,7 +159,7 @@ is_int() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::get_int_value
-//       Access: Public
+//       Access: Published
 //  Description: Retrieves the value stored in the EventParameter.  It
 //               is only valid to call this if is_int() has already
 //               returned true.
@@ -175,7 +175,7 @@ get_int_value() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::is_double
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the EventParameter stores a double
 //               floating-point value, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -189,7 +189,7 @@ is_double() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::get_double_value
-//       Access: Public
+//       Access: Published
 //  Description: Retrieves the value stored in the EventParameter.  It
 //               is only valid to call this if is_double() has already
 //               returned true.
@@ -202,7 +202,7 @@ get_double_value() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::is_string
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the EventParameter stores a string
 //               value, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -216,7 +216,7 @@ is_string() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::get_string_value
-//       Access: Public
+//       Access: Published
 //  Description: Retrieves the value stored in the EventParameter.  It
 //               is only valid to call this if is_string() has already
 //               returned true.
@@ -229,7 +229,7 @@ get_string_value() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::is_wstring
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the EventParameter stores a wstring
 //               value, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -243,7 +243,7 @@ is_wstring() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::get_wstring_value
-//       Access: Public
+//       Access: Published
 //  Description: Retrieves the value stored in the EventParameter.  It
 //               is only valid to call this if is_wstring() has already
 //               returned true.
@@ -256,7 +256,7 @@ get_wstring_value() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::is_typed_ref_count
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the EventParameter stores a
 //               TypedReferenceCount pointer, false otherwise.  Note
 //               that a TypedReferenceCount is not exactly the same
@@ -273,7 +273,7 @@ is_typed_ref_count() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::get_typed_ref_count_value
-//       Access: Public
+//       Access: Published
 //  Description: Retrieves the value stored in the EventParameter.  It
 //               is only valid to call this if is_typed_ref_count()
 //               has already returned true.
@@ -286,7 +286,7 @@ get_typed_ref_count_value() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::get_ptr
-//       Access: Public
+//       Access: Published
 //  Description: Retrieves a pointer to the actual value stored in the
 //               parameter.  The TypeHandle of this pointer may be
 //               examined to determine the actual type of parameter it
@@ -316,7 +316,7 @@ EventStoreValueBase() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventStoreTypedRefCount::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE EventStoreTypedRefCount::
@@ -327,7 +327,7 @@ EventStoreTypedRefCount(const TypedReferenceCount *value) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventStoreTypedRefCount::set_value
-//       Access: Public
+//       Access: Published
 //  Description: Changes the value stored in the parameter.  It is
 //               dangerous to do this for a parameter already added to
 //               an event, since the parameters may be shared.
@@ -340,7 +340,7 @@ set_value(const TypedReferenceCount *value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventStoreTypedRefCount::get_value
-//       Access: Public
+//       Access: Published
 //  Description: Retrieves the value stored in the parameter.
 ////////////////////////////////////////////////////////////////////
 INLINE TypedReferenceCount *EventStoreTypedRefCount::
