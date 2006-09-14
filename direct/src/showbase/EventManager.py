@@ -7,6 +7,7 @@ from MessengerGlobal import *
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.task.Task import Task
+from pandac.PandaModules import *
 
 class EventManager:
 
@@ -54,7 +55,14 @@ class EventManager:
         else:
             # Must be some user defined type, return the ptr
             # which will be downcast to that type
-            return eventParameter.getPtr()
+            ptr = eventParameter.getPtr()
+            
+            if isinstance(ptr, EventStorePandaNode):
+                # Actually, it's a kludgey wrapper around a PandaNode
+                # pointer.  Return the node.
+                ptr = ptr.getValue()
+
+            return ptr
         
     def processEvent(self, event):
         """
