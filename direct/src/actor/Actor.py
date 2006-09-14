@@ -1047,8 +1047,8 @@ class Actor(DirectObject, NodePath):
             for geomNum in range(0, numGeoms):
                 thisGeom = thisGeomNode.node().getGeom(geomNum)
                 thisGeom.markBoundStale()
-                Actor.notify.debug("fixing bounds for node %s, geom %s" % \
-                                  (nodeNum, geomNum))
+                assert Actor.notify.debug("fixing bounds for node %s, geom %s" % \
+                                          (nodeNum, geomNum))
             thisGeomNode.node().markBoundStale()
 
     def showAllBounds(self):
@@ -1204,7 +1204,8 @@ class Actor(DirectObject, NodePath):
             anim = animDict.get(animName)
             if anim == None:
                 # anim was not present
-                Actor.notify.debug("couldn't find anim: %s" % (animName))
+                assert Actor.notify.debug("couldn't find anim: %s" % (animName))
+                pass
             else:
                 # bind the animation first if we need to
                 if not isinstance(anim[1], AnimControl):
@@ -1293,7 +1294,8 @@ class Actor(DirectObject, NodePath):
 
                     if anim == None:
                         # anim was not present
-                        Actor.notify.debug("couldn't find anim: %s" % (animName))
+                        assert Actor.notify.debug("couldn't find anim: %s" % (animName))
+                        pass
                     else:
                         # bind the animation first if we need to
                         animControl = anim[1]
@@ -1313,8 +1315,8 @@ class Actor(DirectObject, NodePath):
         """
         assert partName not in self.__subpartDict
 
-        Actor.notify.debug("in loadModel: %s, part: %s, lod: %s, copy: %s" % \
-            (modelPath, partName, lodName, copy))
+        assert Actor.notify.debug("in loadModel: %s, part: %s, lod: %s, copy: %s" % \
+                                  (modelPath, partName, lodName, copy))
 
         if isinstance(modelPath, NodePath):
             # If we got a NodePath instead of a string, use *that* as
@@ -1463,8 +1465,8 @@ class Actor(DirectObject, NodePath):
         to 'lodRoot' for non-LOD actors) and dict of corresponding
         anims in the form animName:animPath{}
         """
-        Actor.notify.debug("in loadAnims: %s, part: %s, lod: %s" %
-                           (anims, partName, lodName))
+        assert Actor.notify.debug("in loadAnims: %s, part: %s, lod: %s" %
+                                  (anims, partName, lodName))
 
         for animName in anims.keys():
             # make sure this lod is in anim control dict
@@ -1484,8 +1486,8 @@ class Actor(DirectObject, NodePath):
         anims in the form animName:animPath{}. Deletes the anim control
         for the given animation and parts/lods.
         """
-        Actor.notify.debug("in unloadAnims: %s, part: %s, lod: %s" %
-                           (anims, partName, lodName))
+        assert Actor.notify.debug("in unloadAnims: %s, part: %s, lod: %s" %
+                                  (anims, partName, lodName))
 
         if (lodName == None):
             lodNames = self.__animControlDict.keys()
@@ -1593,7 +1595,7 @@ class Actor(DirectObject, NodePath):
 
         # Are there any controls requested for joints in this bundle?
         # If so, apply them.
-        print 'actor bundle %s, %s'% (bundle,bundle.this)
+        assert Actor.notify.debug('actor bundle %s, %s'% (bundle,bundle.this))
         controlDict = self.__controlJoints.get(bundle.this, None)
         if controlDict:
             for jointName, node in controlDict.items():
@@ -1612,8 +1614,8 @@ class Actor(DirectObject, NodePath):
         else:
             # store the animControl
             anim[1] = animControl
-            Actor.notify.debug("binding anim: %s to part: %s, lod: %s" %
-                               (animName, partName, lodName))
+            assert Actor.notify.debug("binding anim: %s to part: %s, lod: %s" %
+                                      (animName, partName, lodName))
         return animControl
 
     def __copyPartBundles(self, other):
