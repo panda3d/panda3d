@@ -292,6 +292,7 @@ CData(const LODNode::CData &copy) :
   _switch_vector(copy._switch_vector),
   _lowest(copy._lowest),
   _highest(copy._highest),
+  _bounds_seq(UpdateSeq::old()),
   _got_force_switch(copy._got_force_switch),
   _force_switch(copy._force_switch),
   _num_shown(copy._num_shown)
@@ -304,7 +305,11 @@ CData(const LODNode::CData &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LODNode::Switch::
-Switch(float in, float out) : _shown(false) {
+Switch(float in, float out) : 
+  _shown(false),
+  _bounds_seq(UpdateSeq::old()),
+  _verify_ok(false)
+{
   set_range(in, out);
 }
 

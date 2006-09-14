@@ -208,7 +208,7 @@ operator ++ () {
   if (priv_is_special(new_seq)) {
     // Oops, wraparound.  We don't want to confuse the new value
     // with our special cases.
-    new_seq = (PN_int32)SC_old;
+    new_seq = (PN_int32)SC_old + 1;
   }
 
 #ifdef HAVE_THREADS
@@ -220,7 +220,7 @@ operator ++ () {
     if (priv_is_special(new_seq)) {
       // Oops, wraparound.  We don't want to confuse the new value
       // with our special cases.
-      new_seq = (PN_int32)SC_old;
+      new_seq = (PN_int32)SC_old + 1;
     }
     result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
   }
@@ -243,7 +243,7 @@ operator ++ (int) {
   if (priv_is_special(new_seq)) {
     // Oops, wraparound.  We don't want to confuse the new value
     // with our special cases.
-    new_seq = (PN_int32)SC_old;
+    new_seq = (PN_int32)SC_old + 1;
   }
 
 #ifdef HAVE_THREADS
@@ -255,7 +255,7 @@ operator ++ (int) {
     if (priv_is_special(new_seq)) {
       // Oops, wraparound.  We don't want to confuse the new value
       // with our special cases.
-      new_seq = (PN_int32)SC_old;
+      new_seq = (PN_int32)SC_old + 1;
     }
     result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
   }
