@@ -57,6 +57,12 @@ public:
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
+  virtual CPT(TransformState)
+    calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                      bool &found_any,
+                      const TransformState *transform,
+                      Thread *current_thread) const;
+
 PUBLISHED:
   INLINE CharacterJointBundle *get_bundle() const;
 

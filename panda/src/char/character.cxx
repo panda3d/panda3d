@@ -172,6 +172,38 @@ cull_callback(CullTraverser *, CullTraverserData &) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Character::calc_tight_bounds
+//       Access: Public, Virtual
+//  Description: This is used to support
+//               NodePath::calc_tight_bounds().  It is not intended to
+//               be called directly, and it has nothing to do with the
+//               normal Panda bounding-volume computation.
+//
+//               If the node contains any geometry, this updates
+//               min_point and max_point to enclose its bounding box.
+//               found_any is to be set true if the node has any
+//               geometry at all, or left alone if it has none.  This
+//               method may be called over several nodes, so it may
+//               enter with min_point, max_point, and found_any
+//               already set.
+//
+//               This function is recursive, and the return value is
+//               the transform after it has been modified by this
+//               node's transform.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) Character::
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
+                  const TransformState *transform, Thread *current_thread) const {
+  // This method is overridden by Character solely to provide a hook
+  // to force the joints to update before computing the bounding
+  // volume.
+  ((Character *)this)->update_to_now();
+
+  return PandaNode::calc_tight_bounds(min_point, max_point, 
+                                      found_any, transform, current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Character::update_to_now
 //       Access: Published
 //  Description: Advances the character's frame to the current time,
