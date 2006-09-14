@@ -512,7 +512,7 @@ class Actor(DirectObject, NodePath):
 ##             self.__LODNode.node().setSwitch(index, self.switches[eachLod][0],
 ##                                      self.switches[eachLod][1])
 
-    def addLOD(self, lodName, inDist=0, outDist=0):
+    def addLOD(self, lodName, inDist=0, outDist=0, center=None):
         """addLOD(self, string)
         Add a named node under the LODNode to parent all geometry
         of a specific LOD under.
@@ -522,6 +522,8 @@ class Actor(DirectObject, NodePath):
         self.switches[lodName] = [inDist, outDist]
         # add the switch distance info
         self.__LODNode.node().addSwitch(inDist, outDist)
+        if center != None:
+            self.__LODNode.node().setCenter(center)
 
     def setLOD(self, lodName, inDist=0, outDist=0):
         """setLOD(self, string)
