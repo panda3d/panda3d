@@ -257,6 +257,7 @@ def generateNativeWrappers():
         moduleModulesFilename = os.path.join(outputCodeDir, '%sModules.py' % (moduleName))
         moduleModules = open(moduleModulesFilename, 'w')
 
+        moduleModules.write('from extension_native_helpers import *\n')
         moduleModules.write('from %s import *\n\n' % (moduleName))
 
         # Now look for extensions

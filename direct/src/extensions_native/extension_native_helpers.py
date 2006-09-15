@@ -1,6 +1,23 @@
 ###  Tools
-from libpandaexpress import *
+__all__ = ["Dtool_ObjectToDict", "Dtool_funcToMethod"]
 
+import sys,os
+
+# Make sure the panda DLL directory is first on the path.
+if (sys.platform == "win32"):
+    target = None
+    for dir in sys.path:
+        lib = os.path.join(dir,"libpandaexpress.dll")
+        if (os.path.exists(lib)):
+            target = dir
+    if (target == None):
+        print "Cannot find libpandaexpress. Exiting."
+        os.exit(1)
+    path=os.environ["PATH"]
+    if (path.startswith(target+";")==0):
+        os.environ["PATH"] = target+";"+path
+
+from libpandaexpress import *
 
 def Dtool_ObjectToDict(clas, name, obj):
     clas.DtoolClassDict[name] = obj;

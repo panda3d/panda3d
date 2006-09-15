@@ -1823,13 +1823,11 @@ for pkg in (PACKAGES + ["extras"]):
                 CopyAllFiles("built/lib/","thirdparty/linux-libs-a/"+pkg.lower()+"/lib/")
 if (sys.platform == "win32"):
     if (OMIT.count("PYTHON")==0):
-        CopyFile('built/bin/ppython.exe',  'thirdparty/win-python/python.exe')
-        CopyFile('built/bin/ppythonw.exe', 'thirdparty/win-python/pythonw.exe')
         CopyFile('built/bin/python24.dll', 'thirdparty/win-python/python24.dll')
-        CopyTree('built/bin/lib',  'thirdparty/win-python/lib')
-        CopyTree('built/bin/dlls', 'thirdparty/win-python/dlls')
-        CopyTree('built/bin/tcl',  'thirdparty/win-python/tcl')
-        ConditionalWriteFile('built/bin/panda.pth',"..\n")
+        CopyTree('built/python', 'thirdparty/win-python')
+        CopyFile('built/python/ppython.exe', 'thirdparty/win-python/python.exe')
+        CopyFile('built/python/ppythonw.exe', 'thirdparty/win-python/pythonw.exe')
+        ConditionalWriteFile('built/python/panda.pth',"..\n../bin\n")
 
 ########################################################################
 ##

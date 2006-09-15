@@ -23,13 +23,13 @@
 
 #ifdef BUILDING_GENPYCODE
 #define LINK_SOURCE "\\bin\\genpycode.exe"
-#define LINK_TARGET "\\bin\\ppython.exe"
+#define LINK_TARGET "\\python\\ppython.exe"
 #define GENPYCODE 1
 #endif
 
 #ifdef BUILDING_PACKPANDA
 #define LINK_SOURCE "\\bin\\packpanda.exe"
-#define LINK_TARGET "\\bin\\ppython.exe"
+#define LINK_TARGET "\\python\\ppython.exe"
 #define PACKPANDA 1
 #endif
 
