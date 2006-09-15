@@ -38,4 +38,6 @@ extern EXPCL_PANDA ConfigVariableDouble drive_vertical_ramp_down_time;
 extern EXPCL_PANDA ConfigVariableDouble drive_horizontal_ramp_up_time;
 extern EXPCL_PANDA ConfigVariableDouble drive_horizontal_ramp_down_time;
 
+extern EXPCL_PANDA ConfigVariableDouble inactivity_timeout;
+
 #endif

@@ -32,6 +32,7 @@
 #include "dcast.h"
 #include "indent.h"
 #include "mutexHolder.h"
+#include "nearly_zero.h"
 
 #include <algorithm>
 
@@ -67,8 +68,11 @@ MouseWatcher(const string &name) :
   _button_down = false;
   _eh = (EventHandler *)NULL;
   _display_region = (DisplayRegion *)NULL;
-  _has_inactivity_timeout = false;
-  _inactivity_timeout = 0.0;
+
+  _inactivity_timeout = inactivity_timeout;
+  _has_inactivity_timeout = !IS_NEARLY_ZERO(_inactivity_timeout);
+  
+  _inactivity_timeout_event = "inactivity_timeout";
   _last_activity = 0.0;
   _inactivity_state = IS_active;
 
@@ -1425,6 +1429,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
       }
     }
     _inactivity_state = IS_inactive;
+    throw_event(_inactivity_timeout_event);
     break;
     
   case IS_inactive_to_active:

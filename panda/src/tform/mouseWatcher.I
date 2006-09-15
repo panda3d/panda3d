@@ -511,12 +511,15 @@ has_display_region() const {
 //     Function: MouseWatcher::set_inactivity_timeout
 //       Access: Published
 //  Description: Sets an inactivity timeout on the mouse activity.
-//               When this timeout (in seconds) is exceed with no
+//               When this timeout (in seconds) is exceeded with no
 //               keyboard or mouse activity, all currently-held
 //               buttons are automatically released.  This is intended
 //               to help protect against people who inadvertently (or
 //               intentionally) leave a keyboard key stuck down and
 //               then wander away from the keyboard.
+//
+//               Also, when this timeout expires, the event specified
+//               by set_inactivity_timeout() will be generated.
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcher::
 set_inactivity_timeout(double timeout) {
@@ -561,6 +564,30 @@ clear_inactivity_timeout() {
   _has_inactivity_timeout = false;
   _inactivity_timeout = 0.0;
   note_activity();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_inactivity_timeout_event
+//       Access: Published
+//  Description: Specifies the event string that will be generated
+//               when the inactivity timeout counter expires.  See
+//               set_inactivity_timeout().
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+set_inactivity_timeout_event(const string &event) {
+  _inactivity_timeout_event = event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_inactivity_timeout_event
+//       Access: Published
+//  Description: Returns the event string that will be generated
+//               when the inactivity timeout counter expires.  See
+//               set_inactivity_timeout().
+////////////////////////////////////////////////////////////////////
+INLINE const string &MouseWatcher::
+get_inactivity_timeout_event() const {
+  return _inactivity_timeout_event;
 }
 
 ////////////////////////////////////////////////////////////////////

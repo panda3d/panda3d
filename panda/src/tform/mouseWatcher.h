@@ -126,6 +126,10 @@ PUBLISHED:
   INLINE bool has_inactivity_timeout() const;
   INLINE double get_inactivity_timeout() const;
   INLINE void clear_inactivity_timeout();
+
+  INLINE void set_inactivity_timeout_event(const string &event);
+  INLINE const string &get_inactivity_timeout_event() const;
+
   void note_activity();
 
 public:
@@ -217,6 +221,7 @@ private:
 
   bool _has_inactivity_timeout;
   double _inactivity_timeout;
+  string _inactivity_timeout_event;
   double _last_activity;
 
   enum InactivityState {

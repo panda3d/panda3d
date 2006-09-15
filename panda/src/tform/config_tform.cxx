@@ -55,6 +55,9 @@ ConfigVariableDouble drive_horizontal_ramp_up_time
 ConfigVariableDouble drive_horizontal_ramp_down_time
 ("drive-horizontal-ramp-down-time", 0.0);
 
+ConfigVariableDouble inactivity_timeout
+("inactivity-timeout", 0.0);
+
 ConfigureFn(config_tform) {
   DriveInterface::init_type();
   ButtonThrower::init_type();
