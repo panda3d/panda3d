@@ -554,6 +554,10 @@ class Actor(DirectObject, NodePath):
         """
         return self.__hasLOD
 
+    def setCenter(self, center):
+        if center != None:
+            self.__LODNode.node().setCenter(center)
+            
     def update(self, lod=0):
         lodnames = self.getLODNames()
         if (lod < len(lodnames)):
