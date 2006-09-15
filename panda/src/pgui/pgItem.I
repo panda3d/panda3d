@@ -352,6 +352,19 @@ get_press_prefix() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_repeat_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the repeat
+//               event for all PGItems.  The repeat event is the
+//               concatenation of this string followed by a button
+//               name, followed by a hyphen and get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_repeat_prefix() {
+  return "repeat-";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_release_prefix
 //       Access: Published, Static
 //  Description: Returns the prefix that is used to define the release
@@ -463,6 +476,19 @@ get_focus_out_event() const {
 INLINE string PGItem::
 get_press_event(const ButtonHandle &button) const {
   return get_press_prefix() + button.get_name() + "-" + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_repeat_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when the
+//               item is active and the indicated mouse or keyboard
+//               button is continuously held down while the mouse is
+//               within the frame.
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_repeat_event(const ButtonHandle &button) const {
+  return get_repeat_prefix() + button.get_name() + "-" + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -583,7 +583,12 @@ void PGItem::
 press(const MouseWatcherParameter &param, bool background) {
   if (!background) {
     PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-    string event = get_press_event(param.get_button());
+    string event;
+    if (param.is_keyrepeat()) {
+      event = get_repeat_event(param.get_button());
+    } else {
+      event = get_press_event(param.get_button());
+    }
     play_sound(event);
     throw_event(event, EventParameter(ep));
   }

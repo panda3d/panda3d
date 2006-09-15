@@ -30,6 +30,7 @@
 class EXPCL_PANDA ButtonHandle {
 PUBLISHED:
   INLINE ButtonHandle();
+  INLINE ButtonHandle(int index);
 
 public:
   INLINE ButtonHandle(const ButtonHandle &copy);

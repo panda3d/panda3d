@@ -73,6 +73,38 @@ get_button_up_event() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::set_button_repeat_event
+//       Access: Published
+//  Description: Specifies the generic event that is generated (if
+//               any) repeatedly while a key or button is held down.
+//               Unlike the specific events that are unique to each
+//               key, this same event name is used for *all* button
+//               events, and the name of the button pressed (possibly
+//               with modifier prefixes) will be sent as a parameter.
+//
+//               If this string is empty, no event is generated.  It
+//               is possible to generate both generic events and
+//               specific events for the same button.
+//
+//               See also set_keystroke_event().
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonThrower::
+set_button_repeat_event(const string &button_repeat_event) {
+  _button_repeat_event = button_repeat_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::get_button_repeat_event
+//       Access: Published
+//  Description: Returns the button_repeat_event that has been set on
+//               this ButtonThrower.  See set_button_repeat_event().
+////////////////////////////////////////////////////////////////////
+INLINE const string &ButtonThrower::
+get_button_repeat_event() const {
+  return _button_repeat_event;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ButtonThrower::set_keystroke_event
 //       Access: Published
 //  Description: Specifies the event that is generated (if any) for
@@ -82,6 +114,12 @@ get_button_up_event() const {
 //               been pressed.  For instance, pressing shift and 4
 //               together will generate the button event "shift-4",
 //               but it will generate the keystroke "$".
+//
+//               If a key is held down, keyrepeat will cause the same
+//               keystroke event to be generated repeatedly.  This is
+//               different from the corresponding down event, which
+//               will only be generated once, followed by a number of
+//               button repeat events.
 //
 //               This event is generated with a single wstring
 //               parameter, which is a one-character string that

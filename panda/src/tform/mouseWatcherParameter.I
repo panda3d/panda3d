@@ -78,6 +78,23 @@ set_button(const ButtonHandle &button) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::set_keyrepeat
+//       Access: Public
+//  Description: Sets the state of the "keyrepeat" flag.  This is true
+//               if a button-press event was generated due to
+//               keyrepeat, or false if it is an original button
+//               press.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcherParameter::
+set_keyrepeat(bool flag) {
+  if (flag) {
+    _flags |= F_is_keyrepeat;
+  } else {
+    _flags &= ~F_is_keyrepeat;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherParameter::set_keycode
 //       Access: Public
 //  Description: Sets the keycode associated with this event, if any.
@@ -166,6 +183,18 @@ has_button() const {
 INLINE ButtonHandle MouseWatcherParameter::
 get_button() const {
   return _button;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::is_keyrepeat
+//       Access: Published
+//  Description: Returns true if the button-down even was generated
+//               due to keyrepeat, or false if it was an original
+//               button down.
+////////////////////////////////////////////////////////////////////
+INLINE bool MouseWatcherParameter::
+is_keyrepeat() const {
+  return (_flags & F_is_keyrepeat) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -31,6 +31,8 @@
 #include "buttonHandle.h"
 #include "buttonEventList.h"
 #include "linmath_events.h"
+#include "bitArray.h"
+#include "clockObject.h"
 #include "pvector.h"
 
 class MouseWatcherParameter;
@@ -75,11 +77,16 @@ PUBLISHED:
   INLINE MouseWatcherRegion *get_over_region(float x, float y) const;
   MouseWatcherRegion *get_over_region(const LPoint2f &pos) const;
 
+  INLINE bool is_button_down(ButtonHandle button) const;
+
   INLINE void set_button_down_pattern(const string &pattern);
   INLINE const string &get_button_down_pattern() const;
 
   INLINE void set_button_up_pattern(const string &pattern);
   INLINE const string &get_button_up_pattern() const;
+
+  INLINE void set_button_repeat_pattern(const string &pattern);
+  INLINE const string &get_button_repeat_pattern() const;
 
   INLINE void set_enter_pattern(const string &pattern);
   INLINE const string &get_enter_pattern() const;
@@ -115,6 +122,12 @@ PUBLISHED:
   int get_num_groups() const;
   MouseWatcherGroup *get_group(int n) const;
 
+  INLINE void set_inactivity_timeout(double timeout);
+  INLINE bool has_inactivity_timeout() const;
+  INLINE double get_inactivity_timeout() const;
+  INLINE void clear_inactivity_timeout();
+  void note_activity();
+
 public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -147,7 +160,7 @@ protected:
                            const ButtonHandle &button);
 
   void move();
-  void press(ButtonHandle button);
+  void press(ButtonHandle button, bool keyrepeat);
   void release(ButtonHandle button);
   void keystroke(int keycode);
   void candidate(const wstring &candidate, size_t highlight_start, 
@@ -178,6 +191,7 @@ private:
   int _external_suppress;
   LPoint2f _mouse;
   LPoint2f _mouse_pixel;
+  BitArray _current_buttons_down;
 
   Regions _current_regions;
   PT(MouseWatcherRegion) _preferred_region;
@@ -189,6 +203,7 @@ private:
 
   string _button_down_pattern;
   string _button_up_pattern;
+  string _button_repeat_pattern;
   string _enter_pattern;
   string _leave_pattern;
   string _within_pattern;
@@ -199,6 +214,18 @@ private:
   EventHandler *_eh;
   ModifierButtons _mods;
   DisplayRegion *_display_region;
+
+  bool _has_inactivity_timeout;
+  double _inactivity_timeout;
+  double _last_activity;
+
+  enum InactivityState {
+    IS_active,
+    IS_inactive,
+    IS_active_to_inactive,
+    IS_inactive_to_active,
+  };
+  InactivityState _inactivity_state;
 
 #ifndef NDEBUG
   NodePath _show_regions_render2d;

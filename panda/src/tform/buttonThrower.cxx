@@ -307,6 +307,10 @@ do_general_event(const ButtonEvent &button_event, const string &button_name) {
     event_name = _button_up_event;
     break;
 
+  case ButtonEvent::T_repeat:
+    event_name = _button_repeat_event;
+    break;
+
   case ButtonEvent::T_keystroke:
     event_name = _keystroke_event;
     break;
@@ -388,7 +392,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
       const ButtonEvent &be = button_events->get_event(i);
       string event_name = be._button.get_name();
 
-      if (be._type == ButtonEvent::T_down) {
+      if (be._type == ButtonEvent::T_down || be._type == ButtonEvent::T_repeat) {
         // Button down.
         if (!_mods.button_down(be._button)) {
           // We only prepend modifier names on the button-down events,
@@ -398,7 +402,11 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
 
         if (!_throw_buttons_active || has_throw_button(_mods, be._button)) {
           // Process this button.
-          do_specific_event(event_name, be._time);
+          if (be._type == ButtonEvent::T_repeat) {
+            do_specific_event(event_name + "-repeat", be._time);
+          } else {
+            do_specific_event(event_name, be._time);
+          }
           do_general_event(be, event_name);
           
         } else {

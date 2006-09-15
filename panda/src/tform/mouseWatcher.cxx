@@ -44,7 +44,7 @@ TypeHandle MouseWatcher::_type_handle;
 ////////////////////////////////////////////////////////////////////
 MouseWatcher::
 MouseWatcher(const string &name) : 
-  DataNode(name) 
+  DataNode(name)
 {
   _pixel_xy_input = define_input("pixel_xy", EventStoreVec2::get_class_type());
   _pixel_size_input = define_input("pixel_size", EventStoreVec2::get_class_type());
@@ -67,6 +67,10 @@ MouseWatcher(const string &name) :
   _button_down = false;
   _eh = (EventHandler *)NULL;
   _display_region = (DisplayRegion *)NULL;
+  _has_inactivity_timeout = false;
+  _inactivity_timeout = 0.0;
+  _last_activity = 0.0;
+  _inactivity_state = IS_active;
 
   // When this flag is true, the mouse pointer is allowed to be
   // "entered" into multiple regions simultaneously; when false, it
@@ -334,6 +338,41 @@ get_group(int n) const {
   MutexHolder holder(_lock);
   nassertr(n >= 0 && n < (int)_groups.size(), NULL);
   return _groups[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::note_activity
+//       Access: Published
+//  Description: Can be used in conjunction with the inactivity
+//               timeout to inform the MouseWatcher that the user has
+//               just performed some action which proves he/she is
+//               present.  It may be necessary to call this for
+//               external events, such as joystick action, that the
+//               MouseWatcher might otherwise not know about.  This
+//               will reset the current inactivity timer.  When the
+//               inactivity timer reaches the length of time specified
+//               by set_inactivity_timeout(), with no keyboard or
+//               mouse activity and no calls to note_activity(), then
+//               any buttons held will be automatically released.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+note_activity() {
+  _last_activity = ClockObject::get_global_clock()->get_frame_time();
+  switch (_inactivity_state) {
+  case IS_active:
+    break;
+
+  case IS_inactive:
+    _inactivity_state = IS_inactive_to_active;
+    break;
+
+  case IS_active_to_inactive:
+    _inactivity_state = IS_active;
+    break;
+
+  case IS_inactive_to_active:
+    break;
+  }
 }
 
 
@@ -810,11 +849,12 @@ move() {
 //               being depressed.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
-press(ButtonHandle button) {
+press(ButtonHandle button, bool keyrepeat) {
   nassertv(_lock.debug_is_locked());
 
   MouseWatcherParameter param;
   param.set_button(button);
+  param.set_keyrepeat(keyrepeat);
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
 
@@ -828,8 +868,13 @@ press(ButtonHandle button) {
 
     if (_preferred_button_down_region != (MouseWatcherRegion *)NULL) {
       _preferred_button_down_region->press(param);
-      throw_event_pattern(_button_down_pattern,
-                          _preferred_button_down_region, button);
+      if (keyrepeat) {
+        throw_event_pattern(_button_repeat_pattern,
+                            _preferred_button_down_region, button);
+      } else {
+        throw_event_pattern(_button_down_pattern,
+                            _preferred_button_down_region, button);
+      }
     }
     
   } else {
@@ -1186,6 +1231,8 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
   Thread *current_thread = trav->get_current_thread();
   MutexHolder holder(_lock);
 
+  bool activity = false;
+
   // Initially, we do not suppress any events to objects below us in
   // the data graph.
   _internal_suppress = 0;
@@ -1207,6 +1254,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     // Asad: determine if mouse moved from last position
     const LVecBase2f &last_f = _xy->get_value();
     if (f != last_f) {
+      activity = true;
       move();
     }
 
@@ -1260,34 +1308,63 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     _internal_suppress |= _preferred_region->get_suppress_flags();
   }
 
-  // Look for button events.
+  ButtonEventList new_button_events;
+
+  // Look for new button events.
   if (input.has_data(_button_events_input)) {
-    const ButtonEventList *button_events;
-    DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_ptr());
-    int num_events = button_events->get_num_events();
+    const ButtonEventList *this_button_events;
+    DCAST_INTO_V(this_button_events, input.get_data(_button_events_input).get_ptr());
+    int num_events = this_button_events->get_num_events();
     for (int i = 0; i < num_events; i++) {
-      const ButtonEvent &be = button_events->get_event(i);
+      const ButtonEvent &be = this_button_events->get_event(i);
       be.update_mods(_mods);
 
       switch (be._type) {
       case ButtonEvent::T_down:
-        press(be._button);
+        if (!_current_buttons_down.get_bit(be._button.get_index())) {
+          // The button was not already depressed; thus, this is not
+          // keyrepeat.
+          activity = true;
+          _current_buttons_down.set_bit(be._button.get_index());
+          press(be._button, false);
+          new_button_events.add_event(be);
+          break;
+        }
+        // The button was already depressed, so this is really just
+        // keyrepeat.  Fall through.
+
+      case ButtonEvent::T_repeat:
+        _current_buttons_down.set_bit(be._button.get_index());
+        press(be._button, true);
+        new_button_events.add_event(ButtonEvent(be._button, ButtonEvent::T_repeat,
+                                                be._time));
         break;
 
       case ButtonEvent::T_up:
+        activity = true;
+        _current_buttons_down.clear_bit(be._button.get_index());
         release(be._button);
+        new_button_events.add_event(be);
         break;
 
       case ButtonEvent::T_keystroke:
+        // We don't consider "keystroke" an activity event, because it
+        // might be just keyrepeat.
         keystroke(be._keycode);
+        new_button_events.add_event(be);
         break;
 
       case ButtonEvent::T_candidate:
+        activity = true;
         candidate(be._candidate_string, be._highlight_start, be._highlight_end, be._cursor_pos);
+        new_button_events.add_event(be);
         break;
 
       case ButtonEvent::T_resume_down:
-        // Ignore this, since the button wasn't pressed just now.
+        _current_buttons_down.set_bit(be._button.get_index());
+        // Don't call press(), since the button wasn't actually
+        // pressed just now.
+        new_button_events.add_event(be);
         break;
 
       case ButtonEvent::T_move:
@@ -1295,6 +1372,73 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
         break;
       }
     }
+  }
+
+  // Now check the inactivity timer.
+  if (_has_inactivity_timeout) {
+    if (activity) {
+      note_activity();
+      
+    } else {
+      double now = ClockObject::get_global_clock()->get_frame_time();
+      double elapsed = now - _last_activity;
+
+      // Toggle the inactivity state to inactive.
+      if (elapsed > _inactivity_timeout) {
+        switch (_inactivity_state) {
+        case IS_active:
+          _inactivity_state = IS_active_to_inactive;
+          break;
+
+        case IS_inactive:
+          break;
+          
+        case IS_active_to_inactive:
+          break;
+          
+        case IS_inactive_to_active:
+          _inactivity_state = IS_inactive;
+          break;
+        }
+      }
+    }
+  }
+
+  switch (_inactivity_state) {
+  case IS_active:
+  case IS_inactive:
+    break;
+    
+  case IS_active_to_inactive:
+    // "Release" all of the currently-held buttons.
+    if (tform_cat.is_debug()) {
+      tform_cat.info()
+        << "MouseWatcher detected " << _inactivity_timeout
+        << " seconds of inactivity; releasing held buttons.\n";
+    }
+    {
+      for (int i = 0; i < _current_buttons_down.get_num_bits(); ++i) {
+        if (_current_buttons_down.get_bit(i)) {
+          release(ButtonHandle(i));
+          new_button_events.add_event(ButtonEvent(ButtonHandle(i), ButtonEvent::T_up));
+        }
+      }
+    }
+    _inactivity_state = IS_inactive;
+    break;
+    
+  case IS_inactive_to_active:
+    // "Press" all of the buttons we "released" before.
+    {
+      for (int i = 0; i < _current_buttons_down.get_num_bits(); ++i) {
+        if (_current_buttons_down.get_bit(i)) {
+          press(ButtonHandle(i), false);
+          new_button_events.add_event(ButtonEvent(ButtonHandle(i), ButtonEvent::T_down));
+        }
+      }
+    }
+    _inactivity_state = IS_active;
+    break;
   }
 
   if (_has_mouse &&
@@ -1306,41 +1450,31 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
   }
 
+  // Now transmit the buttons events down the graph.
   int suppress_buttons = ((_internal_suppress | _external_suppress) & MouseWatcherRegion::SF_any_button);
 
-  if (suppress_buttons != 0) {
-    // Suppress some buttons.
-    _button_events->clear();
+  _button_events->clear();
 
-    if (input.has_data(_button_events_input)) {
-      const ButtonEventList *button_events;
-      DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_ptr());
-      int num_events = button_events->get_num_events();
-      for (int i = 0; i < num_events; i++) {
-        const ButtonEvent &be = button_events->get_event(i);
-        bool suppress = true;
-        
-        if (be._type != ButtonEvent::T_keystroke && 
-            MouseButton::is_mouse_button(be._button)) {
-          suppress = ((suppress_buttons & MouseWatcherRegion::SF_mouse_button) != 0);
-        } else {
-          suppress = ((suppress_buttons & MouseWatcherRegion::SF_other_button) != 0);
-        }
-
-        if (!suppress || be._type == ButtonEvent::T_up) {
-          // Don't suppress this button event; pass it through.
-          _button_events->add_event(be);
-        }
-      }
+  int num_events = new_button_events.get_num_events();
+  for (int i = 0; i < num_events; i++) {
+    const ButtonEvent &be = new_button_events.get_event(i);
+    bool suppress = true;
+    
+    if (be._type != ButtonEvent::T_keystroke && 
+        MouseButton::is_mouse_button(be._button)) {
+      suppress = ((suppress_buttons & MouseWatcherRegion::SF_mouse_button) != 0);
+    } else {
+      suppress = ((suppress_buttons & MouseWatcherRegion::SF_other_button) != 0);
     }
-
-    if (_button_events->get_num_events() != 0) {
-      output.set_data(_button_events_output, EventParameter(_button_events));
+    
+    if (!suppress || be._type == ButtonEvent::T_up) {
+      // Don't suppress this button event; pass it through.
+      _button_events->add_event(be);
     }
-
-  } else {
-    // Transmit all buttons.
-    output.set_data(_button_events_output, input.get_data(_button_events_input));
+  }
+  
+  if (_button_events->get_num_events() != 0) {
+    output.set_data(_button_events_output, EventParameter(_button_events));
   }
 
   // We always pass the pixel_size data through.

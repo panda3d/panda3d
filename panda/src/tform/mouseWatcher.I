@@ -139,6 +139,17 @@ get_over_region(float x, float y) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::is_button_down
+//       Access: Published
+//  Description: Returns true if the indicated button is currently
+//               being held down, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool MouseWatcher::
+is_button_down(ButtonHandle button) const {
+  return _inactivity_state != IS_inactive && _current_buttons_down.get_bit(button.get_index());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::set_button_down_pattern
 //       Access: Published
 //  Description: Sets the pattern string that indicates how the event
@@ -191,6 +202,39 @@ set_button_up_pattern(const string &pattern) {
 INLINE const string &MouseWatcher::
 get_button_up_pattern() const {
   return _button_up_pattern;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_button_repeat_pattern
+//       Access: Published
+//  Description: Sets the pattern string that indicates how the event
+//               names are generated when a button is continuously
+//               held and generates keyrepeat "down" events.  This is
+//               a string that may contain any of the following:
+//
+//                  %r  - the name of the region the mouse is over
+//                  %b  - the name of the button pressed.
+//
+//               The event name will be based on the in_pattern
+//               string specified here, with all occurrences of the
+//               above strings replaced with the corresponding values.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+set_button_repeat_pattern(const string &pattern) {
+  _button_repeat_pattern = pattern;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_button_repeat_pattern
+//       Access: Published
+//  Description: Returns the string that indicates how event names are
+//               names are generated when a button is continuously
+//               held and generates keyrepeat "down" events.  See
+//               set_button_repeat_pattern().
+////////////////////////////////////////////////////////////////////
+INLINE const string &MouseWatcher::
+get_button_repeat_pattern() const {
+  return _button_repeat_pattern;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -461,6 +505,62 @@ get_display_region() const {
 INLINE bool MouseWatcher::
 has_display_region() const {
   return (_display_region != (DisplayRegion *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_inactivity_timeout
+//       Access: Published
+//  Description: Sets an inactivity timeout on the mouse activity.
+//               When this timeout (in seconds) is exceed with no
+//               keyboard or mouse activity, all currently-held
+//               buttons are automatically released.  This is intended
+//               to help protect against people who inadvertently (or
+//               intentionally) leave a keyboard key stuck down and
+//               then wander away from the keyboard.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+set_inactivity_timeout(double timeout) {
+  _has_inactivity_timeout = true;
+  _inactivity_timeout = timeout;
+  note_activity();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::has_inactivity_timeout
+//       Access: Published
+//  Description: Returns true if an inactivity timeout has been set,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool MouseWatcher::
+has_inactivity_timeout() const {
+  return _has_inactivity_timeout;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_inactivity_timeout
+//       Access: Published
+//  Description: Returns the inactivity timeout that has been set.
+//               It is an error to call this if
+//               has_inactivity_timeout() returns false.
+////////////////////////////////////////////////////////////////////
+INLINE double MouseWatcher::
+get_inactivity_timeout() const {
+  nassertr(_has_inactivity_timeout, 0.0);
+  return _inactivity_timeout;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::clear_inactivity_timeout
+//       Access: Published
+//  Description: Removes the inactivity timeout and restores the
+//               MouseWatcher to its default behavior of allowing a
+//               key to be held indefinitely.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+clear_inactivity_timeout() {
+  _has_inactivity_timeout = false;
+  _inactivity_timeout = 0.0;
+  note_activity();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -31,6 +31,17 @@ ButtonHandle() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ButtonHandle::Constructor
+//       Access: Published
+//  Description: Constructs a ButtonHandle with the corresponding
+//               index number, which may have been returned by an
+//               earlier call to ButtonHandle::get_index().
+////////////////////////////////////////////////////////////////////
+INLINE ButtonHandle::
+ButtonHandle(int index) : _index(index) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::Copy Constructor
 //       Access: Published
 //  Description:

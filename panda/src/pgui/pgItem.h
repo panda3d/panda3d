@@ -139,6 +139,7 @@ PUBLISHED:
   INLINE static string get_focus_in_prefix();
   INLINE static string get_focus_out_prefix();
   INLINE static string get_press_prefix();
+  INLINE static string get_repeat_prefix();
   INLINE static string get_release_prefix();
   INLINE static string get_keystroke_prefix();
 
@@ -149,6 +150,7 @@ PUBLISHED:
   INLINE string get_focus_in_event() const;
   INLINE string get_focus_out_event() const;
   INLINE string get_press_event(const ButtonHandle &button) const;
+  INLINE string get_repeat_event(const ButtonHandle &button) const;
   INLINE string get_release_event(const ButtonHandle &button) const;
   INLINE string get_keystroke_event() const;
 

@@ -40,6 +40,7 @@ public:
   INLINE ~MouseWatcherParameter();
 
   INLINE void set_button(const ButtonHandle &button);
+  INLINE void set_keyrepeat(bool flag);
   INLINE void set_keycode(int keycode);
   INLINE void set_candidate(const wstring &candidate_string,
                             size_t highlight_start, 
@@ -52,6 +53,7 @@ public:
 PUBLISHED:
   INLINE bool has_button() const;
   INLINE ButtonHandle get_button() const;
+  INLINE bool is_keyrepeat() const;
 
   INLINE bool has_keycode() const;
   INLINE int get_keycode() const;
@@ -93,6 +95,7 @@ public:
     F_is_outside    = 0x004,
     F_has_keycode   = 0x008,
     F_has_candidate = 0x010,
+    F_is_keyrepeat  = 0x020,
   };
   int _flags;
 };

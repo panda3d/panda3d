@@ -49,6 +49,8 @@ PUBLISHED:
   INLINE const string &get_button_down_event() const;
   INLINE void set_button_up_event(const string &button_up_event);
   INLINE const string &get_button_up_event() const;
+  INLINE void set_button_repeat_event(const string &button_repeat_event);
+  INLINE const string &get_button_repeat_event() const;
   INLINE void set_keystroke_event(const string &keystroke_event);
   INLINE const string &get_keystroke_event() const;
   INLINE void set_candidate_event(const string &candidate_event);
@@ -92,6 +94,7 @@ private:
 private:
   string _button_down_event;
   string _button_up_event;
+  string _button_repeat_event;
   string _keystroke_event;
   string _candidate_event;
   string _move_event;

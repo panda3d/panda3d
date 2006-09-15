@@ -27,6 +27,27 @@ ButtonEventList() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventList::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ButtonEventList::
+ButtonEventList(const ButtonEventList &copy) :
+  _events(copy._events)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventList::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonEventList::
+operator = (const ButtonEventList &copy) {
+  _events = copy._events;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventList::add_event
 //       Access: Public
 //  Description: Adds a new event to the end of the list.

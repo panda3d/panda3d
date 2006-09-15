@@ -41,6 +41,8 @@ class DatagramIterator;
 class EXPCL_PANDA ButtonEventList : public EventStoreValueBase {
 public:
   INLINE ButtonEventList();
+  INLINE ButtonEventList(const ButtonEventList &copy);
+  INLINE void operator = (const ButtonEventList &copy);
 
   INLINE void add_event(ButtonEvent event);
   INLINE int get_num_events() const;

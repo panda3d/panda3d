@@ -42,6 +42,10 @@ output(ostream &out) const {
     out << "button " << _button << " up";
     break;
 
+  case T_repeat:
+    out << "button " << _button << " repeat";
+    break;
+
   case T_keystroke:
     out << "keystroke " << _keycode;
     break;
@@ -70,6 +74,7 @@ write_datagram(Datagram &dg) const {
   case T_down:
   case T_resume_down:
   case T_up:
+  case T_repeat:
     // We write the button name.  This is not particularly compact, but
     // presumably we don't get thousands of button events per frame, and
     // it is robust as the button index may change between sessions but
@@ -108,6 +113,7 @@ read_datagram(DatagramIterator &scan) {
   case T_down:
   case T_resume_down:
   case T_up:
+  case T_repeat:
     _button = ButtonRegistry::ptr()->get_button(scan.get_string());
     break;
 

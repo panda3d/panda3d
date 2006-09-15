@@ -422,7 +422,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     for (int i = 0; i < num_events; i++) {
       const ButtonEvent &be = button_events->get_event(i);
       if (be._type != ButtonEvent::T_keystroke) {
-        bool down = (be._type == ButtonEvent::T_down);
+        bool down = (be._type != ButtonEvent::T_up);
         
         if (be._button == KeyboardButton::up()) {
           _up_arrow.set_key(down);
