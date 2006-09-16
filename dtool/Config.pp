@@ -86,6 +86,10 @@
   #define BUILD_TYPE gmsvc
 #elif $[eq $[PLATFORM], osx]
   #define BUILD_TYPE unix
+#elif $[eq $[PLATFORM], osxppc]
+  #define BUILD_TYPE unix
+#elif $[eq $[PLATFORM], osxintell]
+  #define BUILD_TYPE unix
 #else
   #define BUILD_TYPE unix
 #endif
@@ -801,6 +805,10 @@
   #define USE_COMPILER GCC
 #elif $[eq $[PLATFORM], osx]
   #define USE_COMPILER GCC
+#elif $[eq $[PLATFORM], osxppc]
+  #define USE_COMPILER GCC
+#elif $[eq $[PLATFORM], osxintell]
+  #define USE_COMPILER GCC
 #elif $[eq $[PLATFORM], FreeBSD]
   #define USE_COMPILER GCC
 #endif
@@ -927,6 +935,12 @@
 #if $[eq $[PLATFORM], osx]
   #defer STATIC_LIB_C libtool -static -o $[target] $[sources]
   #defer STATIC_LIB_C++ libtool -static -o $[target] $[sources]
+#elif $[eq $[PLATFORM], osxppc]
+  #defer STATIC_LIB_C libtool -static -o $[target] $[sources]
+  #defer STATIC_LIB_C++ libtool -static -o $[target] $[sources]
+#elif  $[eq $[PLATFORM], osxintell]
+  #defer STATIC_LIB_C libtool -static -o $[target] $[sources]
+  #defer STATIC_LIB_C++ libtool -static -o $[target] $[sources]
 //#elif $[eq $[PLATFORM], FreeBSD]
 //  #defer STATIC_LIB_C libtool --mode=link -static -o $[target] $[sources]
 //  #defer STATIC_LIB_C++ libtool --mode=link -static -o $[target] $[sources]
@@ -950,6 +964,14 @@
 // libraries, and $[lpath] is a space-separated list of directories in
 // which those libraries can be found.
 #if $[eq $[PLATFORM], osx]
+  #defer SHARED_LIB_C $[cc_ld] -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+  #defer SHARED_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+  #defer BUNDLE_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -bundle -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+#elif $[eq $[PLATFORM], osxppc]
+  #defer SHARED_LIB_C $[cc_ld] -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+  #defer SHARED_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+  #defer BUNDLE_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -bundle -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+#elif  $[eq $[PLATFORM], osxintell]
   #defer SHARED_LIB_C $[cc_ld] -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
   #defer SHARED_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
   #defer BUNDLE_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -bundle -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
