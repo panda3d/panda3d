@@ -59,6 +59,8 @@ PUBLISHED:
   virtual ~NurbsCurve();
 
 public:
+  virtual PandaNode *make_copy() const;
+
   // We don't need to re-publish these, since they're all published
   // from NurbsCurveInterface.
   virtual void set_order(int order);

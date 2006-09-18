@@ -88,6 +88,19 @@ NurbsCurve::
 ~NurbsCurve() {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurve::make_copy
+//       Access: Public, Virtual
+//  Description: Returns a newly-allocated PandaNode that is a shallow
+//               copy of this one.  It will be a different pointer,
+//               but its internal data may or may not be shared with
+//               that of the original PandaNode.  No children will be
+//               copied.
+////////////////////////////////////////////////////////////////////
+PandaNode *NurbsCurve::
+make_copy() const {
+  return new NurbsCurve(*this);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurve::set_order
