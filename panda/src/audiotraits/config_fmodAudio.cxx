@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
-#ifdef HAVE_FMOD //[
+#ifdef HAVE_FMODEX //[
 
 
 #include "config_fmodAudio.h"

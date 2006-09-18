@@ -20,7 +20,7 @@
 #include "pandabase.h"
 #include "dcast.h"
 
-#ifdef HAVE_FMOD //[
+#ifdef HAVE_FMODEX //[
 
 //Panda Headers
 #include "config_audio.h"
@@ -33,31 +33,29 @@ TypeHandle FmodAudioDSP::_type_handle;
 //     Function: FmodAudioDSP::FmodAudioDSP
 //       Access: Protected
 //  Description: Constructor
-//				 This is a thin wrapper around FMOD-EX.
+//               This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
 ////////////////////////////////////////////////////////////////////
-FmodAudioDSP::FmodAudioDSP(AudioManager *manager, AudioManager::DSP_category cat) {
+FmodAudioDSP::
+FmodAudioDSP(AudioManager *manager, AudioManager::DSP_category cat) {
   // Intentionally blank.
 
-		audio_debug("FmodAudioDSP::FmodAudioDSP()	Creating new DSP " );
+  audio_debug("FmodAudioDSP::FmodAudioDSP() Creating new DSP " );
+  
+  //Local Variables that are needed.
+  FMOD_RESULT result;
 
-		//Local Variables that are needed.
-		FMOD_RESULT result;
+  //Assign the values we need
+  DCAST_INTO_V(_manager, manager);
 
-		//Assign the values we need
-		DCAST_INTO_V(_manager, manager);
+  FMOD_DSP_TYPE dsptype = (FMOD_DSP_TYPE)cat;
 
-		FMOD_DSP_TYPE dsptype = (FMOD_DSP_TYPE)cat;
+  result = _manager->_system->createDSPByType( dsptype, &_dsp);
+  ERRCHECK(result);
 
-		result = _manager->_system->createDSPByType( dsptype, &_dsp);
-		ERRCHECK(result);
+  set_in_chain(false);
 
-		set_in_chain(false);
-
-		cerr << get_dsp_name() << endl;
-
-		audio_debug("DSP Loaded");
-
+  audio_debug("DSP Loaded");
 }
 
 
@@ -68,21 +66,20 @@ FmodAudioDSP::FmodAudioDSP(AudioManager *manager, AudioManager::DSP_category cat
 //       Access: Published, Virtual
 //  Description: DESTRUCTOR!!!
 ////////////////////////////////////////////////////////////////////
-FmodAudioDSP::~FmodAudioDSP() {
+FmodAudioDSP::
+~FmodAudioDSP() {
+  audio_debug("FmodAudioSound::FmodAudioDSP() Destruction!!! " );
 
-		audio_debug("FmodAudioSound::FmodAudioDSP()	Destruction!!! " );
+  //Local Variables that are needed.
+  FMOD_RESULT result;
 
-		//Local Variables that are needed.
-		FMOD_RESULT result;
+  result = _dsp->remove();
+  ERRCHECK(result);
 
-		result = _dsp->remove();
-		ERRCHECK(result);
+  result = _dsp->release();
+  ERRCHECK(result);
 
-		result = _dsp->release();
-		ERRCHECK(result);
-
-		audio_debug("DSP GONE");
-	
+  audio_debug("DSP GONE");
 }
 
 
@@ -91,20 +88,19 @@ FmodAudioDSP::~FmodAudioDSP() {
 //       Access: Published, Virtual
 //  Description: This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
-//				 [This resets an FMOD DSP to its default values]
+//               [This resets an FMOD DSP to its default values]
 ////////////////////////////////////////////////////////////////////
-void FmodAudioDSP::reset() {
+void FmodAudioDSP::
+reset() {
+  audio_debug("FmodAudioSound::reset() Reset DSP to default settings." );
 
-	audio_debug("FmodAudioSound::reset() Reset DSP to default settings." );
+  //Local Variables that are needed.
+  FMOD_RESULT result;
 
-	//Local Variables that are needed.
-	FMOD_RESULT result;
+  result = _dsp->reset();
+  ERRCHECK(result);
 
-	result = _dsp->reset();
-	ERRCHECK(result);
-
-	audio_debug("DSP Reset.");
-
+  audio_debug("DSP Reset.");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,19 +108,19 @@ void FmodAudioDSP::reset() {
 //       Access: Published, Virtual
 //  Description: This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
-//				 [This removes the DSP from an Effects Chain]
+//               [This removes the DSP from an Effects Chain]
 ////////////////////////////////////////////////////////////////////
-void FmodAudioDSP::remove() {
-	audio_debug("FmodAudioSound::remove() Removes a DSP from and effect chain." );
+void FmodAudioDSP::
+remove() {
+  audio_debug("FmodAudioSound::remove() Removes a DSP from and effect chain." );
 
-	//Local Variables that are needed.
-	FMOD_RESULT result;
+  //Local Variables that are needed.
+  FMOD_RESULT result;
 
-	result = _dsp->remove();
-	ERRCHECK(result);
+  result = _dsp->remove();
+  ERRCHECK(result);
 
-	audio_debug("DSP Removed from relative effects chain.");
-
+  audio_debug("DSP Removed from relative effects chain.");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -132,18 +128,19 @@ void FmodAudioDSP::remove() {
 //       Access: Published, Virtual
 //  Description: This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
-//				 [This turns the Bypass for an Effect on and off]/
+//         [This turns the Bypass for an Effect on and off]/
 ////////////////////////////////////////////////////////////////////
-void FmodAudioDSP::set_bypass(bool bypass) {
-	audio_debug("FmodAudioSound::set_bypass() ." );
+void FmodAudioDSP::
+set_bypass(bool bypass) {
+  audio_debug("FmodAudioSound::set_bypass() ." );
 
-	//Local Variables that are needed.
-	FMOD_RESULT result;
+  //Local Variables that are needed.
+  FMOD_RESULT result;
 
-	result = _dsp->setBypass(bypass);
-	ERRCHECK(result);
+  result = _dsp->setBypass(bypass);
+  ERRCHECK(result);
 
-	audio_debug("DSP Bypass set to:" << bypass );
+  audio_debug("DSP Bypass set to:" << bypass );
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -152,19 +149,19 @@ void FmodAudioDSP::set_bypass(bool bypass) {
 //  Description: This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
 ////////////////////////////////////////////////////////////////////
-bool FmodAudioDSP::get_bypass() {
-	audio_debug("FmodAudioSound::get_bypass() ." );
+bool FmodAudioDSP::
+get_bypass() {
+  audio_debug("FmodAudioSound::get_bypass() ." );
 
-	//Local Variables that are needed.
-	FMOD_RESULT result;
+  //Local Variables that are needed.
+  FMOD_RESULT result;
 
-	bool bypass;
+  bool bypass;
 
-	result = _dsp->getBypass(&bypass);
-	ERRCHECK(result);
+  result = _dsp->getBypass(&bypass);
+  ERRCHECK(result);
 
-	return bypass;
-
+  return bypass;
 }
 
 
@@ -175,19 +172,18 @@ bool FmodAudioDSP::get_bypass() {
 //  Description: This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
 ////////////////////////////////////////////////////////////////////
-void FmodAudioDSP::set_parameter(const string &name, float value) {
-	
-	int parameterIndex = find_parameter(name);
-	if (parameterIndex < 0) {
-		return;
-	}
+void FmodAudioDSP::
+set_parameter(const string &name, float value) {
+  int parameterIndex = find_parameter(name);
+  if (parameterIndex < 0) {
+    return;
+  }
 
-	//Local Variables that are needed.
-	FMOD_RESULT result;
+  //Local Variables that are needed.
+  FMOD_RESULT result;
 
-	result = _dsp->setParameter(parameterIndex, value);
-	ERRCHECK(result);
-
+  result = _dsp->setParameter(parameterIndex, value);
+  ERRCHECK(result);
 }
 
 
@@ -197,18 +193,19 @@ void FmodAudioDSP::set_parameter(const string &name, float value) {
 //  Description: This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
 ////////////////////////////////////////////////////////////////////
-int FmodAudioDSP::get_num_parameters() {
-	audio_debug("FmodAudioSound::get_num_parameters() ." );
+int FmodAudioDSP::
+get_num_parameters() {
+  audio_debug("FmodAudioSound::get_num_parameters() ." );
 
-	//Local Variables that are needed.
-	FMOD_RESULT result;
+  //Local Variables that are needed.
+  FMOD_RESULT result;
 
-	int numOfParameters;
+  int numOfParameters;
 
-	result = _dsp->getNumParameters(&numOfParameters);
-	ERRCHECK(result);
+  result = _dsp->getNumParameters(&numOfParameters);
+  ERRCHECK(result);
 
-	return numOfParameters;
+  return numOfParameters;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -217,30 +214,30 @@ int FmodAudioDSP::get_num_parameters() {
 //  Description: This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
 ////////////////////////////////////////////////////////////////////
-string FmodAudioDSP::get_parameter_name(int parameterIndex) {
-	// intentionally blank
+string FmodAudioDSP::
+get_parameter_name(int parameterIndex) {
 
-	audio_debug("FmodAudioSound::get_parameter_name()" );
+  audio_debug("FmodAudioSound::get_parameter_name()" );
 
-	//Local Variables that are needed.
-	FMOD_RESULT result;
+  //Local Variables that are needed.
+  FMOD_RESULT result;
 
-	//int		parameterIndex;
-	char	parameterName[32]; 
-	char	parameterLabel[32]; 
-	char	parameterDescription[32];
-	int		parameterDescriptionLength = 0;
-	float	parameterMin;
-	float	parameterMax;
+  //int   parameterIndex;
+  char  parameterName[32]; 
+  char  parameterLabel[32]; 
+  char  parameterDescription[32];
+  int   parameterDescriptionLength = 0;
+  float parameterMin;
+  float parameterMax;
 
-	result = _dsp->getParameterInfo(parameterIndex, parameterName, parameterLabel, parameterDescription, parameterDescriptionLength, &parameterMin, &parameterMax);
-	ERRCHECK(result);
+  result = _dsp->getParameterInfo(parameterIndex, parameterName, parameterLabel, parameterDescription, parameterDescriptionLength, &parameterMin, &parameterMax);
+  ERRCHECK(result);
 
-	string returnInfo = (parameterName);
+  string returnInfo = (parameterName);
 
-	return returnInfo;
+  return returnInfo;
 
-	//return "";
+  //return "";
 }
 
 
@@ -249,37 +246,38 @@ string FmodAudioDSP::get_parameter_name(int parameterIndex) {
 //       Access: Published, Virtual
 //  Description: This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
-//				 This Method actually returns FMOD's Parameter Label
-//				 Information, and not Description.
-//				 The reason is, that most of the FMOD's Description
-//				 Properties seem to be empty.
-//				 Also the Label sort of serves as as a description by
-//				 return the type of unit the cooresponding parameter
-//				 modifies for a DSP.
-//				 IE.  For the Echo.   The first parameter is 'Delay'
-//				 and the units for measuring the Delay is in Milliseconds.
-//				 The Label returns Milliseconds letting you know that.
+//               This Method actually returns FMOD's Parameter Label
+//               Information, and not Description.
+//               The reason is, that most of the FMOD's Description
+//               Properties seem to be empty.
+//               Also the Label sort of serves as as a description by
+//               return the type of unit the cooresponding parameter
+//               modifies for a DSP.
+//               IE.  For the Echo.   The first parameter is 'Delay'
+//               and the units for measuring the Delay is in Milliseconds.
+//               The Label returns Milliseconds letting you know that.
 ////////////////////////////////////////////////////////////////////
-string FmodAudioDSP::get_parameter_description(int parameterIndex) {
-	// intentionally blank
+string FmodAudioDSP::
+get_parameter_description(int parameterIndex) {
+  // intentionally blank
 
-	audio_debug("FmodAudioSound::get_parameter_description()." );
+  audio_debug("FmodAudioSound::get_parameter_description()." );
 
-	//Local Variables that are needed.
-	FMOD_RESULT result;
+  //Local Variables that are needed.
+  FMOD_RESULT result;
 
-	//int		parameterIndex;
-	char	parameterName[32]; 
-	char	parameterLabel[32]; 
-	char	parameterDescription[32];
-	int		parameterDescriptionLength = 0;
-	float	parameterMin;
-	float	parameterMax;
+  //int   parameterIndex;
+  char  parameterName[32]; 
+  char  parameterLabel[32]; 
+  char  parameterDescription[32];
+  int   parameterDescriptionLength = 0;
+  float parameterMin;
+  float parameterMax;
 
-	result = _dsp->getParameterInfo(parameterIndex, parameterName, parameterLabel, parameterDescription, parameterDescriptionLength, &parameterMin, &parameterMax);
-	ERRCHECK(result);
+  result = _dsp->getParameterInfo(parameterIndex, parameterName, parameterLabel, parameterDescription, parameterDescriptionLength, &parameterMin, &parameterMax);
+  ERRCHECK(result);
 
-	return parameterLabel;
+  return parameterLabel;
 
 }
 
@@ -289,25 +287,26 @@ string FmodAudioDSP::get_parameter_description(int parameterIndex) {
 //  Description: This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
 ////////////////////////////////////////////////////////////////////
-float FmodAudioDSP::get_parameter_min(int parameterIndex) {
-	
-	audio_debug("FmodAudioSound::get_parameter_min()." );
+float FmodAudioDSP::
+get_parameter_min(int parameterIndex) {
+  
+  audio_debug("FmodAudioSound::get_parameter_min()." );
 
-	//Local Variables that are needed.
-	FMOD_RESULT result;
+  //Local Variables that are needed.
+  FMOD_RESULT result;
 
-	//int		parameterIndex;
-	char	parameterName[32]; 
-	char	parameterLabel[32]; 
-	char	parameterDescription[32];
-	int		parameterDescriptionLength = 0;
-	float	parameterMin;
-	float	parameterMax;
+  //int   parameterIndex;
+  char  parameterName[32]; 
+  char  parameterLabel[32]; 
+  char  parameterDescription[32];
+  int   parameterDescriptionLength = 0;
+  float parameterMin;
+  float parameterMax;
 
-	result = _dsp->getParameterInfo(parameterIndex, parameterName, parameterLabel, parameterDescription, parameterDescriptionLength, &parameterMin, &parameterMax);
-	ERRCHECK(result);
+  result = _dsp->getParameterInfo(parameterIndex, parameterName, parameterLabel, parameterDescription, parameterDescriptionLength, &parameterMin, &parameterMax);
+  ERRCHECK(result);
 
-	return parameterMin;
+  return parameterMin;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -316,25 +315,26 @@ float FmodAudioDSP::get_parameter_min(int parameterIndex) {
 //  Description: This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
 ////////////////////////////////////////////////////////////////////
-float FmodAudioDSP::get_parameter_max(int parameterIndex) {
-	
-	audio_debug("FmodAudioSound::get_parameter_min()." );
+float FmodAudioDSP::
+get_parameter_max(int parameterIndex) {
+  
+  audio_debug("FmodAudioSound::get_parameter_min()." );
 
-	//Local Variables that are needed.
-	FMOD_RESULT result;
+  //Local Variables that are needed.
+  FMOD_RESULT result;
 
-	//int		parameterIndex;
-	char	parameterName[32]; 
-	char	parameterLabel[32]; 
-	char	parameterDescription[32];
-	int		parameterDescriptionLength = 0;
-	float	parameterMin;
-	float	parameterMax;
+  //int   parameterIndex;
+  char  parameterName[32]; 
+  char  parameterLabel[32]; 
+  char  parameterDescription[32];
+  int   parameterDescriptionLength = 0;
+  float parameterMin;
+  float parameterMax;
 
-	result = _dsp->getParameterInfo(parameterIndex, parameterName, parameterLabel, parameterDescription, parameterDescriptionLength, &parameterMin, &parameterMax);
-	ERRCHECK(result);
+  result = _dsp->getParameterInfo(parameterIndex, parameterName, parameterLabel, parameterDescription, parameterDescriptionLength, &parameterMin, &parameterMax);
+  ERRCHECK(result);
 
-	return parameterMax;
+  return parameterMax;
 }
 
 
@@ -344,25 +344,26 @@ float FmodAudioDSP::get_parameter_max(int parameterIndex) {
 //  Description: This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
 ////////////////////////////////////////////////////////////////////
-float FmodAudioDSP::get_parameter_value(const string &name) {
-	
-	int parameterIndex = find_parameter(name);
-	if (parameterIndex < 0) {
-		return 0.0;
-	}
+float FmodAudioDSP::
+get_parameter_value(const string &name) {
+  
+  int parameterIndex = find_parameter(name);
+  if (parameterIndex < 0) {
+    return 0.0;
+  }
 
-	//Local Variables that are needed.
-	FMOD_RESULT result;
+  //Local Variables that are needed.
+  FMOD_RESULT result;
  
-	float	parameterValue; 
-	char	valuestr[32];
-	int		valuestrlen = 32;
+  float parameterValue; 
+  char  valuestr[32];
+  int   valuestrlen = 32;
 
 
-	result = _dsp->getParameter(parameterIndex, &parameterValue, valuestr, valuestrlen);
-	ERRCHECK(result);
+  result = _dsp->getParameter(parameterIndex, &parameterValue, valuestr, valuestrlen);
+  ERRCHECK(result);
 
-	return parameterValue;
+  return parameterValue;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -370,17 +371,18 @@ float FmodAudioDSP::get_parameter_value(const string &name) {
 //       Access: Private
 //  Description: Convert a parameter name to an fmod parameter index.
 ////////////////////////////////////////////////////////////////////
-int FmodAudioDSP::find_parameter(const string &name) {
-	int np = get_num_parameters();
-	for (int i=0; i<np; i++) {
-		if ( name == get_parameter_name(i) ) {
+int FmodAudioDSP::
+find_parameter(const string &name) {
+  int np = get_num_parameters();
+  for (int i=0; i<np; i++) {
+    if ( name == get_parameter_name(i) ) {
 
-			audio_debug("FmodAudioSound::find_parameter() returning: " << get_parameter_name(i) << " " << i );
+      audio_debug("FmodAudioSound::find_parameter() returning: " << get_parameter_name(i) << " " << i );
 
-			return i;
-		}
-	}
-	return -1;
+      return i;
+    }
+  }
+  return -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -389,28 +391,27 @@ int FmodAudioDSP::find_parameter(const string &name) {
 //  Description: This is a thin wrapper around FMOD-EX.
 //               See the FMOD-EX documentation.
 ////////////////////////////////////////////////////////////////////
-string FmodAudioDSP::get_dsp_name() {
-	
-	audio_debug("FmodAudioSound::get_dsp_name()." );
+string FmodAudioDSP::
+get_dsp_name() {
+  audio_debug("FmodAudioSound::get_dsp_name()." );
 
-	//Local Variables that are needed.
-	FMOD_RESULT result;
-	char	name[32];
-	unsigned int	version;
-	int		channels;
-	int		configwidth;
-	int		configheight;
+  //Local Variables that are needed.
+  FMOD_RESULT result;
+  char  name[32];
+  unsigned int  version;
+  int   channels;
+  int   configwidth;
+  int   configheight;
 
-	result = _dsp->getInfo(name, &version, &channels, &configwidth, &configheight);
-	ERRCHECK(result);
+  result = _dsp->getInfo(name, &version, &channels, &configwidth, &configheight);
+  ERRCHECK(result);
 
-	string returnInfo = (name);
-	//returnInfo.append(" Version: ");
-	//returnInfo.append(version);
-	//returnInfo.append("\n");
+  string returnInfo = (name);
+  //returnInfo.append(" Version: ");
+  //returnInfo.append(version);
+  //returnInfo.append("\n");
 
-	return returnInfo;
-
+  return returnInfo;
 }
 
 
@@ -418,17 +419,15 @@ string FmodAudioDSP::get_dsp_name() {
 //     Function: FmodAudioDSP::get_in_chain()
 //       Access: Published, Virtual
 //  Description: This is a functiont to query if a DSP have been assigned
-//				 to the GLOBAL or a SOUND's effect chain.
-//				 This is to make sure you 'remove' an effect from a chain
-//				 before you move it somewhere else or destroy it.
+//         to the GLOBAL or a SOUND's effect chain.
+//         This is to make sure you 'remove' an effect from a chain
+//         before you move it somewhere else or destroy it.
 ////////////////////////////////////////////////////////////////////
-bool FmodAudioDSP::get_in_chain() {
-	
-	audio_debug("FmodAudioSound::get_in_chain()." );
+bool FmodAudioDSP::
+get_in_chain() {
+  audio_debug("FmodAudioSound::get_in_chain()." );
 
-	return _in_chain;
-
-
+  return _in_chain;
 }
 
 
@@ -436,16 +435,14 @@ bool FmodAudioDSP::get_in_chain() {
 //     Function: FmodAudioDSP::set_in_chain()
 //       Access: Published, Virtual
 //  Description: This is a functiont to set if a DSP have been assigned
-//				 to the GLOBAL or a SOUND's effect chain.
+//         to the GLOBAL or a SOUND's effect chain.
 ////////////////////////////////////////////////////////////////////
-void FmodAudioDSP::set_in_chain(bool chain_state) {
-	
-	audio_debug("FmodAudioSound::set_in_chain()." );
+void FmodAudioDSP::
+set_in_chain(bool chain_state) {
+  audio_debug("FmodAudioSound::set_in_chain()." );
 
-	_in_chain = chain_state;
-
+  _in_chain = chain_state;
 }
-
 
 
 #endif //]

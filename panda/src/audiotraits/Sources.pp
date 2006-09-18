@@ -23,7 +23,7 @@
 
 #begin lib_target
   #define TARGET fmod_audio
-  #define BUILD_TARGET $[HAVE_FMOD]
+  #define BUILD_TARGET $[HAVE_FMODEX]
   #define USE_PACKAGES fmod
   #define BUILDING_DLL BUILDING_FMOD_AUDIO
   #define LOCAL_LIBS audio event

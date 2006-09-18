@@ -71,7 +71,7 @@
 
 #include <pandabase.h>
 
-#ifdef HAVE_FMOD //[
+#ifdef HAVE_FMODEX //[
 
 #include "audioSound.h"
 

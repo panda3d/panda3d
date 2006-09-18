@@ -71,7 +71,7 @@
 #include "pandabase.h"
 #include "pset.h"
 
-#ifdef HAVE_FMOD //[
+#ifdef HAVE_FMODEX //[
 
 #include "audioManager.h"
 
