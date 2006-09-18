@@ -75,14 +75,10 @@ class Transitions:
                 guiId = 'fade',
                 relief = None,
                 image = self.fadeModel,
-                image_scale = 2 * base.getAspectRatio(),
+                image_scale = 2,
                 state = DGG.NORMAL,
                 )
-
-            def rescaleFade():
-                self.fade['image_scale'] = 2 * base.getAspectRatio()
-            
-            self.fade.accept('aspectRatioChanged', rescaleFade)
+            self.fade.setBin('unsorted', 0)
 
     def fadeIn(self, t=0.5, finishIval=None):
         """

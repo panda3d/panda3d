@@ -308,6 +308,7 @@ class DirectDialog(DirectFrame):
     def show(self):
         if self['fadeScreen']:
             base.transitions.fadeScreen(self['fadeScreen'])
+            self.setBin('gui-popup', 0)
         NodePath.show(self)
 
     def hide(self):
