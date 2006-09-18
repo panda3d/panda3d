@@ -138,7 +138,7 @@ class Loader(DirectObject):
             cb = Loader.Callback(len(modelList), callback, extraArgs)
             for i in range(len(modelList)):
                 modelPath = modelList[i]
-                if loaderOptions.allowRamCache() and ModelPool.hasModel(modelPath):
+                if loaderOptions.getAllowRamCache() and ModelPool.hasModel(modelPath):
                     # If it's already in the model pool, we won't
                     # bother bouncing the load request through the
                     # thread; and maybe we can just make the callback
