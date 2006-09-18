@@ -48,12 +48,21 @@ PUBLISHED:
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;
 
-  INLINE bool allow_disk_cache() const;
-  INLINE bool allow_ram_cache() const;
+  INLINE bool get_allow_disk_cache() const;
+  INLINE bool get_allow_ram_cache() const;
 
-private:  
+  void output(ostream &out) const;
+
+private:
+  void write_flag(ostream &out, string &sep, 
+                  const string &flag_name, int flag) const;
   int _flags;
 };
+
+INLINE ostream &operator << (ostream &out, const LoaderOptions &opts) {
+  opts.output(out);
+  return out;
+}
 
 #include "loaderOptions.I"
 

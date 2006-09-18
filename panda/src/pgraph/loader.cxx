@@ -189,7 +189,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) Loader::
 load_file(const Filename &filename, const LoaderOptions &options) const {
-  if (options.allow_ram_cache()) {
+  if (options.get_allow_ram_cache()) {
     // If we're allowing a RAM cache (and we don't have any other
     // funny options), use the ModelPool to load the file.
     PT(PandaNode) node = ModelPool::load_model(filename, options);
@@ -261,7 +261,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
 
     PT(BamCacheRecord) record;
 
-    if (cache->get_active() && options.allow_disk_cache()) {
+    if (cache->get_active() && options.get_allow_disk_cache()) {
       // See if the texture can be found in the on-disk cache, if it is
       // active.
       record = cache->lookup(path, "bam");

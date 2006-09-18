@@ -70,26 +70,26 @@ get_flags() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LoaderOptions::allow_disk_cache
+//     Function: LoaderOptions::get_allow_disk_cache
 //       Access: Published
 //  Description: Returns true if the loader flags allow retrieving the
 //               model from the on-disk bam cache (if it is enabled),
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool LoaderOptions::
-allow_disk_cache() const {
+get_allow_disk_cache() const {
   return (_flags & LF_no_disk_cache) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LoaderOptions::allow_ram_cache
+//     Function: LoaderOptions::get_allow_ram_cache
 //       Access: Published
 //  Description: Returns true if the loader flags allow retrieving the
 //               model from the in-memory ModelPool cache, false
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool LoaderOptions::
-allow_ram_cache() const {
+get_allow_ram_cache() const {
   return ((_flags & (LF_no_ram_cache | LF_convert_anim)) == 0 &&
           (_flags & LF_search) != 0);
 }
