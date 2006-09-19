@@ -74,7 +74,7 @@ Function runFunction
         ExecShell "open" "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk"
         !else
         ExecShell "open" "$SMPROGRAMS\${SMDIRECTORY}\Panda Greeting Card.lnk"
-        !endif        
+        !endif
 FunctionEnd
 
 Section "${SMDIRECTORY}" SecCore
@@ -151,8 +151,8 @@ Section "${SMDIRECTORY}" SecCore
             SetOutPath $INSTDIR\samples\GreetingCard
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Greeting Card.lnk" "$INSTDIR\python\ppython.exe" 'GreetingCard.py "$SMPROGRAMS\${SMDIRECTORY}"' "$INSTDIR\bin\pzip.exe" 0 SW_SHOWMINIMIZED "" "Panda Greeting Card"
             SetOutPath $INSTDIR
-            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\python\ppython.exe" 0 "" "" "Panda Manual"
-            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\python\ppython.exe" 0 "" "" "Panda Website"
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\bin\pzip.exe" 0 "" "" "Panda Manual"
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\bin\pzip.exe" 0 "" "" "Panda Website"
 
             FindFirst $0 $1 $INSTDIR\samples\*--*
             loop:

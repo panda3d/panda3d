@@ -958,10 +958,10 @@ def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
     if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
     if (opts.count("MSFORSCOPE")==0): cmd = cmd + ' /Zc:forScope'
     optlevel = getoptlevel(opts,OPTIMIZE)
-    if (optlevel==1): cmd = cmd + " /MD /Zi /DNDEBUG /RTCs /GS"
-    if (optlevel==2): cmd = cmd + " /MD /Zi /DNDEBUG "
-    if (optlevel==3): cmd = cmd + " /MD /Zi /DNDEBUG /O2 /Ob2 /DFORCE_INLINING "
-    if (optlevel==4): cmd = cmd + " /MD /Zi /DNDEBUG /Ox /Ob2 /DFORCE_INLINING /GL "
+    if (optlevel==1): cmd = cmd + " /MD /Zi /RTCs /GS"
+    if (optlevel==2): cmd = cmd + " /MD /Zi "
+    if (optlevel==3): cmd = cmd + " /MD /Zi /O2 /Ob2 /DFORCE_INLINING "
+    if (optlevel==4): cmd = cmd + " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /GL "
     cmd = cmd + " /Fd" + wobj[:-4] + ".pdb"
     building = getbuilding(opts)
     if (building): cmd = cmd + " /DBUILDING_" + building
