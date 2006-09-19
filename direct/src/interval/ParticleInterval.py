@@ -75,6 +75,8 @@ class ParticleInterval(Interval):
             for particles in self.particleEffect.getParticlesList():
                 particles.setRenderParent(renderParent.node())
 
+        self.__softStopped = False
+        
         if softStopT == 0.0:
             self.softStopT = duration
         elif softStopT < 0.0:
@@ -99,7 +101,6 @@ class ParticleInterval(Interval):
             self.particleEffect.softStop()
         self.__softStopped = True
 
-
     def privInitialize(self, t):
         if self.state != CInterval.SPaused:
             # Restarting from a hard stop or just interrupting the
@@ -115,6 +116,11 @@ class ParticleInterval(Interval):
 
         Interval.privInitialize(self,t)
 
+    def privInstant(self):
+        self.privInitialize(self.getDuration())
+        self.state = CInterval.SFinal
+        self.intervalDone()
+        
     def privStep(self, t):
         if self.state == CInterval.SPaused or t < self.currT:
             # Restarting from a pause.
