@@ -52,7 +52,6 @@ protected:
 
 public:
   virtual PandaNode *make_copy() const;
-  virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
   virtual void press(const MouseWatcherParameter &param, bool background);

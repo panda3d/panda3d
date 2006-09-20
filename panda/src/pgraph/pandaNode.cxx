@@ -157,6 +157,7 @@ PandaNode(const PandaNode &copy) :
     cdata->_internal_bounds = NULL;
     cdata->_internal_bounds_stale = true;
     cdata->_final_bounds = copy_cdata->_final_bounds;
+    cdata->_fancy_bits = copy_cdata->_fancy_bits;
     
 #ifdef HAVE_PYTHON
     // Copy and increment all of the Python objects held by the other
@@ -404,28 +405,20 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::has_cull_callback
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return
-//               true if cull_callback() has been defined.  Otherwise,
-//               returns false to indicate cull_callback() does not
-//               need to be called for this node during the cull
-//               traversal.
-////////////////////////////////////////////////////////////////////
-bool PandaNode::
-has_cull_callback() const {
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::cull_callback
 //       Access: Public, Virtual
-//  Description: If has_cull_callback() returns true, this function
-//               will be called during the cull traversal to perform
-//               any additional operations that should be performed at
-//               cull time.  This may include additional manipulation
-//               of render state or additional visible/invisible
-//               decisions, or any other arbitrary operation.
+//  Description: This function will be called during the cull
+//               traversal to perform any additional operations that
+//               should be performed at cull time.  This may include
+//               additional manipulation of render state or additional
+//               visible/invisible decisions, or any other arbitrary
+//               operation.
+//
+//               Note that this function will *not* be called unless
+//               set_cull_callback() is called in the constructor of
+//               the derived class.  It is necessary to call
+//               set_cull_callback() to indicated that we require
+//               cull_callback() to be called.
 //
 //               By the time this function is called, the node has
 //               already passed the bounding-volume test for the
@@ -994,6 +987,7 @@ set_attrib(const RenderAttrib *attrib, int override) {
     CPT(RenderState) new_state = cdata->_state->add_attrib(attrib, override);
     if (cdata->_state != new_state) {
       cdata->_state = new_state;
+      cdata->set_fancy_bit(FB_state, true);
       any_changed = true;
     }
   }
@@ -1025,6 +1019,7 @@ clear_attrib(TypeHandle type) {
     CPT(RenderState) new_state = cdata->_state->remove_attrib(type);
     if (cdata->_state != new_state) {
       cdata->_state = new_state;
+      cdata->set_fancy_bit(FB_state, !new_state->is_empty());
       any_changed = true;
     }
   }
@@ -1053,6 +1048,7 @@ set_effect(const RenderEffect *effect) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = cdata->_effects->add_effect(effect);
+    cdata->set_fancy_bit(FB_effects, true);
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
@@ -1069,6 +1065,7 @@ clear_effect(TypeHandle type) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = cdata->_effects->remove_effect(type);
+    cdata->set_fancy_bit(FB_effects, !cdata->_effects->is_empty());
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
@@ -1092,6 +1089,7 @@ set_state(const RenderState *state, Thread *current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     if (cdata->_state != state) {
       cdata->_state = state;
+      cdata->set_fancy_bit(FB_state, !state->is_empty());
       any_changed = true;
     }
   }
@@ -1119,6 +1117,7 @@ set_effects(const RenderEffects *effects, Thread *current_thread) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = effects;
+    cdata->set_fancy_bit(FB_effects, !effects->is_empty());
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
@@ -1139,6 +1138,7 @@ set_transform(const TransformState *transform, Thread *current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     if (cdata->_transform != transform) {
       cdata->_transform = transform;
+      cdata->set_fancy_bit(FB_transform, !transform->is_identity());
       any_changed = true;
 
       if (pipeline_stage == 0) {
@@ -1259,6 +1259,7 @@ set_tag(const string &key, const string &value, Thread *current_thread) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_tag_data[key] = value;
+    cdata->set_fancy_bit(FB_tag, true);
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
@@ -1275,6 +1276,7 @@ clear_tag(const string &key, Thread *current_thread) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_tag_data.erase(key);
+    cdata->set_fancy_bit(FB_tag, !cdata->_tag_data.empty());
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
@@ -1412,6 +1414,7 @@ copy_tags(PandaNode *other) {
          ++ti) {
       cdataw->_tag_data[(*ti).first] = (*ti).second;
     }
+    cdataw->set_fancy_bit(FB_tag, !cdataw->_tag_data.empty());
     
 #ifdef HAVE_PYTHON
     PythonTagData::const_iterator pti;
@@ -1539,6 +1542,7 @@ adjust_draw_mask(DrawMask show_mask, DrawMask hide_mask, DrawMask clear_mask) {
       cdata->_draw_show_mask = draw_show_mask;
       any_changed = true;
     }
+    cdata->set_fancy_bit(FB_draw_mask, !draw_control_mask.is_zero());
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
@@ -2184,6 +2188,24 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
 
     add_child(dest_child, sort, current_thread);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_cull_callback
+//       Access: Protected
+//  Description: Intended to be called in the constructor by any
+//               subclass that defines cull_callback(), this sets up
+//               the flags to indicate that the cullback needs to be
+//               called.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_cull_callback() {
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    cdata->set_fancy_bit(FB_cull_callback, true);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3254,6 +3276,7 @@ CData() {
   _internal_bounds = NULL;
   _internal_bounds_stale = true;
   _final_bounds = false;
+  _fancy_bits = 0;
 
   _net_collide_mask = CollideMask::all_off();
   _net_draw_control_mask = DrawMask::all_off();
@@ -3285,6 +3308,7 @@ CData(const PandaNode::CData &copy) :
   _internal_bounds(copy._internal_bounds),
   _internal_bounds_stale(copy._internal_bounds_stale),
   _final_bounds(copy._final_bounds),
+  _fancy_bits(copy._fancy_bits),
 
   _net_collide_mask(copy._net_collide_mask),
   _net_draw_control_mask(copy._net_draw_control_mask),
@@ -3413,6 +3437,13 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   pi += complete_up_list(*modify_up(), p_list + pi, manager);
   pi += complete_down_list(*modify_down(), p_list + pi, manager);
   pi += complete_down_list(*modify_stashed(), p_list + pi, manager);
+
+  // Since the _effects and _states members have been finalized by
+  // now, this should be safe.
+  set_fancy_bit(FB_transform, !_transform->is_identity());
+  set_fancy_bit(FB_state, !_state->is_empty());
+  set_fancy_bit(FB_effects, !_effects->is_empty());
+  set_fancy_bit(FB_tag, !_tag_data.empty());
 
   return pi;
 }

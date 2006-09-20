@@ -47,6 +47,7 @@ INLINE SwitchNode::
 SwitchNode(const string &name) :
   SelectiveChildNode(name)
 {
+  set_cull_callback();
 }
 
 ////////////////////////////////////////////////////////////////////

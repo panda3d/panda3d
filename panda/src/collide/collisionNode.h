@@ -49,7 +49,6 @@ public:
   virtual PandaNode *combine_with(PandaNode *other); 
   virtual CollideMask get_legal_collide_mask() const;
 
-  virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool is_renderable() const;
 

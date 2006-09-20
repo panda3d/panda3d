@@ -102,7 +102,6 @@ public:
                       const TransformState *transform,
                       Thread *current_thread) const;
   
-  virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool has_selective_visibility() const;
   virtual int get_first_visible_child() const;
@@ -253,6 +252,16 @@ PUBLISHED:
   virtual bool is_lod_node() const;
   virtual Light *as_light();
 
+  enum FancyBits {
+    FB_transform            = 0x0001,
+    FB_state                = 0x0002,
+    FB_effects              = 0x0004,
+    FB_tag                  = 0x0010,
+    FB_draw_mask            = 0x0020,
+    FB_cull_callback        = 0x0040,
+  };
+  INLINE int get_fancy_bits(Thread *current_thread = Thread::get_current_thread()) const;
+
 protected:
   INLINE CPT(BoundingVolume) get_user_bounds(int pipeline_stage, Thread *current_thread) const;
   CPT(BoundingVolume) get_internal_bounds(int pipeline_stage, Thread *current_thread) const;
@@ -275,6 +284,8 @@ protected:
                                         Thread *current_thread) const;
   virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map,
                                Thread *current_thread);
+
+  void set_cull_callback();
 
 private:
   class CData;
@@ -409,6 +420,8 @@ private:
   public:
     // This section contains the heavierweight parts of the node that
     // are less likely to change as often: tags, collide mask.
+
+    INLINE void set_fancy_bit(int bits, bool value);
     
 #ifdef HAVE_PYTHON
     void inc_py_refs();
@@ -446,6 +459,11 @@ private:
     // This is true if the external bounds of this node should be
     // deemed "final".  See set_final().
     bool _final_bounds;
+
+    // This bitmask is maintained automatically by the internal
+    // PandaNode code; it contains a 1 for each "fancy" attribute that
+    // is set on the node.  See enum FancyBits, above.
+    int _fancy_bits;
 
   public:
     // This section contains the data that is accumulated upward from
@@ -667,6 +685,7 @@ public:
   INLINE CPT(RenderAttrib) get_off_clip_planes() const;
   INLINE CPT(BoundingVolume) get_bounds() const;
   INLINE bool is_final() const;
+  INLINE int get_fancy_bits() const;
 
   INLINE PandaNode::Children get_children() const;
   INLINE PandaNode::Stashed get_stashed() const;

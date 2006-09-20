@@ -52,7 +52,6 @@ public:
   virtual PandaNode *make_copy() const;
   virtual void xform(const LMatrix4f &mat);
 
-  virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool is_renderable() const;
 

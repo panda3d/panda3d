@@ -618,6 +618,22 @@ is_final(Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_fancy_bits
+//       Access: Published
+//  Description: Returns the union of all of the enum FancyBits values
+//               corresponding to the various "fancy" attributes that
+//               are set on the node.  If this returns 0, the node has
+//               nothing interesting about it.  This is intended to
+//               speed traversal by quickly skipping past nodes that
+//               don't particularly affect the render state.
+////////////////////////////////////////////////////////////////////
+INLINE int PandaNode::
+get_fancy_bits(Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
+  return cdata->_fancy_bits;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_user_bounds
 //       Access: Protected
 //  Description: Returns the node's user bounding volume.  This is the
@@ -869,6 +885,22 @@ operator < (const UpConnection &other) const {
 INLINE PandaNode *PandaNode::UpConnection::
 get_parent() const {
   return _parent;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::set_fancy_bit
+//       Access: Public
+//  Description: Internal function to set (if value is true) or clear
+//               (if value is false) the indicated bit(s) in the
+//               _fancy_bits member.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::CData::
+set_fancy_bit(int bits, bool value) {
+  if (value) {
+    _fancy_bits |= bits;
+  } else {
+    _fancy_bits &= ~bits;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1350,7 +1382,7 @@ compare_draw_mask(DrawMask running_draw_mask, DrawMask camera_mask) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_num_parents
-//       Access: Published
+//       Access: Public
 //  Description: Returns the number of parent nodes this node has.  If
 //               this number is greater than 1, the node has been
 //               multiply instanced.  The order of the parent nodes is
@@ -1364,7 +1396,7 @@ get_num_parents() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_parent
-//       Access: Published
+//       Access: Public
 //  Description: Returns the nth parent node of this node.  See
 //               get_num_parents().  Also see get_parents(), if your
 //               intention is to iterate through the complete list of
@@ -1379,7 +1411,7 @@ get_parent(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::find_parent
-//       Access: Published
+//       Access: Public
 //  Description: Returns the index of the indicated parent node, if it
 //               is a parent, or -1 if it is not.
 ////////////////////////////////////////////////////////////////////
@@ -1390,7 +1422,7 @@ find_parent(PandaNode *node) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_num_children
-//       Access: Published
+//       Access: Public
 //  Description: Returns the number of child nodes this node has.  The
 //               order of the child nodes *is* meaningful and is based
 //               on the sort number that was passed to add_child(),
@@ -1403,7 +1435,7 @@ get_num_children() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_child
-//       Access: Published
+//       Access: Public
 //  Description: Returns the nth child node of this node.  See
 //               get_num_children().  Also see get_children(), if your
 //               intention is to iterate through the complete list of
@@ -1418,7 +1450,7 @@ get_child(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_child_sort
-//       Access: Published
+//       Access: Public
 //  Description: Returns the sort index of the nth child node of this
 //               node (that is, the number that was passed to
 //               add_child()).  See get_num_children().
@@ -1432,7 +1464,7 @@ get_child_sort(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::find_child
-//       Access: Published
+//       Access: Public
 //  Description: Returns the index of the indicated child node, if it
 //               is a child, or -1 if it is not.
 ////////////////////////////////////////////////////////////////////
@@ -1443,7 +1475,7 @@ find_child(PandaNode *node) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_num_stashed
-//       Access: Published
+//       Access: Public
 //  Description: Returns the number of stashed nodes this node has.
 //               These are former children of the node that have been
 //               moved to the special stashed list via stash_child().
@@ -1455,7 +1487,7 @@ get_num_stashed() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_stashed
-//       Access: Published
+//       Access: Public
 //  Description: Returns the nth stashed child of this node.  See
 //               get_num_stashed().  Also see get_stashed(), if your
 //               intention is to iterate through the complete list of
@@ -1471,7 +1503,7 @@ get_stashed(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_stashed_sort
-//       Access: Published
+//       Access: Public
 //  Description: Returns the sort index of the nth stashed node of this
 //               node (that is, the number that was passed to
 //               add_child()).  See get_num_stashed().
@@ -1485,7 +1517,7 @@ get_stashed_sort(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::find_stashed
-//       Access: Published
+//       Access: Public
 //  Description: Returns the index of the indicated stashed node, if
 //               it is a stashed child, or -1 if it is not.
 ////////////////////////////////////////////////////////////////////
@@ -1496,7 +1528,7 @@ find_stashed(PandaNode *node) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_state
-//       Access: Published
+//       Access: Public
 //  Description: Returns the complete RenderState that will be applied
 //               to all nodes at this level and below, as set on this
 //               node.  This returns only the RenderState set on this
@@ -1510,7 +1542,7 @@ get_state() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_effects
-//       Access: Published
+//       Access: Public
 //  Description: Returns the complete RenderEffects that will be
 //               applied to this node.
 ////////////////////////////////////////////////////////////////////
@@ -1521,7 +1553,7 @@ get_effects() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_transform
-//       Access: Published
+//       Access: Public
 //  Description: Returns the transform that has been set on this
 //               particular node.  This is not the net transform from
 //               the root, but simply the transform on this particular
@@ -1534,7 +1566,7 @@ get_transform() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_prev_transform
-//       Access: Published
+//       Access: Public
 //  Description: Returns the transform that has been set as this
 //               node's "previous" position.  See
 //               set_prev_transform().
@@ -1546,7 +1578,7 @@ get_prev_transform() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_tag
-//       Access: Published
+//       Access: Public
 //  Description: Retrieves the user-defined value that was previously
 //               set on this node for the particular key, if any.  If
 //               no value has been previously set, returns the empty
@@ -1564,7 +1596,7 @@ get_tag(const string &key) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::has_tag
-//       Access: Published
+//       Access: Public
 //  Description: Returns true if a value has been defined on this node
 //               for the particular key (even if that value is the
 //               empty string), or false if no value has been set.
@@ -1578,7 +1610,7 @@ has_tag(const string &key) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_net_collide_mask
-//       Access: Published
+//       Access: Public
 //  Description: Returns the union of all into_collide_mask() values
 //               set at CollisionNodes at this level and below.
 ////////////////////////////////////////////////////////////////////
@@ -1590,7 +1622,7 @@ get_net_collide_mask() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_off_clip_planes
-//       Access: Published
+//       Access: Public
 //  Description: Returns a ClipPlaneAttrib which represents the union
 //               of all of the clip planes that have been turned *off*
 //               at this level and below.
@@ -1603,7 +1635,7 @@ get_off_clip_planes() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::get_bounds
-//       Access: Published
+//       Access: Public
 //  Description: Returns the external bounding volume of this node: a
 //               bounding volume that contains the user bounding
 //               volume, the internal bounding volume, and all of the
@@ -1617,7 +1649,7 @@ get_bounds() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::is_final
-//       Access: Published
+//       Access: Public
 //  Description: Returns the current state of the "final" flag.
 //               Initially, this flag is off (false), but it may be
 //               changed by an explicit call to set_final().  See
@@ -1626,6 +1658,22 @@ get_bounds() const {
 INLINE bool PandaNodePipelineReader::
 is_final() const {
   return _cdata->_final_bounds;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNodePipelineReader::get_fancy_bits
+//       Access: Public
+//  Description: Returns the union of all of the enum FancyBits values
+//               corresponding to the various "fancy" attributes that
+//               are set on the node.  If this returns 0, the node has
+//               nothing interesting about it.  This is intended to
+//               speed traversal by quickly skipping past nodes that
+//               don't particularly affect the render state.
+////////////////////////////////////////////////////////////////////
+INLINE int PandaNodePipelineReader::
+get_fancy_bits() const {
+  return _cdata->_fancy_bits;
 }
 
 ////////////////////////////////////////////////////////////////////

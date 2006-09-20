@@ -26,6 +26,7 @@ INLINE SequenceNode::
 SequenceNode(const string &name) :
   SelectiveChildNode(name)
 {
+  set_cull_callback();
 }
 
 ////////////////////////////////////////////////////////////////////

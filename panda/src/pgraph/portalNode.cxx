@@ -57,6 +57,8 @@ PortalNode(const string &name) :
   _into_portal_mask(PortalMask::all_on()),
   _flags(0)
 {
+  set_cull_callback();
+
   _visible = false;
   _open = true;
   _clip_plane = false;
@@ -75,6 +77,8 @@ PortalNode(const string &name, LPoint3f pos, float scale) :
   _into_portal_mask(PortalMask::all_on()),
   _flags(0)
 {
+  set_cull_callback();
+
   add_vertex(LPoint3f(pos[0]-1.0*scale, pos[1], pos[2]-1.0*scale));
   add_vertex(LPoint3f(pos[0]+1.0*scale, pos[1], pos[2]-1.0*scale));
   add_vertex(LPoint3f(pos[0]+1.0*scale, pos[1], pos[2]+1.0*scale));
@@ -225,28 +229,14 @@ combine_with(PandaNode *other) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::has_cull_callback
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return
-//               true if cull_callback() has been defined.  Otherwise,
-//               returns false to indicate cull_callback() does not
-//               need to be called for this node during the cull
-//               traversal.
-////////////////////////////////////////////////////////////////////
-bool PortalNode::
-has_cull_callback() const {
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PortalNode::cull_callback
 //       Access: Public, Virtual
-//  Description: If has_cull_callback() returns true, this function
-//               will be called during the cull traversal to perform
-//               reduced frustum culling. Basically, once the scenegraph
-//               comes across a portal node, it calculates a CulltraverserData
-//               with which cell, this portal leads out to and the new frustum.
-//               Then it traverses that child
+//  Description: This function will be called during the cull
+//               traversal to perform reduced frustum
+//               culling. Basically, once the scenegraph comes across
+//               a portal node, it calculates a CulltraverserData with
+//               which cell, this portal leads out to and the new
+//               frustum.  Then it traverses that child
 //
 //               The return value is true if this node should be
 //               visible, or false if it should be culled.

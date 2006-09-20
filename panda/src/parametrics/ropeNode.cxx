@@ -82,6 +82,7 @@ RopeNode::
 RopeNode(const string &name) :
   PandaNode(name)
 {
+  set_cull_callback();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -123,28 +124,20 @@ safe_to_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RopeNode::has_cull_callback
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return
-//               true if cull_callback() has been defined.  Otherwise,
-//               returns false to indicate cull_callback() does not
-//               need to be called for this node during the cull
-//               traversal.
-////////////////////////////////////////////////////////////////////
-bool RopeNode::
-has_cull_callback() const {
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RopeNode::cull_callback
 //       Access: Public, Virtual
-//  Description: If has_cull_callback() returns true, this function
-//               will be called during the cull traversal to perform
-//               any additional operations that should be performed at
-//               cull time.  This may include additional manipulation
-//               of render state or additional visible/invisible
-//               decisions, or any other arbitrary operation.
+//  Description: This function will be called during the cull
+//               traversal to perform any additional operations that
+//               should be performed at cull time.  This may include
+//               additional manipulation of render state or additional
+//               visible/invisible decisions, or any other arbitrary
+//               operation.
+//
+//               Note that this function will *not* be called unless
+//               set_cull_callback() is called in the constructor of
+//               the derived class.  It is necessary to call
+//               set_cull_callback() to indicated that we require
+//               cull_callback() to be called.
 //
 //               By the time this function is called, the node has
 //               already passed the bounding-volume test for the

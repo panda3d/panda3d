@@ -148,11 +148,6 @@ traverse(const NodePath &root, bool python_cull_control) {
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 traverse(CullTraverserData &data) {
-  // Most nodes will have no transform or state, and will not
-  // contain decals or require a special cull callback.  As an
-  // optimization, we should tag nodes with these properties as
-  // being "fancy", and skip this processing for non-fancy nodes.
-  
   if (data.is_in_view(_camera_mask)) {
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam() 
@@ -161,33 +156,47 @@ traverse(CullTraverserData &data) {
     }
 
     PandaNodePipelineReader *node_reader = data.node_reader();
-    PandaNode *node = data.node();
+    int fancy_bits = node_reader->get_fancy_bits();
 
-    const RenderEffects *node_effects = node_reader->get_effects();
-    if (node_effects->has_show_bounds()) {
-      // If we should show the bounding volume for this node, make it
-      // up now.
-      show_bounds(data, node_effects->has_show_tight_bounds());
-    }
+    if ((fancy_bits & (PandaNode::FB_transform |
+                       PandaNode::FB_state |
+                       PandaNode::FB_effects |
+                       PandaNode::FB_tag |
+                       PandaNode::FB_draw_mask |
+                       PandaNode::FB_cull_callback)) == 0 &&
+        data._cull_planes->is_empty()) {
+      // Nothing interesting in this node; just move on.
+      traverse_below(data);
 
-    data.apply_transform_and_state(this);
-
-    const FogAttrib *fog = node_reader->get_state()->get_fog();
-    if (fog != (const FogAttrib *)NULL && fog->get_fog() != (Fog *)NULL) {
-      // If we just introduced a FogAttrib here, call adjust_to_camera()
-      // now.  This maybe isn't the perfect time to call it, but it's
-      // good enough; and at this time we have all the information we
-      // need for it.
-      fog->get_fog()->adjust_to_camera(get_camera_transform());
-    }
-
-    if (node->has_cull_callback()) {
-      if (!node->cull_callback(this, data)) {
-        return;
+    } else {
+      // Something in this node is worth taking a closer look.
+      const RenderEffects *node_effects = node_reader->get_effects();
+      if (node_effects->has_show_bounds()) {
+        // If we should show the bounding volume for this node, make it
+        // up now.
+        show_bounds(data, node_effects->has_show_tight_bounds());
       }
-    }
+      
+      data.apply_transform_and_state(this);
+      
+      const FogAttrib *fog = node_reader->get_state()->get_fog();
+      if (fog != (const FogAttrib *)NULL && fog->get_fog() != (Fog *)NULL) {
+        // If we just introduced a FogAttrib here, call adjust_to_camera()
+        // now.  This maybe isn't the perfect time to call it, but it's
+        // good enough; and at this time we have all the information we
+        // need for it.
+        fog->get_fog()->adjust_to_camera(get_camera_transform());
+      }
+      
+      if (fancy_bits & PandaNode::FB_cull_callback) {
+        PandaNode *node = data.node();
+        if (!node->cull_callback(this, data)) {
+          return;
+        }
+      }
 
-    traverse_below(data);
+      traverse_below(data);
+    }
   }
 }
 

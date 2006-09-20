@@ -38,6 +38,8 @@ TypeHandle FrameRateMeter::_type_handle;
 ////////////////////////////////////////////////////////////////////
 FrameRateMeter::
 FrameRateMeter(const string &name) : TextNode(name) {
+  set_cull_callback();
+
   Thread *current_thread = Thread::get_current_thread();
 
   _update_interval = frame_rate_meter_update_interval;
@@ -130,12 +132,18 @@ clear_window() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameRateMeter::cull_callback
 //       Access: Protected, Virtual
-//  Description: If has_cull_callback() returns true, this function
-//               will be called during the cull traversal to perform
-//               any additional operations that should be performed at
-//               cull time.  This may include additional manipulation
-//               of render state or additional visible/invisible
-//               decisions, or any other arbitrary operation.
+//  Description: This function will be called during the cull
+//               traversal to perform any additional operations that
+//               should be performed at cull time.  This may include
+//               additional manipulation of render state or additional
+//               visible/invisible decisions, or any other arbitrary
+//               operation.
+//
+//               Note that this function will *not* be called unless
+//               set_cull_callback() is called in the constructor of
+//               the derived class.  It is necessary to call
+//               set_cull_callback() to indicated that we require
+//               cull_callback() to be called.
 //
 //               By the time this function is called, the node has
 //               already passed the bounding-volume test for the

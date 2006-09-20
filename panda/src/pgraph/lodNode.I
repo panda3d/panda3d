@@ -27,6 +27,7 @@ INLINE LODNode::
 LODNode(const string &name) :
   PandaNode(name)
 {
+  set_cull_callback();
 }
 
 ////////////////////////////////////////////////////////////////////
