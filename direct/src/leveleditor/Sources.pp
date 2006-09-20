@@ -10,6 +10,6 @@
 
 // Install scripts for building zipfiles (leveleditor and RobotToonManager)
 #if $[CTPROJS]
-  #define INSTALL_SCRIPTS printdir printlib copyfiles zipfiles
+  #define INSTALL_SCRIPTS printdir printlib copyfiles copyfiles.pl zipfiles
 #endif
 
