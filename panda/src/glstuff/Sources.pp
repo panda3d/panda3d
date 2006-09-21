@@ -22,6 +22,9 @@
      glGraphicsStateGuardian_src.I \
      glGraphicsStateGuardian_src.cxx \
      glGraphicsStateGuardian_src.h \
+     glGraphicsBuffer_src.I \
+     glGraphicsBuffer_src.cxx \
+     glGraphicsBuffer_src.h \
      glImmediateModeSender_src.I \
      glImmediateModeSender_src.cxx \
      glImmediateModeSender_src.h \
