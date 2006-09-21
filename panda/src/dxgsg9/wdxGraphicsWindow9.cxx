@@ -219,7 +219,7 @@ verify_window_sizes(int numsizes, int *dimen) {
           (_wcontext, x_size, y_size, _wcontext._presentation_params.EnableAutoDepthStencil != false,
            IS_STENCIL_FORMAT(_wcontext._presentation_params.AutoDepthStencilFormat),
            &_wcontext._supported_screen_depths_mask,
-           &CouldntFindAnyValidZBuf, &newPixFmt, dx_force_16bpp_zbuffer);
+           &CouldntFindAnyValidZBuf, &newPixFmt, dx_force_16bpp_zbuffer, true);
         bIsGoodMode = (newPixFmt != D3DFMT_UNKNOWN);
       }
     }
@@ -462,7 +462,7 @@ do_fullscreen_resize(int x_size, int y_size) {
                                        bNeedZBuffer, bNeedStencilBuffer,
                                        &_wcontext._supported_screen_depths_mask,
                                        &bCouldntFindValidZBuf,
-                                       &pixFmt, dx_force_16bpp_zbuffer);
+                                       &pixFmt, dx_force_16bpp_zbuffer, true);
   bIsGoodMode = (pixFmt != D3DFMT_UNKNOWN);
 
   if (!bIsGoodMode) {
@@ -1071,7 +1071,7 @@ search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
                                                  bNeedZBuffer, bWantStencil,
                                                  &_wcontext._supported_screen_depths_mask,
                                                  &bCouldntFindValidZBuf,
-                                                 &pixFmt, dx_force_16bpp_zbuffer);
+                                                 &pixFmt, dx_force_16bpp_zbuffer, true);
 
             // note I'm not saving refresh rate, will just use adapter
             // default at given res for now
@@ -1102,7 +1102,7 @@ search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
                                              bNeedZBuffer, bWantStencil,
                                              &_wcontext._supported_screen_depths_mask,
                                              &bCouldntFindValidZBuf,
-                                             &pixFmt, dx_force_16bpp_zbuffer);
+                                             &pixFmt, dx_force_16bpp_zbuffer, true);
 
         // note I'm not saving refresh rate, will just use adapter
         // default at given res for now
@@ -1145,7 +1145,7 @@ search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
                                            bNeedZBuffer, bWantStencil,
                                            &_wcontext._supported_screen_depths_mask,
                                            &bCouldntFindValidZBuf,
-                                           &pixFmt, dx_force_16bpp_zbuffer);
+                                           &pixFmt, dx_force_16bpp_zbuffer, true);
 
       // hack: figuring out exactly what res to use is tricky, instead I will
       // just use 640x480 if we have < 3 meg avail
@@ -1330,6 +1330,34 @@ init_resized_window() {
   }
 
   make_current();
+
+  // set render target before clearing
+  _dxgsg->set_render_target ( );
+
+  // clear back buffers
+  DWORD flags;
+  D3DCOLOR clear_color;
+
+  flags = D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
+  clear_color = 0x00000000;
+  hr = _wcontext._d3d_device-> Clear (0, NULL, flags, clear_color, 0.0f, 0);
+  if (FAILED(hr)) {
+    wdxdisplay9_cat.error()
+      << "Clear failed for device"
+      << D3DERRORSTRING(hr);
+  }
+  hr = _wcontext._d3d_device-> Present (NULL, NULL, NULL, NULL);
+  if (FAILED(hr)) {
+    wdxdisplay9_cat.error()
+      << "Present failed for device"
+      << D3DERRORSTRING(hr);
+  }
+  hr = _wcontext._d3d_device-> Clear (0, NULL, flags, clear_color, 0.0f, 0);
+  if (FAILED(hr)) {
+    wdxdisplay9_cat.error()
+      << "Clear failed for device"
+      << D3DERRORSTRING(hr);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
