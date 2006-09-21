@@ -649,9 +649,9 @@ class Actor(DirectObject, NodePath):
             return None
         return controls[0].getNumFrames()
 
-    def getFrameTime(self, anim, frame):
-        numFrames = self.getNumFrames(anim)
-        animTime = self.getDuration(anim)
+    def getFrameTime(self, animName, frame, partName=None):
+        numFrames = self.getNumFrames(anim,partName)
+        animTime = self.getDuration(anim,partName)
         frameTime = animTime * float(frame) / numFrames
         return frameTime
 
