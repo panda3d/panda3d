@@ -514,5 +514,7 @@ close_buffer() {
   
   // Release the Gsg
   _gsg.clear();
+
+  _is_valid = false;
 }
 
