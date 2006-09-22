@@ -366,7 +366,7 @@ $[TAB] $[shared_lib_c]
   #if $[BUNDLE_EXT]
     // Also generate the bundles (on OSX only).
     #define target $[ODIR]/lib$[TARGET]$[BUNDLE_EXT]
-
+    #define source $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
 $[target] : $[sources] $[static_lib_dependencies]
 $[TAB] $[BUNDLE_LIB_C++]
   #endif  // BUNDLE_EXT
