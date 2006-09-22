@@ -144,7 +144,7 @@ class Loader(DirectObject):
                     # thread; and maybe we can just make the callback
                     # immediately.
                     node = ModelPool.loadModel(modelPath)
-                    nodePath = NodePath(node)
+                    nodePath = NodePath(node.copySubgraph())
                     cb.gotObject(i, nodePath)
 
                 else:
