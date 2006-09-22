@@ -149,7 +149,7 @@ private:
   // itwas set inactive.
   bool _paused;
 
-  MilesAudioSound(MilesAudioManager *manager, MilesAudioManager::SoundData *sd,
+  MilesAudioSound(MilesAudioManager* manager, MilesAudioManager::SoundData *sd,
                   string file_name, float length=0.0f);
   void cleanup();
 

@@ -66,7 +66,7 @@ namespace {
 namespace {
   AILSEQUENCECB sequence_callback = 0;
   AILSAMPLECB sample_callback = 0;
-  const user_data_index = 7;
+  const int user_data_index = 7;
 
   ////////////////////////////////////////////////////////////////////
   //     Function: pandaAudioAilCallback_Sequence
@@ -363,7 +363,7 @@ set_time(float time) {
     time = max_time;
   }
 
-  S32 millisecond_time=S32(1000*time);
+  S32 millisecond_time=(S32)(1000*time);
   AIL_quick_set_ms_position(_audio, millisecond_time);
 }
 
@@ -462,7 +462,7 @@ set_play_rate(float play_rate) {
     case AIL_QUICK_XMIDI_TYPE:
     case AIL_QUICK_DLS_XMIDI_TYPE:
       // midi uses whole percentage values 100 == 100%
-      _audio->speed = S32(play_rate*100.0f);
+      _audio->speed = (S32)(play_rate*100.0f);
       if ((_audio->speed != -1) && (AIL_quick_status(_audio) == QSTAT_PLAYING)) {
         AIL_set_sequence_tempo((HSEQUENCE)_audio->handle, _audio->speed, 0);
       }
@@ -471,7 +471,7 @@ set_play_rate(float play_rate) {
     case AIL_QUICK_DIGITAL_TYPE:
     case AIL_QUICK_MPEG_DIGITAL_TYPE:
       // wave and mp3 use sample rate (e.g. 44100)
-      _audio->speed = S32(play_rate*float(_original_playback_rate));
+      _audio->speed = (S32)(play_rate*float(_original_playback_rate));
       if ((_audio->speed != -1) && (AIL_quick_status(_audio) == QSTAT_PLAYING)) {
         AIL_set_sample_playback_rate((HSAMPLE)_audio->handle, _audio->speed);
       }
