@@ -133,7 +133,7 @@ ConfigVariableBool link_tristrips
 // true = use DirectX management of video memory
 // false = see dx_lru_management config variable below
 ConfigVariableBool dx_management
-("dx-management", true);
+("dx-management", false);
 
 // valid only if dx_management == false
 // true = use DirectX management of texture memory
