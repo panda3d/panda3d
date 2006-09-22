@@ -24,7 +24,6 @@
 //#define PYTHON_LPATH /Library/Frameworks/Python.framework/Headers
 
 #define PYTHON_IPATH /Library/Frameworks/Python.framework/Headers
-
 #define HAVE_PYTHON 1
 #define PYTHON_FRAMEWORK  Python
 
@@ -41,13 +40,13 @@
 #define HAVE_JPEG 1
 #define HAVE_FREETYPE 1
 #print   Before Configure Miles 
-//#define HAVE_RAD_MSS 1
-//#define RAD_MSS_IPATH  /Users/roger/Documents/M/include 
-//#define RAD_MSS_LPATH  /Users/roger/Documents/M/redist/macho/
-//#define RAD_MSS_LIBS  MilesMachO
-//#define rad_mss_ipath $[RAD_MSS_IPATH]
-//#define rad_mss_lpath $[RAD_MSS_LPATH] 
-//#define rad_mss_libs $[RAD_MSS_LIBS]
+#define HAVE_RAD_MSS 1
+#define RAD_MSS_IPATH  /Users/roger/m/include
+#define RAD_MSS_LPATH  /Users/roger/m/redist/macx86
+#define RAD_MSS_LIBS MilesMachOx86
+#define rad_mss_ipath $[RAD_MSS_IPATH]
+#define rad_mss_lpath $[RAD_MSS_LPATH] 
+#define rad_mss_libs $[RAD_MSS_LIBS]
 
 
 //#print   -- $[RAD_MSS_IPATH]
