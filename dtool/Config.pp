@@ -84,11 +84,7 @@
   #define BUILD_TYPE nmake
 #elif $[eq $[PLATFORM], Cygwin]
   #define BUILD_TYPE gmsvc
-#elif $[eq $[PLATFORM], osx]
-  #define BUILD_TYPE unix
-#elif $[eq $[PLATFORM], osxppc]
-  #define BUILD_TYPE unix
-#elif $[eq $[PLATFORM], osxintell]
+#elif $[OSX_PLATFORM]
   #define BUILD_TYPE unix
 #else
   #define BUILD_TYPE unix
@@ -803,11 +799,7 @@
   #define USE_COMPILER MIPS
 #elif $[eq $[PLATFORM], Linux]
   #define USE_COMPILER GCC
-#elif $[eq $[PLATFORM], osx]
-  #define USE_COMPILER GCC
-#elif $[eq $[PLATFORM], osxppc]
-  #define USE_COMPILER GCC
-#elif $[eq $[PLATFORM], osxintell]
+#elif $[OSX_PLATFORM]
   #define USE_COMPILER GCC
 #elif $[eq $[PLATFORM], FreeBSD]
   #define USE_COMPILER GCC
@@ -932,13 +924,7 @@
 // How to generate a static C or C++ library.  $[target] is the
 // name of the library to generate, and $[sources] is the list of .o
 // files that will go into the library.
-#if $[eq $[PLATFORM], osx]
-  #defer STATIC_LIB_C libtool -static -o $[target] $[sources]
-  #defer STATIC_LIB_C++ libtool -static -o $[target] $[sources]
-#elif $[eq $[PLATFORM], osxppc]
-  #defer STATIC_LIB_C libtool -static -o $[target] $[sources]
-  #defer STATIC_LIB_C++ libtool -static -o $[target] $[sources]
-#elif  $[eq $[PLATFORM], osxintell]
+#if $[OSX_PLATFORM]
   #defer STATIC_LIB_C libtool -static -o $[target] $[sources]
   #defer STATIC_LIB_C++ libtool -static -o $[target] $[sources]
 //#elif $[eq $[PLATFORM], FreeBSD]
@@ -963,15 +949,7 @@
 // as above, and $[libs] is a space-separated list of dependent
 // libraries, and $[lpath] is a space-separated list of directories in
 // which those libraries can be found.
-#if $[eq $[PLATFORM], osx]
-  #defer SHARED_LIB_C $[cc_ld] -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
-  #defer SHARED_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
-  #defer BUNDLE_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -bundle -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
-#elif $[eq $[PLATFORM], osxppc]
-  #defer SHARED_LIB_C $[cc_ld] -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
-  #defer SHARED_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
-  #defer BUNDLE_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -bundle -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
-#elif  $[eq $[PLATFORM], osxintell]
+#if $[OSX_PLATFORM]
   #defer SHARED_LIB_C $[cc_ld] -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
   #defer SHARED_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
   #defer BUNDLE_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -bundle -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
