@@ -255,7 +255,12 @@ class NonPhysicsWalker(DirectObject.DirectObject):
 
         self.__oldPosDelta = self.avatarNodePath.getPosDelta(render)
         self.__oldDt = dt
-        self.worldVelocity = self.__oldPosDelta*(1/self.__oldDt)
+
+        try:
+            self.worldVelocity = self.__oldPosDelta*(1/self.__oldDt)
+        except:
+            # divide by zero
+            self.worldVelocity = 0
 
         return Task.cont
 
