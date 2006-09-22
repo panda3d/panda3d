@@ -1,4 +1,6 @@
-#define OTHER_LIBS dtoolconfig dtool
+#define OTHER_LIBS dtoolconfig dtool dtoolbase:c dtoolutil:c \
+    putil:c prc:c interrogatedb:c dconfig:c
+
 #define BUILD_DIRECTORY $[HAVE_AUDIO]
 
 #begin lib_target
