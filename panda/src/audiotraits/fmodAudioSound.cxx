@@ -71,7 +71,9 @@ FmodAudioSound(AudioManager *manager, string file_name, bool positional) {
   _sideright = 1;
 
   //Assign the values we need
-  DCAST_INTO_V(_manager, manager);
+  FmodAudioManager *fmanager;
+  DCAST_INTO_V(fmanager, manager);
+  _manager = fmanager;
 
   //_channel = 0;
   _file_name = file_name;
