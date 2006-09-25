@@ -565,6 +565,7 @@ sub CTAttachCompute {
 
       &CTAttachAddToMod( "PATH", $root . "/bin" ) ;
       &CTAttachAddToMod( "LD_LIBRARY_PATH", $root . "/lib" ) ;
+      &CTAttachAddToMod( "DYLD_LIBRARY_PATH", $root . "/lib" ) ;
       #&CTAttachAddToMod( "CDPATH", $root . "/src/all" ) ;
       &CTAttachAddToMod( "CT_INCLUDE_PATH", $root . "/include" ) ;
       &CTAttachAddToMod( "DC_PATH", $root . "/etc" ) ;

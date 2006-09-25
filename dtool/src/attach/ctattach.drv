@@ -130,6 +130,7 @@ if (( $proj eq "-" ) || ( $flav eq "-" )) {
    if (( $curflav eq "" ) || ( $noflav == 0 )) {
       $envsep{"PATH"} = ":" ;
       $envsep{"LD_LIBRARY_PATH"} = ":" ;
+      $envsep{"DYLD_LIBRARY_PATH"} = ":" ;
       $envsep{"PFPATH"} = ":" ;
       $envsep{"SSPATH"} = ":" ;
       $envsep{"STKPATH"} = ":" ;

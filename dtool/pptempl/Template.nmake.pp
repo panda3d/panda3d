@@ -868,7 +868,7 @@ $[TAB] $[COMPILE_C]
 
 // Rules to compile C++ files.
 
-#foreach file $[sort $[cxx_sources]]
+#foreach file $[sort $[cxx_sources] $[cxx_interrogate_sources]]
 #define target $[$[file]_obj]
 #define source $[file]
 #define ipath $[target_ipath]

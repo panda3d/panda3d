@@ -347,12 +347,14 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
   // various .obj files.
 
   #define sources \
-   $[patsubst %,$[%_obj],$[compile_sources]]
+   $[patsubst %,$[%_obj],$[c_sources] $[cxx_sources]]
+  #define interrogate_sources \
+   $[patsubst %,$[%_obj],$[cxx_interrogate_sources]]
   #define cc_ld $[or $[get_ld],$[CC]]
   #define cxx_ld $[or $[get_ld],$[CXX]]
 
   #define varname $[subst -,_,lib$[TARGET]_so]
-$[varname] = $[sources]
+$[varname] = $[sources] $[if $[not $[BUNDLE_EXT]],$[interrogate_sources]]
   #define target $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
   #define sources $($[varname])
 
@@ -366,7 +368,7 @@ $[TAB] $[shared_lib_c]
   #if $[BUNDLE_EXT]
     // Also generate the bundles (on OSX only).
     #define target $[ODIR]/lib$[TARGET]$[BUNDLE_EXT]
-    #define sources $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
+    #define sources $[interrogate_sources] $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
 $[target] : $[sources] $[static_lib_dependencies] 
 $[TAB] $[BUNDLE_LIB_C++]
   #endif  // BUNDLE_EXT
@@ -700,7 +702,7 @@ $[TAB] $[compile_c]
 
 // Rules to compile C++ files (static objects).
 
-#foreach file $[sort $[cxx_sources]]
+#foreach file $[sort $[cxx_sources] $[cxx_interrogate_sources]]
 #define target $[$[file]_obj]
 #define source $[file]
 #define ipath $[target_ipath]
@@ -741,7 +743,7 @@ $[TAB] $[compile_c]
 
 // Rules to compile C++ files (shared objects).
 
-#foreach file $[sort $[cxx_sources]]
+#foreach file $[sort $[cxx_sources] $[cxx_interrogate_sources]]
 #define target $[$[file]_obj]
 #define source $[file]
 #define ipath $[target_ipath]

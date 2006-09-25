@@ -92,6 +92,7 @@ sub CTUnattachCompute {
 	  &CTUnattachMod( "PATH", $item ) ;
       }
       &CTUnattachMod( "LD_LIBRARY_PATH", $item ) ;
+      &CTUnattachMod( "DYLD_LIBRARY_PATH", $item ) ;
       #$item = $root . "/src/all" ;
       #&CTUnattachMod( "CDPATH", $item ) ;
       $item = $root . "/built/include" ;

@@ -98,7 +98,8 @@ get_python_object() const {
     Py_XINCREF(_python_object);
     return _python_object;
   }
-  Py_RETURN_NONE;
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 #endif  // HAVE_PYTHON
 

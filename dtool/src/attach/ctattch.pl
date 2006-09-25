@@ -374,6 +374,7 @@ sub CTAttachCompute {
           #if ( -e $item ) {
           &CTAttachMod( "PATH", $item, $root, $proj ) ;
       &CTAttachMod( "LD_LIBRARY_PATH", $item, $root, $proj ) ;
+      &CTAttachMod( "DYLD_LIBRARY_PATH", $item, $root, $proj ) ;
           #}
 
           $item = $root . "/built/include" ;

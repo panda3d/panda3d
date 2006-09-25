@@ -1339,7 +1339,8 @@ get_python_tag(const string &key) const {
     Py_XINCREF(result);
     return result;
   }
-  Py_RETURN_NONE;
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 #endif  // HAVE_PYTHON
 

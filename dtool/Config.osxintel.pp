@@ -168,7 +168,7 @@
 #define HAVE_IO_H
 
 // Do we have <malloc.h>?
-#define HAVE_MALLOC_H 1
+#define HAVE_MALLOC_H
 
 // Do we have <alloca.h>?
 #define HAVE_ALLOCA_H 1

@@ -4,6 +4,7 @@ setenv OS `uname`
 
 # careful, security exploit here
 setenv LD_LIBRARY_PATH "."
+setenv DYLD_LIBRARY_PATH "."
 
 setenv CTEMACS_FOREHIGHLIGHT white
 setenv CTEMACS_BACKHIGHLIGHT blue
