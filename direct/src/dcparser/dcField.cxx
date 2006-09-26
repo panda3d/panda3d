@@ -73,6 +73,8 @@ DCField(const string &name, DCClass *dclass) :
   _has_default_value = false;
   _default_value_stale = true;
 
+  _bogus_field = false;
+
   _has_nested_fields = true;
   _num_nested_fields = 0;
   _pack_type = PT_field;
