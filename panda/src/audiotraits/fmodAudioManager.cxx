@@ -39,32 +39,25 @@
 #include <fmod_errors.h>
 
 
-////////////////////////////////////////////////////////////////////
-//  This in needed for Panda's Pointer System
-//  DO NOT ERASE!
-////////////////////////////////////////////////////////////////////
 
 TypeHandle FmodAudioManager::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//  END OF POINTER THING
-////////////////////////////////////////////////////////////////////
-
 
 ////////////////////////////////////////////////////////////////////
-//  OK I am not sure if there is the best place for this one,  
-//  but it seems to work.  IE, the FmodSound and FmodDSP classes can find it.
-//  All FMOD API calls return a success or failure error.
-//  [I am sure there is a name for this type of programming but I don't know it.]
-//  Anyway, by adding the line "notify-level-audio debug" to the config.prc file 
-//  of Panda, of the config.in file of MAKEPANDA, you can see the Debugs printed out at the
-//  Python Prompt
-/////////////////////////////////////////////////////////////////////
-void ERRCHECK(FMOD_RESULT result){
-  audio_debug("FMOD State: "<< result <<" "<< FMOD_ErrorString(result) );
+// Central dispatcher for audio errors.
+////////////////////////////////////////////////////////////////////
+
+static void fmod_audio_errcheck(FMOD_RESULT result) {
+  if (result != 0) {
+    audio_error("FMOD State: "<< result <<" "<< FMOD_ErrorString(result) );
+  }
 }
 
-
+////////////////////////////////////////////////////////////////////
+//     Function: Create_AudioManager
+//       Access: Private
+//  Description: Factory Function
+////////////////////////////////////////////////////////////////////
 PT(AudioManager) Create_AudioManager() {
   audio_debug("Create_AudioManager() Fmod.");
   return new FmodAudioManager;
@@ -108,12 +101,12 @@ FmodAudioManager() {
 
   audio_debug("FMOD::System_Create()");
   result = FMOD::System_Create(&_system);
-  ERRCHECK(result);
+  fmod_audio_errcheck(result);
 
   //  Let check the Version of FMOD to make sure the Headers and Libraries are correct.
   audio_debug("FMOD::System_Create()");
   result = _system->getVersion(&version);
-  ERRCHECK(result);
+  fmod_audio_errcheck(result);
 
   audio_debug("FMOD VERSION:" << hex << version );
   audio_debug("FMOD - Getting Version");
@@ -129,14 +122,14 @@ FmodAudioManager() {
   if (fmod_use_surround_sound) {
     audio_debug("Setting FMOD to use 5.1 Surround Sound.");
     result = _system->setSpeakerMode( FMOD_SPEAKERMODE_5POINT1 );
-    ERRCHECK(result);
+    fmod_audio_errcheck(result);
   }
 
   //Now we Initialize the System.
 
   audio_debug("FMOD::System_Init");
   result = _system->init(fmod_number_of_sound_channels, FMOD_INIT_NORMAL, 0);
-  ERRCHECK(result);
+  fmod_audio_errcheck(result);
 
   if (result == FMOD_OK){
     audio_debug("FMOD Intialized OK, We are good to go Houston!");
@@ -160,7 +153,7 @@ FmodAudioManager() {
   audio_debug("Setting 3D Audio settings: Doppler Factor, Distance Factor, Drop Off Factor");
 
   result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
-  ERRCHECK( result );
+  fmod_audio_errcheck( result );
 
 }
 
@@ -183,10 +176,10 @@ FmodAudioManager::
   _all_sounds.clear();
 
   //result = _system->close();
-  //ERRCHECK(result);
+  //fmod_audio_errcheck(result);
 
   result = _system->release();
-  ERRCHECK(result);
+  fmod_audio_errcheck(result);
 
   audio_debug("~FmodAudioManager(): System Down.");
 
@@ -275,7 +268,7 @@ add_dsp( PT(AudioDSP) x) {
   {
 
     result = _system->addDSP( fdsp->_dsp );
-    ERRCHECK( result );
+    fmod_audio_errcheck( result );
 
     _system_dsp.insert(fdsp);
 
@@ -305,7 +298,7 @@ remove_dsp(PT(AudioDSP) x) {
   if ( fdsp->get_in_chain() ) {
 
     result = fdsp->_dsp->remove();
-    ERRCHECK( result );
+    fmod_audio_errcheck( result );
 
     _system_dsp.erase(fdsp);
 
@@ -340,7 +333,7 @@ getSpeakerSetup() {
   int returnMode;
 
   result = _system->getSpeakerMode( &speakerMode );
-  ERRCHECK( result );
+  fmod_audio_errcheck( result );
 
   switch (speakerMode) {
     case  FMOD_SPEAKERMODE_RAW:
@@ -409,7 +402,7 @@ setSpeakerSetup(AudioManager::SPEAKERMODE_category cat) {
   FMOD_SPEAKERMODE speakerModeType = (FMOD_SPEAKERMODE)cat;
 
   result = _system->setSpeakerMode( speakerModeType);
-  ERRCHECK(result);
+  fmod_audio_errcheck(result);
 
   audio_debug("Speaker Mode Set");
 
@@ -531,7 +524,7 @@ audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float v
   _up.z = uy;
     
   result = _system->set3DListenerAttributes( 0, &_position, &_velocity, &_forward, &_up);
-  ERRCHECK( result );
+  fmod_audio_errcheck( result );
 
 }
 
@@ -562,7 +555,7 @@ audio_3d_set_distance_factor(float factor) {
   _distance_factor = factor;
 
   result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
-  ERRCHECK( result );
+  fmod_audio_errcheck( result );
 
 
 }
@@ -595,7 +588,7 @@ audio_3d_set_doppler_factor(float factor) {
   _doppler_factor = factor;
 
   result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
-  ERRCHECK( result );
+  fmod_audio_errcheck( result );
 
 }
 
@@ -626,7 +619,7 @@ audio_3d_set_drop_off_factor(float factor) {
   _drop_off_factor = factor;
 
   result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
-  ERRCHECK( result );
+  fmod_audio_errcheck( result );
 
 }
 

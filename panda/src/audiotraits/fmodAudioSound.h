@@ -208,6 +208,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   void set_balance_on_channel();
   void set_play_rate_on_channel();
   void set_speaker_mix_on_channel();
+  void set_3d_attributes_on_channel();
   void add_dsp_on_channel();
   void set_speaker_mix_or_balance_on_channel();
 
@@ -222,6 +223,12 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   //THEY ARE ONLY HERE BECAUSE THEY are still need by Miles.
   //THESE are stubs in FMOD-EX version
   string _finished_event;
+
+  friend FMOD_RESULT F_CALLBACK sound_end_callback(FMOD_CHANNEL *  channel, 
+                                                   FMOD_CHANNEL_CALLBACKTYPE  type, 
+                                                   int  command, 
+                                                   unsigned int  commanddata1, 
+                                                   unsigned int  commanddata2);
 
   ////////////////////////////////////////////////////////////
   //These are needed for Panda's Pointer System. DO NOT ERASE!

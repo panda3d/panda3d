@@ -82,22 +82,9 @@
 class FmodAudioSound;
 class FmodAudioDSP;
 
-////////////////////////////////////////////////////////////////////
-//  OK I am not sure if there is the best place for this one,  
-//  but it seems to work.  IE, the FmodSound and FmodDSP classes can find it.
-//  All FMOD API calls return a success or failure error.
-//  [I am sure there is a name for this type of programming but I don't know it.]
-//  Anyway, by adding the line "notify-level-audio debug" to the config.prc file 
-//  of Panda, of the config.in file of MAKEPANDA, you can see the Debugs printed out at the
-//  Python Prompt
-/////////////////////////////////////////////////////////////////////
-void ERRCHECK(FMOD_RESULT result);
-
+extern void fmod_audio_errcheck(FMOD_RESULT n);
 
 class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
-    // All of these methods are stubbed out to some degree.
-    // If you're looking for a starting place for a new AudioManager,
-    // please consider looking at the milesAudioManager.
     friend class FmodAudioSound;
     friend class FmodAudioDSP;
 
@@ -250,6 +237,7 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
 };
 
 EXPCL_FMOD_AUDIO PT(AudioManager) Create_AudioManager();
+
 
 #endif //]
 
