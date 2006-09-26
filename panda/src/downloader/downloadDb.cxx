@@ -21,6 +21,7 @@
 #include "streamReader.h"
 #include "streamWriter.h"
 #include "ramfile.h"
+#include "virtualFileSystem.h"
 
 #include <algorithm>
 
@@ -293,26 +294,29 @@ expand_client_multifile(string mfname) {
 ////////////////////////////////////////////////////////////////////
 DownloadDb::Db DownloadDb::
 read_db(Filename &file, bool want_server_info) {
-  // Open the multifile for reading
-  ifstream read_stream;
-  file.set_binary();
-
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   Db db;
 
-  if (!file.open_read(read_stream)) {
+  // Open the multifile for reading
+  file.set_binary();
+  istream *read_stream = vfs->open_read_file(file, true);
+
+  if (read_stream == (istream *)NULL) {
     downloader_cat.error()
       << "failed to open input file: "
       << file << endl;
     return db;
   }
 
-  StreamReader sr(read_stream);
+  StreamReader sr(*read_stream);
   if (!db.read(sr, want_server_info)) {
     downloader_cat.error()
       << "read failed: "
       << file << endl;
+    vfs->close_read_file(read_stream);
     return db;
   }
+
   if (want_server_info) {
     if (!read_version_map(sr)) {
       downloader_cat.error()
@@ -320,6 +324,8 @@ read_db(Filename &file, bool want_server_info) {
         << file << endl;
     }
   }
+
+  vfs->close_read_file(read_stream);
 
   return db;
 }
