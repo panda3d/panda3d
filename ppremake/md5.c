@@ -23,6 +23,7 @@
  */
 
 #include "md5.h"
+#include <string.h>
 
 /* Constants for MD5Transform routine.
  */

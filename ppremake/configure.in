@@ -72,7 +72,8 @@ else
     irix*) PLATFORM=Irix;;
     linux*) PLATFORM=Linux;;
     cygwin*) PLATFORM=Cygwin;;
-    *) echo "Cannot determine platform; use --with-platform=name."
+    darwin*) PLATFORM=OSX;;
+    *) echo "Cannot determine platform from $host_os; use --with-platform=name."
        exit 1;;
   esac
 fi
