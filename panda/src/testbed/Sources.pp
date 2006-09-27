@@ -1,7 +1,7 @@
 #define OTHER_LIBS interrogatedb:c prc:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m pystub
 
-#define USE_PACKAGES fftw cg
+#define USE_PACKAGES cg freetype
 
 #define LOCAL_LIBS \
     framework putil collide pgraph chan text \

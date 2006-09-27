@@ -35,7 +35,7 @@ bool update = false;           // -u
 bool tlist = false;             // -t
 bool extract = false;          // -x
 bool verbose = false;          // -v
-bool compress = false;         // -z
+bool compress_flag = false;         // -z
 int default_compression_level = 6;
 Filename multifile_name;       // -f
 bool got_multifile_name = false;
@@ -198,7 +198,7 @@ is_named(const string &subfile_name, int argc, char *argv[]) {
 int
 get_compression_level(const Filename &subfile_name) {
   // Returns the appropriate compression level for the named file.
-  if (!compress) {
+  if (!compress_flag) {
     // Don't compress anything.
     return 0;
   }
@@ -544,43 +544,43 @@ main(int argc, char *argv[]) {
       verbose = true;
       break;
     case 'z':
-      compress = true;
+      compress_flag = true;
       break;
     case '1':
       default_compression_level = 1;
-      compress = true;
+      compress_flag = true;
       break;
     case '2':
       default_compression_level = 2;
-      compress = true;
+      compress_flag = true;
       break;
     case '3':
       default_compression_level = 3;
-      compress = true;
+      compress_flag = true;
       break;
     case '4':
       default_compression_level = 4;
-      compress = true;
+      compress_flag = true;
       break;
     case '5':
       default_compression_level = 5;
-      compress = true;
+      compress_flag = true;
       break;
     case '6':
       default_compression_level = 6;
-      compress = true;
+      compress_flag = true;
       break;
     case '7':
       default_compression_level = 7;
-      compress = true;
+      compress_flag = true;
       break;
     case '8':
       default_compression_level = 8;
-      compress = true;
+      compress_flag = true;
       break;
     case '9':
       default_compression_level = 9;
-      compress = true;
+      compress_flag = true;
       break;
     case 'Z':
       dont_compress_str = optarg;

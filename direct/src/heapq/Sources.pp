@@ -14,10 +14,15 @@
 #define OTHER_LIBS \
   pandaexpress:m \
   dconfig:c dtoolconfig:m \
-  dtoolutil:c dtoolbase:c dtool:m
+  dtoolutil:c dtoolbase:c prc:c dtool:m
 
 #begin metalib_target
   #define TARGET heapq
+
+  // Tell ppremake to treat this file as if it had been generated via
+  // interrogate.  On OSX, this will move it into the .so, instead of
+  // the .dylib, so that it can be imported into Python.
+  #define PYTHON_MODULE_ONLY 1
 
   #define SOURCES heapq.cxx
 #end metalib_target

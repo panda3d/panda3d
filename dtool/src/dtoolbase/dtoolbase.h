@@ -242,7 +242,25 @@
 #define TAU_GLOBAL_TIMER_START(timer)
 #define TAU_GLOBAL_TIMER_STOP()
 
-#endif  // USE_TAU
+#endif  /* USE_TAU */
+
+/* Try to infer the endianness of the host based on compiler
+   predefined macros.  For systems on which the compiler does not
+   define these macros, we rely on ppremake to define WORDS_BIGENDIAN
+   correctly.  For systems on which the compiler *does* define these
+   macros, we ignore what ppremake said and define WORDS_BIGENDIAN
+   correctly here.  (This is essential on OSX, which requires
+   compiling each file twice in different modes, for universal binary
+   support.) */
+
+#if defined(__LITTLE_ENDIAN__) || defined(__i386__)
+#undef WORDS_BIGENDIAN
+
+#elif defined(__BIG_ENDIAN__) || defined(__ppc__)
+#undef WORDS_BIGENDIAN
+#define WORDS_BIGENDIAN 1
+
+#endif
 
 /*
  We define the macros BEGIN_PUBLISH and END_PUBLISH to bracket

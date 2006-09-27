@@ -15,5 +15,6 @@ from SoundInterval import *
 from ProjectileInterval import *
 from MetaInterval import *
 from IntervalManager import *
-from TestInterval import *
+if __debug__:
+    from TestInterval import *
 from pandac.PandaModules import WaitInterval

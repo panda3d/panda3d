@@ -144,6 +144,12 @@
 //
 #define OPTIMIZE 3
 
+// On OSX, you may or may not want to compile universal binaries.
+// Leaving this option on allows your compiled version of Panda to run
+// on any version of OSX (PPC or Intel-based), but it will also
+// increase the compilation time, as well as the resulting binary
+// size.  This option has no effect on non-OSX platforms.
+#define UNIVERSAL_BINARIES 1
 
 // Panda uses prc files for runtime configuration.  There are many
 // compiled-in options to customize the behavior of the prc config
@@ -870,13 +876,20 @@
   #define CXX CC
 #endif
 
+#if $[and $[OSX_PLATFORM],$[UNIVERSAL_BINARIES]]
+  // Configure for universal binaries on OSX.
+  #define ARCH_FLAGS -arch i386 -arch ppc
+#else
+  #define ARCH_FLAGS
+#endif
+
 // How to compile a C or C++ file into a .o file.  $[target] is the
 // name of the .o file, $[source] is the name of the source file,
 // $[ipath] is a space-separated list of directories to search for
 // include files, and $[flags] is a list of additional flags to pass
 // to the compiler.
-#defer COMPILE_C $[CC] $[CFLAGS_GEN] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
-#defer COMPILE_C++ $[CXX] $[C++FLAGS_GEN] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
+#defer COMPILE_C $[CC] $[CFLAGS_GEN] $[ARCH_FLAGS] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
+#defer COMPILE_C++ $[CXX] $[C++FLAGS_GEN] $[ARCH_FLAGS] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
 
 // What flags should be passed to both C and C++ compilers to enable
 // compiler optimizations?  This will be supplied when OPTIMIZE
@@ -913,9 +926,9 @@
 // $[sources] is the list of .o files.  $[libs] is a space-separated
 // list of dependent libraries, and $[lpath] is a space-separated list
 // of directories in which those libraries can be found.
-#defer LINK_BIN_C $[cc_ld] -o $[target] $[sources] $[flags] $[lpath:%=-L%] $[libs:%=-l%]\
+#defer LINK_BIN_C $[cc_ld] $[ARCH_FLAGS] -o $[target] $[sources] $[flags] $[lpath:%=-L%] $[libs:%=-l%]\
  $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[bin_frameworks]]
-#defer LINK_BIN_C++ $[cxx_ld]\
+#defer LINK_BIN_C++ $[cxx_ld] $[ARCH_FLAGS] \
  -o $[target] $[sources]\
  $[flags]\
  $[lpath:%=-L%] $[libs:%=-l%]\
@@ -950,9 +963,9 @@
 // libraries, and $[lpath] is a space-separated list of directories in
 // which those libraries can be found.
 #if $[OSX_PLATFORM]
-  #defer SHARED_LIB_C $[cc_ld] -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
-  #defer SHARED_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
-  #defer BUNDLE_LIB_C++ $[cxx_ld] -undefined dynamic_lookup -bundle -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+  #defer SHARED_LIB_C $[cc_ld] $[ARCH_FLAGS] -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+  #defer SHARED_LIB_C++ $[cxx_ld] $[ARCH_FLAGS] -undefined dynamic_lookup -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+  #defer BUNDLE_LIB_C++ $[cxx_ld] $[ARCH_FLAGS] -undefined dynamic_lookup -bundle -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
 #else
   #defer SHARED_LIB_C $[cc_ld] -shared $[LFLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
   #defer SHARED_LIB_C++ $[cxx_ld] -shared $[LFLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]

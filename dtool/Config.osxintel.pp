@@ -36,9 +36,9 @@
 //#define ZLIB_LPATH /usr/lib/
 //#define ZLIB_LIBS  libz.dylib 
 
-#define HAVE_ZLIB 1
-#define HAVE_JPEG 1
-#define HAVE_FREETYPE 1
+//#define HAVE_ZLIB 1
+//#define HAVE_JPEG 1
+//#define HAVE_FREETYPE 1
 #print   Before Configure Miles 
 #define HAVE_RAD_MSS 1
 #define RAD_MSS_IPATH  /Users/roger/m/include
@@ -71,7 +71,7 @@
 // Is libfftw installed, and where?
 #define FFTW_IPATH /opt/local/include
 #define FFTW_LPATH /opt/local/lib
-#define FFTW_LIBS drfftw dfftw
+#define FFTW_LIBS rfftw fftw
 //#define HAVE_FFTW 1
 
 

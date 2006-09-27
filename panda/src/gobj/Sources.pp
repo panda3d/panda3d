@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c
-#define OSX_SYS_LIBS mx
+//#define OSX_SYS_LIBS mx
 #define USE_PACKAGES zlib
 
 #begin lib_target

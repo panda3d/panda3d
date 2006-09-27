@@ -7,7 +7,11 @@ from MessengerGlobal import *
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.task.Task import Task
-from pandac.PandaModules import *
+
+# This module may not import pandac.PandaModules, since it is imported
+# by the Toontown Launcher before the complete PandaModules have been
+# downloaded.
+#from pandac.PandaModules import *
 
 class EventManager:
 
@@ -56,7 +60,8 @@ class EventManager:
             # Must be some user defined type, return the ptr
             # which will be downcast to that type
             ptr = eventParameter.getPtr()
-            
+
+            from pandac.PandaModules import EventStorePandaNode
             if isinstance(ptr, EventStorePandaNode):
                 # Actually, it's a kludgey wrapper around a PandaNode
                 # pointer.  Return the node.
