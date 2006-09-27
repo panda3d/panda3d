@@ -975,12 +975,12 @@ set_speaker_mix_or_balance_on_channel() {
     //FMOD Returns an error is you try and pan a sound in 3D Audio.
     //Which makes sense.
     //It is nothing serious,  but might as well avoid it while we can.
-    if ( soundMode & FMOD_3D ) {
+    if (( soundMode & FMOD_3D ) == 0) {
       result = _channel->setPan( _balance );
       fmod_audio_errcheck(result);
     }
   } else {
-    if ( soundMode & FMOD_3D ) {
+    if (( soundMode & FMOD_3D ) == 0) {
       result = _channel->setSpeakerMix( _frontleft, _frontright, _center, _sub, _backleft, _backright, _sideleft, _sideright );
       fmod_audio_errcheck(result);
     }
