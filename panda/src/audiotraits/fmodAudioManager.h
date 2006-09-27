@@ -85,154 +85,138 @@ class FmodAudioDSP;
 extern void fmod_audio_errcheck(FMOD_RESULT n);
 
 class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
-    friend class FmodAudioSound;
-    friend class FmodAudioDSP;
+  friend class FmodAudioSound;
+  friend class FmodAudioDSP;
 
-    public:
+ public:
 
-        //Constructor and Destructor
-        FmodAudioManager();
-        virtual ~FmodAudioManager();
+  //Constructor and Destructor
+  FmodAudioManager();
+  virtual ~FmodAudioManager();
 
-        virtual bool is_valid();
+  virtual bool is_valid();
           
-        virtual PT(AudioSound) get_sound(const string&, bool positional = false);
+  virtual PT(AudioSound) get_sound(const string&, bool positional = false);
     
-        virtual PT(AudioDSP) create_dsp(DSP_category);
-        virtual bool add_dsp(PT(AudioDSP) dspToAdd);
-        virtual bool remove_dsp(PT(AudioDSP) x);
+  virtual PT(AudioDSP) create_dsp(DSP_category);
+  virtual bool add_dsp(PT(AudioDSP) dspToAdd);
+  virtual bool remove_dsp(PT(AudioDSP) x);
 
-        virtual int getSpeakerSetup();
-        virtual void setSpeakerSetup(SPEAKERMODE_category cat);
+  virtual int getSpeakerSetup();
+  virtual void setSpeakerSetup(SPEAKERMODE_category cat);
 
-        virtual void set_volume(float);
-        virtual float get_volume() const;
+  virtual void set_volume(float);
+  virtual float get_volume() const;
           
-        virtual void set_active(bool);
-        virtual bool get_active() const;
+  virtual void set_active(bool);
+  virtual bool get_active() const;
 
-        virtual void stop_all_sounds();
+  virtual void stop_all_sounds();
 
-        // Changes to the positions of 3D spacialized sounds and the listener
-        // are all made at once when this method is called. It should be put
-        // in the main program loop.
-        virtual void audio_3d_update();
+  virtual void update();
+  
+  // This controls the "set of ears" that listens to 3D spacialized sound
+  // px, py, pz are position coordinates. Can be 0.0f to ignore.
+  // vx, vy, vz are a velocity vector in UNITS PER SECOND (default: meters).
+  // fx, fy and fz are the respective components of a unit forward-vector
+  // ux, uy and uz are the respective components of a unit up-vector
+  // These changes will NOT be invoked until audio_3d_update() is called.
+  virtual void audio_3d_set_listener_attributes(float px, float py, float pz,
+                                                float vx, float xy, float xz, 
+                                                float fx, float fy, float fz,
+                                                float ux, float uy, float uz);
 
-        // This controls the "set of ears" that listens to 3D spacialized sound
-        // px, py, pz are position coordinates. Can be 0.0f to ignore.
-        // vx, vy, vz are a velocity vector in UNITS PER SECOND (default: meters).
-        // fx, fy and fz are the respective components of a unit forward-vector
-        // ux, uy and uz are the respective components of a unit up-vector
-        // These changes will NOT be invoked until audio_3d_update() is called.
-        virtual void audio_3d_set_listener_attributes(float px, float py, float pz,
-                                                        float vx, float xy, float xz, 
-                                                        float fx, float fy, float fz,
-                                                        float ux, float uy, float uz);
-
-        // REMOVE THIS ONE
-        virtual void audio_3d_get_listener_attributes(float *px, float *py, float *pz,
-                                                        float *vx, float *vy, float *vz,
-                                                        float *fx, float *fy, float *fz,
-                                                        float *ux, float *uy, float *uz);
+  // REMOVE THIS ONE
+  virtual void audio_3d_get_listener_attributes(float *px, float *py, float *pz,
+                                                float *vx, float *vy, float *vz,
+                                                float *fx, float *fy, float *fz,
+                                                float *ux, float *uy, float *uz);
           
-        // Control the "relative distance factor" for 3D spacialized audio. Default is 1.0
-        // Fmod uses meters internally, so give a float in Units-per meter
-        // Don't know what Miles uses.
-        virtual void audio_3d_set_distance_factor(float factor);
-        virtual float audio_3d_get_distance_factor() const;
+  // Control the "relative distance factor" for 3D spacialized audio. Default is 1.0
+  // Fmod uses meters internally, so give a float in Units-per meter
+  // Don't know what Miles uses.
+  virtual void audio_3d_set_distance_factor(float factor);
+  virtual float audio_3d_get_distance_factor() const;
 
-        // Control the presence of the Doppler effect. Default is 1.0
-        // Exaggerated Doppler, use >1.0
-        // Diminshed Doppler, use <1.0
-        virtual void audio_3d_set_doppler_factor(float factor);
-        virtual float audio_3d_get_doppler_factor() const;
+  // Control the presence of the Doppler effect. Default is 1.0
+  // Exaggerated Doppler, use >1.0
+  // Diminshed Doppler, use <1.0
+  virtual void audio_3d_set_doppler_factor(float factor);
+  virtual float audio_3d_get_doppler_factor() const;
 
-        // Exaggerate or diminish the effect of distance on sound. Default is 1.0
-        // Faster drop off, use >1.0
-        // Slower drop off, use <1.0
-        virtual void audio_3d_set_drop_off_factor(float factor);
-        virtual float audio_3d_get_drop_off_factor() const;
+  // Exaggerate or diminish the effect of distance on sound. Default is 1.0
+  // Faster drop off, use >1.0
+  // Slower drop off, use <1.0
+  virtual void audio_3d_set_drop_off_factor(float factor);
+  virtual float audio_3d_get_drop_off_factor() const;
 
-        //THESE ARE NOT USED ANYMORE.
-        //THEY ARE ONLY HERE BECAUSE THEY are still needed by Miles.
-        //THESE are stubs in FMOD-EX version
-        ////////////////////////////////////////////////////////////////////
-        virtual void set_concurrent_sound_limit(unsigned int limit = 0);
-        virtual unsigned int get_concurrent_sound_limit() const;
-        virtual void reduce_sounds_playing_to(unsigned int count);
-        virtual void uncache_sound(const string&);
-        virtual void clear_cache();
-        virtual void set_cache_limit(unsigned int count);
-        virtual unsigned int get_cache_limit() const;
-        ////////////////////////////////////////////////////////////////////
+  //THESE ARE NOT USED ANYMORE.
+  //THEY ARE ONLY HERE BECAUSE THEY are still needed by Miles.
+  //THESE are stubs in FMOD-EX version
+  ////////////////////////////////////////////////////////////////////
+  virtual void set_concurrent_sound_limit(unsigned int limit = 0);
+  virtual unsigned int get_concurrent_sound_limit() const;
+  virtual void reduce_sounds_playing_to(unsigned int count);
+  virtual void uncache_sound(const string&);
+  virtual void clear_cache();
+  virtual void set_cache_limit(unsigned int count);
+  virtual unsigned int get_cache_limit() const;
+  ////////////////////////////////////////////////////////////////////
 
-    protected:
+ private:
 
-        //  This is the main FMOD system varible.  Without it you got nothing.
-        FMOD::System    *_system; 
+  FMOD::System *_system; 
+  
+  static pset<FmodAudioManager *> _all_managers;
 
-    private:
+  FMOD_VECTOR _position;
+  FMOD_VECTOR _velocity;
+  FMOD_VECTOR _forward;
+  FMOD_VECTOR _up;
 
-        //  This varible is something to receive the FMOD_RESULTs which we use to check
-        //  FMOD's State
-        FMOD_VECTOR _position;
-        FMOD_VECTOR _velocity;
-        FMOD_VECTOR _forward;
-        FMOD_VECTOR _up;
+  bool _is_valid;
+  bool _active;
 
+  float _distance_factor;
+  float _doppler_factor;
+  float _drop_off_factor;
 
-        bool _is_valid;
-        bool _active;
+  // The set of all sounds.  Needed only to implement stop_all_sounds.
+  typedef pset<FmodAudioSound *> SoundSet;
+  SoundSet _all_sounds;
 
-        float _distance_factor;
-        float _doppler_factor;
-        float _drop_off_factor;
+  // The Data Structure that holds all the DSPs.
+  typedef pset<PT (FmodAudioDSP) > DSPSet;
+  DSPSet _system_dsp;
 
-        //The Data Structure that holds all the sounds.
-        //BTW.  Notice that this IS NOT A PT Structure.
-        //It probably should never bee either.
-        //We tried it as a PT, and you run into a problem with
-        //PANDA's garbage collection system, when you finally get around
-        //to destroying the sounds.
-        //So you are probably wondering why we even need a set like the one below by now.
-        //Mainly becuase we need something for the 'stop_all_sounds()' function.
-        //Which does just take it stop all the sounds at once [and believe it is needed at times.]
-        typedef pset<FmodAudioSound *> SoundSet;
-        SoundSet _all_sounds;
+  friend class FmodAudioSound;
 
-        //The Data Structure that holds all the DSPs.
-        typedef pset<PT (FmodAudioDSP) > DSPSet;
-        DSPSet _system_dsp;
+  ////////////////////////////////////////////////////////////
+  //These are needed for Panda's Pointer System. DO NOT ERASE!
+  ////////////////////////////////////////////////////////////
 
-        friend class FmodAudioSound;
+ public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    AudioManager::init_type();
+    register_type(_type_handle, "FmodAudioManager", AudioManager::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {
+    init_type(); 
+    return get_class_type();
+  }
 
+ private:
+  static TypeHandle _type_handle;
 
-    ////////////////////////////////////////////////////////////
-    //These are needed for Panda's Pointer System. DO NOT ERASE!
-    ////////////////////////////////////////////////////////////
-
-    public:
-        static TypeHandle get_class_type() {
-            return _type_handle;
-        }
-        static void init_type() {
-            AudioManager::init_type();
-            register_type(_type_handle, "FmodAudioManager", AudioManager::get_class_type());
-        }
-        virtual TypeHandle get_type() const {
-            return get_class_type();
-        }
-        virtual TypeHandle force_init_type() {
-            init_type(); 
-            return get_class_type();
-        }
-
-    private:
-        static TypeHandle _type_handle;
-
-    ////////////////////////////////////////////////////////////
-    //DONE
-    ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  //DONE
+  ////////////////////////////////////////////////////////////
 
 };
 

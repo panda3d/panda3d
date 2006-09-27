@@ -209,16 +209,6 @@ stop_all_sounds() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NullAudioManager::audio_3d_update
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void NullAudioManager::
-audio_3d_update() {
-    // intentionally blank.
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NullAudioManager::audio_3d_set_listener_attributes
 //       Access: Public
 //  Description: 

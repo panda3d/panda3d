@@ -27,12 +27,13 @@
 
 //Panda headers.
 #include "config_audio.h"
+#include "config_util.h"
 #include "fmodAudioManager.h"
 #include "fmodAudioSound.h"
 #include "fmodAudioDSP.h"
 //Needed so People use Panda's Generic UNIX Style Paths for Filename.
 #include "filename.h"
-
+#include "virtualFileSystem.h"
 
 //FMOD Headers.
 #include <fmod.hpp>
@@ -42,6 +43,7 @@
 
 TypeHandle FmodAudioManager::_type_handle;
 
+pset<FmodAudioManager *> FmodAudioManager::_all_managers;
 
 ////////////////////////////////////////////////////////////////////
 // Central dispatcher for audio errors.
@@ -49,7 +51,7 @@ TypeHandle FmodAudioManager::_type_handle;
 
 static void fmod_audio_errcheck(FMOD_RESULT result) {
   if (result != 0) {
-    audio_error("FMOD State: "<< result <<" "<< FMOD_ErrorString(result) );
+    audio_error("FMOD Error: "<< FMOD_ErrorString(result) );
   }
 }
 
@@ -59,7 +61,6 @@ static void fmod_audio_errcheck(FMOD_RESULT result) {
 //  Description: Factory Function
 ////////////////////////////////////////////////////////////////////
 PT(AudioManager) Create_AudioManager() {
-  audio_debug("Create_AudioManager() Fmod.");
   return new FmodAudioManager;
 }
 
@@ -71,15 +72,13 @@ PT(AudioManager) Create_AudioManager() {
 ////////////////////////////////////////////////////////////////////
 FmodAudioManager::
 FmodAudioManager() {
-
-  //OK Lets create the FMOD Audio Manager.
-  audio_debug("FmodAudioManager::FmodAudioManager()");
-
   FMOD_RESULT result;
 
   //We need a varible temporary to check the FMOD Version.
   unsigned int      version;
 
+  _all_managers.insert(this);
+  
   //Init 3D attributes
   _position.x = 0;
   _position.y = 0;
@@ -97,28 +96,18 @@ FmodAudioManager() {
   _up.y = 0;
   _up.z = 0;
     
-
-
-  audio_debug("FMOD::System_Create()");
   result = FMOD::System_Create(&_system);
   fmod_audio_errcheck(result);
 
   //  Let check the Version of FMOD to make sure the Headers and Libraries are correct.
-  audio_debug("FMOD::System_Create()");
   result = _system->getVersion(&version);
   fmod_audio_errcheck(result);
-
-  audio_debug("FMOD VERSION:" << hex << version );
-  audio_debug("FMOD - Getting Version");
-
+  
   if (version < FMOD_VERSION){
-    audio_debug("Error!  You are using an old version of FMOD.  This program requires:" << FMOD_VERSION);
+    audio_error("You are using an old version of FMOD.  This program requires:" << FMOD_VERSION);
   }
 
   //Stick Surround Sound 5.1 thing Here.
-
-  audio_debug("Checking for Surround Sound Flag.");
-
   if (fmod_use_surround_sound) {
     audio_debug("Setting FMOD to use 5.1 Surround Sound.");
     result = _system->setSpeakerMode( FMOD_SPEAKERMODE_5POINT1 );
@@ -126,16 +115,12 @@ FmodAudioManager() {
   }
 
   //Now we Initialize the System.
-
-  audio_debug("FMOD::System_Init");
   result = _system->init(fmod_number_of_sound_channels, FMOD_INIT_NORMAL, 0);
   fmod_audio_errcheck(result);
 
   if (result == FMOD_OK){
-    audio_debug("FMOD Intialized OK, We are good to go Houston!");
     _is_valid = true;
   } else {
-    audio_debug("Something is still wrong with FMOD!  Check source.");
     _is_valid = false;
   }
 
@@ -150,11 +135,8 @@ FmodAudioManager() {
   _distance_factor = 3.28;
   _drop_off_factor = 1;
 
-  audio_debug("Setting 3D Audio settings: Doppler Factor, Distance Factor, Drop Off Factor");
-
   result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
   fmod_audio_errcheck( result );
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -165,8 +147,6 @@ FmodAudioManager() {
 FmodAudioManager::
 ~FmodAudioManager() {
   // Be sure to delete associated sounds before deleting the manager!
-  audio_debug("~FmodAudioManager(): Closing Down");
-
   FMOD_RESULT result;
 
   //Release DSPs First
@@ -175,14 +155,11 @@ FmodAudioManager::
   //Release Sounds Next
   _all_sounds.clear();
 
-  //result = _system->close();
-  //fmod_audio_errcheck(result);
+  // Remove me from the managers list.
+  _all_managers.erase(this);
 
-  result = _system->release();
+    result = _system->release();
   fmod_audio_errcheck(result);
-
-  audio_debug("~FmodAudioManager(): System Down.");
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,7 +170,6 @@ FmodAudioManager::
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioManager::
 is_valid() {
-  audio_debug("FmodAudioManager::is_valid() = " << _is_valid );
   return _is_valid;
 }
 
@@ -204,12 +180,13 @@ is_valid() {
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) FmodAudioManager::
 get_sound(const string &file_name, bool positional) {
-
-  audio_debug("FmodAudioManager::get_sound(file_name=\""<<file_name<<"\")");
-
   //Needed so People use Panda's Generic UNIX Style Paths for Filename.
   //path.to_os_specific() converts it back to the proper OS version later on.
+  
   Filename path = file_name;
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(path, get_sound_path());
 
   // Build a new AudioSound from the audio data.
   PT(AudioSound) audioSound = 0;
@@ -220,7 +197,6 @@ get_sound(const string &file_name, bool positional) {
   audioSound = fmodAudioSound;
 
   return audioSound;
-
 }
 
 
@@ -231,8 +207,6 @@ get_sound(const string &file_name, bool positional) {
 ////////////////////////////////////////////////////////////////////
 PT(AudioDSP) FmodAudioManager::
 create_dsp(DSP_category index) {
-  audio_debug("FmodAudioManager()::create_dsp");
-  
   // Build a new AudioSound from the audio data.
   PT(FmodAudioDSP) fmodAudioDSP = new FmodAudioDSP(this, index);
 
@@ -249,8 +223,6 @@ create_dsp(DSP_category index) {
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioManager::
 add_dsp( PT(AudioDSP) x) {
-  // intentionally blank
-
   FMOD_RESULT result;
 
   FmodAudioDSP *fdsp;
@@ -258,25 +230,14 @@ add_dsp( PT(AudioDSP) x) {
   DCAST_INTO_R(fdsp, x, false);
 
   if ( fdsp->get_in_chain() ) {
-
-    audio_debug("FmodAudioManager()::add_dsp");
-    audio_debug("This DSP has already been assigned to the system or a sound.");
-
     return false;
-
-  } else
-  {
-
+  } else {
     result = _system->addDSP( fdsp->_dsp );
     fmod_audio_errcheck( result );
-
     _system_dsp.insert(fdsp);
-
     fdsp->set_in_chain(true);
-
     return true;
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -288,15 +249,12 @@ add_dsp( PT(AudioDSP) x) {
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioManager::
 remove_dsp(PT(AudioDSP) x) {
-  // intentionally blank
-
   FMOD_RESULT result;
 
   FmodAudioDSP *fdsp;
   DCAST_INTO_R(fdsp, x, false);
 
   if ( fdsp->get_in_chain() ) {
-
     result = fdsp->_dsp->remove();
     fmod_audio_errcheck( result );
 
@@ -305,17 +263,9 @@ remove_dsp(PT(AudioDSP) x) {
     fdsp->set_in_chain(false);
 
     return true;
-
-  } else
-  {
-
-    audio_debug("FmodAudioManager()::remove_dsp()");
-    audio_debug("This DSP doesn't exist in this chain.");
-
+  } else {
     return false;
-
   }
-
 }
 
 
@@ -326,8 +276,6 @@ remove_dsp(PT(AudioDSP) x) {
 ////////////////////////////////////////////////////////////////////
 int FmodAudioManager::
 getSpeakerSetup() {
-  // intentionally blank
-
   FMOD_RESULT result;
   FMOD_SPEAKERMODE speakerMode;
   int returnMode;
@@ -392,10 +340,6 @@ getSpeakerSetup() {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 setSpeakerSetup(AudioManager::SPEAKERMODE_category cat) {
-  // intentionally blank
-
-  audio_debug("FmodAudioSound::setSpeakerSetup() " );
-
   //Local Variables that are needed.
   FMOD_RESULT result;
 
@@ -403,9 +347,6 @@ setSpeakerSetup(AudioManager::SPEAKERMODE_category cat) {
 
   result = _system->setSpeakerMode( speakerModeType);
   fmod_audio_errcheck(result);
-
-  audio_debug("Speaker Mode Set");
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -416,8 +357,7 @@ setSpeakerSetup(AudioManager::SPEAKERMODE_category cat) {
 //        so this function is moot now.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::set_volume(float volume) {
-  audio_debug("FmodAudioManager::set_volume()" );
-  audio_debug("This function has no effect in this version." );
+  audio_warning("FmodAudioManager::set_volume has no effect." );
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -429,20 +369,19 @@ void FmodAudioManager::set_volume(float volume) {
 ////////////////////////////////////////////////////////////////////
 float FmodAudioManager::
 get_volume() const {
-  audio_debug("FmodAudioManager::get_volume() returning ");
-  audio_debug("This function has no effect in this version." );
-  return 0;
+  audio_warning("FmodAudioManager::get_volume has no effect." );
+  return 1.0;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::set_active(bool active)
 //       Access: Public
 //  Description: Turn on/off
-//         Again, this function is pretty much moot in this version now.
+//               Warning: not implemented.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 set_active(bool active) {
-  audio_debug("FmodAudioManager::set_active(flag="<<active<<")");
+  _active = active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -452,7 +391,6 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioManager::
 get_active() const {
-  audio_debug("FmodAudioManager::get_active() returning "<<_active);
   return _active;
 }
 
@@ -463,27 +401,19 @@ get_active() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 stop_all_sounds() {
-  audio_debug("FmodAudioManager::stop_all_sounds()" );
-
   for (SoundSet::iterator i = _all_sounds.begin(); i != _all_sounds.end(); ++i) {
     (*i)->stop();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioManager::audio_3d_update
+//     Function: FmodAudioManager::update
 //       Access: Public
-//  Description: Commit position changes to listener and all
-//               positioned sounds. Normally, you'd want to call this
-//               once per iteration of your main loop.
+//  Description: Perform all per-frame update functions.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
-audio_3d_update() {
-  audio_debug("FmodAudioManager::audio_3d_update()");
-  audio_debug("Calling FMOD's update function");
-
+update() {
   _system->update();
-
 }
 
 ////////////////////////////////////////////////////////////////////

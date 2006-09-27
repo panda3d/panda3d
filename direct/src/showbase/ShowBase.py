@@ -1314,6 +1314,13 @@ class ShowBase(DirectObject.DirectObject):
             self.appTrav.traverse(self.render)
         return Task.cont
 
+    def audioLoop(self, state):
+        if (self.musicManager != None):
+            self.musicManager.update()
+        for x in self.sfxManagerList:
+            x.update()
+        return Task.cont
+
     def igLoop(self, state):
         # We render the watch variables for the onScreenDebug as soon
         # as we reasonably can before the renderFrame().
@@ -1374,9 +1381,13 @@ class ShowBase(DirectObject.DirectObject):
         # give the igLoop task a reasonably "late" priority,
         # so that it will get run after most tasks
         self.taskMgr.add(self.igLoop, 'igLoop', priority = 50)
+        # the audioLoop updates the positions of 3D sounds.
+        # as such, it needs to run after the cull traversal in the igLoop.
+        self.taskMgr.add(self.audioLoop, 'audioLoop', priority = 60)
         self.eventMgr.restart()
 
     def shutdown(self):
+        self.taskMgr.remove('audioLoop')
         self.taskMgr.remove('igLoop')
         self.taskMgr.remove('shadowCollisionLoop')
         self.taskMgr.remove('collisionLoop')

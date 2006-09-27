@@ -81,37 +81,31 @@ FmodAudioSound(AudioManager *manager, string file_name, bool positional) {
   result = _manager->_system->getSpeakerMode( &_speakermode );
   fmod_audio_errcheck(result);
 
-  if (positional == true) {
-  
-    result = _manager->_system->createSound( file_name.c_str(), FMOD_SOFTWARE | FMOD_3D , 0, &_sound);
+  int flag = positional ? FMOD_3D : FMOD_2D;
+
+  result = _manager->_system->createSound( file_name.c_str(), FMOD_SOFTWARE | flag , 0, &_sound);
+  if (result != FMOD_OK) {
+    char blank_data[100];
+    FMOD_CREATESOUNDEXINFO exinfo;
+    audio_error("CreateSound " << file_name << ": " << FMOD_ErrorString(result));
+    memset(&exinfo, 0, sizeof(exinfo));
+    memset(blank_data, 0, sizeof(blank_data));
+    exinfo.cbsize = sizeof(exinfo);
+    exinfo.length = sizeof(blank_data);
+    exinfo.numchannels = 1;
+    exinfo.defaultfrequency = 8000;
+    exinfo.format = FMOD_SOUND_FORMAT_PCM16;
+    result = _manager->_system->createSound( blank_data, FMOD_SOFTWARE | flag | FMOD_OPENMEMORY | FMOD_OPENRAW, &exinfo, &_sound);
     fmod_audio_errcheck(result);
-
-    //This is just to collect the defaults of the sound, so we don't
-    //Have to query FMOD everytime for the info.
-    //It is also important we get the '_sampleFrequency' variable here, for the
-    //'set_play_rate()' and 'get_play_rate()' methods later;
-    
-    result = _sound->getDefaults( &_sampleFrequency, &_volume , &_balance, &_priority);
-    fmod_audio_errcheck(result);
-
-    audio_debug("Sound loaded as 3D");
-
-  } else {
-
-    result = _manager->_system->createSound( file_name.c_str(), FMOD_SOFTWARE | FMOD_2D , 0, &_sound);
-    fmod_audio_errcheck(result);
-  
-    //This is just to collect the defaults of the sound, so we don't
-    //Have to query FMOD everytime for the info.
-    //It is also important we get the '_sampleFrequency' variable here, for the
-    //'set_play_rate()' and 'get_play_rate()' methods later;
-
-    result = _sound->getDefaults( &_sampleFrequency, &_volume , &_balance, &_priority);
-    fmod_audio_errcheck(result);
-
-    audio_debug("Sound loaded as 2D");
-
   }
+  
+  //This is just to collect the defaults of the sound, so we don't
+  //Have to query FMOD everytime for the info.
+  //It is also important we get the '_sampleFrequency' variable here, for the
+  //'set_play_rate()' and 'get_play_rate()' methods later;
+  
+  result = _sound->getDefaults( &_sampleFrequency, &_volume , &_balance, &_priority);
+  fmod_audio_errcheck(result);
 }
 
 

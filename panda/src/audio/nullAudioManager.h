@@ -56,8 +56,6 @@ public:
 
   virtual void stop_all_sounds();
 
-  virtual void audio_3d_update();
-
   virtual void audio_3d_set_listener_attributes(float px, float py, float pz,
                                                 float vx, float vy, float vz,
                                                 float fx, float fy, float fz,

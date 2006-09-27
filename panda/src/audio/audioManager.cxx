@@ -152,8 +152,8 @@ get_null_sound() {
 ////////////////////////////////////////////////////////////////////
 PT(AudioDSP) AudioManager::
 create_dsp(DSP_category) {
-    // intentionally blank.
-	return NULL;
+  // intentionally blank.
+  return NULL;
 }
 
 
@@ -164,8 +164,8 @@ create_dsp(DSP_category) {
 ////////////////////////////////////////////////////////////////////
 bool AudioManager::
 add_dsp(PT(AudioDSP) x) {
-	// intentionally blank
-	return false;
+  // intentionally blank
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,8 +175,8 @@ add_dsp(PT(AudioDSP) x) {
 ////////////////////////////////////////////////////////////////////
 bool AudioManager::
 remove_dsp(PT(AudioDSP) x) {
-	// intentionally blank
-	return false;
+  // intentionally blank
+  return false;
 }
 
 
@@ -187,8 +187,8 @@ remove_dsp(PT(AudioDSP) x) {
 ////////////////////////////////////////////////////////////////////
 int AudioManager::
 getSpeakerSetup() {
-	// intentionally blank
-	return 0;
+  // intentionally blank
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,21 +198,19 @@ getSpeakerSetup() {
 ////////////////////////////////////////////////////////////////////
 void AudioManager::
 setSpeakerSetup(SPEAKERMODE_category cat) {
-	// intentionally blank
-	;
+  // intentionally blank
 }
 
-
-
-
-
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::audio_3d_update
-//       Access: Public
-//  Description: 
+//     Function: AudioManager::update()
+//       Access: Published
+//  Description: Must be called every frame.  Failure to call this
+//               every frame could cause problems for some audio
+//               managers.
 ////////////////////////////////////////////////////////////////////
-void AudioManager::audio_3d_update() {
-    // intentionally blank.
+void AudioManager::
+update() {
+  // Intentionally blank.
 }
 
 ////////////////////////////////////////////////////////////////////

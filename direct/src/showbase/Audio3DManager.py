@@ -271,5 +271,4 @@ class Audio3DManager:
             self.audio_manager.audio3dSetListenerAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], 0, 1, 0, 0, 0, 1)
         else:
             self.audio_manager.audio3dSetListenerAttributes(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1)
-        self.audio_manager.audio3dUpdate()
         return Task.cont
