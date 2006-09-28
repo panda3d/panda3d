@@ -102,6 +102,7 @@
   #define nspr_lpath $[wildcard $[NSPR_LPATH]]
   #define nspr_cflags $[NSPR_CFLAGS]
   #define nspr_libs $[NSPR_LIBS]
+  #define nspr_framework $[NSPR_FRAMEWORK]
 #endif
 
 #if $[HAVE_OPENSSL]
@@ -278,6 +279,7 @@
   #define freetype_lpath $[wildcard $[FREETYPE_LPATH]]
   #define freetype_cflags $[FREETYPE_CFLAGS]
   #define freetype_libs $[FREETYPE_LIBS]
+  #define freetype_framework $[FREETYPE_FRAMEWORK]
 #endif
 
 #if $[and $[HAVE_MAYA],$[MAYA_LOCATION]]

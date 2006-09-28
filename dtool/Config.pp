@@ -876,12 +876,8 @@
   #define CXX CC
 #endif
 
-#if $[and $[OSX_PLATFORM],$[UNIVERSAL_BINARIES]]
-  // Configure for universal binaries on OSX.
-  #define ARCH_FLAGS -arch i386 -arch ppc
-#else
-  #define ARCH_FLAGS
-#endif
+// Configure for universal binaries on OSX.
+#defer ARCH_FLAGS $[if $[and $[OSX_PLATFORM],$[UNIVERSAL_BINARIES]],-arch i386 -arch ppc,]
 
 // How to compile a C or C++ file into a .o file.  $[target] is the
 // name of the .o file, $[source] is the name of the source file,

@@ -78,13 +78,7 @@ MilesAudioManager() {
     S32 use_MIDI=(audio_play_midi)?1:0;
     if (audio_play_midi && audio_software_midi) {
       use_MIDI=AIL_QUICK_DLS_ONLY;
-
     }
-
-#ifdef IS_OSX 
-use_MIDI=AIL_QUICK_DLS_ONLY;
-audio_software_midi=true;
-#endif
 
     audio_debug("  use_digital="<<use_digital);
     audio_debug("  use_MIDI="<<use_MIDI);
@@ -92,7 +86,7 @@ audio_software_midi=true;
     audio_debug("  audio_output_bits="<<audio_output_bits);
     audio_debug("  audio_output_channels="<<audio_output_channels);
     audio_debug("  audio_software_midi="<<audio_software_midi);
-    #ifndef NDEBUG //[
+    #if !defined(NDEBUG) && defined(AIL_MSS_version) //[
       char version[8];
       AIL_MSS_version(version, 8);
       audio_debug("  Mss32.dll Version: "<<version);
@@ -136,7 +130,7 @@ audio_software_midi=true;
         audio_info("  using Miles hardware midi");
       }
     } else {
-      audio_debug("  AIL_quick_startup failed: "<<AIL_last_error());
+      audio_error("Unable to init MilesAudioManager.  AIL_quick_startup failed: "<<AIL_last_error());
       _is_valid = false;
     }
   }

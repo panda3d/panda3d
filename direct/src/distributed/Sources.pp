@@ -12,10 +12,7 @@
     interrogatedb:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
-    pipeline:c
-  #if $[and $[HAVE_NET],$[HAVE_NSPR]] \
-    #define OTHER_LIBS net:c $[OTHER_LIBS]
-  #endif
+    pipeline:c $[if $[HAVE_NET],net:c]
 
   #define SOURCES \
     config_distributed.cxx config_distributed.h \

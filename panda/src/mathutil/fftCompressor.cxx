@@ -27,7 +27,6 @@
 
 #ifdef HAVE_FFTW
 
-#ifdef IS_OSX
 //  hack.....
 // this is a hack to help interigate sort out a macro 
 // in the system poll and select definitions 
@@ -35,10 +34,7 @@
 #ifdef howmany
 #undef howmany
 #endif
-#include <drfftw.h>
-#else
 #include <rfftw.h>
-#endif 
 
 // These FFTW support objects can only be defined if we actually have
 // the FFTW library available.

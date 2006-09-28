@@ -38,12 +38,8 @@ extern ConfigVariableDouble downloader_frequency;
 extern ConfigVariableInt downloader_timeout;
 extern ConfigVariableInt downloader_timeout_retries;
 
-extern ConfigVariableInt decompressor_buffer_size;
-extern ConfigVariableDouble decompressor_frequency;
-
-extern ConfigVariableInt extractor_buffer_size;
-extern ConfigVariableDouble extractor_frequency;
-
+extern ConfigVariableDouble decompressor_step_time;
+extern ConfigVariableDouble extractor_step_time;
 extern ConfigVariableInt patcher_buffer_size;
 
 extern ConfigVariableBool verify_ssl;

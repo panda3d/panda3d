@@ -1,5 +1,6 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m
+#define OTHER_LIBS \
+   interrogatedb:c dconfig:c dtoolconfig:m \
+   dtoolutil:c dtoolbase:c prc:c dtool:m
 #define BUILD_DIRECTORY $[and $[HAVE_NET],$[HAVE_NSPR]]
 #define USE_PACKAGES net nspr
 

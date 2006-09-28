@@ -27,6 +27,7 @@
 #include "ramfile.h"
 #include "zStream.h"
 #include "config_express.h"
+#include "trueClock.h"
 
 #include "decompressor.h"
 
@@ -159,19 +160,27 @@ run() {
     // Hmm, we were already done.
     return EU_success;
   }
-  
-  // Read a bunch of characters from the decompress stream, but no
-  // more than decompressor_buffer_size.
-  int count = 0;
-  int ch = _decompress->get();
-  while (!_decompress->eof() && !_decompress->fail()) {
-    _dest->put(ch);
-    if (++count >= decompressor_buffer_size) {
+
+  TrueClock *clock = TrueClock::get_global_ptr();
+  double now = clock->get_short_time();
+  double finish = now + decompressor_step_time;
+
+  static const size_t buffer_size = 1024;
+  char buffer[buffer_size];
+
+  _decompress->read(buffer, buffer_size);
+  size_t count = _decompress->gcount();
+  while (count != 0) {
+    _dest->write(buffer, count);
+
+    now = clock->get_short_time();
+    if (now >= finish) {
       // That's enough for now.
       return EU_ok;
     }
 
-    ch = _decompress->get();
+    _decompress->read(buffer, buffer_size);
+    count = _decompress->gcount();
   }
 
   // All done!

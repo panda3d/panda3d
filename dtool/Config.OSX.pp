@@ -1,5 +1,5 @@
 //
-// Config.osx.pp
+// Config.OSX.pp
 //
 // This file defines some custom config variables for the osx
 // platform.  It makes some initial guesses about compiler features,
@@ -19,68 +19,14 @@
 // to a subsequent version of Panda.
 // *******************************************************************
 
-
-//#define PYTHON_IPATH /Library/Frameworks/Python.framework/Headers
-//#define PYTHON_LPATH /Library/Frameworks/Python.framework/Headers
-
-#define PYTHON_IPATH /Library/Frameworks/Python.framework/Headers
-#define HAVE_PYTHON 1
-#define PYTHON_FRAMEWORK  Python
-
 // What additional flags should we pass to interrogate?
 #define SYSTEM_IGATE_FLAGS -D__FLT_EVAL_METHOD__=0  -D__i386__ -D__const=const -Dvolatile -D__LITTLE_ENDIAN__ -D__inline__=inline -D__GNUC__
 #define HAVE_GL 1
 #define IS_OSX 1
 
-//#define ZLIB_IPATH /usr/include
-//#define ZLIB_LPATH /usr/lib/
-//#define ZLIB_LIBS  libz.dylib 
-
-//#define HAVE_ZLIB 1
-//#define HAVE_JPEG 1
-//#define HAVE_FREETYPE 1
-#print   Before Configure Miles 
-#define HAVE_RAD_MSS 1
-#define RAD_MSS_IPATH  /Users/roger/m/include
-#define RAD_MSS_LPATH  /Users/roger/m/redist/macx86
-#define RAD_MSS_LIBS MilesMachOx86
-#define rad_mss_ipath $[RAD_MSS_IPATH]
-#define rad_mss_lpath $[RAD_MSS_LPATH] 
-#define rad_mss_libs $[RAD_MSS_LIBS]
-
-
-//#print   -- $[RAD_MSS_IPATH]
-//#print  ---  $[RAD_MSS_LPATH]
-//#print   ----$[RAD_MSS_LIBS]
-
-
-//#print  ---$[rad_mss_ipath]
-//#print  ---$[rad_mss_lpath]
-//#print  ---$[rad_mss_libs]
-
-
-
-#define PNG_IPATH /opt/local/include 
-#define PNG_LPATH /opt/local/lib
-#define PNG_LIBS png
-//#define HAVE_PNG 1
-
-
-#define HAVE_OPENSSL 1
-
-// Is libfftw installed, and where?
-#define FFTW_IPATH /opt/local/include
-#define FFTW_LPATH /opt/local/lib
-#define FFTW_LIBS rfftw fftw
-//#define HAVE_FFTW 1
-
-
-#define TIFF_IPATH /opt/local/include 
-#define TIFF_LPATH /opt/local/lib
-
-// Is the platform big-endian (like an SGI workstation) or
-// little-endian (like a PC)?  Define this to the empty string to
-// indicate little-endian, or nonempty to indicate big-endian.
+// We don't need worry about defining WORDS_BIGENDIAN (and we
+// shouldn't anyway, since ppc and intel are different).  We rely on
+// dtoolbase.h to determine this at compilation time.
 #define WORDS_BIGENDIAN 
 
 // Does the C++ compiler support namespaces?

@@ -9,7 +9,7 @@
     interrogatedb:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m \
     pandabase:c prc:c gsgbase:c pstatclient:c \
-    pipeline:c
+    pipeline:c $[if $[HAVE_NET],net:c]
 
   #define SOURCES \
     config_interval.cxx config_interval.h \

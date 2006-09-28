@@ -47,20 +47,21 @@ ConfigVariableInt downloader_timeout
 ConfigVariableInt downloader_timeout_retries
 ("downloader-timeout-retries", 5);
 
-ConfigVariableInt decompressor_buffer_size
-("decompressor-buffer-size", 4096);
+ConfigVariableDouble decompressor_step_time
+("decompressor-step-time", 0.1,
+ PRC_DESC("Specifies the maximum amount of time that should be consumed by "
+          "a single call to Decompressor::run()."));
 
-ConfigVariableDouble decompressor_frequency
-("decompressor-frequency", 0.2);
-
-ConfigVariableInt extractor_buffer_size
-("extractor-buffer-size", 4096);
-
-ConfigVariableDouble extractor_frequency
-("extractor-frequency", 0.2);
+ConfigVariableDouble extractor_step_time
+("extractor-step-time", 0.1,
+ PRC_DESC("Specifies the maximum amount of time that should be consumed by "
+          "a single call to Extractor::step()."));
 
 ConfigVariableInt patcher_buffer_size
-("patcher-buffer-size", 4096);
+("patcher-buffer-size", 16384,
+  PRC_DESC("Limits the size of the buffer used in a single call to "
+           "Patcher::run().  Increasing this may help the Patcher "
+           "perform more work before returning."));
 
 ConfigVariableBool verify_ssl
 ("verify-ssl", true,

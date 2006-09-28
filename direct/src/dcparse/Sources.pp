@@ -4,9 +4,9 @@
   express:c pandaexpress:m \
   interrogatedb:c dconfig:c dtoolconfig:m \
   dtoolutil:c dtoolbase:c dtool:m \
-  pystub \
   prc:c pstatclient:c pandabase:c linmath:c putil:c \
-  pipeline:c
+  pipeline:c $[if $[HAVE_NET],net:c] \
+  pystub
 
 #define C++FLAGS -DWITHIN_PANDA
 

@@ -149,6 +149,7 @@ DoGenPyCode.extensionsDir = os.path.join(directDir, 'src', '$[extensions_name]')
 DoGenPyCode.etcPath = []
 DoGenPyCode.pythonSourcePath = []
 
+#if $[CTA_GENERIC_GENPYCODE]
 # Look for additional packages (other than the basic three)
 # that the user might be dynamically attached to.
 packages = []
@@ -204,6 +205,7 @@ for package in packages:
                     if isModule:
                         if basename not in DoGenPyCode.codeLibs:
                             DoGenPyCode.codeLibs.append(basename)
+#endif  // CTA_GENERIC_GENPYCODE
 #endif  // CTPROJS
 
 DoGenPyCode.run()

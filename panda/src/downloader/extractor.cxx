@@ -155,69 +155,112 @@ step() {
     _initiated = true;
   }
 
-  if (_read == (istream *)NULL) {
-    // Time to open the next subfile.
-    if (_request_index >= (int)_requests.size()) {
-      // All done!
-      reset();
-      return EU_success;
-    }
+  TrueClock *clock = TrueClock::get_global_ptr();
+  double now = clock->get_short_time();
+  double finish = now + extractor_step_time;
 
-    _subfile_index = _requests[_request_index];
-    _subfile_filename = Filename(_extract_dir, 
-                                 _multifile->get_subfile_name(_subfile_index));
-    _subfile_filename.set_binary();
-    _subfile_filename.make_dir();
-    if (!_subfile_filename.open_write(_write, true)) {
-      downloader_cat.error()
-        << "Unable to write to " << _subfile_filename << ".\n";
-      reset();
-      return EU_error_abort;
-    }
-
-    _subfile_length = _multifile->get_subfile_length(_subfile_index);
-    _subfile_pos = 0;
-    _read = _multifile->open_read_subfile(_subfile_index);
+  do {
     if (_read == (istream *)NULL) {
-      downloader_cat.error()
-        << "Unable to read subfile "
-        << _multifile->get_subfile_name(_subfile_index) << ".\n";
-      reset();
-      return EU_error_abort;
-    }
+      // Time to open the next subfile.
+      if (_request_index >= (int)_requests.size()) {
+        // All done!
+        if (downloader_cat.is_debug()) {
+          downloader_cat.debug()
+            << "Finished extracting.\n";
+        }
+        reset();
+        return EU_success;
+      }
+      
+      _subfile_index = _requests[_request_index];
+      _subfile_filename = Filename(_extract_dir, 
+                                   _multifile->get_subfile_name(_subfile_index));
 
-  } else if (_subfile_pos >= _subfile_length) {
-    // Time to close this subfile.
-    delete _read;
-    _read = (istream *)NULL;
-    _write.close();
-    _request_index++;
+      if (downloader_cat.is_debug()) {
+        downloader_cat.debug()
+          << "Extracting " << _subfile_filename << ".\n";
+      }
 
-  } else {
-    // Read a number of bytes from the subfile and write them to the
-    // output.
-    size_t max_bytes = min((size_t)extractor_buffer_size, 
-                           _subfile_length - _subfile_pos);
-    for (size_t p = 0; p < max_bytes; p++) {
-      int byte = _read->get();
-      if (_read->eof() || _read->fail()) {
+      _subfile_filename.set_binary();
+      _subfile_filename.make_dir();
+      if (!_subfile_filename.open_write(_write, true)) {
+        downloader_cat.error()
+          << "Unable to write to " << _subfile_filename << ".\n";
+        reset();
+        return EU_error_abort;
+      }
+      
+      _subfile_length = _multifile->get_subfile_length(_subfile_index);
+      _subfile_pos = 0;
+      _read = _multifile->open_read_subfile(_subfile_index);
+      if (_read == (istream *)NULL) {
+        downloader_cat.error()
+          << "Unable to read subfile "
+          << _multifile->get_subfile_name(_subfile_index) << ".\n";
+        reset();
+        return EU_error_abort;
+      }
+      
+    } else if (_subfile_pos >= _subfile_length) {
+      // Time to close this subfile.
+
+      if (downloader_cat.is_debug()) {
+        downloader_cat.debug()
+          << "Finished current subfile.\n";
+      }
+      delete _read;
+      _read = (istream *)NULL;
+      _write.close();
+      _request_index++;
+      
+    } else {
+      // Read a number of bytes from the subfile and write them to the
+      // output.
+      static const size_t buffer_size = 1024;
+      char buffer[buffer_size];
+      
+      size_t max_bytes = min(buffer_size, _subfile_length - _subfile_pos);
+      _read->read(buffer, max_bytes);
+      size_t count = _read->gcount();
+      while (count != 0) {
+        if (downloader_cat.is_spam()) {
+          downloader_cat.spam()
+            << " . . . read " << count << " bytes.\n";
+        }
+        _write.write(buffer, count);
+        if (!_write) {
+          downloader_cat.error()
+            << "Error writing to " << _subfile_filename << ".\n";
+          reset();
+          return EU_error_abort;
+        }
+        
+        _subfile_pos += count;
+        _total_bytes_extracted += count;
+        
+        now = clock->get_short_time();
+        if (now >= finish) {
+          // That's enough for now.
+          return EU_ok;
+        }
+        
+        max_bytes = min(buffer_size, _subfile_length - _subfile_pos);
+        _read->read(buffer, max_bytes);
+        count = _read->gcount();
+      }
+      
+      if (max_bytes != 0) {
         downloader_cat.error()
           << "Unexpected EOF on multifile " << _multifile_name << ".\n";
         reset();
         return EU_error_abort;
       }
-      _write.put(byte);
     }
-    if (!_write) {
-      downloader_cat.error()
-        << "Error writing to " << _subfile_filename << ".\n";
-      reset();
-      return EU_error_abort;
-    }
-    _subfile_pos += max_bytes;
-    _total_bytes_extracted += max_bytes;
-  }
+  
+    now = clock->get_short_time();
+  } while (now < finish);
 
+  // That's enough for now.
   return EU_ok;
 }
 

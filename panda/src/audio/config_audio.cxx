@@ -64,7 +64,7 @@ ConfigVariableBool fmod_use_surround_sound
 // Config variables for Miles:
 
 ConfigVariableBool audio_software_midi 
-("audio-software-midi", false);
+("audio-software-midi", true);
 
 ConfigVariableFilename audio_dls_file
 ("audio-dls-file", "");

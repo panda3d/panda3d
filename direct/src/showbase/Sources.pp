@@ -9,7 +9,7 @@
     dtoolutil:c dtoolbase:c dtool:m \
     pgraph:c gsgbase:c gobj:c mathutil:c pstatclient:c \
     lerp:c downloader:c pandabase:c pnmimage:c prc:c \
-    pipeline:c cull:c
+    pipeline:c cull:c $[if $[HAVE_NET],net:c]
 
   #define SOURCES \
     showBase.cxx showBase.h
