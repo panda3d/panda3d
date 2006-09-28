@@ -1212,18 +1212,20 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       case WM_MOUSEWHEEL:
         {
           int delta = GET_WHEEL_DELTA_WPARAM(wparam);
-          int x = translate_mouse(LOWORD(lparam));
-          int y = translate_mouse(HIWORD(lparam));
+
+          POINT point;
+          GetCursorPos(&point);
+          ScreenToClient(hwnd, &point);
           double time = get_message_time();
 
           if (delta >= 0) {
             while (delta > 0) {
-              handle_keypress(MouseButton::wheel_up(), x, y, time);
+              handle_keypress(MouseButton::wheel_up(), point.x, point.y, time);
               delta -= WHEEL_DELTA;
             }
           } else {
             while (delta < 0) {
-              handle_keypress(MouseButton::wheel_down(), x, y, time);
+              handle_keypress(MouseButton::wheel_down(), point.x, point.y, time);
               delta += WHEEL_DELTA;
             }
           }
