@@ -232,7 +232,6 @@ static pascal OSStatus windowEvtHndlr (EventHandlerCallRef myHandler, EventRef e
 ////////////////////////////////////////////////////////////////////
 void     osxGraphicsWindow::DoResize(void)
 {
-
 	osxdisplay_cat.debug() << "In Resize Out....." << _properties << "\n";
     // only in window mode .. not full screen
     if(_osx_window != NULL && _is_fullsreen == false && _properties.has_size())
@@ -1388,33 +1387,20 @@ if (osxdisplay_cat.is_debug())
 
 bool osxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool has_origin,int x_size, int y_size)
 {
-	if(_osx_window == NULL)
-	  return false;
+  if (_properties.get_fullscreen()) {
+    // Can't resize fullscreen windows that easily.
+    return false;
+  }
 
- if (osxdisplay_cat.is_debug())	
-	osxdisplay_cat.debug() << "do_reshape_request " << x_origin <<" "<<  y_origin <<" "<< has_origin<< " " << x_size <<" "<<  y_size <<"\n";
-
-
-	// location is optional 
-	Rect  rect;
-	if(has_origin)
-	{
-		rect.left =  x_origin;
-		rect.top = y_origin;
-	}
-	else
-	{
-		GetWindowPortBounds (_osx_window, &rect);					
-	}
-	
-	// ok set size .. not oprional
-	rect.left = rect.left + x_size;
-	rect.bottom = rect.top + y_size;
-	
-	SetWindowUserState(_osx_window, &rect);
-	SetWindowStandardState (_osx_window, &rect );
-
-	return true;
+  // For now, ignore the origin, since we seem to be getting a bogus
+  // origin of (0, 0).
+  /*
+  if (has_origin) {
+    MoveWindow(_osx_window, x_origin, y_origin, false);
+  }
+  */
+  SizeWindow(_osx_window, x_size, y_size, false);
+  return true;
 }								
 
 
@@ -1458,7 +1444,6 @@ void osxGraphicsWindow::set_properties_now(WindowProperties &properties)
 	osxdisplay_cat.debug() << "set_properties_now After Base Class" << properties << "\n";
 	  
 	  
-	  
 //	  if(_osx_window == NULL)
 //	  {
 //		cerr<< "-------------------------------------set_properties_now out(not Window)  Request=[" <<properties <<"]\n";
@@ -1490,6 +1475,14 @@ void osxGraphicsWindow::set_properties_now(WindowProperties &properties)
   {
 		need_full_rebuild = true;
   }
+
+  // If we are fullscreen and requesting a size change
+  if (_properties.get_fullscreen() &&  
+      (properties.has_size() && 
+       (properties.get_x_size() != _properties.get_x_size() ||
+        properties.get_y_size() != _properties.get_y_size()))) {
+    need_full_rebuild = true;
+  }
   
   
   
@@ -1497,18 +1490,27 @@ void osxGraphicsWindow::set_properties_now(WindowProperties &properties)
   
   if(need_full_rebuild)
   {
-	// Login here is ..  tage a union of the properties .. with the new  allowed to overwrite the old states.
-	// and start a bootstrap of a new window ..
+	// Logic here is ..  take a union of the properties .. with the
+	// new allowed to overwrite the old states.  and start a bootstrap
+	// of a new window ..
+
+    if (properties.has_size()) {
+      // Make sure the DisplayRegions, etc., will be updated.
+      system_changed_size(properties.get_x_size(), properties.get_y_size());
+    }
+
     // get a copy of my properties..
 	WindowProperties req_properties(_properties); 
-	cerr<< "-------------------------------------Lets Go Full Rebuild   Request=[" <<properties <<"]\n";
+    //	cerr<< "-------------------------------------Lets Go Full Rebuild   Request=[" <<properties <<"]\n";
 	ReleaseSystemResources();
 	_properties.clear();	
 	req_properties.add_properties(properties);	
-	// put back in the request bucket..
-	properties = req_properties;
 	
-	OSOpenWindow(properties); 
+	OSOpenWindow(req_properties); 
+
+    // Now we've handled all of the requested properties.
+    properties.clear();
+
   }
 
  
@@ -1545,55 +1547,6 @@ if(properties.has_cursor_hidden())
                 } 
       properties.clear_cursor_hidden(); 
   } 
-
-	//
-	// icons
-	if(properties.has_icon_filename())
-	{
-		_properties.set_icon_filename(properties.get_icon_filename());
-		properties.clear_icon_filename();
-	}
-	
-	if(properties.has_cursor_filename())
-	{
-		_properties.set_cursor_filename(properties.get_cursor_filename());
-		properties.clear_cursor_filename();
-	}	
-
-
-	if(properties.has_minimized())
-	{
-		_properties.set_minimized(properties.get_minimized());
-		properties.clear_minimized();	
-	}
-
-
-
-	if(properties.has_foreground())
-	{
-		_properties.set_foreground(properties.get_foreground());
-		properties.clear_foreground();	
-	
-	}
-
-/*
-	if(properties.has_size())
-	{
-		_properties.set_size(properties.get_size());
-		properties.clear_size();
-		
-		do_reshape_request(_properties.
-	};
-*/
-
-
-	if(properties.has_open())
-	{
-	   
-//	  cerr << " properties Has Open Flag \n";
-		properties.clear_open();		
-	}
-
 
     
  // cerr<< "-------------------------------------- out request=[" <<properties <<"]\n";
