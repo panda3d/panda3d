@@ -3,6 +3,7 @@
 from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
+from direct.showbase.PythonUtil import EnforcesCalldowns, calldownEnforced
 #from PyDatagram import PyDatagram
 #from PyDatagramIterator import PyDatagramIterator
 
@@ -15,7 +16,7 @@ ESDisabled     = 4  # values here and lower are considered "disabled"
 ESGenerating   = 5  # values here and greater are considered "generated"
 ESGenerated    = 6
 
-class DistributedObject(DistributedObjectBase):
+class DistributedObject(DistributedObjectBase, EnforcesCalldowns):
     """
     The Distributed Object class is the base class for all network based
     (i.e. distributed) objects.  These will usually (always?) have a
@@ -36,6 +37,8 @@ class DistributedObject(DistributedObjectBase):
         except:
             self.DistributedObject_initialized = 1
             DistributedObjectBase.__init__(self, cr)
+
+            EnforcesCalldowns.__init__(self)
 
             # Most DistributedObjects are simple and require no real
             # effort to load.  Some, particularly actors, may take
@@ -200,6 +203,7 @@ class DistributedObject(DistributedObjectBase):
             messenger.send(self.uniqueName("disable"))
             self.disable()
 
+    @calldownEnforced
     def announceGenerate(self):
         """
         Sends a message to the world after the object has been
@@ -210,6 +214,7 @@ class DistributedObject(DistributedObjectBase):
             self.activeState = ESGenerated
             messenger.send(self.uniqueName("generate"), [self])
 
+    @calldownEnforced
     def disable(self):
         """
         Inheritors should redefine this to take appropriate action on disable
@@ -238,6 +243,7 @@ class DistributedObject(DistributedObjectBase):
         assert self.notify.debugStateCall(self)
         return (self.activeState == ESGenerated)
 
+    @calldownEnforced
     def delete(self):
         """
         Inheritors should redefine this to take appropriate action on delete
@@ -249,7 +255,9 @@ class DistributedObject(DistributedObjectBase):
             self.DistributedObject_deleted = 1
             self.cr = None
             self.dclass = None
+            EnforcesCalldowns.destroy(self)
 
+    @calldownEnforced
     def generate(self):
         """
         Inheritors should redefine this to take appropriate action on generate
@@ -257,11 +265,12 @@ class DistributedObject(DistributedObjectBase):
         assert self.notify.debugStateCall(self)
         self.activeState = ESGenerating
         # this has already been set at this point
-        #self.cr.storeObjectLocation(self.doId, self.parentId, self.zoneId)
-        # HACK: we seem to be calling generate() more than once for objects that multiply-inherit
+        #self.cr.storeObjectLocation(self, self.parentId, self.zoneId)
+        # semi-hack: we seem to be calling generate() more than once for objects that multiply-inherit
         if not hasattr(self, '_autoInterestHandle'):
             self.cr.openAutoInterests(self)
 
+    @calldownEnforced
     def generateInit(self):
         """
         This method is called when the DistributedObject is first introduced
