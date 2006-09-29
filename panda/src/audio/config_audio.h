@@ -58,24 +58,22 @@ extern EXPCL_PANDA ConfigVariableInt audio_output_channels;
 
 
 
-#ifndef NDEBUG //[
+#ifdef NOTIFY_DEBUG //[
   // Non-release build:
   #define audio_debug(msg) \
   if (audio_cat.is_debug()) { \
     audio_cat->debug() << msg << endl; \
   } else {}
-
-  #define audio_info(msg) \
-    audio_cat->info() << msg << endl
-
-  #define audio_warning(msg) \
-    audio_cat->warning() << msg << endl
 #else //][
   // Release build:
   #define audio_debug(msg) ((void)0)
-  #define audio_info(msg) ((void)0)
-  #define audio_warning(msg) ((void)0)
 #endif //]
+
+#define audio_info(msg) \
+  audio_cat->info() << msg << endl
+
+#define audio_warning(msg) \
+  audio_cat->warning() << msg << endl
 
 #define audio_error(msg) \
   audio_cat->error() << msg << endl

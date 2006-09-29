@@ -76,6 +76,11 @@ MilesAudioManager() {
   if (_active_managers==0 || !_miles_active) {
     S32 use_digital=(audio_play_wave || audio_play_mp3)?1:0;
     S32 use_MIDI=(audio_play_midi)?1:0;
+
+#ifdef IS_OSX
+    audio_software_midi=true;
+#endif
+
     if (audio_play_midi && audio_software_midi) {
       use_MIDI=AIL_QUICK_DLS_ONLY;
     }
