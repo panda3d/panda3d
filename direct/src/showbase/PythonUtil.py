@@ -2460,6 +2460,9 @@ class EnforcesCalldowns:
                 self, self.__class__))
             
     def EC_destroy(self):
+        """this used to be called destroy() but it was masking destroy() functions
+        on other classes that were multiply-inherited after ('to the right of')
+        this class"""
         if not __debug__:
             return
         # this must be called on destruction to prevent memory leaks
