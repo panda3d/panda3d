@@ -255,7 +255,7 @@ class DistributedObject(DistributedObjectBase, EnforcesCalldowns):
             self.DistributedObject_deleted = 1
             self.cr = None
             self.dclass = None
-            EnforcesCalldowns.destroy(self)
+            EnforcesCalldowns.EC_destroy(self)
 
     @calldownEnforced
     def generate(self):

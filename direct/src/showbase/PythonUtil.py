@@ -2459,9 +2459,10 @@ class EnforcesCalldowns:
                 Functor(EnforcesCalldowns._enforceCalldowns, oldMethod, name),
                 self, self.__class__))
             
-    def destroy(self):
+    def EC_destroy(self):
+        if not __debug__:
+            return
         # this must be called on destruction to prevent memory leaks
-        #import pdb;pdb.set_trace()
         for name in self._obscuredMethodNames:
             delattr(self, name)
         del self._obscuredMethodNames
