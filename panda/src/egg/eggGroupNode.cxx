@@ -422,6 +422,8 @@ has_absolute_pathnames() const {
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
 resolve_filenames(const DSearchPath &searchpath) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  
   Children::iterator ci;
   for (ci = _children.begin();
        ci != _children.end();
@@ -430,19 +432,19 @@ resolve_filenames(const DSearchPath &searchpath) {
     if (child->is_of_type(EggTexture::get_class_type())) {
       EggTexture *tex = DCAST(EggTexture, child);
       Filename tex_filename = tex->get_filename();
-      tex_filename.resolve_filename(searchpath);
+      vfs->resolve_filename(tex_filename, searchpath);
       tex->set_filename(tex_filename);
       
       if (tex->has_alpha_filename()) {
         Filename alpha_filename = tex->get_alpha_filename();
-        alpha_filename.resolve_filename(searchpath);
+        vfs->resolve_filename(alpha_filename, searchpath);
         tex->set_alpha_filename(alpha_filename);
       }
 
     } else if (child->is_of_type(EggFilenameNode::get_class_type())) {
       EggFilenameNode *fnode = DCAST(EggFilenameNode, child);
       Filename filename = fnode->get_filename();
-      filename.resolve_filename(searchpath, fnode->get_default_extension());
+      vfs->resolve_filename(filename, searchpath, fnode->get_default_extension());
       fnode->set_filename(filename);
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
