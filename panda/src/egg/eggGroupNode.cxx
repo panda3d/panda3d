@@ -1898,11 +1898,17 @@ r_collect_tangent_binormal(const GlobPattern &uv_name,
               double t1 = w2[1] - w1[1];
               double t2 = w3[1] - w1[1];
               
-              double r = 1.0f / (s1 * t2 - s2 * t1);
-              ref._sdir.set((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
-                            (t2 * z1 - t1 * z2) * r);
-              ref._tdir.set((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
-                            (s1 * z2 - s2 * z1) * r);
+              double denom = (s1 * t2 - s2 * t1);
+              if (denom == 0.0) {
+                ref._sdir.set(0.0, 0.0, 0.0);
+                ref._tdir.set(0.0, 0.0, 0.0);
+              } else {
+                double r = 1.0 / denom;
+                ref._sdir.set((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
+                              (t2 * z1 - t1 * z2) * r);
+                ref._tdir.set((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
+                              (s1 * z2 - s2 * z1) * r);
+              }
 
               // Store the vertex referenced to the polygon.
               ref._vertex = i;
@@ -1950,6 +1956,17 @@ do_compute_tangent_binormal(const TBNVertexValue &value,
     const TBNVertexReference &ref = (*gi);
     sdir += ref._sdir;
     tdir += ref._tdir;
+  }
+
+  // If sdir and/or tdir are zero, choose an arbitrary vector instead.
+  // (This is really the only reason we normalize sdir and tdir,
+  // though it also helps stabilize the math below in case the vectors
+  // are very small but not quite zero.)
+  if (!sdir.normalize()) {
+    sdir.set(1.0, 0.0, 0.0);
+  }
+  if (!tdir.normalize()) {
+    tdir = sdir.cross(Normald(0.0, 0.0, -1.0));
   }
 
   Normald tangent = (sdir - value._normal * value._normal.dot(sdir));
