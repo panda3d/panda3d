@@ -621,14 +621,23 @@ void osxGraphicsWindow::end_frame(FrameMode mode, Thread *current_thread)
 {
   end_frame_spam();
   
-  if(mode == FM_render )
-  {
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  if(mode == FM_render ) {
+    nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
+    if (!_properties.get_fixed_size() && 
+        !_properties.get_undecorated() && 
+        !_properties.get_fullscreen()) {
+      // Draw a kludgey little resize box in the corner of the window,
+      // so the user knows he's supposed to be able to drag the window
+      // if he wants.
+      DisplayRegionPipelineReader dr_reader(_default_display_region, current_thread);
+      _gsg->prepare_display_region(&dr_reader, Lens::SC_mono);
+      DCAST(osxGraphicsStateGuardian, _gsg)->draw_resize_box();
+    }
+      
 	aglSwapBuffers (get_ggs_context());
-  _gsg->end_frame(current_thread);
+    _gsg->end_frame(current_thread);
   }
-//  trigger_flip();
 }
 
 ////////////////////////////////////////////////////////////////////

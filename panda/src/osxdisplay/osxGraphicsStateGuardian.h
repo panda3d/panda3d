@@ -40,6 +40,8 @@ public:
                            osxGraphicsStateGuardian *share_with);
   virtual ~osxGraphicsStateGuardian();
   virtual void reset();
+
+  void draw_resize_box();
 	
 protected:
   virtual void *get_extension_func(const char *prefix, const char *name);

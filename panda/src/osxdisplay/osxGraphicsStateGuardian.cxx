@@ -17,10 +17,15 @@
 #include "osxGraphicsBuffer.h"
 #include "string_utils.h"
 #include "config_osxdisplay.h"
+#include "pnmImage.h"
 
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #import <mach-o/dyld.h>
+
+// This is generated data for the standard texture we use for drawing
+// the resize box in the window corner.
+#include "resize_box.rgb.c"
 
 TypeHandle osxGraphicsStateGuardian::_type_handle;
 
@@ -104,6 +109,73 @@ void osxGraphicsStateGuardian::reset()
 
   GLGraphicsStateGuardian::reset();
  }
+
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsStateGuardian::draw_resize_box
+//       Access: Public, Virtual
+//  Description: Draws an OSX-style resize icon in the bottom right
+//               corner of the current display region.  This is
+//               normally done automatically at the end of each frame
+//               when the window is indicated as resizable, since the
+//               3-D graphics overlay the normal, OS-drawn resize icon
+//               and the user won't be able see it.
+////////////////////////////////////////////////////////////////////
+void osxGraphicsStateGuardian::
+draw_resize_box() {
+  // This state is created, once, and never freed.
+  static CPT(RenderState) state;
+  if (state == (RenderState *)NULL) {
+    state = RenderState::make(TransparencyAttrib::make(TransparencyAttrib::M_alpha),
+                              DepthWriteAttrib::make(DepthWriteAttrib::M_off),
+                              DepthTestAttrib::make(DepthTestAttrib::M_none));
+
+    // Get the default texture to apply to the resize box; it's
+    // compiled into the code.
+    string resize_box_string((const char *)resize_box, resize_box_len);
+    istringstream resize_box_strm(resize_box_string);
+    PNMImage resize_box_pnm;
+    if (resize_box_pnm.read(resize_box_strm, "resize_box.rgb")) {
+      PT(Texture) tex = new Texture;
+      tex->set_name("resize_box.rgb");
+      tex->load(resize_box_pnm);
+      tex->set_minfilter(Texture::FT_linear);
+      tex->set_magfilter(Texture::FT_linear);
+      state = state->add_attrib(TextureAttrib::make(tex));
+    }
+  }
+
+  // Clear out the lens.
+  _projection_mat_inv = _projection_mat = TransformState::make_identity();
+  prepare_lens();
+
+  // Set the state to our specific, known state for drawing the icon.
+  set_state_and_transform(state, TransformState::make_identity());
+
+  // Now determine the inner corner of the quad, choosing a 15x15
+  // pixel square in the lower-right corner, computed from the
+  // viewport size.
+  float inner_x = 1.0f - (15.0f * 2.0f / _viewport_width);
+  float inner_y = (15.0f * 2.0f / _viewport_height) - 1.0f;
+  
+  // Draw the quad.  We just use the slow, simple immediate mode calls
+  // here.  It's just one quad, after all.
+  glBegin(GL_QUADS);
+
+  glColor4f(1.0, 1.0, 1.0, 1.0);
+  glTexCoord2f(0.0, 0.0);
+  glVertex2f(inner_x, -1.0);
+
+  glTexCoord2f(0.9375, 0.0);
+  glVertex2f(1.0, -1.0);
+
+  glTexCoord2f(0.9375, 0.9375);
+  glVertex2f(1.0, inner_y);
+
+  glTexCoord2f(0.0, 0.9375);
+  glVertex2f(inner_x, inner_y);
+
+  glEnd();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsStateGuardian::buildGL
