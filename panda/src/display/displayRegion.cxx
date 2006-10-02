@@ -38,6 +38,7 @@ DisplayRegion(GraphicsOutput *window) :
   _cull_region_pcollector("Cull:Invalid"),
   _draw_region_pcollector("Draw:Invalid")
 {
+  _screenshot_buffer_type = window->get_draw_buffer_type();
   _draw_buffer_type = window->get_draw_buffer_type();
   compute_pixels_all_stages();
 }
@@ -54,6 +55,7 @@ DisplayRegion(GraphicsOutput *window, float l, float r, float b, float t) :
   _cull_region_pcollector("Cull:Invalid"),
   _draw_region_pcollector("Draw:Invalid")
 {
+  _screenshot_buffer_type = window->get_draw_buffer_type();
   _draw_buffer_type = window->get_draw_buffer_type();
   set_dimensions(l, r, b, t);
   compute_pixels_all_stages();
@@ -65,7 +67,7 @@ DisplayRegion(GraphicsOutput *window, float l, float r, float b, float t) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
-DisplayRegion(const DisplayRegion&) : 
+DisplayRegion(const DisplayRegion &) : 
   _cull_region_pcollector("Cull:Invalid"),
   _draw_region_pcollector("Draw:Invalid")
 {
