@@ -29,6 +29,7 @@
 #include "config_audio.h"
 #include "fmodAudioSound.h"
 #include "fmodAudioDSP.h"
+#include "string_utils.h"
 
 TypeHandle FmodAudioSound::_type_handle;
 
@@ -41,7 +42,7 @@ TypeHandle FmodAudioSound::_type_handle;
 ////////////////////////////////////////////////////////////////////
 
 FmodAudioSound::
-FmodAudioSound(AudioManager *manager, string file_name, bool positional) { 
+FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) { 
   audio_debug("FmodAudioSound::FmodAudioSound() Creating new sound, filename: " << file_name  );
 
   //Local Variables that are needed.
@@ -60,14 +61,9 @@ FmodAudioSound(AudioManager *manager, string file_name, bool positional) {
   _playrate = 1;
 
   // These set the Speaker Levels to a default if you are using a MultiChannel Setup.
-  _frontleft = 1;
-  _frontright = 1;
-  _center = 1;
-  _sub = 1;
-  _backleft = 1;
-  _backright = 1;
-  _sideleft = 1;
-  _sideright = 1;
+  for (int i=0; i<AudioManager::SPK_COUNT; i++) {
+    _mix[i] = 1.0;
+  }
 
   //Assign the values we need
   FmodAudioManager *fmanager;
@@ -81,9 +77,15 @@ FmodAudioSound(AudioManager *manager, string file_name, bool positional) {
   result = _manager->_system->getSpeakerMode( &_speakermode );
   fmod_audio_errcheck(result);
 
+  // Calculate the approximate uncompressed size of the sound.
+  int size =  file_name.get_file_size();
+  string ext = downcase(file_name.get_extension());
+  if (ext != "wav") size *= 10;
+  
   int flag = positional ? FMOD_3D : FMOD_2D;
-
-  result = _manager->_system->createSound( file_name.c_str(), FMOD_SOFTWARE | flag , 0, &_sound);
+  int streamflag = (size > 250000) ? FMOD_CREATESTREAM : FMOD_CREATESAMPLE;
+  
+  result = _manager->_system->createSound( file_name.to_os_specific().c_str(), FMOD_SOFTWARE | streamflag | flag , 0, &_sound);
   if (result != FMOD_OK) {
     char blank_data[100];
     FMOD_CREATESOUNDEXINFO exinfo;
@@ -116,9 +118,6 @@ FmodAudioSound(AudioManager *manager, string file_name, bool positional) {
 ////////////////////////////////////////////////////////////////////
 FmodAudioSound::
 ~FmodAudioSound() {
-
-  audio_debug("FmodAudioSound::~FmodAudioSound()  Closing this Sound Instance Down.");
-
   FMOD_RESULT result;
 
   //Remove me from table of all sounds.
@@ -130,9 +129,6 @@ FmodAudioSound::
   //The Release Sound
   result = _sound->release();
   fmod_audio_errcheck(result);
-
-  audio_debug("FmodAudioSound::~FmodAudioSound()  FMOD Sound Released and Closed.");
-
 }
 
 
@@ -140,170 +136,27 @@ FmodAudioSound::
 //     Function: FmodAudioSound:: play
 //       Access: public
 //  Description: Plays a sound.
-//        OK when you play a Sound a couple of things are going
-//        to happen.
-//        First Panda is going to check if the sound is in a pause
-//        State because of if a 'set_time()' has been called on the sound.
-//        Second, remember when I said channels don't exist unless a sound,
-//        is playing on them?  Well they don't  and therefore any associated
-//        DSP, looping, playback rate, pan, volume, or 3D information  associated with
-//        that sound is not going to be known by that channel either.
-//        So all we do, is load a sound on a channel PAUSED.
-//        While the sound is paused, it sets up all the sound attributes, and 
-//        then plays the sound.  This all happens really fast, so you should
-//        notice a hit.
-//        And yes this is the FMOD way of doing things.
-//        
-//        The biggest problem with this comes when you are 'looping' sounds.
-//        In the 'prepare2DSound()' and prepare3DSound' [private methods
-//        which set up their respected type of sounds], I had to impliment the
-//        'FMOD_CHANNEL_REUSE' flag.
-//        Remember back in the header file, where I said there is only one dedicated,
-//        Channel for each sound, where there is a reason for that.
-//        If you were to use 'FMOD_CHANNEL_FREE' each time you played a sound,
-//        FMOD would grab the first available channel and play the sound on that.
-//        This is bad for Panda because the FmodAudioSound class is only set up to 
-//        remember only channel at a time.   If we play a sound that is set to loop, and
-//        then trigger that sound to loop again, the reference to the Channel Object for a particular
-//        sound is replaced with the new, instance of the loop.  Thus the previous sound keeps playing
-//        forever because we have lost the reference to it.
-//        But using the 'FMOD_CHANNEL_REUSE' flag, we avoid this problem, because the new call to play
-//        the looping sound will, play the sound on the previous allocated channel.
-//        The only to downside to this, is that playing a looping sound a second time, will cause the
-//        Previous instance to be cut off.
-//
-//        Honestly, it should be easy to create a work around for this.  So you could 
-//        use the 'FMOD_CHANNEL_FREE' which will prevent the cutoff program, by creating 
-//        a set, that keeps track of channels playing the same looping sound, when the sound is looping 
-//        [or is really long, another possible scenerio for this problem].
-//        
-//        But honestly the cutoff shouldn't be a big problem, in most cases.
-//        I just wanted to explain my reasoning here.
-//        
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 play() {
-  FMOD_RESULT result;
-
   set_time(0.0);
-  result = _channel->setPaused(false);
-  fmod_audio_errcheck(result);
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: sound_end_callback
 //       Access: Static
-//  Description: When fmod finishes playing a sound, the channel
-//               handle of the sound becomes invalid.  This callback
-//               removes the invalid channel handle from the relevant
-//               fmodAudioSound.
+//  Description: When fmod finishes playing a sound, decrements the
+//               reference count of the associated FmodAudioSound.
 ////////////////////////////////////////////////////////////////////
-static FMOD_RESULT F_CALLBACK  sound_end_callback(FMOD_CHANNEL *  channel, 
-                                                  FMOD_CHANNEL_CALLBACKTYPE  type, 
-                                                  int  command, 
-                                                  unsigned int  commanddata1, 
-                                                  unsigned int  commanddata2) {
+static FMOD_RESULT F_CALLBACK sound_end_callback(FMOD_CHANNEL *  channel, 
+                                                 FMOD_CHANNEL_CALLBACKTYPE  type, 
+                                                 int  command, 
+                                                 unsigned int  commanddata1, 
+                                                 unsigned int  commanddata2) {
   FmodAudioSound *fsound = (FmodAudioSound*)command;
-  if (fsound->_channel != 0) {
-    fsound->_channel = 0;
-    fsound->unref();
-  }
+  fsound->unref();
   return FMOD_OK;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioSound::prepareSound
-//       Access: Private
-//  Description: Prepares a sound [GENERAL]
-////////////////////////////////////////////////////////////////////
-
-void FmodAudioSound::
-prepareSound() {
-  
-  if (_channel != 0) {
-    return;
-  }
-
-  audio_debug("FmodAudioSound::prepareSound()" );
-
-  FMOD_RESULT result;
-  bool paused = 0;
-  FMOD_MODE soundMode;
-
-  audio_debug("FmodAudioSound::play()   Going to perpare a sound." );
-
-  result = _sound->getMode(&soundMode);
-  fmod_audio_errcheck(result);
-
-  if ( soundMode & FMOD_3D ) {
-    prepare3DSound();
-  } else {
-    prepare2DSound();
-  }
-
-  // This function sets up an fmod callback, which will
-  // clear the _channel variable when the sound stops playing.
-  // We want to make sure this fmodAudioSound doesn't go away
-  // until after the _channel is cleared, so I increment the
-  // ref-count.
-  this->ref();
-
-  result = _channel->setCallback(FMOD_CHANNEL_CALLBACKTYPE_END, sound_end_callback, (int)this);
-  fmod_audio_errcheck(result);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioSound::prepare2DSound
-//       Access: Private
-//  Description: Prepares a 2D sound.
-//        We need seperate 3D and 2D play commands, because of
-//        the way FMOD sets the 3D Attributes to the 'channel' a
-//        sound is playing on.
-//        Since a 'channel' is initialize when a sound is set to 
-//        play to one, and then subsiquenctly destroyed once the
-//        sound is finished playing.
-//        
-////////////////////////////////////////////////////////////////////
-void FmodAudioSound::
-prepare2DSound() {
-  
-  audio_debug("FmodAudioSound::prepare2DSound()" );
-
-  FMOD_RESULT result;
-
-  result = _manager->_system->playSound(FMOD_CHANNEL_REUSE, _sound, true, &_channel);
-  fmod_audio_errcheck(result);
-
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioSound::prepare3DSound
-//       Access: Private
-//  Description: Prepares a 3D sound
-//        We need seperate 3D and 2D play commands, because of
-//        the way FMOD sets the 3D Attributes to the 'channel' a
-//        sound is playing on.
-//        Since a 'channel' is initialize when a sound is set to 
-//        play to one, and then subsiquenctly destroyed once the
-//        sound is finished playing.
-//        
-////////////////////////////////////////////////////////////////////
-void FmodAudioSound::
-prepare3DSound() {
-  
-  audio_debug("FmodAudioSound::prepare2DSound()" );
-
-  FMOD_RESULT result;
-
-  result = _manager->_system->playSound(FMOD_CHANNEL_REUSE, _sound, true, &_channel);
-  fmod_audio_errcheck(result);
-
-  result = _channel->set3DAttributes( &_location, &_velocity );
-  fmod_audio_errcheck(result);
-
-}
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioSound::stop
@@ -312,21 +165,16 @@ prepare3DSound() {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 stop() {
-  audio_debug("FmodAudioSound::stop()  Going to stop a sound." );
-
-  //LOCALS
   FMOD_RESULT result;
 
   if (_channel != 0) {
-    result = _channel->stop();
+    result =_channel->stop();
+    if (result == FMOD_OK) {
+      unref();
+    }
     fmod_audio_errcheck(result);
-    _channel = 0;
-    unref();
   }
-  
-  audio_debug("FmodAudioSound::stop()  Sound should be stopped.");
 }
-
 
 
 ////////////////////////////////////////////////////////////////////
@@ -336,17 +184,13 @@ stop() {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_loop(bool loop) {
-  audio_debug("FmodAudioSound::set_loop()  Setting loop state to " << loop);
   FMOD_RESULT result;
   if ( loop ) {
     result = _sound->setMode(FMOD_LOOP_NORMAL);
     fmod_audio_errcheck(result);
-    audio_debug("This sound is set to loop." );
-
   } else {
     result = _sound->setMode(FMOD_LOOP_OFF);  
     fmod_audio_errcheck(result);
-    audio_debug("FmodAudioSound::set_loop()  This sound is set to one-shot." );
   }
 }
 
@@ -357,9 +201,6 @@ set_loop(bool loop) {
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioSound::
 get_loop() const {
-  
-  audio_debug( "FmodAudioSound::get_loop()   Retreiving a sound's loop state." );
-  
   // 0 means loop forever,
   // >1 means loop that many times
   // So _loop_count != 1 means we're looping
@@ -443,21 +284,48 @@ get_loop_count() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_time(float start_time) {
-  
   FMOD_RESULT result;
-  audio_debug("FmodAudioSound::set_time()   Going to set a sounds start position" );
-
-  prepareSound();
-
-  set_volume_on_channel();
-  set_play_rate_on_channel();
-  set_speaker_mix_or_balance_on_channel();
-  add_dsp_on_channel();
-  set_3d_attributes_on_channel();
+  bool playing;
 
   int startTime = start_time * 1000;
 
-  result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
+  if (_channel != 0) {
+    // try backing up current sound.
+    result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
+    if (result == FMOD_ERR_INVALID_HANDLE) {
+      _channel = 0;
+    } else {
+      fmod_audio_errcheck(result);
+    }
+    result = _channel->isPlaying(&playing);
+    if ((result == FMOD_ERR_INVALID_HANDLE) || (playing == false)) {
+      _channel = 0;
+    } else {
+      fmod_audio_errcheck(result);
+    }
+  }
+  
+  if (_channel == 0) {
+
+    result = _manager->_system->playSound(FMOD_CHANNEL_FREE, _sound, true, &_channel);
+    fmod_audio_errcheck(result);
+    result = _channel->setCallback(FMOD_CHANNEL_CALLBACKTYPE_END, sound_end_callback, (int)this);
+    fmod_audio_errcheck(result);
+    result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
+    fmod_audio_errcheck(result);
+
+    set_volume_on_channel();
+    set_play_rate_on_channel();
+    set_speaker_mix_or_balance_on_channel();
+    add_dsp_on_channel();
+    set_3d_attributes_on_channel();
+
+    result = _channel->setPaused(false);
+    fmod_audio_errcheck(result);
+    
+    this->ref();
+  }
+
   fmod_audio_errcheck(result);
 }
 
@@ -468,16 +336,17 @@ set_time(float start_time) {
 ////////////////////////////////////////////////////////////////////
 float FmodAudioSound::
 get_time() const {
-  audio_debug("FmodAudioSound::get_time()   Going to get a sound's position" );
+  FMOD_RESULT result;
+  unsigned int current_time;
 
   if (_channel == 0) {
     return 0.0f;
   }
 
-  FMOD_RESULT result;
-  unsigned int current_time;
-
   result = _channel->getPosition( &current_time , FMOD_TIMEUNIT_MS );
+  if (result == FMOD_ERR_INVALID_HANDLE) {
+    return 0.0f;
+  }
   fmod_audio_errcheck(result);
 
   current_time = current_time / 1000;
@@ -498,6 +367,16 @@ set_volume(float vol) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioSound::get_volume
+//       Access: public
+//  Description: Gets the current volume of a sound.  1 is Max. O is Min.
+////////////////////////////////////////////////////////////////////
+float FmodAudioSound::
+get_volume() const {
+  return _volume;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioSound::set_volume_on_channel()
 //       Access: Private
 //  Description: Set the volume on a prepared Sound channel.
@@ -506,22 +385,14 @@ void FmodAudioSound::
 set_volume_on_channel() {
   FMOD_RESULT result;
 
-  if (_channel == 0) {
-    return;
+  if (_channel != 0) {
+    result = _channel->setVolume( _volume );
+    if (result == FMOD_ERR_INVALID_HANDLE) {
+      _channel = 0;
+    } else {
+      fmod_audio_errcheck(result);
+    }
   }
-
-  result = _channel->setVolume( _volume );
-  fmod_audio_errcheck(result);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioSound::get_volume
-//       Access: public
-//  Description: Gets the current volume of a sound.  1 is Max. O is Min.
-////////////////////////////////////////////////////////////////////
-float FmodAudioSound::
-get_volume() const {
-  return _volume;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -564,30 +435,6 @@ set_play_rate(float rate) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioSound::set_play_rate_on_channel()
-//       Access: public
-//  Description: Set the play rate on a prepared Sound channel.
-////////////////////////////////////////////////////////////////////
-void FmodAudioSound::
-set_play_rate_on_channel() {
-  FMOD_RESULT result;
-  
-  if (_channel == 0) {
-    return;
-  }
-
-  float frequencyToSetChannelTo;
-  if ( _playrate == 1) {
-    result = _channel->setFrequency( _sampleFrequency );
-    fmod_audio_errcheck(result);
-  } else {
-    frequencyToSetChannelTo = _sampleFrequency * _playrate ;
-    result = _channel->setFrequency( frequencyToSetChannelTo );
-    fmod_audio_errcheck(result);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioSound::get_play_rate
 //       Access: public
 //  Description: 
@@ -595,6 +442,26 @@ set_play_rate_on_channel() {
 float FmodAudioSound::
 get_play_rate() const {
   return _playrate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioSound::set_play_rate_on_channel()
+//       Access: public
+//  Description: Set the play rate on a prepared Sound channel.
+////////////////////////////////////////////////////////////////////
+void FmodAudioSound::
+set_play_rate_on_channel() {
+  FMOD_RESULT result;
+  float frequency = _sampleFrequency * _playrate;
+  
+  if (_channel != 0) {
+    result = _channel->setFrequency( frequency );
+    if (result == FMOD_ERR_INVALID_HANDLE) {
+      _channel = 0;
+    } else {
+      fmod_audio_errcheck(result);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -655,7 +522,7 @@ set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioSound::set_3d_attributes
+//     Function: FmodAudioSound::set_3d_attributes_on_channel
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -664,16 +531,16 @@ set_3d_attributes_on_channel() {
   FMOD_RESULT result;
   FMOD_MODE soundMode;
 
-  if (_channel == 0) {
-    return;
-  }
-  
   result = _sound->getMode(&soundMode);
   fmod_audio_errcheck(result);
   
-  if ( soundMode & FMOD_3D ) {
+  if ((_channel != 0) && (soundMode & FMOD_3D)) {
     result = _channel->set3DAttributes( &_location, &_velocity );
-    fmod_audio_errcheck(result);
+    if (result == FMOD_ERR_INVALID_HANDLE) {
+      _channel = 0;
+    } else {
+      fmod_audio_errcheck(result);
+    }
   }
 }
 
@@ -790,15 +657,17 @@ add_dsp( PT(AudioDSP) x) {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 add_dsp_on_channel() {
-  audio_debug("FmodAudioManager()::add_dsp_on_channel");
-
   FMOD_RESULT result;
 
   for (DSPSet::iterator i = _sound_dsp.begin(); i != _sound_dsp.end(); ++i) {
-
-    result = _channel->addDSP( (*i)->_dsp );
-    fmod_audio_errcheck( result );
-
+    if (_channel != 0) {
+      result = _channel->addDSP( (*i)->_dsp );
+      if (result == FMOD_ERR_INVALID_HANDLE) {
+        _channel = 0;
+      } else {
+        fmod_audio_errcheck( result );
+      }
+    }
   }
 }
 
@@ -812,10 +681,6 @@ add_dsp_on_channel() {
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioSound::
 remove_dsp(PT(AudioDSP) x) {
-  // intentionally blank
-  
-  audio_debug("FmodAudioManager()::remove_dsp()");
-
   FMOD_RESULT result;
 
   FmodAudioDSP *fdsp;
@@ -847,30 +712,15 @@ remove_dsp(PT(AudioDSP) x) {
 //     Function: FmodAudioSound::get_speaker_mix
 //       Access: Published
 //  Description: In Multichannel Speaker systems [like Surround].
-//        Can pass in the ID of a specific speaker and get itself Volume level.
-//        Currenly that is set to the Following:
-//        1 = Front Left
-//        2 = Front Right
-//        3 = Center
-//        4 = Subwoofer
-//        5 = Back Left
-//        6 = Back Right
-//        7 = Side Left
-//        8 = Side Right
-//        Speakers which don't exist in some systems will simply be ignored.
-//        IE So a quadsystem would only return values on 1,2,5,6.
 //
+//        Speakers which don't exist in some systems will simply be ignored.
 //        But I haven't been able to test this yet, so I am jsut letting you know.
 //
 //        BTW This will also work in Stereo speaker systems, but since
 //        PANDA/FMOD has a balance [pan] function what is the point?
 ////////////////////////////////////////////////////////////////////
 float FmodAudioSound::
-get_speaker_mix(int speaker) {
-  // intentionally blank
-
-  audio_debug("FmodAudioSound::getSpeakerMix()");
-
+get_speaker_mix(AudioManager::SpeakerId speaker) {
   if (_channel == 0) {
     return 0.0;
   }
@@ -885,69 +735,48 @@ get_speaker_mix(int speaker) {
   float sideleft;
   float sideright;
 
-  float returnValue;
-
   result = _channel->getSpeakerMix( &frontleft, &frontright, &center, &sub, &backleft, &backright, &sideleft, &sideright );
   fmod_audio_errcheck(result);
 
   switch(speaker) {
-  
-  case 1: 
-    returnValue = frontleft;
-    break;
-  case 2: 
-    returnValue = frontright;
-    break;
-  case 3: 
-    returnValue = center;
-    break;
-  case 4: 
-    returnValue = sub;
-    break;
-  case 5: 
-    returnValue = backleft;
-    break;
-  case 6: 
-    returnValue = backright;
-    break;
-  case 7: 
-    returnValue = sideleft;
-    break;
-  case 8: 
-    returnValue = sideright;
-    break;
-  default: 
-    audio_error("You specified a speaker which doesn't exist.");
+  case AudioManager::SPK_frontleft:  return frontleft;
+  case AudioManager::SPK_frontright: return frontright;
+  case AudioManager::SPK_center:     return center;
+  case AudioManager::SPK_sub:        return sub;
+  case AudioManager::SPK_backleft:   return backleft;
+  case AudioManager::SPK_backright:  return backright;
+  case AudioManager::SPK_sideleft:   return sideleft;
+  case AudioManager::SPK_sideright:  return sideright;
+  default: return 0.0;
   }
-
-  return returnValue;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioSound::set_speaker_mix
 //       Access: Published
 //  Description: This sets the speaker mix for Surround Sound sytems.
-//        It required 8 parameters which match up to the following:
-//        1 = Front Left
-//        2 = Front Right
-//        3 = Center
-//        4 = Subwoofer
-//        5 = Back Left
-//        6 = Back Right
-//        7 = Side Left
-//        8 = Side Right
-//        Speakers which don't exist in some systems will simply be ignored.
+//               It required 8 parameters which match up to the following:
+//
+//               * 1 = Front Left
+//               * 2 = Front Right
+//               * 3 = Center
+//               * 4 = Subwoofer
+//               * 5 = Back Left
+//               * 6 = Back Right
+//               * 7 = Side Left
+//               * 8 = Side Right
+//
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright) {
-  _frontleft = frontleft;
-  _frontright = frontright;
-  _center = center;
-  _sub = sub;
-  _backleft = backleft;
-  _backright = backright;
-  _sideleft = sideleft;
-  _sideright = sideright;
+  _mix[AudioManager::SPK_frontleft]  = frontleft;
+  _mix[AudioManager::SPK_frontright] = frontright;
+  _mix[AudioManager::SPK_center]     = center;
+  _mix[AudioManager::SPK_sub]        = sub;
+  _mix[AudioManager::SPK_backleft]   = backleft;
+  _mix[AudioManager::SPK_backright]  = backright;
+  _mix[AudioManager::SPK_sideleft]   = sideleft;
+  _mix[AudioManager::SPK_sideright]  = sideright;
 
   set_speaker_mix_or_balance_on_channel();
 }
@@ -971,22 +800,27 @@ set_speaker_mix_or_balance_on_channel() {
   result = _sound->getMode(&soundMode);
   fmod_audio_errcheck(result);
 
-  if ( _speakermode == FMOD_SPEAKERMODE_STEREO ) {
-    //FMOD Returns an error is you try and pan a sound in 3D Audio.
-    //Which makes sense.
-    //It is nothing serious,  but might as well avoid it while we can.
-    if (( soundMode & FMOD_3D ) == 0) {
+  if ((_channel != 0) && (( soundMode & FMOD_3D ) == 0)) {
+    if ( _speakermode == FMOD_SPEAKERMODE_STEREO ) {
       result = _channel->setPan( _balance );
-      fmod_audio_errcheck(result);
+    } else {
+      result = _channel->setSpeakerMix( _mix[AudioManager::SPK_frontleft],
+                                        _mix[AudioManager::SPK_frontright],
+                                        _mix[AudioManager::SPK_center],
+                                        _mix[AudioManager::SPK_sub],
+                                        _mix[AudioManager::SPK_backleft],
+                                        _mix[AudioManager::SPK_backright],
+                                        _mix[AudioManager::SPK_sideleft],
+                                        _mix[AudioManager::SPK_sideright] 
+                                        );
     }
-  } else {
-    if (( soundMode & FMOD_3D ) == 0) {
-      result = _channel->setSpeakerMix( _frontleft, _frontright, _center, _sub, _backleft, _backright, _sideleft, _sideright );
+    if (result == FMOD_ERR_INVALID_HANDLE) {
+      _channel = 0;
+    } else {
       fmod_audio_errcheck(result);
     }
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioSound::get_priority
@@ -1028,31 +862,19 @@ set_priority(int priority) {
 ////////////////////////////////////////////////////////////////////
 AudioSound::SoundStatus FmodAudioSound::
 status() const {
-  // If the stream's channel isn't playing anything, then the stream
-  // definitely isn't playing.
-  
-  audio_debug("FmodAudioSound::status() ");
-
   FMOD_RESULT result;
   bool playingState;
 
-  if ( _channel != 0 ) {
-    result = _channel->isPlaying( &playingState );
-    fmod_audio_errcheck(result);
+  if ( _channel == 0 ) {
+    return READY;
   }
 
-  //audio_debug("If you get 'FMOD State: 32 An invalid object handle was used.' ");
-  //audio_debug("It doesn't mean there is a problem with FMOD or the sound.");
-  //audio_debug( "It just means your sound isn't playing." );
-
-
-  if (playingState) {
+  result = _channel->isPlaying( &playingState );
+  if ((result == FMOD_OK) && (playingState == true)) {
     return PLAYING;
   } else {
     return READY;
   }
-  
-  //return BAD;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1064,7 +886,6 @@ status() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_active(bool active) {
-  audio_debug( "set_active(active=" << active << ")" );
   audio_debug("NOT USED ANYMORE in FMOD-EX version of PANDA.");
 }
 
@@ -1097,7 +918,6 @@ void FmodAudioSound::
 finished() {
   audio_debug("FmodAudioSound::finished()");
   audio_debug("NOT USED ANYMORE in FMOD-EX version of PANDA.");
-  stop();
 }
 
 ////////////////////////////////////////////////////////////////////

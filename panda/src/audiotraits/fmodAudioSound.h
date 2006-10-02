@@ -84,7 +84,7 @@ class FmodAudioDSP;
 class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
  public:
 
-  FmodAudioSound(AudioManager *manager, string file_name, bool positional );
+  FmodAudioSound(AudioManager *manager, Filename fn, bool positional );
   ~FmodAudioSound();
             
   // For best compatability, set the loop_count, start_time,
@@ -148,7 +148,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   virtual bool add_dsp( PT(AudioDSP) dspToAdd );
   virtual bool remove_dsp( PT(AudioDSP) x);
 
-  virtual float get_speaker_mix(int speaker);
+  virtual float get_speaker_mix(AudioManager::SpeakerId speaker);
   virtual void set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright);
 
   //THESE ARE NOT USED ANYMORE.
@@ -170,39 +170,24 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   FMOD::Sound      *_sound;
   FMOD::Channel    *_channel;
 
-  string _file_name;
+  Filename _file_name;
 
   float _volume; 
   float _balance;
   float _playrate;
-  int _priority;
+  int   _priority;
+  float _mix[AudioManager::SPK_COUNT];
 
   float _sampleFrequency;
   mutable float _length;   //in seconds.
 
   FMOD_SPEAKERMODE  _speakermode;
 
-  float _frontleft;
-  float _frontright;
-  float _center;
-  float _sub;
-  float _backleft;
-  float _backright;
-  float _sideleft;
-  float _sideright;
-
   FMOD_VECTOR _location;
   FMOD_VECTOR _velocity;
 
   float _min_dist;
   float _max_dist;
-
-  void play2DSound();
-  void play3DSound();
-
-  void prepareSound();
-  void prepare2DSound();
-  void prepare3DSound();
 
   void set_volume_on_channel();
   void set_balance_on_channel();

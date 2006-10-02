@@ -103,7 +103,7 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   virtual bool remove_dsp(PT(AudioDSP) x);
 
   virtual int getSpeakerSetup();
-  virtual void setSpeakerSetup(SPEAKERMODE_category cat);
+  virtual void setSpeakerSetup(SpeakerModeCategory cat);
 
   virtual void set_volume(float);
   virtual float get_volume() const;

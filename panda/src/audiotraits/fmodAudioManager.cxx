@@ -190,7 +190,7 @@ get_sound(const string &file_name, bool positional) {
 
   // Build a new AudioSound from the audio data.
   PT(AudioSound) audioSound = 0;
-  PT(FmodAudioSound) fmodAudioSound = new FmodAudioSound(this, path.to_os_specific(), positional );
+  PT(FmodAudioSound) fmodAudioSound = new FmodAudioSound(this, path, positional );
 
   _all_sounds.insert(fmodAudioSound);
 
@@ -339,12 +339,9 @@ getSpeakerSetup() {
 //         one can init or re-init the AudioManagers after Panda is running.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
-setSpeakerSetup(AudioManager::SPEAKERMODE_category cat) {
-  //Local Variables that are needed.
+setSpeakerSetup(AudioManager::SpeakerModeCategory cat) {
   FMOD_RESULT result;
-
   FMOD_SPEAKERMODE speakerModeType = (FMOD_SPEAKERMODE)cat;
-
   result = _system->setSpeakerMode( speakerModeType);
   fmod_audio_errcheck(result);
 }
