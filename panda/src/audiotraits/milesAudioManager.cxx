@@ -104,21 +104,25 @@ MilesAudioManager() {
         // Load the downloadable sounds file:
 
         if (_dls_field == NULL) {
-          HDLSDEVICE dls;
+          HDLSDEVICE dls = NULL;
           AIL_quick_handles(0, 0, &dls);
-          nassertv(dls != NULL);
-          string dls_file = Filename(audio_dls_file).to_os_specific();
-          if (dls_file.empty()) {
-            get_gm_file_path(dls_file);
-            // we need more dbg info in logs, so bumping the msgs from 'debug' status to 'info' status
-            audio_info("  using default dls_file: "<< dls_file );
+          if (dls == NULL) {
+            audio_error("  Unable to open DLS. " << AIL_last_error());
+          } else {
+            string dls_file = Filename(audio_dls_file).to_os_specific();
+            if (dls_file.empty()) {
+              get_gm_file_path(dls_file);
+              // we need more dbg info in logs, so bumping the msgs from 'debug' status to 'info' status
+              audio_info("  using default dls_file: "<< dls_file );
+            }
+            
+            audio_debug("  dls_file=\""<<dls_file<<"\"");
+            // note: if AIL_DLS_load_file is not done, midi fails to play on some machines.
+            nassertv(_dls_field == NULL);
+            audio_debug("  AIL_DLS_load_file(dls, " << dls_file << ", 0)");
+            _dls_field = AIL_DLS_load_file(dls, dls_file.c_str(), 0);
           }
-          
-          audio_debug("  dls_file=\""<<dls_file<<"\"");
-          // note: if AIL_DLS_load_file is not done, midi fails to play on some machines.
-          nassertv(_dls_field == NULL);
-          audio_debug("  AIL_DLS_load_file(dls, " << dls_file << ", 0)");
-          _dls_field = AIL_DLS_load_file(dls, dls_file.c_str(), 0);
+
           if (!_dls_field) {
             audio_error("  AIL_DLS_load_file() failed, \""<<AIL_last_error() <<"\" Switching to hardware midi");
             AIL_quick_shutdown();
