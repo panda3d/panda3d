@@ -64,7 +64,7 @@ def createBounce(nodeObj, numBounces, startValues, totalTime, amplitude,
             "createBounceIvals called with invalid parameter")
         return
     
-    result = []
+    result = Sequence()
         
     # calculate how long, in seconds, each bounce should last
     bounceTime = totalTime/float(numBounces)
@@ -89,7 +89,7 @@ def createBounce(nodeObj, numBounces, startValues, totalTime, amplitude,
     # figure out the new value, which progressively gets closer
     # to our start value
     #
-    for bounceNum in range(numBounces):
+    for bounceNum in range(numBounces*2):
         # determine the direction that this value should go,
         # alternating for each lerp interval to simulate
         # a spring effect
@@ -105,6 +105,7 @@ def createBounce(nodeObj, numBounces, startValues, totalTime, amplitude,
 
         newVec3 = Vec3(startValues)
         newVec3.setCell(index, currBounceVal)
+        print "### newVec3 = ", newVec3
         
         # create the right type of lerp
         if ((bounceType == SX_BOUNCE) or (bounceType == SY_BOUNCE) or
