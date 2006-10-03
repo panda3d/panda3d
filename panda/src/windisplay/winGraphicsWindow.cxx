@@ -695,7 +695,9 @@ do_fullscreen_resize(int x_size, int y_size) {
     << " bitdepth " << dwFullScreenBitDepth << ", "
     << dm.dmDisplayFrequency << "Hz\n";
 
-  system_changed_size(x_size, y_size);
+  _properties.set_size(x_size, y_size);
+  set_size_and_recalc(x_size, y_size);
+
   return true;
 }
 
