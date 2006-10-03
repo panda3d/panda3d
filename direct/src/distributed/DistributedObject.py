@@ -3,7 +3,7 @@
 from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
-from direct.showbase.PythonUtil import EnforcesCalldowns, calldownEnforced
+from direct.showbase.EnforcesCalldowns import EnforcesCalldowns, calldownEnforced
 #from PyDatagram import PyDatagram
 #from PyDatagramIterator import PyDatagramIterator
 
