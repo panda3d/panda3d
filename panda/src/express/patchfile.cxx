@@ -858,6 +858,12 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   // read in original file
   stream_orig.seekg(0, ios::end);
   _source_file_length = stream_orig.tellg();
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Allocating " << _source_file_length << " bytes to read " 
+      << file_orig << "\n";
+  }
+
   char *buffer_orig = new char[_source_file_length];
   stream_orig.seekg(0, ios::beg);
   stream_orig.read(buffer_orig, _source_file_length);
@@ -865,6 +871,12 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   // read in new file
   stream_new.seekg(0, ios::end);
   _result_file_length = stream_new.tellg();
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Allocating " << _result_file_length << " bytes to write " 
+      << file_new << "\n";
+  }
+
   char *buffer_new = new char[_result_file_length];
   stream_new.seekg(0, ios::beg);
   stream_new.read(buffer_new, _result_file_length);
@@ -878,7 +890,18 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   START_PROFILE(allocTables);
 
   // allocate hash/link tables
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Allocating hashtable of size " << _HASHTABLESIZE << " * 4\n";
+  }
+
   PN_uint32* hash_table = new PN_uint32[_HASHTABLESIZE];
+
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Allocating linktable of size " << _source_file_length << " * 4\n";
+  }
+
   PN_uint32* link_table = new PN_uint32[_source_file_length];
 
   END_PROFILE(allocTables, "allocating hash and link tables");
