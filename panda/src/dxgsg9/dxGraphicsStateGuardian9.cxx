@@ -3267,6 +3267,7 @@ set_state_and_transform(const RenderState *target,
   }
 
   if (_target._tex_matrix != _state._tex_matrix) {
+    _state._texture = 0;
     _state._tex_matrix = _target._tex_matrix;
   }
 
