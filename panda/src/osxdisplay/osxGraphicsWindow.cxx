@@ -181,7 +181,7 @@ static pascal OSStatus windowEvtHndlr (EventHandlerCallRef myHandler, EventRef e
 	{
 //	if(osx_win->	
 	osxGraphicsWindow * osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);		
- 
+
 	switch (the_class) {
 		case kEventClassMouse:
 			result  = osx_win->handleWindowMouseEvents (myHandler, event);
@@ -745,7 +745,6 @@ extern OSErr CPSSetFrontProcess( struct CPSProcessSerNum *psn);
 bool osxGraphicsWindow::open_window()
 {
   WindowProperties req_properties  = _properties;
-  _properties.clear();
   
   if (_gsg == 0) {
     _gsg = new osxGraphicsStateGuardian(_pipe, NULL);
@@ -794,7 +793,7 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties )
         if(req_properties.has_title())
         {
             err = CPSSetProcessName(&PSN,(char *)req_properties.get_title().c_str());
-			//_properties.set_title(req_properties.get_title());
+            //_properties.set_title(req_properties.get_title());
         }
         else		
             err = CPSSetProcessName(&PSN,"");
@@ -807,32 +806,7 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties )
     }
 
 
-
-    Rect r;
-    if(req_properties.has_origin())
-    {	
-        r.top = req_properties.get_y_origin();
-        r.left =req_properties.get_x_origin();
-    }
-    else
-    {
-        r.top = 50;
-        r.left = 10;
-    }
-
-    if(req_properties.has_size())
-    {
-        r.right = r.left + req_properties.get_x_size();
-        r.bottom = r.top + req_properties.get_y_size();
-    }
-    else
-    {			
-        r.right = r.left + 512;
-        r.bottom = r.top + 512;
-    }
-			
-
-    if(req_properties.has_fullscreen() && req_properties.get_fullscreen() == true)
+    if(req_properties.has_fullscreen() && req_properties.get_fullscreen())
     {
 //		if(FullScreenWindow != NULL)
 //			return false;
@@ -843,9 +817,28 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties )
         if(req_properties.has_size())
         {
             _originalMode = CGDisplayCurrentMode( kCGDirectMainDisplay );	
-            CGDisplaySwitchToMode( kCGDirectMainDisplay,
-                CGDisplayBestModeForParameters( kCGDirectMainDisplay, 32,  req_properties.get_x_size(), req_properties.get_y_size(), 0 ) );
-				
+            CFDictionaryRef newMode = CGDisplayBestModeForParameters( kCGDirectMainDisplay, 32,  req_properties.get_x_size(), req_properties.get_y_size(), 0 );
+            if (newMode == NULL) {
+              osxdisplay_cat.error()
+                << "Invalid fullscreen size: " << req_properties.get_x_size()
+                << ", " << req_properties.get_y_size()
+                << "\n";
+
+            } else {
+              CGDisplaySwitchToMode( kCGDirectMainDisplay, newMode);
+              
+              // Set our new window size according to the size we actually got.
+
+              SInt32 width, height;
+              CFNumberGetValue((CFNumberRef)CFDictionaryGetValue(newMode, kCGDisplayWidth),
+                               kCFNumberSInt32Type,
+                               &width);
+              CFNumberGetValue((CFNumberRef)CFDictionaryGetValue(newMode, kCGDisplayHeight),
+                               kCFNumberSInt32Type,
+                               &height);
+
+              _properties.set_size(width, height);
+            }
         }
 
 	   
@@ -868,49 +861,101 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties )
       //  if (!aglSetInteger (get_context(), AGL_SWAP_INTERVAL, &swap))
       //      aglReportError ();
 
-		_properties.set_fullscreen(true);
+        _properties.set_fullscreen(true);
 
         _is_fullsreen	=true;	
         FullScreenWindow = this;
-		req_properties.clear_fullscreen();
+        req_properties.clear_fullscreen();
 
     }
     else
     {
+      // lets use this as a crome based window..
+      Rect r;
+      if(req_properties.has_origin())
+        {	
+          r.top = req_properties.get_y_origin();
+          r.left =req_properties.get_x_origin();
+        }
+      else
+        {
+          r.top = 50;
+          r.left = 10;
+        }
+      
+      if(req_properties.has_size())
+        {
+          r.right = r.left + req_properties.get_x_size();
+          r.bottom = r.top + req_properties.get_y_size();
+        }
+      else
+        {			
+          r.right = r.left + 512;
+          r.bottom = r.top + 512;
+        }
+			
+      if(req_properties.has_undecorated() && req_properties.get_undecorated())
+        { // create a unmovable .. no edge window..
+          CreateNewWindow(//
+                          kDocumentWindowClass,   
+                          kWindowStandardDocumentAttributes |  kWindowNoTitleBarAttribute,
+                          &r, 
+                          &_osx_window);
+        }
+      else
+        { // create a window with crome and sizing and sucj
 
-		
-		// lets use this as a crome based window..
-		
-	
-		if(	!req_properties.has_undecorated() || req_properties.get_undecorated() == false)
-		{ // create a window with crome and sizing and sucj
-			CreateNewWindow(//
-				kDocumentWindowClass,   
-				kWindowStandardDocumentAttributes |  kWindowStandardHandlerAttribute, 
-				&r, 
-				&_osx_window);
-		}
-		else
-		{ // create a unmovable .. no edge window..
+          // In this case, we want to constrain the window to the
+          // available size.
+          Rect bounds;
+          GetAvailableWindowPositioningBounds(GetMainDevice(), &bounds);
 
-			CreateNewWindow(//
-				kDocumentWindowClass,   
-				kWindowStandardDocumentAttributes |  kWindowNoTitleBarAttribute,
-				&r, 
-				&_osx_window);
-		}
-
+          r.left = max(r.left, bounds.left);
+          r.right = min(r.right, bounds.right);
+          r.top = max(r.top, bounds.top);
+          r.bottom = min(r.bottom, bounds.bottom);
+          
+          CreateNewWindow(//
+                          kDocumentWindowClass,   
+                          kWindowStandardDocumentAttributes |  
+                          kWindowStandardHandlerAttribute,
+                          &r, 
+                          &_osx_window);
+        }
+      
         if (_osx_window)
         {
             EventHandlerUPP gWinEvtHandler;			// window event handler
             //EventHandlerRef		ref;
             EventTypeSpec list[] = { 
-			{ kEventClassWindow, kEventWindowCollapsing },
-            { kEventClassWindow, kEventWindowShown },
-            { kEventClassWindow, kEventWindowActivated },
-            { kEventClassWindow, kEventWindowClose },
-			{ kEventClassWindow,kEventWindowBoundsChanged },
-			
+              { kEventClassWindow, kEventWindowCollapsing },
+              { kEventClassWindow, kEventWindowShown },
+              { kEventClassWindow, kEventWindowActivated },
+              { kEventClassWindow, kEventWindowDeactivated },
+              { kEventClassWindow, kEventWindowClose },
+              { kEventClassWindow, kEventWindowBoundsChanged },
+              
+              { kEventClassWindow, kEventWindowHidden },
+              { kEventClassWindow, kEventWindowCollapsed },
+              { kEventClassWindow, kEventWindowExpanded },
+              { kEventClassWindow, kEventWindowZoomed },
+              //{ kEventClassWindow, kEventWindowDragStarted },
+              //{ kEventClassWindow, kEventWindowDragCompleted },
+              //{ kEventClassWindow, kEventWindowTransitionCompleted },
+              { kEventClassWindow, kEventWindowClosed },
+
+              /*
+              { kEventClassWindow, kEventWindowClickDragRgn },
+              { kEventClassWindow, kEventWindowClickResizeRgn },
+              { kEventClassWindow, kEventWindowClickCollapseRgn },
+              { kEventClassWindow, kEventWindowClickCloseRgn },
+              { kEventClassWindow, kEventWindowClickZoomRgn },
+              { kEventClassWindow, kEventWindowClickContentRgn },
+              { kEventClassWindow, kEventWindowClickProxyIconRgn },
+              { kEventClassWindow, kEventWindowClickToolbarButtonRgn },
+              { kEventClassWindow, kEventWindowClickStructureRgn },
+              */
+              
         //    { kEventClassMouse, kEventMouseDown },// handle trackball functionality globaly because there is only a single user
         //    { kEventClassMouse, kEventMouseUp }, 
         //    { kEventClassMouse, kEventMouseMoved },
@@ -973,38 +1018,24 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties )
 			}
 					
         }
+
+        // Now measure the size and placement of the window we
+        // actually ended up with.
+        Rect				rectPort = {0,0,0,0};
+        GetWindowPortBounds (_osx_window, &rectPort); 	
+        _properties.set_size((int)(rectPort.right - rectPort.left),(int) (rectPort.bottom - rectPort.top));
+        req_properties.clear_size();
+        req_properties.clear_origin();
     }
-
-
-    //
-    // pull the size from the real window .. do not trust the requested values?f	
-  //  WindowProperties properties;
 
     _properties.set_foreground(true);
     _properties.set_minimized(false);
     _properties.set_open(true);
-    Rect				rectPort = {0,0,0,0};
-    if(_is_fullsreen)
-    {
-        CGDirectDisplayID display =   CGMainDisplayID ();
 
-//		if (osxdisplay_cat.is_debug())	
-			osxdisplay_cat.debug() << "Full Screen Size ["<< 	CGDisplayPixelsWide (display) <<","<< CGDisplayPixelsHigh (display) << "]\n";
-        //	  _properties.set_size((int)800,(int) 600);
-        _properties.set_size((int)CGDisplayPixelsWide (display),(int) CGDisplayPixelsHigh (display));
-        _properties.set_origin((int) 0,(int)0);
-		req_properties.clear_size();
-		req_properties.clear_origin();		
+    if (_properties.has_size()) {
+      set_size_and_recalc(_properties.get_x_size(),
+                          _properties.get_y_size());
     }
-    else
-    {
-        GetWindowPortBounds (_osx_window, &rectPort); 	
-        _properties.set_size((int)(rectPort.right - rectPort.left),(int) (rectPort.bottom - rectPort.top));
-        _properties.set_origin((int) rectPort.left,(int)rectPort.top);
-		req_properties.clear_size();
-		req_properties.clear_origin();
-    }
-
 
 //	cerr << " Generate Output Properties "<< _properties <<"\n";
 	
@@ -1408,7 +1439,19 @@ bool osxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool has_
     MoveWindow(_osx_window, x_origin, y_origin, false);
   }
   */
+
+  if (!_properties.get_undecorated()) {
+    // Constrain the window to the available desktop size.
+    Rect bounds;
+    GetAvailableWindowPositioningBounds(GetMainDevice(), &bounds);
+    
+    x_size = min(x_size, bounds.right - bounds.left);
+    y_size = min(y_size, bounds.bottom - bounds.top);
+  }
+
   SizeWindow(_osx_window, x_size, y_size, false);
+
+  system_changed_size(x_size, y_size);
   return true;
 }								
 
@@ -1503,16 +1546,10 @@ void osxGraphicsWindow::set_properties_now(WindowProperties &properties)
 	// new allowed to overwrite the old states.  and start a bootstrap
 	// of a new window ..
 
-    if (properties.has_size()) {
-      // Make sure the DisplayRegions, etc., will be updated.
-      system_changed_size(properties.get_x_size(), properties.get_y_size());
-    }
-
     // get a copy of my properties..
 	WindowProperties req_properties(_properties); 
     //	cerr<< "-------------------------------------Lets Go Full Rebuild   Request=[" <<properties <<"]\n";
 	ReleaseSystemResources();
-	_properties.clear();	
 	req_properties.add_properties(properties);	
 	
 	OSOpenWindow(req_properties); 

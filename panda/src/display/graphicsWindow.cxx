@@ -586,6 +586,8 @@ set_properties_now(WindowProperties &properties) {
     return;
   }
 
+  properties.clear_open();
+
   // The window is already open; we are limited to what we can change
   // on the fly.
 
@@ -618,12 +620,12 @@ set_properties_now(WindowProperties &properties) {
       if (do_reshape_request(x_origin, y_origin, has_origin,
                              reshape_props.get_x_size(),
                              reshape_props.get_y_size())) {
-        system_changed_size(reshape_props.get_x_size(), 
-                            reshape_props.get_y_size());
-        _properties.add_properties(reshape_props);
         properties.clear_size();
         properties.clear_origin();
       }
+    } else {
+      properties.clear_size();
+      properties.clear_origin();
     }
   }
 
@@ -729,8 +731,8 @@ system_changed_size(int x_size, int y_size) {
       << "system_changed_size(" << x_size << ", " << y_size << ")\n";
   }
   
-  if (x_size != _properties.get_x_size() || 
-      y_size != _properties.get_y_size()) {
+  if (!_properties.has_size() || (x_size != _properties.get_x_size() || 
+                                  y_size != _properties.get_y_size())) {
     set_size_and_recalc(x_size, y_size);
   }
 }

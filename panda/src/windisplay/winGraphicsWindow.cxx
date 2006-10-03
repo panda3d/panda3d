@@ -606,10 +606,6 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
                  view_rect.bottom - view_rect.top,
                  flags);
 
-    // This isn't quite right, because handle_reshape() calls
-    // system_changed_properties(), generating the event indicating
-    // the window has changed size externally--even though it changed
-    // due to an internal request.
     handle_reshape();
     return true;
   }
@@ -699,6 +695,7 @@ do_fullscreen_resize(int x_size, int y_size) {
     << " bitdepth " << dwFullScreenBitDepth << ", "
     << dm.dmDisplayFrequency << "Hz\n";
 
+  system_changed_size(x_size, y_size);
   return true;
 }
 
