@@ -123,6 +123,14 @@ class DoInterestManager(DirectObject.DirectObject):
     def getAllInterestsCompleteEvent(self):
         return 'allInterestsComplete-%s' % DoInterestManager._SerialNum
 
+    def resetInterestStateForConnectionLoss(self):
+        DoInterestManager._interests.clear()
+        self._outstandingScopes = set()
+        self._completeEventCount = ScratchPad(num=0)
+        self._addDebugInterestHistory(
+            "STATE RESET", "", 0, 0,
+            0, [])
+
     def addInterest(self, parentId, zoneIdList, description, event=None, auto=False):
         """
         Look into a (set of) zone(s).
