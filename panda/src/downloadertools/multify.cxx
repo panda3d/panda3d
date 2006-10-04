@@ -51,6 +51,43 @@ pset<string> dont_compress;    // -Z
 // Default extensions not to compress.  May be overridden with -Z.
 string dont_compress_str = "jpg,mp3";
 
+bool got_record_timestamp_flag = false;
+bool record_timestamp_flag = true;
+
+////////////////////////////////////////////////////////////////////
+//     Function: string_to_int
+//  Description: A string-interface wrapper around the C library
+//               strtol().  This parses the ASCII representation of an
+//               integer, and then sets tail to everything that
+//               follows the first valid integer read.  If, on exit,
+//               str == tail, there was no valid integer in the
+//               source string; if !tail.empty(), there was garbage
+//               after the integer.
+//
+//               It is legal if str and tail refer to the same string.
+////////////////////////////////////////////////////////////////////
+static int
+string_to_int(const string &str, string &tail) {
+  const char *nptr = str.c_str();
+  char *endptr;
+  int result = strtol(nptr, &endptr, 10);
+  tail = endptr;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: string_to_int
+//  Description: Another flavor of string_to_int(), this one returns
+//               true if the string is a perfectly valid integer (and
+//               sets result to that value), or false otherwise.
+////////////////////////////////////////////////////////////////////
+static bool
+string_to_int(const string &str, int &result) {
+  string tail;
+  result = string_to_int(str, tail);
+  return tail.empty();
+}
+
 void 
 usage() {
   cerr <<
@@ -158,6 +195,14 @@ help() {
     "      files that are not to be compressed.  The default if this is omitted is\n"
     "      \"" << dont_compress_str << "\".  Specify -Z \"\" (be sure to include the space) to allow\n"
     "      all files to be compressed.\n\n"
+
+    "  -T <flag>\n"
+    "      Enable or disable the recording of file timestamps within the multifile.\n"
+    "      If <flag> is 1, timestamps will be recorded within the multifile for\n"
+    "      each subfile added; this is the default behavior.  If <flag> is 0,\n"
+    "      timestamps will not be recorded, which will make it easier to do a\n"
+    "      bitwise comparison between multifiles to determine whether their\n"
+    "      contents are equivalent.\n\n"
 
     "  -1 .. -9\n"
     "      Specify the compression level when -z is in effect.  Larger numbers\n"
@@ -272,6 +317,10 @@ add_files(int argc, char *argv[]) {
       cerr << "Unable to open " << multifile_name << " for writing.\n";
       return false;
     }
+  }
+  
+  if (got_record_timestamp_flag) {
+    multifile->set_record_timestamp(record_timestamp_flag);
   }
 
   if (encryption_flag) {
@@ -389,10 +438,15 @@ extract_files(int argc, char *argv[]) {
 }
 
 const char *
-format_timestamp(time_t timestamp) {
+format_timestamp(bool record_timestamp, time_t timestamp) {
   static const size_t buffer_size = 512;
   static char buffer[buffer_size];
 
+  if (!record_timestamp) {
+    // No timestamps.
+    return "";
+  }
+  
   if (timestamp == 0) {
     // A zero timestamp is a special case.
     return "  (no date) ";
@@ -447,26 +501,34 @@ list_files(int argc, char *argv[]) {
             printf("%12d worse %c %s %s\n",
                    multifile->get_subfile_length(i),
                    encrypted_symbol,
-                   format_timestamp(multifile->get_subfile_timestamp(i)),
+                   format_timestamp(multifile->get_record_timestamp(),
+                                    multifile->get_subfile_timestamp(i)),
                    subfile_name.c_str());
           } else {
             printf("%12d  %3.0f%% %c %s %s\n",
                    multifile->get_subfile_length(i),
                    100.0 - ratio * 100.0, encrypted_symbol,
-                   format_timestamp(multifile->get_subfile_timestamp(i)),
+                   format_timestamp(multifile->get_record_timestamp(),
+                                    multifile->get_subfile_timestamp(i)),
                    subfile_name.c_str());
           }
         } else {
           printf("%12d       %c %s %s\n", 
                  multifile->get_subfile_length(i),
                  encrypted_symbol,
-                 format_timestamp(multifile->get_subfile_timestamp(i)),
+                 format_timestamp(multifile->get_record_timestamp(),
+                                  multifile->get_subfile_timestamp(i)),
                  subfile_name.c_str());
         }
       }
     }
-    cout << "Last modification " << format_timestamp(multifile->get_timestamp()) << "\n";
     fflush(stdout);
+
+    if (multifile->get_record_timestamp()) {
+      cout << "Last modification " 
+           << format_timestamp(true, multifile->get_timestamp()) << "\n";
+    }
+
     if (multifile->get_scale_factor() != 1) {
       cout << "Scale factor is " << multifile->get_scale_factor() << "\n";
     }
@@ -520,7 +582,7 @@ main(int argc, char *argv[]) {
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "crutxvz123456789Z:f:OC:ep:F:h";
+  static const char *optflags = "crutxvz123456789Z:T:f:OC:ep:F:h";
   int flag = getopt(argc, argv, optflags);
   Filename rel_path;
   while (flag != EOF) {
@@ -584,6 +646,19 @@ main(int argc, char *argv[]) {
       break;
     case 'Z':
       dont_compress_str = optarg;
+      break;
+    case 'T':
+      {
+        int flag;
+        if (!string_to_int(optarg, flag) ||
+            (flag != 0 && flag != 1)) {
+          cerr << "Invalid timestamp flag: " << optarg << "\n";
+          usage();
+          return 1;
+        }
+        record_timestamp_flag = (flag != 0);
+        got_record_timestamp_flag = true;
+      }
       break;
     case 'f':
       multifile_name = Filename::from_os_specific(optarg);
@@ -655,8 +730,14 @@ main(int argc, char *argv[]) {
   if (create || append || update) {
     okflag = add_files(argc, argv);
   } else if (extract) {
+    if (got_record_timestamp_flag) {
+      cerr << "Warning: -T ignored on extract.\n";
+    }
     okflag = extract_files(argc, argv);
   } else { // list
+    if (got_record_timestamp_flag) {
+      cerr << "Warning: -T ignored on list.\n";
+    }
     okflag = list_files(argc, argv);
   }
 

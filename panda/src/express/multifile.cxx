@@ -111,6 +111,7 @@ Multifile() {
   _needs_repack = false;
   _timestamp = 0;
   _timestamp_dirty = false;
+  _record_timestamp = true;
   _scale_factor = 1;
   _new_scale_factor = 1;
   _encryption_flag = false;
@@ -534,7 +535,11 @@ flush() {
     nassertr(!_write->fail(), false);
     
     StreamWriter writer(*_write);
-    writer.add_uint32(_timestamp);
+    if (_record_timestamp) {
+      writer.add_uint32(_timestamp);
+    } else {
+      writer.add_uint32(0);
+    }
     _timestamp_dirty = false;
   }
 
@@ -808,14 +813,19 @@ get_subfile_length(int index) const {
 //       Access: Published
 //  Description: Returns the modification time of the nth
 //               subfile.  If this is called on an older .mf file,
-//               which did not store individual timestamps in the
-//               file, this will return the modification time of the
-//               overall multifile.
+//               which did not store individual timestamps in the file
+//               (or if get_record_timestamp() is false), this will
+//               return the modification time of the overall
+//               multifile.
 ////////////////////////////////////////////////////////////////////
 time_t Multifile::
 get_subfile_timestamp(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
-  return _subfiles[index]->_timestamp;
+  if (!get_record_timestamp()) {
+    return get_timestamp();
+  } else {
+    return _subfiles[index]->_timestamp;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1384,8 +1394,16 @@ read_index() {
     return false;
   }
 
+  _record_timestamp = true;
   if (_file_minor_ver >= 1) {
-    _timestamp = reader.get_uint32();
+    time_t read_timestamp = reader.get_uint32();
+    if (read_timestamp == 0) {
+      // If we read a 0 timestamp from the file, that implies that we
+      // don't want to record a timestamp in this particular file.
+      _record_timestamp = false;
+    } else {
+      _timestamp = read_timestamp;
+    }
     _timestamp_dirty = false;
   }
 
@@ -1456,7 +1474,12 @@ write_header() {
   writer.add_int16(_current_minor_ver);
   writer.add_uint32(_scale_factor);
 
-  writer.add_uint32(_timestamp);
+  if (_record_timestamp) {
+    writer.add_uint32(_timestamp);
+  } else {
+    writer.add_uint32(0);
+    _timestamp_dirty = false;
+  }
 
   _next_index = _write->tellp();
   _next_index = pad_to_streampos(_next_index);
@@ -1515,6 +1538,9 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
     _timestamp = multifile->get_timestamp();
   } else {
     _timestamp = reader.get_uint32();
+    if (_timestamp == 0) {
+      _timestamp = multifile->get_timestamp();
+    }
   }
 
   size_t name_length = reader.get_uint16();
@@ -1758,7 +1784,11 @@ rewrite_index_data_start(ostream &write, Multifile *multifile) {
   if ((_flags & (SF_compressed | SF_encrypted)) != 0) {
     writer.add_uint32(_uncompressed_length);
   }
-  writer.add_uint32(_timestamp);
+  if (multifile->_record_timestamp) {
+    writer.add_uint32(_timestamp);
+  } else {
+    writer.add_uint32(0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

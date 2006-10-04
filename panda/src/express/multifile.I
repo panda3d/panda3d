@@ -79,6 +79,41 @@ get_timestamp() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::set_record_timestamp
+//       Access: Published
+//  Description: Sets the flag indicating whether timestamps should be
+//               recorded within the Multifile or not.  The default is
+//               true, indicating the Multifile will record timestamps
+//               for the overall file and also for each subfile.  
+//
+//               If this is false, the Multifile will not record
+//               timestamps internally.  In this case, the return
+//               value from get_timestamp() or get_subfile_timestamp()
+//               will be estimations.
+//
+//               You may want to set this false to minimize the
+//               bitwise difference between independently-generated
+//               Multifiles.
+////////////////////////////////////////////////////////////////////
+INLINE void Multifile::
+set_record_timestamp(bool flag) {
+  _record_timestamp = flag;
+  _timestamp_dirty = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_record_timestamp
+//       Access: Published
+//  Description: Returns the flag indicating whether timestamps
+//               should be recorded within the Multifile or not.  See
+//               set_record_timestamp().
+////////////////////////////////////////////////////////////////////
+INLINE bool Multifile::
+get_record_timestamp() const {
+  return _record_timestamp;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::get_scale_factor
 //       Access: Published
 //  Description: Returns the internal scale factor for this Multifile.

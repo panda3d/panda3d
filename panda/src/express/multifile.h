@@ -56,6 +56,9 @@ PUBLISHED:
 
   INLINE time_t get_timestamp() const;
 
+  INLINE void set_record_timestamp(bool record_timestamp);
+  INLINE bool get_record_timestamp() const;
+
   void set_scale_factor(size_t scale_factor);
   INLINE size_t get_scale_factor() const;
 
@@ -168,6 +171,7 @@ private:
   bool _needs_repack;
   time_t _timestamp;
   bool _timestamp_dirty;
+  bool _record_timestamp;
   size_t _scale_factor;
   size_t _new_scale_factor;
 
