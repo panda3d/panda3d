@@ -55,7 +55,7 @@ foreach my $line (@fileline)
 
     if ( ($line =~ /CVS/)
         || ($line =~ /Opt\d\-/)
-        || ($line =~ /\.cxx|\.obj|\.h|\.I|\.in|\.pdb|\.pp|\.cvsignore/)
+        || ($line =~ /\.cxx|\.obj|\.h|\.I|\.in|\.pdb|\.pp|\.cvsignore|Makefile/)
        )
     {                                                       # skip if ...
         print "skipping $line\n";
