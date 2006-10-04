@@ -145,16 +145,16 @@ def calldownEnforced(f):
     """
     if EnforcesCalldowns.notActive():
         return f
-    def calldownEnforcedImpl(obj, *args, **kArgs):
+    def calldownEnforcedDecorator(obj, *args, **kArgs):
         # track the fact that this func has been called
         obj._ECvisit(id(f))
         f(obj, *args, **kArgs)
-    calldownEnforcedImpl.__doc__ = f.__doc__
-    calldownEnforcedImpl.__name__ = f.__name__
-    calldownEnforcedImpl.__module__ = f.__module__
-    EnforcesCalldowns._decoId2funcId[id(calldownEnforcedImpl)] = id(f)
-    EnforcesCalldowns._funcId2func[id(f)] = calldownEnforcedImpl
-    return calldownEnforcedImpl
+    calldownEnforcedDecorator.__doc__ = f.__doc__
+    calldownEnforcedDecorator.__name__ = f.__name__
+    calldownEnforcedDecorator.__module__ = f.__module__
+    EnforcesCalldowns._decoId2funcId[id(calldownEnforcedDecorator)] = id(f)
+    EnforcesCalldowns._funcId2func[id(f)] = calldownEnforcedDecorator
+    return calldownEnforcedDecorator
 
 if not EnforcesCalldowns.notActive():
     class CalldownEnforceTest(EnforcesCalldowns):
