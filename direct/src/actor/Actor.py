@@ -1287,14 +1287,15 @@ class Actor(DirectObject, NodePath):
                 for thisPart, animDict in animDictItems:
                     anim = animDict.get(animName)
                     if anim == None:
-                        # Maybe it's a subpart that hasn't been bound yet.
-                        subpartDef = self.__subpartDict.get(partName)
-                        if subpartDef:
-                            truePartName = subpartDef[0]
-                            anim = partDict[truePartName].get(animName)
-                            if anim:
-                                anim = [anim[0], None]
-                                animDict[animName] = anim
+                        for pName in partNameList:
+                            # Maybe it's a subpart that hasn't been bound yet.
+                            subpartDef = self.__subpartDict.get(pName)
+                            if subpartDef:
+                                truePartName = subpartDef[0]
+                                anim = partDict[truePartName].get(animName)
+                                if anim:
+                                    anim = [anim[0], None]
+                                    animDict[animName] = anim
 
                     if anim == None:
                         # anim was not present
