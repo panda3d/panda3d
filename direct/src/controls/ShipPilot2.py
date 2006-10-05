@@ -63,6 +63,7 @@ class ShipPilot2(PhysicsWalker):
         self.__slideSpeed=0.0
         self.__vel=Vec3(0.0)
         self.collisionsActive = 0
+        self.currentTurning = 0.0
 
         self.isAirborne = 0
         self.highMark = 0
@@ -89,7 +90,8 @@ class ShipPilot2(PhysicsWalker):
             #self.setupShip()
             self.setupPhysics(ship)
             self.ship = ship
-
+            
+            """
             #*# Debug:
             if not hasattr(ship, "acceleration"):
                 self.ship.acceleration = 60
@@ -100,7 +102,8 @@ class ShipPilot2(PhysicsWalker):
                 self.ship.maxTurn = 30
                 self.ship.anchorDrag = .9
                 self.ship.hullDrag = .9
-
+            """
+            
     def setupRay(self, floorBitmask, floorOffset):
         # This is a ray cast from your head down to detect floor polygons
         # A toon is about 4.0 feet high, so start it there
@@ -593,6 +596,14 @@ class ShipPilot2(PhysicsWalker):
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
 
+        # Check for Auto-Sailing
+        if self.ship.getIsAutoSailing():
+            forward = 1
+            reverse = 0
+
+        # How far did we move based on the amount of time elapsed?
+        dt=ClockObject.getGlobalClock().getDt()
+        
         # this was causing the boat to get stuck moving forward or back
         if 0:
             if not hasattr(self, "sailsDeployed"):
@@ -611,8 +622,11 @@ class ShipPilot2(PhysicsWalker):
                     self.sailsDeployed = -1.0
             self.__speed = self.ship.acceleration * self.sailsDeployed
         else:
-            self.__speed=(forward and self.ship.acceleration or
-                    reverse and -self.ship.reverseAcceleration)
+            self.__speed=(forward and self.ship.acceleration) or \
+                (reverse and -self.ship.reverseAcceleration)
+            #self.__speed=(forward and min(dt*(self.__speed + self.ship.acceleration), self.ship.maxSpeed) or
+            #        reverse and min(dt*(self.__speed - self.ship.reverseAcceleration), self.ship.maxReverseSpeed))
+            
         avatarSlideSpeed=self.ship.acceleration*0.5
         #self.__slideSpeed=slide and (
         #        (turnLeft and -avatarSlideSpeed) or
@@ -623,8 +637,7 @@ class ShipPilot2(PhysicsWalker):
         self.__rotationSpeed=not slide and (
                 (turnLeft and self.ship.turnRate) or
                 (turnRight and -self.ship.turnRate))
-
-
+        
         # Enable debug turbo mode
         maxSpeed = self.ship.maxSpeed
         if __debug__:
@@ -634,11 +647,8 @@ class ShipPilot2(PhysicsWalker):
                 self.__slideSpeed*=4.0
                 self.__rotationSpeed*=1.25
                 maxSpeed = self.ship.maxSpeed * 4.0
-
-
+                
         #*#
-        if not hasattr(self, "currentTurning"):
-            self.currentTurning = 0.0
         self.currentTurning += self.__rotationSpeed
         if self.currentTurning > self.ship.maxTurn:
             self.currentTurning = self.ship.maxTurn
@@ -658,9 +668,6 @@ class ShipPilot2(PhysicsWalker):
 
         if self.wantDebugIndicator:
             self.displayDebugInfo()
-
-        # How far did we move based on the amount of time elapsed?
-        dt=ClockObject.getGlobalClock().getDt()
 
         if self.needToDeltaPos:
             self.setPriorParentVector()
