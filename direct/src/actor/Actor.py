@@ -98,6 +98,8 @@ class Actor(DirectObject, NodePath):
         self.__animControlDict = {}
         self.__controlJoints = {}
 
+        self.__subpartsComplete = False
+
         self.__LODNode = None
         self.switches = None
 
@@ -1225,9 +1227,17 @@ class Actor(DirectObject, NodePath):
         animation for the given part and the given lod.  If animName
         is omitted, the currently-playing animation (or all
         currently-playing animations) is returned.  If partName is
-        omitted, all parts are returned.  If lodName is omitted, all
-        LOD's are returned.
+        omitted, all parts are returned (or possibly the one overall
+        Actor part, according to the subpartsComplete flag).  If
+        lodName is omitted, all LOD's are returned.
         """
+
+        if partName == None and self.__subpartsComplete:
+            # If we have the __subpartsComplete flag, and no partName
+            # is specified, it really means to play the animation on
+            # all subparts, not on the overall Actor.
+            partName = self.__subpartDict.keys()
+            
         controls = []
         # build list of lodNames and corresponding animControlDicts
         # requested.
@@ -1461,6 +1471,35 @@ class Actor(DirectObject, NodePath):
             subset.addExcludeJoint(GlobPattern(name))
 
         self.__subpartDict[partName] = (parent, subset)
+
+    def setSubpartsComplete(self, flag):
+
+        """Sets the subpartsComplete flag.  This affects the behavior
+        of play(), loop(), stop(), etc., when no explicit parts are
+        specified.
+
+        When this flag is False (the default), play() with no parts
+        means to play the animation on the overall Actor, which is a
+        separate part that overlaps each of the subparts.  If you then
+        play a different animation on a subpart, it may stop the
+        overall animation (in non-blend mode) or blend with it (in
+        blend mode).
+
+        When this flag is True, play() with no parts means to play the
+        animation on each of the subparts--instead of on the overall
+        Actor.  In this case, you may then play a different animation
+        on a subpart, which replaces only that subpart's animation.
+
+        It makes sense to set this True when the union of all of your
+        subparts completely defines the entire Actor.
+        """
+        
+        self.__subpartsComplete = flag
+
+    def getSubpartsComplete(self):
+        """See setSubpartsComplete()."""
+        
+        return self.__subpartsComplete
 
     def loadAnims(self, anims, partName="modelRoot", lodName="lodRoot"):
         """loadAnims(self, string:string{}, string='modelRoot',
