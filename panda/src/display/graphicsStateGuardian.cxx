@@ -617,7 +617,7 @@ get_geom_munger(const RenderState *state, Thread *current_thread) {
     }
   }
 
-  // Nope, we have to loop up in the map.
+  // Nope, we have to look it up in the map.
   RenderState::Mungers::const_iterator mi = state->_mungers.find(this);
   if (mi != state->_mungers.end() && !(*mi).first.was_deleted()) {
     ((RenderState *)state)->_last_mi = mi;
