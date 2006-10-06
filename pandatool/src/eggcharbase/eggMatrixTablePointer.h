@@ -46,7 +46,7 @@ public:
 
   virtual void do_finish_reparent(EggJointPointer *new_parent);
 
-  virtual bool do_rebuild();
+  virtual bool do_rebuild(EggCharacterDb &db);
 
   virtual void optimize();
   virtual void zero_channels(const string &components);

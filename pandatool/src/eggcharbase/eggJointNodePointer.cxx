@@ -141,23 +141,6 @@ move_vertices_to(EggJointPointer *new_joint) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::add_rebuild_frame
-//       Access: Public, Virtual
-//  Description: Adds a new frame to the set of rebuild frames.  See
-//               begin_rebuild() and do_rebuild().  Returns true if
-//               this is valid, false otherwise (e.g. adding multiple
-//               frames to a static joint).
-////////////////////////////////////////////////////////////////////
-bool EggJointNodePointer::
-add_rebuild_frame(const LMatrix4d &mat) {
-  if (!_rebuild_frames.empty()) {
-    // Only one frame may be added to a <Joint>.
-    return false;
-  }
-  return EggJointPointer::add_rebuild_frame(mat);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggJointNodePointer::do_rebuild
 //       Access: Public, Virtual
 //  Description: Rebuilds the entire table all at once, based on the
@@ -171,17 +154,18 @@ add_rebuild_frame(const LMatrix4d &mat) {
 //               acceptable, or false if there is some problem.
 ////////////////////////////////////////////////////////////////////
 bool EggJointNodePointer::
-do_rebuild() {
-  if (_rebuild_frames.empty()) {
+do_rebuild(EggCharacterDb &db) {
+  LMatrix4d mat;
+  if (!db.get_matrix(this, EggCharacterDb::TT_rebuild_frame, 0, mat)) {
+    // No rebuild frame; this is OK.
     return true;
   }
 
-  if (_rebuild_frames.size() != 1) {
-    return false;
-  }
+  _joint->set_transform3d(mat);
 
-  _joint->set_transform3d(_rebuild_frames[0]);
-  _rebuild_frames.clear();
+  // We shouldn't have a frame 1.
+  nassertr(!db.get_matrix(this, EggCharacterDb::TT_rebuild_frame, 1, mat), false);
+  
   return true;
 }
 

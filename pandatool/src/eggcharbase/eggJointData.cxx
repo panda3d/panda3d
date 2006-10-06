@@ -74,7 +74,7 @@ get_frame(int model_index, int n) const {
 //               in the indicated model.
 ////////////////////////////////////////////////////////////////////
 LMatrix4d EggJointData::
-get_net_frame(int model_index, int n) const {
+get_net_frame(int model_index, int n, EggCharacterDb &db) const {
   EggBackPointer *back = get_model(model_index);
   if (back == (EggBackPointer *)NULL) {
     return LMatrix4d::ident_mat();
@@ -82,23 +82,18 @@ get_net_frame(int model_index, int n) const {
 
   EggJointPointer *joint;
   DCAST_INTO_R(joint, back, LMatrix4d::ident_mat());
-
-  if (joint->get_num_net_frames() < n) {
-    // Recursively get the previous frame's net, so we have a place to
-    // stuff this frame's value.
-    get_net_frame(model_index, n - 1);
-  }
-
-  if (joint->get_num_net_frames() == n) {
+  
+  LMatrix4d mat;
+  if (!db.get_matrix(joint, EggCharacterDb::TT_net_frame, n, mat)) {
     // Compute this frame's net, and stuff it in.
-    LMatrix4d mat = get_frame(model_index, n);
+    mat = get_frame(model_index, n);
     if (_parent != (EggJointData *)NULL) {
-      mat = mat * _parent->get_net_frame(model_index, n);
+      mat = mat * _parent->get_net_frame(model_index, n, db);
     }
-    joint->add_net_frame(mat);
+    db.set_matrix(joint, EggCharacterDb::TT_net_frame, n, mat);
   }
 
-  return joint->get_net_frame(n);
+  return mat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,7 +102,7 @@ get_net_frame(int model_index, int n) const {
 //  Description: Returns the inverse of get_net_frame().
 ////////////////////////////////////////////////////////////////////
 LMatrix4d EggJointData::
-get_net_frame_inv(int model_index, int n) const {
+get_net_frame_inv(int model_index, int n, EggCharacterDb &db) const {
   EggBackPointer *back = get_model(model_index);
   if (back == (EggBackPointer *)NULL) {
     return LMatrix4d::ident_mat();
@@ -116,20 +111,15 @@ get_net_frame_inv(int model_index, int n) const {
   EggJointPointer *joint;
   DCAST_INTO_R(joint, back, LMatrix4d::ident_mat());
 
-  if (joint->get_num_net_frame_invs() < n) {
-    // Recursively get the previous frame's net, so we have a place to
-    // stuff this frame's value.
-    get_net_frame_inv(model_index, n - 1);
-  }
-
-  if (joint->get_num_net_frame_invs() == n) {
+  LMatrix4d mat;
+  if (!db.get_matrix(joint, EggCharacterDb::TT_net_frame_inv, n, mat)) {
     // Compute this frame's net inverse, and stuff it in.
-    LMatrix4d mat = get_net_frame(model_index, n);
+    LMatrix4d mat = get_net_frame(model_index, n, db);
     mat.invert_in_place();
-    joint->add_net_frame_inv(mat);
+    db.set_matrix(joint, EggCharacterDb::TT_net_frame_inv, n, mat);
   }
 
-  return joint->get_net_frame_inv(n);
+  return mat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -202,7 +192,7 @@ move_vertices_to(EggJointData *new_owner) {
 //               error.
 ////////////////////////////////////////////////////////////////////
 int EggJointData::
-score_reparent_to(EggJointData *new_parent) {
+score_reparent_to(EggJointData *new_parent, EggCharacterDb &db) {
   if (!FFTCompressor::is_compression_available()) {
     // If we don't have compression compiled in, we can't meaningfully
     // score the joints.
@@ -232,17 +222,17 @@ score_reparent_to(EggJointData *new_parent) {
           
         } else if (_parent == (EggJointData *)NULL) {
           // We are moving from outside the joint hierarchy to within it.
-          transform = new_parent->get_net_frame_inv(model_index, n);
+          transform = new_parent->get_net_frame_inv(model_index, n, db);
           
         } else if (new_parent == (EggJointData *)NULL) {
           // We are moving from within the hierarchy to outside it.
-          transform = _parent->get_net_frame(model_index, n);
+          transform = _parent->get_net_frame(model_index, n, db);
           
         } else {
           // We are changing parents within the hierarchy.
           transform = 
-            _parent->get_net_frame(model_index, n) *
-            new_parent->get_net_frame_inv(model_index, n);
+            _parent->get_net_frame(model_index, n, db) *
+            new_parent->get_net_frame_inv(model_index, n, db);
         }
 
         transform = joint->get_frame(n) * transform;
@@ -304,14 +294,14 @@ score_reparent_to(EggJointData *new_parent) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggJointData::do_rebuild
+//     Function: EggJointData::do_rebuild_all
 //       Access: Public
 //  Description: Calls do_rebuild() on all models, and recursively on
 //               all joints at this node and below.  Returns true if
 //               all models returned true, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool EggJointData::
-do_rebuild() {
+do_rebuild_all(EggCharacterDb &db) {
   bool all_ok = true;
 
   BackPointers::iterator bpi;
@@ -320,7 +310,7 @@ do_rebuild() {
     if (back != (EggBackPointer *)NULL) {
       EggJointPointer *joint;
       DCAST_INTO_R(joint, back, false);
-      if (!joint->do_rebuild()) {
+      if (!joint->do_rebuild(db)) {
         all_ok = false;
       }
     }
@@ -329,7 +319,7 @@ do_rebuild() {
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     EggJointData *child = (*ci);
-    if (!child->do_rebuild()) {
+    if (!child->do_rebuild_all(db)) {
       all_ok = false;
     }
   }
@@ -497,15 +487,6 @@ void EggJointData::
 do_begin_reparent() {
   _got_new_parent_depth = false;
   _children.clear();
-
-  int num_models = get_num_models();
-  for (int model_index = 0; model_index < num_models; model_index++) {
-    if (has_model(model_index)) {
-      EggJointPointer *joint;
-      DCAST_INTO_V(joint, get_model(model_index));
-      joint->begin_rebuild();
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -568,7 +549,7 @@ do_begin_compute_reparent() {
 //               false on failure.
 ////////////////////////////////////////////////////////////////////
 bool EggJointData::
-do_compute_reparent(int model_index, int n) {
+do_compute_reparent(int model_index, int n, EggCharacterDb &db) {
   if (_computed_reparent) {
     // We've already done this joint.  This is possible because we
     // have to recursively compute joints upwards, so we might visit
@@ -597,23 +578,51 @@ do_compute_reparent(int model_index, int n) {
   LMatrix4d transform;
   if (_parent == (EggJointData *)NULL) {
     // We are moving from outside the joint hierarchy to within it.
-    transform = _new_parent->get_new_net_frame_inv(model_index, n);
+    transform = _new_parent->get_new_net_frame_inv(model_index, n, db);
 
   } else if (_new_parent == (EggJointData *)NULL) {
     // We are moving from within the hierarchy to outside it.
-    transform = _parent->get_net_frame(model_index, n);
+    transform = _parent->get_net_frame(model_index, n, db);
 
   } else {
     // We are changing parents within the hierarchy.
     transform = 
-      _parent->get_net_frame(model_index, n) *
-      _new_parent->get_new_net_frame_inv(model_index, n);
+      _parent->get_net_frame(model_index, n, db) *
+      _new_parent->get_new_net_frame_inv(model_index, n, db);
   }
 
-  nassertr(n == joint->get_num_rebuild_frames(), false);
+  db.set_matrix(joint, EggCharacterDb::TT_rebuild_frame, n,
+                joint->get_frame(n) * transform);
+  _computed_ok = true;
 
-  _computed_ok = joint->add_rebuild_frame(joint->get_frame(n) * transform);
   return _computed_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::do_joint_rebuild
+//       Access: Protected
+//  Description: Calls do_rebuild() on the joint for the indicated
+//               model index.  Returns true on success, false on
+//               failure (false shouldn't be possible).
+////////////////////////////////////////////////////////////////////
+bool EggJointData::
+do_joint_rebuild(int model_index, EggCharacterDb &db) {
+  bool all_ok = true;
+
+  EggJointPointer *parent_joint = NULL;
+  if (_new_parent != NULL && _new_parent->has_model(model_index)) {
+    DCAST_INTO_R(parent_joint, _new_parent->get_model(model_index), false);
+  }
+  
+  if (has_model(model_index)) {
+    EggJointPointer *joint;
+    DCAST_INTO_R(joint, get_model(model_index), false);
+    if (!joint->do_rebuild(db)) {
+      all_ok = false;
+    }
+  }
+
+  return all_ok;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -621,28 +630,21 @@ do_compute_reparent(int model_index, int n) {
 //       Access: Protected
 //  Description: Performs the actual reparenting operation
 //               by removing all of the old children and replacing
-//               them with the set of new children.  Returns true on
-//               success, false on failure.
+//               them with the set of new children.
 ////////////////////////////////////////////////////////////////////
-bool EggJointData::
+void EggJointData::
 do_finish_reparent() {
-  bool all_ok = true;
-
   int num_models = get_num_models();
   for (int model_index = 0; model_index < num_models; model_index++) {
     EggJointPointer *parent_joint = NULL;
     if (_new_parent != NULL && _new_parent->has_model(model_index)) {
-      DCAST_INTO_R(parent_joint, _new_parent->get_model(model_index), false);
+      DCAST_INTO_V(parent_joint, _new_parent->get_model(model_index));
     }
 
     if (has_model(model_index)) {
       EggJointPointer *joint;
-      DCAST_INTO_R(joint, get_model(model_index), false);
+      DCAST_INTO_V(joint, get_model(model_index));
       joint->do_finish_reparent(parent_joint);
-      joint->clear_net_frames();
-      if (!joint->do_rebuild()) {
-        all_ok = false;
-      }
     }
   }
 
@@ -650,8 +652,6 @@ do_finish_reparent() {
   if (_parent != (EggJointData *)NULL) {
     _parent->_children.push_back(this);
   }
-
-  return all_ok;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -760,11 +760,11 @@ is_new_ancestor(EggJointData *child) const {
 //               useful only when called within do_compute_reparent().
 ////////////////////////////////////////////////////////////////////
 const LMatrix4d &EggJointData::
-get_new_net_frame(int model_index, int n) {
+get_new_net_frame(int model_index, int n, EggCharacterDb &db) {
   if (!_got_new_net_frame) {
-    _new_net_frame = get_new_frame(model_index, n);
+    _new_net_frame = get_new_frame(model_index, n, db);
     if (_new_parent != (EggJointData *)NULL) {
-      _new_net_frame = _new_net_frame * _new_parent->get_new_net_frame(model_index, n);
+      _new_net_frame = _new_net_frame * _new_parent->get_new_net_frame(model_index, n, db);
     }
     _got_new_net_frame = true;
   }
@@ -777,11 +777,11 @@ get_new_net_frame(int model_index, int n) {
 //  Description: Returns the inverse of get_new_net_frame().
 ////////////////////////////////////////////////////////////////////
 const LMatrix4d &EggJointData::
-get_new_net_frame_inv(int model_index, int n) {
+get_new_net_frame_inv(int model_index, int n, EggCharacterDb &db) {
   if (!_got_new_net_frame_inv) {
-    _new_net_frame_inv.invert_from(get_new_frame(model_index, n));
+    _new_net_frame_inv.invert_from(get_new_frame(model_index, n, db));
     if (_new_parent != (EggJointData *)NULL) {
-      _new_net_frame_inv = _new_parent->get_new_net_frame_inv(model_index, n) * _new_net_frame_inv;
+      _new_net_frame_inv = _new_parent->get_new_net_frame_inv(model_index, n, db) * _new_net_frame_inv;
     }
     _got_new_net_frame_inv = true;
   }
@@ -797,8 +797,8 @@ get_new_net_frame_inv(int model_index, int n) {
 //               called.
 ////////////////////////////////////////////////////////////////////
 LMatrix4d EggJointData::
-get_new_frame(int model_index, int n) {
-  do_compute_reparent(model_index, n);
+get_new_frame(int model_index, int n, EggCharacterDb &db) {
+  do_compute_reparent(model_index, n, db);
 
   EggBackPointer *back = get_model(model_index);
   if (back == (EggBackPointer *)NULL) {
@@ -808,9 +808,12 @@ get_new_frame(int model_index, int n) {
   EggJointPointer *joint;
   DCAST_INTO_R(joint, back, LMatrix4d::ident_mat());
 
-  if (joint->get_num_rebuild_frames() > 0) {
-    return joint->get_rebuild_frame(n);
-  } else {
+  LMatrix4d mat;
+  if (!db.get_matrix(joint, EggCharacterDb::TT_rebuild_frame, n, mat)) {
+    // No rebuild frame; return the regular frame.
     return joint->get_frame(n);
   }
+
+  // Return the rebuild frame, as computed.
+  return mat;
 }

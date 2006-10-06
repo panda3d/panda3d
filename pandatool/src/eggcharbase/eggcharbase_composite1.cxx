@@ -3,6 +3,7 @@
 #include "eggBackPointer.cxx"
 #include "eggCharacterCollection.cxx"
 #include "eggCharacterData.cxx"
+#include "eggCharacterDb.cxx"
 #include "eggCharacterFilter.cxx"
 #include "eggComponentData.cxx"
 #include "eggJointData.cxx"

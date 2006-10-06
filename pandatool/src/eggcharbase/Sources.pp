@@ -13,8 +13,11 @@
   #define SOURCES \ 
      config_eggcharbase.h eggBackPointer.h \
      eggCharacterCollection.h eggCharacterCollection.I \
-     eggCharacterData.h eggCharacterData.I eggCharacterFilter.h \
-     eggComponentData.h eggComponentData.I eggJointData.h \
+     eggCharacterData.h eggCharacterData.I \
+     eggCharacterDb.I eggCharacterDb.h \
+     eggCharacterFilter.h \
+     eggComponentData.h eggComponentData.I \
+     eggJointData.h \
      eggJointData.I eggJointPointer.h eggJointPointer.I \
      eggJointNodePointer.h \
      eggMatrixTablePointer.h eggScalarTablePointer.h \
@@ -24,6 +27,7 @@
   #define INCLUDED_SOURCES \
      config_eggcharbase.cxx eggBackPointer.cxx \
      eggCharacterCollection.cxx eggCharacterData.cxx \
+     eggCharacterDb.cxx \
      eggCharacterFilter.cxx eggComponentData.cxx eggJointData.cxx \
      eggJointPointer.cxx eggJointNodePointer.cxx \
      eggMatrixTablePointer.cxx eggScalarTablePointer.cxx \
@@ -34,7 +38,9 @@
   #define INSTALL_HEADERS \
     eggBackPointer.h \
     eggCharacterCollection.I eggCharacterCollection.h \
-    eggCharacterData.I eggCharacterData.h eggCharacterFilter.h \
+    eggCharacterData.I eggCharacterData.h \
+    eggCharacterDb.I eggCharacterDb.h \
+    eggCharacterFilter.h \
     eggComponentData.I eggComponentData.h \
     eggJointData.h eggJointData.I \
     eggJointPointer.h eggJointPointer.I \

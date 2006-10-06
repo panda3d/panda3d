@@ -189,8 +189,10 @@ do_finish_reparent(EggJointPointer *new_parent) {
 //               acceptable, or false if there is some problem.
 ////////////////////////////////////////////////////////////////////
 bool EggMatrixTablePointer::
-do_rebuild() {
-  if (_rebuild_frames.empty()) {
+do_rebuild(EggCharacterDb &db) {
+  LMatrix4d mat;
+  if (!db.get_matrix(this, EggCharacterDb::TT_rebuild_frame, 0, mat)) {
+    // No rebuild frame; this is OK.
     return true;
   }
 
@@ -201,14 +203,19 @@ do_rebuild() {
   bool all_ok = true;
   
   _xform->clear_data();
-  RebuildFrames::const_iterator fi;
-  for (fi = _rebuild_frames.begin(); fi != _rebuild_frames.end(); ++fi) {
-    if (!_xform->add_data(*fi)) {
-      all_ok = false;
-    }
+  if (!_xform->add_data(mat)) {
+    all_ok = false;
   }
 
-  _rebuild_frames.clear();
+  // Assume all frames will be contiguous.
+  int n = 1;
+  while (db.get_matrix(this, EggCharacterDb::TT_rebuild_frame, n, mat)) {
+    if (!_xform->add_data(mat)) {
+      all_ok = false;
+    }
+    ++n;
+  }
+
   return all_ok;
 }
 

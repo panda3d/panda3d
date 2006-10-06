@@ -18,6 +18,7 @@
 
 #include "eggCharacterData.h"
 #include "eggCharacterCollection.h"
+#include "eggCharacterDb.h"
 #include "eggJointData.h"
 #include "eggSliderData.h"
 #include "indent.h"
@@ -227,8 +228,13 @@ do_reparent() {
   // frame.
   Models::const_iterator mi;
   for (mi = _models.begin(); mi != _models.end(); ++mi) {
+    EggCharacterDb db;
     int model_index = (*mi)._model_index;
     int num_frames = get_num_frames(model_index);
+    nout << "  computing " << (mi - _models.begin()) + 1
+         << " of " << _models.size()
+         << ": " << (*mi)._egg_data->get_egg_filename() 
+         << " (" << num_frames << " frames)\n";
     for (int f = 0; f < num_frames; f++) {
       // First, walk through all the joints and flush the computed net
       // transforms from before.
@@ -242,10 +248,18 @@ do_reparent() {
       // caching net transforms as necessary.
       for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
         EggJointData *joint_data = (*ji);
-        if (!joint_data->do_compute_reparent(model_index, f)) {
+        if (!joint_data->do_compute_reparent(model_index, f, db)) {
           // Oops, we got an invalid transform.
           invalid_set.insert(joint_data);
         }
+      }
+    }
+
+    // Finally, apply the computations to the joints.
+    for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
+      EggJointData *joint_data = (*ji);
+      if (!joint_data->do_joint_rebuild(model_index, db)) {
+        invalid_set.insert(joint_data);
       }
     }
   }
@@ -253,9 +267,7 @@ do_reparent() {
   // Now remove all of the old children and add in the new children.
   for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
     EggJointData *joint_data = (*ji);
-    if (!joint_data->do_finish_reparent()) {
-      invalid_set.insert(joint_data);
-    }
+    joint_data->do_finish_reparent();
   }
 
   // Report the set of joints that failed.  It really shouldn't be
@@ -299,19 +311,21 @@ do_reparent() {
 ////////////////////////////////////////////////////////////////////
 void EggCharacterData::
 choose_optimal_hierarchy() {
+  EggCharacterDb db;
+
   Joints::const_iterator ji, jj;
   for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
     EggJointData *joint_data = (*ji);
 
     EggJointData *best_parent = joint_data->get_parent();
-    int best_score = joint_data->score_reparent_to(best_parent);
+    int best_score = joint_data->score_reparent_to(best_parent, db);
 
     for (jj = _joints.begin(); jj != _joints.end(); ++jj) {
       EggJointData *possible_parent = (*jj);
       if (possible_parent != joint_data && possible_parent != best_parent &&
           !joint_data->is_new_ancestor(possible_parent)) {
 
-        int score = joint_data->score_reparent_to(possible_parent);
+        int score = joint_data->score_reparent_to(possible_parent, db);
         if (score >= 0 && (best_score < 0 || score < best_score)) {
           best_parent = possible_parent;
           best_score = score;
@@ -322,7 +336,7 @@ choose_optimal_hierarchy() {
     // Also consider reparenting the node to the root.
     EggJointData *possible_parent = get_root_joint();
     if (possible_parent != best_parent) {
-      int score = joint_data->score_reparent_to(possible_parent);
+      int score = joint_data->score_reparent_to(possible_parent, db);
       if (score >= 0 && (best_score < 0 || score < best_score)) {
         best_parent = possible_parent;
         best_score = score;
@@ -376,6 +390,36 @@ make_slider(const string &name) {
   _components.push_back(slider);
   return slider;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::estimate_db_size
+//       Access: Public
+//  Description: Returns the estimated amount of memory, in megabytes,
+//               that will be required to perform the do_reparent()
+//               operation.  This is used mainly be EggCharacterDb to
+//               decide up front whether to store this data in-RAM or
+//               on-disk.
+////////////////////////////////////////////////////////////////////
+size_t EggCharacterData::
+estimate_db_size() const {
+  // Count how much memory we will need to store the interim
+  // transforms.  This is models * joints * frames * 3 *
+  // sizeof(LMatrix4d).
+  size_t mj_frames = 0;
+  Models::const_iterator mi;
+  for (mi = _models.begin(); mi != _models.end(); ++mi) {
+    int model_index = (*mi)._model_index;
+    size_t num_frames = (size_t)get_num_frames(model_index);
+    mj_frames += num_frames * _joints.size();
+  }
+
+  // We do this operation a bit carefully, to guard against integer
+  // overflow.
+  size_t mb_needed = ((mj_frames * 3 / 1024) * sizeof(LMatrix4d)) / 1024;
+
+  return mb_needed;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::write

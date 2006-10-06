@@ -22,7 +22,6 @@
 #include "pandatoolbase.h"
 
 #include "eggJointData.h"
-
 #include "eggNode.h"
 #include "eggData.h"
 #include "pointerTo.h"
@@ -33,6 +32,7 @@
 
 class EggCharacterCollection;
 class EggSliderData;
+class EggCharacterDb;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggCharacterData
@@ -81,6 +81,7 @@ public:
   INLINE EggJointData *make_new_joint(const string &name, EggJointData *parent);
   INLINE int get_num_joints() const;
   INLINE EggJointData *get_joint(int n) const;
+
   bool do_reparent();
   void choose_optimal_hierarchy();
 
@@ -91,6 +92,8 @@ public:
 
   INLINE int get_num_components() const;
   INLINE EggComponentData *get_component(int n) const;
+
+  size_t estimate_db_size() const;
 
   virtual void write(ostream &out, int indent_level = 0) const;
 

@@ -45,35 +45,6 @@ move_vertices_to(EggJointPointer *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggJointPointer::begin_rebuild
-//       Access: Public
-//  Description: Resets the set of rebuild frames in preparation for
-//               rebuilding the complete table of frames.  Repeated
-//               calls to add_rebuild_frame() will build up the frames
-//               without changing the values returned by get_frame();
-//               the table will eventually be updated when do_rebuild
-//               is called.
-////////////////////////////////////////////////////////////////////
-void EggJointPointer::
-begin_rebuild() {
-  _rebuild_frames.clear();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointPointer::add_rebuild_frame
-//       Access: Public, Virtual
-//  Description: Adds a new frame to the set of rebuild frames.  See
-//               begin_rebuild() and do_rebuild().  Returns true if
-//               this is valid, false otherwise (e.g. adding multiple
-//               frames to a static joint).
-////////////////////////////////////////////////////////////////////
-bool EggJointPointer::
-add_rebuild_frame(const LMatrix4d &mat) {
-  _rebuild_frames.push_back(mat);
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggJointPointer::do_rebuild
 //       Access: Public, Virtual
 //  Description: Rebuilds the entire table all at once, based on the
@@ -87,12 +58,8 @@ add_rebuild_frame(const LMatrix4d &mat) {
 //               acceptable, or false if there is some problem.
 ////////////////////////////////////////////////////////////////////
 bool EggJointPointer::
-do_rebuild() {
-  if (_rebuild_frames.empty()) {
-    return true;
-  }
-  _rebuild_frames.clear();
-  return false;
+do_rebuild(EggCharacterDb &db) {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

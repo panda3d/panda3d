@@ -22,6 +22,7 @@
 #include "eggJointData.h"
 #include "eggCharacterCollection.h"
 #include "eggCharacterData.h"
+#include "eggCharacterDb.h"
 #include "eggJointPointer.h"
 #include "eggTable.h"
 #include "compose_matrix.h"
@@ -125,6 +126,8 @@ run() {
   }
 
   // Now process each character.
+  EggCharacterDb db;
+
   int ci;
   for (ci = 0; ci < num_characters; ci++) {
     EggCharacterData *char_data = _collection->get_character(ci);
@@ -163,7 +166,7 @@ run() {
     int num_children = root_joint->get_num_children();
     for (int i = 0; i < num_children; i++) {
       EggJointData *joint_data = root_joint->get_child(i);
-      strip_anim(char_data, joint_data, from_model, from_char, top_joint);
+      strip_anim(char_data, joint_data, from_model, from_char, top_joint, db);
     }
 
     // We also need to transform the vertices for any models involved
@@ -173,7 +176,7 @@ run() {
       EggNode *node = char_data->get_model_root(m);
       if (!node->is_of_type(EggTable::get_class_type())) {
         strip_anim_vertices(node, char_data->get_model_index(m),
-                            from_model, top_joint);
+                            from_model, top_joint, db);
       }
     }
   }
@@ -181,7 +184,7 @@ run() {
   // Now, trigger the actual rebuilding of all the joint data.
   for (ci = 0; ci < num_characters; ci++) {
     EggCharacterData *char_data = _collection->get_character(ci);
-    char_data->get_root_joint()->do_rebuild();
+    char_data->get_root_joint()->do_rebuild_all(db);
   }
 
   write_eggs();
@@ -235,11 +238,10 @@ check_transform_channels() {
 void EggTopstrip::
 strip_anim(EggCharacterData *char_data, EggJointData *joint_data,
            int from_model, EggCharacterData *from_char,
-           EggJointData *top_joint) {
+           EggJointData *top_joint, EggCharacterDb &db) {
   int num_models = joint_data->get_num_models();
   for (int i = 0; i < num_models; i++) {
     int model = (from_model < 0) ? i : from_model;
-
     if (joint_data->has_model(i)) {
       if (!top_joint->has_model(model)) {
         nout << "Warning: Joint " << top_joint->get_name()
@@ -258,23 +260,16 @@ strip_anim(EggCharacterData *char_data, EggJointData *joint_data,
       DCAST_INTO_V(joint, back);
 
       // Compute and apply the new transforms.
-      joint->begin_rebuild();
 
       int f;
       for (f = 0; f < num_frames; f++) {
         LMatrix4d into = joint_data->get_frame(i, f % num_into_frames);
-        LMatrix4d from = top_joint->get_net_frame(model, f % num_from_frames);
+        LMatrix4d from = top_joint->get_net_frame(model, f % num_from_frames, db);
 
         adjust_transform(from);
 
-        if (!joint->add_rebuild_frame(into * from)) {
-          nout <<
-            "Cannot apply multiple frames of animation to a model file.\n"
-            "In general, -r cannot be used when a model file is being "
-            "adjusted, unless the named source is a one-frame animation "
-            "file, or another model file.\n";
-          exit(1);
-        }
+        db.set_matrix(joint, EggCharacterDb::TT_rebuild_frame,
+                      f, into * from);
       }
     }
   }
@@ -288,7 +283,7 @@ strip_anim(EggCharacterData *char_data, EggJointData *joint_data,
 ////////////////////////////////////////////////////////////////////
 void EggTopstrip::
 strip_anim_vertices(EggNode *egg_node, int into_model, int from_model,
-                    EggJointData *top_joint) {
+                    EggJointData *top_joint, EggCharacterDb &db) {
   int model = (from_model < 0) ? into_model : from_model;
   if (!top_joint->has_model(model)) {
     nout << "Warning: Joint " << top_joint->get_name()
@@ -296,7 +291,7 @@ strip_anim_vertices(EggNode *egg_node, int into_model, int from_model,
     return;
   }
 
-  LMatrix4d from = top_joint->get_net_frame(model, 0);
+  LMatrix4d from = top_joint->get_net_frame(model, 0, db);
   adjust_transform(from);
 
   egg_node->transform_vertices_only(from);

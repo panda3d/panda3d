@@ -28,6 +28,7 @@
 
 class EggCharacterData;
 class EggJointData;
+class EggCharacterDb;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggRetargetAnim
@@ -43,7 +44,8 @@ public:
   void run();
 
   void retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
-                     int reference_model, const pset<string> &keep_names);
+                     int reference_model, const pset<string> &keep_names,
+                     EggCharacterDb &db);
 
   Filename _reference_filename;
   vector_string _keep_joints;

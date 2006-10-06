@@ -20,11 +20,12 @@
 #define EGGJOINTDATA_H
 
 #include "pandatoolbase.h"
-
 #include "eggComponentData.h"
 #include "eggGroup.h"
 #include "luse.h"
 #include "pset.h"
+
+class EggCharacterDb;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggJointData
@@ -45,8 +46,8 @@ public:
   INLINE EggJointData *find_joint(const string &name);
 
   LMatrix4d get_frame(int model_index, int n) const;
-  LMatrix4d get_net_frame(int model_index, int n) const;
-  LMatrix4d get_net_frame_inv(int model_index, int n) const;
+  LMatrix4d get_net_frame(int model_index, int n, EggCharacterDb &db) const;
+  LMatrix4d get_net_frame_inv(int model_index, int n, EggCharacterDb &db) const;
 
   INLINE bool has_rest_frame() const;
   INLINE bool rest_frames_differ() const;
@@ -55,9 +56,9 @@ public:
 
   INLINE void reparent_to(EggJointData *new_parent);
   void move_vertices_to(EggJointData *new_owner);
-  int score_reparent_to(EggJointData *new_parent);
+  int score_reparent_to(EggJointData *new_parent, EggCharacterDb &db);
 
-  bool do_rebuild();
+  bool do_rebuild_all(EggCharacterDb &db);
   void optimize();
   void expose(EggGroup::DCSType dcs_type = EggGroup::DC_default);
   void zero_channels(const string &components);
@@ -70,8 +71,9 @@ protected:
   void do_begin_reparent();
   bool calc_new_parent_depth(pset<EggJointData *> &chain);
   void do_begin_compute_reparent();
-  bool do_compute_reparent(int model_index, int n);
-  bool do_finish_reparent();
+  bool do_compute_reparent(int model_index, int n, EggCharacterDb &db);
+  bool do_joint_rebuild(int model_index, EggCharacterDb &db);
+  void do_finish_reparent();
 
 private:
   EggJointData *make_new_joint(const string &name);
@@ -79,9 +81,9 @@ private:
   EggJointData *find_joint_matches(const string &name);
 
   bool is_new_ancestor(EggJointData *child) const;
-  const LMatrix4d &get_new_net_frame(int model_index, int n);
-  const LMatrix4d &get_new_net_frame_inv(int model_index, int n);
-  LMatrix4d get_new_frame(int model_index, int n);
+  const LMatrix4d &get_new_net_frame(int model_index, int n, EggCharacterDb &db);
+  const LMatrix4d &get_new_net_frame_inv(int model_index, int n, EggCharacterDb &db);
+  LMatrix4d get_new_frame(int model_index, int n, EggCharacterDb &db);
 
   bool _has_rest_frame;
   bool _rest_frames_differ;

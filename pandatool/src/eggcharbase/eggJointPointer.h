@@ -20,10 +20,11 @@
 #define EGGJOINTPOINTER_H
 
 #include "pandatoolbase.h"
-
 #include "eggBackPointer.h"
 #include "eggGroup.h"
 #include "luse.h"
+
+class EggCharacterDb;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggJointPointer
@@ -44,21 +45,7 @@ public:
   virtual void do_finish_reparent(EggJointPointer *new_parent)=0;
   virtual void move_vertices_to(EggJointPointer *new_joint);
 
-  void begin_rebuild();
-  virtual bool add_rebuild_frame(const LMatrix4d &mat);
-  INLINE int get_num_rebuild_frames() const;
-  INLINE const LMatrix4d &get_rebuild_frame(int n) const;
-  virtual bool do_rebuild();
-
-  INLINE void clear_net_frames();
-  INLINE void add_net_frame(const LMatrix4d &mat);
-  INLINE int get_num_net_frames() const;
-  INLINE const LMatrix4d &get_net_frame(int n) const;
-
-  INLINE void clear_net_frame_invs();
-  INLINE void add_net_frame_inv(const LMatrix4d &mat);
-  INLINE int get_num_net_frame_invs() const;
-  INLINE const LMatrix4d &get_net_frame_inv(int n) const;
+  virtual bool do_rebuild(EggCharacterDb &db);
 
   virtual void optimize();
   virtual void expose(EggGroup::DCSType dcs_type);
@@ -66,12 +53,6 @@ public:
   virtual void quantize_channels(const string &components, double quantum);
 
   virtual EggJointPointer *make_new_joint(const string &name)=0;
-
-protected:
-  typedef pvector<LMatrix4d> RebuildFrames;
-  RebuildFrames _rebuild_frames;
-  RebuildFrames _net_frames;
-  RebuildFrames _net_frame_invs;
 
 public:
   static TypeHandle get_class_type() {

@@ -41,8 +41,7 @@ public:
   virtual void do_finish_reparent(EggJointPointer *new_parent);
   virtual void move_vertices_to(EggJointPointer *new_joint);
 
-  virtual bool add_rebuild_frame(const LMatrix4d &mat);
-  virtual bool do_rebuild();
+  virtual bool do_rebuild(EggCharacterDb &db);
   virtual void expose(EggGroup::DCSType dcs_type);
 
   virtual bool has_vertices() const;

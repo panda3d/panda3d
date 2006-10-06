@@ -27,6 +27,7 @@
 #include "pvector.h"
 
 class EggCharacterData;
+class EggCharacterDb;
 class EggJointData;
 class EggJointPointer;
 
@@ -47,9 +48,10 @@ public:
 
   void strip_anim(EggCharacterData *char_data, EggJointData *joint_data,
                   int from_model, EggCharacterData *from_char,
-                  EggJointData *top_joint);
+                  EggJointData *top_joint, EggCharacterDb &db);
   void strip_anim_vertices(EggNode *egg_node, int into_model,
-                           int from_model, EggJointData *top_joint);
+                           int from_model, EggJointData *top_joint,
+                           EggCharacterDb &db);
 
   void adjust_transform(LMatrix4d &mat) const;
 

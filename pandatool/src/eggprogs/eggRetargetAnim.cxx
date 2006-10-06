@@ -22,6 +22,7 @@
 #include "eggJointData.h"
 #include "eggCharacterCollection.h"
 #include "eggCharacterData.h"
+#include "eggCharacterDb.h"
 #include "eggJointPointer.h"
 #include "eggTable.h"
 #include "compose_matrix.h"
@@ -127,9 +128,10 @@ run() {
     keep_names.insert(*si);
   }
 
+  EggCharacterDb db;
   EggJointData *root_joint = char_data->get_root_joint();
-  retarget_anim(char_data, root_joint, reference_model, keep_names);
-  root_joint->do_rebuild();
+  retarget_anim(char_data, root_joint, reference_model, keep_names, db);
+  root_joint->do_rebuild_all(db);
 
   write_eggs();
 }
@@ -143,7 +145,8 @@ run() {
 ////////////////////////////////////////////////////////////////////
 void EggRetargetAnim::
 retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
-              int reference_model, const pset<string> &keep_names) {
+              int reference_model, const pset<string> &keep_names,
+              EggCharacterDb &db) {
   if (keep_names.find(joint_data->get_name()) != keep_names.end()) {
     // Don't retarget this joint; keep the translation and scale and whatever.
 
@@ -176,11 +179,9 @@ retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
               nout << "Could not decompose matrix for " << joint_data->get_name()
                    << "\n";
             }
-            
-            if (!joint->add_rebuild_frame(mat)) {
-              nout << "Unable to combine animations.\n";
-              exit(1);
-            }
+
+            db.set_matrix(joint, EggCharacterDb::TT_rebuild_frame,
+                          f, mat);
           }
         }
       }
@@ -190,7 +191,7 @@ retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
   int num_children = joint_data->get_num_children();
   for (int i = 0; i < num_children; i++) {
     EggJointData *next_joint_data = joint_data->get_child(i);
-    retarget_anim(char_data, next_joint_data, reference_model, keep_names);
+    retarget_anim(char_data, next_joint_data, reference_model, keep_names, db);
   }
 }
 
