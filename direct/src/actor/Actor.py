@@ -1296,7 +1296,7 @@ class Actor(DirectObject, NodePath):
                 # get the named animation only.
                 for thisPart, animDict in animDictItems:
                     anim = animDict.get(animName)
-                    if anim == None:
+                    if anim == None and partName != None:
                         for pName in partNameList:
                             # Maybe it's a subpart that hasn't been bound yet.
                             subpartDef = self.__subpartDict.get(pName)
