@@ -67,6 +67,7 @@ Character(const string &name) :
   _joints_pcollector(PStatCollector(_animation_pcollector, name), "Joints"),
   _skinning_pcollector(PStatCollector(_animation_pcollector, name), "Vertices")
 {
+  set_cull_callback();
 }
 
 ////////////////////////////////////////////////////////////////////
