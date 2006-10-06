@@ -138,6 +138,11 @@
 #set FFTW_LIBS $[FFTW_LIBS]
 #set HAVE_FFTW $[HAVE_FFTW]
 
+#set BDB_IPATH $[unixfilename $[BDB_IPATH]]
+#set BDB_LPATH $[unixfilename $[BDB_LPATH]]
+#set BDB_LIBS $[BDB_LIBS]
+#set HAVE_BDB $[HAVE_BDB]
+
 #set CG_IPATH $[unixfilename $[CG_IPATH]]
 #set CG_LPATH $[unixfilename $[CG_LPATH]]
 #set CG_LIBS $[CG_LIBS]

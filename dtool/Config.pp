@@ -438,11 +438,15 @@
 #defer HAVE_FFTW $[libtest $[FFTW_LPATH],$[FFTW_LIBS]]
 
 
-// Is NURBS++ installed, and where?
-#define NURBSPP_IPATH /usr/local/include/nurbs++
-#define NURBSPP_LPATH /usr/local/lib
-#define NURBSPP_LIBS nurbsf matrixN matrixI matrix
-#defer HAVE_NURBSPP $[libtest $[NURBSPP_LPATH],$[NURBSPP_LIBS]]
+// Is Berkeley DB installed, and where?  Presently, this is only used
+// for some applications (egg-optchar in particular) in Pandatool, and
+// it is completely optional there.  If available, egg-optchar takes
+// advantage of it to allow the optimization of very large numbers of
+// models in one pass, that might otherwise exceed available memory.
+#define BDB_IPATH
+#define BDB_LPATH
+#define BDB_LIBS db db_cxx
+#defer HAVE_BDB $[libtest $[BDB_LPATH],$[BDB_LIBS]]
 
 // Is Cg installed, and where?
 #if $[WINDOWS_PLATFORM]

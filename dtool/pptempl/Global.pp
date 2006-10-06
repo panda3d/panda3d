@@ -204,11 +204,11 @@
   #define fftw_libs $[FFTW_LIBS]
 #endif
 
-#if $[HAVE_NURBSPP]
-  #define nurbspp_ipath $[wildcard $[NURBSPP_IPATH]]
-  #define nurbspp_lpath $[wildcard $[NURBSPP_LPATH]]
-  #define nurbspp_cflags $[NURBSPP_CFLAGS]
-  #define nurbspp_libs $[NURBSPP_LIBS]
+#if $[HAVE_BDB]
+  #define bdb_ipath $[wildcard $[BDB_IPATH]]
+  #define bdb_lpath $[wildcard $[BDB_LPATH]]
+  #define bdb_cflags $[BDB_CFLAGS]
+  #define bdb_libs $[BDB_LIBS]
 #endif
 
 #if $[HAVE_CG]

@@ -41,6 +41,11 @@
 #else
 #print - Did not find fftw
 #endif
+#if $[HAVE_BDB]
+#print + Berkeley DB
+#else
+#print - Did not find Berkeley DB
+#endif
 #if $[HAVE_CG]
 #print + Nvidia Cg High Level Shading Language
 #else
@@ -181,8 +186,8 @@ $[cdefine HAVE_TIFF]
 /* Define if we have libfftw installed.  */
 $[cdefine HAVE_FFTW]
 
-/* Define if we have NURBS++ installed.  */
-$[cdefine HAVE_NURBSPP]
+/* Define if we have Berkeley DB installed.  */
+$[cdefine HAVE_BDB]
 
 /* Define if we have VRPN installed.  */
 $[cdefine HAVE_VRPN]
