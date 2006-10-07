@@ -45,6 +45,8 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
 
             self.__generated = False
 
+            self._zoneData = None
+
     # Uncomment if you want to debug DO leaks
     #def __del__(self):
     #    """
@@ -415,7 +417,7 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         other networked info in this function.
         """
         assert self.notify.debugStateCall(self)
-        self._zoneData = None
+
 
     @calldownEnforced
     def generateInit(self, repository=None):
