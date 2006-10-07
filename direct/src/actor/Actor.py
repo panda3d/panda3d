@@ -1052,10 +1052,10 @@ class Actor(DirectObject, NodePath):
             numGeoms = thisGeomNode.node().getNumGeoms()
             for geomNum in range(0, numGeoms):
                 thisGeom = thisGeomNode.node().getGeom(geomNum)
-                thisGeom.markBoundStale()
+                thisGeom.markBoundsStale()
                 assert Actor.notify.debug("fixing bounds for node %s, geom %s" % \
                                           (nodeNum, geomNum))
-            thisGeomNode.node().markBoundStale()
+            thisGeomNode.node().markInternalBoundsStale()
 
     def showAllBounds(self):
         """
