@@ -38,6 +38,19 @@ CLP(GeomMunger)::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CLP(GeomMunger)::wp_callback
+//       Access: Public, Virtual
+//  Description: This callback is set to be made whenever the
+//               associated _texture or _tex_gen attributes are
+//               destructed, in which case the GeomMunger is invalid
+//               and should no longer be used.
+////////////////////////////////////////////////////////////////////
+void CLP(GeomMunger)::
+wp_callback(void *) {
+  unregister_myself();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CLP(GeomMunger)::munge_format_impl
 //       Access: Protected, Virtual
 //  Description: Given a source GeomVertexFormat, converts it if

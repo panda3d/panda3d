@@ -76,9 +76,7 @@ operator = (const GeomMunger &copy) {
 ////////////////////////////////////////////////////////////////////
 GeomMunger::
 ~GeomMunger() {
-  if (is_registered()) {
-    get_registry()->unregister_munger(this);
-  }
+  unregister_myself();
   nassertv(_formats_by_animation.empty());
 }
 

@@ -22,6 +22,8 @@
 #include "textureAttrib.h"
 #include "texGenAttrib.h"
 #include "renderState.h"
+#include "weakPointerTo.h"
+#include "weakPointerCallback.h"
 
 class CLP(GeomContext);
 
@@ -31,11 +33,13 @@ class CLP(GeomContext);
 //               for OpenGL rendering.  In particular, it makes sure
 //               colors aren't stored in DirectX's packed_argb format.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_GL CLP(GeomMunger) : public StandardMunger {
+class EXPCL_GL CLP(GeomMunger) : public StandardMunger, public WeakPointerCallback {
 public:
   INLINE CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state);
   virtual ~CLP(GeomMunger)();
   ALLOC_DELETED_CHAIN(CLP(GeomMunger));
+
+  virtual void wp_callback(void *);
 
 protected:
   virtual CPT(GeomVertexFormat) munge_format_impl(const GeomVertexFormat *orig,
@@ -44,8 +48,8 @@ protected:
   virtual int geom_compare_to_impl(const GeomMunger *other) const;
 
 private:
-  CPT(TextureAttrib) _texture;
-  CPT(TexGenAttrib) _tex_gen;
+  WCPT(TextureAttrib) _texture;
+  WCPT(TexGenAttrib) _tex_gen;
 
   typedef pset<CLP(GeomContext) *> GeomContexts;
   GeomContexts _geom_contexts;

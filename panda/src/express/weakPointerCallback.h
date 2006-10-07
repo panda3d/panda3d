@@ -1,5 +1,5 @@
-// Filename: glGeomMunger_src.I
-// Created by:  drose (10Mar05)
+// Filename: weakPointerCallback.h
+// Created by:  drose (06Oct06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,20 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef WEAKPOINTERCALLBACK_H
+#define WEAKPOINTERCALLBACK_H
+
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::Constructor
-//       Access: Public
-//  Description:
+//       Class : WeakPointerCallback
+// Description : Derive from this class and override the callback()
+//               method if you want to get an immediate callback from
+//               a WeakPointerTo object when its referenced pointer is
+//               deleted.
 ////////////////////////////////////////////////////////////////////
-INLINE CLP(GeomMunger)::
-CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
-  StandardMunger(gsg, state, 4, NT_uint8, C_color),
-  _texture(state->get_texture()),
-  _tex_gen(state->get_tex_gen())
-{
-  // Set a callback to unregister ourselves when either the Texture or
-  // the TexGen object gets deleted.
-  _texture.set_callback(this);
-  _tex_gen.set_callback(this);
-}
+class EXPCL_PANDAEXPRESS WeakPointerCallback {
+public:
+  virtual void wp_callback(void *pointer)=0;
+};
+
+#include "weakPointerCallback.I"
+
+#endif

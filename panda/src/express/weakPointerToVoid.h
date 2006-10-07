@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "pointerToVoid.h"
+#include "weakPointerCallback.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WeakPointerToVoid
@@ -36,12 +37,16 @@ protected:
 public:
   INLINE void mark_deleted();
 
+  INLINE void set_callback(WeakPointerCallback *callback);
+  INLINE WeakPointerCallback *get_callback() const;
+
 PUBLISHED:
   INLINE bool was_deleted() const;
   INLINE bool is_valid_pointer() const;
 
 protected:
   bool _ptr_was_deleted;
+  WeakPointerCallback *_callback;
 };
 
 #include "weakPointerToVoid.I"

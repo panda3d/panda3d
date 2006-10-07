@@ -25,6 +25,7 @@
 INLINE WeakPointerToVoid::
 WeakPointerToVoid() {
   _ptr_was_deleted = false;
+  _callback = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,6 +49,39 @@ INLINE void WeakPointerToVoid::
 mark_deleted() {
   nassertv(!_ptr_was_deleted);
   _ptr_was_deleted = true;
+  if (_callback != (WeakPointerCallback *)NULL) {
+    _callback->wp_callback(_void_ptr);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WeakPointerToVoid::set_callback
+//       Access: Public
+//  Description: Sets a callback that will be made when the pointer is
+//               deleted.  If a previous callback has already been
+//               set, it will be replaced.
+//
+//               If the pointer has already been deleted, the callback
+//               will be made immediately.
+////////////////////////////////////////////////////////////////////
+INLINE void WeakPointerToVoid::
+set_callback(WeakPointerCallback *callback) {
+  _callback = callback;
+  if (_ptr_was_deleted && _callback != (WeakPointerCallback *)NULL) {
+    _callback->wp_callback(_void_ptr);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WeakPointerToVoid::get_callback
+//       Access: Public
+//  Description: Returns the callback that will be made when the
+//               pointer is deleted, or NULL if no callback has been
+//               set.
+////////////////////////////////////////////////////////////////////
+INLINE WeakPointerCallback *WeakPointerToVoid::
+get_callback() const {
+  return _callback;
 }
 
 ////////////////////////////////////////////////////////////////////

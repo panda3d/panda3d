@@ -22,6 +22,7 @@
 #include "virtualFileMountSystem.cxx"
 #include "virtualFileSimple.cxx"
 #include "virtualFileSystem.cxx"
+#include "weakPointerCallback.cxx"
 #include "weakPointerTo.cxx"
 #include "weakPointerToBase.cxx"
 #include "weakPointerToVoid.cxx"

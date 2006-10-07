@@ -51,6 +51,40 @@ register_munger(GeomMunger *munger, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomMunger::munge_format
+//       Access: Public
+//  Description: Given a source GeomVertexFormat, converts it if
+//               necessary to the appropriate format for rendering.
+//
+//               If the GeomVertexAnimationSpec so indicates, then the
+//               format will be chosen to convert CPU-based animation
+//               tables to HW-based animation tables, reserving space
+//               for the specified number of transforms per vertex.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(GeomVertexFormat) GeomMunger::
+munge_format(const GeomVertexFormat *format,
+             const GeomVertexAnimationSpec &animation) const {
+  // We cast away the const pointer, because do_munge_format() needs
+  // to update caches and stuff, but we trust it not to change any
+  // user-definable parameters.
+  return ((GeomMunger *)this)->do_munge_format(format, animation);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomMunger::munge_data
+//       Access: Public
+//  Description: Given a source GeomVertexData, converts it if
+//               necessary to the appropriate data for rendering.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(GeomVertexData) GeomMunger::
+munge_data(const GeomVertexData *data) const {
+  // We cast away the const pointer, because do_munge_data() needs to
+  // update caches and stuff, but we trust it not to change any
+  // user-definable parameters.
+  return ((GeomMunger *)this)->munge_data_impl(data);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomMunger::compare_to
 //       Access: Public
 //  Description: Provides an arbitrary ordering among all unique
@@ -96,37 +130,22 @@ geom_compare_to(const GeomMunger &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomMunger::munge_format
-//       Access: Public
-//  Description: Given a source GeomVertexFormat, converts it if
-//               necessary to the appropriate format for rendering.
+//     Function: GeomMunger::unregister_myself
+//       Access: Protected
+//  Description: Unregisters the GeomMunger, for instance when it is
+//               being destructed, or whenever it has become invalid
+//               for some reason.  This removes it from the registry
+//               so that it will no longer be available to be returned
+//               by register_munger().
 //
-//               If the GeomVertexAnimationSpec so indicates, then the
-//               format will be chosen to convert CPU-based animation
-//               tables to HW-based animation tables, reserving space
-//               for the specified number of transforms per vertex.
+//               It is not an error to call this if the munger has
+//               already been unregistered.
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(GeomVertexFormat) GeomMunger::
-munge_format(const GeomVertexFormat *format,
-             const GeomVertexAnimationSpec &animation) const {
-  // We cast away the const pointer, because do_munge_format() needs
-  // to update caches and stuff, but we trust it not to change any
-  // user-definable parameters.
-  return ((GeomMunger *)this)->do_munge_format(format, animation);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomMunger::munge_data
-//       Access: Public
-//  Description: Given a source GeomVertexData, converts it if
-//               necessary to the appropriate data for rendering.
-////////////////////////////////////////////////////////////////////
-INLINE CPT(GeomVertexData) GeomMunger::
-munge_data(const GeomVertexData *data) const {
-  // We cast away the const pointer, because do_munge_data() needs to
-  // update caches and stuff, but we trust it not to change any
-  // user-definable parameters.
-  return ((GeomMunger *)this)->munge_data_impl(data);
+INLINE void GeomMunger::
+unregister_myself() {
+  if (is_registered()) {
+    get_registry()->unregister_munger(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

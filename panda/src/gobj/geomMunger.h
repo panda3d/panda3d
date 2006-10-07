@@ -81,6 +81,8 @@ public:
   INLINE int geom_compare_to(const GeomMunger &other) const;
 
 protected:
+  INLINE void unregister_myself();
+
   CPT(GeomVertexFormat) do_munge_format(const GeomVertexFormat *format,
                                           const GeomVertexAnimationSpec &animation);
 

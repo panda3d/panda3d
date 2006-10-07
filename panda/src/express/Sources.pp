@@ -62,6 +62,7 @@
     virtualFileMountMultifile.I virtualFileMountSystem.h \
     virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
     virtualFileSystem.h virtualFileSystem.I \
+    weakPointerCallback.I weakPointerCallback.h \
     weakPointerTo.I weakPointerTo.h \
     weakPointerToBase.I weakPointerToBase.h \
     weakPointerToVoid.I weakPointerToVoid.h \
@@ -112,6 +113,7 @@
     virtualFileMount.cxx \
     virtualFileMountMultifile.cxx virtualFileMountSystem.cxx \
     virtualFileSimple.cxx virtualFileSystem.cxx \
+    weakPointerCallback.cxx \
     weakPointerTo.cxx \
     weakPointerToBase.cxx \
     weakPointerToVoid.cxx \
@@ -173,6 +175,7 @@
     virtualFileMountMultifile.I virtualFileMountSystem.h \
     virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
     virtualFileSystem.h virtualFileSystem.I \
+    weakPointerCallback.I weakPointerCallback.h \
     weakPointerTo.I weakPointerTo.h \
     weakPointerToBase.I weakPointerToBase.h \
     weakPointerToVoid.I weakPointerToVoid.h \
