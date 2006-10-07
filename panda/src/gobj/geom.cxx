@@ -1017,12 +1017,15 @@ compute_internal_bounds(Thread *current_thread) const {
   PT(BoundingVolume) bound = new BoundingSphere;
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);
 
+  // Get the vertex data, after animation.
+  CPT(GeomVertexData) vertex_data = 
+    get_vertex_data(current_thread)->animate_vertices(current_thread);
+
   // Now actually compute the bounding volume.  We do this by using
   // calc_tight_bounds to determine our minmax first.
   LPoint3f points[2];
   bool found_any = false;
-  do_calc_tight_bounds(points[0], points[1], found_any, 
-                       get_vertex_data(current_thread),
+  do_calc_tight_bounds(points[0], points[1], found_any, vertex_data,
 		       false, LMatrix4f::ident_mat(), current_thread);
   if (found_any) {
     // Then we put the bounding volume around both of those points.
