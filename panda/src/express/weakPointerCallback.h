@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS WeakPointerCallback {
 public:
+  virtual ~WeakPointerCallback();
   virtual void wp_callback(void *pointer)=0;
 };
 
