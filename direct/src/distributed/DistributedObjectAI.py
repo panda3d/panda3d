@@ -4,6 +4,7 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
 from direct.showbase import PythonUtil
 from direct.showbase.EnforcesCalldowns import EnforcesCalldowns, calldownEnforced
+from otp.ai.AIZoneData import AIZoneData
 from pandac.PandaModules import *
 #from PyDatagram import PyDatagram
 #from PyDatagramIterator import PyDatagramIterator
@@ -119,6 +120,10 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
                     """
             self._DOAI_requestedDelete = False
 
+            if self._zoneData is not None:
+                self._zoneData.destroy()
+            self._zoneData = None
+
             # Clean up all the pending barriers.
             for barrier in self.__barriers.values():
                 barrier.cleanup()
@@ -202,6 +207,9 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         self.air.storeObjectLocation(self, parentId, zoneId)
         if ((oldParentId != parentId) or
             (oldZoneId != zoneId)):
+            if self._zoneData is not None:
+                self._zoneData.destroy()
+                self._zoneData = None
             messenger.send(self.getZoneChangeEvent(), [zoneId, oldZoneId])
             # if we are not going into the quiet zone, send a 'logical' zone
             # change message
@@ -298,15 +306,35 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         messenger.send(self.getLogicalZoneChangeEvent(),
                        [newZoneId, oldZoneId])
 
+    def getZoneData(self):
+        # Call this to get an AIZoneData object for the current zone. This class
+        # will hold onto 
+        # setLocation destroys self._zoneData if we move away to a different zone
+        if self._zoneData is None:
+            self._zoneData = AIZoneData(self.air, self.parentId, self.zoneId)
+        return self._zoneData
+
+    def releaseZoneData(self):
+        # You can call this to release any AIZoneData object that we might be
+        # holding onto. If we're the last one for the current zone, the data
+        # will be destroyed (render, collision traverser, etc.)
+        # Note that the AIZoneData object that we're holding will be destroyed
+        # automatically when we move away or are destroyed.
+        if self._zoneData is not None:
+            self._zoneData.destroy()
+            self._zoneData = None
+
     def getRender(self):
         # note that this will return a different node if we change zones
-        return self.air.getRender(self.zoneId)
+        #return self.air.getRender(self.zoneId)
+        return self.getZoneData().getRender()
 
     def getParentMgr(self):
-        return self.air.getParentMgr(self.zoneId)
+        #return self.air.getParentMgr(self.zoneId)
+        return self.getZoneData().getParentMgr()
 
     def getCollTrav(self):
-        return self.air.getCollTrav(self.zoneId)
+        return self.getZoneData().getCollTrav()
 
     def sendUpdate(self, fieldName, args = []):
         assert self.notify.debugStateCall(self)
@@ -387,6 +415,7 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         other networked info in this function.
         """
         assert self.notify.debugStateCall(self)
+        self._zoneData = None
 
     @calldownEnforced
     def generateInit(self, repository=None):
