@@ -63,6 +63,7 @@ PUBLISHED:
   static ButtonHandle end();
   static ButtonHandle insert();
   static ButtonHandle del();  // delete is a C++ keyword.
+  static ButtonHandle help();
 
   static ButtonHandle shift();
   static ButtonHandle control();

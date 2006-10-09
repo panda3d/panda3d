@@ -25,6 +25,7 @@
 #include "modifierButtons.h"
 #include "linmath_events.h"
 #include "mouseButton.h"
+#include "keyboardButton.h"
 
 TypeHandle Trackball::_type_handle;
 
@@ -32,8 +33,6 @@ TypeHandle Trackball::_type_handle;
 #define B1_MASK 0x01
 #define B2_MASK 0x02
 #define B3_MASK 0x04
-#define B4_MASK 0x08
-#define B5_MASK 0x10
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::Constructor
@@ -66,8 +65,14 @@ Trackball(const string &name) :
   watch_button(MouseButton::one());
   watch_button(MouseButton::two());
   watch_button(MouseButton::three());
-  watch_button(MouseButton::four());
-  watch_button(MouseButton::five());
+
+  // In OSX mode, we need to use the command and option key in
+  // conjunction with the (one) mouse button.  We can go ahead and
+  // keep this code live in other platforms too; it doesn't do any
+  // harm.
+  watch_button(KeyboardButton::meta());
+  watch_button(KeyboardButton::alt());
+  watch_button(KeyboardButton::control());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -553,19 +558,36 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     int this_button = 0;
     
     if (is_down(MouseButton::one())) {
-      this_button |= B1_MASK;
+      if (is_down(KeyboardButton::meta())) {
+        // Wait, the user is holding down the command key in
+        // conjunction with mouse button 1.  This changes its meaning
+        // to either mouse 2 and/or mouse 3, according to whether the
+        // alt or control key is also held down.
+            
+        if (is_down(KeyboardButton::alt())) {
+          // Command + alt: B2 + B3.
+          this_button |= B2_MASK | B3_MASK;
+
+        } else if (is_down(KeyboardButton::control())) {
+          // Command + control: B2.
+          this_button |= B2_MASK;
+
+        } else {
+          // Command key by itself: B3.
+          this_button |= B3_MASK;
+        }
+
+      } else {
+        // Without the command key, a mouse 1 button is a mouse 1
+        // button.
+        this_button |= B1_MASK;
+      }
     }
     if (is_down(MouseButton::two())) {
       this_button |= B2_MASK;
     }
     if (is_down(MouseButton::three())) {
       this_button |= B3_MASK;
-    }
-    if (is_down(MouseButton::four())) {
-      this_button |= B4_MASK;
-    }
-    if (is_down(MouseButton::five())) {
-      this_button |= B5_MASK;
     }
     
     float x = this_x - _lastx;

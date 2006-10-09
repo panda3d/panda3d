@@ -82,6 +82,7 @@ DEFINE_KEYBD_BUTTON_HANDLE(home)
 DEFINE_KEYBD_BUTTON_HANDLE(end)
 DEFINE_KEYBD_BUTTON_HANDLE(insert)
 DEFINE_KEYBD_BUTTON_HANDLE(del)
+DEFINE_KEYBD_BUTTON_HANDLE(help)
 DEFINE_KEYBD_BUTTON_HANDLE(meta)
 DEFINE_KEYBD_BUTTON_HANDLE(caps_lock)
 DEFINE_KEYBD_BUTTON_HANDLE(shift_lock)
@@ -142,6 +143,7 @@ init_keyboard_buttons() {
   ButtonRegistry::ptr()->register_button(_home, "home");
   ButtonRegistry::ptr()->register_button(_end, "end");
   ButtonRegistry::ptr()->register_button(_insert, "insert");
+  ButtonRegistry::ptr()->register_button(_help, "help");
 
   ButtonRegistry::ptr()->register_button(_shift, "shift");
   ButtonRegistry::ptr()->register_button(_control, "control");

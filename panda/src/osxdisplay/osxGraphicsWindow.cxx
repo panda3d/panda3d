@@ -1325,7 +1325,7 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
      case 121:  nk = KeyboardButton::page_down();				  break;
      case 115:  nk = KeyboardButton::home();				  break;
      case 119:  nk = KeyboardButton::end();				  break;
-         //	case    :  nk = KeyboardButton::insert();			  break;			
+     case 114:  nk = KeyboardButton::help();			  break;			
      case 117:  nk = KeyboardButton::del();			  break;			
 
          //	case  71:  nk = KeyboardButton::num_lock()        break; 
@@ -1358,13 +1358,18 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
      case  44:  nk = KeyboardButton::ascii_key('/');				  break;
 
      default:
-         //		 printf (" Untranslated KeyCode: %lu (0x%lX)\n", key, key);
-         // not sure this is right .. but no mapping for keypad and such
-         // this at least does a best gess..
+       if (osxdisplay_cat.is_debug()) {
+         osxdisplay_cat.debug()
+           << " Untranslated KeyCode: " << key
+           << " (0x" << hex << key << dec << ")\n";
+       }
 
-         char charCode =  0;	
-         if(GetEventParameter( event, kEventParamKeyMacCharCodes, typeChar, nil, sizeof( charCode ), nil, &charCode ) == noErr)
-             nk = KeyboardButton::ascii_key(charCode);	
+       // not sure this is right .. but no mapping for keypad and such
+       // this at least does a best gess..
+       
+       char charCode =  0;	
+       if(GetEventParameter( event, kEventParamKeyMacCharCodes, typeChar, nil, sizeof( charCode ), nil, &charCode ) == noErr)
+         nk = KeyboardButton::ascii_key(charCode);	
      }
      return nk;
  }
@@ -1386,6 +1391,9 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
 
      if ((changed & (controlKey | rightControlKey)) != 0) 
 		SendKeyEvent(KeyboardButton::control(),(newModifiers & (controlKey | rightControlKey)) != 0);
+
+     if ((changed & cmdKey) != 0) 
+		SendKeyEvent(KeyboardButton::meta(),(newModifiers & cmdKey) != 0);
 	
     if ((changed & alphaLock) != 0) 
 		SendKeyEvent(KeyboardButton::caps_lock(),(newModifiers & alphaLock) != 0);
