@@ -403,8 +403,8 @@ match_texture(TextureImage *texture) const {
     case ST_scale:
       if (source != (SourceTextureImage *)NULL && source->get_size()) {
         request._got_size = true;
-        request._x_size = (int)(source->get_x_size() * _scale / 100.0);
-        request._y_size = (int)(source->get_y_size() * _scale / 100.0);
+        request._x_size = max(1, (int)(source->get_x_size() * _scale / 100.0));
+        request._y_size = max(1, (int)(source->get_y_size() * _scale / 100.0));
       }
       break;
 
