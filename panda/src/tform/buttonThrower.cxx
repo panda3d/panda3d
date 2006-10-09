@@ -339,6 +339,7 @@ do_general_event(const ButtonEvent &button_event, const string &button_name) {
   case ButtonEvent::T_down:
   case ButtonEvent::T_resume_down:
   case ButtonEvent::T_up:
+  case ButtonEvent::T_repeat:
     event->add_parameter(button_name);
     break;
 
