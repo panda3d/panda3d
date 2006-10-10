@@ -5,6 +5,7 @@ __all__ = ['DirectWaitBar']
 from pandac.PandaModules import *
 import DirectGuiGlobals as DGG
 from DirectFrame import *
+import types
 
 """
 import DirectWaitBar
@@ -31,6 +32,7 @@ class DirectWaitBar(DirectFrame):
             ('value',          0,                  self.setValue),
             ('barBorderWidth', (0, 0),             self.setBarBorderWidth),
             ('barColor',       (1, 0, 0, 1),       self.setBarColor),
+            ('barTexture',     None,               self.setBarTexture),
             ('barRelief',      DGG.FLAT,           self.setBarRelief),
             ('sortOrder',      NO_FADE_SORT_INDEX, None),
             )
@@ -78,6 +80,17 @@ class DirectWaitBar(DirectFrame):
     def setBarColor(self):
         color = self['barColor']
         self.barStyle.setColor(color[0], color[1], color[2], color[3])
+        self.updateBarStyle()
+
+    def setBarTexture(self):
+        # this must be a single texture (or a string).
+        texture = self['barTexture']
+        if isinstance(texture, types.StringTypes):
+            texture = loader.loadTexture(texture)
+        if texture:
+            self.barStyle.setTexture(texture)
+        else:
+            self.barStyle.clearTexture()
         self.updateBarStyle()
 
     def update(self, value):

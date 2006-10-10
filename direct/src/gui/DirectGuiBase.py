@@ -994,6 +994,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
                 texture = loader.loadTexture(texture)
             if texture:
                 self.frameStyle[i].setTexture(texture)
+            else:
+                self.frameStyle[i].clearTexture()
         self.updateFrameStyle()
 
     def setFrameVisibleScale(self):
