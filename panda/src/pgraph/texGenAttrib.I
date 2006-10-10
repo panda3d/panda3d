@@ -117,6 +117,11 @@ compare_to(const TexGenAttrib::ModeDef &other) const {
   if (compare != 0) {
     return compare;
   }
-  return strcmp(_source_name.c_str(), other._source_name.c_str());
+  compare = strcmp(_source_name.c_str(), other._source_name.c_str());
+  if (compare != 0) {
+    return compare;
+  }
+  compare = _constant_value.compare_to(other._constant_value);
+  return compare;
 }
 

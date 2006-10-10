@@ -164,6 +164,11 @@ PUBLISHED:
     // tangent and binormal for the particular named texture
     // coordinate set.
     M_light_vector,
+
+    // M_constant generates the same fixed texture coordinates at each
+    // vertex.  Not terribly useful, of course, except for certain
+    // special effects involving moving a flat color over an object.
+    M_constant,
   };
 
 protected:

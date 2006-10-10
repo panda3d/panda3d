@@ -57,6 +57,7 @@ PUBLISHED:
 				       bool read_mipmaps = false);
 
   INLINE static Texture *get_normalization_cube_map(int size);
+  INLINE static Texture *get_alpha_scale_map();
 
   INLINE static void add_texture(Texture *texture);
   INLINE static void release_texture(Texture *texture);
@@ -101,6 +102,7 @@ private:
   Texture *ns_load_cube_map(const Filename &filename_pattern,
 			    bool read_mipmaps);
   Texture *ns_get_normalization_cube_map(int size);
+  Texture *ns_get_alpha_scale_map();
 
   void ns_add_texture(Texture *texture);
   void ns_release_texture(Texture *texture);
@@ -128,6 +130,7 @@ private:
   string _fake_texture_image;
 
   PT(Texture) _normalization_cube_map;
+  PT(Texture) _alpha_scale_map;
 
   typedef pmap<string, MakeTextureFunc *> TypeRegistry;
   TypeRegistry _type_registry;

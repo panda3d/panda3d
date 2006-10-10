@@ -30,6 +30,23 @@ TypeHandle ColorScaleAttrib::_type_handle;
 CPT(RenderAttrib) ColorScaleAttrib::_identity_attrib;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::Constructor
+//       Access: Protected
+//  Description: Use ColorScaleAttrib::make() to construct a new
+//               ColorScaleAttrib object.
+////////////////////////////////////////////////////////////////////
+ColorScaleAttrib::
+ColorScaleAttrib(bool off, const LVecBase4f &scale) :
+  _off(off),
+  _scale(scale)
+{
+  quantize_scale();
+  _has_scale = !_scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
+  _has_rgb_scale = !LVecBase3f(_scale[0], _scale[1], _scale[2]).almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f));
+  _has_alpha_scale = !IS_NEARLY_EQUAL(_scale[3], 1.0f);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ColorScaleAttrib::make_identity
 //       Access: Published, Static
 //  Description: Constructs an identity scale attrib.
@@ -85,6 +102,8 @@ set_scale(const LVecBase4f &scale) const {
   attrib->_scale = scale;
   attrib->quantize_scale();
   attrib->_has_scale = !scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
+  attrib->_has_rgb_scale = !LVecBase3f(scale[0], scale[1], scale[2]).almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f));
+  attrib->_has_alpha_scale = !IS_NEARLY_EQUAL(scale[3], 1.0f);
   return return_new(attrib);
 }
 
@@ -346,4 +365,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _scale.read_datagram(scan);
   quantize_scale();
   _has_scale = !_scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
+  _has_rgb_scale = !LVecBase3f(_scale[0], _scale[1], _scale[2]).almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f));
+  _has_alpha_scale = !IS_NEARLY_EQUAL(_scale[3], 1.0f);
 }

@@ -144,6 +144,22 @@ get_normalization_cube_map(int size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::get_alpha_scale_map
+//       Access: Published, Static
+//  Description: Returns a standard Texture object that has been
+//               created with Texture::generate_alpha_scale_map().
+//
+//               This Texture object is used internally by Panda to
+//               apply an alpha scale to an object (instead of munging
+//               its vertices) when gsg->get_alpha_scale_via_texture()
+//               returns true.
+////////////////////////////////////////////////////////////////////
+INLINE Texture *TexturePool::
+get_alpha_scale_map() {
+  return get_global_ptr()->ns_get_alpha_scale_map();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::add_texture
 //       Access: Published, Static
 //  Description: Adds the indicated already-loaded texture to the

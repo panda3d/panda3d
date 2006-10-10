@@ -33,7 +33,7 @@ class FactoryParams;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ColorScaleAttrib : public RenderAttrib {
 protected:
-  INLINE ColorScaleAttrib(bool off, const LVecBase4f &scale);
+  ColorScaleAttrib(bool off, const LVecBase4f &scale);
   INLINE ColorScaleAttrib(const ColorScaleAttrib &copy);
 
 PUBLISHED:
@@ -44,6 +44,8 @@ PUBLISHED:
   INLINE bool is_off() const;
   INLINE bool is_identity() const;
   INLINE bool has_scale() const;
+  INLINE bool has_rgb_scale() const;
+  INLINE bool has_alpha_scale() const;
   INLINE const LVecBase4f &get_scale() const;
   CPT(RenderAttrib) set_scale(const LVecBase4f &scale) const;
 
@@ -64,6 +66,8 @@ private:
 private:
   bool _off;
   bool _has_scale;
+  bool _has_rgb_scale;
+  bool _has_alpha_scale;
   LVecBase4f _scale;
   static CPT(RenderAttrib) _identity_attrib;
 

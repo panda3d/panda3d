@@ -54,9 +54,11 @@ public:
 
 PUBLISHED:
   static CPT(RenderAttrib) make();
-  static CPT(RenderAttrib) make(TextureStage *stage, Mode mode, const string &source_name = string(), const NodePath &light = NodePath());
+  static CPT(RenderAttrib) make(TextureStage *stage, Mode mode);
 
-  CPT(RenderAttrib) add_stage(TextureStage *stage, Mode mode, const string &source_name = string(), const NodePath &light = NodePath()) const;
+  CPT(RenderAttrib) add_stage(TextureStage *stage, Mode mode) const;
+  CPT(RenderAttrib) add_stage(TextureStage *stage, Mode mode, const string &source_name, const NodePath &light) const;
+  CPT(RenderAttrib) add_stage(TextureStage *stage, Mode mode, const TexCoord3f &constant_value) const;
   CPT(RenderAttrib) remove_stage(TextureStage *stage) const;
 
   bool is_empty() const;
@@ -64,6 +66,7 @@ PUBLISHED:
   Mode get_mode(TextureStage *stage) const;
   string get_source_name(TextureStage *stage) const;
   NodePath get_light(TextureStage *stage) const;
+  const TexCoord3f &get_constant_value(TextureStage *stage) const;
 
   INLINE int get_geom_rendering(int geom_rendering) const;
 
@@ -94,6 +97,7 @@ private:
     Mode _mode;
     string _source_name;
     NodePath _light;
+    TexCoord3f _constant_value;
   };
   typedef pmap<PT(TextureStage), ModeDef> Stages;
   Stages _stages;

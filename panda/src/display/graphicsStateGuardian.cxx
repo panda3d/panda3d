@@ -38,6 +38,7 @@
 #include "drawableRegion.h"
 #include "displayRegion.h"
 #include "graphicsOutput.h"
+#include "texturePool.h"
 
 #include <algorithm>
 #include <limits.h>
@@ -68,6 +69,7 @@ PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive
 PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 
+PT(TextureStage) GraphicsStateGuardian::_alpha_scale_texture_stage = NULL;
 GraphicsStateGuardian *GraphicsStateGuardian::_global_gsg = NULL;
 
 TypeHandle GraphicsStateGuardian::_type_handle;
@@ -162,6 +164,10 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   // twiddling the material and/or ambient light (which could mean
   // enabling lighting even without a LightAttrib).
   _color_scale_via_lighting = color_scale_via_lighting;
+
+  // Similarly for applying a texture to achieve uniform alpha
+  // scaling.
+  _alpha_scale_via_texture = alpha_scale_via_texture;
 
   _stencil_render_states = 0;
 
@@ -311,6 +317,7 @@ reset() {
 
   _color_scale_enabled = false;
   _current_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _has_texture_alpha_scale = false;
 
   _has_material_force_color = false;
   _material_force_color.set(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1564,6 +1571,7 @@ do_issue_color_scale() {
   const ColorScaleAttrib *attrib = _target._color_scale;
   _color_scale_enabled = attrib->has_scale();
   _current_color_scale = attrib->get_scale();
+  _has_texture_alpha_scale = false;
 
   if (_color_blend_involves_color_scale) {
     _state_rs = 0;
@@ -1579,6 +1587,13 @@ do_issue_color_scale() {
     _state._material = 0;
 
     determine_light_color_scale();
+  }
+  if (_alpha_scale_via_texture && !_has_scene_graph_color &&
+      attrib->has_alpha_scale()) {
+    _state._texture = 0;
+    _state._tex_matrix = 0;
+
+    _has_texture_alpha_scale = true;
   }
 }
 
@@ -1907,6 +1922,28 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 end_bind_clip_planes() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::determine_effective_texture
+//       Access: Protected
+//  Description: Assigns _effective_texture and _effective_tex_gen
+//               based on the current settings of _target._texture and
+//               _target._color_scale.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+determine_effective_texture() {
+  _effective_texture = _target._texture->filter_to_max(_max_texture_stages);
+  _effective_tex_gen = _target._tex_gen;
+
+  if (_has_texture_alpha_scale) {
+    PT(TextureStage) stage = get_alpha_scale_texture_stage();
+    PT(Texture) texture = TexturePool::get_alpha_scale_map();
+
+    _effective_texture = DCAST(TextureAttrib, _effective_texture->add_on_stage(stage, texture));
+    _effective_tex_gen = DCAST(TexGenAttrib, _effective_tex_gen->add_stage
+                               (stage, TexGenAttrib::M_constant, TexCoord3f(_current_color_scale[3], 0.0f, 0.0f)));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

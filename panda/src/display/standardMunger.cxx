@@ -73,20 +73,21 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   } else if (color_scale_attrib != (ColorScaleAttrib *)NULL &&
              color_scale_attrib->has_scale()) {
     _color_scale = color_scale_attrib->get_scale();
-    if (!_gsg->get_color_scale_via_lighting() || _color_scale[3] < 0.999f) {
-      // We only need to apply the color scale by directly munging the
-      // color if the GSG says it can't cheat this via lighting (for
-      // instance, by applying an ambient light).  Or, since we assume
-      // lighting can't scale the alpha component, if the color scale
-      // involves alpha.
 
-      // Known bug: if there is a material on an object that would
-      // obscure the effect of color_scale, we scale the lighting
-      // anyway, thus applying the effect even if it should be
-      // obscured.  It doesn't seem worth the effort to detect this
-      // contrived situation and handle it correctly.
+    CPT(TextureAttrib) tex_attrib = state->get_texture();
+
+    // If the GSG says it can't cheat this RGB or alpha scale, we have
+    // to apply the color scale directly.
+    if ((color_scale_attrib->has_rgb_scale() && !_gsg->get_color_scale_via_lighting()) ||
+        (color_scale_attrib->has_alpha_scale() && !_gsg->get_alpha_scale_via_texture(tex_attrib))) {
       _munge_color_scale = true;
     }
+
+    // Known bug: if there is a material on an object that would
+    // obscure the effect of color_scale, we scale the lighting
+    // anyway, thus applying the effect even if it should be obscured.
+    // It doesn't seem worth the effort to detect this contrived
+    // situation and handle it correctly.
   }
 }
 

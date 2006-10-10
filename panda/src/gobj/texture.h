@@ -199,6 +199,7 @@ PUBLISHED:
                              ComponentType component_type, Format format);
 
   void generate_normalization_cube_map(int size);
+  void generate_alpha_scale_map();
 
   INLINE bool read(const Filename &fullpath);
   INLINE bool read(const Filename &fullpath, const Filename &alpha_fullpath,

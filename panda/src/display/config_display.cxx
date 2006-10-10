@@ -201,7 +201,19 @@ ConfigVariableBool color_scale_via_lighting
           "avoids the need to munge the vertex data to change each vertex's "
           "color.  Set this false to avoid this trickery, so that lighting "
           "is only enabled when the application specifically enables "
-          "it."));
+          "it.  See also alpha-scale-via-texture."));
+
+ConfigVariableBool alpha_scale_via_texture
+("alpha-scale-via-texture", false,
+ PRC_DESC("When this is true, Panda will try to implement "
+          "ColorScaleAttribs that affect alpha by "
+          "creating an additional Texture layer over the geometry "
+          "with a uniform alpha scale applied everywhere, if there "
+          "is at least one available Texture slot available on the "
+          "multitexture pipeline.  Set this false to avoid this "
+          "trickery, so that texturing is only enabled when the "
+          "application specifically enables it.  See also "
+          "color-scale-via-lighting."));
 
 ConfigVariableInt win_size
 ("win-size", "640 480",

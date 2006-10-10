@@ -636,6 +636,9 @@ PUBLISHED:
   void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
                    const string &source_name, const NodePath &light, 
                    int priority = 0);
+  void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
+                   const TexCoord3f &constant_value,
+                   int priority = 0);
   void clear_tex_gen();
   void clear_tex_gen(TextureStage *stage);
   bool has_tex_gen(TextureStage *stage) const;

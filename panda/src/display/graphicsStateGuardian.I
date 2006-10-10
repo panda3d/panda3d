@@ -574,6 +574,51 @@ get_color_scale_via_lighting() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_alpha_scale_via_texture
+//       Access: Published
+//  Description: Returns true if this particular GSG can implement (or
+//               would prefer to implement) an alpha scale via an
+//               additional Texture layer, or false if we need to
+//               actually munge the alpha.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_alpha_scale_via_texture() const {
+  return _alpha_scale_via_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_alpha_scale_via_texture
+//       Access: Published
+//  Description: This variant of get_alpha_scale_via_texture() answers
+//               the question of whether the GSG can implement an
+//               alpha scale via an additional Texture layer,
+//               considering the current TextureAttrib that will be in
+//               effect.  This considers whether there is at least one
+//               additional texture slot available on the GSG.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_alpha_scale_via_texture(const TextureAttrib *tex_attrib) const {
+  return _alpha_scale_via_texture &&
+    (tex_attrib->get_num_on_stages() < get_max_texture_stages());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_alpha_scale_texture_stage
+//       Access: Published, Static
+//  Description: Returns the TextureStage that will be used to apply
+//               an alpha scale, if get_alpha_scale_via_texture()
+//               returns true.
+////////////////////////////////////////////////////////////////////
+INLINE TextureStage *GraphicsStateGuardian::
+get_alpha_scale_texture_stage() {
+  if (_alpha_scale_texture_stage == (TextureStage *)NULL) {
+    _alpha_scale_texture_stage = new TextureStage("alpha-scale");
+    _alpha_scale_texture_stage->set_sort(1000000000);
+  }
+  return _alpha_scale_texture_stage;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_coordinate_system
 //       Access: Published
 //  Description: Returns the coordinate system in effect on this

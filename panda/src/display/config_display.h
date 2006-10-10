@@ -61,6 +61,7 @@ extern EXPCL_PANDA ConfigVariableString red_blue_stereo_colors;
 extern EXPCL_PANDA ConfigVariableBool depth_offset_decals;
 extern EXPCL_PANDA ConfigVariableBool auto_generate_mipmaps;
 extern EXPCL_PANDA ConfigVariableBool color_scale_via_lighting;
+extern EXPCL_PANDA ConfigVariableBool alpha_scale_via_texture;
 
 extern EXPCL_PANDA ConfigVariableInt win_size;
 extern EXPCL_PANDA ConfigVariableInt win_origin;

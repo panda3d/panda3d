@@ -351,6 +351,31 @@ generate_normalization_cube_map(int size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::generate_alpha_scale_map
+//       Access: Published
+//  Description: Generates a special 256x1 1-d texture that can be
+//               used to apply an arbitrary alpha scale to objects by
+//               judicious use of texture matrix.  The texture is a
+//               gradient, with an alpha of 0 on the left (U = 0), and
+//               255 on the right (U = 1).
+////////////////////////////////////////////////////////////////////
+void Texture::
+generate_alpha_scale_map() {
+  setup_1d_texture(256, T_unsigned_byte, F_alpha);
+  set_wrap_u(WM_clamp);
+  set_minfilter(FT_nearest);
+  set_magfilter(FT_nearest);
+
+  PTA_uchar image = make_ram_image();
+  _keep_ram_image = true;
+
+  unsigned char *p = image;
+  for (int xi = 0; xi < 256; ++xi) {
+    *p++ = xi;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::estimate_texture_memory
 //       Access: Published
 //  Description: Estimates the amount of texture memory that will be

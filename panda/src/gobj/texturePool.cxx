@@ -658,6 +658,23 @@ ns_get_normalization_cube_map(int size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::ns_get_alpha_scale_map
+//       Access: Private
+//  Description: The nonstatic implementation of get_alpha_scale_map().
+////////////////////////////////////////////////////////////////////
+Texture *TexturePool::
+ns_get_alpha_scale_map() {
+  MutexHolder holder(_lock);
+
+  if (_alpha_scale_map == (Texture *)NULL) {
+    _alpha_scale_map = new Texture("alpha_scale_map");
+    _alpha_scale_map->generate_alpha_scale_map();
+  }
+
+  return _alpha_scale_map;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::ns_add_texture
 //       Access: Private
 //  Description: The nonstatic implementation of add_texture().

@@ -62,9 +62,8 @@ make() {
 //               indicated stage.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexGenAttrib::
-make(TextureStage *stage, TexGenAttrib::Mode mode, 
-     const string &source_name, const NodePath &light) {
-  return DCAST(TexGenAttrib, make())->add_stage(stage, mode, source_name, light);
+make(TextureStage *stage, TexGenAttrib::Mode mode) {
+  return DCAST(TexGenAttrib, make())->add_stage(stage, mode);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,8 +75,35 @@ make(TextureStage *stage, TexGenAttrib::Mode mode,
 //               replaced.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexGenAttrib::
+add_stage(TextureStage *stage, TexGenAttrib::Mode mode) const {
+  nassertr(mode != M_light_vector && mode != M_constant, this);
+
+  CPT(RenderAttrib) removed = remove_stage(stage);
+  TexGenAttrib *attrib = new TexGenAttrib(*DCAST(TexGenAttrib, removed));
+
+  ModeDef &mode_def = attrib->_stages[stage];
+  mode_def._mode = mode;
+  attrib->record_stage(stage, mode_def);
+
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::add_stage
+//       Access: Published, Static
+//  Description: Returns a new TexGenAttrib just like this one,
+//               with the indicated generation mode for the given
+//               stage.  If this stage already exists, its mode is
+//               replaced.
+//
+//               This variant also accepts source_name and light,
+//               which are only meaningful if mode is M_light_vector.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) TexGenAttrib::
 add_stage(TextureStage *stage, TexGenAttrib::Mode mode, 
           const string &source_name, const NodePath &light) const {
+  nassertr(mode == M_light_vector, this);
+
   CPT(RenderAttrib) removed = remove_stage(stage);
   TexGenAttrib *attrib = new TexGenAttrib(*DCAST(TexGenAttrib, removed));
 
@@ -85,6 +111,33 @@ add_stage(TextureStage *stage, TexGenAttrib::Mode mode,
   mode_def._mode = mode;
   mode_def._source_name = source_name;
   mode_def._light = light;
+  attrib->record_stage(stage, mode_def);
+
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::add_stage
+//       Access: Published, Static
+//  Description: Returns a new TexGenAttrib just like this one,
+//               with the indicated generation mode for the given
+//               stage.  If this stage already exists, its mode is
+//               replaced.
+//
+//               This variant also accepts constant_value, which is
+//               only meaningful if mode is M_constant.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) TexGenAttrib::
+add_stage(TextureStage *stage, TexGenAttrib::Mode mode, 
+          const TexCoord3f &constant_value) const {
+  nassertr(mode == M_constant, this);
+
+  CPT(RenderAttrib) removed = remove_stage(stage);
+  TexGenAttrib *attrib = new TexGenAttrib(*DCAST(TexGenAttrib, removed));
+
+  ModeDef &mode_def = attrib->_stages[stage];
+  mode_def._mode = mode;
+  mode_def._constant_value = constant_value;
   attrib->record_stage(stage, mode_def);
 
   return return_new(attrib);
@@ -201,6 +254,22 @@ get_light(TextureStage *stage) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::get_constant_value
+//       Access: Published
+//  Description: Returns the constant value associated with the named
+//               texture stage.  This is only meaningful if the mode
+//               is M_constant.
+////////////////////////////////////////////////////////////////////
+const TexCoord3f &TexGenAttrib::
+get_constant_value(TextureStage *stage) const {
+  Stages::const_iterator mi = _stages.find(stage);
+  if (mi != _stages.end()) {
+    return (*mi).second._constant_value;
+  }
+  return TexCoord3f::zero();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttrib::output
 //       Access: Public, Virtual
 //  Description: 
@@ -251,6 +320,10 @@ output(ostream &out) const {
     case M_light_vector:
       out << "light_vector: \"" << mode_def._source_name << "\", "
           << mode_def._light;
+      break;
+
+    case M_constant:
+      out << "constant: " << mode_def._constant_value;
       break;
 
     case M_unused:

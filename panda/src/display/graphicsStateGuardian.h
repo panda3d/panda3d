@@ -139,6 +139,10 @@ PUBLISHED:
   virtual int get_supported_geom_rendering() const;
 
   INLINE bool get_color_scale_via_lighting() const;
+  INLINE bool get_alpha_scale_via_texture() const;
+  INLINE bool get_alpha_scale_via_texture(const TextureAttrib *tex_attrib) const;
+
+  INLINE static TextureStage *get_alpha_scale_texture_stage();
 
   void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
@@ -268,6 +272,8 @@ protected:
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
   virtual void end_bind_clip_planes();
 
+  void determine_effective_texture();
+
   virtual void free_pointers();
   virtual void close_gsg();
   void panic_deactivate();
@@ -291,6 +297,13 @@ protected:
   CPT(RenderState) _state_rs;
   CPT(RenderState) _target_rs;
   CPT(TransformState) _internal_transform;
+
+  // The current TextureAttrib is a special case; we may further
+  // restrict it (according to graphics cards limits) or extend it
+  // (according to ColorScaleAttribs in effect) beyond what is
+  // specifically requested in the scene graph.
+  CPT(TextureAttrib) _effective_texture;
+  CPT(TexGenAttrib) _effective_tex_gen;
 
   // These are set by begin_draw_primitives(), and are only valid
   // between begin_draw_primitives() and end_draw_primitives().
@@ -329,6 +342,7 @@ protected:
   bool _has_material_force_color;
   Colorf _material_force_color;
   LVecBase4f _light_color_scale;
+  bool _has_texture_alpha_scale;
 
   bool _tex_gen_modifies_mat;
   bool _tex_gen_point_sprite;
@@ -383,6 +397,7 @@ protected:
 
   int _supported_geom_rendering;
   bool _color_scale_via_lighting;
+  bool _alpha_scale_via_texture;
 
   int _stereo_buffer_mask;
 
@@ -390,6 +405,8 @@ protected:
 
   int _auto_detect_shader_model;
   int _shader_model;
+
+  static PT(TextureStage) _alpha_scale_texture_stage;
 
 public:
   // Statistics

@@ -3577,6 +3577,36 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_gen
+//       Access: Published
+//  Description: Enables automatic texture coordinate generation for
+//               the indicated texture stage.  This version of this
+//               method is useful when setting M_constant, which
+//               requires a constant texture coordinate value.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
+            const TexCoord3f &constant_value, int priority) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TexGenAttrib::get_class_type());
+
+  CPT(TexGenAttrib) tga;
+
+  if (attrib != (const RenderAttrib *)NULL) {
+    priority = max(priority,
+                   node()->get_state()->get_override(TextureAttrib::get_class_type()));
+    tga = DCAST(TexGenAttrib, attrib);
+
+  } else {
+    tga = DCAST(TexGenAttrib, TexGenAttrib::make());
+  }
+
+  node()->set_attrib(tga->add_stage(stage, mode, constant_value), priority);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_tex_gen
 //       Access: Published
 //  Description: Removes the texture coordinate generation mode from

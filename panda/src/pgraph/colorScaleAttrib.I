@@ -18,21 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ColorScaleAttrib::Constructor
-//       Access: Protected
-//  Description: Use ColorScaleAttrib::make() to construct a new
-//               ColorScaleAttrib object.
-////////////////////////////////////////////////////////////////////
-INLINE ColorScaleAttrib::
-ColorScaleAttrib(bool off, const LVecBase4f &scale) :
-  _off(off),
-  _scale(scale)
-{
-  quantize_scale();
-  _has_scale = !_scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ColorScaleAttrib::Copy Constructor
 //       Access: Protected
 //  Description: Use ColorScaleAttrib::make() to construct a new
@@ -42,6 +27,8 @@ INLINE ColorScaleAttrib::
 ColorScaleAttrib(const ColorScaleAttrib &copy) :
   _off(copy._off),
   _has_scale(copy._has_scale),
+  _has_rgb_scale(copy._has_rgb_scale),
+  _has_alpha_scale(copy._has_alpha_scale),
   _scale(copy._scale)
 {
 }
@@ -82,6 +69,30 @@ is_identity() const {
 INLINE bool ColorScaleAttrib::
 has_scale() const {
   return _has_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::has_rgb_scale
+//       Access: Published
+//  Description: Returns true if the ColorScaleAttrib has a
+//               non-identity scale in the RGB components (ignoring
+//               alpha), or false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool ColorScaleAttrib::
+has_rgb_scale() const {
+  return _has_rgb_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::has_alpha_scale
+//       Access: Published
+//  Description: Returns true if the ColorScaleAttrib has a
+//               non-identity scale in the alpha component (ignoring
+//               RGB), or false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool ColorScaleAttrib::
+has_alpha_scale() const {
+  return _has_alpha_scale;
 }
 
 ////////////////////////////////////////////////////////////////////

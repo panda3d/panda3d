@@ -5676,23 +5676,6 @@ set_state_and_transform(const RenderState *target,
     _state._texture = 0;
   }
 
-  if (_target._texture != _state._texture) {
-    do_issue_texture();
-    _state._texture = _target._texture;
-    _state._tex_gen = 0;
-    _state._tex_matrix = 0;
-  }
-
-  if (_target._material != _state._material) {
-    do_issue_material();
-    _state._material = _target._material;
-  }
-
-  if (_target._light != _state._light) {
-    do_issue_light();
-    _state._light = _target._light;
-  }
-
   // If one of the previously-loaded TexGen modes modified the texture
   // matrix, then if either state changed, we have to change both of
   // them now.
@@ -5704,14 +5687,29 @@ set_state_and_transform(const RenderState *target,
     }
   }
 
+  if (_target._texture != _state._texture ||
+      _target._tex_gen != _state._tex_gen) {
+    determine_effective_texture();
+    do_issue_texture();
+    do_issue_tex_gen();
+    _state._texture = _target._texture;
+    _state._tex_gen = _target._tex_gen;
+    _state._tex_matrix = 0;
+  }
+
   if (_target._tex_matrix != _state._tex_matrix) {
     do_issue_tex_matrix();
     _state._tex_matrix = _target._tex_matrix;
   }
 
-  if (_target._tex_gen != _state._tex_gen) {
-    do_issue_tex_gen();
-    _state._tex_gen = _target._tex_gen;
+  if (_target._material != _state._material) {
+    do_issue_material();
+    _state._material = _target._material;
+  }
+
+  if (_target._light != _state._light) {
+    do_issue_light();
+    _state._light = _target._light;
   }
 
   if (_target._stencil != _state._stencil) {
@@ -5822,7 +5820,7 @@ do_issue_texture() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 update_standard_texture_bindings() {
-  int num_stages = _target._texture->get_num_on_stages();
+  int num_stages = _effective_texture->get_num_on_stages();
   int num_old_stages = _max_texture_stages;
   if (_state._texture != (TextureAttrib *)NULL) {
     num_old_stages = _state._texture->get_num_on_stages();
@@ -5837,8 +5835,8 @@ update_standard_texture_bindings() {
   int last_stage = -1;
   int i;
   for (i = 0; i < num_stages; i++) {
-    TextureStage *stage = _target._texture->get_on_stage(i);
-    Texture *texture = _target._texture->get_on_texture(stage);
+    TextureStage *stage = _effective_texture->get_on_stage(i);
+    Texture *texture = _effective_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
 
     if (i >= num_old_stages ||
@@ -6057,11 +6055,11 @@ disable_standard_texture_bindings() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_tex_matrix() {
-  int num_stages = _target._texture->get_num_on_stages();
+  int num_stages = _effective_texture->get_num_on_stages();
   nassertv(num_stages <= _max_texture_stages);
 
   for (int i = 0; i < num_stages; i++) {
-    TextureStage *stage = _target._texture->get_on_stage(i);
+    TextureStage *stage = _effective_texture->get_on_stage(i);
     _glActiveTexture(GL_TEXTURE0 + i);
 
     GLP(MatrixMode)(GL_TEXTURE);
@@ -6091,7 +6089,7 @@ void CLP(GraphicsStateGuardian)::
 do_issue_tex_gen() {
   bool force_normal = false;
 
-  int num_stages = _target._texture->get_num_on_stages();
+  int num_stages = _effective_texture->get_num_on_stages();
   nassertv(num_stages <= _max_texture_stages);
 
   // These are passed in for the four OBJECT_PLANE or EYE_PLANE
@@ -6109,7 +6107,7 @@ do_issue_tex_gen() {
   bool got_point_sprites = false;
 
   for (int i = 0; i < num_stages; i++) {
-    TextureStage *stage = _target._texture->get_on_stage(i);
+    TextureStage *stage = _effective_texture->get_on_stage(i);
     _glActiveTexture(GL_TEXTURE0 + i);
     GLP(Disable)(GL_TEXTURE_GEN_S);
     GLP(Disable)(GL_TEXTURE_GEN_T);
@@ -6119,7 +6117,7 @@ do_issue_tex_gen() {
       GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_FALSE);
     }
 
-    TexGenAttrib::Mode mode = _target._tex_gen->get_mode(stage);
+    TexGenAttrib::Mode mode = _effective_tex_gen->get_mode(stage);
     switch (mode) {
     case TexGenAttrib::M_off:
     case TexGenAttrib::M_light_vector:
@@ -6298,6 +6296,35 @@ do_issue_tex_gen() {
       if (_supports_point_sprite) {
         GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
         got_point_sprites = true;
+      }
+      break;
+
+    case TexGenAttrib::M_constant:
+      // To generate a constant UV(w) coordinate everywhere, we use
+      // EYE_LINEAR mode, but we construct a special matrix that
+      // flattens the vertex position to zero and then adds our
+      // desired value.
+      {
+        const TexCoord3f &v = _effective_tex_gen->get_constant_value(stage);
+
+        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+        GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+
+        LVecBase4f s(0.0f, 0.0f, 0.0f, v[0]);
+        LVecBase4f t(0.0f, 0.0f, 0.0f, v[1]);
+        LVecBase4f r(0.0f, 0.0f, 0.0f, v[2]);
+
+        GLP(TexGenfv)(GL_S, GL_OBJECT_PLANE, s.get_data());
+        GLP(TexGenfv)(GL_T, GL_OBJECT_PLANE, t.get_data());
+        GLP(TexGenfv)(GL_R, GL_OBJECT_PLANE, r.get_data());
+        GLP(TexGenfv)(GL_Q, GL_OBJECT_PLANE, q_data);
+
+        GLP(Enable)(GL_TEXTURE_GEN_S);
+        GLP(Enable)(GL_TEXTURE_GEN_T);
+        GLP(Enable)(GL_TEXTURE_GEN_R);
+        GLP(Enable)(GL_TEXTURE_GEN_Q);
       }
       break;
 

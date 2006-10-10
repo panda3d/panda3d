@@ -37,7 +37,7 @@ public:
   CPT(RenderState) munge_state(const RenderState *state);
 
 protected:
-  CPT(RenderState) munge_state_impl(const RenderState *state);
+  virtual CPT(RenderState) munge_state_impl(const RenderState *state);
 
   typedef pmap< WCPT(RenderState), WCPT(RenderState) > StateMap;
   StateMap _state_map;
