@@ -2234,16 +2234,6 @@ set_state_and_transform(const RenderState *target,
     _state._shader = _target._shader;
   }
 
-  if (_target._tex_gen != _state._tex_gen) {
-    _state._texture = 0;
-    _state._tex_gen = _target._tex_gen;
-  }
-
-  if (_target._tex_matrix != _state._tex_matrix) {
-    _state._texture = 0;
-    _state._tex_matrix = _target._tex_matrix;
-  }
-
   if ((_target._transparency != _state._transparency)||
       (_target._color_write != _state._color_write)||
       (_target._color_blend != _state._color_blend)) {
@@ -2253,9 +2243,17 @@ set_state_and_transform(const RenderState *target,
     _state._color_blend = _target._color_blend;
   }
 
-  if (_target._texture != _state._texture) {
+  if (_target._tex_matrix != _state._tex_matrix) {
+    _state._texture = 0;
+    _state._tex_matrix = _target._tex_matrix;
+  }
+
+  if (_target._texture != _state._texture ||
+      _target._tex_gen != _state._tex_gen) {
+    determine_effective_texture();
     do_issue_texture();
     _state._texture = _target._texture;
+    _state._tex_gen = _target._tex_gen;
   }
 
   if (_target._material != _state._material) {
@@ -2516,7 +2514,7 @@ void DXGraphicsStateGuardian8::
 do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
-  int num_stages = _target._texture->get_num_on_stages();
+  int num_stages = _effective_texture->get_num_on_stages();
   int num_old_stages = _max_texture_stages;
   if (_state._texture != (TextureAttrib *)NULL) {
     num_old_stages = _state._texture->get_num_on_stages();
@@ -2537,8 +2535,8 @@ do_issue_texture() {
 
   int i;
   for (i = 0; i < num_stages; i++) {
-    TextureStage *stage = _target._texture->get_on_stage(i);
-    Texture *texture = _target._texture->get_on_texture(stage);
+    TextureStage *stage = _effective_texture->get_on_stage(i);
+    Texture *texture = _effective_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
 
     const InternalName *name = stage->get_texcoord_name();
@@ -2564,7 +2562,7 @@ do_issue_texture() {
     }
 
     // Issue the texgen mode.
-    TexGenAttrib::Mode mode = _state._tex_gen->get_mode(stage);
+    TexGenAttrib::Mode mode = _effective_tex_gen->get_mode(stage);
     bool any_point_sprite = false;
 
     switch (mode) {
@@ -2655,6 +2653,30 @@ do_issue_texture() {
     case TexGenAttrib::M_point_sprite:
       _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
       any_point_sprite = true;
+      break;
+
+    case TexGenAttrib::M_constant:
+      // To generate a constant UV(w) coordinate everywhere, we use
+      // CAMERASPACEPOSITION coordinates, but we construct a special
+      // matrix that flattens the existing values to zero and then
+      // adds our desired value.
+
+      // The only reason we need to specify CAMERASPACEPOSITION at
+      // all, instead of using whatever texture coordinates (if any)
+      // happen to be on the vertices, is because we need to guarantee
+      // that there are 3-d texture coordinates, because of the
+      // 3-component texture coordinate in get_constant_value().
+      {
+        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+                                          texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
+        texcoord_dimensions = 3;
+
+        const TexCoord3f &v = _effective_tex_gen->get_constant_value(stage);
+        CPT(TransformState) squash = 
+          TransformState::make_pos_hpr_scale(v, LVecBase3f::zero(),
+                                             LVecBase3f::zero());
+        tex_mat = tex_mat->compose(squash);
+      }
       break;
     }
 

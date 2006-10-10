@@ -178,8 +178,6 @@ protected:
   void do_issue_blending();
   void do_issue_stencil();
 
-  void disable_texturing();
-
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
@@ -284,6 +282,9 @@ protected:
     PerPixelFog=D3DRS_FOGTABLEMODE
   };
   DxgsgFogType _do_fog_type;
+
+  D3DVIEWPORT9 _current_viewport;
+  bool _supports_depth_bias;
 
   DWORD _clip_plane_bits;
   CullFaceAttrib::Mode _cull_face_mode;

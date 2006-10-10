@@ -5592,10 +5592,6 @@ set_state_and_transform(const RenderState *target,
   target->store_into_slots(&_target);
   _state_rs = 0;
 
-  // There might be some physical limits to the actual target
-  // attributes we issue.  Impose them now.
-  _target._texture = _target._texture->filter_to_max(_max_texture_stages);
-
   if (_target._alpha_test != _state._alpha_test) {
     do_issue_alpha_test();
     _state._alpha_test = _target._alpha_test;

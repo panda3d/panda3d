@@ -793,11 +793,12 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
   int l, u, w, h;
   dr->get_region_pixels_i(l, u, w, h);
 
-  DBG_S dxgsg9_cat.debug ( ) << "display_region " << l << " " << u << " "  << w << " "  << h << "\n"; DBG_E
+  DBG_S dxgsg9_cat.debug ( ) << "display_region " << l << " " << u << " "  << w << " "  << h << "\n"; DBG_E;
 
   // Create the viewport
   D3DVIEWPORT9 vp = { l, u, w, h, 0.0f, 1.0f };
-  HRESULT hr = _d3d_device->SetViewport(&vp);
+  _current_viewport = vp;
+  HRESULT hr = _d3d_device->SetViewport(&_current_viewport);
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "_screen->_swap_chain = " << _screen->_swap_chain << " _swap_chain = " << _swap_chain << "\n";
@@ -2426,6 +2427,8 @@ reset() {
   _supports_stencil_wrap = (d3d_caps.StencilCaps & D3DSTENCILCAPS_INCR) && (d3d_caps.StencilCaps & D3DSTENCILCAPS_DECR);
   _supports_two_sided_stencil = ((d3d_caps.StencilCaps & D3DSTENCILCAPS_TWOSIDED) != 0);
 
+  _supports_depth_bias = ((d3d_caps.RasterCaps & D3DPRASTERCAPS_DEPTHBIAS) != 0);
+
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
       << "\nHwTransformAndLight = " << ((d3d_caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) != 0)
@@ -2448,6 +2451,8 @@ reset() {
       << "\nD3DTEXOPCAPS_MULTIPLYADD = " << ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_MULTIPLYADD) != 0)
       << "\nD3DTEXOPCAPS_LERP = " << ((d3d_caps.TextureOpCaps & D3DTEXOPCAPS_LERP) != 0)
       << "\nD3DPMISCCAPS_TSSARGTEMP = " << ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) != 0)
+      << "\nD3DPRASTERCAPS_DEPTHBIAS = " << ((d3d_caps.RasterCaps & D3DPRASTERCAPS_DEPTHBIAS) != 0)
+      << "\nD3DPRASTERCAPS_SLOPESCALEDEPTHBIAS = " << ((d3d_caps.RasterCaps & D3DPRASTERCAPS_SLOPESCALEDEPTHBIAS) != 0)
       << "\nVertexShaderVersion = " << _vertex_shader_version_major << "." << _vertex_shader_version_minor
       << "\nPixelShaderVersion = " << _pixel_shader_version_major << "." << _pixel_shader_version_minor
       << "\nMaxVertexShaderConst = " << _vertex_shader_maximum_constants
@@ -2491,9 +2496,21 @@ reset() {
       vertex_profile = cgD3D9GetLatestVertexProfile( );
       pixel_profile = cgD3D9GetLatestPixelProfile( );
 
+      const char *vertex_profile_str = 
+        cgGetProfileString(vertex_profile);
+      const char *pixel_profile_str = 
+        cgGetProfileString(pixel_profile);
+
+      if (vertex_profile_str == NULL) {
+        vertex_profile_str = "(null)";
+      }
+      if (pixel_profile_str == NULL) {
+        pixel_profile_str = "(null)";
+      }
+
       dxgsg9_cat.debug()
-        << "\nCg vertex profile = " << cgGetProfileString(vertex_profile) << "  id = " << vertex_profile
-        << "\nCg pixel profile = " << cgGetProfileString(pixel_profile) << "  id = " << pixel_profile
+        << "\nCg vertex profile = " << vertex_profile_str << "  id = " << vertex_profile
+        << "\nCg pixel profile = " << pixel_profile_str << "  id = " << pixel_profile
         << "\nshader model = " << _shader_model
         << "\n";
     }
@@ -3126,9 +3143,19 @@ do_issue_depth_offset() {
   const DepthOffsetAttrib *attrib = _target._depth_offset;
   int offset = attrib->get_offset();
 
-/* ***** DX9 ??? D3DRS_ZBIAS NOT IN DX9 ??? RENAMED D3DRS_DEPTHBIAS ??? */
-  set_render_state(D3DRS_DEPTHBIAS, offset);
+  if (_supports_depth_bias) {
+    set_render_state(D3DRS_DEPTHBIAS, offset);
 
+  } else {
+    // DirectX depth bias isn't directly supported by the driver.
+    // Cheese a depth bias effect by sliding the viewport backward a
+    // bit.
+    static const float bias_scale = 0.0001;
+    D3DVIEWPORT9 vp = _current_viewport;
+    vp.MinZ -= bias_scale * offset;
+    vp.MaxZ -= bias_scale * offset;
+    _d3d_device->SetViewport(&vp);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3191,10 +3218,6 @@ set_state_and_transform(const RenderState *target,
   _target.clear_to_defaults();
   target->store_into_slots(&_target);
   _state_rs = 0;
-
-  // There might be some physical limits to the actual target
-  // attributes we issue.  Impose them now.
-  _target._texture = _target._texture->filter_to_max(_max_texture_stages);
 
   if (_target._alpha_test != _state._alpha_test) {
     do_issue_alpha_test();
@@ -3261,16 +3284,6 @@ set_state_and_transform(const RenderState *target,
     _state._shade_model = _target._shade_model;
   }
 
-  if (_target._tex_gen != _state._tex_gen) {
-    _state._texture = 0;
-    _state._tex_gen = _target._tex_gen;
-  }
-
-  if (_target._tex_matrix != _state._tex_matrix) {
-    _state._texture = 0;
-    _state._tex_matrix = _target._tex_matrix;
-  }
-
   if ((_target._transparency != _state._transparency)||
       (_target._color_write != _state._color_write)||
       (_target._color_blend != _state._color_blend)) {
@@ -3286,9 +3299,17 @@ set_state_and_transform(const RenderState *target,
     _state._texture = 0;
   }
 
-  if (_target._texture != _state._texture) {
+  if (_target._tex_matrix != _state._tex_matrix) {
+    _state._texture = 0;
+    _state._tex_matrix = _target._tex_matrix;
+  }
+
+  if (_target._texture != _state._texture ||
+      _target._tex_gen != _state._tex_gen) {
+    determine_effective_texture();
     do_issue_texture();
     _state._texture = _target._texture;
+    _state._tex_gen = _target._tex_gen;
   }
 
   if (_target._material != _state._material) {
@@ -3605,7 +3626,7 @@ void DXGraphicsStateGuardian9::
 update_standard_texture_bindings() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
-  int num_stages = _target._texture->get_num_on_stages();
+  int num_stages = _effective_texture->get_num_on_stages();
   int num_old_stages = _max_texture_stages;
   if (_state._texture != (TextureAttrib *)NULL) {
     num_old_stages = _state._texture->get_num_on_stages();
@@ -3626,8 +3647,8 @@ update_standard_texture_bindings() {
 
   int i;
   for (i = 0; i < num_stages; i++) {
-    TextureStage *stage = _target._texture->get_on_stage(i);
-    Texture *texture = _target._texture->get_on_texture(stage);
+    TextureStage *stage = _effective_texture->get_on_stage(i);
+    Texture *texture = _effective_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
 
     const InternalName *name = stage->get_texcoord_name();
@@ -3653,7 +3674,7 @@ update_standard_texture_bindings() {
     }
 
     // Issue the texgen mode.
-    TexGenAttrib::Mode mode = _state._tex_gen->get_mode(stage);
+    TexGenAttrib::Mode mode = _effective_tex_gen->get_mode(stage);
     bool any_point_sprite = false;
 
     switch (mode) {
@@ -3744,6 +3765,30 @@ update_standard_texture_bindings() {
     case TexGenAttrib::M_point_sprite:
       set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
       any_point_sprite = true;
+      break;
+
+    case TexGenAttrib::M_constant:
+      // To generate a constant UV(w) coordinate everywhere, we use
+      // CAMERASPACEPOSITION coordinates, but we construct a special
+      // matrix that flattens the existing values to zero and then
+      // adds our desired value.
+
+      // The only reason we need to specify CAMERASPACEPOSITION at
+      // all, instead of using whatever texture coordinates (if any)
+      // happen to be on the vertices, is because we need to guarantee
+      // that there are 3-d texture coordinates, because of the
+      // 3-component texture coordinate in get_constant_value().
+      {
+        set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX, 
+                                texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
+        texcoord_dimensions = 3;
+
+        const TexCoord3f &v = _effective_tex_gen->get_constant_value(stage);
+        CPT(TransformState) squash = 
+          TransformState::make_pos_hpr_scale(v, LVecBase3f::zero(),
+                                             LVecBase3f::zero());
+        tex_mat = tex_mat->compose(squash);
+      }
       break;
     }
 
@@ -3887,18 +3932,6 @@ do_issue_blending() {
 
   // Nothing's set, so disable blending.
   set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::disable_texturing
-//       Access: Protected
-//  Description: Turns off any texturing that is currently enabled.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-disable_texturing() {
-  _target._texture = DCAST(TextureAttrib, TextureAttrib::make_off());
-  do_issue_texture();
-  _state._texture = _target._texture;
 }
 
 ////////////////////////////////////////////////////////////////////
