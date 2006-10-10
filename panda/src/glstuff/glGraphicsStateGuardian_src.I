@@ -498,12 +498,16 @@ enable_polygon_offset(bool val) {
         << "glEnable(GL_POLYGON_OFFSET_*)" << endl;
 #endif
       GLP(Enable)(GL_POLYGON_OFFSET_FILL);
+      GLP(Enable)(GL_POLYGON_OFFSET_LINE);
+      GLP(Enable)(GL_POLYGON_OFFSET_POINT);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
         << "glDisable(GL_POLYGON_OFFSET_*)" << endl;
 #endif
       GLP(Disable)(GL_POLYGON_OFFSET_FILL);
+      GLP(Disable)(GL_POLYGON_OFFSET_LINE);
+      GLP(Disable)(GL_POLYGON_OFFSET_POINT);
     }
   }
 }
