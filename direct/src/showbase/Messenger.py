@@ -72,7 +72,7 @@ class Messenger:
             self.notify.warning(
                 "object: %s already accepting: %s" %
                 (object.__class__.__name__, event))
-        
+
         acceptorDict[object] = [method, extraArgs, persistent]
 
         # Remember that this object is listening for this event
@@ -159,7 +159,7 @@ class Messenger:
         Send this event, optionally passing in arguments
         """
         if Messenger.notify.getDebug() and not self.quieting.get(event):
-            Messenger.notify.debug(
+            assert Messenger.notify.debug(
                 'sent event: ' + event + ' sentArgs: ' + `sentArgs`)
         if __debug__:
             foundWatch=0
@@ -276,10 +276,10 @@ class Messenger:
             """
             return a matching event (needle) if found (in haystack).
             This is primarily a debugging tool.
-            
+
             This is intended for debugging use only.
             This function is not defined if python is ran with -O (optimize).
-            
+
             See Also: unwatch
             """
             if not self.__watching.get(needle):
@@ -290,10 +290,10 @@ class Messenger:
             """
             return a matching event (needle) if found (in haystack).
             This is primarily a debugging tool.
-            
+
             This is intended for debugging use only.
             This function is not defined if python is ran with -O (optimize).
-            
+
             See Also: watch
             """
             if self.__watching.get(needle):
@@ -305,10 +305,10 @@ class Messenger:
             When verbose mode is on, don't spam the output with messages
             marked as quiet.
             This is primarily a debugging tool.
-            
+
             This is intended for debugging use only.
             This function is not defined if python is ran with -O (optimize).
-            
+
             See Also: unquiet
             """
             if not self.quieting.get(message):
@@ -319,10 +319,10 @@ class Messenger:
             Remove a message from the list of messages that are not reported
             in verbose mode.
             This is primarily a debugging tool.
-            
+
             This is intended for debugging use only.
             This function is not defined if python is ran with -O (optimize).
-            
+
             See Also: quiet
             """
             if self.quieting.get(message):

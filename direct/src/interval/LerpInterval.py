@@ -39,7 +39,7 @@ class LerpNodePathInterval(CLerpNodePathInterval):
         # functor, false if none of them are.  This is used by derived
         # classes to determine if a functor was passed in for a
         # parameter.
-        
+
         for param in params:
             if callable(param):
                 return 1
@@ -107,7 +107,7 @@ class LerpPosInterval(LerpNodePathInterval):
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
         LerpNodePathInterval.privDoEvent(self, t, event)
-                
+
 
 class LerpHprInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, hpr,
@@ -630,7 +630,7 @@ class LerpFunctionInterval(Interval.Interval):
             if "%d" in name:
                 name = name % LerpFunctionInterval.lerpFunctionIntervalNum
                 LerpFunctionInterval.lerpFunctionIntervalNum += 1
-            
+
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
 
@@ -648,8 +648,10 @@ class LerpFunctionInterval(Interval.Interval):
             data = (self.fromData * (1 - bt)) + (self.toData * bt)
             # Evaluate function
             apply(self.function, [data] + self.extraArgs)
+
         # Print debug information
-        self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
+        assert self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
+
         self.state = CInterval.SStarted
         self.currT = t
 
