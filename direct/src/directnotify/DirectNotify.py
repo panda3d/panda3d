@@ -78,12 +78,12 @@ class DirectNotify:
             # see if there's an override of the default config level
             level = config.GetString('default-directnotify-level', '')
 
+        category = self.getCategory(categoryName)
         if level:
             # Note - this print statement is making it difficult to
             # achieve "no output unless there's an error" operation - Josh
             # print ("Setting DirectNotify category: " + categoryName +
             #        " to severity: " + level)
-            category = self.getCategory(categoryName)
             if level == "error":
                 category.setWarning(0)
                 category.setInfo(0)
@@ -103,11 +103,23 @@ class DirectNotify:
             else:
                 print ("DirectNotify: unknown notify level: " + str(level)
                        + " for category: " + str(categoryName))
+        else:
+            category.setWarning(0)
+            category.setInfo(0)
+            category.setDebug(0)
+            
 
     def setDconfigLevels(self):
         for categoryName in self.getCategories():
             self.setDconfigLevel(categoryName)
 
+    def setVerbose(self):
+        for categoryName in self.getCategories():
+            category = self.getCategory(categoryName)
+            category.setWarning(1)
+            category.setInfo(1)
+            category.setDebug(1)
+            
     def popupControls(self, tl = None):
         from direct.tkpanels import NotifyPanel
         NotifyPanel.NotifyPanel(self, tl)
