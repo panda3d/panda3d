@@ -25,6 +25,37 @@ GeomMunger *DXGeomMunger9::_deleted_chain = NULL;
 TypeHandle DXGeomMunger9::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGeomMunger9::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DXGeomMunger9::
+~DXGeomMunger9() {
+  if (_reffed_filtered_texture) {
+    unref_delete(_filtered_texture);
+    _reffed_filtered_texture = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGeomMunger9::wp_callback
+//       Access: Public, Virtual
+//  Description: This callback is set to be made whenever the
+//               associated _texture or _tex_gen attributes are
+//               destructed, in which case the GeomMunger is invalid
+//               and should no longer be used.
+////////////////////////////////////////////////////////////////////
+void DXGeomMunger9::
+wp_callback(void *) {
+  unregister_myself();
+
+  if (_reffed_filtered_texture) {
+    unref_delete(_filtered_texture);
+    _reffed_filtered_texture = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGeomMunger9::munge_format_impl
 //       Access: Protected, Virtual
 //  Description: Given a source GeomVertexFormat, converts it if
@@ -37,7 +68,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     if (animation.get_animation_type() != AT_none) {
       dxgsg9_cat.debug()
         << "preparing animation type " << animation << " for " << *orig
-  << "\n";
+        << "\n";
     }
   }
   // We have to build a completely new format that includes only the
@@ -110,13 +141,13 @@ munge_format_impl(const GeomVertexFormat *orig,
 
   // Now copy all of the texture coordinates in, in order by stage
   // index.  But we have to reuse previous columns.
-  if (_texture != (TextureAttrib *)NULL) {
+  if (_filtered_texture != (TextureAttrib *)NULL) {
     typedef pset<const InternalName *> UsedStages;
     UsedStages used_stages;
 
-    int num_stages = _texture->get_num_on_stages();
+    int num_stages = _filtered_texture->get_num_on_stages();
     for (int i = 0; i < num_stages; ++i) {
-      TextureStage *stage = _texture->get_on_stage(i);
+      TextureStage *stage = _filtered_texture->get_on_stage(i);
 
       InternalName *name = stage->get_texcoord_name();
       if (used_stages.insert(name).second) {
@@ -154,8 +185,8 @@ munge_format_impl(const GeomVertexFormat *orig,
 int DXGeomMunger9::
 compare_to_impl(const GeomMunger *other) const {
   const DXGeomMunger9 *om = DCAST(DXGeomMunger9, other);
-  if (_texture != om->_texture) {
-    return _texture < om->_texture ? -1 : 1;
+  if (_filtered_texture != om->_filtered_texture) {
+    return _filtered_texture < om->_filtered_texture ? -1 : 1;
   }
   if (_tex_gen != om->_tex_gen) {
     return _tex_gen < om->_tex_gen ? -1 : 1;
@@ -174,12 +205,13 @@ compare_to_impl(const GeomMunger *other) const {
 ////////////////////////////////////////////////////////////////////
 int DXGeomMunger9::
 geom_compare_to_impl(const GeomMunger *other) const {
-  // Unlike GLGeomMunger, we do consider _texture and _tex_gen
-  // important for this purpose, since they control the number and
-  // order of texture coordinates we might put into the FVF.
+  // Unlike GLGeomMunger, we do consider _filtered_texture and
+  // _tex_gen important for this purpose, since they control the
+  // number and order of texture coordinates we might put into the
+  // FVF.
   const DXGeomMunger9 *om = DCAST(DXGeomMunger9, other);
-  if (_texture != om->_texture) {
-    return _texture < om->_texture ? -1 : 1;
+  if (_filtered_texture != om->_filtered_texture) {
+    return _filtered_texture < om->_filtered_texture ? -1 : 1;
   }
   if (_tex_gen != om->_tex_gen) {
     return _tex_gen < om->_tex_gen ? -1 : 1;

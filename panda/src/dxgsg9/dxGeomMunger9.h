@@ -22,6 +22,8 @@
 #include "pandabase.h"
 #include "standardMunger.h"
 #include "graphicsStateGuardian.h"
+#include "weakPointerTo.h"
+#include "weakPointerCallback.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DXGeomMunger9
@@ -31,10 +33,13 @@
 //               and that all relevant components are packed into a
 //               single array, in the correct order.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDADX DXGeomMunger9 : public StandardMunger {
+class EXPCL_PANDADX DXGeomMunger9 : public StandardMunger, public WeakPointerCallback {
 public:
   INLINE DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state);
+  virtual ~DXGeomMunger9();
   ALLOC_DELETED_CHAIN(DXGeomMunger9);
+
+  virtual void wp_callback(void *);
 
 protected:
   virtual CPT(GeomVertexFormat) munge_format_impl(const GeomVertexFormat *orig,
@@ -44,8 +49,16 @@ protected:
   virtual int geom_compare_to_impl(const GeomMunger *other) const;
 
 private:
-  CPT(TextureAttrib) _texture;
-  CPT(TexGenAttrib) _tex_gen;
+  WCPT(TextureAttrib) _texture;
+  WCPT(TexGenAttrib) _tex_gen;
+
+  // This pointer is derived from _texture, above.  In the case that
+  // it is a different pointer, we maintain its reference count
+  // explicitly.  If it is the same pointer, we don't reference count
+  // it at all (so we won't hold on to the reference count
+  // unnecessarily).
+  const TextureAttrib *_filtered_texture;
+  bool _reffed_filtered_texture;
 
   static GeomMunger *_deleted_chain;
 
