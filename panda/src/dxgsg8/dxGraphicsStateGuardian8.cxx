@@ -2179,13 +2179,11 @@ set_state_and_transform(const RenderState *target,
     _state._clip_plane = _target._clip_plane;
   }
 
-  if (_target._color != _state._color) {
+  if (_target._color != _state._color ||
+      _target._color_scale != _state._color_scale) {
     do_issue_color();
-    _state._color = _target._color;
-  }
-
-  if (_target._color_scale != _state._color_scale) {
     do_issue_color_scale();
+    _state._color = _target._color;
     _state._color_scale = _target._color_scale;
   }
 
