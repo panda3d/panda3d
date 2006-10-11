@@ -66,13 +66,12 @@ Trackball(const string &name) :
   watch_button(MouseButton::two());
   watch_button(MouseButton::three());
 
+#ifdef IS_OSX
   // In OSX mode, we need to use the command and option key in
-  // conjunction with the (one) mouse button.  We can go ahead and
-  // keep this code live in other platforms too; it doesn't do any
-  // harm.
+  // conjunction with the (one) mouse button.
   watch_button(KeyboardButton::meta());
   watch_button(KeyboardButton::alt());
-  watch_button(KeyboardButton::control());
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -558,30 +557,25 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     int this_button = 0;
     
     if (is_down(MouseButton::one())) {
-      if (is_down(KeyboardButton::meta())) {
-        // Wait, the user is holding down the command key in
-        // conjunction with mouse button 1.  This changes its meaning
-        // to either mouse 2 and/or mouse 3, according to whether the
-        // alt or control key is also held down.
-            
-        if (is_down(KeyboardButton::alt())) {
-          // Command + alt: B2 + B3.
-          this_button |= B2_MASK | B3_MASK;
-
-        } else if (is_down(KeyboardButton::control())) {
-          // Command + control: B2.
-          this_button |= B2_MASK;
-
-        } else {
-          // Command key by itself: B3.
+#ifdef IS_OSX
+      if (is_down(KeyboardButton::alt())) {
+        // B1 + alt (option) = B2.
+        this_button |= B2_MASK;
+        if (is_down(KeyboardButton::meta())) {
           this_button |= B3_MASK;
         }
 
+      } else if (is_down(KeyboardButton::meta())) {
+        // B1 + meta (command) = B3.
+        this_button |= B3_MASK;
+
       } else {
-        // Without the command key, a mouse 1 button is a mouse 1
-        // button.
+        // Without a special key, B1 is B1.
         this_button |= B1_MASK;
       }
+#else   // IS_OSX
+      this_button |= B1_MASK;
+#endif  // IS_OSX
     }
     if (is_down(MouseButton::two())) {
       this_button |= B2_MASK;
