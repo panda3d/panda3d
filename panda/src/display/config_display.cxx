@@ -204,7 +204,7 @@ ConfigVariableBool color_scale_via_lighting
           "it.  See also alpha-scale-via-texture."));
 
 ConfigVariableBool alpha_scale_via_texture
-("alpha-scale-via-texture", false,
+("alpha-scale-via-texture", true,
  PRC_DESC("When this is true, Panda will try to implement "
           "ColorScaleAttribs that affect alpha by "
           "creating an additional Texture layer over the geometry "
