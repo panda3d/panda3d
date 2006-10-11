@@ -599,7 +599,8 @@ get_alpha_scale_via_texture() const {
 INLINE bool GraphicsStateGuardian::
 get_alpha_scale_via_texture(const TextureAttrib *tex_attrib) const {
   return _alpha_scale_via_texture &&
-    (tex_attrib->get_num_on_stages() < get_max_texture_stages());
+    (tex_attrib == (const TextureAttrib *)NULL ||
+     tex_attrib->get_num_on_stages() < get_max_texture_stages());
 }
 
 ////////////////////////////////////////////////////////////////////
