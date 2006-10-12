@@ -4,9 +4,10 @@
   #define TARGET pstatserver
   #define LOCAL_LIBS pandatoolbase
   #define OTHER_LIBS \
-    pstatclient:c net:c putil:c express:c panda:m dtool
-  #define UNIX_SYS_LIBS \
-    m
+    pstatclient:c net:c putil:c pipeline:c \
+    panda:m \
+    pandabase:c express:c pandaexpress:m \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m
 
   #define SOURCES \
     pStatClientData.cxx pStatClientData.h pStatGraph.I pStatGraph.cxx \

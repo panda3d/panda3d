@@ -1,5 +1,8 @@
-#define OTHER_LIBS interrogatedb:c prc:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m express:c putil:c
+#define OTHER_LIBS \
+   pipeline:c panda:m \
+   express:c putil:c pandabase:c pandaexpress:m \
+   interrogatedb:c prc:c dconfig:c dtoolconfig:m \
+   dtoolutil:c dtoolbase:c dtool:m
 
 #begin ss_lib_target
   #define TARGET pandatoolbase

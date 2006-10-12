@@ -2,12 +2,11 @@
   imagebase progbase
 #define OTHER_LIBS \
   egg:c pandaegg:m \
-  linmath:c \
-  pnmimagetypes:c pnmimage:c putil:c express:c panda:m \
-  pandaexpress:m \
-  dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
-#define UNIX_SYS_LIBS \
-  m
+  linmath:c event:c pipeline:c mathutil:c \
+  pnmimagetypes:c pnmimage:c putil:c express:c \
+  panda:m \
+  pandabase:c pandaexpress:m \
+  interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
 #begin bin_target
   #define TARGET image-trans

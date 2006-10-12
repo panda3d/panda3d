@@ -5,9 +5,15 @@
 #define LOCAL_LIBS \
   palettizer eggbase progbase
 #define OTHER_LIBS \
+  egg:c pandaegg:m \
   display:c pnmtext:c pnmimagetypes:c pnmimage:c \
-  egg:c linmath:c putil:c express:c pandaegg:m panda:m pandaexpress:m \
-  dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+  linmath:c putil:c pgraph:c pipeline:c cull:c \
+  gsgbase:c gobj:c event:c mathutil:c pstatclient:c \
+  lerp:c \
+  $[if $[HAVE_NET],net:c] \
+  panda:m \
+  downloader:c pandabase:c express:c pandaexpress:m \
+  interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
 #begin bin_target
   #define TARGET egg-mkfont

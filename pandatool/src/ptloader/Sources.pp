@@ -6,13 +6,15 @@
     converter pandatoolbase
   #define OTHER_LIBS \
     egg2pg:c egg:c pandaegg:m \
-    mathutil:c linmath:c putil:c \
+    pstatclient:c mathutil:c linmath:c putil:c \
     gobj:c chan:c parametrics:c pgraph:c \
     pnmimage:c grutil:c collide:c tform:c text:c \
-    char:c dgraph:c display:c \
-    downloader:c \
-    event:c gsgbase:c lerp:c panda:m \
-    express:c pandaexpress:m \
+    char:c dgraph:c display:c device:c cull:c \
+    downloader:c pipeline:c pnmtext:c \
+    event:c gsgbase:c lerp:c \
+    $[if $[HAVE_NET],net:c] \
+    panda:m \
+    pandabase:c express:c pandaexpress:m \
     interrogatedb:c prc:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
   #define UNIX_SYS_LIBS \

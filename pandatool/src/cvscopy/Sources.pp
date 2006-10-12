@@ -4,8 +4,11 @@
     progbase pandatoolbase
 
   #define OTHER_LIBS \
-    express:c dtoolutil:c dtoolbase:c pnmimagetypes:c pnmimage:c putil:c \
-    linmath:c panda:m prc:c dconfig:c dtool:m pystub
+    pipeline:c pnmimagetypes:c pnmimage:c putil:c linmath:c \
+    event:c \
+    panda:m \
+    pandabase:c express:c pandaexpress:m \
+    dtoolutil:c dtoolbase:c prc:c dconfig:c interrogatedb:c dtool:m
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
     

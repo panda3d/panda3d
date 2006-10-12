@@ -3,9 +3,10 @@
   #define LOCAL_LIBS pandatoolbase
 
   #define OTHER_LIBS \
-    mathutil:c linmath:c panda:m \
-    dtoolbase:c dtool:m
-  #define UNIX_SYS_LIBS m
+    pipeline:c event:c putil:c mathutil:c linmath:c \
+    panda:m \
+    pandabase:c express:c pandaexpress:m \
+    dtoolutil:c dconfig:c prc:c interrogatedb:c dtoolbase:c dtool:m
   
   #define SOURCES \
     dxfFile.cxx dxfFile.h dxfLayer.h dxfLayer.cxx \

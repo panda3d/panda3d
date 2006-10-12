@@ -3,9 +3,9 @@
   #define LOCAL_LIBS \
     progbase
   #define OTHER_LIBS \
-    pnmimage:c panda:m \
-    pystub \
-    express:c linmath:c putil:c \
+    linmath:c putil:c pnmimage:c pipeline:c event:c \
+    panda:m \
+    pandabase:c express:c pandaexpress:m \
     interrogatedb:c prc:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
 

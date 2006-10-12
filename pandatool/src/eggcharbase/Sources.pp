@@ -3,7 +3,11 @@
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
-    egg:c event:c express:c linmath:c mathutil:c pnmimage:c putil:c panda:m pystub \
+    egg:c pandaegg:m \
+    event:c linmath:c mathutil:c pnmimage:c putil:c \
+    pipeline:c \
+    panda:m \
+    pandabase:c express:c pandaexpress:m \
     interrogatedb:c prc:c dconfig:c dtooolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
   #define USE_PACKAGES zlib

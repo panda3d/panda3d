@@ -3,11 +3,15 @@
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
-    chan:c char:c downloader:c egg2pg:c event:c lerp:c \
-    tform:c grutil:c text:c dgraph:c display:c gsgbase:c collide:c gobj:c \
-    parametrics:c pgraph:c egg:c pandaegg:m \
-    pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c panda:m \
-    express:c pandaexpress:m \
+    egg2pg:c egg:c pandaegg:m \
+    chan:c char:c downloader:c event:c lerp:c \
+    tform:c grutil:c text:c dgraph:c display:c gsgbase:c \
+    collide:c gobj:c cull:c device:c pnmtext:c \
+    parametrics:c pgraph:c pipeline:c pstatclient:c chan:c \
+    pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c \
+    $[if $[HAVE_NET],net:c] \
+    panda:m \
+    pandabase:c express:c pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS m
 

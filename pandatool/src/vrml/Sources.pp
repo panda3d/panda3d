@@ -5,8 +5,10 @@
   #define LOCAL_LIBS \
     pandatoolbase
   #define OTHER_LIBS \
-    mathutil:c linmath:c panda:m \
-    dtoolbase:c dtool:m
+    mathutil:c linmath:c pipeline:c \
+    panda:m \
+    pandabase:c express:c pandaexpress:m \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m
 
   #define USE_PACKAGES zlib
 

@@ -5,7 +5,8 @@
   #define LOCAL_LIBS \
     pandatoolbase
   #define OTHER_LIBS \
-    pnmimage:c linmath:c putil:c express:c panda:m pystub \
+    pipeline:c event:c panda:m \
+    pandabase:c pnmimage:c linmath:c putil:c express:c \
     interrogatedb:c prc:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
     
@@ -33,6 +34,7 @@
   #define TARGET test_prog
   #define LOCAL_LIBS \
     progbase
+  #define OTHER_LIBS pystub
 
   #define SOURCES \
     test_prog.cxx

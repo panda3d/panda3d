@@ -3,10 +3,14 @@
   #define LOCAL_LIBS \
     pandatoolbase
   #define OTHER_LIBS \
-    egg:c display:c pgraph:c linmath:c putil:c express:c pnmimage:c pnmimagetypes:c \
-    event:c mathutil:c \
-    pandaegg:m panda:m pandaexpress:m \
-    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m
+    egg:c pandaegg:m \
+    display:c pgraph:c linmath:c putil:c pnmimage:c \
+    pnmimagetypes:c pipeline:c cull:c gsgbase:c gobj:c \
+    event:c mathutil:c pstatclient:c lerp:c \
+    $[if $[HAVE_NET],net:c] \
+    panda:m \
+    pandabase:c express:c downloader:c pandaexpress:m \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 

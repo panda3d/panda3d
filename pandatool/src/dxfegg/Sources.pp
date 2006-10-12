@@ -2,10 +2,13 @@
   #define TARGET dxfegg
   #define LOCAL_LIBS converter dxf pandatoolbase
   #define OTHER_LIBS \
-    egg:c event:c pandaegg:m \
-    mathutil:c linmath:c putil:c express:c panda:m \
+    egg:c pandaegg:m \
+    pandabase:c express:c pandaexpress:m \
+    pipeline:c mathutil:c linmath:c putil:c event:c \
+    panda:m \
     interrogatedb:c prc:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
+
   #define UNIX_SYS_LIBS \
     m
 

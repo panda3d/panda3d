@@ -1,9 +1,11 @@
 #define LOCAL_LIBS \
   converter eggbase progbase
 #define OTHER_LIBS \
-  egg:c event:c pandaegg:m \
-  pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c panda:m \
-  express:c pandaexpress:m \
+  egg:c pandaegg:m \
+  event:c pipeline:c \
+  pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c \
+  panda:m \
+  pandabase:c express:c pandaexpress:m \
   interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 #define UNIX_SYS_LIBS m
 

@@ -1,11 +1,13 @@
+#define OTHER_LIBS \
+  egg:c pandaegg:m \
+  pipeline:c event:c panda:m \
+  mathutil:c linmath:c putil:c express:c pandabase:c \
+  interrogatedb:c prc:c dconfig:c dtoolconfig:m \
+  dtoolutil:c dtoolbase:c dtool:m
+
 #begin ss_lib_target
   #define TARGET converter
   #define LOCAL_LIBS pandatoolbase
-  #define OTHER_LIBS \
-    egg:c pandaegg:m \
-    mathutil:c linmath:c putil:c express:c panda:m \
-    interrogatedb:c prc:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m
   #define UNIX_SYS_LIBS \
     m
 

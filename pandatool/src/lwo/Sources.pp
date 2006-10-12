@@ -1,6 +1,8 @@
 #define LOCAL_LIBS pandatoolbase
 #define OTHER_LIBS \
-  mathutil:c linmath:c putil:c express:c panda:m pandaexpress:m \
+  mathutil:c linmath:c putil:c pipeline:c event:c \
+  panda:m \
+  pandabase:c express:c pandaexpress:m \
   interrogatedb:c prc:c dconfig:c dtoolconfig:m \
   dtoolutil:c dtoolbase:c dtool:m
 #define UNIX_SYS_LIBS m

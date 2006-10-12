@@ -3,9 +3,12 @@
   #define LOCAL_LIBS xfile eggbase progbase pandatoolbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    mathutil:c linmath:c putil:c panda:m \
-    express:c pandaexpress:m \
-    dtoolconfig dtool pystub \
+    mathutil:c linmath:c putil:c pipeline:c event:c \
+    pnmimage:c \
+    panda:m \
+    pandabase:c express:c pandaexpress:m \
+    interrogatedb:c prc:c dconfig:c dtoolconfig:m \
+    dtoolutil:c dtoolbase:c dtool:m
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
     
