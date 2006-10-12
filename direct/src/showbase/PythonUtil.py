@@ -904,6 +904,10 @@ class Queue:
     def top(self):
         # return the next item at the front of the queue without popping it off
         return self.__list[0]
+    def front(self):
+        return self.__list[0]
+    def back(self):
+        return self.__list[-1]
     def pop(self):
         return self.__list.pop(0)
     def clear(self):
@@ -923,6 +927,8 @@ if __debug__:
     q.push(20)
     assert not q.isEmpty()
     assert len(q) == 2
+    assert q.front() == 10
+    assert q.back() == 20
     assert q.top() == 10
     assert q.top() == 10
     assert q.pop() == 10
