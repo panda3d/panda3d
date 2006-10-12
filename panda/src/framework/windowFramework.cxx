@@ -399,6 +399,7 @@ enable_keyboard() {
     mods.add_button(KeyboardButton::shift());
     mods.add_button(KeyboardButton::control());
     mods.add_button(KeyboardButton::alt());
+    mods.add_button(KeyboardButton::meta());
     bt->set_modifier_buttons(mods);
     mouse.attach_new_node(bt);
   }

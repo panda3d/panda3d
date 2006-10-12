@@ -1040,6 +1040,7 @@ class ShowBase(DirectObject.DirectObject):
             mb.addButton(KeyboardButton.shift())
             mb.addButton(KeyboardButton.control())
             mb.addButton(KeyboardButton.alt())
+            mb.addButton(KeyboardButton.meta())
             mw.node().setModifierButtons(mb)
             bt = mw.attachNewNode(ButtonThrower(name))
             if (i != 0):
@@ -1048,6 +1049,7 @@ class ShowBase(DirectObject.DirectObject):
             mods.addButton(KeyboardButton.shift())
             mods.addButton(KeyboardButton.control())
             mods.addButton(KeyboardButton.alt())
+            mods.addButton(KeyboardButton.meta())
             bt.node().setModifierButtons(mods)
             self.buttonThrowers.append(bt)
             if (win.hasPointer(i)):
@@ -1128,6 +1130,10 @@ class ShowBase(DirectObject.DirectObject):
     def getControl(self):
         return self.mouseWatcherNode.getModifierButtons().isDown(
             KeyboardButton.control())
+
+    def getMeta(self):
+        return self.mouseWatcherNode.getModifierButtons().isDown(
+            KeyboardButton.meta())
 
     def addAngularIntegrator(self):
         if not self.physicsMgrAngular:
