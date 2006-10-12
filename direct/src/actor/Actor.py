@@ -238,7 +238,6 @@ class Actor(DirectObject, NodePath):
             # copy the part dictionary from other
             self.__copyPartBundles(other)
             self.__copySubpartDict(other)
-
             self.__subpartsComplete = other.__subpartsComplete
 
             # copy the anim dictionary from other
