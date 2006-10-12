@@ -16,8 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef EVENT_H
-#define EVENT_H
+// Apparently some OSX system header defines EVENT_H.  Go figure.
+#ifndef __EVENT_H__
+#define __EVENT_H__
 
 #include "pandabase.h"
 #include "eventParameter.h"
