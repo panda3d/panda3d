@@ -22,7 +22,8 @@ class Actor(DirectObject, NodePath):
                                        LoaderOptions.LFReportErrors |
                                        LoaderOptions.LFConvertAnim)
 
-    def __init__(self, models=None, anims=None, other=None, copy=1):
+    def __init__(self, models=None, anims=None, other=None, copy=1,
+                 lodNode = None):
         """__init__(self, string | string:string{}, string:string{} |
         string:(string:string{}){}, Actor=None)
         Actor constructor: can be used to create single or multipart
@@ -129,7 +130,7 @@ class Actor(DirectObject, NodePath):
                     # if this is a dictionary of dictionaries
                     if (type(models[models.keys()[0]]) == type({})):
                         # then it must be a multipart actor w/LOD
-                        self.setLODNode()
+                        self.setLODNode(node = lodNode)
                         # preserve numerical order for lod's
                         # this will make it easier to set ranges
                         sortedKeys = models.keys()
@@ -150,7 +151,7 @@ class Actor(DirectObject, NodePath):
                             self.loadModel(models[partName], partName, copy = copy)
                     else:
                         # it is a single part actor w/LOD
-                        self.setLODNode()
+                        self.setLODNode(node = lodNode)
                         # preserve order of LOD's
                         sortedKeys = models.keys()
                         sortedKeys.sort()
@@ -461,10 +462,9 @@ class Actor(DirectObject, NodePath):
         If one is not supplied as an argument, make one
         """
         if (node == None):
-            lod = LODNode("lod")
-            self.__LODNode = self.__geomNode.attachNewNode(lod)
-        else:
-            self.__LODNode = self.__geomNode.attachNewNode(node)
+            node = LODNode("lod")
+
+        self.__LODNode = self.__geomNode.attachNewNode(node)
         self.__hasLOD = 1
         self.switches = {}
 
