@@ -90,6 +90,7 @@ public: // do not call direct ..
 
   OSStatus event_handler(EventHandlerCallRef myHandler, EventRef event);
 
+  virtual void user_close_request();
   void SystemCloseWindow();
   void SystemSetWindowForground(bool forground);	
   void SystemPointToLocalPoint(Point &qdGlobalPoint);

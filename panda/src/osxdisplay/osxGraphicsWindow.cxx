@@ -161,6 +161,13 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
   WindowRef window = NULL;		
   GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
 
+  if (osxdisplay_cat.is_spam()) {
+    osxdisplay_cat.spam()
+      << ClockObject::get_global_clock()->get_real_time() 
+      << " event_handler: " << (void *)this << ", " << window << ", "
+      << the_class << ", " << kind << "\n";
+  }
+
   switch (the_class) {
   case kEventClassMouse:
     result  = handleWindowMouseEvents (myHandler, event);
@@ -169,7 +176,6 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
   case kEventClassWindow:	
     switch (kind) {
     case kEventWindowCollapsing:
-      cerr << "collapsing\n";
       /*
       Rect r;
       GetWindowPortBounds (window, &r);					
@@ -185,20 +191,8 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
     case kEventWindowClose: // called when window is being closed (close box)
       // This is a message from the window manager indicating that
       // the user has requested to close the window.
-      {
-        string close_request_event = get_close_request_event();
-        if (!close_request_event.empty()) {
-          // In this case, the app has indicated a desire to intercept
-          // the request and process it directly.
-          throw_event(close_request_event);
-          result = noErr;
-          
-        } else {
-          // In this case, the default case, the app does not intend
-          // to service the request, so we do by closing the window.
-          close_window();
-        }
-      }
+      user_close_request();
+      result = noErr;
       break;
     case kEventWindowShown: // called on initial show (not on un-minimize)
       if (window == FrontWindow ())
@@ -215,6 +209,28 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
   }
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::user_close_request
+//       Access: Private
+//  Description: The user has requested to close the window, for
+//               instance with Cmd-W, or by clicking on the close
+//               button.
+////////////////////////////////////////////////////////////////////
+void osxGraphicsWindow::
+user_close_request() {
+  string close_request_event = get_close_request_event();
+  if (!close_request_event.empty()) {
+    // In this case, the app has indicated a desire to intercept
+    // the request and process it directly.
+    throw_event(close_request_event);
+    
+  } else {
+    // In this case, the default case, the app does not intend
+    // to service the request, so we do by closing the window.
+    close_window();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1129,40 +1145,56 @@ void handleWindowDMEvent (void *userData, short theMessage, void *notifyData)
 	}
 }
 ////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::process_events()
+//     Function: osxGraphicsWindow::handleKeyInput()
 //       Access: virtual, protected
 //  Description: Required Event upcall . Used to dispatch Window and Aplication Events 
 //               back into panda
 //               
 ////////////////////////////////////////////////////////////////////
 // key input handler
-OSStatus osxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, EventRef event, Boolean keyDown)
-{
-	OSStatus result = eventNotHandledErr;
+OSStatus osxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, EventRef event, Boolean keyDown) {
+  OSStatus result = eventNotHandledErr;
 
-	result = CallNextEventHandler(myHandler, event);	
-	if (eventNotHandledErr == result) 
-	{ 
-			UInt32 newModifiers = 0;
-			OSStatus error = GetEventParameter(event, kEventParamKeyModifiers,typeUInt32, NULL,sizeof(UInt32), NULL, &newModifiers);
-			if(error == noErr)						   
-				HandleModifireDeleta(newModifiers);
-	
-			UInt32 keyCode;
-			GetEventParameter (event, kEventParamKeyCode, typeUInt32, NULL, sizeof(UInt32), NULL, &keyCode);
-			if(keyDown)
-			{
-			  SendKeyEvent(OSX_TranslateKey( keyCode , event ),true);
-			  result = noErr; 
-			}
-			else
-			{
-			  SendKeyEvent(OSX_TranslateKey( keyCode , event ),false);
-			  result = noErr; 
-			}
-	}	
-			
-	return result;
+  if (osxdisplay_cat.is_spam()) {
+    UInt32 keyCode;
+    GetEventParameter (event, kEventParamKeyCode, typeUInt32, NULL, sizeof(UInt32), NULL, &keyCode);
+
+    osxdisplay_cat.spam()
+      << ClockObject::get_global_clock()->get_real_time() 
+      << " handleKeyInput: " << (void *)this << ", " << keyCode << "\n";
+  }
+  
+  result = CallNextEventHandler(myHandler, event);	
+  if (eventNotHandledErr == result) { 
+    UInt32 newModifiers = 0;
+    OSStatus error = GetEventParameter(event, kEventParamKeyModifiers,typeUInt32, NULL,sizeof(UInt32), NULL, &newModifiers);
+    if(error == noErr) {						   
+      HandleModifireDeleta(newModifiers);
+    }
+    
+    UInt32 keyCode;
+    GetEventParameter (event, kEventParamKeyCode, typeUInt32, NULL, sizeof(UInt32), NULL, &keyCode);
+    ButtonHandle button = OSX_TranslateKey(keyCode, event);
+
+    if (keyDown) {
+      if ((newModifiers & cmdKey) != 0) {
+        if (button == KeyboardButton::ascii_key("q") ||
+            button == KeyboardButton::ascii_key("w")) {
+          // Command-Q or Command-W: quit the application or close the
+          // window, respectively.  For now, we treat them both the
+          // same: close the window.
+          user_close_request();
+        }
+      }
+      SendKeyEvent(button, true);
+      result = noErr; 
+    } else {
+      SendKeyEvent(button, false);
+      result = noErr; 
+    }
+  }	
+  
+  return result;
 }
  ////////////////////////////////////////////////////////////////////
  //     Function: 
