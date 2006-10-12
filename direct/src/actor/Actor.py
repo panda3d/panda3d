@@ -237,7 +237,9 @@ class Actor(DirectObject, NodePath):
 
             # copy the part dictionary from other
             self.__copyPartBundles(other)
-            self.__subpartDict = copy_module.deepcopy(other.__subpartDict)
+            self.__copySubpartDict(other)
+
+            self.__subpartsComplete = other.__subpartsComplete
 
             # copy the anim dictionary from other
             self.__copyAnimControls(other)
@@ -1690,6 +1692,19 @@ class Actor(DirectObject, NodePath):
                     Actor.notify.error("lod: %s has no matching part: %s" %
                                        (lodName, partName))
 
+    def __copySubpartDict(self, other):
+        """Copies the subpartDict from another as this instance's own.
+        This makes a deep copy of the map and all of the names and
+        PartSubset objects within it.  We can't use copy.deepcopy()
+        because of the included C++ PartSubset objects."""
+
+        self.__subpartDict = {}
+        for partName, subpartDef in other.__subpartDict.items():
+            subpartDefCopy = subpartDef
+            if subpartDef:
+                truePartName, subset = subpartDef
+                subpartDefCopy = (truePartName, PartSubset(subset))
+            self.__subpartDict[partName] = subpartDef
 
     def __copyAnimControls(self, other):
         """__copyAnimControls(self, Actor)
