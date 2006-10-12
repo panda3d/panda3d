@@ -21,6 +21,7 @@
 #include "pStatClient.h"
 #include "eventQueue.h"
 #include "dataGraphTraverser.h"
+#include "depthOffsetAttrib.h"
 #include "collisionNode.h"
 #include "config_framework.h"
 #include "graphicsPipeSelection.h"
@@ -90,7 +91,9 @@ open_framework(int &argc, char **&argv) {
   _data_root = NodePath("data");
   _highlight_wireframe = NodePath("wireframe");
   _highlight_wireframe.set_render_mode_wireframe(1);
+  _highlight_wireframe.set_texture_off(1);
   _highlight_wireframe.set_color(1.0f, 0.0f, 0.0f, 1.0f, 1);
+  _highlight_wireframe.set_attrib(DepthOffsetAttrib::make());
 
   if (!playback_session.empty()) {
     // If the config file so indicates, create a recorder and start it
