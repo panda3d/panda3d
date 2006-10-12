@@ -33,8 +33,13 @@ ConfigureFn(config_osxdisplay) {
   init_libosxdisplay();
 }
 
-ConfigVariableString display_cfg
-("display", "");
+ConfigVariableBool show_resize_box
+("show-resize-box", true,
+ PRC_DESC("When this variable is true, then resizable OSX Panda windows will "
+          "be rendered with a resize control in the lower-right corner.  "
+          "This is specially handled by Panda, since otherwise the 3-d "
+          "window would completely hide any resize control drawn by the "
+          "OS.  Set this variable false to allow this control to be hidden."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libosxdisplay

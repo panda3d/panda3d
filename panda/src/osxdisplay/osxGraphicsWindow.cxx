@@ -22,6 +22,7 @@
 #include "keyboardButton.h"
 #include "mouseButton.h"
 #include "osxGraphicsStateGuardian.h"
+#include "throw_event.h"
 
 #include <OpenGL/gl.h>
 #include <AGL/agl.h>
@@ -144,6 +145,78 @@ static void CompositeGLBufferIntoWindow (AGLContext ctx, Rect *bufferRect, GrafP
 	DisposeGWorld( pGWorld );
 	DisposePtr ( image );
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::event_handler
+//       Access: Public
+//  Description: The standard window event handler for non-fullscreen
+//               windows.
+////////////////////////////////////////////////////////////////////
+OSStatus osxGraphicsWindow::
+event_handler(EventHandlerCallRef myHandler, EventRef event) {
+  OSStatus result = eventNotHandledErr;
+  UInt32 the_class = GetEventClass(event);
+  UInt32 kind = GetEventKind(event);
+
+  WindowRef window = NULL;		
+  GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
+
+  switch (the_class) {
+  case kEventClassMouse:
+    result  = handleWindowMouseEvents (myHandler, event);
+    break;
+	
+  case kEventClassWindow:	
+    switch (kind) {
+    case kEventWindowCollapsing:
+      cerr << "collapsing\n";
+      /*
+      Rect r;
+      GetWindowPortBounds (window, &r);					
+      CompositeGLBufferIntoWindow( get_context(), &r, GetWindowPort (window));
+      UpdateCollapsedWindowDockTile (window);
+      */
+      SystemSetWindowForground(false);
+      break;
+    case kEventWindowActivated: // called on click activation and initially
+      SystemSetWindowForground(true);
+      DoResize();
+      break;
+    case kEventWindowClose: // called when window is being closed (close box)
+      // This is a message from the window manager indicating that
+      // the user has requested to close the window.
+      {
+        string close_request_event = get_close_request_event();
+        if (!close_request_event.empty()) {
+          // In this case, the app has indicated a desire to intercept
+          // the request and process it directly.
+          throw_event(close_request_event);
+          result = noErr;
+          
+        } else {
+          // In this case, the default case, the app does not intend
+          // to service the request, so we do by closing the window.
+          close_window();
+        }
+      }
+      break;
+    case kEventWindowShown: // called on initial show (not on un-minimize)
+      if (window == FrontWindow ())
+        SetUserFocusWindow (window);
+      break;
+    case kEventWindowBoundsChanged: // called for resize and moves (drag)
+      DoResize();
+      break;
+    case kEventWindowZoomed: // called when user clicks on zoom button (occurs after the window has been zoomed)
+      // use this if you need to some special here as you always get a kEventWindowBoundsChanged event
+      break;
+    }
+    break;
+  }
+
+  return result;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsWindow::SystemCloseWindow
 //       Access: private
@@ -156,72 +229,31 @@ void osxGraphicsWindow::SystemCloseWindow()
 	osxdisplay_cat.debug() << "System Closing Window \n";
 	ReleaseSystemResources();	
 };
+
 ////////////////////////////////////////////////////////////////////
 //     Function: windowEvtHndlr
 //       Access: file scope static
 //  Description: The C callback for Window Events ..
 //
-//   We only hook this up for none fullscreen window... so we only handle system window events..
+//  We only hook this up for non fullscreen window... so we only
+//  handle system window events..
 //        
 ////////////////////////////////////////////////////////////////////
-static pascal OSStatus windowEvtHndlr (EventHandlerCallRef myHandler, EventRef event, void* userData)
-{
+static pascal OSStatus 
+windowEvtHndlr(EventHandlerCallRef myHandler, EventRef event, void *userData) {
 #pragma unused (userData)
-    OSStatus			result = eventNotHandledErr;
-    UInt32 				the_class = GetEventClass (event);
-    UInt32 				kind = GetEventKind (event);
  
-//	cerr << " In windowEvtHndlr \n";
+  WindowRef window = NULL;		
+  GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
 
-				
-    WindowRef window = NULL;		
-	GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
-
-	if(window != NULL)
-	{
-//	if(osx_win->	
-	osxGraphicsWindow * osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);		
-
-	switch (the_class) {
-		case kEventClassMouse:
-			result  = osx_win->handleWindowMouseEvents (myHandler, event);
-			break;
-	
-		case kEventClassWindow:	
-		   // WindowRef window = NULL;		
-		///	GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
-			//osxGraphicsWindow * osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);		 
-			switch (kind) {
-				case kEventWindowCollapsing:
-					//Rect r;
-					//GetWindowPortBounds (window, &r);					
-					//CompositeGLBufferIntoWindow( osx_win->get_context(), &r, GetWindowPort (window));
-					//result = UpdateCollapsedWindowDockTile (window);
-					//osx_win->SystemSetWindowForground(false);
-					break;
-				case kEventWindowActivated: // called on click activation and initially
-						osx_win->SystemSetWindowForground(true);
-						osx_win->DoResize();
-					break;
-				case kEventWindowClose: // called when window is being closed (close box)
-						osx_win->SystemCloseWindow();
-					break;
-				case kEventWindowShown: // called on initial show (not on un-minimize)
-					if (window == FrontWindow ())
-						SetUserFocusWindow (window);
-					break;
-				case kEventWindowBoundsChanged: // called for resize and moves (drag)
-						osx_win->DoResize();
-					break;
-				case kEventWindowZoomed: // called when user clicks on zoom button (occurs after the window has been zoomed)
-					// use this if you need to some special here as you always get a kEventWindowBoundsChanged event
-					break;
-			}
-			break;
-	}
-	}
-    return result;
+  if (window != NULL) {
+    osxGraphicsWindow *osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);
+    return osx_win->event_handler(myHandler, event);
+  } else {
+    return eventNotHandledErr;
+  }
 }
+
 ///////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsWindow::DoResize
 //       Access: 
@@ -626,7 +658,8 @@ void osxGraphicsWindow::end_frame(FrameMode mode, Thread *current_thread)
 
     if (!_properties.get_fixed_size() && 
         !_properties.get_undecorated() && 
-        !_properties.get_fullscreen()) {
+        !_properties.get_fullscreen() &&
+        show_resize_box) {
       // Draw a kludgey little resize box in the corner of the window,
       // so the user knows he's supposed to be able to drag the window
       // if he wants.
@@ -712,6 +745,12 @@ void osxGraphicsWindow::begin_flip()
 ////////////////////////////////////////////////////////////////////
 void osxGraphicsWindow::close_window()
 {
+  SystemCloseWindow();
+
+  WindowProperties properties;
+  properties.set_open(false);
+  system_changed_properties(properties);
+
   ReleaseSystemResources();
   _gsg.clear();
   _active = false;
@@ -935,9 +974,10 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties )
               { kEventClassWindow, kEventWindowClose },
               { kEventClassWindow, kEventWindowBoundsChanged },
               
-              { kEventClassWindow, kEventWindowHidden },
-              { kEventClassWindow, kEventWindowCollapsed },
-              { kEventClassWindow, kEventWindowExpanded },
+              //{ kEventClassWindow, kEventWindowHidden },
+              //{ kEventClassWindow, kEventWindowCollapse },
+              //{ kEventClassWindow, kEventWindowCollapsed },
+              //{ kEventClassWindow, kEventWindowExpanded },
               { kEventClassWindow, kEventWindowZoomed },
               //{ kEventClassWindow, kEventWindowDragStarted },
               //{ kEventClassWindow, kEventWindowDragCompleted },

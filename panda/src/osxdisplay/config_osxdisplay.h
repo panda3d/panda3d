@@ -25,6 +25,6 @@ NotifyCategoryDecl( osxdisplay , EXPCL_PANDAGL, EXPTP_PANDAGL);
 
 extern EXPCL_PANDAGL void init_libosxdisplay();
 
-extern ConfigVariableString display_cfg;
+extern ConfigVariableBool show_resize_box;
 
 #endif /* __CONFIG_OSXDISPLAY_H__ */

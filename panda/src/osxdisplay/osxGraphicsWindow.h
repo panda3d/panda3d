@@ -88,8 +88,9 @@ public: // do not call direct ..
   void     HandleModifireDeleta(UInt32 modifiers);
   void     DoResize(void);
 
+  OSStatus event_handler(EventHandlerCallRef myHandler, EventRef event);
 
-  void SystemCloseWindow();	
+  void SystemCloseWindow();
   void SystemSetWindowForground(bool forground);	
   void SystemPointToLocalPoint(Point &qdGlobalPoint);
   void LocalPointToSystemPoint(Point &qdLocalPoint);
