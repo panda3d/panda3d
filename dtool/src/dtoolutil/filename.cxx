@@ -913,19 +913,16 @@ to_os_specific() const {
   standard.standardize();
 
 #ifdef IS_OSX 
-	if(get_type() == T_dso)
-	{
-          std::string workname = standard.get_fullpath();
-	  size_t dot = workname.rfind('.');
-	  if (dot != string::npos) 
-	  {
-		  if (workname.substr(dot) == ".so") 
-		  {
-  			string dyLibBase = workname.substr(0, dot)+".dylib";
-			return dyLibBase ; 
-		  }
-  	    }
-	}
+  if (get_type() == T_dso) {
+    std::string workname = standard.get_fullpath();
+    size_t dot = workname.rfind('.');
+    if (dot != string::npos) {
+      if (workname.substr(dot) == ".so") {
+        string dyLibBase = workname.substr(0, dot)+".dylib";
+        return dyLibBase; 
+      }
+    }
+  }
 #endif
 
 #ifdef WIN32
@@ -963,6 +960,76 @@ to_os_generic() const {
 
 #ifdef WIN32
   return back_to_front_slash(to_os_specific());
+#else // WIN32
+  return to_os_specific();
+#endif // WIN32
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::to_os_short_name
+//       Access: Published
+//  Description: This works like to_os_generic(), but it returns the
+//               "short name" version of the filename, if it exists,
+//               or the original filename otherwise.
+//
+//               On Windows platforms, this returns the 8.3 filename
+//               version of the given filename, if the file exists,
+//               and the same thing as to_os_specific() otherwise.  On
+//               non-Windows platforms, this always returns the same
+//               thing as to_os_specific().
+////////////////////////////////////////////////////////////////////
+string Filename::
+to_os_short_name() const {
+  assert(!get_pattern());
+
+#ifdef WIN32
+  string os_specific = to_os_specific();
+  
+  char short_name[MAX_PATH + 1];
+  DWORD l = GetShortPathName(os_specific.c_str(), short_name, MAX_PATH + 1);
+  if (l == 0) {
+    // Couldn't query the path name for some reason.  Probably the
+    // file didn't exist.
+    return os_specific;
+  }
+  // According to the Windows docs, l will return a value greater than
+  // the specified length if the short_name length wasn't enough--but also
+  // according to the Windows docs, MAX_PATH will always be enough.
+  assert(l < MAX_PATH + 1);
+
+  return string(short_name);
+
+#else // WIN32
+  return to_os_specific();
+#endif // WIN32
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::to_os_long_name
+//       Access: Published
+//  Description: This is the opposite of to_os_short_name(): it
+//               returns the "long name" of the filename, if the
+//               filename exists.  On non-Windows platforms, this
+//               returns the same thing as to_os_specific().
+////////////////////////////////////////////////////////////////////
+string Filename::
+to_os_long_name() const {
+  assert(!get_pattern());
+
+#ifdef WIN32
+  string os_specific = to_os_specific();
+  
+  char long_name[MAX_PATH + 1];
+  DWORD l = GetLongPathName(os_specific.c_str(), long_name, MAX_PATH + 1);
+  if (l == 0) {
+    // Couldn't query the path name for some reason.  Probably the
+    // file didn't exist.
+    return os_specific;
+  }
+  assert(l < MAX_PATH + 1);
+
+  return string(long_name);
+
 #else // WIN32
   return to_os_specific();
 #endif // WIN32

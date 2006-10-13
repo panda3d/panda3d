@@ -152,6 +152,8 @@ PUBLISHED:
 
   string to_os_specific() const;
   string to_os_generic() const;
+  string to_os_short_name() const;
+  string to_os_long_name() const;
 
   bool exists() const;
   bool is_regular_file() const;
