@@ -13,7 +13,7 @@
 #define HAVE_NAMESPACE 1
 
 /* Define if the C++ iostream library supports ios::binary.  */
-/* #undef HAVE_IOS_BINARY */
+#define HAVE_IOS_BINARY 1
 
 /* Define if fstream::open() accepts a third parameter for umask. */
 /* #undef HAVE_OPEN_MASK */
