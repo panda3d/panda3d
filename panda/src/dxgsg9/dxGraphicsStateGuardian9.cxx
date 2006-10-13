@@ -2349,6 +2349,7 @@ void DXGraphicsStateGuardian9::reset_render_states (void)
     texture_render_states -> state_array [D3DSAMP_MINFILTER] = D3DTEXF_POINT;
     texture_render_states -> state_array [D3DSAMP_MAXANISOTROPY] = 1;
   }
+  _num_active_texture_stages = 0;
 
   set_render_state(D3DRS_NORMALIZENORMALS, false);
 
@@ -3595,13 +3596,8 @@ do_issue_texture() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 disable_standard_texture_bindings() {
-  int num_old_stages = _max_texture_stages;
-  if (_state._texture != (TextureAttrib *)NULL) {
-    num_old_stages = _state._texture->get_num_on_stages();
-  }
-
   // Disable the texture stages that are no longer used.
-  for (int i = 0; i < num_old_stages; i++) {
+  for (int i = 0; i < _num_active_texture_stages; i++) {
     HRESULT hr;
 
     hr = _d3d_device -> SetTexture (i, NULL);
@@ -3613,6 +3609,8 @@ disable_standard_texture_bindings() {
         << D3DERRORSTRING(hr);
     }
   }
+
+  _num_active_texture_stages = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3631,7 +3629,7 @@ update_standard_texture_bindings() {
   }
 
   nassertv(num_stages <= _max_texture_stages &&
-           num_old_stages <= _max_texture_stages);
+           _num_active_texture_stages <= _max_texture_stages);
 
   _texture_involves_color_scale = false;
 
@@ -3827,10 +3825,13 @@ update_standard_texture_bindings() {
   }
 
   // Disable the texture stages that are no longer used.
-  for (i = num_stages; i < num_old_stages; i++) {
+  for (i = num_stages; i < _num_active_texture_stages; i++) {
     set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
     _d3d_device->SetTexture(i, NULL);
   }
+
+  // Save the count of texture stages for next time.
+  _num_active_texture_stages = num_stages;
 }
 
 ////////////////////////////////////////////////////////////////////

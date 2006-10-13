@@ -345,6 +345,8 @@ protected:
   TextureStageStates _texture_stage_states_array [D3D_MAXTEXTURESTAGES];
   TextureRenderStates _texture_render_states_array [MAXIMUM_TEXTURES];
 
+  int _num_active_texture_stages;
+
   int _vertex_shader_version_major;
   int _vertex_shader_version_minor;
   int _pixel_shader_version_major;

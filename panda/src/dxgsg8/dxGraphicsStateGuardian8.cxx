@@ -1721,6 +1721,8 @@ reset() {
     _max_cube_map_dimension = _max_texture_dimension;
   }
 
+  _num_active_texture_stages = 0;
+
   _max_lights = (int)d3d_caps.MaxActiveLights;
   _max_clip_planes = (int)d3d_caps.MaxUserClipPlanes;
   _max_vertex_transforms = d3d_caps.MaxVertexBlendMatrices;
@@ -2513,13 +2515,8 @@ do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
   int num_stages = _effective_texture->get_num_on_stages();
-  int num_old_stages = _max_texture_stages;
-  if (_state._texture != (TextureAttrib *)NULL) {
-    num_old_stages = _state._texture->get_num_on_stages();
-  }
-
   nassertv(num_stages <= _max_texture_stages &&
-           num_old_stages <= _max_texture_stages);
+           _num_active_texture_stages <= _max_texture_stages);
 
   _texture_involves_color_scale = false;
 
@@ -2715,9 +2712,12 @@ do_issue_texture() {
   }
 
   // Disable the texture stages that are no longer used.
-  for (i = num_stages; i < num_old_stages; i++) {
+  for (i = num_stages; i < _num_active_texture_stages; i++) {
     _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
   }
+
+  // Save the count of texture stages for next time.
+  _num_active_texture_stages = num_stages;
 }
 
 ////////////////////////////////////////////////////////////////////

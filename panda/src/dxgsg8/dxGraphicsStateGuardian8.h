@@ -235,6 +235,8 @@ protected:
   const DXVertexBufferContext8 *_active_vbuffer;
   const DXIndexBufferContext8 *_active_ibuffer;
 
+  int _num_active_texture_stages;
+
   bool _overlay_windows_supported;
   bool _tex_stats_retrieval_impossible;
 
