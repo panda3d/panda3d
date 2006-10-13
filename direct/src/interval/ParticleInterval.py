@@ -66,7 +66,7 @@ class ParticleInterval(Interval):
         # Record instance variables
         self.particleEffect = particleEffect 
         self.cleanup = cleanup
-        
+
         if parent != None:
             self.particleEffect.reparentTo(parent)
         if worldRelative:
@@ -118,8 +118,7 @@ class ParticleInterval(Interval):
 
     def privInstant(self):
         self.privInitialize(self.getDuration())
-        self.state = CInterval.SFinal
-        self.intervalDone()
+        self.privFinalize()
         
     def privStep(self, t):
         if self.state == CInterval.SPaused or t < self.currT:
