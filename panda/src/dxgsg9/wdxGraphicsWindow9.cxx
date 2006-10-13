@@ -766,13 +766,52 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
 
   PRINT_REFCNT(wdxdisplay9, _wcontext._d3d_device);
 
-  if (presentation_params->EnableAutoDepthStencil) {
-    _fb_properties.set_depth_bits(1);
-    if (IS_STENCIL_FORMAT(presentation_params->AutoDepthStencilFormat)) {
-      _fb_properties.set_stencil_bits(1);
-    } else {
-      _fb_properties.set_stencil_bits(0);
+  if (presentation_params->EnableAutoDepthStencil) {    
+    int depth_bits;
+    int stencil_bits;
+
+    depth_bits = 1;
+    stencil_bits = 0;
+    switch (presentation_params->AutoDepthStencilFormat)
+    {
+      case D3DFMT_D16_LOCKABLE:
+        depth_bits = 16;
+        break;
+      case D3DFMT_D32:
+        depth_bits = 32;
+        break;
+      case D3DFMT_D15S1:
+        depth_bits = 15;
+        stencil_bits = 1;
+        break;
+      case D3DFMT_D24S8:
+        depth_bits = 24;
+        stencil_bits = 8;
+        break;
+      case D3DFMT_D24X8:
+        depth_bits = 24;
+        break;
+      case D3DFMT_D24X4S4:
+        depth_bits = 24;
+        stencil_bits = 4;
+        break;
+      case D3DFMT_D32F_LOCKABLE:
+        depth_bits = 32;
+        break;
+      case D3DFMT_D24FS8:
+        depth_bits = 24;
+        stencil_bits = 8;
+        break;
+      case D3DFMT_D16:
+        depth_bits = 16;
+        break;
+      default:
+        wdxdisplay9_cat.error() << "unknown depth stencil format  " << presentation_params->AutoDepthStencilFormat;
+        break;
     }
+      
+    _fb_properties.set_stencil_bits(stencil_bits);
+    _fb_properties.set_depth_bits(depth_bits);
   } else {
     _fb_properties.set_depth_bits(0);
     _fb_properties.set_stencil_bits(0);
