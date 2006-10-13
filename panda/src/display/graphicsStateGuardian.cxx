@@ -1955,6 +1955,8 @@ determine_effective_texture() {
     _effective_tex_gen = DCAST(TexGenAttrib, _effective_tex_gen->add_stage
                                (stage, TexGenAttrib::M_constant, TexCoord3f(_current_color_scale[3], 0.0f, 0.0f)));
   }
+
+  nassertv(_effective_texture->get_num_on_stages() <= _max_texture_stages);
 }
 
 ////////////////////////////////////////////////////////////////////
