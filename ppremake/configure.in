@@ -5,7 +5,7 @@ dnl ****************  UPDATE VERSION NUMBER HERE  ****************
 dnl **         Also be sure to change the version number        **
 dnl **                at the end of config_msvc.h.              **
 dnl ****************                              ****************
-AM_INIT_AUTOMAKE(ppremake, 1.20)
+AM_INIT_AUTOMAKE(ppremake, 1.21)
 dnl ****************  UPDATE VERSION NUMBER HERE  ****************
 
 AM_CONFIG_HEADER(config.h)
@@ -80,6 +80,10 @@ fi
 
 if test "$PLATFORM" = "Cygwin"; then
   AC_DEFINE(HAVE_CYGWIN, 1, [Define if we're compiling with Cygwin.])
+fi
+
+if test "$PLATFORM" = "OSX"; then
+  AC_DEFINE(HAVE_OSX, 1, [Define if we're compiling for OSX.])
 fi
 
 AC_DEFINE_UNQUOTED(PLATFORM, "$PLATFORM", 

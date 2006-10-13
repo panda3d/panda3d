@@ -78,7 +78,7 @@ protected:
   bool replay_foreach(const string &varname, const vector<string> &words);
   bool replay_formap(const string &varname, const string &mapvar);
   bool compare_output(const string &new_contents, Filename filename,
-                      bool notouch);
+                      bool notouch, bool binary);
   bool failed_if() const;
 
   bool is_valid_formal(const string &formal_parameter_name) const;
@@ -154,6 +154,7 @@ private:
 
   enum OutputFlags {
     OF_notouch  = 0x001,
+    OF_binary   = 0x002,
   };
   
   class BlockNesting {

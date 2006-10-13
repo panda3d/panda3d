@@ -21,6 +21,9 @@
 /* Define if we're compiling with Cygwin. */
 /* #undef HAVE_CYGWIN */
 
+/* Define if we're compiling for OSX. */
+/* #undef HAVE_OSX */
+
 /* Define if we're compiling using Windows Microsoft Visual C++. */
 #define WIN32_VC 1
 
@@ -86,5 +89,5 @@
  **         Also be sure to change the version number        **
  **             at the beginning of configure.in.            **
  ****************                              ****************/
-#define VERSION "1.20"
+#define VERSION "1.21"
 /****************  UPDATE VERSION NUMBER HERE  ****************/

@@ -139,7 +139,8 @@ static void
 report_version() {
   cerr << "This is " << PACKAGE << " version " << VERSION 
        << " built on " << __DATE__ << " at " << __TIME__
-       << ".\n";
+       << ".\n"
+       << "Default platform is \"" << PLATFORM << "\".\n";
 }
 
 static void

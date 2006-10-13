@@ -1492,14 +1492,20 @@ expand_libtest(const string &params) {
     found = libname.resolve_filename(directories);
   }
   
-#else
+#else  // WIN32
   libname = "lib" + libname.get_basename() + ".a";
   found = libname.resolve_filename(directories);
   if (!found) {
     libname.set_extension("so");
     found = libname.resolve_filename(directories);
   }
-#endif
+#ifdef HAVE_OSX
+  if (!found) {
+    libname.set_extension("dylib");
+    found = libname.resolve_filename(directories);
+  }
+#endif  // HAVE_OSX
+#endif  // WIN32
 
   if (found) {
     return libname.get_fullpath();

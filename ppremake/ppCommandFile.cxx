@@ -1138,6 +1138,8 @@ handle_output_command() {
   for (int i = 0; i < (int)words.size(); i++) {
     if (words[i] == "notouch") {
       nest->_flags |= OF_notouch;
+    } else if (words[i] == "binary") {
+      nest->_flags |= OF_binary;
     } else {
       cerr << "Invalid output flag: " << words[i] << "\n";
       errors_occurred = true;
@@ -1281,7 +1283,8 @@ handle_end_command() {
 #endif  // HAVE_SSTREAM
 
       if (!compare_output(generated_file, nest->_params,
-                          (nest->_flags & OF_notouch) != 0)) {
+                          (nest->_flags & OF_notouch) != 0,
+                          (nest->_flags & OF_binary) != 0)) {
         return false;
       }
     }
@@ -2103,8 +2106,12 @@ replay_formap(const string &varname, const string &mapvar) {
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 compare_output(const string &new_contents, Filename filename,
-               bool notouch) {
-  filename.set_text();
+               bool notouch, bool binary) {
+  if (binary) {
+    filename.set_binary();
+  } else {
+    filename.set_text();
+  }    
   bool exists = filename.exists();
   bool differ = false;
 
@@ -2139,7 +2146,11 @@ compare_output(const string &new_contents, Filename filename,
       // Write our new contents to a file so we can run diff on both
       // of them.
       Filename temp_filename = filename.get_fullpath() + string(".ppd");
-      temp_filename.set_text();
+      if (binary) {
+        temp_filename.set_binary();
+      } else {
+        temp_filename.set_text();
+      }    
       ofstream out_b;
       if (!temp_filename.open_write(out_b)) {
         cerr << "Unable to open temporary file " << filename << " for writing.\n";
