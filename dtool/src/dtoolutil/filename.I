@@ -537,6 +537,16 @@ operator < (const string &other) const {
   return (*(string *)this) < other;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::compare_to
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int Filename::
+compare_to(const Filename &other) const {
+  return strcmp(_filename.c_str(), other._filename.c_str());
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::output

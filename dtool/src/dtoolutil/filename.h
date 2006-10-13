@@ -187,6 +187,7 @@ PUBLISHED:
   INLINE bool operator == (const string &other) const;
   INLINE bool operator != (const string &other) const;
   INLINE bool operator < (const string &other) const;
+  INLINE int compare_to(const Filename &other) const;
 
   INLINE void output(ostream &out) const;
 
