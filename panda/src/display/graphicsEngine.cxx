@@ -353,11 +353,21 @@ make_output(GraphicsPipe *pipe,
           return window;
         } else {
           if (flags & GraphicsPipe::BF_fb_props_optional) {
-            display_cat.warning() << "FrameBufferProperties available less than requested.\n";
+            display_cat.warning()
+              << "FrameBufferProperties available less than requested.\n";
             return window;
           }
+          display_cat.error()
+            << "Could not get requested FrameBufferProperties; abandoning window.\n";
+          display_cat.error(false)
+            << "  requested: " << fb_prop << "\n"
+            << "  got: " << window->get_fb_properties() << "\n";
         }
+      } else {
+        display_cat.error()
+          << "Window wouldn't open; abandoning window.\n";
       }
+
       // No good; delete the window and keep trying.
       bool removed = remove_window(window);
       nassertr(removed, NULL);
