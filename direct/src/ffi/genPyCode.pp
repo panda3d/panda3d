@@ -37,7 +37,7 @@ $[python] -u $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 
 
 #else  // Win32
 
-#output genPyCode
+#output genPyCode $[if $[>= $[PPREMAKE_VERSION],1.21],binary]
 #! /bin/sh
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
