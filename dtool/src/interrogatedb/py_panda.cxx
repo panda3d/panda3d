@@ -490,7 +490,15 @@ int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
         {
             int answer = PyInt_AsLong(res);
             Py_DECREF(res);
-            return  answer;
+
+            // Python really wants us to return strictly -1, 0, or 1.
+            if (answer < 0) {
+              return -1;
+            } else if (answer > 0) {
+              return 1;
+            } else {
+              return 0;
+            }
         }
         if(res != NULL)
             Py_DECREF(res);
