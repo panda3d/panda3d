@@ -20,6 +20,7 @@
 #ifdef HAVE_IOSTREAM
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #ifdef HAVE_SSTREAM
 #include <sstream>
 #else  /* HAVE_SSTREAM */
@@ -34,6 +35,7 @@ typedef std::ios::seekdir ios_seekdir;
 #else  /* HAVE_IOSTREAM */
 #include <iostream.h>
 #include <fstream.h>
+#include <iomanip.h>
 #include <strstream.h>
 
 typedef int ios_openmode;

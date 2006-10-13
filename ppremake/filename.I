@@ -18,46 +18,48 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
 Filename(const string &filename) {
-  (*this) = filename;
   _flags = 0;
+  (*this) = filename;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
 Filename(const char *filename) {
-  (*this) = filename;
   _flags = 0;
+  (*this) = filename;
 }
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
-Filename(const Filename &copy)
-  : _filename(copy._filename),
-    _dirname_end(copy._dirname_end),
-    _basename_start(copy._basename_start),
-    _basename_end(copy._basename_end),
-    _extension_start(copy._extension_start),
-    _flags(copy._flags)
+Filename(const Filename &copy) :
+  _filename(copy._filename),
+  _dirname_end(copy._dirname_end),
+  _basename_start(copy._basename_start),
+  _basename_end(copy._basename_end),
+  _extension_start(copy._extension_start),
+  _hash_start(copy._hash_start),
+  _hash_end(copy._hash_end),
+  _flags(copy._flags)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::text_filename named constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
@@ -69,7 +71,7 @@ text_filename(const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::binary_filename named constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
@@ -81,7 +83,7 @@ binary_filename(const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::dso_filename named constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
@@ -93,7 +95,7 @@ dso_filename(const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::executable_filename named constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
@@ -104,8 +106,21 @@ executable_filename(const string &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::pattern_filename named constructor
+//       Access: Published
+//  Description: Constructs a filename that represents a sequence of
+//               numbered files.  See set_pattern().
+////////////////////////////////////////////////////////////////////
+INLINE Filename Filename::
+pattern_filename(const string &filename) {
+  Filename result(filename);
+  result.set_pattern(true);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
@@ -115,7 +130,7 @@ INLINE Filename::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename &Filename::
@@ -124,12 +139,13 @@ operator = (const string &filename) {
 
   locate_basename();
   locate_extension();
+  locate_hash();
   return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename &Filename::
@@ -140,7 +156,7 @@ operator = (const char *filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Copy assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename &Filename::
@@ -150,6 +166,8 @@ operator = (const Filename &copy) {
   _basename_start = copy._basename_start;
   _basename_end = copy._basename_end;
   _extension_start = copy._extension_start;
+  _hash_start = copy._hash_start;
+  _hash_end = copy._hash_end;
   _flags = copy._flags;
   return *this;
 }
@@ -157,7 +175,7 @@ operator = (const Filename &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::string typecast operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
@@ -167,7 +185,7 @@ operator const string & () const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::c_str
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const char *Filename::
@@ -177,7 +195,7 @@ c_str() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::empty
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
@@ -187,7 +205,7 @@ empty() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::length
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Filename::
@@ -197,7 +215,7 @@ length() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Indexing operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE char Filename::
@@ -206,10 +224,20 @@ operator [] (int n) const {
   return _filename[n];
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::substr
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE string Filename::
+substr(size_t begin, size_t end) const {
+  return _filename.substr(begin, end);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_fullpath
-//       Access: Public
+//       Access: Published
 //  Description: Returns the entire filename: directory, basename,
 //               extension.  This is the same thing returned by the
 //               string typecast operator, so this function is a
@@ -222,7 +250,7 @@ get_fullpath() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_dirname
-//       Access: Public
+//       Access: Published
 //  Description: Returns the directory part of the filename.  This is
 //               everything in the filename up to, but not including
 //               the rightmost slash.
@@ -234,7 +262,7 @@ get_dirname() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_basename
-//       Access: Public
+//       Access: Published
 //  Description: Returns the basename part of the filename.  This is
 //               everything in the filename after the rightmost slash,
 //               including any extensions.
@@ -247,7 +275,7 @@ get_basename() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_fullpath_wo_extension
-//       Access: Public
+//       Access: Published
 //  Description: Returns the full filename--directory and basename
 //               parts--except for the extension.
 ////////////////////////////////////////////////////////////////////
@@ -259,7 +287,7 @@ get_fullpath_wo_extension() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_basename_wo_extension
-//       Access: Public
+//       Access: Published
 //  Description: Returns the basename part of the filename, without
 //               the file extension.
 ////////////////////////////////////////////////////////////////////
@@ -275,7 +303,7 @@ get_basename_wo_extension() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_extension
-//       Access: Public
+//       Access: Published
 //  Description: Returns the file extension.  This is everything after
 //               the rightmost dot, if there is one, or the empty
 //               string if there is not.
@@ -291,7 +319,7 @@ get_extension() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::set_binary
-//       Access: Public
+//       Access: Published
 //  Description: Indicates that the filename represents a binary file.
 //               This is primarily relevant to the read_file() and
 //               write_file() methods, so they can set the appropriate
@@ -304,7 +332,7 @@ set_binary() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::set_text
-//       Access: Public
+//       Access: Published
 //  Description: Indicates that the filename represents a text file.
 //               This is primarily relevant to the read_file() and
 //               write_file() methods, so they can set the appropriate
@@ -317,7 +345,7 @@ set_text() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_binary
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the Filename has been indicated to
 //               represent a binary file via a previous call to
 //               set_binary().  It is possible that neither
@@ -331,7 +359,7 @@ is_binary() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_text
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the Filename has been indicated to
 //               represent a text file via a previous call to
 //               set_text().  It is possible that neither is_binary()
@@ -345,7 +373,7 @@ is_text() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::set_type
-//       Access: Public
+//       Access: Published
 //  Description: Sets the type of the file represented by the
 //               filename.  This is useful for to_os_specific(),
 //               resolve_filename(), test_existence(), and all such
@@ -369,7 +397,7 @@ set_type(Filename::Type type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_type
-//       Access: Public
+//       Access: Published
 //  Description: Returns the type of the file represented by the
 //               filename, as previously set by set_type().
 ////////////////////////////////////////////////////////////////////
@@ -379,8 +407,77 @@ get_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::set_pattern
+//       Access: Published
+//  Description: Sets the flag indicating whether this is a filename
+//               pattern.  When this is true, the filename is
+//               understood to be a placeholder for a numbered
+//               sequence of filename, such as an image sequence.  In
+//               this case, a sequence of one or more hash characters
+//               ("#") should appear in the filename string; these
+//               characters will be filled in with the corresponding
+//               number (or more) of digits representing the sequence
+//               number.  Sequence numbers always begin counting at 0.
+//
+//               When this is true, methods like has_hash() and
+//               get_hash_to_end() and get_filename_index() may be
+//               called.  Methods like is_exists() will implicitly
+//               test for existance of filename sequence 0.
+////////////////////////////////////////////////////////////////////
+INLINE void Filename::
+set_pattern(bool pattern) {
+  if (pattern != get_pattern()) {
+    if (pattern) {
+      _flags |= F_pattern;
+    } else {
+      _flags &= ~F_pattern;
+    }
+    locate_hash();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_pattern
+//       Access: Published
+//  Description: Returns the flag indicating whether this is a
+//               filename pattern.  See set_pattern().
+////////////////////////////////////////////////////////////////////
+INLINE bool Filename::
+get_pattern() const {
+  return (_flags & F_pattern) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::has_hash
+//       Access: Published
+//  Description: Returns true if the filename is indicated to be a
+//               filename pattern (that is, set_pattern(true) was
+//               called), and the filename pattern did include a
+//               sequence of hash marks, or false if it was not a
+//               filename pattern or did not include hash marks.  If
+//               this is true, then get_filename_index() will return a
+//               different filename each time.
+////////////////////////////////////////////////////////////////////
+INLINE bool Filename::
+has_hash() const {
+  return (_hash_start != _hash_end);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_hash_to_end
+//       Access: Published
+//  Description: Returns the part of the filename beginning at the
+//               hash sequence (if any), and continuing to the end of
+//               the filename.
+////////////////////////////////////////////////////////////////////
+INLINE string Filename::
+get_hash_to_end() const {
+  return _filename.substr(_hash_start);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_local
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the filename is local, e.g. does not
 //               begin with a slash, or false if the filename is fully
 //               specified from the root.
@@ -392,7 +489,7 @@ is_local() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_fully_qualified
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the filename is fully qualified,
 //               e.g. begins with a slash.  This is almost, but not
 //               quite, the same thing as !is_local().  It's not
@@ -412,7 +509,7 @@ is_fully_qualified() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Equality operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
@@ -422,7 +519,7 @@ operator == (const string &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Inequality operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
@@ -432,7 +529,7 @@ operator != (const string &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Ordering operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
@@ -440,10 +537,20 @@ operator < (const string &other) const {
   return (*(string *)this) < other;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::compare_to
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int Filename::
+compare_to(const Filename &other) const {
+  return strcmp(_filename.c_str(), other._filename.c_str());
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::output
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Filename::

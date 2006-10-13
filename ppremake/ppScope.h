@@ -87,6 +87,7 @@ private:
   string expand_isfullpath(const string &params);
   string expand_osfilename(const string &params);
   string expand_unixfilename(const string &params);
+  string expand_unixshortname(const string &params);
   string expand_cygpath_w(const string &params);
   string expand_cygpath_p(const string &params);
   string expand_wildcard(const string &params);

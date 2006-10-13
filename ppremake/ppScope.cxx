@@ -1008,6 +1008,8 @@ r_expand_variable(const string &str, size_t &vp,
       return expand_osfilename(params);
     } else if (funcname == "unixfilename") {
       return expand_unixfilename(params);
+    } else if (funcname == "unixshortname") {
+      return expand_unixshortname(params);
     } else if (funcname == "cygpath_w") {
       // This maps to osfilename for historical reasons.
       return expand_osfilename(params);
@@ -1337,6 +1339,31 @@ expand_unixfilename(const string &params) {
 
   string result = repaste(words, " ");
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_unixshortname
+//       Access: Private
+//  Description: Expands the "unixshortname" function variable.  This
+//               converts the filename from a platform-specific
+//               filename to a Unix-style filename (e.g. with slash
+//               separators), just like the unixfilename variable.
+//
+//               On Windows, this also specifically converts the
+//               Windows-specific filename to 8.3 convention before
+//               converting it to Unix style.  This can be a cheesy
+//               way to work around embedded spaces in the filename.
+//
+//               Unlike unixfilename, this parameter accepts only one
+//               filename.  However, the filename may contain embedded
+//               spaces.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_unixshortname(const string &params) {
+  Filename filename = Filename::from_os_specific(params);
+  filename = Filename::from_os_specific(filename.to_os_short_name());
+
+  return filename;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -58,6 +58,7 @@ public:
     F_type            = 0x0f,
     F_binary          = 0x10,
     F_text            = 0x20,
+    F_pattern         = 0x40,
   };
 
 PUBLISHED:
@@ -75,11 +76,14 @@ PUBLISHED:
   INLINE static Filename dso_filename(const string &filename);
   INLINE static Filename executable_filename(const string &filename);
 
+  INLINE static Filename pattern_filename(const string &filename);
+
   static Filename from_os_specific(const string &os_specific,
                                    Type type = T_general);
   static Filename expand_from(const string &user_string, 
                               Type type = T_general);
   static Filename temporary(const string &dirname, const string &prefix,
+                            const string &suffix = string(),
                             Type type = T_general);
 
   // Assignment is via the = operator.
@@ -93,6 +97,8 @@ PUBLISHED:
   INLINE bool empty() const;
   INLINE size_t length() const;
   INLINE char operator [] (int n) const;
+
+  INLINE string substr(size_t begin, size_t end = string::npos) const;
 
   // Or, you can use any of these.
   INLINE string get_fullpath() const;
@@ -122,6 +128,15 @@ PUBLISHED:
   INLINE void set_type(Type type);
   INLINE Type get_type() const;
 
+  INLINE void set_pattern(bool pattern);
+  INLINE bool get_pattern() const;
+
+  INLINE bool has_hash() const;
+  Filename get_filename_index(int index) const;
+
+  INLINE string get_hash_to_end() const;
+  void set_hash_to_end(const string &s);
+
   void extract_components(vector_string &components) const;
   void standardize();
 
@@ -133,9 +148,12 @@ PUBLISHED:
   void make_absolute(const Filename &start_directory);
 
   bool make_canonical();
+  bool make_true_case();
 
   string to_os_specific() const;
   string to_os_generic() const;
+  string to_os_short_name() const;
+  string to_os_long_name() const;
 
   bool exists() const;
   bool is_regular_file() const;
@@ -144,11 +162,15 @@ PUBLISHED:
   int compare_timestamps(const Filename &other,
                          bool this_missing_is_old = true,
                          bool other_missing_is_old = true) const;
+  time_t get_timestamp() const;
+  time_t get_access_timestamp() const;
+  off_t get_file_size() const;
+
   bool resolve_filename(const DSearchPath &searchpath,
                         const string &default_extension = string());
   bool make_relative_to(Filename directory, bool allow_backups = true);
   int find_on_searchpath(const DSearchPath &searchpath);
-
+  
   bool scan_directory(vector_string &contents) const;
 
   bool open_read(ifstream &stream) const;
@@ -156,8 +178,8 @@ PUBLISHED:
   bool open_append(ofstream &stream) const;
   bool open_read_write(fstream &stream) const;
 
+  bool chdir() const;
   bool touch() const;
-
   bool unlink() const;
   bool rename_to(const Filename &other) const;
 
@@ -167,12 +189,18 @@ PUBLISHED:
   INLINE bool operator == (const string &other) const;
   INLINE bool operator != (const string &other) const;
   INLINE bool operator < (const string &other) const;
+  INLINE int compare_to(const Filename &other) const;
 
   INLINE void output(ostream &out) const;
 
-private:
+public:
+  bool atomic_compare_and_exchange_contents(string &orig_contents, const string &old_contents, const string &new_contents) const;
+  bool atomic_read_contents(string &contents) const;
+
+protected:
   void locate_basename();
   void locate_extension();
+  void locate_hash();
   size_t get_common_prefix(const string &other) const;
   static int count_slashes(const string &str);
   bool r_make_canonical(const Filename &cwd);
@@ -184,6 +212,8 @@ private:
   size_t _basename_start;
   size_t _basename_end;
   size_t _extension_start;
+  size_t _hash_start;
+  size_t _hash_end;
 
   int _flags;
 };
