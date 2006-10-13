@@ -20,6 +20,7 @@ import sys
 import whrandom
 import types
 from direct.task import Task
+import Pmw
 import __builtin__
 
 # Force direct and tk to be on
