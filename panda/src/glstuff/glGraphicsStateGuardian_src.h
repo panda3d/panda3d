@@ -364,6 +364,7 @@ protected:
   GLuint _current_vbuffer_index;
   GLuint _current_ibuffer_index;
   GLuint _current_fbo;
+  int _num_active_texture_stages;
 
   int _error_count;
 

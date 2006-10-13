@@ -942,6 +942,8 @@ reset() {
     }
   }
 
+  _num_active_texture_stages = 0;
+
   report_my_gl_errors();
 
   _supports_stencil_wrap = has_extension("GL_EXT_stencil_wrap");
@@ -5815,13 +5817,9 @@ do_issue_texture() {
 void CLP(GraphicsStateGuardian)::
 update_standard_texture_bindings() {
   int num_stages = _effective_texture->get_num_on_stages();
-  int num_old_stages = _max_texture_stages;
-  if (_state._texture != (TextureAttrib *)NULL) {
-    num_old_stages = _state._texture->get_num_on_stages();
-  }
 
   nassertv(num_stages <= _max_texture_stages &&
-           num_old_stages <= _max_texture_stages);
+           _num_active_texture_stages <= _max_texture_stages);
 
   _texture_involves_color_scale = false;
 
@@ -5833,7 +5831,7 @@ update_standard_texture_bindings() {
     Texture *texture = _effective_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
 
-    if (i >= num_old_stages ||
+    if (i >= _num_active_texture_stages ||
         _state._texture == (TextureAttrib *)NULL ||
         stage != _state._texture->get_on_stage(i) ||
         texture != _state._texture->get_on_texture(stage) ||
@@ -5998,7 +5996,7 @@ update_standard_texture_bindings() {
   }
 
   // Disable the texture stages that are no longer used.
-  for (i = num_stages; i < num_old_stages; i++) {
+  for (i = num_stages; i < _num_active_texture_stages; i++) {
     _glActiveTexture(GL_TEXTURE0 + i);
     GLP(Disable)(GL_TEXTURE_1D);
     GLP(Disable)(GL_TEXTURE_2D);
@@ -6009,6 +6007,9 @@ update_standard_texture_bindings() {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
   }
+
+  // Save the count of texture stages for next time.
+  _num_active_texture_stages = num_stages;
 
   report_my_gl_errors();
 }
@@ -6021,13 +6022,8 @@ update_standard_texture_bindings() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 disable_standard_texture_bindings() {
-  int num_old_stages = _max_texture_stages;
-  if (_state._texture != (TextureAttrib *)NULL) {
-    num_old_stages = _state._texture->get_num_on_stages();
-  }
-
   // Disable the texture stages that are no longer used.
-  for (int i = 0; i < num_old_stages; i++) {
+  for (int i = 0; i < _num_active_texture_stages; i++) {
     _glActiveTexture(GL_TEXTURE0 + i);
     GLP(Disable)(GL_TEXTURE_1D);
     GLP(Disable)(GL_TEXTURE_2D);
@@ -6039,6 +6035,8 @@ disable_standard_texture_bindings() {
     }
   }
 
+  _num_active_texture_stages = 0;
+  
   report_my_gl_errors();
 }
 
@@ -6049,10 +6047,9 @@ disable_standard_texture_bindings() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_tex_matrix() {
-  int num_stages = _effective_texture->get_num_on_stages();
-  nassertv(num_stages <= _max_texture_stages);
+  nassertv(_num_active_texture_stages <= _max_texture_stages);
 
-  for (int i = 0; i < num_stages; i++) {
+  for (int i = 0; i < _num_active_texture_stages; i++) {
     TextureStage *stage = _effective_texture->get_on_stage(i);
     _glActiveTexture(GL_TEXTURE0 + i);
 
@@ -6083,8 +6080,7 @@ void CLP(GraphicsStateGuardian)::
 do_issue_tex_gen() {
   bool force_normal = false;
 
-  int num_stages = _effective_texture->get_num_on_stages();
-  nassertv(num_stages <= _max_texture_stages);
+  nassertv(_num_active_texture_stages <= _max_texture_stages);
 
   // These are passed in for the four OBJECT_PLANE or EYE_PLANE
   // values; they effectively define an identity matrix that maps
@@ -6100,7 +6096,7 @@ do_issue_tex_gen() {
 
   bool got_point_sprites = false;
 
-  for (int i = 0; i < num_stages; i++) {
+  for (int i = 0; i < _num_active_texture_stages; i++) {
     TextureStage *stage = _effective_texture->get_on_stage(i);
     _glActiveTexture(GL_TEXTURE0 + i);
     GLP(Disable)(GL_TEXTURE_GEN_S);
