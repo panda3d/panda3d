@@ -18,6 +18,7 @@ class ContainerReport:
         # for breadth-first searching
         self._queue = Queue()
         ContainerReport.PrivateIds.update(set([
+            id(ContainerReport.PrivateIds),
             id(self._visitedIds),
             id(self._id2pathStr),
             id(self._id2container),
@@ -163,6 +164,7 @@ class ContainerReport:
                     return
 
     def _output(self, **kArgs):
+        print "===== ContainerReport: \'%s\' =====" % (self._name,)
         initialTypes = (types.DictType, types.ListType, types.TupleType)
         for type in initialTypes:
             self._outputType(type, **kArgs)
