@@ -885,10 +885,12 @@ reset() {
         << "vertex buffer objects are NOT supported.\n";
     }
 
+#ifdef SUPPORT_IMMEDIATE_MODE
     if (!vertex_arrays) {
       GLCAT.debug()
         << "immediate mode commands will be used instead of vertex arrays.\n";
     }
+#endif
 
     if (!_supports_compressed_texture) {
       GLCAT.debug()
@@ -1685,9 +1687,9 @@ update_standard_vertex_arrays() {
     // least those for which we're not generating texture coordinates
     // automatically.
     const Geom::ActiveTextureStages &active_stages =
-      _state._texture->get_on_stages();
+      _effective_texture->get_on_stages();
     const Geom::NoTexCoordStages &no_texcoords =
-      _state._tex_gen->get_no_texcoords();
+      _effective_tex_gen->get_no_texcoords();
 
     int max_stage_index = (int)active_stages.size();
     int stage_index = 0;
@@ -1781,9 +1783,9 @@ update_standard_vertex_arrays() {
     // least those for which we're not generating texture coordinates
     // automatically.
     const Geom::ActiveTextureStages &active_stages =
-      _state._texture->get_on_stages();
+      _effective_texture->get_on_stages();
     const Geom::NoTexCoordStages &no_texcoords =
-      _state._tex_gen->get_no_texcoords();
+      _effective_tex_gen->get_no_texcoords();
 
     int max_stage_index = (int)active_stages.size();
     int stage_index = 0;
@@ -5832,9 +5834,9 @@ update_standard_texture_bindings() {
     nassertv(texture != (Texture *)NULL);
 
     if (i >= _num_active_texture_stages ||
-        _state._texture == (TextureAttrib *)NULL ||
-        stage != _state._texture->get_on_stage(i) ||
-        texture != _state._texture->get_on_texture(stage) ||
+        _effective_texture == (TextureAttrib *)NULL ||
+        stage != _effective_texture->get_on_stage(i) ||
+        texture != _effective_texture->get_on_texture(stage) ||
         stage->involves_color_scale()) {
       // Stage i has changed.  Issue the texture on this stage.
       _glActiveTexture(GL_TEXTURE0 + i);
