@@ -76,37 +76,34 @@ class DirectNotify:
 
         if not level:
             # see if there's an override of the default config level
-            level = config.GetString('default-directnotify-level', '')
+            level = config.GetString('default-directnotify-level', 'info')
+        if not level:
+            level = 'error'
 
         category = self.getCategory(categoryName)
-        if level:
-            # Note - this print statement is making it difficult to
-            # achieve "no output unless there's an error" operation - Josh
-            # print ("Setting DirectNotify category: " + categoryName +
-            #        " to severity: " + level)
-            if level == "error":
-                category.setWarning(0)
-                category.setInfo(0)
-                category.setDebug(0)
-            elif level == "warning":
-                category.setWarning(1)
-                category.setInfo(0)
-                category.setDebug(0)
-            elif level == "info":
-                category.setWarning(1)
-                category.setInfo(1)
-                category.setDebug(0)
-            elif level == "debug":
-                category.setWarning(1)
-                category.setInfo(1)
-                category.setDebug(1)
-            else:
-                print ("DirectNotify: unknown notify level: " + str(level)
-                       + " for category: " + str(categoryName))
-        else:
+        # Note - this print statement is making it difficult to
+        # achieve "no output unless there's an error" operation - Josh
+        # print ("Setting DirectNotify category: " + categoryName +
+        #        " to severity: " + level)
+        if level == "error":
             category.setWarning(0)
             category.setInfo(0)
             category.setDebug(0)
+        elif level == "warning":
+            category.setWarning(1)
+            category.setInfo(0)
+            category.setDebug(0)
+        elif level == "info":
+            category.setWarning(1)
+            category.setInfo(1)
+            category.setDebug(0)
+        elif level == "debug":
+            category.setWarning(1)
+            category.setInfo(1)
+            category.setDebug(1)
+        else:
+            print ("DirectNotify: unknown notify level: " + str(level)
+                   + " for category: " + str(categoryName))
             
 
     def setDconfigLevels(self):
