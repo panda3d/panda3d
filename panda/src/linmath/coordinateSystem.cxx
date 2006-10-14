@@ -42,8 +42,6 @@ get_default_coordinate_system() {
 
 CoordinateSystem
 parse_coordinate_system_string(const string &str) {
-  // First, make sure the string is lowercase before we compare it, so
-  // we'll be case-insensitive.
   if (cmp_nocase_uh(str, "default") == 0) {
     return CS_default;
 
