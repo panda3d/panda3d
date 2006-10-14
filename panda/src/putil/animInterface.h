@@ -54,7 +54,7 @@ PUBLISHED:
   INLINE void pingpong(bool restart);
   INLINE void pingpong(bool restart, double from, double to);
   INLINE void stop();
-  INLINE void pose(int frame);
+  INLINE void pose(double frame);
 
   INLINE void set_play_rate(double play_rate);
   INLINE double get_play_rate() const;
@@ -62,6 +62,7 @@ PUBLISHED:
   virtual int get_num_frames() const;
 
   INLINE int get_frame() const;
+  INLINE int get_next_frame() const;
   INLINE double get_frac() const;
   INLINE int get_full_frame() const;
   INLINE double get_full_fframe() const;
@@ -102,10 +103,10 @@ private:
     void play(double from, double to);
     void loop(bool restart, double from, double to);
     void pingpong(bool restart, double from, double to);
-    void pose(int frame);
+    void pose(double frame);
 
     INLINE double get_frac() const;
-    int get_full_frame() const;
+    int get_full_frame(int increment) const;
     double get_full_fframe() const;
     bool is_playing() const;
 

@@ -22,15 +22,23 @@
 #include "animControl.h"
 #include "config_chan.h"
 #include "bitArray.h"
-
+#include "string_utils.h"
 #include "indent.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "configVariableEnum.h"
 
 TypeHandle PartBundle::_type_handle;
 
+
+static ConfigVariableEnum<PartBundle::BlendType> anim_blend_type
+("anim-blend-type", PartBundle::BT_normalized_linear,
+ PRC_DESC("The default blend type to use for blending animations between "
+          "frames, or between multiple animations.  See interpolate-frames, "
+          "and also PartBundle::set_anim_blend_flag() and "
+          "PartBundle::set_frame_blend_flag()."));
 
 
 ////////////////////////////////////////////////////////////////////
@@ -71,37 +79,33 @@ make_copy() const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::set_blend_type
+//     Function: PartBundle::set_anim_blend_flag
 //       Access: Published
 //  Description: Defines the way the character responds to multiple
-//               set_control_effect()).  By default, the blend_type is
-//               BT_single, which disallows multiple animations.  In
-//               BT_single mode, it is not necessary to explicitly set
-//               the control_effect when starting an animation;
-//               starting the animation will implicitly remove the
-//               control_effect from the previous animation and set it
-//               on the current one.
+//               calls to set_control_effect()).  By default, this
+//               flag is set false, which disallows multiple
+//               animations.  When this flag is false, it is not
+//               necessary to explicitly set the control_effect when
+//               starting an animation; starting the animation will
+//               implicitly remove the control_effect from the
+//               previous animation and set it on the current one.
 //
-//               However, if the blend_type is set to any other value,
-//               the control_effect must be explicitly set via
-//               set_control_effect() whenever an animation is to
-//               affect the character.
-//
-//               See partBundle.h for a description of the meaning of
-//               each of the BlendType values.
+//               However, if this flag is set true, the control_effect
+//               must be explicitly set via set_control_effect()
+//               whenever an animation is to affect the character.
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
-set_blend_type(BlendType bt) {
+set_anim_blend_flag(bool anim_blend_flag) {
   nassertv(Thread::get_current_pipeline_stage() == 0);
 
   CDLockedReader cdata(_cycler);
-  if (cdata->_blend_type != bt) {
+  if (cdata->_anim_blend_flag != anim_blend_flag) {
     CDWriter cdataw(_cycler, cdata);
-    cdataw->_blend_type = bt;
+    cdataw->_anim_blend_flag = anim_blend_flag;
 
-    if (cdataw->_blend_type == BT_single && cdataw->_blend.size() > 1) {
-      // If we just changed to a single blend type, i.e. no blending,
-      // we should eliminate all the AnimControls other than the
+    if (!anim_blend_flag && cdataw->_blend.size() > 1) {
+      // If we just changed to disallow animation blending, we should
+      // eliminate all the AnimControls other than the
       // most-recently-added one.
 
       nassertv(cdataw->_last_control_set != NULL);
@@ -245,6 +249,12 @@ update() {
   {
     CDReader cdata(_cycler, current_thread);
     anim_changed = cdata->_anim_changed;
+
+    if (cdata->_frame_blend_flag) {
+      // If the intra-frame blend flag is on, we will just assume the
+      // animation changes every time we call update().
+      anim_changed = true;
+    }
   }
   bool any_changed = do_update(this, NULL, false, anim_changed, current_thread);
 
@@ -300,9 +310,10 @@ control_activated(AnimControl *control) {
   nassertv(control->get_part() == this);
 
   CDLockedReader cdata(_cycler);
-  // If (and only if) our blend type is BT_single, which means no
-  // blending, then starting an animation implicitly enables it.
-  if (cdata->_blend_type == BT_single) {
+
+  // If (and only if) our anim_blend_flag is false, then starting an
+  // animation implicitly enables it.
+  if (!cdata->_anim_blend_flag) {
     CDWriter cdataw(_cycler, cdata);
     do_set_control_effect(control, 1.0f, cdataw);
   }
@@ -330,9 +341,9 @@ do_set_control_effect(AnimControl *control, float effect, CData *cdata) {
   } else {
     // Otherwise we define it.
 
-    // If we currently have BT_single, we only allow one AnimControl
-    // at a time.  Stop all of the other AnimControls.
-    if (cdata->_blend_type == BT_single) {
+    // If anim_blend_flag is false, we only allow one AnimControl at a
+    // time.  Stop all of the other AnimControls.
+    if (!cdata->_anim_blend_flag) {
       clear_and_stop_intersecting(control, cdata);
     }
 
@@ -388,9 +399,9 @@ recompute_net_blend(CData *cdata) {
 //  Description: Removes and stops all the currently activated
 //               AnimControls that animate some joints also animated
 //               by the indicated AnimControl.  This is a special
-//               internal function that's only called when _blend_type
-//               is BT_single, to automatically stop all the other
-//               currently-executing animations.
+//               internal function that's only called when
+//               _anim_blend_flag is false, to automatically stop all
+//               the other currently-executing animations.
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
 clear_and_stop_intersecting(AnimControl *control, CData *cdata) {
@@ -470,7 +481,9 @@ register_with_read_factory()
 ////////////////////////////////////////////////////////////////////
 PartBundle::CData::
 CData() {
-  _blend_type = BT_single;
+  _blend_type = anim_blend_type;
+  _anim_blend_flag = false;
+  _frame_blend_flag = interpolate_frames;
   _last_control_set = NULL;
   _net_blend = 0.0f;
   _anim_changed = false;
@@ -502,4 +515,59 @@ CData(const PartBundle::CData &copy) :
 CycleData *PartBundle::CData::
 make_copy() const {
   return new CData(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::BlendType output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, PartBundle::BlendType blend_type) {
+  switch (blend_type) {
+    case PartBundle::BT_linear:
+      return out << "linear";
+
+    case PartBundle::BT_normalized_linear:
+      return out << "normalized_linear";
+
+    case PartBundle::BT_componentwise:
+      return out << "componentwise";
+
+    case PartBundle::BT_componentwise_quat:
+      return out << "componentwise_quat";
+  }
+  
+  chan_cat->error()
+    << "Invalid BlendType value: " << (int)blend_type << "\n";
+  nassertr(false, out);
+  return out;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::BlendType input operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+istream &
+operator >> (istream &in, PartBundle::BlendType &blend_type) {
+  string word;
+  in >> word;
+
+  if (cmp_nocase_uh(word, "linear") == 0) {
+    blend_type = PartBundle::BT_linear;
+
+  } else if (cmp_nocase_uh(word, "normalized_linear") == 0) {
+    blend_type = PartBundle::BT_normalized_linear;
+
+  } else if (cmp_nocase_uh(word, "componentwise") == 0) {
+    blend_type = PartBundle::BT_componentwise;
+
+  } else if (cmp_nocase_uh(word, "componentwise_quat") == 0) {
+    blend_type = PartBundle::BT_componentwise_quat;
+
+  } else {
+    chan_cat->error()
+      << "Invalid BlendType string: " << word << "\n";
+    blend_type = PartBundle::BT_linear;
+  }
+  return in;
 }

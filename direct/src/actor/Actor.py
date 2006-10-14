@@ -1149,6 +1149,67 @@ class Actor(DirectObject, NodePath):
         for control in self.getAnimControls(animName, partName, lodName):
             control.pose(frame)
 
+    def setBlend(self, animBlend = None, frameBlend = None,
+                 blendType = None, partName = None):
+        """
+        Changes the way the Actor handles blending of multiple
+        different animations, and/or interpolation between consecutive
+        frames.
+
+        The animBlend and frameBlend parameters are boolean flags.
+        You may set either or both to True or False.  If you do not
+        specify them, they do not change from the previous value.
+        
+        When animBlend is True, multiple different animations may
+        simultaneously be playing on the Actor.  This means you may
+        call play(), loop(), or pose() on multiple animations and have
+        all of them contribute to the final pose each frame.
+
+        In this mode (that is, when animBlend is True), starting a
+        particular animation with play(), loop(), or pose() does not
+        implicitly make the animation visible; you must also call
+        setControlEffect() for each animation you wish to use to
+        indicate how much each animation contributes to the final
+        pose.
+
+        The frameBlend flag is unrelated to playing multiple
+        animations.  It controls whether the Actor smoothly
+        interpolates between consecutive frames of its animation (when
+        the flag is True) or holds each frame until the next one is
+        ready (when the flag is False).  The default value of
+        frameBlend is controlled by the interpolate-frames Config.prc
+        variable.
+
+        In either case, you may also specify blendType, which controls
+        the precise algorithm used to blend two or more different
+        matrix values into a final result.  Different skeleton
+        hierarchies may benefit from different algorithms.  The
+        default blendType is controlled by the anim-blend-type
+        Config.prc variable.
+        """
+        bundles = []
+        
+        for lodName, bundleDict in self.__partBundleDict.items():
+            if partName == None:
+                for partBundle in bundleDict.values():
+                    bundles.append(partBundle.node().getBundle())
+
+            else:
+                truePartName = self.__subpartDict.get(partName, [partName])[0]
+                partBundle = bundleDict.get(truePartName)
+                if partBundle != None:
+                    bundles.append(partBundle.node().getBundle())
+                else:
+                    Actor.notify.warning("Couldn't find part: %s" % (partName))
+
+        for bundle in bundles:
+            if blendType != None:
+                bundle.setBlendType(blendType)
+            if animBlend != None:
+                bundle.setAnimBlendFlag(animBlend)
+            if frameBlend != None:
+                bundle.setFrameBlendFlag(frameBlend)
+
     def enableBlend(self, blendType = PartBundle.BTNormalizedLinear, partName = None):
         """
         Enables blending of multiple animations simultaneously.
@@ -1161,25 +1222,19 @@ class Actor(DirectObject, NodePath):
         animation visible; you must also call setControlEffect() for
         each animation you wish to use to indicate how much each
         animation contributes to the final pose.
+
+        This method is deprecated.  You should use setBlend() instead.
         """
-        for lodName, bundleDict in self.__partBundleDict.items():
-            if partName == None:
-                for partBundle in bundleDict.values():
-                    partBundle.node().getBundle().setBlendType(blendType)
-            else:
-                truePartName = self.__subpartDict.get(partName, [partName])[0]
-                partBundle = bundleDict.get(truePartName)
-                if partBundle != None:
-                    partBundle.node().getBundle().setBlendType(blendType)
-                else:
-                    Actor.notify.warning("Couldn't find part: %s" % (partName))
+        self.setBlend(animBlend = True, blendType = blendType, partName = partName)
 
     def disableBlend(self, partName = None):
         """
         Restores normal one-animation-at-a-time operation after a
         previous call to enableBlend().
+
+        This method is deprecated.  You should use setBlend() instead.
         """
-        self.enableBlend(PartBundle.BTSingle, partName)
+        self.setBlend(animBlend = False, partName = partName)
 
     def setControlEffect(self, animName, effect,
                          partName = None, lodName = None):
@@ -1187,7 +1242,7 @@ class Actor(DirectObject, NodePath):
         Sets the amount by which the named animation contributes to
         the overall pose.  This controls blending of multiple
         animations; it only makes sense to call this after a previous
-        call to enableBlend().
+        call to setBlend(animBlend = True).
         """        
         for control in self.getAnimControls(animName, partName, lodName):
             control.getPart().setControlEffect(control, effect)

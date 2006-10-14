@@ -60,18 +60,9 @@ PUBLISHED:
 
   // This is the parameter to set_blend_type() and specifies the kind
   // of blending operation to be performed when multiple controls are
-  // in effect simultaneously (see set_control_effect()).
+  // in effect simultaneously (see set_control_effect()) or between
+  // sequential frames of the animation.
   enum BlendType {
-
-    // BT_single means no blending is performed.  Only one AnimControl
-    // is allowed to be set at a time in set_control_effect().  In
-    // this mode, and this mode only, activating a particular
-    // AnimControl (via play(), loop(), or pose()) will implicitly set
-    // the bundle's control_effect to 100% of that particular
-    // AnimControl, removing any AnimControls previously set.  In
-    // other modes, the control_effect must be set manually.
-    BT_single,
-
     // BT_linear does a componentwise average of all blended matrices,
     // which is a linear blend.  The result of this is that if a
     // particular vertex would have been at point P in one animation
@@ -100,8 +91,14 @@ PUBLISHED:
     BT_componentwise_quat,
   };
 
-  void set_blend_type(BlendType bt);
+  INLINE void set_blend_type(BlendType bt);
   INLINE BlendType get_blend_type() const;
+
+  void set_anim_blend_flag(bool anim_blend_flag);
+  INLINE bool get_anim_blend_flag() const;
+
+  INLINE void set_frame_blend_flag(bool frame_blend_flag);
+  INLINE bool get_frame_blend_flag() const;
 
   INLINE PartBundleNode *get_node() const;
 
@@ -147,6 +144,8 @@ private:
     }
 
     BlendType _blend_type;
+    bool _anim_blend_flag;
+    bool _frame_blend_flag;
     AnimControl *_last_control_set;
     ChannelBlend _blend;
     float _net_blend;
@@ -192,6 +191,9 @@ inline ostream &operator <<(ostream &out, const PartBundle &bundle) {
   bundle.output(out);
   return out;
 }
+
+ostream &operator <<(ostream &out, PartBundle::BlendType blend_type);
+istream &operator >>(istream &in, PartBundle::BlendType &blend_type);
 
 #include "partBundle.I"
 

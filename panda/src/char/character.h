@@ -119,6 +119,8 @@ private:
   typedef vector_PartGroupStar Parts;
   Parts _parts;
 
+  double _last_auto_update;
+
   // Statistics
   PStatCollector _joints_pcollector;
   PStatCollector _skinning_pcollector;

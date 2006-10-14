@@ -229,7 +229,7 @@ fillin(DatagramIterator &scan, BamReader *) {
 void AnimInterface::CData::
 play(double from, double to) {
   if (from >= to) {
-    pose((int)from);
+    pose(from);
     return;
   }
 
@@ -259,7 +259,7 @@ play(double from, double to) {
 void AnimInterface::CData::
 loop(bool restart, double from, double to) {
   if (from >= to) {
-    pose((int)from);
+    pose(from);
     return;
   }
 
@@ -292,7 +292,7 @@ loop(bool restart, double from, double to) {
 void AnimInterface::CData::
 pingpong(bool restart, double from, double to) {
   if (from >= to) {
-    pose((int)from);
+    pose(from);
     return;
   }
 
@@ -322,20 +322,21 @@ pingpong(bool restart, double from, double to) {
 //               it there.
 ////////////////////////////////////////////////////////////////////
 void AnimInterface::CData::
-pose(int frame) {
+pose(double frame) {
   _play_mode = PM_pose;
   _start_time = ClockObject::get_global_clock()->get_frame_time();
-  _start_frame = (double)frame;
+  _start_frame = frame;
   _play_frames = 0.0;
-  _from_frame = frame;
-  _to_frame = frame;
+  _from_frame = (int)floor(frame);
+  _to_frame = (int)floor(frame);
   _paused_f = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimInterface::CData::get_full_frame
 //       Access: Public
-//  Description: Returns the current integer frame number.
+//  Description: Returns the current integer frame number, plus the
+//               indicated increment.
 //
 //               Unlike the value returned by get_frame(), this frame
 //               number may extend beyond the range of
@@ -347,8 +348,8 @@ pose(int frame) {
 //               to_frame in the play() method.
 ////////////////////////////////////////////////////////////////////
 int AnimInterface::CData::
-get_full_frame() const {
-  int frame = (int)floor(get_full_fframe());
+get_full_frame(int increment) const {
+  int frame = (int)floor(get_full_fframe()) + increment;
   if (_play_mode == PM_play) {
     // In play mode, we never let the return value exceed
     // (_from_frame, _to_frame).
@@ -435,19 +436,19 @@ void AnimInterface::CData::
 output(ostream &out) const {
   switch (_play_mode) {
   case PM_pose:
-    out << "pose, frame " << get_full_frame();
+    out << "pose, frame " << get_full_fframe();
     return;
 
   case PM_play:
-    out << "play, frame " << get_full_frame();
+    out << "play, frame " << get_full_fframe();
     return;
 
   case PM_loop:
-    out << "loop, frame " << get_full_frame();
+    out << "loop, frame " << get_full_fframe();
     return;
 
   case PM_pingpong:
-    out << "pingpong, frame " << get_full_frame();
+    out << "pingpong, frame " << get_full_fframe();
     return;
   }
 }

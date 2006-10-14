@@ -119,7 +119,7 @@ pingpong(bool restart, double from, double to) {
 ////////////////////////////////////////////////////////////////////
 INLINE void AnimInterface::
 stop() {
-  pose(get_frame());
+  pose(get_full_fframe());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ stop() {
 //               it there.
 ////////////////////////////////////////////////////////////////////
 INLINE void AnimInterface::
-pose(int frame) {
+pose(double frame) {
   {
     CDWriter cdata(_cycler);
     cdata->pose(frame);
@@ -192,7 +192,30 @@ get_frame() const {
   if (num_frames <= 0) {
     return 0;
   }
-  return cmod(get_full_frame(), num_frames);
+  CDReader cdata(_cycler);
+  return cmod(cdata->get_full_frame(0), num_frames);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimInterface::get_next_frame
+//       Access: Published
+//  Description: Returns the current integer frame number + 1,
+//               constrained to the range 0 <= f < get_num_frames().
+//
+//               If the play mode is PM_play, this will clamp to the
+//               same value as get_frame() at the end of the
+//               animation.  If the play mode is any other value, this
+//               will wrap around to frame 0 at the end of the
+//               animation.
+////////////////////////////////////////////////////////////////////
+INLINE int AnimInterface::
+get_next_frame() const {
+  int num_frames = get_num_frames();
+  if (num_frames <= 0) {
+    return 0;
+  }
+  CDReader cdata(_cycler);
+  return cmod(cdata->get_full_frame(1), num_frames);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -229,7 +252,7 @@ get_frac() const {
 INLINE int AnimInterface::
 get_full_frame() const {
   CDReader cdata(_cycler);
-  return cdata->get_full_frame();
+  return cdata->get_full_frame(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -308,7 +331,7 @@ set_num_frames(int num_frames) {
 ////////////////////////////////////////////////////////////////////
 INLINE double AnimInterface::CData::
 get_frac() const {
-  return get_full_fframe() - (double)get_full_frame();
+  return get_full_fframe() - (double)get_full_frame(0);
 }
 
 INLINE ostream &

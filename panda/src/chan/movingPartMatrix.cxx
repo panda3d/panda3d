@@ -69,7 +69,7 @@ get_blend_value(const PartBundle *root) {
     // No channel is bound; supply the default value.
     _value = _initial_value;
 
-  } else if (cdata->_blend.size() == 1) {
+  } else if (cdata->_blend.size() == 1 && !cdata->_frame_blend_flag) {
     // A single value, the normal case.
     AnimControl *control = (*cdata->_blend.begin()).first;
 
@@ -85,10 +85,11 @@ get_blend_value(const PartBundle *root) {
     }
 
   } else {
-    // A blend of two or more values.
+    // A blend of two or more values, either between multiple
+    // different animations, or between consecutive frames of the same
+    // animation (or both).
 
     switch (cdata->_blend_type) {
-    case PartBundle::BT_single:
     case PartBundle::BT_linear:
       {
         // An ordinary, linear blend.
@@ -107,8 +108,18 @@ get_blend_value(const PartBundle *root) {
           if (channel != (ChannelType *)NULL) {
             ValueType v;
             channel->get_value(control->get_frame(), v);
-            
-            _value += v * effect;
+
+            if (!cdata->_frame_blend_flag) {
+              // Hold the current frame until the next one is ready.
+              _value += v * effect;
+            } else {
+              // Blend between successive frames.
+              float frac = (float)control->get_frac();
+              _value += v * (effect * (1.0f - frac));
+
+              channel->get_value(control->get_next_frame(), v);
+              _value += v * (effect * frac);
+            }
             net += effect;
           }
         }
@@ -144,15 +155,35 @@ get_blend_value(const PartBundle *root) {
           nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
           ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
           if (channel != (ChannelType *)NULL) {
+            int frame = control->get_frame();
             ValueType v;
-            channel->get_value_no_scale_shear(control->get_frame(), v);
             LVecBase3f iscale, ishear;
-            channel->get_scale(control->get_frame(), iscale);
-            channel->get_shear(control->get_frame(), ishear);
+            channel->get_value_no_scale_shear(frame, v);
+            channel->get_scale(frame, iscale);
+            channel->get_shear(frame, ishear);
             
-            _value += v * effect;
-            scale += iscale * effect;
-            shear += ishear * effect;
+            if (!cdata->_frame_blend_flag) {
+              // Hold the current frame until the next one is ready.
+              _value += v * effect;
+              scale += iscale * effect;
+              shear += ishear * effect;
+            } else {
+              // Blend between successive frames.
+              float frac = (float)control->get_frac();
+              float e0 = effect * (1.0f - frac);
+              _value += v * e0;
+              scale += iscale * e0;
+              shear += ishear * e0;
+
+              int next_frame = control->get_next_frame();
+              channel->get_value_no_scale_shear(next_frame, v);
+              channel->get_scale(next_frame, iscale);
+              channel->get_shear(next_frame, ishear);
+              float e1 = effect * frac;
+              _value += v * e1;
+              scale += iscale * e1;
+              shear += ishear * e1;
+            }
             net += effect;
           }
         }
@@ -193,16 +224,41 @@ get_blend_value(const PartBundle *root) {
           nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
           ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
           if (channel != (ChannelType *)NULL) {
+            int frame = control->get_frame();
             LVecBase3f iscale, ihpr, ipos, ishear;
-            channel->get_scale(control->get_frame(), iscale);
-            channel->get_hpr(control->get_frame(), ihpr);
-            channel->get_pos(control->get_frame(), ipos);
-            channel->get_shear(control->get_frame(), ishear);
+            channel->get_scale(frame, iscale);
+            channel->get_hpr(frame, ihpr);
+            channel->get_pos(frame, ipos);
+            channel->get_shear(frame, ishear);
             
-            scale += iscale * effect;
-            hpr += ihpr * effect;
-            pos += ipos * effect;
-            shear += ishear * effect;
+            if (!cdata->_frame_blend_flag) {
+              // Hold the current frame until the next one is ready.
+              scale += iscale * effect;
+              hpr += ihpr * effect;
+              pos += ipos * effect;
+              shear += ishear * effect;
+            } else {
+              // Blend between successive frames.
+              float frac = (float)control->get_frac();
+              float e0 = effect * (1.0f - frac);
+
+              scale += iscale * e0;
+              hpr += ihpr * e0;
+              pos += ipos * e0;
+              shear += ishear * e0;
+
+              int next_frame = control->get_next_frame();
+              channel->get_scale(next_frame, iscale);
+              channel->get_hpr(next_frame, ihpr);
+              channel->get_pos(next_frame, ipos);
+              channel->get_shear(next_frame, ishear);
+              float e1 = effect * frac;
+
+              scale += iscale * e1;
+              hpr += ihpr * e1;
+              pos += ipos * e1;
+              shear += ishear * e1;
+            }
             net += effect;
           }
         }
@@ -241,17 +297,43 @@ get_blend_value(const PartBundle *root) {
           nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
           ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
           if (channel != (ChannelType *)NULL) {
+            int frame = control->get_frame();
             LVecBase3f iscale, ipos, ishear;
             LQuaternionf iquat;
-            channel->get_scale(control->get_frame(), iscale);
-            channel->get_quat(control->get_frame(), iquat);
-            channel->get_pos(control->get_frame(), ipos);
-            channel->get_shear(control->get_frame(), ishear);
+            channel->get_scale(frame, iscale);
+            channel->get_quat(frame, iquat);
+            channel->get_pos(frame, ipos);
+            channel->get_shear(frame, ishear);
             
-            scale += iscale * effect;
-            quat += iquat * effect;
-            pos += ipos * effect;
-            shear += ishear * effect;
+            if (!cdata->_frame_blend_flag) {
+              // Hold the current frame until the next one is ready.
+              scale += iscale * effect;
+              quat += iquat * effect;
+              pos += ipos * effect;
+              shear += ishear * effect;
+
+            } else {
+              // Blend between successive frames.
+              float frac = (float)control->get_frac();
+              float e0 = effect * (1.0f - frac);
+
+              scale += iscale * e0;
+              quat += iquat * e0;
+              pos += ipos * e0;
+              shear += ishear * e0;
+
+              int next_frame = control->get_next_frame();
+              channel->get_scale(next_frame, iscale);
+              channel->get_quat(next_frame, iquat);
+              channel->get_pos(next_frame, ipos);
+              channel->get_shear(next_frame, ishear);
+              float e1 = effect * frac;
+
+              scale += iscale * e1;
+              quat += iquat * e1;
+              pos += ipos * e1;
+              shear += ishear * e1;
+            }
             net += effect;
           }
         }

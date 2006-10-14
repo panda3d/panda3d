@@ -54,7 +54,7 @@ get_blend_value(const PartBundle *root) {
     // No channel is bound; supply the default value.
     _value = _initial_value;
 
-  } else if (cdata->_blend.size() == 1) {
+  } else if (cdata->_blend.size() == 1 && !cdata->_frame_blend_flag) {
     // A single value, the normal case.
     AnimControl *control = (*cdata->_blend.begin()).first;
 
@@ -87,7 +87,17 @@ get_blend_value(const PartBundle *root) {
         ValueType v;
         channel->get_value(control->get_frame(), v);
         
-        _value += v * effect;
+        if (!cdata->_frame_blend_flag) {
+          // Hold the current frame until the next one is ready.
+          _value += v * effect;
+        } else {
+          // Blend between successive frames.
+          float frac = (float)control->get_frac();
+          _value += v * (effect * (1.0f - frac));
+
+          channel->get_value(control->get_next_frame(), v);
+          _value += v * (effect * frac);
+        }
         net += effect;
       }
     }

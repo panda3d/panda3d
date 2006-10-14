@@ -30,5 +30,6 @@ NotifyCategoryDecl(chan, EXPCL_PANDA, EXPTP_PANDA);
 EXPCL_PANDA extern ConfigVariableBool compress_channels;
 EXPCL_PANDA extern ConfigVariableInt compress_chan_quality;
 EXPCL_PANDA extern ConfigVariableBool read_compressed_channels;
+EXPCL_PANDA extern ConfigVariableBool interpolate_frames;
 
 #endif

@@ -83,6 +83,13 @@ PRC_DESC("Set this false to disable reading of compressed animation channels, "
          "might want to do this would be to speed load time when you don't "
          "care about what the animation looks like."));
 
+ConfigVariableBool interpolate_frames
+("interpolate-frames", false,
+PRC_DESC("Set this true to interpolate character animations between frames, "
+         "or false to hold each frame until the next one is ready.  This can "
+         "also be changed on a per-character basis with "
+         "PartBundle::set_frame_blend_flag()."));
+
 
 ConfigureFn(config_chan) {
   AnimBundle::init_type();

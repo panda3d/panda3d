@@ -54,6 +54,8 @@ Character(const Character &copy) :
   // update our _parts list.
 
   copy_joints(get_bundle(), copy.get_bundle());
+
+  _last_auto_update = -1.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,14 +156,17 @@ cull_callback(CullTraverser *, CullTraverserData &) {
   // optimization later, to handle characters that might animate
   // themselves in front of the view frustum.
 
-  PStatTimer timer(_joints_pcollector);
+  double now = ClockObject::get_global_clock()->get_frame_time();
+  if (now != _last_auto_update) {
+    _last_auto_update = now;
 
-  if (char_cat.is_spam()) {
-    double now = ClockObject::get_global_clock()->get_frame_time();
-    char_cat.spam() << "Animating " << *this << " at time " << now << "\n";
+    PStatTimer timer(_joints_pcollector);
+    if (char_cat.is_spam()) {
+      char_cat.spam() << "Animating " << *this << " at time " << now << "\n";
+    }
+    
+    do_update();
   }
-
-  do_update();
 
   return true;
 }
