@@ -199,9 +199,9 @@ describe_scene_graph(PandaNode *node) {
   root->add_child(node);
   _num_scene_graphs++;
 
-  int num_nodes = _analyzer._num_nodes;
+  int num_nodes = _analyzer.get_num_nodes();
   _analyzer.add_node(node);
-  num_nodes = _analyzer._num_nodes - num_nodes;
+  num_nodes = _analyzer.get_num_nodes() - num_nodes;
 
   nout << "  " << num_nodes << " nodes, bounding volume is "
        << *root->get_bounds() << "\n";
