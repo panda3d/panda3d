@@ -36,7 +36,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 SceneGraphAnalyzer::
@@ -46,7 +46,7 @@ SceneGraphAnalyzer() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 SceneGraphAnalyzer::
@@ -55,7 +55,7 @@ SceneGraphAnalyzer::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::clear
-//       Access: Public
+//       Access: Published
 //  Description: Resets all of the data in the analyzer in preparation
 //               for a new run.
 ////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ clear() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::add_node
-//       Access: Public
+//       Access: Published
 //  Description: Adds a new node to the set of data for analysis.
 //               Normally, this would only be called once, and passed
 //               the top of the scene graph, but it's possible to
@@ -108,7 +108,7 @@ add_node(PandaNode *node) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::write
-//       Access: Public
+//       Access: Published
 //  Description: Describes all the data collected.
 ////////////////////////////////////////////////////////////////////
 void SceneGraphAnalyzer::

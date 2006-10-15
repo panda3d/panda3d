@@ -37,7 +37,7 @@ class Texture;
 //               collect interesting statistics on it.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA SceneGraphAnalyzer {
-public:
+PUBLISHED:
   SceneGraphAnalyzer();
   ~SceneGraphAnalyzer();
 
