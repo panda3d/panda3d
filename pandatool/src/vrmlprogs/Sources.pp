@@ -19,7 +19,7 @@
   #define TARGET vrml-trans
   #define LOCAL_LIBS \
     progbase pvrml
-a
+
   #define SOURCES \
     vrmlTrans.cxx vrmlTrans.h
 
