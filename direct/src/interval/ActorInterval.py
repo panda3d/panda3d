@@ -71,19 +71,19 @@ class ActorInterval(Interval.Interval):
             if startFrame != None:
                 self.startFrame = startFrame
             elif startTime != None:
-                self.startFrame = int(math.floor(startTime * self.frameRate + 0.0001))
+                self.startFrame = startTime * self.frameRate
             else:
                 self.startFrame = 0
 
             if endFrame != None:
                 self.endFrame = endFrame
             elif endTime != None:
-                self.endFrame = int(math.floor(endTime * self.frameRate + 0.0001))
+                self.endFrame = endTime * self.frameRate
             elif duration != None:
                 if startTime == None:
                     startTime = float(self.startFrame) / float(self.frameRate)
                 endTime = startTime + duration
-                self.endFrame = int(math.floor(duration * self.frameRate + 0.0001))
+                self.endFrame = duration * self.frameRate
             else:
                 # No end frame specified.  Choose the maximum of all
                 # of the controls' numbers of frames.
@@ -129,7 +129,7 @@ class ActorInterval(Interval.Interval):
             absFrame = self.startFrame + frameCount
 
         # Calc integer frame number
-        absFrame = int(math.floor(absFrame + 0.0001))
+        intFrame = int(math.floor(absFrame + 0.0001))
 
         # Pose anim
 
@@ -140,7 +140,7 @@ class ActorInterval(Interval.Interval):
             # Each animControl might have a different number of frames.
             numFrames = control.getNumFrames()
             if self.loopAnim:
-                frame = absFrame % numFrames
+                frame = (intFrame % numFrames) + (absFrame - intFrame)
             else:
                 frame = max(min(absFrame, numFrames - 1), 0)
 
@@ -152,12 +152,15 @@ class ActorInterval(Interval.Interval):
         self.currT = t
 
     def privFinalize(self):
-        if self.implicitDuration:
+        if self.implicitDuration and not self.loopAnim:
             # As a special case, we ensure we end up posed to the last
             # frame of the animation if the original duration was
             # implicit.  This is necessary only to guard against
             # possible roundoff error in computing the final frame
-            # from the duration.
+            # from the duration.  We don't do this in the case of a
+            # looping animation, however, because this would introduce
+            # a hitch in the animation when it plays back-to-back with
+            # the next cycle.
             if self.reverse:
                 for control in self.controls:
                     control.pose(self.startFrame)
