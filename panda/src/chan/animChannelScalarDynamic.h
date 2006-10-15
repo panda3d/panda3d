@@ -45,7 +45,7 @@ protected:
   AnimChannelScalarDynamic();
 
 public:
-  virtual bool has_changed(int last_frame, int this_frame);
+  virtual bool has_changed(double last_frame, double this_frame);
   virtual void get_value(int frame, float &value);
 
 PUBLISHED:

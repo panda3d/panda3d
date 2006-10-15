@@ -35,6 +35,7 @@ class PartSubset;
 class BamReader;
 class FactoryParams;
 class BitArray;
+class CycleData;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PartGroup
@@ -85,9 +86,9 @@ public:
                        const PartGroup *parent,
                        int hierarchy_match_flags = 0) const;
 
-  virtual bool do_update(PartBundle *root, PartGroup *parent,
-                         bool parent_changed, bool anim_changed,
-                         Thread *current_thread);
+  virtual bool do_update(PartBundle *root, const CycleData *root_cdata,
+                         PartGroup *parent, bool parent_changed, 
+                         bool anim_changed, Thread *current_thread);
 
 protected:
   void write_descendants(ostream &out, int indent_level) const;

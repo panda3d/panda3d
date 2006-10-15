@@ -70,12 +70,14 @@ AnimChannelMatrixXfmTable::
 //               frame number.
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelMatrixXfmTable::
-has_changed(int last_frame, int this_frame) {
+has_changed(double last_frame, double this_frame) {
   if (last_frame != this_frame) {
+    int last_i_frame = (int)floor(last_frame);
+    int next_i_frame = (int)ceil(this_frame);
     for (int i = 0; i < num_matrix_components; i++) {
       if (_tables[i].size() > 1) {
-        if (_tables[i][last_frame % _tables[i].size()] !=
-            _tables[i][this_frame % _tables[i].size()]) {
+        if (_tables[i][last_i_frame % _tables[i].size()] !=
+            _tables[i][next_i_frame % _tables[i].size()]) {
           return true;
         }
       }

@@ -246,24 +246,20 @@ bool PartBundle::
 update() {
   Thread *current_thread = Thread::get_current_thread();
   bool anim_changed;
-  {
-    CDReader cdata(_cycler, current_thread);
-    anim_changed = cdata->_anim_changed;
+  bool frame_blend_flag;
+  CDWriter cdata(_cycler, false, current_thread);
+  anim_changed = cdata->_anim_changed;
+  frame_blend_flag = cdata->_frame_blend_flag;
 
-    if (cdata->_frame_blend_flag) {
-      // If the intra-frame blend flag is on, we will just assume the
-      // animation changes every time we call update().
-      anim_changed = true;
-    }
-  }
-  bool any_changed = do_update(this, NULL, false, anim_changed, current_thread);
+  bool any_changed = do_update(this, cdata, NULL, false, anim_changed, 
+                               current_thread);
 
   // Now update all the controls for next time.
-  CDWriter cdata(_cycler, false, current_thread);
+  //  CDWriter cdata(_cycler, false, current_thread);
   ChannelBlend::const_iterator cbi;
   for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
     AnimControl *control = (*cbi).first;
-    control->mark_channels();
+    control->mark_channels(frame_blend_flag);
   }
   
   cdata->_anim_changed = false;
@@ -281,14 +277,14 @@ update() {
 bool PartBundle::
 force_update() {
   Thread *current_thread = Thread::get_current_thread();
-  bool any_changed = do_update(this, NULL, true, true, current_thread);
+  CDWriter cdata(_cycler, false, current_thread);
+  bool any_changed = do_update(this, cdata, NULL, true, true, current_thread);
 
   // Now update all the controls for next time.
-  CDWriter cdata(_cycler, false, current_thread);
   ChannelBlend::const_iterator cbi;
   for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
     AnimControl *control = (*cbi).first;
-    control->mark_channels();
+    control->mark_channels(cdata->_frame_blend_flag);
   }
   
   cdata->_anim_changed = false;
@@ -442,7 +438,8 @@ clear_and_stop_intersecting(AnimControl *control, CData *cdata) {
 void PartBundle::
 finalize(BamReader *) {
   Thread *current_thread = Thread::get_current_thread();
-  do_update(this, NULL, true, true, current_thread);
+  CDWriter cdata(_cycler, true);
+  do_update(this, cdata, NULL, true, true, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

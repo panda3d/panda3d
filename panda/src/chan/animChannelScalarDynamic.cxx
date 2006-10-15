@@ -59,7 +59,7 @@ AnimChannelScalarDynamic() {
 //               frame number.
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelScalarDynamic::
-has_changed(int, int) {
+has_changed(double, double) {
   if (_value_node != (PandaNode *)NULL) {
     _value = _value_node->get_transform();
     bool has_changed = (_value != _last_value);

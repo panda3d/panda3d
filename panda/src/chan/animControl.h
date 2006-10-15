@@ -59,8 +59,8 @@ public:
   // interface; they're just public so we don't have to declare a
   // bunch of friends.
 
-  bool channel_has_changed(AnimChannelBase *channel) const;
-  void mark_channels();
+  bool channel_has_changed(AnimChannelBase *channel, bool frame_blend_flag) const;
+  void mark_channels(bool frame_blend_flag);
 
 protected:
   virtual void animation_activated();
@@ -74,7 +74,7 @@ private:
   int _channel_index;
 
   // This is the frame number as of the last call to mark_channels().
-  int _marked_frame;
+  double _marked_frame;
 
   // This is the bitmask of joints and/or sliders from the animation
   // that we have actually bound into this AnimControl.  See

@@ -35,7 +35,7 @@ TypeHandle AnimChannelBase::_type_handle;
 //               frame number.
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelBase::
-has_changed(int, int) {
+has_changed(double, double) {
   return true;
 }
 

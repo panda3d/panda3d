@@ -36,7 +36,7 @@ class EXPCL_PANDA AnimChannelScalarTable : public AnimChannelScalar {
 public:
   AnimChannelScalarTable(AnimGroup *parent, const string &name);
 
-  virtual bool has_changed(int last_frame, int this_frame);
+  virtual bool has_changed(double last_frame, double this_frame);
   virtual void get_value(int frame, float &value);
 
   void set_table(const CPTA_float &table);

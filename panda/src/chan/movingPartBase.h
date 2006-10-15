@@ -56,9 +56,9 @@ PUBLISHED:
   virtual void output_value(ostream &out) const=0;
 
 public:
-  virtual bool do_update(PartBundle *root, PartGroup *parent,
-                         bool parent_changed, bool anim_changed,
-                         Thread *current_thread);
+  virtual bool do_update(PartBundle *root, const CycleData *root_cdata,
+                         PartGroup *parent, bool parent_changed, 
+                         bool anim_changed, Thread *current_thread);
 
   virtual void get_blend_value(const PartBundle *root)=0;
   virtual bool update_internals(PartGroup *parent, bool self_changed,

@@ -87,12 +87,15 @@ output(ostream &out) const {
 //               changed since the last call to mark_channels().
 ////////////////////////////////////////////////////////////////////
 bool AnimControl::
-channel_has_changed(AnimChannelBase *channel) const {
-  if (_marked_frame < 0) {
+channel_has_changed(AnimChannelBase *channel, bool frame_blend_flag) const {
+  if (_marked_frame < 0.0) {
     return true;
   }
 
-  int this_frame = get_frame();
+  double this_frame = get_full_fframe();
+  if (!frame_blend_flag) {
+    this_frame = floor(this_frame + 0.0001);
+  }
   return channel->has_changed(_marked_frame, this_frame);
 }
 
@@ -103,8 +106,11 @@ channel_has_changed(AnimChannelBase *channel) const {
 //               next call to channel_has_changed().
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
-mark_channels() {
-  _marked_frame = get_frame();
+mark_channels(bool frame_blend_flag) {
+  _marked_frame = get_full_fframe();
+  if (!frame_blend_flag) {
+    _marked_frame = floor(_marked_frame + 0.0001);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -41,7 +41,7 @@ public:
   INLINE AnimChannelFixed(AnimGroup *parent, const string &name, const ValueType &value);
   INLINE AnimChannelFixed(const string &name, const ValueType &value);
 
-  virtual bool has_changed(int last_frame, int this_frame);
+  virtual bool has_changed(double last_frame, double this_frame);
   virtual void get_value(int frame, ValueType &value);
 
   virtual void output(ostream &out) const;

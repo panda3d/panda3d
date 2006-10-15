@@ -58,10 +58,12 @@ AnimChannelScalarTable(){
 //               frame number.
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelScalarTable::
-has_changed(int last_frame, int this_frame) {
+has_changed(double last_frame, double this_frame) {
   if (last_frame != this_frame && _table.size() > 1) {
-    if (_table[last_frame % _table.size()] !=
-        _table[this_frame % _table.size()]) {
+    int last_i_frame = (int)floor(last_frame);
+    int next_i_frame = (int)ceil(this_frame);
+    if (_table[last_i_frame % _table.size()] !=
+        _table[next_i_frame % _table.size()]) {
       return true;
     }
   }

@@ -98,7 +98,7 @@ write_with_value(ostream &out, int indent_level) const {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool MovingPartBase::
-do_update(PartBundle *root, PartGroup *parent,
+do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *parent,
           bool parent_changed, bool anim_changed,
           Thread *current_thread) {
   bool any_changed = false;
@@ -107,7 +107,7 @@ do_update(PartBundle *root, PartGroup *parent,
   // See if any of the channel values have changed since last time.
 
   {
-    PartBundle::CDReader cdata(root->_cycler, current_thread);
+    const PartBundle::CData *cdata = (const PartBundle::CData *)root_cdata;
     PartBundle::ChannelBlend::const_iterator bci;
     for (bci = cdata->_blend.begin();
          !needs_update && bci != cdata->_blend.end();
@@ -117,7 +117,7 @@ do_update(PartBundle *root, PartGroup *parent,
       nassertr(channel_index >= 0 && channel_index < (int)_channels.size(), false);
       AnimChannelBase *channel = _channels[channel_index];
       if (channel != (AnimChannelBase*)NULL) {
-        needs_update = control->channel_has_changed(channel);
+        needs_update = control->channel_has_changed(channel, cdata->_frame_blend_flag);
       }
     }
   }
@@ -135,7 +135,8 @@ do_update(PartBundle *root, PartGroup *parent,
   // Now recurse.
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    if ((*ci)->do_update(root, this, parent_changed || needs_update,
+    if ((*ci)->do_update(root, root_cdata, this, 
+                         parent_changed || needs_update,
                          anim_changed, current_thread)) {
       any_changed = true;
     }

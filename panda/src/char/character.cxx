@@ -155,19 +155,7 @@ cull_callback(CullTraverser *, CullTraverserData &) {
   // the view frustum.  We may need a better way to do this
   // optimization later, to handle characters that might animate
   // themselves in front of the view frustum.
-
-  double now = ClockObject::get_global_clock()->get_frame_time();
-  if (now != _last_auto_update) {
-    _last_auto_update = now;
-
-    PStatTimer timer(_joints_pcollector);
-    if (char_cat.is_spam()) {
-      char_cat.spam() << "Animating " << *this << " at time " << now << "\n";
-    }
-    
-    do_update();
-  }
-
+  update();
   return true;
 }
 
@@ -211,14 +199,11 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
 //               code to force an update of the character's position
 //               to the current frame, regardless of whether the
 //               character is currently onscreen and animating.
+//
+//               This method is deprecated.  Call update() instead.
 ////////////////////////////////////////////////////////////////////
 void Character::
 update_to_now() {
-  if (char_cat.is_spam()) {
-    double now = ClockObject::get_global_clock()->get_frame_time();
-    char_cat.spam() << "Animating " << *this << " at time " << now << "\n";
-  }
-
   update();
 }
 
@@ -232,8 +217,17 @@ update_to_now() {
 ////////////////////////////////////////////////////////////////////
 void Character::
 update() {
-  PStatTimer timer(_joints_pcollector);
-  do_update();
+  double now = ClockObject::get_global_clock()->get_frame_time();
+  if (now != _last_auto_update) {
+    _last_auto_update = now;
+
+    PStatTimer timer(_joints_pcollector);
+    if (char_cat.is_spam()) {
+      char_cat.spam() << "Animating " << *this << " at time " << now << "\n";
+    }
+    
+    do_update();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
