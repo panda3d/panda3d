@@ -89,7 +89,7 @@
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
     rescaleNormalAttrib.I rescaleNormalAttrib.h \
-    sceneGraphAnalyzer.h \
+    sceneGraphAnalyzer.h sceneGraphAnalyzer.I \
     sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
     selectiveChildNode.I selectiveChildNode.h \
@@ -296,7 +296,7 @@
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
     rescaleNormalAttrib.I rescaleNormalAttrib.h \
-    sceneGraphAnalyzer.h \
+    sceneGraphAnalyzer.h sceneGraphAnalyzer.I \
     sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
     selectiveChildNode.I selectiveChildNode.h \

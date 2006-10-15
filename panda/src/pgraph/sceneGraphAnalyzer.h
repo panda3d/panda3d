@@ -46,6 +46,33 @@ PUBLISHED:
 
   void write(ostream &out, int indent_level = 0) const;
 
+  INLINE int get_num_nodes() const;
+  INLINE int get_num_instances() const;
+  INLINE int get_num_transforms() const;
+  INLINE int get_num_nodes_with_attribs() const;
+  INLINE int get_num_geom_nodes() const;
+  INLINE int get_num_geoms() const;
+  INLINE int get_num_geom_vertex_datas() const;
+
+  INLINE int get_num_vertices() const;
+  INLINE int get_num_normals() const;
+  INLINE int get_num_texcoords() const;
+  INLINE int get_num_tris() const;
+  INLINE int get_num_lines() const;
+  INLINE int get_num_points() const;
+
+  INLINE int get_num_individual_tris() const;
+  INLINE int get_num_tristrips() const;
+  INLINE int get_num_triangles_in_strips() const;
+  INLINE int get_num_trifans() const;
+  INLINE int get_num_triangles_in_fans() const;
+
+  INLINE int get_texture_bytes() const;
+
+  INLINE int get_num_long_normals() const;
+  INLINE int get_num_short_normals() const;
+  INLINE float get_total_normal_length() const;
+
 private:
   void collect_statistics(PandaNode *node, bool under_instance);
   void collect_statistics(GeomNode *geom_node);
@@ -60,7 +87,7 @@ private:
   VDatas _vdatas;
   Textures _textures;
 
-public:
+private:
   int _num_nodes;
   int _num_instances;
   int _num_transforms;
@@ -88,5 +115,7 @@ public:
   int _num_short_normals;
   float _total_normal_length;
 };
+
+#include "sceneGraphAnalyzer.I"
 
 #endif
