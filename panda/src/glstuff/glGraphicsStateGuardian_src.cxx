@@ -6489,11 +6489,20 @@ apply_texture(TextureContext *tc) {
   }
   GLP(BindTexture)(target, gtc->_index);
 
-  if (gtc->was_modified()) {
+  if (gtc->was_image_modified()) {
+    // If the texture image was modified, reload the texture.  This
+    // means we also re-specify the properties for good measure.
     specify_texture(gtc->get_texture());
     upload_texture(gtc);
     gtc->mark_loaded();
+
+  } else if (gtc->was_properties_modified()) {
+    // If only the properties have been modified, we don't necessarily
+    // need to reload the texture.
+    specify_texture(gtc->get_texture());
+    gtc->mark_loaded();
   }
+
 
   report_my_gl_errors();
 }
@@ -6728,6 +6737,9 @@ upload_texture_image(CLP(TextureContext) *gtc,
     } else if (is_compressed_format(internal_format)) {
       GLCAT.debug()
         << "compressing texture " << tex->get_name() << "\n";
+    } else {
+      GLCAT.debug()
+        << "loading uncompressed texture " << tex->get_name() << "\n";
     }
   }
 

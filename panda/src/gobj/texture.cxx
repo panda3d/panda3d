@@ -168,7 +168,8 @@ operator = (const Texture &copy) {
   _match_framebuffer_format = copy._match_framebuffer_format;
   _ram_image_compression = copy._ram_image_compression;
   _ram_images = copy._ram_images;
-  ++_modified;
+  ++_properties_modified;
+  ++_image_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -619,7 +620,7 @@ bool Texture::
 reload() {
   if (_loaded_from_image && has_filename()) {
     reload_ram_image();
-    ++_modified;
+    ++_image_modified;
     return has_ram_image();
   }
 
@@ -686,7 +687,7 @@ load_related(const InternalName *suffix) const {
 void Texture::
 set_wrap_u(Texture::WrapMode wrap) {
   if (_wrap_u != wrap) {
-    ++_modified;
+    ++_properties_modified;
     _wrap_u = wrap;
   }
 }
@@ -699,7 +700,7 @@ set_wrap_u(Texture::WrapMode wrap) {
 void Texture::
 set_wrap_v(Texture::WrapMode wrap) {
   if (_wrap_v != wrap) {
-    ++_modified;
+    ++_properties_modified;
     _wrap_v = wrap;
   }
 }
@@ -712,7 +713,7 @@ set_wrap_v(Texture::WrapMode wrap) {
 void Texture::
 set_wrap_w(Texture::WrapMode wrap) {
   if (_wrap_w != wrap) {
-    ++_modified;
+    ++_properties_modified;
     _wrap_w = wrap;
   }
 }
@@ -725,7 +726,7 @@ set_wrap_w(Texture::WrapMode wrap) {
 void Texture::
 set_minfilter(Texture::FilterType filter) {
   if (_minfilter != filter) {
-    ++_modified;
+    ++_properties_modified;
     _minfilter = filter;
   }
 }
@@ -738,7 +739,7 @@ set_minfilter(Texture::FilterType filter) {
 void Texture::
 set_magfilter(Texture::FilterType filter) {
   if (_magfilter != filter) {
-    ++_modified;
+    ++_properties_modified;
     _magfilter = filter;
   }
 }
@@ -755,7 +756,7 @@ set_magfilter(Texture::FilterType filter) {
 void Texture::
 set_anisotropic_degree(int anisotropic_degree) {
   if (_anisotropic_degree != anisotropic_degree) {
-    ++_modified;
+    ++_properties_modified;
     _anisotropic_degree = anisotropic_degree;
   }
 }
@@ -771,7 +772,7 @@ set_anisotropic_degree(int anisotropic_degree) {
 void Texture::
 set_border_color(const Colorf &color) {
   if (_border_color != color) {
-    ++_modified;
+    ++_properties_modified;
     _border_color = color;
   }
 }
@@ -798,7 +799,7 @@ set_border_color(const Colorf &color) {
 void Texture::
 set_compression(Texture::CompressionMode compression) {
   if (_compression != compression) {
-    ++_modified;
+    ++_properties_modified;
     _compression = compression;
   }
 }
@@ -993,7 +994,7 @@ set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
     _ram_images[0]._image = image;
     _ram_images[0]._page_size = page_size;
     _ram_image_compression = compression;
-    ++_modified;
+    ++_image_modified;
   }
 }
 
@@ -1091,7 +1092,7 @@ make_ram_mipmap_image(int n) {
 
   _ram_images[n]._image = PTA_uchar::empty_array(get_expected_ram_mipmap_image_size(n));
   _ram_images[n]._page_size = get_expected_ram_mipmap_page_size(n);
-  ++_modified;
+  ++_image_modified;
   return _ram_images[n]._image;
 }
 
@@ -1122,7 +1123,7 @@ set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size) {
       _ram_images[n]._page_size != page_size) {
     _ram_images[n]._image = image;
     _ram_images[n]._page_size = page_size;
-    ++_modified;
+    ++_image_modified;
   }
 }
 
@@ -2320,7 +2321,7 @@ reload_ram_image() {
 //     Function: Texture::do_modify_ram_image
 //       Access: Protected
 //  Description: This is called internally to uniquify the ram image
-//               pointer without updating _modified.
+//               pointer without updating _image_modified.
 ////////////////////////////////////////////////////////////////////
 void Texture::
 do_modify_ram_image() {
@@ -2336,7 +2337,7 @@ do_modify_ram_image() {
 //     Function: Texture::do_make_ram_image
 //       Access: Protected
 //  Description: This is called internally to make a new ram image
-//               without updating _modified.
+//               without updating _image_modified.
 ////////////////////////////////////////////////////////////////////
 void Texture::
 do_make_ram_image() {
@@ -2351,7 +2352,7 @@ do_make_ram_image() {
 //     Function: Texture::do_modify_ram_mipmap_image
 //       Access: Protected
 //  Description: This is called internally to uniquify the nth mipmap
-//               image pointer without updating _modified.
+//               image pointer without updating _image_modified.
 ////////////////////////////////////////////////////////////////////
 void Texture::
 do_modify_ram_mipmap_image(int n) {
@@ -3352,16 +3353,23 @@ make_from_bam(const FactoryParams &params) {
 void Texture::
 fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
   // We have already read in the filenames; don't read them again.
-  _wrap_u = (WrapMode)scan.get_uint8();
-  _wrap_v = (WrapMode)scan.get_uint8();
-  _wrap_w = (WrapMode)scan.get_uint8();
-  _minfilter = (FilterType)scan.get_uint8();
-  _magfilter = (FilterType)scan.get_uint8();
-  _anisotropic_degree = scan.get_int16();
-  _border_color.read_datagram(scan);
-  _compression = CM_default;
+
+  // We use the setters here, instead of directly assigning these
+  // values, so that we will correctly update _properties_modified
+  // only if any of these changes.
+
+  set_wrap_u((WrapMode)scan.get_uint8());
+  set_wrap_v((WrapMode)scan.get_uint8());
+  set_wrap_w((WrapMode)scan.get_uint8());
+  set_minfilter((FilterType)scan.get_uint8());
+  set_magfilter((FilterType)scan.get_uint8());
+  set_anisotropic_degree(scan.get_int16());
+  Colorf border_color;
+  border_color.read_datagram(scan);
+  set_border_color(border_color);
+
   if (manager->get_file_minor_ver() >= 1) {
-    _compression = (CompressionMode)scan.get_uint8();
+    set_compression((CompressionMode)scan.get_uint8());
   }
 
   Format format = (Format)scan.get_uint8();
@@ -3413,8 +3421,9 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
       _ram_images[n]._image = image;
     }
     _loaded_from_image = true;
+    ++_image_modified;
+    ++_properties_modified;
   }
-  ++_modified;
 }
 
 ////////////////////////////////////////////////////////////////////

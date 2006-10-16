@@ -40,15 +40,40 @@ get_texture() const {
   return _texture;
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureContext::was_modified
 //       Access: Public
-//  Description: Returns true if the texture has been modified since the
-//               last time mark_loaded() was called.
+//  Description: Returns true if the texture properties or image have
+//               been modified since the last time mark_loaded() was
+//               called.
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextureContext::
 was_modified() const {
-  return get_modified() != _texture->get_modified();
+  return was_properties_modified() || was_image_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::was_properties_modified
+//       Access: Public
+//  Description: Returns true if the texture properties (unrelated to
+//               the image) have been modified since the last time
+//               mark_loaded() was called.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureContext::
+was_properties_modified() const {
+  return _properties_modified != _texture->get_properties_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::was_image_modified
+//       Access: Public
+//  Description: Returns true if the texture image has been modified
+//               since the last time mark_loaded() was called.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureContext::
+was_image_modified() const {
+  return _image_modified != _texture->get_image_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,7 +86,9 @@ was_modified() const {
 INLINE void TextureContext::
 mark_loaded() {
   //  _data_size_bytes = _data->get_texture_size_bytes();
-  update_modified(_texture->get_modified());
+  _properties_modified = _texture->get_properties_modified();
+  _image_modified = _texture->get_image_modified();
+  update_modified(max(_properties_modified, _image_modified));
 
   // Assume the texture is now resident.
   set_resident(true);

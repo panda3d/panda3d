@@ -45,6 +45,8 @@ public:
   INLINE Texture *get_texture() const;
 
   INLINE bool was_modified() const;
+  INLINE bool was_properties_modified() const;
+  INLINE bool was_image_modified() const;
   INLINE void mark_loaded();
 
 private:
@@ -52,6 +54,8 @@ private:
   // both own their TextureContexts!  That would create a circular
   // reference count.
   Texture *_texture;
+  UpdateSeq _properties_modified;
+  UpdateSeq _image_modified;
   
 public:
   static TypeHandle get_class_type() {

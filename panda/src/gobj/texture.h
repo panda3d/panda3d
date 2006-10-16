@@ -302,7 +302,8 @@ PUBLISHED:
   void clear_ram_mipmap_images();
   void generate_ram_mipmap_images();
 
-  INLINE UpdateSeq get_modified() const;
+  INLINE UpdateSeq get_properties_modified() const;
+  INLINE UpdateSeq get_image_modified() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool release(PreparedGraphicsObjects *prepared_objects);
@@ -520,7 +521,8 @@ protected:
   typedef pvector<RamImage> RamImages;
   RamImages _ram_images;
 
-  UpdateSeq _modified;
+  UpdateSeq _properties_modified;
+  UpdateSeq _image_modified;
 
 private:
   // The auxiliary data is not recorded to a bam file.

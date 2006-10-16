@@ -169,7 +169,8 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
 INLINE bool Texture::
 read(const Filename &fullpath, int z, int n, 
      bool read_pages, bool read_mipmaps) {
-  ++_modified;
+  ++_properties_modified;
+  ++_image_modified;
   return do_read(fullpath, Filename(), 0, 0, z, n, read_pages, read_mipmaps,
                  NULL);
 }
@@ -248,7 +249,8 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
      int primary_file_num_channels, int alpha_file_channel,
      int z, int n, bool read_pages, bool read_mipmaps,
      BamCacheRecord *record) {
-  ++_modified;
+  ++_properties_modified;
+  ++_image_modified;
   return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
 		 alpha_file_channel, z, n, read_pages, read_mipmaps,
                  record);
@@ -343,7 +345,8 @@ load(const PNMImage &pnmimage) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 load(const PNMImage &pnmimage, int z, int n) {
-  ++_modified;
+  ++_properties_modified;
+  ++_image_modified;
   return do_load_one(pnmimage, get_name(), z, n);
 }
 
@@ -785,7 +788,7 @@ get_ram_image_compression() const {
 INLINE PTA_uchar Texture::
 modify_ram_image() {
   do_modify_ram_image();
-  ++_modified;
+  ++_image_modified;
   return _ram_images[0]._image;
 }
 
@@ -800,7 +803,7 @@ modify_ram_image() {
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_uchar Texture::
 make_ram_image() {
-  ++_modified;
+  ++_image_modified;
   do_make_ram_image();
   return _ram_images[0]._image;
 }
@@ -931,20 +934,32 @@ get_expected_ram_mipmap_page_size(int n) const {
 INLINE PTA_uchar Texture::
 modify_ram_mipmap_image(int n) {
   do_modify_ram_mipmap_image(n);
-  ++_modified;
+  ++_image_modified;
   return _ram_images[n]._image;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::get_modified
+//     Function: Texture::get_properties_modified
 //       Access: Published
 //  Description: Returns a sequence number which is guaranteed to
-//               change at least every time the texture data or
-//               properties are modified.
+//               change at least every time the texture properties
+//               (unrelated to the image) are modified.
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq Texture::
-get_modified() const {
-  return _modified;
+get_properties_modified() const {
+  return _properties_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_image_modified
+//       Access: Published
+//  Description: Returns a sequence number which is guaranteed to
+//               change at least every time the texture image data
+//               (including mipmap levels) are modified.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq Texture::
+get_image_modified() const {
+  return _image_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1068,7 +1083,7 @@ INLINE void Texture::
 set_x_size(int x_size) {
   if (_x_size != x_size) {
     _x_size = x_size;
-    ++_modified;
+    ++_image_modified;
     clear_ram_image();
   }
 }
@@ -1085,7 +1100,7 @@ set_y_size(int y_size) {
   if (_y_size != y_size) {
     nassertv(_texture_type != Texture::TT_1d_texture || y_size == 1);
     _y_size = y_size;
-    ++_modified;
+    ++_image_modified;
     clear_ram_image();
   }
 }
@@ -1104,7 +1119,7 @@ set_z_size(int z_size) {
              (_texture_type == Texture::TT_cube_map && z_size == 6) ||
              (z_size == 1));
     _z_size = z_size;
-    ++_modified;
+    ++_image_modified;
     clear_ram_image();
   }
 }
