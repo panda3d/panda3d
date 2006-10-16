@@ -20,10 +20,10 @@ class DirectFastrak(DirectObject):
     fastrakCount = 0
     notify = DirectNotifyGlobal.directNotify.newCategory('DirectFastrak')
 
-    def __init__(self, device = 'Tracker0', nodePath = direct.camera):
+    def __init__(self, device = 'Tracker0', nodePath = base.direct.camera):
         # See if device manager has been initialized
-        if direct.deviceManager == None:
-            direct.deviceManager = DirectDeviceManager()
+        if base.direct.deviceManager == None:
+            base.direct.deviceManager = DirectDeviceManager()
 
         # Set name
         self.name = 'Fastrak-' + `DirectFastrak.fastrakCount`
@@ -43,7 +43,7 @@ class DirectFastrak(DirectObject):
         # Kill existing task
         self.disable()
         # Initialize tracker
-        self.tracker = direct.deviceManager.createTracker(self.device)
+        self.tracker = base.direct.deviceManager.createTracker(self.device)
         # Update task
         taskMgr.add(self.updateTask, self.name + '-updateTask')
 
@@ -60,7 +60,7 @@ class DirectFastrak(DirectObject):
 
     def fastrakUpdate(self):
         # Get tracker position in feet.  Flip x, z axes.
-        pos = direct.fastrak[self.deviceNo].tracker.getPos()
+        pos = base.direct.fastrak[self.deviceNo].tracker.getPos()
         self.trackerPos = Vec3(3.280839895013123 * pos[2],
                                3.280839895013123 * pos[1],
                                3.280839895013123 * pos[0])

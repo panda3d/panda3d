@@ -21,16 +21,16 @@ class DirectRadamec(DirectObject):
     radamecCount = 0
     notify = DirectNotifyGlobal.directNotify.newCategory('DirectRadamec')
 
-    def __init__(self, device = 'Analog0', nodePath = direct.camera):
+    def __init__(self, device = 'Analog0', nodePath = base.direct.camera):
         # See if device manager has been initialized
-        if direct.deviceManager == None:
-            direct.deviceManager = DirectDeviceManager()
+        if base.direct.deviceManager == None:
+            base.direct.deviceManager = DirectDeviceManager()
         # Set name
         self.name = 'Radamec-' + `DirectRadamec.radamecCount`
         DirectRadamec.radamecCount += 1
         # Get analogs
         self.device = device
-        self.analogs = direct.deviceManager.createAnalogs(self.device)
+        self.analogs = base.direct.deviceManager.createAnalogs(self.device)
         self.numAnalogs = len(self.analogs)
         self.aList = [0, 0, 0, 0, 0, 0, 0, 0]
         # Radamec device max/mins

@@ -555,15 +555,15 @@ class LevelEditor(NodePath, DirectObject):
 
         # Initialize state
         # Make sure direct is running
-        direct.enable()
+        base.direct.enable()
         # And only the appropriate handles are showing
-        direct.widget.disableHandles(['x-ring', 'x-disc',
+        base.direct.widget.disableHandles(['x-ring', 'x-disc',
                                            'y-ring', 'y-disc',
                                            'z-post'])
         # Initialize camera
         base.camLens.setNear(1.0)
         base.camLens.setFar(3000)
-        direct.camera.setPos(0, -10, 10)
+        base.direct.camera.setPos(0, -10, 10)
         # Initialize drive mode
         self.configureDriveModeCollisionData()
         # Init visibility variables
@@ -620,7 +620,7 @@ class LevelEditor(NodePath, DirectObject):
     def enable(self):
         """ Enable level editing and show level """
         # Make sure level is visible
-        self.reparentTo(direct.group)
+        self.reparentTo(base.direct.group)
         self.show()
         # Add all the action events
         for event in self.actionEvents:
@@ -636,7 +636,7 @@ class LevelEditor(NodePath, DirectObject):
     def disable(self):
         """ Disable level editing and hide level """
         # Deselect everything as a precaution
-        direct.deselectAll()
+        base.direct.deselectAll()
         # Hide the level
         self.reparentTo(hidden)
         # Ignore the hooks
@@ -681,7 +681,7 @@ class LevelEditor(NodePath, DirectObject):
 
         # Initialize variables
         # Reset grid
-        direct.grid.setPosHprScale(0, 0, 0, 0, 0, 0, 1, 1, 1)
+        base.direct.grid.setPosHprScale(0, 0, 0, 0, 0, 0, 1, 1, 1)
         # The selected DNA Object/NodePath
         self.selectedDNARoot = None
         self.selectedNPRoot = None
@@ -760,23 +760,23 @@ class LevelEditor(NodePath, DirectObject):
         base.cam.iPosHpr()
         # Renable mouse
         self.enableMouse()
-        direct.enable()
+        base.direct.enable()
 
     def useDriveMode(self):
         """ Lerp down to eye level then switch to Drive mode """
-        pos = direct.camera.getPos()
+        pos = base.direct.camera.getPos()
         pos.setZ(4.0)
-        hpr = direct.camera.getHpr()
+        hpr = base.direct.camera.getHpr()
         hpr.set(hpr[0], 0.0, 0.0)
-        t = direct.camera.lerpPosHpr(pos, hpr, 1.0, blendType = 'easeInOut',
+        t = base.direct.camera.lerpPosHpr(pos, hpr, 1.0, blendType = 'easeInOut',
                                    task = 'manipulateCamera')
         # Note, if this dies an unatural death, this could screw things up
         # t.uponDeath = self.switchToDriveMode
 
     def switchToDriveMode(self, state):
         """ Disable direct camera manipulation and enable player drive mode """
-        direct.minimumConfiguration()
-        direct.manipulationControl.disableManipulation()
+        base.direct.minimumConfiguration()
+        base.direct.manipulationControl.disableManipulation()
         # Update vis data
         self.initVisibilityData()
         # Switch to drive mode
@@ -786,9 +786,9 @@ class LevelEditor(NodePath, DirectObject):
         # And move down and forward to compensate
         base.camera.setPos(base.camera, 0, 5, -4)
         # Make sure we're where we want to be
-        pos = direct.camera.getPos()
+        pos = base.direct.camera.getPos()
         pos.setZ(0.0)
-        hpr = direct.camera.getHpr()
+        hpr = base.direct.camera.getHpr()
         hpr.set(hpr[0], 0.0, 0.0)
         # Fine tune the drive mode
         base.mouseInterface.node().setPos(pos)
@@ -1048,7 +1048,7 @@ class LevelEditor(NodePath, DirectObject):
             # Update visible geometry using new DNA
             newRoot = self.replace(self.selectedNPRoot, self.selectedDNARoot)
             # Reselect node path and respawn followSelectedNodePathTask
-            direct.select(newRoot)
+            base.direct.select(newRoot)
 
     def replace(self, nodePath, dnaNode):
         """ Replace a node path with the results of a DNANode traversal """
@@ -1083,7 +1083,7 @@ class LevelEditor(NodePath, DirectObject):
             DNASTORE.removeDNAGroup(dnaNode)
         if nodePath:
             # Next deselect nodePath to avoid having bad node paths in the dict
-            direct.deselect(nodePath)
+            base.direct.deselect(nodePath)
             # Now you can get rid of the node path
             nodePath.removeNode()
 
@@ -1224,19 +1224,19 @@ class LevelEditor(NodePath, DirectObject):
                 # It is, is it a DNA_NODE (i.e. does it have pos/hpr/scale)?
                 if DNAIsDerivedFrom(dnaObject, DNA_NODE):
                     # First snap selected node path to grid
-                    pos = selectedNode.getPos(direct.grid)
-                    snapPos = direct.grid.computeSnapPoint(pos)
+                    pos = selectedNode.getPos(base.direct.grid)
+                    snapPos = base.direct.grid.computeSnapPoint(pos)
                     if self.panel.fPlaneSnap.get():
                         zheight = 0
                     else:
                         zheight = snapPos[2]
-                    selectedNode.setPos(direct.grid,
+                    selectedNode.setPos(base.direct.grid,
                                         snapPos[0], snapPos[1], zheight)
                     # Angle snap
-                    h = direct.grid.computeSnapAngle(selectedNode.getH())
-                    if direct.grid.getHprSnap():
+                    h = base.direct.grid.computeSnapAngle(selectedNode.getH())
+                    if base.direct.grid.getHprSnap():
                         selectedNode.setH(h)
-                    if selectedNode == direct.selected.last:
+                    if selectedNode == base.direct.selected.last:
                         self.setLastAngle(h)
                     # Update DNA
                     self.updatePose(dnaObject, selectedNode)
@@ -1244,14 +1244,14 @@ class LevelEditor(NodePath, DirectObject):
                 pointOrCell, type = self.findPointOrCell(selectedNode)
                 if pointOrCell and type:
                     # First snap selected node path to grid
-                    pos = selectedNode.getPos(direct.grid)
-                    snapPos = direct.grid.computeSnapPoint(pos)
+                    pos = selectedNode.getPos(base.direct.grid)
+                    snapPos = base.direct.grid.computeSnapPoint(pos)
                     if self.panel.fPlaneSnap.get():
                         zheight = 0
                     else:
                         zheight = snapPos[2]
                     selectedNode.setPos(
-                        direct.grid,
+                        base.direct.grid,
                         snapPos[0], snapPos[1], zheight)
                     newPos = selectedNode.getPos(self.NPToplevel)
                     # Update DNA
@@ -1457,14 +1457,14 @@ class LevelEditor(NodePath, DirectObject):
             # Attach a node, so we can set pos with respect to:
             tempNode = hidden.attachNewNode('tempNode')
             # Place it:
-            tempNode.setPos(direct.grid, hitPt)
+            tempNode.setPos(base.direct.grid, hitPt)
             # Copy the pos to where we really want it:
             dnaNode.setPos(tempNode.getPos())
             # Clean up:
             tempNode.removeNode()
         else:
             # Place the new node path at the current grid origin
-            dnaNode.setPos(direct.grid.getPos())
+            dnaNode.setPos(base.direct.grid.getPos())
         # Initialize angle to match last object
         dnaNode.setHpr(Vec3(self.getLastAngle(), 0, 0))
 
@@ -1479,7 +1479,7 @@ class LevelEditor(NodePath, DirectObject):
         if DNAClassEqual(dnaNode, DNA_STREET):
             self.snapList = self.getSnapPoint(dnaNode.getCode())
         # Select the instance
-        direct.select(newNodePath)
+        base.direct.select(newNodePath)
         self.lastNodePath = newNodePath
         # Update grid to get ready for the next object
         self.autoPositionGrid()
@@ -1490,14 +1490,14 @@ class LevelEditor(NodePath, DirectObject):
     def addGroup(self, nodePath):
         """ Add a new DNA Node Group to the specified Node Path """
         # Set the node path as the current parent
-        direct.setActiveParent(nodePath)
+        base.direct.setActiveParent(nodePath)
         # Add a new group to the selected parent
         self.createNewGroup()
 
     def addVisGroup(self, nodePath):
         """ Add a new DNA Group to the specified Node Path """
         # Set the node path as the current parent
-        direct.setActiveParent(nodePath)
+        base.direct.setActiveParent(nodePath)
         # Add a new group to the selected parent
         self.createNewGroup(type = 'vis')
 
@@ -1715,11 +1715,11 @@ class LevelEditor(NodePath, DirectObject):
         elif DNAClassEqual(dnaObject, DNA_PROP):
             # PROP OPERATIONS
             self.DNATarget = dnaObject
-            if direct.gotControl(modifiers):
+            if base.direct.gotControl(modifiers):
                 menuMode = 'prop_color'
-            elif direct.gotAlt(modifiers) and self.panel.currentBaselineDNA:
+            elif base.direct.gotAlt(modifiers) and self.panel.currentBaselineDNA:
                 menuMode = 'baseline_style'
-            elif direct.gotShift(modifiers):
+            elif base.direct.gotShift(modifiers):
                 menuMode = 'sign_texture'
                 self.DNATarget = DNAGetChildOfClass(dnaObject, DNA_SIGN)
                 self.DNATargetParent = dnaObject
@@ -1783,19 +1783,19 @@ class LevelEditor(NodePath, DirectObject):
         hitPt = self.getWallIntersectionPoint(self.selectedNPRoot)
         if hitPt[2] < 10.0:
             # Do door operations
-            if direct.gotControl(modifiers):
+            if base.direct.gotControl(modifiers):
                 menuMode = 'door_color'
-            elif direct.gotAlt(modifiers):
+            elif base.direct.gotAlt(modifiers):
                 menuMode = 'door_orientation'
             else:
                 menuMode = 'door_double_texture'
         else:
             # Do sign operations
-            if direct.gotControl(modifiers):
+            if base.direct.gotControl(modifiers):
                 menuMode = 'sign_color'
-            elif direct.gotAlt(modifiers) and self.panel.currentBaselineDNA:
+            elif base.direct.gotAlt(modifiers) and self.panel.currentBaselineDNA:
                 menuMode = 'baseline_style'
-            elif direct.gotAlt(modifiers):
+            elif base.direct.gotAlt(modifiers):
                 menuMode = 'sign_orientation'
             else:
                 menuMode = 'sign_texture'
@@ -1807,7 +1807,7 @@ class LevelEditor(NodePath, DirectObject):
         wallNum = self.computeWallNum(dnaObject, hitPt)
         if wallNum < 0:
             # Do building related operations
-            if direct.gotAlt(modifiers):
+            if base.direct.gotAlt(modifiers):
                 menuMode = 'building_width'
             else:
                 menuMode = 'building_style_all'
@@ -1825,37 +1825,37 @@ class LevelEditor(NodePath, DirectObject):
             # Determine which zone you are pointing at
             if (zPt > 0.8):
                 # Do cornice operations
-                if direct.gotControl(modifiers):
+                if base.direct.gotControl(modifiers):
                     menuMode = 'cornice_color'
-                elif direct.gotAlt(modifiers):
+                elif base.direct.gotAlt(modifiers):
                     menuMode = 'cornice_orientation'
                 else:
                     menuMode = 'cornice_texture'
             elif ((xPt < 0.3) or (xPt > 0.7)):
                 # Do wall operations
-                if direct.gotControl(modifiers):
+                if base.direct.gotControl(modifiers):
                     menuMode = 'wall_color'
-                elif direct.gotAlt(modifiers):
+                elif base.direct.gotAlt(modifiers):
                     menuMode = 'wall_orientation'
-                elif direct.gotShift(modifiers):
+                elif base.direct.gotShift(modifiers):
                     menuMode = 'wall_texture'
                 else:
                     menuMode = 'wall_style'
             elif (zPt < 0.4):
                 # Do door operations
-                if direct.gotControl(modifiers):
+                if base.direct.gotControl(modifiers):
                     menuMode = 'door_color'
-                elif direct.gotAlt(modifiers):
+                elif base.direct.gotAlt(modifiers):
                     menuMode = 'door_orientation'
                 else:
                     menuMode = 'door_single_texture'
             else:
                 # Do window operations
-                if direct.gotControl(modifiers):
+                if base.direct.gotControl(modifiers):
                     menuMode = 'window_color'
-                elif direct.gotAlt(modifiers):
+                elif base.direct.gotAlt(modifiers):
                     menuMode = 'window_orientation'
-                elif direct.gotShift(modifiers):
+                elif base.direct.gotShift(modifiers):
                     menuMode = 'window_count'
                 else:
                     menuMode = 'window_texture'
@@ -2005,7 +2005,7 @@ class LevelEditor(NodePath, DirectObject):
         # Now process newly selected node path
         dnaParent = None
         dnaNode = self.findDNANode(nodePath)
-        if direct.fControl:
+        if base.direct.fControl:
             # Is the current node a DNA Object?
             if not dnaNode:
                 # No it isn't, look for a parent DNA object
@@ -2018,9 +2018,9 @@ class LevelEditor(NodePath, DirectObject):
         # Do we need to switch selection to a parent object?
         if dnaParent:
             # Yes, deselect currently selected node path
-            direct.deselect(nodePath)
+            base.direct.deselect(nodePath)
             # And select parent
-            direct.select(dnaParent, direct.fShift)
+            base.direct.select(dnaParent, base.direct.fShift)
         elif dnaNode:
             # We got a valid node path/DNA object, continue
             self.selectedNPRoot = nodePath
@@ -2048,9 +2048,9 @@ class LevelEditor(NodePath, DirectObject):
                     suitEdge = self.findSuitEdge(nodePath.getParent())
                     if suitEdge:
                         # Yes, deselect currently selected node path
-                        direct.deselect(nodePath)
+                        base.direct.deselect(nodePath)
                         # And select parent
-                        direct.select(suitEdge, direct.fShift)
+                        base.direct.select(suitEdge, base.direct.fShift)
 
         # Let others know that something new may be selected:
         for i in self.selectedNodePathHookHooks:
@@ -2135,10 +2135,10 @@ class LevelEditor(NodePath, DirectObject):
     def keyboardRotateSelected(self, arrowDirection):
         """ Rotate selected objects using arrow keys """
         # Get snap angle
-        if direct.fShift:
-            oldSnapAngle = direct.grid.snapAngle
-            direct.grid.setSnapAngle(1.0)
-        snapAngle = direct.grid.snapAngle
+        if base.direct.fShift:
+            oldSnapAngle = base.direct.grid.snapAngle
+            base.direct.grid.setSnapAngle(1.0)
+        snapAngle = base.direct.grid.snapAngle
         # Compute new angle
         if ((arrowDirection == 'left') or (arrowDirection == 'up')):
             self.setLastAngle(self.getLastAngle() + snapAngle)
@@ -2150,26 +2150,26 @@ class LevelEditor(NodePath, DirectObject):
         elif (self.getLastAngle() > 180.0):
             self.setLastAngle(self.getLastAngle() - 360.0)
         # Move selected objects
-        for selectedNode in direct.selected:
+        for selectedNode in base.direct.selected:
             selectedNode.setHpr(self.getLastAngle(), 0, 0)
         # Snap objects to grid and update DNA if necessary
-        self.updateSelectedPose(direct.selected.getSelectedAsList())
-        if direct.fShift:
-            direct.grid.setSnapAngle(oldSnapAngle)
+        self.updateSelectedPose(base.direct.selected.getSelectedAsList())
+        if base.direct.fShift:
+            base.direct.grid.setSnapAngle(oldSnapAngle)
 
     def keyboardTranslateSelected(self, arrowDirection):
-        gridToCamera = direct.grid.getMat(direct.camera)
+        gridToCamera = base.direct.grid.getMat(base.direct.camera)
         camXAxis = gridToCamera.xformVec(X_AXIS)
         xxDot = camXAxis.dot(X_AXIS)
         xzDot = camXAxis.dot(Z_AXIS)
 
         # what is the current grid spacing?
-        if direct.fShift:
+        if base.direct.fShift:
             # If shift, divide grid spacing by 10.0
-            oldGridSpacing = direct.grid.gridSpacing
+            oldGridSpacing = base.direct.grid.gridSpacing
             # Use back door to set grid spacing to avoid grid update
-            direct.grid.gridSpacing = direct.grid.gridSpacing/10.0
-        deltaMove = direct.grid.gridSpacing
+            base.direct.grid.gridSpacing = base.direct.grid.gridSpacing/10.0
+        deltaMove = base.direct.grid.gridSpacing
 
         # Compute the specified delta
         deltaPos = Vec3(0)
@@ -2199,16 +2199,16 @@ class LevelEditor(NodePath, DirectObject):
                 deltaPos.setX(deltaPos[0] - deltaMove)
 
         # Move selected objects
-        for selectedNode in direct.selected:
+        for selectedNode in base.direct.selected:
             # Move it
-            selectedNode.setPos(direct.grid,
-                                selectedNode.getPos(direct.grid) + deltaPos)
+            selectedNode.setPos(base.direct.grid,
+                                selectedNode.getPos(base.direct.grid) + deltaPos)
         # Snap objects to grid and update DNA if necessary
-        self.updateSelectedPose(direct.selected.getSelectedAsList())
+        self.updateSelectedPose(base.direct.selected.getSelectedAsList())
         # Restore grid spacing
-        if direct.fShift:
+        if base.direct.fShift:
             # Use back door to set grid spacing to avoid grid update
-            direct.grid.gridSpacing = oldGridSpacing
+            base.direct.grid.gridSpacing = oldGridSpacing
 
     def keyboardXformSelected(self, arrowDirection, mode):
         if mode == 'rotate':
@@ -2250,9 +2250,9 @@ class LevelEditor(NodePath, DirectObject):
     def showGrid(self, flag):
         """ toggle direct grid """
         if flag:
-            direct.grid.enable()
+            base.direct.grid.enable()
         else:
-            direct.grid.disable()
+            base.direct.grid.disable()
 
     # LEVEL MAP/MARKER FUNCTIONS
     def createLevelMaps(self):
@@ -2276,7 +2276,7 @@ class LevelEditor(NodePath, DirectObject):
             map.setColor(Vec4(1, 1, 1, .4))
             self.mapDictionary[neighborhood] = map
             # Make sure this item isn't pickable
-            direct.addUnpickable(neighborhood + '_layout')
+            base.direct.addUnpickable(neighborhood + '_layout')
 
     def selectMap(self, neighborhood):
         if self.activeMap:
@@ -2287,7 +2287,7 @@ class LevelEditor(NodePath, DirectObject):
 
     def toggleMapVis(self, flag):
         if flag:
-            self.levelMap.reparentTo(direct.group)
+            self.levelMap.reparentTo(base.direct.group)
         else:
             self.levelMap.reparentTo(hidden)
 
@@ -2309,7 +2309,7 @@ class LevelEditor(NodePath, DirectObject):
         taskMgr.add(self.insertionMarkerTask, 'insertionMarkerTask')
 
     def insertionMarkerTask(self, state):
-        self.insertionMarker.setPosHpr(direct.grid, 0, 0, 0, 0, 0, 0)
+        self.insertionMarker.setPosHpr(base.direct.grid, 0, 0, 0, 0, 0, 0)
         # MRM: Why is this necessary?
         self.insertionMarker.setScale(1, 1, 1)
         return Task.cont
@@ -2344,7 +2344,7 @@ class LevelEditor(NodePath, DirectObject):
     def autoPositionGrid(self, fLerp = 1):
         taskMgr.remove('autoPositionGrid')
         # Move grid to prepare for placement of next object
-        selectedNode = direct.selected.last
+        selectedNode = base.direct.selected.last
         if selectedNode:
             dnaNode = self.findDNANode(selectedNode)
             if dnaNode == None:
@@ -2371,7 +2371,7 @@ class LevelEditor(NodePath, DirectObject):
             if fLerp:
                 # Position grid for placing next object
                 # Eventually we need to setHpr too
-                t = direct.grid.lerpPosHpr(
+                t = base.direct.grid.lerpPosHpr(
                     deltaPos, deltaHpr, 0.25,
                     other = selectedNode,
                     blendType = 'easeInOut',
@@ -2381,24 +2381,24 @@ class LevelEditor(NodePath, DirectObject):
                 t.selectedNode = selectedNode
                 t.uponDeath = self.autoPositionCleanup
             else:
-                direct.grid.setPosHpr(selectedNode, deltaPos, deltaHpr)
+                base.direct.grid.setPosHpr(selectedNode, deltaPos, deltaHpr)
 
         # Also move the camera
         taskMgr.remove('autoMoveDelay')
-        handlesToCam = direct.widget.getPos(direct.camera)
-        handlesToCam = handlesToCam * (direct.dr.near/handlesToCam[1])
-        if ((abs(handlesToCam[0]) > (direct.dr.nearWidth * 0.4)) or
-            (abs(handlesToCam[2]) > (direct.dr.nearHeight * 0.4))):
+        handlesToCam = base.direct.widget.getPos(base.direct.camera)
+        handlesToCam = handlesToCam * (base.direct.dr.near/handlesToCam[1])
+        if ((abs(handlesToCam[0]) > (base.direct.dr.nearWidth * 0.4)) or
+            (abs(handlesToCam[2]) > (base.direct.dr.nearHeight * 0.4))):
             taskMgr.remove('manipulateCamera')
-            direct.cameraControl.centerCamIn(0.5)
+            base.direct.cameraControl.centerCamIn(0.5)
 
     def autoPositionCleanup(self, state):
-        direct.grid.setPosHpr(state.selectedNode, state.deltaPos,
+        base.direct.grid.setPosHpr(state.selectedNode, state.deltaPos,
                               state.deltaHpr)
-        if direct.grid.getHprSnap():
+        if base.direct.grid.getHprSnap():
             # Clean up grid angle
-            direct.grid.setH(ROUND_TO(direct.grid.getH(),
-                                      direct.grid.snapAngle))
+            base.direct.grid.setH(ROUND_TO(base.direct.grid.getH(),
+                                      base.direct.grid.snapAngle))
 
     def getNextSnapPoint(self):
         """ Pull next pos hpr deltas off of snap list then rotate list """
@@ -2416,18 +2416,18 @@ class LevelEditor(NodePath, DirectObject):
         through mouse.
         """
         # Find mouse point on near plane
-        mouseX = direct.dr.mouseX
-        mouseY = direct.dr.mouseY
-        nearX = (math.tan(deg2Rad(direct.dr.fovH)/2.0) *
-                 mouseX * direct.dr.near)
-        nearZ = (math.tan(deg2Rad(direct.dr.fovV)/2.0) *
-                 mouseY * direct.dr.near)
+        mouseX = base.direct.dr.mouseX
+        mouseY = base.direct.dr.mouseY
+        nearX = (math.tan(deg2Rad(base.direct.dr.fovH)/2.0) *
+                 mouseX * base.direct.dr.near)
+        nearZ = (math.tan(deg2Rad(base.direct.dr.fovV)/2.0) *
+                 mouseY * base.direct.dr.near)
         # Initialize points
-        mCam2Wall = direct.camera.getMat(selectedNode)
+        mCam2Wall = base.direct.camera.getMat(selectedNode)
         mouseOrigin = Point3(0)
         mouseOrigin.assign(mCam2Wall.getRow3(3))
         mouseDir = Vec3(0)
-        mouseDir.set(nearX, direct.dr.near, nearZ)
+        mouseDir.set(nearX, base.direct.dr.near, nearZ)
         mouseDir.assign(mCam2Wall.xformVec(mouseDir))
         # Calc intersection point
         return planeIntersect(mouseOrigin, mouseDir, ZERO_POINT, NEG_Y_AXIS)
@@ -2437,7 +2437,7 @@ class LevelEditor(NodePath, DirectObject):
         Return point of intersection between ground plane and line from cam
         through mouse. Return false, if nothing selected. Snap to grid.
         """
-        return direct.grid.computeSnapPoint(self.getGridIntersectionPoint())
+        return base.direct.grid.computeSnapPoint(self.getGridIntersectionPoint())
 
     def getGridIntersectionPoint(self):
         """
@@ -2445,31 +2445,31 @@ class LevelEditor(NodePath, DirectObject):
         through mouse. Return false, if nothing selected
         """
         # Find mouse point on near plane
-        mouseX = direct.dr.mouseX
-        mouseY = direct.dr.mouseY
-        nearX = (math.tan(deg2Rad(direct.dr.fovH)/2.0) *
-                 mouseX * direct.dr.near)
-        nearZ = (math.tan(deg2Rad(direct.dr.fovV)/2.0) *
-                 mouseY * direct.dr.near)
+        mouseX = base.direct.dr.mouseX
+        mouseY = base.direct.dr.mouseY
+        nearX = (math.tan(deg2Rad(base.direct.dr.fovH)/2.0) *
+                 mouseX * base.direct.dr.near)
+        nearZ = (math.tan(deg2Rad(base.direct.dr.fovV)/2.0) *
+                 mouseY * base.direct.dr.near)
         # Initialize points
-        mCam2Grid = direct.camera.getMat(direct.grid)
+        mCam2Grid = base.direct.camera.getMat(base.direct.grid)
         mouseOrigin = Point3(0)
         mouseOrigin.assign(mCam2Grid.getRow3(3))
         mouseDir = Vec3(0)
-        mouseDir.set(nearX, direct.dr.near, nearZ)
+        mouseDir.set(nearX, base.direct.dr.near, nearZ)
         mouseDir.assign(mCam2Grid.xformVec(mouseDir))
         # Calc intersection point
         return planeIntersect(mouseOrigin, mouseDir, ZERO_POINT, Z_AXIS)
 
     def jumpToInsertionPoint(self):
         """ Move selected object to insertion point """
-        selectedNode = direct.selected.last
+        selectedNode = base.direct.selected.last
         if selectedNode:
             # Check if its a dna node
             dnaNode = self.findDNANode(selectedNode)
             if dnaNode:
                 # Place the new node path at the current grid origin
-                selectedNode.setPos(direct.grid, 0, 0, 0)
+                selectedNode.setPos(base.direct.grid, 0, 0, 0)
                 # Initialize angle to match last object
                 selectedNode.setHpr(self.getLastAngle(), 0, 0)
                 # Now update DNA pos and hpr to reflect final pose
@@ -2900,7 +2900,7 @@ class LevelEditor(NodePath, DirectObject):
         v = self.getGridSnapIntersectionPoint()
         # get the absolute pos relative to the top level.
         # That is what gets stored in the point
-        mat = direct.grid.getMat(self.NPToplevel)
+        mat = base.direct.grid.getMat(self.NPToplevel)
         absPos = Point3(mat.xformPoint(v))
         print 'Suit point: ' + `absPos`
         # Store the point in the DNA. If this point is already in there,
@@ -2974,7 +2974,7 @@ class LevelEditor(NodePath, DirectObject):
 
     def highlightConnected(self, nodePath = None, fReversePath = 0):
         if nodePath == None:
-            nodePath = direct.selected.last
+            nodePath = base.direct.selected.last
         if nodePath:
             suitPoint = self.findPointOrCell(nodePath)[0]
             if suitPoint:
@@ -3044,7 +3044,7 @@ class LevelEditor(NodePath, DirectObject):
             return
 
         v = self.getGridSnapIntersectionPoint()
-        mat = direct.grid.getMat(self.NPParent)
+        mat = base.direct.grid.getMat(self.NPParent)
         absPos = Point3(mat.xformPoint(v))
         if (self.currentBattleCellType == '20w 20l'):
             cell = DNABattleCell(20, 20, absPos)
@@ -3366,7 +3366,7 @@ class LevelEditor(NodePath, DirectObject):
         if dnaNode:
             if (DNAClassEqual(dnaNode, DNA_FLAT_BUILDING) or
                 DNAClassEqual(dnaNode, DNA_LANDMARK_BUILDING)):
-                direct.reparent(nodePath, fWrt = 1)
+                base.direct.reparent(nodePath, fWrt = 1)
         children = nodePath.getChildrenAsList()
         for child in children:
             self.reparentStreetBuildings(child)
@@ -3379,15 +3379,15 @@ class LevelEditor(NodePath, DirectObject):
         atrGroup = self.NPParent
         atrGroup.setName('ATR')
         self.setName(atrGroup, 'ATR')
-        direct.setActiveParent(atrGroup)
+        base.direct.setActiveParent(atrGroup)
         for child in originalChildren:
-            direct.reparent(child)
+            base.direct.reparent(child)
         # Now create a new group with just the buildings
         self.addGroup(self.NPToplevel)
         newGroup = self.NPParent
         newGroup.setName('LongStreet')
         self.setName(newGroup, 'LongStreet')
-        direct.setActiveParent(newGroup)
+        base.direct.setActiveParent(newGroup)
         self.reparentStreetBuildings(self.NPToplevel)
         return newGroup
 
@@ -3410,7 +3410,7 @@ class LevelEditor(NodePath, DirectObject):
             groupName = 'Buildings_' + side + "-" + str(sequenceNum)
         newGroup.setName(groupName)
         self.setName(newGroup, groupName)
-        direct.setActiveParent(newGroup)
+        base.direct.setActiveParent(newGroup)
 
         if 'barricade_curve' in curveName:
             parts = curveName.split('_')
@@ -3448,7 +3448,7 @@ class LevelEditor(NodePath, DirectObject):
         return streetLength
 
     def addStreetUnits(self, streetLength):
-        direct.grid.setPosHpr(0, -40, 0, 0, 0, 0)
+        base.direct.grid.setPosHpr(0, -40, 0, 0, 0, 0)
         currLength = 0
         while (currLength < streetLength):
             self.addStreet('street_80x40')
@@ -3460,18 +3460,18 @@ class LevelEditor(NodePath, DirectObject):
         numBldgs = len(bldgs)
         streetLength = self.calcLongStreetLength(bldgs)/2.0
         ref = None
-        direct.grid.fXyzSnap = 0
+        base.direct.grid.fXyzSnap = 0
         currLength = 0
         for i in range(numBldgs):
             bldg = bldgs[i]
             if ref == None:
-                direct.grid.iPosHpr(bldgGroup)
+                base.direct.grid.iPosHpr(bldgGroup)
             else:
                 ref.select()
                 self.autoPositionGrid(fLerp = 0)
-            if direct.grid.getX() >= streetLength:
-                direct.grid.setPosHpr(direct.grid, 0, -40, 0, 180, 0, 0)
-            bldg.iPosHpr(direct.grid)
+            if base.direct.grid.getX() >= streetLength:
+                base.direct.grid.setPosHpr(base.direct.grid, 0, -40, 0, 180, 0, 0)
+            bldg.iPosHpr(base.direct.grid)
             self.updateSelectedPose([bldg])
             self.adjustPropChildren(bldg)
             ref = bldg
@@ -3629,8 +3629,8 @@ class LevelEditor(NodePath, DirectObject):
         self.innerBarricadeDict = {}
 
 
-        direct.grid.fXyzSnap = 0
-        direct.grid.fHprSnap = 0
+        base.direct.grid.fXyzSnap = 0
+        base.direct.grid.fHprSnap = 0
         self.panel.fPlaneSnap.set(0)
         bldgGroup = self.consolidateStreetBuildings()
         bldgs = bldgGroup.getChildrenAsList()
@@ -3689,7 +3689,7 @@ class LevelEditor(NodePath, DirectObject):
 
                         self.updateSelectedPose([bldg])
                         self.adjustPropChildren(bldg)
-                        direct.reparent(bldg, fWrt = 1)
+                        base.direct.reparent(bldg, fWrt = 1)
                         print bldgIndex
                     elif curveType == 'trees':
                         curve.getPoint(currT, currPoint)
@@ -3715,11 +3715,11 @@ class LevelEditor(NodePath, DirectObject):
 
 
                         self.addProp(tree)
-                        for selectedNode in direct.selected:
+                        for selectedNode in base.direct.selected:
                             # Move it
                             selectedNode.setPos(currPoint)
                             # Snap objects to grid and update DNA if necessary
-                            self.updateSelectedPose(direct.selected.getSelectedAsList())
+                            self.updateSelectedPose(base.direct.selected.getSelectedAsList())
                     elif curveType == 'bridge':
                         # Don't add any dna for the bridge sections, but add the length
                         # of the bridge so we can increment our building groups correctly
@@ -3766,11 +3766,11 @@ class LevelEditor(NodePath, DirectObject):
                                                 "prop_snow_tree_large_ur",
                                                 "prop_snow_tree_large_ul"])
                             self.addProp(tree)
-                            for selectedNode in direct.selected:
+                            for selectedNode in base.direct.selected:
                                 # Move it
                                 selectedNode.setPos(currPoint)
                                 # Snap objects to grid and update DNA if necessary
-                                self.updateSelectedPose(direct.selected.getSelectedAsList())
+                                self.updateSelectedPose(base.direct.selected.getSelectedAsList())
 
 
 
@@ -3795,8 +3795,8 @@ class LevelEditor(NodePath, DirectObject):
         unstashing code to go off kilter.
         """
 
-        direct.grid.fXyzSnap = 0
-        direct.grid.fHprSnap = 0
+        base.direct.grid.fXyzSnap = 0
+        base.direct.grid.fHprSnap = 0
         self.panel.fPlaneSnap.set(0)
         bldgGroup = self.consolidateStreetBuildings()
         bldgs = bldgGroup.getChildrenAsList()
@@ -3859,7 +3859,7 @@ class LevelEditor(NodePath, DirectObject):
 
                         self.updateSelectedPose([bldg])
                         self.adjustPropChildren(bldg)
-                        direct.reparent(bldg, fWrt = 1)
+                        base.direct.reparent(bldg, fWrt = 1)
                         print bldgIndex
                     elif curveType == 'trees':
                         curve.getPoint(currT, currPoint)
@@ -3884,11 +3884,11 @@ class LevelEditor(NodePath, DirectObject):
 
 
                         self.addProp(tree)
-                        for selectedNode in direct.selected:
+                        for selectedNode in base.direct.selected:
                             # Move it
                             selectedNode.setPos(currPoint)
                             # Snap objects to grid and update DNA if necessary
-                            self.updateSelectedPose(direct.selected.getSelectedAsList())
+                            self.updateSelectedPose(base.direct.selected.getSelectedAsList())
                     elif curveType == 'bridge':
                         # Don't add any dna for the bridge sections, but add the length
                         # of the bridge so we can increment our building groups correctly
@@ -3935,11 +3935,11 @@ class LevelEditor(NodePath, DirectObject):
                                                 "prop_snow_tree_large_ur",
                                                 "prop_snow_tree_large_ul"])
                             self.addProp(tree)
-                            for selectedNode in direct.selected:
+                            for selectedNode in base.direct.selected:
                                 # Move it
                                 selectedNode.setPos(currPoint)
                                 # Snap objects to grid and update DNA if necessary
-                                self.updateSelectedPose(direct.selected.getSelectedAsList())
+                                self.updateSelectedPose(base.direct.selected.getSelectedAsList())
 
                 #done with for loop, increment bldgGroupIndex
                 bldgGroupIndex += 1
@@ -4092,7 +4092,7 @@ class LevelStyleManager:
         keys.sort()
         styles = map(lambda x, d = dictionary: d[x], keys)
         sf = 0.1
-        aspectRatio = (direct.dr.getWidth()/float(direct.dr.getHeight()))
+        aspectRatio = (base.direct.dr.getWidth()/float(base.direct.dr.getHeight()))
         for i in range(numItems):
             # Get the node
             node = self.createBaselineStyleSample(styles[i])
@@ -4215,7 +4215,7 @@ class LevelStyleManager:
         keys.sort()
         styles = map(lambda x, d = dictionary: d[x], keys)
         sf = 0.03
-        aspectRatio = (direct.dr.getWidth()/float(direct.dr.getHeight()))
+        aspectRatio = (base.direct.dr.getWidth()/float(base.direct.dr.getHeight()))
         for i in range(numItems):
             # Get the node
             node = self.createWallStyleSample(styles[i])
@@ -4417,7 +4417,7 @@ class LevelStyleManager:
         keys.sort()
         styles = map(lambda x, d = dictionary: d[x], keys)
         sf = 0.02
-        aspectRatio = (direct.dr.getWidth()/float(direct.dr.getHeight()))
+        aspectRatio = (base.direct.dr.getWidth()/float(base.direct.dr.getHeight()))
         for i in range(numItems):
             # Get the node
             node = self.createBuildingStyleSample(styles[i])
@@ -4630,7 +4630,7 @@ class LevelStyleManager:
         newColorMenu = hidden.attachNewNode(menuName + 'Menu')
         # Compute the angle per item
         angle = deg2Rad(360.0/float(numItems))
-        aspectRatio = (direct.dr.getWidth() / float(direct.dr.getHeight()))
+        aspectRatio = (base.direct.dr.getWidth() / float(base.direct.dr.getHeight()))
         # Attach the color chips to the new menu and adjust sizes
         for i in range (numItems):
             # Create a text node--just a card, really--of the right color.
@@ -4717,7 +4717,7 @@ class LevelStyleManager:
         newMenu = hidden.attachNewNode(dnaType + 'Menu')
         # Compute angle increment per item
         angle = deg2Rad(360.0/numItems)
-        aspectRatio = direct.dr.getWidth() /float(direct.dr.getHeight())
+        aspectRatio = base.direct.dr.getWidth() /float(base.direct.dr.getHeight())
         # Add items
         for i in range(0, numItems):
             if dnaList[i]:
@@ -4755,7 +4755,7 @@ class LevelStyleManager:
             angle = 0.0
         else:
             angle = deg2Rad(360.0/numItems)
-        aspectRatio = direct.dr.getWidth()/float(direct.dr.getHeight())
+        aspectRatio = base.direct.dr.getWidth()/float(base.direct.dr.getHeight())
         # Add items
         for i in range (numItems):
             # Create text node for each item
@@ -5863,11 +5863,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
         def toggleWidgetHandles(s = self):
             if s.fPlaneSnap.get():
-                direct.widget.disableHandles(['x-ring', 'x-disc',
+                base.direct.widget.disableHandles(['x-ring', 'x-disc',
                                               'y-ring', 'y-disc',
                                               'z-post'])
             else:
-                direct.widget.enableHandles('all')
+                base.direct.widget.enableHandles('all')
         self.fPlaneSnap = IntVar()
         self.fPlaneSnap.set(1)
         self.planeSnapButton = Checkbutton(buttonFrame,
@@ -5879,12 +5879,12 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
         self.fGrid = IntVar()
         self.fGrid.set(0)
-        direct.gridButton = Checkbutton(buttonFrame,
+        base.direct.gridButton = Checkbutton(buttonFrame,
                                       text = 'Show Grid',
                                       width = 6,
                                       variable = self.fGrid,
                                       command = self.toggleGrid)
-        direct.gridButton.pack(side = LEFT, expand = 1, fill = X)
+        base.direct.gridButton.pack(side = LEFT, expand = 1, fill = X)
         buttonFrame.pack(fill = X)
 
         buttonFrame4 = Frame(hull)
@@ -5907,29 +5907,29 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
         self.fColl = IntVar()
         self.fColl.set(1)
-        direct.collButton = Checkbutton(
+        base.direct.collButton = Checkbutton(
             buttonFrame4,
             text = 'Collide',
             variable = self.fColl,
             command = self.levelEditor.toggleCollisions)
-        direct.collButton.pack(side = LEFT, expand = 1, fill = X)
+        base.direct.collButton.pack(side = LEFT, expand = 1, fill = X)
 
         self.fVis = IntVar()
         self.fVis.set(1)
-        direct.visButton = Checkbutton(
+        base.direct.visButton = Checkbutton(
             buttonFrame4,
             text = 'Visibility',
             variable = self.fVis,
             command = self.levelEditor.toggleVisibility)
-        direct.visButton.pack(side = LEFT, expand = 1, fill = X)
+        base.direct.visButton.pack(side = LEFT, expand = 1, fill = X)
 
         self.fVisZones = IntVar()
         self.fVisZones.set(visualizeZones)
-        direct.visZonesButton = Checkbutton(
+        base.direct.visZonesButton = Checkbutton(
             buttonFrame4,
             text = 'Show Zones',
             variable = self.fVisZones)
-        direct.visZonesButton.pack(side = LEFT, expand = 1, fill = X)
+        base.direct.visZonesButton.pack(side = LEFT, expand = 1, fill = X)
 
         buttonFrame4.pack(fill = X, padx = 5)
 
@@ -5960,9 +5960,9 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
     def toggleGrid(self):
         if self.fGrid.get():
-            direct.grid.enable()
+            base.direct.grid.enable()
         else:
-            direct.grid.disable()
+            base.direct.grid.disable()
 
     def toggleSuitPaths(self):
         if self.fPaths.get():
@@ -5983,10 +5983,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.levelEditor.clearZoneLabels()
 
     def toggleXyzSnap(self):
-        direct.grid.setXyzSnap(self.fXyzSnap.get())
+        base.direct.grid.setXyzSnap(self.fXyzSnap.get())
 
     def toggleHprSnap(self):
-        direct.grid.setHprSnap(self.fXyzSnap.get())
+        base.direct.grid.setHprSnap(self.fXyzSnap.get())
 
     def toggleMapVis(self):
         self.levelEditor.toggleMapVis(self.fMapVis.get())

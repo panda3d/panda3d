@@ -1129,14 +1129,14 @@ del rgbPanel
 #####################################################################
 def select(self):
         base.startDirect(fWantTk = 0)
-        direct.select(self)
+        base.direct.select(self)
 
 Dtool_funcToMethod(select, NodePath)
 del select
 #####################################################################
 def deselect(self):
         base.startDirect(fWantTk = 0)
-        direct.deselect(self)
+        base.direct.deselect(self)
 
 Dtool_funcToMethod(deselect, NodePath)
 del deselect

@@ -36,17 +36,17 @@ class DirectJoybox(DirectObject):
     joyboxCount = 0
     xyzMultiplier = 1.0
     hprMultiplier = 1.0
-    def __init__(self, device = 'CerealBox', nodePath = direct.camera):
+    def __init__(self, device = 'CerealBox', nodePath = base.direct.camera):
         # See if device manager has been initialized
-        if direct.deviceManager == None:
-            direct.deviceManager = DirectDeviceManager()
+        if base.direct.deviceManager == None:
+            base.direct.deviceManager = DirectDeviceManager()
         # Set name
         DirectJoybox.joyboxCount += 1
         self.name = 'Joybox-' + `DirectJoybox.joyboxCount`
         # Get buttons and analogs
         self.device = device
-        self.analogs = direct.deviceManager.createAnalogs(self.device)
-        self.buttons = direct.deviceManager.createButtons(self.device)
+        self.analogs = base.direct.deviceManager.createAnalogs(self.device)
+        self.buttons = base.direct.deviceManager.createButtons(self.device)
         self.aList = [0, 0, 0, 0, 0, 0, 0, 0]
         self.bList = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         # For joybox fly mode
@@ -59,12 +59,12 @@ class DirectJoybox(DirectObject):
         # Record node path
         self.nodePath = nodePath
         # Ref CS for orbit mode
-        self.refCS = direct.cameraControl.coaMarker
-        self.tempCS = direct.group.attachNewNode('JoyboxTempCS')
+        self.refCS = base.direct.cameraControl.coaMarker
+        self.tempCS = base.direct.group.attachNewNode('JoyboxTempCS')
         # Text object to display current mode
         self.readout = OnscreenText.OnscreenText(
             pos = (-0.9, 0.95),
-            font = direct.font,
+            font = base.direct.font,
             mayChange = 1)
         # List of functions to cycle through
         self.modeList = [self.joeMode, self.driveMode, self.orbitMode]
@@ -204,7 +204,7 @@ class DirectJoybox(DirectObject):
 
     def acceptUprightCameraEvent(self, button = L_UPPER):
         self.accept(self.getEventName(button),
-                    direct.cameraControl.orbitUprightCam)
+                    base.direct.cameraControl.orbitUprightCam)
     def ignoreUprightCameraEvent(self, button = L_UPPER):
         self.ignore(self.getEventName(button))
 

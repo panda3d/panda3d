@@ -949,11 +949,11 @@
 
     def select(self):
         base.startDirect(fWantTk = 0)
-        direct.select(self)
+        base.direct.select(self)
 
     def deselect(self):
         base.startDirect(fWantTk = 0)
-        direct.deselect(self)
+        base.direct.deselect(self)
 
     def showCS(self, mask = None):
         """

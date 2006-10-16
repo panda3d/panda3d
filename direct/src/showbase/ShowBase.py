@@ -357,7 +357,7 @@ class ShowBase(DirectObject.DirectObject):
         del self.sfxManagerList
 
         try:
-            direct.panel.destroy()
+            base.direct.panel.destroy()
         except StandardError:
             pass
 
@@ -2023,7 +2023,7 @@ class ShowBase(DirectObject.DirectObject):
         self.wantDirect = fWantDirect
         if self.wantDirect:
             from direct.directtools import DirectSession
-            direct.enable()
+            base.direct.enable()
         else:
             __builtins__["direct"] = self.direct = None
 

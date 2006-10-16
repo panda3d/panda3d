@@ -52,7 +52,7 @@ class DirectGrid(NodePath, DirectObject):
         self.enable()
 
     def enable(self):
-        self.reparentTo(direct.group)
+        self.reparentTo(base.direct.group)
         self.updateGrid()
         self.fEnabled = 1
 

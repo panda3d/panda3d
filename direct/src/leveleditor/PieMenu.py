@@ -10,7 +10,7 @@ class PieMenu(NodePath, DirectObject):
         NodePath.__init__(self)
         # Create a toplevel node for aspect ratio scaling
         self.assign(hidden.attachNewNode('PieMenu'))
-        self.dr = direct.dr
+        self.dr = base.direct.dr
         # Attach the menu
         self.visibleMenu = visibleMenu
         # Try to flatten the visibleMenu (note, flattenStrong is too strong

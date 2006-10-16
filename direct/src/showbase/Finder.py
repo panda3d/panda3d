@@ -145,7 +145,7 @@ def replaceTaskMgrFunc(replaceFuncList):
             print ('replaced taskMgr function: %s' % funcName)
 
 def replaceStateFunc(replaceFuncList):
-    if not sys.modules.get('direct.fsm.State'):
+    if not sys.modules.get('base.direct.fsm.State'):
         return
     from direct.fsm.State import State
     for oldFunc, funcName, newFunc in replaceFuncList:
@@ -174,7 +174,7 @@ def replaceAIRFunc(replaceFuncList):
 def replaceIvalFunc(replaceFuncList):
     # Make sure we have imported IntervalManager and thus created
     # a global ivalMgr.
-    if not sys.modules.get('direct.interval.IntervalManager'):
+    if not sys.modules.get('base.direct.interval.IntervalManager'):
         return
     from direct.interval.FunctionInterval import FunctionInterval
     for oldFunc, funcName, newFunc in replaceFuncList:    

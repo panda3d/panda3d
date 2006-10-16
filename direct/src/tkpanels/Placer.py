@@ -29,7 +29,7 @@ class Placer(AppShell):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',       self.appname,       None),
-            ('nodePath',    direct.camera,      None),
+            ('nodePath',    base.direct.camera,      None),
             )
         self.defineoptions(kw, optiondefs)
 
@@ -40,23 +40,23 @@ class Placer(AppShell):
 
     def appInit(self):
         # Initialize state
-        self.tempCS = direct.group.attachNewNode('placerTempCS')
-        self.orbitFromCS = direct.group.attachNewNode(
+        self.tempCS = base.direct.group.attachNewNode('placerTempCS')
+        self.orbitFromCS = base.direct.group.attachNewNode(
             'placerOrbitFromCS')
-        self.orbitToCS = direct.group.attachNewNode('placerOrbitToCS')
+        self.orbitToCS = base.direct.group.attachNewNode('placerOrbitToCS')
         self.refCS = self.tempCS
 
         # Dictionary keeping track of all node paths manipulated so far
         self.nodePathDict = {}
-        self.nodePathDict['camera'] = direct.camera
-        self.nodePathDict['widget'] = direct.widget
+        self.nodePathDict['camera'] = base.direct.camera
+        self.nodePathDict['widget'] = base.direct.widget
         self.nodePathNames = ['camera', 'widget', 'selected']
 
         self.refNodePathDict = {}
         self.refNodePathDict['parent'] = self['nodePath'].getParent()
         self.refNodePathDict['render'] = render
-        self.refNodePathDict['camera'] = direct.camera
-        self.refNodePathDict['widget'] = direct.widget
+        self.refNodePathDict['camera'] = base.direct.camera
+        self.refNodePathDict['widget'] = base.direct.widget
         self.refNodePathNames = ['parent', 'self', 'render',
                                  'camera', 'widget', 'selected']
 
@@ -104,12 +104,12 @@ class Placer(AppShell):
             'Placer', 'command',
             'Toggle widget visability',
             label = 'Toggle Widget Vis',
-            command = direct.toggleWidgetVis)
+            command = base.direct.toggleWidgetVis)
         self.menuBar.addmenuitem(
             'Placer', 'command',
             'Toggle widget manipulation mode',
             label = 'Toggle Widget Mode',
-            command = direct.manipulationControl.toggleObjectHandlesMode)
+            command = base.direct.manipulationControl.toggleObjectHandlesMode)
 
         # Get a handle to the menu frame
         menuFrame = self.menuFrame
@@ -146,8 +146,8 @@ class Placer(AppShell):
         self.bind(self.refNodePathMenu, 'Select relative node path')
 
         self.undoButton = Button(menuFrame, text = 'Undo',
-                                 command = direct.undo)
-        if direct.undoList:
+                                 command = base.direct.undo)
+        if base.direct.undoList:
             self.undoButton['state'] = 'normal'
         else:
             self.undoButton['state'] = 'disabled'
@@ -155,8 +155,8 @@ class Placer(AppShell):
         self.bind(self.undoButton, 'Undo last operation')
 
         self.redoButton = Button(menuFrame, text = 'Redo',
-                                 command = direct.redo)
-        if direct.redoList:
+                                 command = base.direct.redo)
+        if base.direct.redoList:
             self.redoButton['state'] = 'normal'
         else:
             self.redoButton['state'] = 'disabled'
@@ -395,7 +395,7 @@ class Placer(AppShell):
             # Add Combo box entry for the initial node path
             self.addNodePath(nodePath)
         elif name == 'selected':
-            nodePath = direct.selected.last
+            nodePath = base.direct.selected.last
             # Add Combo box entry for this selected object
             self.addNodePath(nodePath)
         else:
@@ -418,7 +418,7 @@ class Placer(AppShell):
             else:
                 if name == 'widget':
                     # Record relationship between selected nodes and widget
-                    direct.selected.getWrtAll()
+                    base.direct.selected.getWrtAll()
         # Update active node path
         self.setActiveNodePath(nodePath)
 
@@ -451,7 +451,7 @@ class Placer(AppShell):
         if name == 'self':
             nodePath = self.tempCS
         elif name == 'selected':
-            nodePath = direct.selected.last
+            nodePath = base.direct.selected.last
             # Add Combo box entry for this selected object
             self.addRefNodePath(nodePath)
         elif name == 'parent':
@@ -562,13 +562,13 @@ class Placer(AppShell):
         elif self.movementMode == 'Orbit:':
             self.xformOrbit(value, axis)
         if self.nodePathMenu.get() == 'widget':
-            if direct.manipulationControl.fSetCoa:
+            if base.direct.manipulationControl.fSetCoa:
                 # Update coa based on current widget position
-                direct.selected.last.mCoa2Dnp.assign(
-                    direct.widget.getMat(direct.selected.last))
+                base.direct.selected.last.mCoa2Dnp.assign(
+                    base.direct.widget.getMat(base.direct.selected.last))
             else:
                 # Move the objects with the widget
-                direct.selected.moveWrtWidgetAll()
+                base.direct.selected.moveWrtWidgetAll()
 
     def xformStart(self, data):
         # Record undo point
@@ -577,7 +577,7 @@ class Placer(AppShell):
         if self.nodePathMenu.get() == 'widget':
             taskMgr.remove('followSelectedNodePath')
             # Record relationship between selected nodes and widget
-            direct.selected.getWrtAll()
+            base.direct.selected.getWrtAll()
         # Record initial state
         self.deltaHpr = self['nodePath'].getHpr(self.refCS)
         # Update placer to reflect new state
@@ -592,7 +592,7 @@ class Placer(AppShell):
         # If moving widget restart follow task
         if self.nodePathMenu.get() == 'widget':
             # Restart followSelectedNodePath task
-            direct.manipulationControl.spawnFollowSelectedNodePathTask()
+            base.direct.manipulationControl.spawnFollowSelectedNodePathTask()
 
     def xformRelative(self, value, axis):
         nodePath = self['nodePath']
@@ -731,7 +731,7 @@ class Placer(AppShell):
             self.xformStop(None)
 
     def pushUndo(self, fResetRedo = 1):
-        direct.pushUndo([self['nodePath']])
+        base.direct.pushUndo([self['nodePath']])
 
     def undoHook(self, nodePathList = []):
         # Reflect new changes
@@ -746,7 +746,7 @@ class Placer(AppShell):
         self.undoButton.configure(state = 'disabled')
 
     def pushRedo(self):
-        direct.pushRedo([self['nodePath']])
+        base.direct.pushRedo([self['nodePath']])
 
     def redoHook(self, nodePathList = []):
         # Reflect new changes

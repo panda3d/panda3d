@@ -19,7 +19,7 @@ class DirectNodePath(NodePath):
         # Create matrix to hold the offset between the nodepath
         # and its center of action (COA)
         self.mCoa2Dnp = Mat4(Mat4.identMat())
-        if direct.coaMode == COA_CENTER:
+        if base.direct.coaMode == COA_CENTER:
             self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
 
         # Transform from nodePath to widget
@@ -104,7 +104,7 @@ class SelectedNodePaths(DirectObject):
         # And update last
         __builtins__["last"] = self.last = dnp
         # Update cluster servers if this is a cluster client
-        if direct.clusterMode == 'client':
+        if base.direct.clusterMode == 'client':
             cluster.selectNodePath(dnp)
         return dnp
 
@@ -125,7 +125,7 @@ class SelectedNodePaths(DirectObject):
             # Send a message
             messenger.send('DIRECT_deselectedNodePath', [dnp])
             # Update cluster servers if this is a cluster client
-            if direct.clusterMode == 'client':
+            if base.direct.clusterMode == 'client':
                 cluster.deselectNodePath(dnp)
         return dnp
 
@@ -187,13 +187,13 @@ class SelectedNodePaths(DirectObject):
         self.forEachSelectedNodePathDo(self.getWrt)
 
     def getWrt(self, nodePath):
-        nodePath.tDnp2Widget = nodePath.getTransform(direct.widget)
+        nodePath.tDnp2Widget = nodePath.getTransform(base.direct.widget)
 
     def moveWrtWidgetAll(self):
         self.forEachSelectedNodePathDo(self.moveWrtWidget)
 
     def moveWrtWidget(self, nodePath):
-        nodePath.setTransform(direct.widget, nodePath.tDnp2Widget)
+        nodePath.setTransform(base.direct.widget, nodePath.tDnp2Widget)
 
     def deselectAll(self):
         self.forEachSelectedNodePathDo(self.deselect)
@@ -564,8 +564,8 @@ class SelectionRay(SelectionQueue):
             mx = xy[0]
             my = xy[1]
         elif direct:
-            mx = direct.dr.mouseX
-            my = direct.dr.mouseY
+            mx = base.direct.dr.mouseX
+            my = base.direct.dr.mouseY
         else:
             if not base.mouseWatcherNode.hasMouse():
                 # No mouse in window.

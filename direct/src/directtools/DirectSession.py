@@ -51,7 +51,7 @@ class DirectSession(DirectObject):
         self.useObjectHandles()
         self.grid = DirectGrid()
         self.grid.disable()
-        self.lights = DirectLights(direct.group)
+        self.lights = DirectLights(base.direct.group)
         # Create some default lights
         self.lights.createDefaultLights()
         # But turn them off
@@ -281,10 +281,10 @@ class DirectSession(DirectObject):
 
         if self.oobeMode:
             # Position a target point to lerp the oobe camera to
-            direct.cameraControl.camManipRef.iPosHpr(self.trueCamera)
+            base.direct.cameraControl.camManipRef.iPosHpr(self.trueCamera)
             t = self.oobeCamera.lerpPosHpr(
                 Point3(0), Vec3(0), 2.0,
-                other = direct.cameraControl.camManipRef,
+                other = base.direct.cameraControl.camManipRef,
                 task = 'manipulateCamera',
                 blendType = 'easeInOut')
             # When move is done, switch to oobe mode
@@ -302,12 +302,12 @@ class DirectSession(DirectObject):
             # Put camera under new oobe camera
             base.cam.reparentTo(self.oobeCamera)
             # Position a target point to lerp the oobe camera to
-            direct.cameraControl.camManipRef.setPos(
+            base.direct.cameraControl.camManipRef.setPos(
                 self.trueCamera, Vec3(-2, -20, 5))
-            direct.cameraControl.camManipRef.lookAt(self.trueCamera)
+            base.direct.cameraControl.camManipRef.lookAt(self.trueCamera)
             t = self.oobeCamera.lerpPosHpr(
                 Point3(0), Vec3(0), 2.0,
-                other = direct.cameraControl.camManipRef,
+                other = base.direct.cameraControl.camManipRef,
                 task = 'manipulateCamera',
                 blendType = 'easeInOut')
             # When move is done, switch to oobe mode
@@ -315,8 +315,8 @@ class DirectSession(DirectObject):
 
     def beginOOBE(self, state):
         # Make sure we've reached our final destination
-        self.oobeCamera.iPosHpr(direct.cameraControl.camManipRef)
-        direct.camera = self.oobeCamera
+        self.oobeCamera.iPosHpr(base.direct.cameraControl.camManipRef)
+        base.direct.camera = self.oobeCamera
         self.oobeMode = 1
 
     def endOOBE(self, state):
@@ -324,7 +324,7 @@ class DirectSession(DirectObject):
         self.oobeCamera.iPosHpr(self.trueCamera)
         # Disable OOBE mode.
         base.cam.reparentTo(self.trueCamera)
-        direct.camera = self.trueCamera
+        base.direct.camera = self.trueCamera
         # Get rid of ancillary node paths
         self.oobeVis.reparentTo(hidden)
         self.oobeCamera.reparentTo(hidden)
@@ -608,7 +608,7 @@ class DirectSession(DirectObject):
         if nodePath == 'None Given':
             # If nothing specified, try selected node path
             nodePath = self.selected.last
-        direct.select(nodePath)
+        base.direct.select(nodePath)
         def fitTask(state, self = self):
             self.cameraControl.fitOnWidget()
             return Task.done
@@ -783,7 +783,7 @@ class DirectSession(DirectObject):
 
     def useObjectHandles(self):
         self.widget = self.manipulationControl.objectHandles
-        self.widget.reparentTo(direct.group)
+        self.widget.reparentTo(base.direct.group)
 
     def hideSelectedNPReadout(self):
         self.selectedNPReadout.reparentTo(hidden)
@@ -1004,7 +1004,7 @@ class DisplayRegionList(DirectObject):
     def mouseUpdate(self, modifiers = DIRECT_NO_MOD):
         for dr in self.displayRegionList:
             dr.mouseUpdate()
-        direct.dr = self.getCurrentDr()
+        base.direct.dr = self.getCurrentDr()
 
     def getCurrentDr(self):
         for dr in self.displayRegionList:

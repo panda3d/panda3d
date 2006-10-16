@@ -132,7 +132,7 @@ class ParticlePanel(AppShell):
                                           command = self.createNewEffect)
         self.effectsLabelMenu.add_command(
             label = 'Select Particle Effect',
-            command = lambda s = self: direct.select(s.particleEffect))
+            command = lambda s = self: base.direct.select(s.particleEffect))
         self.effectsLabelMenu.add_command(
             label = 'Place Particle Effect',
             command = lambda s = self: Placer.place(s.particleEffect))

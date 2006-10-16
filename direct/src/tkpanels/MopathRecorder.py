@@ -22,8 +22,8 @@ from direct.tkwidgets import VectorWidgets
 import __builtin__
 
 PRF_UTILITIES = [
-    'lambda: direct.camera.lookAt(render)',
-    'lambda: direct.camera.setZ(render, 0.0)',
+    'lambda: base.direct.camera.lookAt(render)',
+    'lambda: base.direct.camera.setZ(render, 0.0)',
     'lambda s = self: s.playbackMarker.lookAt(render)',
     'lambda s = self: s.playbackMarker.setZ(render, 0.0)',
     'lambda s = self: s.followTerrain(10.0)']
@@ -67,7 +67,7 @@ class MopathRecorder(AppShell, DirectObject):
         # The active node path's parent
         self.nodePathParent = render
         # Top level node path
-        self.recorderNodePath = direct.group.attachNewNode(self.name)
+        self.recorderNodePath = base.direct.group.attachNewNode(self.name)
         # Temp CS for use in refinement/path extension
         self.tempCS = self.recorderNodePath.attachNewNode(
             'mopathRecorderTempCS')
@@ -97,8 +97,8 @@ class MopathRecorder(AppShell, DirectObject):
         # Active node path dictionary
         self.nodePathDict = {}
         self.nodePathDict['marker'] = self.playbackMarker
-        self.nodePathDict['camera'] = direct.camera
-        self.nodePathDict['widget'] = direct.widget
+        self.nodePathDict['camera'] = base.direct.camera
+        self.nodePathDict['widget'] = base.direct.widget
         self.nodePathDict['mopathRecorderTempCS'] = self.tempCS
         self.nodePathNames = ['marker', 'camera', 'selected']
         # ID of selected object
@@ -203,20 +203,20 @@ class MopathRecorder(AppShell, DirectObject):
             'Recorder', 'command',
             'Toggle widget visability',
             label = 'Toggle Widget Vis',
-            command = direct.toggleWidgetVis)
+            command = base.direct.toggleWidgetVis)
         self.menuBar.addmenuitem(
             'Recorder', 'command',
             'Toggle widget manipulation mode',
             label = 'Toggle Widget Mode',
-            command = direct.manipulationControl.toggleObjectHandlesMode)
+            command = base.direct.manipulationControl.toggleObjectHandlesMode)
 
         self.createComboBox(self.menuFrame, 'Mopath', 'History',
                             'Select input points to fit curve to', '',
                             self.selectPointSetNamed, expand = 1)
 
         self.undoButton = Button(self.menuFrame, text = 'Undo',
-                                 command = direct.undo)
-        if direct.undoList:
+                                 command = base.direct.undo)
+        if base.direct.undoList:
             self.undoButton['state'] = 'normal'
         else:
             self.undoButton['state'] = 'disabled'
@@ -224,8 +224,8 @@ class MopathRecorder(AppShell, DirectObject):
         self.bind(self.undoButton, 'Undo last operation')
 
         self.redoButton = Button(self.menuFrame, text = 'Redo',
-                                 command = direct.redo)
-        if direct.redoList:
+                                 command = base.direct.redo)
+        if base.direct.redoList:
             self.redoButton['state'] = 'normal'
         else:
             self.redoButton['state'] = 'disabled'
@@ -239,7 +239,7 @@ class MopathRecorder(AppShell, DirectObject):
         # Button to select active node path
         widget = self.createButton(frame, 'Recording', 'Node Path:',
                                    'Select Active Mopath Node Path',
-                                   lambda s = self: direct.select(s.nodePath),
+                                   lambda s = self: base.direct.select(s.nodePath),
                                    side = LEFT, expand = 0)
         widget['relief'] = FLAT
         self.nodePathMenu = Pmw.ComboBox(
@@ -627,7 +627,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.mainNotebook.setnaturalsize()
 
     def pushUndo(self, fResetRedo = 1):
-        direct.pushUndo([self.nodePath])
+        base.direct.pushUndo([self.nodePath])
 
     def undoHook(self, nodePathList = []):
         # Reflect new changes
@@ -642,7 +642,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.undoButton.configure(state = 'disabled')
 
     def pushRedo(self):
-        direct.pushRedo([self.nodePath])
+        base.direct.pushRedo([self.nodePath])
 
     def redoHook(self, nodePathList = []):
         # Reflect new changes
@@ -664,9 +664,9 @@ class MopathRecorder(AppShell, DirectObject):
         taskMgr.remove(self.name + '-curveEditTask')
         print nodePath.id()
         if nodePath.id() in self.playbackMarkerIds:
-            direct.select(self.playbackMarker)
+            base.direct.select(self.playbackMarker)
         elif nodePath.id() in self.tangentMarkerIds:
-            direct.select(self.tangentMarker)
+            base.direct.select(self.tangentMarker)
         elif nodePath.id() == self.playbackMarker.id():
             self.tangentGroup.show()
             taskMgr.add(self.curveEditTask,
@@ -745,10 +745,10 @@ class MopathRecorder(AppShell, DirectObject):
 
     def manipulateObjectStartHook(self):
         self.manipulandumId = None
-        if direct.selected.last:
-            if direct.selected.last.id() == self.playbackMarker.id():
+        if base.direct.selected.last:
+            if base.direct.selected.last.id() == self.playbackMarker.id():
                 self.manipulandumId = self.playbackMarker.id()
-            elif direct.selected.last.id() == self.tangentMarker.id():
+            elif base.direct.selected.last.id() == self.tangentMarker.id():
                 self.manipulandumId = self.tangentMarker.id()
 
     def manipulateObjectCleanupHook(self, nodePathList = []):
@@ -766,8 +766,8 @@ class MopathRecorder(AppShell, DirectObject):
         self.trace.reparentTo(self.recorderNodePath)
         self.recorderNodePath.removeNode()
         # Make sure markers are deselected
-        direct.deselect(self.playbackMarker)
-        direct.deselect(self.tangentMarker)
+        base.direct.deselect(self.playbackMarker)
+        base.direct.deselect(self.tangentMarker)
         # Remove tasks
         taskMgr.remove(self.name + '-recordTask')
         taskMgr.remove(self.name + '-playbackTask')
@@ -1180,7 +1180,7 @@ class MopathRecorder(AppShell, DirectObject):
             # Add Combo box entry for the initial node path
             self.addNodePath(nodePath)
         elif name == 'selected':
-            nodePath = direct.selected.last
+            nodePath = base.direct.selected.last
             # Add Combo box entry for this selected object
             self.addNodePath(nodePath)
         else:
@@ -1203,7 +1203,7 @@ class MopathRecorder(AppShell, DirectObject):
             else:
                 if name == 'widget':
                     # Record relationship between selected nodes and widget
-                    direct.selected.getWrtAll()
+                    base.direct.selected.getWrtAll()
                 if name == 'marker':
                     self.playbackMarker.show()
                     # Initialize tangent marker position
