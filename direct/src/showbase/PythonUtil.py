@@ -2074,6 +2074,15 @@ def setTrace():
         import pdb;pdb.set_trace()
         # setTrace
     return True
+def _is(a,b):
+    if a is not b:
+        if __dev__:
+            print StackTrace()
+            import pdb;pdb.set_trace()
+            # setTrace
+        else:
+            assert a is b
+    return True
 def _equal(a,b):
     if a != b:
         if __dev__:
@@ -2391,6 +2400,7 @@ __builtin__.uniqueName = uniqueName
 __builtin__.serialNum = serialNum
 __builtin__.profiled = profiled
 __builtin__.setTrace = setTrace
+__builtin__._is = _is
 __builtin__._equal = _equal
 __builtin__._notEqual = _notEqual
 __builtin__._isNone = _isNone
