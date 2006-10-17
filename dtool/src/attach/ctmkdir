@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 sub CTMkDirUsage {
     print STDERR "Usage: ctmkdir [-c \"comment\"] [-nc] dir-name [...]\n" ;

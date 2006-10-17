@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 $tool = $ENV{"DTOOL"} ;
 if ( $tool eq "" ) {

@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 # acceptable forms:
 #   ctattach                     - give usage message

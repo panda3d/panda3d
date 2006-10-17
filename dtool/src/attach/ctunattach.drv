@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 # acceptable forms:
 #   ctunattach project      - attach to the personal flavor of the project

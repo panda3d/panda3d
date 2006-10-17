@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 sub CTCoUsage {
     print STDERR "Usage: ctco [-c \"comment\"] [-nc] element-name [...]\n" ;

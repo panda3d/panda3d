@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 sub CTMkElemUsage {
     print STDERR "Usage: ctmkelem [-c \"comment\"] [-nc] [-eltype type] element-name [...]\n" ;

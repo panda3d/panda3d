@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 if ($#ARGV < 0) {
     exit print "Usage: cttimewarp [-clear] label [time]\n" ;

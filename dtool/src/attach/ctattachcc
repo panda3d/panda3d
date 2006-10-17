@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 if ( $#ARGV != 5 ) {
    print STDERR "This is for internal use by attach ONLY\n" ;
