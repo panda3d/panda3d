@@ -184,9 +184,9 @@
 
 #begin test_bin_target
   #define USE_PACKAGES maya
-  #define TARGET blend_test
+  #define TARGET normal_test
 
   #define SOURCES \
-    blend_test.cxx
+    normal_test.cxx
 
 #end test_bin_target
