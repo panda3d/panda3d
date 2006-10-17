@@ -60,7 +60,7 @@ PUBLISHED:
     DSP_COUNT
   };
   
-  enum SPEAKERMODE_category{
+  enum SpeakerModeCategory {
     // These enumerants line up one-to-one
     // with the FMOD SPEAKERMODE enumerants.
     SPEAKERMODE_raw, 
@@ -75,13 +75,28 @@ PUBLISHED:
     SPEAKERMODE_COUNT
   };
   
+
+  enum SpeakerId {
+    SPK_none,
+    SPK_frontleft,
+    SPK_frontright,
+    SPK_center,
+    SPK_sub,
+    SPK_backleft,
+    SPK_backright,
+    SPK_sideleft,
+    SPK_sideright,
+    SPK_COUNT,
+  };
+
+
   virtual PT(AudioDSP) create_dsp(DSP_category cat);
   
   virtual bool add_dsp(PT(AudioDSP) x);
   virtual bool remove_dsp(PT(AudioDSP) x);
   
   virtual int getSpeakerSetup();
-  virtual void setSpeakerSetup(SPEAKERMODE_category cat);
+  virtual void setSpeakerSetup(SpeakerModeCategory cat);
   
   // Create an AudioManager for each category of sounds you have.
   // E.g.

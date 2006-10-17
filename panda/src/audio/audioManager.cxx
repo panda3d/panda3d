@@ -197,7 +197,7 @@ getSpeakerSetup() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void AudioManager::
-setSpeakerSetup(SPEAKERMODE_category cat) {
+setSpeakerSetup(SpeakerModeCategory cat) {
   // intentionally blank
 }
 
