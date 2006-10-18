@@ -19,6 +19,7 @@
 #include "vrmlToEgg.h"
 
 #include "vrmlToEggConverter.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VRMLToEgg::Constructor
@@ -73,6 +74,9 @@ run() {
 
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   VRMLToEgg prog;
   prog.parse_command_line(argc, argv);
   prog.run();

@@ -21,6 +21,7 @@
 #include "cvsSourceDirectory.h"
 #include "mayaShader.h"
 #include "dcast.h"
+#include "pystub.h"
 
 #include "pre_maya_include.h"
 #include <maya/MStringArray.h>
@@ -437,6 +438,9 @@ collect_shader_for_node(const MDagPath &dag_path) {
 
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   MayaCopy prog;
   prog.parse_command_line(argc, argv);
   prog.run();

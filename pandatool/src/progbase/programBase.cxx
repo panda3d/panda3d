@@ -19,11 +19,6 @@
 #include "programBase.h"
 #include "wordWrapStream.h"
 
-#include "pystub.h"
-// Since programBase.cxx includes pystub.h, no program that links with
-// progbase needs to do so.  No Python code should attempt to link
-// with libprogbase.so.
-
 #include "pnmFileTypeRegistry.h"
 #include "indent.h"
 #include "dSearchPath.h"
@@ -96,9 +91,6 @@ static ConfigVariableBool use_terminal_width
 ////////////////////////////////////////////////////////////////////
 ProgramBase::
 ProgramBase() {
-  // A call to pystub() to force libpystub.so to be linked in.
-  pystub();
-
   // Set up Notify to write output to our own formatted stream.
   Notify::ptr()->set_ostream_ptr(new WordWrapStream(this), true);
 

@@ -24,6 +24,7 @@
 #include "fltExternalReference.h"
 #include "fltError.h"
 #include "dcast.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltCopy::Constructor
@@ -248,6 +249,9 @@ scan_flt(FltRecord *record, FltCopy::Refs &refs, FltCopy::Textures &textures) {
 
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   FltCopy prog;
   prog.parse_command_line(argc, argv);
   prog.run();

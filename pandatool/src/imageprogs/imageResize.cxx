@@ -18,6 +18,7 @@
 
 #include "imageResize.h"
 #include "string_utils.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ImageResize::Constructor
@@ -126,6 +127,9 @@ dispatch_size_request(const string &opt, const string &arg, void *var) {
 
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   ImageResize prog;
   prog.parse_command_line(argc, argv);
   prog.run();

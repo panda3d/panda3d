@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "eggRename.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggRename::Constructor
@@ -59,6 +60,9 @@ run() {
 
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   EggRename prog;
   prog.parse_command_line(argc, argv);
   prog.run();

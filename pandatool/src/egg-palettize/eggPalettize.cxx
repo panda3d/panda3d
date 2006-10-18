@@ -28,6 +28,7 @@
 #include "pnotify.h"
 #include "notifyCategory.h"
 #include "notifySeverity.h"
+#include "pystub.h"
 
 #include <stdio.h>
 
@@ -858,6 +859,9 @@ run() {
 
 int
 main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   EggPalettize prog;
   prog.parse_command_line(argc, argv);
   prog.run();

@@ -18,6 +18,7 @@
 
 #include "imageInfo.h"
 #include "pnmImageHeader.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ImageInfo::Constructor
@@ -79,6 +80,9 @@ handle_args(ProgramBase::Args &args) {
 
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   ImageInfo prog;
   prog.parse_command_line(argc, argv);
   prog.run();

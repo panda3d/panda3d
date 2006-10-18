@@ -36,6 +36,7 @@
 #include "load_prc_file.h"
 #include "windowProperties.h"
 #include "frameBufferProperties.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggToBam::Constructor
@@ -461,6 +462,9 @@ make_buffer() {
 
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   EggToBam prog;
   prog.parse_command_line(argc, argv);
   prog.run();

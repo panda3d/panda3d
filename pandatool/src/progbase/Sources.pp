@@ -8,12 +8,7 @@
     pipeline:c event:c panda:m \
     pandabase:c pnmimage:c linmath:c putil:c express:c \
     interrogatedb:c prc:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m \
-    pystub
-
-// We link with pystub so we can include pystub.h here in
-// programBase.cxx, so that every silly little executable in Pandatool
-// doesn't have to include pystub.h.
+    dtoolutil:c dtoolbase:c dtool:m
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 

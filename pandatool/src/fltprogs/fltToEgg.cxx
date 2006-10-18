@@ -20,6 +20,7 @@
 
 #include "fltToEggConverter.h"
 #include "config_flt.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltToEgg::Constructor
@@ -106,6 +107,9 @@ run() {
 
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   init_libflt();
   FltToEgg prog;
   prog.parse_command_line(argc, argv);

@@ -29,6 +29,7 @@
 #include "pvector.h"
 #include "bamCacheRecord.h"
 #include "bamCacheIndex.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamInfo::Constructor
@@ -335,6 +336,9 @@ list_hierarchy(PandaNode *node, int indent_level) {
 }
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   BamInfo prog;
   prog.parse_command_line(argc, argv);
   prog.run();

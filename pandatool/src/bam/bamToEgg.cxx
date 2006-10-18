@@ -45,6 +45,7 @@
 #include "eggMaterial.h"
 #include "somethingToEggConverter.h"
 #include "dcast.h"
+#include "pystub.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -609,6 +610,9 @@ get_egg_texture(Texture *tex) {
 
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   BamToEgg prog;
   prog.parse_command_line(argc, argv);
   prog.run();

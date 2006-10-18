@@ -33,6 +33,7 @@
 #include "pset.h"
 #include "compose_matrix.h"
 #include "fftCompressor.h"
+#include "pystub.h"
 
 #include <algorithm>
 
@@ -1347,6 +1348,9 @@ rename_primitives(EggGroupNode *egg_group, const string &name) {
 }
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   EggOptchar prog;
   prog.parse_command_line(argc, argv);
   prog.run();

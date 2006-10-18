@@ -21,6 +21,7 @@
 #include "lwoInputFile.h"
 #include "lwoChunk.h"
 #include "config_lwo.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoScan::Constructor
@@ -86,6 +87,9 @@ handle_args(ProgramBase::Args &args) {
 
 int
 main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   init_liblwo();
   LwoScan prog;
   prog.parse_command_line(argc, argv);

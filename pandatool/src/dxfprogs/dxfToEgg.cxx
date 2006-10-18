@@ -19,6 +19,7 @@
 #include "dxfToEgg.h"
 
 #include "dxfToEggConverter.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXFToEgg::Constructor
@@ -75,6 +76,9 @@ run() {
 
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   DXFToEgg prog;
   prog.parse_command_line(argc, argv);
   prog.run();

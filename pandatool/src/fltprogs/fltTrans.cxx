@@ -19,6 +19,7 @@
 #include "fltTrans.h"
 
 #include "fltHeader.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTrans::Constructor
@@ -136,6 +137,9 @@ handle_args(ProgramBase::Args &args) {
 
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   FltTrans prog;
   prog.parse_command_line(argc, argv);
   prog.run();

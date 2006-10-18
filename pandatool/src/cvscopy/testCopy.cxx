@@ -18,6 +18,7 @@
 
 #include "testCopy.h"
 #include "cvsSourceDirectory.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TestCopy::Constructor
@@ -69,6 +70,9 @@ copy_file(const Filename &source, const Filename &dest,
 
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   TestCopy prog;
   prog.parse_command_line(argc, argv);
   prog.run();

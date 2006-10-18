@@ -21,6 +21,7 @@
 #include "config_mayaegg.h"
 #include "config_maya.h"  // for maya_cat
 #include "globPattern.h"
+#include "pystub.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEgg::Constructor
@@ -255,6 +256,9 @@ dispatch_transform_type(const string &opt, const string &arg, void *var) {
 }
 
 int main(int argc, char *argv[]) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   MayaToEgg prog;
   prog.parse_command_line(argc, argv);
   prog.run();
