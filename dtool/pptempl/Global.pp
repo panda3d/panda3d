@@ -216,6 +216,7 @@
   #define cg_lpath $[wildcard $[CG_LPATH]]
   #define cg_cflags $[CG_CFLAGS]
   #define cg_libs $[CG_LIBS]
+  #define cg_framework $[CG_FRAMEWORK]
 #endif
 
 #if $[HAVE_CGGL]
@@ -223,6 +224,7 @@
   #define cggl_lpath $[wildcard $[CGGL_LPATH]]
   #define cggl_cflags $[CGGL_CFLAGS]
   #define cggl_libs $[CGGL_LIBS]
+  #define cggl_framework $[CGGL_FRAMEWORK]
 #endif
 
 #if $[HAVE_CGDX8]

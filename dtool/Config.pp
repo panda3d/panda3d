@@ -145,11 +145,14 @@
 #define OPTIMIZE 3
 
 // On OSX, you may or may not want to compile universal binaries.
-// Leaving this option on allows your compiled version of Panda to run
+
+// Turning this option on allows your compiled version of Panda to run
 // on any version of OSX (PPC or Intel-based), but it will also
 // increase the compilation time, as well as the resulting binary
-// size.  This option has no effect on non-OSX platforms.
-#define UNIVERSAL_BINARIES 1
+// size.  I believe you have to be building on an Intel-based platform
+// to generate universal binaries using this technique.  This option
+// has no effect on non-OSX platforms.
+#define UNIVERSAL_BINARIES
 
 // Panda uses prc files for runtime configuration.  There are many
 // compiled-in options to customize the behavior of the prc config
@@ -892,6 +895,11 @@
 #defer COMPILE_C++ $[CXX] $[C++FLAGS_GEN] $[ARCH_FLAGS] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
 
 // What flags should be passed to both C and C++ compilers to enable
+// debug symbols?  This will be supplied when OPTIMIZE (above) is set
+// to 1, 2, or 3.
+#defer DEBUGFLAGS -g
+
+// What flags should be passed to both C and C++ compilers to enable
 // compiler optimizations?  This will be supplied when OPTIMIZE
 // (above) is set to 2, 3, or 4.
 #defer OPTFLAGS -O2
@@ -911,9 +919,9 @@
 // so we can compile certain files that give optimizers trouble (like
 // the output of lex and yacc) without them, but with all the other
 // relevant flags.
-#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] -Wall -g
-#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] -Wall -g $[OPTFLAGS]
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] -g $[OPTFLAGS]
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] -Wall $[DEBUGFLAGS]
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] -Wall $[DEBUGFLAGS] $[OPTFLAGS]
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] $[DEBUGFLAGS] $[OPTFLAGS]
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%] $[OPTFLAGS]
 
 // What additional flags should be passed to both compilers when
