@@ -32,7 +32,7 @@ class DirectSession(DirectObject):
     def __init__(self):
         # Establish a global pointer to the direct object early on
         # so dependant classes can access it in their code
-        __builtins__["direct"] = self
+        __builtins__["direct"] = base.direct = self
         # These come early since they are used later on
         self.group = render.attachNewNode('DIRECT')
         self.font = TextNode.getDefaultFont()

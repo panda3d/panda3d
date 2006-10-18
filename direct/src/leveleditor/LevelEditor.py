@@ -3,13 +3,14 @@ from pandac.PandaModules import *
 from direct.directbase.DirectStart import *
 from direct.showbase.DirectObject import DirectObject
 from PieMenu import *
-import direct.gui.DirectGuiGlobals
+import direct.gui.DirectGuiGlobals as DGG
 from direct.showbase.TkGlobal import *
 from direct.directtools.DirectUtil import *
 from direct.directtools.DirectGeometry import *
 from direct.tkwidgets.SceneGraphExplorer import *
 from tkMessageBox import showinfo
 from tkFileDialog import *
+from Tkinter import *
 from whrandom import *
 from direct.tkwidgets import Floater
 from direct.tkwidgets import VectorWidgets
@@ -4635,7 +4636,7 @@ class LevelStyleManager:
         for i in range (numItems):
             # Create a text node--just a card, really--of the right color.
             tn = TextNode('colorChip')
-            tn.setFont(DirectGuiGlobals.getDefaultFont())
+            tn.setFont(DGG.getDefaultFont())
             tn.setTransform(Mat4.scaleMat(0.07, 0.07, 0.07 * aspectRatio))
             tn.setCardColor(colorList[i])
             tn.setCardActual(0, 1.1111, 0, 0.8333)
@@ -4761,7 +4762,7 @@ class LevelStyleManager:
             # Create text node for each item
             if (textList[i] != None):
                 tn = TextNode('TextItem')
-                tn.setFont(DirectGuiGlobals.getDefaultFont())
+                tn.setFont(DGG.getDefaultFont())
                 tn.setTransform(Mat4.scaleMat(0.07, 0.07, 0.07 * aspectRatio))
                 tn.setTextColor(0, 0, 0, 1)
                 tn.setCardColor(1, 1, 1, 1)
