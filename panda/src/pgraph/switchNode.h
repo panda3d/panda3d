@@ -37,6 +37,7 @@ public:
 
   virtual PandaNode *make_copy() const;
   virtual bool safe_to_combine() const;
+  virtual bool safe_to_combine_children() const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool has_single_child_visibility() const;

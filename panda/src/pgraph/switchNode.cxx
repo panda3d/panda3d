@@ -37,13 +37,27 @@ make_copy() const {
 //       Access: Public, Virtual
 //  Description: Returns true if it is generally safe to combine this
 //               particular kind of PandaNode with other kinds of
-//               PandaNodes, adding children or whatever.  For
-//               instance, an LODNode should not be combined with any
-//               other PandaNode, because its set of children is
-//               meaningful.
+//               PandaNodes of compatible type, adding children or
+//               whatever.  For instance, an LODNode should not be
+//               combined with any other PandaNode, because its set of
+//               children is meaningful.
 ////////////////////////////////////////////////////////////////////
 bool SwitchNode::
 safe_to_combine() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SwitchNode::safe_to_combine_children
+//       Access: Public, Virtual
+//  Description: Returns true if it is generally safe to combine the
+//               children of this PandaNode with each other.  For
+//               instance, an LODNode's children should not be
+//               combined with each other, because the set of children
+//               is meaningful.
+////////////////////////////////////////////////////////////////////
+bool SwitchNode::
+safe_to_combine_children() const {
   return false;
 }
 

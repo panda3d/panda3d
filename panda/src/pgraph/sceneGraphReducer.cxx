@@ -231,7 +231,14 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
   }
   int num_nodes = 0;
 
-  if (parent_node->safe_to_flatten_below()) {
+  if (!parent_node->safe_to_flatten_below()) {
+    if (pgraph_cat.is_spam()) {
+      pgraph_cat.spam()
+        << "Not traversing farther; " << *parent_node
+        << " doesn't allow flattening below itself.\n";
+    }
+    
+  } else {
     if ((combine_siblings_bits & CS_within_radius) != 0) {
       CPT(BoundingVolume) bv = parent_node->get_bounds();
       if (bv->is_of_type(BoundingSphere::get_class_type())) {
@@ -274,10 +281,9 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
     // first, and then flatten siblings, which avoids overly
     // enthusiastic flattening.
     if ((combine_siblings_bits & CS_recurse) != 0 && 
-        parent_node->get_num_children() >= 2) {
-      if (parent_node->safe_to_combine()) {
-        num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
-      }
+        parent_node->get_num_children() >= 2 &&
+        parent_node->safe_to_combine_children()) {
+      num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
     }
 
     if (parent_node->get_num_children() == 1) {
@@ -302,10 +308,9 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
 
     if ((combine_siblings_bits & CS_recurse) == 0 &&
         (combine_siblings_bits & ~CS_recurse) != 0 && 
-        parent_node->get_num_children() >= 2) {
-      if (parent_node->safe_to_combine()) {
-        num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
-      }
+        parent_node->get_num_children() >= 2 &&
+        parent_node->safe_to_combine_children()) {
+      num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
     }
 
     // Finally, if any of our remaining children are plain PandaNodes

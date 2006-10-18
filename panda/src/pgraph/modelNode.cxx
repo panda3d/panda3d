@@ -87,10 +87,10 @@ safe_to_modify_transform() const {
 //       Access: Public, Virtual
 //  Description: Returns true if it is generally safe to combine this
 //               particular kind of PandaNode with other kinds of
-//               PandaNodes, adding children or whatever.  For
-//               instance, an LODNode should not be combined with any
-//               other PandaNode, because its set of children is
-//               meaningful.
+//               PandaNodes of compatible type, adding children or
+//               whatever.  For instance, an LODNode should not be
+//               combined with any other PandaNode, because its set of
+//               children is meaningful.
 ////////////////////////////////////////////////////////////////////
 bool ModelNode::
 safe_to_combine() const {
