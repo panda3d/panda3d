@@ -4,7 +4,7 @@
 
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    pnmimage:c putil:c \
+    event:c mathutil:c pnmimage:c putil:c \
     linmath:c pipeline:c event:c \
     panda:m \
     pandabase:c express:c pandaexpress:m \

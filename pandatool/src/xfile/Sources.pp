@@ -7,7 +7,7 @@
   #define TARGET xfile
   #define LOCAL_LIBS pandatoolbase
   #define OTHER_LIBS \
-    mathutil:c linmath:c panda:m \
+    putil:c pipeline:c mathutil:c linmath:c panda:m \
     pandabase:c express:c pandaexpress:m \
     interrogatedb:c prc:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
