@@ -410,6 +410,7 @@ class TaskManager:
         # Removing the tasks during the for loop is a bad idea
         # Instead we just flag them as removed
         # Later, somebody else cleans them out
+        currentTime = self.__getTime()
         while self.__doLaterList:
             # Check the first one on the list to see if it is ready
             dl = self.__doLaterList[0]
@@ -419,7 +420,7 @@ class TaskManager:
                 continue
             # If the time now is less than the start of the doLater + delay
             # then we are not ready yet, continue to next one
-            elif task.time < dl.wakeTime:
+            elif currentTime < dl.wakeTime:
                 # Since the list is sorted, the first one we get to, that
                 # is not ready to go, we can return
                 break
@@ -898,6 +899,7 @@ class TaskManager:
                + 'priority'.rjust(priorityWidth)
                + '\n')
         str += '-------------------------------------------------------------------------\n'
+        dtfmt = '%%%d.2f' % (dtWidth)
         for taskPriList in self.taskList:
             priority = `taskPriList.getPriority()`
             for task in taskPriList:
@@ -908,13 +910,12 @@ class TaskManager:
                 else:
                     taskName = task.name
                 if self.taskTimerVerbose:
-                    import fpformat
                     totalDt = totalDt + task.dt
                     totalAvgDt = totalAvgDt + task.avgDt
                     str += (taskName.ljust(taskNameWidth)
-                            + fpformat.fix(task.dt*1000, 2).rjust(dtWidth)
-                            + fpformat.fix(task.avgDt*1000, 2).rjust(dtWidth)
-                            + fpformat.fix(task.maxDt*1000, 2).rjust(dtWidth)
+                            + dtfmt % (task.dt*1000)
+                            + dtfmt % (task.avgDt*1000)
+                            + dtfmt % (task.maxDt*1000)
                             + priority.rjust(priorityWidth)
                             + '\n')
                 else:
@@ -934,14 +935,24 @@ class TaskManager:
                 else:
                     taskName = '(P)' + task.name
                 if (self.taskTimerVerbose):
-                    import fpformat
                     str += ('  ' + taskName.ljust(taskNameWidth-2)
-                            +  fpformat.fix(pri, 2).rjust(dtWidth)
+                            +  dtfmt % (pri)
                             + '\n')
                 else:
                     str += ('  ' + taskName.ljust(taskNameWidth-2)
                             +  '----'.rjust(dtWidth)
                             + '\n')
+        str += '-------------------------------------------------------------------------\n'
+        if (self.taskTimerVerbose):
+            str += ('total'.ljust(taskNameWidth)
+                    + dtfmt % (totalDt*1000)
+                    + dtfmt % (totalAvgDt*1000)
+                    + '\n')
+        else:
+            str += ('total'.ljust(taskNameWidth)
+                    + '----'.rjust(dtWidth)
+                    + '----'.rjust(dtWidth)
+                    + '\n')
         str += '-------------------------------------------------------------------------\n'
         str += ('doLaterList'.ljust(taskNameWidth)
                + 'waitTime(s)'.rjust(dtWidth)
@@ -959,27 +970,10 @@ class TaskManager:
                 taskName = '(R)' + task.name
             else:
                 taskName = task.name
-            if (self.taskTimerVerbose):
-                import fpformat
-                str += ('  ' + taskName.ljust(taskNameWidth-2)
-                        +  fpformat.fix(remainingTime, 2).rjust(dtWidth)
-                        + '\n')
-            else:
-                str += ('  ' + taskName.ljust(taskNameWidth-2)
-                        +  '----'.rjust(dtWidth)
-                        + '\n')
+            str += ('  ' + taskName.ljust(taskNameWidth-2)
+                    +  dtfmt % (remainingTime)
+                    + '\n')
         str += '-------------------------------------------------------------------------\n'
-        if (self.taskTimerVerbose):
-            import fpformat
-            str += ('total'.ljust(taskNameWidth)
-                    + fpformat.fix(totalDt*1000, 2).rjust(dtWidth)
-                    + fpformat.fix(totalAvgDt*1000, 2).rjust(dtWidth)
-                    + '\n')
-        else:
-            str += ('total'.ljust(taskNameWidth)
-                    + '----'.rjust(dtWidth)
-                    + '----'.rjust(dtWidth)
-                    + '\n')
         str += "End of taskMgr info\n"
         return str
 
@@ -1024,7 +1018,6 @@ class TaskManager:
     def doOsd(self, task):
         if not onScreenDebug.enabled:
             return
-        import fpformat
         prefix = TaskManager.OsdPrefix
         onScreenDebug.removeAllWithPrefix(prefix)
         taskNameWidth = 32
@@ -1055,15 +1048,15 @@ class TaskManager:
                 onScreenDebug.add(
                     ('%s%02i.%s' % (prefix, i, task.name)).ljust(taskNameWidth),
                     '%s %s %s %s' % (
-                    fpformat.fix(task.dt*1000, 2).rjust(dtWidth),
-                    fpformat.fix(task.avgDt*1000, 2).rjust(dtWidth),
-                    fpformat.fix(task.maxDt*1000, 2).rjust(dtWidth),
+                    dtfmt % (task.dt*1000),
+                    dtfmt % (task.avgDt*1000),
+                    dtfmt % (task.maxDt*1000),
                     priority.rjust(priorityWidth)))
                 i += 1
         onScreenDebug.add(('%s%02i.total' % (prefix, i)).ljust(taskNameWidth),
                           '%s %s' % (
-            fpformat.fix(totalDt*1000, 2).rjust(dtWidth),
-            fpformat.fix(totalAvgDt*1000, 2).rjust(dtWidth),))
+            dtfmt % (totalDt*1000),
+            dtfmt % (totalAvgDt*1000),))
         return cont
 
 
