@@ -310,6 +310,9 @@ set_min_fov(float min_fov) {
   } else {
     // Otherwise, throw out film size.
     nassertv(_film_size_seq == 0);
+
+    // Make sure we save the aspect ratio first.
+    compute_aspect_ratio();
     adjust_user_flags(UF_film_width | UF_film_height | UF_vfov | UF_hfov,
                       UF_min_fov);
   }
@@ -343,6 +346,9 @@ set_fov(float hfov) {
   } else {
     // Otherwise, throw out film size.
     nassertv(_film_size_seq == 0);
+
+    // Make sure we save the aspect ratio first.
+    compute_aspect_ratio();
     adjust_user_flags(UF_film_width | UF_film_height | UF_vfov | UF_min_fov,
                       UF_hfov);
   }
@@ -1419,34 +1425,54 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 compute_film_size() {
-  if ((_user_flags & UF_film_width) == 0) {
-    if ((_user_flags & (UF_hfov | UF_focal_length)) == (UF_hfov | UF_focal_length)) {
-      _film_size[0] = fov_to_film(_fov[0], _focal_length, true);
+  if ((_user_flags & (UF_min_fov | UF_focal_length)) == (UF_min_fov | UF_focal_length)) {
+    // If we just have a min FOV and a focal length, that determines
+    // the smaller of the two film_sizes, and the larger is simply
+    // chosen according to the aspect ratio.
+    float fs = fov_to_film(_min_fov, _focal_length, true);
+    nassertv((_user_flags & UF_aspect_ratio) != 0 ||
+             (_comp_flags & CF_aspect_ratio) != 0);
+
+    if (_aspect_ratio < 1.0f) {
+      _film_size[1] = fs / _aspect_ratio;
+      _film_size[0] = fs;
+
     } else {
-      _film_size[0] = 1.0f;
+      _film_size[0] = fs * _aspect_ratio;
+      _film_size[1] = fs;
     }
-  }
 
-  if ((_user_flags & UF_film_height) == 0) {
-    if ((_user_flags & (UF_vfov | UF_focal_length)) == (UF_vfov | UF_focal_length)) {
-      _film_size[1] = fov_to_film(_fov[1], _focal_length, false);
-
-    } else if ((_user_flags & (UF_hfov | UF_vfov)) == (UF_hfov | UF_vfov)) {
-      // If we don't have a focal length, but we have an explicit vfov
-      // and hfov, we can infer the focal length is whatever makes the
-      // film width, above, be what it is.
-      if ((_comp_flags & CF_focal_length) == 0) {
-        _focal_length = fov_to_focal_length(_fov[0], _film_size[0], true);
-        adjust_comp_flags(0, CF_focal_length);
+  } else {
+    if ((_user_flags & UF_film_width) == 0) {
+      if ((_user_flags & (UF_hfov | UF_focal_length)) == (UF_hfov | UF_focal_length)) {
+        _film_size[0] = fov_to_film(_fov[0], _focal_length, true);
+      } else {
+        _film_size[0] = 1.0f;
       }
-      _film_size[1] = fov_to_film(_fov[1], _focal_length, false);
-
-    } else if ((_user_flags & UF_aspect_ratio) != 0) {
-      _film_size[1] = _film_size[0] / _aspect_ratio;
-
-    } else {
-      // Default is an aspect ratio of 1.
-      _film_size[1] = _film_size[0];
+    }
+    
+    if ((_user_flags & UF_film_height) == 0) {
+      if ((_user_flags & (UF_vfov | UF_focal_length)) == (UF_vfov | UF_focal_length)) {
+        _film_size[1] = fov_to_film(_fov[1], _focal_length, false);
+        
+      } else if ((_user_flags & (UF_hfov | UF_vfov)) == (UF_hfov | UF_vfov)) {
+        // If we don't have a focal length, but we have an explicit vfov
+        // and hfov, we can infer the focal length is whatever makes the
+        // film width, above, be what it is.
+        if ((_comp_flags & CF_focal_length) == 0) {
+          _focal_length = fov_to_focal_length(_fov[0], _film_size[0], true);
+          adjust_comp_flags(0, CF_focal_length);
+        }
+        _film_size[1] = fov_to_film(_fov[1], _focal_length, false);
+        
+      } else if ((_user_flags & UF_aspect_ratio) != 0 ||
+                 (_comp_flags & CF_aspect_ratio) != 0) {
+        _film_size[1] = _film_size[0] / _aspect_ratio;
+        
+      } else {
+        // Default is an aspect ratio of 1.
+        _film_size[1] = _film_size[0];
+      }
     }
   }
 
@@ -1564,8 +1590,8 @@ compute_aspect_ratio() {
     } else {
       _aspect_ratio = film_size[0] / film_size[1];
     }
-    adjust_comp_flags(0, CF_aspect_ratio);
   }
+  adjust_comp_flags(0, CF_aspect_ratio);
 }
 
 ////////////////////////////////////////////////////////////////////
