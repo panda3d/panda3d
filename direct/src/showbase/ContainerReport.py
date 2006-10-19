@@ -156,13 +156,20 @@ class ContainerReport:
         count = 0
         stop = False
         for l in lengths:
-            len2ids[l].sort()
+            #len2ids[l].sort()
+            pathStrList = list()
             for id in len2ids[l]:
                 obj = self._id2container[id]
-                print '%s: %s' % (l, self._id2pathStr[id])
+                #print '%s: %s' % (l, self._id2pathStr[id])
+                pathStrList.append(self._id2pathStr[id])
                 count += 1
                 if limit is not None and count >= limit:
                     return
+            pathStrList.sort()
+            for pathstr in pathStrList:
+                if pathstr.find("reload") == -1:
+                    print '%s: %s' % (l, pathstr)
+
 
     def _output(self, **kArgs):
         print "===== ContainerReport: \'%s\' =====" % (self._name,)
