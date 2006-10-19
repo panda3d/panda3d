@@ -309,17 +309,6 @@ traverse(const NodePath &root) {
   CollisionPlane::flush_level();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::reset_prev_transform
-//       Access: Published
-//  Description: This method is deprecated.  Just call
-//               PandaNode::reset_all_prev_transform() now.
-////////////////////////////////////////////////////////////////////
-void CollisionTraverser::
-reset_prev_transform(const NodePath &) {
-  PandaNode::reset_all_prev_transform();
-}
-
 #ifdef DO_COLLISION_RECORDING
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::set_recorder

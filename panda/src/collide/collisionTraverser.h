@@ -66,7 +66,6 @@ PUBLISHED:
   void clear_colliders();
 
   void traverse(const NodePath &root);
-  void reset_prev_transform(const NodePath &root);
 
 #ifdef DO_COLLISION_RECORDING
   void set_recorder(CollisionRecorder *recorder);
