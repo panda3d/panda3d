@@ -156,6 +156,7 @@ class ContainerReport:
         count = 0
         stop = False
         for l in lengths:
+            len2ids[l].sort()
             for id in len2ids[l]:
                 obj = self._id2container[id]
                 print '%s: %s' % (l, self._id2pathStr[id])
@@ -168,7 +169,8 @@ class ContainerReport:
         initialTypes = (types.DictType, types.ListType, types.TupleType)
         for type in initialTypes:
             self._outputType(type, **kArgs)
-        otherTypes = set(self._type2id2len.keys()).difference(set(initialTypes))
+        otherTypes = list(set(self._type2id2len.keys()).difference(set(initialTypes)))
+        otherTypes.sort()
         for type in otherTypes:
             self._outputType(type, **kArgs)
 
