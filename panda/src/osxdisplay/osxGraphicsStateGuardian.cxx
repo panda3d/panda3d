@@ -70,7 +70,6 @@ osxGraphicsStateGuardian(GraphicsPipe *pipe,
   _aglcontext(NULL)
 {
   SharedBuffer = 1011;
-  cerr << "osxGraphicsStateGuardian::osxGraphicsStateGuardian()\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,8 +79,6 @@ osxGraphicsStateGuardian(GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 osxGraphicsStateGuardian::~osxGraphicsStateGuardian() 
 {
-	cerr << "osxGraphicsStateGuardian::~osxGraphicsStateGuardian()\n";
-
   if(_aglcontext != (AGLContext)NULL)
   {
      aglDestroyContext(_aglcontext);
