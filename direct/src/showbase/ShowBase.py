@@ -1280,7 +1280,7 @@ class ShowBase(DirectObject.DirectObject):
                 music.setLoop(looping)
                 music.play()
 
-    def resetPrevTransform(self, state):
+    def __resetPrevTransform(self, state):
         # Clear out the previous velocity deltas now, after we have
         # rendered (the previous frame).  We do this after the render,
         # so that we have a chance to draw a representation of spheres
@@ -1288,30 +1288,29 @@ class ShowBase(DirectObject.DirectObject):
         # really means after the command prompt, which allows the user
         # to interactively query these deltas meaningfully.
 
-        if self.cTrav:
-            self.cTrav.resetPrevTransform(self.render)
+        PandaNode.resetAllPrevTransform()
         return Task.cont
 
-    def dataLoop(self, state):
+    def __dataLoop(self, state):
         # traverse the data graph.  This reads all the control
         # inputs (from the mouse and keyboard, for instance) and also
         # directly acts upon them (for instance, to move the avatar).
         self.dgTrav.traverse(self.dataRootNode)
         return Task.cont
 
-    def ivalLoop(self, state):
+    def __ivalLoop(self, state):
         # Execute all intervals in the global ivalMgr.
         IntervalManager.ivalMgr.step()
         return Task.cont
 
-    def shadowCollisionLoop(self, state):
+    def __shadowCollisionLoop(self, state):
         # run the collision traversal if we have a
         # CollisionTraverser set.
         if self.shadowTrav:
             self.shadowTrav.traverse(self.render)
         return Task.cont
 
-    def collisionLoop(self, state):
+    def __collisionLoop(self, state):
         # run the collision traversal if we have a
         # CollisionTraverser set.
         if self.cTrav:
@@ -1320,14 +1319,14 @@ class ShowBase(DirectObject.DirectObject):
             self.appTrav.traverse(self.render)
         return Task.cont
 
-    def audioLoop(self, state):
+    def __audioLoop(self, state):
         if (self.musicManager != None):
             self.musicManager.update()
         for x in self.sfxManagerList:
             x.update()
         return Task.cont
 
-    def igLoop(self, state):
+    def __igLoop(self, state):
         # We render the watch variables for the onScreenDebug as soon
         # as we reasonably can before the renderFrame().
         onScreenDebug.render()
@@ -1367,29 +1366,29 @@ class ShowBase(DirectObject.DirectObject):
 
     def restart(self):
         self.shutdown()
-        # resetPrevTransform goes at the very beginning of the frame.
+        # __resetPrevTransform goes at the very beginning of the frame.
         self.taskMgr.add(
-            self.resetPrevTransform, 'resetPrevTransform', priority = -51)
+            self.__resetPrevTransform, 'resetPrevTransform', priority = -51)
         # give the dataLoop task a reasonably "early" priority,
         # so that it will get run before most tasks
-        self.taskMgr.add(self.dataLoop, 'dataLoop', priority = -50)
+        self.taskMgr.add(self.__dataLoop, 'dataLoop', priority = -50)
         # spawn the ivalLoop with a later priority, so that it will
         # run after most tasks, but before igLoop.
-        self.taskMgr.add(self.ivalLoop, 'ivalLoop', priority = 20)
+        self.taskMgr.add(self.__ivalLoop, 'ivalLoop', priority = 20)
         # make the collisionLoop task run before igLoop,
         # but leave enough room for the app to insert tasks
         # between collisionLoop and igLoop
-        self.taskMgr.add(self.collisionLoop, 'collisionLoop', priority = 30)
+        self.taskMgr.add(self.__collisionLoop, 'collisionLoop', priority = 30)
         # do the shadowCollisionLoop after the collisionLoop and
         # befor the igLoop:
         self.taskMgr.add(
-            self.shadowCollisionLoop, 'shadowCollisionLoop', priority = 45)
+            self.__shadowCollisionLoop, 'shadowCollisionLoop', priority = 45)
         # give the igLoop task a reasonably "late" priority,
         # so that it will get run after most tasks
-        self.taskMgr.add(self.igLoop, 'igLoop', priority = 50)
+        self.taskMgr.add(self.__igLoop, 'igLoop', priority = 50)
         # the audioLoop updates the positions of 3D sounds.
         # as such, it needs to run after the cull traversal in the igLoop.
-        self.taskMgr.add(self.audioLoop, 'audioLoop', priority = 60)
+        self.taskMgr.add(self.__audioLoop, 'audioLoop', priority = 60)
         self.eventMgr.restart()
 
     def shutdown(self):

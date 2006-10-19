@@ -48,6 +48,7 @@ class ShadowPlacer(DirectObject.DirectObject):
             if not base.shadowTrav:
                 # set up the shadow collision traverser
                 base.shadowTrav = CollisionTraverser("base.shadowTrav")
+                base.shadowTrav.setRespectPrevTransform(False)
             cTrav = base.shadowTrav
 
         self.cTrav = cTrav
