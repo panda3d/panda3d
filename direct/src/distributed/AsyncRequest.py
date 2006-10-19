@@ -84,7 +84,7 @@ class AsyncRequest(DirectObject):
             self.__deleted=True
         _removeActiveAsyncRequest(self)
         self.ignoreAll()
-        self.timeoutTask.remove()
+        taskMgr.remove(self.timeoutTask)
         del self.timeoutTask
         messenger.send(self.deletingMessage, [])
         if 0:
