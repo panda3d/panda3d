@@ -59,23 +59,23 @@ class DoHierarchy:
         return r
 
     def storeObjectLocation(self, do, parentId, zoneId):
-        assert self.notify.debugCall()
         doId = do.doId
         if doId in self._allDoIds:
             self.notify.error(
-                'storeObjectLocation(%s %s) already in _allDoIds' % (
+                'storeObjectLocation(%s %s) already in _allDoIds; duplicate generate()?' % (
                 do.__class__.__name__, do.doId))
         parentZoneDict = self._table.setdefault(parentId, {})
         zoneDoSet = parentZoneDict.setdefault(zoneId, set())
         zoneDoSet.add(doId)
         self._allDoIds.add(doId)
+        self.notify.debug('storeObjectLocation: %s(%s) @ (%s, %s)' % (
+            do.__class__.__name__, doId, parentId, zoneId))
 
     def deleteObjectLocation(self, do, parentId, zoneId):
-        assert self.notify.debugCall()
         doId = do.doId
         if doId not in self._allDoIds:
-            self.notify.warning(
-                'deleteObjectLocation(%s %s) not in _allDoIds' % (
+            self.notify.error(
+                'deleteObjectLocation(%s %s) not in _allDoIds; duplicate delete()?' % (
                 do.__class__.__name__, do.doId))
         # jbutler: temp hack to get by the assert, this will be fixed soon
         if (doId not in self._allDoIds):
@@ -87,6 +87,8 @@ class DoHierarchy:
                 if doId in zoneDoSet:
                     zoneDoSet.remove(doId)
                     self._allDoIds.remove(doId)
+                    self.notify.debug('deleteObjectLocation: %s(%s) @ (%s, %s)' % (
+                        do.__class__.__name__, doId, parentId, zoneId))
                     if len(zoneDoSet) == 0:
                         del parentZoneDict[zoneId]
                         if len(parentZoneDict) == 0:
