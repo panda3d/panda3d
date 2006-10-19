@@ -167,8 +167,7 @@ class ContainerReport:
                     return
             pathStrList.sort()
             for pathstr in pathStrList:
-                if pathstr.find("reload") == -1:
-                    print '%s: %s' % (l, pathstr)
+                print '%s: %s' % (l, pathstr)
 
 
     def _output(self, **kArgs):
