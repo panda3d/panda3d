@@ -50,6 +50,7 @@ SmoothMover() {
   _computed_forward_axis = true;
 
   _smooth_forward_velocity = 0.0;
+  _smooth_lateral_velocity = 0.0;
   _smooth_rotational_velocity = 0.0;
 
   _last_point_before = -1;
@@ -184,6 +185,7 @@ clear_positions(bool reset_velocity) {
 
   if (reset_velocity) {
     _smooth_forward_velocity = 0.0;
+    _smooth_lateral_velocity = 0.0;
     _smooth_rotational_velocity = 0.0;
   }
 }
@@ -214,6 +216,7 @@ compute_smooth_position(double timestamp) {
       double age = timestamp - _smooth_timestamp;
       if (age > _reset_velocity_age) {
         _smooth_forward_velocity = 0.0;
+        _smooth_lateral_velocity = 0.0;
         _smooth_rotational_velocity = 0.0;
       }
     }
@@ -288,6 +291,7 @@ compute_smooth_position(double timestamp) {
     const SamplePoint &point = _points[point_after];
     set_smooth_pos(point._pos, point._hpr, timestamp);
     _smooth_forward_velocity = 0.0;
+    _smooth_lateral_velocity = 0.0;
     _smooth_rotational_velocity = 0.0;
     _last_point_before = point_before;
     _last_point_after = point_after;
@@ -342,6 +346,7 @@ compute_smooth_position(double timestamp) {
       // local timestamps, not on the other client's reported
       // timestamps.
       _smooth_forward_velocity = 0.0;
+      _smooth_lateral_velocity = 0.0;
       _smooth_rotational_velocity = 0.0;
     }
 
@@ -425,6 +430,7 @@ get_latest_position() {
   const SamplePoint &point = _points.back();
   set_smooth_pos(point._pos, point._hpr, point._timestamp);
   _smooth_forward_velocity = 0.0;
+  _smooth_lateral_velocity = 0.0;
   _smooth_rotational_velocity = 0.0;
   return true;
 }
@@ -565,9 +571,13 @@ compute_velocity(const LVector3f &pos_delta, const LVecBase3f &hpr_delta,
     //cerr << "  compute forward_axis = " << _forward_axis << "\n";
   }
    
+  LVector3f lateral_axis = _forward_axis.cross(LVector3f(0.0,0.0,1.0));
+
   float forward_distance = pos_delta.dot(_forward_axis);
-  
+  float lateral_distance = pos_delta.dot(lateral_axis);
+
   _smooth_forward_velocity = forward_distance / age;
+  _smooth_lateral_velocity = lateral_distance / age;
   _smooth_rotational_velocity = hpr_delta[0] / age;
 
   //cerr << "  compute_velocity = " << _smooth_forward_velocity << "\n";

@@ -429,6 +429,20 @@ get_smooth_forward_velocity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_smooth_lateral_velocity
+//       Access: Published
+//  Description: Returns the speed at which the avatar is moving, in
+//               feet per second, along its own lateral axis (after
+//               applying the avatar's hpr).  This will be a positive
+//               number if the avatar is moving right, and a
+//               negative number if it is moving left.
+////////////////////////////////////////////////////////////////////
+INLINE float SmoothMover::
+get_smooth_lateral_velocity() const {
+  return _smooth_lateral_velocity;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::get_smooth_rotational_velocity
 //       Access: Published
 //  Description: Returns the speed at which the avatar is rotating in

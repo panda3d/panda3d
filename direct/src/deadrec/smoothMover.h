@@ -103,6 +103,7 @@ PUBLISHED:
   INLINE void compute_and_apply_smooth_mat(NodePath &node);
 
   INLINE float get_smooth_forward_velocity() const;
+  INLINE float get_smooth_lateral_velocity() const;
   INLINE float get_smooth_rotational_velocity() const;
   INLINE const LVecBase3f &get_forward_axis() const;
 
@@ -181,6 +182,7 @@ private:
   bool _computed_forward_axis;
 
   double _smooth_forward_velocity;
+  double _smooth_lateral_velocity;
   double _smooth_rotational_velocity;
 
   typedef CircBuffer<SamplePoint, max_position_reports> Points;
