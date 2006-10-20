@@ -446,6 +446,10 @@
 // it is completely optional there.  If available, egg-optchar takes
 // advantage of it to allow the optimization of very large numbers of
 // models in one pass, that might otherwise exceed available memory.
+
+// Actually, this isn't even true anymore.  At the time of this writing,
+// no system in Panda makes use of Berkeley DB.  So don't bother to
+// define this.
 #define BDB_IPATH
 #define BDB_LPATH
 #define BDB_LIBS db db_cxx
