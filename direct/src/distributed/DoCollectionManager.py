@@ -194,25 +194,28 @@ class DoCollectionManager:
     def storeObjectLocation(self, object, parentId, zoneId):
         oldParentId = object.parentId
         oldZoneId = object.zoneId
-        if ((None not in (oldParentId, oldZoneId)) and
-            ((oldParentId != parentId) or (oldZoneId != zoneId))):
+        if (oldParentId != parentId) or (oldZoneId != zoneId):
             # Remove old location
             self.deleteObjectLocation(object, oldParentId, oldZoneId)
         elif oldParentId == parentId and oldZoneId == zoneId:
             # object is already at that parent and zone
             return
-        if (parentId is None) or (zoneId is None):
-            # Do not store null values
-            return
-        # Add to new location
-        self._doHierarchy.storeObjectLocation(object, parentId, zoneId)
-        # this check doesn't work because of global UD objects;
-        # should they have a location?
-        #assert len(self._doHierarchy) == len(self.doId2do)
 
-        # Set the new parent and zone on the object
-        object.parentId = parentId
-        object.zoneId = zoneId
+        if ((parentId is None) or (zoneId is None) or
+            (parentId == zoneId == 0)):
+            # Do not store null values
+            object.parentId = None
+            object.zoneId = None
+        else:
+            # Add to new location
+            self._doHierarchy.storeObjectLocation(object, parentId, zoneId)
+            # this check doesn't work because of global UD objects;
+            # should they have a location?
+            #assert len(self._doHierarchy) == len(self.doId2do)
+
+            # Set the new parent and zone on the object
+            object.parentId = parentId
+            object.zoneId = zoneId
 
         if 1:
             # Do we still need this
@@ -229,7 +232,8 @@ class DoCollectionManager:
             
     def deleteObjectLocation(self, object, parentId, zoneId):
         # Do not worry about null values
-        if (parentId is None) or (zoneId is None):
+        if ((parentId is None) or (zoneId is None) or
+            (parentId == zoneId == 0)):
             return
         if 1:
             # Do we still need this

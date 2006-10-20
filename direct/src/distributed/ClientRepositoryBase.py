@@ -218,6 +218,9 @@ class ClientRepositoryBase(ConnectionRepository):
             self.doId2do[doId] = distObj
             # and update it.
             distObj.generate()
+            # make sure we don't have a stale location
+            distObj.parentId = None
+            distObj.zoneId = None
             distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
@@ -262,6 +265,9 @@ class ClientRepositoryBase(ConnectionRepository):
             self.doId2do[doId] = distObj
             # and update it.
             distObj.generate()
+            # make sure we don't have a stale location
+            distObj.parentId = None
+            distObj.zoneId = None
             distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
