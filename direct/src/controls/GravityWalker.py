@@ -167,6 +167,9 @@ class GravityWalker(DirectObject.DirectObject):
         #assert self.debugPrint("getSpeeds()")
         return (self.speed, self.rotationSpeed, self.slideSpeed)
 
+    def getIsAirborne(self):
+        return self.isAirborne
+    
     def setAvatar(self, avatar):
         self.avatar = avatar
         if avatar is not None:

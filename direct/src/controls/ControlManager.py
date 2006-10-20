@@ -178,6 +178,9 @@ class ControlManager:
     def getSpeeds(self):
         return self.currentControls.getSpeeds()
 
+    def getIsAirborne(self):
+        return self.currentControls.getIsAirborne()
+    
     def setTag(self, key, value):
         assert self.notify.debugCall(id(self))
         for controls in self.controls.values():
