@@ -349,6 +349,32 @@ class DirectScrolledList(DirectFrame):
         else:
             return 0
 
+    def removeAllItems(self, refresh=1):
+        """
+        Remove this item from the panel
+        Warning 2006_10_19 tested only in the trolley metagame
+        """
+        assert self.notify.debugStateCall(self)
+        retval = 0
+        #print "remove item called", item
+        #print "items list", self['items']
+        while len (self["items"]):
+            item = self['items'][0]
+            #print "removing item", item
+            if hasattr(self, "currentSelected") and self.currentSelected is item:
+                del self.currentSelected
+            self["items"].remove(item)
+            if type(item) != type(''):
+                #RAU possible leak here, let's try to do the right thing 
+                #item.reparentTo(hidden)
+                item.removeNode()
+            retval = 1
+
+        if (refresh):
+            self.refresh()
+            
+        return retval
+
     def refresh(self):
         """
         Update the list - useful when adding or deleting items
