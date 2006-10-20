@@ -26,50 +26,6 @@ INLINE ClockObject::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClockObject::set_mode
-//       Access: Published
-//  Description: Changes the mode of the clock.  Normally, the clock
-//               is in mode M_normal. In this mode, each call to
-//               tick() will set the value returned by
-//               get_frame_time() to the current real time; thus, the
-//               clock simply reports time advancing.
-//
-//               Other possible modes:
-//
-//               M_non_real_time - the clock ignores real time
-//               completely; at each call to tick(), it pretends that
-//               exactly dt seconds have elapsed since the last call
-//               to tick().  You may set the value of dt with
-//               set_dt().
-//
-//               M_limited - the clock will run as fast as it can, as
-//               in M_normal, but will not run faster than the rate
-//               specified by set_dt().  If the application would run
-//               faster than this rate, the clock will slow down the
-//               application.
-//
-//               M_forced - the clock forces the application to run at
-//               the rate specified by set_dt().  If the application
-//               would run faster than this rate, the clock will slow
-//               down the application; if the application would run
-//               slower than this rate, the clock slows down time so
-//               that the application believes it is running at the
-//               given rate.
-//
-//               M_degrade - the clock runs at real time, but the
-//               application is slowed down by a set factor of its
-//               frame rate, specified by set_degrade_factor().
-//
-//               M_slave - the clock does not advance, but relies on
-//               the user to call set_frame_time() and/or
-//               set_frame_count() each frame.
-////////////////////////////////////////////////////////////////////
-INLINE void ClockObject::
-set_mode(ClockObject::Mode mode) {
-  _mode = mode;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_mode
 //       Access: Published
 //  Description: Returns the current mode of the clock.  See
@@ -200,14 +156,15 @@ get_dt(Thread *current_thread) const {
 //  Description: In non-real-time mode, sets the number of seconds
 //               that should appear to elapse between frames.  In
 //               forced mode or limited mode, sets our target dt.  In
-//               normal mode, this has no effect.
+//               normal mode, this has no effect.  
+//
+//               Also see set_frame_rate(), which is a different way
+//               to specify the same quantity.
 ////////////////////////////////////////////////////////////////////
 INLINE void ClockObject::
-set_dt(double dt, Thread *current_thread) {
-  nassertv(current_thread->get_pipeline_stage() == 0);
-  _set_dt = dt;
-  CDWriter cdata(_cycler, current_thread);
-  cdata->_dt = dt;
+set_dt(double dt) {
+  nassertv(dt != 0.0);
+  set_frame_rate(1.0 / dt);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -304,25 +261,6 @@ set_average_frame_rate_interval(double time) {
 INLINE double ClockObject::
 get_average_frame_rate_interval() const {
   return _average_frame_rate_interval;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClockObject::get_average_frame_rate
-//       Access: Published
-//  Description: Returns the average frame rate in number of frames
-//               per second over the last
-//               get_average_frame_rate_interval() seconds.  This
-//               measures the virtual frame rate if the clock is in
-//               M_non_real_time mode.
-////////////////////////////////////////////////////////////////////
-INLINE double ClockObject::
-get_average_frame_rate(Thread *current_thread) const {
-  CDStageReader cdata(_cycler, 0, current_thread);
-  if (_ticks.size() <= 1) {
-    return 0.0;
-  } else {
-    return _ticks.size() / (cdata->_reported_frame_time - _ticks.front());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

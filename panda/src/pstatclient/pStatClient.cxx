@@ -30,11 +30,14 @@
 #include "config_pstats.h"
 #include "pStatProperties.h"
 #include "thread.h"
+#include "clockObject.h"
 
 PStatCollector PStatClient::_total_size_pcollector("Memory usage");
 PStatCollector PStatClient::_cpp_size_pcollector("Memory usage:C++");
 PStatCollector PStatClient::_interpreter_size_pcollector("Memory usage:Interpreter");
 PStatCollector PStatClient::_pstats_pcollector("*:PStats");
+PStatCollector PStatClient::_clock_wait_pcollector("Wait:Clock Wait:Sleep");
+PStatCollector PStatClient::_clock_busy_wait_pcollector("Wait:Clock Wait:Spin");
 
 PStatClient *PStatClient::_global_pstats = NULL;
 
@@ -317,6 +320,10 @@ PStatClient *PStatClient::
 get_global_pstats() {
   if (_global_pstats == (PStatClient *)NULL) {
     _global_pstats = new PStatClient;
+    
+    ClockObject::_start_clock_wait = start_clock_wait;
+    ClockObject::_start_clock_busy_wait = start_clock_busy_wait;
+    ClockObject::_stop_clock_wait = stop_clock_wait;
   }
   return _global_pstats;
 }
@@ -794,6 +801,58 @@ get_level(int collector_index, int thread_index) const {
   float factor = collector->get_def(this, collector_index)->_factor;
 
   return collector->_per_thread[thread_index]._level / factor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::start_clock_wait
+//       Access: Private, Static
+//  Description: This function is added as a hook into ClockObject, so
+//               that we may time the delay for
+//               ClockObject::wait_until(), used for certain special
+//               clock modes.  
+//
+//               This callback is a hack around the fact that we can't
+//               let the ClockObject directly create a PStatCollector,
+//               because the pstatclient module depends on putil.
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+start_clock_wait() {
+  _clock_wait_pcollector.start();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::start_clock_busy_wait
+//       Access: Private, Static
+//  Description: This function is added as a hook into ClockObject, so
+//               that we may time the delay for
+//               ClockObject::wait_until(), used for certain special
+//               clock modes.  
+//
+//               This callback is a hack around the fact that we can't
+//               let the ClockObject directly create a PStatCollector,
+//               because the pstatclient module depends on putil.
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+start_clock_busy_wait() {
+  _clock_wait_pcollector.stop();
+  _clock_busy_wait_pcollector.start();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::stop_clock_wait
+//       Access: Private, Static
+//  Description: This function is added as a hook into ClockObject, so
+//               that we may time the delay for
+//               ClockObject::wait_until(), used for certain special
+//               clock modes.  
+//
+//               This callback is a hack around the fact that we can't
+//               let the ClockObject directly create a PStatCollector,
+//               because the pstatclient module depends on putil.
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+stop_clock_wait() {
+  _clock_busy_wait_pcollector.stop();
 }
 
 ////////////////////////////////////////////////////////////////////

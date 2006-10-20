@@ -19,7 +19,12 @@
 #include "clockObject.h"
 #include "config_util.h"
 #include "configVariableEnum.h"
+#include "string_utils.h"
 #include "thread.h"
+
+void (*ClockObject::_start_clock_wait)() = ClockObject::dummy_clock_wait;
+void (*ClockObject::_start_clock_busy_wait)() = ClockObject::dummy_clock_wait;
+void (*ClockObject::_stop_clock_wait)() = ClockObject::dummy_clock_wait;
 
 ClockObject *ClockObject::_global_clock = (ClockObject *)NULL;
 TypeHandle ClockObject::_type_handle;
@@ -42,13 +47,83 @@ ClockObject() {
   _start_long_time = _true_clock->get_long_time();
   _actual_frame_time = 0.0;
   _max_dt = max_dt;
+  _user_frame_rate = clock_frame_rate;
   _degrade_factor = clock_degrade_factor;
   _average_frame_rate_interval = average_frame_rate_interval;
 
   _error_count = _true_clock->get_error_count();
+}
 
-  CDReader cdata(_cycler);
-  _set_dt = cdata->_dt;
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::set_mode
+//       Access: Published
+//  Description: Changes the mode of the clock.  Normally, the clock
+//               is in mode M_normal. In this mode, each call to
+//               tick() will set the value returned by
+//               get_frame_time() to the current real time; thus, the
+//               clock simply reports time advancing.
+//
+//               Other possible modes:
+//
+//               M_non_real_time - the clock ignores real time
+//               completely; at each call to tick(), it pretends that
+//               exactly dt seconds have elapsed since the last call
+//               to tick().  You may set the value of dt with
+//               set_dt() or set_frame_rate().
+//
+//               M_limited - the clock will run as fast as it can, as
+//               in M_normal, but will not run faster than the rate
+//               specified by set_frame_rate().  If the application
+//               would run faster than this rate, the clock will slow
+//               down the application.
+//
+//               M_integer - the clock will run as fast as it can, but
+//               the rate will be constrained to be an integer
+//               multiple or divisor of the rate specified by
+//               set_frame_rate().  The clock will slow down the
+//               application a bit to guarantee this.
+//
+//               M_integer_limited - a combination of M_limited and
+//               M_integer; the clock will not run faster than
+//               set_frame_rate(), and if it runs slower, it will run
+//               at a integer divisor of that rate.
+//
+//               M_forced - the clock forces the application to run at
+//               the rate specified by set_frame_rate().  If the
+//               application would run faster than this rate, the
+//               clock will slow down the application; if the
+//               application would run slower than this rate, the
+//               clock slows down time so that the application
+//               believes it is running at the given rate.
+//
+//               M_degrade - the clock runs at real time, but the
+//               application is slowed down by a set factor of its
+//               frame rate, specified by set_degrade_factor().
+//
+//               M_slave - the clock does not advance, but relies on
+//               the user to call set_frame_time() and/or
+//               set_frame_count() each frame.
+////////////////////////////////////////////////////////////////////
+void ClockObject::
+set_mode(ClockObject::Mode mode) {
+  Thread *current_thread = Thread::get_current_thread();
+  nassertv(current_thread->get_pipeline_stage() == 0);
+  CDWriter cdata(_cycler, current_thread);
+
+  _mode = mode;
+
+  // In case we have set the clock to one of the modes that uses
+  // _reported_frame_time_epoch, recompute the epoch.
+  switch (_mode) {
+  case M_non_real_time:
+  case M_forced:
+    cdata->_reported_frame_time_epoch = cdata->_reported_frame_time -
+      cdata->_frame_count / _user_frame_rate;
+    cdata->_dt = 1.0 / _user_frame_rate;
+
+  default:
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,6 +170,10 @@ set_frame_time(double time, Thread *current_thread) {
   CDWriter cdata(_cycler, current_thread);
   _actual_frame_time = time;
   cdata->_reported_frame_time = time;
+
+  // Recompute the epoch in case we are in a mode that relies on this.
+  cdata->_reported_frame_time_epoch = cdata->_reported_frame_time -
+    cdata->_frame_count / _user_frame_rate;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,6 +195,62 @@ set_frame_count(int frame_count, Thread *current_thread) {
 #endif  // NOTIFY_DEBUG
   CDWriter cdata(_cycler, current_thread);
   cdata->_frame_count = frame_count;
+
+  // Recompute the epoch in case we are in a mode that relies on this.
+  cdata->_reported_frame_time_epoch = cdata->_reported_frame_time -
+    cdata->_frame_count / _user_frame_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::set_frame_rate
+//       Access: Published
+//  Description: In non-real-time mode, sets the number of frames per
+//               second that we should appear to be running.  In forced
+//               mode or limited mode, sets our target frame rate.  In
+//               normal mode, this has no effect.
+//
+//               Also see set_dt(), which is a different way to
+//               specify the same quantity.
+////////////////////////////////////////////////////////////////////
+void ClockObject::
+set_frame_rate(double frame_rate) {
+  nassertv(frame_rate != 0.0);
+
+  Thread *current_thread = Thread::get_current_thread();
+  nassertv(current_thread->get_pipeline_stage() == 0);
+
+  CDWriter cdata(_cycler, current_thread);
+  _user_frame_rate = frame_rate;
+
+  switch (_mode) {
+  case M_non_real_time:
+  case M_forced:
+    cdata->_reported_frame_time_epoch = cdata->_reported_frame_time -
+      cdata->_frame_count / _user_frame_rate;
+    cdata->_dt = 1.0 / _user_frame_rate;
+
+  default:
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::get_average_frame_rate
+//       Access: Published
+//  Description: Returns the average frame rate in number of frames
+//               per second over the last
+//               get_average_frame_rate_interval() seconds.  This
+//               measures the virtual frame rate if the clock is in
+//               M_non_real_time mode.
+////////////////////////////////////////////////////////////////////
+double ClockObject::
+get_average_frame_rate(Thread *current_thread) const {
+  CDStageReader cdata(_cycler, 0, current_thread);
+  if (_ticks.size() <= 1) {
+    return 0.0;
+  } else {
+    return _ticks.size() / (cdata->_reported_frame_time - _ticks.front());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,6 +272,14 @@ tick(Thread *current_thread) {
   if (_mode != M_slave) {
     double old_time = _actual_frame_time;
     _actual_frame_time = get_real_time();
+
+    // In case someone munged the clock last frame and sent us
+    // backward in time, clamp the previous time to the current time
+    // to make sure we don't report anything strange (or wait
+    // interminably).
+    old_time = min(old_time, _actual_frame_time);
+
+    ++cdata->_frame_count;
     
     switch (_mode) {
     case M_normal:
@@ -148,22 +291,67 @@ tick(Thread *current_thread) {
     case M_non_real_time:
       // Ignore real time.  We always report the same interval having
       // elapsed each frame.
-      cdata->_reported_frame_time += _set_dt;
+      cdata->_reported_frame_time = cdata->_reported_frame_time_epoch +
+        cdata->_frame_count / _user_frame_rate;
       break;
       
     case M_limited:
       // If we are running faster than the desired interval, slow down.
-      wait_until(old_time + _set_dt);
-      cdata->_dt = _actual_frame_time - old_time;
-      cdata->_reported_frame_time = _actual_frame_time;
+      {
+        double wait_until_time = old_time + 1.0 / _user_frame_rate;
+        wait_until(wait_until_time);
+        cdata->_dt = _actual_frame_time - old_time;
+        cdata->_reported_frame_time = max(_actual_frame_time, wait_until_time);
+      }
+      break;
+
+    case M_integer:
+      {
+        double dt = _actual_frame_time - old_time;
+        double target_dt = 1.0 / _user_frame_rate;
+        if (dt < target_dt) {
+          // We're running faster than the desired interval, so slow
+          // down to the next integer multiple of the frame rate.
+          target_dt = target_dt / floor(target_dt / dt);
+        } else {
+          // We're running slower than the desired interval, so slow
+          // down to the next integer divisor of the frame rate.
+          target_dt = target_dt * ceil(dt / target_dt);
+        }
+        double wait_until_time = old_time + target_dt;
+        wait_until(wait_until_time);
+        cdata->_dt = target_dt;
+        cdata->_reported_frame_time = wait_until_time;
+      }
+      break;
+
+    case M_integer_limited:
+      {
+        double dt = _actual_frame_time - old_time;
+        double target_dt = 1.0 / _user_frame_rate;
+        if (dt < target_dt) {
+          // We're running faster than the desired interval, so slow
+          // down to the target frame rate.
+
+        } else {
+          // We're running slower than the desired interval, so slow
+          // down to the next integer divisor of the frame rate.
+          target_dt = target_dt * ceil(dt / target_dt);
+        }
+        double wait_until_time = old_time + target_dt;
+        wait_until(wait_until_time);
+        cdata->_dt = target_dt;
+        cdata->_reported_frame_time = wait_until_time;
+      }
       break;
       
     case M_forced:
       // If we are running faster than the desired interval, slow down.
       // If we are running slower than the desired interval, ignore that
       // and pretend we're running at the specified rate.
-      wait_until(old_time + _set_dt);
-      cdata->_reported_frame_time += _set_dt;
+      wait_until(old_time + 1.0 / _user_frame_rate);
+      cdata->_reported_frame_time = cdata->_reported_frame_time_epoch +
+        cdata->_frame_count / _user_frame_rate;
       break;
       
     case M_degrade:
@@ -189,13 +377,11 @@ tick(Thread *current_thread) {
       // Handled above.
       break;
     }
-
-    cdata->_frame_count++;
   }
 
   if (_average_frame_rate_interval > 0.0) {
     _ticks.push_back(old_reported_time);
-    while (!_ticks.empty() && 
+    while (_ticks.size() > 2 && 
            cdata->_reported_frame_time - _ticks.front() > _average_frame_rate_interval) {
       _ticks.pop_front();
     }
@@ -233,16 +419,32 @@ sync_frame_time(Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void ClockObject::
 wait_until(double want_time) {
+  if (want_time <= _actual_frame_time) {
+    return;
+  }
+
+#ifdef DO_PSTATS
+  (*_start_clock_wait)();
+#endif
+
   double wait_interval = (want_time - _actual_frame_time) - sleep_precision;
     
   if (wait_interval > 0.0) {
     Thread::sleep(wait_interval);
   }
+
+#ifdef DO_PSTATS
+  (*_start_clock_busy_wait)();
+#endif
   
   // Now busy-wait until the actual time elapses.
   while (_actual_frame_time < want_time) {
     _actual_frame_time = get_real_time();
   }
+
+#ifdef DO_PSTATS
+  (*_stop_clock_wait)();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -267,6 +469,17 @@ make_global_clock() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::dummy_clock_wait
+//       Access: Private, Static
+//  Description: This no-op function is assigned as the initial
+//               pointer for _start_clock_wait and _stop_clock_wait,
+//               until the PStatClient comes along and replaces it.
+////////////////////////////////////////////////////////////////////
+void ClockObject::
+dummy_clock_wait() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::CData::Constructor
 //       Access: Public
 //  Description:
@@ -275,7 +488,8 @@ ClockObject::CData::
 CData() {
   _frame_count = 0;
   _reported_frame_time = 0.0;
-  _dt = 1.0 / clock_frame_rate;
+  _reported_frame_time_epoch = 0.0;
+  _dt = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -304,6 +518,12 @@ operator << (ostream &out, ClockObject::Mode mode) {
   case ClockObject::M_limited:
     return out << "limited";
 
+  case ClockObject::M_integer:
+    return out << "integer";
+
+  case ClockObject::M_integer_limited:
+    return out << "integer_limited";
+
   case ClockObject::M_forced:
     return out << "forced";
 
@@ -326,17 +546,21 @@ operator >> (istream &in, ClockObject::Mode &mode) {
   string word;
   in >> word;
 
-  if (word == "normal") {
+  if (cmp_nocase_uh(word, "normal") == 0) {
     mode = ClockObject::M_normal;
-  } else if (word == "non-real-time") {
+  } else if (cmp_nocase_uh(word, "non-real-time") == 0) {
     mode = ClockObject::M_non_real_time;
-  } else if (word == "limited") {
+  } else if (cmp_nocase_uh(word, "limited") == 0) {
     mode = ClockObject::M_limited;
-  } else if (word == "forced") {
+  } else if (cmp_nocase_uh(word, "integer") == 0) {
+    mode = ClockObject::M_integer;
+  } else if (cmp_nocase_uh(word, "integer_limited") == 0) {
+    mode = ClockObject::M_integer_limited;
+  } else if (cmp_nocase_uh(word, "forced") == 0) {
     mode = ClockObject::M_forced;
-  } else if (word == "degrade") {
+  } else if (cmp_nocase_uh(word, "degrade") == 0) {
     mode = ClockObject::M_degrade;
-  } else if (word == "slave") {
+  } else if (cmp_nocase_uh(word, "slave") == 0) {
     mode = ClockObject::M_slave;
   } else {
     util_cat.error()

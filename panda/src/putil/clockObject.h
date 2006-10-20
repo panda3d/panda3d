@@ -72,12 +72,14 @@ PUBLISHED:
     M_degrade,
     M_slave,
     M_limited,
+    M_integer,
+    M_integer_limited,
   };
 
   ClockObject();
   INLINE ~ClockObject();
 
-  INLINE void set_mode(Mode mode);
+  void set_mode(Mode mode);
   INLINE Mode get_mode() const;
 
   INLINE double get_frame_time(Thread *current_thread = Thread::get_current_thread()) const;
@@ -93,7 +95,8 @@ PUBLISHED:
   INLINE double get_net_frame_rate(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE double get_dt(Thread *current_thread = Thread::get_current_thread()) const;
-  INLINE void set_dt(double dt, Thread *current_thread = Thread::get_current_thread());
+  INLINE void set_dt(double dt);
+  void set_frame_rate(double frame_rate);
 
   INLINE double get_max_dt() const;
   INLINE void set_max_dt(double max_dt);
@@ -103,7 +106,7 @@ PUBLISHED:
 
   INLINE void set_average_frame_rate_interval(double time);
   INLINE double get_average_frame_rate_interval() const;
-  INLINE double get_average_frame_rate(Thread *current_thread = Thread::get_current_thread()) const;
+  double get_average_frame_rate(Thread *current_thread = Thread::get_current_thread()) const;
 
   void tick(Thread *current_thread = Thread::get_current_thread());
   void sync_frame_time(Thread *current_thread = Thread::get_current_thread());
@@ -112,9 +115,15 @@ PUBLISHED:
 
   INLINE static ClockObject *get_global_clock();
 
+public:
+  static void (*_start_clock_wait)();
+  static void (*_start_clock_busy_wait)();
+  static void (*_stop_clock_wait)();
+
 private:
   void wait_until(double want_time);
   static void make_global_clock();
+  static void dummy_clock_wait();
 
   TrueClock *_true_clock;
   Mode _mode;
@@ -122,7 +131,7 @@ private:
   double _start_long_time;
   double _actual_frame_time;
   double _max_dt;
-  double _set_dt;
+  double _user_frame_rate;
   double _degrade_factor;
   int _error_count;
 
@@ -145,6 +154,7 @@ private:
 
     int _frame_count;
     double _reported_frame_time;
+    double _reported_frame_time_epoch;
     double _dt;
   };
 

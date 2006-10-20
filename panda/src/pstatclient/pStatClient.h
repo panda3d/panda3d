@@ -128,6 +128,10 @@ private:
   void add_level(int collector_index, int thread_index, float increment);
   float get_level(int collector_index, int thread_index) const;
 
+  static void start_clock_wait();
+  static void start_clock_busy_wait();
+  static void stop_clock_wait();
+
   class Collector;
   class InternalThread;
   void add_collector(Collector *collector);
@@ -220,6 +224,8 @@ private:
   static PStatCollector _cpp_size_pcollector;
   static PStatCollector _interpreter_size_pcollector;
   static PStatCollector _pstats_pcollector;
+  static PStatCollector _clock_wait_pcollector;
+  static PStatCollector _clock_busy_wait_pcollector;
 
   static PStatClient *_global_pstats;
 
