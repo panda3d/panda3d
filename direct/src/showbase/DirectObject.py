@@ -4,6 +4,7 @@ __all__ = ['DirectObject']
 
 
 from MessengerGlobal import messenger
+from direct.showbase.PythonUtil import ClassTree
 
 class DirectObject:
     """
@@ -36,3 +37,6 @@ class DirectObject:
 
     def isIgnoring(self, event):
         return messenger.isIgnoring(event, self)
+
+    def printClassTree(self):
+        print ClassTree(self)
