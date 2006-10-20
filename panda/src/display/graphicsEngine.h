@@ -330,6 +330,10 @@ private:
     FS_flip,  // All windows are done drawing and have flipped.
   };
   FlipState _flip_state;
+
+  bool _singular_warning_last_frame;
+  bool _singular_warning_this_frame;
+
   ReMutex _lock;
 
   static PStatCollector _wait_pcollector;

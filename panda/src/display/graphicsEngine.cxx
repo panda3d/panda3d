@@ -123,6 +123,9 @@ GraphicsEngine(Pipeline *pipeline) :
   _auto_flip = auto_flip;
   _portal_enabled = false;
   _flip_state = FS_flip;
+
+  _singular_warning_last_frame = false;
+  _singular_warning_this_frame = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1058,6 +1061,9 @@ void GraphicsEngine::
 cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   PStatTimer timer(_cull_pcollector, current_thread);
 
+  _singular_warning_last_frame = _singular_warning_this_frame;
+  _singular_warning_this_frame = false;
+
   // Keep track of the cameras we have already used in this thread to
   // render DisplayRegions.
   typedef pmap<NodePath, DisplayRegion *> AlreadyCulled;
@@ -1403,6 +1409,28 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   NodePath scene_parent = scene_root.get_parent(current_thread);
   CPT(TransformState) camera_transform = camera.get_transform(scene_parent, current_thread);
   CPT(TransformState) world_transform = scene_parent.get_transform(camera, current_thread);
+
+  if (camera_transform->is_invalid()) {
+    // There must be a singular transform over the scene.
+    if (!_singular_warning_last_frame) {
+      display_cat.warning()
+        << "Scene " << scene_root << " has net scale (" 
+        << scene_root.get_scale(NodePath()) << "); cannot render.\n";
+      _singular_warning_this_frame = true;
+    }
+    return NULL;
+  }
+
+  if (world_transform->is_invalid()) {
+    // There must be a singular transform over the camera.
+    if (!_singular_warning_last_frame) {
+      display_cat.warning()
+        << "Camera " << camera << " has net scale (" 
+        << camera.get_scale(NodePath()) << "); cannot render.\n";
+    }
+    _singular_warning_this_frame = true;
+    return NULL;
+  }
 
   CPT(RenderState) initial_state = camera_node->get_initial_state();
 
