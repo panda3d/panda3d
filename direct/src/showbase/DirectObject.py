@@ -38,5 +38,5 @@ class DirectObject:
     def isIgnoring(self, event):
         return messenger.isIgnoring(event, self)
 
-    def printClassTree(self):
-        print ClassTree(self)
+    def classTree(self):
+        return ClassTree(self)
