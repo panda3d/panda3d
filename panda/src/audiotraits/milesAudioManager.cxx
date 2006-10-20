@@ -275,6 +275,7 @@ load(Filename file_name) {
   } else if ((int)sd->_raw_data.size() >= miles_audio_expand_mp3_threshold) {
     audio_debug(sd->_basename << " is too large to expand in-memory.");
   } else {
+    audio_debug(sd->_basename << " will be expanded in-memory.");
     expand_to_wav = true;
   }
 
@@ -376,9 +377,13 @@ get_sound(const string& file_name, bool) {
     bool inserted = _sounds_on_loan.insert(milesAudioSound).second;
     nassertr(inserted, milesAudioSound.p());
     audioSound=milesAudioSound;
+
+    _hasMidiSounds |= (file_name.find(".mid")!=string::npos);
+  } else {
+    // Couldn't load the file; just return a NullAudioSound.
+    audioSound = new NullAudioSound;
   }
 
-  _hasMidiSounds |= (file_name.find(".mid")!=string::npos);
   audio_debug("  returning 0x" << (void*)audioSound);
   assert(is_valid());
   return audioSound;
