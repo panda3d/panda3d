@@ -1220,11 +1220,13 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           if (delta >= 0) {
             while (delta > 0) {
               handle_keypress(MouseButton::wheel_up(), point.x, point.y, time);
+              handle_keyrelease(MouseButton::wheel_up(), time);
               delta -= WHEEL_DELTA;
             }
           } else {
             while (delta < 0) {
               handle_keypress(MouseButton::wheel_down(), point.x, point.y, time);
+              handle_keyrelease(MouseButton::wheel_down(), time);
               delta += WHEEL_DELTA;
             }
           }
