@@ -26,11 +26,44 @@ class ContainerReport:
             id(self._queue),
             id(self._instanceDictIds),
             ]))
+        # push on a few things that we want to give priority
+        # for the sake of the variable-name printouts
+        try:
+            base
+        except:
+            pass
+        else:
+            self._enqueueContainer( base.__dict__,
+                                   'base')
+        try:
+            simbase
+        except:
+            pass
+        else:
+            self._enqueueContainer( simbase.__dict__,
+                                   'simbase')
         self._queue.push(__builtins__)
         self._id2pathStr[id(__builtins__)] = ''
         self._traverse()
         if log:
             self.log(limit=limit)
+    def _enqueueContainer(self, obj, pathStr=None):
+        # call this to add a container that should be examined before any (other) direct
+        # children of __builtins__
+        # this is mostly to fix up the names of variables
+        self._queue.push(obj)
+        objId = id(obj)
+        if pathStr is not None:
+            self._id2pathStr[objId] = pathStr
+        # if it's a container, put it in the tables
+        try:
+            length = len(obj)
+        except:
+            length = None
+        if length is not None and length > 0:
+            self._id2container[objId] = obj
+            self._type2id2len.setdefault(type(obj), {})
+            self._type2id2len[type(obj)][objId] = length
     def _examine(self, obj):
         # return False if it's an object that can't contain or lead to other objects
         if type(obj) in (types.BooleanType, types.BuiltinFunctionType,
@@ -43,22 +76,12 @@ class ContainerReport:
         if id(obj) in ContainerReport.PrivateIds:
             return False
         # this object might lead to more objects. put it on the queue
-        self._queue.push(obj)
-        # if it's a container, put it in the tables
-        try:
-            length = len(obj)
-        except:
-            length = None
-        if length is not None and length > 0:
-            objId = id(obj)
-            self._id2container[objId] = obj
-            self._type2id2len.setdefault(type(obj), {})
-            self._type2id2len[type(obj)][objId] = length
+        self._enqueueContainer(obj)
         return True
     def _traverse(self):
         while len(self._queue) > 0:
             parentObj = self._queue.pop()
-            #print '%s: %s, %s' % (id(parentObj), type(parentObj), fastRepr(parentObj))
+            #print '%s: %s, %s' % (id(parentObj), type(parentObj), self._id2pathStr[id(parentObj)])
             isInstanceDict = False
             if id(parentObj) in self._instanceDictIds:
                 isInstanceDict = True
@@ -75,7 +98,7 @@ class ContainerReport:
             if type(parentObj) in (types.ModuleType, types.InstanceType):
                 child = parentObj.__dict__
                 if self._examine(child):
-                    assert _equal(self._queue.back(), child)
+                    assert _is(self._queue.back(), child)
                     self._instanceDictIds.add(id(child))
                     self._id2pathStr[id(child)] = str(self._id2pathStr[id(parentObj)])
                 continue
@@ -83,11 +106,17 @@ class ContainerReport:
             if type(parentObj) is types.DictType:
                 key = None
                 attr = None
-                for key, attr in parentObj.items():
+                keys = parentObj.keys()
+                try:
+                    keys.sort()
+                except TypeError, e:
+                    print '%s: %s' % (self._id2pathStr[id(parentObj)], repr(e))
+                for key in keys:
+                    attr = parentObj[key]
                     if id(attr) not in self._visitedIds:
                         self._visitedIds.add(id(attr))
                         if self._examine(attr):
-                            assert _equal(self._queue.back(), attr)
+                            assert _is(self._queue.back(), attr)
                             if parentObj is __builtins__:
                                 self._id2pathStr[id(attr)] = key
                             else:
@@ -117,7 +146,7 @@ class ContainerReport:
                             if id(attr) not in self._visitedIds:
                                 self._visitedIds.add(id(attr))
                                 if self._examine(attr):
-                                    assert _equal(self._queue.back(), attr)
+                                    assert _is(self._queue.back(), attr)
                                     self._id2pathStr[id(attr)] = self._id2pathStr[id(parentObj)] + '[%s]' % index
                             index += 1
                         del attr
@@ -138,7 +167,7 @@ class ContainerReport:
                     if id(child) not in self._visitedIds:
                         self._visitedIds.add(id(child))
                         if self._examine(child):
-                            assert _equal(self._queue.back(), child)
+                            assert _is(self._queue.back(), child)
                             self._id2pathStr[id(child)] = self._id2pathStr[id(parentObj)] + '.%s' % childName
                 del childName
                 del child
@@ -168,7 +197,6 @@ class ContainerReport:
             pathStrList.sort()
             for pathstr in pathStrList:
                 print '%s: %s' % (l, pathstr)
-
 
     def _output(self, **kArgs):
         print "===== ContainerReport: \'%s\' =====" % (self._name,)
