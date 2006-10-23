@@ -19,15 +19,12 @@
 #ifndef CONFIG_DEADREC_H
 #define CONFIG_DEADREC_H
 
-#include "pandabase.h"
+#include "directbase.h"
 #include "notifyCategoryProxy.h"
-#include "configVariableDouble.h"
-#include "configVariableString.h"
-#include "configVariableInt.h"
 
-NotifyCategoryDecl(deadrec, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(deadrec, EXPCL_DIRECT, EXPTP_DIRECT);
 
-extern EXPCL_PANDA void init_libdeadrec();
+extern EXPCL_DIRECT void init_libdeadrec();
 
 #endif
 
