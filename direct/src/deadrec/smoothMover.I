@@ -586,6 +586,32 @@ get_max_position_age() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_expected_broadcast_period
+//       Access: Published, Static
+//  Description: Sets the interval at which we expect the SmoothNodes
+//               to broadcast their position, in elapsed seconds.
+//               This controls the length of time we assume the object
+//               has truly stopped, when we receive a long sequence of
+//               no updates.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+set_expected_broadcast_period(double period) {
+  _expected_broadcast_period = period;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_expected_broadcast_period
+//       Access: Published, Static
+//  Description: Returns the interval at which we expect the SmoothNodes
+//               to broadcast their position, in elapsed seconds.  See
+//               set_expected_broadcast_period().
+////////////////////////////////////////////////////////////////////
+INLINE double SmoothMover::
+get_expected_broadcast_period() {
+  return _expected_broadcast_period;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::set_reset_velocity_age
 //       Access: Published, Static
 //  Description: Sets the amount of time that should elapse after the

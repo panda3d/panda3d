@@ -24,6 +24,7 @@
 #include "clockObject.h"
 #include "circBuffer.h"
 #include "nodePath.h"
+#include "pdeque.h"
 
 static const int max_position_reports = 10;
 static const int max_timestamp_delays = 10;
@@ -138,6 +139,9 @@ PUBLISHED:
   INLINE static void set_max_position_age(double age); 
   INLINE static double get_max_position_age(); 
 
+  INLINE static void set_expected_broadcast_period(double period); 
+  INLINE static double get_expected_broadcast_period(); 
+
   INLINE static void set_reset_velocity_age(double age); 
   INLINE static double get_reset_velocity_age(); 
 
@@ -185,7 +189,8 @@ private:
   double _smooth_lateral_velocity;
   double _smooth_rotational_velocity;
 
-  typedef CircBuffer<SamplePoint, max_position_reports> Points;
+  //  typedef CircBuffer<SamplePoint, max_position_reports> Points;
+  typedef pdeque<SamplePoint> Points;
   Points _points;
   int _last_point_before;
   int _last_point_after;
@@ -205,6 +210,7 @@ private:
   static double _delay;
   static bool _accept_clock_skew;
   static double _max_position_age;
+  static double _expected_broadcast_period;
   static double _reset_velocity_age;
 };
 

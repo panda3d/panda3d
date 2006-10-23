@@ -12,12 +12,15 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
   #define SOURCES \
+    config_deadrec.h \
     smoothMover.h smoothMover.I
   
   #define INCLUDED_SOURCES \  
+    config_deadrec.cxx \
     smoothMover.cxx
 
   #define INSTALL_HEADERS \
+    config_deadrec.h \
     smoothMover.h smoothMover.I
 
   #define IGATESCAN \

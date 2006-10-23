@@ -25,6 +25,7 @@ SmoothMover::PredictionMode SmoothMover::_prediction_mode = SmoothMover::PM_off;
 double SmoothMover::_delay = 0.2;
 bool SmoothMover::_accept_clock_skew = true;
 double SmoothMover::_max_position_age = 0.25;
+double SmoothMover::_expected_broadcast_period = 0.2;
 double SmoothMover::_reset_velocity_age = 0.3;
 
 ////////////////////////////////////////////////////////////////////
@@ -150,7 +151,7 @@ mark_position() {
       // value simply replaces the previous value.
       _points.back() = _sample;
 
-    } else if (_points.full()) {
+    } else if ((int)_points.size() >= max_position_reports) {
       // If we have too many position reports, throw away the oldest
       // one.
       _points.pop_front();
@@ -206,7 +207,11 @@ clear_positions(bool reset_velocity) {
 ////////////////////////////////////////////////////////////////////
 bool SmoothMover::
 compute_smooth_position(double timestamp) {
-  //cerr << _points.size() << " points\n";
+  if (deadrec_cat.is_spam()) {
+    deadrec_cat.spam()
+      << _points.size() << " points\n";
+  }
+
   if (_points.empty()) {
     // With no position reports available, this function does nothing,
     // except to make sure that our velocity gets reset to zero after
@@ -223,7 +228,10 @@ compute_smooth_position(double timestamp) {
     bool result = _smooth_position_changed;
     _smooth_position_changed = false;
 
-    //cerr << "  no points: " << result << "\n";
+    if (deadrec_cat.is_spam()) {
+      deadrec_cat.spam()
+        << "  no points: " << result << "\n";
+    }
     return result;
   }
   if (_smooth_mode == SM_off) {
@@ -234,7 +242,10 @@ compute_smooth_position(double timestamp) {
     bool result = _smooth_position_changed;
     _smooth_position_changed = false;
 
-    //cerr << "  disabled: " << result << "\n";
+    if (deadrec_cat.is_spam()) {
+      deadrec_cat.spam()
+        << "  disabled: " << result << "\n";
+    }
     return result;
   }
 
@@ -245,14 +256,16 @@ compute_smooth_position(double timestamp) {
     timestamp -= get_avg_timestamp_delay();
   }
 
-  /*
-  cerr << "time = " << timestamp << ", " << _points.size() << " points, last = " << _last_point_before << ", " << _last_point_after << "\n";
-  cerr << "  ";
-  for (int pi = 0; pi < _points.size(); pi++) {
-    cerr << _points[pi]._timestamp << " ";
+  if (deadrec_cat.is_spam()) {
+    deadrec_cat.spam()
+      << "time = " << timestamp << ", " << _points.size() << " points, last = " << _last_point_before << ", " << _last_point_after << "\n";
+    deadrec_cat.spam(false)
+      << "  ";
+    for (int pi = 0; pi < (int)_points.size(); pi++) {
+      deadrec_cat.spam(false) << _points[pi]._timestamp << " ";
+    }
+    deadrec_cat.spam(false) << "\n";
   }
-  cerr << "\n";
-  */
 
   // Now look for the two bracketing position reports.
   int point_way_before = -1;
@@ -281,7 +294,11 @@ compute_smooth_position(double timestamp) {
     timestamp_after = _points[i]._timestamp;
   }
 
-  //cerr << "  found points (" << point_way_before << ") " << point_before << ", " << point_after << "\n";
+  if (deadrec_cat.is_spam()) {
+    deadrec_cat.spam()
+      << "  found points (" << point_way_before << ") " << point_before
+      << ", " << point_after << "\n";
+  }
 
   if (point_before < 0) {
     nassertr(point_after >= 0, false);
@@ -295,7 +312,11 @@ compute_smooth_position(double timestamp) {
     _smooth_rotational_velocity = 0.0;
     _last_point_before = point_before;
     _last_point_after = point_after;
-    //cerr << "  only an after point: " << _last_point_before << ", " << _last_point_after << "\n";
+    if (deadrec_cat.is_spam()) {
+      deadrec_cat.spam()
+        << "  only an after point: " << _last_point_before << ", " 
+        << _last_point_after << "\n";
+    }
     return result;
   }
 
@@ -330,11 +351,17 @@ compute_smooth_position(double timestamp) {
     if (point_way_before >= 0) {
       // Use the previous two points, if we've got 'em, so we can
       // still reflect the avatar's velocity.
-      //cerr << "  previous two\n";
+      if (deadrec_cat.is_spam()) {
+        deadrec_cat.spam()
+          << "  previous two\n";
+      }
       linear_interpolate(point_way_before, point_before, timestamp_before);
 
     } else {
-      //cerr << "  one point\n";
+      if (deadrec_cat.is_spam()) {
+        deadrec_cat.spam()
+          << "  one point\n";
+      }
       // If we really only have one point, use it.
       const SamplePoint &point = _points[point_before];
       set_smooth_pos(point._pos, point._hpr, timestamp);
@@ -354,11 +381,48 @@ compute_smooth_position(double timestamp) {
                _last_point_after == point_after);
   } else {
     // If we have two points, we can linearly interpolate between them.
-    //cerr << "  normal interpolate\n";
-    linear_interpolate(point_before, point_after, timestamp);
+    if (deadrec_cat.is_spam()) {
+      deadrec_cat.spam()
+        << "  normal interpolate\n";
+    }
+    SamplePoint &point_b = _points[point_before];
+    const SamplePoint &point_a = _points[point_after];
+    
+    if (point_b._pos == point_a._pos && point_b._hpr == point_a._hpr) {
+      // The points are equivalent, so just return that.
+      set_smooth_pos(point_b._pos, point_b._hpr, timestamp);
+
+    } else {
+      // The points are different, so we have to do some work.
+      double age = (point_a._timestamp - point_b._timestamp);
+    
+      if (age > _max_position_age) {
+        // If the first point is too old, assume there were a lot of
+        // implicit standing still messages that weren't sent.  Insert a new
+        // sample point to reflect this.
+        SamplePoint new_point = point_b;
+        new_point._timestamp = point_a._timestamp - _expected_broadcast_period;
+        if (new_point._timestamp > timestamp) {
+          _points.insert(_points.begin() + point_after, new_point);
+          
+          // Now we've monkeyed with the sequence.  Start over.
+          if (deadrec_cat.is_spam()) {
+            deadrec_cat.spam()
+              << "  recursing after time adjustment.\n";
+          }
+          return compute_smooth_position(orig_timestamp);
+        }
+      }
+
+      linear_interpolate(point_before, point_after, timestamp);
+    }
   }
 
-  //cerr << "  changing " << _last_point_before << ", " << _last_point_after << " to " << point_before << ", " << point_after << "\n";
+  if (deadrec_cat.is_spam()) {
+    deadrec_cat.spam()
+      << "  changing " << _last_point_before << ", " << _last_point_after
+      << " to " << point_before << ", " << point_after << "\n";
+  }
   _last_point_before = point_before;
   _last_point_after = point_after;
 
@@ -373,7 +437,11 @@ compute_smooth_position(double timestamp) {
     --point_way_before;
     --_last_point_before;
     --_last_point_after;
-    //cerr << "  popping old point: " << _last_point_before << ", " << _last_point_after << "\n";
+    if (deadrec_cat.is_spam()) {
+      deadrec_cat.spam()
+        << "  popping old point: " << _last_point_before << ", " 
+        << _last_point_after << "\n";
+    }
   }
 
   // If we are not using prediction mode, we can also remove
@@ -386,7 +454,11 @@ compute_smooth_position(double timestamp) {
       --point_way_before;
       --_last_point_before;
       --_last_point_after;
-      //cerr << "  popping way_before point: " << _last_point_before << ", " << _last_point_after << "\n";
+      if (deadrec_cat.is_spam()) {
+        deadrec_cat.spam()
+          << "  popping way_before point: " << _last_point_before << ", " 
+          << _last_point_after << "\n";
+      }
     }
 
     // And if there's only one point left, remove even that one
@@ -395,16 +467,25 @@ compute_smooth_position(double timestamp) {
                 when this object is stopped for a while then starts moving again
     if (_points.size() == 1) {
       double age = timestamp - _points.back()._timestamp;
-      //cerr << "considering clearing all points, age = " << age << "\n";
+      if (deadrec_cat.is_spam()) {
+        deadrec_cat.spam()
+          << "considering clearing all points, age = " << age << "\n";
+      }
       if (age > _reset_velocity_age) {
-        //cerr << "clearing all points.\n";
+        if (deadrec_cat.is_spam()) {
+          deadrec_cat.spam()
+            << "clearing all points.\n";
+        }
         _points.clear();
       }
     }
     */
   }
 
-  //cerr << "  result = " << result << "\n";
+  if (deadrec_cat.is_spam()) {
+    deadrec_cat.spam()
+      << "  result = " << result << "\n";
+  }
 
   return result;
 }
@@ -470,6 +551,12 @@ write(ostream &out) const {
 void SmoothMover::
 set_smooth_pos(const LPoint3f &pos, const LVecBase3f &hpr,
                double timestamp) {
+  if (deadrec_cat.is_spam()) {
+    deadrec_cat.spam()
+      << "set_smooth_pos(" << pos << ", " << hpr << ", "
+      << timestamp << ")\n";
+  }
+
   if (_smooth_pos != pos) {
     _smooth_pos = pos;
     _smooth_position_changed = true;
@@ -512,10 +599,20 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
 
   if (point_before == _last_point_before && 
       point_after == _last_point_after) {
-    //cerr << "  same two points\n";
+    if (deadrec_cat.is_spam()) {
+      deadrec_cat.spam()
+        << "  same two points\n";
+    }
+
     // If these are the same two points we found last time (which is
     // likely), we can save a bit of work.
     double t = (timestamp - point_b._timestamp) / age;
+
+    if (deadrec_cat.is_spam()) {
+      deadrec_cat.spam()
+        << "   interp " << t << ": " << point_b._pos << " to " << point_a._pos
+        << "\n";
+    }
     set_smooth_pos(point_b._pos + t * (point_a._pos - point_b._pos),
                    point_b._hpr + t * (point_a._hpr - point_b._hpr),
                    timestamp);
@@ -523,14 +620,6 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
     // The velocity remains the same as last time.
 
   } else {
-    if (age > _max_position_age) {
-      // If the first point is too old, assume there were a lot of
-      // implicit standing still messages that weren't sent.  Reset
-      // the first point's timestamp to reflect this.
-      point_b._timestamp = min(timestamp, point_a._timestamp - _max_position_age);
-      age = (point_a._timestamp - point_b._timestamp);
-    }
-
     // To interpolate the hpr's, we must first make sure that both
     // angles are on the same side of the discontinuity.
     for (int j = 0; j < 3; j++) {
@@ -545,6 +634,11 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
     LVector3f pos_delta = point_a._pos - point_b._pos;
     LVecBase3f hpr_delta = point_a._hpr - point_b._hpr;
 
+    if (deadrec_cat.is_spam()) {
+      deadrec_cat.spam()
+        << "   interp " << t << ": " << point_b._pos << " to " << point_a._pos
+        << "\n";
+    }
     set_smooth_pos(point_b._pos + t * pos_delta, 
                    point_b._hpr + t * hpr_delta, 
                    timestamp);
@@ -568,7 +662,11 @@ compute_velocity(const LVector3f &pos_delta, const LVecBase3f &hpr_delta,
     LMatrix3f rot_mat;
     compose_matrix(rot_mat, LVecBase3f(1.0, 1.0, 1.0), _smooth_hpr);
     _forward_axis = LVector3f(0.0, 1.0, 0.0) * rot_mat;
-    //cerr << "  compute forward_axis = " << _forward_axis << "\n";
+
+    if (deadrec_cat.is_spam()) {
+      deadrec_cat.spam()
+        << "  compute forward_axis = " << _forward_axis << "\n";
+    }
   }
    
   LVector3f lateral_axis = _forward_axis.cross(LVector3f(0.0,0.0,1.0));
@@ -580,7 +678,10 @@ compute_velocity(const LVector3f &pos_delta, const LVecBase3f &hpr_delta,
   _smooth_lateral_velocity = lateral_distance / age;
   _smooth_rotational_velocity = hpr_delta[0] / age;
 
-  //cerr << "  compute_velocity = " << _smooth_forward_velocity << "\n";
+  if (deadrec_cat.is_spam()) {
+    deadrec_cat.spam()
+      << "  compute_velocity = " << _smooth_forward_velocity << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
