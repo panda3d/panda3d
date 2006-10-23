@@ -40,7 +40,7 @@ has_model(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ModelPool::
 verify_model(const string &filename) {
-  return load_model(filename) != (PandaNode *)NULL;
+  return load_model(filename) != (ModelRoot *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,7 +52,7 @@ verify_model(const string &filename) {
 //               loaded, returns that one instead.  If the model
 //               file cannot be found, returns NULL.
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode *ModelPool::
+INLINE ModelRoot *ModelPool::
 load_model(const string &filename, const LoaderOptions &options) {
   return get_ptr()->ns_load_model(filename, options);
 }
@@ -66,7 +66,7 @@ load_model(const string &filename, const LoaderOptions &options) {
 //               same filename.
 ////////////////////////////////////////////////////////////////////
 INLINE void ModelPool::
-add_model(const string &filename, PandaNode *model) {
+add_model(const string &filename, ModelRoot *model) {
   get_ptr()->ns_add_model(filename, model);
 }
 

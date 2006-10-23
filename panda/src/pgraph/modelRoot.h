@@ -20,7 +20,7 @@
 #define MODELROOT_H
 
 #include "pandabase.h"
-
+#include "referenceCount.h"
 #include "modelNode.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -34,13 +34,27 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ModelRoot : public ModelNode {
 PUBLISHED:
-  INLINE ModelRoot(const string &name );
+  INLINE ModelRoot(const string &name);
+
+  INLINE int get_model_ref_count() const;
+
+  // This class is used to unify references to the same model.
+  class ModelReference : public ReferenceCount {
+  PUBLISHED:
+    INLINE ModelReference();
+  };
+
+  INLINE ModelReference *get_reference() const;
+  INLINE void set_reference(ModelReference *ref);
 
 protected:
   INLINE ModelRoot(const ModelRoot &copy);
 
 public:
   virtual PandaNode *make_copy() const;
+
+private:
+  PT(ModelReference) _reference;
 
 public:
   static void register_with_read_factory();

@@ -61,7 +61,7 @@ ns_has_model(const string &filename) {
 //       Access: Private
 //  Description: The nonstatic implementation of load_model().
 ////////////////////////////////////////////////////////////////////
-PandaNode *ModelPool::
+ModelRoot *ModelPool::
 ns_load_model(const string &filename, const LoaderOptions &options) {
   {
     MutexHolder holder(_lock);
@@ -78,11 +78,20 @@ ns_load_model(const string &filename, const LoaderOptions &options) {
   LoaderOptions new_options(options);
   new_options.set_flags(new_options.get_flags() | LoaderOptions::LF_no_ram_cache);
 
-  PT(PandaNode) node = model_loader.load_sync(filename, new_options);
-
-  if (node.is_null()) {
+  PT(PandaNode) panda_node = model_loader.load_sync(filename, new_options);
+  if (panda_node.is_null()) {
     // This model was not found.
-    return (PandaNode *)NULL;
+    return (ModelRoot *)NULL;
+  }
+
+  PT(ModelRoot) node;
+  if (panda_node->is_of_type(ModelRoot::get_class_type())) {
+    node = DCAST(ModelRoot, panda_node);
+
+  } else {
+    // We have to construct a ModelRoot node to put it under.
+    node = new ModelRoot(filename);
+    node->add_child(panda_node);
   }
 
   {
@@ -109,7 +118,7 @@ ns_load_model(const string &filename, const LoaderOptions &options) {
 //  Description: The nonstatic implementation of add_model().
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
-ns_add_model(const string &filename, PandaNode *model) {
+ns_add_model(const string &filename, ModelRoot *model) {
   MutexHolder holder(_lock);
   // We blow away whatever model was there previously, if any.
   _models[filename] = model;
@@ -155,8 +164,8 @@ ns_garbage_collect() {
 
   Models::iterator ti;
   for (ti = _models.begin(); ti != _models.end(); ++ti) {
-    PandaNode *node = (*ti).second;
-    if (node->get_ref_count() == 1) {
+    ModelRoot *node = (*ti).second;
+    if (node->get_model_ref_count() == 1) {
       if (loader_cat.is_debug()) {
         loader_cat.debug()
           << "Releasing " << (*ti).first << "\n";
@@ -184,7 +193,7 @@ ns_list_contents(ostream &out) const {
   Models::const_iterator ti;
   for (ti = _models.begin(); ti != _models.end(); ++ti) {
     out << "  " << (*ti).first
-        << " (count = " << (*ti).second->get_ref_count() << ")\n";
+        << " (count = " << (*ti).second->get_model_ref_count() << ")\n";
   }
 }
 
