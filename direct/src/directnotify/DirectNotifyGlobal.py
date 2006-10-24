@@ -3,4 +3,4 @@
 import DirectNotify
 
 directNotify = DirectNotify.DirectNotify()
-
+giveNotify = directNotify.giveNotify

@@ -120,3 +120,6 @@ class DirectNotify:
     def popupControls(self, tl = None):
         from direct.tkpanels import NotifyPanel
         NotifyPanel.NotifyPanel(self, tl)
+        
+    def giveNotify(self,cls):
+        cls.notify = self.newCategory(cls.__name__)

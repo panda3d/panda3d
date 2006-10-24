@@ -249,6 +249,7 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["run"] = self.run
         __builtins__["ostream"] = Notify.out()
         __builtins__["directNotify"] = directNotify
+        __builtins__["giveNotify"] = giveNotify
         __builtins__["globalClock"] = globalClock
         __builtins__["vfs"] = vfs
         __builtins__["cpMgr"] = ConfigPageManager.getGlobalPtr()
