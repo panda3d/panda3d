@@ -988,9 +988,11 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
                 dxgsg9_cat.debug() << "|||||cgD3D9ValidateVertexDeclaration succeeded\n";
               }
               else {
-                dxgsg9_cat.error() << "********************************************\n";
-                dxgsg9_cat.error() << "***cgD3D9ValidateVertexDeclaration failed***\n";
-                dxgsg9_cat.error() << "********************************************\n";
+                DBG_SH2
+                  dxgsg9_cat.error() << "********************************************\n";
+                  dxgsg9_cat.error() << "***cgD3D9ValidateVertexDeclaration failed***\n";
+                  dxgsg9_cat.error() << "********************************************\n";
+                DBG_E
               }
             }
             else {
