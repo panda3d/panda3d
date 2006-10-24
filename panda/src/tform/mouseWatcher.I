@@ -519,7 +519,7 @@ has_display_region() const {
 //               then wander away from the keyboard.
 //
 //               Also, when this timeout expires, the event specified
-//               by set_inactivity_timeout() will be generated.
+//               by set_inactivity_timeout_event() will be generated.
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcher::
 set_inactivity_timeout(double timeout) {
