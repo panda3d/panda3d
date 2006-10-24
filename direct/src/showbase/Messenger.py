@@ -395,9 +395,9 @@ class Messenger:
         # Print out the object: event dictionary too
         str += "="*64 + "\n"
         for object, eventDict in self.__objectEvents.items():
-            str += "%s:\n" % object
+            str += "%s:\n" % repr(object)
             for event in eventDict.keys():
-                str += "     %s\n" % event
+                str += "     %s\n" % repr(event)
 
         str += "="*64 + "\n" + "End of messenger info.\n"
         return str
