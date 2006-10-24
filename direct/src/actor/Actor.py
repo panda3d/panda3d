@@ -378,8 +378,10 @@ class Actor(DirectObject, NodePath):
             partDict = self.__animControlDict[lodName]
             partInfo = []
             for partName in partDict.keys():
-                truePartName = self.__subpartDict.get(partName, [partName])[0]
-                partBundle = self.__partBundleDict[lodName][truePartName].partBundle
+                subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+
+                partDef = partBundleDict.get(subpartDef.truePartName)
+                partBundle = partDef.partBundle
                 animDict = partDict[partName]
                 animInfo = []
                 for animName in animDict.keys():
@@ -869,8 +871,9 @@ class Actor(DirectObject, NodePath):
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
 
-        truePartName = self.__subpartDict.get(partName, [partName])[0]
-        partDef = partBundleDict.get(truePartName)
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+
+        partDef = partBundleDict.get(subpartDef.truePartName)
         if partDef:
             bundle = partDef.partBundle.node().getBundle()
         else:
@@ -903,8 +906,9 @@ class Actor(DirectObject, NodePath):
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
 
-        truePartName = self.__subpartDict.get(partName, [partName])[0]
-        partDef = partBundleDict.get(truePartName)
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+
+        partDef = partBundleDict.get(subpartDef.truePartName)
         if partDef:
             bundle = partDef.partBundle.node().getBundle()
         else:
@@ -937,8 +941,8 @@ class Actor(DirectObject, NodePath):
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
 
-        truePartName = self.__subpartDict.get(partName, [partName])[0]
-        partDef = partBundleDict.get(truePartName)
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+        partDef = partBundleDict.get(subpartDef.truePartName)
         if partDef:
             bundle = partDef.partBundle.node().getBundle()
         else:
@@ -970,8 +974,8 @@ class Actor(DirectObject, NodePath):
         Instance a nodePath to an actor part at a joint called jointName"""
         partBundleDict = self.__partBundleDict.get(lodName)
         if partBundleDict:
-            truePartName = self.__subpartDict.get(partName, [partName])[0]
-            partDef = partBundleDict.get(truePartName)
+            subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+            partDef = partBundleDict.get(subpartDef.truePartName)
             if partDef:
                 joint = partDef.partBundle.find("**/" + jointName)
                 if (joint.isEmpty()):
@@ -988,8 +992,8 @@ class Actor(DirectObject, NodePath):
         Attach one actor part to another at a joint called jointName"""
         partBundleDict = self.__partBundleDict.get(lodName)
         if partBundleDict:
-            truePartName = self.__subpartDict.get(partName, [partName])[0]
-            partDef = partBundleDict.get(truePartName)
+            subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+            partDef = partBundleDict.get(subpartDef.truePartName)
             if partDef:
                 anotherPartDef = partBundleDict.get(anotherPartName)
                 if anotherPartDef:
@@ -1255,8 +1259,8 @@ class Actor(DirectObject, NodePath):
                     bundles.append(partDef.partBundle.node().getBundle())
 
             else:
-                truePartName = self.__subpartDict.get(partName, [partName])[0]
-                partDef = bundleDict.get(truePartName)
+                subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+                partDef = partBundleDict.get(subpartDef.truePartName)
                 if partDef != None:
                     bundles.append(partDef.partBundle.node().getBundle())
                 else:
