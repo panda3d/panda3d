@@ -78,12 +78,6 @@ class Actor(DirectObject, NodePath):
 
         def makeCopy(self):
             return Actor.SubpartDef(self.truePartName, PartSubset(self.subset))
-
-        def __getitem__(self,index):
-            if(index==0):
-                return self.truePartName
-            else:
-                return None
             
         
         def __repr__(self):
@@ -781,7 +775,7 @@ class Actor(DirectObject, NodePath):
         if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
-        truePartName = self.__subpartDict.get(partName, [partName])[0]
+        truePartName = self.__subpartDict.get(partName, [partName]).truePartName
         partDef = partBundleDict.get(truePartName)
         if partDef != None:
             return partDef.partBundle
