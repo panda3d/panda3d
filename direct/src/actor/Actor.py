@@ -22,6 +22,66 @@ class Actor(DirectObject, NodePath):
                                        LoaderOptions.LFReportErrors |
                                        LoaderOptions.LFConvertAnim)
 
+    class PartDef:
+
+        """Instances of this class are stored within the
+        PartBundleDict to track all of the individual PartBundles
+        associated with the Actor.  In general, each separately loaded
+        model file is a different PartBundle.  This can include the
+        multiple different LOD's, as well as the multiple different
+        pieces of a multipart Actor. """
+        
+        def __init__(self, partBundle, partModel):
+            # We also save the ModelRoot node along with the
+            # PartBundle, so that the reference count in the ModelPool
+            # will be accurate.
+            self.partBundle = partBundle
+            self.partModel = partModel
+
+        def __repr__(self):
+            return 'Actor.PartDef(%s, %s)' % (repr(self.partBundle), repr(self.partModel))
+
+    class AnimDef:
+
+        """Instances of this class are stored within the
+        AnimControlDict to track all of the animations associated with
+        the Actor.  This includes animations that have already been
+        bound (these have a valid AnimControl) as well as those that
+        have not yet been bound (for these, self.animControl is None).
+
+        There is a different AnimDef for each different part or
+        sub-part, times each different animation in the AnimDict. """
+        
+        def __init__(self, filename):
+            self.filename = filename
+            self.animModel = None
+            self.animControl = None
+
+        def makeCopy(self):
+            return Actor.AnimDef(self.filename)
+
+        def __repr__(self):
+            return 'Actor.AnimDef(%s)' % (repr(self.filename))
+
+    class SubpartDef:
+
+        """Instances of this class are stored within the SubpartDict
+        to track the existance of arbitrary sub-parts.  These are
+        designed to appear to the user to be identical to true "part"
+        of a multi-part Actor, but in fact each subpart represents a
+        subset of the joints of an existing part (which is accessible
+        via a different name). """
+
+        def __init__(self, truePartName, subset = PartSubset()):
+            self.truePartName = truePartName
+            self.subset = subset
+
+        def makeCopy(self):
+            return Actor.SubpartDef(self.truePartName, PartSubset(self.subset))
+
+        def __repr__(self):
+            return 'Actor.SubpartDef(%s, %s)' % (repr(self.truePartName), repr(self.subset))
+
     def __init__(self, models=None, anims=None, other=None, copy=1,
                  lodNode = None):
         """__init__(self, string | string:string{}, string:string{} |
@@ -226,7 +286,7 @@ class Actor(DirectObject, NodePath):
 
             # copy the scene graph elements of other
             if (overwrite):
-                otherCopy = other.copyTo(hidden)
+                otherCopy = other.copyTo(NodePath())
                 otherCopy.detachNode()
                 # assign these elements to ourselve (overwrite)
                 self.assign(otherCopy)
@@ -266,8 +326,8 @@ class Actor(DirectObject, NodePath):
         """
         Actor print function
         """
-        return "Actor: partBundleDict = %s,\n animControlDict = %s" % \
-               (self.__partBundleDict, self.__animControlDict)
+        return "Actor %s, parts = %s, LODs = %s, anims = %s" % \
+               (self.getName(), self.getPartNames(), self.getLODNames(), self.getAnimNames())
 
     def listJoints(self, partName="modelRoot", lodName="lodRoot"):
         """Handy utility function to list the joint hierarchy of the
@@ -277,18 +337,14 @@ class Actor(DirectObject, NodePath):
         if not partBundleDict:
             Actor.notify.error("no lod named: %s" % (lodName))
 
-        truePartName = partName
-        subset = PartSubset()
-        subpartDef = self.__subpartDict.get(partName)
-        if subpartDef:
-            truePartName, subset = subpartDef
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
 
-        bundle = partBundleDict.get(truePartName)
-        if bundle == None:
+        partDef = partBundleDict.get(subpartDef.truePartName)
+        if partDef == None:
             Actor.notify.error("no part named: %s" % (partName))
 
-        self.__doListJoints(0, bundle.node().getBundle(),
-                            subset.isIncludeEmpty(), subset)
+        self.__doListJoints(0, partDef.partBundle.node().getBundle(),
+                            subset.isIncludeEmpty(), subpartDef.subset)
 
     def __doListJoints(self, indentLevel, part, isIncluded, subset):
         name = part.getName()
@@ -322,12 +378,12 @@ class Actor(DirectObject, NodePath):
             partInfo = []
             for partName in partDict.keys():
                 truePartName = self.__subpartDict.get(partName, [partName])[0]
-                partBundle = self.__partBundleDict[lodName][truePartName]
+                partBundle = self.__partBundleDict[lodName][truePartName].partBundle
                 animDict = partDict[partName]
                 animInfo = []
                 for animName in animDict.keys():
-                    file = animDict[animName][0]
-                    animControl = animDict[animName][1]
+                    file = animDict[animName].filename
+                    animControl = animDict[animName].animControl
                     animInfo.append([animName, file, animControl])
                 partInfo.append([partName, partBundle, animInfo])
             lodInfo.append([lodName, partInfo])
@@ -563,10 +619,10 @@ class Actor(DirectObject, NodePath):
     def update(self, lod=0):
         lodnames = self.getLODNames()
         if (lod < len(lodnames)):
-            partBundles = self.__partBundleDict[lodnames[lod]].values()
-            for partBundle in partBundles:
+            partDefs = self.__partBundleDict[lodnames[lod]].values()
+            for partDef in partDefs:
                 # print "updating: %s" % (partBundle.node())
-                partBundle.node().updateToNow()
+                partDef.partBundle.node().updateToNow()
         else:
             self.notify.warning('update() - no lod: %d' % lod)
 
@@ -675,7 +731,7 @@ class Actor(DirectObject, NodePath):
 
         # loop through all anims for named part and find if any are playing
         for animName, anim in animDict.items():
-            if isinstance(anim[1], AnimControl) and anim[1].isPlaying():
+            if isinstance(anim.animControl, AnimControl) and anim.animControl.isPlaying():
                 return animName
 
         # we must have found none, or gotten an error
@@ -700,8 +756,8 @@ class Actor(DirectObject, NodePath):
 
         # loop through all anims for named part and find if any are playing
         for animName, anim in animDict.items():
-            if isinstance(anim[1], AnimControl) and anim[1].isPlaying():
-                return anim[1].getFrame()
+            if isinstance(anim.animControl, AnimControl) and anim.animControl.isPlaying():
+                return anim.animControl.getFrame()
 
         # we must have found none, or gotten an error
         return None
@@ -719,7 +775,10 @@ class Actor(DirectObject, NodePath):
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
         truePartName = self.__subpartDict.get(partName, [partName])[0]
-        return partBundleDict.get(truePartName)
+        partDef = partBundleDict.get(truePartName)
+        if partDef != None:
+            return partDef.partBundle
+        return None
 
     def removePart(self, partName, lodName="lodRoot"):
         """
@@ -735,7 +794,7 @@ class Actor(DirectObject, NodePath):
 
         # remove the part
         if (partBundleDict.has_key(partName)):
-            partBundleDict[partName].removeNode()
+            partBundleDict[partName].partBundle.removeNode()
             del(partBundleDict[partName])
 
         # find the corresponding anim control dict
@@ -758,9 +817,9 @@ class Actor(DirectObject, NodePath):
         if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return
-        part = partBundleDict.get(partName)
-        if part:
-            part.hide()
+        partDef = partBundleDict.get(partName)
+        if partDef:
+            partDef.partBundle.hide()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
 
@@ -773,9 +832,9 @@ class Actor(DirectObject, NodePath):
         if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return
-        part = partBundleDict.get(partName)
-        if part:
-            part.show()
+        partDef = partBundleDict.get(partName)
+        if partDef:
+            partDef.partBundle.show()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
 
@@ -788,10 +847,10 @@ class Actor(DirectObject, NodePath):
         if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return
-        part = partBundleDict.get(partName)
-        if part:
-            part.show()
-            part.getChildren().show()
+        partDef = partBundleDict.get(partName)
+        if partDef:
+            partDef.partBundle.show()
+            partDef.partBundle.getChildren().show()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
 
@@ -810,9 +869,9 @@ class Actor(DirectObject, NodePath):
             return None
 
         truePartName = self.__subpartDict.get(partName, [partName])[0]
-        part = partBundleDict.get(truePartName)
-        if part:
-            bundle = part.node().getBundle()
+        partDef = partBundleDict.get(truePartName)
+        if partDef:
+            bundle = partDef.partBundle.node().getBundle()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             return None
@@ -844,9 +903,9 @@ class Actor(DirectObject, NodePath):
             return None
 
         truePartName = self.__subpartDict.get(partName, [partName])[0]
-        part = partBundleDict.get(truePartName)
-        if part:
-            bundle = part.node().getBundle()
+        partDef = partBundleDict.get(truePartName)
+        if partDef:
+            bundle = partDef.partBundle.node().getBundle()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             return None
@@ -878,9 +937,9 @@ class Actor(DirectObject, NodePath):
             return None
 
         truePartName = self.__subpartDict.get(partName, [partName])[0]
-        part = partBundleDict.get(truePartName)
+        partDef = partBundleDict.get(truePartName)
         if part:
-            bundle = part.node().getBundle()
+            bundle = partDef.partBundle.node().getBundle()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             return None
@@ -911,9 +970,9 @@ class Actor(DirectObject, NodePath):
         partBundleDict = self.__partBundleDict.get(lodName)
         if partBundleDict:
             truePartName = self.__subpartDict.get(partName, [partName])[0]
-            part = partBundleDict.get(truePartName)
-            if part:
-                joint = part.find("**/" + jointName)
+            partDef = partBundleDict.get(truePartName)
+            if partDef:
+                joint = partDef.partBundle.find("**/" + jointName)
                 if (joint.isEmpty()):
                     Actor.notify.warning("%s not found!" % (jointName))
                 else:
@@ -929,15 +988,15 @@ class Actor(DirectObject, NodePath):
         partBundleDict = self.__partBundleDict.get(lodName)
         if partBundleDict:
             truePartName = self.__subpartDict.get(partName, [partName])[0]
-            part = partBundleDict.get(truePartName)
-            if part:
-                anotherPart = partBundleDict.get(anotherPartName)
-                if anotherPart:
-                    joint = anotherPart.find("**/" + jointName)
+            partDef = partBundleDict.get(truePartName)
+            if partDef:
+                anotherPartDef = partBundleDict.get(anotherPartName)
+                if anotherPartDef:
+                    joint = anotherPartDef.partBundle.find("**/" + jointName)
                     if (joint.isEmpty()):
                         Actor.notify.warning("%s not found!" % (jointName))
                     else:
-                        part.reparentTo(joint)
+                        partDef.partBundle.reparentTo(joint)
                 else:
                     Actor.notify.warning("no part named %s!" % (anotherPartName))
             else:
@@ -1191,14 +1250,14 @@ class Actor(DirectObject, NodePath):
         
         for lodName, bundleDict in self.__partBundleDict.items():
             if partName == None:
-                for partBundle in bundleDict.values():
-                    bundles.append(partBundle.node().getBundle())
+                for partDef in bundleDict.values():
+                    bundles.append(partDef.partBundle.node().getBundle())
 
             else:
                 truePartName = self.__subpartDict.get(partName, [partName])[0]
-                partBundle = bundleDict.get(truePartName)
-                if partBundle != None:
-                    bundles.append(partBundle.node().getBundle())
+                partDef = bundleDict.get(truePartName)
+                if partDef != None:
+                    bundles.append(partDef.partBundle.node().getBundle())
                 else:
                     Actor.notify.warning("Couldn't find part: %s" % (partName))
 
@@ -1269,9 +1328,9 @@ class Actor(DirectObject, NodePath):
                 pass
             else:
                 # bind the animation first if we need to
-                if not isinstance(anim[1], AnimControl):
+                if not isinstance(anim.animControl, AnimControl):
                     self.__bindAnimToPart(animName, partName, lodName)
-                return anim[1]
+                return anim.animControl
 
         return None
 
@@ -1345,8 +1404,8 @@ class Actor(DirectObject, NodePath):
                 # get all playing animations
                 for thisPart, animDict in animDictItems:
                     for anim in animDict.values():
-                        if isinstance(anim[1], AnimControl) and anim[1].isPlaying():
-                            controls.append(anim[1])
+                        if isinstance(anim.animControl, AnimControl) and anim.animControl.isPlaying():
+                            controls.append(anim.animControl)
             else:
                 # get the named animation only.
                 for thisPart, animDict in animDictItems:
@@ -1356,10 +1415,10 @@ class Actor(DirectObject, NodePath):
                             # Maybe it's a subpart that hasn't been bound yet.
                             subpartDef = self.__subpartDict.get(pName)
                             if subpartDef:
-                                truePartName = subpartDef[0]
+                                truePartName = subpartDef.truePartName
                                 anim = partDict[truePartName].get(animName)
                                 if anim:
-                                    anim = [anim[0], None]
+                                    anim = anim.makeCopy()
                                     animDict[animName] = anim
 
                     if anim == None:
@@ -1368,7 +1427,7 @@ class Actor(DirectObject, NodePath):
                         pass
                     else:
                         # bind the animation first if we need to
-                        animControl = anim[1]
+                        animControl = anim.animControl
                         if animControl == None:
                             animControl = self.__bindAnimToPart(animName, thisPart, lodName)
                         if animControl:
@@ -1392,27 +1451,31 @@ class Actor(DirectObject, NodePath):
             # If we got a NodePath instead of a string, use *that* as
             # the model directly.
             if (copy):
-                model = modelPath.copyTo(hidden)
+                model = modelPath.copyTo(NodePath())
             else:
                 model = modelPath
         else:
             # otherwise, we got the name of the model to load.
-            if (copy):
-                # We can't pass loaderOptions to loadModelCopy.
-                model = loader.loadModelCopy(modelPath)
-            else:
-                # But if we're loading our own copy of the model, we
-                # can pass loaderOptions to specify that we want to
-                # get the skeleton model.  This only matters to model
-                # files (like .mb) for which we can choose to extract
-                # either the skeleton or animation, or neither.
-                model = loader.loadModel(modelPath,
-                                         loaderOptions = self.modelLoaderOptions)
+            loaderOptions = self.modelLoaderOptions
+            if not copy:
+                # If copy = 0, then we should always hit the disk.
+                loaderOptions = LoaderOptions(loaderOptions)
+                loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFNoRamCache)
+            
+            # Pass loaderOptions to specify that we want to
+            # get the skeleton model.  This only matters to model
+            # files (like .mb) for which we can choose to extract
+            # either the skeleton or animation, or neither.
+            model = loader.loadModel(modelPath, loaderOptions = loaderOptions)
 
         if (model == None):
             raise StandardError, "Could not load Actor model %s" % (modelPath)
 
-        bundle = model.find("**/+PartBundleNode")
+        if (model.node().isOfType(PartBundleNode.getClassType())):
+            bundle = model
+        else:
+            bundle = model.find("**/+PartBundleNode")
+            
         if (bundle.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))
             model.reparentTo(self.__geomNode)
@@ -1426,7 +1489,7 @@ class Actor(DirectObject, NodePath):
 
             # Now extract out the PartBundleNode and integrate it with
             # the Actor.
-            self.prepareBundle(bundle, partName, lodName)
+            self.__prepareBundle(bundle, model, partName, lodName)
 
             if numAnims != 0:
                 # If the model had some animations, store them in the
@@ -1446,9 +1509,8 @@ class Actor(DirectObject, NodePath):
                     # animControl, but put None in for the filename.
                     self.__animControlDict[lodName][partName][animName] = [None, animControl]
 
-            model.removeNode()
-
-    def prepareBundle(self, bundle, partName="modelRoot", lodName="lodRoot"):
+    def __prepareBundle(self, bundle, model,
+                        partName="modelRoot", lodName="lodRoot"):
         assert partName not in self.__subpartDict
 
         # Rename the node at the top of the hierarchy, if we
@@ -1469,20 +1531,17 @@ class Actor(DirectObject, NodePath):
             needsDict = 0
 
         if (lodName!="lodRoot"):
-            # instance to appropriate node under LOD switch
-            #bundle = bundle.instanceTo(
-            #    self.__LODNode.find("**/" + str(lodName)))
+            # parent to appropriate node under LOD switch
             bundle.reparentTo(self.__LODNode.find("**/" + str(lodName)))
         else:
-            #bundle = bundle.instanceTo(self.__geomNode)
             bundle.reparentTo(self.__geomNode)
 
         if (needsDict):
-            bundleDict[partName] = bundle
+            bundleDict[partName] = Actor.PartDef(bundle, model.node())
             self.__partBundleDict[lodName] = bundleDict
             self.__updateSortedLODNames()
         else:
-            self.__partBundleDict[lodName][partName] = bundle
+            self.__partBundleDict[lodName][partName] = Actor.PartDef(bundle, model.node())
 
     def makeSubpart(self, partName, includeJoints, excludeJoints = [],
                     parent="modelRoot"):
@@ -1513,19 +1572,15 @@ class Actor(DirectObject, NodePath):
 
         assert partName not in self.__subpartDict
 
-        truePartName = partName
-        prevSubset = PartSubset()
-        subpartDef = self.__subpartDict.get(partName)
-        if subpartDef:
-            truePartName, subset = subpartDef
+        subpartDef = self.__subpartDict.get(parent, Actor.SubpartDef(''))
 
-        subset = PartSubset(prevSubset)
+        subset = PartSubset(subpartDef.subset)
         for name in includeJoints:
             subset.addIncludeJoint(GlobPattern(name))
         for name in excludeJoints:
             subset.addExcludeJoint(GlobPattern(name))
 
-        self.__subpartDict[partName] = (parent, subset)
+        self.__subpartDict[partName] = Actor.SubpartDef(parent, subset)
 
     def setSubpartsComplete(self, flag):
 
@@ -1567,13 +1622,14 @@ class Actor(DirectObject, NodePath):
         assert Actor.notify.debug("in loadAnims: %s, part: %s, lod: %s" %
                                   (anims, partName, lodName))
 
-        for animName in anims.keys():
+        for animName, filename in anims.items():
             # make sure this lod is in anim control dict
             self.__animControlDict.setdefault(lodName, {})
             self.__animControlDict[lodName].setdefault(partName, {})
-            # store the file path and None in place of the animControl.
-            # we will bind it only when played
-            self.__animControlDict[lodName][partName][animName] = [anims[animName], None]
+
+            # store the file path only; we will bind it (and produce
+            # an AnimControl) when it is played
+            self.__animControlDict[lodName][partName][animName] = Actor.AnimDef(filename)
 
 
     def unloadAnims(self, anims, partName="modelRoot", lodName="lodRoot"):
@@ -1612,15 +1668,14 @@ class Actor(DirectObject, NodePath):
                 for animName in anims:
                     # delete the anim control
                     try:
-                        animControlPair = self.__animControlDict[lodName][partName][animName]
-                        if animControlPair[1] != None:
+                        animDef = self.__animControlDict[lodName][partName][animName]
+                        if animDef.animControl != None:
                             # Try to clear any control effects before we let
                             # our handle on them go. This is especially
                             # important if the anim control was blending
                             # animations.
-                            animControlPair[1].getPart().clearControlEffects()
-                            del(animControlPair[1])
-                            animControlPair.append(None)
+                            animDef.animControl.getPart().clearControlEffects()
+                            animDef.animControl = None
                     except:
                         return
 
@@ -1649,12 +1704,7 @@ class Actor(DirectObject, NodePath):
         for internal use only!
         """
         # make sure this anim is in the dict
-        subpartDef = self.__subpartDict.get(partName)
-        truePartName = partName
-        subset = PartSubset()
-        if subpartDef:
-            truePartName, subset = subpartDef
-
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
 
         partDict = self.__animControlDict[lodName]
         animDict = partDict.get(partName)
@@ -1666,31 +1716,32 @@ class Actor(DirectObject, NodePath):
         anim = animDict.get(animName)
         if anim == None:
             # It must be a subpart that hasn't been bound yet.
-            if subpartDef != None:
-                anim = partDict[truePartName].get(animName)
-                anim = [anim[0], None]
-                animDict[animName] = anim
+            anim = partDict[subpartDef.truePartName].get(animName)
+            anim = anim.makeCopy()
+            animDict[animName] = anim
 
         if anim == None:
             Actor.notify.error("actor has no animation %s", animName)
 
         # only bind if not already bound!
-        if anim[1]:
-            return anim[1]
+        if anim.animControl:
+            return anim.animControl
 
         # fetch a copy from the modelPool, or if we weren't careful
         # enough to preload, fetch from disk
-        animPath = anim[0]
-        if self.__autoCopy:
-            animNode = loader.loadModelOnce(animPath)
-        else:
-            animNode = loader.loadModel(animPath,
-                                        loaderOptions = self.animLoaderOptions)
+        animPath = anim.filename
+        loaderOptions = self.animLoaderOptions
+        if not self.__autoCopy:
+            # If copy = 0, then we should always hit the disk.
+            loaderOptions = LoaderOptions(loaderOptions)
+            loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFNoRamCache)
+            
+        animNode = loader.loadModel(animPath, loaderOptions = loaderOptions)
         if animNode == None:
             return None
         animBundle = (animNode.find("**/+AnimBundleNode").node()).getBundle()
 
-        bundle = self.__partBundleDict[lodName][truePartName].node().getBundle()
+        bundle = self.__partBundleDict[lodName][subpartDef.truePartName].partBundle.node().getBundle()
 
         # Are there any controls requested for joints in this bundle?
         # If so, apply them.
@@ -1706,13 +1757,13 @@ class Actor(DirectObject, NodePath):
                         Actor.notify.error("controlled joint %s is not present" % jointName)
 
         # bind anim
-        animControl = bundle.bindAnim(animBundle, -1, subset)
+        animControl = bundle.bindAnim(animBundle, -1, subpartDef.subset)
 
         if (animControl == None):
             Actor.notify.error("Null AnimControl: %s" % (animName))
         else:
             # store the animControl
-            anim[1] = animControl
+            anim.animControl = animControl
             assert Actor.notify.debug("binding anim: %s to part: %s, lod: %s" %
                                       (animName, partName, lodName))
         return animControl
@@ -1733,14 +1784,14 @@ class Actor(DirectObject, NodePath):
             if partLod.isEmpty():
                 Actor.notify.warning("no lod named: %s" % (lodName))
                 return None
-            for partName in other.__partBundleDict[lodName].keys():
+            for partName, partDef in other.__partBundleDict[lodName].items():
+                model = partDef.partModel.copySubgraph()
+                
                 # find the part in our tree
-                #partBundle = self.find("**/" + Actor.partPrefix + partName)
-                # Asad: changed above line to below
                 partBundle = partLod.find("**/" + Actor.partPrefix + partName)
                 if (partBundle != None):
                     # store the part bundle
-                    self.__partBundleDict[lodName][partName] = partBundle
+                    self.__partBundleDict[lodName][partName] = Actor.PartDef(partBundle, model)
                 else:
                     Actor.notify.error("lod: %s has no matching part: %s" %
                                        (lodName, partName))
@@ -1755,8 +1806,7 @@ class Actor(DirectObject, NodePath):
         for partName, subpartDef in other.__subpartDict.items():
             subpartDefCopy = subpartDef
             if subpartDef:
-                truePartName, subset = subpartDef
-                subpartDefCopy = (truePartName, PartSubset(subset))
+                subpartDef = subpartDef.makeCopy()
             self.__subpartDict[partName] = subpartDef
 
     def __copyAnimControls(self, other):
@@ -1770,9 +1820,10 @@ class Actor(DirectObject, NodePath):
             for partName in other.__animControlDict[lodName].keys():
                 self.__animControlDict[lodName][partName] = {}
                 for animName in other.__animControlDict[lodName][partName].keys():
-                    # else just copy what's there
-                    self.__animControlDict[lodName][partName][animName] = \
-                        [other.__animControlDict[lodName][partName][animName][0], None]
+                    anim = other.__animControlDict[lodName][partName][animName]
+                    anim = anim.makeCopy()
+                    self.__animControlDict[lodName][partName][animName] = anim
+
 
     def actorInterval(self, *args, **kw):
         from direct.interval import ActorInterval
