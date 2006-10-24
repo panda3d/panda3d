@@ -775,8 +775,8 @@ class Actor(DirectObject, NodePath):
         if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
-        truePartName = self.__subpartDict.get(partName, [partName]).truePartName
-        partDef = partBundleDict.get(truePartName)
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+        partDef = partBundleDict.get(subpartDef.truePartName)
         if partDef != None:
             return partDef.partBundle
         return None
