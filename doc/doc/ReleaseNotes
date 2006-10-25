@@ -1,3 +1,23 @@
+------------------------  RELEASE 1.3.0  ------------------------
+
+This release contains several new features, and as such, it might be
+buggy.  However, we've been testing it internally for a couple weeks,
+and it seems to be okay.  It contains the following new features:
+
+* Stencil buffers and stencil operations now supported.
+* Sound API now supports DSP and better support for large MP3s.
+* Video uses FFMPEG instead of DirectShow - no more codec issues.
+* Heightfield terrain.
+* Support for intra-frame animation interpolation.
+* Use of 'import *' now only imports correct symbols.
+* Various minor improvements to the particle system.
+* Scene editor at least partially operational (alpha level)
+* Removed most of the 65,536 vertex-per-mesh limits.
+* Various low-level optimizations.
+* Support for threaded model loads (only in CVS, not in distro).
+* Support for 'model-cache-dir', which caches a BAM each time you load an EGG.
+* OnscreenText/DirectLabel can contain embedded 3D models inside the text.
+
 ------------------------  RELEASE 1.2.3  ------------------------
 
 The last release was a disaster:
