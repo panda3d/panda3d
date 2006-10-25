@@ -77,7 +77,7 @@ public:
   static void init_type() {
     ReferenceCount::init_type();
     register_type(_type_handle, "ShaderInput",
-                  ReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
