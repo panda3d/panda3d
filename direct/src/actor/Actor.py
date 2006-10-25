@@ -379,7 +379,7 @@ class Actor(DirectObject, NodePath):
             partInfo = []
             for partName in partDict.keys():
                 subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
-
+                partBundleDict = self.__partBundleDict.get(lodName)
                 partDef = partBundleDict.get(subpartDef.truePartName)
                 partBundle = partDef.partBundle
                 animDict = partDict[partName]
