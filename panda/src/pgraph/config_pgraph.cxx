@@ -259,21 +259,21 @@ ConfigVariableBool m_dual_flash
 ("m-dual-flash", false,
  PRC_DESC("Set this true to flash any objects that use M_dual, for debugging."));
 
-
-ConfigVariableBool asynchronous_loads
-("asynchronous-loads", false,
- PRC_DESC("Set this true to support actual asynchronous loads via the "
-          "request_load()/fetch_load() interface to Loader.  Set it false to "
-          "map these to blocking, synchronous loads instead.  Currently, the "
-          "rest of Panda isn't quite ready for asynchronous loads, so leave "
-          "this false for now."));
-
 ConfigVariableList load_file_type
 ("load-file-type",
  PRC_DESC("List the model loader modules that Panda will automatically "
           "import when a new, unknown model type is loaded.  This may be "
           "either the name of a module, or a space-separate list of filename "
           "extensions, followed by the name of the module."));
+
+ConfigVariableString default_model_extension
+("default-model-extension", "",
+ PRC_DESC("This specifies the filename extension (with leading dot) that "
+          "should be assumed if an attempt is made to load a filename that "
+          "has no extension.  This is primarily designed to support legacy "
+          "code that used the now-deprecated implicit-extension feature of "
+          "Panda's loader; new code should probably give the correct name "
+          "for each model file they intend to load."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraph

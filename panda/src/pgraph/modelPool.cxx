@@ -76,7 +76,8 @@ ns_load_model(const string &filename, const LoaderOptions &options) {
   loader_cat.info()
     << "Loading model " << filename << "\n";
   LoaderOptions new_options(options);
-  new_options.set_flags(new_options.get_flags() | LoaderOptions::LF_no_ram_cache);
+  new_options.set_flags((new_options.get_flags() | LoaderOptions::LF_no_ram_cache) &
+                        ~LoaderOptions::LF_search);
 
   PT(PandaNode) panda_node = model_loader.load_sync(filename, new_options);
   if (panda_node.is_null()) {
@@ -93,6 +94,7 @@ ns_load_model(const string &filename, const LoaderOptions &options) {
     node = new ModelRoot(filename);
     node->add_child(panda_node);
   }
+  node->set_fullpath(filename);
 
   {
     MutexHolder holder(_lock);
@@ -134,6 +136,33 @@ ns_release_model(const string &filename) {
   MutexHolder holder(_lock);
   Models::iterator ti;
   ti = _models.find(filename);
+  if (ti != _models.end()) {
+    _models.erase(ti);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelPool::ns_add_model
+//       Access: Private
+//  Description: The nonstatic implementation of add_model().
+////////////////////////////////////////////////////////////////////
+void ModelPool::
+ns_add_model(ModelRoot *model) {
+  MutexHolder holder(_lock);
+  // We blow away whatever model was there previously, if any.
+  _models[model->get_fullpath()] = model;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelPool::ns_release_model
+//       Access: Private
+//  Description: The nonstatic implementation of release_model().
+////////////////////////////////////////////////////////////////////
+void ModelPool::
+ns_release_model(ModelRoot *model) {
+  MutexHolder holder(_lock);
+  Models::iterator ti;
+  ti = _models.find(model->get_fullpath());
   if (ti != _models.end()) {
     _models.erase(ti);
   }

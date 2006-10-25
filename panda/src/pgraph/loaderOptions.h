@@ -39,6 +39,8 @@ PUBLISHED:
     LF_no_disk_cache     = 0x0010,  // disallow BamCache
     LF_no_ram_cache      = 0x0020,  // disallow ModelPool
     LF_no_cache          = 0x0030,  // no_disk + no_ram
+    LF_cache_only        = 0x0040,  // fail if not in cache
+    LF_allow_instance    = 0x0080,  // returned pointer might be shared
   };
 
   INLINE LoaderOptions(int flags = LF_search | LF_report_errors);
@@ -47,9 +49,6 @@ PUBLISHED:
 
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;
-
-  INLINE bool get_allow_disk_cache() const;
-  INLINE bool get_allow_ram_cache() const;
 
   void output(ostream &out) const;
 

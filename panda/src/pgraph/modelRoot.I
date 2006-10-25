@@ -25,6 +25,7 @@
 INLINE ModelRoot::
 ModelRoot(const string &name) :
   ModelNode(name),
+  _fullpath(name),
   _reference(new ModelRoot::ModelReference)
 {
 }
@@ -43,6 +44,37 @@ ModelRoot(const string &name) :
 INLINE int ModelRoot::
 get_model_ref_count() const {
   return _reference->get_ref_count();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelRoot::get_fullpath
+//       Access: Published
+//  Description: Returns the full pathname of the model represented by
+//               this node, as found on disk.  This is mainly useful
+//               for reference purposes, but is also used to index the
+//               ModelRoot into the ModelPool.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &ModelRoot::
+get_fullpath() const {
+  return _fullpath;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelRoot::set_fullpath
+//       Access: Published
+//  Description: Sets the full pathname of the model represented by
+//               this node, as found on disk.  This is mainly useful
+//               for reference purposes, but is also used to index the
+//               ModelRoot into the ModelPool.
+//
+//               This is normally set automatically when a model is
+//               loaded, and should not be set directly by the user.
+//               If you change this on a loaded model, then
+//               ModelPool::release_model() may fail.
+////////////////////////////////////////////////////////////////////
+INLINE void ModelRoot::
+set_fullpath(const Filename &fullpath) {
+  _fullpath = fullpath;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,6 +113,7 @@ set_reference(ModelRoot::ModelReference *ref) {
 INLINE ModelRoot::
 ModelRoot(const ModelRoot &copy) :
   ModelNode(copy),
+  _fullpath(copy._fullpath),
   _reference(copy._reference)
 {
 }

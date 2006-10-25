@@ -198,12 +198,38 @@ class Loader(DirectObject):
 
         return model
 
-    def unloadModel(self, modelPath):
+    def unloadModel(self, model):
         """
-        modelPath is a string.
+        model is the return value of loadModel().  For backward
+        compatibility, it may also be the filename that was passed to
+        loadModel(), though this requires a disk search.
         """
-        assert Loader.notify.debug("Unloading model: %s" % (modelPath))
-        ModelPool.releaseModel(modelPath)
+        if isinstance(model, NodePath):
+            # Maybe we were given a NodePath
+            modelNode = model.node()
+
+        elif isinstance(model, ModelNode):
+            # Maybe we were given a node
+            modelNode = model
+
+        elif isinstance(model, types.StringTypes) or \
+             isinstance(model, Filename):
+            # If we were given a filename, we have to ask the loader
+            # to resolve it for us.
+            options = LoaderOptions(LoaderOptions.LFSearch | LoaderOptions.LFNoDiskCache | LoaderOptions.LFCacheOnly)
+            modelNode = self.loader.loadSync(Filename(model), options)
+            if modelNode == None:
+                # Model not found.
+                assert Loader.notify.debug("Unloading model not loaded: %s" % (model))
+                return
+
+            assert Loader.notify.debug("%s resolves to %s" % (model, modelNode.getFullpath()))
+
+        else:
+            raise 'Invalid parameter to unloadModel: %s' % (model)
+
+        assert Loader.notify.debug("Unloading model: %s" % (modelNode.getFullpath()))
+        ModelPool.releaseModel(modelNode)
 
     # font loading funcs
     def loadFont(self, modelPath,

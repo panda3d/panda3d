@@ -38,6 +38,9 @@ PUBLISHED:
 
   INLINE int get_model_ref_count() const;
 
+  INLINE const Filename &get_fullpath() const;
+  INLINE void set_fullpath(const Filename &fullpath);
+
   // This class is used to unify references to the same model.
   class ModelReference : public ReferenceCount {
   PUBLISHED:
@@ -45,7 +48,7 @@ PUBLISHED:
   };
 
   INLINE ModelReference *get_reference() const;
-  INLINE void set_reference(ModelReference *ref);
+  void set_reference(ModelReference *ref);
 
 protected:
   INLINE ModelRoot(const ModelRoot &copy);
@@ -54,6 +57,7 @@ public:
   virtual PandaNode *make_copy() const;
 
 private:
+  Filename _fullpath;
   PT(ModelReference) _reference;
 
 public:

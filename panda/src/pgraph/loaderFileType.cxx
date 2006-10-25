@@ -28,6 +28,12 @@ TypeHandle LoaderFileType::_type_handle;
 ////////////////////////////////////////////////////////////////////
 LoaderFileType::
 LoaderFileType() {
+  // Derived LoaderFileType classes that return a different result
+  // based on the setting of certain LoaderOptions flags (like
+  // LF_convert_anim) should set those bits in the following bitmask,
+  // so that we will not inadvertently cache a model without
+  // respecting these flags.
+  _no_cache_flags = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,6 +67,30 @@ get_additional_extensions() const {
 bool LoaderFileType::
 supports_compressed() const {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileType::get_allow_disk_cache
+//       Access: Published, Virtual
+//  Description: Returns true if the loader flags allow retrieving the
+//               model from the on-disk bam cache (if it is enabled),
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool LoaderFileType::
+get_allow_disk_cache(const LoaderOptions &options) const {
+  return (options.get_flags() & (LoaderOptions::LF_no_disk_cache | _no_cache_flags)) == 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileType::get_allow_ram_cache
+//       Access: Published
+//  Description: Returns true if the loader flags allow retrieving the
+//               model from the in-memory ModelPool cache, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool LoaderFileType::
+get_allow_ram_cache(const LoaderOptions &options) const {
+  return (options.get_flags() & (LoaderOptions::LF_no_ram_cache | _no_cache_flags)) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////

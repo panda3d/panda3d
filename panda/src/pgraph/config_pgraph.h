@@ -61,9 +61,8 @@ extern ConfigVariableBool m_dual_opaque;
 extern ConfigVariableBool m_dual_transparent;
 extern ConfigVariableBool m_dual_flash;
 
-extern ConfigVariableBool asynchronous_loads;
-
 extern ConfigVariableList load_file_type;
+extern ConfigVariableString default_model_extension;
 
 extern EXPCL_PANDA void init_libpgraph();
 

@@ -50,9 +50,15 @@ PUBLISHED:
   virtual string get_additional_extensions() const;
   virtual bool supports_compressed() const;
 
+  virtual bool get_allow_disk_cache(const LoaderOptions &options) const;
+  virtual bool get_allow_ram_cache(const LoaderOptions &options) const;
+
 public:
   virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options,
                                   BamCacheRecord *record) const;
+
+protected:
+  int _no_cache_flags;
 
 public:
   static TypeHandle get_class_type() {

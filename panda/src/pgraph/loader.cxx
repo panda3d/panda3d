@@ -61,108 +61,6 @@ Loader(const string &name, int num_threads) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Loader::find_all_files
-//       Access: Published
-//  Description: Searches along the given search path for the given
-//               file name, and fills up the results list with all
-//               possible matches and their associated types, in
-//               order.
-////////////////////////////////////////////////////////////////////
-int Loader::
-find_all_files(const Filename &filename, const DSearchPath &search_path,
-               Loader::Results &results) const {
-  if (!_file_types_loaded) {
-    load_file_types();
-  }
-  string extension = filename.get_extension();
-  string extra_ext;
-  bool pz_file = false;
-
-#ifdef HAVE_ZLIB
-  if (extension == "pz") {
-    // The extension ".pz" is special.  This is an explicitly-named
-    // compressed file.  We'll decompress it on the fly, if possible.
-    // (This relies on the auto_unwrap parameter to vfs->read_file(),
-    // which is different from the implicitly-named compressed file
-    // action that you might get if vfs-implicit-pz is enabled.)
-    extra_ext = extension;
-    extension = Filename(filename.get_basename_wo_extension()).get_extension();
-    pz_file = true;
-  }
-#endif  // HAVE_ZLIB
-
-  int num_added = 0;
-
-  if (!extension.empty()) {
-    // If the extension is not empty, it specifies a single file type.
-    LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
-    LoaderFileType *requested_type =
-      reg->get_type_from_extension(extension);
-
-    if (requested_type != (LoaderFileType *)NULL &&
-        (!pz_file || requested_type->supports_compressed())) {
-      if (!filename.is_local()) {
-        // Global filename, take it as it is.
-        results.add_file(filename, requested_type);
-        num_added++;
-
-      } else {
-        // Local filename, search along the path.
-        DSearchPath::Results files;
-        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-        num_added = vfs->find_all_files(filename, search_path, files);
-        
-        for (int i = 0; i < num_added; ++i) {
-          results.add_file(files.get_file(i), requested_type);
-        }
-      }
-    }
-  } else {
-    // If the extension *is* empty, we have to search for all possible
-    // file types.
-    LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
-    int num_types = reg->get_num_types();
-
-    if (!filename.is_local()) {
-      // Global filename, take it as it is.
-      for (int t = 0; t < num_types; ++t) {
-        LoaderFileType *type = reg->get_type(t);
-        Filename file(filename);
-        file.set_extension(type->get_extension());
-        file = file.get_fullpath() + extra_ext;
-          
-        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-        if (vfs->exists(file)) {
-          results.add_file(file, type);
-          ++num_added;
-        }
-      }
-    } else {
-      // Local filename, look it up on the model path.
-      int num_dirs = search_path.get_num_directories();
-      for (int i = 0; i < num_dirs; ++i) {
-        const Filename &directory = search_path.get_directory(i);
-        
-        for (int t = 0; t < num_types; ++t) {
-          LoaderFileType *type = reg->get_type(t);
-          Filename file(directory, filename);
-          file.set_extension(type->get_extension());
-          file = file.get_fullpath() + extra_ext;
-          
-          VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-          if (vfs->exists(file)) {
-            results.add_file(file, type);
-            ++num_added;
-          }
-        }
-      }
-    }
-  }
-
-  return num_added;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Loader::output
 //       Access: Published, Virtual
 //  Description: 
@@ -189,113 +87,164 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) Loader::
 load_file(const Filename &filename, const LoaderOptions &options) const {
-  if (options.get_allow_ram_cache()) {
-    // If we're allowing a RAM cache (and we don't have any other
-    // funny options), use the ModelPool to load the file.
-    PT(PandaNode) node = ModelPool::load_model(filename, options);
-    if (node != (PandaNode *)NULL) {
-      // But return a deep copy of the shared model.
-      node = node->copy_subgraph();
-    }
-    return node;
+  Filename this_filename(filename);
+  LoaderOptions this_options(options);
+
+  bool report_errors = (this_options.get_flags() & LoaderOptions::LF_report_errors) != 0;
+
+  string extension = this_filename.get_extension();
+  if (extension.empty()) {
+    // If the filename has no filename extension, append the default
+    // extension specified in the Config file.
+    this_filename = this_filename.get_fullpath() + default_model_extension.get_value();
+    extension = this_filename.get_extension();
   }
 
-  Results results;
-  int num_files;
-
-  bool search = (options.get_flags() & LoaderOptions::LF_search) != 0;
-
-  if (search) {
-    // Look for the file along the model path.
-    num_files = find_all_files(filename, get_model_path(), results);
-  } else {
-    // Look for the file only where it is.
-    num_files = find_all_files(filename, DSearchPath(Filename(".")), results);
-  }
-
-  if (num_files == 0) {
-    // Couldn't find the file.  Either it doesn't exist, or it's an
-    // unknown file type.  Report a useful message either way.
-    string extension = filename.get_extension();
-    bool pz_file = false;
+  bool pz_file = false;
 #ifdef HAVE_ZLIB
-    if (extension == "pz") {
-      pz_file = true;
-      extension = Filename(filename.get_basename_wo_extension()).get_extension();
-    }
+  if (extension == "pz") {
+    pz_file = true;
+    extension = Filename(this_filename.get_basename_wo_extension()).get_extension();
+  }
 #endif  // HAVE_ZLIB
-    if (!extension.empty()) {
-      LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
-      LoaderFileType *requested_type =
-        reg->get_type_from_extension(extension);
-      if (requested_type == (LoaderFileType *)NULL) {
-        loader_cat.error()
-          << "Extension of file " << filename
-          << " is unrecognized; cannot load.\n";
-        loader_cat.error(false)
-          << "Currently known scene file types are:\n";
-        reg->write(loader_cat.error(false), 2);
-        return NULL;
-      } else if (pz_file && !requested_type->supports_compressed()) {
-        loader_cat.error()
-          << requested_type->get_name() << " file type (."
-          << extension << ") does not support in-line compression.\n";
-        return NULL;
-      }
-    }
 
-    if (search) {
+  if (extension.empty()) {
+    if (report_errors) {
       loader_cat.error()
-        << "Couldn't load file " << filename << ": not found on model path "
-        << "(which is currently: \"" << get_model_path() << "\")\n";
-    } else {
-      loader_cat.error()
-        << "Couldn't load file ./" << filename << ": does not exist.\n";
+        << "Cannot load " << this_filename
+        << " without filename extension.  Loading of model filenames with an "
+        "implicit extension is deprecated in Panda3D.  Please "
+        "correct the filename reference.  If necessary, you may put the "
+        "line \"default-model-extension .bam\" or \"default-model-extension .egg\" "
+        "in your Config.prc to globally assume a particular model "
+        "filename extension.\n";
     }
     return NULL;
   }
 
+  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
+  LoaderFileType *requested_type =
+    reg->get_type_from_extension(extension);
+  if (requested_type == (LoaderFileType *)NULL) {
+    if (report_errors) {
+      loader_cat.error()
+        << "Extension of file " << this_filename
+        << " is unrecognized; cannot load.\n";
+      loader_cat.error(false)
+        << "Currently known scene file types are:\n";
+      reg->write(loader_cat.error(false), 2);
+    }
+    return NULL;
+  } else if (pz_file && !requested_type->supports_compressed()) {
+    if (report_errors) {
+      loader_cat.error()
+        << requested_type->get_name() << " file type (."
+        << extension << ") does not support in-line compression.\n";
+    }
+    return NULL;
+  }
+
+  DSearchPath::Results results;
+  bool search = (this_options.get_flags() & LoaderOptions::LF_search) != 0;
+  if (!filename.is_local()) {
+    // If we have a global filename, we don't search the model path.
+    search = false;
+  }
+
+  bool cache_only = (this_options.get_flags() & LoaderOptions::LF_cache_only) != 0;
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    
+  if (search) {
+    // Look for the file along the model path.
+    vfs->find_all_files(this_filename, get_model_path(), results);
+
+    if (results.get_num_files() == 0) {
+      if (report_errors) {
+        loader_cat.error()
+          << "Couldn't load file " << this_filename << ": not found on model path "
+          << "(which is currently: \"" << get_model_path() << "\")\n";
+      }
+      return NULL;
+    }
+
+  } else {
+    // Look for the file only where it is.
+    if (vfs->exists(this_filename)) {
+      results.add_file(this_filename);
+
+    } else {
+      if (report_errors) {
+        loader_cat.error()
+          << "Couldn't load file " << this_filename << ": does not exist.\n";
+      }
+      return NULL;
+    }
+  }
+
+  // Now that we've searched for the file, don't try to search again.
+  this_options.set_flags(this_options.get_flags() & ~LoaderOptions::LF_search);
+
   BamCache *cache = BamCache::get_global_ptr();
+  int num_files = results.get_num_files();
   for (int i = 0; i < num_files; ++i) {
     const Filename &path = results.get_file(i);
 
-    PT(BamCacheRecord) record;
+    if (requested_type->get_allow_ram_cache(this_options)) {
+      // If we're allowing a RAM cache, use the ModelPool to load the
+      // file.
+      if (!cache_only || ModelPool::has_model(path)) {
+        PT(PandaNode) node = ModelPool::load_model(path, this_options);
+        if (node != (PandaNode *)NULL &&
+            (this_options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
+          // But return a deep copy of the shared model.
+          node = node->copy_subgraph();
+        }
+        return node;
+      }
+    }
 
-    if (cache->get_active() && options.get_allow_disk_cache()) {
-      // See if the texture can be found in the on-disk cache, if it is
+    PT(BamCacheRecord) record;
+    if (cache->get_active() && requested_type->get_allow_disk_cache(this_options)) {
+      // See if the model can be found in the on-disk cache, if it is
       // active.
       record = cache->lookup(path, "bam");
       if (record != (BamCacheRecord *)NULL) {
         if (record->has_data()) {
-          loader_cat.info()
-            << "Model " << path << " found in disk cache.\n";
+          if (report_errors) {
+            loader_cat.info()
+              << "Model " << path << " found in disk cache.\n";
+          }
           return DCAST(PandaNode, record->extract_data());
         }
       }
     }
 
-    LoaderFileType *type = results.get_file_type(i);
-    PT(PandaNode) result = type->load_file(path, options, record);
-    if (result != (PandaNode *)NULL){ 
-      if (record != (BamCacheRecord *)NULL) {
-        record->set_data(result, false);
-        cache->store(record);
+    if (!cache_only) {
+      PT(PandaNode) result = requested_type->load_file(path, this_options, record);
+      if (result != (PandaNode *)NULL){ 
+        if (record != (BamCacheRecord *)NULL) {
+          record->set_data(result, false);
+          cache->store(record);
+        }
+        
+        return result;
       }
-
-      return result;
     }
   }
 
-  // None of the matching files could be loaded.  Oh well.
-  if (search) {
-    loader_cat.error()
-      << "Couldn't load file " << filename
-      << ": all matching files on model path invalid "
-      << "(the model path is currently: \"" << get_model_path() << "\")\n";
-  } else {
-    loader_cat.error()
-      << "Couldn't load file " << filename
-      << ": invalid.\n";
+  if (report_errors) {
+    // None of the matching files could be loaded.  Oh well.
+    if (num_files > 1) {
+      loader_cat.error()
+        << "Couldn't load file " << this_filename
+        << ": all matching files on model path invalid "
+        << "(the model path is currently: \"" << get_model_path() << "\")\n";
+    } else {
+      loader_cat.error()
+        << "Couldn't load file " << this_filename
+        << ": invalid.\n";
+    }
   }
   return NULL;
 }

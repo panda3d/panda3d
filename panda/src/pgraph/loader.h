@@ -79,9 +79,6 @@ PUBLISHED:
 
   Loader(const string &name = "loader", int num_threads = -1);
 
-  int find_all_files(const Filename &filename, const DSearchPath &search_path,
-                     Results &results) const;
-
   INLINE PT(PandaNode) load_sync(const Filename &filename, 
                                  const LoaderOptions &options = LoaderOptions()) const;
 

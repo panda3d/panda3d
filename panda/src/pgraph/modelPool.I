@@ -64,6 +64,10 @@ load_model(const string &filename, const LoaderOptions &options) {
 //               pool.  The model will always replace any
 //               previously-loaded model in the pool that had the
 //               same filename.
+//
+//               This two-parameter version of this method is
+//               deprecated; use the one-parameter add_model(model)
+//               instead.
 ////////////////////////////////////////////////////////////////////
 INLINE void ModelPool::
 add_model(const string &filename, ModelRoot *model) {
@@ -78,10 +82,44 @@ add_model(const string &filename, ModelRoot *model) {
 //               may then be freed.  If this function is never called,
 //               a reference count will be maintained on every model
 //               every loaded, and models will never be freed.
+//
+//               This version of this method is deprecated; use
+//               release_model(model) instead.
 ////////////////////////////////////////////////////////////////////
 INLINE void ModelPool::
 release_model(const string &filename) {
   get_ptr()->ns_release_model(filename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelPool::add_model
+//       Access: Public, Static
+//  Description: Adds the indicated already-loaded model to the
+//               pool.  The model will always replace any
+//               previously-loaded model in the pool that had the
+//               same filename.
+////////////////////////////////////////////////////////////////////
+INLINE void ModelPool::
+add_model(ModelRoot *model) {
+  get_ptr()->ns_add_model(model);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelPool::release_model
+//       Access: Public, Static
+//  Description: Removes the indicated model from the pool,
+//               indicating it will never be loaded again; the model
+//               may then be freed.  If this function is never called,
+//               a reference count will be maintained on every model
+//               every loaded, and models will never be freed.
+//
+//               The model's get_fullpath() value should not have been
+//               changed during its lifetime, or this function may
+//               fail to locate it in the pool.
+////////////////////////////////////////////////////////////////////
+INLINE void ModelPool::
+release_model(ModelRoot *model) {
+  get_ptr()->ns_release_model(model);
 }
 
 ////////////////////////////////////////////////////////////////////
