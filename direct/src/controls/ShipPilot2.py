@@ -692,14 +692,14 @@ class ShipPilot2(PhysicsWalker):
                     # the avatar has landed.
                     contactLength = contact.length()
                     if contactLength>self.__hardLandingForce:
-                        messenger.send("jumpHardLand")
+                        messenger.send("shipJumpHardLand")
                     else:
-                        messenger.send("jumpLand")
+                        messenger.send("shipJumpLand")
                     #self.priorParent.setVector(Vec3.zero())
                     self.isAirborne = 0
                 elif jump:
                     #self.__jumpButton=0
-                    messenger.send("jumpStart")
+                    messenger.send("shipJumpStart")
                     if 0:
                         # Jump away from walls and with with the slope normal.
                         jumpVec=Vec3(contact+Vec3.up())
