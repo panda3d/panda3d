@@ -1681,6 +1681,7 @@ class Actor(DirectObject, NodePath):
                             # animations.
                             animDef.animControl.getPart().clearControlEffects()
                             animDef.animControl = None
+                            animDef.animModel = None
                     except:
                         return
 
@@ -1769,6 +1770,7 @@ class Actor(DirectObject, NodePath):
         else:
             # store the animControl
             anim.animControl = animControl
+            anim.animModel = animNode.node()
             assert Actor.notify.debug("binding anim: %s to part: %s, lod: %s" %
                                       (animName, partName, lodName))
         return animControl
