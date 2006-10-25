@@ -36,12 +36,32 @@ import sys
 import random
 import time
 import new
+import guppy
 if __debug__:
     import traceback
+
+
 
 from direct.directutil import Verify
 
 ScalarTypes = (types.FloatType, types.IntType, types.LongType)
+
+
+class MemoryChecker(object):
+    def getHeap(self):
+        if(not self.__dict__.get("hp",0)):
+           self.hp=guppy.hpy()
+        return self.hp
+    def getClassesByType(self,inType):
+        hp=self.getHeap()
+        objHeap=hp.heap() & inType
+        outArr=[]
+        for i in range(objHeap.byid.count):
+            outArr.append(objHeap.byid[i].theone)
+        return outArr
+
+
+
 
 def enumerate(L):
     """Returns (0, L[0]), (1, L[1]), etc., allowing this syntax:

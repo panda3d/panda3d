@@ -12,13 +12,14 @@ import types
 # phase
 phaseChecker = None
 
+
 class Loader(DirectObject):
     """
     Load models, textures, sounds, and code.
     """
     notify = directNotify.newCategory("Loader")
     loaderIndex = 0
-
+    
     class Callback:
         def __init__(self, numObjects, callback, extraArgs):
             self.objects = [None] * numObjects
@@ -110,12 +111,12 @@ class Loader(DirectObject):
             # Assume we were given a list of model pathnames.
             modelList = modelPath
             gotList = True
-
+        
         if callback is None:
             # We got no callback, so it's a synchronous load.
 
             result = []
-            for modelPath in modelList:
+            for modelPath in modelList:                
                 node = self.loader.loadSync(Filename(modelPath), loaderOptions)
                 if (node != None):
                     nodePath = NodePath(node)
@@ -136,23 +137,11 @@ class Loader(DirectObject):
             # callback (passing it the models on the parameter list).
             
             cb = Loader.Callback(len(modelList), callback, extraArgs)
-            for i in range(len(modelList)):
-                modelPath = modelList[i]
-                if loaderOptions.getAllowRamCache() and ModelPool.hasModel(modelPath):
-                    # If it's already in the model pool, we won't
-                    # bother bouncing the load request through the
-                    # thread; and maybe we can just make the callback
-                    # immediately.
-                    node = ModelPool.loadModel(modelPath)
-                    nodePath = NodePath(node.copySubgraph())
-                    cb.gotObject(i, nodePath)
-
-                else:
-                    # We do need to go to the thread to load this model.
-                    request = ModelLoadRequest(Filename(modelPath), loaderOptions)
-                    request.setDoneEvent(self.hook)
-                    request.setPythonObject((cb, i))
-                    self.loader.loadAsync(request)
+            for modelPath in modelList:
+                request = ModelLoadRequest(Filename(modelPath), loaderOptions)
+                request.setDoneEvent(self.hook)
+                request.setPythonObject((cb, i))
+                self.loader.loadAsync(request)
 
     def loadModelOnce(self, modelPath):
         """
@@ -230,6 +219,7 @@ class Loader(DirectObject):
 
         assert Loader.notify.debug("Unloading model: %s" % (modelNode.getFullpath()))
         ModelPool.releaseModel(modelNode)
+
 
     # font loading funcs
     def loadFont(self, modelPath,
