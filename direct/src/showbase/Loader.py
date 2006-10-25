@@ -137,10 +137,12 @@ class Loader(DirectObject):
             # callback (passing it the models on the parameter list).
             
             cb = Loader.Callback(len(modelList), callback, extraArgs)
+            i=0
             for modelPath in modelList:
                 request = ModelLoadRequest(Filename(modelPath), loaderOptions)
                 request.setDoneEvent(self.hook)
                 request.setPythonObject((cb, i))
+                i+=1
                 self.loader.loadAsync(request)
 
     def loadModelOnce(self, modelPath):
