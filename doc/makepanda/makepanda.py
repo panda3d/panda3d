@@ -977,6 +977,7 @@ def CompileCxxLINUXA(wobj,fullsrc,ipath,opts):
     if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -Ithirdparty/linux-libs-a/fmodex/include'
     if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -Ithirdparty/linux-libs-a/nvidiacg/include'
     if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/nspr/include'
+    if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + ' -Ithirdparty/linux-libs-a/ffmpeg/include'
     if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
     for x in ipath: cmd = cmd + ' -I' + x
     if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
@@ -1357,12 +1358,13 @@ def CompileLinkLINUXA(wdll, obj, wobj, opts, dll, ldef):
         elif (suffix==".dll"): cmd = cmd + ' -l' + x[3:-4]
         elif (suffix==".lib"): cmd = cmd + ' built/lib/' + x[:-4] + '.a'
         elif (suffix==".ilb"): cmd = cmd + ' built/tmp/' + x[:-4] + '.a'
-    if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -Lthirdparty/linux-libs-a/fmodex/lib -lfmod-3.74'
+    if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -Lthirdparty/linux-libs-a/fmodex/lib -lfmodex'
     if (PkgSelected(opts,"NVIDIACG")):
         cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
         if (opts.count("CGGL")):  cmd = cmd + " -lCgGL"
         cmd = cmd + " -lCg"
     if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/nspr/lib -lpandanspr4'
+    if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + " -Lthirdparty/linux-libs-a/ffmpeg/lib -lavformat -lavcodec -lavformat -lavutil"
     if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
     if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
     if (PkgSelected(opts,"JPEG")):     cmd = cmd + " -ljpeg"
