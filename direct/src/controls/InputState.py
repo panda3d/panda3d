@@ -9,6 +9,7 @@ class InputStateToken:
     Inval = 'invalidatedToken'
     def __init__(self, inputState):
         self._id = InputStateToken._SerialGen.next()
+        self._hash = self._id
         self._inputState = inputState
     def release(self):
         # subclasses will override
@@ -18,7 +19,7 @@ class InputStateToken:
     def invalidate(self):
         self._id = InputStateToken.Inval
     def __hash__(self):
-        return self._id
+        return self._hash
 
 class InputStateWatchToken(InputStateToken, DirectObject.DirectObject):
     def release(self):
