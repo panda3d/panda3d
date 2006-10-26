@@ -148,11 +148,11 @@ play() {
 //  Description: When fmod finishes playing a sound, decrements the
 //               reference count of the associated FmodAudioSound.
 ////////////////////////////////////////////////////////////////////
-static FMOD_RESULT F_CALLBACK sound_end_callback(FMOD_CHANNEL *  channel, 
-                                                 FMOD_CHANNEL_CALLBACKTYPE  type, 
-                                                 int  command, 
-                                                 unsigned int  commanddata1, 
-                                                 unsigned int  commanddata2) {
+FMOD_RESULT F_CALLBACK sound_end_callback(FMOD_CHANNEL *  channel, 
+					  FMOD_CHANNEL_CALLBACKTYPE  type, 
+					  int  command, 
+					  unsigned int  commanddata1, 
+					  unsigned int  commanddata2) {
   FmodAudioSound *fsound = (FmodAudioSound*)command;
   fsound->unref();
   return FMOD_OK;
@@ -287,7 +287,7 @@ set_time(float start_time) {
   FMOD_RESULT result;
   bool playing;
 
-  int startTime = start_time * 1000;
+  int startTime = (int)(start_time * 1000);
 
   if (_channel != 0) {
     // try backing up current sound.

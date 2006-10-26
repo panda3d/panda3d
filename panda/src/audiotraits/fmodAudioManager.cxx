@@ -49,7 +49,7 @@ pset<FmodAudioManager *> FmodAudioManager::_all_managers;
 // Central dispatcher for audio errors.
 ////////////////////////////////////////////////////////////////////
 
-static void fmod_audio_errcheck(FMOD_RESULT result) {
+void fmod_audio_errcheck(FMOD_RESULT result) {
   if (result != 0) {
     audio_error("FMOD Error: "<< FMOD_ErrorString(result) );
   }
