@@ -3,6 +3,40 @@
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
 
+# internal class, don't create these on your own
+class InputStateToken:
+    _SerialGen = SerialNumGen()
+    Inval = 'invalidatedToken'
+    def __init__(self, inputState):
+        self._id = InputStateToken._SerialGen.next()
+        self._inputState = inputState
+    def release(self):
+        # subclasses will override
+        assert False
+    def isValid(self):
+        return self._id != InputStateToken.Inval
+    def invalidate(self):
+        self._id = InputStateToken.Inval
+    def __hash__(self):
+        return self._id
+
+class InputStateWatchToken(InputStateToken, DirectObject.DirectObject):
+    def release(self):
+        self._inputState._ignore(self)
+        self.ignoreAll()
+class InputStateForceToken(InputStateToken):
+    def release(self):
+        self._inputState._unforce(self)
+
+class InputStateTokenGroup:
+    def __init__(self):
+        self._tokens = []
+    def addToken(self, token):
+        self._tokens.append(token)
+    def release(self):
+        for token in self._tokens:
+            token.release()
+        self._tokens = []
 
 class InputState(DirectObject.DirectObject):
     """
@@ -16,93 +50,170 @@ class InputState(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("InputState")
 
+    # standard input sources
+    WASD = 'WASD'
+    ArrowKeys = 'ArrowKeys'
+    Keyboard = 'Keyboard'
+    Mouse = 'Mouse'
+
     def __init__(self):
-        self.state = {}
+        # stateName->set(SourceNames)
+        self._state = {}
+        # stateName->set(SourceNames)
+        self._forcingOn = {}
+        # stateName->set(SourceNames)
+        self._forcingOff = {}
+        # tables to look up the info needed to undo operations
+        self._token2inputSource = {}
+        self._token2forceInfo = {}
+        # inputSource->token->(eventOn, eventOff)
+        self._watching = {}
         assert self.debugPrint("InputState()")
-        self.watching = {}
-        self.forcing = {}
 
     def delete(self):
+        del self._watching
+        del self._token2forceInfo
+        del self._token2inputSource
+        del self._forcingOff
+        del self._forcingOn
+        del self._state
         self.ignoreAll()
-
-    def watch(self, name, eventOn, eventOff, default = 0):
-        """
-        name is any string (or actually any valid dictionary key).
-        eventOn is the string name of the Messenger event that will
-            set the state (set to 1).
-        eventOff is the string name of the Messenger event that will
-            clear the state (set to 0).
-        default is the initial value (this will be returned from
-            isSet() if a call is made before any eventOn or eventOff
-            events occur.
-        See Also: ignore()
-        """
-        assert self.debugPrint(
-            "watch(name=%s, eventOn=%s, eventOff=%s, default=%s)"%(
-            name, eventOn, eventOff, default))
-        self.accept(eventOn, self.set, [name, 1])
-        self.accept(eventOff, self.set, [name, 0])
-        self.state[name] = default
-        # self.watching is a dict of the form:
-        #   {name: [(eventOn, eventOff), (eventOn, eventOff)...]}
-        eventList = self.watching.get(name)
-        if eventList:
-            eventList.append((eventOn, eventOff))
-        else:
-            # Start a new list
-            self.watching[name] = [(eventOn, eventOff)]
-
-    def watchWithModifiers(self, name, event, default = 0):
-        patterns = ('%s', 'control-%s', 'shift-control-%s', 'alt-%s',
-                    'control-alt-%s', 'shift-%s',)
-        for pattern in patterns:
-            self.watch(name, pattern % event, '%s-up' % event, default)
-
-    def force(self, name, value):
-        """
-        Force isSet(name) to return value.
-        See Also: unforce()
-        """
-        self.forcing[name] = value
-
-    def unforce(self, name):
-        """
-        Stop forcing a value.
-        See Also: force()
-        """
-        del self.forcing[name]
-
-    def ignore(self, name):
-        """
-        The opposite of watch(name, ...)
-        See Also: watch()
-        """
-        for event in self.watching[name]:
-            eventOn, eventOff = event
-            DirectObject.DirectObject.ignore(self, eventOn)
-            DirectObject.DirectObject.ignore(self, eventOff)
-        del self.watching[name]
-        del self.state[name]
-
-    def set(self, name, isSet):
-        assert self.debugPrint("set(name=%s, isSet=%s)"%(name, isSet))
-        self.state[name] = isSet
-        # We change the name before sending it because this may
-        # be the same name that messenger used to call InputState.set()
-        # this avoids running in circles:
-        messenger.send("InputState-%s"%(name,), [isSet])
 
     def isSet(self, name):
         """
-        returns 0, 1
+        returns True/False
         """
         #assert self.debugPrint("isSet(name=%s)"%(name))
-        r = self.forcing.get(name)
-        if r is not None:
-            return r
-        return self.state.get(name, 0)
+        if name in self._forcingOn:
+            return True
+        elif name in self._forcingOff:
+            return False
+        return name in self._state
+
+    def set(self, name, isActive, inputSource=None):
+        assert self.debugPrint("set(name=%s, isActive=%s, inputSource=%s)"%(name, isActive, inputSource))
+        # inputSource is a string that identifies where this input change
+        # is coming from (like 'WASD', 'ArrowKeys', etc.)
+        # Each unique inputSource is allowed to influence this input item
+        # once: it's either 'active' or 'not active'. If at least one source
+        # activates this input item, the input item is considered to be active
+        if inputSource is None:
+            inputSource = 'anonymous'
+        if isActive:
+            self._state.setdefault(name, set())
+            self._state[name].add(inputSource)
+        else:
+            if name in self._state:
+                self._state[name].discard(inputSource)
+                if len(self._state[name]) == 0:
+                    del self._state[name]
+        # We change the name before sending it because this may
+        # be the same name that messenger used to call InputState.set()
+        # this avoids running in circles:
+        messenger.send("InputState-%s"%(name,), [self.isSet(name)])
+
+    def releaseInputs(self, name):
+        # call this to act as if all inputs affecting this state have been released
+        del self._state[name]
+
+    def watch(self, name, eventOn, eventOff, startState=False, inputSource=None):
+        """
+        This returns a token; hold onto the token and call token.release() when you
+        no longer want to watch for these events.
+
+        # set up
+        token = inputState.watch('forward', 'w', 'w-up', inputSource=inputState.WASD)
+         ...
+        # tear down
+        token.release()
+        """
+        assert self.debugPrint(
+            "watch(name=%s, eventOn=%s, eventOff=%s, startState=%s)"%(
+            name, eventOn, eventOff, startState))
+        if inputSource is None:
+            inputSource = "eventPair('%s','%s')" % (eventOn, eventOff)
+        self.set(name, startState, inputSource)
+        token = InputStateWatchToken(self)
+        # make the token listen for the events, to allow multiple listeners for the same event
+        token.accept(eventOn, self.set, [name, True, inputSource])
+        token.accept(eventOff, self.set, [name, False, inputSource])
+        self._token2inputSource[token] = inputSource
+        self._watching.setdefault(inputSource, {})
+        self._watching[inputSource][token] = (eventOn, eventOff)
+        return token
+
+    def watchWithModifiers(self, name, event, startState=False, inputSource=None):
+        patterns = ('%s', 'control-%s', 'shift-control-%s', 'alt-%s',
+                    'control-alt-%s', 'shift-%s', 'shift-alt-%s')
+        tGroup = InputStateTokenGroup()
+        for pattern in patterns:
+            tGroup.addToken(self.watch(name, pattern % event, '%s-up' % event, startState=startState, inputSource=inputSource))
+        return tGroup
+
+    def _ignore(self, token):
+        """
+        Undo a watch(). Don't call this directly, call release() on the token that watch() returned.
+        """
+        inputSource = self._token2inputSource.pop(token)
+        eventPair = self._watching[inputSource].pop(token)
+        token.invalidate()
+        eventOn, eventOff = eventPair
+        DirectObject.DirectObject.ignore(self, eventOn)
+        DirectObject.DirectObject.ignore(self, eventOff)
+        if len(self._watching[inputSource]) == 0:
+            del self._watching[inputSource]
+        self.set(name, False, inputSource)
+
+    def force(self, name, value, inputSource):
+        """
+        Force isSet(name) to return 'value'.
+
+        This returns a token; hold onto the token and call token.release() when you
+        no longer want to force the state.
+
+        example:
+        # set up
+        token=inputState.force('forward', True, inputSource='myForwardForcer')
+         ...
+        # tear down
+        token.release()
+        """
+        token = InputStateForceToken(self)
+        self._token2forceInfo[token] = (name, inputSource)
+        if value:
+            if name in self._forcingOff:
+                self.notify.error(
+                    "%s is trying to force '%s' to ON, but '%s' is already being forced OFF by %s" %
+                    (inputSource, name, name, self._forcingOff[name])
+                    )
+            self._forcingOn.setdefault(name, set())
+            self._forcingOn[name].add(inputSource)
+        else:
+            if name in self._forcingOn:
+                self.notify.error(
+                    "%s is trying to force '%s' to OFF, but '%s' is already being forced ON by %s" %
+                    (inputSource, name, name, self._forcingOn[name])
+                    )
+            self._forcingOff.setdefault(name, set())
+            self._forcingOff[name].add(inputSource)
+        return token
+
+    def _unforce(self, token):
+        """
+        Stop forcing a value. Don't call this directly, call release() on your token.
+        """
+        name, inputSource = self._token2forceInfo[token]
+        token.invalidate()
+        if name in self._forcingOn:
+            self._forcingOn[name].discard(inputSource)
+            if len(self._forcingOn[name]) == 0:
+                del self._forcingOn[name]
+        if name in self._forcingOff:
+            self._forcingOff[name].discard(inputSource)
+            if len(self._forcingOff[name]) == 0:
+                del self._forcingOff[name]
 
     def debugPrint(self, message):
         """for debugging"""
         return self.notify.debug(
-            "%s (%s) %s"%(id(self), len(self.state), message))
+            "%s (%s) %s"%(id(self), len(self._state), message))

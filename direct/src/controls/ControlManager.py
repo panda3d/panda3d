@@ -24,50 +24,53 @@ class ControlManager:
 
     def __init__(self):
         assert self.notify.debugCall(id(self))
-        self.enableJumpCounter = 1
         self.controls = {}
         self.currentControls = None
         self.currentControlsName = None
         self.isEnabled = 1
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
-        inputState.watch("run", "running-on", "running-off")
+        self.forceAvJumpToken = None
+        # keep track of what we do on the inputState so we can undo it later on
+        self.inputStateTokens = []
+        ist=self.inputStateTokens
+        ist.append(inputState.watch("run", 'runningEvent', "running-on", "running-off"))
         
-        inputState.watchWithModifiers("forward", "arrow_up")
-        inputState.watch("forward", "force-forward", "force-forward-stop")
+        ist.append(inputState.watchWithModifiers("forward", "arrow_up", inputSource=inputState.ArrowKeys))
+        ist.append(inputState.watch("forward", "force-forward", "force-forward-stop"))
         
-        inputState.watchWithModifiers("reverse", "arrow_down")
-        inputState.watchWithModifiers("reverse", "mouse4")
+        ist.append(inputState.watchWithModifiers("reverse", "arrow_down", inputSource=inputState.ArrowKeys))
+        ist.append(inputState.watchWithModifiers("reverse", "mouse4", inputSource=inputState.Mouse))
         
         if self.wantWASD:
-            inputState.watchWithModifiers("slideLeft", "arrow_left")
-            inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done")
-            inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop")
+            ist.append(inputState.watchWithModifiers("slideLeft", "arrow_left", inputSource=inputState.ArrowKeys))
+            ist.append(inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done"))
+            ist.append(inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop"))
             
-            inputState.watchWithModifiers("slideRight", "arrow_right")
-            inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done")
-            inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop")
+            ist.append(inputState.watchWithModifiers("slideRight", "arrow_right", inputSource=inputState.ArrowKeys))
+            ist.append(inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done"))
+            ist.append(inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop"))
 
-            inputState.watchWithModifiers("forward", "w")
-            inputState.watchWithModifiers("reverse", "s")
-            inputState.watchWithModifiers("slideLeft", "a")
-            inputState.watchWithModifiers("slideRight", "d")
-            inputState.watchWithModifiers("turnLeft", "q")
-            inputState.watchWithModifiers("turnRight", "e")
+            ist.append(inputState.watchWithModifiers("forward", "w", inputSource=inputState.WASD))
+            ist.append(inputState.watchWithModifiers("reverse", "s", inputSource=inputState.WASD))
+            ist.append(inputState.watchWithModifiers("slideLeft", "a", inputSource=inputState.WASD))
+            ist.append(inputState.watchWithModifiers("slideRight", "d", inputSource=inputState.WASD))
+            ist.append(inputState.watchWithModifiers("turnLeft", "q", inputSource=inputState.WASD))
+            ist.append(inputState.watchWithModifiers("turnRight", "e", inputSource=inputState.WASD))
         else:
-            inputState.watchWithModifiers("turnLeft", "arrow_left")
-            inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done")
-            inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop")
+            ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
+            ist.append(inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done"))
+            ist.append(inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop"))
             
-            inputState.watchWithModifiers("turnRight", "arrow_right")
-            inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done")
-            inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop")
+            ist.append(inputState.watchWithModifiers("turnRight", "arrow_right", inputSource=inputState.ArrowKeys))
+            ist.append(inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done"))
+            ist.append(inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop"))
 
 
         # Jump controls
         if self.wantWASD:
-            inputState.watchWithModifiers("jump", "space")
+            ist.append(inputState.watchWithModifiers("jump", "space"))
         else:
-            inputState.watch("jump", "control", "control-up")
+            ist.append(inputState.watch("jump", "control", "control-up"))
             
     def add(self, controls, name="basic"):
         """
@@ -162,16 +165,8 @@ class ControlManager:
         del self.controls
         del self.currentControls
 
-        inputState.ignore("forward")
-        inputState.ignore("reverse")
-        inputState.ignore("turnLeft")
-        inputState.ignore("turnRight")
-        inputState.ignore("jump")
-        inputState.ignore("run")
-
-        if self.wantWASD:
-            inputState.ignore("slideLeft")
-            inputState.ignore("slideRight")
+        for token in self.inputStateTokens:
+            token.release()
 
         #self.monitorTask.remove()
 
@@ -213,25 +208,21 @@ class ControlManager:
         self.isEnabled = 0
         self.currentControls.disableAvatarControls()
 
+    def disableAvatarJump(self):
+        """
+        prevent 
+        """
+        assert self.forceAvJumpToken is None
+        self.forceAvJumpToken=inputState.force(
+            "jump", 0, 'ControlManager.disableAvatarJump')
+
     def enableAvatarJump(self):
         """
         Stop forcing the ctrl key to return 0's
         """
-        assert self.notify.debugCall(id(self))
-        self.enableJumpCounter+=1
-        if self.enableJumpCounter:
-            assert self.enableJumpCounter == 1
-            self.enableJumpCounter = 1
-            inputState.unforce("jump")
-
-    def disableAvatarJump(self):
-        """
-        Force the ctrl key to return 0's
-        """
-        assert self.notify.debugCall(id(self))
-        self.enableJumpCounter-=1
-        if self.enableJumpCounter <= 0:
-            inputState.force("jump", 0)
+        assert self.forceAvJumpToken is not None
+        self.forceAvJumpToken.release()
+        self.forceAvJumpToken = None
 
     def monitor(self, foo):
         #assert self.debugPrint("monitor()")
