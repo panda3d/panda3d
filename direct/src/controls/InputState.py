@@ -66,7 +66,7 @@ class InputState(DirectObject.DirectObject):
         # tables to look up the info needed to undo operations
         self._token2inputSource = {}
         self._token2forceInfo = {}
-        # inputSource->token->(eventOn, eventOff)
+        # inputSource->token->(name, eventOn, eventOff)
         self._watching = {}
         assert self.debugPrint("InputState()")
 
@@ -139,7 +139,7 @@ class InputState(DirectObject.DirectObject):
         token.accept(eventOff, self.set, [name, False, inputSource])
         self._token2inputSource[token] = inputSource
         self._watching.setdefault(inputSource, {})
-        self._watching[inputSource][token] = (eventOn, eventOff)
+        self._watching[inputSource][token] = (name, eventOn, eventOff)
         return token
 
     def watchWithModifiers(self, name, event, startState=False, inputSource=None):
@@ -155,9 +155,8 @@ class InputState(DirectObject.DirectObject):
         Undo a watch(). Don't call this directly, call release() on the token that watch() returned.
         """
         inputSource = self._token2inputSource.pop(token)
-        eventPair = self._watching[inputSource].pop(token)
+        name, eventOn, eventOff = self._watching[inputSource].pop(token)
         token.invalidate()
-        eventOn, eventOff = eventPair
         DirectObject.DirectObject.ignore(self, eventOn)
         DirectObject.DirectObject.ignore(self, eventOff)
         if len(self._watching[inputSource]) == 0:
