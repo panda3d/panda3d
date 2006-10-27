@@ -68,6 +68,8 @@ class ConnectionRepository(
         # DC file.  The AIRepository will redefine this to 'AI'.
         self.dcSuffix = ''
 
+        self._serverAddress = ''
+
         if self.config.GetBool('want-debug-leak', 1):
             import gc
             gc.set_debug(gc.DEBUG_SAVEALL)
@@ -322,6 +324,9 @@ class ConnectionRepository(
             components = moduleName.split('.')
             dcImports[components[0]] = module
 
+    def getServerAddress(self):
+        return self._serverAddress
+
     def connect(self, serverList,
                 successCallback = None, successArgs = [],
                 failureCallback = None, failureArgs = []):
@@ -403,6 +408,7 @@ class ConnectionRepository(
         Closes the previously-established connection.
         """
         self.notify.info("Closing connection to server.")
+        self._serverAddress = ''
         CConnectionRepository.disconnect(self)
         self.stopReaderPollTask()
 
@@ -411,6 +417,7 @@ class ConnectionRepository(
                             failureCallback, failureArgs):
         if ch.isConnectionReady():
             self.setConnectionHttp(ch)
+            self._serverAddress = serverList[serverIndex-1]
 
             ## if self.recorder:
             ##     # If we have a recorder, we wrap the connect inside a
@@ -466,6 +473,7 @@ class ConnectionRepository(
         return self.http
 
     def startReaderPollTask(self):
+        print '########## startReaderPollTask'
         # Stop any tasks we are running now
         self.stopReaderPollTask()
         self.accept(CConnectionRepository.getOverflowEventName(),
@@ -474,6 +482,7 @@ class ConnectionRepository(
                     priority = self.taskPriority)
 
     def stopReaderPollTask(self):
+        print '########## stopReaderPollTask'
         taskMgr.remove(self.uniqueName("readerPollTask"))
         self.ignore(CConnectionRepository.getOverflowEventName())
 
