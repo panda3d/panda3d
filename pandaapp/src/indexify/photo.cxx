@@ -25,7 +25,7 @@ static const char * const standard_movie_extensions[] = {
 };
 
 static const char * const standard_sound_extensions[] = {
-  "jpg", "wav", "ogg", NULL
+  "mp3", "wav", "ogg", NULL
 };
                                                 
 
