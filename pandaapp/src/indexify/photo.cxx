@@ -20,6 +20,15 @@
 #include "indexParameters.h"
 #include "rollDirectory.h"
 
+static const char * const standard_movie_extensions[] = {
+  "mov", "avi", "mpg", NULL
+};
+
+static const char * const standard_sound_extensions[] = {
+  "jpg", "wav", "ogg", NULL
+};
+                                                
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Photo::Constructor
@@ -59,6 +68,16 @@ Photo(RollDirectory *dir, const Filename &basename,
   if (movie_filename.exists()) {
     _movie = movie_filename.get_basename();
     _has_movie = true;
+
+  } else {
+    const char * const *ext;
+    for (ext = standard_movie_extensions; *ext != NULL; ++ext) {
+      movie_filename.set_extension(*ext);
+      if (movie_filename.exists()) {
+        _movie = movie_filename.get_basename();
+        _has_movie = true;
+      }
+    }
   }
 
   _has_sound = false;
@@ -67,6 +86,16 @@ Photo(RollDirectory *dir, const Filename &basename,
   if (sound_filename.exists()) {
     _sound = sound_filename.get_basename();
     _has_sound = true;
+
+  } else {
+    const char * const *ext;
+    for (ext = standard_sound_extensions; *ext != NULL; ++ext) {
+      sound_filename.set_extension(*ext);
+      if (sound_filename.exists()) {
+        _sound = sound_filename.get_basename();
+        _has_sound = true;
+      }
+    }
   }
 
   _has_cm = false;
