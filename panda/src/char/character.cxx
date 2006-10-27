@@ -323,9 +323,11 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
 
   fill_joint_map(joint_map, get_bundle(), from_char->get_bundle());
 
+  GeomVertexMap gvmap;
   GeomJointMap gjmap;
   GeomSliderMap gsmap;
-  r_copy_char(this, from_char, from_char, node_map, joint_map, gjmap, gsmap);
+  r_copy_char(this, from_char, from_char, node_map, joint_map, 
+              gvmap, gjmap, gsmap);
   copy_node_pointers(from_char, node_map);
 }
 
@@ -375,6 +377,7 @@ void Character::
 r_copy_char(PandaNode *dest, const PandaNode *source,
             const Character *from, Character::NodeMap &node_map,
             const Character::JointMap &joint_map,
+            Character::GeomVertexMap &gvmap,
             Character::GeomJointMap &gjmap, Character::GeomSliderMap &gsmap) {
 
   if (source->is_geom_node()) {
@@ -388,7 +391,7 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
     for (int i = 0; i < num_geoms; i++) {
       const Geom *geom = source_gnode->get_geom(i);
       const RenderState *state = source_gnode->get_geom_state(i);
-      dest_gnode->add_geom(copy_geom(geom, from, joint_map, gjmap, gsmap), state);
+      dest_gnode->add_geom(copy_geom(geom, from, joint_map, gvmap, gjmap, gsmap), state);
     }
   }
 
@@ -412,7 +415,7 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
       // work correctly.  Too bad.
       dest_child = source_child->make_copy();
       r_copy_char(dest_child, source_child, from, node_map, joint_map,
-                  gjmap, gsmap);
+                  gvmap, gjmap, gsmap);
     }
     dest->add_child(dest_child, source_sort);
     node_map[source_child] = dest_child;
@@ -430,6 +433,7 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
 PT(Geom) Character::
 copy_geom(const Geom *source, const Character *from,
           const Character::JointMap &joint_map,
+          Character::GeomVertexMap &gvmap,
           Character::GeomJointMap &gjmap, Character::GeomSliderMap &gsmap) {
   CPT(GeomVertexFormat) format = source->get_vertex_data()->get_format();
   if (format->get_animation().get_animation_type() == Geom::AT_none) {
@@ -438,11 +442,23 @@ copy_geom(const Geom *source, const Character *from,
   }
   
   PT(Geom) dest = source->make_copy();
-  PT(GeomVertexData) vdata = dest->modify_vertex_data();
   
-  vdata->set_transform_table(redirect_transform_table(vdata->get_transform_table(), joint_map, gjmap));
-  vdata->set_transform_blend_table(redirect_transform_blend_table(vdata->get_transform_blend_table(), joint_map, gjmap));
-  vdata->set_slider_table(redirect_slider_table(vdata->get_slider_table(), gsmap));
+  CPT(GeomVertexData) orig_vdata = source->get_vertex_data();
+  PT(GeomVertexData) new_vdata;
+  GeomVertexMap::iterator gvmi = gvmap.find(orig_vdata);
+  if (gvmi != gvmap.end()) {
+    new_vdata = (*gvmi).second;
+  } else {
+    new_vdata = new GeomVertexData(*orig_vdata);
+
+    new_vdata->set_transform_table(redirect_transform_table(orig_vdata->get_transform_table(), joint_map, gjmap));
+    new_vdata->set_transform_blend_table(redirect_transform_blend_table(orig_vdata->get_transform_blend_table(), joint_map, gjmap));
+    new_vdata->set_slider_table(redirect_slider_table(orig_vdata->get_slider_table(), gsmap));
+
+    gvmap.insert(GeomVertexMap::value_type(orig_vdata, new_vdata));
+  }  
+
+  dest->set_vertex_data(new_vdata);
   
   return dest;
 }

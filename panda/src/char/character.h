@@ -84,6 +84,7 @@ private:
 
   typedef pmap<const PandaNode *, PandaNode *> NodeMap;
   typedef pmap<const PartGroup *, PartGroup *> JointMap;
+  typedef pmap<const GeomVertexData *, GeomVertexData *> GeomVertexMap;
   typedef pmap<const VertexTransform *, PT(JointVertexTransform) > GeomJointMap;
   typedef pmap<const VertexSlider *, PT(CharacterVertexSlider) > GeomSliderMap;
 
@@ -92,10 +93,10 @@ private:
   void fill_joint_map(JointMap &joint_map, PartGroup *copy, PartGroup *orig);
   void r_copy_char(PandaNode *dest, const PandaNode *source,
                    const Character *from, NodeMap &node_map,
-                   const JointMap &joint_map,
+                   const JointMap &joint_map, GeomVertexMap &gvmap,
                    GeomJointMap &gjmap, GeomSliderMap &gsmap);
   PT(Geom) copy_geom(const Geom *source, const Character *from,
-                     const JointMap &joint_map,
+                     const JointMap &joint_map, GeomVertexMap &gvmap,
                      GeomJointMap &gjmap, GeomSliderMap &gsmap);
   void copy_node_pointers(const Character *from, const NodeMap &node_map);
   CPT(TransformTable) redirect_transform_table(const TransformTable *source,
