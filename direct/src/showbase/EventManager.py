@@ -16,6 +16,11 @@ from direct.task.Task import Task
 class EventManager:
 
     notify = None
+
+    # for efficiency, only call import once per module
+    EventStorePandaNode = None
+    EventQueue = None
+    EventHandler = None
     
     def __init__(self, eventQueue = None):
         """
@@ -61,8 +66,10 @@ class EventManager:
             # which will be downcast to that type
             ptr = eventParameter.getPtr()
 
-            from pandac.PandaModules import EventStorePandaNode
-            if isinstance(ptr, EventStorePandaNode):
+            if EventManager.EventStorePandaNode is None:
+                from pandac.PandaModules import EventStorePandaNode
+                EventManager.EventStorePandaNode = EventStorePandaNode
+            if isinstance(ptr, EventManager.EventStorePandaNode):
                 # Actually, it's a kludgey wrapper around a PandaNode
                 # pointer.  Return the node.
                 ptr = ptr.getValue()
@@ -101,19 +108,22 @@ class EventManager:
 
 
     def restart(self):
-        from pandac.PandaModules import EventQueue, EventHandler
+        if None in (EventManager.EventQueue, EventManager.EventHandler):
+            from pandac.PandaModules import EventQueue, EventHandler
+            EventManager.EventQueue = EventQueue
+            EventManager.EventHandler = EventHandler
         
         if self.eventQueue == None:
-            self.eventQueue = EventQueue.getGlobalEventQueue()
+            self.eventQueue = EventManager.EventQueue.getGlobalEventQueue()
 
         if self.eventHandler == None:
-            if self.eventQueue == EventQueue.getGlobalEventQueue():
+            if self.eventQueue == EventManager.EventQueue.getGlobalEventQueue():
                 # If we are using the global event queue, then we also
                 # want to use the global event handler.
-                self.eventHandler = EventHandler.getGlobalEventHandler(self.eventQueue)
+                self.eventHandler = EventManager.EventHandler.getGlobalEventHandler(self.eventQueue)
             else:
                 # Otherwise, we need our own event handler.
-                self.eventHandler = EventHandler(self.eventQueue)
+                self.eventHandler = EventManager.EventHandler(self.eventQueue)
 
         taskMgr.add(self.eventLoopTask, 'eventManager')
 
