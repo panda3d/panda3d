@@ -441,13 +441,14 @@ class TaskManager:
 
     def doMethodLater(self, delayTime, funcOrTask, name, extraArgs=None,
             priority=0, uponDeath=None, appendTask=False):
+        if delayTime < 0:
+            self.notify.warning('doMethodLater: added task: %s with negative delay: %s' % (name, delayTime))
         if isinstance(funcOrTask, Task):
             task = funcOrTask
         elif callable(funcOrTask):
             task = Task(funcOrTask, priority)
         else:
-            self.notify.error(
-                'add: Tried to add a task that was not a Task or a func')
+            self.notify.error('doMethodLater: Tried to add a task that was not a Task or a func')
         task.setPriority(priority)
         task.name = name
         task.extraArgs = extraArgs
