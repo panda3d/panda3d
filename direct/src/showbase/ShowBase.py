@@ -2027,6 +2027,9 @@ class ShowBase(DirectObject.DirectObject):
         else:
             __builtins__["direct"] = self.direct = None
 
+    def profileNextFrame(self):
+        self.taskMgr.profileNextFrame()
+
     def run(self):
         self.taskMgr.run()
 

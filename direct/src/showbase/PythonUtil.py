@@ -761,9 +761,15 @@ def profiled(category, terse=False):
     def loadParticles():
         ...
 
+    want-profile-particles 1
     """
     assert type(category) is types.StringType, "must provide a category name for @profiled"
-    if not __dev__:
+
+    try:
+        null = not __dev__
+    except:
+        null = not __debug__
+    if null:
         # if we're not in __dev__, just return the function itself. This
         # results in zero runtime overhead, since decorators are evaluated
         # at module-load.
