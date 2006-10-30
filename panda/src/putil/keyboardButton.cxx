@@ -72,6 +72,10 @@ DEFINE_KEYBD_BUTTON_HANDLE(f9)
 DEFINE_KEYBD_BUTTON_HANDLE(f10)
 DEFINE_KEYBD_BUTTON_HANDLE(f11)
 DEFINE_KEYBD_BUTTON_HANDLE(f12)
+DEFINE_KEYBD_BUTTON_HANDLE(f13)
+DEFINE_KEYBD_BUTTON_HANDLE(f14)
+DEFINE_KEYBD_BUTTON_HANDLE(f15)
+DEFINE_KEYBD_BUTTON_HANDLE(f16)
 DEFINE_KEYBD_BUTTON_HANDLE(left)
 DEFINE_KEYBD_BUTTON_HANDLE(right)
 DEFINE_KEYBD_BUTTON_HANDLE(up)
@@ -133,6 +137,11 @@ init_keyboard_buttons() {
   ButtonRegistry::ptr()->register_button(_f10, "f10");
   ButtonRegistry::ptr()->register_button(_f11, "f11");
   ButtonRegistry::ptr()->register_button(_f12, "f12");
+
+  ButtonRegistry::ptr()->register_button(_f13, "f13");
+  ButtonRegistry::ptr()->register_button(_f14, "f14");
+  ButtonRegistry::ptr()->register_button(_f15, "f15");
+  ButtonRegistry::ptr()->register_button(_f16, "f16");
 
   ButtonRegistry::ptr()->register_button(_left, "arrow_left");
   ButtonRegistry::ptr()->register_button(_right, "arrow_right");

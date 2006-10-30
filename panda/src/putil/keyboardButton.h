@@ -53,6 +53,12 @@ PUBLISHED:
   static ButtonHandle f11();
   static ButtonHandle f12();
 
+  // PC keyboards don't have these four buttons, but Macs do.
+  static ButtonHandle f13();
+  static ButtonHandle f14();
+  static ButtonHandle f15();
+  static ButtonHandle f16();
+
   static ButtonHandle left();
   static ButtonHandle right();
   static ButtonHandle up();

@@ -1155,7 +1155,7 @@ void handleWindowDMEvent (void *userData, short theMessage, void *notifyData)
 OSStatus osxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, EventRef event, Boolean keyDown) {
   OSStatus result = eventNotHandledErr;
 
-  if (osxdisplay_cat.is_spam()) {
+  if (osxdisplay_cat.is_debug()) {
     UInt32 keyCode;
     GetEventParameter (event, kEventParamKeyCode, typeUInt32, NULL, sizeof(UInt32), NULL, &keyCode);
 
@@ -1410,11 +1410,15 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
      case  97:  nk = KeyboardButton::f6();				  break;
      case  98:  nk = KeyboardButton::f7();				  break;
      case 100:  nk = KeyboardButton::f8();				  break;
-         //	case    :  nk = KeyboardButton::f9();				  break;  // seem to be used by the systems..
-         //	case    :  nk = KeyboardButton::f10();				  break;
-         //	case    :  nk = KeyboardButton::f11();				  break;
-         //	case    :  nk = KeyboardButton::f12();				  break;
-         //	case 105:  nk = KeyboardButton::f13();				  break;  // panda does not have a 13
+     case 101:  nk = KeyboardButton::f9();				  break;
+     case 109:  nk = KeyboardButton::f10();				  break;
+     case 103:  nk = KeyboardButton::f11();				  break;
+     case 111:  nk = KeyboardButton::f12();				  break;
+
+     case 105:  nk = KeyboardButton::f13();				  break;
+     case 107:  nk = KeyboardButton::f14();				  break;
+     case 113:  nk = KeyboardButton::f15();				  break;
+     case 106:  nk = KeyboardButton::f16();				  break;
 
          // shiftable chartablet 
      case  50:  nk = KeyboardButton::ascii_key('`');				  break;
