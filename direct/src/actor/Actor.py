@@ -345,7 +345,7 @@ class Actor(DirectObject, NodePath):
             Actor.notify.error("no part named: %s" % (partName))
 
         self.__doListJoints(0, partDef.partBundle.node().getBundle(),
-                            subset.isIncludeEmpty(), subpartDef.subset)
+                            subpartDef.subset.isIncludeEmpty(), subpartDef.subset)
 
     def __doListJoints(self, indentLevel, part, isIncluded, subset):
         name = part.getName()
