@@ -114,6 +114,10 @@ set_value_node(PandaNode *value_node) {
   }
 
   _value_node = value_node;
+
+  if (_value_node != (PandaNode *)NULL) {
+    _value = _value_node->get_transform();
+  }
 }
 
 
