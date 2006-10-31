@@ -80,7 +80,7 @@ class MotionTrail(NodePath, DirectObject):
         self.continuous_motion_trail = True
         self.color_scale = 1.0
         self.time_window = 1.0
-        self.sampling_time = 1.0 / 30.0
+        self.sampling_time = 0.0
         self.square_t = True
 
         self.task_transform = False
@@ -140,6 +140,8 @@ class MotionTrail(NodePath, DirectObject):
 
                 transform = None
 
+#                print motion_trail.time_window
+                
                 if (motion_trail.root_node_path != None) and (motion_trail.root_node_path != render):
                     motion_trail.root_node_path.update ( )
 
@@ -293,6 +295,11 @@ class MotionTrail(NodePath, DirectObject):
         return state
 
     def update_motion_trail (self, current_time, transform):
+
+        if (len (self.frame_list) >= 1):
+            if (transform == self.frame_list [0].transform):
+#                print "duplicate transform"              
+                return
 
         if (self.check_for_update (current_time)):
 
