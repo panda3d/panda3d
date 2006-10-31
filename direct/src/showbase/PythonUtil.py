@@ -2392,6 +2392,39 @@ class ClassTree:
     def __repr__(self):
         return self._getStr()
 
+
+def report(types = [],notifyName = None,notifyLevel = 'fatal'):
+    if __dev__:
+        def decorator(f):
+            def wrap(*args,**kwargs):
+                rArgs = [`x`+', ' for x in args] + [ x + ' = ' + '%s, ' % `y` for x,y in kwargs.items()]
+                    
+                if not rArgs:
+                    rArgs = '()'
+                else:
+                    rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
+
+                outStr = f.func_name + rArgs
+
+                if 'frameCount' in types:
+                    outStr = `globalClock.getFrameCount()` + ': ' + outStr
+
+                if args and notifyName:
+                    eval('args[0].%s.%s(\'%s\')'%(notifyName,notifyLevel,outStr))
+                else:
+                    print outStr
+
+                return f(*args,**kwargs)
+
+            wrap.func_name = f.func_name
+            wrap.__doc__ = f.__doc__
+            return wrap
+    else:
+        def decorator(f):
+            return f
+        
+    return decorator
+
 def getBase():
     try:
         return base
