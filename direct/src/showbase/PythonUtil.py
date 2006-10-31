@@ -2393,10 +2393,12 @@ class ClassTree:
         return self._getStr()
 
 
-def report(types = [],notifyName = None,notifyLevel = 'fatal'):
+def report(types = [],notifyFunc = None):
     if __dev__:
         def decorator(f):
             def wrap(*args,**kwargs):
+                aargs = args
+                kkwargs = kwargs
                 rArgs = [`x`+', ' for x in args] + [ x + ' = ' + '%s, ' % `y` for x,y in kwargs.items()]
                     
                 if not rArgs:
@@ -2409,8 +2411,8 @@ def report(types = [],notifyName = None,notifyLevel = 'fatal'):
                 if 'frameCount' in types:
                     outStr = `globalClock.getFrameCount()` + ': ' + outStr
 
-                if args and notifyName:
-                    eval('args[0].%s.%s(\'%s\')'%(notifyName,notifyLevel,outStr))
+                if notifyFunc:
+                    notifyFunc(outStr)
                 else:
                     print outStr
 
