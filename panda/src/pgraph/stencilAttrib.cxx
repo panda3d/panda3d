@@ -78,7 +78,8 @@ StencilAttrib() {
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilAttrib::make_off
 //       Access: Published, Static
-//  Description: Constructs a front face StencilAttrib.
+//  Description: Constructs a StencilAttrib that has stenciling 
+//               turned off.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) StencilAttrib::
 make_off()
