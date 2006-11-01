@@ -26,8 +26,12 @@ class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : StencilAttrib
-// Description : Enables or disables writing of pixel to framebuffer
-//               based on its alpha value relative to a reference alpha value
+// Description : A StencilAttrib is a collection of all stencil render
+//               states.  The render states in a StencilAttrib are 
+//               read-only.  A StencilAttrib is created with make or 
+//               make_2_sided.  To determine if two sided stencil is 
+//               supported, call the function GraphicsStateGuardian::
+//               get_supports_two_sided_stencil.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA StencilAttrib : public RenderAttrib {
 private:
