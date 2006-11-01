@@ -36,6 +36,7 @@ NotifyCategoryDecl(audio, EXPCL_PANDA, EXPTP_PANDA);
 extern EXPCL_PANDA ConfigVariableBool audio_active;
 extern EXPCL_PANDA ConfigVariableInt audio_cache_limit;
 extern EXPCL_PANDA ConfigVariableDouble audio_volume;
+extern EXPCL_PANDA ConfigVariableFilename audio_dls_file;
 
 //We Need This one.
 extern EXPCL_PANDA ConfigVariableString audio_library_name;

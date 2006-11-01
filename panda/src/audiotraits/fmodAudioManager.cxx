@@ -43,15 +43,31 @@
 
 TypeHandle FmodAudioManager::_type_handle;
 
+FMOD::System *FmodAudioManager::_system; 
 pset<FmodAudioManager *> FmodAudioManager::_all_managers;
+
+bool FmodAudioManager::_system_is_valid = false;
+
+
+//  This sets the distance factor for 3D audio to use feet. 
+//  FMOD uses meters by default.
+//  Since Panda use feet we need to compensate for that with a factor of 3.28
+//
+//  This can be overwritten.  You just need to call
+//  audio_3d_set_distance_factor(float factor) and set your new factor.
+
+float FmodAudioManager::_doppler_factor = 1;
+float FmodAudioManager::_distance_factor = 3.28;
+float FmodAudioManager::_drop_off_factor = 1;
+
 
 ////////////////////////////////////////////////////////////////////
 // Central dispatcher for audio errors.
 ////////////////////////////////////////////////////////////////////
 
-void fmod_audio_errcheck(FMOD_RESULT result) {
+void fmod_audio_errcheck(const char *context, FMOD_RESULT result) {
   if (result != 0) {
-    audio_error("FMOD Error: "<< FMOD_ErrorString(result) );
+    audio_error(context << ": " << FMOD_ErrorString(result) );
   }
 }
 
@@ -95,48 +111,60 @@ FmodAudioManager() {
   _up.x = 0;
   _up.y = 0;
   _up.z = 0;
+
+  if (_system == (FMOD::System *)NULL) {
+    // Create the global FMOD System object.  This one object must be
+    // shared by all FmodAudioManagers (this is particularly true on
+    // OSX, but the FMOD documentation is unclear as to whether this
+    // is the intended design on all systems).
+
+    result = FMOD::System_Create(&_system);
+    fmod_audio_errcheck("FMOD::System_Create()", result);
+
+    //  Let check the Version of FMOD to make sure the Headers and Libraries are correct.
+    result = _system->getVersion(&version);
+    fmod_audio_errcheck("_system->getVersion()", result);
+  
+    if (version < FMOD_VERSION){
+      audio_error("You are using an old version of FMOD.  This program requires:" << FMOD_VERSION);
+    }
+
+    //Stick Surround Sound 5.1 thing Here.
+    if (fmod_use_surround_sound) {
+      audio_debug("Setting FMOD to use 5.1 Surround Sound.");
+      result = _system->setSpeakerMode( FMOD_SPEAKERMODE_5POINT1 );
+      fmod_audio_errcheck("_system->setSpeakerMode()", result);
+    }
+
+    //Now we Initialize the System.
+    result = _system->init(fmod_number_of_sound_channels, FMOD_INIT_NORMAL, 0);
+    fmod_audio_errcheck("_system->init()", result);
+
+    _system_is_valid = (result == FMOD_OK);
+
+    if (_system_is_valid) {
+      result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
+      fmod_audio_errcheck("_system->set3DSettings()", result);
+
+      result = _system->setFileSystem(open_callback, close_callback, read_callback, seek_callback, -1);
+      fmod_audio_errcheck("_system->setFileSystem()", result);
+    }
+  }
+
+  _is_valid = _system_is_valid;
+
+  memset(&_midi_info, 0, sizeof(_midi_info));
+  _midi_info.cbsize = sizeof(_midi_info);
+
+  Filename dls_filename = audio_dls_file;
+  if (!dls_filename.empty()) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->resolve_filename(dls_filename, get_sound_path()) ||
+      vfs->resolve_filename(dls_filename, get_model_path());
     
-  result = FMOD::System_Create(&_system);
-  fmod_audio_errcheck(result);
-
-  //  Let check the Version of FMOD to make sure the Headers and Libraries are correct.
-  result = _system->getVersion(&version);
-  fmod_audio_errcheck(result);
-  
-  if (version < FMOD_VERSION){
-    audio_error("You are using an old version of FMOD.  This program requires:" << FMOD_VERSION);
+    _dlsname = dls_filename.to_os_specific();
+    _midi_info.dlsname = _dlsname.c_str();
   }
-
-  //Stick Surround Sound 5.1 thing Here.
-  if (fmod_use_surround_sound) {
-    audio_debug("Setting FMOD to use 5.1 Surround Sound.");
-    result = _system->setSpeakerMode( FMOD_SPEAKERMODE_5POINT1 );
-    fmod_audio_errcheck(result);
-  }
-
-  //Now we Initialize the System.
-  result = _system->init(fmod_number_of_sound_channels, FMOD_INIT_NORMAL, 0);
-  fmod_audio_errcheck(result);
-
-  if (result == FMOD_OK){
-    _is_valid = true;
-  } else {
-    _is_valid = false;
-  }
-
-  //  This sets the distance factor for 3D audio to use feet. 
-  //  FMOD uses meters by default.
-  //  Since Panda use feet we need to compensate for that with a factor of 3.28
-  //
-  //  This can be over written.  You just need to call
-  //  audio_3d_set_distance_factor(float factor) and set you new factor.
-  
-  _doppler_factor = 1;
-  _distance_factor = 3.28;
-  _drop_off_factor = 1;
-
-  result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
-  fmod_audio_errcheck( result );
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,8 +186,12 @@ FmodAudioManager::
   // Remove me from the managers list.
   _all_managers.erase(this);
 
+  if (_all_managers.empty()) {
     result = _system->release();
-  fmod_audio_errcheck(result);
+    fmod_audio_errcheck("_system->release()", result);
+    _system = NULL;
+    _system_is_valid = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,7 +218,8 @@ get_sound(const string &file_name, bool positional) {
   Filename path = file_name;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(path, get_sound_path());
+  vfs->resolve_filename(path, get_sound_path()) ||
+    vfs->resolve_filename(path, get_model_path());
 
   // Build a new AudioSound from the audio data.
   PT(AudioSound) audioSound = 0;
@@ -233,7 +266,7 @@ add_dsp( PT(AudioDSP) x) {
     return false;
   } else {
     result = _system->addDSP( fdsp->_dsp );
-    fmod_audio_errcheck( result );
+    fmod_audio_errcheck("_system->addDSP()", result);
     _system_dsp.insert(fdsp);
     fdsp->set_in_chain(true);
     return true;
@@ -256,7 +289,7 @@ remove_dsp(PT(AudioDSP) x) {
 
   if ( fdsp->get_in_chain() ) {
     result = fdsp->_dsp->remove();
-    fmod_audio_errcheck( result );
+    fmod_audio_errcheck("_dsp->remove()", result);
 
     _system_dsp.erase(fdsp);
 
@@ -281,7 +314,7 @@ getSpeakerSetup() {
   int returnMode;
 
   result = _system->getSpeakerMode( &speakerMode );
-  fmod_audio_errcheck( result );
+  fmod_audio_errcheck("_system->getSpeakerMode()", result);
 
   switch (speakerMode) {
     case  FMOD_SPEAKERMODE_RAW:
@@ -343,7 +376,7 @@ setSpeakerSetup(AudioManager::SpeakerModeCategory cat) {
   FMOD_RESULT result;
   FMOD_SPEAKERMODE speakerModeType = (FMOD_SPEAKERMODE)cat;
   result = _system->setSpeakerMode( speakerModeType);
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_system->setSpeakerMode()", result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -378,7 +411,16 @@ get_volume() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 set_active(bool active) {
-  _active = active;
+  if (_active != active) {
+    _active = active;
+
+    // Tell our AudioSounds to adjust:
+    for (SoundSet::iterator i = _all_sounds.begin(); 
+         i != _all_sounds.end(); 
+         ++i) {
+      (*i)->set_active(_active);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -398,8 +440,17 @@ get_active() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 stop_all_sounds() {
-  for (SoundSet::iterator i = _all_sounds.begin(); i != _all_sounds.end(); ++i) {
+  // We have to walk through this list with some care, since stopping
+  // a sound may also remove it from the set (if there are no other
+  // references to the sound).
+  SoundSet::iterator i;
+  i = _all_sounds.begin();
+  while (i != _all_sounds.end()) {
+    SoundSet::iterator next = i;
+    ++next;
+
     (*i)->stop();
+    i = next;
   }
 }
 
@@ -451,7 +502,7 @@ audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float v
   _up.z = uy;
     
   result = _system->set3DListenerAttributes( 0, &_position, &_velocity, &_forward, &_up);
-  fmod_audio_errcheck( result );
+  fmod_audio_errcheck("_system->set3DListenerAttributes()", result);
 
 }
 
@@ -482,7 +533,7 @@ audio_3d_set_distance_factor(float factor) {
   _distance_factor = factor;
 
   result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
-  fmod_audio_errcheck( result );
+  fmod_audio_errcheck("_system->set3DSettings()", result);
 
 
 }
@@ -515,7 +566,7 @@ audio_3d_set_doppler_factor(float factor) {
   _doppler_factor = factor;
 
   result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
-  fmod_audio_errcheck( result );
+  fmod_audio_errcheck("_system->set3DSettings()", result);
 
 }
 
@@ -546,7 +597,7 @@ audio_3d_set_drop_off_factor(float factor) {
   _drop_off_factor = factor;
 
   result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
-  fmod_audio_errcheck( result );
+  fmod_audio_errcheck("_system->set3DSettings()", result);
 
 }
 
@@ -646,6 +697,92 @@ get_cache_limit() const {
   return 0;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::open_callback
+//       Access: Private, Static
+//  Description: A hook into Panda's virtual file system.
+////////////////////////////////////////////////////////////////////
+FMOD_RESULT F_CALLBACK FmodAudioManager::
+open_callback(const char *name, int, unsigned int *file_size,
+              void **handle, void **user_data) {
+  if (name == (const char *)NULL || name[0] == '\0') {
+    // An invalid attempt to open an unnamed file.
+    return FMOD_ERR_FILE_NOTFOUND;
+  }
+    
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  PT(VirtualFile) file = vfs->get_file(Filename(name));
+  if (file == (VirtualFile *)NULL) {
+    return FMOD_ERR_FILE_NOTFOUND;
+  }
+  istream *str = file->open_read_file(true);
+
+  (*file_size) = file->get_file_size(str);
+  (*handle) = (void *)str;
+  (*user_data) = NULL;
+
+  return FMOD_OK;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::close_callback
+//       Access: Private, Static
+//  Description: A hook into Panda's virtual file system.
+////////////////////////////////////////////////////////////////////
+FMOD_RESULT F_CALLBACK FmodAudioManager::
+close_callback(void *handle, void *user_data) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  istream *str = (istream *)handle;
+  vfs->close_read_file(str);
+
+  return FMOD_OK;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::read_callback
+//       Access: Private, Static
+//  Description: A hook into Panda's virtual file system.
+////////////////////////////////////////////////////////////////////
+FMOD_RESULT F_CALLBACK FmodAudioManager::
+read_callback(void *handle, void *buffer, unsigned int size_bytes,
+              unsigned int *bytes_read, void *user_data) {
+  istream *str = (istream *)handle;
+  str->read((char *)buffer, size_bytes);
+  (*bytes_read) = str->gcount();
+
+  if (str->eof()) {
+    if ((*bytes_read) == 0) {
+      return FMOD_ERR_FILE_EOF;
+    } else {
+      // Report the EOF next time.
+      return FMOD_OK;
+    }
+  } if (str->fail()) {
+    return FMOD_ERR_FILE_BAD;
+  } else {
+    return FMOD_OK;
+  }
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::seek_callback
+//       Access: Private, Static
+//  Description: A hook into Panda's virtual file system.
+////////////////////////////////////////////////////////////////////
+FMOD_RESULT F_CALLBACK FmodAudioManager::
+seek_callback(void *handle, unsigned int pos, void *user_data) {
+  istream *str = (istream *)handle;
+  str->clear();
+  str->seekg(pos);
+
+  if (str->fail() && !str->eof()) {
+    return FMOD_ERR_FILE_COULDNOTSEEK;
+  } else {
+    return FMOD_OK;
+  }
+}
 
 
 #endif //]

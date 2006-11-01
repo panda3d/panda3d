@@ -41,6 +41,14 @@ ConfigVariableString audio_library_name
 ConfigVariableDouble audio_volume 
 ("audio-volume", 1.0f);
 
+ConfigVariableFilename audio_dls_file 
+("audio-dls-file", Filename(),
+ PRC_DESC("Specifies a DLS file that defines an instrument set to load "
+          "for MIDI file playback.  If this is not specified, the sound "
+          "interface will try to use the system default DLS file, if "
+          "one is available; the likely success of this depends on the "
+          "operating system."));
+
 // Config variables for Fmod:
 
 //I should note this somewhere.  The actual number of sound one could

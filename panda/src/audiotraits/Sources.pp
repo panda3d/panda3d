@@ -26,7 +26,7 @@
 #begin lib_target
   #define TARGET fmod_audio
   #define BUILD_TARGET $[HAVE_FMODEX]
-  #define USE_PACKAGES fmod
+  #define USE_PACKAGES fmodex
   #define BUILDING_DLL BUILDING_FMOD_AUDIO
   #define LOCAL_LIBS audio event
   #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib winmm.lib

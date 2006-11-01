@@ -51,7 +51,7 @@ FmodAudioDSP(AudioManager *manager, AudioManager::DSP_category cat) {
   FMOD_DSP_TYPE dsptype = (FMOD_DSP_TYPE)cat;
 
   result = _manager->_system->createDSPByType( dsptype, &_dsp);
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_system->createDSPByType()", result);
 
   set_in_chain(false);
 
@@ -74,10 +74,10 @@ FmodAudioDSP::
   FMOD_RESULT result;
 
   result = _dsp->remove();
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->remove()", result);
 
   result = _dsp->release();
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->release()", result);
 
   audio_debug("DSP GONE");
 }
@@ -98,7 +98,7 @@ reset() {
   FMOD_RESULT result;
 
   result = _dsp->reset();
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->reset()", result);
 
   audio_debug("DSP Reset.");
 }
@@ -118,7 +118,7 @@ remove() {
   FMOD_RESULT result;
 
   result = _dsp->remove();
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->remove()", result);
 
   audio_debug("DSP Removed from relative effects chain.");
 }
@@ -138,7 +138,7 @@ set_bypass(bool bypass) {
   FMOD_RESULT result;
 
   result = _dsp->setBypass(bypass);
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->setBypass()", result);
 
   audio_debug("DSP Bypass set to:" << bypass );
 }
@@ -159,7 +159,7 @@ get_bypass() {
   bool bypass;
 
   result = _dsp->getBypass(&bypass);
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->getBypass()", result);
 
   return bypass;
 }
@@ -183,7 +183,7 @@ set_parameter(const string &name, float value) {
   FMOD_RESULT result;
 
   result = _dsp->setParameter(parameterIndex, value);
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->setParameter()", result);
 }
 
 
@@ -203,7 +203,7 @@ get_num_parameters() {
   int numOfParameters;
 
   result = _dsp->getNumParameters(&numOfParameters);
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->getNumParameters()", result);
 
   return numOfParameters;
 }
@@ -231,7 +231,7 @@ get_parameter_name(int parameterIndex) {
   float parameterMax;
 
   result = _dsp->getParameterInfo(parameterIndex, parameterName, parameterLabel, parameterDescription, parameterDescriptionLength, &parameterMin, &parameterMax);
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->getParameterInfo()", result);
 
   string returnInfo = (parameterName);
 
@@ -275,7 +275,7 @@ get_parameter_description(int parameterIndex) {
   float parameterMax;
 
   result = _dsp->getParameterInfo(parameterIndex, parameterName, parameterLabel, parameterDescription, parameterDescriptionLength, &parameterMin, &parameterMax);
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->getParameterInfo()", result);
 
   return parameterLabel;
 
@@ -304,7 +304,7 @@ get_parameter_min(int parameterIndex) {
   float parameterMax;
 
   result = _dsp->getParameterInfo(parameterIndex, parameterName, parameterLabel, parameterDescription, parameterDescriptionLength, &parameterMin, &parameterMax);
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->getParameterInfo()", result);
 
   return parameterMin;
 }
@@ -332,7 +332,7 @@ get_parameter_max(int parameterIndex) {
   float parameterMax;
 
   result = _dsp->getParameterInfo(parameterIndex, parameterName, parameterLabel, parameterDescription, parameterDescriptionLength, &parameterMin, &parameterMax);
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->getParameterInfo()", result);
 
   return parameterMax;
 }
@@ -361,7 +361,7 @@ get_parameter_value(const string &name) {
 
 
   result = _dsp->getParameter(parameterIndex, &parameterValue, valuestr, valuestrlen);
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->getParameter()", result);
 
   return parameterValue;
 }
@@ -404,7 +404,7 @@ get_dsp_name() {
   int   configheight;
 
   result = _dsp->getInfo(name, &version, &channels, &configwidth, &configheight);
-  fmod_audio_errcheck(result);
+  fmod_audio_errcheck("_dsp->getInfo()", result);
 
   string returnInfo = (name);
   //returnInfo.append(" Version: ");

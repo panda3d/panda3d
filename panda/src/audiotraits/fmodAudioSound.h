@@ -23,44 +23,50 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-//[FIRST READ FmodAudioManager for an Introduction if you haven't already].
+//[FIRST READ FmodAudioManager for an Introduction if you haven't
+//already].
 //
-//Hello, all future Panda audio code people! This is my errata documentation to
-//Help any future programmer maintain FMOD and PANDA.
+//Hello, all future Panda audio code people! This is my errata
+//documentation to Help any future programmer maintain FMOD and PANDA.
 //
-//Well, if you reading this you probably want to know how PANDA deals with sounds
-//directly using FMOD-EX. Well I am going to tell you.
+//Well, if you reading this you probably want to know how PANDA deals
+//with sounds directly using FMOD-EX. Well I am going to tell you.
 //
-//The first thing, you as the programmer have to understand, especially if you
-//never have done sound programming before, is how the FMOD-EX API works.
+//The first thing, you as the programmer have to understand,
+//especially if you never have done sound programming before, is how
+//the FMOD-EX API works.
 //
-//With FMOD-EX the guys at Firelight, adopted a model of managing sounds with FMOD
-//similar to how a Sound Designer creates sound in a sound studio using SOUNDS
-//and CHANNELS. Although this may seem strange at first, if you are not familiar
-//with sound programming, there is a very good metaphor you are probably already
-//familiar with to explain how FMOD-EX works.
+//With FMOD-EX the guys at Firelight, adopted a model of managing
+//sounds with FMOD similar to how a Sound Designer creates sound in a
+//sound studio using SOUNDS and CHANNELS. Although this may seem
+//strange at first, if you are not familiar with sound programming,
+//there is a very good metaphor you are probably already familiar with
+//to explain how FMOD-EX works.
 //
-//Think of you standard GUI API. Usually a GUI API is made up of two things:
-//Windows and Widgets. These correspond to CHANNELS and SOUNDS, where a
-//Channel is a Window and a Sound is Widget. Sounds are played within channels,
-//and channels don’t exist unless they have something to display.
+//Think of you standard GUI API. Usually a GUI API is made up of two
+//things: Windows and Widgets. These correspond to CHANNELS and
+//SOUNDS, where a Channel is a Window and a Sound is Widget. Sounds
+//are played within channels, and channels don't exist unless they
+//have something to display.
 //
-//Now why am I explaining all of this? When PANDA was created they set up the
-//basic audio classes to handle only the idea of a SOUND. The idea of a
-//Channel really wasn't prevalent as in more modern Audio APIs. With this rewrite
-//of PANDA to use the FMOD-EX API, the PANDA FmodAudioSound Class, now has to
-//handle two different parts of the FMOD-EX API in order to play a sound.
+//Now why am I explaining all of this? When PANDA was created they set
+//up the basic audio classes to handle only the idea of a SOUND. The
+//idea of a Channel really wasn't prevalent as in more modern Audio
+//APIs. With this rewrite of PANDA to use the FMOD-EX API, the PANDA
+//FmodAudioSound Class, now has to handle two different parts of the
+//FMOD-EX API in order to play a sound.
 //
-//SOUND: The object the handles the audio data in form of WAV, AIF, OGG, MID, IT,
-//MP3, etc... And CHANNEL: The object that actually plays the sound and
-//manipulates it in real time.
+//SOUND: The object the handles the audio data in form of WAV, AIF,
+//OGG, MID, IT, MP3, etc... And CHANNEL: The object that actually
+//plays the sound and manipulates it in real time.
 //
-//Ultimately this isn’t a problem expect for a couple situations when you go to
-//play a sound, which I will explain in more detail in that part of the code. All
-//that you have to know right now is that Channels in FMOD  do not exist
-//unless they are playing a sound. And in the PANDA FmodAudioSound API class there
-//is only ONE dedicated channel per sound.
-//Otherwise there is really nothing to worry about.
+//Ultimately this isn't a problem expect for a couple situations when
+//you go to play a sound, which I will explain in more detail in that
+//part of the code. All that you have to know right now is that
+//Channels in FMOD do not exist unless they are playing a sound. And
+//in the PANDA FmodAudioSound API class there is only ONE dedicated
+//channel per sound.  Otherwise there is really nothing to worry
+//about.
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -126,7 +132,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   void set_play_rate(float play_rate=1.0f);
   float get_play_rate() const;
 
-  const string& get_name() const;
+  const string &get_name() const;
             
   // return: playing time in seconds.
   float length() const;
@@ -151,13 +157,13 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   virtual float get_speaker_mix(AudioManager::SpeakerId speaker);
   virtual void set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright);
 
+  void set_active(bool active=true);
+  bool get_active() const;
+
   //THESE ARE NOT USED ANYMORE.
   //THEY ARE ONLY HERE BECAUSE THEY are still needed by Miles.
   //THESE are stubs in FMOD-EX version
   ////////////////////////////////////////////////////////////////////
-  void set_active(bool active=true);
-  bool get_active() const;
-
   void finished();
   void set_finished_event(const string& event);
   const string& get_finished_event() const;
@@ -203,6 +209,16 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   //The Data Structure that holds all the DSPs.
   typedef pset<PT (FmodAudioDSP) > DSPSet;
   DSPSet _sound_dsp;
+
+  bool _active;
+
+  // This reference-counting pointer is set to this while the sound is
+  // playing, and cleared when we get an indication that the sound has
+  // stopped.  This prevents a sound from destructing while it is
+  // playing.  We use a PT instead of managing the reference counts by
+  // hand to help guard against accidental reference count leaks or
+  // other mismanagement.
+  PT(FmodAudioSound) _self_ref;
 
   //THESE AREN'T USED ANYMORE.
   //THEY ARE ONLY HERE BECAUSE THEY are still need by Miles.

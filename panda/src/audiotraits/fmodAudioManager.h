@@ -23,43 +23,52 @@
 
 ////////////////////////////////////////////////////////////////////
 //
-//Hello, all future Panda audio code people! This is my errata documentation to
-//help any future programmer maintain FMOD and PANDA.
+//Hello, all future Panda audio code people! This is my errata
+//documentation to help any future programmer maintain FMOD and PANDA.
 //
-//This documentation more then that is needed, but I wanted to go all out, with
-//the documentation. Because I was a totally newbie at programming [especially
-//with C/C++] this semester I want to make sure future code maintainers have that
-//insight I did not when starting on the PANDA project here at the ETC/CMU.
+//This documentation more then that is needed, but I wanted to go all
+//out, with the documentation. Because I was a totally newbie at
+//programming [especially with C/C++] this semester I want to make
+//sure future code maintainers have that insight I did not when
+//starting on the PANDA project here at the ETC/CMU.
 //
-//As of Spring 2006, Panda's FMOD audio support has been pretty much completely
-//rewritten. This has been done so PANDA can use FMOD-EX [or AKA FMOD 4] and some
-//of its new features.
+//As of Spring 2006, Panda's FMOD audio support has been pretty much
+//completely rewritten. This has been done so PANDA can use FMOD-EX
+//[or AKA FMOD 4] and some of its new features.
 //
-//First, the FMOD-EX API itself has been completely rewritten compared to previous
-//versions. FMOD now handles any type of audio files, wave audio [WAV, AIF, MP3,
-//OGG, etc...] or musical file [MID, TRACKERS] as the same type of an object. The
-//API has also been structured more like a sound studio, with 'sounds' and
-//'channels'. This will be covered more in the FmodAudioSound.h/.cxx sources.
+//First, the FMOD-EX API itself has been completely rewritten compared
+//to previous versions. FMOD now handles any type of audio files, wave
+//audio [WAV, AIF, MP3, OGG, etc...] or musical file [MID, TRACKERS]
+//as the same type of an object. The API has also been structured more
+//like a sound studio, with 'sounds' and 'channels'. This will be
+//covered more in the FmodAudioSound.h/.cxx sources.
 //
-//Second, FMOD now offers virtually unlimited sounds to be played at once via
-//their virtual channels system. Actually the theoretical limit is around 4000,
-//but that is still a lot. What you need to know about this, is that even thought
-//you might only hear 32 sound being played at once, FMOD will keep playing any
-//additional sounds, and swap those on virtual channels in and out with those on real channels
-//depending on priority, or distance [if you are dealing with 3D audio].
+//Second, FMOD now offers virtually unlimited sounds to be played at
+//once via their virtual channels system. Actually the theoretical
+//limit is around 4000, but that is still a lot. What you need to know
+//about this, is that even thought you might only hear 32 sound being
+//played at once, FMOD will keep playing any additional sounds, and
+//swap those on virtual channels in and out with those on real
+//channels depending on priority, or distance [if you are dealing with
+//3D audio].
 //
-//Third, FMOD's DSP support has been added. So you can now add GLOBAL or SOUND
-//specific DSP effects. Right not you can only use FMOD's built in DSP effects.
-//But adding support for FMOD's support of VST effects shouldn't be that hard.
+//Third, FMOD's DSP support has been added. So you can now add GLOBAL
+//or SOUND specific DSP effects. Right not you can only use FMOD's
+//built in DSP effects.  But adding support for FMOD's support of VST
+//effects shouldn't be that hard.
 //
-//As for the FmodManager itself, it is pretty straight forward, I hope. As a
-//manager class, it will create the FMOD system with the ‘_system’ variable which
-//is an instance of FMOD::SYSTEM. This class is also the one responsible for
-//creation of Sounds, DSP, and maintaining the GLOBAL DSP chains [The GLOBAL DSP
-//chain is the DSP Chain which affects ALL the sounds].
+//As for the FmodManager itself, it is pretty straight forward, I
+//hope. As a manager class, it will create the FMOD system with the
+//"_system" variable which is an instance of FMOD::SYSTEM. (Actually,
+//we create only one global _system variable now, and share it with
+//all outstanding FmodManager objects--this appears to be the way FMOD
+//wants to work.)  The FmodManager class is also the one responsible
+//for creation of Sounds, DSP, and maintaining the GLOBAL DSP chains
+//[The GLOBAL DSP chain is the DSP Chain which affects ALL the
+//sounds].
 //
-//Any way that is it for an intro, lets move on to looking at the rest of the
-//code.
+//Any way that is it for an intro, lets move on to looking at the rest
+//of the code.
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -82,7 +91,7 @@
 class FmodAudioSound;
 class FmodAudioDSP;
 
-extern void fmod_audio_errcheck(FMOD_RESULT n);
+extern void fmod_audio_errcheck(const char *context, FMOD_RESULT n);
 
 class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   friend class FmodAudioSound;
@@ -163,23 +172,43 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   virtual unsigned int get_cache_limit() const;
   ////////////////////////////////////////////////////////////////////
 
+private:
+  static FMOD_RESULT F_CALLBACK 
+  open_callback(const char *name, int unicode, unsigned int *file_size,
+                void **handle, void **user_data);
+
+  static FMOD_RESULT F_CALLBACK 
+  close_callback(void *handle, void *user_data);
+
+  static FMOD_RESULT F_CALLBACK 
+  read_callback(void *handle, void *buffer, unsigned int size_bytes,
+                unsigned int *bytes_read, void *user_data);
+  
+  static FMOD_RESULT F_CALLBACK 
+  seek_callback(void *handle, unsigned int pos, void *user_data);
+
  private:
 
-  FMOD::System *_system; 
-  
+  static FMOD::System *_system; 
   static pset<FmodAudioManager *> _all_managers;
+
+  static bool _system_is_valid;
+
+  static float _distance_factor;
+  static float _doppler_factor;
+  static float _drop_off_factor;
 
   FMOD_VECTOR _position;
   FMOD_VECTOR _velocity;
   FMOD_VECTOR _forward;
   FMOD_VECTOR _up;
 
+  // DLS info for MIDI files
+  string _dlsname;
+  FMOD_CREATESOUNDEXINFO _midi_info;
+
   bool _is_valid;
   bool _active;
-
-  float _distance_factor;
-  float _doppler_factor;
-  float _drop_off_factor;
 
   // The set of all sounds.  Needed only to implement stop_all_sounds.
   typedef pset<FmodAudioSound *> SoundSet;
@@ -188,8 +217,6 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   // The Data Structure that holds all the DSPs.
   typedef pset<PT (FmodAudioDSP) > DSPSet;
   DSPSet _system_dsp;
-
-  friend class FmodAudioSound;
 
   ////////////////////////////////////////////////////////////
   //These are needed for Panda's Pointer System. DO NOT ERASE!

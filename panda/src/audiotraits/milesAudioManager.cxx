@@ -333,7 +333,8 @@ get_sound(const string& file_name, bool) {
   Filename path = file_name;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(path, get_sound_path());
+  vfs->resolve_filename(path, get_sound_path()) ||
+    vfs->resolve_filename(path, get_model_path());
   audio_debug("  resolved file_name is '"<<path<<"'");
 
   PT(SoundData) sd;
@@ -402,7 +403,8 @@ uncache_sound(const string& file_name) {
   Filename path = file_name;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(path, get_sound_path());
+  vfs->resolve_filename(path, get_sound_path()) ||
+    vfs->resolve_filename(path, get_model_path());
 
   audio_debug("  path=\""<<path<<"\"");
   SoundMap::iterator i=_sounds.find(path);
@@ -737,6 +739,12 @@ get_registry_entry(HKEY base, const char* subKeyName,
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 get_gm_file_path(string& result) {
+  Filename dls_filename = audio_dls_file;
+  if (!dls_filename.empty()) {
+    result = dls_filename.to_os_specific();
+    return;
+  }
+
 #ifdef WIN32
   if(!get_registry_entry(HKEY_LOCAL_MACHINE,"SOFTWARE\\Microsoft\\DirectMusic", "GMFilePath", result)) {
           char sysdir[MAX_PATH+1];
