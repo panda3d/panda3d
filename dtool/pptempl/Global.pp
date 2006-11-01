@@ -309,10 +309,11 @@
   #define rad_mss_libs $[RAD_MSS_LIBS]
 #endif
 
-#if $[HAVE_FMOD]
-  #define fmod_ipath $[wildcard $[FMOD_IPATH]]
-  #define fmod_lpath $[wildcard $[FMOD_LPATH]]
-  #define fmod_libs $[FMOD_LIBS]
+#if $[HAVE_FMODEX]
+  #define fmodex_ipath $[wildcard $[FMODEX_IPATH]]
+  #define fmodex_lpath $[wildcard $[FMODEX_LPATH]]
+  #define fmodex_cflags $[FMODEX_CFLAGS]
+  #define fmodex_libs $[FMODEX_LIBS]
 #endif
 
 #if $[HAVE_CHROMIUM]

@@ -717,10 +717,10 @@
 
 // Info for the Fmod audio engine
 // note this may be overwritten in wintools Config.pp
-#define FMOD_IPATH
-#define FMOD_LPATH
-#define FMOD_LIBS fmod
-#defer HAVE_FMOD $[libtest $[FMOD_LPATH],$[FMOD_LIBS]]
+#define FMODEX_IPATH
+#define FMODEX_LPATH
+#define FMODEX_LIBS fmodex
+#defer HAVE_FMODEX $[libtest $[FMODEX_LPATH],$[FMODEX_LIBS]]
 
 // Info for http://www.sourceforge.net/projects/chromium
 // note this may be overwritten in wintools Config.pp

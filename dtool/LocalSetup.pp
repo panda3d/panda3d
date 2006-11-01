@@ -86,10 +86,10 @@
 #else
 #print - Did not find Miles Sound System
 #endif
-#if $[HAVE_FMOD]
-#print + FMOD sound library
+#if $[HAVE_FMODEX]
+#print + FMODex sound library
 #else
-#print - Did not find FMOD sound library
+#print - Did not find FMODex sound library
 #endif
 #if $[HAVE_FREETYPE]
 #print + Freetype
@@ -150,8 +150,8 @@ $[cdefine PYTHON_FRAMEWORK]
 /* Define if we have RAD game tools, Miles Sound System installed.  */
 $[cdefine HAVE_RAD_MSS]
 
-/* Define if we have FMOD installed. */
-$[cdefine HAVE_FMOD]
+/* Define if we have FMODex installed. */
+$[cdefine HAVE_FMODEX]
 
 /* Define if we have Freetype 2.0 or better available. */
 $[cdefine HAVE_FREETYPE]
