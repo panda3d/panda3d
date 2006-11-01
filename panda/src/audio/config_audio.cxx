@@ -74,9 +74,6 @@ ConfigVariableBool fmod_use_surround_sound
 ConfigVariableBool audio_software_midi 
 ("audio-software-midi", true);
 
-ConfigVariableFilename audio_dls_file
-("audio-dls-file", "");
-
 ConfigVariableBool audio_play_midi 
 ("audio-play-midi", true);
 
