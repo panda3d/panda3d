@@ -494,8 +494,10 @@ class Actor(DirectObject, NodePath):
         Return list of Actor part names. If not an multipart actor,
         returns 'modelRoot' NOTE: returns parts of arbitrary LOD
         """
-        return self.__partBundleDict.values()[0].keys() + self.__subpartDict.keys()
-
+        partNames = []
+        if self.__partBundleDict:
+            partNames = self.__partBundleDict.values()[0].keys()
+        return partNames + self.__subpartDict.keys()
 
     def getGeomNode(self):
         """
