@@ -127,7 +127,8 @@ class DoInterestManager(DirectObject.DirectObject):
         DoInterestManager._interests.clear()
         self._outstandingScopes = set()
         self._completeEventCount = ScratchPad(num=0)
-        self._addDebugInterestHistory("RESET", "", 0, 0, 0, [])
+        if __debug__:
+            self._addDebugInterestHistory("RESET", "", 0, 0, 0, [])
 
     def isValidInterestHandle(self, handle):
         # pass in a handle (or anything else) and this will return true if it is
