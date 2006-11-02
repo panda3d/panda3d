@@ -1365,7 +1365,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
         break;
 
       case ButtonEvent::T_resume_down:
-        _current_buttons_down.set_bit(be._button.get_index());
+        //_current_buttons_down.set_bit(be._button.get_index());
         // Don't call press(), since the button wasn't actually
         // pressed just now.
         new_button_events.add_event(be);
