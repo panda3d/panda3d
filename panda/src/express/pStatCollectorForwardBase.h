@@ -32,7 +32,7 @@
 //               This is subclassed as PStatCollectorForward, which
 //               defines the actual functionality.
 ////////////////////////////////////////////////////////////////////
-class PStatCollectorForwardBase : public ReferenceCount {
+class EXPCL_PANDAEXPRESS PStatCollectorForwardBase : public ReferenceCount {
 PUBLISHED:
 #ifdef DO_PSTATS
   virtual ~PStatCollectorForwardBase();
