@@ -30,11 +30,15 @@ pvector<Element> ConstPointerToArray<Element>::_empty_array;
 template<class Element>
 INLINE PointerToArray<Element>::
 PointerToArray() :
-  PointerToBase<NodeRefCountObj<pvector<Element> > >((NodeRefCountObj<pvector<Element> > *)NULL)
+  PointerToArrayBase<Element>((PointerToArrayElement<Element> *)NULL)
 {
 }
 
-// return an empty array of size n
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::empty_array
+//       Access: Published, Static
+//  Description: Return an empty array of size n
+////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element> 
 PointerToArray<Element>::empty_array(size_type n) {
@@ -52,7 +56,7 @@ PointerToArray<Element>::empty_array(size_type n) {
 template<class Element>
 INLINE PointerToArray<Element>::
 PointerToArray(size_type n, const Element &value) :
-  PointerToBase<NodeRefCountObj<pvector<Element> > >(new NodeRefCountObj<pvector<Element> >) {
+  PointerToArrayBase<Element>(new PointerToArrayElement<Element>) {
   ((To *)(this->_void_ptr))->reserve(n);
   insert(begin(), n, value);
 }
@@ -65,8 +69,42 @@ PointerToArray(size_type n, const Element &value) :
 template<class Element>
 INLINE PointerToArray<Element>::
 PointerToArray(const PointerToArray<Element> &copy) :
-  PointerToBase<NodeRefCountObj<pvector<Element> > >(copy)
+  PointerToArrayBase<Element>(copy)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::get_col
+//       Access: Published
+//  Description: Returns the pointer to the PStatCollector object that
+//               tracks the total allocated size of this buffer.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE PStatCollectorForwardBase *PointerToArray<Element>::
+get_col() const {
+#ifdef DO_PSTATS
+  if ((this->_void_ptr) != NULL) {
+    return ((To *)(this->_void_ptr))->get_col();
+  }
+#endif  // DO_PSTATS
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::set_col
+//       Access: Published
+//  Description: Changes the pointer to the PStatCollector object that
+//               tracks the total allocated size of this buffer.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+set_col(PStatCollectorForwardBase *col) {
+#ifdef DO_PSTATS
+  if ((this->_void_ptr) == NULL) {
+    reassign(new PointerToArrayElement<Element>);
+  }
+  ((To *)(this->_void_ptr))->set_col(col);
+#endif  // DO_PSTATS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,7 +183,7 @@ template<class Element>
 INLINE TYPENAME PointerToArray<Element>::size_type PointerToArray<Element>::
 max_size() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   return ((To *)(this->_void_ptr))->max_size();
 }
@@ -170,7 +208,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 reserve(TYPENAME PointerToArray<Element>::size_type n) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new NodeRefCountObj<pvector<Element> >);
+    reassign(new PointerToArrayElement<Element>);
   }
   ((To *)(this->_void_ptr))->reserve(n);
 }
@@ -196,7 +234,7 @@ template<class Element>
 INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
 front() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   nassertd(!((To *)(this->_void_ptr))->empty()) {
     ((To *)(this->_void_ptr))->push_back(Element());
@@ -213,7 +251,7 @@ template<class Element>
 INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
 back() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   nassertd(!((To *)(this->_void_ptr))->empty()) {
     ((To *)(this->_void_ptr))->push_back(Element());
@@ -230,7 +268,7 @@ template<class Element>
 INLINE TYPENAME PointerToArray<Element>::iterator PointerToArray<Element>::
 insert(iterator position, const Element &x) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new NodeRefCountObj<pvector<Element> >);
+    reassign(new PointerToArrayElement<Element>);
     position = end();
   }
   nassertr(position >= ((To *)(this->_void_ptr))->begin() &&
@@ -247,7 +285,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 insert(iterator position, size_type n, const Element &x) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new NodeRefCountObj<pvector<Element> >);
+    reassign(new PointerToArrayElement<Element>);
     position = end();
   }
   nassertv(position >= ((To *)(this->_void_ptr))->begin() &&
@@ -293,7 +331,7 @@ template<class Element>
 INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
 operator [](size_type n) const {
   nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   nassertd(!((To *)(this->_void_ptr))->empty()) {
     ((To *)(this->_void_ptr))->push_back(Element());
@@ -354,7 +392,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 push_back(const Element &x) {
   if ((this->_void_ptr) == NULL) {
-    reassign(new NodeRefCountObj<pvector<Element> >);
+    reassign(new PointerToArrayElement<Element>);
   }
   ((To *)(this->_void_ptr))->push_back(x);
 }
@@ -368,7 +406,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 pop_back() {
   nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   nassertv(!((To *)(this->_void_ptr))->empty());
   ((To *)(this->_void_ptr))->pop_back();
@@ -385,7 +423,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 make_empty() {
   nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   nassertv(!((To *)(this->_void_ptr))->empty());
   ((To *)(this->_void_ptr))->clear();
@@ -429,7 +467,7 @@ template<class Element>
 INLINE pvector<Element> &PointerToArray<Element>::
 v() const {
   if ((this->_void_ptr) == NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   return *((To *)(this->_void_ptr));
 }
@@ -488,7 +526,7 @@ template<class Element>
 INLINE void PointerToArray<Element>::
 node_ref() const {
   if ((this->_void_ptr) == NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((PointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   ((To *)(this->_void_ptr))->node_ref();
 }
@@ -512,7 +550,7 @@ node_unref() const {
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element> &PointerToArray<Element>::
-operator = (NodeRefCountObj<pvector<Element> > *ptr) {
+operator = (PointerToArrayElement<Element> *ptr) {
   reassign(ptr);
   return *this;
 }
@@ -539,7 +577,19 @@ operator = (const PointerToArray<Element> &copy) {
 template<class Element>
 INLINE void PointerToArray<Element>::
 clear() {
-  reassign((NodeRefCountObj<pvector<Element> > *)NULL);
+#ifdef DO_PSTATS
+  if ((this->_void_ptr) != NULL) {
+    PT(PStatCollectorForwardBase) col = ((To *)(this->_void_ptr))->get_col();
+    if (col != (PStatCollectorForwardBase *)NULL) {
+      // If we have a PStat counter, preserve it.
+      reassign(new PointerToArrayElement<Element>);
+      ((To *)(this->_void_ptr))->set_col(col);
+      return;
+    }
+  }
+#endif // DO_PSTATS
+
+  reassign((PointerToArrayElement<Element> *)NULL);
 }
 
 
@@ -552,7 +602,7 @@ clear() {
 template<class Element>
 INLINE ConstPointerToArray<Element>::
 ConstPointerToArray() :
-  PointerToBase<NodeRefCountObj<pvector<Element> > >((NodeRefCountObj<pvector<Element> > *)NULL)
+  PointerToArrayBase<Element>((PointerToArrayElement<Element> *)NULL)
 {
 }
 
@@ -564,7 +614,7 @@ ConstPointerToArray() :
 template<class Element>
 INLINE ConstPointerToArray<Element>::
 ConstPointerToArray(const PointerToArray<Element> &copy) :
-  PointerToBase<NodeRefCountObj<pvector<Element> > >(copy)
+  PointerToArrayBase<Element>(copy)
 {
 }
 
@@ -576,8 +626,25 @@ ConstPointerToArray(const PointerToArray<Element> &copy) :
 template<class Element>
 INLINE ConstPointerToArray<Element>::
 ConstPointerToArray(const ConstPointerToArray<Element> &copy) :
-  PointerToBase<NodeRefCountObj<pvector<Element> > >(copy)
+  PointerToArrayBase<Element>(copy)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::get_col
+//       Access: Published
+//  Description: Returns the pointer to the PStatCollector object that
+//               tracks the total allocated size of this buffer.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE PStatCollectorForwardBase *ConstPointerToArray<Element>::
+get_col() const {
+#ifdef DO_PSTATS
+  if ((this->_void_ptr) != NULL) {
+    return ((To *)(this->_void_ptr))->get_col();
+  }
+#endif  // DO_PSTATS
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -656,7 +723,7 @@ template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
 max_size() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   return ((To *)(this->_void_ptr))->max_size();
 }
@@ -681,7 +748,7 @@ template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
 capacity() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   return ((To *)(this->_void_ptr))->capacity();
 }
@@ -695,7 +762,7 @@ template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
 front() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   nassertd(!((To *)(this->_void_ptr))->empty()) {
     ((To *)(this->_void_ptr))->push_back(Element());
@@ -712,7 +779,7 @@ template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
 back() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   nassertd(!((To *)(this->_void_ptr))->empty()) {
     ((To *)(this->_void_ptr))->push_back(Element());
@@ -730,7 +797,7 @@ template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
 operator [](size_type n) const {
   nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   nassertd(!((To *)(this->_void_ptr))->empty()) {
     ((To *)(this->_void_ptr))->push_back(Element());
@@ -804,7 +871,7 @@ template<class Element>
 INLINE const pvector<Element> &ConstPointerToArray<Element>::
 v() const {
   nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   return *(To *)(this->_void_ptr);
 }
@@ -840,7 +907,7 @@ template<class Element>
 INLINE void ConstPointerToArray<Element>::
 node_ref() const {
   if ((this->_void_ptr) == NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new NodeRefCountObj<pvector<Element> >);
+    ((ConstPointerToArray<Element> *)this)->reassign(new PointerToArrayElement<Element>);
   }
   ((To *)(this->_void_ptr))->node_ref();
 }
@@ -864,7 +931,7 @@ node_unref() const {
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
-operator = (NodeRefCountObj<pvector<Element> > *ptr) {
+operator = (PointerToArrayElement<Element> *ptr) {
   reassign(ptr);
   return *this;
 }
@@ -903,6 +970,19 @@ operator = (const ConstPointerToArray<Element> &copy) {
 template<class Element>
 INLINE void ConstPointerToArray<Element>::
 clear() {
-  reassign((NodeRefCountObj<pvector<Element> > *)NULL);
+#ifdef DO_PSTATS
+  if ((this->_void_ptr) != NULL) {
+    PT(PStatCollectorForwardBase) col = ((To *)(this->_void_ptr))->get_col();
+    if (col != (PStatCollectorForwardBase *)NULL) {
+      // If we have a PStat counter, preserve it.
+      reassign(new PointerToArrayElement<Element>);
+      ((To *)(this->_void_ptr))->set_col(col);
+      return;
+    }
+  }
+
+#else  // DO_PSTATS
+  reassign((PointerToArrayElement<Element> *)NULL);
+#endif // DO_PSTATS
 }
 

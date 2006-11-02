@@ -45,6 +45,7 @@ PStatClientImpl::
 PStatClientImpl(PStatClient *client) :
   _clock(TrueClock::get_global_ptr()),
   _delta(0.0),
+  _last_frame(0.0),
   _client(client),
   _reader(this, 0),
   _writer(this, pstats_threaded_write ? 1 : 0)
@@ -247,11 +248,12 @@ transmit_frame_data(int thread_index) {
       datagram.add_uint32(thread->_frame_number);
       thread->_frame_data.write_datagram(datagram);
 
+      bool sent;
       if (_writer.is_valid_for_udp(datagram)) {
         if (_udp_count * _udp_count_factor < _tcp_count * _tcp_count_factor) {
           // Send this one as a UDP packet.
           nassertv(_got_udp_port);
-          _writer.send(datagram, _udp_connection, _server);
+          sent = _writer.send(datagram, _udp_connection, _server);
           _udp_count++;
 
           if (_udp_count == 0) {
@@ -262,7 +264,7 @@ transmit_frame_data(int thread_index) {
 
         } else {
           // Send this one as a TCP packet.
-          _writer.send(datagram, _tcp_connection);
+          sent = _writer.send(datagram, _tcp_connection);
           _tcp_count++;
 
           if (_tcp_count == 0) {
@@ -273,7 +275,7 @@ transmit_frame_data(int thread_index) {
         }
 
       } else {
-        _writer.send(datagram, _tcp_connection);
+        sent = _writer.send(datagram, _tcp_connection);
         // If our packets are so large that we must ship them via TCP,
         // then artificially slow down the packet rate even further.
         int packet_ratio =
@@ -283,6 +285,11 @@ transmit_frame_data(int thread_index) {
       }
 
       thread->_next_packet = now + packet_delay;
+
+      if (!sent) {
+        pstats_cat.debug()
+          << "Couldn't send packet.\n";
+      }
     }
   }
 }

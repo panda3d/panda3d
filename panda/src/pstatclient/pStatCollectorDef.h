@@ -50,8 +50,8 @@ public:
   ColorDef _suggested_color;
   int _sort;
   string _level_units;
-  float _suggested_scale;
-  float _factor;
+  double _suggested_scale;
+  double _factor;
   bool _is_active;
   bool _active_explicitly_set;
 };

@@ -388,6 +388,12 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
       header.verify_datagram(datagram);
     }
 
+    if (net_cat.is_spam()) {
+      net_cat.spam()
+        << "Sending UDP datagram with " 
+        << bytes_to_send << " bytes to " << (void *)this << "\n";
+    }
+
     PR_Unlock(_write_mutex);
     return check_send_error(result, errcode, bytes_to_send);
   }

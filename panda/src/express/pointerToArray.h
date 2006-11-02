@@ -70,9 +70,7 @@
 
 #include "pandabase.h"
 
-#include "nodeReferenceCount.h"
-#include "pointerTo.h"
-#include "pvector.h"
+#include "pointerToArrayBase.h"
 
 #if defined(WIN32_VC) && !defined(__INTEL_COMPILER)
 // disable mysterious MSVC warning for static inline PTA::empty_array method
@@ -99,9 +97,9 @@
 //               different parts of the system that may not use it.
 ////////////////////////////////////////////////////////////////////
 template <class Element>
-class PointerToArray : public PointerToBase<NodeRefCountObj<pvector<Element> > > {
+class PointerToArray : public PointerToArrayBase<Element> {
 public:
-  typedef TYPENAME PointerToBase<NodeRefCountObj<pvector<Element> > >::To To;
+  typedef TYPENAME PointerToArrayBase<Element>::To To;
   typedef TYPENAME pvector<Element>::value_type value_type;
   typedef TYPENAME pvector<Element>::reference reference;
   typedef TYPENAME pvector<Element>::const_reference const_reference;
@@ -117,6 +115,9 @@ PUBLISHED:
   INLINE static PointerToArray<Element> empty_array(size_type n);
   INLINE PointerToArray(size_type n, const Element &value);
   INLINE PointerToArray(const PointerToArray<Element> &copy);
+
+  INLINE PStatCollectorForwardBase *get_col() const;
+  INLINE void set_col(PStatCollectorForwardBase *col);
 
 public:
   // Duplicating the interface of vector.  The following member
@@ -192,7 +193,7 @@ public:
 
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE PointerToArray<Element> &
-  operator = (NodeRefCountObj<pvector<Element> > *ptr);
+  operator = (PointerToArrayElement<Element> *ptr);
   INLINE PointerToArray<Element> &
   operator = (const PointerToArray<Element> &copy);
   INLINE void clear();
@@ -212,9 +213,9 @@ private:
 //               may not be modified.
 ////////////////////////////////////////////////////////////////////
 template <class Element>
-class ConstPointerToArray : public PointerToBase<NodeRefCountObj<pvector<Element> > > {
+class ConstPointerToArray : public PointerToArrayBase<Element> {
 public:
-  typedef TYPENAME PointerToBase<NodeRefCountObj<pvector<Element> > >::To To;
+  typedef TYPENAME PointerToArrayBase<Element>::To To;
   typedef TYPENAME pvector<Element>::value_type value_type;
   typedef TYPENAME pvector<Element>::const_reference reference;
   typedef TYPENAME pvector<Element>::const_reference const_reference;
@@ -234,6 +235,8 @@ PUBLISHED:
   INLINE ConstPointerToArray();
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
+
+  INLINE PStatCollectorForwardBase *get_col() const;
 
 public:
   // Duplicating the interface of vector.
@@ -278,7 +281,7 @@ public:
 
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE ConstPointerToArray<Element> &
-  operator = (NodeRefCountObj<pvector<Element> > *ptr);
+  operator = (PointerToArrayElement<Element> *ptr);
   INLINE ConstPointerToArray<Element> &
   operator = (const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray<Element> &

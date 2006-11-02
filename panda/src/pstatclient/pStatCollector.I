@@ -218,7 +218,7 @@ clear_level() {
 //               value.  This implicitly calls flush_level().
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-set_level(float level) {
+set_level(double level) {
   _client->set_level(_index, 0, level);
   _level = 0.0f;
 }
@@ -237,7 +237,7 @@ set_level(float level) {
 //               flush_level() is called.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-add_level(float increment) {
+add_level(double increment) {
   _level += increment;
 }
 
@@ -255,7 +255,7 @@ add_level(float increment) {
 //               flush_level() is called.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-sub_level(float decrement) {
+sub_level(double decrement) {
   _level -= decrement;
 }
 
@@ -265,7 +265,7 @@ sub_level(float decrement) {
 //  Description: Calls add_level() and immediately calls flush_level().
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-add_level_now(float increment) {
+add_level_now(double increment) {
   add_level(increment);
   flush_level();
 }
@@ -276,7 +276,7 @@ add_level_now(float increment) {
 //  Description: Calls sub_level() and immediately calls flush_level().
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-sub_level_now(float decrement) {
+sub_level_now(double decrement) {
   sub_level(decrement);
   flush_level();
 }
@@ -302,7 +302,7 @@ flush_level() {
 //               collector in the main thread.  This implicitly calls
 //               flush_level().
 ////////////////////////////////////////////////////////////////////
-INLINE float PStatCollector::
+INLINE double PStatCollector::
 get_level() {
   flush_level();
   return _client->get_level(_index, 0);
@@ -333,7 +333,7 @@ clear_thread_level() {
 //               value.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-set_thread_level(float level) {
+set_thread_level(double level) {
 #ifndef HAVE_THREADS
   _client->set_level(_index, 0, level);
 #else  // HAVE_THREADS
@@ -351,7 +351,7 @@ set_thread_level(float level) {
 //               it is initialized to 0.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-add_thread_level(float increment) {
+add_thread_level(double increment) {
 #ifndef HAVE_THREADS
   _client->add_level(_index, 0, increment);
 #else  // HAVE_THREADS
@@ -369,7 +369,7 @@ add_thread_level(float increment) {
 //               thread, it is initialized to 0.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-sub_thread_level(float decrement) {
+sub_thread_level(double decrement) {
 #ifndef HAVE_THREADS
   _client->add_level(_index, 0, -decrement);
 #else  // HAVE_THREADS
@@ -383,7 +383,7 @@ sub_thread_level(float decrement) {
 //  Description: Returns the current level value of the given
 //               collector in the current thread.
 ////////////////////////////////////////////////////////////////////
-INLINE float PStatCollector::
+INLINE double PStatCollector::
 get_thread_level() {
 #ifndef HAVE_THREADS
   return _client->get_level(_index, 0);
@@ -484,7 +484,7 @@ clear_level(const PStatThread &thread) {
 //               value.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-set_level(const PStatThread &thread, float level) {
+set_level(const PStatThread &thread, double level) {
   _client->set_level(_index, thread._index, level);
 }
 
@@ -498,7 +498,7 @@ set_level(const PStatThread &thread, float level) {
 //               initialized to 0.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-add_level(const PStatThread &thread, float increment) {
+add_level(const PStatThread &thread, double increment) {
   _client->add_level(_index, thread._index, increment);
 }
 
@@ -512,7 +512,7 @@ add_level(const PStatThread &thread, float increment) {
 //               it is initialized to 0.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-sub_level(const PStatThread &thread, float decrement) {
+sub_level(const PStatThread &thread, double decrement) {
   _client->add_level(_index, thread._index, -decrement);
 }
 
@@ -521,7 +521,7 @@ sub_level(const PStatThread &thread, float decrement) {
 //       Access: Published
 //  Description: Returns the current level value of the given collector.
 ////////////////////////////////////////////////////////////////////
-INLINE float PStatCollector::
+INLINE double PStatCollector::
 get_level(const PStatThread &thread) {
   return _client->get_level(_index, thread._index);
 }

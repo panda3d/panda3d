@@ -32,9 +32,9 @@
 #include "thread.h"
 #include "clockObject.h"
 
-PStatCollector PStatClient::_total_size_pcollector("Memory usage");
-PStatCollector PStatClient::_cpp_size_pcollector("Memory usage:C++");
-PStatCollector PStatClient::_interpreter_size_pcollector("Memory usage:Interpreter");
+PStatCollector PStatClient::_total_size_pcollector("Main memory");
+PStatCollector PStatClient::_cpp_size_pcollector("Main memory:C++");
+PStatCollector PStatClient::_interpreter_size_pcollector("Main memory:Interpreter");
 PStatCollector PStatClient::_pstats_pcollector("*:PStats");
 PStatCollector PStatClient::_clock_wait_pcollector("Wait:Clock Wait:Sleep");
 PStatCollector PStatClient::_clock_busy_wait_pcollector("Wait:Clock Wait:Spin");
@@ -730,7 +730,7 @@ clear_level(int collector_index, int thread_index) {
 //               instead, call PStatCollector::set_level().
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
-set_level(int collector_index, int thread_index, float level) {
+set_level(int collector_index, int thread_index, double level) {
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors));
   nassertv(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads));
@@ -763,7 +763,7 @@ set_level(int collector_index, int thread_index, float level) {
 //               instead, call PStatCollector::add_level().
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
-add_level(int collector_index, int thread_index, float increment) {
+add_level(int collector_index, int thread_index, double increment) {
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors));
   nassertv(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads));
@@ -787,7 +787,7 @@ add_level(int collector_index, int thread_index, float increment) {
 //               Normally you would not use this interface directly;
 //               instead, call PStatCollector::get_level().
 ////////////////////////////////////////////////////////////////////
-float PStatClient::
+double PStatClient::
 get_level(int collector_index, int thread_index) const {
 #ifdef _DEBUG
   nassertr(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors), 0.0f);
@@ -798,7 +798,7 @@ get_level(int collector_index, int thread_index) const {
   InternalThread *thread = get_thread_ptr(thread_index);
   MutexHolder holder(thread->_thread_lock);
 
-  float factor = collector->get_def(this, collector_index)->_factor;
+  double factor = collector->get_def(this, collector_index)->_factor;
 
   return collector->_per_thread[thread_index]._level / factor;
 }

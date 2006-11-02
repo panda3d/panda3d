@@ -39,9 +39,11 @@
     patchfile.I patchfile.h \
     pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h \
+    pointerToArrayBase.I pointerToArrayBase.h \
     pointerToBase.I pointerToBase.h \
     pointerToVoid.I pointerToVoid.h \
     profileTimer.I profileTimer.h \
+    pStatCollectorForwardBase.h \
     pta_uchar.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
@@ -95,6 +97,7 @@
     pointerToBase.cxx \
     pointerToVoid.cxx \
     profileTimer.cxx \
+    pStatCollectorForwardBase.cxx \
     pta_uchar.cxx \
     ramfile.cxx \
     referenceCount.cxx \
@@ -152,9 +155,11 @@
     patchfile.I patchfile.h \
     pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h \
+    pointerToArrayBase.I pointerToArrayBase.h \
     pointerToBase.I pointerToBase.h \
     pointerToVoid.I pointerToVoid.h \
     profileTimer.I profileTimer.h \
+    pStatCollectorForwardBase.h \
     pta_uchar.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \

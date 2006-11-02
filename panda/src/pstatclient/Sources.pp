@@ -15,6 +15,7 @@
      pStatClientVersion.I  \
      pStatClientVersion.h pStatClientControlMessage.h  \
      pStatCollector.I pStatCollector.h pStatCollectorDef.h  \
+     pStatCollectorForward.I pStatCollectorForward.h \
      pStatFrameData.I pStatFrameData.h pStatProperties.h  \
      pStatServerControlMessage.h pStatThread.I pStatThread.h  \
      pStatTimer.I pStatTimer.h
@@ -23,6 +24,7 @@
      config_pstats.cxx pStatClient.cxx pStatClientImpl.cxx \
      pStatClientVersion.cxx  \
      pStatClientControlMessage.cxx pStatCollectorDef.cxx  \
+     pStatCollectorForward.cxx \
      pStatFrameData.cxx pStatProperties.cxx  \
      pStatServerControlMessage.cxx \
      pStatThread.cxx
@@ -32,7 +34,9 @@
     pStatClientImpl.I pStatClientImpl.h \
     pStatClientVersion.I pStatClientVersion.h \
     pStatClientControlMessage.h pStatCollector.I pStatCollector.h \
-    pStatCollectorDef.h pStatFrameData.I pStatFrameData.h \
+    pStatCollectorDef.h \
+    pStatCollectorForward.I pStatCollectorForward.h \
+    pStatFrameData.I pStatFrameData.h \
     pStatProperties.h \
     pStatServerControlMessage.h pStatThread.I pStatThread.h \
     pStatTimer.I pStatTimer.h

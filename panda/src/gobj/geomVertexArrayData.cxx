@@ -26,6 +26,8 @@
 
 TypeHandle GeomVertexArrayData::_type_handle;
 
+PT(PStatCollectorForward) GeomVertexArrayData::_vdata_mem_pcollector = new PStatCollectorForward(PStatCollector("Main memory:C++:Vertex Data"));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::Default Constructor
 //       Access: Private
@@ -435,6 +437,7 @@ finalize(BamReader *manager) {
 
   // Now is also the time to node_ref the data.
   cdata->_data.node_ref();
+  cdata->_data.set_col(_vdata_mem_pcollector);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -544,6 +547,7 @@ set_num_rows(int n) {
       _cdata->_data.node_unref();
       _cdata->_data = new_data;
       _cdata->_data.node_ref();
+      _cdata->_data.set_col(GeomVertexArrayData::_vdata_mem_pcollector);
       
     } else {
       // We've got the only reference to the data, so we can change
@@ -582,6 +586,7 @@ modify_data() {
     _cdata->_data = PTA_uchar();
     _cdata->_data.v() = orig_data.v();
     _cdata->_data.node_ref();
+    _cdata->_data.set_col(GeomVertexArrayData::_vdata_mem_pcollector);
   }
   _cdata->_modified = Geom::get_next_modified();
 
@@ -598,5 +603,6 @@ set_data(CPTA_uchar array) {
   _cdata->_data.node_unref();
   _cdata->_data = (PTA_uchar &)array;
   _cdata->_data.node_ref();
+  _cdata->_data.set_col(GeomVertexArrayData::_vdata_mem_pcollector);
   _cdata->_modified = Geom::get_next_modified();
 }

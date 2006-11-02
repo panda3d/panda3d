@@ -72,19 +72,19 @@ PUBLISHED:
   INLINE void stop();
 
   INLINE void clear_level();
-  INLINE void set_level(float level);
-  INLINE void add_level(float increment);
-  INLINE void sub_level(float decrement);
-  INLINE void add_level_now(float increment);
-  INLINE void sub_level_now(float decrement);
+  INLINE void set_level(double level);
+  INLINE void add_level(double increment);
+  INLINE void sub_level(double decrement);
+  INLINE void add_level_now(double increment);
+  INLINE void sub_level_now(double decrement);
   INLINE void flush_level();
-  INLINE float get_level();
+  INLINE double get_level();
 
   INLINE void clear_thread_level();
-  INLINE void set_thread_level(float level);
-  INLINE void add_thread_level(float increment);
-  INLINE void sub_thread_level(float decrement);
-  INLINE float get_thread_level();
+  INLINE void set_thread_level(double level);
+  INLINE void add_thread_level(double increment);
+  INLINE void sub_thread_level(double decrement);
+  INLINE double get_thread_level();
 
   INLINE bool is_active(const PStatThread &thread);
   INLINE bool is_started(const PStatThread &thread);
@@ -94,17 +94,17 @@ PUBLISHED:
   INLINE void stop(const PStatThread &thread, float as_of);
 
   INLINE void clear_level(const PStatThread &thread);
-  INLINE void set_level(const PStatThread &thread, float level);
-  INLINE void add_level(const PStatThread &thread, float increment);
-  INLINE void sub_level(const PStatThread &thread, float decrement);
-  INLINE float get_level(const PStatThread &thread);
+  INLINE void set_level(const PStatThread &thread, double level);
+  INLINE void add_level(const PStatThread &thread, double increment);
+  INLINE void sub_level(const PStatThread &thread, double decrement);
+  INLINE double get_level(const PStatThread &thread);
 
   INLINE int get_index() const;
 
 private:
   PStatClient *_client;
   int _index;
-  float _level;
+  double _level;
 
 friend class PStatClient;
 
@@ -121,13 +121,13 @@ PUBLISHED:
   INLINE void stop() { }
 
   INLINE void clear_level() { }
-  INLINE void set_level(float) { }
-  INLINE void add_level(float) { }
-  INLINE void sub_level(float) { }
-  INLINE void add_level_now(float) { }
-  INLINE void sub_level_now(float) { }
+  INLINE void set_level(double) { }
+  INLINE void add_level(double) { }
+  INLINE void sub_level(double) { }
+  INLINE void add_level_now(double) { }
+  INLINE void sub_level_now(double) { }
   INLINE void flush_level() { }
-  INLINE float get_level() { return 0.0; }
+  INLINE double get_level() { return 0.0; }
 
   INLINE bool is_active(const PStatThread &) { return false; }
   INLINE void start(const PStatThread &) { }
@@ -136,10 +136,10 @@ PUBLISHED:
   INLINE void stop(const PStatThread &, float) { }
 
   INLINE void clear_level(const PStatThread &) { }
-  INLINE void set_level(const PStatThread &, float) { }
-  INLINE void add_level(const PStatThread &, float) { }
-  INLINE void sub_level(const PStatThread &, float) { }
-  INLINE float get_level(const PStatThread &) { return 0.0; }
+  INLINE void set_level(const PStatThread &, double) { }
+  INLINE void add_level(const PStatThread &, double) { }
+  INLINE void sub_level(const PStatThread &, double) { }
+  INLINE double get_level(const PStatThread &) { return 0.0; }
 
   INLINE int get_index() const { return 0; }
 

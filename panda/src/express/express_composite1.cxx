@@ -30,3 +30,4 @@
 #include "pointerToBase.cxx"
 #include "pointerToVoid.cxx"
 #include "profileTimer.cxx"
+#include "pStatCollectorForwardBase.cxx"
