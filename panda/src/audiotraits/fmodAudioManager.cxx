@@ -157,6 +157,15 @@ FmodAudioManager() {
   _midi_info.cbsize = sizeof(_midi_info);
 
   Filename dls_pathname = get_dls_pathname();
+
+#ifdef IS_OSX
+  // Here's a big kludge.  Don't ever let FMOD try to load this
+  // OSX-provided file; it crashes messily if you do.
+  if (dls_pathname == "/System/Library/Components/CoreAudio.component/Contents/Resources/gs_instruments.dls") {
+    dls_pathname = "";
+  }
+#endif  // IS_OSX
+
   if (!dls_pathname.empty()) {
     _dlsname = dls_pathname.to_os_specific();
     _midi_info.dlsname = _dlsname.c_str();
