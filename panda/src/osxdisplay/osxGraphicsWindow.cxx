@@ -188,6 +188,9 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
       SystemSetWindowForground(true);
       DoResize();
       break;
+    case kEventWindowDeactivated:
+      SystemSetWindowForground(false);
+      break;
     case kEventWindowClose: // called when window is being closed (close box)
       // This is a message from the window manager indicating that
       // the user has requested to close the window.
@@ -201,8 +204,21 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
     case kEventWindowBoundsChanged: // called for resize and moves (drag)
       DoResize();
       break;
-    case kEventWindowZoomed: // called when user clicks on zoom button (occurs after the window has been zoomed)
-      // use this if you need to some special here as you always get a kEventWindowBoundsChanged event
+    case kEventWindowZoomed:
+      break;
+    case kEventWindowCollapsed:
+      {
+        WindowProperties properties;
+        properties.set_minimized(true);
+        system_changed_properties(properties);
+      }
+      break;
+    case kEventWindowExpanded:
+      {
+        WindowProperties properties;
+        properties.set_minimized(false);
+        system_changed_properties(properties);
+      }
       break;
     }
     break;
@@ -264,10 +280,12 @@ windowEvtHndlr(EventHandlerCallRef myHandler, EventRef event, void *userData) {
 
   if (window != NULL) {
     osxGraphicsWindow *osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);
-    return osx_win->event_handler(myHandler, event);
-  } else {
-    return eventNotHandledErr;
+    if (osx_win != (osxGraphicsWindow *)NULL) {
+      return osx_win->event_handler(myHandler, event);
+    }
   }
+
+  return eventNotHandledErr;
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -514,10 +532,16 @@ osxGraphicsWindow(GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 osxGraphicsWindow::~osxGraphicsWindow()
 {
- if (osxdisplay_cat.is_debug())	
-	osxdisplay_cat.debug() << "osxGraphicsWindow::~osxGraphicsWindow() -" <<_ID << "\n";
+  if (osxdisplay_cat.is_debug())	
+    osxdisplay_cat.debug() << "osxGraphicsWindow::~osxGraphicsWindow() -" <<_ID << "\n";
 
-	ReleaseSystemResources();	
+  // Make sure the window callback won't come back to this
+  // (destructed) object any more.
+  if (_osx_window) {
+    SetWRefCon (_osx_window, (long) NULL);
+  }
+
+  ReleaseSystemResources();	
 }
  
 
@@ -992,8 +1016,8 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties )
               
               //{ kEventClassWindow, kEventWindowHidden },
               //{ kEventClassWindow, kEventWindowCollapse },
-              //{ kEventClassWindow, kEventWindowCollapsed },
-              //{ kEventClassWindow, kEventWindowExpanded },
+              { kEventClassWindow, kEventWindowCollapsed },
+              { kEventClassWindow, kEventWindowExpanded },
               { kEventClassWindow, kEventWindowZoomed },
               //{ kEventClassWindow, kEventWindowDragStarted },
               //{ kEventClassWindow, kEventWindowDragCompleted },
