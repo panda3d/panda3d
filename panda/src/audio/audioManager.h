@@ -216,6 +216,8 @@ PUBLISHED:
   virtual void audio_3d_set_drop_off_factor(float factor);
   virtual float audio_3d_get_drop_off_factor() const;
 
+  Filename get_dls_pathname();
+
 public:
   static void register_AudioManager_creator(Create_AudioManager_proc* proc);
 

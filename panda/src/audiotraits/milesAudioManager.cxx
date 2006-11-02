@@ -109,13 +109,12 @@ MilesAudioManager() {
           if (dls == NULL) {
             audio_error("  Unable to open DLS. " << AIL_last_error());
           } else {
-            string dls_file;
-            get_gm_file_path(dls_file);
-            audio_debug("  dls_file=\""<<dls_file<<"\"");
+            Filename dls_pathname = get_dls_pathname();
+            string os_pathname = dls_pathname.to_os_specific();
             // note: if AIL_DLS_load_file is not done, midi fails to play on some machines.
             nassertv(_dls_field == NULL);
-            audio_debug("  AIL_DLS_load_file(dls, " << dls_file << ", 0)");
-            _dls_field = AIL_DLS_load_file(dls, dls_file.c_str(), 0);
+            audio_debug("  AIL_DLS_load_file(dls, " << os_pathname << ", 0)");
+            _dls_field = AIL_DLS_load_file(dls, os_pathname.c_str(), 0);
           }
 
           if (!_dls_field) {
@@ -679,85 +678,6 @@ stop_all_sounds() {
   reduce_sounds_playing_to(0);
 }
 
-
-#ifdef WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_registry_entry
-//       Access: private
-//  Description: Combine base\\subKeyname\\keyName to get
-//               'result' from the Windows registry.
-////////////////////////////////////////////////////////////////////
-bool MilesAudioManager::
-get_registry_entry(HKEY base, const char* subKeyName,
-    const char* keyName, string& result) {
-  // Open the key to access the registry:
-  HKEY key;
-  long r=RegOpenKeyEx(base, subKeyName, 0, KEY_QUERY_VALUE, &key);
-  if (r==ERROR_SUCCESS) {
-    DWORD len=0;
-    // Read the size of the value at keyName:
-    r=RegQueryValueEx(key, keyName, 0, 0, 0, &len);
-    if (r==ERROR_SUCCESS) {
-      char* src = new char[len];
-      DWORD type;
-      // Read the value at keyName:
-      r=RegQueryValueEx(key, keyName, 0, &type, (unsigned char*)src, &len);
-      if (r==ERROR_SUCCESS) {
-        if (type==REG_EXPAND_SZ) {
-          // Find the size of the expanded string:
-          DWORD destSize=ExpandEnvironmentStrings(src, 0, 0);
-          // Get a destination buffer of that size:
-          char* dest = new char[destSize];
-          // Do the expansion:
-          ExpandEnvironmentStrings(src, dest, destSize);
-          // Propagate the result:
-          result=dest;
-          delete [] dest;
-        } else if (type==REG_SZ) {
-          result=src;
-        } else {
-          audio_error("MilesAudioManager::get_reg_entry(): Unknown key type.");
-        }
-      }
-      delete [] src;
-    }
-    RegCloseKey(key);
-  }
-
-  return (r==ERROR_SUCCESS);
-}
-#endif
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_gm_file_path
-//       Access: private
-//  Description: Get path of downloadable sound midi instruments file.
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-get_gm_file_path(string& result) {
-  Filename dls_filename = audio_dls_file;
-  if (!dls_filename.empty()) {
-    result = dls_filename.to_os_specific();
-    return;
-  }
-
-#ifdef WIN32
-  if(!get_registry_entry(HKEY_LOCAL_MACHINE,"SOFTWARE\\Microsoft\\DirectMusic", "GMFilePath", result)) {
-          char sysdir[MAX_PATH+1];
-          GetSystemDirectory(sysdir,MAX_PATH+1);
-          result = sysdir;
-          result.append("\\drivers\\gm.dls");
-  }
-#endif
-
-#ifdef IS_OSX 
-result = 
-//"gs_instruments.dls";
-"/System/Library/Components/CoreAudio.component/Contents/Resources/gs_instruments.dls";
-#endif
-
-
-  audio_debug("MilesAudioManager::get_gm_file_path() result out=\""<<result<<"\"");
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::force_midi_reset

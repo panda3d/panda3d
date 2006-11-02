@@ -21,8 +21,14 @@
 #include "audioManager.h"
 #include "atomicAdjust.h"
 #include "nullAudioManager.h"
-
+#include "windowsRegistry.h"
+#include "virtualFileSystem.h"
+#include "config_util.h"
 #include "load_dso.h"
+
+#ifdef WIN32
+#include <windows.h>  // For GetSystemDirectory()
+#endif
 
 
 TypeHandle AudioManager::_type_handle;
@@ -286,4 +292,48 @@ void AudioManager::audio_3d_set_drop_off_factor(float factor) {
 float AudioManager::audio_3d_get_drop_off_factor() const {
     // intentionally blank.
     return 0.0f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::get_dls_pathname
+//       Access: Public
+//  Description: Returns the full pathname to the DLS file, as
+//               specified by the Config.prc file, or the default for
+//               the current OS if appropriate.  Returns empty string
+//               if the DLS file is unavailable.
+////////////////////////////////////////////////////////////////////
+Filename AudioManager::
+get_dls_pathname() {
+  Filename dls_filename = audio_dls_file;
+  if (!dls_filename.empty()) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->resolve_filename(dls_filename, get_sound_path()) ||
+      vfs->resolve_filename(dls_filename, get_model_path());
+    
+    return dls_filename;
+  }
+
+#ifdef WIN32
+  Filename pathname;
+
+  // Get the registry key from DirectMusic
+  string os_filename = WindowsRegistry::get_string_value("SOFTWARE\\Microsoft\\DirectMusic", "GMFilePath", "");
+
+  if (!os_filename.empty()) {
+    pathname = Filename::from_os_specific(os_filename);
+  } else {
+    char sysdir[MAX_PATH+1];
+    GetSystemDirectory(sysdir,MAX_PATH+1);
+    pathname = Filename(Filename::from_os_specific(sysdir), Filename("drivers/gm.dls"));
+  }
+  pathname.make_true_case();
+  return pathname;
+
+#elif defined(IS_OSX)
+  // This appears to be the standard place for this file on OSX 10.4.
+  return Filename("/System/Library/Components/CoreAudio.component/Contents/Resources/gs_instruments.dls");
+
+#else
+  return Filename();
+#endif
 }

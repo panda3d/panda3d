@@ -122,13 +122,7 @@ private:
 
   void starting_sound(MilesAudioSound* audio);
   void stopping_sound(MilesAudioSound* audio);
-#ifdef WIN32
-  // utility function that should be moved to another class:
-  bool get_registry_entry(HKEY base, 
-                          const char* subKeyName, 
-                          const char* keyName, 
-                          string& result);
-#endif
+
   // get the default dls file path:
   void get_gm_file_path(string& result);
 

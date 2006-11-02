@@ -156,13 +156,9 @@ FmodAudioManager() {
   memset(&_midi_info, 0, sizeof(_midi_info));
   _midi_info.cbsize = sizeof(_midi_info);
 
-  Filename dls_filename = audio_dls_file;
-  if (!dls_filename.empty()) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(dls_filename, get_sound_path()) ||
-      vfs->resolve_filename(dls_filename, get_model_path());
-    
-    _dlsname = dls_filename.to_os_specific();
+  Filename dls_pathname = get_dls_pathname();
+  if (!dls_pathname.empty()) {
+    _dlsname = dls_pathname.to_os_specific();
     _midi_info.dlsname = _dlsname.c_str();
   }
 }

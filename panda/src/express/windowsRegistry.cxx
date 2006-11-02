@@ -327,6 +327,18 @@ do_get(const string &key, const string &name, int &data_type, string &data) {
       << ": " << format_message(error) << "\n";
   }
 
+  if (okflag) {
+    if (data_type == REG_EXPAND_SZ) {
+      // Expand the string.
+      DWORD destSize=ExpandEnvironmentStrings(data.c_str(), 0, 0);
+      char *dest = new char[destSize];
+      ExpandEnvironmentStrings(data.c_str(), dest, destSize);
+      data = dest;
+      delete[] dest;
+      data_type = REG_SZ;
+    }
+  }
+
   return okflag;
 }
 
