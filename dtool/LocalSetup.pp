@@ -87,9 +87,9 @@
 #print - Did not find Miles Sound System
 #endif
 #if $[HAVE_FMODEX]
-#print + FMODex sound library
+#print + FMOD Ex sound library
 #else
-#print - Did not find FMODex sound library
+#print - Did not find FMOD Ex sound library
 #endif
 #if $[HAVE_FREETYPE]
 #print + Freetype
