@@ -366,7 +366,11 @@
 // call anyway) or when HAVE_THREADS is not defined (since the
 // non-thread-safe dlmalloc is a tiny bit faster than the system
 // library).
-#defer ALTERNATIVE_MALLOC $[or $[WINDOWS_PLATFORM],$[DO_MEMORY_USAGE],$[not $[HAVE_THREADS]]]
+
+// In hindsight, let's not enable this at all.  It just causes
+// problems.
+//#defer ALTERNATIVE_MALLOC $[or $[WINDOWS_PLATFORM],$[DO_MEMORY_USAGE],$[not $[HAVE_THREADS]]]
+#define ALTERNATIVE_MALLOC
 
 // Is NSPR installed, and where?  This is the Netscape Portable
 // Runtime library, downloadable as part of the Mozilla package from
