@@ -228,7 +228,7 @@ class DoCollectionManager:
                     parentObj.handleChildArrive(object, zoneId)
                 elif parentId not in (0, self.getGameDoId()):
                     self.notify.warning('storeObjectLocation(%s): parent %s not present' %
-                                        (doId, parentId))
+                                        (object.doId, parentId))
             
     def deleteObjectLocation(self, object, parentId, zoneId):
         # Do not worry about null values
