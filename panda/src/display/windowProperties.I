@@ -701,8 +701,54 @@ clear_z_order() {
   _z_order = Z_normal;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_mouse_mode
+//       Access: Published
+//  Description: Removes the z_order specification from the properties.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+set_mouse_mode(MouseMode mode) {
+  _mouse_mode=mode;
+  _specified |= S_mouse_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_mouse_mode
+//       Access: Published
+//  Description: Removes the z_order specification from the properties.
+////////////////////////////////////////////////////////////////////
+INLINE WindowProperties::MouseMode WindowProperties::
+get_mouse_mode() const {
+ return _mouse_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::has_moude_mode
+//       Access: Published
+//  Description: Removes the z_order specification from the properties.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowProperties::
+has_mouse_mode() const {
+  return ((_specified & S_mouse_mode)!=0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::clear_mouse_mode
+//       Access: Published
+//  Description: Removes the z_order specification from the properties.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+clear_mouse_mode() {
+  _specified &= ~S_mouse_mode;
+  _mouse_mode=MOUSE_absolute;
+}
+
+
 INLINE ostream &
 operator << (ostream &out, const WindowProperties &properties) {
   properties.output(out);
   return out;
 }
+
+

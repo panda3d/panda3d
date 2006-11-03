@@ -634,6 +634,25 @@ set_properties_now(WindowProperties &properties) {
     // Fullscreen property specified, but unchanged.
     properties.clear_fullscreen();
   }
+  if (properties.has_mouse_mode() ) {
+    
+    if (properties.get_mouse_mode() == _properties.get_mouse_mode()) {  
+      properties.clear_mouse_mode();
+    }
+    else {
+      if(properties.get_mouse_mode() == WindowProperties::MOUSE_absolute) {
+        _properties.set_mouse_mode(WindowProperties::MOUSE_absolute);
+        mouse_mode_absolute();
+        properties.clear_mouse_mode();
+      }
+      else
+      {
+        _properties.set_mouse_mode(WindowProperties::MOUSE_relative);
+        mouse_mode_relative();
+        properties.clear_mouse_mode();        
+      }    
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -778,3 +797,25 @@ parse_color_mask(const string &word) {
   return result;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::mouse_mode_relative
+//       Access: Protected, Virtual
+//  Description: detaches mouse. Only mouse delta from now on. 
+//               
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+mouse_mode_relative() {
+
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::mouse_mode_absolute
+//       Access: Protected, Virtual
+//  Description: reattaches mouse to location
+//               
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+mouse_mode_absolute() {
+
+}

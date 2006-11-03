@@ -71,6 +71,7 @@ PUBLISHED:
   string get_input_device_name(int device) const;
   bool has_pointer(int device) const;
   bool has_keyboard(int device) const;
+  
 
   MouseData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
@@ -102,6 +103,9 @@ protected:
   virtual bool do_reshape_request(int x_origin, int y_origin, bool has_origin,
                                   int x_size, int y_size);
 
+  virtual void mouse_mode_absolute();
+  virtual void mouse_mode_relative();
+
   // It is an error to call any of the following methods from any
   // thread other than the window thread.
   void system_changed_properties(const WindowProperties &properties);
@@ -109,7 +113,7 @@ protected:
 
 private:
   static unsigned int parse_color_mask(const string &word);
-  
+
 protected:
   typedef vector_GraphicsWindowInputDevice InputDevices;
   InputDevices _input_devices;

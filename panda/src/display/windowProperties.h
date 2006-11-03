@@ -37,6 +37,11 @@ PUBLISHED:
     Z_normal,
     Z_top,
   };
+  
+  enum MouseMode {
+    MOUSE_absolute,
+    MOUSE_relative,
+  };
 
   WindowProperties();
   INLINE WindowProperties(const WindowProperties &copy);
@@ -63,6 +68,11 @@ PUBLISHED:
   INLINE int get_y_size() const;
   INLINE bool has_size() const;
   INLINE void clear_size();
+
+  INLINE bool has_mouse_mode() const;
+  INLINE void set_mouse_mode(MouseMode mode);
+  INLINE MouseMode get_mouse_mode() const;
+  INLINE void clear_mouse_mode();  
 
   INLINE void set_title(const string &title);
   INLINE const string &get_title() const;
@@ -141,6 +151,7 @@ private:
     S_z_order          = 0x0400,
     S_icon_filename    = 0x0800,
     S_cursor_filename  = 0x1000,
+    S_mouse_mode       = 0x2000,
   };
 
   // This bitmask represents the true/false settings for various
@@ -161,6 +172,7 @@ private:
   int _y_origin;
   int _x_size;
   int _y_size;
+  MouseMode _mouse_mode;
   string _title;
   Filename _cursor_filename;
   Filename _icon_filename;
@@ -172,6 +184,12 @@ EXPCL_PANDA ostream &
 operator << (ostream &out, WindowProperties::ZOrder z_order);
 EXPCL_PANDA istream &
 operator >> (istream &in, WindowProperties::ZOrder &z_order);
+
+EXPCL_PANDA ostream &
+operator << (ostream &out, WindowProperties::MouseMode mode);
+EXPCL_PANDA istream &
+operator >> (istream &in, WindowProperties::MouseMode &mode);
+
 
 INLINE ostream &operator << (ostream &out, const WindowProperties &properties);
 

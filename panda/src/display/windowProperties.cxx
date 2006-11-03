@@ -47,6 +47,7 @@ operator = (const WindowProperties &copy) {
   _cursor_filename = copy._cursor_filename;
   _z_order = copy._z_order;
   _flags = copy._flags;
+  _mouse_mode = copy._mouse_mode;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +86,7 @@ get_default() {
     props.set_z_order(z_order);
   }
   props.set_title(window_title);
-
+  props.set_mouse_mode(MOUSE_absolute);
   return props;
 }
 
@@ -119,7 +120,9 @@ operator == (const WindowProperties &other) const {
           _z_order == other._z_order &&
           _title == other._title &&
           _icon_filename == other._icon_filename &&
-          _cursor_filename == other._cursor_filename);
+          _cursor_filename == other._cursor_filename &&
+          _mouse_mode == other._mouse_mode);
+  
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -141,6 +144,7 @@ clear() {
   _cursor_filename = Filename();
   _z_order = Z_normal;
   _flags = 0;
+  _mouse_mode = MOUSE_absolute;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -190,6 +194,9 @@ add_properties(const WindowProperties &other) {
   }
   if (other.has_z_order()) {
     set_z_order(other.get_z_order());
+  }
+  if (other.has_mouse_mode()) {
+    set_mouse_mode(other.get_mouse_mode());
   }
 }
 
@@ -241,6 +248,9 @@ output(ostream &out) const {
   if (has_z_order()) {
     out << get_z_order() << " ";
   }
+  if (has_mouse_mode()) {
+    out << get_mouse_mode() << " ";
+  }
 }
 
 ostream &
@@ -277,6 +287,39 @@ operator >> (istream &in, WindowProperties::ZOrder &z_order) {
     display_cat.warning()
       << "Unknown z-order: " << word << "\n";
     z_order = WindowProperties::Z_normal;
+  }
+
+  return in;
+}
+
+//
+// MouseMode operators
+//
+
+ostream &
+operator << (ostream &out, WindowProperties::MouseMode mode) {
+  switch (mode) {
+  case WindowProperties::MOUSE_absolute:
+    return out << "absolute";
+  case WindowProperties::MOUSE_relative:
+    return out << "relative";
+  }
+  return out << "**invalid WindowProperties::MouseMode(" << (int)mode << ")**";
+}
+
+istream &
+operator >> (istream &in, WindowProperties::MouseMode &mode) {
+  string word;
+  in >> word;
+
+  if (word == "absolute") {
+    mode = WindowProperties::MOUSE_absolute;
+  } else if (word == "relative") {
+    mode = WindowProperties::MOUSE_relative;
+  } else {
+    display_cat.warning()
+      << "Unknown mouse mode: " << word << "\n";
+    mode = WindowProperties::MOUSE_absolute;
   }
 
   return in;

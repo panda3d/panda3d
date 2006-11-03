@@ -43,3 +43,8 @@ INLINE bool GraphicsWindow::
 is_fullscreen() const {
   return _properties.get_fullscreen();
 }
+
+
+
+
+
