@@ -200,7 +200,7 @@ write(ostream &out, int indent_level) const {
       // Each child SAnimData table should have a one-letter name.
       nassertv(sanim->get_name().length() == 1);
       char name = sanim->get_name()[0];
-      char *p = strchr(matrix_component_letters, name);
+      char *p = (char *)strchr(matrix_component_letters, name);
       nassertv(p != (char *)NULL);
       if (p != (char *)NULL) {
         int index = p - matrix_component_letters;
