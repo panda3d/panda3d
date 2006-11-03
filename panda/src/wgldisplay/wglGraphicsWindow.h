@@ -46,8 +46,6 @@ public:
 protected:
   virtual void close_window();
   virtual bool open_window();
-  virtual void reconsider_fullscreen_size(DWORD &x_size, DWORD &y_size, 
-                                          DWORD &bitdepth);
 
 private:
   void setup_colormap(const PIXELFORMATDESCRIPTOR &pixelformat);
