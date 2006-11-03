@@ -1537,6 +1537,8 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
       return false;
     }
 
+    copy_inverted = true;
+
     RELEASE(backbuffer, dxgsg8, "backbuffer", RELEASE_ONCE);
 
   } else if (_cur_read_pixel_buffer & RenderBuffer::T_front) {
