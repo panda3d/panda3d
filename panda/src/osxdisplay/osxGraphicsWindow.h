@@ -58,6 +58,9 @@ public:
   
   virtual bool do_reshape_request(int x_origin, int y_origin, bool has_origin,
                                   int x_size, int y_size);
+  
+  virtual void mouse_mode_absolute();
+  virtual void mouse_mode_relative();
 
   virtual void set_properties_now(WindowProperties &properties);
 

@@ -1286,9 +1286,18 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
                 {
                     GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
                     GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
-                    GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
-                    SystemPointToLocalPoint(qdGlobalPoint);
-
+                    if(_properties.get_mouse_mode()==WindowProperties::MOUSE_relative)
+                    {
+                      GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
+                      MouseData currMouse=get_pointer(0);
+                      qdGlobalPoint.h+=currMouse.get_x();
+                      qdGlobalPoint.v+=currMouse.get_y();
+                    } 
+                    else
+                    {
+                      GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);                    
+                      SystemPointToLocalPoint(qdGlobalPoint);
+                    }
                     ButtonHandle button_h = MouseButton::one();
                     if(kEventMouseButtonSecondary == button)
                         button_h = MouseButton::two();
@@ -1304,9 +1313,18 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
                 {
                     GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
                     //				GetEventParameter(event, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof(HIPoint), NULL, &location);	// Mac OS X v10.1 and later
-                    GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
-                    SystemPointToLocalPoint(qdGlobalPoint);
-
+                    if(_properties.get_mouse_mode()==WindowProperties::MOUSE_relative)
+                    {
+                      GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
+                      MouseData currMouse=get_pointer(0);
+                      qdGlobalPoint.h+=currMouse.get_x();
+                      qdGlobalPoint.v+=currMouse.get_y();
+                    }
+                    else
+                    {
+                      GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
+                      SystemPointToLocalPoint(qdGlobalPoint);
+                    }
                     ButtonHandle button_h = MouseButton::one();
                     if(kEventMouseButtonSecondary == button)
                         button_h = MouseButton::two();
@@ -1319,9 +1337,19 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
                 break;
             case kEventMouseMoved:	
             case kEventMouseDragged:
-                GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
-                SystemPointToLocalPoint(qdGlobalPoint);
-
+                if(_properties.get_mouse_mode()==WindowProperties::MOUSE_relative)
+                {
+                  GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
+                  
+                  MouseData currMouse=get_pointer(0);
+                  qdGlobalPoint.h+=currMouse.get_x();
+                  qdGlobalPoint.v+=currMouse.get_y();
+                }
+                else
+                { 
+                  GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
+                  SystemPointToLocalPoint(qdGlobalPoint);
+                }
                 _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
 				result = noErr;
 
@@ -1524,12 +1552,16 @@ if (osxdisplay_cat.is_debug())
     pt.h = x; 
     pt.v = y; 
     _input_devices[0].set_pointer_in_window(x, y);  
-    LocalPointToSystemPoint(pt); 
-    CGPoint newCursorPosition = {0, 0}; 
-    newCursorPosition.x = pt.h; 
-    newCursorPosition.y = pt.v; 
-    CGWarpMouseCursorPosition(newCursorPosition); 
-  
+
+    if(_properties.get_mouse_mode()==WindowProperties::MOUSE_absolute)
+    {
+       LocalPointToSystemPoint(pt); 
+       CGPoint newCursorPosition = {0, 0}; 
+       newCursorPosition.x = pt.h; 
+       newCursorPosition.y = pt.v; 
+       CGWarpMouseCursorPosition(newCursorPosition); 
+    }
+    
     return true; 
 }; 
 
@@ -1725,3 +1757,27 @@ void osxGraphicsWindow::LocalPointToSystemPoint(Point &qdLocalPoint)
                 
  }; 
 
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: OSXGraphicsWindow::mouse_mode_relative
+//       Access: Protected, Virtual
+//  Description: detaches mouse. Only mouse delta from now on. 
+//               
+////////////////////////////////////////////////////////////////////
+void osxGraphicsWindow::
+mouse_mode_relative() {
+  CGAssociateMouseAndMouseCursorPosition(false);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: OSXGraphicsWindow::mouse_mode_absolute
+//       Access: Protected, Virtual
+//  Description: reattaches mouse to location
+//               
+////////////////////////////////////////////////////////////////////
+void osxGraphicsWindow::
+mouse_mode_absolute() {
+  CGAssociateMouseAndMouseCursorPosition(true);
+}
