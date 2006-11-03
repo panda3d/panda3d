@@ -1093,7 +1093,7 @@ search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
           // even though 64MB cards should handle it
           {64000000, 1280, 1024}   // 64MB+ cards will choose this
         };
-        const NumResLims = (sizeof(MemRes)/sizeof(Memlimres));
+        const int NumResLims = (sizeof(MemRes)/sizeof(Memlimres));
 
         for(int i = NumResLims - 1; i >= 0; i--) {
           // find biggest slot card can handle
