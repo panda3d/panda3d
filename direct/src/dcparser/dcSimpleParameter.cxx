@@ -752,7 +752,7 @@ pack_int(DCPackData &pack_data, int value,
          bool &pack_error, bool &range_error) const {
   int int_value = value * _divisor;
 
-  if (value != 0 && (int_value / value) != _divisor) {
+  if (value != 0 && (int_value / value) != (int)_divisor) {
     // If we've experienced overflow after applying the divisor, pack
     // it as an int64 instead.
     pack_int64(pack_data, (PN_int64)value, pack_error, range_error);
