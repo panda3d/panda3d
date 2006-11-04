@@ -2433,6 +2433,30 @@ def getBase():
     except:
         return simbase
 
+def exceptionLogged(f):
+    """decorator that prints the function name and all arguments if an
+    exception passes back through the stack frame
+    """
+    def _exceptionLogged(*args, **kArgs):
+        try:
+            return f(*args, **kArgs)
+        except:
+            try:
+                s = 'STACK UNWIND: %s(' % f.func_name
+                for arg in args:
+                    s += '%s, ' % arg
+                for key, value in kArgs.items():
+                    s += '%s=%s, ' % (key, value)
+                if len(args) or len(kArgs):
+                    s = s[:-2]
+                s += ')'
+                print s
+            except:
+                print 'exceptionLogged(%s): ERROR IN PRINTING' % f.func_name
+            raise
+    _exceptionLogged.__doc__ = f.__doc__
+    return _exceptionLogged
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
@@ -2451,3 +2475,4 @@ __builtin__._notNone = _notNone
 __builtin__._contains = _contains
 __builtin__._notIn = _notIn
 __builtin__.itype = itype
+__builtin__.exceptionLogged = exceptionLogged
