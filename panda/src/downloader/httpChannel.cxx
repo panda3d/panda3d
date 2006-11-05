@@ -621,7 +621,7 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
   _download_to_file.close();
   _download_to_file.clear();
 
-  _subdocument_resumes = (subdocument_resumes && _first_byte_requested != 0);
+  _subdocument_resumes = (subdocument_resumes && _first_byte_delivered != 0);
 
   if (!_download_to_filename.open_write(_download_to_file, !_subdocument_resumes)) {
     downloader_cat.info()
@@ -630,7 +630,7 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
   }
 
   _download_dest = DD_file;
-  if (!reset_download_position(_first_byte_requested)) {
+  if (!reset_download_position(_first_byte_delivered)) {
     reset_download_to();
     return false;
   }
@@ -684,9 +684,9 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
   ramfile->_pos = 0;
   _download_to_ramfile = ramfile;
   _download_dest = DD_ram;
-  _subdocument_resumes = (subdocument_resumes && _first_byte_requested != 0);
+  _subdocument_resumes = (subdocument_resumes && _first_byte_delivered != 0);
 
-  if (!reset_download_position(_first_byte_requested)) {
+  if (!reset_download_position(_first_byte_delivered)) {
     reset_download_to();
     return false;
   }
@@ -1684,6 +1684,17 @@ run_reading_header() {
   } else {
     _first_byte_delivered = 0;
     _last_byte_delivered = 0;
+  }
+  if (downloader_cat.is_debug()) {
+    if (_first_byte_requested != 0 || _last_byte_requested != 0 ||
+        _first_byte_delivered != 0 || _last_byte_delivered != 0) {
+      downloader_cat.debug()
+        << "Requested byte range " << _first_byte_requested
+        << " to " << _last_byte_delivered
+        << "; server delivers range " << _first_byte_delivered
+        << " to " << _last_byte_delivered
+        << "\n";
+    }
   }
 
   // Set the _document_spec to reflect what we just retrieved.

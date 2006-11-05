@@ -150,6 +150,11 @@ PUBLISHED:
   virtual off_t get_file_size() const;
   INLINE bool is_file_size_known() const;
 
+  INLINE size_t get_first_byte_requested() const;
+  INLINE size_t get_last_byte_requested() const;
+  INLINE size_t get_first_byte_delivered() const;
+  INLINE size_t get_last_byte_delivered() const;
+
   void write_headers(ostream &out) const;
 
   INLINE void reset();

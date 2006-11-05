@@ -519,6 +519,70 @@ is_file_size_known() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_first_byte_requested
+//       Access: Published
+//  Description: Returns the first byte of the file requested by the
+//               request.  This will normally be 0 to indicate that
+//               the file is being requested from the beginning, but
+//               if the file was requested via a get_subdocument()
+//               call, this will contain the first_byte parameter from
+//               that call.
+////////////////////////////////////////////////////////////////////
+INLINE size_t HTTPChannel::
+get_first_byte_requested() const {
+  return _first_byte_requested;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_last_byte_requested
+//       Access: Published
+//  Description: Returns the last byte of the file requested by the
+//               request.  This will normally be 0 to indicate that
+//               the file is being requested to its last byte, but if
+//               the file was requested via a get_subdocument() call,
+//               this will contain the last_byte parameter from that
+//               call.
+////////////////////////////////////////////////////////////////////
+INLINE size_t HTTPChannel::
+get_last_byte_requested() const {
+  return _last_byte_requested;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_first_byte_delivered
+//       Access: Published
+//  Description: Returns the first byte of the file (that will be)
+//               delivered by the server in response to the current
+//               request.  Normally, this is the same as
+//               get_first_byte_requested(), but some servers will
+//               ignore a subdocument request and always return the
+//               whole file, in which case this value will be 0,
+//               regardless of what was requested to
+//               get_subdocument().
+////////////////////////////////////////////////////////////////////
+INLINE size_t HTTPChannel::
+get_first_byte_delivered() const {
+  return _first_byte_delivered;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_last_byte_delivered
+//       Access: Published
+//  Description: Returns the last byte of the file (that will be)
+//               delivered by the server in response to the current
+//               request.  Normally, this is the same as
+//               get_last_byte_requested(), but some servers will
+//               ignore a subdocument request and always return the
+//               whole file, in which case this value will be 0,
+//               regardless of what was requested to
+//               get_subdocument().
+////////////////////////////////////////////////////////////////////
+INLINE size_t HTTPChannel::
+get_last_byte_delivered() const {
+  return _last_byte_delivered;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::reset
 //       Access: Published
 //  Description: Stops whatever file transaction is currently in
