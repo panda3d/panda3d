@@ -106,12 +106,6 @@ ConfigVariableBool dx_do_vidmemsize_check
 ConfigVariableBool dx_preserve_fpu_state
 ("dx-preserve-fpu-state", true);
 
-// if true, override win-width/height and use driver vidmem info to
-// pick what will be a fullscreen window size close to the best perf
-// capability of card, based on a heuristic
-ConfigVariableBool dx_pick_best_screenres
-("pick-best-screenres", false);
-
 ConfigVariableInt dx_preferred_device_id
 ("dx-preferred-device-id", -1);
 

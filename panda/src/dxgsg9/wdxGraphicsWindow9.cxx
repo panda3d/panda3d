@@ -513,11 +513,6 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   wdxGraphicsPipe9 *dxpipe;
   DCAST_INTO_R(dxpipe, _pipe, false);
 
-  // only want dx_pick_best_screenres to apply to initial startup, and
-  // since the initial res has already been picked, dont use
-  // auto-res-select in any future init sequence.
-  dx_pick_best_screenres = false;
-
   DWORD dwRenderWidth = display._display_mode.Width;
   DWORD dwRenderHeight = display._display_mode.Height;
   DWORD dwBehaviorFlags = 0x0;
@@ -1013,7 +1008,7 @@ search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
   // bugbug: wouldnt we like to do GetAVailVidMem so we can do
   // upper-limit memory computation for dx8 cards too?  otherwise
   // verify_window_sizes cant do much
-  if ((_d3dcaps.MaxStreams == 0) || dx_pick_best_screenres) {
+  if (_d3dcaps.MaxStreams == 0) {
     if (wdxdisplay9_cat.is_debug()) {
       wdxdisplay9_cat.debug()
         << "checking vidmem size\n";
@@ -1067,154 +1062,31 @@ search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
 
   if (is_fullscreen()) {
     bool bCouldntFindValidZBuf;
-    if (!_wcontext._is_low_memory_card) {
-      bool bUseDefaultSize = dx_pick_best_screenres &&
-        ((_wcontext._max_available_video_memory == UNKNOWN_VIDMEM_SIZE) ||
-         is_badvidmem_card(&_wcontext._dx_device_id));
-
-      if (dx_pick_best_screenres && !bUseDefaultSize) {
-        typedef struct {
-          UINT memlimit;
-          DWORD scrnX, scrnY;
-        } Memlimres;
-
-        const Memlimres MemRes[] = {
-          {       0,  640, 480},
-          { 8000000,  800, 600},
-
-          // unfortunately the 32MB card perf varies greatly (TNT2-GF2),
-          // so we need to be conservative since frame rate difference
-          // can change from 15->30fps when going from 1280x1024->800x600
-          // on low-end 32mb cards
-          {16000000,  800, 600},
-          {32000000,  800, 600},  // 32MB+ cards will choose this
-
-          // some monitors have trouble w/1600x1200, so dont pick this by deflt,
-          // even though 64MB cards should handle it
-          {64000000, 1280, 1024}   // 64MB+ cards will choose this
-        };
-        const int NumResLims = (sizeof(MemRes)/sizeof(Memlimres));
-
-        for(int i = NumResLims - 1; i >= 0; i--) {
-          // find biggest slot card can handle
-          if (_wcontext._max_available_video_memory > MemRes[i].memlimit) {
-            dwRenderWidth = MemRes[i].scrnX;
-            dwRenderHeight = MemRes[i].scrnY;
-
-            wdxdisplay9_cat.info()
-              << "pick_best_screenres: trying " << dwRenderWidth
-              << "x" << dwRenderHeight << " based on "
-              << _wcontext._max_available_video_memory << " bytes avail\n";
-
-            dxpipe->search_for_valid_displaymode(_wcontext, dwRenderWidth, dwRenderHeight,
-                                                 bNeedZBuffer, bWantStencil,
-                                                 &_wcontext._supported_screen_depths_mask,
-                                                 &bCouldntFindValidZBuf,
-                                                 &pixFmt, dx_force_16bpp_zbuffer, true);
-
-            // note I'm not saving refresh rate, will just use adapter
-            // default at given res for now
-
-            if (pixFmt != D3DFMT_UNKNOWN) {
-              break;
-            }
-
-            wdxdisplay9_cat.info()
-              << "skipping scrnres; "
-              << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
-              << " at " << dwRenderWidth << "x" << dwRenderHeight
-              << " for device #" << _wcontext._card_id << endl;
-          }
-        }
-        // otherwise just go with whatever was specified (we probably shouldve marked this card as lowmem if it gets to end of loop w/o breaking
-      }
-
-      if (pixFmt == D3DFMT_UNKNOWN) {
-        if (bUseDefaultSize) {
-          wdxdisplay9_cat.info()
-            << "pick_best_screenres: defaulted 800x600 based on no reliable vidmem size\n";
-          dwRenderWidth = 800;
-          dwRenderHeight = 600;
-        }
-
-        dxpipe->search_for_valid_displaymode(_wcontext, dwRenderWidth, dwRenderHeight,
-                                             bNeedZBuffer, bWantStencil,
-                                             &_wcontext._supported_screen_depths_mask,
-                                             &bCouldntFindValidZBuf,
-                                             &pixFmt, dx_force_16bpp_zbuffer, true);
-
-        // note I'm not saving refresh rate, will just use adapter
-        // default at given res for now
-
-        if (pixFmt == D3DFMT_UNKNOWN) {
-          wdxdisplay9_cat.error()
-            << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
-            << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _wcontext._card_id << endl;
-
-          // if it failed because of a size constraints (for non-default case), try with default size
-          if (!bUseDefaultSize) {
-            wdxdisplay9_cat.info() << "was not a default: but trying 800x600 size in verbose mode\n";
-            dwRenderWidth = 800;
-            dwRenderHeight = 600;
-          }
-
-          // run it again in verbose mode to get more dbg info to log
-          dxpipe->search_for_valid_displaymode(_wcontext, dwRenderWidth, dwRenderHeight,
-                                               bNeedZBuffer, bWantStencil,
-                                               &_wcontext._supported_screen_depths_mask,
-                                               &bCouldntFindValidZBuf,
-                                               &pixFmt, dx_force_16bpp_zbuffer, true);
-
-          // if still D3DFMT_UNKNOWN return false
-          if (pixFmt == D3DFMT_UNKNOWN)
-            return false;
-        }
-      }
-    } else {
-      // Low Memory card
-      dwRenderWidth = 640;
-      dwRenderHeight = 480;
-      dx_force_16bpptextures = true;
-
-      // need to autoforce 16bpp zbuf?  or let user use that extra mem
-      // for textures/framebuf res/etc?  most lowmem cards only do
-      // 16bpp Z anyway, but we wont force it for now
-
+    
+    dxpipe->search_for_valid_displaymode(_wcontext, dwRenderWidth, dwRenderHeight,
+                                         bNeedZBuffer, bWantStencil,
+                                         &_wcontext._supported_screen_depths_mask,
+                                         &bCouldntFindValidZBuf,
+                                         &pixFmt, dx_force_16bpp_zbuffer, true);
+    
+    // note I'm not saving refresh rate, will just use adapter
+    // default at given res for now
+    
+    if (pixFmt == D3DFMT_UNKNOWN) {
+      wdxdisplay9_cat.error()
+        << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
+        << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _wcontext._card_id << endl;
+      
+      // run it again in verbose mode to get more dbg info to log
       dxpipe->search_for_valid_displaymode(_wcontext, dwRenderWidth, dwRenderHeight,
                                            bNeedZBuffer, bWantStencil,
                                            &_wcontext._supported_screen_depths_mask,
                                            &bCouldntFindValidZBuf,
                                            &pixFmt, dx_force_16bpp_zbuffer, true);
-
-      // hack: figuring out exactly what res to use is tricky, instead I will
-      // just use 640x480 if we have < 3 meg avail
-
-      if (_wcontext._supported_screen_depths_mask & R5G6B5_FLAG) {
-        pixFmt = D3DFMT_R5G6B5;
-      } else if (_wcontext._supported_screen_depths_mask & X1R5G5B5_FLAG) {
-        pixFmt = D3DFMT_X1R5G5B5;
-      } else {
-        wdxdisplay9_cat.fatal()
-          << "Low Memory VidCard has no supported FullScreen 16bpp resolutions at "
-          << dwRenderWidth << "x" << dwRenderHeight << " for device #"
-          << device_info->cardID << " ("
-          << _wcontext._dx_device_id.Description << "), skipping device...\n";
-
-        // run it again in verbose mode to get more dbg info to log
-        dxpipe->search_for_valid_displaymode(_wcontext, dwRenderWidth, dwRenderHeight,
-                                             bNeedZBuffer, bWantStencil,
-                                             &_wcontext._supported_screen_depths_mask,
-                                             &bCouldntFindValidZBuf,
-                                             &pixFmt, dx_force_16bpp_zbuffer,
-                                             true /* verbose mode on*/);
+      
+      // if still D3DFMT_UNKNOWN return false
+      if (pixFmt == D3DFMT_UNKNOWN)
         return false;
-      }
-
-      if (wdxdisplay9_cat.is_info()) {
-        wdxdisplay9_cat.info()
-          << "Available VidMem (" << _wcontext._max_available_video_memory
-          << ") is under threshold, using 640x480 16bpp rendertargets to save tex vidmem.\n";
-      }
     }
   } else {
     // Windowed Mode
@@ -1238,18 +1110,17 @@ search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
 
   if (dwRenderWidth != properties.get_x_size() ||
       dwRenderHeight != properties.get_y_size()) {
-    // This is probably not the best place to put this; I'm just putting
-    // it here for now because if dx_pick_best_screenres is true, the
-    // code above might have changed the size of the window
-    // unexpectedly.  This code gets called when make_gsg() is called,
-    // which means it is called in the draw thread, but this method
-    // should really be called from the window thread.  In DirectX those
-    // may always be the same threads anyway, so we may be all right.
-    // Still, it's a little strange that the window may change size
-    // after it has already been opened, at the time we create the GSG
-    // for it; it would be better if we could find a way to do this
-    // resolution-selection logic earlier, say at the time the window is
-    // created.
+    // This is probably not the best place to put this; I'm just
+    // putting it here for now because the code above might have
+    // changed the size of the window unexpectedly.  This code gets
+    // called when make_gsg() is called, which means it is called in
+    // the draw thread, but this method should really be called from
+    // the window thread.  In DirectX those may always be the same
+    // threads anyway, so we may be all right.  Still, it's a little
+    // strange that the window may change size after it has already
+    // been opened, at the time we create the GSG for it; it would be
+    // better if we could find a way to do this resolution-selection
+    // logic earlier, say at the time the window is created.
     system_changed_size(dwRenderWidth, dwRenderHeight);
     WindowProperties resized_props;
     resized_props.set_size(dwRenderWidth, dwRenderHeight);

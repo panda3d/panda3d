@@ -48,7 +48,6 @@ extern ConfigVariableBool dx_force_anisotropic_filtering;
 extern ConfigVariableBool dx_force_16bpp_zbuffer;
 extern ConfigVariableBool dx_do_vidmemsize_check;
 extern ConfigVariableBool dx_preserve_fpu_state;
-extern ConfigVariableBool dx_pick_best_screenres;
 extern ConfigVariableInt dx_preferred_device_id;
 
 #ifndef NDEBUG
