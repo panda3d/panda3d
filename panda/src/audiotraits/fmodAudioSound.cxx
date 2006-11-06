@@ -91,6 +91,10 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
   if (ext == "mid") {
     streamflag = FMOD_CREATESTREAM;
     sound_info = &_manager->_midi_info;
+    
+    if (sound_info->dlsname != NULL) {
+      audio_debug("Using DLS file " << sound_info->dlsname);
+    }
   }
 
   result = _manager->_system->createSound( file_name.c_str(), FMOD_SOFTWARE | streamflag | flag , 
