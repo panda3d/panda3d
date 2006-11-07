@@ -91,6 +91,8 @@ PUBLISHED:
   void append_data(const void *data, size_t size);
   INLINE void append_data(const string &data);
 
+  void assign(const void *data, size_t size);
+
   INLINE string get_message() const;
   INLINE const void *get_data() const;
   INLINE size_t get_length() const;
@@ -112,6 +114,7 @@ private:
 
 
 public:
+
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -124,6 +127,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
 
 private:
   static TypeHandle _type_handle;

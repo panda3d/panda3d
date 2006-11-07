@@ -1,0 +1,325 @@
+#ifndef __NONECLOCKING_CONNECTTION_H_
+#define __NONECLOCKING_CONNECTTION_H_
+////////////////////////////////////////////////////////////////////
+// 
+// Ok here is the base behavior..
+//     A message IO engin that is Smart enough to Do 
+//
+//  1. Non Blocking Connect .. and Buffer the writes if needed
+//  2. Handle 1 to N targets for the connection.. 
+//
+//  3. Handle Framing and Unframing properly ..
+//
+////////////////////////////////////////////////////////////////////
+#include "dtoolbase.h"
+#include <vector>
+#include "socket_base.h"
+//#include "../express/datagram.h"
+#include "datagram.h"
+
+#include "buffered_datagramreader.h"
+#include "buffered_datagramwriter.h"
+
+////////////////////////////////////////////////////////////////
+// there are 3 states   
+//
+//      1. Socket not even assigned,,,,
+//      2. Socket Assigned and trying to get a active connect open
+//      3. Socket is open and  writable.. ( Fully powered up )...
+//
+///////////////////////////////////////////////////////////////
+class Buffered_DatagramConnection : protected Socket_TCP
+{
+private:
+    struct AddressQueue : private std::vector<Socket_Address> // this is used to do a round robin for addres to connect to ..
+    {   
+        size_t _active_index;   
+        bool GetNext(Socket_Address &out) 
+        {
+            size_t the_size = size();
+            if(the_size == 0)
+                return false;
+
+            if(_active_index >= the_size || _active_index < 0)
+                _active_index = 0;
+             out = (*this)[_active_index++];   
+             return true;
+        }            
+
+        void clear() { std::vector<Socket_Address>::clear(); };
+        void push_back(Socket_Address &address)
+        {
+            iterator ii;
+            for(ii = begin(); ii != end(); ii++)
+                if(*ii == address)
+                    return;
+            std::vector<Socket_Address>::push_back(address);
+        }
+
+        size_t size() { return std::vector<Socket_Address>::size(); };
+    };
+protected:
+    // c++ upcals for 
+    virtual void PostConnect(void) { };
+    virtual void NewWriteBuffer(void) { };
+    ///////////////////////////////////////////
+	inline void ClearAll(void);
+	inline bool DoConnect(void);            // all the real state magic is in here ...        
+    inline bool SendMessageBufferOnly(Datagram &msg); // do not use this .. this is a way for the the COnnecting UPcall to drop messages in queue first..
+public:
+PUBLISHED:
+	inline Buffered_DatagramConnection(bool do_blocking_writes, int rbufsize, int wbufsize, int write_flush_point) ;
+	virtual ~Buffered_DatagramConnection(void) ;
+    // the reason thsi all exists
+	inline bool SendMessage(Datagram &msg);
+	inline bool GetMessage(Datagram **val);
+    inline Datagram * GetMessage();
+	inline bool Flush(void);
+    inline void Reset(void);
+
+    // address queue stuff
+    inline size_t AddressQueueSize() { return _Addresslist.size(); };
+	inline void AddAddress(Socket_Address &inadr);
+    inline void ClearAddresses(void);
+private:
+	Buffered_DatagramWriter	_Writer;		// buffered writing
+	Buffered_DatagramReader _Reader;		// buffered reader
+    AddressQueue            _Addresslist;   // the location of the round robin address list
+	Socket_Address			_Adddress;		// the conection address ( active one from list being used)
+    // the local datagram store..
+	Datagram	    		_Msg;			// The temp storage for a upcalled message
+    ////////////////////////////////
+    // connection state engine /////
+    Time_Out                _LastConnectTry; // A Recycle Timer to Stop Connection/spaming.. 
+    bool                    _tryingToOpen;  // this is a flag that say we are in state 2
+                                            // state 1 = Active() == false,,
+                                            // state 2 = Active() == true and _tryingToOpen == true;
+                                            // state 3 = Active() == true and _tryingToOpen == flase;
+
+    friend class Buffered_DatagramReader;
+    friend class Buffered_DatagramWriter;
+
+};
+////////////////////////////////////////////////////////////////////
+// Function name	: Buffered_DatagramConnection::ClearAll
+// Description	    :  used to do a full reset of buffers
+//  
+// Return type		: inline void 
+// Argument         : void
+////////////////////////////////////////////////////////////////////
+inline void Buffered_DatagramConnection::ClearAll(void)
+{
+	Close();
+    _tryingToOpen = false;
+	_Writer.ReSet();
+	_Reader.ReSet();
+}	
+////////////////////////////////////////////////////////////////////
+// Function name	: Buffered_DatagramConnection::DoConnect
+// Description	    : This is the function thah does the conection for us
+//  
+// Return type		: inline bool 
+// Argument         : void
+////////////////////////////////////////////////////////////////////
+inline bool Buffered_DatagramConnection::DoConnect(void)
+{
+	if(Active() != true)
+	{ 
+        if(_LastConnectTry.Expired() != true)
+            return false;
+
+        if(!_Addresslist.GetNext(_Adddress)) // lookup the proper value...
+            return false;
+
+		if(ActiveOpenNonBlocking(_Adddress) == true)
+		{
+             _LastConnectTry.ReStart();
+            _tryingToOpen = true; // set the flag indicating we are trying to open up 
+			SetNonBlocking(); // maybe should be blocking?
+			SetSendBufferSize(1024*50);  // we need to hand tune these for the os we are using
+			SetRecvBufferSize(1024*50);
+            NewWriteBuffer();
+			return true;
+		}
+
+		return false;
+	}
+
+    if(_tryingToOpen)  // okay handle the  i am connecting state....
+    {
+        Socket_fdset  fdset;
+        fdset.setForSocket(*this);
+        Socket_Selector  selector;
+        if(selector.WaitFor_All(fdset,0) >0)
+        {
+            _tryingToOpen = false;
+            if(selector._error.IsSetFor(*this) == true) // means we are in errorconnected. else writable
+            {
+                ClearAll();
+                return false;  // error on connect 
+            }
+            PostConnect();
+            return true;  // just got connected
+        }
+        return true; // still connecting
+    }    
+	return true;
+}
+////////////////////////////////////////////////////////////////////
+// Function name	: Buffered_DatagramConnection::~Buffered_DatagramConnection
+// Description	    : 
+//  
+// Return type		: inline 
+// Argument         : void
+////////////////////////////////////////////////////////////////////
+inline Buffered_DatagramConnection::~Buffered_DatagramConnection(void) 
+{
+	Close();
+}
+////////////////////////////////////////////////////////////////////
+// Function name	: Buffered_DatagramConnection::Buffered_DatagramConnection
+// Description	    : 
+//  
+// Return type		: inline 
+// Argument         : bool do_blocking_writes
+// Argument         : int rbufsize
+// Argument         : int wbufsize
+////////////////////////////////////////////////////////////////////
+inline Buffered_DatagramConnection::Buffered_DatagramConnection(bool do_blocking_writes, int rbufsize, int wbufsize, int write_flush_point) 
+	:  _Writer(do_blocking_writes,wbufsize,write_flush_point) , _Reader(rbufsize), _Msg() ,  _LastConnectTry(Time_Span(0,0,0,1,0))
+{
+    _LastConnectTry.ForceToExpired();
+}
+////////////////////////////////////////////////////////////////////
+// Function name	:  Buffered_DatagramConnection::SendMessage
+// Description	    : send the message 
+//  
+// Return type		: inline bool 
+// Argument         : DataGram &msg
+////////////////////////////////////////////////////////////////////
+inline bool  Buffered_DatagramConnection::SendMessage(Datagram &msg)
+{
+	if(DoConnect() == true)
+	{	
+//        printf(" DO SendMessage %d\n",msg.get_length()); 
+        int val = 0;        
+        if(_tryingToOpen)    // indicates we are in the process of opening the connection ....just buffer
+        {
+	        val = _Writer.AddData(msg.get_data(),msg.get_length());
+        }
+        else
+        {
+   		    val = _Writer.AddData(msg.get_data(),msg.get_length(),*this);
+        }
+		if(val >= 0)
+			return true;
+
+//		LOGWARNING("Buffered_DatagramConnection::SendMessage->Error On Write--Out Buffer = %d",_Writer.AmountBuffered());
+		ClearAll();
+	}
+	return false;
+}
+
+inline bool  Buffered_DatagramConnection::SendMessageBufferOnly(Datagram &msg)
+{
+    int val = _Writer.AddData(msg.get_data(),msg.get_length());
+	if(val >= 0)
+	    return true;
+
+//	LOGWARNING("Buffered_DatagramConnection::SendMessageBufferOnly->Error On Write--Out Buffer = %d",_Writer.AmountBuffered());
+	ClearAll();
+    return false;
+}
+
+////////////////////////////////////////////////////////////////////
+// Function name	: Buffered_DatagramConnection::Init
+// Description	    :  must be called to set value to the server
+//  
+// Return type		: inline void 
+// Argument         : Socket_Address &inadr
+////////////////////////////////////////////////////////////////////
+inline void Buffered_DatagramConnection::AddAddress(Socket_Address &inadr)
+{
+    _Addresslist.push_back(inadr);
+}
+
+inline void Buffered_DatagramConnection::ClearAddresses(void)
+{
+    _Addresslist.clear();
+}
+////////////////////////////////////////////////////////////////////
+// Function name	: Buffered_DatagramConnection::GetMessage
+// Description	    :  read a message
+//  
+//	false means something bad happened..
+//
+//
+// Return type		: inline bool 
+// Argument         : DataGram **val
+////////////////////////////////////////////////////////////////////
+inline bool Buffered_DatagramConnection::GetMessage(Datagram **val)
+{
+	*val = NULL;
+	if(DoConnect() == true && _tryingToOpen != true)
+	{
+		int ans1 = _Reader.PumpMessageReader(_Msg,*this);
+		if(ans1 <0)
+		{
+//    		LOGWARNING("Buffered_DatagramConnection::GetMessage->Error On PumpMessageReader--Out Buffer = %d",_Writer.AmountBuffered());
+			ClearAll();
+			return false;
+		}
+		else if (ans1 == 1)
+        {
+			*val = &_Msg;
+        }
+		
+		return true;
+	}
+	return false;
+}
+
+inline Datagram * Buffered_DatagramConnection::GetMessage()
+{
+    Datagram *out = NULL;    
+    GetMessage(&out);
+    return out;
+}
+////////////////////////////////////////////////////////////////////
+// Function name	: Buffered_DatagramConnection::Flush
+// Description	    : flush all wrightes
+//  
+// Return type		: bool 
+// Argument         : void
+////////////////////////////////////////////////////////////////////
+bool Buffered_DatagramConnection::Flush(void)
+{
+	if(Active() == true && _tryingToOpen != true )
+	{
+        int flush_resp = _Writer.FlushNoBlock(*this);
+		if(flush_resp < 0)
+		{
+//			LOGWARNING("Buffered_DatagramConnection::Flush->Error On Flush [%d]",GetLastError());
+  //		    LOGWARNING("Buffered_DatagramConnection::Flush->Error ..Write--Out Buffer = %d",_Writer.AmountBuffered());
+			ClearAll();  
+			return false;
+		}
+		return true;
+	}
+	return false;
+}
+////////////////////////////////////////////////////////////////////
+// Function name	: Buffered_DatagramConnection::Flush
+// Description	    : Reset 
+//  
+// Return type		: void 
+// Argument         : void
+////////////////////////////////////////////////////////////////////
+inline void Buffered_DatagramConnection::Reset()
+{
+    ClearAll();
+};
+
+
+#endif //__NONECLOCKING_CONNECTTION_H_
+

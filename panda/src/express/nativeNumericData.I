@@ -69,3 +69,55 @@ INLINE const void *NativeNumericData::
 get_data() const {
   return _source;
 }
+
+/////////////////////
+// this is for a intel compile .. it is native format and it is 
+// readable off word boundries
+/////////////////////////
+inline void TS_SetVal1(const PN_int8 * src, PN_int8 *dst)
+{
+	*dst = *src;
+}
+inline void TS_SetVal2(const char * src, char *dst)
+{
+	*(reinterpret_cast<PN_int16 *>(dst)) = *(reinterpret_cast  <const PN_int16 *>(src));
+}
+
+inline void TS_SetVal4(const char * src, char *dst)
+{
+	*(reinterpret_cast <PN_int32 *>(dst)) = *(reinterpret_cast <const PN_int32 *>(src));
+}
+
+
+inline void TS_SetVal8(const char * src, char *dst)
+{
+	*(reinterpret_cast<PN_int64 *>(dst)) = *(reinterpret_cast<const PN_int64 *>(src));
+}
+
+template<class type> inline type  TS_GetInteger(type &val,const  char * _src)
+{	
+	val = *(reinterpret_cast <const type *>(_src));
+	return val;
+}
+
+template<class type> inline type  TS_GetIntegerIncPtr(type &val,char *& _src)
+{	
+	val = *(reinterpret_cast <const type *>(_src));
+	_src+= sizeof(type);
+	return val;
+}
+
+template<class type> inline void TS_AddIntegerIncPtr(type val, char *& _dst)
+{
+	*(reinterpret_cast <type *>(_dst)) = val;
+	_dst+= sizeof(type);
+}
+
+template<class type> inline void TS_AddInteger(type val, char * _dst)
+{
+	*(reinterpret_cast <type *>(_dst)) = val;
+}
+
+#define TS_GetDirect(TT,SS)  *((TT *)(SS))	
+#define TS_GetDirectIncPtr(TT,SS) {  _ptr += sizeof(TT); return *((TT *)(SS -sizeof(TT))); }	
+
