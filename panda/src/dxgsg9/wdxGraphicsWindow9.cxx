@@ -283,6 +283,15 @@ open_window() {
     return false;
   }
 
+  // Ensure the window properties get set to the actual size of the
+  // window.
+  {
+    WindowProperties resized_props;
+    resized_props.set_size(_wcontext._display_mode.Width, 
+                           _wcontext._display_mode.Height);
+    _properties.add_properties(resized_props);
+  }
+
   wdxdisplay9_cat.debug() << "_wcontext._window is " << _wcontext._window << "\n";
   if (!WinGraphicsWindow::open_window()) {
     return false;
@@ -306,8 +315,7 @@ open_window() {
 
       wdxdisplay9_cat.debug() << "device width " << _wcontext._display_mode.Width << "\n";
       if (!create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer)) {
-        // just crash here
-        wdxdisplay9_cat.error() << "fatal: must be trying to create two fullscreen windows: not supported\n";
+        wdxdisplay9_cat.error() << "Unable to create window with specified parameters.\n";
         return false;
       }
       _dxgsg->get_pipe()->make_device((void*)(&_wcontext));
@@ -321,13 +329,12 @@ open_window() {
       wdxdisplay9_cat.debug() << "device is not null\n";
 
       dxdev = (DXGraphicsDevice9*)_dxgsg->get_pipe()->get_device();
-      props = get_properties();
       memcpy(&_wcontext, &dxdev->_Scrn, sizeof(DXScreenData));
 
       _wcontext._presentation_params.Windowed = !is_fullscreen();
       _wcontext._presentation_params.hDeviceWindow = _wcontext._window = _hWnd;
-      _wcontext._presentation_params.BackBufferWidth = _wcontext._display_mode.Width = props.get_x_size();
-      _wcontext._presentation_params.BackBufferHeight = _wcontext._display_mode.Height = props.get_y_size();
+      _wcontext._presentation_params.BackBufferWidth = _wcontext._display_mode.Width = _properties.get_x_size();
+      _wcontext._presentation_params.BackBufferHeight = _wcontext._display_mode.Height = _properties.get_y_size();
 
       wdxdisplay9_cat.debug() << "device width " << _wcontext._presentation_params.BackBufferWidth << "\n";
       if (!_dxgsg->create_swap_chain(&_wcontext)) {
@@ -399,30 +406,30 @@ void wdxGraphicsWindow9::
 handle_reshape() {
   GdiFlush();
   WinGraphicsWindow::handle_reshape();
-
+  
   if (_dxgsg != NULL) {
     // create the new resized rendertargets
     WindowProperties props = get_properties();
     int x_size = props.get_x_size();
     int y_size = props.get_y_size();
-
+    
     if (_wcontext._presentation_params.BackBufferWidth != x_size ||
-  _wcontext._presentation_params.BackBufferHeight != y_size) {
+        _wcontext._presentation_params.BackBufferHeight != y_size) {
       bool resize_succeeded = reset_device_resize_window(x_size, y_size);
-
+      
       if (wdxdisplay9_cat.is_debug()) {
-  if (!resize_succeeded) {
-    wdxdisplay9_cat.debug()
-      << "windowed_resize to size: (" << x_size << ", " << y_size
-      << ") failed due to out-of-memory\n";
-  } else {
-    int x_origin = props.get_x_origin();
-    int y_origin = props.get_y_origin();
-    wdxdisplay9_cat.debug()
-      << "windowed_resize to origin: (" << x_origin << ", "
-      << y_origin << "), size: (" << x_size
-      << ", " << y_size << ")\n";
-  }
+        if (!resize_succeeded) {
+          wdxdisplay9_cat.debug()
+            << "windowed_resize to size: (" << x_size << ", " << y_size
+            << ") failed due to out-of-memory\n";
+        } else {
+          int x_origin = props.get_x_origin();
+          int y_origin = props.get_y_origin();
+          wdxdisplay9_cat.debug()
+            << "windowed_resize to origin: (" << x_origin << ", "
+            << y_origin << "), size: (" << x_size
+            << ", " << y_size << ")\n";
+        }
       }
     }
   }
@@ -942,28 +949,42 @@ choose_device() {
     }
   }
 
-  UINT good_device_count = 0;
-  for(UINT devnum = 0;devnum<device_infos.size() /*&& (good_device_count < num_windows)*/;devnum++) {
-    if (search_for_device(dxpipe, &device_infos[devnum]))
-      good_device_count++;
+  // Try to select the default or requested device.
+  if (adapter_num >= 0 && adapter_num < (int)device_infos.size()) {
+    if (consider_device(dxpipe, &device_infos[adapter_num])) {
+      wdxdisplay9_cat.info()
+        << "Selected device " << adapter_num << " (of "
+        << device_infos.size() << ", zero-based)\n";
+      return true;
+    }
+    wdxdisplay9_cat.info()
+      << "Could not select device " << adapter_num << "\n";
   }
 
-  if (good_device_count == 0) {
-    wdxdisplay9_cat.error() << "no usable display devices.\n";
-    return false;
+  // Iterate through all available devices to find the first suitable
+  // one.
+  for (UINT devnum = 0; devnum < device_infos.size(); ++devnum) {
+    if (consider_device(dxpipe, &device_infos[devnum])) {
+      wdxdisplay9_cat.info()
+        << "Chose device " << devnum << " (of "
+        << device_infos.size() << ", zero-based): first one that works.\n";
+      return true;
+    }
   }
 
-  return true;
+  wdxdisplay9_cat.error() << "no usable display devices.\n";
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::search_for_device
+//     Function: wdxGraphicsWindow9::consider_device
 //       Access: Private
-//  Description: Searches for a suitable hardware device for
-//               rendering.
+//  Description: If the specified device is acceptable, sets it as the
+//               current device and returns true; otherwise, returns
+//               false.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow9::
-search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
+consider_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
 
   assert(dxpipe != NULL);
   WindowProperties properties = get_properties();
@@ -1080,17 +1101,7 @@ search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
       wdxdisplay9_cat.error()
         << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
         << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _wcontext._card_id << endl;
-      
-      // run it again in verbose mode to get more dbg info to log
-      dxpipe->search_for_valid_displaymode(_wcontext, dwRenderWidth, dwRenderHeight,
-                                           bNeedZBuffer, bWantStencil,
-                                           &_wcontext._supported_screen_depths_mask,
-                                           &bCouldntFindValidZBuf,
-                                           &pixFmt, dx_force_16bpp_zbuffer, true);
-      
-      // if still D3DFMT_UNKNOWN return false
-      if (pixFmt == D3DFMT_UNKNOWN)
-        return false;
+      return false;
     }
   } else {
     // Windowed Mode
@@ -1111,25 +1122,6 @@ search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
   _wcontext._display_mode.Format = pixFmt;
   _wcontext._display_mode.RefreshRate = D3DPRESENT_RATE_DEFAULT;
   _wcontext._monitor = device_info->_monitor;
-
-  if (dwRenderWidth != properties.get_x_size() ||
-      dwRenderHeight != properties.get_y_size()) {
-    // This is probably not the best place to put this; I'm just
-    // putting it here for now because the code above might have
-    // changed the size of the window unexpectedly.  This code gets
-    // called when make_gsg() is called, which means it is called in
-    // the draw thread, but this method should really be called from
-    // the window thread.  In DirectX those may always be the same
-    // threads anyway, so we may be all right.  Still, it's a little
-    // strange that the window may change size after it has already
-    // been opened, at the time we create the GSG for it; it would be
-    // better if we could find a way to do this resolution-selection
-    // logic earlier, say at the time the window is created.
-    system_changed_size(dwRenderWidth, dwRenderHeight);
-    WindowProperties resized_props;
-    resized_props.set_size(dwRenderWidth, dwRenderHeight);
-    _properties.add_properties(resized_props);
-  }
 
   return true;
 }

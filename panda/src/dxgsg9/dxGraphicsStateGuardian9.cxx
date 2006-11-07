@@ -4637,7 +4637,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     }
 
     hr = _d3d_device->Reset(&_presentation_reset);
-    if (FAILED(hr)) {
+    if (FAILED(hr) && hr != D3DERR_DEVICELOST) {
       return hr;
     }
 

@@ -73,7 +73,7 @@ private:
                                         bool force_16bpp_zbuffer);
 
   bool choose_device();
-  bool search_for_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info);
+  bool consider_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info);
 
   bool reset_device_resize_window(UINT new_xsize, UINT new_ysize);
   void init_resized_window();
