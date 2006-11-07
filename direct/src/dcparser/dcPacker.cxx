@@ -802,6 +802,7 @@ unpack_object() {
   switch (pack_type) {
   case PT_invalid:
     object = Py_None;
+    Py_INCREF(object);
     unpack_skip();
     break;
 
@@ -900,7 +901,7 @@ unpack_object() {
     break;
   }
 
-  nassertr(object != (PyObject *)NULL, Py_None);
+  nassertr(object != (PyObject *)NULL, NULL);
   return object;
 }
 #endif  // HAVE_PYTHON

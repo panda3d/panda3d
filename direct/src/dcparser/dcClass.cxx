@@ -426,6 +426,7 @@ set_class_def(PyObject *class_def) {
 PyObject *DCClass::
 get_class_def() const {
   if (_class_def == NULL) {
+    Py_INCREF(Py_None);
     return Py_None;
   }
 
@@ -474,6 +475,7 @@ set_owner_class_def(PyObject *owner_class_def) {
 PyObject *DCClass::
 get_owner_class_def() const {
   if (_owner_class_def == NULL) {
+    Py_INCREF(Py_None);
     return Py_None;
   }
 
