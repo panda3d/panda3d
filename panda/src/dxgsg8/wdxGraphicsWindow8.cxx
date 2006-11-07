@@ -437,6 +437,10 @@ handle_reshape() {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow8::
 do_fullscreen_resize(int x_size, int y_size) {
+  if (!WinGraphicsWindow::do_fullscreen_resize(x_size, y_size)) {
+    return false;
+  }
+
   bool bCouldntFindValidZBuf;
   D3DFORMAT pixFmt;
   bool bNeedZBuffer = (_wcontext._presentation_params.EnableAutoDepthStencil != false);

@@ -566,6 +566,7 @@ set_properties_now(WindowProperties &properties) {
 
         // And mark the window closed.
         _properties.set_open(false);
+        _is_valid = false;
       }
 
     } else {
