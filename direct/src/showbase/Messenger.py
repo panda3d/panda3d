@@ -126,6 +126,16 @@ class Messenger:
                         del self.__callbacks[event]
             del self.__objectEvents[object]
 
+    def getAllAccepting(self, object):
+        """
+        Returns the list of all events accepted by the indicated object.
+        """
+        # Get the list of events this object is listening to
+        eventDict = self.__objectEvents.get(object)
+        if eventDict:
+            return eventDict.keys()
+        return []
+
     def isAccepting(self, event, object):
         """ isAccepting(self, string, DirectOject)
         Is this object accepting this event?

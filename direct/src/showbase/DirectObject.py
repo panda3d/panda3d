@@ -35,6 +35,9 @@ class DirectObject:
     def isAccepting(self, event):
         return messenger.isAccepting(event, self)
 
+    def getAllAccepting(self):
+        return messenger.getAllAccepting(self)
+
     def isIgnoring(self, event):
         return messenger.isIgnoring(event, self)
 
