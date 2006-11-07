@@ -12,7 +12,7 @@ if (sys.platform == "win32"):
             target = dir
     if (target == None):
         print "Cannot find libpandaexpress. Exiting."
-        os.exit(1)
+        sys.exit(1)
     path=os.environ["PATH"]
     if (path.startswith(target+";")==0):
         os.environ["PATH"] = target+";"+path
