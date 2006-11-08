@@ -78,6 +78,12 @@ MayaToEgg() :
      &MayaToEgg::dispatch_none, &_suppress_vertex_color);
 
   add_option
+    ("keep-uvs", "", 0,
+     "Convert all UV sets on all vertices, even those that do not appear "
+     "to be referenced by any textures.",
+     &MayaToEgg::dispatch_none, &_keep_all_uvsets);
+
+  add_option
     ("trans", "type", 0,
      "Specifies which transforms in the Maya file should be converted to "
      "transforms in the egg file.  The option may be one of all, model, "
@@ -175,6 +181,7 @@ run() {
   converter._polygon_tolerance = _polygon_tolerance;
   converter._respect_maya_double_sided = _respect_maya_double_sided;
   converter._always_show_vertex_color = !_suppress_vertex_color;
+  converter._keep_all_uvsets = _keep_all_uvsets;
   converter._transform_type = _transform_type;
 
   vector_string::const_iterator si;

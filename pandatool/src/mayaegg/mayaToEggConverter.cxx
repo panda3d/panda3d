@@ -96,6 +96,7 @@ MayaToEggConverter(const string &program_name) :
   _polygon_tolerance = 0.01;
   _respect_maya_double_sided = maya_default_double_sided;
   _always_show_vertex_color = maya_default_vertex_color;
+  _keep_all_uvsets = false;
   _transform_type = TT_model;
 }
 
@@ -118,6 +119,7 @@ MayaToEggConverter(const MayaToEggConverter &copy) :
   _polygon_tolerance(copy._polygon_tolerance),
   _respect_maya_double_sided(copy._respect_maya_double_sided),
   _always_show_vertex_color(copy._always_show_vertex_color),
+  _keep_all_uvsets(copy._keep_all_uvsets),
   _transform_type(copy._transform_type)
 {
 }
@@ -454,6 +456,8 @@ convert_maya() {
       }
 
     } else {
+      // This call makes every node a potential joint; but it does not
+      // necessarily force nodes to be joints.
       _tree.tag_joint_all();
     }
   }
@@ -1819,10 +1823,10 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     }
   }
 
-  //bool keep_all_uvsets = egg_group->has_object_type("keep-all-uvsets");
-  bool keep_all_uvsets = node_desc->has_object_type("keep-all-uvsets");
-  if (keep_all_uvsets)
+  bool keep_all_uvsets = _keep_all_uvsets || node_desc->has_object_type("keep-all-uvsets");
+  if (keep_all_uvsets) {
     mayaegg_cat.info() << "will keep_all_uvsets" << endl;
+  }
 
   MStringArray maya_uvset_names;
   status = mesh.getUVSetNames(maya_uvset_names);
@@ -1850,6 +1854,10 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     }
     _tex_names.push_back(t_n);
   }
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam()
+      << "done scanning uvs\n";
+  }
 
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
@@ -1873,12 +1881,12 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       shader = default_shader;
     }
 
-    const MayaShaderColorDef *color_def = NULL;
+    const MayaShaderColorDef *default_color_def = NULL;
 
     // And apply the shader properties to the polygon.
     if (shader != (MayaShader *)NULL) {
       set_shader_attributes(*egg_poly, *shader, &pi);
-      color_def = shader->get_color_def();
+      default_color_def = shader->get_color_def();
     }
 
     // Should we extract the color from the vertices?  Normally, in
@@ -1894,8 +1902,8 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     // Furthermore, if _always_show_vertex_color is true, we pretend
     // that the "vertex-color" flag is always set.
     bool ignore_vertex_color = false;
-    if ( color_def != (MayaShaderColorDef *)NULL) {
-      ignore_vertex_color = color_def->_has_texture && !(egg_vertex_color || _always_show_vertex_color);
+    if ( default_color_def != (MayaShaderColorDef *)NULL) {
+      ignore_vertex_color = default_color_def->_has_texture && !(egg_vertex_color || _always_show_vertex_color);
     }
 
     Colorf poly_color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1912,7 +1920,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     long i;
     LPoint3d centroid(0.0, 0.0, 0.0);
 
-    if (color_def != (MayaShaderColorDef *)NULL && color_def->has_projection()) {
+    if (default_color_def != (MayaShaderColorDef *)NULL && default_color_def->has_projection()) {
       // If the shader has a projection, we may need to compute the
       // polygon's centroid to avoid seams at the edges.
       for (i = 0; i < num_verts; i++) {
@@ -1942,28 +1950,31 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       }
 
       string uvset_name("");
-      if (color_def != (MayaShaderColorDef *)NULL && color_def->_has_texture) {
-        // Go thru all the texture references for this primitive and set uvs
-        if (mayaegg_cat.is_debug()) {
+      // Go thru all the texture references for this primitive and set uvs
+      if (mayaegg_cat.is_debug()) {
+        if (shader != (MayaShader *)NULL) {
           mayaegg_cat.debug() << "shader->_color.size is " << shader->_color.size() << endl;
-          mayaegg_cat.debug() << "primitive->tref.size is " << egg_poly->get_num_textures() << endl;
         }
-        for (size_t ti=0; ti< _uvset_names.size(); ++ti) {
-          // get the eggTexture pointer
-          string colordef_uv_name = uvset_name=  _uvset_names[ti];
-          if (mayaegg_cat.is_debug()) {
-            mayaegg_cat.debug() << "--uvset_name :" << uvset_name << endl;
-          }
-
-          if (uvset_name == "map1")  // this is the name to look up by in maya
-            colordef_uv_name = "default";
-
-          // get the shader color def that matches this EggTexture
-          // Asad: optimizing uvset: to discard unused uvsets. This for 
-          // loop figures out which ones are unused.
-          // 
-          bool found = false;
-          for (size_t tj=0; tj< shader->_color.size(); ++tj) {
+        mayaegg_cat.debug() << "primitive->tref.size is " << egg_poly->get_num_textures() << endl;
+      }
+      for (size_t ti=0; ti< _uvset_names.size(); ++ti) {
+        // get the eggTexture pointer
+        string colordef_uv_name = uvset_name=  _uvset_names[ti];
+        if (mayaegg_cat.is_debug()) {
+          mayaegg_cat.debug() << "--uvset_name :" << uvset_name << endl;
+        }
+        
+        if (uvset_name == "map1")  // this is the name to look up by in maya
+          colordef_uv_name = "default";
+        
+        // get the shader color def that matches this EggTexture
+        // Asad: optimizing uvset: to discard unused uvsets. This for 
+        // loop figures out which ones are unused.
+        // 
+        MayaShaderColorDef *color_def = NULL;
+        bool found = false;
+        if (shader != (MayaShader *)NULL) {
+          for (size_t tj = 0; tj < shader->_color.size(); ++tj) {
             color_def = shader->get_color_def(tj);
             if (color_def->_uvset_name == colordef_uv_name) {
               if (mayaegg_cat.is_debug()) {
@@ -1973,36 +1984,46 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
               break;
             }
           }
-          // if uvset is not used don't add it to the vertex
-          if (!found && !keep_all_uvsets) {
-            if (mayaegg_cat.is_spam()) {
-              mayaegg_cat.spam() << "discarding unused uvset " << uvset_name << endl;
-            }
-            continue;
-          }
 
-          if (mayaegg_cat.is_debug()) {
-            mayaegg_cat.debug() << "color_def->uvset_name :" << color_def->_uvset_name << endl;
+          if (!found && shader->_transparency._uvset_name == colordef_uv_name) {
+            if (mayaegg_cat.is_debug()) {
+              mayaegg_cat.debug() << "matched colordef to transparency\n";
+            }
+            color_def = &shader->_transparency;
+            found = true;
           }
-          if (color_def->has_projection()) {
-            // If the shader has a projection, use it instead of the
-            // polygon's built-in UV's.
-            vert.set_uv(colordef_uv_name,
-                        color_def->project_uv(p3d, centroid));
-          } else {
-            // Get the UV's from the polygon.
-            float2 uvs;
-            MString uv_mstring(uvset_name.c_str());
-            if (pi.hasUVs(uv_mstring, &status)) {
-              status = pi.getUV(i, uvs, &uv_mstring);
-              if (!status) {
-                status.perror("MItMeshPolygon::getUV");
-              } else {
-                // apply upto 1/1000th precision
-                uvs[0] = (double)((long)(uvs[0]*1000))/1000.0;
-                uvs[1] = (double)((long)(uvs[1]*1000))/1000.0;
-                vert.set_uv(colordef_uv_name, TexCoordd(uvs[0], uvs[1]));
-              }
+        }
+
+        // if uvset is not used don't add it to the vertex
+        if (!found && !keep_all_uvsets) {
+          if (mayaegg_cat.is_spam()) {
+            mayaegg_cat.spam() << "discarding unused uvset " << uvset_name << endl;
+          }
+          continue;
+        }
+        nassertv(color_def != (MayaShaderColorDef *)NULL);
+        
+        if (mayaegg_cat.is_debug()) {
+          mayaegg_cat.debug() << "color_def->uvset_name :" << color_def->_uvset_name << endl;
+        }
+        if (color_def->has_projection()) {
+          // If the shader has a projection, use it instead of the
+          // polygon's built-in UV's.
+          vert.set_uv(colordef_uv_name,
+                      color_def->project_uv(p3d, centroid));
+        } else {
+          // Get the UV's from the polygon.
+          float2 uvs;
+          MString uv_mstring(uvset_name.c_str());
+          if (pi.hasUVs(uv_mstring, &status)) {
+            status = pi.getUV(i, uvs, &uv_mstring);
+            if (!status) {
+              status.perror("MItMeshPolygon::getUV");
+            } else {
+              // apply upto 1/1000th precision
+              uvs[0] = (double)((long)(uvs[0]*1000))/1000.0;
+              uvs[1] = (double)((long)(uvs[1]*1000))/1000.0;
+              vert.set_uv(colordef_uv_name, TexCoordd(uvs[0], uvs[1]));
             }
           }
         }
@@ -2070,9 +2091,8 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         }
       }
     }
-      
+  
     pi.next();
-
   }
   if (mayaegg_cat.is_spam()) {
     mayaegg_cat.spam() << "done traversing polys" << endl;
@@ -2646,6 +2666,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
                                          fullpath, outpath);
         tex.set_filename(outpath);
         tex.set_fullpath(fullpath);
+        tex.set_format(EggTexture::F_alpha);
         apply_texture_properties(tex, trans_def);
       }
       
@@ -2660,9 +2681,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
         _textures.create_unique_texture(tex, ~0);
       
       if (pi) {
-        // Asad: let the primitive add the texture, don't worry about the coord
         if (uvset_name.find("not found") == -1) {
-        //if (pi->hasUVs(MString(uvset_name.c_str()))) {
           primitive.add_texture(new_tex);
           if (uvset_name == "map1")  // this is the name to look up by in maya
             color_def->_uvset_name.assign("default");

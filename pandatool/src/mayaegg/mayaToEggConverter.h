@@ -181,6 +181,7 @@ public:
   double _polygon_tolerance;
   bool _respect_maya_double_sided;
   bool _always_show_vertex_color;
+  bool _keep_all_uvsets;
 
   enum TransformType {
     TT_invalid,

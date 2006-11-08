@@ -41,6 +41,7 @@ protected:
   double _polygon_tolerance;
   bool _respect_maya_double_sided;
   bool _suppress_vertex_color;
+  bool _keep_all_uvsets;
   MayaToEggConverter::TransformType _transform_type;
   vector_string _subroots; 
   vector_string _subsets;

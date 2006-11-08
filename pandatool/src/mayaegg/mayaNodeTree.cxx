@@ -333,7 +333,10 @@ get_egg_group(MayaNodeDesc *node_desc) {
     nassertr(node_desc->_parent != (MayaNodeDesc *)NULL, NULL);
     egg_group = new EggGroup(node_desc->get_name());
     if (node_desc->is_joint()) {
-      egg_group->set_group_type(EggGroup::GT_joint);
+      if (_converter->get_animation_convert() == AC_model ||
+          _converter->get_animation_convert() == AC_both) {
+        egg_group->set_group_type(EggGroup::GT_joint);
+      }
     }
 
     MayaEggGroupUserData *parent_user_data = NULL;
