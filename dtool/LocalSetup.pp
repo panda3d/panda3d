@@ -515,6 +515,10 @@ $[cdefine USE_MEMORY_PTMALLOC2]
 $[cdefine USE_MEMORY_MALLOC]
 $[cdefine USE_MEMORY_NOWRAPPERS]
 
+#define if we want native net
+$[cdefine WANT_NATIVE_NET]
+
+
 /* Can we define a modern-style STL allocator? */
 $[cdefine USE_STL_ALLOCATOR]
 
