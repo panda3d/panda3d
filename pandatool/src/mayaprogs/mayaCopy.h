@@ -74,6 +74,7 @@ private:
   bool _keep_ver;
   bool _omit_tex;
   int _curr_idx;
+  bool _maya_ascii;
   /*
   vector_string _replace_prefix;
   */

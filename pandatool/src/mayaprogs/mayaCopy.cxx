@@ -77,6 +77,11 @@ MayaCopy() {
      "This option omits the textures and references of the models to be re-mayacopied",
      &CVSCopy::dispatch_none, &_omit_tex);
 
+  add_option
+    ("ma", "", 0,
+     "Write a .ma file instead of a .mb file (regardless of input type)",
+     &CVSCopy::dispatch_none, &_maya_ascii);
+
   add_path_replace_options();
 }
 
@@ -155,10 +160,15 @@ filter_filename(const string &source) {
     underscore = string::npos;
 
   string extension = source.substr(dot);
-  if (extension == ".ma") {
-    // By convention, we always write out Maya binary files (even if
-    // we receive a Maya ascii file for input).
-    extension = ".mb";
+  if (extension == ".ma" || extension == ".mb") {
+    // If we are reading a Maya file (as opposed to a texture image),
+    // then we always write ".mb" files out (unless -ma was specified
+    // on the command line).
+    if (_maya_ascii) {
+      extension = ".ma";
+    } else {
+      extension = ".mb";
+    }
   }
 
   if (underscore == string::npos) {
