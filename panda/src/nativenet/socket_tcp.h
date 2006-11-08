@@ -9,7 +9,7 @@
 //               platform differences from machine to machine
 //
 /////////////////////////////////////////////////////////////////////
-class Socket_TCP : public Socket_IP
+class EXPCL_PANDA Socket_TCP : public Socket_IP
 {
 public:    
 PUBLISHED:

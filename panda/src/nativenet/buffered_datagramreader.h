@@ -10,7 +10,7 @@ inline unsigned short GetUnsignedShort(char * in)
 };
 
 
-class   Buffered_DatagramReader : protected RingBuffer
+class EXPCL_PANDA Buffered_DatagramReader : protected RingBuffer
 {
 	inline bool GetMessageFromBuffer(Datagram &inmsg);
 public:

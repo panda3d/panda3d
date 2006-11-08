@@ -28,76 +28,78 @@
 //      3. Socket is open and  writable.. ( Fully powered up )...
 //
 ///////////////////////////////////////////////////////////////
-class Buffered_DatagramConnection : protected Socket_TCP
+class EXPCL_PANDA Buffered_DatagramConnection : protected Socket_TCP
 {
 private:
-    struct AddressQueue : private std::vector<Socket_Address> // this is used to do a round robin for addres to connect to ..
-    {   
-        size_t _active_index;   
-        bool GetNext(Socket_Address &out) 
-        {
-            size_t the_size = size();
-            if(the_size == 0)
-                return false;
+  struct AddressQueue : private std::vector<Socket_Address> // this is used to do a round robin for addres to connect to ..
+  {   
+    size_t _active_index;   
+    bool GetNext(Socket_Address &out) 
+    {
+      size_t the_size = size();
+      if(the_size == 0)
+        return false;
+      
+      if(_active_index >= the_size || _active_index < 0)
+        _active_index = 0;
+      out = (*this)[_active_index++];   
+      return true;
+    }            
 
-            if(_active_index >= the_size || _active_index < 0)
-                _active_index = 0;
-             out = (*this)[_active_index++];   
-             return true;
-        }            
+    void clear() { std::vector<Socket_Address>::clear(); };
+    void push_back(Socket_Address &address)
+    {
+      iterator ii;
+      for(ii = begin(); ii != end(); ii++)
+        if(*ii == address)
+          return;
+      std::vector<Socket_Address>::push_back(address);
+    }
 
-        void clear() { std::vector<Socket_Address>::clear(); };
-        void push_back(Socket_Address &address)
-        {
-            iterator ii;
-            for(ii = begin(); ii != end(); ii++)
-                if(*ii == address)
-                    return;
-            std::vector<Socket_Address>::push_back(address);
-        }
-
-        size_t size() { return std::vector<Socket_Address>::size(); };
-    };
+    size_t size() { return std::vector<Socket_Address>::size(); };
+  };
 protected:
-    // c++ upcals for 
-    virtual void PostConnect(void) { };
-    virtual void NewWriteBuffer(void) { };
-    ///////////////////////////////////////////
-	inline void ClearAll(void);
-	inline bool DoConnect(void);            // all the real state magic is in here ...        
-    inline bool SendMessageBufferOnly(Datagram &msg); // do not use this .. this is a way for the the COnnecting UPcall to drop messages in queue first..
+  // c++ upcals for 
+  virtual void PostConnect(void) { };
+  virtual void NewWriteBuffer(void) { };
+  ///////////////////////////////////////////
+  inline void ClearAll(void);
+  inline bool DoConnect(void);            // all the real state magic is in here ...        
+  inline bool SendMessageBufferOnly(Datagram &msg); // do not use this .. this is a way for the the COnnecting UPcall to drop messages in queue first..
 public:
+  inline bool GetMessageInternal(Datagram **val);
 PUBLISHED:
-	inline Buffered_DatagramConnection(bool do_blocking_writes, int rbufsize, int wbufsize, int write_flush_point) ;
-	virtual ~Buffered_DatagramConnection(void) ;
-    // the reason thsi all exists
-	inline bool SendMessage(Datagram &msg);
-	inline bool GetMessage(Datagram **val);
-    inline Datagram * GetMessage();
-	inline bool Flush(void);
-    inline void Reset(void);
-
-    // address queue stuff
-    inline size_t AddressQueueSize() { return _Addresslist.size(); };
-	inline void AddAddress(Socket_Address &inadr);
-    inline void ClearAddresses(void);
+  
+  inline Buffered_DatagramConnection(bool do_blocking_writes, int rbufsize, int wbufsize, int write_flush_point) ;
+  virtual ~Buffered_DatagramConnection(void) ;
+  // the reason thsi all exists
+  inline bool SendMessage(Datagram &msg);
+  
+  inline Datagram * GetMessage();
+  inline bool Flush(void);
+  inline void Reset(void);
+  
+  // address queue stuff
+  inline size_t AddressQueueSize() { return _Addresslist.size(); };
+  inline void AddAddress(Socket_Address &inadr);
+  inline void ClearAddresses(void);
 private:
-	Buffered_DatagramWriter	_Writer;		// buffered writing
-	Buffered_DatagramReader _Reader;		// buffered reader
-    AddressQueue            _Addresslist;   // the location of the round robin address list
-	Socket_Address			_Adddress;		// the conection address ( active one from list being used)
-    // the local datagram store..
-	Datagram	    		_Msg;			// The temp storage for a upcalled message
-    ////////////////////////////////
-    // connection state engine /////
-    Time_Out                _LastConnectTry; // A Recycle Timer to Stop Connection/spaming.. 
-    bool                    _tryingToOpen;  // this is a flag that say we are in state 2
-                                            // state 1 = Active() == false,,
-                                            // state 2 = Active() == true and _tryingToOpen == true;
-                                            // state 3 = Active() == true and _tryingToOpen == flase;
+  Buffered_DatagramWriter	_Writer;		// buffered writing
+  Buffered_DatagramReader _Reader;		// buffered reader
+  AddressQueue            _Addresslist;   // the location of the round robin address list
+  Socket_Address			_Adddress;	// the conection address ( active one from list being used)
+  // the local datagram store..
+  Datagram	    		_Msg;			// The temp storage for a upcalled message
+  ////////////////////////////////
+  // connection state engine /////
+  Time_Out                _LastConnectTry; // A Recycle Timer to Stop Connection/spaming.. 
+  bool                    _tryingToOpen;  // this is a flag that say we are in state 2
+                                          // state 1 = Active() == false,,
+                                          // state 2 = Active() == true and _tryingToOpen == true;
+                                          // state 3 = Active() == true and _tryingToOpen == flase;
 
-    friend class Buffered_DatagramReader;
-    friend class Buffered_DatagramWriter;
+  friend class Buffered_DatagramReader;
+  friend class Buffered_DatagramWriter;
 
 };
 ////////////////////////////////////////////////////////////////////
@@ -257,7 +259,7 @@ inline void Buffered_DatagramConnection::ClearAddresses(void)
 // Return type		: inline bool 
 // Argument         : DataGram **val
 ////////////////////////////////////////////////////////////////////
-inline bool Buffered_DatagramConnection::GetMessage(Datagram **val)
+inline bool Buffered_DatagramConnection::GetMessageInternal(Datagram **val)
 {
 	*val = NULL;
 	if(DoConnect() == true && _tryingToOpen != true)
@@ -282,7 +284,7 @@ inline bool Buffered_DatagramConnection::GetMessage(Datagram **val)
 inline Datagram * Buffered_DatagramConnection::GetMessage()
 {
     Datagram *out = NULL;    
-    GetMessage(&out);
+    GetMessageInternal(&out);
     return out;
 }
 ////////////////////////////////////////////////////////////////////

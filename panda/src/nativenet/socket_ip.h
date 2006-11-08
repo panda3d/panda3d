@@ -26,7 +26,7 @@ class Socket_UDP_Outgoing;
 // socket_fdset
 //
 /////////////////////////////////////////////////////////////////////
-class Socket_IP
+class EXPCL_PANDA Socket_IP
 {
 public:
 PUBLISHED:

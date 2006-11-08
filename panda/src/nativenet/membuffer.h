@@ -14,7 +14,7 @@
 //
 //
 ////////////////////////////////////////////////////////////////////
-class MemBuffer
+class EXPCL_PANDA MemBuffer
 {
 public:
 	inline		MemBuffer(void);

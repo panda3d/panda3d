@@ -3,7 +3,7 @@
 
 #include <string>
 #include "dtoolbase.h"
-
+#include "pandabase.h"
 ///////////////////////////////////
 // Class : Socket_Address
 //
@@ -11,7 +11,7 @@
 //    communication layer
 //
 //////////////////////////////
-class Socket_Address
+class EXPCL_PANDA Socket_Address
 {
 public:
     typedef struct sockaddr_in AddressType;
