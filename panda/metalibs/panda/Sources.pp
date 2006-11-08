@@ -13,11 +13,11 @@
     pvrpn grutil chan pstatclient \
     char chat collide cull device \
     dgraph display event gobj graph gsgbase \
-    gsgmisc light linmath mathutil net \
+    gsgmisc light linmath mathutil net nativenet\
     parametrics pnm \
     pnmimagetypes pnmimage sgattrib sgmanip sgraph sgraphutil \
     switchnode pnmtext text tform tiff lerp loader putil \
-    audio pgui pandabase helix 
+    audio pgui pandabase helix
 
 #define LOCAL_LIBS \
   downloader express pandabase
