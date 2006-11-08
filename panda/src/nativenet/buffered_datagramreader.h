@@ -12,7 +12,7 @@ inline unsigned short GetUnsignedShort(char * in)
 
 class Buffered_DatagramReader : protected RingBuffer
 {
-	xinline bool GetMessageFromBuffer(Datagram &inmsg);
+	inline bool GetMessageFromBuffer(Datagram &inmsg);
 public:
 	inline Buffered_DatagramReader(int in_size = 8192) ;
 	inline void ReSet(void); 
