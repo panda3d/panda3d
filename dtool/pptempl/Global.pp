@@ -329,6 +329,11 @@
 #define BUILD_DIRECTORY 1
 #define BUILD_TARGET 1
 
+// This is the default extension for a Maya file.  It might be
+// overridden within a maya_char_egg rule to convert a .ma file
+// instead.
+#define MAYA_EXTENSION .mb
+
 // This variable, when evaluated in the scope of a particular directory,
 // will indicate true (i.e. nonempty) when the directory is truly built,
 // or false (empty) when the directory is not to be built.

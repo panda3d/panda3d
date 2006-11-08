@@ -325,13 +325,13 @@ $[TAB]maya2egg $[MAYA2EGG_OPTS] -o $[target] $[source]
 #forscopes maya_char_egg
   #if $[POLY_MODEL]
     #define target $[EGG_PREFIX]$[POLY_MODEL].egg
-    #define source $[MAYA_PREFIX]$[or $[MODEL],$[POLY_MODEL]].mb
+    #define source $[MAYA_PREFIX]$[or $[MODEL],$[POLY_MODEL]]$[MAYA_EXTENSION]
 $[target] : $[source]
 $[TAB]maya2egg $[MAYA2EGG_OPTS] -p -a model -cn "$[CHAR_NAME]" -o $[target] $[source]
   #endif
   #if $[NURBS_MODEL]
     #define target $[EGG_PREFIX]$[NURBS_MODEL].egg
-    #define source $[MAYA_PREFIX]$[or $[MODEL],$[NURBS_MODEL]].mb
+    #define source $[MAYA_PREFIX]$[or $[MODEL],$[NURBS_MODEL]]$[MAYA_EXTENSION]
 $[target] : $[source]
 $[TAB]maya2egg $[MAYA2EGG_OPTS] -a model -cn "$[CHAR_NAME]" -o $[target] $[source]
   #endif
@@ -342,7 +342,7 @@ $[TAB]maya2egg $[MAYA2EGG_OPTS] -a model -cn "$[CHAR_NAME]" -o $[target] $[sourc
 #forscopes maya_char_egg
   #foreach anim $[ANIMS]
     #define target $[EGG_PREFIX]$[anim]$[CHAN_SUFFIX].egg
-    #define source $[MAYA_PREFIX]$[anim].mb
+    #define source $[MAYA_PREFIX]$[anim]$[MAYA_EXTENSION]
     #define begin 0
     #define end
     #if $[$[anim]_frames]
