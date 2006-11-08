@@ -15,19 +15,17 @@
 
 #ifndef OSXGRAPHICSWINDOW_H
 #define OSXGRAPHICSWINDOW_H
-#include <Carbon/Carbon.h>
-
-
-#define __glext_h_
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <AGL/agl.h>
-
 
 #include "pandabase.h"
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
 
+#include <Carbon/Carbon.h>
+
+#define __glext_h_
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <AGL/agl.h>
 
 #define HACK_SCREEN_HASH_CONTEXT true
 OSStatus aglReportError (const std::string &);
@@ -74,7 +72,7 @@ protected:
 
 private:
 	
-	bool OSOpenWindow(WindowProperties &properties);
+  bool OSOpenWindow(WindowProperties &properties);
 
     //
     // a singleton .. for the events to find the right pipe to push the event into
@@ -98,31 +96,26 @@ public: // do not call direct ..
   void SystemSetWindowForground(bool forground);	
   void SystemPointToLocalPoint(Point &qdGlobalPoint);
   void LocalPointToSystemPoint(Point &qdLocalPoint);
-  AGLContext  get_ggs_context(void);
-  AGLContext  get_context(void);
-  OSStatus	  buildGL(bool full_screen);
-	
-	
-	
-	
+  AGLContext get_ggs_context(void);
+  AGLContext get_context(void);
+  OSStatus buildGL(bool full_screen);
+  bool set_icon_filename(const Filename &icon_filename);
 
-
-
-
-//	WindowProperties & properties() { return _properties; };
 private:
-public:
-	UInt32			_last_key_modifiers;
-    WindowRef		_osx_window;
-	bool           _is_fullsreen;
-	
-	int				_ID;
-    static osxGraphicsWindow  * FullScreenWindow; 
+  UInt32 _last_key_modifiers;
+  WindowRef _osx_window;
+  bool _is_fullscreen;
 
+  CGImageRef _pending_icon;
+  CGImageRef _current_icon;
+  
+  int _ID;
+  static osxGraphicsWindow  *FullScreenWindow; 
+  
 #ifdef HACK_SCREEN_HASH_CONTEXT
-  AGLContext		_holder_aglcontext;
+  AGLContext _holder_aglcontext;
 #endif
-	CFDictionaryRef _originalMode;
+  CFDictionaryRef _originalMode;
 	 
 public:
   static TypeHandle get_class_type() {

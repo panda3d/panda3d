@@ -19,7 +19,10 @@
 #include "pandabase.h"
 #include "graphicspipe.h"
 
+#include <Carbon/Carbon.h>
+
 class osxGraphicsStateGuardian;
+class PNMImage;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : osxGraphicsPipe
@@ -34,6 +37,11 @@ public:
 
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
+
+  static CGImageRef create_cg_image(const PNMImage &pnm_image);
+
+private:
+  static void release_data(void *info, const void *data, size_t size);
 
 protected:
   virtual PT(GraphicsOutput) make_output(const string &name,
