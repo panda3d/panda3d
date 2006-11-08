@@ -1,4 +1,4 @@
- #ifndef __BUFFEREDREADER_GM_H__
+#ifndef __BUFFEREDREADER_GM_H__
 #define __BUFFEREDREADER_GM_H__
 
 #include "ringbuffer.h"
@@ -10,9 +10,9 @@ inline unsigned short GetUnsignedShort(char * in)
 };
 
 
-class EXPCL_PANDA Buffered_DatagramReader : protected RingBuffer
+class Buffered_DatagramReader : protected RingBuffer
 {
-	inline bool GetMessageFromBuffer(Datagram &inmsg);
+	xinline bool GetMessageFromBuffer(Datagram &inmsg);
 public:
 	inline Buffered_DatagramReader(int in_size = 8192) ;
 	inline void ReSet(void); 
