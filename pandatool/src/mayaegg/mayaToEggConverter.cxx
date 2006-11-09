@@ -2020,9 +2020,9 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
             if (!status) {
               status.perror("MItMeshPolygon::getUV");
             } else {
-              // apply upto 1/100th precision
-              uvs[0] = (double)((long)(uvs[0]*100))/100.0;
-              uvs[1] = (double)((long)(uvs[1]*100))/100.0;
+              // apply upto 1/1000th precision
+              uvs[0] = (double)((long)(uvs[0]*1000))/1000.0;
+              uvs[1] = (double)((long)(uvs[1]*1000))/1000.0;
               vert.set_uv(colordef_uv_name, TexCoordd(uvs[0], uvs[1]));
             }
           }
