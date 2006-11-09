@@ -25,7 +25,7 @@ class ClientRepositoryBase(ConnectionRepository):
 
     def __init__(self, dcFileNames = None):
         self.dcSuffix=""
-        ConnectionRepository.__init__(self, base.config, hasOwnerView=True)
+        ConnectionRepository.__init__(self, ConnectionRepository.CM_HTTP, base.config, hasOwnerView=True)
 
         self.context=100000
         self.setClientDatagram(1)

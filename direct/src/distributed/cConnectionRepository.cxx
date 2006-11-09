@@ -29,6 +29,7 @@
 #include "pStatTimer.h"
 
 
+
 const string CConnectionRepository::_overflow_event_name = "CRDatagramOverflow";
 
 #ifndef CPPPARSER
@@ -51,6 +52,10 @@ CConnectionRepository(bool has_owner_view) :
 #ifdef HAVE_NSPR
   _cw(&_qcm, 0),
   _qcr(&_qcm, 0),
+#endif
+#ifdef WANT_NATIVE_NET
+  _bdc(0,4096000,4096000,102400),
+  _native(false),
 #endif
   _client_datagram(true),
   _simulated_disconnect(false),
@@ -139,6 +144,24 @@ try_connect_nspr(const URLSpec &url) {
   return false;
 }
 #endif  // HAVE_NSPR
+
+#ifdef WANT_NATIVE_NET
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::connect_native
+//       Access: Published
+//  Description: Connects to the server using a native system roger 
+//               put together
+////////////////////////////////////////////////////////////////////
+bool CConnectionRepository::
+connect_native(const URLSpec &url) {
+  _native=true;
+  Socket_Address addr;
+  addr.set_host(url.get_server(),url.get_port());
+  _bdc.AddAddress(addr);
+  return _bdc.IsConnected();
+}
+
+#endif //WANT NATIVE NET
 
 #ifdef SIMULATE_NETWORK_DELAY
 ////////////////////////////////////////////////////////////////////
@@ -281,6 +304,12 @@ check_datagram() {
 ////////////////////////////////////////////////////////////////////
 bool CConnectionRepository::
 is_connected() {
+
+#ifdef WANT_NATIVE_NET
+  if(_native)
+    return (_bdc.IsConnected());
+#endif
+
 #ifdef HAVE_NSPR
   if (_nspr_conn) {
     if (_qcm.reset_connection_available()) {
@@ -335,6 +364,11 @@ send_datagram(const Datagram &dg) {
   }
 #endif  // NDEBUG
 
+#ifdef WANT_NATIVE_NET
+  if(_native)
+    return _bdc.SendMessage(dg);
+#endif
+
 #ifdef HAVE_NSPR
   if (_nspr_conn) {
     _cw.send(dg, _nspr_conn);
@@ -372,6 +406,12 @@ consider_flush() {
     return false;
   }
 
+#ifdef WANT_NATIVE_NET
+  //NATIVENET HERE
+  if(_native)
+    return 1;
+#endif
+
 #ifdef HAVE_NSPR
   if (_nspr_conn) {
     return _nspr_conn->consider_flush();
@@ -399,6 +439,10 @@ flush() {
   if (_simulated_disconnect) {
     return false;
   }
+  #ifdef WANT_NATIVE_NET
+  if(_native)
+    return _bdc.Flush();
+  #endif
 
   #ifdef HAVE_NSPR
   if (_nspr_conn) {
@@ -422,6 +466,12 @@ flush() {
 ////////////////////////////////////////////////////////////////////
 void CConnectionRepository::
 disconnect() {
+  #ifdef WANT_NATIVE_NET
+  if(_native) {
+    _bdc.Reset();
+    _bdc.ClearAddresses();
+  }
+  #endif
   #ifdef HAVE_NSPR
   if (_nspr_conn) {
     _qcm.close_connection(_nspr_conn);
@@ -448,6 +498,15 @@ disconnect() {
 ////////////////////////////////////////////////////////////////////
 bool CConnectionRepository::
 do_check_datagram() {
+  #ifdef WANT_NATIVE_NET
+  if(_native) {
+    Datagram * dgi;
+    bool ret= _bdc.GetMessageInternal(&dgi);
+    if(ret)
+      _dg=*dgi;
+    return ret; 
+  }
+  #endif
   #ifdef HAVE_NSPR
   if (_nspr_conn) {
     _nspr_conn->consider_flush();
@@ -465,6 +524,7 @@ do_check_datagram() {
     return _http_conn->receive_datagram(_dg);
   }
   #endif  // HAVE_OPENSSL
+
 
   return false;
 }

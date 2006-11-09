@@ -9,7 +9,9 @@ from PyDatagramIterator import PyDatagramIterator
 import types
 import imp
 
-class ConnectionRepository(
+
+
+class ConnectionRepository( 
         DoInterestManager, DoCollectionManager, CConnectionRepository):
     """
     This is a base class for things that know how to establish a
@@ -19,7 +21,12 @@ class ConnectionRepository(
     notify = DirectNotifyGlobal.directNotify.newCategory("ConnectionRepository")
     taskPriority = -30
 
-    def __init__(self, config, hasOwnerView=False):
+    CM_HTTP=0
+    CM_NSPR=1
+    CM_NATIVE=2
+
+
+    def __init__(self, connectMethod, config, hasOwnerView=False):
         assert self.notify.debugCall()
         # let the C connection repository know whether we're supporting
         # 'owner' views of distributed objects (i.e. 'receives ownrecv',
@@ -54,7 +61,8 @@ class ConnectionRepository(
         # Set it to 'default' to use the HTTPClient interface if a
         # proxy is in place, but the NSPR interface if we don't have a
         # proxy.
-        self.connectMethod = self.config.GetString('connect-method', 'default')
+        self.connectMethod=connectMethod
+        
         self.connectHttp = None
         self.http = None
 
@@ -366,16 +374,11 @@ class ConnectionRepository(
         else:
             self.notify.info("Connecting to gameserver directly (no proxy).")
 
-        if self.connectMethod == 'http':
-            self.connectHttp = 1
-        elif self.connectMethod == 'nspr':
-            self.connectHttp = 0
-        else:
-            self.connectHttp = (hasProxy or serverList[0].isSsl())
+        #Redefine the connection to http or nspr in the default case
 
         self.bootedIndex = None
         self.bootedText = None
-        if self.connectHttp:
+        if self.connectMethod == self.CM_HTTP:
             # In the HTTP case, we can't just iterate through the list
             # of servers, because each server attempt requires
             # spawning a request and then coming back later to check
@@ -389,7 +392,7 @@ class ConnectionRepository(
                     ch, serverList, 0,
                     successCallback, successArgs,
                     failureCallback, failureArgs)
-        else:
+        elif self.connectMethod == self.CM_NSPR:
             # Try each of the servers in turn.
             for url in serverList:
                 self.notify.info("Connecting to %s via NSPR interface." % (url.cStr()))
@@ -402,7 +405,9 @@ class ConnectionRepository(
             # Failed to connect.
             if failureCallback:
                 failureCallback(0, '', *failureArgs)
-
+        elif self.connectMethod == self.CM_NATIVE:
+            pass
+        
     def disconnect(self):
         """
         Closes the previously-established connection.

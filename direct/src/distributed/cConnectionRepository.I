@@ -120,6 +120,20 @@ get_qcr() {
   INLINE QueuedConnectionReader &get_qcr();
 #endif  // HAVE_NSPR
 
+#ifdef WANT_NATIVE_NET
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_bcd
+//       Access: Published
+//  Description: Returns the Buffered_DatagramConnection object associated
+//               with the repository.
+////////////////////////////////////////////////////////////////////
+INLINE Buffered_DatagramConnection &CConnectionRepository::
+get_bdc() {
+  return _bdc;
+}
+  INLINE Buffered_DatagramConnection &get_bdc();
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::get_datagram
 //       Access: Published

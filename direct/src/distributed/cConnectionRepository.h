@@ -35,6 +35,11 @@
 #include "connection.h"
 #endif
 
+#ifdef WANT_NATIVE_NET
+#include "buffered_datagramconnection.h"
+#include "socket_address.h"
+#endif
+
 class URLSpec;
 class HTTPChannel;
 class SocketStream;
@@ -80,6 +85,11 @@ PUBLISHED:
   INLINE QueuedConnectionManager &get_qcm();
   INLINE ConnectionWriter &get_cw();
   INLINE QueuedConnectionReader &get_qcr();
+#endif
+
+#ifdef WANT_NATIVE_NET
+  bool connect_native(const URLSpec &url);
+  INLINE Buffered_DatagramConnection &get_bdc();
 #endif
 
 #ifdef SIMULATE_NETWORK_DELAY
@@ -139,6 +149,11 @@ private:
   ConnectionWriter _cw;
   QueuedConnectionReader _qcr;
   PT(Connection) _nspr_conn;
+#endif
+
+#ifdef WANT_NATIVE_NET
+  Buffered_DatagramConnection _bdc;
+  bool _native;
 #endif
 
   DCFile _dc_file;

@@ -2,7 +2,7 @@
 
 #begin lib_target
   #define BUILD_TARGET $[HAVE_PYTHON]
-  #define USE_PACKAGES openssl nspr
+  #define USE_PACKAGES openssl nspr 
 
   #define TARGET distributed
   #define LOCAL_LIBS \
@@ -12,7 +12,7 @@
     interrogatedb:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
-    pipeline:c $[if $[HAVE_NET],net:c]
+    pipeline:c $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c]
 
   #define SOURCES \
     config_distributed.cxx config_distributed.h \
