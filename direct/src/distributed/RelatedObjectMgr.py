@@ -232,6 +232,8 @@ class RelatedObjectMgr(DirectObject.DirectObject):
                     taskMgr.remove(doLaterName)
             
                 objects, doIdsPending = self.__generateObjectList(doIdList)
+                if None in objects:
+                    self.notify.warning('calling %s with None.\n objects=%s\n doIdsPending=%s\n doIdList=%s\n' % (allCallback,objects,doIdsPending,doIdList))
                 if allCallback:
                     allCallback(objects)
 
