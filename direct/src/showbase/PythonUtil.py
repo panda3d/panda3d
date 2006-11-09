@@ -2293,13 +2293,14 @@ class DelayedFunctor:
 
 class FrameDelayedCallback:
     """ waits N frames and then calls a callback """
-    def __init__(self, frames, callback, cancelFunc=None):
+    def __init__(self, name, frames, callback, cancelFunc=None):
         # checkFunc is optional; called every frame, if returns True, FrameDelay is cancelled
         # and callback is not called
+        self._name = name
         self._frames = frames
         self._callback = callback
         self._cancelFunc = cancelFunc
-        self._taskName = uniqueName(self.__class__.__name__)
+        self._taskName = uniqueName('%s-%s' % (self.__class__.__name__, self._name))
         self._startTask()
     def destroy(self):
         self._stopTask()
