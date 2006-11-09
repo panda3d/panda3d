@@ -69,11 +69,11 @@ protected:
 public:
   inline bool GetMessageInternal(Datagram **val);
 PUBLISHED:
-  
+  inline bool IsConnected(void) { return DoConnect(); };
   inline Buffered_DatagramConnection(bool do_blocking_writes, int rbufsize, int wbufsize, int write_flush_point) ;
   virtual ~Buffered_DatagramConnection(void) ;
   // the reason thsi all exists
-  inline bool SendMessage(Datagram &msg);
+  inline bool SendMessage(const Datagram &msg);
   
   inline Datagram * GetMessage();
   inline bool Flush(void);
@@ -87,9 +87,9 @@ private:
   Buffered_DatagramWriter	_Writer;		// buffered writing
   Buffered_DatagramReader _Reader;		// buffered reader
   AddressQueue            _Addresslist;   // the location of the round robin address list
-  Socket_Address			_Adddress;	// the conection address ( active one from list being used)
+  Socket_Address          _Adddress;	// the conection address ( active one from list being used)
   // the local datagram store..
-  Datagram	    		_Msg;			// The temp storage for a upcalled message
+  Datagram	    	  _Msg;			// The temp storage for a upcalled message
   ////////////////////////////////
   // connection state engine /////
   Time_Out                _LastConnectTry; // A Recycle Timer to Stop Connection/spaming.. 
@@ -109,13 +109,13 @@ private:
 // Return type		: inline void 
 // Argument         : void
 ////////////////////////////////////////////////////////////////////
-inline void Buffered_DatagramConnection::ClearAll(void)
-{
-	Close();
-    _tryingToOpen = false;
-	_Writer.ReSet();
-	_Reader.ReSet();
+inline void Buffered_DatagramConnection::ClearAll(void) {
+  Close();
+  _tryingToOpen = false;
+  _Writer.ReSet();
+  _Reader.ReSet();
 }	
+
 ////////////////////////////////////////////////////////////////////
 // Function name	: Buffered_DatagramConnection::DoConnect
 // Description	    : This is the function thah does the conection for us
@@ -123,49 +123,43 @@ inline void Buffered_DatagramConnection::ClearAll(void)
 // Return type		: inline bool 
 // Argument         : void
 ////////////////////////////////////////////////////////////////////
-inline bool Buffered_DatagramConnection::DoConnect(void)
-{
-	if(Active() != true)
-	{ 
-        if(_LastConnectTry.Expired() != true)
-            return false;
-
-        if(!_Addresslist.GetNext(_Adddress)) // lookup the proper value...
-            return false;
-
-		if(ActiveOpenNonBlocking(_Adddress) == true)
-		{
-             _LastConnectTry.ReStart();
-            _tryingToOpen = true; // set the flag indicating we are trying to open up 
-			SetNonBlocking(); // maybe should be blocking?
-			SetSendBufferSize(1024*50);  // we need to hand tune these for the os we are using
-			SetRecvBufferSize(1024*50);
-            NewWriteBuffer();
-			return true;
-		}
-
-		return false;
-	}
-
-    if(_tryingToOpen)  // okay handle the  i am connecting state....
-    {
-        Socket_fdset  fdset;
-        fdset.setForSocket(*this);
-        Socket_Selector  selector;
-        if(selector.WaitFor_All(fdset,0) >0)
-        {
-            _tryingToOpen = false;
-            if(selector._error.IsSetFor(*this) == true) // means we are in errorconnected. else writable
-            {
-                ClearAll();
-                return false;  // error on connect 
-            }
-            PostConnect();
-            return true;  // just got connected
-        }
-        return true; // still connecting
-    }    
-	return true;
+inline bool Buffered_DatagramConnection::DoConnect(void) {
+  if(Active() != true) { 
+    if(_LastConnectTry.Expired() != true)
+      return false;
+    
+    if(!_Addresslist.GetNext(_Adddress)) // lookup the proper value...
+      return false;
+    
+    if(ActiveOpen(_Adddress) == true) {
+      _LastConnectTry.ReStart();
+      _tryingToOpen = true; // set the flag indicating we are trying to open up 
+      SetNonBlocking(); // maybe should be blocking?
+      SetSendBufferSize(1024*50);  // we need to hand tune these for the os we are using
+      SetRecvBufferSize(1024*50);
+      NewWriteBuffer();
+      return true;
+    }
+      
+    return false;
+  }
+  
+  if(_tryingToOpen) {  // okay handle the  i am connecting state....
+    Socket_fdset  fdset;
+    fdset.setForSocket(*this);
+    Socket_Selector  selector;
+    if(selector.WaitFor_All(fdset,0) >0) {
+      _tryingToOpen = false;
+      if(selector._error.IsSetFor(*this) == true) { // means we are in errorconnected. else writable
+        ClearAll();
+        return false;  // error on connect 
+      }
+      PostConnect();
+      return true;  // just got connected
+    }
+    return true; // still connecting
+  }    
+  return true;
 }
 ////////////////////////////////////////////////////////////////////
 // Function name	: Buffered_DatagramConnection::~Buffered_DatagramConnection
@@ -199,7 +193,7 @@ inline Buffered_DatagramConnection::Buffered_DatagramConnection(bool do_blocking
 // Return type		: inline bool 
 // Argument         : DataGram &msg
 ////////////////////////////////////////////////////////////////////
-inline bool  Buffered_DatagramConnection::SendMessage(Datagram &msg)
+inline bool  Buffered_DatagramConnection::SendMessage(const Datagram &msg)
 {
 	if(DoConnect() == true)
 	{	

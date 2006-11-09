@@ -27,68 +27,60 @@ public:
 	inline int AddData(const void * data, size_t len, Socket_TCP &sck);
 	inline int AddData(const void * data, size_t len);
 // THE FUNCTIONS THAT TAKE A SOCKET NEED TO BE TEMPLATED TO WORK..
+  
+        template < class SOCK_TYPE>
+        int  FlushNoBlock(SOCK_TYPE &sck) {  // this is the ugly part
+    
+          int answer = 0;	
+          size_t Writesize = AmountBuffered();
 
-    template < class SOCK_TYPE>
-    int  FlushNoBlock(SOCK_TYPE &sck)  // this is the ugly part
-    {	
-        int answer = 0;	
-        size_t Writesize = AmountBuffered();
-
-        if(Writesize > 0)
-        {
+          if(Writesize > 0) {
             int Writen = sck.SendData(GetMessageHead(),(int)Writesize);
-            if(Writen > 0)
-            {
-                _StartPos += Writen;
-                FullCompress();
-                if(AmountBuffered() > 0) // send 0 if empty else send 1 for more to do
-                    answer = 1;
+            if(Writen > 0) {
+              _StartPos += Writen;
+              FullCompress();
+              if(AmountBuffered() > 0) // send 0 if empty else send 1 for more to do
+                answer = 1;
             }
-            else if(Writen < 0)
-            {
-                if(!sck.ErrorIs_WouldBlocking(Writen))
-                    answer = -1;
-                else
-                    answer = 1;  // 1 = more to do.....
+            else if(Writen < 0) {
+              if(!sck.ErrorIs_WouldBlocking(Writen))
+                answer = -1;
+              else
+                answer = 1;  // 1 = more to do.....
             }
-        }		
-        return answer;
-    };
+          }		
+          return answer;
+        };
 
 
-    template < class SOCK_TYPE>
-        inline int  Flush(SOCK_TYPE &sck)  
-    {	
-        int answer = 0;	
-        size_t Writesize = AmountBuffered();
-
-        if(Writesize > 0)
-        {
+        template < class SOCK_TYPE>
+        inline int  Flush(SOCK_TYPE &sck) {	
+          int answer = 0;	
+          size_t Writesize = AmountBuffered();
+          
+          if(Writesize > 0) {
             int Writen = sck.SendData(GetMessageHead(),(int)Writesize);
-            if(_are_we_going_to_block_on_write == true && Writen < 0 && sck.ErrorIs_WouldBlocking(Writen) == TRUE)
-            {
-                //sck.SetBlocking();
-                Writen = sck.SendData(GetMessageHead(),(int)Writesize);		
-                //sck.SetNonBlocking();
+            if(_are_we_going_to_block_on_write == true && Writen < 0 && sck.ErrorIs_WouldBlocking(Writen) == TRUE) {
+              //sck.SetBlocking();
+              Writen = sck.SendData(GetMessageHead(),(int)Writesize);		
+              //sck.SetNonBlocking();
             }
 
-
-            if(Writen > 0)
-            {
-                _StartPos += Writen;
-                FullCompress();
-                if(AmountBuffered() > 0) // send 0 if empty else send 1 for more to do
-                    answer = 1;
+            
+            if(Writen > 0) {
+              _StartPos += Writen;
+              FullCompress();
+              if(AmountBuffered() > 0) //send 0 if empty else send 1 for more to do
+                answer = 1;
             }
-            else if(Writen < 0)
-            {
-                if(sck.ErrorIs_WouldBlocking(Writen) != TRUE)
-                    answer = -1;
+            else if(Writen < 0) {
+              if(sck.ErrorIs_WouldBlocking(Writen) != TRUE)
+                answer = -1;
             }
-        }		
-
-        return answer;
-    };
+          }		
+      
+          return answer;
+        };
 };
 
 ///////////////////////////////////////////////////////
@@ -98,19 +90,17 @@ public:
 //                    you can not guarany network writes are message alligned
 // Return type		: void 
 ///////////////////////////////////////////////////////
-inline void Buffered_DatagramWriter::ReSet(void)		
-{
-	ResetContent();
+inline void Buffered_DatagramWriter::ReSet(void) {
+  ResetContent();
 }
 ////////////////////////////////////////////////
 //  Buffered_DatagramWriter::Buffered_DatagramWriter
 //
 //
 ////////////////////////////////////////////////
-inline Buffered_DatagramWriter::Buffered_DatagramWriter(bool  do_blocking, size_t in_size , int in_flush_point) : RingBuffer(in_size)
-{	
-	_flush_point = in_flush_point;
-	_are_we_going_to_block_on_write = do_blocking;
+inline Buffered_DatagramWriter::Buffered_DatagramWriter(bool  do_blocking, size_t in_size , int in_flush_point) : RingBuffer(in_size) {	
+  _flush_point = in_flush_point;
+  _are_we_going_to_block_on_write = do_blocking;
 }
 
 //////////////////////////////////////////////////////////////
@@ -121,23 +111,23 @@ inline Buffered_DatagramWriter::Buffered_DatagramWriter(bool  do_blocking, size_
 // Argument         : int len
 // Argument         : Socket_TCP &sck
 //////////////////////////////////////////////////////////////
-inline int Buffered_DatagramWriter::AddData(const void * data, size_t len, Socket_TCP &sck)
-{	
-	int answer = 0;
+inline int Buffered_DatagramWriter::AddData(const void * data, size_t len, Socket_TCP &sck) {	
+  int answer = 0;
+  
+  if(len >  BufferAvailabe())
+    answer = Flush(sck);
 	
-	if(len >  BufferAvailabe())
-		answer = Flush(sck);
-	
-	if(answer >= 0)
-		answer = AddData(data,len);
-	
-	if(answer >= 0 && _flush_point != -1)
-		if(_flush_point <  (int)AmountBuffered())
-			if(Flush(sck) < 0)
-				answer = -1;
+  if(answer >= 0)
+    answer = AddData(data,len);
+  
+  if(answer >= 0 && _flush_point != -1)
+    if(_flush_point <  (int)AmountBuffered())
+      if(Flush(sck) < 0)
+        answer = -1;
 			
-    return answer;
+  return answer;
 }
+
 //////////////////////////////////////////////////////////////
 // Function name	: Buffered_DatagramWriter::AddData
 // Description	    : 
@@ -147,22 +137,18 @@ inline int Buffered_DatagramWriter::AddData(const void * data, size_t len, Socke
 //////////////////////////////////////////////////////////////
 inline int Buffered_DatagramWriter::AddData(const void * data, size_t len)
 {
-	int answer = -1;
-    if(BufferAvailabe() > len+2)
-    {
-        unsigned short len1(len);
-        TS_GetInteger(len1,(char *)&len1);
-        if(Put((char *)&len1,sizeof(len1)) == true)
-        {
-            if(Put((char *)data,len) == true)
-            {
-                answer = 1;
-            }
-        }
+  int answer = -1;
+  if(BufferAvailabe() > len+2) {
+    unsigned short len1(len);
+    TS_GetInteger(len1,(char *)&len1);
+    if(Put((char *)&len1,sizeof(len1)) == true) {
+      if(Put((char *)data,len) == true) {
+        answer = 1;
+      }
     }
+  }
 
-
-	return answer;
+  return answer;
 }
 #endif //__BufferedWriter_H__
 
