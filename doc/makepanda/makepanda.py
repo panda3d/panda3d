@@ -26,9 +26,8 @@ from glob import glob
 ##
 ########################################################################
 
-if (sys.platform == "win32"): COMPILERS=["MSVC7"]
-if (sys.platform == "linux2"): COMPILERS=["LINUXA"]
-COMPILER=COMPILERS[0]
+COMPILER=0
+THIRDPARTYLIBS=0
 OPTIMIZE="3"
 INSTALLER=0
 GENMAN=0
@@ -328,7 +327,6 @@ def usage(problem):
     print ""
     print "  --help            (print the help message you're reading now)"
     print "  --package-info    (help info about the optional packages)"
-    print "  --compiler X      (currently, compiler can only be MSVC7,LINUXA)"
     print "  --optimize X      (optimization level can be 1,2,3,4)"
     print "  --installer       (build an installer)"
     print "  --v1 X            (set the major version number)"
@@ -355,10 +353,10 @@ def usage(problem):
     exit("")
 
 def parseopts(args):
-    global COMPILER,OPTIMIZE,OMIT,INSTALLER,GENMAN
+    global OPTIMIZE,OMIT,INSTALLER,GENMAN
     global VERSION,COMPRESSOR,VERBOSE,SLAVEFILE,THREADCOUNT
     longopts = [
-        "help","package-info","compiler=",
+        "help","package-info",
         "optimize=","everything","nothing","installer","quiet","verbose",
         "version=","lzma","no-python","slaves=","threads="]
     anything = 0
@@ -368,7 +366,6 @@ def parseopts(args):
         opts, extras = getopt.getopt(args, "", longopts)
         for option,value in opts:
             if (option=="--help"): raise "usage"
-            elif (option=="--compiler"): COMPILER=value
             elif (option=="--optimize"): OPTIMIZE=value
             elif (option=="--quiet"): VERBOSE-=1
             elif (option=="--verbose"): VERBOSE+=1
@@ -399,7 +396,6 @@ def parseopts(args):
     elif (OPTIMIZE=="3"): OPTIMIZE=3
     elif (OPTIMIZE=="4"): OPTIMIZE=4
     else: usage("Invalid setting for OPTIMIZE")
-    if (COMPILERS.count(COMPILER)==0): usage("Invalid setting for COMPILER: "+COMPILER)
 
 parseopts(sys.argv[1:])
 
@@ -557,45 +553,77 @@ if (OMIT.count("PYTHON")==0):
 
 ########################################################################
 ##
-## Locate Visual Studio 7.0 or 7.1 or the Visual Toolkit 2003
+## Choose a Compiler.
 ##
-## The visual studio compiler doesn't work unless you set up a
-## couple of environment variables to point at the compiler.
+## This should also set up any environment variables needed to make
+## the compiler work.
 ##
 ########################################################################
 
 
-def AddToVisualStudioPath(path,add):
+def AddToPathEnv(path,add):
     if (os.environ.has_key(path)):
         os.environ[path] = add + ";" + os.environ[path]
     else:
         os.environ[path] = add
 
-def LocateVisualStudio():
+def ChooseCompiler():
+    global COMPILER, THIRDPARTYLIBS
 
-    # Try to use Visual Studio
+    # Try to use Linux GCC
+
+    if (sys.platform[:5] == "linux"):
+	COMPILER="LINUX"
+	THIRDPARTYLIBS="thirdparty/linux-libs-a/"
+	return
+
+    # Try to use Visual Studio 8
+
+    vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", "8.0")
+    print "VCDIR=",vcdir
+    if (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
+	vcdir = vcdir[:-3]
+        platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1",
+                               "Install Dir")
+        if (platsdk == 0): exit("Found VC Toolkit, but cannot locate MS Platform SDK")
+	WARNINGS.append("Using visual studio: "+vcdir)
+        AddToPathEnv("PATH",    vcdir + "VC\\bin")
+        AddToPathEnv("PATH",    vcdir + "Common7\\IDE")
+        AddToPathEnv("INCLUDE", vcdir + "VC\\include")
+        AddToPathEnv("LIB",     vcdir + "VC\\lib")
+        AddToPathEnv("INCLUDE", platsdk + "include")
+        AddToPathEnv("LIB",     platsdk + "lib")
+	COMPILER="MSVC"
+	THIRDPARTYLIBS="thirdparty/win-libs-vc8/"
+	return
+
+    # Try to use Visual Studio 7
+
     vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.1", "InstallDir")
     if (vcdir == 0):
         vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.0", "InstallDir")
     if (vcdir != 0) and (vcdir[-13:] == "\\Common7\\IDE\\"):
         vcdir = vcdir[:-12]
         WARNINGS.append("Using visual studio: "+vcdir)
-        AddToVisualStudioPath("PATH",    vcdir + "vc7\\bin")
-        AddToVisualStudioPath("PATH",    vcdir + "Common7\\IDE")
-        AddToVisualStudioPath("PATH",    vcdir + "Common7\\Tools")
-        AddToVisualStudioPath("PATH",    vcdir + "Common7\\Tools\\bin\\prerelease")
-        AddToVisualStudioPath("PATH",    vcdir + "Common7\\Tools\\bin")
-        AddToVisualStudioPath("INCLUDE", vcdir + "vc7\\ATLMFC\\INCLUDE")
-        AddToVisualStudioPath("INCLUDE", vcdir + "vc7\\include")
-        AddToVisualStudioPath("INCLUDE", vcdir + "vc7\\PlatformSDK\\include\\prerelease")
-        AddToVisualStudioPath("INCLUDE", vcdir + "vc7\\PlatformSDK\\include")
-        AddToVisualStudioPath("LIB",     vcdir + "vc7\\ATLMFC\\LIB")
-        AddToVisualStudioPath("LIB",     vcdir + "vc7\\LIB")
-        AddToVisualStudioPath("LIB",     vcdir + "vc7\\PlatformSDK\\lib\\prerelease")
-        AddToVisualStudioPath("LIB",     vcdir + "vc7\\PlatformSDK\\lib")
+        AddToPathEnv("PATH",    vcdir + "vc7\\bin")
+        AddToPathEnv("PATH",    vcdir + "Common7\\IDE")
+        AddToPathEnv("PATH",    vcdir + "Common7\\Tools")
+        AddToPathEnv("PATH",    vcdir + "Common7\\Tools\\bin\\prerelease")
+        AddToPathEnv("PATH",    vcdir + "Common7\\Tools\\bin")
+        AddToPathEnv("INCLUDE", vcdir + "vc7\\ATLMFC\\INCLUDE")
+        AddToPathEnv("INCLUDE", vcdir + "vc7\\include")
+        AddToPathEnv("INCLUDE", vcdir + "vc7\\PlatformSDK\\include\\prerelease")
+        AddToPathEnv("INCLUDE", vcdir + "vc7\\PlatformSDK\\include")
+        AddToPathEnv("LIB",     vcdir + "vc7\\ATLMFC\\LIB")
+        AddToPathEnv("LIB",     vcdir + "vc7\\LIB")
+        AddToPathEnv("LIB",     vcdir + "vc7\\PlatformSDK\\lib\\prerelease")
+        AddToPathEnv("LIB",     vcdir + "vc7\\PlatformSDK\\lib")
+	COMPILER="MSVC"
+	THIRDPARTYLIBS="thirdparty/win-libs-vc7/"
         return
 
     # Try to use the Visual Toolkit 2003
+
     vcdir = GetRegistryKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment","VCToolkitInstallDir")
     if (vcdir != 0) or (os.environ.has_key("VCTOOLKITINSTALLDIR")):
         if (vcdir == 0): vcdir = os.environ["VCTOOLKITINSTALLDIR"]
@@ -604,20 +632,21 @@ def LocateVisualStudio():
         if (platsdk == 0): exit("Found VC Toolkit, but cannot locate MS Platform SDK")
         WARNINGS.append("Using visual toolkit: "+vcdir)
         WARNINGS.append("Using MS Platform SDK: "+platsdk)
-        AddToVisualStudioPath("PATH", vcdir + "\\bin")
-        AddToVisualStudioPath("INCLUDE", platsdk + "\\include")
-        AddToVisualStudioPath("INCLUDE", vcdir + "\\include")
-        AddToVisualStudioPath("LIB",     platsdk + "\\lib")
-        AddToVisualStudioPath("LIB",     vcdir + "\\lib")
-        AddToVisualStudioPath("LIB",     "thirdparty\\win-libs-vc7\\extras\\lib")
+        AddToPathEnv("PATH", vcdir + "\\bin")
+        AddToPathEnv("INCLUDE", platsdk + "\\include")
+        AddToPathEnv("INCLUDE", vcdir + "\\include")
+        AddToPathEnv("LIB",     platsdk + "\\lib")
+        AddToPathEnv("LIB",     vcdir + "\\lib")
+        AddToPathEnv("LIB",     "thirdparty\\win-libs-vc7\\extras\\lib")
+	COMPILER="MSVC"
+	THIRDPARTYLIBS="thirdparty/win-libs-vc7/"
         return
 
     # Give up
     exit("Cannot locate Microsoft Visual Studio 7.0, 7.1, or the Visual Toolkit 2003")
 
 
-if (COMPILER == "MSVC7"):
-    LocateVisualStudio()
+ChooseCompiler()
 
 ##########################################################################################
 #
@@ -928,8 +957,8 @@ def CopyAllHeaders(dir, skip=[]):
 
 def CopyTree(dstdir,srcdir):
     if (os.path.isdir(dstdir)): return 0
-    if (COMPILER=="MSVC7"): cmd = 'xcopy /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
-    if (COMPILER=="LINUXA"): cmd = 'cp --recursive --force ' + srcdir + ' ' + dstdir
+    if (COMPILER=="MSVC"): cmd = 'xcopy /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
+    if (COMPILER=="LINUX"): cmd = 'cp --recursive --force ' + srcdir + ' ' + dstdir
     oscmd(cmd)
 
 ########################################################################
@@ -938,8 +967,8 @@ def CopyTree(dstdir,srcdir):
 ##
 ########################################################################
 
-def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
-    cmd = "cl /Fo" + wobj + " /nologo /c"
+def CompileCxxMSVC(wobj,fullsrc,ipath,opts):
+    cmd = "cl /wd4996 /Fo" + wobj + " /nologo /c"
     if (OMIT.count("PYTHON")==0): cmd = cmd + " /Ithirdparty/win-python/include"
     for ver in DXVERSIONS:
         if (PkgSelected(opts,"DX"+ver)):
@@ -952,7 +981,7 @@ def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
             cmd = cmd + ' /I"' + MAXSDK["MAX"+ver] + '/include" /I"' + MAXSDKCS["MAX"+ver] + '" /DMAX' + ver
     for pkg in PACKAGES:
         if (pkg[:4] != "MAYA") and (pkg[:3]!="MAX") and (pkg[:2]!="DX") and PkgSelected(opts,pkg):
-            cmd = cmd + " /Ithirdparty/win-libs-vc7/" + pkg.lower() + "/include"
+            cmd = cmd + " /I" + THIRDPARTYLIBS + pkg.lower() + "/include"
     for x in ipath: cmd = cmd + " /I" + x
     if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
     if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
@@ -968,16 +997,16 @@ def CompileCxxMSVC7(wobj,fullsrc,ipath,opts):
     cmd = cmd + " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + fullsrc
     oscmd(cmd)
 
-def CompileCxxLINUXA(wobj,fullsrc,ipath,opts):
+def CompileCxxLINUX(wobj,fullsrc,ipath,opts):
     if (fullsrc[-2:]==".c"): cmd = 'gcc -c -o ' + wobj
     else:                    cmd = 'g++ -ftemplate-depth-30 -c -o ' + wobj
     if (OMIT.count("PYTHON")==0): cmd = cmd + ' -I"' + PYTHONSDK + '"'
-    if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/vrpn/include'
-    if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/fftw/include'
-    if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -Ithirdparty/linux-libs-a/fmodex/include'
-    if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -Ithirdparty/linux-libs-a/nvidiacg/include'
-    if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -Ithirdparty/linux-libs-a/nspr/include'
-    if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + ' -Ithirdparty/linux-libs-a/ffmpeg/include'
+    if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I' + THIRDPARTYLIBS + 'vrpn/include'
+    if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I' + THIRDPARTYLIBS + 'fftw/include'
+    if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -I' + THIRDPARTYLIBS + 'fmodex/include'
+    if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -I' + THIRDPARTYLIBS + 'nvidiacg/include'
+    if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -I' + THIRDPARTYLIBS + 'nspr/include'
+    if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + ' -I' + THIRDPARTYLIBS + 'ffmpeg/include'
     if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
     for x in ipath: cmd = cmd + ' -I' + x
     if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
@@ -994,12 +1023,12 @@ def CompileCxxLINUXA(wobj,fullsrc,ipath,opts):
 def EnqueueCxx(obj=0,src=0,ipath=[],opts=[],xdep=[]):
     if ((obj==0)|(src==0)):
         exit("syntax error in EnqueueCxx directive")
-    if (COMPILER=="MSVC7"):
+    if (COMPILER=="MSVC"):
         wobj = "built/tmp/"+obj
-        fn = CompileCxxMSVC7
-    if (COMPILER=="LINUXA"):
+        fn = CompileCxxMSVC
+    if (COMPILER=="LINUX"):
         wobj = "built/tmp/" + obj[:-4] + ".o"
-        fn = CompileCxxLINUXA
+        fn = CompileCxxLINUX
     ipath = ["built/tmp"] + ipath + ["built/include"]
     fullsrc = CxxFindSource(src, ipath)
     if (fullsrc == 0):
@@ -1013,29 +1042,29 @@ def EnqueueCxx(obj=0,src=0,ipath=[],opts=[],xdep=[]):
 ##
 ########################################################################
 
-def CompileBisonMSVC7(pre, dsth, dstc, wobj, ipath, opts, src):
+def CompileBisonMSVC(pre, dsth, dstc, wobj, ipath, opts, src):
     ifile = os.path.basename(src)
     oscmd('thirdparty/win-util/bison -y -d -obuilt/tmp/'+ifile+'.c -p '+pre+' '+src)
     CopyFile(dstc, "built/tmp/"+ifile+".c")
     CopyFile(dsth, "built/tmp/"+ifile+".h")
-    CompileCxxMSVC7(wobj,dstc,ipath,opts)
+    CompileCxxMSVC(wobj,dstc,ipath,opts)
 
-def CompileBisonLINUXA(pre, dsth, dstc, wobj, ipath, opts, src):
+def CompileBisonLINUX(pre, dsth, dstc, wobj, ipath, opts, src):
     ifile = os.path.basename(src)
     oscmd("bison -y -d -obuilt/tmp/"+ifile+".c -p "+pre+" "+src)
     CopyFile(dstc, "built/tmp/"+ifile+".c")
     CopyFile(dsth, "built/tmp/"+ifile+".h")
-    CompileCxxLINUXA(wobj,dstc,ipath,opts)
+    CompileCxxLINUX(wobj,dstc,ipath,opts)
 
 def EnqueueBison(ipath=0,opts=0,pre=0,obj=0,dsth=0,src=0):
     if ((ipath==0)|(opts==0)|(pre==0)|(obj==0)|(dsth==0)|(src==0)):
         exit("syntax error in EnqueueBison directive")
-    if (COMPILER=="MSVC7"):
+    if (COMPILER=="MSVC"):
         wobj="built/tmp/"+obj
-        fn = CompileBisonMSVC7
-    if (COMPILER=="LINUXA"):
+        fn = CompileBisonMSVC
+    if (COMPILER=="LINUX"):
         wobj="built/tmp/"+obj[:-4]+".o"
-        fn = CompileBisonLINUXA
+        fn = CompileBisonLINUX
     ipath = ["built/tmp"] + ipath + ["built/include"]
     fullsrc = CxxFindSource(src, ipath)
     if (fullsrc == 0):
@@ -1058,25 +1087,25 @@ def EnqueueBison(ipath=0,opts=0,pre=0,obj=0,dsth=0,src=0):
 ##
 ########################################################################
 
-def CompileFlexMSVC7(pre,dst,src,wobj,ipath,opts,dashi):
+def CompileFlexMSVC(pre,dst,src,wobj,ipath,opts,dashi):
     if (dashi): oscmd("thirdparty/win-util/flex -i -P" + pre + " -o"+dst+" "+src)
     else:       oscmd("thirdparty/win-util/flex    -P" + pre + " -o"+dst+" "+src)
-    CompileCxxMSVC7(wobj,dst,ipath,opts)
+    CompileCxxMSVC(wobj,dst,ipath,opts)
 
-def CompileFlexLINUXA(pre,dst,src,wobj,ipath,opts,dashi):
+def CompileFlexLINUX(pre,dst,src,wobj,ipath,opts,dashi):
     if (dashi): oscmd("flex -i -P" + pre + " -o"+dst+" "+src)
     else:       oscmd("flex    -P" + pre + " -o"+dst+" "+src)
-    CompileCxxLINUXA(wobj,dst,ipath,opts)
+    CompileCxxLINUX(wobj,dst,ipath,opts)
 
 def EnqueueFlex(ipath=0,opts=0,pre=0,obj=0,src=0,dashi=0):
     if ((ipath==0)|(opts==0)|(pre==0)|(obj==0)|(src==0)):
         exit("syntax error in EnqueueFlex directive")
-    if (COMPILER=="MSVC7"):
+    if (COMPILER=="MSVC"):
         wobj="built/tmp/"+obj[:-4]+".obj"
-        fn=CompileFlexMSVC7
-    if (COMPILER=="LINUXA"):
+        fn=CompileFlexMSVC
+    if (COMPILER=="LINUX"):
         wobj="built/tmp/"+obj[:-4]+".o"
-        fn=CompileFlexLINUXA
+        fn=CompileFlexLINUX
     ipath = ["built/tmp"] + ipath + ["built/include"]
     fullsrc = CxxFindSource(src, ipath)
     if (fullsrc == 0):
@@ -1096,7 +1125,7 @@ def EnqueueFlex(ipath=0,opts=0,pre=0,obj=0,src=0,dashi=0):
 ##
 ########################################################################
 
-def CompileIgateMSVC7(ipath,opts,outd,outc,wobj,src,module,library,files):
+def CompileIgateMSVC(ipath,opts,outd,outc,wobj,src,module,library,files):
     if (OMIT.count("PYTHON")):
         WriteFile(outc,"")
     else:
@@ -1112,7 +1141,7 @@ def CompileIgateMSVC7(ipath,opts,outd,outc,wobj,src,module,library,files):
         cmd = cmd + ' -Ithirdparty/win-python/include'
         for pkg in PACKAGES:
             if (PkgSelected(opts,pkg)):
-                cmd = cmd + " -Ithirdparty/win-libs-vc7/" + pkg.lower() + "/include"
+                cmd = cmd + " -I" + THIRDPARTYLIBS + pkg.lower() + "/include"
         cmd = cmd + ' -oc ' + outc + ' -od ' + outd
         cmd = cmd + ' -fnames -string -refcount -assert -python-native'
         for x in ipath: cmd = cmd + ' -I' + x
@@ -1121,16 +1150,16 @@ def CompileIgateMSVC7(ipath,opts,outd,outc,wobj,src,module,library,files):
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
         cmd = cmd + ' -module ' + module + ' -library ' + library
         for ver in DXVERSIONS:
-            if ((COMPILER=="MSVC7") and PkgSelected(opts,"DX"+ver)):
+            if ((COMPILER=="MSVC") and PkgSelected(opts,"DX"+ver)):
                 cmd = cmd + ' -I"' + DIRECTXSDK["DX"+ver] + '/include"'
         for ver in MAYAVERSIONS:
-            if ((COMPILER=="MSVC7") and PkgSelected(opts,"MAYA"+ver)):
+            if ((COMPILER=="MSVC") and PkgSelected(opts,"MAYA"+ver)):
                 cmd = cmd + ' -I"' + MAYASDK["MAYA"+ver] + '/include"'
         for x in files: cmd = cmd + ' ' + x
         oscmd(cmd)
-    CompileCxxMSVC7(wobj,outc,ipath,opts)
+    CompileCxxMSVC(wobj,outc,ipath,opts)
 
-def CompileIgateLINUXA(ipath,opts,outd,outc,wobj,src,module,library,files):
+def CompileIgateLINUX(ipath,opts,outd,outc,wobj,src,module,library,files):
     if (OMIT.count("PYTHON")):
         WriteFile(outc,"")
     else:
@@ -1145,7 +1174,7 @@ def CompileIgateLINUXA(ipath,opts,outd,outc,wobj,src,module,library,files):
         cmd = cmd + ' -Ithirdparty/win-python/include'
         for pkg in PACKAGES:
             if (PkgSelected(opts,pkg)):
-                cmd = cmd + " -Ithirdparty/linux-libs-a/" + pkg.lower() + "/include"
+                cmd = cmd + " -I" + THIRDPARTYLIBS + pkg.lower() + "/include"
         cmd = cmd + ' -oc ' + outc + ' -od ' + outd
         cmd = cmd + ' -fnames -string -refcount -assert -python-native'
         for x in ipath: cmd = cmd + ' -I' + x
@@ -1158,19 +1187,19 @@ def CompileIgateLINUXA(ipath,opts,outd,outc,wobj,src,module,library,files):
                 cmd = cmd + ' -I"' + MAYASDK["MAYA"+ver] + '/include"'
         for x in files: cmd = cmd + ' ' + x
         oscmd(cmd)
-    CompileCxxLINUXA(wobj,outc,ipath,opts)
+    CompileCxxLINUX(wobj,outc,ipath,opts)
 
 def EnqueueIgate(ipath=0, opts=0, outd=0, obj=0, src=0, module=0, library=0, also=0, skip=0):
     if ((ipath==0)|(opts==0)|(outd==0)|(obj==0)|(src==0)|(module==0)|(library==0)|(also==0)|(skip==0)):
         exit("syntax error in EnqueueIgate directive")
-    if (COMPILER=="MSVC7"):
+    if (COMPILER=="MSVC"):
         altdep = "built/bin/interrogate.exe"
         wobj = "built/tmp/"+obj
-        fn = CompileIgateMSVC7
-    if (COMPILER=="LINUXA"):
+        fn = CompileIgateMSVC
+    if (COMPILER=="LINUX"):
         altdep = "built/bin/interrogate"
         wobj = "built/tmp/"+obj[:-4]+".o"
-        fn = CompileIgateLINUXA
+        fn = CompileIgateLINUX
     outd = 'built/pandac/input/'+outd
     dirlisting = os.listdir(src)
     files = fnmatch.filter(dirlisting,"*.h")
@@ -1192,7 +1221,7 @@ def EnqueueIgate(ipath=0, opts=0, outd=0, obj=0, src=0, module=0, library=0, als
 ##
 ########################################################################
 
-def CompileImodMSVC7(outc, wobj, module, library, ipath, opts, files):
+def CompileImodMSVC(outc, wobj, module, library, ipath, opts, files):
     if (OMIT.count("PYTHON")):
         WriteFile(outc,"")
     else:
@@ -1200,9 +1229,9 @@ def CompileImodMSVC7(outc, wobj, module, library, ipath, opts, files):
         cmd = cmd + ' -oc ' + outc + ' -module ' + module + ' -library ' + library + ' -python-native '
         for x in files: cmd = cmd + ' ' + x
         oscmd(cmd)
-    CompileCxxMSVC7(wobj,outc,ipath,opts)
+    CompileCxxMSVC(wobj,outc,ipath,opts)
 
-def CompileImodLINUXA(outc, wobj, module, library, ipath, opts, files):
+def CompileImodLINUX(outc, wobj, module, library, ipath, opts, files):
     if (OMIT.count("PYTHON")):
         WriteFile(outc,"")
     else:
@@ -1210,19 +1239,19 @@ def CompileImodLINUXA(outc, wobj, module, library, ipath, opts, files):
         cmd = cmd + ' -oc ' + outc + ' -module ' + module + ' -library ' + library + ' -python-native '
         for x in files: cmd = cmd + ' ' + x
         oscmd(cmd)
-    CompileCxxLINUXA(wobj,outc,ipath,opts)
+    CompileCxxLINUX(wobj,outc,ipath,opts)
 
 def EnqueueImod(ipath=0, opts=0, obj=0, module=0, library=0, files=0):
     if ((ipath==0)|(opts==0)|(obj==0)|(module==0)|(library==0)|(files==0)):
         exit("syntax error in EnqueueImod directive")
-    if (COMPILER=="MSVC7"):
+    if (COMPILER=="MSVC"):
         altdep = "built/bin/interrogate_module.exe"
         wobj = "built/tmp/"+obj[:-4]+".obj"
-        fn = CompileImodMSVC7
-    if (COMPILER=="LINUXA"):
+        fn = CompileImodMSVC
+    if (COMPILER=="LINUX"):
         altdep = "built/bin/interrogate_module"
         wobj = "built/tmp/"+obj[:-4]+".o"
-        fn = CompileImodLINUXA
+        fn = CompileImodLINUX
     ipath = ["built/tmp"] + ipath + ["built/include"]
     outc = "built/tmp/"+obj[:-4]+".cxx"
     files = xpaths("built/pandac/input/",files,"")
@@ -1235,14 +1264,14 @@ def EnqueueImod(ipath=0, opts=0, obj=0, module=0, library=0, files=0):
 ##
 ########################################################################
 
-def CompileLibMSVC7(wlib, wobj, opts):
+def CompileLibMSVC(wlib, wobj, opts):
     cmd = 'link /lib /nologo /OUT:' + wlib
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==4): cmd = cmd + " /LTCG "
     for x in wobj: cmd = cmd + ' ' + x
     oscmd(cmd)
 
-def CompileLibLINUXA(wlib, wobj, opts):
+def CompileLibLINUX(wlib, wobj, opts):
     cmd = 'ar cru ' + wlib
     for x in wobj: cmd=cmd + ' ' + x
     oscmd(cmd)
@@ -1250,18 +1279,18 @@ def CompileLibLINUXA(wlib, wobj, opts):
 def EnqueueLib(lib=0, obj=[], opts=[]):
     if (lib==0): exit("syntax error in EnqueueLib directive")
 
-    if (COMPILER=="MSVC7"):
+    if (COMPILER=="MSVC"):
         if (lib[-4:]==".ilb"): wlib = "built/tmp/" + lib[:-4] + ".lib"
         else:                  wlib = "built/lib/" + lib[:-4] + ".lib"
         wobj = xpaths("built/tmp/",obj,"")
-        DependencyQueue(CompileLibMSVC7, [wlib, wobj, opts], [wlib], wobj, [])
+        DependencyQueue(CompileLibMSVC, [wlib, wobj, opts], [wlib], wobj, [])
 
-    if (COMPILER=="LINUXA"):
+    if (COMPILER=="LINUX"):
         if (lib[-4:]==".ilb"): wlib = "built/tmp/" + lib[:-4] + ".a"
         else:                  wlib = "built/lib/" + lib[:-4] + ".a"
         wobj = []
         for x in obj: wobj.append("built/tmp/" + x[:-4] + ".o")
-        DependencyQueue(CompileLibLINUXA, [wlib, wobj, opts], [wlib], wobj, [])
+        DependencyQueue(CompileLibLINUX, [wlib, wobj, opts], [wlib], wobj, [])
 
 ########################################################################
 ##
@@ -1269,8 +1298,9 @@ def EnqueueLib(lib=0, obj=[], opts=[]):
 ##
 ########################################################################
 
-def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
+def CompileLinkMSVC(wdll, wlib, wobj, opts, dll, ldef):
     cmd = 'link /nologo /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:MSVCRTD.LIB /DEBUG '
+    if (THIRDPARTYLIBS=="thirdparty/win-libs-vc8/"): cmd = cmd + " /nod:libc /nod:libcmtd"
     if (wdll[-4:]!=".exe"): cmd = cmd + " /DLL"
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:LINES /MAPINFO:EXPORTS"
@@ -1301,37 +1331,37 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
     if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
     if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
     if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
-    if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' thirdparty/win-libs-vc7/zlib/lib/libpandazlib1.lib'
-    if (PkgSelected(opts,"PNG")):      cmd = cmd + ' thirdparty/win-libs-vc7/png/lib/libpandapng13.lib'
-    if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' thirdparty/win-libs-vc7/jpeg/lib/libpandajpeg.lib'
-    if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' thirdparty/win-libs-vc7/tiff/lib/libpandatiff.lib'
+    if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'zlib/lib/libpandazlib1.lib'
+    if (PkgSelected(opts,"PNG")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'png/lib/libpandapng13.lib'
+    if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'jpeg/lib/libpandajpeg.lib'
+    if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'tiff/lib/libpandatiff.lib'
     if (PkgSelected(opts,"VRPN")):
-        cmd = cmd + ' thirdparty/win-libs-vc7/vrpn/lib/vrpn.lib'
-        cmd = cmd + ' thirdparty/win-libs-vc7/vrpn/lib/quat.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'vrpn/lib/vrpn.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'vrpn/lib/quat.lib'
     if (PkgSelected(opts,"FMODEX")):
-        cmd = cmd + ' thirdparty/win-libs-vc7/fmodex/lib/fmodex_vc.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'fmodex/lib/fmodex_vc.lib'
     if (PkgSelected(opts,"MILES")):
-        cmd = cmd + ' thirdparty/win-libs-vc7/miles/lib/mss32.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'miles/lib/mss32.lib'
     if (PkgSelected(opts,"NVIDIACG")):
         if (opts.count("CGGL")):
-            cmd = cmd + ' thirdparty/win-libs-vc7/nvidiacg/lib/cgGL.lib'
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'nvidiacg/lib/cgGL.lib'
         if (opts.count("CGDX9")):
-            cmd = cmd + ' thirdparty/win-libs-vc7/nvidiacg/lib/cgD3D9.lib'
-        cmd = cmd + ' thirdparty/win-libs-vc7/nvidiacg/lib/cg.lib'
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'nvidiacg/lib/cgD3D9.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'nvidiacg/lib/cg.lib'
     if (PkgSelected(opts,"NSPR")):
-        cmd = cmd + ' thirdparty/win-libs-vc7/nspr/lib/nspr4.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'nspr/lib/nspr4.lib'
     if (PkgSelected(opts,"OPENSSL")):
-        cmd = cmd + ' thirdparty/win-libs-vc7/openssl/lib/libpandassl.lib'
-        cmd = cmd + ' thirdparty/win-libs-vc7/openssl/lib/libpandaeay.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'openssl/lib/libpandassl.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'openssl/lib/libpandaeay.lib'
     if (PkgSelected(opts,"FREETYPE")):
-        cmd = cmd + ' thirdparty/win-libs-vc7/freetype/lib/freetype.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'freetype/lib/freetype.lib'
     if (PkgSelected(opts,"FFTW")):
-        cmd = cmd + ' thirdparty/win-libs-vc7/fftw/lib/rfftw.lib'
-        cmd = cmd + ' thirdparty/win-libs-vc7/fftw/lib/fftw.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'fftw/lib/rfftw.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'fftw/lib/fftw.lib'
     if (PkgSelected(opts,"FFMPEG")):
-        cmd = cmd + ' thirdparty/win-libs-vc7/ffmpeg/lib/avcodec-51-panda.lib'
-        cmd = cmd + ' thirdparty/win-libs-vc7/ffmpeg/lib/avformat-50-panda.lib'
-        cmd = cmd + ' thirdparty/win-libs-vc7/ffmpeg/lib/avutil-49-panda.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avcodec-51-panda.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avformat-50-panda.lib'
+        cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avutil-49-panda.lib'
     for ver in MAYAVERSIONS:
         if (PkgSelected(opts,"MAYA"+ver)):
             cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/Foundation.lib"'
@@ -1349,7 +1379,7 @@ def CompileLinkMSVC7(wdll, wlib, wobj, opts, dll, ldef):
             cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/paramblk2.lib"'
     oscmd(cmd)
 
-def CompileLinkLINUXA(wdll, obj, wobj, opts, dll, ldef):
+def CompileLinkLINUX(wdll, obj, wobj, opts, dll, ldef):
     if (dll[-4:]==".exe"): cmd = 'g++ -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
     else:                  cmd = 'g++ -shared -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
     for x in obj:
@@ -1358,28 +1388,28 @@ def CompileLinkLINUXA(wdll, obj, wobj, opts, dll, ldef):
         elif (suffix==".dll"): cmd = cmd + ' -l' + x[3:-4]
         elif (suffix==".lib"): cmd = cmd + ' built/lib/' + x[:-4] + '.a'
         elif (suffix==".ilb"): cmd = cmd + ' built/tmp/' + x[:-4] + '.a'
-    if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -Lthirdparty/linux-libs-a/fmodex/lib -lfmodex'
+    if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fmodex/lib -lfmodex'
     if (PkgSelected(opts,"NVIDIACG")):
         cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
         if (opts.count("CGGL")):  cmd = cmd + " -lCgGL"
         cmd = cmd + " -lCg"
-    if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/nspr/lib -lpandanspr4'
-    if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + " -Lthirdparty/linux-libs-a/ffmpeg/lib -lavformat -lavcodec -lavformat -lavutil"
+    if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'nspr/lib -lpandanspr4'
+    if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'ffmpeg/lib -lavformat -lavcodec -lavformat -lavutil'
     if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
     if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
     if (PkgSelected(opts,"JPEG")):     cmd = cmd + " -ljpeg"
     if (PkgSelected(opts,"TIFF")):     cmd = cmd + " -ltiff"
     if (PkgSelected(opts,"OPENSSL")):  cmd = cmd + " -lssl"
     if (PkgSelected(opts,"FREETYPE")): cmd = cmd + " -lfreetype"
-    if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/vrpn/lib -lvrpn -lquat'
-    if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -Lthirdparty/linux-libs-a/fftw/lib -lrfftw -lfftw'
+    if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'vrpn/lib -lvrpn -lquat'
+    if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fftw/lib -lrfftw -lfftw'
     if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
     oscmd(cmd)
 
 def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
     if (dll==0): exit("syntax error in EnqueueLink directive")
 
-    if (COMPILER=="MSVC7"):
+    if (COMPILER=="MSVC"):
         wobj = []
         for x in obj:
             suffix = x[-4:]
@@ -1390,16 +1420,16 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
             else: exit("unknown suffix in object list.")
         if (dll[-4:]==".exe"):
             wdll = "built/bin/"+dll
-            DependencyQueue(CompileLinkMSVC7, [wdll, 0,    wobj, opts, dll, ldef], [wdll], wobj, [])
+            DependencyQueue(CompileLinkMSVC, [wdll, 0,    wobj, opts, dll, ldef], [wdll], wobj, [])
         elif (dll[-4:]==".dll"):
             wdll = "built/bin/"+dll
             wlib = "built/lib/"+dll[:-4]+".lib"
-            DependencyQueue(CompileLinkMSVC7, [wdll, wlib, wobj, opts, dll, ldef], [wdll, wlib], wobj, [])
+            DependencyQueue(CompileLinkMSVC, [wdll, wlib, wobj, opts, dll, ldef], [wdll, wlib], wobj, [])
         else:
             wdll = "built/plugins/"+dll
-            DependencyQueue(CompileLinkMSVC7, [wdll, 0, wobj, opts, dll, ldef], [wdll], wobj, [])
+            DependencyQueue(CompileLinkMSVC, [wdll, 0, wobj, opts, dll, ldef], [wdll], wobj, [])
 
-    if (COMPILER=="LINUXA"):
+    if (COMPILER=="LINUX"):
         if (dll[-4:]==".exe"): wdll = "built/bin/"+dll[:-4]
         else: wdll = "built/lib/"+dll[:-4]+".so"
         wobj = []
@@ -1410,7 +1440,7 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
             elif (suffix==".lib"): wobj.append("built/lib/"+x[:-4]+".a")
             elif (suffix==".ilb"): wobj.append("built/tmp/"+x[:-4]+".a")
             else: exit("unknown suffix in object list.")
-        DependencyQueue(CompileLinkLINUXA, [wdll, obj, wobj, opts, dll, ldef], [wdll], wobj, [])
+        DependencyQueue(CompileLinkLINUX, [wdll, obj, wobj, opts, dll, ldef], [wdll], wobj, [])
 
 
 ##########################################################################################
@@ -1817,12 +1847,12 @@ ConditionalWriteFile("built/etc/Config.prc", configprc)
 
 for pkg in (PACKAGES + ["extras"]):
     if (OMIT.count(pkg)==0):
-        if (COMPILER == "MSVC7"):
-            if (os.path.exists("thirdparty/win-libs-vc7/"+pkg.lower()+"/bin")):
-                CopyAllFiles("built/bin/","thirdparty/win-libs-vc7/"+pkg.lower()+"/bin/")
-        if (COMPILER == "LINUXA"):
-            if (os.path.exists("thirdparty/linux-libs-a/"+pkg.lower()+"/lib")):
-                CopyAllFiles("built/lib/","thirdparty/linux-libs-a/"+pkg.lower()+"/lib/")
+        if (COMPILER == "MSVC"):
+            if (os.path.exists(THIRDPARTYLIBS+pkg.lower()+"/bin")):
+                CopyAllFiles("built/bin/",THIRDPARTYLIBS+pkg.lower()+"/bin/")
+        if (COMPILER == "LINUX"):
+            if (os.path.exists(THIRDPARTYLIBS+pkg.lower()+"/lib")):
+                CopyAllFiles("built/lib/",THIRDPARTYLIBS+pkg.lower()+"/lib/")
 if (sys.platform == "win32"):
     if (OMIT.count("PYTHON")==0):
         CopyFile('built/bin/python24.dll', 'thirdparty/win-python/python24.dll')
