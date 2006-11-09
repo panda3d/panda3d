@@ -439,6 +439,11 @@ class DoInterestManager(DirectObject.DirectObject):
                 "remove", state.desc, handle, scopeId,
                 state.parentId, state.zoneIdList)
 
+    def cleanupWaitAllInterestsClosed(self):
+        if self._completeDelayedCallback is not None:
+            self._completeDelayedCallback.destroy()
+            self._completeDelayedCallback = None
+
     def handleInterestDoneMessage(self, di):
         """
         This handles the interest done messages and may dispatch an event
@@ -479,9 +484,9 @@ class DoInterestManager(DirectObject.DirectObject):
                 return self._completeEventCount.num > 0
             def sendEvent():
                 messenger.send(self.getAllInterestsCompleteEvent())
-            if self._completeDelayedCallback is not None:
-                self._completeDelayedCallback.destroy()
+            self.cleanupWaitAllInterestsClosed()
             self._completeDelayedCallback = FrameDelayedCallback(
+                'waitForAllInterestCompletes',
                 frames=3,
                 callback=sendEvent,
                 cancelFunc=checkMoreInterests)
