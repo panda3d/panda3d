@@ -38,7 +38,7 @@ class ConnectionRepository(
         DoInterestManager.__init__(self)
         DoCollectionManager.__init__(self)
         self.setPythonRepository(self)
-
+        
         self.config = config
 
         if hasattr(self, 'setVerbose'):
@@ -406,8 +406,17 @@ class ConnectionRepository(
             if failureCallback:
                 failureCallback(0, '', *failureArgs)
         elif self.connectMethod == self.CM_NATIVE:
-            pass
-        
+            for url in serverList:
+                self.notify.info("Connecting to %s via Native interface." % (url.cStr()))
+                if self.connectNative(url):
+                    self.startReaderPollTask()
+                    if successCallback:
+                        successCallback(*successArgs)
+                    return
+
+            # Failed to connect.
+            if failureCallback:
+                failureCallback(0, '', *failureArgs)
     def disconnect(self):
         """
         Closes the previously-established connection.

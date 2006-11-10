@@ -54,7 +54,7 @@ CConnectionRepository(bool has_owner_view) :
   _qcr(&_qcm, 0),
 #endif
 #ifdef WANT_NATIVE_NET
-  _bdc(0,4096000,4096000,102400),
+  _bdc(0,4096000,4096000,1460),
   _native(false),
 #endif
   _client_datagram(true),
@@ -157,8 +157,9 @@ connect_native(const URLSpec &url) {
   _native=true;
   Socket_Address addr;
   addr.set_host(url.get_server(),url.get_port());
+  _bdc.ClearAddresses();
   _bdc.AddAddress(addr);
-  return _bdc.IsConnected();
+  return _bdc.DoConnect();
 }
 
 #endif //WANT NATIVE NET
@@ -217,8 +218,7 @@ stop_delay() {
 #endif  // SIMULATE_NETWORK_DELAY
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CConnectionRepository::check_datagram
-//       Access: Published
+//     Function: CConnectionRepository::check_datagram//       Access: Published
 //  Description: Returns true if a new datagram is available, false
 //               otherwise.  If the return value is true, the new
 //               datagram may be retrieved via get_datagram(), or
@@ -230,7 +230,11 @@ check_datagram() {
   if (_simulated_disconnect) {
     return false;
   }
-  while (do_check_datagram()) {
+  #ifdef WANT_NATIVE_NET
+  if(_native)
+    _bdc.Flush();
+  #endif //WANT_NATIVE_NET
+  while (do_check_datagram()) { //Read a datagram
 #ifndef NDEBUG
     if (get_verbose()) {
       describe_message(nout, "receive ", _dg.get_message());
@@ -407,9 +411,8 @@ consider_flush() {
   }
 
 #ifdef WANT_NATIVE_NET
-  //NATIVENET HERE
   if(_native)
-    return 1;
+    return true;  //Maybe we should just flush here for now?
 #endif
 
 #ifdef HAVE_NSPR
@@ -500,11 +503,7 @@ bool CConnectionRepository::
 do_check_datagram() {
   #ifdef WANT_NATIVE_NET
   if(_native) {
-    Datagram * dgi;
-    bool ret= _bdc.GetMessageInternal(&dgi);
-    if(ret)
-      _dg=*dgi;
-    return ret; 
+    return _bdc.GetMessage(_dg);
   }
   #endif
   #ifdef HAVE_NSPR
@@ -711,6 +710,7 @@ void CConnectionRepository::
 describe_message(ostream &out, const string &prefix, 
                  const string &message_data) const {
   DCPacker packer;
+  
   packer.set_unpack_data(message_data);
   CHANNEL_TYPE do_id;
   int msg_type;
