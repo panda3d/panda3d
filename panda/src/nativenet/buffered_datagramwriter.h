@@ -120,11 +120,12 @@ inline int Buffered_DatagramWriter::AddData(const void * data, size_t len, Socke
   if(answer >= 0)
     answer = AddData(data,len);
   
+  /*
   if(answer >= 0 && _flush_point != -1)
     if(_flush_point <  (int)AmountBuffered())
       if(Flush(sck) < 0)
         answer = -1;
-			
+  */		
   return answer;
 }
 

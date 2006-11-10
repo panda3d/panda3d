@@ -16,7 +16,7 @@ inline bool Buffered_DatagramReader::GetMessageFromBuffer(Datagram &inmsg)
 		len += sizeof(unsigned short);
 		if(len <= DataAvail)
 		{
-			inmsg.assign(ff,len-2);
+			inmsg.assign(ff+2,len-2);
 			_StartPos += len;				
 			answer = true;
 		}
