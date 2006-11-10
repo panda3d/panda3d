@@ -36,8 +36,8 @@ import sys
 import random
 import time
 import new
-if __debug__:
-    import traceback
+#if __debug__:
+import traceback
 
 
 
