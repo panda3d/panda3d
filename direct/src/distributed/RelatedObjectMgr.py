@@ -233,7 +233,7 @@ class RelatedObjectMgr(DirectObject.DirectObject):
             
                 objects, doIdsPending = self.__generateObjectList(doIdList)
                 if None in objects:
-                    self.notify.warning('calling %s with None.\n objects=%s\n doIdsPending=%s\n doIdList=%s\n' % (allCallback,objects,doIdsPending,doIdList))
+                    assert self.notify.warning('calling %s with None.\n objects=%s\n doIdsPending=%s\n doIdList=%s\n' % (allCallback,objects,doIdsPending,doIdList))
                 if allCallback:
                     allCallback(objects)
 
