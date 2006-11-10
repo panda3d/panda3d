@@ -5,7 +5,7 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
 
-#define BUILD_DIRECTORY [$WANT_NATIVE_NET]
+#define BUILD_DIRECTORY $[WANT_NATIVE_NET]
 
 #begin lib_target
   #define TARGET nativenet
