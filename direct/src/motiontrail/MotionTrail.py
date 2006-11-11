@@ -531,6 +531,10 @@ class MotionTrail(NodePath, DirectObject):
                         t2 = Vec2 (one_minus_x (et), motion_trail_vertex_start.v)
                         
                         while (vertex_segement_index < total_vertex_segments):
+
+                            motion_trail_vertex_start = self.vertex_list [vertex_segement_index]
+                            motion_trail_vertex_end = self.vertex_list [vertex_segement_index + 1]
+
                             start_nurbs_curve_result = nurbs_curve_result_list [vertex_segement_index]
                             end_nurbs_curve_result = nurbs_curve_result_list [vertex_segement_index + 1]
 
