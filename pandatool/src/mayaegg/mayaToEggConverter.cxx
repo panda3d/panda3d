@@ -97,6 +97,7 @@ MayaToEggConverter(const string &program_name) :
   _respect_maya_double_sided = maya_default_double_sided;
   _always_show_vertex_color = maya_default_vertex_color;
   _keep_all_uvsets = false;
+  _round_uvs = false;
   _transform_type = TT_model;
 }
 
@@ -120,6 +121,7 @@ MayaToEggConverter(const MayaToEggConverter &copy) :
   _respect_maya_double_sided(copy._respect_maya_double_sided),
   _always_show_vertex_color(copy._always_show_vertex_color),
   _keep_all_uvsets(copy._keep_all_uvsets),
+  _round_uvs(copy._round_uvs),
   _transform_type(copy._transform_type)
 {
 }
@@ -778,6 +780,10 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
 bool MayaToEggConverter::
 convert_hierarchy(EggGroupNode *egg_root) {
   int num_nodes = _tree.get_num_nodes();
+
+  if (_round_uvs) {
+    mayaegg_cat.info() << "will round up uv coordinates" << endl;
+  }
 
   _tree.clear_egg(get_egg_data(), egg_root, NULL, NULL);
   for (int i = 0; i < num_nodes; i++) {
@@ -1675,6 +1681,20 @@ find_uv_link(string match) {
   }
   return "not found";
 }
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::round uvs
+//       Access: Private
+//  Description: given uvsets, round them up or down
+////////////////////////////////////////////////////////////////////
+int MayaToEggConverter::
+round(double value) {
+  if (value < 0)
+    return -(floor(-value + 0.5));
+  // or as an alternate use:
+  // return ceil ( value - 0.5);
+  else
+    return   floor( value + 0.5);
+}
 /*
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEggConverter::store_tex_names
@@ -2020,9 +2040,17 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
             if (!status) {
               status.perror("MItMeshPolygon::getUV");
             } else {
-              // apply upto 1/1000th precision
-              uvs[0] = (double)((long)(uvs[0]*1000))/1000.0;
-              uvs[1] = (double)((long)(uvs[1]*1000))/1000.0;
+              if (_round_uvs) {
+                // apply upto 1/1000th precision, but round up
+                uvs[0] = (long)(uvs[0]*1000);
+                uvs[1] = (long)(uvs[1]*1000);
+                //cout << "before rounding uvs[0]: " << uvs[0] << endl;
+                //cout << "before rounding uvs[1]: " << uvs[1] << endl;
+                uvs[0] = (double)(round((double)uvs[0]/10.0)*10.0)/1000.0;
+                uvs[1] = (double)(round((double)uvs[1]/10.0)*10.0)/1000.0;
+                //cout << "after rounding uvs[0]: " << uvs[0] << endl;
+                //cout << "after rounding uvs[1]: " << uvs[1] << endl;
+              }
               vert.set_uv(colordef_uv_name, TexCoordd(uvs[0], uvs[1]));
             }
           }

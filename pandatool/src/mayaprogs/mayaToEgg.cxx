@@ -84,6 +84,12 @@ MayaToEgg() :
      &MayaToEgg::dispatch_none, &_keep_all_uvsets);
 
   add_option
+    ("round-uvs", "", 0,
+     "round up uv coordinates to the nearest 1/100th. i.e. -0.001 becomes"
+     "0.0; 0.444 becomes 0.44; 0.778 becomes 0.78.",
+     &MayaToEgg::dispatch_none, &_round_uvs);
+
+  add_option
     ("trans", "type", 0,
      "Specifies which transforms in the Maya file should be converted to "
      "transforms in the egg file.  The option may be one of all, model, "
@@ -182,6 +188,7 @@ run() {
   converter._respect_maya_double_sided = _respect_maya_double_sided;
   converter._always_show_vertex_color = !_suppress_vertex_color;
   converter._keep_all_uvsets = _keep_all_uvsets;
+  converter._round_uvs = _round_uvs;
   converter._transform_type = _transform_type;
 
   vector_string::const_iterator si;

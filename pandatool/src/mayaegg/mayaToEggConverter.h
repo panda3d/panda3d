@@ -155,7 +155,8 @@ private:
   bool reparent_decals(EggGroupNode *egg_parent);
 
   string find_uv_link(string match);
-  //  string find_uv_link_2(string match, const MObjectArray &textures);
+ 
+  int round(double value);
 
   string _program_name;
 
@@ -182,6 +183,7 @@ public:
   bool _respect_maya_double_sided;
   bool _always_show_vertex_color;
   bool _keep_all_uvsets;
+  bool _round_uvs;
 
   enum TransformType {
     TT_invalid,
