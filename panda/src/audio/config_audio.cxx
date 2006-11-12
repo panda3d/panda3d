@@ -59,17 +59,15 @@ ConfigVariableFilename audio_dls_file
 
 // Config variables for Fmod:
 
-//I should note this somewhere.  The actual number of sound one could
-//play is 2 times whatever the default is here.  In this case 32 * 2 =
-//64.  The reason for this, is because of the way Panda creates two
-//seperate audio managers.  One for sound effects, the other for music
-//files.  At one time this used to be a concern, because wave files
-//[WAV, AIF, MP3, etc...]  and Music files [MID MOD IT] used to be
-//treated differently.  However in current Audio APIs [particularly
-//FMOD] a sound file is treated the same no matter what it is.
-
+// At one time, the actual number of sound channels was twice this,
+// because Panda creates two AudioManagers, and each AudioManager was
+// initializing the sound hardware separately.  But it turns out you
+// can't do that reliably on all platforms, so now we only initialize
+// the sound hardware once, and this is once again the overall limit.
+// But with FMOD Ex there's not much reason to make this a small
+// number.
 ConfigVariableInt fmod_number_of_sound_channels
-("fmod-number-of-sound-channels", 32,
+("fmod-number-of-sound-channels", 128,
  PRC_DESC("Guarantee this many channels you will have with FMOD.  AKA the max number of sounds you can play at one time.") );
 
 ConfigVariableBool fmod_use_surround_sound
