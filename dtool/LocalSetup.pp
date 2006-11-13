@@ -516,7 +516,7 @@ $[cdefine USE_MEMORY_MALLOC]
 $[cdefine USE_MEMORY_NOWRAPPERS]
 
 #define if we want native net
-$[cdefine WANT_NATIVE_NET]
+//$[cdefine WANT_NATIVE_NET]
 
 
 /* Can we define a modern-style STL allocator? */
