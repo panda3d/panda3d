@@ -1370,7 +1370,7 @@ do_compose(const TransformState *other) const {
   }
 
   // Do the operation with matrices.
-  if (is_2d()) {
+  if (is_2d() && other->is_2d()) {
     LMatrix3f new_mat = other->get_mat3() * get_mat3();
     return make_mat3(new_mat);
   } else {
