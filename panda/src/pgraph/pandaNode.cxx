@@ -1501,6 +1501,168 @@ list_tags(ostream &out, const string &separator) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::copy_all_properties
+//       Access: Published
+//  Description: Copies the TransformState, RenderState,
+//               RenderEffects, tags, Python tags, and the show/hide
+//               state from the other node onto this one.  Typically
+//               this is used to prepare a node to replace another
+//               node in the scene graph (also see replace_node()).
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+copy_all_properties(PandaNode *other) {
+  if (other == this) {
+    // Trivial.
+    return;
+  }
+
+  bool any_transform_changed = false;
+  bool any_state_changed = false;
+  bool any_draw_mask_changed = false;
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
+    CDStageReader cdatar(other->_cycler, pipeline_stage, current_thread);
+
+    if (cdataw->_transform != cdatar->_transform) {
+      any_transform_changed = true;
+    }
+    if (cdataw->_state != cdatar->_state) {
+      any_state_changed = true;
+    }
+    if (cdataw->_draw_control_mask != cdatar->_draw_control_mask ||
+        cdataw->_draw_show_mask != cdatar->_draw_show_mask) {
+      any_draw_mask_changed = true;
+    }
+
+    cdataw->_transform = cdatar->_transform;
+    cdataw->_prev_transform = cdatar->_prev_transform;
+    cdataw->_state = cdatar->_state;
+    cdataw->_effects = cdatar->_effects;
+    cdataw->_draw_control_mask = cdatar->_draw_control_mask;
+    cdataw->_draw_show_mask = cdatar->_draw_show_mask;
+      
+    TagData::const_iterator ti;
+    for (ti = cdatar->_tag_data.begin();
+         ti != cdatar->_tag_data.end();
+         ++ti) {
+      cdataw->_tag_data[(*ti).first] = (*ti).second;
+    }
+    
+#ifdef HAVE_PYTHON
+    PythonTagData::const_iterator pti;
+    for (pti = cdatar->_python_tag_data.begin();
+         pti != cdatar->_python_tag_data.end();
+         ++pti) {
+      const string &key = (*pti).first;
+      PyObject *value = (*pti).second;
+      Py_XINCREF(value);
+      
+      pair<PythonTagData::iterator, bool> result;
+      result = cdataw->_python_tag_data.insert(PythonTagData::value_type(key, value));
+      
+      if (!result.second) {
+        // The insert was unsuccessful; that means the key was already
+        // present in the map.  In this case, we should decrement the
+        // original value's reference count and replace it with the new
+        // object.
+        PythonTagData::iterator wpti = result.first;
+        PyObject *old_value = (*wpti).second;
+        Py_XDECREF(old_value);
+        (*wpti).second = value;
+      }
+    }
+#endif // HAVE_PYTHON
+
+    static const int change_bits = (FB_transform | FB_state | FB_effects |
+                                    FB_tag | FB_draw_mask);
+    cdataw->_fancy_bits =
+      (cdataw->_fancy_bits & ~change_bits) |
+      (cdatar->_fancy_bits & change_bits);
+
+    if (pipeline_stage == 0) {
+      if (cdataw->_transform != cdataw->_prev_transform) {
+        set_dirty_prev_transform();
+      }
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+
+  if (any_transform_changed || any_state_changed || any_draw_mask_changed) {
+    mark_bounds_stale(current_thread);
+
+    if (any_transform_changed) {
+      transform_changed();
+    }
+    if (any_state_changed) {
+      state_changed();
+    }
+    if (any_draw_mask_changed) {
+      draw_mask_changed();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::replace_node
+//       Access: Published
+//  Description: Inserts this node into the scene graph in place of
+//               the other one, and removes the other node.  All scene
+//               graph attributes (TransformState, RenderState, etc.)
+//               are copied to this node.  
+//
+//               All children are moved to this node, and removed from
+//               the old node.  The new node is left in the same place
+//               in the old node's parent's list of children.
+//
+//               Even NodePaths that reference the old node are
+//               updated in-place to reference the new node instead.
+//
+//               This method is intended to be used to replace a node
+//               of a given type in the scene graph with a node of a
+//               different type.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+replace_node(PandaNode *other) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+
+  if (other == this) {
+    // Trivial.
+    return;
+  }
+
+  // Make sure the other node is not destructed during the
+  // execution of this method.
+  PT(PandaNode) keep_other = other;
+
+  // Get all the important scene graph properties.
+  copy_all_properties(other);
+
+  // Fix up the NodePaths.
+  {
+    MutexHolder holder1(other->_paths_lock);
+    MutexHolder holder2(_paths_lock);
+    Paths::iterator pi;
+    for (pi = other->_paths.begin(); pi != other->_paths.end(); ++pi) {
+      (*pi)->_node = this;
+      _paths.insert(*pi);
+    }
+    other->_paths.clear();
+  }
+
+  // Get the children.
+  steal_children(other);
+
+  // Switch the parents.
+  Thread *current_thread = Thread::get_current_thread();
+  Parents parents = other->get_parents();
+  for (int i = 0; i < parents.get_num_parents(); ++i) {
+    PandaNode *parent = parents.get_parent(i);
+    parent->replace_child(other, this, current_thread);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::adjust_draw_mask
 //       Access: Published
 //  Description: Adjusts the hide/show bits of this particular node.
@@ -2282,7 +2444,7 @@ stage_remove_child(PandaNode *child_node, int pipeline_stage,
   // First, look for the parent in the child's up list, to ensure the
   // child is known.
   CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
-                                 current_thread);
+                            current_thread);
   int parent_index = child_node->do_find_parent(this, cdata_child);
   if (parent_index < 0) {
     // Nope, no relation.
@@ -2345,6 +2507,11 @@ stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
     
     // Don't let orig_child be destructed yet.
     PT(PandaNode) keep_orig_child = orig_child;
+
+    // If we already have new_child as a child, remove it first.
+    if (stage_remove_child(new_child, pipeline_stage, current_thread)) {
+      sever_connection(this, new_child, pipeline_stage, current_thread);
+    }
     
     int child_index = do_find_child(orig_child, cdata);
     if (child_index >= 0) {

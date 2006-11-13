@@ -199,6 +199,9 @@ PUBLISHED:
   void copy_tags(PandaNode *other);
   void list_tags(ostream &out, const string &separator = "\n") const;
 
+  void copy_all_properties(PandaNode *other);
+  void replace_node(PandaNode *other);
+
   INLINE static DrawMask get_overall_bit();
   INLINE static DrawMask get_all_camera_mask();
   INLINE bool is_overall_hidden() const;
