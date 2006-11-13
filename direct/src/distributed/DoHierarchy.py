@@ -59,9 +59,6 @@ class DoHierarchy:
         return r
 
     def storeObjectLocation(self, do, parentId, zoneId):
-        if do.__class__.__name__ == 'DistributedToon':
-            from direct.showbase.PythonUtil import StackTrace
-            print 'storeObjectLocation(DistributedToon %s)(%s, %s): %s' % (do.doId, parentId, zoneId, StackTrace())
         doId = do.doId
         if doId in self._allDoIds:
             self.notify.error(
@@ -75,9 +72,6 @@ class DoHierarchy:
             do.__class__.__name__, doId, parentId, zoneId))
 
     def deleteObjectLocation(self, do, parentId, zoneId):
-        if do.__class__.__name__ == 'DistributedToon':
-            from direct.showbase.PythonUtil import StackTrace
-            print 'deleteObjectLocation(DistributedToon %s)(%s, %s): %s' % (do.doId, parentId, zoneId, StackTrace())
         doId = do.doId
         if doId not in self._allDoIds:
             self.notify.error(
