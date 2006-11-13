@@ -79,7 +79,7 @@ class DoInterestManager(DirectObject.DirectObject):
         tempbase = base
     except:
         tempbase = simbase
-    InterestDebug = tempbase.config.GetBool('interest-debug', True)
+    InterestDebug = tempbase.config.GetBool('interest-debug', False)
     del tempbase
 
     # 'handle' is a number that represents a single interest set that the
@@ -281,7 +281,7 @@ class DoInterestManager(DirectObject.DirectObject):
     def openAutoInterests(self, obj):
         if hasattr(obj, '_autoInterestHandle'):
             # must be multiple inheritance
-            self.notify.warning('openAutoInterests(%s): interests already open' % obj.__class__.__name__)
+            self.notify.debug('openAutoInterests(%s): interests already open' % obj.__class__.__name__)
             return
         autoInterests = obj.getAutoInterests()
         obj._autoInterestHandle = None
@@ -291,7 +291,7 @@ class DoInterestManager(DirectObject.DirectObject):
     def closeAutoInterests(self, obj):
         if not hasattr(obj, '_autoInterestHandle'):
             # must be multiple inheritance
-            self.notify.warning('closeAutoInterests(%s): interests already closed' % obj)
+            self.notify.debug('closeAutoInterests(%s): interests already closed' % obj)
             return
         if obj._autoInterestHandle is not None:
             self.removeInterest(obj._autoInterestHandle, auto=True)
