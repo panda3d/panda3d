@@ -129,6 +129,7 @@ class StackTrace:
             self.label, len(self.trace),)
         for i in traceback.format_list(self.trace):
             r+=i
+        r+="***** NOTE: This is not a crash. This is a debug stack trace. *****"
         return r
 
 #-----------------------------------------------------------------------------
