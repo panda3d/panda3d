@@ -22,6 +22,23 @@
 #include "config_pnmimage.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+PNMImage::
+PNMImage(const Filename &filename, PNMFileType *type) {
+  _array = NULL;
+  _alpha = NULL;
+
+  bool result = read(filename, type);
+  if (!result) {
+    pnmimage_cat.error()
+      << "Could not read image " << filename << "\n";
+  }    
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::clear
 //       Access: Published
 //  Description: Frees all memory allocated for the image, and clears

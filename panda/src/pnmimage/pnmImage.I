@@ -33,19 +33,6 @@ PNMImage() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
-PNMImage(const Filename &filename, PNMFileType *type) {
-  _array = NULL;
-  _alpha = NULL;
-
-  read(filename, type);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE PNMImage::
 PNMImage(int x_size, int y_size, int num_channels, xelval maxval,
          PNMFileType *type) {
   _array = NULL;

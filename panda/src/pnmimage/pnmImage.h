@@ -59,7 +59,7 @@ class PNMFileType;
 class EXPCL_PANDA PNMImage : public PNMImageHeader {
 PUBLISHED:
   INLINE PNMImage();
-  INLINE PNMImage(const Filename &filename, PNMFileType *type = NULL);
+  PNMImage(const Filename &filename, PNMFileType *type = NULL);
   INLINE PNMImage(int x_size, int y_size, int num_channels = 3,
                   xelval maxval = 255, PNMFileType *type = NULL);
   INLINE PNMImage(const PNMImage &copy);
