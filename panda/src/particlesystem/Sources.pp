@@ -12,7 +12,8 @@
      baseParticle.I baseParticle.h baseParticleEmitter.I  \
      baseParticleEmitter.h baseParticleFactory.I  \
      baseParticleFactory.h baseParticleRenderer.I  \
-     baseParticleRenderer.h boxEmitter.I boxEmitter.h  \
+     baseParticleRenderer.h arcEmitter.I arcEmitter.h \
+     boxEmitter.I boxEmitter.h  \
      config_particlesystem.h discEmitter.I discEmitter.h  \
      geomParticleRenderer.I geomParticleRenderer.h lineEmitter.I  \
      lineEmitter.h lineParticleRenderer.I lineParticleRenderer.h  \
@@ -37,7 +38,7 @@
     
  #define INCLUDED_SOURCES \
      baseParticle.cxx baseParticleEmitter.cxx baseParticleFactory.cxx \
-     baseParticleRenderer.cxx boxEmitter.cxx \
+     baseParticleRenderer.cxx boxEmitter.cxx arcEmitter.cxx \
      config_particlesystem.cxx discEmitter.cxx \
      geomParticleRenderer.cxx lineEmitter.cxx \
      lineParticleRenderer.cxx particleSystem.cxx \
@@ -54,8 +55,9 @@
   #define INSTALL_HEADERS \
     baseParticle.I baseParticle.h baseParticleEmitter.I \
     baseParticleEmitter.h baseParticleFactory.I baseParticleFactory.h \
-    baseParticleRenderer.I baseParticleRenderer.h boxEmitter.I \
-    boxEmitter.h config_particlesystem.h discEmitter.I discEmitter.h \
+    baseParticleRenderer.I baseParticleRenderer.h arcEmitter.I arcEmitter.h \
+    boxEmitter.I boxEmitter.h config_particlesystem.h \
+    discEmitter.I discEmitter.h \
     emitters.h geomParticleRenderer.I geomParticleRenderer.h \
     lineEmitter.I lineEmitter.h lineParticleRenderer.I \
     lineParticleRenderer.h particleSystem.I particleSystem.h \

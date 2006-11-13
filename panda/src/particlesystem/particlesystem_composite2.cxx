@@ -3,6 +3,7 @@
 #include "baseParticleEmitter.cxx"
 #include "baseParticleFactory.cxx"
 #include "baseParticleRenderer.cxx"
+#include "arcEmitter.cxx"
 #include "boxEmitter.cxx"
 #include "discEmitter.cxx"
 #include "lineEmitter.cxx"

@@ -45,7 +45,7 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
 
-private:
+protected:
   float _radius;
   float _radius_spread;
 
@@ -58,6 +58,7 @@ private:
   float _cos_theta;
   ///////////////////////////////
 
+private:
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);
 };
