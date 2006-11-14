@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "luse.h"
 #include "renderBuffer.h"
+#include "typedWritableReferenceCount.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DrawableRegion
@@ -86,6 +87,7 @@ private:
   Colorf _clear_color;
   float _clear_depth;
   unsigned int _clear_stencil;
+
 };
 
 #include "drawableRegion.I"
