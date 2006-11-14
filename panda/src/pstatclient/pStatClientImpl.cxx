@@ -33,6 +33,7 @@
 #include <algorithm>
 
 #ifdef WIN32_VC
+#include <Winsock2.h>
 #include <windows.h>
 #endif
 

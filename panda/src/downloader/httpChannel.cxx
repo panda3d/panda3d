@@ -30,6 +30,7 @@
 #include "openssl/x509.h"
 
 #ifdef WIN32_VC
+  #include <WinSock2.h>
   #include <windows.h>  // for select()
   #undef X509_NAME
 #endif  // WIN32_VC
