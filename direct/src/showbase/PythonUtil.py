@@ -23,7 +23,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 '_equal', '_notEqual', '_isNone', '_notNone', '_contains', '_notIn',
 'ScratchPad', 'Sync', 'RefCounter', 'itype', 'getNumberedTypedString',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
-'FrameDelayedCallback', 'ArgumentEater', 'ClassTree', 'getBase',]
+'FrameDelayedCallback', 'ArgumentEater', 'ClassTree', 'getBase','superFlattenShip']
 
 import types
 import string
@@ -2434,6 +2434,27 @@ def getBase():
         return base
     except:
         return simbase
+
+def superFlattenShip(ship):
+
+    #PHASE 1: remove characters
+    characterNodes=ship.findAllMatches("**/+Character")
+    for i in range(characterNodes.getNumPaths()):
+        character=characterNodes.getPath(i)
+        children=character.getChildrenAsList()
+        for child in children:
+            child.copyTo(character.getParent())
+        character.reparentTo(hidden)
+
+    #PHASE 2: remove textures
+    tex=ship.findAllTextures().getTexture(0)
+    ship.setTexture(tex,1000)
+
+    #PHASE 3: stop rocking task
+    taskMgr.remove("shipRocking-%d"%(ship.getDoId()))
+
+    #PHASE 4: flatten strong!
+    return ship.flattenStrong()
 
 def exceptionLogged(f):
     """decorator that prints the function name and all arguments if an
