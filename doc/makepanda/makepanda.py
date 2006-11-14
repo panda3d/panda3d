@@ -998,8 +998,8 @@ def CompileCxxMSVC(wobj,fullsrc,ipath,opts):
     oscmd(cmd)
 
 def CompileCxxLINUX(wobj,fullsrc,ipath,opts):
-    if (fullsrc[-2:]==".c"): cmd = 'gcc -c -o ' + wobj
-    else:                    cmd = 'g++ -ftemplate-depth-30 -c -o ' + wobj
+    if (fullsrc[-2:]==".c"): cmd = 'gcc -fPIC -c -o ' + wobj
+    else:                    cmd = 'g++ -ftemplate-depth-30 -fPIC -c -o ' + wobj
     if (OMIT.count("PYTHON")==0): cmd = cmd + ' -I"' + PYTHONSDK + '"'
     if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I' + THIRDPARTYLIBS + 'vrpn/include'
     if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I' + THIRDPARTYLIBS + 'fftw/include'
