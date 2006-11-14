@@ -465,8 +465,12 @@ class ShowBase(DirectObject.DirectObject):
         elif type == 'offscreen':
             flags = flags | GraphicsPipe.BFRefuseWindow
 
-        win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
-                                             props, flags)
+        if gsg:
+            win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
+                                                 props, flags, gsg)
+        else:
+            win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
+                                                 props, flags)
 
         if win == None:
             # Couldn't create a window!
