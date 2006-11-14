@@ -171,7 +171,6 @@ update_type_handle(TypeHandle &destination, TypeHandle refined) {
 
   } else {
     // Unrelated types, which might or might not be a problem.
-    destination = refined;
     return false;
   }
   

@@ -20,7 +20,7 @@
 #include "config_express.h"
 
 #ifdef _WIN32
-#include <windows.h>  // for IsBadWritePtr()
+//#include <windows.h>  // for IsBadWritePtr()
 #endif
 
 
