@@ -124,6 +124,15 @@ class StackTrace:
         else:
             self.trace = traceback.extract_stack(sys._getframe(1+start))
             
+    def compact(self):
+        r = ''
+        comma = ','
+        for filename, lineNum, funcName, text in self.trace:
+            r += '%s.%s:%s%s' % (filename[filename.rfind('\\')+1:], funcName, lineNum, comma)
+        if len(r):
+            r = r[:-len(comma)]
+        return r
+
     def __str__(self):
         r = "Debug stack trace of %s (back %s frames):\n"%(
             self.label, len(self.trace),)
