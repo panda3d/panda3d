@@ -480,7 +480,6 @@ ReleaseSystemResources() {
   }
   
   if (_pending_icon != NULL) {
-    cerr << "release pending icon\n";
     CGImageRelease(_pending_icon);
     _pending_icon = NULL;
   }
@@ -668,7 +667,6 @@ set_icon_filename(const Filename &icon_filename) {
   }
 
   if (_pending_icon != NULL) {
-    cerr << "release pending icon (reset)\n";
     CGImageRelease(_pending_icon);
     _pending_icon = NULL;
   }
