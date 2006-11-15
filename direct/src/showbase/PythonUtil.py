@@ -2466,8 +2466,9 @@ def superFlattenShip(ship):
     from pirates.shipparts.DistributedShipDecor import DistributedShipDecor
     for DO in base.cr.doId2do.values():
         if(type(DO) == DistributedShipDecor):
-            DO.prop.lanternGlowEffect.destroy()
-
+            if (hasattr(DO.prop, 'lanternGlowEffect')):
+                DO.prop.lanternGlowEffect.destroy()
+            
     #PHASE 5: flatten strong!
     return ship.flattenStrong()
 
