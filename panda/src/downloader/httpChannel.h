@@ -102,7 +102,12 @@ PUBLISHED:
 
     SC_ssl_invalid_server_certificate,
     SC_ssl_unexpected_server,
+    
+    // These errors are only generated after a download_to_ram() or
+    // download_to_file() call has been issued.
+    SC_download_open_error,
     SC_download_write_error,
+    SC_download_invalid_range,
   };
 
   INLINE bool is_valid() const;
@@ -227,7 +232,7 @@ private:
   void reset_for_new_request();
 
   void finished_body(bool has_trailer);
-  bool reset_download_position(size_t first_byte);
+  bool open_download_file();
 
   bool server_getline(string &str);
   bool server_getline_failsafe(string &str);

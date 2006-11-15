@@ -31,7 +31,7 @@
 bool IIdentityStream::
 is_closed() {
   if ((_buf._has_content_length && _buf._bytes_remaining == 0) || 
-      (*_buf._source)->is_closed()) {
+      _buf.is_closed()) {
     return true;
   }
   clear();

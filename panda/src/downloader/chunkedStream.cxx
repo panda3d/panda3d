@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 bool IChunkedStream::
 is_closed() {
-  if (_buf._done || (*_buf._source)->is_closed()) {
+  if (_buf._done || _buf.is_closed()) {
     return true;
   }
   clear();

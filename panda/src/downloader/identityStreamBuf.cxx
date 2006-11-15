@@ -156,6 +156,7 @@ read_chars(char *start, size_t length) {
       length = min(length, _bytes_remaining);
       (*_source)->read(start, length);
       read_count = (*_source)->gcount();
+      nassertr(read_count <= _bytes_remaining, 0);
       _bytes_remaining -= read_count;
   
       if (read_count == 0) {
@@ -163,6 +164,7 @@ read_chars(char *start, size_t length) {
           // socket closed unexpectedly; problem.
           if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
             _doc->_state = HTTPChannel::S_failure;
+            _doc->_status_entry._status_code = HTTPChannel::SC_lost_connection;
           }
         }
         return 0;

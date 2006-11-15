@@ -13,7 +13,8 @@
     bioPtr.I bioPtr.h \
     bioStreamPtr.I bioStreamPtr.h \
     bioStream.I bioStream.h bioStreamBuf.h \
-    chunkedStream.I chunkedStream.h chunkedStreamBuf.h \
+    chunkedStream.I chunkedStream.h \
+    chunkedStreamBuf.h chunkedStreamBuf.I \
     decompressor.h decompressor.I \
     documentSpec.I documentSpec.h \
     downloadDb.I downloadDb.h \
@@ -28,7 +29,8 @@
     httpDigestAuthorization.I httpDigestAuthorization.h \
     httpEntityTag.I httpEntityTag.h \
     httpEnum.h \
-    identityStream.I identityStream.h identityStreamBuf.h \
+    identityStream.I identityStream.h \
+    identityStreamBuf.h identityStreamBuf.I \
     multiplexStream.I multiplexStream.h \
     multiplexStreamBuf.I multiplexStreamBuf.h \
     patcher.h patcher.I \
@@ -67,7 +69,8 @@
     bioPtr.I bioPtr.h \
     bioStreamPtr.I bioStreamPtr.h \
     bioStream.I bioStream.h bioStreamBuf.h \
-    chunkedStream.I chunkedStream.h chunkedStreamBuf.h \
+    chunkedStream.I chunkedStream.h \
+    chunkedStreamBuf.h chunkedStreamBuf.I \
     config_downloader.h \
     decompressor.h decompressor.I \
     documentSpec.h documentSpec.I \
@@ -82,7 +85,8 @@
     httpDigestAuthorization.I httpDigestAuthorization.h \
     httpEntityTag.I httpEntityTag.h \
     httpEnum.h \
-    identityStream.I identityStream.h identityStreamBuf.h \
+    identityStream.I identityStream.h \
+    identityStreamBuf.h identityStreamBuf.I \
     multiplexStream.I multiplexStream.h \
     multiplexStreamBuf.I multiplexStreamBuf.h \
     patcher.h patcher.I \

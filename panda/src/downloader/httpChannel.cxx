@@ -258,8 +258,14 @@ get_status_string() const {
   case SC_ssl_unexpected_server:
     return "Unexpected SSL server";
 
+  case SC_download_open_error:
+    return "Error opening file";
+
   case SC_download_write_error:
     return "Error writing to disk";
+
+  case SC_download_invalid_range:
+    return "Invalid subrange requested";
   }
 
   return _status_entry._status_string;
@@ -621,20 +627,9 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
   _download_to_filename.set_binary();
   _download_to_file.close();
   _download_to_file.clear();
-
-  _subdocument_resumes = (subdocument_resumes && _first_byte_delivered != 0);
-
-  if (!_download_to_filename.open_write(_download_to_file, !_subdocument_resumes)) {
-    downloader_cat.info()
-      << "Could not open " << _download_to_filename << " for writing.\n";
-    return false;
-  }
+  _subdocument_resumes = subdocument_resumes;
 
   _download_dest = DD_file;
-  if (!reset_download_position(_first_byte_delivered)) {
-    reset_download_to();
-    return false;
-  }
 
   if (_nonblocking) {
     // In nonblocking mode, we can't start the download yet; that will
@@ -643,6 +638,11 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
   }
 
   // In normal, blocking mode, go ahead and do the download.
+  if (!open_download_file()) {
+    reset_download_to();
+    return false;
+  }
+
   run();
   return is_download_complete();
 }
@@ -687,11 +687,6 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
   _download_dest = DD_ram;
   _subdocument_resumes = (subdocument_resumes && _first_byte_delivered != 0);
 
-  if (!reset_download_position(_first_byte_delivered)) {
-    reset_download_to();
-    return false;
-  }
-
   if (_nonblocking) {
     // In nonblocking mode, we can't start the download yet; that will
     // be done later as run() is called.
@@ -699,6 +694,11 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
   }
 
   // In normal, blocking mode, go ahead and do the download.
+  if (!open_download_file()) {
+    reset_download_to();
+    return false;
+  }
+
   run();
   return is_download_complete();
 }
@@ -829,6 +829,9 @@ reached_done_state() {
         _body_stream = NULL;
       }
       _started_download = true;
+
+
+      _done_state = S_read_trailer;
       _last_run_time = TrueClock::get_global_ptr()->get_short_time();
       return true;
     }
@@ -1709,11 +1712,10 @@ run_reading_header() {
     _document_spec.set_date(HTTPDate(date));
   }
 
-  // In case we've got a download in effect, reset the download
-  // position to match our starting byte.
-  if (!reset_download_position(_first_byte_delivered)) {
-    _status_entry._status_code = SC_invalid_http;
-    _state = S_failure;
+  // In case we've got a download in effect, now we know what the
+  // first byte of the subdocument request will be, so we can open the
+  // file and position it.
+  if (!open_download_file()) {
     return false;
   }
 
@@ -2057,20 +2059,31 @@ run_download_to_file() {
   nassertr(_body_stream != (ISocketStream *)NULL, false);
 
   bool do_throttle = _nonblocking && _download_throttle;
-  int count = 0;
 
-  int ch = _body_stream->get();
-  nassertr(_body_stream != (ISocketStream *)NULL, false);
-  while (!_body_stream->eof() && !_body_stream->fail()) {
-    _download_to_file.put(ch);
-    _bytes_downloaded++;
-    if (do_throttle && (++count >= _bytes_per_update)) {
-      // That's enough for now.
-      return true;
+  static const size_t buffer_size = 1024;
+  char buffer[buffer_size];
+
+  size_t remaining_this_pass = buffer_size;
+  if (do_throttle) {
+    remaining_this_pass = _bytes_per_update;
+  }
+
+  _body_stream->read(buffer, min(buffer_size, remaining_this_pass));
+  size_t count = _body_stream->gcount();
+  while (count != 0) {
+    _download_to_file.write(buffer, count);
+    _bytes_downloaded += count;
+    if (do_throttle) {
+      nassertr(count <= remaining_this_pass, false);
+      remaining_this_pass -= count;
+      if (remaining_this_pass == 0) {
+        // That's enough for now.
+        return true;
+      }
     }
 
-    ch = _body_stream->get();
-    nassertr(_body_stream != (ISocketStream *)NULL, false);
+    _body_stream->read(buffer, min(buffer_size, remaining_this_pass));
+    count = _body_stream->gcount();
   }
 
   if (_download_to_file.fail()) {
@@ -2078,13 +2091,15 @@ run_download_to_file() {
       << "Error writing to " << _download_to_filename << "\n";
     _status_entry._status_code = SC_download_write_error;
     _state = S_failure;
-    _download_to_file.close();
+    reset_download_to();
     return false;
   }
 
+  _download_to_file.flush();
+
   if (_body_stream->is_closed()) {
     // Done.
-    _download_to_file.close();
+    _started_download = false;
     return false;
   } else {
     // More to come.
@@ -2104,24 +2119,36 @@ run_download_to_ram() {
   nassertr(_download_to_ramfile != (Ramfile *)NULL, false);
 
   bool do_throttle = _nonblocking && _download_throttle;
-  int count = 0;
 
-  int ch = _body_stream->get();
-  nassertr(_body_stream != (ISocketStream *)NULL, false);
-  while (!_body_stream->eof() && !_body_stream->fail()) {
-    _download_to_ramfile->_data += (char)ch;
-    _bytes_downloaded++;
-    if (do_throttle && (++count >= _bytes_per_update)) {
-      // That's enough for now.
-      return true;
+  static const size_t buffer_size = 1024;
+  char buffer[buffer_size];
+
+  size_t remaining_this_pass = buffer_size;
+  if (do_throttle) {
+    remaining_this_pass = _bytes_per_update;
+  }
+
+  _body_stream->read(buffer, min(buffer_size, remaining_this_pass));
+  size_t count = _body_stream->gcount();
+  while (count != 0) {
+    _download_to_ramfile->_data += string(buffer, count);
+    _bytes_downloaded += count;
+    if (do_throttle) {
+      nassertr(count <= remaining_this_pass, false);
+      remaining_this_pass -= count;
+      if (remaining_this_pass == 0) {
+        // That's enough for now.
+        return true;
+      }
     }
 
-    ch = _body_stream->get();
-    nassertr(_body_stream != (ISocketStream *)NULL, false);
+    _body_stream->read(buffer, min(buffer_size, remaining_this_pass));
+    count = _body_stream->gcount();
   }
 
   if (_body_stream->is_closed()) {
     // Done.
+    _started_download = false;
     return false;
   } else {
     // More to come.
@@ -2309,16 +2336,30 @@ finished_body(bool has_trailer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::reset_download_position
+//     Function: HTTPChannel::open_download_file
 //       Access: Private
-//  Description: If a download has been requested, seeks within the
-//               download file to the appropriate first_byte position,
-//               so that downloaded bytes will be written to the
+//  Description: If a download has been requested, opens the file on
+//               disk (or prepares the RamFile) and seeks within it to
+//               the appropriate _first_byte_delivered position, so
+//               that downloaded bytes will be written to the
 //               appropriate point within the file.  Returns true if
-//               the starting position is valid, false otherwise.
+//               the starting position is valid, false otherwise (in
+//               which case the state is set to S_failure).
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
-reset_download_position(size_t first_byte) {
+open_download_file() {
+  _subdocument_resumes = (_subdocument_resumes && _first_byte_delivered != 0);
+
+  if (_download_dest == DD_file) {
+    if (!_download_to_filename.open_write(_download_to_file, !_subdocument_resumes)) {
+      downloader_cat.info()
+        << "Could not open " << _download_to_filename << " for writing.\n";
+      _status_entry._status_code = SC_download_open_error;
+      _state = S_failure;
+      return false;
+    }
+  }
+
   if (_subdocument_resumes) {
     if (_download_dest == DD_file) {
       // Windows doesn't complain if you try to seek past the end of
@@ -2326,38 +2367,42 @@ reset_download_position(size_t first_byte) {
       // difference.  Blecch.  That means we need to get the file size
       // first to check it ourselves.
       _download_to_file.seekp(0, ios::end);
-      if (first_byte > (size_t)_download_to_file.tellp()) {
+      if (_first_byte_delivered > (size_t)_download_to_file.tellp()) {
         downloader_cat.info()
-          << "Invalid starting position of byte " << first_byte
+          << "Invalid starting position of byte " << _first_byte_delivered
           << " within " << _download_to_filename << " (which has " 
           << _download_to_file.tellp() << " bytes)\n";
         _download_to_file.close();
+        _status_entry._status_code = SC_download_invalid_range;
+        _state = S_failure;
         return false;
       }
       
-      _download_to_file.seekp(first_byte);
+      _download_to_file.seekp(_first_byte_delivered);
       
     } else if (_download_dest == DD_ram) {
-      if (first_byte > _download_to_ramfile->_data.length()) {
+      if (_first_byte_delivered > _download_to_ramfile->_data.length()) {
         downloader_cat.info()
-          << "Invalid starting position of byte " << first_byte 
+          << "Invalid starting position of byte " << _first_byte_delivered 
           << " within Ramfile (which has " 
           << _download_to_ramfile->_data.length() << " bytes)\n";
+        _status_entry._status_code = SC_download_invalid_range;
+        _state = S_failure;
         return false;
       }
 
-      if (first_byte == 0) {
+      if (_first_byte_delivered == 0) {
         _download_to_ramfile->_data = string();
       } else {
         _download_to_ramfile->_data = 
-          _download_to_ramfile->_data.substr(0, first_byte);
+          _download_to_ramfile->_data.substr(0, _first_byte_delivered);
       }
     }
 
   } else {
     // If _subdocument_resumes is false, we should be sure to reset to
     // the beginning of the file, regardless of the value of
-    // first_byte.
+    // _first_byte_delivered.
     if (_download_dest == DD_file) {
       _download_to_file.seekp(0);
     } else if (_download_dest == DD_ram) {

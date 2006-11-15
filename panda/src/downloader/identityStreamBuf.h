@@ -42,6 +42,8 @@ public:
                  bool has_content_length, size_t content_length);
   void close_read();
 
+  INLINE bool is_closed() const;
+
 protected:
   virtual int underflow();
 
@@ -57,6 +59,8 @@ private:
 
   friend class IIdentityStream;
 };
+
+#include "identityStreamBuf.I"
 
 #endif  // HAVE_OPENSSL
 

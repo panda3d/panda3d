@@ -42,6 +42,8 @@ public:
   void open_read(BioStreamPtr *source, HTTPChannel *doc);
   void close_read();
 
+  INLINE bool is_closed() const;
+
 protected:
   virtual int underflow();
 
@@ -59,6 +61,8 @@ private:
 
   friend class IChunkedStream;
 };
+
+#include "chunkedStreamBuf.I"
 
 #endif  // HAVE_OPENSSL
 
