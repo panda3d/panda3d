@@ -53,6 +53,21 @@ make(Character *character) {
 ////////////////////////////////////////////////////////////////////
 bool CharacterJointEffect::
 safe_to_transform() const {
+  // We now accept that it will be OK to transform the joint--we allow
+  // this on the assumption that anything that transforms the joint
+  // will also transform the Character node, above the joint.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJointEffect::safe_to_combine
+//       Access: Public, Virtual
+//  Description: Returns true if this kind of effect can safely be
+//               combined with sibling nodes that share the exact same
+//               effect, or false if this is not a good idea.
+////////////////////////////////////////////////////////////////////
+bool CharacterJointEffect::
+safe_to_combine() const {
   return false;
 }
 

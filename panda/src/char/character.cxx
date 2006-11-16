@@ -41,19 +41,24 @@ PStatCollector Character::_animation_pcollector("*:Animation");
 ////////////////////////////////////////////////////////////////////
 Character::
 Character(const Character &copy) :
-  PartBundleNode(copy, new CharacterJointBundle(copy.get_bundle()->get_name())),
+  PartBundleNode(copy),
   _parts(copy._parts),
   _joints_pcollector(copy._joints_pcollector),
   _skinning_pcollector(copy._skinning_pcollector)
 {
   set_cull_callback();
 
-  // Now make a copy of the joint/slider hierarchy.  We could just use
-  // the copy_subgraph feature of the PartBundleNode's copy
-  // constructor, but if we do it ourselves we can simultaneously
-  // update our _parts list.
+  // Copy the bundle(s).
+  int num_bundles = copy.get_num_bundles();
+  for (int i = 0; i < num_bundles; ++i) {
+    PartBundle *orig_bundle = copy.get_bundle(i);
+    PartBundle *new_bundle = 
+      new CharacterJointBundle(orig_bundle->get_name());
+    add_bundle(new_bundle);
 
-  copy_joints(get_bundle(), copy.get_bundle());
+    // Make a copy of the joint/slider hierarchy.
+    copy_joints(new_bundle, orig_bundle);
+  }
 
   _last_auto_update = -1.0;
 }
@@ -79,7 +84,10 @@ Character(const string &name) :
 ////////////////////////////////////////////////////////////////////
 Character::
 ~Character() {
-  r_clear_joint_characters(get_bundle());
+  int num_bundles = get_num_bundles();
+  for (int i = 0; i < num_bundles; ++i) {
+    r_clear_joint_characters(get_bundle(i));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,28 +107,31 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Character::safe_to_transform
+//     Function: Character::combine_with
 //       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to transform
-//               this particular kind of Node by calling the xform()
-//               method, false otherwise.  For instance, it's usually
-//               a bad idea to attempt to xform a Character.
+//  Description: Collapses this node with the other node, if possible,
+//               and returns a pointer to the combined node, or NULL
+//               if the two nodes cannot safely be combined.
+//
+//               The return value may be this, other, or a new node
+//               altogether.
+//
+//               This function is called from GraphReducer::flatten(),
+//               and need not deal with children; its job is just to
+//               decide whether to collapse the two nodes and what the
+//               collapsed node should look like.
 ////////////////////////////////////////////////////////////////////
-bool Character::
-safe_to_transform() const {
-  return false;
-}
+PandaNode *Character::
+combine_with(PandaNode *other) {
+  if (is_exact_type(get_class_type()) &&
+      other->is_exact_type(get_class_type())) {
+    // Two Characters can combine by moving PartBundles from one to the other.
+    Character *c_other = DCAST(Character, other);
+    steal_bundles(c_other);
+    return this;
+  }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Character::safe_to_flatten_below
-//       Access: Public, Virtual
-//  Description: Returns true if a flatten operation may safely
-//               continue past this node, or false if nodes below this
-//               node may not be molested.
-////////////////////////////////////////////////////////////////////
-bool Character::
-safe_to_flatten_below() const {
-  return false;
+  return PandaNode::combine_with(other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,6 +203,78 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Character::find_joint
+//       Access: Published
+//  Description: Returns a pointer to the joint with the given name,
+//               if there is such a joint, or NULL if there is no such
+//               joint.  This will not return a pointer to a slider.
+////////////////////////////////////////////////////////////////////
+CharacterJoint *Character::
+find_joint(const string &name) const {
+  int num_bundles = get_num_bundles();
+  for (int i = 0; i < num_bundles; ++i) {
+    PartGroup *part = get_bundle(i)->find_child(name);
+    if (part != (PartGroup *)NULL &&
+        part->is_of_type(CharacterJoint::get_class_type())) {
+      return DCAST(CharacterJoint, part);
+    }
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::find_slider
+//       Access: Published
+//  Description: Returns a pointer to the slider with the given name,
+//               if there is such a slider, or NULL if there is no such
+//               slider.  This will not return a pointer to a joint.
+////////////////////////////////////////////////////////////////////
+CharacterSlider *Character::
+find_slider(const string &name) const {
+  int num_bundles = get_num_bundles();
+  for (int i = 0; i < num_bundles; ++i) {
+    PartGroup *part = get_bundle(i)->find_child(name);
+    if (part != (PartGroup *)NULL &&
+        part->is_of_type(CharacterSlider::get_class_type())) {
+      return DCAST(CharacterSlider, part);
+    }
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::write_parts
+//       Access: Published
+//  Description: Writes a list of the Character's joints and sliders,
+//               in their hierchical structure, to the indicated
+//               output stream.
+////////////////////////////////////////////////////////////////////
+void Character::
+write_parts(ostream &out) const {
+  int num_bundles = get_num_bundles();
+  for (int i = 0; i < num_bundles; ++i) {
+    get_bundle(i)->write(out, 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::write_part_values
+//       Access: Published
+//  Description: Writes a list of the Character's joints and sliders,
+//               along with each current position, in their hierchical
+//               structure, to the indicated output stream.
+////////////////////////////////////////////////////////////////////
+void Character::
+write_part_values(ostream &out) const {
+  int num_bundles = get_num_bundles();
+  for (int i = 0; i < num_bundles; ++i) {
+    get_bundle(i)->write_with_value(out, 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Character::update_to_now
 //       Access: Published
 //  Description: Advances the character's frame to the current time,
@@ -242,7 +325,10 @@ force_update() {
   PStatTimer timer(_joints_pcollector);
 
   // Update all the joints and sliders.
-  get_bundle()->force_update();
+  int num_bundles = get_num_bundles();
+  for (int i = 0; i < num_bundles; ++i) {
+    get_bundle(i)->force_update();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -255,9 +341,15 @@ void Character::
 do_update() {
   // Update all the joints and sliders.
   if (even_animation) {
-    get_bundle()->force_update();
+    int num_bundles = get_num_bundles();
+    for (int i = 0; i < num_bundles; ++i) {
+      get_bundle(i)->force_update();
+    }
   } else {
-    get_bundle()->update();
+    int num_bundles = get_num_bundles();
+    for (int i = 0; i < num_bundles; ++i) {
+      get_bundle(i)->update();
+    }
   }
 }
 
@@ -321,7 +413,11 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
   NodeMap node_map;
   JointMap joint_map;
 
-  fill_joint_map(joint_map, get_bundle(), from_char->get_bundle());
+  int num_bundles = get_num_bundles();
+  nassertv(from_char->get_num_bundles() == num_bundles);
+  for (int i = 0; i < num_bundles; ++i) {
+    fill_joint_map(joint_map, get_bundle(i), from_char->get_bundle(i));
+  }
 
   GeomVertexMap gvmap;
   GeomJointMap gjmap;

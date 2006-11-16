@@ -213,8 +213,7 @@ safe_to_flatten() const {
 //       Access: Public, Virtual
 //  Description: Returns true if it is generally safe to transform
 //               this particular kind of PandaNode by calling the
-//               xform() method, false otherwise.  For instance, it's
-//               usually a bad idea to attempt to xform a Character.
+//               xform() method, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
 safe_to_transform() const {
@@ -356,15 +355,6 @@ xform(const LMatrix4f &) {
 ////////////////////////////////////////////////////////////////////
 PandaNode *PandaNode::
 combine_with(PandaNode *other) {
-  // This is a little bit broken right now w.r.t. NodePaths, since any
-  // NodePaths attached to the lost node will simply be disconnected.
-  // This isn't the right thing to do; we should collapse those
-  // NodePaths with these NodePaths instead.  To do this properly, we
-  // will need to combine this functionality with that of stealing the
-  // other node's children into one method.  Not too difficult, but
-  // there are more pressing problems to work on right now.
-
-
   // An unadorned PandaNode always combines with any other PandaNodes by
   // yielding completely.  However, if we are actually some fancy PandaNode
   // type that derives from PandaNode but didn't redefine this function, we
@@ -1655,10 +1645,17 @@ replace_node(PandaNode *other) {
 
   // Switch the parents.
   Thread *current_thread = Thread::get_current_thread();
-  Parents parents = other->get_parents();
-  for (int i = 0; i < parents.get_num_parents(); ++i) {
-    PandaNode *parent = parents.get_parent(i);
-    parent->replace_child(other, this, current_thread);
+  Parents other_parents = other->get_parents();
+  for (int i = 0; i < other_parents.get_num_parents(); ++i) {
+    PandaNode *parent = other_parents.get_parent(i);
+    if (find_parent(parent) != -1) {
+      // This node was already a child of this parent; don't change
+      // it.
+      parent->remove_child(other);
+    } else {
+      // This node was not yet a child of this parent; now it is.
+      parent->replace_child(other, this, current_thread);
+    }
   }
 }
 

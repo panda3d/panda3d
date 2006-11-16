@@ -63,7 +63,10 @@ PartBundle(const PartBundle &copy) :
 //               PartBundleNode is created.
 ////////////////////////////////////////////////////////////////////
 PartBundle::
-PartBundle(const string &name) : PartGroup(name) {
+PartBundle(const string &name) : 
+  PartGroup(name),
+  _node(NULL)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -234,7 +237,7 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::update
-//       Access: Public
+//       Access: Published
 //  Description: Updates all the parts in the bundle to reflect the
 //               data for the current frame (as set in each of the
 //               AnimControls).
@@ -269,7 +272,7 @@ update() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::force_update
-//       Access: Public
+//       Access: Published
 //  Description: Updates all the parts in the bundle to reflect the
 //               data for the current frame, whether we believe it
 //               needs it or not.
@@ -481,6 +484,7 @@ CData() {
   _blend_type = anim_blend_type;
   _anim_blend_flag = false;
   _frame_blend_flag = interpolate_frames;
+  _root_xform = LMatrix4f::ident_mat();
   _last_control_set = NULL;
   _net_blend = 0.0f;
   _anim_changed = false;
@@ -494,6 +498,9 @@ CData() {
 PartBundle::CData::
 CData(const PartBundle::CData &copy) :
   _blend_type(copy._blend_type),
+  _anim_blend_flag(copy._anim_blend_flag),
+  _frame_blend_flag(copy._frame_blend_flag),
+  _root_xform(copy._root_xform),
   _last_control_set(copy._last_control_set),
   _blend(copy._blend),
   _net_blend(copy._net_blend),

@@ -106,6 +106,45 @@ get_frame_blend_flag() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::set_root_xform
+//       Access: Published
+//  Description: Specifies the transform matrix which is implicitly
+//               applied at the root of the animated hierarchy.
+////////////////////////////////////////////////////////////////////
+INLINE void PartBundle::
+set_root_xform(const LMatrix4f &root_xform) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+  CDWriter cdata(_cycler);
+  cdata->_root_xform = root_xform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::xform
+//       Access: Published
+//  Description: Applies the indicated transform to the root of the
+//               animated hierarchy.
+////////////////////////////////////////////////////////////////////
+INLINE void PartBundle::
+xform(const LMatrix4f &mat) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+  CDWriter cdata(_cycler);
+  cdata->_root_xform = cdata->_root_xform * mat;
+  do_xform(mat, invert(mat));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::get_root_xform
+//       Access: Published
+//  Description: Returns the transform matrix which is implicitly
+//               applied at the root of the animated hierarchy.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4f &PartBundle::
+get_root_xform() const {
+  CDReader cdata(_cycler);
+  return cdata->_root_xform;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::get_node
 //       Access: Published
 //  Description: Returns the PartBundleNode associated with this

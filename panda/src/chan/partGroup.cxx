@@ -375,6 +375,22 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *,
   return any_changed;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::do_xform
+//       Access: Public, Virtual
+//  Description: Called by PartBundle::xform(), this indicates the
+//               indicated transform is being applied to the root
+//               joint.
+////////////////////////////////////////////////////////////////////
+void PartGroup::
+do_xform(const LMatrix4f &mat, const LMatrix4f &inv_mat) {
+  Children::const_iterator ci;
+
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    (*ci)->do_xform(mat, inv_mat);
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::write_descendants

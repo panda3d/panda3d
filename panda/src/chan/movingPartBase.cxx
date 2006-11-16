@@ -128,7 +128,7 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *parent,
   }
 
   if (parent_changed || needs_update) {
-    any_changed = update_internals(parent, needs_update, parent_changed,
+    any_changed = update_internals(root, parent, needs_update, parent_changed,
                                    current_thread);
   }
 
@@ -158,7 +158,7 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *parent,
 //               result of the update, or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool MovingPartBase::
-update_internals(PartGroup *, bool, bool, Thread *) {
+update_internals(PartBundle *, PartGroup *, bool, bool, Thread *) {
   return true;
 }
 

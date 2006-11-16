@@ -30,6 +30,7 @@
 #include "cycleDataLockedReader.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
+#include "luse.h"
 
 class AnimBundle;
 class PartBundleNode;
@@ -100,6 +101,10 @@ PUBLISHED:
   INLINE void set_frame_blend_flag(bool frame_blend_flag);
   INLINE bool get_frame_blend_flag() const;
 
+  INLINE void set_root_xform(const LMatrix4f &root_xform);
+  INLINE void xform(const LMatrix4f &mat);
+  INLINE const LMatrix4f &get_root_xform() const;
+
   INLINE PartBundleNode *get_node() const;
 
   void clear_control_effects();
@@ -113,13 +118,13 @@ PUBLISHED:
                             int hierarchy_match_flags = 0, 
                             const PartSubset &subset = PartSubset());
 
+  bool update();
+  bool force_update();
+
 public:
   // The following functions aren't really part of the public
   // interface; they're just public so we don't have to declare a
   // bunch of friends.
-
-  bool update();
-  bool force_update();
   virtual void control_activated(AnimControl *control);
 
 private:
@@ -146,6 +151,7 @@ private:
     BlendType _blend_type;
     bool _anim_blend_flag;
     bool _frame_blend_flag;
+    LMatrix4f _root_xform;
     AnimControl *_last_control_set;
     ChannelBlend _blend;
     float _net_blend;

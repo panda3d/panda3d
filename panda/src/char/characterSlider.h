@@ -43,8 +43,9 @@ public:
 
   virtual PartGroup *make_copy() const;
 
-  virtual bool update_internals(PartGroup *parent, bool self_changed,
-                                bool parent_changed, Thread *current_thread);
+  virtual bool update_internals(PartBundle *root, PartGroup *parent, 
+                                bool self_changed, bool parent_changed, 
+                                Thread *current_thread);
 
 private:
   typedef pset<CharacterVertexSlider *> VertexSliders;

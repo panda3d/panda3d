@@ -61,8 +61,9 @@ public:
                          bool anim_changed, Thread *current_thread);
 
   virtual void get_blend_value(const PartBundle *root)=0;
-  virtual bool update_internals(PartGroup *parent, bool self_changed,
-                                bool parent_changed, Thread *current_thread);
+  virtual bool update_internals(PartBundle *root, PartGroup *parent, 
+                                bool self_changed, bool parent_changed, 
+                                Thread *current_thread);
 
 protected:
   MovingPartBase();

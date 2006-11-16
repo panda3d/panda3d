@@ -52,8 +52,7 @@ public:
 
   virtual PandaNode *make_copy() const;
 
-  virtual bool safe_to_transform() const;
-  virtual bool safe_to_flatten_below() const;
+  virtual PandaNode *combine_with(PandaNode *other); 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
   virtual CPT(TransformState)
@@ -63,16 +62,16 @@ public:
                       Thread *current_thread) const;
 
 PUBLISHED:
-  INLINE CharacterJointBundle *get_bundle() const;
+  INLINE CharacterJointBundle *get_bundle(int i) const;
 
   INLINE int get_num_parts() const;
   INLINE PartGroup *get_part(int n) const;
 
-  INLINE CharacterJoint *find_joint(const string &name) const;
-  INLINE CharacterSlider *find_slider(const string &name) const;
+  CharacterJoint *find_joint(const string &name) const;
+  CharacterSlider *find_slider(const string &name) const;
 
-  INLINE void write_parts(ostream &out) const;
-  INLINE void write_part_values(ostream &out) const;
+  void write_parts(ostream &out) const;
+  void write_part_values(ostream &out) const;
 
   void update_to_now();
   void update();

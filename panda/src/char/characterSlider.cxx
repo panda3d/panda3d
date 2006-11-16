@@ -88,7 +88,7 @@ make_copy() const {
 //               result of the update, or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CharacterSlider::
-update_internals(PartGroup *, bool, bool, Thread *current_thread) {
+update_internals(PartBundle *, PartGroup *, bool, bool, Thread *current_thread) {
   // Tell our related CharacterVertexSliders that they now need to
   // recompute themselves.
   VertexSliders::iterator vsi;

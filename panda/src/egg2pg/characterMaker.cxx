@@ -47,7 +47,7 @@ CharacterMaker(EggGroup *root, EggLoader &loader)
   : _loader(loader), _egg_root(root) {
 
   _character_node = new Character(_egg_root->get_name());
-  _bundle = _character_node->get_bundle();
+  _bundle = _character_node->get_bundle(0);
 
   _morph_root = (PartGroup *)NULL;
   _skeleton_root = new PartGroup(_bundle, "<skeleton>");
@@ -261,7 +261,8 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
       LMatrix4f matf = LCAST(float, matd);
 
       CharacterJoint *joint =
-        new CharacterJoint(_character_node, part, egg_group->get_name(), matf);
+        new CharacterJoint(_character_node, _character_node->get_bundle(0),
+                           part, egg_group->get_name(), matf);
       index = _parts.size();
       _parts.push_back(joint);
 
@@ -269,7 +270,12 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
         // If the joint requested an explicit DCS, create a node for
         // it.
         PT(ModelNode) geom_node = new ModelNode(egg_group->get_name());
-        geom_node->set_preserve_transform(ModelNode::PT_local);
+
+        // We don't need to insist on PT_local on this exposed node,
+        // as long as we assume that any operation that transforms
+        // this node will also transform the Character node above it.
+        //geom_node->set_preserve_transform(ModelNode::PT_local);
+
         joint->_geom_node = geom_node.p();
       }
 

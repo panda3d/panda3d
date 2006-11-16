@@ -31,15 +31,16 @@ class Actor(DirectObject, NodePath):
         multiple different LOD's, as well as the multiple different
         pieces of a multipart Actor. """
         
-        def __init__(self, partBundle, partModel):
+        def __init__(self, partBundleNP, partBundle, partModel):
             # We also save the ModelRoot node along with the
             # PartBundle, so that the reference count in the ModelPool
             # will be accurate.
+            self.partBundleNP = partBundleNP
             self.partBundle = partBundle
             self.partModel = partModel
 
         def __repr__(self):
-            return 'Actor.PartDef(%s, %s)' % (repr(self.partBundle), repr(self.partModel))
+            return 'Actor.PartDef(%s, %s)' % (repr(self.partBundleNP), repr(self.partModel))
 
     class AnimDef:
 
@@ -84,7 +85,7 @@ class Actor(DirectObject, NodePath):
             return 'Actor.SubpartDef(%s, %s)' % (repr(self.truePartName), repr(self.subset))
 
     def __init__(self, models=None, anims=None, other=None, copy=1,
-                 lodNode = None):
+                 lodNode = None, flattenable = 1):
         """__init__(self, string | string:string{}, string:string{} |
         string:(string:string{}){}, Actor=None)
         Actor constructor: can be used to create single or multipart
@@ -169,10 +170,23 @@ class Actor(DirectObject, NodePath):
 
             # create base hierarchy
             self.gotName = 0
-            root = ModelNode('actor')
-            root.setPreserveTransform(1)
-            self.assign(NodePath(root))
-            self.setGeomNode(self.attachNewNode(ModelNode('actorGeom')))
+
+            if flattenable:
+                # If we want a flattenable Actor, don't create all
+                # those ModelNodes, and the GeomNode is the same as
+                # the root.
+                root = PandaNode('actor')
+                self.assign(NodePath(root))
+                self.setGeomNode(self)
+
+            else:
+                # A standard Actor has a ModelNode at the root, and
+                # another ModelNode to protect the GeomNode.
+                root = ModelNode('actor')
+                root.setPreserveTransform(1)
+                self.assign(NodePath(root))
+                self.setGeomNode(self.attachNewNode(ModelNode('actorGeom')))
+                
             self.__hasLOD = 0
 
             # load models
@@ -344,7 +358,7 @@ class Actor(DirectObject, NodePath):
         if partDef == None:
             Actor.notify.error("no part named: %s" % (partName))
 
-        self.__doListJoints(0, partDef.partBundle.node().getBundle(),
+        self.__doListJoints(0, partDef.partBundle,
                             subpartDef.subset.isIncludeEmpty(), subpartDef.subset)
 
     def __doListJoints(self, indentLevel, part, isIncluded, subset):
@@ -627,7 +641,7 @@ class Actor(DirectObject, NodePath):
             partDefs = self.__partBundleDict[lodnames[lod]].values()
             for partDef in partDefs:
                 # print "updating: %s" % (partBundle.node())
-                partDef.partBundle.node().updateToNow()
+                partDef.partBundle.update()
         else:
             self.notify.warning('update() - no lod: %d' % lod)
 
@@ -782,6 +796,21 @@ class Actor(DirectObject, NodePath):
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
         partDef = partBundleDict.get(subpartDef.truePartName)
         if partDef != None:
+            return partDef.partBundleNP
+        return None
+
+    def getPartBundle(self, partName, lodName="lodRoot"):
+        """
+        Find the named part in the optional named lod and return its
+        associated PartBundle, or return None if not present
+        """
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if not partBundleDict:
+            Actor.notify.warning("no lod named: %s" % (lodName))
+            return None
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+        partDef = partBundleDict.get(subpartDef.truePartName)
+        if partDef != None:
             return partDef.partBundle
         return None
 
@@ -799,7 +828,7 @@ class Actor(DirectObject, NodePath):
 
         # remove the part
         if (partBundleDict.has_key(partName)):
-            partBundleDict[partName].partBundle.removeNode()
+            partBundleDict[partName].partBundleNP.removeNode()
             del(partBundleDict[partName])
 
         # find the corresponding anim control dict
@@ -824,7 +853,7 @@ class Actor(DirectObject, NodePath):
             return
         partDef = partBundleDict.get(partName)
         if partDef:
-            partDef.partBundle.hide()
+            partDef.partBundleNP.hide()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
 
@@ -839,7 +868,7 @@ class Actor(DirectObject, NodePath):
             return
         partDef = partBundleDict.get(partName)
         if partDef:
-            partDef.partBundle.show()
+            partDef.partBundleNP.show()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
 
@@ -854,8 +883,8 @@ class Actor(DirectObject, NodePath):
             return
         partDef = partBundleDict.get(partName)
         if partDef:
-            partDef.partBundle.show()
-            partDef.partBundle.getChildren().show()
+            partDef.partBundleNP.show()
+            partDef.partBundleNP.getChildren().show()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
 
@@ -877,7 +906,7 @@ class Actor(DirectObject, NodePath):
 
         partDef = partBundleDict.get(subpartDef.truePartName)
         if partDef:
-            bundle = partDef.partBundle.node().getBundle()
+            bundle = partDef.partBundle
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             return None
@@ -912,7 +941,7 @@ class Actor(DirectObject, NodePath):
 
         partDef = partBundleDict.get(subpartDef.truePartName)
         if partDef:
-            bundle = partDef.partBundle.node().getBundle()
+            bundle = partDef.partBundle
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             return None
@@ -946,7 +975,7 @@ class Actor(DirectObject, NodePath):
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
         partDef = partBundleDict.get(subpartDef.truePartName)
         if partDef:
-            bundle = partDef.partBundle.node().getBundle()
+            bundle = partDef.partBundle
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             return None
@@ -979,7 +1008,7 @@ class Actor(DirectObject, NodePath):
             subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
             partDef = partBundleDict.get(subpartDef.truePartName)
             if partDef:
-                joint = partDef.partBundle.find("**/" + jointName)
+                joint = partDef.partBundleNP.find("**/" + jointName)
                 if (joint.isEmpty()):
                     Actor.notify.warning("%s not found!" % (jointName))
                 else:
@@ -999,11 +1028,11 @@ class Actor(DirectObject, NodePath):
             if partDef:
                 anotherPartDef = partBundleDict.get(anotherPartName)
                 if anotherPartDef:
-                    joint = anotherPartDef.partBundle.find("**/" + jointName)
+                    joint = anotherPartDef.partBundleNP.find("**/" + jointName)
                     if (joint.isEmpty()):
                         Actor.notify.warning("%s not found!" % (jointName))
                     else:
-                        partDef.partBundle.reparentTo(joint)
+                        partDef.partBundleNP.reparentTo(joint)
                 else:
                     Actor.notify.warning("no part named %s!" % (anotherPartName))
             else:
@@ -1258,13 +1287,13 @@ class Actor(DirectObject, NodePath):
         for lodName, bundleDict in self.__partBundleDict.items():
             if partName == None:
                 for partDef in bundleDict.values():
-                    bundles.append(partDef.partBundle.node().getBundle())
+                    bundles.append(partDef.partBundle)
 
             else:
                 subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
                 partDef = partBundleDict.get(subpartDef.truePartName)
                 if partDef != None:
-                    bundles.append(partDef.partBundle.node().getBundle())
+                    bundles.append(partDef.partBundle)
                 else:
                     Actor.notify.warning("Couldn't find part: %s" % (partName))
 
@@ -1479,11 +1508,11 @@ class Actor(DirectObject, NodePath):
             raise StandardError, "Could not load Actor model %s" % (modelPath)
 
         if (model.node().isOfType(PartBundleNode.getClassType())):
-            bundle = model
+            bundleNP = model
         else:
-            bundle = model.find("**/+PartBundleNode")
+            bundleNP = model.find("**/+PartBundleNode")
             
-        if (bundle.isEmpty()):
+        if (bundleNP.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))
             model.reparentTo(self.__geomNode)
         else:
@@ -1496,7 +1525,7 @@ class Actor(DirectObject, NodePath):
 
             # Now extract out the PartBundleNode and integrate it with
             # the Actor.
-            self.__prepareBundle(bundle, model, partName, lodName)
+            self.__prepareBundle(bundleNP, model, partName, lodName)
 
             if numAnims != 0:
                 # If the model had some animations, store them in the
@@ -1516,7 +1545,7 @@ class Actor(DirectObject, NodePath):
                     # animControl, but put None in for the filename.
                     self.__animControlDict[lodName][partName][animName] = [None, animControl]
 
-    def __prepareBundle(self, bundle, model,
+    def __prepareBundle(self, bundleNP, model,
                         partName="modelRoot", lodName="lodRoot"):
         assert partName not in self.__subpartDict
 
@@ -1524,11 +1553,11 @@ class Actor(DirectObject, NodePath):
         # haven't already, to make it easier to identify this
         # actor in the scene graph.
         if not self.gotName:
-            self.node().setName(bundle.node().getName())
+            self.node().setName(bundleNP.node().getName())
             self.gotName = 1
 
         # we rename this node to make Actor copying easier
-        bundle.node().setName(Actor.partPrefix + partName)
+        bundleNP.node().setName(Actor.partPrefix + partName)
 
         if (self.__partBundleDict.has_key(lodName) == 0):
             # make a dictionary to store these parts in
@@ -1539,16 +1568,21 @@ class Actor(DirectObject, NodePath):
 
         if (lodName!="lodRoot"):
             # parent to appropriate node under LOD switch
-            bundle.reparentTo(self.__LODNode.find("**/" + str(lodName)))
+            bundleNP.reparentTo(self.__LODNode.find("**/" + str(lodName)))
         else:
-            bundle.reparentTo(self.__geomNode)
+            bundleNP.reparentTo(self.__geomNode)
+
+        node = bundleNP.node()
+        # A model loaded from disk will always have just one bundle.
+        assert(node.getNumBundles() == 1)
+        bundle = node.getBundle(0)
 
         if (needsDict):
-            bundleDict[partName] = Actor.PartDef(bundle, model.node())
+            bundleDict[partName] = Actor.PartDef(bundleNP, bundle, model.node())
             self.__partBundleDict[lodName] = bundleDict
             self.__updateSortedLODNames()
         else:
-            self.__partBundleDict[lodName][partName] = Actor.PartDef(bundle, model.node())
+            self.__partBundleDict[lodName][partName] = Actor.PartDef(bundleNP, bundle, model.node())
 
     def makeSubpart(self, partName, includeJoints, excludeJoints = [],
                     parent="modelRoot"):
@@ -1749,7 +1783,7 @@ class Actor(DirectObject, NodePath):
             return None
         animBundle = (animNode.find("**/+AnimBundleNode").node()).getBundle()
 
-        bundle = self.__partBundleDict[lodName][subpartDef.truePartName].partBundle.node().getBundle()
+        bundle = self.__partBundleDict[lodName][subpartDef.truePartName].partBundle
 
         # Are there any controls requested for joints in this bundle?
         # If so, apply them.
@@ -1795,12 +1829,17 @@ class Actor(DirectObject, NodePath):
                 return None
             for partName, partDef in other.__partBundleDict[lodName].items():
                 model = partDef.partModel.copySubgraph()
+
+                # We can really only copy from a non-flattened avatar.
+                assert partDef.partBundleNP.node().getNumBundles() == 1
                 
                 # find the part in our tree
-                partBundle = partLod.find("**/" + Actor.partPrefix + partName)
-                if (partBundle != None):
+                bundleNP = partLod.find("**/" + Actor.partPrefix + partName)
+                if (bundleNP != None):
                     # store the part bundle
-                    self.__partBundleDict[lodName][partName] = Actor.PartDef(partBundle, model)
+                    assert bundleNP.node().getNumBundles() == 1
+                    bundle = bundleNP.node().getBundle(0)
+                    self.__partBundleDict[lodName][partName] = Actor.PartDef(bundleNP, bundle, model)
                 else:
                     Actor.notify.error("lod: %s has no matching part: %s" %
                                        (lodName, partName))

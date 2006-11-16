@@ -24,6 +24,19 @@
 
 TypeHandle PartBundleNode::_type_handle;
 
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundleNode::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PartBundleNode::
+~PartBundleNode() {
+  Bundles::iterator bi;
+  for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
+    nassertv((*bi)->_node == this);
+    (*bi)->_node = NULL;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundleNode::safe_to_flatten
@@ -40,6 +53,50 @@ safe_to_flatten() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartBundleNode::xform
+//       Access: Public, Virtual
+//  Description: Transforms the contents of this PandaNode by the
+//               indicated matrix, if it means anything to do so.  For
+//               most kinds of PandaNodes, this does nothing.
+////////////////////////////////////////////////////////////////////
+void PartBundleNode::
+xform(const LMatrix4f &mat) {
+  Bundles::iterator bi;
+  for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
+    (*bi)->xform(mat);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundleNode::add_bundle
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PartBundleNode::
+add_bundle(PartBundle *bundle) {
+  nassertv(bundle->_node == NULL);
+  _bundles.push_back(bundle);
+  bundle->_node = this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundleNode::steal_bundles
+//       Access: Protected
+//  Description: Moves the PartBundles from the other node onto this
+//               one.
+////////////////////////////////////////////////////////////////////
+void PartBundleNode::
+steal_bundles(PartBundleNode *other) {
+  Bundles::iterator bi;
+  for (bi = other->_bundles.begin(); bi != other->_bundles.end(); ++bi) {
+    PartBundle *bundle = (*bi);
+    _bundles.push_back(bundle);
+    bundle->_node = this;
+  }
+  other->_bundles.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PartBundleNode::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
@@ -48,7 +105,12 @@ safe_to_flatten() const {
 void PartBundleNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
-  manager->write_pointer(dg, _bundle);
+
+  dg.add_uint16(_bundles.size());
+  Bundles::iterator bi;
+  for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
+    manager->write_pointer(dg, (*bi));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,8 +123,13 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 int PartBundleNode::
 complete_pointers(TypedWritable **p_list, BamReader* manager) {
   int pi = PandaNode::complete_pointers(p_list, manager);
-  _bundle = DCAST(PartBundle, p_list[pi++]);
-  _bundle->_node = this;
+
+  Bundles::iterator bi;
+  for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
+    (*bi) = DCAST(PartBundle, p_list[pi++]);
+    (*bi)->_node = this;
+  }
+
   return pi;
 }
 
@@ -76,5 +143,13 @@ complete_pointers(TypedWritable **p_list, BamReader* manager) {
 void PartBundleNode::
 fillin(DatagramIterator &scan, BamReader* manager) {
   PandaNode::fillin(scan, manager);
-  manager->read_pointer(scan);
+
+  int num_bundles = 1;
+  if (manager->get_file_minor_ver() >= 5) {
+    num_bundles = scan.get_uint16();
+  }
+
+  for (int i = 0; i < num_bundles; ++i) {
+    manager->read_pointer(scan);
+  }
 }

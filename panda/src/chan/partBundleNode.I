@@ -28,10 +28,9 @@
 ////////////////////////////////////////////////////////////////////
 INLINE PartBundleNode::
 PartBundleNode(const string &name, PartBundle *bundle) :
-  PandaNode(name),
-  _bundle(bundle)
+  PandaNode(name)
 {
-  _bundle->_node = this;
+  add_bundle(bundle);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,20 +48,22 @@ PartBundleNode() : PandaNode("") {
 //  Description: Use make_copy() or copy_subgraph() to copy one of
 //               these.  
 //
-//               If the supplied PartBundle is non-null, it is
-//               assigned to the new node; otherwise, a copy is made
-//               of the complete PartGroup hierarchy.
+//               This constructor does not copy the bundle pointers.
 ////////////////////////////////////////////////////////////////////
 INLINE PartBundleNode::
-PartBundleNode(const PartBundleNode &copy, PartBundle *bundle) :
+PartBundleNode(const PartBundleNode &copy) :
   PandaNode(copy)
 {
-  if (bundle != (PartBundle *)NULL) {
-    _bundle = bundle;
-  } else {
-    _bundle = DCAST(PartBundle, copy._bundle->copy_subgraph());
-  }
-  _bundle->_node = this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundleNode::get_num_bundles
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int PartBundleNode::
+get_num_bundles() const {
+  return _bundles.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,6 +72,7 @@ PartBundleNode(const PartBundleNode &copy, PartBundle *bundle) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PartBundle *PartBundleNode::
-get_bundle() const {
-  return _bundle;
+get_bundle(int n) const {
+  nassertr(n >= 0 && n < (int)_bundles.size(), NULL);
+  return _bundles[n];
 }

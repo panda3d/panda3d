@@ -24,11 +24,11 @@
 #include "string_utils.h"
 #include "partGroup.h"
 
-typedef pset<AnimBundleNode *> AnimNodes;
-typedef pmap<string, AnimNodes> Anims;
+typedef pset<AnimBundle *> AnimBundles;
+typedef pmap<string, AnimBundles> Anims;
 
-typedef pset<PartBundleNode *> PartNodes;
-typedef pmap<string, PartNodes> Parts;
+typedef pset<PartBundle *> PartBundles;
+typedef pmap<string, PartBundles> Parts;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -39,16 +39,16 @@ typedef pmap<string, PartNodes> Parts;
 //               sense.
 ////////////////////////////////////////////////////////////////////
 static void
-bind_anims(const PartNodes &parts, const AnimNodes &anims,
+bind_anims(const PartBundles &parts, const AnimBundles &anims,
            AnimControlCollection &controls,
            int hierarchy_match_flags) {
-  PartNodes::const_iterator pni;
+  PartBundles::const_iterator pbi;
 
-  for (pni = parts.begin(); pni != parts.end(); ++pni) {
-    PartBundle *part = (*pni)->get_bundle();
-    AnimNodes::const_iterator ani;
-    for (ani = anims.begin(); ani != anims.end(); ++ani) {
-      AnimBundle *anim = (*ani)->get_bundle();
+  for (pbi = parts.begin(); pbi != parts.end(); ++pbi) {
+    PartBundle *part = (*pbi);
+    AnimBundles::const_iterator abi;
+    for (abi = anims.begin(); abi != anims.end(); ++abi) {
+      AnimBundle *anim = (*abi);
       if (chan_cat.is_info()) {
         chan_cat.info()
           << "Attempting to bind " << *part << " to " << *anim << "\n";
@@ -56,7 +56,7 @@ bind_anims(const PartNodes &parts, const AnimNodes &anims,
 
       PT(AnimControl) control =
         part->bind_anim(anim, hierarchy_match_flags);
-      string name = (*ani)->get_name();
+      string name = (*abi)->get_name();
       if (name.empty()) {
         name = anim->get_name();
       }
@@ -100,10 +100,16 @@ static void
 r_find_bundles(PandaNode *node, Anims &anims, Parts &parts) {
   if (node->is_of_type(AnimBundleNode::get_class_type())) {
     AnimBundleNode *bn = DCAST(AnimBundleNode, node);
-    anims[bn->get_bundle()->get_name()].insert(bn);
+    AnimBundle *bundle = bn->get_bundle();
+    anims[bundle->get_name()].insert(bundle);
+
   } else if (node->is_of_type(PartBundleNode::get_class_type())) {
     PartBundleNode *bn = DCAST(PartBundleNode, node);
-    parts[bn->get_bundle()->get_name()].insert(bn);
+    int num_bundles = bn->get_num_bundles();
+    for (int i = 0; i < num_bundles; ++i) {
+      PartBundle *bundle = bn->get_bundle(i);
+      parts[bundle->get_name()].insert(bundle);
+    }
   }
 
   PandaNode::Children cr = node->get_children();
@@ -127,8 +133,10 @@ void
 auto_bind(PandaNode *root_node, AnimControlCollection &controls,
           int hierarchy_match_flags) {
   // First, locate all the bundles in the subgraph.
-  Anims anims; AnimNodes extraAnims;
-  Parts parts; PartNodes extraParts;
+  Anims anims; 
+  AnimBundles extra_anims;
+  Parts parts; 
+  PartBundles extra_parts;
   r_find_bundles(root_node, anims, parts);
   
   if (chan_cat.is_debug()) {
@@ -178,18 +186,20 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
     if ((*ai).first < (*pi).first) {
       // Here's an anim with no matching parts.
       if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name) {
-        AnimNodes::const_iterator ani;
-        for (ani = (*ai).second.begin(); ani != (*ai).second.end(); ++ani)
-          extraAnims.insert(*ani);
+        AnimBundles::const_iterator abi;
+        for (abi = (*ai).second.begin(); abi != (*ai).second.end(); ++abi) {
+          extra_anims.insert(*abi);
+        }
       }
       ++ai;
 
     } else if ((*pi).first < (*ai).first) {
       // And here's a part with no matching anims.
       if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name) {
-        PartNodes::const_iterator pni;
-        for (pni = (*pi).second.begin(); pni != (*pi).second.end(); ++pni)
-          extraParts.insert(*pni);
+        PartBundles::const_iterator pbi;
+        for (pbi = (*pi).second.begin(); pbi != (*pi).second.end(); ++pbi) {
+          extra_parts.insert(*pbi);
+        }
       }
       ++pi;
 
@@ -211,9 +221,10 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
     while (ai != anims.end()) {
       // Here's an anim with no matching parts.
       if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name) {
-	AnimNodes::const_iterator ani;
-	for (ani = (*ai).second.begin(); ani != (*ai).second.end(); ++ani)
-	  extraAnims.insert(*ani);
+	AnimBundles::const_iterator abi;
+	for (abi = (*ai).second.begin(); abi != (*ai).second.end(); ++abi) {
+	  extra_anims.insert(*abi);
+        }
       }
       ++ai;
     }
@@ -221,14 +232,15 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
     while (pi != parts.end()) {
       // And here's a part with no matching anims.
       if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name) {
-	PartNodes::const_iterator pni;
-	for (pni = (*pi).second.begin(); pni != (*pi).second.end(); ++pni)
-	  extraParts.insert(*pni);
+	PartBundles::const_iterator pbi;
+	for (pbi = (*pi).second.begin(); pbi != (*pi).second.end(); ++pbi) {
+	  extra_parts.insert(*pbi);
+        }
       }
       ++pi;
     }
     
-    bind_anims(extraParts, extraAnims, controls,
+    bind_anims(extra_parts, extra_anims, controls,
                hierarchy_match_flags);
   }
 }

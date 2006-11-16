@@ -27,6 +27,7 @@
 #include "typedef.h"
 #include "thread.h"
 #include "plist.h"
+#include "luse.h"
 
 class AnimControl;
 class AnimGroup;
@@ -89,6 +90,7 @@ public:
   virtual bool do_update(PartBundle *root, const CycleData *root_cdata,
                          PartGroup *parent, bool parent_changed, 
                          bool anim_changed, Thread *current_thread);
+  virtual void do_xform(const LMatrix4f &mat, const LMatrix4f &inv_mat);
 
 protected:
   void write_descendants(ostream &out, int indent_level) const;

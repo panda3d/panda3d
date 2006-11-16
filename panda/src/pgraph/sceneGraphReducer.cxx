@@ -520,15 +520,8 @@ do_flatten_child(PandaNode *grandparent_node, PandaNode *parent_node,
 
   choose_name(new_parent, parent_node, child_node);
 
-  if (new_parent != child_node) {
-    new_parent->steal_children(child_node);
-    new_parent->copy_tags(child_node);
-  }
-
-  if (new_parent != parent_node) {
-    grandparent_node->replace_child(parent_node, new_parent);
-    new_parent->copy_tags(parent_node);
-  }
+  new_parent->replace_node(child_node);
+  new_parent->replace_node(parent_node);
 
   return true;
 }
@@ -564,24 +557,8 @@ do_flatten_siblings(PandaNode *parent_node, PandaNode *child1,
 
   choose_name(new_child, child2, child1);
 
-  if (new_child == child1) {
-    new_child->steal_children(child2);
-    parent_node->remove_child(child2);
-    new_child->copy_tags(child2);
-
-  } else if (new_child == child2) {
-    new_child->steal_children(child1);
-    parent_node->remove_child(child1);
-    new_child->copy_tags(child1);
-
-  } else {
-    new_child->steal_children(child1);
-    new_child->steal_children(child2);
-    parent_node->remove_child(child2);
-    parent_node->replace_child(child1, new_child);
-    new_child->copy_tags(child1);
-    new_child->copy_tags(child2);
-  }
+  new_child->replace_node(child1);
+  new_child->replace_node(child2);
 
   return new_child;
 }

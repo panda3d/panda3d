@@ -25,6 +25,7 @@
 
 #include "pandaNode.h"
 #include "dcast.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PartBundleNode
@@ -38,16 +39,24 @@ public:
 
 protected:
   INLINE PartBundleNode();
-  INLINE PartBundleNode(const PartBundleNode &copy, PartBundle *bundle = NULL);
+  INLINE PartBundleNode(const PartBundleNode &copy);
 
 public:
+  virtual ~PartBundleNode();
   virtual bool safe_to_flatten() const;
+  virtual void xform(const LMatrix4f &mat);
 
 PUBLISHED:
-  INLINE PartBundle *get_bundle() const;
+  INLINE int get_num_bundles() const;
+  INLINE PartBundle *get_bundle(int n) const;
+
+protected:
+  void add_bundle(PartBundle *bundle);
+  void steal_bundles(PartBundleNode *other);
 
 private:
-  PT(PartBundle) _bundle;
+  typedef pvector< PT(PartBundle) > Bundles;
+  Bundles _bundles;
 
 public:
   virtual void write_datagram(BamWriter* manager, Datagram &me);

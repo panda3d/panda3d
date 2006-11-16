@@ -39,14 +39,16 @@ protected:
 
 public:
   CharacterJoint(Character *character,
-                 PartGroup *parent, const string &name,
+                 PartBundle *root, PartGroup *parent, const string &name,
                  const LMatrix4f &initial_value);
   virtual ~CharacterJoint();
 
   virtual PartGroup *make_copy() const;
 
-  virtual bool update_internals(PartGroup *parent, bool self_changed,
-                                bool parent_changed, Thread *current_thread);
+  virtual bool update_internals(PartBundle *root, PartGroup *parent, 
+                                bool self_changed, bool parent_changed, 
+                                Thread *current_thread);
+  virtual void do_xform(const LMatrix4f &mat, const LMatrix4f &inv_mat);
 
 PUBLISHED:
   bool add_net_transform(PandaNode *node);

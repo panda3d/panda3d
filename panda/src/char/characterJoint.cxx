@@ -60,7 +60,7 @@ CharacterJoint(const CharacterJoint &copy) :
 ////////////////////////////////////////////////////////////////////
 CharacterJoint::
 CharacterJoint(Character *character,
-               PartGroup *parent, const string &name,
+               PartBundle *root, PartGroup *parent, const string &name,
                const LMatrix4f &initial_value) :
   MovingPartMatrix(parent, name, initial_value),
   _character(character)
@@ -69,7 +69,7 @@ CharacterJoint(Character *character,
 
   // Now that we've constructed and we're in the tree, let's call
   // update_internals() to get our _net_transform set properly.
-  update_internals(parent, true, false, current_thread);
+  update_internals(root, parent, true, false, current_thread);
 
   // And then compute its inverse.  This is needed for
   // ComputedVertices, during animation.
@@ -114,8 +114,8 @@ make_copy() const {
 //               transforms for this particular joint.
 ////////////////////////////////////////////////////////////////////
 bool CharacterJoint::
-update_internals(PartGroup *parent, bool self_changed, bool parent_changed,
-                 Thread *current_thread) {
+update_internals(PartBundle *root, PartGroup *parent, bool self_changed, 
+                 bool parent_changed, Thread *current_thread) {
 
   nassertr(parent != (PartGroup *)NULL, false);
 
@@ -131,10 +131,10 @@ update_internals(PartGroup *parent, bool self_changed, bool parent_changed,
     }
 
   } else {
-    // The joint *is* a toplevel joint, and the only thing that
-    // affects its net transform is the joint itself.
+    // The joint is a toplevel joint, so therefore it gets its root
+    // transform from the bundle.
     if (self_changed) {
-      _net_transform = _value;
+      _net_transform = _value * root->get_root_xform();
       net_changed = true;
     }
   }
@@ -175,6 +175,21 @@ update_internals(PartGroup *parent, bool self_changed, bool parent_changed,
 
   return self_changed || net_changed;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::do_xform
+//       Access: Public, Virtual
+//  Description: Called by PartBundle::xform(), this indicates the
+//               indicated transform is being applied to the root
+//               joint.
+////////////////////////////////////////////////////////////////////
+void CharacterJoint::
+do_xform(const LMatrix4f &mat, const LMatrix4f &inv_mat) {
+  _initial_net_transform_inverse = inv_mat * _initial_net_transform_inverse;
+
+  MovingPartMatrix::do_xform(mat, inv_mat);
+}
+
 
 
 ////////////////////////////////////////////////////////////////////
