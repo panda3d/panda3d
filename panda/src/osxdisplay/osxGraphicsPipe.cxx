@@ -144,8 +144,8 @@ create_cg_image(const PNMImage &pnm_image) {
       if (is_grayscale) {
         *dp++ = (xelval)(pnm_image.get_gray(xi, yi) * PGM_MAXMAXVAL);
       } else {
-        *dp++ = (xelval)(pnm_image.get_green(xi, yi) * PGM_MAXMAXVAL);
         *dp++ = (xelval)(pnm_image.get_red(xi, yi) * PGM_MAXMAXVAL);
+        *dp++ = (xelval)(pnm_image.get_green(xi, yi) * PGM_MAXMAXVAL);
         *dp++ = (xelval)(pnm_image.get_blue(xi, yi) * PGM_MAXMAXVAL);
       }
       if (has_alpha) {
