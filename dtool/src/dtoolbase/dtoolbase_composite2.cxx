@@ -1,3 +1,4 @@
+#include "memoryBase.cxx"
 #include "mutexDummyImpl.cxx"
 #include "mutexNsprImpl.cxx"
 #include "mutexLinuxImpl.cxx"

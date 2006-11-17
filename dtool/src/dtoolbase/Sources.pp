@@ -43,6 +43,7 @@
     atomicAdjustPosixImpl.cxx \
     atomicAdjustWin32Impl.cxx \
     dtoolbase.cxx \
+    memoryBase.cxx \
     mutexDummyImpl.cxx \
     mutexNsprImpl.cxx \
     mutexLinuxImpl.cxx \
