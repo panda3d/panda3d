@@ -33,15 +33,15 @@
 #include "config_express.h"
 #include <algorithm>
 
+MemoryUsage *MemoryUsage::_global_ptr = (MemoryUsage *)NULL;
+
 // This flag is set true in is_counting() mode to indicate that the
 // malloc operation is coming from C++ operator new or delete.
-static bool _is_cpp_operator = false;
+bool MemoryUsage::_is_cpp_operator = false;
 
 // This flag is used to protect the operator new/delete handlers
 // against recursive entry.
-static bool _recursion_protect = false;
-
-MemoryUsage *MemoryUsage::_global_ptr = (MemoryUsage *)NULL;
+bool MemoryUsage::_recursion_protect = false;
 
 // The cutoff ages, in seconds, for the various buckets in the AgeHistogram.
 double MemoryUsage::AgeHistogram::_cutoff[MemoryUsage::AgeHistogram::num_buckets] = {
@@ -224,18 +224,6 @@ operator_new_handler(size_t size) {
     }
   }
 
-  /*
-  cerr << "new(" << size << ") = " << ptr << "\n";
-  static int counter = 0;
-  static int target = 0;
-
-  ++counter;
-  if (target == 0 && counter == 1000) {
-    target = ConfigVariableInt("target", 10000);
-  }
-  nassertr(counter != target, ptr);
-  */
-
   return ptr;
 }
 
@@ -250,7 +238,6 @@ operator_new_handler(size_t size) {
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
 operator_delete_handler(void *ptr) {
-  //  cerr << "delete(" << ptr << ")\n";
   if (_recursion_protect) {
     if (express_cat.is_spam()) {
       express_cat.spam()

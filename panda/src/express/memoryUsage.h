@@ -167,6 +167,9 @@ private:
 
   bool _track_memory_usage;
   bool _count_memory_usage;
+
+  static bool _is_cpp_operator;
+  static bool _recursion_protect;
 };
 
 #include "memoryUsage.I"

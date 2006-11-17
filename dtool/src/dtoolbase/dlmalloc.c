@@ -5,6 +5,10 @@
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
 
+/* Define this to enable spammy "memmatch" debug output, which can be
+   processed by direct/src/directscripts/memmatch.py. */
+/*#define MEMMATCH 1*/
+
 /*
   This is a version (aka dlmalloc) of malloc/free/realloc written by
   Doug Lea and released to the public domain, as explained at
@@ -2027,6 +2031,10 @@ static struct malloc_state _gm_;
 #define gm                 (&_gm_)
 #define is_global(M)       ((M) == &_gm_)
 #define is_initialized(M)  ((M)->top != 0)
+
+#ifdef MEMMATCH
+static int output_counter = 0;
+#endif
 
 /* -------------------------- system alloc setup ------------------------- */
 
@@ -4153,9 +4161,17 @@ void* dlmalloc(size_t bytes) {
 
   postaction:
     POSTACTION(gm);
+#ifdef MEMMATCH
+    fprintf(stderr, "memmatch %p %08d malloc(%d)\n",
+            mem, ++output_counter, bytes);
+#endif
     return mem;
   }
 
+#ifdef MEMMATCH
+  fprintf(stderr, "memmatch %p %08d malloc(%d)\n",
+          0, ++output_counter, bytes);
+#endif
   return 0;
 }
 
@@ -4165,6 +4181,11 @@ void dlfree(void* mem) {
      free chunks, if they exist, and then place in a bin.  Intermixed
      with special cases for top, dv, mmapped chunks, and usage errors.
   */
+
+#ifdef MEMMATCH
+  fprintf(stderr, "memmatch %p %08d free\n",
+          mem, ++output_counter);
+#endif
 
   if (mem != 0) {
     mchunkptr p  = mem2chunk(mem);

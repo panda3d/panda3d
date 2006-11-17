@@ -24,6 +24,7 @@
 #include "nodeReferenceCount.h"
 #include "pointerTo.h"
 #include "pvector.h"
+#include "memoryBase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PointerToArrayElement

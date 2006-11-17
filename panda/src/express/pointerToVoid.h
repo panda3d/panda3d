@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "pnotify.h"
+#include "memoryBase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PointerToVoid
@@ -33,7 +34,7 @@
 //
 //               This is the base class for PointerToBase<T>.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS PointerToVoid {
+class EXPCL_PANDAEXPRESS PointerToVoid : public MemoryBase {
 protected:
   INLINE PointerToVoid();
   INLINE ~PointerToVoid();

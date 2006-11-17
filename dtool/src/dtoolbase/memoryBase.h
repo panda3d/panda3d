@@ -33,26 +33,24 @@
   inline void *operator new(size_t size) {                   \
     return (*global_operator_new)(size);                     \
   }                                                          \
-  inline void *operator new(size_t size, void *) {           \
-    return (*global_operator_new)(size);                     \
+  inline void *operator new(size_t size, void *ptr) {        \
+    return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
     (*global_operator_delete)(ptr);                          \
   }                                                          \
   inline void operator delete(void *ptr, void *) {           \
-    (*global_operator_delete)(ptr);                          \
   }                                                          \
   inline void *operator new[](size_t size) {                 \
     return (*global_operator_new)(size);                     \
   }                                                          \
-  inline void *operator new[](size_t size, void *) {         \
-    return (*global_operator_new)(size);                     \
+  inline void *operator new[](size_t size, void *ptr) {      \
+    return ptr;                                              \
   }                                                          \
   inline void operator delete[](void *ptr) {                 \
     (*global_operator_delete)(ptr);                          \
   }                                                          \
-  inline void operator delete[](void *ptr, void *) {         \
-    (*global_operator_delete)(ptr);                          \
+  inline void operator delete[](void *, void *) {            \
   }
 
 #else   // USE_MEMORY_NOWRAPPERS
