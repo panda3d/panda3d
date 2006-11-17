@@ -19,6 +19,7 @@
     dtoolbase.h dtoolbase_cc.h dtoolsymbols.h \
     fakestringstream.h \
     indent.I indent.h indent.cxx \
+    memoryBase.h \
     mutexImpl.h \
     mutexDummyImpl.h mutexDummyImpl.I \
     mutexNsprImpl.h mutexNsprImpl.I \
@@ -62,6 +63,7 @@
     deletedChain.h deletedChain.T \
     dtoolbase.h dtoolbase_cc.h dtoolsymbols.h fakestringstream.h \
     indent.I indent.h \
+    memoryBase.h \
     mutexImpl.h \
     mutexDummyImpl.h mutexDummyImpl.I \
     mutexNsprImpl.h mutexNsprImpl.I \

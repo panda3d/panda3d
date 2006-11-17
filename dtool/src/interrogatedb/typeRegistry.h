@@ -24,6 +24,7 @@
 #include "pnotify.h"
 #include "pvector.h"
 #include "pmap.h"
+#include "memoryBase.h"
 
 #include <set>
 
@@ -40,7 +41,7 @@ class TypedObject;
 //               initially, and it should be migrated to shared memory
 //               as soon as shared memory becomes available.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG TypeRegistry {
+class EXPCL_DTOOLCONFIG TypeRegistry : public MemoryBase {
 public:
   // User code shouldn't generally need to call
   // TypeRegistry::register_type() or record_derivation() directly;

@@ -147,6 +147,7 @@ EXPCL_DTOOL void default_operator_delete(void *ptr);
 extern EXPCL_DTOOL void *(*global_operator_new)(size_t size);
 extern EXPCL_DTOOL void (*global_operator_delete)(void *ptr);
 
+#ifdef REDEFINE_GLOBAL_OPERATOR_NEW
 #ifdef GLOBAL_OPERATOR_NEW_EXCEPTIONS
 
 // Redefinitions of operator new/delete, for O1 - O3 builds (!NDEBUG)
@@ -184,6 +185,7 @@ INLINE void operator delete[](void *ptr) {
 }
 
 #endif  // GLOBAL_OPERATOR_NEW_EXCEPTIONS
+#endif  // REDEFINE_GLOBAL_OPERATOR_NEW
 #endif  // USE_MEMORY_NOWRAPPERS
 
 #if defined(USE_TAU) && defined(WIN32)

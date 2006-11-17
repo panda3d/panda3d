@@ -327,6 +327,11 @@
 // available, even if it is unused.
 #defer DO_MEMORY_USAGE $[<= $[OPTIMIZE], 3]
 
+// Should we attempt to override the global new and delete operators?
+// It turns out this is usually a bad idea, but may be useful for
+// development.
+#define REDEFINE_GLOBAL_OPERATOR_NEW
+
 // This option compiles in support for simulating network delay via
 // the min-lag and max-lag prc variables.  It adds a tiny bit of
 // overhead even when it is not activated, so it is typically enabled

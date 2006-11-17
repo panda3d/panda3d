@@ -23,6 +23,7 @@
 
 #include "typeHandle.h"
 #include "register_type.h"
+#include "memoryBase.h"
 
 #include <set>
 
@@ -104,7 +105,7 @@
 //               }
 //               
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG TypedObject {
+class EXPCL_DTOOLCONFIG TypedObject : public MemoryBase {
 public:
   INLINE TypedObject();
   INLINE TypedObject(const TypedObject &copy);

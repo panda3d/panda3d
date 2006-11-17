@@ -23,6 +23,7 @@
 #include "weakReferenceList.h"
 #include "typedObject.h"
 #include "memoryUsage.h"
+#include "memoryBase.h"
 #include "config_express.h"
 #include "atomicAdjust.h"
 #include "numeric_types.h"
@@ -42,7 +43,7 @@
 //               conjunction with PointerTo to automatically delete
 //               objects when the last pointer to them goes away.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS ReferenceCount {
+class EXPCL_PANDAEXPRESS ReferenceCount : public MemoryBase {
 protected:
   INLINE ReferenceCount();
   INLINE ReferenceCount(const ReferenceCount &);

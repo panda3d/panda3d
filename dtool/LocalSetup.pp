@@ -275,6 +275,7 @@ $[cdefine TRACK_IN_INTERPRETER]
 
 /* Define if we want to enable track-memory-usage.  */
 $[cdefine DO_MEMORY_USAGE]
+$[cdefine REDEFINE_GLOBAL_OPERATOR_NEW]
 
 /* Define if we want to enable min-lag and max-lag.  */
 $[cdefine SIMULATE_NETWORK_DELAY]

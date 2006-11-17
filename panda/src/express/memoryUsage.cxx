@@ -603,6 +603,7 @@ ns_record_void_pointer(void *ptr, size_t size) {
     if ((info._flags & MemoryInfo::F_got_void) != 0) {
       express_cat.error()
         << "Void pointer " << (void *)ptr << " recorded twice!\n";
+      nassertv(false);
     }
 
     if (info._freeze_index == _freeze_index) {

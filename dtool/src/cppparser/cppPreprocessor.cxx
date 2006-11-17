@@ -106,7 +106,7 @@ CPPPreprocessor::InputFile::
     // the stream pointer does not call the appropriate global delete
     // function; instead apparently calling the system delete
     // function.  So we call the delete function by hand instead.
-#ifndef USE_MEMORY_NOWRAPPERS
+#if !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     _in->~istream();
     (*global_operator_delete)(_in);
 #else
