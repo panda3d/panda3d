@@ -59,6 +59,10 @@ class DoHierarchy:
         return r
 
     def storeObjectLocation(self, do, parentId, zoneId):
+        if do.__class__.__name__ == 'DistributedToon':
+            if not base.cr.isLive():
+                from direct.showbase.PythonUtil import StackTrace
+                self.notify.info('storeObjectLocation(DistributedToon %s)(%s, %s): %s' % (do.doId, parentId, zoneId, StackTrace().compact()))
         doId = do.doId
         # until we figure out why Toontown is crashing with duplicate Toon generates, don't do the check on LIVE
         try:
@@ -78,6 +82,10 @@ class DoHierarchy:
             do.__class__.__name__, doId, parentId, zoneId))
 
     def deleteObjectLocation(self, do, parentId, zoneId):
+        if do.__class__.__name__ == 'DistributedToon':
+            if not base.cr.isLive():
+                from direct.showbase.PythonUtil import StackTrace
+                self.notify.info('deleteObjectLocation(DistributedToon %s)(%s, %s): %s' % (do.doId, parentId, zoneId, StackTrace().compact()))
         doId = do.doId
         if doId not in self._allDoIds:
             self.notify.error(
