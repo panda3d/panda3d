@@ -177,7 +177,7 @@ class Actor(DirectObject, NodePath):
                 # the root.
                 root = PandaNode('actor')
                 self.assign(NodePath(root))
-                self.setGeomNode(self)
+                self.setGeomNode(NodePath(self))
 
             else:
                 # A standard Actor has a ModelNode at the root, and
@@ -444,6 +444,11 @@ class Actor(DirectObject, NodePath):
         self.__geomNode=None
         if not self.isEmpty():
             self.removeNode()
+
+    def removeNode(self):
+        if self.__geomNode:
+            self.notify.warning("called actor.removeNode() on %s without calling cleanup()" % self.getName())
+        NodePath.removeNode(self)
 
     def flush(self):
         """
