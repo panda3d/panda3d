@@ -22,6 +22,9 @@ class ClientRepository(ClientRepositoryBase):
         self.DOIDnext = 0
         self.DOIDlast = 0
 
+    def isLive(self):
+        return not (__dev__ or launcher.isTestServer())
+
     def handleSetDOIDrange(self, di):
         self.DOIDbase = di.getUint32()
         self.DOIDlast = self.DOIDbase + di.getUint32()
