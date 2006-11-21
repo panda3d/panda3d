@@ -510,6 +510,11 @@ class ClientRepositoryBase(ConnectionRepository):
                 return None
         return worldNP
 
+    def isLive(self):
+        if base.config.GetBool('force-live', 0):
+            return True
+        return not (__dev__ or launcher.isTestServer())
+
     def isLocalId(self, id):
         # By default, no ID's are local.  See also
         # ClientRepository.isLocalId().
