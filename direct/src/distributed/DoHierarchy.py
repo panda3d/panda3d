@@ -60,10 +60,16 @@ class DoHierarchy:
 
     def storeObjectLocation(self, do, parentId, zoneId):
         doId = do.doId
-        if doId in self._allDoIds:
-            self.notify.error(
-                'storeObjectLocation(%s %s) already in _allDoIds; duplicate generate()? or didn\'t clean up previous instance of DO?' % (
-                do.__class__.__name__, do.doId))
+        # until we figure out why Toontown is crashing with duplicate Toon generates, don't do the check on LIVE
+        try:
+            isLive = base.cr.isLive()
+        except:
+            isLive = True
+        if not isLive:
+            if doId in self._allDoIds:
+                self.notify.error(
+                    'storeObjectLocation(%s %s) already in _allDoIds; duplicate generate()? or didn\'t clean up previous instance of DO?' % (
+                    do.__class__.__name__, do.doId))
         parentZoneDict = self._table.setdefault(parentId, {})
         zoneDoSet = parentZoneDict.setdefault(zoneId, set())
         zoneDoSet.add(doId)
