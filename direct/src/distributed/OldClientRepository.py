@@ -1,8 +1,8 @@
-"""ClientRepository module: contains the ClientRepository class"""
+"""OldClientRepository module: contains the OldClientRepository class"""
 
-from ClientRepository import *
+from ClientRepositoryBase import *
 
-class CMUClientRepository(ClientRepository):
+class OldClientRepository(ClientRepositoryBase):
     """
     This is the open-source ClientRepository as provided by CMU.  It
     communicates with the ServerRepository in this same directory.
@@ -13,7 +13,7 @@ class CMUClientRepository(ClientRepository):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
 
     def __init__(self, dcFileNames = None):
-        ClientRepository.__init__(self, dcFileNames = dcFileNames)
+        ClientRepositoryBase.__init__(self, dcFileNames = dcFileNames)
 
         # The DOID allocator.  The CMU LAN server may choose to
         # send us a block of DOIDs.  If it chooses to do so, then we
