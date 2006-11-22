@@ -467,7 +467,7 @@ class ShowBase(DirectObject.DirectObject):
 
         if gsg:
             win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
-                                                 props, flags, gsg)
+                                                 props, flags)
         else:
             win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
                                                  props, flags)
