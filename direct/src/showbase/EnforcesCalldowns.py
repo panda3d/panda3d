@@ -194,6 +194,9 @@ if not EnforcesCalldowns.notActive():
         raised = True
     if raised:
         raise "calldownEnforced.skipCalldown raised when it shouldn't"
+    cetss.EC_destroy()
+    cetsf.EC_destroy()
+    cets.EC_destroy()
     del cetss
     del cetsf
     del cets
