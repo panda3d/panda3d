@@ -321,6 +321,10 @@ class ShowBase(DirectObject.DirectObject):
     def popCTrav(self):
         self.cTrav = self.cTravStack.pop()
 
+    # temp; see ToonBase.py
+    def getExitErrorCode(self):
+        return 0
+
     def printEnvDebugInfo(self):
         """
         Print some information about the environment that we are running
