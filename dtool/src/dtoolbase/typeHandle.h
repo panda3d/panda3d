@@ -151,7 +151,7 @@ INLINE ostream &operator << (ostream &out, TypeHandle type) {
   return out;
 }
 
-ostream &operator << (ostream &out, TypeHandle::MemoryClass mem_class);
+EXPCL_DTOOL ostream &operator << (ostream &out, TypeHandle::MemoryClass mem_class);
 
 // We must include typeRegistry at this point so we can call it from
 // our inline functions.  This is a circular include that is
