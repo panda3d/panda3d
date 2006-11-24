@@ -60,7 +60,7 @@ public:
   typedef TYPENAME allocator<Type>::const_reference const_reference;
   typedef TYPENAME allocator<Type>::size_type size_type;
 
-  INLINE pallocator_single(TypeHandle type_handle) throw();
+  INLINE pallocator_single(TypeHandle type_handle = TypeHandle::none()) throw();
 
   // template member functions in VC++ can only be defined in-class.
   template<class U>
@@ -88,7 +88,7 @@ public:
   typedef TYPENAME allocator<Type>::const_reference const_reference;
   typedef TYPENAME allocator<Type>::size_type size_type;
 
-  INLINE pallocator_array(TypeHandle type_handle) throw();
+  INLINE pallocator_array(TypeHandle type_handle = TypeHandle::none()) throw();
 
   // template member functions in VC++ can only be defined in-class.
   template<class U>
