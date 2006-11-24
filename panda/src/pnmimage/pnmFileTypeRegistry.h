@@ -22,6 +22,8 @@
 #include "pandabase.h"
 
 #include "typedObject.h"
+#include "pmap.h"
+#include "pvector.h"
 
 class PNMFileType;
 

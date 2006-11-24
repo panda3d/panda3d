@@ -249,18 +249,24 @@ ConfigVariableDouble default_keystone
 ConfigureFn(config_gobj) {
   BufferContext::init_type();
   Geom::init_type();
+  GeomPipelineReader::init_type();
   GeomContext::init_type();
   GeomLines::init_type();
   GeomLinestrips::init_type();
   GeomMunger::init_type();
   GeomPoints::init_type();
   GeomPrimitive::init_type();
+  GeomPrimitivePipelineReader::init_type();
   GeomTriangles::init_type();
   GeomTrifans::init_type();
   GeomTristrips::init_type();
   GeomVertexArrayData::init_type();
+  GeomVertexArrayDataPipelineReader::init_type();
+  GeomVertexArrayDataPipelineWriter::init_type();
   GeomVertexArrayFormat::init_type();
   GeomVertexData::init_type();
+  GeomVertexDataPipelineReader::init_type();
+  GeomVertexDataPipelineWriter::init_type();
   GeomVertexFormat::init_type();
   IndexBufferContext::init_type();
   InternalName::init_type();

@@ -44,6 +44,7 @@
 #include "eventStorePandaNode.h"
 #include "fadeLodNode.h"
 #include "fadeLodNodeData.h"
+#include "findApproxLevelEntry.h"
 #include "fog.h"
 #include "fogAttrib.h"
 #include "geomNode.h"
@@ -317,6 +318,7 @@ init_libpgraph() {
   EventStorePandaNode::init_type();
   FadeLODNode::init_type();
   FadeLODNodeData::init_type();
+  FindApproxLevelEntry::init_type();
   Fog::init_type();
   FogAttrib::init_type();
   GeomNode::init_type();
@@ -332,11 +334,11 @@ init_libpgraph() {
   MaterialAttrib::init_type();
   ModelLoadRequest::init_type();
   ModelNode::init_type();
-
   ModelRoot::init_type();
   NodePath::init_type();
   NodePathComponent::init_type();
   PandaNode::init_type();
+  PandaNodePipelineReader::init_type();
   PlaneNode::init_type();
   PointLight::init_type();
   PolylightNode::init_type();

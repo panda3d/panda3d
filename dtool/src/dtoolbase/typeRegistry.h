@@ -21,12 +21,11 @@
 
 #include "dtoolbase.h"
 #include "mutexImpl.h"
-#include "pnotify.h"
-#include "pvector.h"
-#include "pmap.h"
 #include "memoryBase.h"
 
 #include <set>
+#include <map>
+#include <vector>
 
 class TypeHandle;
 class TypeRegistryNode;
@@ -41,7 +40,7 @@ class TypedObject;
 //               initially, and it should be migrated to shared memory
 //               as soon as shared memory becomes available.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG TypeRegistry : public MemoryBase {
+class EXPCL_DTOOL TypeRegistry : public MemoryBase {
 public:
   // User code shouldn't generally need to call
   // TypeRegistry::register_type() or record_derivation() directly;
@@ -61,6 +60,9 @@ PUBLISHED:
   string get_name(TypeHandle type, TypedObject *object) const;
   bool is_derived_from(TypeHandle child, TypeHandle base,
                        TypedObject *child_object);
+
+  int get_num_typehandles();
+  TypeHandle get_typehandle(int n);
 
   int get_num_root_classes();
   TypeHandle get_root_class(int n);
@@ -98,24 +100,26 @@ private:
 
   static INLINE void init_lock();
 
-  typedef pvector<TypeRegistryNode *> HandleRegistry;
+  typedef vector<TypeRegistryNode *> HandleRegistry;
   HandleRegistry _handle_registry;
 
-  typedef phash_map<string, TypeRegistryNode *, string_hash> NameRegistry;
+  typedef map<string, TypeRegistryNode *> NameRegistry;
   NameRegistry _name_registry;
 
-  typedef pvector<TypeRegistryNode *> RootClasses;
+  typedef vector<TypeRegistryNode *> RootClasses;
   RootClasses _root_classes;
 
   bool _derivations_fresh;
 
   static MutexImpl *_lock;
   static TypeRegistry *_global_pointer;
+
+  friend class TypeHandle;
 };
 
 ///////////////////////////////////////////
 // Helper function to allow for "C" interaction into the type system
-extern "C" EXPCL_DTOOLCONFIG  int get_best_parent_from_Set(int id, const std::set<int> &set);
+extern "C" EXPCL_DTOOL  int get_best_parent_from_Set(int id, const std::set<int> &set);
 
 #include "typeRegistry.I"
 

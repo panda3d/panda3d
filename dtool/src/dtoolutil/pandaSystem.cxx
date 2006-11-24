@@ -20,6 +20,7 @@
 #include "pandaVersion.h"
 
 PandaSystem *PandaSystem::_global_ptr = NULL;
+TypeHandle PandaSystem::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::Constructor
@@ -30,7 +31,9 @@ PandaSystem *PandaSystem::_global_ptr = NULL;
 //               PandaSystem.
 ////////////////////////////////////////////////////////////////////
 PandaSystem::
-PandaSystem() {
+PandaSystem() :
+  _systems(get_class_type())
+{
   _system_names_dirty = false;
 }
 
@@ -269,7 +272,7 @@ get_system_tag(const string &system, const string &tag) const {
 ////////////////////////////////////////////////////////////////////
 void PandaSystem::
 add_system(const string &system) {
-  bool inserted = _systems.insert(Systems::value_type(system, SystemTags())).second;
+  bool inserted = _systems.insert(Systems::value_type(system, SystemTags(get_class_type()))).second;
   if (inserted) {
     _system_names_dirty = true;
   }
@@ -285,7 +288,7 @@ void PandaSystem::
 set_system_tag(const string &system, const string &tag,
                const string &value) {
   pair<Systems::iterator, bool> result;
-  result = _systems.insert(Systems::value_type(system, SystemTags()));
+  result = _systems.insert(Systems::value_type(system, SystemTags(get_class_type())));
   if (result.second) {
     _system_names_dirty = true;
   }

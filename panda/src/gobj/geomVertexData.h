@@ -197,6 +197,17 @@ private:
     }
 
     CPT(GeomVertexData) _result;
+    
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "GeomVertexData::CDataCache");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
   };
   typedef CycleDataReader<CDataCache> CDCacheReader;
   typedef CycleDataWriter<CDataCache> CDCacheWriter;
@@ -228,6 +239,17 @@ public:
     CacheKey _key;
 
     PipelineCycler<CDataCache> _cycler;
+    
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "GeomVertexData::CacheEntry");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
   };
   typedef pmap<const CacheKey *, PT(CacheEntry), IndirectLess<CacheKey> > Cache;
 
@@ -255,6 +277,17 @@ private:
     PT(GeomVertexData) _animated_vertices;
     UpdateSeq _animated_vertices_modified;
     UpdateSeq _modified;
+    
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "GeomVertexData::CData");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
   };
 
   PipelineCycler<CData> _cycler;
@@ -298,6 +331,9 @@ public:
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "GeomVertexData",
                   TypedWritableReferenceCount::get_class_type());
+    CDataCache::init_type();
+    CacheEntry::init_type();
+    CData::init_type();
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -399,6 +435,17 @@ private:
   bool _got_array_readers;
   typedef pvector<GeomVertexArrayDataPipelineReader *> ArrayReaders;
   ArrayReaders _array_readers;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "GeomVertexDataPipelineReader");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -437,6 +484,17 @@ private:
   bool _got_array_writers;
   typedef pvector<GeomVertexArrayDataPipelineWriter *> ArrayWriters;
   ArrayWriters _array_writers;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "GeomVertexDataPipelineWriter");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE ostream &operator << (ostream &out, const GeomVertexData &obj);

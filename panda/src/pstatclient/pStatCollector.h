@@ -54,8 +54,10 @@ class EXPCL_PANDA PStatCollector {
 #ifdef DO_PSTATS
 
 private:
-  INLINE PStatCollector();
   INLINE PStatCollector(PStatClient *client, int index);
+
+public:
+  INLINE PStatCollector();
 
 PUBLISHED:
   INLINE PStatCollector(const string &name,
@@ -65,6 +67,8 @@ PUBLISHED:
 
   INLINE PStatCollector(const PStatCollector &copy);
   INLINE void operator = (const PStatCollector &copy);
+
+  INLINE bool is_valid() const;
 
   INLINE bool is_active();
   INLINE bool is_started();

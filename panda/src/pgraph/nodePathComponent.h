@@ -96,6 +96,17 @@ private:
 
     PT(NodePathComponent) _next;
     int _length;
+    
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "NodePathComponent::CData");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
   };
 
   PipelineCycler<CData> _cycler;
@@ -116,6 +127,7 @@ public:
     ReferenceCount::init_type();
     register_type(_type_handle, "NodePathComponent",
                   ReferenceCount::get_class_type());
+    CData::init_type();
   }
   
 private:

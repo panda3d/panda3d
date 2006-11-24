@@ -1,5 +1,5 @@
-// Filename: typeHandle.cxx
-// Created by:  drose (23Oct98)
+// Filename: config_dtoolutil.h
+// Created by:  drose (17Nov06)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "typeHandle.h"
+#ifndef CONFIG_DTOOLUTIL_H
+#define CONFIG_DTOOLUTIL_H
 
-// This is initialized to zero by static initialization.
-TypeHandle TypeHandle::_none;
+#include "dtoolbase.h"
+
+#endif

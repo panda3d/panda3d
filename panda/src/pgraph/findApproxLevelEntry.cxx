@@ -21,6 +21,8 @@
 #include "pandaNode.h"
 #include "indent.h"
 
+TypeHandle FindApproxLevelEntry::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: FindApproxLevelEntry::output
 //       Access: Public

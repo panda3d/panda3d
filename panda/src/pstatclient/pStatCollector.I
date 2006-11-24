@@ -20,21 +20,6 @@
 #ifdef DO_PSTATS
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatCollector::Default Constructor
-//       Access: Private
-//  Description: Normally, this constructor is called only from
-//               PStatClient.  Use one of the constructors below to
-//               create your own Collector.
-////////////////////////////////////////////////////////////////////
-INLINE PStatCollector::
-PStatCollector() : 
-  _client(NULL),
-  _index(0),
-  _level(0.0f)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::Constructor
 //       Access: Private
 //  Description: Normally, this constructor is called only from
@@ -45,6 +30,22 @@ INLINE PStatCollector::
 PStatCollector(PStatClient *client, int index) :
   _client(client),
   _index(index),
+  _level(0.0f)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::Default Constructor
+//       Access: Public
+//  Description: Creates an invalid PStatCollector.  Any attempt to
+//               use this collector will crash messily.
+//
+//               You can reassign it to a different, valid one later.
+////////////////////////////////////////////////////////////////////
+INLINE PStatCollector::
+PStatCollector() : 
+  _client(NULL),
+  _index(0),
   _level(0.0f)
 {
 }
@@ -133,6 +134,19 @@ INLINE void PStatCollector::
 operator = (const PStatCollector &copy) {
   _client = copy._client;
   _index = copy._index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::is_valid
+//       Access: Published
+//  Description: Returns true if collector is valid and may be used,
+//               or false if it was constructed with the default
+//               constructor (in which case any attempt to use it will
+//               crash).
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatCollector::
+is_valid() const {
+  return (_client != (PStatClient *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

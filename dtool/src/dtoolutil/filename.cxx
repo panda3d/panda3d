@@ -51,6 +51,7 @@
 #include <unistd.h>
 #endif
 
+TypeHandle Filename::_type_handle;
 
 #ifdef WIN32
 /* begin Win32-specific code */

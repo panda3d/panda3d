@@ -22,6 +22,7 @@
 #include <memory>
 #include "dtoolbase.h"
 #include "deletedChain.h"
+#include "typeHandle.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : pallocator
@@ -59,11 +60,12 @@ public:
   typedef TYPENAME allocator<Type>::const_reference const_reference;
   typedef TYPENAME allocator<Type>::size_type size_type;
 
-  INLINE pallocator_single() throw();
+  INLINE pallocator_single(TypeHandle type_handle) throw();
 
   // template member functions in VC++ can only be defined in-class.
   template<class U>
-  INLINE pallocator_single(const pallocator_single<U> &) throw() { }
+  INLINE pallocator_single(const pallocator_single<U> &copy) throw() :
+    _type_handle(copy._type_handle) { }
 
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
   INLINE void deallocate(pointer p, size_type n);
@@ -71,6 +73,8 @@ public:
   template<class U> struct rebind { 
     typedef pallocator_single<U> other;
   };
+
+  TypeHandle _type_handle;
 };
 
 template<class Type>
@@ -84,11 +88,12 @@ public:
   typedef TYPENAME allocator<Type>::const_reference const_reference;
   typedef TYPENAME allocator<Type>::size_type size_type;
 
-  INLINE pallocator_array() throw();
+  INLINE pallocator_array(TypeHandle type_handle) throw();
 
   // template member functions in VC++ can only be defined in-class.
   template<class U>
-  INLINE pallocator_array(const pallocator_array<U> &) throw() { }
+  INLINE pallocator_array(const pallocator_array<U> &copy) throw() :
+    _type_handle(copy._type_handle) { }
 
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
   INLINE void deallocate(pointer p, size_type n);
@@ -96,6 +101,8 @@ public:
   template<class U> struct rebind { 
     typedef pallocator_array<U> other;
   };
+
+  TypeHandle _type_handle;
 };
 
 #include "pallocator.T"

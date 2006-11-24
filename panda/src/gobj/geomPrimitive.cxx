@@ -33,6 +33,8 @@
 #include "pStatTimer.h"
 
 TypeHandle GeomPrimitive::_type_handle;
+TypeHandle GeomPrimitive::CData::_type_handle;
+TypeHandle GeomPrimitivePipelineReader::_type_handle;
 
 PStatCollector GeomPrimitive::_decompose_pcollector("*:Munge:Decompose");
 PStatCollector GeomPrimitive::_rotate_pcollector("*:Munge:Rotate");

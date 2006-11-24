@@ -525,6 +525,17 @@ private:
     PT(Down) _down;
     PT(Down) _stashed;
     PT(Up) _up;
+    
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "PandaNode::CData");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
   };
 
   PipelineCycler<CData> _cycler;
@@ -618,6 +629,7 @@ public:
     register_type(_type_handle, "PandaNode",
                   TypedWritable::get_class_type(),
                   ReferenceCount::get_class_type());
+    CData::init_type();
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -700,6 +712,17 @@ private:
   Thread *_current_thread;
 
   const PandaNode::CData *_cdata;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "PandaNodePipelineReader");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE ostream &operator << (ostream &out, const PandaNode &node) {

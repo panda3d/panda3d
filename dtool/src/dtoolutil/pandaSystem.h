@@ -74,6 +74,17 @@ private:
   bool _system_names_dirty;
 
   static PandaSystem *_global_ptr;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "PandaSystem");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 inline ostream &operator << (ostream &out, const PandaSystem &ps) {

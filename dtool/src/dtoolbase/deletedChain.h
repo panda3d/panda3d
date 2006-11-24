@@ -24,6 +24,8 @@
 #include "mutexImpl.h"
 #include "atomicAdjust.h"
 #include "numeric_types.h"
+#include "register_type.h"
+#include "typeHandle.h"
 #include <assert.h>
 
 #ifdef HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
@@ -80,8 +82,8 @@ enum DeletedChainFlag {
 template<class Type>
 class DeletedChain {
 public:
-  INLINE static Type *allocate(size_t size);
-  INLINE static void deallocate(Type *ptr);
+  INLINE static Type *allocate(size_t size, TypeHandle type_handle);
+  INLINE static void deallocate(Type *ptr, TypeHandle type_handle);
 
 private:
   class ObjectNode {
@@ -124,13 +126,13 @@ private:
 // DeletedChain.
 #define ALLOC_DELETED_CHAIN(Type)                            \
   inline void *operator new(size_t size) {                   \
-    return (void *)DeletedChain< Type >::allocate(size);       \
+    return (void *)DeletedChain< Type >::allocate(size, get_type_handle(Type));       \
   }                                                          \
   inline void *operator new(size_t size, void *ptr) {        \
     return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
-    DeletedChain< Type >::deallocate((Type *)ptr);             \
+    DeletedChain< Type >::deallocate((Type *)ptr, get_type_handle(Type));             \
   }                                                          \
   inline void operator delete(void *, void *) {              \
   }

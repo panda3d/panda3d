@@ -334,6 +334,7 @@ init_libdisplay() {
   initialized = true;
 
   DisplayRegion::init_type();
+  DisplayRegionPipelineReader::init_type();
   GraphicsBuffer::init_type();
   GraphicsDevice::init_type();
   GraphicsOutput::init_type();

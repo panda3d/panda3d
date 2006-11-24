@@ -105,7 +105,7 @@
 //               }
 //               
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG TypedObject : public MemoryBase {
+class EXPCL_DTOOL TypedObject : public MemoryBase {
 public:
   INLINE TypedObject();
   INLINE TypedObject(const TypedObject &copy);

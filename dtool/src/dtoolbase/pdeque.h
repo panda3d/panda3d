@@ -21,6 +21,7 @@
 
 #include "dtoolbase.h"
 #include "pallocator.h"
+#include "register_type.h"
 #include <deque>
 
 #ifndef USE_STL_ALLOCATOR
@@ -40,11 +41,12 @@
 template<class Type>
 class pdeque : public deque<Type, pallocator_array<Type> > {
 public:
-  typedef TYPENAME deque<Type, pallocator_array<Type> >::size_type size_type;
-  pdeque() : deque<Type, pallocator_array<Type> >() { }
+  typedef pallocator_array<Type> allocator;
+  typedef TYPENAME deque<Type, allocator>::size_type size_type;
+  pdeque(TypeHandle type_handle = pdeque_type_handle) : deque<Type, pallocator_array<Type> >(allocator(type_handle)) { }
   pdeque(const pdeque<Type> &copy) : deque<Type, pallocator_array<Type> >(copy) { }
-  pdeque(size_type n) : deque<Type, pallocator_array<Type> >(n) { }
-  pdeque(size_type n, const Type &value) : deque<Type, pallocator_array<Type> >(n, value) { }
+  pdeque(size_type n, TypeHandle type_handle = pdeque_type_handle) : deque<Type, pallocator_array<Type> >(n, Type(), allocator(type_handle)) { }
+  pdeque(size_type n, const Type &value, TypeHandle type_handle = pdeque_type_handle) : deque<Type, pallocator_array<Type> >(n, value, allocator(type_handle)) { }
 };
 
 #endif  // USE_STL_ALLOCATOR

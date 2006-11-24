@@ -9,6 +9,7 @@
   
   #define SOURCES \
     checkPandaVersion.h \
+    config_dtoolutil.h \
     executionEnvironment.I executionEnvironment.h filename.I  \
     filename.h load_dso.h dSearchPath.I dSearchPath.h \
     pandaSystem.h pandaVersion.h \
@@ -18,6 +19,7 @@
 
   #define INCLUDED_SOURCES \
     checkPandaVersion.cxx \
+    config_dtoolutil.cxx \
     executionEnvironment.cxx filename.cxx load_dso.cxx  \
     dSearchPath.cxx \
     pandaSystem.cxx \
@@ -26,6 +28,7 @@
 
   #define INSTALL_HEADERS \
     checkPandaVersion.h \
+    config_dtoolutil.h \
     executionEnvironment.I executionEnvironment.h filename.I    \
     filename.h load_dso.h dSearchPath.I dSearchPath.h   \
     pandaSystem.h pandaVersion.h \

@@ -25,6 +25,9 @@
 #include "pset.h"
 
 TypeHandle GeomVertexArrayData::_type_handle;
+TypeHandle GeomVertexArrayData::CData::_type_handle;
+TypeHandle GeomVertexArrayDataPipelineReader::_type_handle;
+TypeHandle GeomVertexArrayDataPipelineWriter::_type_handle;
 
 PT(PStatCollectorForward) GeomVertexArrayData::_vdata_mem_pcollector = new PStatCollectorForward(PStatCollector("Main memory:C++:Vertex Data"));
 

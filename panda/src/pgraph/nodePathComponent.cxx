@@ -24,6 +24,7 @@
 int NodePathComponent::_next_key = 1;
 Mutex NodePathComponent::_key_lock("NodePathComponent::_key_lock");
 TypeHandle NodePathComponent::_type_handle;
+TypeHandle NodePathComponent::CData::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////

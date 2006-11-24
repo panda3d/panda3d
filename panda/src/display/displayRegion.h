@@ -273,6 +273,17 @@ private:
   DisplayRegion *_object;
   Thread *_current_thread;
   const DisplayRegion::CData *_cdata;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "DisplayRegionPipelineReader");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE ostream &operator << (ostream &out, const DisplayRegion &dr);

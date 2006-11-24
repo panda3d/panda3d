@@ -22,6 +22,7 @@
 #include "dtoolbase.h"
 #include "pallocator.h"
 #include "stl_compares.h"
+#include "register_type.h"
 
 #include <map>
 #ifdef HAVE_STL_HASH
@@ -54,11 +55,12 @@
 template<class Key, class Value, class Compare = less<Key> >
 class pmap : public map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > {
 public:
-  typedef map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > base_class;
+  typedef pallocator_single<pair<const Key, Value> > allocator;
+  typedef map<Key, Value, Compare, allocator> base_class;
 
-  pmap() : base_class() { }
+  pmap(TypeHandle type_handle = pmap_type_handle) : base_class(Compare(), allocator(type_handle)) { }
   pmap(const pmap<Key, Value, Compare> &copy) : base_class(copy) { }
-  pmap(const Compare &comp) : base_class(comp) { }
+  pmap(const Compare &comp, TypeHandle type_handle = pmap_type_handle) : base_class(comp, allocator(type_handle)) { }
 
 #ifdef USE_TAU
   TYPENAME base_class::mapped_type &
@@ -123,9 +125,10 @@ public:
 template<class Key, class Value, class Compare = less<Key> >
 class pmultimap : public multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > {
 public:
-  pmultimap() : multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >() { }
-  pmultimap(const pmultimap<Key, Value, Compare> &copy) : multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >(copy) { }
-  pmultimap(const Compare &comp) : multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > >(comp) { }
+  typedef pallocator_single<pair<const Key, Value> > allocator;
+  pmultimap(TypeHandle type_handle = pmap_type_handle) : multimap<Key, Value, Compare, allocator>(Compare(), allocator(type_handle)) { }
+  pmultimap(const pmultimap<Key, Value, Compare> &copy) : multimap<Key, Value, Compare, allocator>(copy) { }
+  pmultimap(const Compare &comp, TypeHandle type_handle = pmap_type_handle) : multimap<Key, Value, Compare, allocator>(comp, allocator(type_handle)) { }
 };
 
 #ifdef HAVE_STL_HASH

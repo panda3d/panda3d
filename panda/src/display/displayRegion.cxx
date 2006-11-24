@@ -25,6 +25,7 @@
 #include "pnmImage.h"
 
 TypeHandle DisplayRegion::_type_handle;
+TypeHandle DisplayRegionPipelineReader::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::Constructor

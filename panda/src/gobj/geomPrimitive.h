@@ -251,6 +251,17 @@ private:
     unsigned int _min_vertex;
     unsigned int _max_vertex;
     
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "GeomPrimitive::CData");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
+
     friend class GeomPrimitive;
   };
 
@@ -280,6 +291,7 @@ public:
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "GeomPrimitive",
                   TypedWritableReferenceCount::get_class_type());
+    CData::init_type();
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -341,6 +353,17 @@ private:
   const GeomPrimitive::CData *_cdata;
 
   GeomVertexArrayDataPipelineReader *_vertices_reader;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "GeomPrimitivePipelineReader");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE ostream &operator << (ostream &out, const GeomPrimitive &obj);

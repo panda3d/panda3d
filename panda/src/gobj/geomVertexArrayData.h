@@ -136,6 +136,17 @@ private:
     UsageHint _usage_hint;
     PTA_uchar _data;
     UpdateSeq _modified;
+    
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "GeomVertexArrayData::CData");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
 
     friend class GeomVertexArrayData;
   };
@@ -170,6 +181,7 @@ public:
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "GeomVertexArrayData",
                   TypedWritableReferenceCount::get_class_type());
+    CData::init_type();
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -234,6 +246,17 @@ public:
   ALLOC_DELETED_CHAIN(GeomVertexArrayDataPipelineReader);
 
   INLINE const GeomVertexArrayData *get_object() const;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "GeomVertexArrayDataPipelineReader");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -257,6 +280,17 @@ public:
   INLINE GeomVertexArrayData *get_object() const;
   PTA_uchar modify_data();
   void set_data(CPTA_uchar data);
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "GeomVertexArrayDataPipelineWriter");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE ostream &operator << (ostream &out, const GeomVertexArrayData &obj);

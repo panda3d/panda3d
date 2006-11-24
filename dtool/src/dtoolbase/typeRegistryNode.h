@@ -23,7 +23,7 @@
 
 #include "typeHandle.h"
 
-#include "pvector.h"
+#include <vector>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TypeRegistryNode
@@ -32,7 +32,7 @@
 //               class; this class is hidden within the TypeRegistry
 //               accessors.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG TypeRegistryNode {
+class EXPCL_DTOOL TypeRegistryNode {
 public:
   TypeRegistryNode(TypeHandle handle, const string &name, TypeHandle &ref);
 
@@ -48,9 +48,13 @@ public:
   TypeHandle _handle;
   string _name;
   TypeHandle &_ref;
-  typedef pvector<TypeRegistryNode *> Classes;
+  typedef vector<TypeRegistryNode *> Classes;
   Classes _parent_classes;
   Classes _child_classes;
+
+#ifdef DO_MEMORY_USAGE
+  size_t _memory_usage[TypeHandle::MC_limit];
+#endif
 
   static bool _paranoid_inheritance;
 
@@ -75,7 +79,7 @@ private:
     SubtreeMaskType _mask;
     SubtreeMaskType _bits;
   };
-  typedef pvector<Inherit> TopInheritance;
+  typedef vector<Inherit> TopInheritance;
 
   void r_build_subtrees(TypeRegistryNode *top, 
                         int bit_count, SubtreeMaskType bits);

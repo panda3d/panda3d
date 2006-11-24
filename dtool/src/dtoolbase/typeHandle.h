@@ -21,7 +21,6 @@
 
 #include "dtoolbase.h"
 #include "typeRegistry.h"
-#include "pnotify.h"
 
 #include <set>
 
@@ -88,8 +87,18 @@ class TypedObject;
 //               ancestry of a particular type may be queried, and the
 //               type name may be retrieved for run-time display.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG TypeHandle {
+class EXPCL_DTOOL TypeHandle {
 PUBLISHED:
+  enum MemoryClass {
+    MC_singleton,
+    MC_array,
+    MC_deleted_chain_active,
+    MC_deleted_chain_inactive,
+
+    MC_limit  // Not a real value, just a placeholder for the maximum
+              // enum value.
+  };
+
   INLINE TypeHandle();
   INLINE TypeHandle(const TypeHandle &copy);
 
@@ -117,6 +126,12 @@ PUBLISHED:
   
   INLINE  int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
 
+#ifdef DO_MEMORY_USAGE
+  size_t get_memory_usage(MemoryClass memory_class) const;
+  void inc_memory_usage(MemoryClass memory_class, size_t size);
+  void dec_memory_usage(MemoryClass memory_class, size_t size);
+#endif
+
   INLINE int get_index() const;
   INLINE void output(ostream &out) const;
   INLINE static TypeHandle none();
@@ -135,6 +150,8 @@ INLINE ostream &operator << (ostream &out, TypeHandle type) {
   type.output(out);
   return out;
 }
+
+ostream &operator << (ostream &out, TypeHandle::MemoryClass mem_class);
 
 // We must include typeRegistry at this point so we can call it from
 // our inline functions.  This is a circular include that is

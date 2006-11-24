@@ -85,13 +85,15 @@ register_dynamic_type(const string &name,
 
 
 // A few system-wide TypeHandles are defined for some basic types.
-extern TypeHandle EXPCL_DTOOLCONFIG long_type_handle;
-extern TypeHandle EXPCL_DTOOLCONFIG int_type_handle;
-extern TypeHandle EXPCL_DTOOLCONFIG short_type_handle;
-extern TypeHandle EXPCL_DTOOLCONFIG char_type_handle;
-extern TypeHandle EXPCL_DTOOLCONFIG bool_type_handle;
-extern TypeHandle EXPCL_DTOOLCONFIG double_type_handle;
-extern TypeHandle EXPCL_DTOOLCONFIG float_type_handle;
+extern TypeHandle EXPCL_DTOOL long_type_handle;
+extern TypeHandle EXPCL_DTOOL int_type_handle;
+extern TypeHandle EXPCL_DTOOL short_type_handle;
+extern TypeHandle EXPCL_DTOOL char_type_handle;
+extern TypeHandle EXPCL_DTOOL uchar_type_handle;
+extern TypeHandle EXPCL_DTOOL bool_type_handle;
+extern TypeHandle EXPCL_DTOOL double_type_handle;
+extern TypeHandle EXPCL_DTOOL float_type_handle;
+extern TypeHandle EXPCL_DTOOL string_type_handle;
 
 extern TypeHandle long_p_type_handle;
 extern TypeHandle int_p_type_handle;
@@ -102,7 +104,13 @@ extern TypeHandle double_p_type_handle;
 extern TypeHandle float_p_type_handle;
 extern TypeHandle void_p_type_handle;
 
-void EXPCL_DTOOLCONFIG init_system_type_handles();
+extern TypeHandle EXPCL_DTOOL pvector_type_handle;
+extern TypeHandle EXPCL_DTOOL pdeque_type_handle;
+extern TypeHandle EXPCL_DTOOL plist_type_handle;
+extern TypeHandle EXPCL_DTOOL pmap_type_handle;
+extern TypeHandle EXPCL_DTOOL pset_type_handle;
+
+void EXPCL_DTOOL init_system_type_handles();
 
 // The following template function and its specializations will return
 // a TypeHandle for any type in the world, from a pointer to that
@@ -134,6 +142,11 @@ INLINE TypeHandle _get_type_handle(const char *) {
 }
 
 template<>
+INLINE TypeHandle _get_type_handle(const unsigned char *) {
+  return uchar_type_handle;
+}
+
+template<>
 INLINE TypeHandle _get_type_handle(const bool *) {
   return bool_type_handle;
 }
@@ -146,6 +159,11 @@ INLINE TypeHandle _get_type_handle(const double *) {
 template<>
 INLINE TypeHandle _get_type_handle(const float *) {
   return float_type_handle;
+}
+
+template<>
+INLINE TypeHandle _get_type_handle(const string *) {
+  return string_type_handle;
 }
 
 template<>

@@ -32,6 +32,10 @@ UpdateSeq Geom::_next_modified;
 PStatCollector Geom::_draw_primitive_setup_pcollector("Draw:Primitive:Setup");
 
 TypeHandle Geom::_type_handle;
+TypeHandle Geom::CDataCache::_type_handle;
+TypeHandle Geom::CacheEntry::_type_handle;
+TypeHandle Geom::CData::_type_handle;
+TypeHandle GeomPipelineReader::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::Constructor

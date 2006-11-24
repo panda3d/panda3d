@@ -31,9 +31,15 @@ MutexImpl *DeletedChain<Type>::_lock;
 ////////////////////////////////////////////////////////////////////
 template<class Type>
 INLINE Type *DeletedChain<Type>::
-allocate(size_t size) {
-  TAU_PROFILE("Type *DeletedChain<Type>::allocate(size_t)", " ", TAU_USER);
+allocate(size_t size, TypeHandle type_handle) {
+  TAU_PROFILE("Type *DeletedChain<Type>::allocate(size_t, TypeHandle)", " ", TAU_USER);
   assert(size <= sizeof(Type));
+
+  size_t alloc_size = sizeof(Type);
+#ifdef USE_DELETEDCHAINFLAG
+  // In development mode, we also need to reserve space for _flag.
+  alloc_size += sizeof(PN_int32);
+#endif  // NDEBUG
 
   TVOLATILE ObjectNode *obj;
 
@@ -41,6 +47,11 @@ allocate(size_t size) {
   init_lock();
   _lock->lock();
   if (_deleted_chain != (ObjectNode *)NULL) {
+#ifdef DO_MEMORY_USAGE
+    type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_inactive, alloc_size);
+    type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
+#endif  // DO_MEMORY_USAGE
+
     obj = _deleted_chain;
     _deleted_chain = _deleted_chain->_next;
     _lock->release();
@@ -59,6 +70,10 @@ allocate(size_t size) {
     TVOLATILE ObjectNode *result = (ObjectNode *)AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_deleted_chain, (void *)obj, (void *)next);
     if (result == obj) {
       // We got it.
+#ifdef DO_MEMORY_USAGE
+      type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_inactive, alloc_size);
+      type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
+#endif  // DO_MEMORY_USAGE
 #ifdef USE_DELETEDCHAINFLAG
       PN_int32 orig_flag = AtomicAdjust::compare_and_exchange(obj->_flag, DCF_deleted, DCF_alive);
       assert(orig_flag == (PN_int32)DCF_deleted);
@@ -74,11 +89,9 @@ allocate(size_t size) {
   // If we get here, the deleted_chain is empty; we have to allocate a
   // new object from the system pool.
 
-  size_t alloc_size = sizeof(Type);
-#ifdef USE_DELETEDCHAINFLAG
-  // In development mode, we also need to reserve space for _flag.
-  alloc_size += sizeof(PN_int32);
-#endif  // NDEBUG
+#ifdef DO_MEMORY_USAGE
+  type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
+#endif  // DO_MEMORY_USAGE
   size = max(alloc_size, sizeof(ObjectNode));
 
 #ifdef DO_MEMORY_USAGE
@@ -100,9 +113,19 @@ allocate(size_t size) {
 ////////////////////////////////////////////////////////////////////
 template<class Type>
 INLINE void DeletedChain<Type>::
-deallocate(Type *ptr) {
-  TAU_PROFILE("void DeletedChain<Type>::deallocate(Type *)", " ", TAU_USER);
+deallocate(Type *ptr, TypeHandle type_handle) {
+  TAU_PROFILE("void DeletedChain<Type>::deallocate(Type *, TypeHandle)", " ", TAU_USER);
   assert(ptr != (Type *)NULL);
+
+#ifdef DO_MEMORY_USAGE
+  size_t alloc_size = sizeof(Type);
+#ifdef USE_DELETEDCHAINFLAG
+  // In development mode, we also need to reserve space for _flag.
+  alloc_size += sizeof(PN_int32);
+#endif  // NDEBUG
+  type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
+  type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_inactive, alloc_size);
+#endif  // DO_MEMORY_USAGE
 
   TVOLATILE ObjectNode *obj = type_to_node(ptr);
 

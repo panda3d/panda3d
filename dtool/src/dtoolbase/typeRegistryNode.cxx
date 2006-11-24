@@ -17,11 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "typeRegistryNode.h"
-#include "config_interrogatedb.h"
 
 #include <algorithm>
 
-bool TypeRegistryNode::_paranoid_inheritance;
+bool TypeRegistryNode::_paranoid_inheritance = false;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistryNode::Constructor
@@ -33,6 +32,9 @@ TypeRegistryNode(TypeHandle handle, const string &name, TypeHandle &ref) :
   _handle(handle), _name(name), _ref(ref) 
 {
   clear_subtree();
+#ifdef DO_MEMORY_USAGE
+  memset(_memory_usage, 0, sizeof(_memory_usage));
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,7 +62,7 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
   // relationship with no additional work.  (See r_build_subtrees()).
 
   if (child->_inherit._top == base->_inherit._top) {
-    nassertr(child->_inherit._top != (TypeRegistryNode *)NULL, false);
+    assert(child->_inherit._top != (TypeRegistryNode *)NULL);
 
     bool derives = 
       Inherit::is_derived_from(child->_inherit, base->_inherit);
@@ -69,7 +71,7 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
     if (_paranoid_inheritance) {
       bool paranoid_derives = check_derived_from(child, base);
       if (derives != paranoid_derives) {
-        interrogatedb_cat.error()
+        cerr
           << "Inheritance test for " << child->_name 
           << " from " << base->_name << " failed!\n"
           << "Result: " << derives << " should have been: "
@@ -80,7 +82,7 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
           << child->_name << " has mask " << child->_inherit._mask
           << " and bits " << child->_inherit._bits << "\n"
           << base->_name << " has mask " << base->_inherit._mask
-        << " and bits " << base->_inherit._bits << "\n"
+          << " and bits " << base->_inherit._bits << "\n"
           << dec;
         return paranoid_derives;
       }
@@ -134,7 +136,7 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
   if (_paranoid_inheritance) {
     bool paranoid_derives = check_derived_from(child, base);
     if (derives != paranoid_derives) {
-      interrogatedb_cat.error()
+      cerr
         << "Inheritance test for " << child->_name 
         << " from " << base->_name << " failed!\n"
         << "Result: " << derives << " should have been: "
@@ -142,7 +144,7 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
         << child->_name << " is a descendent of "
         << child_top->_name << "\n"
         << base->_name << " is a descendent of "
-      << base_top->_name << "\n";
+        << base_top->_name << "\n";
       return paranoid_derives;
     }
   }
@@ -270,7 +272,7 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
   // node itself.
 
   if (top != this && _parent_classes.size() != 1) {
-    nassertv(!_parent_classes.empty());
+    assert(!_parent_classes.empty());
   
     // This class multiply inherits; it therefore begins a new subtree.
 
@@ -284,7 +286,7 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
     if (_visit_count == (int)_parent_classes.size()) {
       // This is the last time we'll visit this node, so continue the
       // recursion now.
-      nassertv(_inherit._top == (TypeRegistryNode *)NULL);
+      assert(_inherit._top == (TypeRegistryNode *)NULL);
       sort(_top_inheritance.begin(), _top_inheritance.end());
       define_subtree();
     }
@@ -292,9 +294,9 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
   } else {
     // This class singly inherits, so this had better be the only time
     // this function is called on it since clear_subtree().
-    nassertv(_inherit._top == (TypeRegistryNode *)NULL);
+    assert(_inherit._top == (TypeRegistryNode *)NULL);
 
-    nassertv(bit_count < (int)(sizeof(SubtreeMaskType) * 8));
+    assert(bit_count < (int)(sizeof(SubtreeMaskType) * 8));
 
     _inherit = Inherit(top, bit_count, bits);
 
@@ -312,13 +314,13 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
     // we can differentiate parent from child.
     more_bits = max(more_bits, 1);
 
-    nassertv(more_bits < (int)(sizeof(SubtreeMaskType) * 8));
+    assert(more_bits < (int)(sizeof(SubtreeMaskType) * 8));
 
     if (bit_count + more_bits > (int)(sizeof(SubtreeMaskType) * 8)) {
       // Too many bits; we need to start a new subtree right here.
       // This node becomes a subtree top node, even though it's not a
       // multiple-inheritance node.
-      nassertv(top != this);
+      assert(top != this);
       _top_inheritance = top->_top_inheritance;
       _top_inheritance.push_back(_inherit);
       sort(_top_inheritance.begin(), _top_inheritance.end());

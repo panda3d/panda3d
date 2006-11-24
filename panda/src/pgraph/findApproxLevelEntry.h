@@ -68,6 +68,17 @@ public:
   int _i;
   FindApproxPath &_approx_path;
   FindApproxLevelEntry *_next;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "FindApproxLevelEntry");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE ostream &

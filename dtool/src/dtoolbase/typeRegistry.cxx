@@ -21,19 +21,11 @@
 #include "typeHandle.h"
 #include "typedObject.h"
 #include "indent.h"
-#include "config_interrogatedb.h"
-#include "configVariableBool.h"
 
 #include <algorithm>
 
-// In general, we use the interrogatedb_cat->info() syntax in this file
-// (instead of interrogatedb_cat.info()), because much of this work is done at
-// static init time, and we must use the arrow syntax to force
-// initialization of the interrogatedb_cat category.
-
 MutexImpl *TypeRegistry::_lock = NULL;
 TypeRegistry *TypeRegistry::_global_pointer = NULL;
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::register_type
@@ -57,7 +49,7 @@ register_type(TypeHandle &type_handle, const string &name) {
     if (&type_handle == &rnode->_ref) {
       // No problem.
       _lock->release();
-      nassertr(rnode->_name == name, false);
+      assert(rnode->_name == name);
       return false;
     }
   }
@@ -68,14 +60,6 @@ register_type(TypeHandle &type_handle, const string &name) {
   if (ri == _name_registry.end()) {
     // The name was not already used; this is the first time this
     // class has been defined.
-
-#ifdef NOTIFY_DEBUG
-    // This code runs at static init time, so cannot use the
-    // interrogatedb_cat.is_spam() syntax.
-    if (interrogatedb_cat->is_spam()) {
-      interrogatedb_cat->spam() << "Registering type " << name << "\n";
-    }
-#endif
 
     TypeHandle new_handle;
     new_handle._index = _handle_registry.size();
@@ -90,11 +74,11 @@ register_type(TypeHandle &type_handle, const string &name) {
     return true;
   }
   TypeRegistryNode *rnode = (*ri).second;
-  nassertr(rnode->_name == (*ri).first, false);
-  nassertr(rnode->_handle._index >= 0 &&
-           rnode->_handle._index < (int)_handle_registry.size(), false);
-  nassertr(_handle_registry[rnode->_handle._index] == rnode, false);
-  nassertr(rnode->_handle._index != 0, false);
+  assert(rnode->_name == (*ri).first);
+  assert(rnode->_handle._index >= 0 &&
+           rnode->_handle._index < (int)_handle_registry.size());
+  assert(_handle_registry[rnode->_handle._index] == rnode);
+  assert(rnode->_handle._index != 0);
 
   // The name was previously used; make sure the type_handle matches.
   if (&type_handle == &rnode->_ref) {
@@ -110,8 +94,7 @@ register_type(TypeHandle &type_handle, const string &name) {
     // at the first call to register_type(), and we got the same
     // reference passed in this time, but now it's different!  Bad
     // juju.
-    interrogatedb_cat->error()
-      << "Reregistering " << name << "\n";
+    cerr << "Reregistering " << name << "\n";
     type_handle == rnode->_handle;
     _lock->release();
     return false;
@@ -119,7 +102,7 @@ register_type(TypeHandle &type_handle, const string &name) {
 
   if (type_handle != rnode->_handle) {
     // Hmm, we seem to have a contradictory type registration!
-    interrogatedb_cat->warning()
+    cerr
       << "Attempt to register type " << name << " more than once!\n";
 
     // This is invalid, but we'll allow it anyway.  It seems to happen
@@ -152,14 +135,6 @@ register_dynamic_type(const string &name) {
   if (ri == _name_registry.end()) {
     // The name was not already used; this is the first time this
     // class has been defined.
-
-#ifdef NOTIFY_DEBUG
-    // This code runs at static init time, so cannot use the
-    // interrogatedb_cat.is_spam() syntax.
-    if (interrogatedb_cat->is_spam()) {
-      interrogatedb_cat->spam() << "Registering type " << name << "\n";
-    }
-#endif
 
     // We must dynamically allocate a new handle so the TypeRegistryNode
     // has something unique to point to.  This doesn't really mean
@@ -196,9 +171,9 @@ record_derivation(TypeHandle child, TypeHandle parent) {
   _lock->lock();
 
   TypeRegistryNode *cnode = look_up(child, NULL);
-  nassertv(cnode != (TypeRegistryNode *)NULL);
+  assert(cnode != (TypeRegistryNode *)NULL);
   TypeRegistryNode *pnode = look_up(parent, NULL);
-  nassertv(pnode != (TypeRegistryNode *)NULL);
+  assert(pnode != (TypeRegistryNode *)NULL);
 
   // First, we'll just run through the list to make sure we hadn't
   // already made this connection.
@@ -233,7 +208,7 @@ record_alternate_name(TypeHandle type, const string &name) {
     NameRegistry::iterator ri =
       _name_registry.insert(NameRegistry::value_type(name, rnode)).first;
     if ((*ri).second != rnode) {
-      interrogatedb_cat.warning()
+      cerr
         << "Name " << name << " already assigned to TypeHandle "
         << rnode->_name << "; cannot reassign to " << type << "\n";
     }
@@ -279,7 +254,7 @@ string TypeRegistry::
 get_name(TypeHandle type, TypedObject *object) const {
   _lock->lock();
   TypeRegistryNode *rnode = look_up(type, object);
-  nassertr(rnode != (TypeRegistryNode *)NULL, "");
+  assert(rnode != (TypeRegistryNode *)NULL);
   string name = rnode->_name;
   _lock->release();
 
@@ -311,13 +286,49 @@ is_derived_from(TypeHandle child, TypeHandle base,
 
   const TypeRegistryNode *child_node = look_up(child, child_object);
   const TypeRegistryNode *base_node = look_up(base, (TypedObject *)NULL);
-  nassertr(child_node != (TypeRegistryNode *)NULL &&
-           base_node != (TypeRegistryNode *)NULL, false);
+  assert(child_node != (TypeRegistryNode *)NULL &&
+         base_node != (TypeRegistryNode *)NULL);
   freshen_derivations();
 
   bool result = TypeRegistryNode::is_derived_from(child_node, base_node);
   _lock->release();
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeRegistry::get_num_type_handles
+//       Access: Public
+//  Description: Returns the total number of unique TypeHandles in the
+//               system.
+////////////////////////////////////////////////////////////////////
+int TypeRegistry::
+get_num_typehandles() {
+  _lock->lock();
+  int num_types = (int)_handle_registry.size();
+  _lock->release();
+  return num_types;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeRegistry::get_typehandle
+//       Access: Public
+//  Description: Returns the nth TypeHandle in the system.  See
+//               get_num_typehandles().
+////////////////////////////////////////////////////////////////////
+TypeHandle TypeRegistry::
+get_typehandle(int n) {
+  _lock->lock();
+  TypeRegistryNode *rnode = NULL;
+  if (n >= 0 && n < (int)_handle_registry.size()) {
+    rnode = _handle_registry[n];
+  }
+  _lock->release();
+
+  if (rnode != (TypeRegistryNode *)NULL) {
+    return rnode->_handle;
+  }
+
+  return TypeHandle::none();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -347,7 +358,7 @@ get_root_class(int n) {
   _lock->lock();
   freshen_derivations();
   TypeHandle handle;
-  if (n >= 0 && n < get_num_root_classes()) {
+  if (n >= 0 && n < (int)_root_classes.size()) {
     handle = _root_classes[n]->_handle;
   }
   _lock->release();
@@ -375,7 +386,7 @@ int TypeRegistry::
 get_num_parent_classes(TypeHandle child, TypedObject *child_object) const {
   _lock->lock();
   TypeRegistryNode *rnode = look_up(child, child_object);
-  nassertr(rnode != (TypeRegistryNode *)NULL, 0);
+  assert(rnode != (TypeRegistryNode *)NULL);
   int num_parents = rnode->_parent_classes.size();
   _lock->release();
   return num_parents;
@@ -393,7 +404,7 @@ get_parent_class(TypeHandle child, int index) const {
   _lock->lock();
   TypeHandle handle;
   TypeRegistryNode *rnode = look_up(child, (TypedObject *)NULL);
-  nassertr(rnode != (TypeRegistryNode *)NULL, TypeHandle::none());
+  assert(rnode != (TypeRegistryNode *)NULL);
   if (index >= 0 && index < (int)rnode->_parent_classes.size()) {
     handle = rnode->_parent_classes[index]->_handle;
   }
@@ -417,7 +428,7 @@ int TypeRegistry::
 get_num_child_classes(TypeHandle child, TypedObject *child_object) const {
   _lock->lock();
   TypeRegistryNode *rnode = look_up(child, child_object);
-  nassertr(rnode != (TypeRegistryNode *)NULL, 0);
+  assert(rnode != (TypeRegistryNode *)NULL);
   int num_children = rnode->_child_classes.size();
   _lock->release();
   return num_children;
@@ -435,7 +446,7 @@ get_child_class(TypeHandle child, int index) const {
   _lock->lock();
   TypeHandle handle;
   TypeRegistryNode *rnode = look_up(child, (TypedObject *)NULL);
-  nassertr(rnode != (TypeRegistryNode *)NULL, TypeHandle::none());
+  assert(rnode != (TypeRegistryNode *)NULL);
   if (index >= 0 && index < (int)rnode->_child_classes.size()) {
     handle = rnode->_child_classes[index]->_handle;
   }
@@ -464,8 +475,8 @@ get_parent_towards(TypeHandle child, TypeHandle base,
   TypeHandle handle;
   const TypeRegistryNode *child_node = look_up(child, child_object);
   const TypeRegistryNode *base_node = look_up(base, NULL);
-  nassertr(child_node != (TypeRegistryNode *)NULL && 
-           base_node != (TypeRegistryNode *)NULL, TypeHandle::none());
+  assert(child_node != (TypeRegistryNode *)NULL && 
+         base_node != (TypeRegistryNode *)NULL);
   freshen_derivations();
   handle = TypeRegistryNode::get_parent_towards(child_node, base_node);
   _lock->release();
@@ -495,8 +506,7 @@ reregister_types() {
        ++ri) {
     TypeRegistryNode *rnode = (*ri);
     if (rnode != NULL && rnode->_handle != rnode->_ref) {
-      interrogatedb_cat->warning()
-        << "Reregistering " << rnode->_name << "\n";
+      cerr << "Reregistering " << rnode->_name << "\n";
     }
   }
   _lock->release();
@@ -538,12 +548,6 @@ ptr() {
   init_lock();
   _lock->lock();
   if (_global_pointer == NULL) {
-#ifdef NOTIFY_DEBUG
-    if (interrogatedb_cat->is_spam()) {
-      interrogatedb_cat->spam()
-        << "Creating global TypeRegistry\n";
-    }
-#endif
     init_global_pointer();
   }
   _lock->release();
@@ -574,16 +578,6 @@ TypeRegistry() {
 void TypeRegistry::
 init_global_pointer() {
   _global_pointer = new TypeRegistry;
-
-  // Now that we've created the TypeRegistry, we can assign this
-  // Config variable.
-
-  ConfigVariableBool paranoid_inheritance
-    ("paranoid-inheritance", true,
-     PRC_DESC("Set this to true to double-check the test for inheritance of "
-              "TypeHandles, e.g. via is_of_type().  This has no effect if NDEBUG "
-              "is defined."));
-  TypeRegistryNode::_paranoid_inheritance = paranoid_inheritance;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -595,13 +589,6 @@ init_global_pointer() {
 ////////////////////////////////////////////////////////////////////
 void TypeRegistry::
 rebuild_derivations() {
-#ifdef NOTIFY_DEBUG
-  if (interrogatedb_cat->is_debug()) {
-    interrogatedb_cat->debug()
-      << "Rebuilding derivation tree.\n";
-  }
-#endif
-
   // First, remove all of the old data from the last type
   // rebuild_derivations() was called.
   _root_classes.clear();
@@ -678,42 +665,42 @@ look_up(TypeHandle handle, TypedObject *object) const {
       handle = object->force_init_type();
       if (handle._index == 0) {
         // Strange.
-        interrogatedb_cat->error()
+        cerr
           << "Unable to force_init_type() on unregistered TypeHandle.\n";
-        nassertr(false, NULL);
+        return NULL;
       }
       if (handle == object->get_type()) {
         // Problem solved!
-        interrogatedb_cat->warning()
+        cerr
           << "Type " << handle << " was unregistered!\n";
       } else {
         // No good; it looks like the TypeHandle belongs to a class
         // that defined get_type(), but didn't define
         // force_init_type().
-        interrogatedb_cat->error()
+        cerr
           << "Attempt to reference unregistered TypeHandle.  Type is of some\n"
           << "class derived from " << handle << " that doesn't define a good\n"
           << "force_init_type() method.\n";
-        nassertr(false, NULL);
+        return NULL;
       }
 
     } else {
       // We don't have a TypedObject pointer, so there's nothing we
       // can do about it.
-      interrogatedb_cat->error()
+      cerr
         << "Attempt to reference unregistered TypeHandle!\n"
         << "Registered TypeHandles are:\n";
-      write(interrogatedb_cat->error(false));
-      nassertr(false, NULL);
+      write(cerr);
+      return NULL;
     }
   }
 
   if (handle._index < 0 ||
       handle._index >= (int)_handle_registry.size()) {
-    interrogatedb_cat->fatal()
+    cerr
       << "Invalid TypeHandle index " << handle._index
       << "!  Is memory corrupt?\n";
-    nassertr(false, NULL);
+    return NULL;
   }
 #endif  // NDEBUG
 
@@ -724,34 +711,34 @@ look_up(TypeHandle handle, TypedObject *object) const {
 //     Function: find_type_by_id
 //       Access: Private
 ///////////////////////////////////////////////////////////////////
-TypeHandle  TypeRegistry::find_type_by_id(int id) const
-{
-  if (id < 0 ||id >= (int)_handle_registry.size()) 
-  {
-    interrogatedb_cat->fatal()
+TypeHandle TypeRegistry::
+find_type_by_id(int id) const {
+  if (id < 0 ||id >= (int)_handle_registry.size()) {
+    cerr
       << "Invalid TypeHandle index " << id
       << "!  Is memory corrupt?\n";
-    //nassertr(false, NULL);
     return TypeHandle::none();
   }
 
-    return _handle_registry[id]->_handle;
-};
+  return _handle_registry[id]->_handle;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_best_parent_from_Set
 //       Access: Private
 ///////////////////////////////////////////////////////////////////
-extern "C" int get_best_parent_from_Set(int id, const std::set<int> &set)
-{
-    // most common case..
-    if(set.find(id) != set.end())
-        return id;
+extern "C" int 
+get_best_parent_from_Set(int id, const std::set<int> &set) {
+  // most common case..
+  if (set.find(id) != set.end()) {
+    return id;
+  }
 
-    TypeHandle th = TypeRegistry::ptr()->find_type_by_id(id);
-    if(th == TypeHandle::none())
-        return -1;
+  TypeHandle th = TypeRegistry::ptr()->find_type_by_id(id);
+  if (th == TypeHandle::none()) {
+    return -1;
+  }
 
-    return th.get_best_parent_from_Set(set);
+  return th.get_best_parent_from_Set(set);
 }
 

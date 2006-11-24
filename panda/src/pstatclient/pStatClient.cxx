@@ -42,6 +42,16 @@ PStatCollector PStatClient::_clock_busy_wait_pcollector("Wait:Clock Wait:Spin");
 PStatClient *PStatClient::_global_pstats = NULL;
 
 
+// This class is used to report memory usage per TypeHandle.  We
+// create one of these for each TypeHandle in the system.
+class TypeHandleCollector {
+public:
+  PStatCollector _mem_class[TypeHandle::MC_limit];
+};
+typedef pvector<TypeHandleCollector> TypeHandleCols;
+static TypeHandleCols type_handle_cols;
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::PerThreadData::Constructor
 //       Access: Public
@@ -200,16 +210,44 @@ main_tick() {
   // know about PStatClient.
 
 #ifdef DO_MEMORY_USAGE
-  if (MemoryUsage::has_total_size()) {
-    _total_size_pcollector.set_level(MemoryUsage::get_total_size());
+  if (is_connected()) {
+    if (MemoryUsage::has_total_size()) {
+      _total_size_pcollector.set_level(MemoryUsage::get_total_size());
+    }
+    if (MemoryUsage::has_cpp_size()) {
+      _cpp_size_pcollector.set_level(MemoryUsage::get_cpp_size());
+    }
+    if (MemoryUsage::has_interpreter_size()) {
+      _interpreter_size_pcollector.set_level(MemoryUsage::get_interpreter_size());
+    }
+    
+    TypeRegistry *type_reg = TypeRegistry::ptr();
+    int num_typehandles = type_reg->get_num_typehandles();
+    
+    while ((int)type_handle_cols.size() < num_typehandles) {
+      type_handle_cols.push_back(TypeHandleCollector());
+    }
+    
+    for (int i = 0; i < num_typehandles; ++i) {
+      TypeHandle type = type_reg->get_typehandle(i);
+      for (int mi = 0; mi < (int)TypeHandle::MC_limit; ++mi) {
+        TypeHandle::MemoryClass mc = (TypeHandle::MemoryClass)mi;
+        PStatCollector &col = type_handle_cols[i]._mem_class[mi];
+        size_t usage = type.get_memory_usage(mc);
+        if (usage != 0 || col.is_valid()) {
+          // We have some memory usage on this TypeHandle.  See if we
+          // have a collector for it.
+          if (!col.is_valid()) {
+            ostringstream strm;
+            strm << "Main memory:C++:" << type << ":" << mc;
+            col = PStatCollector(strm.str());
+          }
+          col.set_level(usage);
+        }
+      }
+    }
   }
-  if (MemoryUsage::has_cpp_size()) {
-    _cpp_size_pcollector.set_level(MemoryUsage::get_cpp_size());
-  }
-  if (MemoryUsage::has_interpreter_size()) {
-    _interpreter_size_pcollector.set_level(MemoryUsage::get_interpreter_size());
-  }
-#endif
+#endif  // DO_MEMORY_USAGE
 
   get_global_pstats()->client_main_tick();
 }  

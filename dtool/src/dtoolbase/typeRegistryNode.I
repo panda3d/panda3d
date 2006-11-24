@@ -37,14 +37,14 @@ Inherit() {
 INLINE TypeRegistryNode::Inherit::
 Inherit(TypeRegistryNode *top, int bit_count,
         TypeRegistryNode::SubtreeMaskType bits) {
-  nassertv(bit_count < (int)(sizeof(SubtreeMaskType) * 8));
+  assert(bit_count < (int)(sizeof(SubtreeMaskType) * 8));
   _top = top;
 
   // Build a bitmask consisting of bit_count low-order bits.
   _mask = ((SubtreeMaskType)1 << bit_count) - 1;
 
   // There shouldn't be anything but zeroes after bit_count bits.
-  nassertv((bits & ~_mask) == 0);
+  assert((bits & ~_mask) == 0);
   _bits = bits;
 }
 
@@ -94,7 +94,7 @@ operator < (const Inherit &other) const {
 INLINE bool TypeRegistryNode::Inherit::
 is_derived_from(const TypeRegistryNode::Inherit &child, 
                 const TypeRegistryNode::Inherit &base) {
-  nassertr(child._top == base._top, false);
+  assert(child._top == base._top);
 
   // Child derives from base if and only if its subtree mask contains
   // more bits (or the same number of bits), and the n low-order

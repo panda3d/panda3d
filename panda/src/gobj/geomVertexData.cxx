@@ -28,6 +28,11 @@
 #include "indent.h"
 
 TypeHandle GeomVertexData::_type_handle;
+TypeHandle GeomVertexData::CDataCache::_type_handle;
+TypeHandle GeomVertexData::CacheEntry::_type_handle;
+TypeHandle GeomVertexData::CData::_type_handle;
+TypeHandle GeomVertexDataPipelineReader::_type_handle;
+TypeHandle GeomVertexDataPipelineWriter::_type_handle;
 
 PStatCollector GeomVertexData::_convert_pcollector("*:Munge:Convert");
 PStatCollector GeomVertexData::_scale_color_pcollector("*:Munge:Scale color");

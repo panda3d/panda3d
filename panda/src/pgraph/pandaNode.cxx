@@ -39,6 +39,8 @@ DrawMask PandaNode::_overall_bit = DrawMask::bit(31);
 PStatCollector PandaNode::_reset_prev_pcollector("App:Collisions:Reset");
 
 TypeHandle PandaNode::_type_handle;
+TypeHandle PandaNode::CData::_type_handle;
+TypeHandle PandaNodePipelineReader::_type_handle;
 
 //
 // There are two different interfaces here for making and breaking

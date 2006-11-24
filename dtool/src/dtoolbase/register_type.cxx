@@ -23,9 +23,11 @@ TypeHandle long_type_handle;
 TypeHandle int_type_handle;
 TypeHandle short_type_handle;
 TypeHandle char_type_handle;
+TypeHandle uchar_type_handle;
 TypeHandle bool_type_handle;
 TypeHandle double_type_handle;
 TypeHandle float_type_handle;
+TypeHandle string_type_handle;
 
 TypeHandle long_p_type_handle;
 TypeHandle int_p_type_handle;
@@ -36,6 +38,12 @@ TypeHandle double_p_type_handle;
 TypeHandle float_p_type_handle;
 TypeHandle void_p_type_handle;
 
+TypeHandle pvector_type_handle;
+TypeHandle pdeque_type_handle;
+TypeHandle plist_type_handle;
+TypeHandle pmap_type_handle;
+TypeHandle pset_type_handle;
+
 void init_system_type_handles() {
   static bool done = false;
   if (!done) {
@@ -44,9 +52,11 @@ void init_system_type_handles() {
     register_type(int_type_handle, "int");
     register_type(short_type_handle, "short");
     register_type(char_type_handle, "char");
+    register_type(uchar_type_handle, "uchar");
     register_type(bool_type_handle, "bool");
     register_type(double_type_handle, "double");
     register_type(float_type_handle, "float");
+    register_type(string_type_handle, "string");
 
     register_type(int_p_type_handle, "int*");
     register_type(short_p_type_handle, "short*");
@@ -55,6 +65,12 @@ void init_system_type_handles() {
     register_type(double_p_type_handle, "double*");
     register_type(float_p_type_handle, "float*");
     register_type(void_p_type_handle, "void*");
+
+    register_type(pvector_type_handle, "pvector");
+    register_type(pdeque_type_handle, "pdeque");
+    register_type(plist_type_handle, "plist");
+    register_type(pmap_type_handle, "pmap");
+    register_type(pset_type_handle, "pset");
   }
 }
 

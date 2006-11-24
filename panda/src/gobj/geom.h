@@ -195,6 +195,17 @@ private:
     Geom *_source;  // A back pointer to the containing Geom
     const Geom *_geom_result;  // ref-counted if not NULL and not same as _source
     CPT(GeomVertexData) _data_result;
+    
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "Geom::CDataCache");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
   };
   typedef CycleDataReader<CDataCache> CDCacheReader;
   typedef CycleDataWriter<CDataCache> CDCacheWriter;
@@ -229,6 +240,17 @@ public:
     CacheKey _key;
 
     PipelineCycler<CDataCache> _cycler;
+    
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "Geom::CacheEntry");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
   };
   typedef pmap<const CacheKey *, PT(CacheEntry), IndirectLess<CacheKey> > Cache;
 
@@ -259,6 +281,17 @@ private:
     CPT(BoundingVolume) _internal_bounds;
     bool _internal_bounds_stale;
     CPT(BoundingVolume) _user_bounds;
+    
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "Geom::CData");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
   };
  
   PipelineCycler<CData> _cycler;
@@ -297,6 +330,9 @@ public:
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "Geom",
                   TypedWritableReferenceCount::get_class_type());
+    CDataCache::init_type();
+    CacheEntry::init_type();
+    CData::init_type();
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -353,6 +389,17 @@ private:
   const Geom *_object;
   Thread *_current_thread;
   const Geom::CData *_cdata;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "GeomPipelineReader");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE ostream &operator << (ostream &out, const Geom &obj);

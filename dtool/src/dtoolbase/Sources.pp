@@ -29,8 +29,13 @@
     mutexSpinlockImpl.h mutexSpinlockImpl.I \
     nearly_zero.h \
     numeric_types.h \
+    register_type.I register_type.h \
     selectThreadImpl.h \
     stl_compares.I stl_compares.h \
+    typeHandle.I typeHandle.h \
+    typeRegistry.I typeRegistry.h \
+    typeRegistryNode.I typeRegistryNode.h \
+    typedObject.I typedObject.h \
     pallocator.T pallocator.h \
     pdeque.h plist.h pmap.h pset.h pvector.h \
     dlmalloc.c lookup3.h lookup3.c
@@ -49,7 +54,11 @@
     mutexLinuxImpl.cxx \
     mutexPosixImpl.cxx \
     mutexWin32Impl.cxx \
-    mutexSpinlockImpl.cxx
+    mutexSpinlockImpl.cxx \
+    register_type.cxx \
+    typeHandle.cxx \
+    typeRegistry.cxx typeRegistryNode.cxx \
+    typedObject.cxx
 
   #define INSTALL_HEADERS \
     addHash.I addHash.h \
@@ -74,8 +83,13 @@
     mutexSpinlockImpl.h mutexSpinlockImpl.I \
     nearly_zero.h \
     numeric_types.h \
+    register_type.I register_type.h \
     selectThreadImpl.h \
     stl_compares.I stl_compares.h \
+    typeHandle.I typeHandle.h \
+    typeRegistry.I typeRegistry.h \
+    typeRegistryNode.I typeRegistryNode.h \
+    typedObject.I typedObject.h \
     pallocator.T pallocator.h \
     pdeque.h plist.h pmap.h pset.h pvector.h \
     lookup3.h

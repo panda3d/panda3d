@@ -24,6 +24,7 @@
 #include "numeric_types.h"
 #include "typedObject.h"
 #include "indent.h"
+#include "pnotify.h"
 
 #include "checksumHashGenerator.h"
 

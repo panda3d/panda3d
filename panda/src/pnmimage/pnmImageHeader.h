@@ -25,6 +25,9 @@
 
 #include "typedObject.h"
 #include "filename.h"
+#include "pnotify.h"
+#include "pmap.h"
+#include "pvector.h"
 
 class PNMFileType;
 class PNMReader;

@@ -20,7 +20,8 @@
 #define FILENAME_H
 
 #include "dtoolbase.h"
-
+#include "typeHandle.h"
+#include "register_type.h"
 #include "vector_string.h"
 
 #include <assert.h>
@@ -216,6 +217,17 @@ protected:
   size_t _hash_end;
 
   int _flags;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "Filename");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE ostream &operator << (ostream &out, const Filename &n) {

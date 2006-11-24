@@ -5,3 +5,4 @@
 #include "atomicAdjustPosixImpl.cxx"
 #include "atomicAdjustWin32Impl.cxx"
 #include "dtoolbase.cxx"
+#include "memoryBase.cxx"
