@@ -127,7 +127,7 @@
 #define tau_ipath $[TAU_ROOT]/include
 #define tau_cflags /DPROFILING_ON /DTAU_STDCXXLIB /DTAU_USE_C_API
 #define tau_lpath $[TAU_ROOT]/lib/VC7
-#define tau_libs tau-profile.lib
+#define tau_libs pytau.lib
 #else  // direct_tau
 #define tau_ipath
 #define tau_cflags
