@@ -232,7 +232,7 @@ PN_uint32 hashlittle( const void *key, size_t length, PN_uint32 initval)
 
   u.ptr = key;
   if (HASH_LITTLE_ENDIAN && ((u.i & 0x3) == 0)) {
-    const PN_uint32 *k = key;                           /* read 32-bit chunks */
+    const PN_uint32 *k =(PN_uint32*) key;                           /* read 32-bit chunks */
 #ifdef VALGRIND
     const PN_uint8  *k8;
 #endif
@@ -300,7 +300,7 @@ PN_uint32 hashlittle( const void *key, size_t length, PN_uint32 initval)
 #endif /* !valgrind */
 
   } else if (HASH_LITTLE_ENDIAN && ((u.i & 0x1) == 0)) {
-    const PN_uint16 *k = key;                           /* read 16-bit chunks */
+    const PN_uint16 *k = (PN_uint16*)key;                           /* read 16-bit chunks */
     const PN_uint8  *k8;
 
     /*--------------- all but last block: aligned reads and different mixing */
@@ -347,7 +347,7 @@ PN_uint32 hashlittle( const void *key, size_t length, PN_uint32 initval)
     }
 
   } else {                        /* need to read the key one byte at a time */
-    const PN_uint8 *k = key;
+    const PN_uint8 *k =(PN_uint8*) key;
 
     /*--------------- all but the last block: affect some 32 bits of (a,b,c) */
     while (length > 12)
@@ -419,7 +419,7 @@ void hashlittle2(
 
   u.ptr = key;
   if (HASH_LITTLE_ENDIAN && ((u.i & 0x3) == 0)) {
-    const PN_uint32 *k = key;                           /* read 32-bit chunks */
+    const PN_uint32 *k = (PN_uint32*)key;                           /* read 32-bit chunks */
 #ifdef VALGRIND
     const PN_uint8  *k8;
 #endif
@@ -487,7 +487,7 @@ void hashlittle2(
 #endif /* !valgrind */
 
   } else if (HASH_LITTLE_ENDIAN && ((u.i & 0x1) == 0)) {
-    const PN_uint16 *k = key;                           /* read 16-bit chunks */
+    const PN_uint16 *k = (PN_uint16*)key;                           /* read 16-bit chunks */
     const PN_uint8  *k8;
 
     /*--------------- all but last block: aligned reads and different mixing */
@@ -534,7 +534,7 @@ void hashlittle2(
     }
 
   } else {                        /* need to read the key one byte at a time */
-    const PN_uint8 *k = key;
+    const PN_uint8 *k = (PN_uint8*)key;
 
     /*--------------- all but the last block: affect some 32 bits of (a,b,c) */
     while (length > 12)
@@ -598,7 +598,7 @@ PN_uint32 hashbig( const void *key, size_t length, PN_uint32 initval)
 
   u.ptr = key;
   if (HASH_BIG_ENDIAN && ((u.i & 0x3) == 0)) {
-    const PN_uint32 *k = key;                           /* read 32-bit chunks */
+    const PN_uint32 *k = (PN_uint32*)key;                           /* read 32-bit chunks */
 #ifdef VALGRIND
     const PN_uint8  *k8;
 #endif
@@ -666,7 +666,7 @@ PN_uint32 hashbig( const void *key, size_t length, PN_uint32 initval)
 #endif /* !VALGRIND */
 
   } else {                        /* need to read the key one byte at a time */
-    const PN_uint8 *k = key;
+    const PN_uint8 *k = (PN_uint8*)key;
 
     /*--------------- all but the last block: affect some 32 bits of (a,b,c) */
     while (length > 12)
