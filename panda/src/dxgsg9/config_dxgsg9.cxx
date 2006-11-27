@@ -26,6 +26,7 @@
 #include "graphicsPipeSelection.h"
 #include "wdxGraphicsWindow9.h"
 #include "wdxGraphicsPipe9.h"
+#include "wdxGraphicsBuffer9.h"
 #include "pandaSystem.h"
 
 #include "dconfig.h"
@@ -220,6 +221,7 @@ init_libdxgsg9() {
 
   wdxGraphicsPipe9::init_type();
   wdxGraphicsWindow9::init_type();
+  wdxGraphicsBuffer9::init_type();
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
   selection->add_pipe_type(wdxGraphicsPipe9::get_class_type(),
