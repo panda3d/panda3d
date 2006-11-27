@@ -32,8 +32,8 @@
 
 #include "directbase.h"
 #include "pnotify.h"
-#include "filename.h"
 #include "numeric_types.h"
+#include "filename.h"
 #include "pvector.h"
 #include "pmap.h"
 #include "pset.h"
