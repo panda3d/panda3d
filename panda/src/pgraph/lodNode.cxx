@@ -38,6 +38,8 @@
 #include "geometricBoundingVolume.h"
 #include "look_at.h"
 #include "nodePath.h"
+#include "shaderAttrib.h"
+#include "colorAttrib.h"
 
 TypeHandle LODNode::_type_handle;
 

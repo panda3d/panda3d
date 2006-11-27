@@ -84,6 +84,7 @@
 #include "shaderAttrib.h"
 #include "shader.h"
 #include "showBoundsEffect.h"
+#include "stencilAttrib.h"
 #include "spotlight.h"
 #include "stateMunger.h"
 #include "switchNode.h"
