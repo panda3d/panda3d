@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
+#include "pointerTo.h"
 #include "linkedListNode.h"
 
 class BamWriter;
@@ -28,6 +29,7 @@ class BamReader;
 class Datagram;
 class DatagramIterator;
 class FactoryParams;
+class BamCacheRecord;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BamCacheRecord
