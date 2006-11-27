@@ -141,6 +141,7 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         Look into a (set of) zone(s).
         """
+        
         assert DoInterestManager.notify.debugCall()
         #assert not self._noNewInterests
         handle = self._getNextHandle()
@@ -185,6 +186,7 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         Stop looking in a (set of) zone(s)
         """
+
         assert DoInterestManager.notify.debugCall()
         assert isinstance(handle, InterestHandle)
         existed = False

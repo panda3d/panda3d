@@ -392,7 +392,7 @@ class ConnectionRepository(
                     ch, serverList, 0,
                     successCallback, successArgs,
                     failureCallback, failureArgs)
-        elif self.connectMethod == self.CM_NSPR:
+        elif self.connectMethod == self.CM_NSPR or (not hasattr(self,"connectNative")):
             # Try each of the servers in turn.
             for url in serverList:
                 self.notify.info("Connecting to %s via NSPR interface." % (url.cStr()))
@@ -417,6 +417,9 @@ class ConnectionRepository(
             # Failed to connect.
             if failureCallback:
                 failureCallback(0, '', *failureArgs)
+        else:
+            print "uh oh, we aren't using one of the tri-state CM variables"
+            failureCallback(0, '', *failureArgs)
     def disconnect(self):
         """
         Closes the previously-established connection.
