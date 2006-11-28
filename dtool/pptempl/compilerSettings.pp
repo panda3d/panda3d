@@ -223,6 +223,9 @@
 #define END_CFLAGS $[END_CFLAGS] /E
 #endif
 
+// Let's just define this LEAN_AND_MEAN thing globally.
+#define EXTRA_CDEFS WIN32_LEAN_AND_MEAN $[EXTRA_CDEFS]
+
 #defer tau_opts $[decygwin %,-I"%",$[EXTRA_INCPATH] $[ipath] $[WIN32_PLATFORMSDK_INCPATH] $[tau_ipath]] $[building_var:%=-D%]
 #defer TAU_MAKE_IL $[PDT_ROOT]/Windows/bin/edgcpfe -o $[il_source] $[tau_opts] $[cdefines:%=-D%] $[C++FLAGS] -DWIN32=1 $[TAU_INSTRUMENTOR_FLAGS] $[source]
 #defer TAU_MAKE_PDB $[PDT_ROOT]/Windows/bin/taucpdisp $[il_source] > $[pdb_source]
