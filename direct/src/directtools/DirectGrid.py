@@ -5,7 +5,7 @@ from DirectUtil import *
 from DirectGeometry import *
 
 class DirectGrid(NodePath, DirectObject):
-    def __init__(self):
+    def __init__(self,gridSize=100.0,gridSpacing=5.0,planeColor=(0.5,0.5,0.5,0.5)):
         # Initialize superclass
         NodePath.__init__(self)
         self.assign(hidden.attachNewNode('DirectGrid'))
@@ -16,7 +16,7 @@ class DirectGrid(NodePath, DirectObject):
         # Polygon used to mark grid plane
         self.gridBack = loader.loadModel('models/misc/gridBack')
         self.gridBack.reparentTo(self)
-        self.gridBack.setColor(0.5, 0.5, 0.5, 0.5)
+        self.gridBack.setColor(*planeColor)
 
         # Grid Lines
         self.lines = self.attachNewNode('gridLines')
@@ -46,8 +46,8 @@ class DirectGrid(NodePath, DirectObject):
         # Initialize Grid characteristics
         self.fXyzSnap = 1
         self.fHprSnap = 1
-        self.gridSize = 100.0
-        self.gridSpacing = 5.0
+        self.gridSize = gridSize
+        self.gridSpacing = gridSpacing
         self.snapAngle = 15.0
         self.enable()
 
@@ -104,7 +104,8 @@ class DirectGrid(NodePath, DirectObject):
         center.create()
         minor.create()
         major.create()
-        self.gridBack.setScale(scaledSize)
+        if (self.gridBack):
+            self.gridBack.setScale(scaledSize)
 
     def setXyzSnap(self, fSnap):
         self.fXyzSnap = fSnap
