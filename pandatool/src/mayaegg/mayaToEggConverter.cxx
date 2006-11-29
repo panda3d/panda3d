@@ -785,6 +785,10 @@ convert_hierarchy(EggGroupNode *egg_root) {
     mayaegg_cat.info() << "will round up uv coordinates" << endl;
   }
 
+  if (_keep_all_uvsets) {
+    mayaegg_cat.info() << "will keep_all_uvsets" << endl;
+  }
+
   _tree.clear_egg(get_egg_data(), egg_root, NULL, NULL);
   for (int i = 0; i < num_nodes; i++) {
     MayaNodeDesc *node = _tree.get_node(i);
@@ -1844,7 +1848,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   }
 
   bool keep_all_uvsets = _keep_all_uvsets || node_desc->has_object_type("keep-all-uvsets");
-  if (keep_all_uvsets) {
+  if (node_desc->has_object_type("keep-all-uvsets")) {
     mayaegg_cat.info() << "will keep_all_uvsets" << endl;
   }
 
