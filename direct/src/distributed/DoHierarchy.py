@@ -87,10 +87,16 @@ class DoHierarchy:
                 from direct.showbase.PythonUtil import StackTrace
                 self.notify.info('deleteObjectLocation(DistributedToon %s)(%s, %s): %s' % (do.doId, parentId, zoneId, StackTrace().compact()))
         doId = do.doId
-        if doId not in self._allDoIds:
-            self.notify.error(
-                'deleteObjectLocation(%s %s) not in _allDoIds; duplicate delete()? or invalid previous location on a new object?' % (
-                do.__class__.__name__, do.doId))
+        # until we figure out why Toontown is crashing with duplicate Toon generates, don't do the check on LIVE
+        try:
+            isLive = base.cr.isLive()
+        except:
+            isLive = True
+        if not isLive:
+            if doId not in self._allDoIds:
+                self.notify.error(
+                    'deleteObjectLocation(%s %s) not in _allDoIds; duplicate delete()? or invalid previous location on a new object?' % (
+                    do.__class__.__name__, do.doId))
         # jbutler: temp hack to get by the assert, this will be fixed soon
         if (doId not in self._allDoIds):
             return
