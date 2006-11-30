@@ -235,11 +235,9 @@ check_datagram() {
     _bdc.Flush();
   #endif //WANT_NATIVE_NET
   while (do_check_datagram()) { //Read a datagram
-#ifndef NDEBUG
     if (get_verbose()) {
       describe_message(nout, "receive ", _dg.get_message());
     }
-#endif  // NDEBUG
 
     // Start breaking apart the datagram.
     _di = DatagramIterator(_dg);
@@ -362,11 +360,9 @@ send_datagram(const Datagram &dg) {
     return false;
   }
 
-#ifndef NDEBUG
   if (get_verbose()) {
     describe_message(nout, "send ", dg.get_message());
   }
-#endif  // NDEBUG
 
 #ifdef WANT_NATIVE_NET
   if(_native)
@@ -698,7 +694,6 @@ handle_update_field_owner() {
   return true;
 }
 
-#ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::describe_message
 //       Access: Private
@@ -793,5 +788,4 @@ describe_message(ostream &out, const string &prefix,
     }
   }
 }
-#endif  // NDEBUG
 

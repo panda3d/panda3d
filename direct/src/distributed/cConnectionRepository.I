@@ -249,7 +249,6 @@ get_simulated_disconnect() const {
   return _simulated_disconnect;
 }
 
-#ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::toggle_verbose
 //       Access: Published
@@ -261,9 +260,7 @@ INLINE void CConnectionRepository::
 toggle_verbose() {
   _verbose = !_verbose;
 }
-#endif  // NDEBUG
 
-#ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::set_verbose
 //       Access: Published
@@ -275,9 +272,7 @@ INLINE void CConnectionRepository::
 set_verbose(bool verbose) {
   _verbose = verbose;
 }
-#endif  // NDEBUG
 
-#ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::get_verbose
 //       Access: Published
@@ -289,4 +284,3 @@ INLINE bool CConnectionRepository::
 get_verbose() const {
   return _verbose;
 }
-#endif  // NDEBUG
