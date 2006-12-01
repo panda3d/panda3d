@@ -271,10 +271,9 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
         // it.
         PT(ModelNode) geom_node = new ModelNode(egg_group->get_name());
 
-        // We don't need to insist on PT_local on this exposed node,
-        // as long as we assume that any operation that transforms
-        // this node will also transform the Character node above it.
-        //geom_node->set_preserve_transform(ModelNode::PT_local);
+        // To prevent flattening from messing with geometry on 
+        // exposed joints
+        geom_node->set_preserve_transform(ModelNode::PT_net);
 
         joint->_geom_node = geom_node.p();
       }
