@@ -650,7 +650,7 @@ class LerpFunctionInterval(Interval.Interval):
             apply(self.function, [data] + self.extraArgs)
 
         # Print debug information
-        assert self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
+#        assert self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
 
         self.state = CInterval.SStarted
         self.currT = t
