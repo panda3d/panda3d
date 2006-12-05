@@ -88,6 +88,9 @@
 
 #include "dtoolsymbols.h"
 
+// always include assert.h until drose unbreaks it for opt4
+#include <assert.h>
+
 #ifdef __GNUC__
 // Large file >2GB support
 // this needs be be before systypes.h and other C headers
