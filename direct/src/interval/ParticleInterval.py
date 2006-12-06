@@ -43,7 +43,7 @@ class ParticleInterval(Interval):
                                     with render
         renderParent is a NodePath: this is where the particles will
                                     be rendered in the scenegraph
-                                    duration is a float for the time
+        duration is a float: for the time
         softStopT is a float: no effect if 0.0,
                               a positive value will count from the
                               start of the interval,
