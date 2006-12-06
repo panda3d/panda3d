@@ -14,6 +14,7 @@ from pandac.PandaModules import GeomParticleRenderer
 from pandac.PandaModules import SparkleParticleRenderer
 #from pandac.PandaModules import SpriteParticleRenderer
 from pandac.PandaModules import BaseParticleEmitter
+from pandac.PandaModules import ArcEmitter
 from pandac.PandaModules import BoxEmitter
 from pandac.PandaModules import DiscEmitter
 from pandac.PandaModules import LineEmitter
@@ -151,7 +152,9 @@ class Particles(ParticleSystem):
         if (self.emitter):
             self.emitter = None
         self.emitterType = type
-        if (type == "BoxEmitter"):
+        if (type == "ArcEmitter"):
+            self.emitter = ArcEmitter()
+        elif (type == "BoxEmitter"):
             self.emitter = BoxEmitter()
         elif (type == "DiscEmitter"):
             self.emitter = DiscEmitter()
