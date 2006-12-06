@@ -118,7 +118,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
             self.cr.doId2do[self.parentId].worldGrid.stopProcessVisibility(event=parentEvent)
 
     def processVisibility(self, task):
-        if self.visAvatar.immobilized:
+        if self.visAvatar.gameFSM.state == 'Cutscene':
             return Task.cont
         
         pos = self.visAvatar.getPos(self)
