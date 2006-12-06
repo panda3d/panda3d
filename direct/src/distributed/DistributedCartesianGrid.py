@@ -118,6 +118,9 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
             self.cr.doId2do[self.parentId].worldGrid.stopProcessVisibility(event=parentEvent)
 
     def processVisibility(self, task):
+        if self.visAvatar.immobilized:
+            return Task.cont
+        
         pos = self.visAvatar.getPos(self)
         # Check to make sure our x and y are positive
         dx = self.cellWidth * self.gridSize * .5
