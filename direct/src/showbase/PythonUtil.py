@@ -2405,6 +2405,11 @@ class ClassTree:
 
 
 def report(types = [],notifyFunc = None):
+    try:
+        __dev__
+    except NameError:
+        __dev__ = False
+        
     if __dev__:
         def decorator(f):
             def wrap(*args,**kwargs):
