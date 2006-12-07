@@ -239,7 +239,7 @@ ns_has_texture(const Filename &orig_filename) {
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
-		bool read_mipmaps) {
+    bool read_mipmaps) {
   Filename filename(orig_filename);
 
   if (!_fake_texture_image.empty()) {
@@ -349,13 +349,13 @@ ns_load_texture(const Filename &orig_filename,
                 const Filename &orig_alpha_filename,
                 int primary_file_num_channels,
                 int alpha_file_channel,
-		bool read_mipmaps) {
+    bool read_mipmaps) {
   Filename filename(orig_filename);
   Filename alpha_filename(orig_alpha_filename);
 
   if (!_fake_texture_image.empty()) {
     return ns_load_texture(_fake_texture_image, primary_file_num_channels,
-			   read_mipmaps);
+         read_mipmaps);
   }
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -465,7 +465,7 @@ ns_load_texture(const Filename &orig_filename,
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_load_3d_texture(const Filename &filename_pattern,
-		   bool read_mipmaps) {
+       bool read_mipmaps) {
   Filename filename(filename_pattern);
   filename.set_pattern(true);
 
@@ -787,15 +787,26 @@ void TexturePool::
 ns_list_contents(ostream &out) const {
   MutexHolder holder(_lock);
 
-  out << _textures.size() << " textures:\n";
+  out << "texture pool contents:\n";
+
+  int total_size;
+  
+  total_size = 0;
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     Texture *tex = (*ti).second;
-    out << "  " << (*ti).first
-        << " (count = " << tex->get_ref_count() << ", ram = "
-        << tex->get_ram_image_size() / 1024 << " Kb)\n";
+    out << (*ti).first << "\n";
+    out << "  (count = " << tex->get_ref_count() 
+        << ", ram = " << tex->get_ram_image_size() 
+        << ", w = " << tex->get_x_size() 
+        << ", h = " << tex->get_y_size() 
+        << ")\n";
     nassertv(tex->_texture_pool_key == (*ti).first);
+    total_size += tex->get_ram_image_size();
   }
+  
+  out << "total number of textures: " << _textures.size() << "\n";
+  out << "texture pool size: " << total_size << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

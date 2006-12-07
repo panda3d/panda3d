@@ -59,9 +59,9 @@ verify_texture(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
 load_texture(const string &filename, int primary_file_num_channels,
-	     bool read_mipmaps) {
+       bool read_mipmaps) {
   return get_global_ptr()->ns_load_texture(filename, primary_file_num_channels,
-					   read_mipmaps);
+             read_mipmaps);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,11 +82,11 @@ load_texture(const string &filename, int primary_file_num_channels,
 INLINE Texture *TexturePool::
 load_texture(const string &filename, const string &alpha_filename,
              int primary_file_num_channels, int alpha_file_channel,
-	     bool read_mipmaps) {
+       bool read_mipmaps) {
   return get_global_ptr()->ns_load_texture(filename, alpha_filename, 
-					   primary_file_num_channels,
-					   alpha_file_channel,
-					   read_mipmaps);
+             primary_file_num_channels,
+             alpha_file_channel,
+             read_mipmaps);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -224,6 +224,16 @@ garbage_collect() {
 INLINE void TexturePool::
 list_contents(ostream &out) {
   get_global_ptr()->ns_list_contents(out);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::list_contents
+//       Access: Published, Static
+//  Description: Lists the contents of the texture pool to cout
+////////////////////////////////////////////////////////////////////
+INLINE void TexturePool::
+list_contents() {
+  get_global_ptr()->ns_list_contents(cout);
 }
 
 ////////////////////////////////////////////////////////////////////
