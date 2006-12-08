@@ -103,7 +103,10 @@ PUBLISHED:
 
     F_luminance,
     F_luminance_alpha,      // 8 bits luminance, 8 bits alpha
-    F_luminance_alphamask   // 8 bits luminance, only needs 1 bit of alpha
+    F_luminance_alphamask,  // 8 bits luminance, only needs 1 bit of alpha
+
+    F_rgba16,  // 16 bits per R,G,B,A channel
+    F_rgba32,  // 32 bits per R,G,B,A channel
   };
 
   enum FilterType {
@@ -345,9 +348,10 @@ PUBLISHED:
 
   static bool is_mipmap(FilterType type);
 
-public:
   INLINE bool get_match_framebuffer_format() const;
   INLINE void set_match_framebuffer_format(bool flag);
+
+public:
 
   TextureContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                               GraphicsStateGuardianBase *gsg);

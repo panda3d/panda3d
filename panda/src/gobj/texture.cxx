@@ -432,6 +432,13 @@ estimate_texture_memory() const {
   case Texture::F_rgb12:
     bpp = 6;
     break;
+
+  case Texture::F_rgba16:
+    bpp = 8;
+    break;
+  case Texture::F_rgba32:
+    bpp = 16;
+    break;
   }
 
   size_t bytes = pixels * bpp;
@@ -1360,6 +1367,12 @@ write(ostream &out, int indent_level) const {
   case F_rgbm:
     out << "rgbm";
     break;
+  case F_rgba32:
+    out << "rgba32";
+    break;
+  case F_rgba16:
+    out << "rgba16";
+    break;
   case F_rgba12:
     out << "rgba12";
     break;
@@ -1514,6 +1527,8 @@ set_format(Texture::Format format) {
   case F_rgba5:
   case F_rgba8:
   case F_rgba12:
+  case F_rgba16:
+  case F_rgba32:
     _num_components = 4;
     break;
   }
@@ -2435,6 +2450,8 @@ has_alpha(Format format) {
   case F_rgba5:
   case F_rgba8:
   case F_rgba12:
+  case F_rgba16:
+  case F_rgba32:
   case F_luminance_alpha:
   case F_luminance_alphamask:
     return true;
