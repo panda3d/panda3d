@@ -97,6 +97,8 @@ create_texture(DXScreenData &scrn) {
   DWORD target_bpp = get_bits_per_pixel(get_texture()->get_format(), &num_alpha_bits);
   DWORD num_color_channels = get_texture()->get_num_components();
 
+//  printf ("target_bpp %d, num_color_channels %d num_alpha_bits %d \n", target_bpp, num_color_channels, num_alpha_bits);
+
   //PRINT_REFCNT(dxgsg9, scrn._d3d9);
 
   DWORD orig_width = (DWORD)get_texture()->get_x_size();
@@ -291,6 +293,26 @@ create_texture(DXScreenData &scrn) {
     // target_bpp is REQUESTED bpp, not what exists in the texture
     // array (the texture array contains num_color_channels*8bits)
 
+  case 128:
+    // check if format is supported    
+    if (scrn._supports_rgba32f_texture_format) {
+      target_pixel_format = D3DFMT_A32B32G32R32F;
+    }
+    else {
+      target_pixel_format = scrn._render_to_texture_d3d_format;
+    }
+    goto found_matching_format;
+
+  case 64:
+    // check if format is supported 
+    if (scrn._supports_rgba16f_texture_format) {
+      target_pixel_format = D3DFMT_A16B16G16R16F;
+    }
+    else {
+      target_pixel_format = scrn._render_to_texture_d3d_format;
+    }
+    goto found_matching_format;
+    
   case 32:
     if (!((num_color_channels == 3) || (num_color_channels == 4)))
       break; //bail
@@ -643,13 +665,21 @@ create_texture(DXScreenData &scrn) {
   D3DPOOL pool;
 
   usage = 0;
-//  if (get_texture()->get_render_to_texture ( )) {
   if (get_texture()->get_render_to_texture ( )) {
     // REQUIRED PARAMETERS
     _managed = false;
     pool = D3DPOOL_DEFAULT;
     usage = D3DUSAGE_RENDERTARGET;
-    target_pixel_format = scrn._render_to_texture_d3d_format;
+    if (target_bpp <= 32 ) {
+      target_pixel_format = scrn._render_to_texture_d3d_format;
+    }
+    
+    dxgsg9_cat.debug ()
+      << "*** RENDER TO TEXTURE ***: format "
+      << D3DFormatStr(target_pixel_format)
+      << "  "
+      << target_pixel_format
+      << "\n";
   }
   else {
     _managed = scrn._managed_textures;
@@ -748,12 +778,10 @@ create_texture(DXScreenData &scrn) {
 
   data_size = target_width * target_height * target_depth;
   data_size = (int) ((float) data_size * bytes_per_texel);
-  if (_has_mipmaps)
-  {
+  if (_has_mipmaps) {
     data_size = (int) ((float) data_size * 1.3f);
   }
-  if (get_texture()->get_texture_type() == Texture::TT_cube_map)
-  {
+  if (get_texture()->get_texture_type() == Texture::TT_cube_map) {
     data_size *= 6;
   }
   update_data_size_bytes(data_size);
@@ -808,6 +836,12 @@ create_texture(DXScreenData &scrn) {
 
   hr = fill_d3d_texture_pixels(scrn._supports_automatic_mipmap_generation);
   if (FAILED(hr)) {
+
+    dxgsg9_cat.debug ()
+      << "*** fill_d3d_texture_pixels failed ***: format "
+      << target_pixel_format
+      << "\n";
+
     goto error_exit;
   }
 
@@ -815,16 +849,16 @@ create_texture(DXScreenData &scrn) {
   if (!_managed && !get_texture()->get_render_to_texture()) {
     if (_lru_page == 0) {
       Lru *lru;
-      
+
       lru = scrn._dxgsg9 -> _lru;
       if (lru) {
         LruPage *lru_page;
-        
+
         lru_page = lru -> allocate_page (data_size);
         if (lru_page) {
           lru_page -> _m.v.type = GPT_Texture;
           lru_page -> _m.lru_page_type.pointer = this;
-          
+
           lru -> add_cached_page (LPP_New, lru_page);
           _lru_page = lru_page;
         }
@@ -1544,6 +1578,12 @@ get_bits_per_pixel(Texture::Format format, int *alphbits) {
   case Texture::F_rgba12:
     *alphbits = 12;
     return 48;
+  case Texture::F_rgba16:
+    *alphbits = 16;
+    return 64;
+  case Texture::F_rgba32:
+    *alphbits = 32;
+    return 128;
   }
   return 8;
 }
