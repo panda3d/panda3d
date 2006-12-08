@@ -67,6 +67,7 @@ PUBLISHED:
   INLINE static int garbage_collect();
 
   INLINE static void list_contents(ostream &out);
+  INLINE static void list_contents();
   static void write(ostream &out);
 
 private:

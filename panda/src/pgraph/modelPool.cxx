@@ -218,12 +218,16 @@ void ModelPool::
 ns_list_contents(ostream &out) const {
   MutexHolder holder(_lock);
 
-  out << _models.size() << " models:\n";
+  out << "model pool contents:\n";
+  
   Models::const_iterator ti;
   for (ti = _models.begin(); ti != _models.end(); ++ti) {
-    out << "  " << (*ti).first
-        << " (count = " << (*ti).second->get_model_ref_count() << ")\n";
+    out << (*ti).first << "\n"
+        << "  (count = " << (*ti).second->get_model_ref_count() 
+        << ")\n";
   }
+  
+  out << "total number of models: " << _models.size() << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

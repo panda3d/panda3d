@@ -158,6 +158,16 @@ list_contents(ostream &out) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModelPool::list_contents
+//       Access: Public, Static
+//  Description: Lists the contents of the model pool to cout.
+////////////////////////////////////////////////////////////////////
+INLINE void ModelPool::
+list_contents() {
+  get_ptr()->ns_list_contents(cout);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelPool::Constructor
 //       Access: Private
 //  Description: The constructor is not intended to be called
