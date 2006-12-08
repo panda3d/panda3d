@@ -787,26 +787,32 @@ void TexturePool::
 ns_list_contents(ostream &out) const {
   MutexHolder holder(_lock);
 
-  out << "texture pool contents:\n";
-
   int total_size;
+  int total_ram_size;
+  Textures::const_iterator ti;
+
+  out << "texture pool contents:\n";
   
   total_size = 0;
-  Textures::const_iterator ti;
+  total_ram_size = 0;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     Texture *tex = (*ti).second;
     out << (*ti).first << "\n";
     out << "  (count = " << tex->get_ref_count() 
-        << ", ram = " << tex->get_ram_image_size() 
+        << ", ram  = " << tex->get_ram_image_size() 
+        << ", size = " << tex->get_ram_page_size()
         << ", w = " << tex->get_x_size() 
         << ", h = " << tex->get_y_size() 
         << ")\n";
     nassertv(tex->_texture_pool_key == (*ti).first);
-    total_size += tex->get_ram_image_size();
+    total_ram_size += tex->get_ram_image_size();
+    total_size += tex->get_ram_page_size();
   }
   
   out << "total number of textures: " << _textures.size() << "\n";
+  out << "texture pool ram : " << total_ram_size << "\n";
   out << "texture pool size: " << total_size << "\n";
+  out << "texture pool size - texture pool ram: " << total_size - total_ram_size << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
