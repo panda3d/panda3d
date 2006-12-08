@@ -1068,23 +1068,23 @@ DBG_S dxgsg9_cat.debug ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
 
     frames = dx_lru_debug_frames_til_output;
     if (dx_lru_debug && frames > 0 && (_lru -> _m.current_frame_identifier % frames) == 0) {
-      if (dxgsg9_cat.is_debug()) {
+      if (dxgsg9_cat.is_error()) {
         UINT available_texture_memory;
 
         available_texture_memory = _d3d_device->GetAvailableTextureMem ( );
 
-        dxgsg9_cat.debug() << "* LRU: total_pages " << _lru -> _m.total_pages << "/" << _lru -> _m.maximum_pages << " upf " << dx_lru_maximum_page_updates_per_frame << " fto " << dx_lru_debug_frames_til_output << "\n";
-        dxgsg9_cat.debug() << "*  DX available_texture_memory = " << available_texture_memory << "\n";
-        dxgsg9_cat.debug() << "*  delta_memory " << _available_texture_memory - (available_texture_memory + (_lru -> _m.maximum_memory - _lru -> _m.available_memory)) << "\n";
-        dxgsg9_cat.debug() << "*  available_memory " << _lru -> _m.available_memory << "/" << _lru -> _m.maximum_memory << "\n";
-        dxgsg9_cat.debug() << "*  total lifetime pages created " << _lru -> _m.identifier << "\n";
-        dxgsg9_cat.debug() << "*  total_lifetime_page_ins " << _lru -> _m.total_lifetime_page_ins << "\n";
-        dxgsg9_cat.debug() << "*  total_lifetime_page_outs " << _lru -> _m.total_lifetime_page_outs << "\n";
-        dxgsg9_cat.debug() << "*  total_page_access " << _lru -> _m.total_page_access << " avg page access " << ((float) _lru -> _m.total_page_access / (float) frames) << "\n";
-        dxgsg9_cat.debug() << "*  total_lru_pages_in_pool " << _lru -> _m.total_lru_pages_in_pool << "\n";
-        dxgsg9_cat.debug() << "*  total_lru_pages_in_free_pool " << _lru -> _m.total_lru_pages_in_free_pool << "\n";
-        dxgsg9_cat.debug() << "*  avg unique page access size " << (_lru -> _m.total_page_access_size / (double) frames) << "\n";
-        dxgsg9_cat.debug() << "*  avg of all page access size " << ((_lru -> _m.total_page_access_size + _lru -> _m.total_page_all_access_size) / (double) frames) << "\n";
+        dxgsg9_cat.error() << "* LRU: total_pages " << _lru -> _m.total_pages << "/" << _lru -> _m.maximum_pages << " upf " << dx_lru_maximum_page_updates_per_frame << " fto " << dx_lru_debug_frames_til_output << "\n";
+        dxgsg9_cat.error() << "*  DX available_texture_memory = " << available_texture_memory << "\n";
+        dxgsg9_cat.error() << "*  delta_memory " << _available_texture_memory - (available_texture_memory + (_lru -> _m.maximum_memory - _lru -> _m.available_memory)) << "\n";
+        dxgsg9_cat.error() << "*  available_memory " << _lru -> _m.available_memory << "/" << _lru -> _m.maximum_memory << "\n";
+        dxgsg9_cat.error() << "*  total lifetime pages created " << _lru -> _m.identifier << "\n";
+        dxgsg9_cat.error() << "*  total_lifetime_page_ins " << _lru -> _m.total_lifetime_page_ins << "\n";
+        dxgsg9_cat.error() << "*  total_lifetime_page_outs " << _lru -> _m.total_lifetime_page_outs << "\n";
+        dxgsg9_cat.error() << "*  total_page_access " << _lru -> _m.total_page_access << " avg page access " << ((float) _lru -> _m.total_page_access / (float) frames) << "\n";
+        dxgsg9_cat.error() << "*  total_lru_pages_in_pool " << _lru -> _m.total_lru_pages_in_pool << "\n";
+        dxgsg9_cat.error() << "*  total_lru_pages_in_free_pool " << _lru -> _m.total_lru_pages_in_free_pool << "\n";
+        dxgsg9_cat.error() << "*  avg unique page access size " << (_lru -> _m.total_page_access_size / (double) frames) << "\n";
+        dxgsg9_cat.error() << "*  avg of all page access size " << ((_lru -> _m.total_page_access_size + _lru -> _m.total_page_all_access_size) / (double) frames) << "\n";
 
         _lru -> _m.total_page_access = 0;
         _lru -> _m.total_page_access_size = 0;
@@ -1096,7 +1096,7 @@ DBG_S dxgsg9_cat.debug ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
 
         for (index = 0; index < LPP_TotalPriorities; index++) {
           if (_lru -> _m.lru_page_count_array [index]) {
-            dxgsg9_cat.debug() << "*  priority " << index << " pages " << _lru -> _m.lru_page_count_array [index] << "\n";
+            dxgsg9_cat.error() << "*  priority " << index << " pages " << _lru -> _m.lru_page_count_array [index] << "\n";
           }
         }
 
@@ -1106,7 +1106,7 @@ DBG_S dxgsg9_cat.debug ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
           PageTypeStatistics *page_type_statistics;
 
           page_type_statistics = &_lru -> _m.page_type_statistics_array [index];
-          dxgsg9_cat.debug() << "\n" <<
+          dxgsg9_cat.error() << "\n" <<
               " page type " << index <<
               "  total pages " << page_type_statistics -> total_pages <<
               "  in " << page_type_statistics -> total_pages_in <<
@@ -2396,6 +2396,7 @@ reset() {
 
   _vertex_shader_maximum_constants = d3d_caps.MaxVertexShaderConst;
 
+#ifdef HAVE_CGDX9
   switch (_pixel_shader_version_major)
   {
     case 0:
@@ -2419,6 +2420,9 @@ reset() {
       _shader_model = SM_40;
       break;
   }
+#else
+  _shader_model = SM_00;
+#endif
   _auto_detect_shader_model = _shader_model;
 
   _supports_stream_offset = (d3d_caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET) != 0;
@@ -2497,9 +2501,9 @@ reset() {
       vertex_profile = cgD3D9GetLatestVertexProfile( );
       pixel_profile = cgD3D9GetLatestPixelProfile( );
 
-      const char *vertex_profile_str = 
+      const char *vertex_profile_str =
         cgGetProfileString(vertex_profile);
-      const char *pixel_profile_str = 
+      const char *pixel_profile_str =
         cgGetProfileString(pixel_profile);
 
       if (vertex_profile_str == NULL) {
@@ -2715,6 +2719,17 @@ reset() {
     if (SUCCEEDED(hr)){
       _screen->_supported_tex_formats_mask |= fmtflag;
     }
+  }
+
+  _screen->_supports_rgba16f_texture_format = false;
+  hr = _screen->_d3d9->CheckDeviceFormat(_screen->_card_id, D3DDEVTYPE_HAL, _screen->_display_mode.Format, 0x0, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F);
+  if (SUCCEEDED(hr)){
+    _screen->_supports_rgba16f_texture_format = true;
+  }
+  _screen->_supports_rgba32f_texture_format = false;
+  hr = _screen->_d3d9->CheckDeviceFormat(_screen->_card_id, D3DDEVTYPE_HAL, _screen->_display_mode.Format, 0x0, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F);
+  if (SUCCEEDED(hr)){
+    _screen->_supports_rgba32f_texture_format = true;
   }
 
   // s3 virge drivers sometimes give crap values for these
@@ -3775,12 +3790,12 @@ update_standard_texture_bindings() {
       // that there are 3-d texture coordinates, because of the
       // 3-component texture coordinate in get_constant_value().
       {
-        set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX, 
+        set_texture_stage_state(i, D3DTSS_TEXCOORDINDEX,
                                 texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
         texcoord_dimensions = 3;
 
         const TexCoord3f &v = _effective_tex_gen->get_constant_value(stage);
-        CPT(TransformState) squash = 
+        CPT(TransformState) squash =
           TransformState::make_pos_hpr_scale(v, LVecBase3f::zero(),
                                              LVecBase3f::zero());
         tex_mat = tex_mat->compose(squash);
@@ -4748,7 +4763,7 @@ DBG_S dxgsg9_cat.debug ( ) << "- - - - - DXGraphicsStateGuardian9::show_frame\n"
 
     print_memory_stats ( );
     reset_memory_stats ( );
-  */
+  */
 
   HRESULT hr;
 
