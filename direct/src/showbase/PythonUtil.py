@@ -2517,6 +2517,34 @@ def recordCreationStack(cls):
     cls.getCreationStackTrace = getCreationStackTrace
     return cls
 
+# class 'decorator' that logs all method calls for a particular class
+def logMethodCalls(cls):
+    if not hasattr(cls, 'notify'):
+        raise 'logMethodCalls: class \'%s\' must have a notify' % cls.__name__
+    for name in dir(cls):
+        method = getattr(cls, name)
+        if callable(method):
+            def getLoggedMethodCall(method):
+                def __logMethodCall__(obj, *args, **kArgs):
+                    s = '%s(' % method.__name__
+                    for arg in args:
+                        try:
+                            argStr = repr(arg)
+                        except:
+                            argStr = 'bad repr: %s' % arg.__class__
+                        s += '%s, ' % argStr
+                    for karg, value in kArgs.items():
+                        s += '%s=%s, ' % (karg, repr(value))
+                    if len(args) or len(kArgs):
+                        s = s[:-2]
+                    s += ')'
+                    obj.notify.info(s)
+                    return method(obj, *args, **kArgs)
+                return __logMethodCall__
+            setattr(cls, name, getLoggedMethodCall(method))
+    __logMethodCall__ = None
+    return cls
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
