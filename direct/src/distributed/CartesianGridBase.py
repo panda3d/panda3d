@@ -18,7 +18,7 @@ class CartesianGridBase:
         else:
             return 0
 
-    def getZoneFromXYZ(self, pos):
+    def getZoneFromXYZ(self, pos, wantRowAndCol=False):
         # NOTE: pos should be relative to our own grid origin
         # Convert a 3d position to a zone
         dx = self.cellWidth * self.gridSize * .5
@@ -29,7 +29,10 @@ class CartesianGridBase:
         # Compute which zone we are in
         zoneId = int(self.startingZone + ((row * self.gridSize) + col))
 
-        return zoneId
+        if (wantRowAndCol):
+            return (zoneId,col,row)
+        else:
+            return zoneId
 
     def getGridSizeFromSphereRadius(self, sphereRadius, cellWidth, gridRadius):
         # NOTE: This ensures that the grid is at least a "gridRadius" number
