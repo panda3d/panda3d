@@ -1027,9 +1027,9 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
           *dest_byte++ = b;
           *dest_byte++ = g;
           *dest_byte++ = r;
-    source_word++;
+          source_word++;
         }
-  surface_bytes += byte_pitch;
+        surface_bytes += byte_pitch;
       }
     }
     break;
@@ -1118,10 +1118,10 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
           // alpha is just set to 0xFF
 
           *dest_word = 0xFF000000 | (r << 16) | (g << 8) | b;
-    source_word++;
-    dest_word++;
+          source_word++;
+          dest_word++;
         }
-  surface_bytes += byte_pitch;
+        surface_bytes += byte_pitch;
       }
     } else {
       // 24bpp texture case (numComponents == 3)
