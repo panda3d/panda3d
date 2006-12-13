@@ -5336,6 +5336,10 @@ do_issue_stencil() {
       stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_read_mask, stencil -> get_render_state (StencilAttrib::SRS_read_mask));
       stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_write_mask, stencil -> get_render_state (StencilAttrib::SRS_write_mask));
     }
+
+    if (stencil -> get_render_state (StencilAttrib::SRS_clear)) {
+      _d3d_device->Clear(0, NULL, D3DCLEAR_STENCIL, 0, 0.0f, stencil -> get_render_state (StencilAttrib::SRS_clear_value));
+    }
   }
   else {
 

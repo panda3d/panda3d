@@ -34,6 +34,7 @@ class FactoryParams;
 //               get_supports_two_sided_stencil.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA StencilAttrib : public RenderAttrib {
+
 private:
   StencilAttrib();
 
@@ -59,6 +60,9 @@ PUBLISHED:
     SRS_back_stencil_pass_z_fail_operation,
     SRS_back_stencil_pass_z_pass_operation,
 
+    SRS_clear,
+    SRS_clear_value,
+    
     SRS_total,
 
     SRS_first = 0,
@@ -120,11 +124,40 @@ PUBLISHED:
     unsigned int back_stencil_pass_z_fail_operation,
     unsigned int back_stencil_pass_z_pass_operation);
 
+  static CPT(RenderAttrib) make_with_clear(
+    unsigned int front_enable,
+    unsigned int front_comparison_function,
+    unsigned int stencil_fail_operation,
+    unsigned int stencil_pass_z_fail_operation,
+    unsigned int front_stencil_pass_z_pass_operation,
+    unsigned int reference,
+    unsigned int read_mask,
+    unsigned int write_mask,
+    unsigned int clear,
+    unsigned int clear_value);
+
+  static CPT(RenderAttrib) make_2_sided_with_clear(
+    unsigned int front_enable,
+    unsigned int back_enable,
+    unsigned int front_comparison_function,
+    unsigned int stencil_fail_operation,
+    unsigned int stencil_pass_z_fail_operation,
+    unsigned int front_stencil_pass_z_pass_operation,
+    unsigned int reference,
+    unsigned int read_mask,
+    unsigned int write_mask,
+    unsigned int back_comparison_function,
+    unsigned int back_stencil_fail_operation,
+    unsigned int back_stencil_pass_z_fail_operation,
+    unsigned int back_stencil_pass_z_pass_operation,
+    unsigned int clear,
+    unsigned int clear_value);
+
   INLINE unsigned int get_render_state (unsigned int render_state_identifier) const;
 
 public:
   static char *stencil_render_state_name_array [SRS_total];
-
+  
   virtual void output(ostream &out) const;
   virtual void store_into_slot(AttribSlots *slots) const;
 

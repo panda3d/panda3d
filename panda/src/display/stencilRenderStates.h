@@ -53,6 +53,9 @@ PUBLISHED:
     SRS_back_stencil_pass_z_fail_operation,
     SRS_back_stencil_pass_z_pass_operation,
 
+    SRS_clear,
+    SRS_clear_value,
+
     SRS_total,
 
     SRS_first = 0,
