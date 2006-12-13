@@ -7459,7 +7459,6 @@ do_issue_stencil() {
         << "SRS_back_stencil_pass_z_pass_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_pass_operation) << "\n";
     }
 
-    if (true)
     {
       bool on;
 
@@ -7488,44 +7487,14 @@ do_issue_stencil() {
         stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_write_mask, stencil -> get_render_state (StencilAttrib::SRS_write_mask));
       }
     }
-    else
-    {
-      bool on;
 
-      on = false;
-
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_enable, stencil -> get_render_state (StencilAttrib::SRS_front_enable));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_enable, stencil -> get_render_state (StencilAttrib::SRS_back_enable));
-
-      // SRS_reference and SRS_read_mask are set when SRS_front_comparison_function is set
-      stencil_render_states -> set_stencil_render_state (false, StencilRenderStates::SRS_reference, stencil -> get_render_state (StencilAttrib::SRS_reference));
-      stencil_render_states -> set_stencil_render_state (false, StencilRenderStates::SRS_read_mask, stencil -> get_render_state (StencilAttrib::SRS_read_mask));
-
-      if (stencil -> get_render_state (StencilAttrib::SRS_front_enable)) {
-        stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_comparison_function, stencil -> get_render_state (StencilAttrib::SRS_front_comparison_function));
-
-        // setting 2 operation states can be defered since all three must be set at once
-        stencil_render_states -> set_stencil_render_state (false, StencilRenderStates::SRS_front_stencil_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_fail_operation));
-        stencil_render_states -> set_stencil_render_state (false, StencilRenderStates::SRS_front_stencil_pass_z_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_fail_operation));
-        stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_stencil_pass_z_pass_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_pass_operation));
-
-        on = true;
-      }
-
-      if (stencil -> get_render_state (StencilAttrib::SRS_back_enable)) {
-        stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_comparison_function, stencil -> get_render_state (StencilAttrib::SRS_back_comparison_function));
-
-        // setting 2 operation states can be defered since all three must be set at once
-        stencil_render_states -> set_stencil_render_state (false, StencilRenderStates::SRS_back_stencil_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_back_stencil_fail_operation));
-        stencil_render_states -> set_stencil_render_state (false, StencilRenderStates::SRS_back_stencil_pass_z_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_fail_operation));
-        stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_stencil_pass_z_pass_operation, stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_pass_operation));
-
-        on = true;
-      }
-
-      if (on) {
-        stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_write_mask, stencil -> get_render_state (StencilAttrib::SRS_write_mask));
-      }
+    if (stencil -> get_render_state (StencilAttrib::SRS_clear)) {    
+      GLbitfield mask = 0;
+      
+      // clear stencil buffer
+      GLP(ClearStencil)(stencil -> get_render_state (StencilAttrib::SRS_clear_value));
+      mask |= GL_STENCIL_BUFFER_BIT;
+      GLP(Clear)(mask);
     }
   }
   else {
