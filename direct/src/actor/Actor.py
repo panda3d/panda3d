@@ -464,6 +464,10 @@ class Actor(DirectObject, NodePath):
             self.__LODNode.removeNode()
             self.__LODNode = None
 
+        for child in self.__geomNode.getChildrenAsList():
+            child.removeNode()
+            
+
         self.__hasLOD = 0
 
     # accessing
@@ -543,6 +547,7 @@ class Actor(DirectObject, NodePath):
         """
         if (node == None):
             node = LODNode("lod")
+
         if self.__LODNode:
             self.__LODNode = node
         else:
@@ -550,6 +555,7 @@ class Actor(DirectObject, NodePath):
             self.__hasLOD = 1
             self.switches = {}
         
+
     def useLOD(self, lodName):
         """
         Make the Actor ONLY display the given LOD
