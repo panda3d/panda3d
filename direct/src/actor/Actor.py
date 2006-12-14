@@ -543,11 +543,13 @@ class Actor(DirectObject, NodePath):
         """
         if (node == None):
             node = LODNode("lod")
-
-        self.__LODNode = self.__geomNode.attachNewNode(node)
-        self.__hasLOD = 1
-        self.switches = {}
-
+        if self.__LODNode:
+            self.__LODNode = node
+        else:
+            self.__LODNode = self.__geomNode.attachNewNode(node)
+            self.__hasLOD = 1
+            self.switches = {}
+        
     def useLOD(self, lodName):
         """
         Make the Actor ONLY display the given LOD
