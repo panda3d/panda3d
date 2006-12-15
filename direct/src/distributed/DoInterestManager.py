@@ -186,11 +186,10 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         Stop looking in a (set of) zone(s)
         """
-
         assert DoInterestManager.notify.debugCall()
         assert isinstance(handle, InterestHandle)
         existed = False
-        if event is None:
+        if ((not auto) and (event is None)):
             event = self._getAnonymousEvent('removeInterest')
         handle = handle.asInt()
         if DoInterestManager._interests.has_key(handle):
@@ -215,18 +214,20 @@ class DoInterestManager(DirectObject.DirectObject):
                     self.notify.warning('removeInterest: abandoning events: %s' %
                                         intState.events)
                     intState.clearEvents()
-                scopeId = self._getNextScopeId()
                 intState.state = InterestState.StatePendingDel
-                intState.scope = scopeId
-                if event is not None:
-                    intState.addEvent(event)
+                if auto:
+                    self._considerRemoveInterest(handle)
+                else:
+                    scopeId = self._getNextScopeId()
+                    intState.scope = scopeId
+                    if event is not None:
+                        intState.addEvent(event)
+                    self._sendRemoveInterest(handle, scopeId)
+                    if event is None:
+                        self._considerRemoveInterest(handle)
                 if self.InterestDebug:
                     print 'INTEREST DEBUG: removeInterest(): handle=%s, event=%s' % (
                         handle, event)
-                if not auto:
-                    self._sendRemoveInterest(handle, scopeId)
-                if event is None:
-                    self._considerRemoveInterest(handle)
         else:
             DoInterestManager.notify.warning(
                 "removeInterest: handle not found: %s" % (handle))
@@ -250,7 +251,7 @@ class DoInterestManager(DirectObject.DirectObject):
             DoInterestManager.notify.warning(
                 "alterInterest: addingInterests on delete: %s" % (handle))
             return
-        
+
         exists = False
         if event is None:
             event = self._getAnonymousEvent('alterInterest')
@@ -334,6 +335,7 @@ class DoInterestManager(DirectObject.DirectObject):
         Consider whether we should cull the interest set.
         """
         assert DoInterestManager.notify.debugCall()
+        
         if DoInterestManager._interests.has_key(handle):
             if DoInterestManager._interests[handle].isPendingDelete():
                 # make sure there is no pending event for this interest
@@ -369,7 +371,7 @@ class DoInterestManager(DirectObject.DirectObject):
             print "******************* Interest Sets **************"
             format = '%6s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %10s %5s %9s %9s %10s'
             print format % (
-                "Handle", "Description", "State", "Scope", 
+                "Handle", "Description", "State", "Scope",
                 "ParentId", "ZoneIdList", "Event")
             for id, state in DoInterestManager._interests.items():
                 if len(state.events) == 0:
