@@ -110,6 +110,7 @@ class DoInterestManager(DirectObject.DirectObject):
         # keep track of request scopes that have not completed
         self._outstandingScopes = set()
         self._completeEventCount = ScratchPad(num=0)
+        self._allInterestsCompleteCallbacks = []
 
     def _getAnonymousEvent(self, desc):
         return 'anonymous-%s-%s' % (desc, DoInterestManager._SerialGen.next())
@@ -119,6 +120,13 @@ class DoInterestManager(DirectObject.DirectObject):
 
     def noNewInterests(self):
         return self._noNewInterests
+
+    def setAllInterestsCompleteCallback(self, callback):
+        if ((self._completeEventCount.num == 0) and
+            (self._completeDelayedCallback is None)):
+            callback()
+        else:
+            self._allInterestsCompleteCallbacks.append(callback)
 
     def getAllInterestsCompleteEvent(self):
         return 'allInterestsComplete-%s' % DoInterestManager._SerialNum
@@ -488,6 +496,9 @@ class DoInterestManager(DirectObject.DirectObject):
                 return self._completeEventCount.num > 0
             def sendEvent():
                 messenger.send(self.getAllInterestsCompleteEvent())
+                for callback in self._allInterestsCompleteCallbacks:
+                    callback()
+                self._allInterestsCompleteCallbacks = []
             self.cleanupWaitAllInterestsClosed()
             self._completeDelayedCallback = FrameDelayedCallback(
                 'waitForAllInterestCompletes',
