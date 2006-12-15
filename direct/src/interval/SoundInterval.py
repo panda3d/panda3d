@@ -5,6 +5,7 @@ __all__ = ['SoundInterval']
 from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import *
 import Interval
+import random
 
 class SoundInterval(Interval.Interval):
     # Name counter
@@ -100,3 +101,8 @@ class SoundInterval(Interval.Interval):
         if self.sound != None:
             self.sound.stop()
         self.state = CInterval.SPaused
+
+    def loop(self, startT = 0.0, endT = -1.0, playRate = 1.0, stagger=False):
+        Interval.Interval.loop(self, startT, endT, playRate)
+        if stagger:
+            self.setT(random.random() * self.getDuration())
