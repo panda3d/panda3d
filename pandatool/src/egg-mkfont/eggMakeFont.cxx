@@ -143,6 +143,15 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_int, NULL, &_tex_margin);
 
   add_option
+    ("rm", "n", 0,
+     "The amount of padding in screen units to place around the glyph when "
+     "rendered.  This differs from -pm in that it has no effect on the "
+     "generated texture map, only on the generated egg.  Use this in order to "
+     "space the characters out in case they appear to be too close together "
+     "when rendered. The default is 0.",
+     &EggMakeFont::dispatch_double, NULL, &_render_margin);
+
+  add_option
     ("sf", "factor", 0,
      "The scale factor of the generated image.  This is the factor by which "
      "the font image is generated oversized, then reduced to its final size, "
@@ -213,6 +222,7 @@ EggMakeFont() : EggWriter(true, false) {
   _point_size = 10.0;
   _poly_margin = 1.0;
   _tex_margin = 2;
+  _render_margin = 0.0;
   _palette_size[0] = _palette_size[1] = 256;
   _face_index = 0;
 
@@ -562,7 +572,7 @@ make_geom(PNMTextGlyph *glyph, int character) {
   // Now create a single point where the origin of the next character
   // will be.
 
-  EggVertex *v0 = make_vertex(LPoint2d(glyph->get_advance() / _pixels_per_unit, 0.0));
+  EggVertex *v0 = make_vertex(LPoint2d(glyph->get_advance() / _pixels_per_unit + _render_margin, 0.0));
   EggPoint *point = new EggPoint;
   group->add_child(point);
   point->add_vertex(v0);

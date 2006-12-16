@@ -75,6 +75,7 @@ private:
   double _point_size;
   double _poly_margin;
   int _tex_margin;
+  double _render_margin;
   bool _got_scale_factor;
   double _scale_factor;
   bool _no_reduce;
