@@ -42,11 +42,11 @@ class ControlManager:
         ist.append(inputState.watchWithModifiers("reverse", "mouse4", inputSource=inputState.Mouse))
         
         if self.wantWASD:
-            ist.append(inputState.watchWithModifiers("slideLeft", "arrow_left", inputSource=inputState.ArrowKeys))
+            ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done"))
             ist.append(inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop"))
             
-            ist.append(inputState.watchWithModifiers("slideRight", "arrow_right", inputSource=inputState.ArrowKeys))
+            ist.append(inputState.watchWithModifiers("turnRight", "arrow_right", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done"))
             ist.append(inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop"))
 
