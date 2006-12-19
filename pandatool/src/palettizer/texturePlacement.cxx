@@ -291,9 +291,14 @@ determine_size() {
   TexCoordd rounded_min_uv = min_uv;
   TexCoordd rounded_max_uv = max_uv;
 
+  //cout << get_name() << endl;
+
   // If so requested, round the minmax out to the next _round_unit.
   // This cuts down on unnecessary resizing of textures within the
   // palettes as the egg references change in trivial amounts.
+  //cout << "rounded_min_uv: " << rounded_min_uv << endl;
+  //cout << "rounded_max_uv: " << rounded_max_uv << endl;
+
   if (pal->_round_uvs) {
     rounded_max_uv[0] =
       ceil((rounded_max_uv[0] - pal->_round_fuzz) / pal->_round_unit) *
@@ -308,6 +313,9 @@ determine_size() {
     rounded_min_uv[1] =
       floor((rounded_min_uv[1] + pal->_round_fuzz) / pal->_round_unit) *
       pal->_round_unit;
+
+    //cout << "after rounded_min_uv: " << rounded_min_uv << endl;
+    //cout << "after rounded_max_uv: " << rounded_max_uv << endl;
   }
 
   // Now determine the size in pixels we require based on the UV's
@@ -910,9 +918,16 @@ compute_size_from_uvs(const TexCoordd &min_uv, const TexCoordd &max_uv) {
   _position._max_uv = max_uv;
 
   TexCoordd range = _position._max_uv - _position._min_uv;
+  //cout << "range: " << range << endl;
+
+  //cout << "_x_size texture: " << _texture->get_x_size() << endl;
+  //cout << "_y_size texture: " << _texture->get_y_size() << endl;
 
   _position._x_size = (int)floor(_texture->get_x_size() * range[0] + 0.5);
   _position._y_size = (int)floor(_texture->get_y_size() * range[1] + 0.5);
+
+  //cout << "_x_size: " << _position._x_size << endl;
+  //cout << "_y_size: " << _position._y_size << endl;
 
   // We arbitrarily require at least four pixels in each dimension.
   // Fewer than this may be asking for trouble.
@@ -920,7 +935,8 @@ compute_size_from_uvs(const TexCoordd &min_uv, const TexCoordd &max_uv) {
   _position._y_size = max(_position._y_size, 4);
 
   _position._margin = _texture->get_margin();
-
+  //cout << "margin: " << _position._margin << endl;
+  
   // Normally, we have interior margins, but if the image size is too
   // small--i.e. the margin size is too great a percentage of the
   // image size--we'll make them exterior margins so as not to overly

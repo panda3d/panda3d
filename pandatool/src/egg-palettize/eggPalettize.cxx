@@ -783,8 +783,11 @@ run() {
     pal->reset_images();
     _all_textures = true;
 
+    /* Asad: I disagree: unless :round is set to no from textures.txa, we
+       should always leave the _round_uvs to default.
     // Also turn off the rounding-up of UV's for this purpose.
     pal->_round_uvs = false;
+    */
   }
 
   if (_all_textures) {
