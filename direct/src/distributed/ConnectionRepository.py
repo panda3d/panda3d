@@ -231,7 +231,7 @@ class ConnectionRepository(
                 className = dclass.getName()
                 classDef = dcImports.get(className)
             if classDef is None:
-                self.notify.info("No class definition for %s." % (className))
+                self.notify.debug("No class definition for %s." % (className))
             else:
                 if type(classDef) == types.ModuleType:
                     if not hasattr(classDef, className):
