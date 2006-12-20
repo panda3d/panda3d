@@ -4842,6 +4842,10 @@ get_internal_image_format(Texture *tex) const {
   if (compression == Texture::CM_default) {
     compression = (compressed_textures) ? Texture::CM_on : Texture::CM_off;
   }
+  if (tex->get_render_to_texture()) {
+    // no compression for render targets
+    compression = Texture::CM_off;
+  }
   bool is_3d = (tex->get_texture_type() == Texture::TT_3d_texture);
 
   if (get_supports_compressed_texture_format(compression)) {
