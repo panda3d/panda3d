@@ -1776,6 +1776,27 @@ determine_cull_callback() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_audio_volume
+//       Access: Private
+//  Description: This is the private implementation of has_audio_volume().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_audio_volume() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_audio_volume) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
+  const RenderAttrib *attrib = get_attrib(AudioVolumeAttrib::get_class_type());
+  _audio_volume = (const AudioVolumeAttrib *)NULL;
+  if (attrib != (const RenderAttrib *)NULL) {
+    _audio_volume = DCAST(AudioVolumeAttrib, attrib);
+  }
+  _flags |= F_checked_audio_volume;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::update_pstats
 //       Access: Private
 //  Description: Moves the RenderState object from one PStats category

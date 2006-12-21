@@ -17,6 +17,7 @@
     ambientLight.I ambientLight.h \
     antialiasAttrib.I antialiasAttrib.h \
     attribSlots.h attribSlots.I \
+    audioVolumeAttrib.I audioVolumeAttrib.h \
     auxSceneData.I auxSceneData.h \
     bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
@@ -124,6 +125,7 @@
     ambientLight.cxx \
     antialiasAttrib.cxx \
     attribSlots.cxx \
+    audioVolumeAttrib.cxx \
     auxSceneData.cxx \
     bamFile.cxx \
     billboardEffect.cxx \
@@ -226,6 +228,7 @@
     ambientLight.I ambientLight.h \
     antialiasAttrib.I antialiasAttrib.h \
     attribSlots.h attribSlots.I \
+    audioVolumeAttrib.I audioVolumeAttrib.h \
     auxSceneData.I auxSceneData.h \
     bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \

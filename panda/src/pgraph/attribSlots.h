@@ -48,6 +48,7 @@
 #include "texGenAttrib.h"
 #include "textureAttrib.h"
 #include "transparencyAttrib.h"
+#include "audioVolumeAttrib.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AttribSlots
@@ -82,6 +83,7 @@ class EXPCL_PANDA AttribSlots
   CPT(TexMatrixAttrib)       _tex_matrix;
   CPT(TextureAttrib)         _texture;
   CPT(TransparencyAttrib)    _transparency;
+  CPT(AudioVolumeAttrib)     _audio_volume;
 
  public:
   AttribSlots();

@@ -747,6 +747,14 @@ PUBLISHED:
   bool has_antialias() const;
   unsigned short get_antialias() const;
 
+  bool has_audio_volume() const;
+  void clear_audio_volume();
+  void set_audio_volume(float volume,
+                        int priority = 0);
+  void set_audio_volume_off(int priority = 0);
+  float get_audio_volume() const;
+  float get_net_audio_volume() const;
+
   INLINE void adjust_all_priorities(int adjustment);
 
   // Variants on show and hide

@@ -47,6 +47,7 @@ class TexGenAttrib;
 class ClipPlaneAttrib;
 class ShaderAttrib;
 class FactoryParams;
+class AudioVolumeAttrib;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderState
@@ -147,6 +148,7 @@ PUBLISHED:
   INLINE const RenderModeAttrib *get_render_mode() const;
   INLINE const ClipPlaneAttrib *get_clip_plane() const;
   INLINE const ShaderAttrib *get_shader() const;
+  INLINE const AudioVolumeAttrib *get_audio_volume() const;
   
   int get_geom_rendering(int geom_rendering) const;
 
@@ -197,6 +199,7 @@ private:
   void determine_clip_plane();
   void determine_shader();
   void determine_cull_callback();
+  void determine_audio_volume();
 
   INLINE void set_destructing();
   INLINE bool is_destructing() const;
@@ -308,6 +311,7 @@ private:
   const RenderModeAttrib *_render_mode;
   const ClipPlaneAttrib *_clip_plane;
   const ShaderAttrib *_shader;
+  const AudioVolumeAttrib *_audio_volume;
   
   enum Flags {
     F_checked_bin_index     = 0x0001,
@@ -323,7 +327,8 @@ private:
     F_checked_clip_plane    = 0x0400,
     F_checked_shader        = 0x0800,
     F_checked_cull_callback = 0x1000,
-    F_has_cull_callback     = 0x2000,
+    F_checked_audio_volume  = 0x2000,
+    F_has_cull_callback     = 0x4000,
     F_is_destructing        = 0x8000,
   };
   unsigned short _flags;

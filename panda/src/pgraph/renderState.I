@@ -390,6 +390,25 @@ get_shader() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_audio_volume
+//       Access: Published
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of an AudioVolumeAttrib on this state.  It returns a
+//               pointer to the AudioVolumeAttrib, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const AudioVolumeAttrib *RenderState::
+get_audio_volume() const {
+  if ((_flags & F_checked_audio_volume) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal audio_volume cache.
+    ((RenderState *)this)->determine_audio_volume();
+  }
+  return _audio_volume;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::determine_bin
 //       Access: Private
 //  Description: This is the private implementation of get_bin().
