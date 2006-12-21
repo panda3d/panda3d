@@ -60,6 +60,10 @@ def activateSmoothing(smoothing, prediction):
             SmoothMover.setSmoothMode(SmoothMover.SMOn)
             SmoothMover.setPredictionMode(SmoothMover.PMOff)
             SmoothMover.setDelay(Lag)
+            # Set these other variables relative to the lag factor
+            SmoothMover.setExpectedBroadcastPeriod(Lag)
+            SmoothMover.setMaxPositionAge(Lag * 1.25)
+            SmoothMover.setResetVelocityAge(Lag * 1.5)
     else:
         # No smoothing, no prediction.
         SmoothMover.setSmoothMode(SmoothMover.SMOff)
