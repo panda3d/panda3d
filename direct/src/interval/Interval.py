@@ -56,6 +56,9 @@ class Interval(DirectObject):
     def getState(self):
         return self.state
 
+    def isPaused(self):
+        return self.getState() == CInterval.SPaused
+
     def isStopped(self):
         # Returns true if the interval has not been started, has already
         # played to its completion, or has been explicitly stopped via
