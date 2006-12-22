@@ -26,7 +26,8 @@ class SoundInterval(Interval.Interval):
     # than explicitly restarting the sound every time around. This
     # prevents a skip in the sound at every repetition (the gap in
     # the sound is caused by the delay between the end of the sound
-    # and the next taskMgr cycle)
+    # and the next taskMgr cycle). There still seems to be a skip
+    # in Miles when looping MP3s. =(
     def __init__(self, sound, loop = 0, duration = 0.0, name = None,
                  volume = 1.0, startTime = 0.0, node=None,
                  seamlessLoop=True):
