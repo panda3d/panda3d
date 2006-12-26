@@ -2084,6 +2084,20 @@ def tagWithCaller(obj):
 def isDefaultValue(x):
     return x == type(x)()
 
+def appendStr(obj, st):
+    """adds a string onto the __str__ output of an instance"""
+    def appendedStr(oldStr, st, self):
+        return oldStr() + st
+    oldStr = getattr(obj, '__str__', None)
+    if oldStr is None:
+        def stringer(s):
+            return s
+        oldStr = Functor(stringer, str(obj))
+        stringer = None
+    obj.__str__ = new.instancemethod(Functor(appendedStr, oldStr, st), obj, obj.__class__)
+    appendedStr = None
+    return obj
+
 # debugging functions that conditionally bring up the debugger in __dev__
 # all can be used with assert, as in 'assert _equal(a,b)'
 def setTrace():
@@ -2478,15 +2492,16 @@ def superFlattenShip(ship):
     return ship.flattenStrong()
 
 def exceptionLogged(f):
-    """decorator that prints the function name and all arguments if an
-    exception passes back through the stack frame
+    """decorator that appends the function name and all arguments to the
+    __str__ output of the exception if an exception passes back through
+    the stack frame
     """
     def _exceptionLogged(*args, **kArgs):
         try:
             return f(*args, **kArgs)
-        except:
+        except Exception, e:
             try:
-                s = 'STACK UNWIND: %s(' % f.func_name
+                s = '\nSTACK UNWIND: %s(' % f.func_name
                 for arg in args:
                     s += '%s, ' % arg
                 for key, value in kArgs.items():
@@ -2494,7 +2509,7 @@ def exceptionLogged(f):
                 if len(args) or len(kArgs):
                     s = s[:-2]
                 s += ')'
-                print s
+                appendStr(e, s)
             except:
                 print 'exceptionLogged(%s): ERROR IN PRINTING' % f.func_name
             raise
@@ -2564,3 +2579,4 @@ __builtin__._contains = _contains
 __builtin__._notIn = _notIn
 __builtin__.itype = itype
 __builtin__.exceptionLogged = exceptionLogged
+__builtin__.appendStr = appendStr
