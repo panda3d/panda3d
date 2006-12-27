@@ -772,7 +772,7 @@ class TaskManager:
     def profileNextFrame(self):
         self._profileNextFrame = True
 
-    @profiled('frame')
+    @profiled()
     def _profiledFrame(self, *args, **kArgs):
         return self.step(*args, **kArgs)
 

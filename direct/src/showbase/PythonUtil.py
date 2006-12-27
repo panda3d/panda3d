@@ -761,7 +761,7 @@ def profile(callback, name, terse):
     print '***** END PROFILE: %s *****' % name
     del __builtin__.__dict__['globalProfileFunc']
 
-def profiled(category, terse=False):
+def profiled(category=None, terse=False):
     """ decorator for profiling functions
     turn categories on and off via "want-profile-categoryName 1"
     
@@ -773,7 +773,7 @@ def profiled(category, terse=False):
 
     want-profile-particles 1
     """
-    assert type(category) is types.StringType, "must provide a category name for @profiled"
+    assert type(category) in (types.StringType, types.NoneType), "must provide a category name for @profiled"
 
     try:
         null = not __dev__
@@ -797,7 +797,7 @@ def profiled(category, terse=False):
                 _base = base
             except:
                 _base = simbase
-            if _base.config.GetBool('want-profile-%s' % category, 0):
+            if (category is None) or _base.config.GetBool('want-profile-%s' % category, 0):
                 return profile(Functor(f, *args, **kArgs), name, terse)
             else:
                 return f(*args, **kArgs)
