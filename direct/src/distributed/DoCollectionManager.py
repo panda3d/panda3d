@@ -191,7 +191,7 @@ class DoCollectionManager:
         else:
             self.notify.warning('handleSetLocation: object %s not present' % self.getMsgChannel())
 
-    @exceptionLogged
+    @exceptionLogged()
     def storeObjectLocation(self, object, parentId, zoneId):
         oldParentId = object.parentId
         oldZoneId = object.zoneId

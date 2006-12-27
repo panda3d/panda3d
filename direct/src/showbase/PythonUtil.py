@@ -2491,30 +2491,39 @@ def superFlattenShip(ship):
     #PHASE 5: flatten strong!
     return ship.flattenStrong()
 
-def exceptionLogged(f):
-    """decorator that appends the function name and all arguments to the
-    __str__ output of the exception if an exception passes back through
-    the stack frame
+def exceptionLogged(append=True):
+    """decorator that outputs the function name and all arguments
+    if an exception passes back through the stack frame
+    if append is true, string is appended to the __str__ output of
+    the exception. if append is false, string is printed to the log
+    directly. If the output will take up many lines, it's recommended
+    to set append to False so that the exception stack is not hidden
+    by the output of this decorator.
     """
-    def _exceptionLogged(*args, **kArgs):
-        try:
-            return f(*args, **kArgs)
-        except Exception, e:
+    def _decoratorFunc(f, append=append):
+        def _exceptionLogged(*args, **kArgs):
             try:
-                s = '\nSTACK UNWIND: %s(' % f.func_name
-                for arg in args:
-                    s += '%s, ' % arg
-                for key, value in kArgs.items():
-                    s += '%s=%s, ' % (key, value)
-                if len(args) or len(kArgs):
-                    s = s[:-2]
-                s += ')'
-                appendStr(e, s)
-            except:
-                print 'exceptionLogged(%s): ERROR IN PRINTING' % f.func_name
-            raise
-    _exceptionLogged.__doc__ = f.__doc__
-    return _exceptionLogged
+                return f(*args, **kArgs)
+            except Exception, e:
+                try:
+                    s = 'STACK UNWIND: %s(' % f.func_name
+                    for arg in args:
+                        s += '%s, ' % arg
+                    for key, value in kArgs.items():
+                        s += '%s=%s, ' % (key, value)
+                    if len(args) or len(kArgs):
+                        s = s[:-2]
+                    s += ')'
+                    if append:
+                        appendStr(e, '\n%s' % s)
+                    else:
+                        print s
+                except:
+                    print 'exceptionLogged(%s): ERROR IN PRINTING' % f.func_name
+                raise
+        _exceptionLogged.__doc__ = f.__doc__
+        return _exceptionLogged
+    return _decoratorFunc
 
 # class 'decorator' that records the stack at the time of creation
 # be careful with this, it creates a StackTrace, and that can take a
