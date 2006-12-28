@@ -2569,10 +2569,21 @@ def logMethodCalls(cls):
     __logMethodCall__ = None
     return cls
 
+# http://en.wikipedia.org/wiki/Golden_ratio
+GoldenRatio = (1. + math.sqrt(5.)) / 2.
+class GoldenRectangle:
+    @staticmethod
+    def getLongerEdge(shorter):
+        return shorter * GoldenRatio
+    @staticmethod
+    def getShorterEdge(longer):
+        return longer / GoldenRatio
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
 __builtin__.Queue = Queue
+__builtin__.Enum = Enum
 __builtin__.SerialNumGen = SerialNumGen
 __builtin__.ScratchPad = ScratchPad
 __builtin__.uniqueName = uniqueName
