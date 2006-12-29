@@ -179,7 +179,7 @@ write(ostream &out, unsigned int indent) const {
   out.width(indent+2); out<<""<<"_current_index "<<_current_index;
   if (_datagram) {
     out<<""<<" (of "<<(get_datagram().get_length())<<")";
-    out<<""<<" or in hex that's "<<(void*)_current_index<<" (of "
+    out<<""<<" / 0x"<<(void*)_current_index<<" (of 0x"
       <<(void*)(get_datagram().get_length())<<")\n";
     get_datagram().write(out, indent+2);
   } else {
