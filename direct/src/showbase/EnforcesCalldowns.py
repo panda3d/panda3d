@@ -62,41 +62,47 @@ class EnforcesCalldowns:
         if EnforcesCalldowns.notActive():
             return
 
-        # this map tracks how many times each func has been called
-        self._funcId2calls = {}
-        # this map tracks the 'latch' values for each func; if the call count
-        # for a func is greater than the latch, then the func has been called.
-        self._funcId2latch = {}
+        # protect against multiple calldowns via multiple inheritance
+        if hasattr(self, '_numInits'):
+            self._numInits += 1
+        else:
+            self._numInits = 1
 
-        if self.__class__ not in EnforcesCalldowns._class2funcName2funcIds:
-            # prepare stubs to enforce method call-downs
-            EnforcesCalldowns._class2funcName2funcIds.setdefault(self.__class__, {})
-            # look through all of our base classes and find matches
-            classes = ClassTree(self).getAllClasses()
-            # collect IDs of all the enforced methods
-            funcId2func = {}
-            for cls in classes:
-                for name, item in cls.__dict__.items():
-                    if id(item) in EnforcesCalldowns._decoId2funcId:
-                        funcId = EnforcesCalldowns._decoId2funcId[id(item)]
-                        funcId2func[funcId] = item
-                        EnforcesCalldowns._funcId2class[funcId] = cls
-            # add these funcs to the list for our class
+            # this map tracks how many times each func has been called
+            self._funcId2calls = {}
+            # this map tracks the 'latch' values for each func; if the call count
+            # for a func is greater than the latch, then the func has been called.
+            self._funcId2latch = {}
+
+            if self.__class__ not in EnforcesCalldowns._class2funcName2funcIds:
+                # prepare stubs to enforce method call-downs
+                EnforcesCalldowns._class2funcName2funcIds.setdefault(self.__class__, {})
+                # look through all of our base classes and find matches
+                classes = ClassTree(self).getAllClasses()
+                # collect IDs of all the enforced methods
+                funcId2func = {}
+                for cls in classes:
+                    for name, item in cls.__dict__.items():
+                        if id(item) in EnforcesCalldowns._decoId2funcId:
+                            funcId = EnforcesCalldowns._decoId2funcId[id(item)]
+                            funcId2func[funcId] = item
+                            EnforcesCalldowns._funcId2class[funcId] = cls
+                # add these funcs to the list for our class
+                funcName2funcIds = EnforcesCalldowns._class2funcName2funcIds[self.__class__]
+                for funcId, func in funcId2func.items():
+                    funcName2funcIds.setdefault(func.__name__, [])
+                    funcName2funcIds[func.__name__].append(funcId)
+
+            # now run through all the enforced funcs for this class and insert
+            # stub methods to do the enforcement
             funcName2funcIds = EnforcesCalldowns._class2funcName2funcIds[self.__class__]
-            for funcId, func in funcId2func.items():
-                funcName2funcIds.setdefault(func.__name__, [])
-                funcName2funcIds[func.__name__].append(funcId)
-
-        # now run through all the enforced funcs for this class and insert
-        # stub methods to do the enforcement
-        funcName2funcIds = EnforcesCalldowns._class2funcName2funcIds[self.__class__]
-        self._obscuredMethodNames = set()
-        for name in funcName2funcIds:
-            oldMethod = getattr(self, name)
-            self._obscuredMethodNames.add(name)
-            setattr(self, name, new.instancemethod(
-                Functor(EnforcesCalldowns._enforceCalldowns, oldMethod, name),
-                self, self.__class__))
+            self._obscuredMethodNames = set()
+            for name in funcName2funcIds:
+                oldMethod = getattr(self, name)
+                self._obscuredMethodNames.add(name)
+                setattr(self, name, new.instancemethod(
+                    Functor(EnforcesCalldowns._enforceCalldowns, oldMethod, name),
+                    self, self.__class__))
             
     def EC_destroy(self):
         """this used to be called destroy() but it was masking destroy() functions
@@ -105,12 +111,21 @@ class EnforcesCalldowns:
         if EnforcesCalldowns.notActive():
             return
         # this must be called on destruction to prevent memory leaks
-        for name in self._obscuredMethodNames:
-            delattr(self, name)
-        del self._obscuredMethodNames
-        # this opens up more cans of worms. Let's keep it closed for the moment
-        #del self._funcId2calls
-        #del self._funcId2latch
+        # protect against multiple calldowns via multiple inheritance
+        assert hasattr(self, '_numInits'), (
+            'too many calls to EnforcesCalldowns.EC_destroy, class=%s' % self.__class__.__name__)
+        if self._numInits == 1:
+            for name in self._obscuredMethodNames:
+                # Functors need to be destroyed to prevent garbage leaks
+                getattr(self, name).destroy()
+                delattr(self, name)
+            del self._obscuredMethodNames
+            # this opens up more cans of worms. Let's keep it closed for the moment
+            #del self._funcId2calls
+            #del self._funcId2latch
+            del self._numInits
+        else:
+            self._numInits -= 1
 
     def skipCalldown(self, method):
         if EnforcesCalldowns.notActive():
@@ -164,15 +179,35 @@ if not EnforcesCalldowns.notActive():
     class CalldownEnforceTestSubclass(CalldownEnforceTest):
         def testFunc(self):
             CalldownEnforceTest.testFunc(self)
+        def destroy(self):
+            CalldownEnforceTest.EC_destroy(self)
     class CalldownEnforceTestSubclassFail(CalldownEnforceTest):
         def testFunc(self):
             pass
     class CalldownEnforceTestSubclassSkip(CalldownEnforceTest):
         def testFunc(self):
             self.skipCalldown(CalldownEnforceTest.testFunc)
+    class CalldownEnforceTestSubclass2(CalldownEnforceTest):
+        def testFunc(self):
+            CalldownEnforceTest.testFunc(self)
+        def destroy(self):
+            CalldownEnforceTest.EC_destroy(self)
+    class CalldownEnforceTestDiamond(CalldownEnforceTestSubclass,
+                                     CalldownEnforceTestSubclass2):
+        def __init__(self):
+            CalldownEnforceTestSubclass.__init__(self)
+            CalldownEnforceTestSubclass2.__init__(self)
+        def testFunc(self):
+            CalldownEnforceTestSubclass.testFunc(self)
+            CalldownEnforceTestSubclass2.testFunc(self)
+        def destroy(self):
+            CalldownEnforceTestSubclass.destroy(self)
+            CalldownEnforceTestSubclass2.destroy(self)
+            
     cets = CalldownEnforceTestSubclass()
     cetsf = CalldownEnforceTestSubclassFail()
     cetss = CalldownEnforceTestSubclassSkip()
+    cetd = CalldownEnforceTestDiamond()
     raised = False
     try:
         cets.testFunc()
@@ -194,12 +229,26 @@ if not EnforcesCalldowns.notActive():
         raised = True
     if raised:
         raise "calldownEnforced.skipCalldown raised when it shouldn't"
+    raised = False
+    cetd.testFunc()
+    msg = ''
+    try:
+        # make sure we're OK to call down to destroy multiple times
+        cetd.destroy()
+    except Exception, e:
+        msg = str(e)
+        raised = True
+    if raised:
+        raise "calldownEnforcedDiamond.destroy raised when it shouldn't\n%s" % msg
     cetss.EC_destroy()
     cetsf.EC_destroy()
     cets.EC_destroy()
+    del cetd
     del cetss
     del cetsf
     del cets
+    del CalldownEnforceTestDiamond
+    del CalldownEnforceTestSubclass2
     del CalldownEnforceTestSubclassSkip
     del CalldownEnforceTestSubclassFail
     del CalldownEnforceTestSubclass
