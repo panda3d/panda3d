@@ -622,8 +622,8 @@ class ShipPilot2(PhysicsWalker):
                     self.sailsDeployed = -1.0
             self.__speed = self.ship.acceleration * self.sailsDeployed
         else:
-            self.__speed=(forward and self.ship.acceleration) or \
-                (reverse and -self.ship.reverseAcceleration)
+            self.__speed=(forward and -self.ship.acceleration) or \
+                (reverse and self.ship.reverseAcceleration)
             #self.__speed=(forward and min(dt*(self.__speed + self.ship.acceleration), self.ship.maxSpeed) or
             #        reverse and min(dt*(self.__speed - self.ship.reverseAcceleration), self.ship.maxReverseSpeed))
             
