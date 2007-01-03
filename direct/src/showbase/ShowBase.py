@@ -471,7 +471,7 @@ class ShowBase(DirectObject.DirectObject):
 
         if gsg:
             win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
-                                                 props, flags)
+                                                 props, flags, gsg)
         else:
             win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
                                                  props, flags)
@@ -503,10 +503,11 @@ class ShowBase(DirectObject.DirectObject):
         """
         # First, remove all of the cameras associated with display
         # regions on the window.
-        numRegions = win.getNumDisplayRegions()
+        numRegions = win.getNumDisplayRegions()        
         for i in range(numRegions):
             dr = win.getDisplayRegion(i)
             cam = NodePath(dr.getCamera())
+            
             dr.setCamera(NodePath())
 
             if not cam.isEmpty() and cam.node().getNumDisplayRegions() == 0:
@@ -605,6 +606,8 @@ class ShowBase(DirectObject.DirectObject):
             oldClearColor = VBase4(self.win.getClearColor())
             oldClearDepthActive = self.win.getClearDepthActive()
             oldClearDepth = self.win.getClearDepth()
+            oldClearStencilActive = self.win.getClearStencilActive()
+            oldClearStencil = self.win.getClearStencil()            
             self.closeWindow(self.win)
 
         # Open a new window.
@@ -631,6 +634,8 @@ class ShowBase(DirectObject.DirectObject):
                 self.win.setClearColor(oldClearColor)
                 self.win.setClearDepthActive(oldClearDepthActive)
                 self.win.setClearDepth(oldClearDepth)
+                self.win.setClearStencilActive(oldClearStencilActive)
+                self.win.setClearStencil(oldClearStencil)
 
             self.setFrameRateMeter(self.config.GetBool(
                 'show-frame-rate-meter', 0))
