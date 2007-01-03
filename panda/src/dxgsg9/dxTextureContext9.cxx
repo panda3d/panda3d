@@ -87,7 +87,8 @@ create_texture(DXScreenData &scrn) {
   int num_alpha_bits;     //  number of alpha bits in texture pixfmt
   D3DFORMAT target_pixel_format = D3DFMT_UNKNOWN;
   bool needs_luminance = false;
-
+  bool compress_texture = false;
+  
   nassertr(IS_VALID_PTR(get_texture()), false);
 
   delete_texture();
@@ -143,6 +144,24 @@ create_texture(DXScreenData &scrn) {
     break;
   }
 
+  // check for texture compression
+  switch (get_texture()->get_texture_type()) {
+    case Texture::TT_1d_texture:
+    case Texture::TT_2d_texture:
+    case Texture::TT_cube_map:
+      // check config setting
+      if (compressed_textures) {
+        // no compression for render target textures
+        if (get_texture()->get_render_to_texture() == false) {
+          compress_texture = true;
+        }
+      }
+      break;
+    case Texture::TT_3d_texture:
+      // not supported by all video chips
+      break;
+  }
+  
   // make sure we handled all the possible cases
   nassertr(_d3d_format != D3DFMT_UNKNOWN, false);
 
@@ -318,6 +337,9 @@ create_texture(DXScreenData &scrn) {
       break; //bail
 
     if (!dx_force_16bpptextures) {
+      if (compress_texture) {
+        CHECK_FOR_FMT(DXT3, Conv32toDXT3);    
+      }
       if (num_color_channels == 4) {
         CHECK_FOR_FMT(A8R8G8B8, Conv32to32);
       } else {
@@ -345,9 +367,9 @@ create_texture(DXScreenData &scrn) {
 #ifndef FORCE_16bpp_1555
       if (num_alpha_bits == 1)
 #endif
-        {
-          CHECK_FOR_FMT(A1R5G5B5, Conv32to16_1555);
-        }
+      {
+        CHECK_FOR_FMT(A1R5G5B5, Conv32to16_1555);
+      }
 
       // normally prefer 4444 due to better alpha channel resolution
       CHECK_FOR_FMT(A4R4G4B4, Conv32to16_4444);
@@ -372,7 +394,12 @@ create_texture(DXScreenData &scrn) {
   case 24:
     nassertr(num_color_channels == 3, false);
 
+    if (compress_texture) {
+      CHECK_FOR_FMT(DXT1, Conv24toDXT1);    
+    }
+
     if (!dx_force_16bpptextures) {
+//    if (!(want_16bit_rgb_textures || dx_force_16bpptextures)) {
       CHECK_FOR_FMT(R8G8B8, Conv24to24);
 
       // no 24-bit fmt.  look for 32 bit fmt (note: this is
@@ -381,7 +408,7 @@ create_texture(DXScreenData &scrn) {
 
       CHECK_FOR_FMT(X8R8G8B8, Conv24to32);
     }
-
+    
     // no 24-bit or 32 fmt.  look for 16 bit fmt (higher res 565 1st)
     CHECK_FOR_FMT(R5G6B5, Conv24to16_0565);
     CHECK_FOR_FMT(X1R5G5B5, Conv24to16_X555);
@@ -401,9 +428,9 @@ create_texture(DXScreenData &scrn) {
 #ifndef FORCE_16bpp_1555
       if (num_alpha_bits == 1)
 #endif
-        {
-          CHECK_FOR_FMT(A1R5G5B5, ConvLum16to16_1555);
-        }
+      {
+        CHECK_FOR_FMT(A1R5G5B5, ConvLum16to16_1555);
+      }
 
       // normally prefer 4444 due to better alpha channel resolution
       CHECK_FOR_FMT(A4R4G4B4, ConvLum16to16_4444);
@@ -768,6 +795,13 @@ create_texture(DXScreenData &scrn) {
       bytes_per_texel = 16.0f;
       break;
 
+    case D3DFMT_DXT1:
+      bytes_per_texel = 0.5f;
+      break;
+    case D3DFMT_DXT3:
+      bytes_per_texel = 1.0f;
+      break;
+      
     default:
       dxgsg9_cat.error()
         << "D3D create_texture ( ) unknown texture format\n";
@@ -798,6 +832,14 @@ create_texture(DXScreenData &scrn) {
         (target_width, target_height, mip_level_count, usage,
          target_pixel_format, pool, &_d3d_2d_texture, NULL);
       _d3d_texture = _d3d_2d_texture;
+      
+/* DEBUG      
+if (get_texture()->get_render_to_texture ( )) {
+  printf ("dtc %p \n", this);
+  printf ("_d3d_2d_texture %p \n", _d3d_2d_texture);
+//  __debugbreak();
+}
+*/
       break;
 
     case Texture::TT_3d_texture:
