@@ -23,7 +23,8 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
 
     def disable(self):
         if self.activeState != DistributedObject.ESDisabled:
-            self.reparentTo(hidden)
+            if not self.isEmpty():
+                self.reparentTo(hidden)
             DistributedObject.DistributedObject.disable(self)
 
     def delete(self):
