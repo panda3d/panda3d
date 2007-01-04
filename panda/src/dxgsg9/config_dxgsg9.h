@@ -78,6 +78,8 @@ extern ConfigVariableBool dx_use_dynamic_textures;
 // DX device options
 extern ConfigVariableBool dx_use_multithread;
 extern ConfigVariableBool dx_use_puredevice;
+extern ConfigVariableBool dx_disable_driver_management;
+extern ConfigVariableBool dx_disable_driver_management_ex;
 
 // nVidia's performace heads up display
 extern ConfigVariableBool dx_use_nvperfhud;

@@ -688,6 +688,13 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
     dwBehaviorFlags |= D3DCREATE_PUREDEVICE;
   }
 
+  if (dx_disable_driver_management) {
+    dwBehaviorFlags |= D3DCREATE_DISABLE_DRIVER_MANAGEMENT;
+  }
+  if (dx_disable_driver_management_ex) {
+    dwBehaviorFlags |= D3DCREATE_DISABLE_DRIVER_MANAGEMENT_EX;
+  }
+  
   if (is_fullscreen()) {
     // CREATE FULLSCREEN BUFFERS
 

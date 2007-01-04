@@ -188,6 +188,14 @@ ConfigVariableBool dx_use_multithread
 ConfigVariableBool dx_use_puredevice
 ("dx-use-puredevice", false);
 
+// DX device option
+ConfigVariableBool dx_disable_driver_management
+("dx-disable-driver-management", false);
+
+// DX device option
+ConfigVariableBool dx_disable_driver_management_ex
+("dx-disable-driver-management-ex", false);
+
 // nVidia's performace heads up display
 ConfigVariableBool dx_use_nvperfhud
 ("dx-use-nvperfhud", false);
