@@ -648,16 +648,37 @@ class Actor(DirectObject, NodePath):
     def setCenter(self, center):
         if center != None:
             self.__LODNode.node().setCenter(center)
-            
-    def update(self, lod=0):
-        lodnames = self.getLODNames()
-        if (lod < len(lodnames)):
-            partDefs = self.__partBundleDict[lodnames[lod]].values()
-            for partDef in partDefs:
-                # print "updating: %s" % (partBundle.node())
-                partDef.partBundle.update()
+
+    def update(self, lod=0, animName=None, partName='modelRoot',
+               lodName=None, force=False):
+        """ Updates all of the Actor's joints in the indicated LOD.
+        The LOD may be specified by name, or by number, where 0 is the
+        highest level of detail, 1 is the next highest, and so on.
+
+        If force is True, this will update every joint, even if we
+        don't believe it's necessary.
+        
+        Returns True if any joint has changed as a result of this,
+        False otherwise. """
+
+        if lodName == None:
+            lodNames = self.getLODNames()
+        else:
+            lodNames = [lodName]
+
+        anyChanged = False
+        if (lod < len(lodNames)):
+            partBundle = self.getPartBundle(partName, lodNames[lod])
+            if force:
+                if partBundle.forceUpdate():
+                    anyChanged = True
+            else:
+                if partBundle.update():
+                    anyChanged = True
         else:
             self.notify.warning('update() - no lod: %d' % lod)
+
+        return anyChanged
 
     def getFrameRate(self, animName=None, partName=None):
         """getFrameRate(self, string, string=None)
@@ -1298,9 +1319,9 @@ class Actor(DirectObject, NodePath):
         """
         bundles = []
         
-        for lodName, bundleDict in self.__partBundleDict.items():
+        for lodName, partBundleDict in self.__partBundleDict.items():
             if partName == None:
-                for partDef in bundleDict.values():
+                for partDef in partBundleDict.values():
                     bundles.append(partDef.partBundle)
 
             else:
@@ -1891,33 +1912,64 @@ class Actor(DirectObject, NodePath):
         from direct.interval import ActorInterval
         return ActorInterval.ActorInterval(self, *args, **kw)
 
-    def printAnimBlends(self, animName=None, partName=None, lodName=None):
-        out = ''
-        first = True
+    def getAnimBlends(self, animName=None, partName=None, lodName=None):
+        """ Returns a list of the form:
+
+        [ (lodName, [(animName, [(partName, effect), (partName, effect), ...]),
+                     (animName, [(partName, effect), (partName, effect), ...]),
+                     ...]),
+          (lodName, [(animName, [(partName, effect), (partName, effect), ...]),
+                     (animName, [(partName, effect), (partName, effect), ...]),
+                     ...]),
+           ... ]
+
+        This list reports the non-zero control effects for each
+        partName within a particular animation and LOD. """
+
+        result = []
+
         if animName is None:
             animNames = self.getAnimNames()
         else:
             animNames = [animName]
-        for animName in animNames:
-            if animName is 'nothing':
-                continue
-            thisAnim = '%s: ' % animName
-            totalEffect = 0.
-            controls = self.getAnimControls(animName, partName, lodName)
-            for control in controls:
-                part = control.getPart()
-                name = part.getName()
-                effect = part.getControlEffect(control)
-                if effect > 0.:
-                    totalEffect += effect
-                    thisAnim += ('%s:%.3f, ' % (name, effect))
-            # don't print anything if this animation is not being played
-            if totalEffect > 0.:
-                if not first:
-                    out += '\n'
-                first = False
-                out += thisAnim
-        print out
+
+        if lodName is None:
+            lodNames = self.getLODNames()
+        else:
+            lodNames = [lodName]
+
+        if partName == None and self.__subpartsComplete:
+            partNames = self.__subpartDict.keys()
+        else:
+            partNames = [partName]
+
+        for lodName in lodNames:
+            animList = []
+            for animName in animNames:
+                blendList = []
+                for partName in partNames:
+                    control = self.getAnimControl(animName, partName, lodName)
+                    if control:
+                        part = control.getPart()
+                        effect = part.getControlEffect(control)
+                        if effect > 0.:
+                            blendList.append((partName, effect))
+                if blendList:
+                    animList.append((animName, blendList))
+            if animList:
+                result.append((lodName, animList))
+
+        return result
+    
+    def printAnimBlends(self, animName=None, partName=None, lodName=None):
+        for lodName, animList in self.getAnimBlends(animName, partName, lodName):
+            print 'LOD %s:' % (lodName)
+            for animName, blendList in animList:
+
+                list = []
+                for partName, effect in blendList:
+                    list.append('%s:%.3f' % (partName, effect))
+                print '  %s: %s' % (animName, ', '.join(list))
 
     def osdAnimBlends(self, animName=None, partName=None, lodName=None):
         if not onScreenDebug.enabled:
