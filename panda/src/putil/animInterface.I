@@ -119,7 +119,11 @@ pingpong(bool restart, double from, double to) {
 ////////////////////////////////////////////////////////////////////
 INLINE void AnimInterface::
 stop() {
-  pose(get_full_fframe());
+  CDWriter cdata(_cycler);
+  cdata->pose(cdata->get_full_fframe());
+
+  // Don't call animation_activated() here; stopping an animation
+  // should not activate it.
 }
 
 ////////////////////////////////////////////////////////////////////
