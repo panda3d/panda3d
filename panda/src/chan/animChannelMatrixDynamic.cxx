@@ -77,6 +77,9 @@ has_changed(double, double) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
 get_value(int, LMatrix4f &mat) {
+  if (_value_node != (PandaNode *)NULL) {
+    _value = _value_node->get_transform();
+  }
   mat = _value->get_mat();
 }
 
@@ -87,7 +90,10 @@ get_value(int, LMatrix4f &mat) {
 //               without any scale or shear information.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
-get_value_no_scale_shear(int frame, LMatrix4f &mat) {
+get_value_no_scale_shear(int, LMatrix4f &mat) {
+  if (_value_node != (PandaNode *)NULL) {
+    _value = _value_node->get_transform();
+  }
   if (_value->has_scale() || _value->has_shear()) {
     compose_matrix(mat, LVecBase3f(1.0f, 1.0f, 1.0f),
                    _value->get_hpr(), _value->get_pos());
@@ -103,6 +109,9 @@ get_value_no_scale_shear(int frame, LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
 get_scale(int, LVecBase3f &scale) {
+  if (_value_node != (PandaNode *)NULL) {
+    _value = _value_node->get_transform();
+  }
   scale = _value->get_scale();
 }
 
@@ -115,6 +124,9 @@ get_scale(int, LVecBase3f &scale) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
 get_hpr(int, LVecBase3f &hpr) {
+  if (_value_node != (PandaNode *)NULL) {
+    _value = _value_node->get_transform();
+  }
   hpr = _value->get_hpr();
 }
 
@@ -127,6 +139,9 @@ get_hpr(int, LVecBase3f &hpr) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
 get_quat(int, LQuaternionf &quat) {
+  if (_value_node != (PandaNode *)NULL) {
+    _value = _value_node->get_transform();
+  }
   quat = _value->get_quat();
 }
 
@@ -139,6 +154,9 @@ get_quat(int, LQuaternionf &quat) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
 get_pos(int, LVecBase3f &pos) {
+  if (_value_node != (PandaNode *)NULL) {
+    _value = _value_node->get_transform();
+  }
   pos = _value->get_pos();
 }
 
@@ -151,6 +169,9 @@ get_pos(int, LVecBase3f &pos) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
 get_shear(int, LVecBase3f &shear) {
+  if (_value_node != (PandaNode *)NULL) {
+    _value = _value_node->get_transform();
+  }
   shear = _value->get_shear();
 }
 

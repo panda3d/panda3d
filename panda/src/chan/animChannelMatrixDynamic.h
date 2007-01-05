@@ -61,6 +61,9 @@ PUBLISHED:
   void set_value(const TransformState *value);
   void set_value_node(PandaNode *node);
 
+  INLINE const TransformState *get_value_transform() const;
+  INLINE PandaNode *get_value_node() const;
+
 private:
   // This is filled in only if we are using the set_value_node()
   // interface to get an implicit value from the transform on the
