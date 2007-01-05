@@ -23,7 +23,8 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 '_equal', '_notEqual', '_isNone', '_notNone', '_contains', '_notIn',
 'ScratchPad', 'Sync', 'RefCounter', 'itype', 'getNumberedTypedString',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
-'FrameDelayedCallback', 'ArgumentEater', 'ClassTree', 'getBase','superFlattenShip']
+'FrameDelayedCallback', 'ArgumentEater', 'ClassTree', 'getBase',
+'superFlattenShip','report','HotkeyBreaker']
 
 import types
 import string
@@ -2578,6 +2579,34 @@ class GoldenRectangle:
     @staticmethod
     def getShorterEdge(longer):
         return longer / GoldenRatio
+
+class HotkeyBreaker:
+    def __init__(self,breakKeys = []):
+        from direct.showbase.DirectObject import DirectObject
+        self.do = DirectObject()
+        self.breakKeys = {}
+        for key in breakKeys:
+            self.addBreakKey(key)
+        
+    def addBreakKey(self,breakKey):
+        if __dev__:
+            self.do.accept(breakKey,self.breakFunc,extraArgs = [breakKey])
+        
+    def removeBreakKey(self,breakKey):
+        if __dev__:
+            self.do.ignore(breakKey)
+
+    def breakFunc(self,breakKey):
+        if __dev__:
+            self.breakKeys[breakKey] = True
+
+    def setBreakPt(self,breakKey = None):
+        if __dev__:
+            if breakKey == None:
+                import pdb;pdb.set_trace()
+            if self.breakKeys.pop(breakKey,False):
+                import pdb;pdb.set_trace()
+
 
 import __builtin__
 __builtin__.Functor = Functor
