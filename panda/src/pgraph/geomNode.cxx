@@ -45,6 +45,7 @@ GeomNode(const string &name) :
   PandaNode(name)
 {
   // GeomNodes have a certain set of bits on by default.
+  _preserved = false;
   set_into_collide_mask(get_default_collide_mask());
 }
 
@@ -56,7 +57,8 @@ GeomNode(const string &name) :
 GeomNode::
 GeomNode(const GeomNode &copy) :
   PandaNode(copy),
-  _cycler(copy._cycler)
+  _cycler(copy._cycler),
+  _preserved(copy._preserved)
 {
 }
 
@@ -221,6 +223,46 @@ xform(const LMatrix4f &mat) {
   GeomTransformer transformer;
   transformer.transform_vertices(this, mat);
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::safe_to_flatten
+//       Access: Public, Virtual
+//  Description: Transforms the contents of this node by the indicated
+//               matrix, if it means anything to do so.  For most
+//               kinds of nodes, this does nothing.
+//
+//               For a GeomNode, this does the right thing, but it is
+//               better to use a GeomTransformer instead, since it
+//               will share the new arrays properly between different
+//               GeomNodes.
+////////////////////////////////////////////////////////////////////
+bool GeomNode::
+safe_to_flatten() const {
+  if(_preserved)
+    return false;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::safe_to_combine
+//       Access: Public, Virtual
+//  Description: Transforms the contents of this node by the indicated
+//               matrix, if it means anything to do so.  For most
+//               kinds of nodes, this does nothing.
+//
+//               For a GeomNode, this does the right thing, but it is
+//               better to use a GeomTransformer instead, since it
+//               will share the new arrays properly between different
+//               GeomNodes.
+////////////////////////////////////////////////////////////////////
+bool GeomNode::
+safe_to_combine() const {
+  if(_preserved)
+    return false;
+  return true;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::combine_with

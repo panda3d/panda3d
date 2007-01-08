@@ -57,7 +57,12 @@ public:
   virtual bool is_renderable() const;
   virtual CollideMask get_legal_collide_mask() const;
 
+  virtual bool safe_to_flatten() const;
+  virtual bool safe_to_combine() const;
+
 PUBLISHED:
+
+  INLINE void set_preserved(bool value);
   INLINE int get_num_geoms() const;
   INLINE const Geom *get_geom(int n) const;
   INLINE Geom *get_unique_geom(int n);
@@ -98,6 +103,8 @@ public:
   };
 
 private:
+
+  bool _preserved;
   typedef RefCountObj< pvector<GeomEntry> > GeomList;
   typedef pmap<const InternalName *, int> NameCount;
 

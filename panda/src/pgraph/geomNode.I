@@ -28,6 +28,17 @@ get_num_geoms() const {
   return cdata->get_geoms()->size();
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::get_num_geoms
+//       Access: Public
+//  Description: Returns the number of geoms in the node.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomNode::
+set_preserved(bool value){
+  _preserved = value;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::get_geom
 //       Access: Public
