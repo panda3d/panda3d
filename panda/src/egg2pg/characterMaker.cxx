@@ -61,7 +61,6 @@ CharacterMaker(EggGroup *root, EggLoader &loader)
 Character *CharacterMaker::
 make_node() {
   make_bundle();
-  _character_node->_parts = _parts;
   return _character_node;
 }
 
