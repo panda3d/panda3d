@@ -42,7 +42,6 @@ PStatCollector Character::_animation_pcollector("*:Animation");
 Character::
 Character(const Character &copy) :
   PartBundleNode(copy),
-  _parts(copy._parts),
   _joints_pcollector(copy._joints_pcollector),
   _skinning_pcollector(copy._skinning_pcollector)
 {
@@ -376,11 +375,6 @@ copy_joints(PartGroup *copy, PartGroup *orig) {
     copy->_children.push_back(copy_child);
     copy_joints(copy_child, orig_child);
   }
-
-  Parts::iterator pi = find(_parts.begin(), _parts.end(), orig);
-  if (pi != _parts.end()) {
-    (*pi) = copy;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -424,7 +418,6 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
   GeomSliderMap gsmap;
   r_copy_char(this, from_char, from_char, node_map, joint_map, 
               gvmap, gjmap, gsmap);
-  copy_node_pointers(from_char, node_map);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -557,64 +550,6 @@ copy_geom(const Geom *source, const Character *from,
   dest->set_vertex_data(new_vdata);
   
   return dest;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Character::copy_node_pointers
-//       Access: Public
-//  Description: Creates _net_transform_nodes and _local_transform_nodes
-//               as appropriate in each of the Character's joints, as
-//               copied from the other Character.
-////////////////////////////////////////////////////////////////////
-void Character::
-copy_node_pointers(const Character *from, const Character::NodeMap &node_map) {
-  nassertv(_parts.size() == from->_parts.size());
-  for (int i = 0; i < (int)_parts.size(); i++) {
-    if (_parts[i]->is_of_type(CharacterJoint::get_class_type())) {
-      nassertv(_parts[i] != from->_parts[i]);
-      CharacterJoint *source_joint;
-      CharacterJoint *dest_joint;
-      DCAST_INTO_V(source_joint, from->_parts[i]);
-      DCAST_INTO_V(dest_joint, _parts[i]);
-
-      CharacterJoint::NodeList::const_iterator ai;
-      for (ai = source_joint->_net_transform_nodes.begin();
-           ai != source_joint->_net_transform_nodes.end();
-           ++ai) {
-        PandaNode *source_node = (*ai);
-
-        NodeMap::const_iterator mi;
-        mi = node_map.find(source_node);
-        if (mi != node_map.end()) {
-          PandaNode *dest_node = (*mi).second;
-
-          // Here's an internal joint that the source Character was
-          // animating directly.  We'll animate our corresponding
-          // joint the same way.
-          dest_joint->set_character(this);
-          dest_joint->add_net_transform(dest_node);
-        }
-      }
-
-      for (ai = source_joint->_local_transform_nodes.begin();
-           ai != source_joint->_local_transform_nodes.end();
-           ++ai) {
-        PandaNode *source_node = (*ai);
-
-        NodeMap::const_iterator mi;
-        mi = node_map.find(source_node);
-        if (mi != node_map.end()) {
-          PandaNode *dest_node = (*mi).second;
-
-          // Here's an internal joint that the source Character was
-          // animating directly.  We'll animate our corresponding
-          // joint the same way.
-          dest_joint->set_character(this);
-          dest_joint->add_local_transform(dest_node);
-        }
-      }
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -820,12 +755,7 @@ register_with_read_factory() {
 void Character::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PartBundleNode::write_datagram(manager, dg);
-
-  dg.add_uint16(_parts.size());
-  Parts::const_iterator pi;
-  for (pi = _parts.begin(); pi != _parts.end(); pi++) {
-    manager->write_pointer(dg, (*pi));
-  }
+  dg.add_uint16(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -837,14 +767,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 int Character::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int pi = PartBundleNode::complete_pointers(p_list, manager);
-
-  int num_parts = _parts.size();
-  for (int i = 0; i < num_parts; i++) {
-    _parts[i] = DCAST(PartGroup, p_list[pi++]);
-  }
-
-  return pi;
+  return PartBundleNode::complete_pointers(p_list, manager) + _temp_num_parts;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -881,12 +804,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   // Read the number of parts to expect in the _parts list, and then
   // fill the array up with NULLs.  We'll fill in the actual values in
   // complete_pointers, later.
-  int num_parts = scan.get_uint16();
-  _parts.clear();
-  _parts.reserve(num_parts);
-  for (int i = 0; i < num_parts; i++) {
+  _temp_num_parts = scan.get_uint16();
+  for (int i = 0; i < _temp_num_parts; i++) {
     manager->read_pointer(scan);
-    _parts.push_back((PartGroup *)NULL);
   }
 
 #ifdef DO_PSTATS
