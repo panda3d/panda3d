@@ -129,6 +129,7 @@ private:
   PT(TextureStage) make_texture_stage(const EggTexture *egg_tex);
 
   void separate_switches(EggNode *egg_node);
+  void emulate_bface(EggNode *egg_node);
 
   PandaNode *make_node(EggNode *egg_node, PandaNode *parent);
   PandaNode *make_node(EggBin *egg_bin, PandaNode *parent);

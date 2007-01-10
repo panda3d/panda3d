@@ -189,6 +189,10 @@ build_graph() {
   // single polyset.
   separate_switches(_data);
 
+  if (egg_emulate_bface) {
+    emulate_bface(_data);
+  }
+
   // Then bin up the polysets and LOD nodes.
   _data->remove_invalid_primitives(true);
   EggBinner binner(*this);
@@ -1513,6 +1517,58 @@ separate_switches(EggNode *egg_node) {
 
       ci = cnext;
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::emulate_bface
+//       Access: Private
+//  Description: Looks for EggPolygons with a bface flag applied to
+//               them.  Any such polygons are duplicated into a pair
+//               of back-to-back polygons, and the bface flag is
+//               removed.
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+emulate_bface(EggNode *egg_node) {
+  if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
+    EggGroupNode *egg_group = DCAST(EggGroupNode, egg_node);
+    PT(EggGroupNode) dup_prims = new EggGroupNode;
+
+    EggGroupNode::iterator ci;
+    for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
+      PT(EggNode) child = (*ci);
+      if (child->is_of_type(EggPolygon::get_class_type())) {
+        EggPolygon *poly = DCAST(EggPolygon, child);
+        if (poly->get_bface_flag()) {
+          poly->set_bface_flag(false);
+
+          PT(EggPolygon) dup_poly = new EggPolygon(*poly);
+          dup_poly->reverse_vertex_ordering();
+          if (dup_poly->has_normal()) {
+            dup_poly->set_normal(-dup_poly->get_normal());
+          }
+
+          // Also reverse the normal on any vertices.
+          EggPolygon::iterator vi;
+          for (vi = dup_poly->begin(); vi != dup_poly->end(); ++vi) {
+            EggVertex *vertex = (*vi);
+            if (vertex->has_normal()) {
+              EggVertex dup_vertex(*vertex);
+              dup_vertex.set_normal(-dup_vertex.get_normal());
+              EggVertex *new_vertex = vertex->get_pool()->create_unique_vertex(dup_vertex);
+              dup_poly->replace(vi, new_vertex);
+            }
+          }
+          dup_prims->add_child(dup_poly);
+        }
+      }
+
+      emulate_bface(child);
+    }
+
+    // Now that we've iterated through all the children, add in any
+    // duplicated polygons we generated.
+    egg_group->steal_children(*dup_prims);
   }
 }
 
