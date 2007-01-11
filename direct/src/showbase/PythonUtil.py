@@ -2419,7 +2419,10 @@ class ClassTree:
         return self._getStr()
 
 
-def report(types = [],notifyFunc = None):
+def report(types = [], notifyFunc = None, overrideDev = False):
+    if overrideDev:
+        __dev__ = 1
+        
     try:
         __dev__
     except NameError:
@@ -2450,7 +2453,8 @@ def report(types = [],notifyFunc = None):
                 return f(*args,**kwargs)
 
             wrap.func_name = f.func_name
-            wrap.__doc__ = f.__doc__
+            wrap.func_dict = f.func_dict
+            wrap.func_doc = f.func_doc
             return wrap
     else:
         def decorator(f):
