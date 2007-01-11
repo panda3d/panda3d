@@ -3501,9 +3501,9 @@ comint believe the user typed this string so that
 `kill-output-from-shell' does The Right Thing."
   (interactive)
   (let ((procbuf (process-buffer proc))
-	(cmd (format "from direct.showbase import Finder; Finder.rebindClass(__builtins__.globals(), r'%s')\n" filename))
-	)
+        (cmd (format "from direct.showbase import Finder; Finder.rebindClass(r'%s')\n" filename))
 
+	)
 	  ;; Goto the python buffer
 	  (set-buffer procbuf)
 	  (goto-char (point-max))
@@ -3511,15 +3511,21 @@ comint believe the user typed this string so that
 	    (goto-char (- current 4))
 	    ;; Look for the python prompt
 	    (if (or (search-forward ">>> " current t)
-		    (search-forward "... " current t))
-		(let ()
-		  ;; We are already at a prompt, no need to interrupt
-		  (process-send-string proc cmd)
-		  )
+		    (search-forward "... " current t)
+                    ;; This is the (Pdb) case, but we are only looking at the last 4 chars
+		    (search-forward "db) " current t)
+                    )
+              (let ()
+                ;; We are already at a prompt, no need to interrupt
+                (process-send-string proc cmd)
+                )
 	      (let ()
+                ;; This is the else clause
 		;; Interrupt the task loop
 		(interrupt-process procbuf nil)
 		(process-send-string proc cmd)
+                ;; Since we started running, let's return to running
+                (python-resume proc)
 		)
 	      )
 	    )
