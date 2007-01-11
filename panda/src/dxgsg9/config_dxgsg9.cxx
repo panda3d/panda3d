@@ -152,7 +152,7 @@ ConfigVariableInt dx_lru_maximum_pages
 // this will allow DirectX some space in case of memory fragmentation, ...
 // this does not apply if dx_lru_minimum_memory_requirement is not met
 ConfigVariableInt dx_lru_free_memory_requirement
-("dx-lru-free-memory-requirement", 5000000);
+("dx-lru-free-memory-requirement", 12000000);
 
 // this is like the minimum recommended amount of video memory
 ConfigVariableInt dx_lru_minimum_memory_requirement
@@ -161,12 +161,12 @@ ConfigVariableInt dx_lru_minimum_memory_requirement
 // used to cap the amount of video memory used
 // 0 = use all available DirectX video memory
 ConfigVariableInt dx_lru_maximum_memory_requirement
-("dx-lru-maximum-memory-requirement", 128000000);
+("dx-lru-maximum-memory-requirement", 0);
 
 // the number of LRU pages the LRU will update per frame
 // do not set this too high or it will degrade performance
 ConfigVariableInt dx_lru_maximum_page_updates_per_frame
-("dx-lru-maximum-page-updates-per-frame", 10);
+("dx-lru-maximum-page-updates-per-frame", 20);
 
 // lru debug on/off
 ConfigVariableBool dx_lru_debug
