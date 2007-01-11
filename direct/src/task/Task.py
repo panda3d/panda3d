@@ -875,29 +875,42 @@ class TaskManager:
         # Set a flag so we will stop before beginning next frame
         self.running = 0
 
-    def replaceMethod(self, oldMethod, newFunction):
+    def __tryReplaceTaskMethod(self, task, oldMethod, newFunction):
         import new
+        if (task is None) or task.isRemoved():
+            return 0
+        method = task.__call__
+        if (type(method) == types.MethodType):
+            function = method.im_func
+        else:
+            function = method
+        #print ('function: ' + `function` + '\n' +
+        #       'method: ' + `method` + '\n' +
+        #       'oldMethod: ' + `oldMethod` + '\n' +
+        #       'newFunction: ' + `newFunction` + '\n')
+        if (function == oldMethod):
+            newMethod = new.instancemethod(newFunction,
+                                           method.im_self,
+                                           method.im_class)
+            task.__call__ = newMethod
+            # Found a match
+            return 1
+        return 0
+
+    def replaceMethod(self, oldMethod, newFunction):
+        numFound = 0
+        # Look through the regular tasks
         for taskPriList in self.taskList:
             for task in taskPriList:
-                if (task is None) or (task.isRemoved()):
-                    break
-                method = task.__call__
-                if (type(method) == types.MethodType):
-                    function = method.im_func
-                else:
-                    function = method
-                #print ('function: ' + `function` + '\n' +
-                #       'method: ' + `method` + '\n' +
-                #       'oldMethod: ' + `oldMethod` + '\n' +
-                #       'newFunction: ' + `newFunction` + '\n')
-                if (function == oldMethod):
-                    newMethod = new.instancemethod(newFunction,
-                                                   method.im_self,
-                                                   method.im_class)
-                    task.__call__ = newMethod
-                    # Found it return true
-                    return 1
-        return 0
+                numFound += self.__tryReplaceTaskMethod(task, oldMethod, newFunction)
+        # Look through the pending tasks
+        for pri, taskList in self.pendingTaskDict.items():
+            for task in taskList:
+                numFound += self.__tryReplaceTaskMethod(task, oldMethod, newFunction)
+        # Look through the doLaters
+        for task in self.__doLaterList:
+            numFound += self.__tryReplaceTaskMethod(task, oldMethod, newFunction)
+        return numFound
 
     def __repr__(self):
         taskNameWidth = 32
