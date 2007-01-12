@@ -23,6 +23,7 @@
 
 #include "movingPartMatrix.h"
 #include "pandaNode.h"
+#include "nodePathCollection.h"
 
 class JointVertexTransform;
 class Character;
@@ -55,11 +56,13 @@ PUBLISHED:
   bool remove_net_transform(PandaNode *node);
   bool has_net_transform(PandaNode *node) const;
   void clear_net_transforms();
+  NodePathCollection get_net_transforms();
 
   bool add_local_transform(PandaNode *node);
   bool remove_local_transform(PandaNode *node);
   bool has_local_transform(PandaNode *node) const;
   void clear_local_transforms();
+  NodePathCollection get_local_transforms();
 
   void get_transform(LMatrix4f &transform) const;
   void get_net_transform(LMatrix4f &transform) const;

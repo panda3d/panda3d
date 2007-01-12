@@ -273,6 +273,29 @@ clear_net_transforms() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::get_net_transforms
+//       Access: Published
+//  Description: Returns a list of the net transforms set for this
+//               node.  Note that this returns a list of NodePaths,
+//               even though the net transforms are actually a list of
+//               PandaNodes.
+////////////////////////////////////////////////////////////////////
+NodePathCollection CharacterJoint::
+get_net_transforms() {
+  NodePathCollection npc;
+
+  NodeList::iterator ai;
+  for (ai = _net_transform_nodes.begin();
+       ai != _net_transform_nodes.end();
+       ++ai) {
+    PandaNode *node = *ai;
+    npc.add_path(NodePath::any_path(node));
+  }
+
+  return npc;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::add_local_transform
 //       Access: Published
 //  Description: Adds the indicated node to the list of nodes that will
@@ -355,6 +378,29 @@ clear_local_transforms() {
   }
 
   _local_transform_nodes.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::get_local_transforms
+//       Access: Published
+//  Description: Returns a list of the local transforms set for this
+//               node.  Note that this returns a list of NodePaths,
+//               even though the local transforms are actually a list of
+//               PandaNodes.
+////////////////////////////////////////////////////////////////////
+NodePathCollection CharacterJoint::
+get_local_transforms() {
+  NodePathCollection npc;
+
+  NodeList::iterator ai;
+  for (ai = _local_transform_nodes.begin();
+       ai != _local_transform_nodes.end();
+       ++ai) {
+    PandaNode *node = *ai;
+    npc.add_path(NodePath::any_path(node));
+  }
+
+  return npc;
 }
 
 ////////////////////////////////////////////////////////////////////
