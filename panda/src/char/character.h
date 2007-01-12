@@ -64,9 +64,6 @@ public:
 PUBLISHED:
   INLINE CharacterJointBundle *get_bundle(int i) const;
 
-  INLINE int get_num_parts() const;
-  INLINE PartGroup *get_part(int n) const;
-
   CharacterJoint *find_joint(const string &name) const;
   CharacterSlider *find_slider(const string &name) const;
 
@@ -97,7 +94,9 @@ private:
   PT(Geom) copy_geom(const Geom *source, const Character *from,
                      const JointMap &joint_map, GeomVertexMap &gvmap,
                      GeomJointMap &gjmap, GeomSliderMap &gsmap);
-  void copy_node_pointers(const Character *from, const NodeMap &node_map);
+  void copy_node_pointers(const Character::NodeMap &node_map,
+                          PartGroup *dest, const PartGroup *source);
+
   CPT(TransformTable) redirect_transform_table(const TransformTable *source,
                                                const JointMap &joint_map,
                                                GeomJointMap &gjmap);
@@ -114,10 +113,9 @@ private:
 
   void r_clear_joint_characters(PartGroup *part);
 
-  // This vector is used by the ComputedVertices object to index back
   // into our joints and sliders.
-  typedef vector_PartGroupStar Parts;
-  Parts _parts;
+  //typedef vector_PartGroupStar Parts;
+  //Parts _parts;
 
   double _last_auto_update;
 
@@ -125,6 +123,10 @@ private:
   PStatCollector _joints_pcollector;
   PStatCollector _skinning_pcollector;
   static PStatCollector _animation_pcollector;
+
+  // This variable is only used temporarily, while reading from the
+  // bam file.
+  unsigned int _temp_num_parts;
 
 public:
   static void register_with_read_factory();
@@ -154,8 +156,6 @@ private:
   static TypeHandle _type_handle;
 
   friend class CharacterMaker;
-  friend class ComputedVerticesMaker;
-  friend class ComputedVertices;
 };
 
 #include "character.I"

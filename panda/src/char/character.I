@@ -28,25 +28,4 @@ get_bundle(int i) const {
   return DCAST(CharacterJointBundle, PartBundleNode::get_bundle(i));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Character::get_num_parts
-//       Access: Published
-//  Description: Returns the total number of moving parts (e.g. joints
-//               and sliders) associated with the Character.
-////////////////////////////////////////////////////////////////////
-INLINE int Character::
-get_num_parts() const {
-  return _parts.size();
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: Character::get_part
-//       Access: Published
-//  Description: Returns the nth moving part associated with the
-//               Character.
-////////////////////////////////////////////////////////////////////
-INLINE PartGroup *Character::
-get_part(int n) const {
-  nassertr(n >= 0 && n < (int)_parts.size(), NULL);
-  return _parts[n];
-}
