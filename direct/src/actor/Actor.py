@@ -649,8 +649,7 @@ class Actor(DirectObject, NodePath):
         if center != None:
             self.__LODNode.node().setCenter(center)
 
-    def update(self, lod=0, animName=None, partName='modelRoot',
-               lodName=None, force=False):
+    def update(self, lod=0, partName=None, lodName=None, force=False):
         """ Updates all of the Actor's joints in the indicated LOD.
         The LOD may be specified by name, or by number, where 0 is the
         highest level of detail, 1 is the next highest, and so on.
@@ -667,14 +666,22 @@ class Actor(DirectObject, NodePath):
             lodNames = [lodName]
 
         anyChanged = False
-        if (lod < len(lodNames)):
-            partBundle = self.getPartBundle(partName, lodNames[lod])
-            if force:
-                if partBundle.forceUpdate():
-                    anyChanged = True
+        if lod < len(lodNames):
+            lodName = lodNames[lod]
+            if partName == None:
+                partBundleDict = self.__partBundleDict[lodName]
+                partNames = partBundleDict.keys()
             else:
-                if partBundle.update():
-                    anyChanged = True
+                partNames = [partName]
+
+            for partName in partNames:
+                partBundle = self.getPartBundle(partName, lodNames[lod])
+                if force:
+                    if partBundle.forceUpdate():
+                        anyChanged = True
+                else:
+                    if partBundle.update():
+                        anyChanged = True
         else:
             self.notify.warning('update() - no lod: %d' % lod)
 
