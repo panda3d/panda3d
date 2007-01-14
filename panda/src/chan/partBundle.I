@@ -116,6 +116,8 @@ set_root_xform(const LMatrix4f &root_xform) {
   nassertv(Thread::get_current_pipeline_stage() == 0);
   CDWriter cdata(_cycler);
   cdata->_root_xform = root_xform;
+  do_xform(root_xform, invert(root_xform));
+  cdata->_anim_changed = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,6 +132,7 @@ xform(const LMatrix4f &mat) {
   CDWriter cdata(_cycler);
   cdata->_root_xform = cdata->_root_xform * mat;
   do_xform(mat, invert(mat));
+  cdata->_anim_changed = true;
 }
 
 ////////////////////////////////////////////////////////////////////
