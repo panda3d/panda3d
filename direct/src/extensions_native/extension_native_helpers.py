@@ -6,7 +6,7 @@ import sys,os
 # Make sure the panda DLL directory is first on the path.
 if (sys.platform == "win32"):
     target = None
-    for dir in sys.path:
+    for dir in sys.path + [sys.prefix]:
         lib = os.path.join(dir,"libpandaexpress.dll")
         if (os.path.exists(lib)):
             target = dir
