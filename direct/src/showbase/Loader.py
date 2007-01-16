@@ -263,9 +263,9 @@ class Loader(DirectObject):
             if polyMargin != None:
                 font.setPolyMargin(polyMargin)
             if minFilter != None:
-                font.setMinFilter(minFilter)
+                font.setMinfilter(minFilter)
             if magFilter != None:
-                font.setMagFilter(magFilter)
+                font.setMagfilter(magFilter)
             if anisotropicDegree != None:
                 font.setAnisotropicDegree(anisotropicDegree)
 
