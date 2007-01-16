@@ -28,6 +28,39 @@
 TypeHandle AnimBundle::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimBundle::Copy Constructor
+//       Access: Protected
+//  Description: Creates a new AnimBundle, just like this one, without
+//               copying any children.  The new copy is added to the
+//               indicated parent.  Intended to be called by
+//               make_copy() only.
+////////////////////////////////////////////////////////////////////
+AnimBundle::
+AnimBundle(AnimGroup *parent, const AnimBundle &copy) : 
+  AnimGroup(parent, copy),
+  _fps(copy._fps),
+  _num_frames(copy._num_frames)
+{
+  nassertv(_root == (AnimBundle *)NULL);
+  _root = this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimBundle::copy_bundle
+//       Access: Published
+//  Description: Returns a full copy of the bundle and its entire tree
+//               of nested AnimGroups.  However, the actual data
+//               stored in the leaves--that is, animation tables, such
+//               as those stored in an AnimChannelMatrixXfmTable--will
+//               be shared.
+////////////////////////////////////////////////////////////////////
+PT(AnimBundle) AnimBundle::
+copy_bundle() const {
+  PT(AnimGroup) group = copy_subtree((AnimGroup *)NULL);
+  return DCAST(AnimBundle, group.p());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimBundle::output
 //       Access: Public, Virtual
 //  Description: Writes a one-line description of the bundle.
@@ -39,14 +72,26 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimBundle::make_copy
+//       Access: Protected, Virtual
+//  Description: Returns a copy of this object, and attaches it to the
+//               indicated parent (which may be NULL only if this is
+//               an AnimBundle).  Intended to be called by
+//               copy_subtree() only.
+////////////////////////////////////////////////////////////////////
+AnimGroup *AnimBundle::
+make_copy(AnimGroup *parent) const {
+  return new AnimBundle(parent, *this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimBundle::write_datagram
 //       Access: Public
 //  Description: Function to write the important information in
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void AnimBundle::
-write_datagram(BamWriter *manager, Datagram &me)
-{
+write_datagram(BamWriter *manager, Datagram &me) {
   AnimGroup::write_datagram(manager, me);
   me.add_float32(_fps);
   me.add_uint16(_num_frames);
@@ -61,8 +106,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               place
 ////////////////////////////////////////////////////////////////////
 void AnimBundle::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
+fillin(DatagramIterator &scan, BamReader *manager) {
   AnimGroup::fillin(scan, manager);
   _fps = scan.get_float32();
   _num_frames = scan.get_uint16();
@@ -73,9 +117,8 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a AnimBundle object
 ////////////////////////////////////////////////////////////////////
-TypedWritable* AnimBundle::
-make_AnimBundle(const FactoryParams &params)
-{
+TypedWritable *AnimBundle::
+make_AnimBundle(const FactoryParams &params) {
   AnimBundle *me = new AnimBundle;
   DatagramIterator scan;
   BamReader *manager;
@@ -91,8 +134,7 @@ make_AnimBundle(const FactoryParams &params)
 //  Description: Factory method to generate a AnimBundle object
 ////////////////////////////////////////////////////////////////////
 void AnimBundle::
-register_with_read_factory()
-{
+register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_AnimBundle);
 }
 

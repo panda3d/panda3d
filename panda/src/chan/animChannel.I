@@ -39,6 +39,21 @@ AnimChannel(const string &name)
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimChannel::Copy Constructor
+//       Access: Protected
+//  Description: Creates a new AnimChannel, just like this one,
+//               without copying any children.  The new copy is added
+//               to the indicated parent.  Intended to be called by
+//               make_copy() only.
+////////////////////////////////////////////////////////////////////
+template<class SwitchType>
+INLINE AnimChannel<SwitchType>::
+AnimChannel(AnimGroup *parent, const AnimChannel &copy) : 
+  AnimChannelBase(parent, copy)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimChannel::Constructor
 //       Access: Public
 //  Description: This is the normal constructor, which automatically

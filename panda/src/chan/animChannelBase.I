@@ -32,6 +32,21 @@ AnimChannelBase(const string &name)
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelBase::Copy Constructor
+//       Access: Protected
+//  Description: Creates a new AnimChannelBase, just like this one,
+//               without copying any children.  The new copy is added
+//               to the indicated parent.  Intended to be called by
+//               make_copy() only.
+////////////////////////////////////////////////////////////////////
+INLINE AnimChannelBase::
+AnimChannelBase(AnimGroup *parent, const AnimChannelBase &copy) : 
+  AnimGroup(parent, copy),
+  _last_frame(copy._last_frame)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelBase::Constructor
 //       Access: Public
 //  Description: This is the normal constructor, which automatically

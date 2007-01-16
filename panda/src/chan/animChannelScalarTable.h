@@ -33,6 +33,10 @@
 //               an egg file.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AnimChannelScalarTable : public AnimChannelScalar {
+protected:
+  AnimChannelScalarTable();
+  AnimChannelScalarTable(AnimGroup *parent, const AnimChannelScalarTable &copy);
+
 public:
   AnimChannelScalarTable(AnimGroup *parent, const string &name);
 
@@ -49,7 +53,9 @@ public:
   virtual void write(ostream &out, int indent_level) const;
 
 protected:
-  AnimChannelScalarTable();
+  virtual AnimGroup *make_copy(AnimGroup *parent) const;
+
+protected:
   CPTA_float _table;
 
 public:

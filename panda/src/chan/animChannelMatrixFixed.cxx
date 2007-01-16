@@ -22,6 +22,26 @@
 TypeHandle AnimChannelMatrixFixed::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixFixed::Copy Constructor
+//       Access: Protected
+//  Description: Creates a new AnimChannelMatrixFixed, just like this
+//               one, without copying any children.  The new copy is
+//               added to the indicated parent.  Intended to be called
+//               by make_copy() only.
+////////////////////////////////////////////////////////////////////
+AnimChannelMatrixFixed::
+AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy) : 
+  AnimChannelFixed<ACMatrixSwitchType>(parent, copy),
+  _value_no_scale_shear(copy._value_no_scale_shear),
+  _scale(copy._scale),
+  _hpr(copy._hpr),
+  _quat(copy._quat),
+  _pos(copy._pos),
+  _shear(copy._shear)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixFixed::Constructor
 //       Access: Public
 //  Description: This flavor creates an AnimChannelMatrixFixed that is not

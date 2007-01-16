@@ -32,6 +32,9 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, AnimChannelFixed<ACMatrixSwitchT
 //               special matrix component operations.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AnimChannelMatrixFixed : public AnimChannelFixed<ACMatrixSwitchType> {
+protected:
+  AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy);
+
 public:
   AnimChannelMatrixFixed(const string &name, const LMatrix4f &value);
 

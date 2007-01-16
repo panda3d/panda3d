@@ -41,6 +41,7 @@ protected:
   // you must first create an AnimBundle, and use that to create any
   // subsequent children.
   INLINE AnimChannelBase(const string &name = "");
+  INLINE AnimChannelBase(AnimGroup *parent, const AnimChannelBase &copy);
 
 public:
   INLINE AnimChannelBase(AnimGroup *parent, const string &name);

@@ -36,6 +36,37 @@ TypeHandle AnimGroup::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimGroup::Default Constructor
+//       Access: Protected
+//  Description: The default constructor is protected: don't try to
+//               create an AnimGroup without a parent.  To create an
+//               AnimChannel hierarchy, you must first create an
+//               AnimBundle, and use that to create any subsequent
+//               children.
+////////////////////////////////////////////////////////////////////
+AnimGroup::
+AnimGroup(const string &name) : Namable(name) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimGroup::Copy Constructor
+//       Access: Protected
+//  Description: Creates a new AnimGroup, just like this one, without
+//               copying any children.  The new copy is added to the
+//               indicated parent.  Intended to be called by
+//               make_copy() only.
+////////////////////////////////////////////////////////////////////
+AnimGroup::
+AnimGroup(AnimGroup *parent, const AnimGroup &copy) : Namable(copy) {
+  if (parent != (AnimGroup *)NULL) {
+    parent->_children.push_back(this);
+    _root = parent->_root;
+  } else {
+    _root = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::Constructor
 //       Access: Public
 //  Description: Creates the AnimGroup, and adds it to the indicated
@@ -278,20 +309,51 @@ write_descendants(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimGroup::make_copy
+//       Access: Protected, Virtual
+//  Description: Returns a copy of this object, and attaches it to the
+//               indicated parent (which may be NULL only if this is
+//               an AnimBundle).  Intended to be called by
+//               copy_subtree() only.
+////////////////////////////////////////////////////////////////////
+AnimGroup *AnimGroup::
+make_copy(AnimGroup *parent) const {
+  return new AnimGroup(parent, *this);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimGroup::copy_subtree
+//       Access: Protected
+//  Description: Returns a full copy of the subtree at this node and
+//               below.
+////////////////////////////////////////////////////////////////////
+PT(AnimGroup) AnimGroup::
+copy_subtree(AnimGroup *parent) const {
+  PT(AnimGroup) new_group = make_copy(parent);
+  nassertr(new_group->get_type() == get_type(), (AnimGroup *)this);
+
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    (*ci)->copy_subtree(new_group);
+  }
+
+  return new_group;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::write_datagram
 //       Access: Public
 //  Description: Function to write the important information in
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void AnimGroup::
-write_datagram(BamWriter *manager, Datagram &me)
-{
+write_datagram(BamWriter *manager, Datagram &me) {
   me.add_string(get_name());
   //Write out the root
   manager->write_pointer(me, this->_root);
   me.add_uint16(_children.size());
-  for(int i = 0; i < (int)_children.size(); i++)
-  {
+  for(int i = 0; i < (int)_children.size(); i++) {
     manager->write_pointer(me, _children[i]);
   }
 }
@@ -305,8 +367,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               place
 ////////////////////////////////////////////////////////////////////
 void AnimGroup::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
+fillin(DatagramIterator &scan, BamReader *manager) {
   set_name(scan.get_string());
   manager->read_pointer(scan);
   _num_children = scan.get_uint16();
@@ -324,19 +385,14 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int AnimGroup::
-complete_pointers(TypedWritable **p_list, BamReader*)
-{
+complete_pointers(TypedWritable **p_list, BamReader *) {
   nassertr(p_list[0] != TypedWritable::Null, 0);
   _root = DCAST(AnimBundle, p_list[0]);
-  for(int i = 1; i < _num_children+1; i++)
-  {
-    if (p_list[i] == TypedWritable::Null)
-    {
+  for(int i = 1; i < _num_children+1; i++) {
+    if (p_list[i] == TypedWritable::Null) {
       chan_cat->warning() << get_type().get_name()
                           << " Ignoring null child" << endl;
-    }
-    else
-    {
+    } else {
       _children.push_back(DCAST(AnimGroup, p_list[i]));
     }
   }
@@ -349,8 +405,7 @@ complete_pointers(TypedWritable **p_list, BamReader*)
 //  Description: Factory method to generate a AnimGroup object
 ////////////////////////////////////////////////////////////////////
 TypedWritable* AnimGroup::
-make_AnimGroup(const FactoryParams &params)
-{
+make_AnimGroup(const FactoryParams &params) {
   AnimGroup *me = new AnimGroup;
   DatagramIterator scan;
   BamReader *manager;
@@ -366,8 +421,7 @@ make_AnimGroup(const FactoryParams &params)
 //  Description: Factory method to generate a AnimGroup object
 ////////////////////////////////////////////////////////////////////
 void AnimGroup::
-register_with_read_factory()
-{
+register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_AnimGroup);
 }
 

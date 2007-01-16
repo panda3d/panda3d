@@ -34,21 +34,36 @@ TypeHandle AnimChannelMatrixXfmTable::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixXfmTable::Constructor
+//       Access: Protected
+//  Description: Used only for bam loader.
+/////////////////////////////////////////////////////////////
+AnimChannelMatrixXfmTable::
+AnimChannelMatrixXfmTable() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixXfmTable::Copy Constructor
+//       Access: Protected
+//  Description: Creates a new AnimChannelMatrixXfmTable, just like
+//               this one, without copying any children.  The new copy
+//               is added to the indicated parent.  Intended to be
+//               called by make_copy() only.
+////////////////////////////////////////////////////////////////////
+AnimChannelMatrixXfmTable::
+AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &copy) : 
+  AnimChannelMatrix(parent, copy),
+  _tables(copy._tables)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixXfmTable::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixXfmTable::
 AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name)
   : AnimChannelMatrix(parent, name) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::Constructor
-//       Access: Protected
-//  Description: Used only for bam loader.
-/////////////////////////////////////////////////////////////
-AnimChannelMatrixXfmTable::
-AnimChannelMatrixXfmTable() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -299,13 +314,26 @@ write(ostream &out, int indent_level) const {
   out << "\n";
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixXfmTable::make_copy
+//       Access: Protected, Virtual
+//  Description: Returns a copy of this object, and attaches it to the
+//               indicated parent (which may be NULL only if this is
+//               an AnimBundle).  Intended to be called by
+//               copy_subtree() only.
+////////////////////////////////////////////////////////////////////
+AnimGroup *AnimChannelMatrixXfmTable::
+make_copy(AnimGroup *parent) const {
+  return new AnimChannelMatrixXfmTable(parent, *this);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixXfmTable::get_table_index
 //       Access: Protected, Static
 //  Description: Returns the table index number, a value between 0 and
-//               num_matrix_components, that corresponds to the indicate table
-//               id.  Returns -1 if the table id is invalid.
+//               num_matrix_components, that corresponds to the
+//               indicated table id.  Returns -1 if the table id is
+//               invalid.
 ////////////////////////////////////////////////////////////////////
 int AnimChannelMatrixXfmTable::
 get_table_index(char table_id) {

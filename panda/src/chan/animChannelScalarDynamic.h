@@ -39,18 +39,22 @@ class TransformState;
 //               scalar each frame.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AnimChannelScalarDynamic : public AnimChannelScalar {
-public:
-  AnimChannelScalarDynamic(AnimGroup *parent, const string &name);
 protected:
   AnimChannelScalarDynamic();
+  AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy);
 
 public:
+  AnimChannelScalarDynamic(AnimGroup *parent, const string &name);
+
   virtual bool has_changed(double last_frame, double this_frame);
   virtual void get_value(int frame, float &value);
 
 PUBLISHED:
   void set_value(float value);
   void set_value_node(PandaNode *node);
+
+protected:
+  virtual AnimGroup *make_copy(AnimGroup *parent) const;
 
 private:
   // This is filled in only if we are using the set_value_node()

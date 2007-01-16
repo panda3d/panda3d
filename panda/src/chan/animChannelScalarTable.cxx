@@ -32,12 +32,26 @@ TypeHandle AnimChannelScalarTable::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelScalarTable::Constructor
-//       Access: Public
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 AnimChannelScalarTable::
-AnimChannelScalarTable(AnimGroup *parent, const string &name)
-  : AnimChannelScalar(parent, name) {
+AnimChannelScalarTable(){
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelScalarTable::Copy Constructor
+//       Access: Protected
+//  Description: Creates a new AnimChannelScalarTable, just like
+//               this one, without copying any children.  The new copy
+//               is added to the indicated parent.  Intended to be
+//               called by make_copy() only.
+////////////////////////////////////////////////////////////////////
+AnimChannelScalarTable::
+AnimChannelScalarTable(AnimGroup *parent, const AnimChannelScalarTable &copy) : 
+  AnimChannelScalar(parent, copy),
+  _table(copy._table)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +60,8 @@ AnimChannelScalarTable(AnimGroup *parent, const string &name)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 AnimChannelScalarTable::
-AnimChannelScalarTable(){
+AnimChannelScalarTable(AnimGroup *parent, const string &name)
+  : AnimChannelScalar(parent, name) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,6 +137,19 @@ write(ostream &out, int indent_level) const {
   }
 
   out << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelScalarTable::make_copy
+//       Access: Protected, Virtual
+//  Description: Returns a copy of this object, and attaches it to the
+//               indicated parent (which may be NULL only if this is
+//               an AnimBundle).  Intended to be called by
+//               copy_subtree() only.
+////////////////////////////////////////////////////////////////////
+AnimGroup *AnimChannelScalarTable::
+make_copy(AnimGroup *parent) const {
+  return new AnimChannelScalarTable(parent, *this);
 }
 
 ////////////////////////////////////////////////////////////////////

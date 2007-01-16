@@ -38,6 +38,10 @@ class AnimChannelFixed : public AnimChannel<SwitchType> {
 public:
   typedef TYPENAME AnimChannel<SwitchType>::ValueType ValueType;
 
+protected:
+  INLINE AnimChannelFixed(AnimGroup *parent, const AnimChannelFixed<SwitchType> &copy);
+
+public:
   INLINE AnimChannelFixed(AnimGroup *parent, const string &name, const ValueType &value);
   INLINE AnimChannelFixed(const string &name, const ValueType &value);
 

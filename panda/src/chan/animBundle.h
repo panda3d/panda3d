@@ -33,8 +33,13 @@ class FactoryParams;
 //               channels in the hierarchy (which must all match).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AnimBundle : public AnimGroup {
+protected:
+  AnimBundle(AnimGroup *parent, const AnimBundle &copy);
+
 PUBLISHED:
   INLINE AnimBundle(const string &name, float fps, int num_frames);
+
+  PT(AnimBundle) copy_bundle() const;
 
   INLINE double get_base_frame_rate() const;
   INLINE int get_num_frames() const;
@@ -44,6 +49,9 @@ PUBLISHED:
 protected:
   INLINE AnimBundle();
 
+  virtual AnimGroup *make_copy(AnimGroup *parent) const;
+
+private:
   float _fps;
   int _num_frames;
 

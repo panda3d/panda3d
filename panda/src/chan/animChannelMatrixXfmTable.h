@@ -36,13 +36,13 @@
 //               transform: scale, rotate, translate.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AnimChannelMatrixXfmTable : public AnimChannelMatrix {
-public:
-  AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name);
 protected:
   AnimChannelMatrixXfmTable();
+  AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &copy);
 
 public:
-  ~AnimChannelMatrixXfmTable();
+  AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name);
+  virtual ~AnimChannelMatrixXfmTable();
   
 
   virtual bool has_changed(double last_frame, double this_frame);
@@ -69,6 +69,8 @@ public:
   virtual void write(ostream &out, int indent_level) const;
 
 protected:
+  virtual AnimGroup *make_copy(AnimGroup *parent) const;
+
   INLINE static char get_table_id(int table_index);
   static int get_table_index(char table_id);
   INLINE static float get_default_value(int table_index);

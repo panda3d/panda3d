@@ -31,6 +31,32 @@ TypeHandle AnimChannelMatrixDynamic::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixDynamic::Constructor
+//       Access: Protected
+//  Description: For use only with the bam reader.
+/////////////////////////////////////////////////////////////
+AnimChannelMatrixDynamic::
+AnimChannelMatrixDynamic() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixDynamic::Copy Constructor
+//       Access: Protected
+//  Description: Creates a new AnimChannelMatrixDynamic, just like
+//               this one, without copying any children.  The new copy
+//               is added to the indicated parent.  Intended to be
+//               called by make_copy() only.
+////////////////////////////////////////////////////////////////////
+AnimChannelMatrixDynamic::
+AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy) : 
+  AnimChannelMatrix(parent, copy),
+  _value_node(copy._value_node),
+  _value(copy._value),
+  _last_value(NULL)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixDynamic::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -41,15 +67,6 @@ AnimChannelMatrixDynamic(AnimGroup *parent, const string &name)
   _value = TransformState::make_identity();
   _last_value = NULL;  // This is impossible; thus, has_changed() will
                        // always return true the first time.
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixDynamic::Constructor
-//       Access: Protected
-//  Description: For use only with the bam reader.
-/////////////////////////////////////////////////////////////
-AnimChannelMatrixDynamic::
-AnimChannelMatrixDynamic() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -211,6 +228,19 @@ set_value_node(PandaNode *value_node) {
   if (_value_node != (PandaNode *)NULL) {
     _value = _value_node->get_transform();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixDynamic::make_copy
+//       Access: Protected, Virtual
+//  Description: Returns a copy of this object, and attaches it to the
+//               indicated parent (which may be NULL only if this is
+//               an AnimBundle).  Intended to be called by
+//               copy_subtree() only.
+////////////////////////////////////////////////////////////////////
+AnimGroup *AnimChannelMatrixDynamic::
+make_copy(AnimGroup *parent) const {
+  return new AnimChannelMatrixDynamic(parent, *this);
 }
 
 

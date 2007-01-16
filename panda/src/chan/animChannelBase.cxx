@@ -46,8 +46,7 @@ has_changed(double, double) {
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void AnimChannelBase::
-write_datagram(BamWriter *manager, Datagram &me)
-{
+write_datagram(BamWriter *manager, Datagram &me) {
   AnimGroup::write_datagram(manager, me);
   me.add_uint16(_last_frame);
 }
@@ -61,8 +60,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               place
 ////////////////////////////////////////////////////////////////////
 void AnimChannelBase::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
+fillin(DatagramIterator &scan, BamReader *manager) {
   AnimGroup::fillin(scan, manager);
   _last_frame = scan.get_uint16();
 }

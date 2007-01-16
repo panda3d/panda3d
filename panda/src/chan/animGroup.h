@@ -38,11 +38,8 @@ class FactoryParams;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AnimGroup : public TypedWritableReferenceCount, public Namable {
 protected:
-  // The default constructor is protected: don't try to create an
-  // AnimGroup without a parent.  To create an AnimChannel hierarchy,
-  // you must first create an AnimBundle, and use that to create any
-  // subsequent children.
-  AnimGroup(const string &name = "") : Namable(name) { }
+  AnimGroup(const string &name = "");
+  AnimGroup(AnimGroup *parent, const AnimGroup &copy);
 
 public:
   // This is the normal AnimGroup constructor.
@@ -68,6 +65,9 @@ PUBLISHED:
 protected:
   void write_descendants(ostream &out, int indent_level) const;
 
+  virtual AnimGroup *make_copy(AnimGroup *parent) const;
+  PT(AnimGroup) copy_subtree(AnimGroup *parent) const;
+  
 protected:
   typedef pvector< PT(AnimGroup) > Children;
   Children _children;

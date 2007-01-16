@@ -31,6 +31,34 @@ TypeHandle AnimChannelScalarDynamic::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelScalarDynamic::Constructor
+//       Access: Protected
+//  Description: For use only with the bam reader.
+////////////////////////////////////////////////////////////////////
+AnimChannelScalarDynamic::
+AnimChannelScalarDynamic() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelScalarDynamic::Copy Constructor
+//       Access: Protected
+//  Description: Creates a new AnimChannelScalarDynamic, just like
+//               this one, without copying any children.  The new copy
+//               is added to the indicated parent.  Intended to be
+//               called by make_copy() only.
+////////////////////////////////////////////////////////////////////
+AnimChannelScalarDynamic::
+AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy) : 
+  AnimChannelScalar(parent, copy),
+  _value_node(copy._value_node),
+  _value(copy._value),
+  _last_value(NULL),
+  _value_changed(true),
+  _float_value(copy._float_value)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelScalarDynamic::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -39,15 +67,8 @@ AnimChannelScalarDynamic(AnimGroup *parent, const string &name)
   : AnimChannelScalar(parent, name) 
 {
   _last_value = _value = TransformState::make_identity();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::Constructor
-//       Access: Protected
-//  Description: For use only with the bam reader.
-////////////////////////////////////////////////////////////////////
-AnimChannelScalarDynamic::
-AnimChannelScalarDynamic() {
+  _value_changed = true;
+  _float_value = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,6 +139,19 @@ set_value_node(PandaNode *value_node) {
   if (_value_node != (PandaNode *)NULL) {
     _value = _value_node->get_transform();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelScalarDynamic::make_copy
+//       Access: Protected, Virtual
+//  Description: Returns a copy of this object, and attaches it to the
+//               indicated parent (which may be NULL only if this is
+//               an AnimBundle).  Intended to be called by
+//               copy_subtree() only.
+////////////////////////////////////////////////////////////////////
+AnimGroup *AnimChannelScalarDynamic::
+make_copy(AnimGroup *parent) const {
+  return new AnimChannelScalarDynamic(parent, *this);
 }
 
 

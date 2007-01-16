@@ -20,6 +20,22 @@ template<class SwitchType>
 TypeHandle AnimChannelFixed<SwitchType>::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelFixed::Copy Constructor
+//       Access: Protected
+//  Description: Creates a new AnimChannelFixed, just like this one,
+//               without copying any children.  The new copy is added
+//               to the indicated parent.  Intended to be called by
+//               make_copy() only.
+////////////////////////////////////////////////////////////////////
+template<class SwitchType>
+INLINE AnimChannelFixed<SwitchType>::
+AnimChannelFixed(AnimGroup *parent, const AnimChannelFixed<SwitchType> &copy) : 
+  AnimChannel<SwitchType>(parent, copy),
+  _value(copy._value)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelFixed::Constructor
 //       Access: Public
 //  Description: This is the flavor of AnimChannelFixed that puts it
