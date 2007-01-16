@@ -45,7 +45,7 @@ class Mopath(DirectObject):
         elif (self.hprNurbsCurve != None):
             self.maxT = self.hprNurbsCurve.getMaxT()
         else:
-            print 'Mopath: no valid curves in file: %s' % filename
+            print 'Mopath: no valid curves in file.'
 
 
     def reset(self):
