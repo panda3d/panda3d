@@ -1556,7 +1556,10 @@ emulate_bface(EggNode *egg_node) {
               EggVertex dup_vertex(*vertex);
               dup_vertex.set_normal(-dup_vertex.get_normal());
               EggVertex *new_vertex = vertex->get_pool()->create_unique_vertex(dup_vertex);
-              dup_poly->replace(vi, new_vertex);
+              if (new_vertex != vertex) {
+                new_vertex->copy_grefs_from(*vertex);
+                dup_poly->replace(vi, new_vertex);
+              }
             }
           }
           dup_prims->add_child(dup_poly);
