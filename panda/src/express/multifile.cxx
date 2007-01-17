@@ -1291,7 +1291,17 @@ add_new_subfile(Subfile *subfile, int compression_level) {
     // name.  Remove the old one.
     Subfile *old_subfile = (*insert_result.first);
     old_subfile->_flags |= SF_deleted;
-    _removed_subfiles.push_back(old_subfile);
+
+    // Maybe it was just added to the _new_subfiles list.  In this case, remove it from that list.
+    PendingSubfiles::iterator ni = find(_new_subfiles.begin(), _new_subfiles.end(), old_subfile);
+    if (ni != _new_subfiles.end()) {
+      _new_subfiles.erase(ni);
+
+    } else {
+      // Otherwise, add it to the _removed_subfiles list, so we can remove the old one.
+      _removed_subfiles.push_back(old_subfile);
+    }
+
     (*insert_result.first) = subfile;
   }
 
@@ -1609,7 +1619,8 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
   size_t this_index_size = 4 + dg.get_length();
 
   // Plus, we will write out the next index address first.
-  streampos next_index = fpos + (streampos)this_index_size;
+  streampos next_index = fpos + (streampos)this_index_size; 
+
   Datagram idg;
   idg.add_uint32(multifile->streampos_to_word(next_index));
 
