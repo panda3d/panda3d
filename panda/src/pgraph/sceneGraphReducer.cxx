@@ -426,9 +426,8 @@ flatten_siblings(PandaNode *parent_node, int combine_siblings_bits) {
               do_flatten_siblings(parent_node, child1, child2);
             if (new_node != (PandaNode *)NULL) {
               // We successfully collapsed a node.
+              (*ai1_hold) = new_node;
               nodes.erase(ai2_hold);
-              nodes.erase(ai1_hold);
-              nodes.push_back(new_node);
               ai1 = nodes.begin();
               ai2 = nodes.end();
               num_nodes++;

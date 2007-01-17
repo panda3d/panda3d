@@ -123,6 +123,19 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::xform
+//       Access: Public, Virtual
+//  Description: Transforms the contents of this node by the indicated
+//               matrix, if it means anything to do so.  For most
+//               kinds of nodes, this does nothing.
+////////////////////////////////////////////////////////////////////
+void PGEntry::
+xform(const LMatrix4f &mat) {
+  PGItem::xform(mat);
+  _text_render_root.set_mat(_text_render_root.get_mat() * mat);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::cull_callback
 //       Access: Protected, Virtual
 //  Description: This function will be called during the cull

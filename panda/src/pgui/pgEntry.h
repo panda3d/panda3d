@@ -51,7 +51,8 @@ protected:
   PGEntry(const PGEntry &copy);
 
 public:
-  virtual PandaNode *make_copy() const;
+  virtual PandaNode *make_copy() const; 
+  virtual void xform(const LMatrix4f &mat);
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
   virtual void press(const MouseWatcherParameter &param, bool background);
