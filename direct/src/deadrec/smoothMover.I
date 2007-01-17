@@ -237,6 +237,34 @@ set_r(float r) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_sample_pos
+//       Access: Published
+//  Description: Returns the current position of the working sample
+//               point.  This position is updated periodically by
+//               set_x(), set_y(), etc., and its current value is
+//               copied to the sample point table when
+//               mark_position() is called.
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint3f &SmoothMover::
+get_sample_pos() const {
+  return _sample._pos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_sample_hpr
+//       Access: Published
+//  Description: Returns the current orientation of the working sample
+//               point.  This orientation is updated periodically by
+//               set_h(), set_p(), etc., and its current value is
+//               copied to the sample point table when
+//               mark_position() is called.
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase3f &SmoothMover::
+get_sample_hpr() const {
+  return _sample._hpr;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::set_phony_timestamp
 //       Access: Published
 //  Description: Lies and specifies that the current position report

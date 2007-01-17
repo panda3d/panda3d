@@ -79,6 +79,9 @@ PUBLISHED:
   INLINE bool set_p(float p);
   INLINE bool set_r(float r);
 
+  INLINE const LPoint3f &get_sample_pos() const;
+  INLINE const LVecBase3f &get_sample_hpr() const;
+
   bool set_mat(const LMatrix4f &mat);
 
   INLINE void set_phony_timestamp();
