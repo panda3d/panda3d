@@ -876,7 +876,6 @@ class TaskManager:
         self.running = 0
 
     def __tryReplaceTaskMethod(self, task, oldMethod, newFunction):
-        import new
         if (task is None) or task.isRemoved():
             return 0
         method = task.__call__
@@ -889,6 +888,7 @@ class TaskManager:
         #       'oldMethod: ' + `oldMethod` + '\n' +
         #       'newFunction: ' + `newFunction` + '\n')
         if (function == oldMethod):
+            import new
             newMethod = new.instancemethod(newFunction,
                                            method.im_self,
                                            method.im_class)
@@ -902,14 +902,17 @@ class TaskManager:
         # Look through the regular tasks
         for taskPriList in self.taskList:
             for task in taskPriList:
-                numFound += self.__tryReplaceTaskMethod(task, oldMethod, newFunction)
+                if task:
+                    numFound += self.__tryReplaceTaskMethod(task, oldMethod, newFunction)
         # Look through the pending tasks
         for pri, taskList in self.pendingTaskDict.items():
             for task in taskList:
-                numFound += self.__tryReplaceTaskMethod(task, oldMethod, newFunction)
+                if task:
+                    numFound += self.__tryReplaceTaskMethod(task, oldMethod, newFunction)
         # Look through the doLaters
         for task in self.__doLaterList:
-            numFound += self.__tryReplaceTaskMethod(task, oldMethod, newFunction)
+            if task:
+                numFound += self.__tryReplaceTaskMethod(task, oldMethod, newFunction)
         return numFound
 
     def __repr__(self):
