@@ -116,6 +116,7 @@ def copyFuncs(fromClass, toClass):
                                    newFunc.func_code.co_name,
                                    newFunc.func_code.co_firstlineno,
                                    newFunc.func_code.co_lnotab)
+                # print 'creating new function:', newFunc.func_code.co_name
                 newFunc = new.function(newCode,
                                        oldFunc.func_globals,
                                        oldFunc.func_name,
