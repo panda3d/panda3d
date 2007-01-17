@@ -51,9 +51,11 @@ AnimChannelMatrixXfmTable() {
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixXfmTable::
 AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &copy) : 
-  AnimChannelMatrix(parent, copy),
-  _tables(copy._tables)
+  AnimChannelMatrix(parent, copy)
 {
+  for (int i = 0; i < num_matrix_components; i++) {
+    _tables[i] = copy._tables[i];
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
