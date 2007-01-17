@@ -24,7 +24,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'ScratchPad', 'Sync', 'RefCounter', 'itype', 'getNumberedTypedString',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
 'FrameDelayedCallback', 'ArgumentEater', 'ClassTree', 'getBase',
-'superFlattenShip','report','HotkeyBreaker']
+'superFlattenShip','HotkeyBreaker']
 
 import types
 import string
@@ -2419,22 +2419,15 @@ class ClassTree:
         return self._getStr()
 
 
-def report(types = [], notifyFunc = None, overrideDev = False):
-    if overrideDev:
-        __dev__ = 1
-        
+def report(types = [], notifyFunc = None, dConfigParam = ''):
     try:
-        __dev__
-    except NameError:
-        __dev__ = False
-        
-    if __dev__:
         def decorator(f):
+            __dev__
             def wrap(*args,**kwargs):
                 aargs = args
                 kkwargs = kwargs
                 rArgs = [`x`+', ' for x in args] + [ x + ' = ' + '%s, ' % `y` for x,y in kwargs.items()]
-                    
+                
                 if not rArgs:
                     rArgs = '()'
                 else:
@@ -2443,20 +2436,27 @@ def report(types = [], notifyFunc = None, overrideDev = False):
                 outStr = f.func_name + rArgs
 
                 if 'frameCount' in types:
-                    outStr = `globalClock.getFrameCount()` + ': ' + outStr
+                    outStr = '%8d : %s' % (globalClock.getFrameCount(), outStr)
 
-                if notifyFunc:
-                    notifyFunc(outStr)
-                else:
-                    print outStr
+                if 'timeStamp' in types:
+                    outStr = '%5.3f : %s' % (globalClock.getFrameTime(), outStr)
 
+                if not dConfigParam or (config.GetBool(dConfigParam, 0)):
+                    if notifyFunc:
+                        notifyFunc(outStr)
+                    else:
+                        print outStr
+                        
                 return f(*args,**kwargs)
+
 
             wrap.func_name = f.func_name
             wrap.func_dict = f.func_dict
             wrap.func_doc = f.func_doc
             return wrap
-    else:
+    except NameError,e:
+        print e
+        print 'Error decorating %s in %s with @report' % (f.func_name, f.__module__)
         def decorator(f):
             return f
         
