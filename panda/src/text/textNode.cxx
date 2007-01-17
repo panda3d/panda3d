@@ -237,8 +237,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void TextNode::
 write(ostream &out, int indent_level) const {
-  indent(out, indent_level)
-    << "TextNode " << get_name() << "\n";
+  PandaNode::write(out, indent_level);
   TextProperties::write(out, indent_level + 2);
   indent(out, indent_level + 2)
     << "transform is: " << *TransformState::make_mat(_transform) << "\n";

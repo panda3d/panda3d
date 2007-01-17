@@ -116,11 +116,13 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
   float bottom = origin_y - tex_y_size / tex_pixels_per_unit - tex_poly_margin;
   float right = origin_x + tex_x_size / tex_pixels_per_unit + tex_poly_margin;
 
-  // And the corresponding corners in UV units.
-  float uv_top = 1.0f - (float)(_y - poly_margin) / _page->get_y_size();
-  float uv_left = (float)(_x - poly_margin) / _page->get_x_size();
-  float uv_bottom = 1.0f - (float)(_y + poly_margin + tex_y_size) / _page->get_y_size();
-  float uv_right = (float)(_x + poly_margin + tex_x_size) / _page->get_x_size();
+  // And the corresponding corners in UV units.  We add 0.5f to center
+  // the UV in the middle of its texel, to minimize roundoff errors
+  // when we are close to 1-to-1 pixel size.
+  float uv_top = 1.0f - ((float)(_y - poly_margin) + 0.5f) / _page->get_y_size();
+  float uv_left = ((float)(_x - poly_margin) + 0.5f) / _page->get_x_size();
+  float uv_bottom = 1.0f - ((float)(_y + poly_margin + tex_y_size) + 0.5f) / _page->get_y_size();
+  float uv_right = ((float)(_x + poly_margin + tex_x_size) + 0.5f) / _page->get_x_size();
   // Create a corresponding triangle pair.  We use a pair of indexed
   // triangles rther than a single triangle strip, to avoid the bad
   // vertex duplication behavior with lots of two-triangle strips.
