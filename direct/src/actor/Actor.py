@@ -1026,15 +1026,12 @@ class Actor(DirectObject, NodePath):
         if joint == None:
             Actor.notify.warning("no joint named %s!" % (jointName))
             return None
-        finalNode=node
+
         if node == None:
-            node = NodePath(ModelNode(jointName))
-            node.node().setPreserveTransform(ModelNode.PTLocal)
-            node.reparentTo(partDef.partBundleNP)
+            node = self.attachNewNode(jointName)
             if joint.getType().isDerivedFrom(MovingPartMatrix.getClassType()):
                 node.setMat(joint.getInitialValue())
-        elif (lodName!="lodRoot"):
-            node.instanceTo(partDef.partBundleNP)
+
         # Store a dictionary of jointName: node to list the controls
         # requested for joints.  The controls will actually be applied
         # later, when we load up the animations in bindAnim().
