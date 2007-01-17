@@ -1832,6 +1832,11 @@ class Actor(DirectObject, NodePath):
         assert Actor.notify.debug('actor bundle %s, %s'% (bundle,bundle.this))
         controlDict = self.__controlJoints.get(bundle.this, None)
         if controlDict:
+            # Before we apply any control joints, we have to make a
+            # copy of the bundle hierarchy, so we don't modify other
+            # Actors that share the same bundle.
+            animBundle = animBundle.copyBundle()
+            
             for jointName, node in controlDict.items():
                 if node:
                     joint = animBundle.makeChildDynamic(jointName)
