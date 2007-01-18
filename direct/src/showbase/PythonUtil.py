@@ -2176,6 +2176,10 @@ class ScratchPad:
     def __init__(self, **kArgs):
         for key, value in kArgs.items():
             setattr(self, key, value)
+        self._keys = kArgs.keys()
+    def destroy(self):
+        for key in self._keys:
+            delattr(self, key)
 
 class Sync:
     _SeriesGen = SerialNumGen()
