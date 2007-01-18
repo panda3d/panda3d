@@ -760,7 +760,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             else:
                 apply(self.setColor, color)
         # Initialize names
-        self.setName(self.guiId)
+        # Putting the class name in helps with debugging.
+        self.setName("%s-%s" % (self.__class__.__name__, self.guiId))
         # Create
         self.stateNodePath = []
         for i in range(self['numStates']):
