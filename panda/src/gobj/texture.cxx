@@ -40,7 +40,7 @@
 
 #include <stddef.h>
 
-PT(PStatCollectorForward) Texture::_tex_mem_pcollector = new PStatCollectorForward(PStatCollector("Main memory:C++:Texture Data"));
+PT(PStatCollectorForward) Texture::_tex_mem_pcollector = new PStatCollectorForward(PStatCollector("Main memory:C++:pvector:array:Texture Data"));
 
 TypeHandle Texture::_type_handle;
 
