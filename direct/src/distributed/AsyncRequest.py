@@ -105,11 +105,25 @@ class AsyncRequest(DirectObject):
         #DirectObject.DirectObject.delete(self)
 
     def startTimeOut(self, timeout = None):
+        """
+        Start the request's timer.
+        timeout is the number of seconds to wait before triggering a response
+
+        The kind of response depends what our limits are
+        before finally invoking the user defined timeout()
+        function and on how many times this request has timed
+        out before.
+
+        This is called every time a this request restarts.  For example,
+        if in finish() we have to send the request back again for more
+        data (as with ships), the time resets with each new task.
+        """
         if timeout:
             self._timeoutTime = timeout
         self.cancelTimeOut()
         self.timeoutTask=taskMgr.doMethodLater(
             self._timeoutTime, self._timeout, "AsyncRequestTimer-%s"%(id(self,)))
+        self._timeoutCount = TimeoutFailureCount 
 
     def cancelTimeOut(self):
         if self.timeoutTask:
