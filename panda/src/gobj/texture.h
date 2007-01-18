@@ -29,6 +29,7 @@
 #include "updateSeq.h"
 #include "pStatCollectorForward.h"
 #include "pmap.h"
+#include "config_gobj.h"
 
 class PNMImage;
 class TextureContext;
@@ -377,10 +378,10 @@ protected:
   virtual bool do_read(const Filename &fullpath, const Filename &alpha_fullpath,
                        int primary_file_num_channels, int alpha_file_channel,
                        int z, int n, bool read_pages, bool read_mipmaps,
-                       BamCacheRecord *record);
+                       bool header_only, BamCacheRecord *record);
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
-                           BamCacheRecord *record);
+                           bool header_only, BamCacheRecord *record);
   bool do_write(const Filename &fullpath, int z, int n, 
                 bool write_pages, bool write_mipmaps) const;
   bool do_write_one(const Filename &fullpath, int z, int n) const;

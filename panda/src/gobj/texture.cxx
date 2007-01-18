@@ -1747,7 +1747,11 @@ bool Texture::
 do_read(const Filename &fullpath, const Filename &alpha_fullpath,
         int primary_file_num_channels, int alpha_file_channel,
         int z, int n, bool read_pages, bool read_mipmaps,
-        BamCacheRecord *record) {
+        bool header_only, BamCacheRecord *record) {
+  if (record != (BamCacheRecord *)NULL) {
+    header_only = false;
+  }
+
   if ((z == 0 || read_pages) && (n == 0 || read_mipmaps)) {
     // When we re-read the page 0 of the base image, we clear
     // everything and start over.
@@ -1829,7 +1833,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
       while ((z_size == 0 && (vfs->exists(file) || z == 0)) ||
              (z_size != 0 && z < z_size)) {
         if (!do_read_one(file, alpha_file, z, n, primary_file_num_channels,
-                         alpha_file_channel, record)) {
+                         alpha_file_channel, header_only, record)) {
           return false;
         }
         ++z;
@@ -1866,7 +1870,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     while ((z_size == 0 && (vfs->exists(file) || z == 0)) ||
            (z_size != 0 && z < z_size)) {
       if (!do_read_one(file, alpha_file, z, 0, primary_file_num_channels,
-                       alpha_file_channel, record)) {
+                       alpha_file_channel, header_only, record)) {
         return false;
       }
       ++z;
@@ -1894,7 +1898,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
            (n_size != 0 && n < n_size)) {
       if (!do_read_one(file, alpha_file, z, n, 
                        primary_file_num_channels, alpha_file_channel,
-                       record)) {
+                       header_only, record)) {
         return false;
       }
       ++n;
@@ -1913,7 +1917,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     // Just an ordinary read of one file.
     if (!do_read_one(fullpath, alpha_fullpath, z, n, 
                      primary_file_num_channels, alpha_file_channel,
-                     record)) {
+                     header_only, record)) {
       return false;
     }
   }    
@@ -1921,6 +1925,13 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
   _has_read_pages = read_pages;
   _has_read_mipmaps = read_mipmaps;
   _num_mipmap_levels_read = _ram_images.size();
+
+  if (header_only) {
+    // If we were only supposed to be checking the image header
+    // information, don't let the Texture think that it's got the
+    // image now.
+    clear_ram_image();
+  }
 
   return true;
 }
@@ -1935,20 +1946,29 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
 bool Texture::
 do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
-            BamCacheRecord *record) {
+            bool header_only, BamCacheRecord *record) {
   if (record != (BamCacheRecord *)NULL) {
+    nassertr(!header_only, false);
     record->add_dependent_file(fullpath);
   }
 
   PNMImage image;
-  if (textures_header_only) {
+  if (header_only || textures_header_only) {
     if (!image.read_header(fullpath)) {
       gobj_cat.error()
         << "Texture::read() - couldn't read: " << fullpath << endl;
       return false;
     }
-    image = PNMImage(1, 1, image.get_num_channels(), image.get_maxval(),
-                     image.get_type());
+    int x_size = image.get_x_size();
+    int y_size = image.get_y_size();
+    if (textures_header_only) {
+      // In this mode, we never intend to load the actual texture
+      // image anyway, so we don't even need to make the size right.
+      x_size = 1;
+      y_size = 1;
+    }
+    image = PNMImage(x_size, y_size, image.get_num_channels(), 
+                     image.get_maxval(), image.get_type());
     image.fill(0.2, 0.3, 1.0);
     if (image.has_alpha()) {
       image.alpha_fill(1.0);
@@ -1968,13 +1988,19 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
       record->add_dependent_file(alpha_fullpath);
     }
 
-    if (textures_header_only) {
+    if (header_only || textures_header_only) {
       if (!alpha_image.read_header(alpha_fullpath)) {
         gobj_cat.error()
           << "Texture::read() - couldn't read: " << alpha_fullpath << endl;
         return false;
       }
-      alpha_image = PNMImage(1, 1, alpha_image.get_num_channels(),
+      int x_size = alpha_image.get_x_size();
+      int y_size = alpha_image.get_y_size();
+      if (textures_header_only) {
+        x_size = 1;
+        y_size = 1;
+      }
+      alpha_image = PNMImage(x_size, y_size, alpha_image.get_num_channels(),
                              alpha_image.get_maxval(),
                              alpha_image.get_type());
       alpha_image.fill(1.0);
@@ -2333,7 +2359,7 @@ reload_ram_image() {
 
   do_read(get_fullpath(), get_alpha_fullpath(),
           _primary_file_num_channels, _alpha_file_channel,
-          z, n, _has_read_pages, _has_read_mipmaps, NULL);
+          z, n, _has_read_pages, _has_read_mipmaps, false, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
