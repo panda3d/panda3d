@@ -5,6 +5,7 @@ from direct.showbase.DirectObject import DirectObject
 from ConnectionRepository import *
 
 DefaultTimeout = 8.0
+TimeoutFailureCount = 2
 if __debug__:
     ForceTimeout = config.GetFloat("async-request-timeout", -1.0)
     BreakOnTimeout = config.GetBool("async-request-break-on-timeout", 0)
@@ -70,13 +71,14 @@ class AsyncRequest(DirectObject):
         #DirectObject.DirectObject.__init__(self)
         self.air=air
         self.replyToChannelId=replyToChannelId
+        self.timeoutTask = None
+        self._timeoutCount = TimeoutFailureCount
         self.neededObjects={}
         if __debug__:
             if ForceTimeout >= 0.0:
                 timeout = ForceTimeout
-        self.timeoutTask=taskMgr.doMethodLater(
-            timeout, self.timeout, "AsyncRequestTimer-%s"%(id(self,)))
-
+        self.startTimeOut(timeout)
+        
     def delete(self):
         assert self.notify.debugCall()
         assert not self.__deleted
@@ -84,7 +86,7 @@ class AsyncRequest(DirectObject):
             self.__deleted=True
         _removeActiveAsyncRequest(self)
         self.ignoreAll()
-        taskMgr.remove(self.timeoutTask)
+        self.cancelTimeOut()
         del self.timeoutTask
         messenger.send(self.deletingMessage, [])
         if 0:
@@ -102,6 +104,25 @@ class AsyncRequest(DirectObject):
         del self.replyToChannelId
         #DirectObject.DirectObject.delete(self)
 
+    def startTimeOut(self, timeout = None):
+        if timeout:
+            self._timeoutTime = timeout
+        self.cancelTimeOut()
+        self.timeoutTask=taskMgr.doMethodLater(
+            self._timeoutTime, self._timeout, "AsyncRequestTimer-%s"%(id(self,)))
+
+    def cancelTimeOut(self):
+        if self.timeoutTask:
+            taskMgr.remove(self.timeoutTask)
+
+    def _timeout(self, task):
+        self._timeoutCount -= 1
+        if not self._timeoutCount:
+            self.timeout(task)
+        else:
+            assert self.notify.debug('Timed out. Trying %d more time(s) : %s' % (self._timeoutCount + 1, `self.neededObjects`))
+            self.startTimeOut()
+            
     def timeout(self, task):
         """
         If this is called we have not gotten the needed objects in the timeout
@@ -159,7 +180,8 @@ class AsyncRequest(DirectObject):
                 "doFieldResponse-%s"%(context,),
                 self._checkCompletion, [key])
             self.air.queryObjectField(dclassName, fieldName, doId, context)
-
+            self.startTimeOut()
+            
     def askForObject(self, doId, context=None):
         """
         Request an already created object, i.e. read from database.
@@ -179,6 +201,7 @@ class AsyncRequest(DirectObject):
                 "doRequestResponse-%s"%(context,),
                 self._checkCompletion, [None])
             self.air.queryObjectAll(doId, context)
+            self.startTimeOut()
 
     #def addInterestInObject(self, doId, context=None):
     #    """
@@ -232,6 +255,7 @@ class AsyncRequest(DirectObject):
         ##         "doRequestResponse-%s"%(context,), self._checkCompletion, [name])
         self.air.requestDatabaseGenerate(
             className, context, databaseId=databaseId, values=values)
+        self.startTimeOut()
 
     def createObjectId(self, name, className, values=None, context=None):
         """
@@ -255,7 +279,8 @@ class AsyncRequest(DirectObject):
             self.air.getDatabaseGenerateResponseEvent(context),
             self._checkCompletion, [name, None])
         self.air.requestDatabaseGenerate(className, context, values=values)
-
+        self.startTimeOut()
+        
     def _doCreateObject(self, name, className, values, doId):
         assert self.notify.debugCall()
         assert not self.__deleted
