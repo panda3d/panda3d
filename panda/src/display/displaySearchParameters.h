@@ -20,6 +20,8 @@
 #ifndef DISPLAYSEARCHPARAMETERS_H
 #define DISPLAYSEARCHPARAMETERS_H
 
+#include "pandabase.h"
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DisplaySearchParameters
 // Description : Parameters used for searching display capabilities.
