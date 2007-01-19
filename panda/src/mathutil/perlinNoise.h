@@ -23,7 +23,7 @@
 #include "pvector.h"
 #include "vector_int.h"
 #include "luse.h"
-#include "mersenne.h"
+#include "randomizer.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PerlinNoise
@@ -41,12 +41,6 @@ protected:
   INLINE static double fade(double t);
   INLINE static double lerp(double t, double a, double b);
 
-  INLINE int random_int(int range);
-  INLINE double random_real(double range);
-  INLINE double random_real_unit();
-
-  INLINE static unsigned long get_next_seed();
-
 PUBLISHED:
   INLINE unsigned long get_seed();
 
@@ -54,9 +48,7 @@ protected:
   int _table_size;
   int _table_size_mask;
 
-  Mersenne _mersenne;
-  static Mersenne _next_seed;
-  static bool _got_first_seed;
+  Randomizer _randomizer;
 
   typedef vector_int Index;
   Index _index;

@@ -1,0 +1,71 @@
+// Filename: triangulator.I
+// Created by:  drose (18Jan07)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Triangulator::add_vertex
+//       Access: Published
+//  Description: Adds a new vertex to the vertex pool.  Returns the
+//               vertex index number.
+////////////////////////////////////////////////////////////////////
+INLINE int Triangulator::
+add_vertex(double x, double y) {
+  return add_vertex(LPoint2d(x, y));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Triangulator::Triangle::Constructor
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Triangulator::Triangle::
+Triangle(Triangulator *t, int v0, int v1, int v2) :
+  _v0(t->vert[v0].user_i), 
+  _v1(t->vert[v1].user_i),
+  _v2(t->vert[v2].user_i)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Triangulator::segment_t::Default Constructor
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Triangulator::segment_t::
+segment_t() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Triangulator::segment_t::Constructor
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Triangulator::segment_t::
+segment_t(Triangulator *t, int v0_i, int v1_i, int prev, int next) :
+  is_inserted(false),
+  root0(0), root1(0),
+  next(next),
+  prev(prev),
+  v0_i(v0_i)
+{
+  v0.x = t->_vertices[v0_i][0];
+  v0.y = t->_vertices[v0_i][1];
+
+  v1.x = t->_vertices[v1_i][0];
+  v1.y = t->_vertices[v1_i][1];
+}

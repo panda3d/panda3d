@@ -18,9 +18,6 @@
 
 #include "perlinNoise.h"
 
-Mersenne PerlinNoise::_next_seed(0);
-bool PerlinNoise::_got_first_seed = false;
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PerlinNoise::Constructor
 //       Access: Protected
@@ -34,7 +31,7 @@ PerlinNoise::
 PerlinNoise(int table_size, unsigned long seed) :
   _table_size(table_size),
   _table_size_mask(table_size - 1),
-  _mersenne(seed != 0 ? seed : get_next_seed())
+  _randomizer(seed)
 {
   // It is necessary for _table_size to be a power of 2.
 #ifndef NDEBUG
@@ -55,7 +52,7 @@ PerlinNoise(int table_size, unsigned long seed) :
     _index.push_back(i);
   }
   for (i = 0; i < _table_size; ++i) {
-    int j = random_int(_table_size);
+    int j = _randomizer.random_int(_table_size);
     nassertv(j >= 0 && j < _table_size);
     int t = _index[i];
     _index[i] = _index[j];
@@ -79,7 +76,7 @@ PerlinNoise::
 PerlinNoise(const PerlinNoise &copy) :
   _table_size(copy._table_size),
   _table_size_mask(copy._table_size_mask),
-  _mersenne(copy._mersenne),
+  _randomizer(copy._randomizer),
   _index(copy._index)
 {
 }
@@ -94,6 +91,6 @@ void PerlinNoise::
 operator = (const PerlinNoise &copy) {
   _table_size = copy._table_size;
   _table_size_mask = copy._table_size_mask;
-  _mersenne = copy._mersenne;
+  _randomizer = copy._randomizer;
   _index = copy._index;
 }

@@ -30,9 +30,12 @@
     perlinNoise2.h perlinNoise2.I \
     perlinNoise3.h perlinNoise3.I \
     plane.h plane_src.I plane_src.cxx  \
-    plane_src.h rotate_to.h rotate_to_src.cxx \
+    plane_src.h \
+    randomizer.h randomizer.I \
+    rotate_to.h rotate_to_src.cxx \
     stackedPerlinNoise2.h stackedPerlinNoise2.I \
-    stackedPerlinNoise3.h stackedPerlinNoise3.I
+    stackedPerlinNoise3.h stackedPerlinNoise3.I \
+    triangulator.h triangulator.I
 
   #define INCLUDED_SOURCES \
     boundingHexahedron.cxx boundingLine.cxx \
@@ -47,8 +50,10 @@
     perlinNoise.cxx \
     perlinNoise2.cxx \
     perlinNoise3.cxx \
+    randomizer.cxx \
     stackedPerlinNoise2.cxx \
     stackedPerlinNoise3.cxx \
+    triangulator.cxx \
     plane.cxx rotate_to.cxx
 
   #define INSTALL_HEADERS \
@@ -67,9 +72,13 @@
     perlinNoise2.h perlinNoise2.I \
     perlinNoise3.h perlinNoise3.I \
     plane.h plane_src.I plane_src.cxx \
-    plane_src.h rotate_to.h rotate_to_src.cxx \
+    plane_src.h \
+    randomizer.h randomizer.I \
+    rotate_to.h rotate_to_src.cxx \
     stackedPerlinNoise2.h stackedPerlinNoise2.I \
-    stackedPerlinNoise3.h stackedPerlinNoise3.I
+    stackedPerlinNoise3.h stackedPerlinNoise3.I \
+    triangulator.h triangulator.I
+
 
 
   #define IGATESCAN all
@@ -79,11 +88,23 @@
 #begin test_bin_target
   #define TARGET test_mathutil
   #define LOCAL_LIBS \
-    mathutil
+    mathutil pipeline
   #define OTHER_LIBS $[OTHER_LIBS] pystub
 
   #define SOURCES \
     test_mathutil.cxx
+
+#end test_bin_target
+
+
+#begin test_bin_target
+  #define TARGET test_tri
+  #define LOCAL_LIBS \
+    mathutil pipeline
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
+
+  #define SOURCES \
+    test_tri.cxx
 
 #end test_bin_target
 

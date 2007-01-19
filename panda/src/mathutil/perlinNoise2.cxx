@@ -71,11 +71,11 @@ noise(const LVecBase2d &value) const {
 ////////////////////////////////////////////////////////////////////
 void PerlinNoise2::
 init_unscaled_xform() {
-  double rot = random_real(360.0f);
+  double rot = _randomizer.random_real(360.0f);
   _unscaled_xform = LMatrix3d::rotate_mat(rot);
 
   // And come up with a random translation too, just so the
   // singularity at (0, 0) is also unpredicatable.
-  _unscaled_xform.set_row(2, LVecBase2d(random_real_unit(),
-                                        random_real_unit()));
+  _unscaled_xform.set_row(2, LVecBase2d(_randomizer.random_real_unit(),
+                                        _randomizer.random_real_unit()));
 }

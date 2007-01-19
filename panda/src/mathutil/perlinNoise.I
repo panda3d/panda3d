@@ -40,51 +40,6 @@ lerp(double t, double a, double b) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise::random_int
-//       Access: Protected
-//  Description: Returns a random integer in the range [0, range).
-////////////////////////////////////////////////////////////////////
-INLINE int PerlinNoise::
-random_int(int range) {
-  return (int)floor(random_real((double)range));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise::random_real
-//       Access: Protected
-//  Description: Returns a random double in the range [0, range).
-////////////////////////////////////////////////////////////////////
-INLINE double PerlinNoise::
-random_real(double range) {
-  return (range * _mersenne.get_uint31()) / ((double)0x80000000);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise::random_real_unit
-//       Access: Protected
-//  Description: Returns a random double in the range [-0.5, 0.5).
-////////////////////////////////////////////////////////////////////
-INLINE double PerlinNoise::
-random_real_unit() {
-  return random_real(1.0f) - 0.5f;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise::get_next_seed
-//       Access: Protected, Static
-//  Description: Returns a random seed value for the next global
-//               PerlinNoise object.
-////////////////////////////////////////////////////////////////////
-INLINE unsigned long PerlinNoise::
-get_next_seed() {
-  if (!_got_first_seed) {
-    _next_seed = Mersenne((unsigned long)time(NULL));
-    _got_first_seed = true;
-  }
-  return _next_seed.get_uint31();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PerlinNoise::get_seed
 //       Access: Published
 //  Description: Returns a unique seed value based on the seed value
@@ -93,5 +48,5 @@ get_next_seed() {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned long PerlinNoise::
 get_seed() {
-  return _mersenne.get_uint31();
+  return _randomizer.get_seed();
 }

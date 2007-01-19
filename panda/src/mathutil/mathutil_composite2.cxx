@@ -1,4 +1,3 @@
-#include "config_mathutil.cxx"
 #include "fftCompressor.cxx"
 #include "linmath_events.cxx"
 #include "look_at.cxx"
@@ -7,6 +6,8 @@
 #include "perlinNoise2.cxx"
 #include "perlinNoise3.cxx"
 #include "plane.cxx"
+#include "randomizer.cxx"
 #include "rotate_to.cxx"
 #include "stackedPerlinNoise2.cxx"
 #include "stackedPerlinNoise3.cxx"
+#include "triangulator.cxx"

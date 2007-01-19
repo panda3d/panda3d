@@ -6,3 +6,4 @@
 #include "finiteBoundingVolume.cxx"
 #include "geometricBoundingVolume.cxx"
 #include "omniBoundingVolume.cxx"
+#include "config_mathutil.cxx"
