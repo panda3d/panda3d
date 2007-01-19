@@ -1492,7 +1492,7 @@ get_vertex_positions(int v0, int v1, int *ip, int *iq) {
   vertexchain_t *vp0, *vp1;
   register int i;
   double angle, temp;
-  int tp, tq;
+  int tp = 0, tq = 0;
 
   vp0 = &vert[v0];
   vp1 = &vert[v1];
@@ -1692,7 +1692,7 @@ traverse_polygon(int mcur, int trnum, int from, int dir) {
   //  int howsplit;
   int mnew;
   int v0, v1;  //, v0next, v1next;
-  int retval;  //, tmp;
+  int retval = 0;  //, tmp;
   int do_switch = false;
 
   if (trnum <= 0)
