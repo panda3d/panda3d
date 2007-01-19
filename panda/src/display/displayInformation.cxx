@@ -48,7 +48,7 @@ DisplayInformation() {
   DisplayMode *display_mode_array;
   int shader_model;
   int video_memory;
-  UINT texture_memory;
+  int texture_memory;
   PN_uint64 physical_memory;
   PN_uint64 available_physical_memory;
 
