@@ -20,6 +20,8 @@
 #ifndef DISPLAYINFORMATION_H
 #define DISPLAYINFORMATION_H
 
+#include "typedef.h"
+
 typedef struct {
   int width;
   int height;
