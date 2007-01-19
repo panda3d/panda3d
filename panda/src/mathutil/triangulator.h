@@ -170,8 +170,9 @@ private:
   void make_segment(const vector_int &range);
 
   int choose_segment();
-  int math_logstar_n(int n);
-  int math_N(int n, int h);
+  static double math_log2(double v);
+  static int math_logstar_n(int n);
+  static int math_N(int n, int h);
 
   int newnode();
   int newtrap();

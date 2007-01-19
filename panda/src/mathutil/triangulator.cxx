@@ -335,6 +335,11 @@ choose_segment() {
   return permute[choose_idx++];
 }
 
+double Triangulator::
+math_log2(double v) {
+  static const double log2 = log(2.0);
+  return log(v) / log2;
+}
 
 /* Get log*n for given n */
 int Triangulator::
@@ -343,7 +348,7 @@ math_logstar_n(int n) {
   double v;
   
   for (i = 0, v = (double) n; v >= 1; i++)
-    v = log2(v);
+    v = math_log2(v);
   
   return (i - 1);
 }
@@ -355,7 +360,7 @@ math_N(int n, int h) {
   double v;
 
   for (i = 0, v = (int) n; i < h; i++)
-    v = log2(v);
+    v = math_log2(v);
   
   return (int) ceil((double) 1.0*n/v);
 }
