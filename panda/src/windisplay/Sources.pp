@@ -29,7 +29,8 @@
     
   #define INCLUDED_SOURCES \
      config_windisplay.cxx winGraphicsPipe.cxx \
-     winGraphicsWindow.cxx
+     winGraphicsWindow.cxx \
+     winDetectDx9.cxx winDetectDx8.cxx winDetectDx7.cxx
 
   #define WIN_SYS_LIBS Imm32.lib winmm.lib kernel32.lib oldnames.lib user32.lib gdi32.lib
 
