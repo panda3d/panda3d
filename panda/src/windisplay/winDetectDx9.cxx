@@ -1,0 +1,48 @@
+// Filename: winDetectDx9.cxx
+// Created by:  aignacio (18Jan07)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2007, Disney Enterprises, Inc.  All rights 
+// reserved.
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#include <d3d9.h>
+
+#include "graphicsStateGuardian.h"
+#include "graphicsPipe.h"
+#include "displaySearchParameters.h"
+
+
+#define DX8 0
+#define Direct3DCreate Direct3DCreate9
+
+typedef LPDIRECT3D9 (WINAPI *DIRECT3DCREATE9)(UINT SDKVersion);
+
+typedef LPDIRECT3D9 DIRECT_3D;
+typedef D3DCAPS9 D3DCAPS;
+typedef D3DADAPTER_IDENTIFIER9 D3DADAPTER_IDENTIFIER;
+typedef LPDIRECT3DDEVICE9 DIRECT_3D_DEVICE;
+typedef DIRECT3DCREATE9 DIRECT_3D_CREATE;
+
+static char *d3d_dll_name = "d3d9.dll";
+static char *direct_3d_create_function_name = "Direct3DCreate9";
+
+
+// include common source code
+#include "winDetectDx.h"
+
+
+int dx9_display_information (DisplaySearchParameters &display_search_parameters, DisplayInformation *display_information) {
+  return get_display_information (display_search_parameters, display_information);
+}
