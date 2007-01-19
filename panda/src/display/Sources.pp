@@ -32,7 +32,9 @@
     parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
     renderBuffer.h \
-    stencilRenderStates.h
+    stencilRenderStates.h \
+    displaySearchParameters.h \
+    displayInformation.h    
     
  #define INCLUDED_SOURCES  \
     standardMunger.cxx \
@@ -52,7 +54,9 @@
     parasiteBuffer.cxx \
     windowProperties.cxx \
     lru.cxx \
-    stencilRenderStates.cxx
+    stencilRenderStates.cxx \
+    displaySearchParameters.cxx \
+    displayInformation.cxx    
 
   #define INSTALL_HEADERS \
     standardMunger.I standardMunger.h \
@@ -75,7 +79,9 @@
     parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
     renderBuffer.h \
-    stencilRenderStates.h
+    stencilRenderStates.h \
+    displaySearchParameters.h \
+    displayInformation.h    
 
   #define IGATESCAN all
 

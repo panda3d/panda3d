@@ -18,6 +18,7 @@
 
 #include "winGraphicsPipe.h"
 #include "config_windisplay.h"
+#include "displaySearchParameters.h"
 
 TypeHandle WinGraphicsPipe::_type_handle;
 
@@ -38,6 +39,28 @@ WinGraphicsPipe() {
   if (_hUser32 != NULL) {
     _pfnTrackMouseEvent = 
       (PFN_TRACKMOUSEEVENT)GetProcAddress(_hUser32, "TrackMouseEvent");
+  }
+
+  int dx7_display_information (DisplaySearchParameters &display_search_parameters, DisplayInformation *display_information);
+  int dx8_display_information (DisplaySearchParameters &display_search_parameters, DisplayInformation *display_information);
+  int dx9_display_information (DisplaySearchParameters &display_search_parameters, DisplayInformation *display_information);
+
+  DisplaySearchParameters display_search_parameters;
+
+  // DX7
+  if (dx7_display_information (display_search_parameters, _display_information)) {
+  
+  }
+  
+  // try DX9 first
+  if (dx9_display_information (display_search_parameters, _display_information)) {
+  
+  }
+  else {
+    // DX9 failed, try DX8
+    if (dx8_display_information (display_search_parameters, _display_information)) {
+
+    }
   }
 }
 

@@ -25,6 +25,7 @@
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
 #include "pmutex.h"
+#include "displayInformation.h"
 
 class GraphicsOutput;
 class GraphicsWindow;
@@ -96,6 +97,8 @@ PUBLISHED:
   INLINE int get_display_width() const;
   INLINE int get_display_height() const;
 
+  DisplayInformation *get_display_information();
+  
   virtual string get_interface_name() const=0;
 
 public:
@@ -127,6 +130,8 @@ protected:
   int _display_width;
   int _display_height;
   PT(GraphicsDevice) _device;
+  
+  DisplayInformation *_display_information;
 
   static const int strip_properties[];
 

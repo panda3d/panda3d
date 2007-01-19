@@ -43,6 +43,8 @@ GraphicsPipe() :
 
   _display_width = 0;
   _display_height = 0;
+
+  _display_information = new DisplayInformation ( );
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,6 +75,7 @@ operator = (const GraphicsPipe &) {
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe::
 ~GraphicsPipe() {
+  delete _display_information;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -138,3 +141,12 @@ make_output(const string &name,
   return NULL;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::get_display_information
+//       Access: Published
+//  Description: Gets the pipe's DisplayInformation.
+////////////////////////////////////////////////////////////////////
+DisplayInformation * GraphicsPipe::
+get_display_information() {
+  return _display_information;
+}

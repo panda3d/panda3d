@@ -10,3 +10,5 @@
 #include "parasiteBuffer.cxx"
 #include "lru.cxx"
 #include "stencilRenderStates.cxx"
+#include "displaySearchParameters.cxx"
+#include "displayInformation.cxx"
