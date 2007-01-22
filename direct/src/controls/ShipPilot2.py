@@ -238,7 +238,7 @@ class ShipPilot2(PhysicsWalker):
 
             # hide other things on my ship that these spheres might collide
             # with and which I dont need anyways...
-            shipCollWall = self.avatarNodePath.hull.find("**/collision_hull")
+            shipCollWall = self.avatarNodePath.transNode.find("**/collision_hull")
             if not shipCollWall.isEmpty():
                 shipCollWall.stash()
         elif self.useOneSphere:
@@ -262,7 +262,7 @@ class ShipPilot2(PhysicsWalker):
 
             # hide other things on my ship that these spheres might collide
             # with and which I dont need anyways...
-            shipCollWall = self.avatarNodePath.hull.find("**/collision_hull")
+            shipCollWall = self.avatarNodePath.transNode.find("**/collision_hull")
             if not shipCollWall.isEmpty():
                 shipCollWall.stash()
         elif self.useDSSolid:
@@ -287,7 +287,7 @@ class ShipPilot2(PhysicsWalker):
 
             # hide other things on my ship that these spheres might collide
             # with and which I dont need anyways...
-            shipCollWall = self.avatarNodePath.hull.find("**/collision_hull")
+            shipCollWall = self.avatarNodePath.transNode.find("**/collision_hull")
             if not shipCollWall.isEmpty():
                 shipCollWall.stash()
 
