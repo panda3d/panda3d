@@ -1862,6 +1862,18 @@ def uniqueName(name):
     global _serialGen
     return '%s-%s' % (name, _serialGen.next())
 
+class EnumIter:
+    def __init__(self, enum):
+        self._values = enum._stringTable.keys()
+        self._index = 0
+    def __iter__(self):
+        return self
+    def next(self):
+        if self._index >= len(self._values):
+            raise StopIteration
+        self._index += 1
+        return self._values[self._index-1]
+
 class Enum:
     """Pass in list of strings or string of comma-separated strings.
     Items are accessible as instance.item, and are assigned unique,
@@ -1922,6 +1934,9 @@ class Enum:
             self.__dict__[item] = i
             self._stringTable[i] = item
             i += 1
+
+    def __iter__(self):
+        return EnumIter(self)
 
     def getString(self, value):
         return self._stringTable[value]
