@@ -450,15 +450,18 @@ class Actor(DirectObject, NodePath):
             self.notify.warning("called actor.removeNode() on %s without calling cleanup()" % self.getName())
         NodePath.removeNode(self)
 
-    def flush(self):
-        """
-        Actor flush function
-        """
+    def clearPythonData(self):
         self.__partBundleDict = {}
         self.__subpartDict = {}
         self.__sortedLODNames = []
         self.__animControlDict = {}
         self.__controlJoints = {}
+        
+    def flush(self):
+        """
+        Actor flush function
+        """
+        self.clearPythonData()
 
         if self.__LODNode and (not self.__LODNode.isEmpty()):
             self.__LODNode.removeNode()
