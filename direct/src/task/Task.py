@@ -552,7 +552,7 @@ class TaskManager:
                 break
 
         if __debug__:
-            if self.pStatsTasks and task.name != "igloop":
+            if self.pStatsTasks and task.name != "igLoop":
                 # Get the PStats name for the task.  By convention,
                 # this is everything until the first hyphen; the part
                 # of the task name following the hyphen is generally
