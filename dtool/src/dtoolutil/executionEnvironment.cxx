@@ -381,7 +381,7 @@ void ExecutionEnvironment::
 read_args() {
 
 #ifdef WIN32_VC
-  HMODULE dllhandle = GetModuleHandle("libdtool.dll");
+  HMODULE dllhandle = GetModuleHandle("libp3dtool.dll");
   if (dllhandle != 0) {
     static const DWORD buffer_size = 1024;
     char buffer[buffer_size];
@@ -404,7 +404,7 @@ read_args() {
     maps.getline(buffer, PATH_MAX);
     char *tail = strrchr(buffer,'/');
     char *head = strchr(buffer,'/');
-    if (tail && head && (strcmp(tail,"/libdtool.so")==0)) {
+    if (tail && head && (strcmp(tail,"/libp3dtool.so")==0)) {
       _dtool_name = head;
     }
   }
