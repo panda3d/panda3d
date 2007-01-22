@@ -17,6 +17,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "dtool_config.h"
+
+#if HAVE_DX
+
 #include <ddraw.h>
 
 #include "graphicsStateGuardian.h"
@@ -71,3 +75,5 @@ int dx7_display_information (DisplaySearchParameters &display_search_parameters,
 
   return state;
 }
+
+#endif

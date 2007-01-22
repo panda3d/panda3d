@@ -17,6 +17,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "dtool_config.h"
+
+#if HAVE_DX
+
 #include <d3d8.h>
 
 #include "graphicsStateGuardian.h"
@@ -45,3 +49,5 @@ static char *direct_3d_create_function_name = "Direct3DCreate8";
 int dx8_display_information (DisplaySearchParameters &display_search_parameters, DisplayInformation *display_information) {
   return get_display_information (display_search_parameters, display_information);
 }
+
+#endif
