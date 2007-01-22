@@ -29,6 +29,31 @@ add_vertex(double x, double y) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Triangulator::get_num_vertices
+//       Access: Published
+//  Description: Returns the number of vertices in the pool.  Note
+//               that the Triangulator might append new vertices, in
+//               addition to those added by the user, if any of the
+//               polygon is self-intersecting, or if any of the holes
+//               intersect some part of the polygon edges.
+////////////////////////////////////////////////////////////////////
+INLINE int Triangulator::
+get_num_vertices() const {
+  return _vertices.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Triangulator::get_vertex
+//       Access: Published
+//  Description: Returns the nth vertex.
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint2d &Triangulator::
+get_vertex(int n) const {
+  nassertr(n >= 0 && n < (int)_vertices.size(), LPoint2d::zero());
+  return _vertices[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Triangulator::Triangle::Constructor
 //       Access: Private
 //  Description: 

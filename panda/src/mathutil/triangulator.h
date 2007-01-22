@@ -47,6 +47,9 @@ PUBLISHED:
   int add_vertex(const LPoint2d &point);
   INLINE int add_vertex(double x, double y);
 
+  INLINE int get_num_vertices() const;
+  INLINE const LPoint2d &get_vertex(int n) const;
+
   void clear_polygon();
   void add_polygon_vertex(int index);
 

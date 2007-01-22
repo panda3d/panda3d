@@ -137,6 +137,11 @@ triangulate() {
   for (i = 0; i < num_segments; ++i) {
     permute.push_back(i + 1);
   }
+
+  // Actually, I'm not sure why we should shuffle the index.  That
+  // makes the result non-deterministic, and isn't one order--for
+  // instance, the initial order--as good as any other?
+  /*
   Randomizer randomizer;
   for (i = 0; i < num_segments; ++i) {
     int j = randomizer.random_int(num_segments);
@@ -145,6 +150,7 @@ triangulate() {
     permute[i] = permute[j];
     permute[j] = t;
   }
+  */
   choose_idx = 0;
 
   //  cerr << "got " << num_segments << " segments\n";
@@ -1490,7 +1496,7 @@ get_angle(point_t *vp0, point_t *vpnext, point_t *vp1) {
 int Triangulator::
 get_vertex_positions(int v0, int v1, int *ip, int *iq) {
   vertexchain_t *vp0, *vp1;
-  register int i;
+  int i;
   double angle, temp;
   int tp = 0, tq = 0;
 
@@ -1543,11 +1549,14 @@ get_vertex_positions(int v0, int v1, int *ip, int *iq) {
  */
 int Triangulator::
 make_new_monotone_poly(int mcur, int v0, int v1) {
-  //  printf("make_new_monotone_poly(%d, %d, %d)\n", mcur, v0, v1);
   int p, q, ip, iq;
   int mnew = newmon();
   int i, j, nf0, nf1;
   vertexchain_t *vp0, *vp1;
+
+  if (v0 <= 0 || v1 <= 0) {
+    return -1;
+  }
   
   vp0 = &vert[v0];
   vp1 = &vert[v1];
@@ -1606,7 +1615,7 @@ make_new_monotone_poly(int mcur, int v0, int v1) {
 
 int Triangulator::
 monotonate_trapezoids(int n) {
-  register int i;
+  int i;
   int tr_start;
 
   vert.clear();
@@ -1695,7 +1704,7 @@ traverse_polygon(int mcur, int trnum, int from, int dir) {
   int retval = 0;  //, tmp;
   int do_switch = false;
 
-  if (trnum <= 0)
+  if (mcur < 0 || trnum <= 0)
     return 0;
 
   //  printf("visited size = %d, visited[trnum] = %d\n", visited.size(), visited[trnum]);
@@ -1977,12 +1986,12 @@ traverse_polygon(int mcur, int trnum, int from, int dir) {
 
 void Triangulator::
 triangulate_monotone_polygons(int nvert, int nmonpoly) {
-  register int i;
+  int i;
   point_t ymax, ymin;
   int p, vfirst, posmax, posmin, v;
   int vcount, processed;
 
-#ifdef DEBUG
+  #ifdef DEBUG
   for (i = 0; i < nmonpoly; i++)
     {
       fprintf(stderr, "\n\nPolygon %d: ", i);
@@ -1992,17 +2001,24 @@ triangulate_monotone_polygons(int nvert, int nmonpoly) {
       while (mchain[p].vnum != vfirst)
 	{
 	  fprintf(stderr, "%d ", mchain[p].vnum);
+          if (mchain[p].vnum == -1) {
+            fprintf(stderr, " xx");
+            break;
+          }
 	  p = mchain[p].next;
 	}
     }
   fprintf(stderr, "\n");
-#endif
+  #endif
 
   for (i = 0; i < nmonpoly; i++)
     {
       vcount = 1;
       processed = false;
       vfirst = mchain[mon[i]].vnum;
+      if (vfirst <= 0) {
+        return;
+      }
       ymin = vert[vfirst].pt;
       ymax = ymin;
       posmin = mon[i];
@@ -2011,14 +2027,17 @@ triangulate_monotone_polygons(int nvert, int nmonpoly) {
       p = mchain[mon[i]].next;
       while ((v = mchain[p].vnum) != vfirst)
 	{
-	 if (mchain[p].marked)
+          if (v <= 0) {
+            return;
+          }
+          if (mchain[p].marked)
 	   {
 	     processed = true;
 	     break;		/* break from while */
 	   }
-	 else
-	   mchain[p].marked = true;
-
+          else
+            mchain[p].marked = true;
+          
 	  if (_greater_than(&vert[v].pt, &ymax))
 	    {
 	      ymax = vert[v].pt;
@@ -2062,10 +2081,12 @@ triangulate_monotone_polygons(int nvert, int nmonpoly) {
  */
 void Triangulator::
 triangulate_single_polygon(int nvert, int posmax, int side) {
-  register int v;
+  int v;
   vector_int rc;	/* reflex chain */
   int ri;
   int endv, tmp, vpos;
+
+  //  cerr << "triangulate_single_polygon(" << nvert << ", " << posmax << ", " << side << ")\n";
 
   if (side == TRI_RHS)		/* RHS segment is a single segment */
     {
@@ -2096,6 +2117,10 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
   
   while ((v != endv) || (ri > 1))
     {
+      if (v <= 0) {
+        // Something went wrong.
+        return;
+      }
       if (ri > 0)		/* reflex chain is non-empty */
 	{
 	  if (CROSS(vert[v].pt, vert[rc[ri - 1]].pt, 
