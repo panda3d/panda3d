@@ -4,17 +4,15 @@
 #begin lib_target
   #define TARGET parametrics
   #define LOCAL_LIBS \
-    pgraph grutil linmath express putil pandabase
+    pgraph linmath express putil pandabase
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
     config_parametrics.h  \
-    cubicCurveseg.h parametricCurveDrawer.I  \
-    parametricCurveDrawer.h curveFitter.I curveFitter.h  \
+    cubicCurveseg.h curveFitter.I curveFitter.h  \
     hermiteCurve.h \
     nurbsCurve.I nurbsCurve.h \
-    nurbsCurveDrawer.I nurbsCurveDrawer.h \
     nurbsCurveEvaluator.I nurbsCurveEvaluator.h \
     nurbsCurveInterface.I nurbsCurveInterface.h \
     nurbsCurveResult.I nurbsCurveResult.h \
@@ -30,9 +28,8 @@
 
   #define INCLUDED_SOURCES \
     config_parametrics.cxx cubicCurveseg.cxx  \
-    parametricCurveDrawer.cxx curveFitter.cxx hermiteCurve.cxx  \
+    curveFitter.cxx hermiteCurve.cxx  \
     nurbsCurve.cxx \
-    nurbsCurveDrawer.cxx \
     nurbsCurveEvaluator.cxx \
     nurbsCurveInterface.cxx  \
     nurbsCurveResult.cxx \
@@ -48,11 +45,9 @@
   #define INSTALL_HEADERS \
     config_parametrics.h \
     cubicCurveseg.h \
-    parametricCurveDrawer.I parametricCurveDrawer.h \
     curveFitter.I curveFitter.h \
     hermiteCurve.h \
     nurbsCurve.I nurbsCurve.h \
-    nurbsCurveDrawer.I nurbsCurveDrawer.h \
     nurbsCurveEvaluator.I nurbsCurveEvaluator.h \
     nurbsCurveInterface.I nurbsCurveInterface.h \
     nurbsCurveResult.I nurbsCurveResult.h \

@@ -2,7 +2,6 @@
 #include "piecewiseCurve.cxx"
 #include "parametricCurve.cxx"
 #include "parametricCurveCollection.cxx"
-#include "parametricCurveDrawer.cxx"
 #include "nurbsCurveEvaluator.cxx"
 #include "nurbsCurveResult.cxx"
 #include "nurbsSurfaceEvaluator.cxx"

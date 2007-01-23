@@ -21,10 +21,8 @@
 #include "cubicCurveseg.h"
 #include "curveFitter.h"
 #include "hermiteCurve.h"
-#include "nurbsCurveDrawer.h"
 #include "nurbsCurveInterface.h"
 #include "parametricCurve.h"
-#include "parametricCurveDrawer.h"
 #include "piecewiseCurve.h"
 #include "ropeNode.h"
 #include "sheetNode.h"
@@ -37,10 +35,8 @@ ConfigureFn(config_parametrics) {
   CubicCurveseg::init_type();
   CurveFitter::init_type();
   HermiteCurve::init_type();
-  NurbsCurveDrawer::init_type();
   NurbsCurveInterface::init_type();
   ParametricCurve::init_type();
-  ParametricCurveDrawer::init_type();
   PiecewiseCurve::init_type();
   RopeNode::init_type();
   SheetNode::init_type();

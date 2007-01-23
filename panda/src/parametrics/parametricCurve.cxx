@@ -20,7 +20,6 @@
 #include "config_parametrics.h"
 #include "hermiteCurve.h"
 #include "nurbsCurve.h"
-#include "parametricCurveDrawer.h"
 
 #include "datagram.h"
 #include "datagramIterator.h"
@@ -682,12 +681,14 @@ invalidate(float, float) {
 ////////////////////////////////////////////////////////////////////
 void ParametricCurve::
 invalidate_all() {
+  /*
   DrawerList::iterator n;
   for (n = _drawers.begin();
        n != _drawers.end();
        ++n) {
     (*n)->redraw();
   }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////

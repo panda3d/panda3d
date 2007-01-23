@@ -19,7 +19,6 @@
 #include "parametricCurveCollection.h"
 #include "config_parametrics.h"
 #include "curveFitter.h"
-#include "parametricCurveDrawer.h"
 #include "nurbsCurve.h"
 
 #include "indent.h"
@@ -982,9 +981,11 @@ prepare_remove_curve(ParametricCurve *curve) {
 ////////////////////////////////////////////////////////////////////
 void ParametricCurveCollection::
 redraw() {
+  /*
   DrawerList::iterator di;
   for (di = _drawers.begin(); di != _drawers.end(); ++di) {
     ParametricCurveDrawer *drawer = (*di);
     drawer->redraw();
   }
+  */
 }
