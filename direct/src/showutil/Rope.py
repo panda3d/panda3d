@@ -42,6 +42,19 @@ class Rope(NodePath):
         factor (which should have been multiplied into the x y z
         components).
 
+        verts may be a list of dictionaries instead of a list of
+        tuples.  In this case, each vertex dictionary may have any of
+        the following elements:
+
+          'node' : the NodePath indicating the coordinate space
+          'point' : the 3-D point relative to the node; default (0, 0, 0)
+          'color' : the color of the vertex, default (1, 1, 1, 1)
+          'thickness' : the thickness at the vertex, default 1
+
+        In order to enable the per-vertex color or thickness, you must
+        call rope.ropeNode.setPerVertexColor() or
+        rope.ropeNode.setPerVertexThickness().
+
         knots is optional.  If specified, it should be a list of
         floats, and should be of length len(verts) + order.  If it
         is omitted, a default knot string is generated that consists
@@ -65,8 +78,30 @@ class Rope(NodePath):
         numVerts = len(self.verts)
         self.curve.reset(numVerts)
         self.curve.setOrder(self.order)
+
+        defaultNodePath = None
+        defaultPoint = (0, 0, 0)
+        defaultColor = (1, 1, 1, 1)
+        defaultThickness = 1
+
+        useVertexColor = self.ropeNode.getUseVertexColor()
+        useVertexThickness = self.ropeNode.getUseVertexThickness()
+
+        vcd = self.ropeNode.getVertexColorDimension()
+        vtd = self.ropeNode.getVertexThicknessDimension()
+        
         for i in range(numVerts):
-            nodePath, point = self.verts[i]
+            v = self.verts[i]
+            if isinstance(v, types.TupleType):
+                nodePath, point = v
+                color = defaultColor
+                thickness = defaultThickness
+            else:
+                nodePath = v.get('node', defaultNodePath)
+                point = v.get('point', defaultPoint)
+                color = v.get('color', defaultColor)
+                thickness = v.get('thickness', defaultThickness)
+                
             if isinstance(point, types.TupleType):
                 if (len(point) >= 4):
                     self.curve.setVertex(i, VBase4(point[0], point[1], point[2], point[3]))
@@ -76,6 +111,13 @@ class Rope(NodePath):
                 self.curve.setVertex(i, point)
             if nodePath:
                 self.curve.setVertexSpace(i, nodePath)
+            if useVertexColor:
+                self.curve.setExtendedVertex(i, vcd + 0, color[0])
+                self.curve.setExtendedVertex(i, vcd + 1, color[1])
+                self.curve.setExtendedVertex(i, vcd + 2, color[2])
+                self.curve.setExtendedVertex(i, vcd + 3, color[3])
+            if useVertexThickness:
+                self.curve.setExtendedVertex(i, vtd, thickness)
 
         if self.knots != None:
             for i in range(len(self.knots)):
