@@ -648,10 +648,10 @@ class ShipPilot2(PhysicsWalker):
                 self.__rotationSpeed*=1.25
                 maxSpeed = self.ship.maxSpeed * 4.0
 
-        self.__speed*=4.0
-        self.__slideSpeed*=4.0
-        self.__rotationSpeed*=1.25
-        maxSpeed = self.ship.maxSpeed * 4.0
+        #self.__speed*=4.0
+        #self.__slideSpeed*=4.0
+        #self.__rotationSpeed*=1.25
+        #maxSpeed = self.ship.maxSpeed * 4.0
                 
         #*#
         self.currentTurning += self.__rotationSpeed
@@ -911,7 +911,7 @@ class ShipPilot2(PhysicsWalker):
             onScreenDebug.add("self.__oldPosDelta",
                               self.__oldPosDelta.pPrintValues())
 
-        velocity = self.__oldPosDelta*(1/self.__oldDt)*4.0 # *4.0 is a hack
+        velocity = self.__oldPosDelta*(1/self.__oldDt)#*4.0 # *4.0 is a hack
         assert self.debugPrint("  __oldPosDelta=%s"%(self.__oldPosDelta,))
         assert self.debugPrint("  velocity=%s"%(velocity,))
         self.priorParent.setVector(Vec3(velocity))
