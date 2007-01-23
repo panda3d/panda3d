@@ -1387,7 +1387,7 @@ class Actor(DirectObject, NodePath):
         for control in self.getAnimControls(animName, partName, lodName):
             control.getPart().setControlEffect(control, effect)
 
-    def getAnimControl(self, animName, partName, lodName="lodRoot"):
+    def getAnimControl(self, animName, partName="modelRoot", lodName="lodRoot"):
         """getAnimControl(self, string, string, string="lodRoot")
         Search the animControl dictionary indicated by lodName for
         a given anim and part. Return the animControl if present,
