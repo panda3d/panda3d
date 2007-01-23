@@ -326,7 +326,8 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
 //               In this mode, the thickness parameter represents a
 //               thickness in pixels, and is passed to the linestrip.
 //               However, you should be aware the DirectX does not
-//               support line thickness.
+//               support line thickness.  This mode does not support
+//               per-vertex thickness.
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
 render_thread(CullTraverser *trav, CullTraverserData &data, 
@@ -540,6 +541,7 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
   int num_verts = get_num_subdiv() + 1;
   int num_segments = result->get_num_segments();
   bool use_vertex_color = get_use_vertex_color();
+  bool use_vertex_thickness = get_use_vertex_thickness();
 
   CurveSegment *curve_segment = NULL;
   LPoint3f last_point;
@@ -560,7 +562,14 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
       vtx._p = point;
       vtx._t = result->get_segment_t(segment, 0.0f);
       if (use_vertex_color) {
-        result->eval_segment_extended_points(segment, 0.0f, 0, &vtx._c[0], 4);
+        result->eval_segment_extended_points(segment, 0.0f, 
+                                             get_vertex_color_dimension(), 
+                                             &vtx._c[0], 4);
+      }
+      if (use_vertex_thickness) {
+        vtx._thickness = 
+          result->eval_segment_extended_point(segment, 0.0f, 
+                                              get_vertex_thickness_dimension());
       }
 
       curve_segment->push_back(vtx);
@@ -574,7 +583,14 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
       result->eval_segment_point(segment, t, vtx._p);
       vtx._t = result->get_segment_t(segment, t);
       if (use_vertex_color) {
-        result->eval_segment_extended_points(segment, t, 0, &vtx._c[0], 4);
+        result->eval_segment_extended_points(segment, t, 
+                                             get_vertex_color_dimension(),
+                                             &vtx._c[0], 4);
+      }
+      if (use_vertex_thickness) {
+        vtx._thickness = 
+          result->eval_segment_extended_point(segment, t, 
+                                              get_vertex_thickness_dimension());
       }
 
       curve_segment->push_back(vtx);
@@ -644,11 +660,13 @@ compute_billboard_vertices(GeomVertexData *vdata,
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
   float thickness = get_thickness();
-  float radius = thickness * 0.5f;
+  float overall_radius = thickness * 0.5f;
+  float radius = overall_radius;
   UVMode uv_mode = get_uv_mode();
   float uv_scale = get_uv_scale();
   bool u_dominant = get_uv_direction();
   bool use_vertex_color = get_use_vertex_color();
+  bool use_vertex_thickness = get_use_vertex_thickness();
 
   float dist = 0.0f;
   CurveSegments::const_iterator si;
@@ -660,6 +678,10 @@ compute_billboard_vertices(GeomVertexData *vdata,
 
       LVector3f norm = cross(tangent, camera_vec);
       norm.normalize();
+
+      if (use_vertex_thickness) {
+        radius = overall_radius * segment[j]._thickness;
+      }
 
       vertex.add_data3f(segment[j]._p + norm * radius);
       vertex.add_data3f(segment[j]._p - norm * radius);
@@ -705,12 +727,14 @@ compute_tube_vertices(GeomVertexData *vdata,
   num_verts_per_slice = num_slices;
 
   float thickness = get_thickness();
-  float radius = thickness * 0.5f;
+  float overall_radius = thickness * 0.5f;
+  float radius = overall_radius;
   UVMode uv_mode = get_uv_mode();
   float uv_scale = get_uv_scale();
   bool u_dominant = get_uv_direction();
   NormalMode normal_mode = get_normal_mode();
   bool use_vertex_color = get_use_vertex_color();
+  bool use_vertex_thickness = get_use_vertex_thickness();
 
   // If we are generating UV's, we will need to duplicate the vertices
   // along the seam so that the UV's go through the whole range of
@@ -739,6 +763,10 @@ compute_tube_vertices(GeomVertexData *vdata,
       float uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
 
       for (int s = 0; s < num_verts_per_slice; ++s) {
+        if (use_vertex_thickness) {
+          radius = overall_radius * segment[j]._thickness;
+        }
+
         vertex.add_data3f(segment[j]._p + norm * radius);
 
         if (normal_mode == NM_vertex) {

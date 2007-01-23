@@ -123,12 +123,17 @@ PUBLISHED:
 
   INLINE void set_use_vertex_color(bool flag);
   INLINE bool get_use_vertex_color() const;
+  INLINE static int get_vertex_color_dimension();
 
   INLINE void set_num_subdiv(int num_subdiv);
   INLINE int get_num_subdiv() const;
 
   INLINE void set_num_slices(int num_slices);
   INLINE int get_num_slices() const;
+
+  INLINE void set_use_vertex_thickness(bool flag);
+  INLINE bool get_use_vertex_thickness() const;
+  INLINE static int get_vertex_thickness_dimension();
 
   INLINE void set_thickness(float thickness);
   INLINE float get_thickness() const;
@@ -162,6 +167,7 @@ private:
   public:
     LPoint3f _p;
     Colorf _c;
+    float _thickness;
     float _t;
   };
   typedef pvector<CurveVertex> CurveSegment;
@@ -213,6 +219,7 @@ private:
     bool _use_vertex_color;
     int _num_subdiv;
     int _num_slices;
+    bool _use_vertex_thickness;
     float _thickness;
   };
 

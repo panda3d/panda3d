@@ -36,6 +36,7 @@ CData() {
   _use_vertex_color = false;
   _num_subdiv = 10;
   _num_slices = 5;
+  _use_vertex_thickness = false;
   _thickness = 1.0f;
 }
 
@@ -58,6 +59,7 @@ CData(const RopeNode::CData &copy) :
   _use_vertex_color(copy._use_vertex_color),
   _num_subdiv(copy._num_subdiv),
   _num_slices(copy._num_slices),
+  _use_vertex_thickness(copy._use_vertex_thickness),
   _thickness(copy._thickness)
 {
 }
@@ -248,8 +250,10 @@ get_tube_up() const {
 //       Access: Published
 //  Description: Sets the "use vertex color" flag.  When this is true,
 //               the R, G, B, A vertex color is assumed to be stored
-//               as the dimensions 0, 1, 2, 3, respectively, of the
-//               extended vertex values.  Use
+//               as the dimensions n + 0, n + 1, n + 2, n + 3,
+//               respectively, of the extended vertex values, where n
+//               is the value returned by
+//               get_vertex_color_dimension().  Use
 //               NurbsCurveEvaluator::set_extended_vertex() to set
 //               these values.
 ////////////////////////////////////////////////////////////////////
@@ -269,6 +273,21 @@ INLINE bool RopeNode::
 get_use_vertex_color() const {
   CDReader cdata(_cycler);
   return cdata->_use_vertex_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_vertex_color_dimension
+//       Access: Published, Static
+//  Description: Returns the numeric extended dimension in which the
+//               color components should be found.  See
+//               NurbsCurveEvaluator::set_extended_vertex().
+//
+//               The color components will be expected at (n, n + 1, n
+//               + 2, n + 3).
+////////////////////////////////////////////////////////////////////
+INLINE int RopeNode::
+get_vertex_color_dimension() {
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -331,11 +350,58 @@ get_num_slices() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: set_use_vertex_thickness
+//       Access: Published
+//  Description: Sets the "use vertex thickness" flag.  When this is true,
+//               the vertex thickness is assumed to be stored as the
+//               dimension get_vertex_thickness_dimension(), of the
+//               extended vertex values.  Use
+//               NurbsCurveEvaluator::set_extended_vertex() to set
+//               these values.
+//
+//               In this mode, the overall thickness is also applied
+//               as a scale to the vertex thickness.  Not all render
+//               modes support vertex thickness.
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+set_use_vertex_thickness(bool flag) {
+  CDWriter cdata(_cycler);
+  cdata->_use_vertex_thickness = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_use_vertex_thickness
+//       Access: Published
+//  Description: Returns the "use vertex thickness" flag.  See
+//               set_use_vertex_thickness().
+////////////////////////////////////////////////////////////////////
+INLINE bool RopeNode::
+get_use_vertex_thickness() const {
+  CDReader cdata(_cycler);
+  return cdata->_use_vertex_thickness;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_vertex_thickness_dimension
+//       Access: Published, Static
+//  Description: Returns the numeric extended dimension in which the
+//               thickness component should be found.  See
+//               NurbsCurveEvaluator::set_extended_vertex().
+////////////////////////////////////////////////////////////////////
+INLINE int RopeNode::
+get_vertex_thickness_dimension() {
+  return 4;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: set_thickness
 //       Access: Published
 //  Description: Specifies the thickness of the rope, in pixels or in
 //               spatial units, depending on the render mode.  See
 //               set_render_mode().
+//
+//               The thickness may also be specified on a per-vertex
+//               basis.  See set_use_vertex_thickness().
 ////////////////////////////////////////////////////////////////////
 INLINE void RopeNode::
 set_thickness(float thickness) {
