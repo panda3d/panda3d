@@ -22,10 +22,12 @@
 
 #undef interface  // I don't know where this symbol is defined, but it interferes with FreeType.
 #include FT_OUTLINE_H 
-#include FT_STROKER_H
 #include FT_BBOX_H
 #ifdef FT_BITMAP_H
 #include FT_BITMAP_H
+#endif
+#ifdef FT_STROKER_H
+#include FT_STROKER_H
 #endif
 
 #include "config_text.h"
@@ -398,11 +400,17 @@ make_glyph(int character, int glyph_index) {
     if (wo == WO_default) {
       // If we weren't told an explicit winding order, ask FreeType to
       // figure it out.  Sometimes it appears to guess wrong.
+#ifdef FT_ORIENTATION_FILL_RIGHT
       if (FT_Outline_Get_Orientation(&slot->outline) == FT_ORIENTATION_FILL_RIGHT) {
         wo = WO_right;
       } else {
         wo = WO_left;
       }
+#else
+      // Hmm.  Assign a right-winding (TTF) orientation if FreeType
+      // can't tell us.
+      wo = WO_right;
+#endif  // FT_ORIENTATION_FILL_RIGHT
     }
 
     if (wo != WO_left) {
@@ -430,7 +438,7 @@ make_glyph(int character, int glyph_index) {
 
   // Render the glyph if necessary.
   if (slot->format != ft_glyph_format_bitmap) {
-    FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL);
+    FT_Render_Glyph(slot, ft_render_mode_normal);
   }
 
   if (bitmap.width == 0 || bitmap.rows == 0) {
