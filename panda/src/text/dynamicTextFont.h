@@ -45,6 +45,34 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DynamicTextFont : public TextFont, public FreetypeFont {
 PUBLISHED:
+  enum RenderMode {
+    // Each glyph is a single textured rectangle
+    RM_texture,
+
+    // Each glyph is a lot of line segments
+    RM_wireframe,
+
+    // Each glyph is a lot of triangles
+    RM_polygon,
+
+    // a 3-D outline, like a cookie cutter
+    RM_extruded,
+
+    // combination of RM_extruded and RM_polygon
+    RM_solid,
+
+    // Returned by string_render_mode() for an invalid match.
+    RM_invalid,
+  };
+
+  enum WindingOrder {
+    WO_default,
+    WO_left,
+    WO_right,
+
+    WO_invalid,
+  };
+
   DynamicTextFont(const Filename &font_filename, int face_index = 0);
   DynamicTextFont(const char *font_data, int data_length, int face_index);
   virtual ~DynamicTextFont();
@@ -84,6 +112,11 @@ PUBLISHED:
   INLINE void set_anisotropic_degree(int anisotropic_degree);
   INLINE int get_anisotropic_degree() const;
 
+  INLINE void set_render_mode(RenderMode render_mode);
+  INLINE RenderMode get_render_mode() const;
+  INLINE void set_winding_order(WindingOrder winding_order);
+  INLINE WindingOrder get_winding_order() const;
+
   int get_num_pages() const;
   DynamicTextPage *get_page(int n) const;
 
@@ -95,6 +128,9 @@ PUBLISHED:
 public:
   virtual bool get_glyph(int character, const TextGlyph *&glyph);
 
+  static RenderMode string_render_mode(const string &string);
+  static WindingOrder string_winding_order(const string &string);
+
 private:
   void initialize();
   void update_filters();
@@ -103,6 +139,17 @@ private:
   void copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph);
   DynamicTextGlyph *slot_glyph(int character, int x_size, int y_size);
 
+  void render_wireframe_contours(DynamicTextGlyph *glyph);
+  void render_polygon_contours(DynamicTextGlyph *glyph);
+
+  static int outline_move_to(const FT_Vector *to, void *user);
+  static int outline_line_to(const FT_Vector *to, void *user);
+  static int outline_conic_to(const FT_Vector *control,
+                              const FT_Vector *to, void *user);
+  static int outline_cubic_to(const FT_Vector *control1, 
+                              const FT_Vector *control2, 
+                              const FT_Vector *to, void *user);
+
   int _texture_margin;
   float _poly_margin;
   int _page_x_size, _page_y_size;
@@ -110,6 +157,9 @@ private:
   Texture::FilterType _minfilter;
   Texture::FilterType _magfilter;
   int _anisotropic_degree;
+
+  RenderMode _render_mode;
+  WindingOrder _winding_order;
 
   typedef pvector< PT(DynamicTextPage) > Pages;
   Pages _pages;
@@ -126,6 +176,18 @@ private:
   // in the above table.
   typedef pvector< PT(DynamicTextGlyph) > EmptyGlyphs;
   EmptyGlyphs _empty_glyphs;
+
+  typedef pvector<LPoint2f> Points;
+
+  class Contour {
+  public:
+    Points _points;
+    bool _is_solid;
+    int _start_vertex;
+  };
+
+  typedef pvector<Contour> Contours;
+  Contours _contours;
 
 public:
   static TypeHandle get_class_type() {
@@ -148,6 +210,11 @@ private:
 };
 
 INLINE ostream &operator << (ostream &out, const DynamicTextFont &dtf);
+
+EXPCL_PANDA ostream &operator << (ostream &out, DynamicTextFont::RenderMode rm);
+EXPCL_PANDA istream &operator >> (istream &in, DynamicTextFont::RenderMode &rm);
+EXPCL_PANDA ostream &operator << (ostream &out, DynamicTextFont::WindingOrder wo);
+EXPCL_PANDA istream &operator >> (istream &in, DynamicTextFont::WindingOrder &wo);
 
 #include "dynamicTextFont.I"
 

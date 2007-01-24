@@ -72,9 +72,10 @@ clear_polygon() {
 //               This vertex should index into the vertex pool
 //               established by repeated calls to add_vertex().
 //
-//               The vertices should be listed in counterclockwise
-//               order, and should not be repeated.  In particular, do
-//               not repeat the first vertex at the end.
+//               The vertices may be listed in either clockwise or
+//               counterclockwise order.  Vertices should not be
+//               repeated.  In particular, do not repeat the first
+//               vertex at the end.
 ////////////////////////////////////////////////////////////////////
 void Triangulator::
 add_polygon_vertex(int index) {
@@ -99,8 +100,9 @@ begin_hole() {
 //               This vertex should index into the vertex pool
 //               established by repeated calls to add_vertex().
 //
-//               The vertices should be listed in clockwise order, and
-//               should not be repeated.
+//               The vertices may be listed in either clockwise or
+//               counterclockwise order.  Vertices should not be
+//               repeated.
 ////////////////////////////////////////////////////////////////////
 void Triangulator::
 add_hole_vertex(int index) {
@@ -123,11 +125,11 @@ triangulate() {
   // Set up the list of segments.
   seg.clear();
   seg.push_back(segment_t());  // we don't use the first entry.
-  make_segment(_polygon);
+  make_segment(_polygon, true);
 
   Holes::const_iterator hi;
   for (hi = _holes.begin(); hi != _holes.end(); ++hi) {
-    make_segment(*hi);
+    make_segment(*hi, false);
   }
 
   // Shuffle the segment index.
@@ -306,29 +308,74 @@ get_triangle_v2(int n) const {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Triangulator::check_left_winding
+//       Access: Private
+//  Description: Returns true if the list of vertices is
+//               counter-clockwise, false if it is clockwise.
+////////////////////////////////////////////////////////////////////
+bool Triangulator::
+check_left_winding(const vector_int &range) const {
+  // We do this by computing the polygon's signed area.  If it comes
+  // out negative, the polygon is right-winding.
+
+  double area = 0.0;
+  size_t j = range.size() - 1;
+  for (size_t i = 0; i < range.size(); ++i) {
+    const LPoint2d &p0 = _vertices[range[j]];
+    const LPoint2d &p1 = _vertices[range[i]];
+    area += p0[0] * p1[1] - p0[1] * p1[0];
+    j = i;
+  }
+
+  return area >= 0.0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Triangulator::make_segment
 //       Access: Private
 //  Description: Converts a linear list of integer vertices to a list
-//               of segment_t.
+//               of segment_t.  If want_left_winding is true, the list
+//               is reversed if necessary to make it left-winding;
+//               otherwise, it is reversed to make it right-winding.
 ////////////////////////////////////////////////////////////////////
 void Triangulator::
-make_segment(const vector_int &range) {
+make_segment(const vector_int &range, bool want_left_winding) {
   int num_points = (int)range.size();
   nassertv(num_points >= 2);
 
   int first = (int)seg.size();
   int last = first + num_points - 1;
 
-  seg.push_back(segment_t(this, range[0], range[1],
-                          last, first + 1));
+  if (want_left_winding == check_left_winding(range)) {
+    // Keep it in its natural order.
+    int first = (int)seg.size();
+    int last = first + num_points - 1;
+    
+    seg.push_back(segment_t(this, range[0], range[1],
+                            last, first + 1));
+    
+    for (int i = 1; i < num_points - 1; ++i) {
+      seg.push_back(segment_t(this, range[i], range[i + 1],
+                              first + i - 1, first + i + 1));
+    }
+    
+    seg.push_back(segment_t(this, range[num_points - 1], range[0],
+                            last - 1, first));
 
-  for (int i = 1; i < num_points - 1; ++i) {
-    seg.push_back(segment_t(this, range[i], range[i + 1],
-                            first + i - 1, first + i + 1));
+  } else {
+    // Reverse it.
+    seg.push_back(segment_t(this, range[0], range[num_points - 1],
+                            last, first + 1));
+    
+    for (int i = 1; i < num_points - 1; ++i) {
+      seg.push_back(segment_t(this, range[num_points - i], range[num_points - i - 1],
+                              first + i - 1, first + i + 1));
+    }
+    
+    seg.push_back(segment_t(this, range[1], range[0],
+                            last - 1, first));
+
   }
-
-  seg.push_back(segment_t(this, range[num_points - 1], range[0],
-                          last - 1, first));
 }
   
 /* Return the next segment in the generated random ordering of all the */

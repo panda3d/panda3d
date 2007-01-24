@@ -76,7 +76,7 @@ public:
   INLINE static float get_points_per_inch();
 
 protected:
-  bool load_glyph(int glyph_index);
+  bool load_glyph(int glyph_index, bool prerender = true);
   void copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image);
 
 private:
@@ -99,7 +99,7 @@ protected:
 
   FT_Face _face;
 
-private:
+protected:
   bool _font_loaded;
 
   // This string is used to hold the data read from the font file in

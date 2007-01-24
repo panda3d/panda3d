@@ -54,6 +54,18 @@ get_vertex(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Triangulator::is_left_winding
+//       Access: Published
+//  Description: Returns true if the polygon vertices are listed in
+//               counterclockwise order, or false if they appear to be
+//               listed in clockwise order.
+////////////////////////////////////////////////////////////////////
+INLINE bool Triangulator::
+is_left_winding() const {
+  return check_left_winding(_polygon);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Triangulator::Triangle::Constructor
 //       Access: Private
 //  Description: 

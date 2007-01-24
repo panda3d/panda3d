@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "referenceCount.h"
 #include "nurbsBasisVector.h"
+#include "vector_float.h"
 
 class NurbsVertex;
 
@@ -63,10 +64,20 @@ PUBLISHED:
   void eval_segment_extended_points(int segment, float t, int d,
                                     float result[], int num_values) const;
   INLINE float get_segment_t(int segment, float t) const;
+
+  void adaptive_sample(float tolerance);
+  INLINE int get_num_samples() const;
+  INLINE float get_sample_t(int n) const;
+  INLINE const LPoint3f &get_sample_point(int n) const;
   
 private:
   int find_segment(float t);
   int r_find_segment(float t, int top, int bot) const;
+
+  void r_adaptive_sample(int segment, float t0, const LPoint3f &p0, 
+                         float t1, const LPoint3f &p1, float tolerance_2);
+  static float sqr_dist_to_line(const LPoint3f &point, const LPoint3f &origin, 
+                                const LVector3f &vec);
 
   NurbsBasisVector _basis;
   const NurbsVertex *_verts;
@@ -77,10 +88,18 @@ private:
   typedef pvector<LMatrix4f> ComposedGeom;
   ComposedGeom _composed;
 
-
   int _last_segment;
   float _last_from;
   float _last_to;
+
+  class AdaptiveSample {
+  public:
+    INLINE AdaptiveSample(float t, const LPoint3f &point);
+    float _t;
+    LPoint3f _point;
+  };
+  typedef pvector<AdaptiveSample> AdaptiveResult;
+  AdaptiveResult _adaptive_result;
 };
 
 #include "nurbsCurveResult.I"

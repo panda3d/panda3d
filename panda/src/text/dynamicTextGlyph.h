@@ -53,6 +53,8 @@ public:
   void make_geom(int top, int left, float advance, float poly_margin,
                  float tex_x_size, float tex_y_size,
                  float font_pixels_per_unit, float tex_pixels_per_unit);
+  void set_geom(GeomVertexData *vdata, GeomPrimitive *prim, 
+                const RenderState *state);
 
   DynamicTextPage *_page;
   int _geom_count;

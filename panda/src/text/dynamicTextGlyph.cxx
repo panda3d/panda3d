@@ -168,4 +168,30 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
 }
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextGlyph::set_geom
+//       Access: Public
+//  Description: Sets the geom from a pre-built object.
+////////////////////////////////////////////////////////////////////
+void DynamicTextGlyph::
+set_geom(GeomVertexData *vdata, GeomPrimitive *prim, 
+         const RenderState *state) {
+  // This function is called when _geom_count = 1, because it was
+  // constructed via the empty Glyph constructor.
+  nassertv(_geom_count == 1);
+  _geom_count--;
+
+  PT(Geom) geom = new GeomTextGlyph(this, vdata);
+  geom->add_primitive(prim);
+  _geom = geom;
+  
+  // The above will increment our _geom_count to 1.  Reset it back
+  // down to 0, since our own internal Geom doesn't count.
+  nassertv(_geom_count == 1);
+  _geom_count--;
+  
+  _state = state;
+}
+
+
 #endif  // HAVE_FREETYPE

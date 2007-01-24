@@ -200,6 +200,41 @@ eval_segment_extended_points(int segment, float t, int d,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveResult::adaptive_sample
+//       Access: Published
+//  Description: Determines the set of subdivisions necessary to
+//               approximate the curve with a set of linear segments,
+//               no point of which is farther than tolerance units
+//               from the actual curve.
+//
+//               After this call, you may walk through the resulting
+//               set of samples with get_num_samples(),
+//               get_sample_t(), and get_sample_point().
+////////////////////////////////////////////////////////////////////
+void NurbsCurveResult::
+adaptive_sample(float tolerance) {
+  float tolerance_2 = tolerance * tolerance;
+  _adaptive_result.clear();
+
+  LPoint3f p0, p1;
+
+  int num_segments = _basis.get_num_segments();
+  for (int segment = 0; segment < num_segments; ++segment) {
+    eval_segment_point(segment, 0.0f, p0);
+    if (segment == 0 || !p0.almost_equal(p1)) {
+      // We explicitly push the first point, and the boundary point
+      // anytime the segment boundary is discontinuous.
+      _adaptive_result.push_back(AdaptiveSample(_basis.get_from(segment), p0));
+    }
+
+    eval_segment_point(segment, 1.0f, p1);
+
+    // Then we recusrively get the remaining points in the segment.
+    r_adaptive_sample(segment, 0.0f, p0, 1.0f, p1, tolerance_2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveResult::find_segment
 //       Access: Private
 //  Description: Returns the index of the segment that contains the
@@ -264,3 +299,46 @@ r_find_segment(float t, int top, int bot) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveResult::r_adaptive_sample
+//       Access: Private
+//  Description: Recursively subdivides a potential evaluation of the
+//               segment until it is found to be within tolerance.
+//               This will add everything up to and including t1, but
+//               excluding t0.
+////////////////////////////////////////////////////////////////////
+void NurbsCurveResult::
+r_adaptive_sample(int segment, float t0, const LPoint3f &p0, 
+                  float t1, const LPoint3f &p1, float tolerance_2) {
+  float tmid = (t0 + t1) * 0.5f;
+  LPoint3f pmid;
+  eval_segment_point(segment, tmid, pmid);
+
+  if (sqr_dist_to_line(pmid, p0, p1 - p0) > tolerance_2) {
+    // The line is still too curved--subdivide.
+    r_adaptive_sample(segment, t0, p0, tmid, pmid, tolerance_2);
+    r_adaptive_sample(segment, tmid, pmid, t1, p1, tolerance_2);
+
+  } else {
+    // The line is sufficiently close.  Stop here.
+    _adaptive_result.push_back(AdaptiveSample(_basis.scale_t(segment, t1), p1));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveResult::sqr_dist_to_line
+//       Access: Private, Static
+//  Description: A support function for r_adaptive_sample(), this
+//               computes the minimum distance from a point to a line,
+//               and returns the distance squared.
+////////////////////////////////////////////////////////////////////
+float NurbsCurveResult::
+sqr_dist_to_line(const LPoint3f &point, const LPoint3f &origin, 
+                 const LVector3f &vec) {
+  LVector3f norm = vec;
+  norm.normalize();
+  LVector3f d = point - origin;
+  float hyp_2 = d.length_squared();
+  float leg = d.dot(norm);
+  return hyp_2 - leg * leg;
+}

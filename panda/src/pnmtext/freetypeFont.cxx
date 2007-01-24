@@ -170,10 +170,16 @@ unload_font() {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool FreetypeFont::
-load_glyph(int glyph_index) {
+load_glyph(int glyph_index, bool prerender) {
   int flags = FT_LOAD_RENDER;
   if (!_native_antialias) { 
     flags |= FT_LOAD_MONOCHROME;
+  }
+
+  if (!prerender) {
+    // If we want to render as an outline font, don't pre-render it to
+    // a bitmap.
+    flags = 0;
   }
 
   int error = FT_Load_Glyph(_face, glyph_index, flags);

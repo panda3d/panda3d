@@ -52,6 +52,7 @@ PUBLISHED:
 
   void clear_polygon();
   void add_polygon_vertex(int index);
+  INLINE bool is_left_winding() const;
 
   void begin_hole();
   void add_hole_vertex(int index);
@@ -170,7 +171,8 @@ private:
 
   vector_int visited;
 
-  void make_segment(const vector_int &range);
+  bool check_left_winding(const vector_int &range) const;
+  void make_segment(const vector_int &range, bool want_left_winding);
 
   int choose_segment();
   static double math_log2(double v);

@@ -289,6 +289,8 @@ load_default_font() {
   // Loading the compiled-in FreeType font is relatively easy.
   _default_font = new DynamicTextFont((const char *)default_font_data, 
                                       default_font_size, 0);
+  // The compiled-in font seems to confuse FreeType about its winding order.
+  ((DynamicTextFont *)_default_font.p())->set_winding_order(DynamicTextFont::WO_left);
 
 #else
   // The compiled-in Bam font requires creating a BamFile object to

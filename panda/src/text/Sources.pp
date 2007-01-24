@@ -7,7 +7,8 @@
   #define TARGET text
   #define LOCAL_LIBS \
     putil gobj pgraph linmath \
-    pnmtext pnmimage gsgbase mathutil
+    pnmtext pnmimage gsgbase mathutil \
+    parametrics
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 

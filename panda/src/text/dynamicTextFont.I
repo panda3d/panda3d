@@ -102,7 +102,8 @@ get_pixels_per_unit() const {
 //               larger than 1.0 to improve the font's antialiasing
 //               (since FreeType doesn't really do a swell job of
 //               antialiasing by itself).  There is some performance
-//               implication for setting this different than 1.0.
+//               implication for setting this different than 1.0, but
+//               it is probably small.
 //
 //               This should only be called before any characters have
 //               been requested out of the font, or immediately after
@@ -358,6 +359,54 @@ set_anisotropic_degree(int anisotropic_degree) {
 INLINE int DynamicTextFont::
 get_anisotropic_degree() const {
   return _anisotropic_degree;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_render_mode
+//       Access: Published
+//  Description: Specifies the way the glyphs on this particular font
+//               are generated.  The default is RM_texture, which is
+//               the only mode supported for bitmap fonts. Other modes
+//               are possible for most modern fonts.
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_render_mode(DynamicTextFont::RenderMode render_mode) {
+  _render_mode = render_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_render_mode
+//       Access: Published
+//  Description: Returns the way the glyphs on this particular font
+//               are generated.  See set_render_mode().
+////////////////////////////////////////////////////////////////////
+INLINE DynamicTextFont::RenderMode DynamicTextFont::
+get_render_mode() const {
+  return _render_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_winding_order
+//       Access: Published
+//  Description: Specifies an explicitly winding order on this
+//               particular font.  This is only necessary if the
+//               render_mode is RM_polygon or RM_solid, and only if
+//               FreeType appears to guess wrong on this font.
+//               Normally, you should leave this at WO_default.
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_winding_order(DynamicTextFont::WindingOrder winding_order) {
+  _winding_order = winding_order;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_winding_order
+//       Access: Published
+//  Description: Returns the winding order set via set_winding_order().
+////////////////////////////////////////////////////////////////////
+INLINE DynamicTextFont::WindingOrder DynamicTextFont::
+get_winding_order() const {
+  return _winding_order;
 }
 
 INLINE ostream &
