@@ -118,6 +118,18 @@ class ActorInterval(Interval.Interval):
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
 
+    def getCurrentFrame(self):
+        """Calculate the current frame playing in this interval.
+
+        returns a float value between startFrame and endFrame, inclusive
+        returns None if there are any problems
+        """
+        retval = None
+        if not self.isStopped():
+            framesPlayed = self.numFrames * self.currT
+            retval = self.startFrame + framesPlayed
+        return retval
+
     def privStep(self, t):
         frameCount = t * self.frameRate
         if self.constrainedLoop:
