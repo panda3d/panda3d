@@ -22,7 +22,9 @@
 
 #undef interface  // I don't know where this symbol is defined, but it interferes with FreeType.
 #include FT_OUTLINE_H 
+#ifdef FT_BBOX_H
 #include FT_BBOX_H
+#endif
 #ifdef FT_BITMAP_H
 #include FT_BITMAP_H
 #endif
