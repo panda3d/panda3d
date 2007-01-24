@@ -536,7 +536,7 @@ class ShowBase(DirectObject.DirectObject):
                 self.frameRateMeter.clearWindow()
                 self.frameRateMeter = None
 
-    def openDefaultWindow(self):
+    def openDefaultWindow(self, *args, **kw):
         # Creates the main window for the first time, without being
         # too particular about the kind of graphics API that is
         # chosen.  The suggested window type from the load-display
@@ -548,7 +548,7 @@ class ShowBase(DirectObject.DirectObject):
         # startup.  It is normally called automatically unless
         # window-type is configured to 'none'.
 
-        self.openMainWindow()
+        self.openMainWindow(*args, **kw)
 
         # Give the window a chance to truly open.
         self.graphicsEngine.openWindows()
@@ -562,7 +562,7 @@ class ShowBase(DirectObject.DirectObject):
             while self.win == None and len(self.pipeList) > 1:
                 self.pipeList.remove(self.pipe)
                 self.pipe = self.pipeList[0]
-                self.openMainWindow()
+                self.openMainWindow(*args, **kw)
 
                 self.graphicsEngine.openWindows()
                 if self.win != None and not self.isMainWindowOpen():
