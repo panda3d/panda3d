@@ -49,28 +49,28 @@ PUBLISHED:
     DS_create_device_error,
   };
 
-  DisplayInformation::~DisplayInformation();
-  DisplayInformation::DisplayInformation();
+  ~DisplayInformation();
+  DisplayInformation();
 
-  int DisplayInformation::get_display_state();
+  int get_display_state();
 
-  int DisplayInformation::get_maximum_window_width();
-  int DisplayInformation::get_maximum_window_height();
-  int DisplayInformation::get_window_bits_per_pixel();
+  int get_maximum_window_width();
+  int get_maximum_window_height();
+  int get_window_bits_per_pixel();
 
-  int DisplayInformation::get_total_display_modes();
-  int DisplayInformation::get_display_mode_width(int display_index);
-  int DisplayInformation::get_display_mode_height(int display_index);
-  int DisplayInformation::get_display_mode_bits_per_pixel(int display_index);
-  int DisplayInformation::get_display_mode_refresh_rate(int display_index);
-  int DisplayInformation::get_display_mode_fullscreen_only(int display_index);
+  int get_total_display_modes();
+  int get_display_mode_width(int display_index);
+  int get_display_mode_height(int display_index);
+  int get_display_mode_bits_per_pixel(int display_index);
+  int get_display_mode_refresh_rate(int display_index);
+  int get_display_mode_fullscreen_only(int display_index);
 
-  int DisplayInformation::get_shader_model();
-  int DisplayInformation::get_video_memory();
-  int DisplayInformation::get_texture_memory();
+  int get_shader_model();
+  int get_video_memory();
+  int get_texture_memory();
 
-  PN_uint64 DisplayInformation::get_physical_memory();
-  PN_uint64 DisplayInformation::get_available_physical_memory();
+  PN_uint64 get_physical_memory();
+  PN_uint64 get_available_physical_memory();
 
 public:
   DetectionState _state;

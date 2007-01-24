@@ -29,15 +29,15 @@
 class EXPCL_PANDA DisplaySearchParameters {
 
 PUBLISHED:
-  DisplaySearchParameters::DisplaySearchParameters();
-  DisplaySearchParameters::~DisplaySearchParameters();
+  DisplaySearchParameters();
+  ~DisplaySearchParameters();
 
-  void DisplaySearchParameters::set_minimum_width(int minimum_width);
-  void DisplaySearchParameters::set_maximum_width(int maximum_width);
-  void DisplaySearchParameters::set_minimum_height(int minimum_height);
-  void DisplaySearchParameters::set_maximum_height(int maximum_height);
-  void DisplaySearchParameters::set_minimum_bits_per_pixel(int minimum_bits_per_pixel);
-  void DisplaySearchParameters::set_maximum_bits_per_pixel(int maximum_bits_per_pixel);
+  void set_minimum_width(int minimum_width);
+  void set_maximum_width(int maximum_width);
+  void set_minimum_height(int minimum_height);
+  void set_maximum_height(int maximum_height);
+  void set_minimum_bits_per_pixel(int minimum_bits_per_pixel);
+  void set_maximum_bits_per_pixel(int maximum_bits_per_pixel);
 
 public:
   int _minimum_width;
