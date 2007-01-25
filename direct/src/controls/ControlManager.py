@@ -13,7 +13,6 @@ from direct.directnotify import DirectNotifyGlobal
 #if __debug__:
 #    import DevWalker
 from direct.task import Task
-
 CollisionHandlerRayStart = 4000.0 # This is a hack, it may be better to use a line instead of a ray.
 
 class ControlManager:
@@ -162,6 +161,7 @@ class ControlManager:
     def delete(self):
         assert self.notify.debugCall(id(self))
         self.disable()
+        # TODO: put controls delete code in here
         del self.controls
         del self.currentControls
 
@@ -201,13 +201,21 @@ class ControlManager:
     def enable(self):
         assert self.notify.debugCall(id(self))
         self.isEnabled = 1
-        self.currentControls.enableAvatarControls()
+        if self.currentControls:
+            self.currentControls.enableAvatarControls()
 
     def disable(self):
         assert self.notify.debugCall(id(self))
         self.isEnabled = 0
-        self.currentControls.disableAvatarControls()
+        if self.currentControls:
+            self.currentControls.disableAvatarControls()
 
+    def stop(self):
+        self.disable()
+        self.currentControls.setCollisionsActive(0)
+        self.currentControls.setAvatar(None)
+        self.currentControls = None
+        
     def disableAvatarJump(self):
         """
         prevent 
