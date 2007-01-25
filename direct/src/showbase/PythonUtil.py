@@ -24,7 +24,8 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'ScratchPad', 'Sync', 'RefCounter', 'itype', 'getNumberedTypedString',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
 'FrameDelayedCallback', 'ArgumentEater', 'ClassTree', 'getBase',
-'superFlattenShip','HotkeyBreaker']
+'superFlattenShip','HotkeyBreaker','logMethodCalls','GoldenRatio',
+'GoldenRectangle']
 
 import types
 import string
@@ -2652,3 +2653,5 @@ __builtin__._notIn = _notIn
 __builtin__.itype = itype
 __builtin__.exceptionLogged = exceptionLogged
 __builtin__.appendStr = appendStr
+__builtin__.bound = bound
+__builtin__.lerp = lerp
