@@ -1493,6 +1493,86 @@ list_tags(ostream &out, const string &separator) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::compare_tags
+//       Access: Published
+//  Description: Returns a number less than 0, 0, or greater than 0,
+//               to indicate the similarity of tags between this node
+//               and the other one.  If this returns 0, the tags are
+//               identical.  If it returns other than 0, then the tags
+//               are different; and the nodes may be sorted into a
+//               consistent (but arbitrary) ordering based on this
+//               number.
+////////////////////////////////////////////////////////////////////
+int PandaNode::
+compare_tags(const PandaNode *other) const {
+  CDReader cdata(_cycler);
+  CDReader cdata_other(other->_cycler);
+
+  TagData::const_iterator ati = cdata->_tag_data.begin();
+  TagData::const_iterator bti = cdata_other->_tag_data.begin();
+  while (ati != cdata->_tag_data.end() &&
+         bti != cdata_other->_tag_data.end()) {
+    int cmp = strcmp((*ati).first.c_str(), (*bti).first.c_str());
+    if (cmp != 0) {
+      return cmp;
+    }
+
+    cmp = strcmp((*ati).second.c_str(), (*bti).second.c_str());
+    if (cmp != 0) {
+      return cmp;
+    }
+
+    ++ati;
+    ++bti;
+  }
+  if (ati != cdata->_tag_data.end()) {
+    // list A is longer.
+    return 1;
+  }
+  if (bti != cdata_other->_tag_data.end()) {
+    // list B is longer.
+    return -1;
+  }
+
+#ifdef HAVE_PYTHON
+  PythonTagData::const_iterator api = cdata->_python_tag_data.begin();
+  PythonTagData::const_iterator bpi = cdata_other->_python_tag_data.begin();
+  while (api != cdata->_python_tag_data.end() &&
+         bpi != cdata_other->_python_tag_data.end()) {
+    int cmp = strcmp((*api).first.c_str(), (*bpi).first.c_str());
+    if (cmp != 0) {
+      return cmp;
+    }
+
+    if (PyObject_Cmp((*api).second, (*bpi).second, &cmp) == -1) {
+      // Unable to compare objects; just compare pointers.
+      if ((*api).second != (*bpi).second) {
+        cmp = (*api).second < (*bpi).second ? -1 : 1;
+      } else {
+        cmp = 0;
+      }
+    }
+    if (cmp != 0) {
+      return cmp;
+    }
+
+    ++api;
+    ++bpi;
+  }
+  if (api != cdata->_python_tag_data.end()) {
+    // list A is longer.
+    return 1;
+  }
+  if (bpi != cdata_other->_python_tag_data.end()) {
+    // list B is longer.
+    return -1;
+  }
+#endif  // HAVE_PYTHON
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::copy_all_properties
 //       Access: Published
 //  Description: Copies the TransformState, RenderState,

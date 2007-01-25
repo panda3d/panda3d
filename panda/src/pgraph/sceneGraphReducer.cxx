@@ -355,6 +355,10 @@ operator () (const PandaNode *node1, const PandaNode *node2) const {
   if (node1->get_draw_show_mask() != node2->get_draw_show_mask()) {
     return node1->get_draw_show_mask() < node2->get_draw_show_mask();
   }
+  int cmp = (node1->compare_tags(node2));
+  if (cmp != 0) {
+    return cmp < 0;
+  }
 
   return 0;
 }
@@ -461,7 +465,8 @@ consider_child(PandaNode *grandparent_node, PandaNode *parent_node,
       parent_node->get_state() != child_node->get_state() ||
       parent_node->get_effects() != child_node->get_effects() ||
       parent_node->get_draw_control_mask() != child_node->get_draw_control_mask() ||
-      parent_node->get_draw_show_mask() != child_node->get_draw_show_mask()) {
+      parent_node->get_draw_show_mask() != child_node->get_draw_show_mask() ||
+      parent_node->compare_tags(child_node) != 0) {
     // The two nodes have a different state; too bad.
     return false;
   }
