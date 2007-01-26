@@ -2101,6 +2101,12 @@ def tagWithCaller(obj):
 def isDefaultValue(x):
     return x == type(x)()
 
+def notNone(A, B):
+    # returns A if not None, B otherwise
+    if A is None:
+        return B
+    return A
+
 def appendStr(obj, st):
     """adds a string onto the __str__ output of an instance"""
     def appendedStr(oldStr, st, self):
@@ -2655,3 +2661,5 @@ __builtin__.exceptionLogged = exceptionLogged
 __builtin__.appendStr = appendStr
 __builtin__.bound = bound
 __builtin__.lerp = lerp
+__builtin__.notNone = notNone
+__builtin__.clampScalar = clampScalar
