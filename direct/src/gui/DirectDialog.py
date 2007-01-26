@@ -334,6 +334,8 @@ class DirectDialog(DirectFrame):
     def destroy(self):
         if self['fadeScreen']:
             base.transitions.noTransitions()
+        for button in self.buttonList:
+            button.destroy()
         DirectFrame.destroy(self)
 
 class OkDialog(DirectDialog):
