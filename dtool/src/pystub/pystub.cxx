@@ -43,6 +43,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyNumber_Long(...);
   EXPCL_DTOOLCONFIG int PyObject_CallObject(...);
   EXPCL_DTOOLCONFIG int PyObject_Call(...);
+  EXPCL_DTOOLCONFIG int PyObject_Cmp(...);
   EXPCL_DTOOLCONFIG int PyObject_Free(...);
   EXPCL_DTOOLCONFIG int PyObject_GetAttrString(...);
   EXPCL_DTOOLCONFIG int PyObject_HasAttrString(...);
@@ -125,6 +126,7 @@ int PyLong_Type(...) { return 0; }
 int PyNumber_Long(...) { return 0; }
 int PyObject_CallObject(...) { return 0; }
 int PyObject_Call(...) { return 0; }
+int PyObject_Cmp(...) { return 0; }
 int PyObject_Free(...) { return 0; }
 int PyObject_GetAttrString(...) { return 0; }
 int PyObject_HasAttrString(...) { return 0; }
