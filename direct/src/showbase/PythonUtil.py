@@ -2663,3 +2663,5 @@ __builtin__.bound = bound
 __builtin__.lerp = lerp
 __builtin__.notNone = notNone
 __builtin__.clampScalar = clampScalar
+__builtin__.makeList = makeList
+__builtin__.makeTuple = makeTuple
