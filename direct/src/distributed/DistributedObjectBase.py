@@ -43,7 +43,7 @@ class DistributedObjectBase(DirectObject):
             return None
 
     def handleChildArrive(self, childObj, zoneId):
-        self.notify.debugCall()
+        assert self.notify.debugCall()
         # A new child has just setLocation beneath us.  Give us a
         # chance to run code when a new child sets location to us. For
         # example, we may want to scene graph reparent the child to
@@ -55,7 +55,7 @@ class DistributedObjectBase(DirectObject):
         pass
 
     def handleChildLeave(self, childObj, zoneId):
-        self.notify.debugCall()
+        assert self.notify.debugCall()
         # A child is about to setLocation away from us.  Give us a
         # chance to run code just before a child sets location away from us.
         ## zone=self.children[zoneId]
@@ -66,7 +66,15 @@ class DistributedObjectBase(DirectObject):
         # Inheritors should override
         pass
 
+    def handleQueryObjectChildrenLocalDone(self, context):
+        assert self.notify.debugCall()
+        # Inheritors should override
+        pass
+
     def getParentObj(self):
         if self.parentId is None:
             return None
         return self.cr.doId2do.get(self.parentId)
+
+    def hasParentingRules(self):
+        return self.dclass.getFieldByName('setParentingRules') != None

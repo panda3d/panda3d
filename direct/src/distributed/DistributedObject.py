@@ -131,9 +131,6 @@ class DistributedObject(DistributedObjectBase, EnforcesCalldowns):
         _getAutoInterests = None
         return list(autoInterests)
 
-    def hasParentingRules(self):
-        return self.dclass.getFieldByName('setParentingRules') != None
-
     def setNeverDisable(self, bool):
         assert bool == 1 or bool == 0
         self.neverDisable = bool
