@@ -3,6 +3,7 @@
 #define LOCAL_LIBS \
     lerp event gsgbase gobj putil linmath \
     downloader express pandabase pstatclient 
+#define USE_PACKAGES python
  
 #begin lib_target
   #define TARGET pgraph
