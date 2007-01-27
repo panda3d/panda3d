@@ -182,9 +182,11 @@ ConfigVariableEnum<Texture::WrapMode> text_wrap_mode
 ("text-wrap-mode", Texture::WM_border_color,
  PRC_DESC("The default wrap mode for dynamic text fonts"));
 
+#ifdef HAVE_FREETYPE
 ConfigVariableEnum<DynamicTextFont::RenderMode> text_render_mode
 ("text-render-mode", DynamicTextFont::RM_texture,
  PRC_DESC("The default render mode for dynamic text fonts"));
+#endif
 
 
 
