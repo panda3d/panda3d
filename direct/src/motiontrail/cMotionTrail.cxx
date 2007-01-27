@@ -78,7 +78,7 @@ reset_vertex_list ( ) {
 }
 
 void CMotionTrail::
-enable (int enable) {
+enable (bool enable) {
   _enable = enable;
 }
 
@@ -88,17 +88,17 @@ set_geom_node (PT(GeomNode) geom_node) {
 }
 
 void CMotionTrail::
-use_nurbs (int enable) {
+use_nurbs (bool enable) {
   _use_nurbs = enable;
 }
 
 void CMotionTrail::
-use_texture (int enable) {
+use_texture (bool enable) {
   _use_texture = enable;
 }
 
 void CMotionTrail::
-calculate_relative_matrix (int enable) {
+calculate_relative_matrix (bool enable) {
   _calculate_relative_matrix = enable;
 }
 
@@ -202,6 +202,42 @@ add_geometry_quad (LVector3f &v0, LVector3f &v1, LVector3f &v2, LVector3f &v3, L
   _vertex_index += 4;
 }
 
+void CMotionTrail::
+add_geometry_quad (LVector4f &v0, LVector4f &v1, LVector4f &v2, LVector4f &v3, LVector4f &c0, LVector4f &c1, LVector4f &c2, LVector4f &c3, LVector2f &t0, LVector2f &t1, LVector2f &t2, LVector2f &t3) {
+
+  _vertex_writer.add_data3f (v0 [0], v0 [1], v0 [2]);
+  _vertex_writer.add_data3f (v1 [0], v1 [1], v1 [2]);
+  _vertex_writer.add_data3f (v2 [0], v2 [1], v2 [2]);
+  _vertex_writer.add_data3f (v3 [0], v3 [1], v3 [2]);
+
+  _color_writer.add_data4f (c0);
+  _color_writer.add_data4f (c1);
+  _color_writer.add_data4f (c2);
+  _color_writer.add_data4f (c3);
+
+  if (_use_texture) {
+    _texture_writer.add_data2f (t0);
+    _texture_writer.add_data2f (t1);
+    _texture_writer.add_data2f (t2);
+    _texture_writer.add_data2f (t3);
+  }
+
+  int vertex_index;
+  vertex_index = _vertex_index;
+
+  _triangles -> add_vertex (vertex_index + 0);
+  _triangles -> add_vertex (vertex_index + 1);
+  _triangles -> add_vertex (vertex_index + 2);
+  _triangles -> close_primitive ( );
+
+  _triangles -> add_vertex (vertex_index + 1);
+  _triangles -> add_vertex (vertex_index + 3);
+  _triangles -> add_vertex (vertex_index + 2);
+  _triangles -> close_primitive ( );
+
+  _vertex_index += 4;
+}
+
 void CMotionTrail::end_geometry ( ) {    
 
   PT(Geom) geometry;
@@ -221,7 +257,7 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
   int debug;
   int total_frames;
   
-  debug = true;
+  debug = false;
 
   total_frames = _frame_list.size ( );
   if (total_frames >= 1) {
@@ -308,10 +344,11 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
   // convert frames and vertices to geometry
   total_frames = _frame_list.size ( );
 
-if (debug)
-{
-  printf ("update_motion_trail, total_frames = %d, total_vertices = %d, nurbs = %d, _calculate_relative_matrix = %d \n", total_frames, total_vertices, _use_nurbs, _calculate_relative_matrix);
-}
+  if (debug)
+  {
+    printf ("update_motion_trail, total_frames = %d, total_vertices = %d, nurbs = %d, _calculate_relative_matrix = %d \n", total_frames, total_vertices, _use_nurbs, _calculate_relative_matrix);
+  }
+
   if ((total_frames >= 2) && (total_vertices >= 2))
   {
     int total_segments;
@@ -342,24 +379,17 @@ if (debug)
     minimum_time = last_motion_trail_frame._time;
     delta_time = current_time - minimum_time;
 
-_calculate_relative_matrix = true;
-
     if (_calculate_relative_matrix)      
     {
       inverse_matrix = *transform;
       inverse_matrix.invert_in_place ( );
     }
-//    if (_use_nurbs && (total_frames >= 5))
-    if ((total_frames >= 5))
+
+    if (_use_nurbs && (total_frames >= 5))
     {
       // nurbs version
+      int total_vertex_segments;
 
-if (debug)
-{
-  printf ("nurbs\n");
-//  __debugbreak();
-}
-      
       float total_distance;  
       LVector3f vector;
       LVector4f v;
@@ -370,12 +400,8 @@ if (debug)
 
       total_distance = 0.0f;
 
-      int total_vertex_segments;
-
-      total_vertex_segments = total_vertices - 1;
-
       // reset NurbsCurveEvaluators for each vertex (the starting point for the trail)
-
+      total_vertex_segments = total_vertices - 1;
       for (index = 0; index < total_vertices; index++)
       {   
           CMotionTrailVertex *motion_trail_vertex;
@@ -389,6 +415,8 @@ if (debug)
       // add vertices to each NurbsCurveEvaluator            
 
       int segment_index;
+      CMotionTrailFrame motion_trail_frame_start;
+      CMotionTrailFrame motion_trail_frame_end;
       
       segment_index = 0;
 
@@ -396,8 +424,6 @@ if (debug)
       while (segment_index < total_segments)
       {
           int vertex_segement_index;
-          CMotionTrailFrame motion_trail_frame_start;
-          CMotionTrailFrame motion_trail_frame_end;
                   
           motion_trail_frame_start = *frame_iterator;
           frame_iterator++;
@@ -422,8 +448,6 @@ if (debug)
           v2 = end_transform.xform (motion_trail_vertex_start -> _vertex);
 
           nurbs_curve_evaluator = motion_trail_vertex_start -> _nurbs_curve_evaluator;
-
-//                        print "nurbs_curve_evaluator", nurbs_curve_evaluator, "index", (vertex_segement_index)
           nurbs_curve_evaluator -> set_vertex (segment_index, v0);
 
           vertex_segement_index = 0;
@@ -437,22 +461,7 @@ if (debug)
 
               nurbs_curve_evaluator = motion_trail_vertex_end -> _nurbs_curve_evaluator;
 
-
-//                            print "nurbs_curve_evaluator", nurbs_curve_evaluator, "index", (vertex_segement_index + 1)
-
-
               nurbs_curve_evaluator -> set_vertex (segment_index, v1);
-
-/*
-
-              """
-              print v0
-              print v1
-              print v2
-              print v3
-              """
-*/
-
               if (vertex_segement_index == (total_vertex_segments - 1))
               {
                   float distance;
@@ -461,23 +470,19 @@ if (debug)
                   vector.set (v[0], v[1], v[2]);
                   distance = vector.length();
                   total_distance += distance;
-// #                                print "DISTANCE", distance
               }
               
               vertex_segement_index += 1;
           }
 
-//                    print "TOTAL DISTANCE", total_distance, "SEGMENTS", total_distance / self.resolution_distance
-
-
           segment_index += 1;
       }
       
       // evaluate NurbsCurveEvaluator for each vertex
+
       PT(NurbsCurveResult) *nurbs_curve_result_array;
       
       nurbs_curve_result_array = new PT(NurbsCurveResult) [total_vertices];
-
       for (index = 0; index < total_vertices; index++)
       {          
           CMotionTrailVertex *motion_trail_vertex;
@@ -637,8 +642,122 @@ if (debug)
     else
     {
       // non-nurbs version
-  
-  
+      int segment_index;
+      int vertex_segment_index;
+      int total_vertex_segments;
+      
+      float st;
+      float et;
+      float start_t;
+      float end_t;
+      float color_start_t;
+      float color_end_t;
+
+      LVector4f v0;
+      LVector4f v1;
+      LVector4f v2;
+      LVector4f v3;
+
+      LVector4f c0;
+      LVector4f c1;
+      LVector4f c2;
+      LVector4f c3;
+
+      LVector2f t0;
+      LVector2f t1;
+      LVector2f t2;
+      LVector2f t3;
+
+      LVector4f vertex_start_color;
+      LVector4f vertex_end_color;
+
+      CMotionTrailFrame motion_trail_frame_start;
+      CMotionTrailFrame motion_trail_frame_end;
+                    
+      segment_index = 0;
+      frame_iterator = _frame_list.begin ( );
+      while (segment_index < total_segments)
+      {
+          CMotionTrailVertex *motion_trail_vertex_start;
+          CMotionTrailVertex *motion_trail_vertex_end;
+
+          motion_trail_frame_start = *frame_iterator;
+          frame_iterator++;
+          motion_trail_frame_end = *frame_iterator;
+
+          start_t = (motion_trail_frame_start._time - minimum_time) / delta_time;
+          end_t = (motion_trail_frame_end._time - minimum_time) / delta_time;
+
+          st = start_t;
+          et = end_t;
+
+          if (_square_t)
+          {
+              start_t *= start_t;
+              end_t *= end_t;
+          }
+
+          vertex_segment_index = 0;
+          total_vertex_segments = total_vertices - 1;
+
+          if (_calculate_relative_matrix) {
+              start_transform.multiply (motion_trail_frame_start._transform, inverse_matrix);
+              end_transform.multiply (motion_trail_frame_end._transform, inverse_matrix);
+          }
+          else {
+              start_transform = motion_trail_frame_start._transform;
+              end_transform = motion_trail_frame_end._transform;
+          }
+
+          motion_trail_vertex_start = &_vertex_array [0];
+
+          v0 = start_transform.xform (motion_trail_vertex_start -> _vertex);
+          v2 = end_transform.xform (motion_trail_vertex_start -> _vertex);
+
+          vertex_start_color = motion_trail_vertex_start -> _end_color + (motion_trail_vertex_start -> _start_color - motion_trail_vertex_start -> _end_color);
+          color_start_t = color_scale * start_t;
+          color_end_t = color_scale * end_t;
+          c0 = vertex_start_color * color_start_t;
+          c2 = vertex_start_color * color_end_t;
+
+          t0.set (st, motion_trail_vertex_start -> _v);
+          t2.set (et, motion_trail_vertex_start -> _v);
+
+          while (vertex_segment_index < total_vertex_segments)
+          {
+              motion_trail_vertex_start = &_vertex_array [vertex_segment_index];
+              motion_trail_vertex_end = &_vertex_array [vertex_segment_index + 1];
+
+              v1 = start_transform.xform (motion_trail_vertex_end -> _vertex);
+              v3 = end_transform.xform (motion_trail_vertex_end -> _vertex);
+
+              // color
+              vertex_end_color = motion_trail_vertex_end -> _end_color + (motion_trail_vertex_end -> _start_color - motion_trail_vertex_end -> _end_color);
+              
+              c1 = vertex_end_color * color_start_t;
+              c3 = vertex_end_color * color_end_t;
+
+              // uv
+              t1.set (st, motion_trail_vertex_end -> _v);
+              t3.set (et, motion_trail_vertex_end -> _v);
+
+              this -> add_geometry_quad (v0, v1, v2, v3, c0, c1, c2, c3, t0, t1, t2, t3);
+
+              // reuse calculations
+              v0 = v1;
+              v2 = v3;
+
+              c0 = c1;
+              c2 = c3;
+
+              t0 = t1;
+              t2 = t3;
+
+              vertex_segment_index += 1;
+          }
+
+          segment_index += 1;
+      }  
     }
 
     // end geometry

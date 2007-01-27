@@ -41,11 +41,11 @@ PUBLISHED:
   void reset ( );  
   void reset_vertex_list ( );
 
-  void enable (int enable);
+  void enable (bool enable);
   void set_geom_node (PT(GeomNode) geom_node);
-  void use_nurbs (int enable);
-  void use_texture (int enable);
-  void calculate_relative_matrix (int enable);  
+  void use_nurbs (bool enable);
+  void use_texture (bool enable);
+  void calculate_relative_matrix (bool enable);  
   void add_vertex (LVector4f *vertex, LVector4f *start_color, LVector4f *end_color, float v);
 
   int check_for_update (float current_time);
@@ -55,6 +55,7 @@ public:
 
   void begin_geometry ( );
   void add_geometry_quad (LVector3f &v0, LVector3f &v1, LVector3f &v2, LVector3f &v3, LVector4f &c0, LVector4f &c1, LVector4f &c2, LVector4f &c3, LVector2f &t0, LVector2f &t1, LVector2f &t2, LVector2f &t3);
+  void add_geometry_quad (LVector4f &v0, LVector4f &v1, LVector4f &v2, LVector4f &v3, LVector4f &c0, LVector4f &c1, LVector4f &c2, LVector4f &c3, LVector2f &t0, LVector2f &t1, LVector2f &t2, LVector2f &t3);
   void end_geometry ( );
 
   int _active;
@@ -73,7 +74,7 @@ public:
 
   float _last_update_time;
 
-  int _use_texture;
+  bool _use_texture;
 
 
   list <CMotionTrailVertex> _vertex_list;
@@ -104,7 +105,7 @@ public:
   int _relative_to_render;
 
   // nurbs parameters
-  int _use_nurbs;
+  bool _use_nurbs;
   float _resolution_distance;
   
     
