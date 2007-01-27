@@ -107,7 +107,7 @@ class ShipPilot(PhysicsWalker):
             0.0, self.bowPos[1], 0.0, sRadius)
         cBowSphereNode = CollisionNode('SP.cBowSphereNode')
         cBowSphereNode.addSolid(cBowSphere)
-        self.cBowSphereNodePath = self.shipNodePath.attachNewNode(
+        self.cBowSphereNodePath = self.ship.getInteractCollisionRoot().attachNewNode(
             cBowSphereNode)
         # self.cBowSphereNodePath.show()
         
@@ -119,7 +119,7 @@ class ShipPilot(PhysicsWalker):
             0.0, self.sternPos[1], 0.0, sRadius)
         cSternSphereNode = CollisionNode('SP.cSternSphereNode')
         cSternSphereNode.addSolid(cSternSphere)
-        self.cSternSphereNodePath = self.shipNodePath.attachNewNode(
+        self.cSternSphereNodePath = self.ship.getInteractCollisionRoot().attachNewNode(
             cSternSphereNode)
         # self.cSternSphereNodePath.show()
 
@@ -142,9 +142,9 @@ class ShipPilot(PhysicsWalker):
             shipCollWall = self.shipNodePath.find("**/collision_hull;+s")
             if active:
                 self.cBowSphereNodePath.node().setFromCollideMask(self.wallBitmask | self.floorBitmask)
-                self.cBowSphereNodePath.node().setFromCollideMask(BitMask32.allOff())
+                self.cBowSphereNodePath.node().setIntoCollideMask(BitMask32.allOff())
                 self.cSternSphereNodePath.node().setFromCollideMask(self.wallBitmask | self.floorBitmask)
-                self.cSternSphereNodePath.node().setFromCollideMask(BitMask32.allOff())
+                self.cSternSphereNodePath.node().setIntoCollideMask(BitMask32.allOff())
                 self.cTrav.addCollider(self.cBowSphereNodePath, self.pusher)
                 self.cTrav.addCollider(self.cSternSphereNodePath, self.pusher)
                 shipCollWall.stash()
@@ -183,9 +183,8 @@ class ShipPilot(PhysicsWalker):
         assert self.debugPrint("takedownPhysics()")
 
     def setTag(self, key, value):
-        if not hasattr(self, "collisionTags"):
-            self.collisionTags = {}
-        self.collisionTags[key] = value
+        self.cSternSphereNodePath.setTag(key, value)
+        self.cBowSphereNodePath.setTag(key, value)
 
     def setAvatarPhysicsIndicator(self, indicator):
         """
@@ -304,7 +303,7 @@ class ShipPilot(PhysicsWalker):
 
     def handleAvatarControls(self, task):
         """
-        Check on the arrow keys and update the avatar.
+        Check on the arrow keys and update the "avatar" (ship).
         """
         if __debug__:
             if self.wantDebugIndicator:
@@ -312,10 +311,9 @@ class ShipPilot(PhysicsWalker):
                     base.localAvatar.getPos().pPrintValues(),))
                 onScreenDebug.append("localAvatar hpr = %s\n"%(
                     base.localAvatar.getHpr().pPrintValues(),))
-        #assert self.debugPrint("handleAvatarControls(task=%s)"%(task,))
+        # assert self.debugPrint("handleAvatarControls(task=%s)"%(task,))
         physObject = self.actorNode.getPhysicsObject()
         contact = self.actorNode.getContactVector()
-
         # get the button states:
         forward = inputState.isSet("forward")
         reverse = inputState.isSet("reverse")
@@ -509,6 +507,9 @@ class ShipPilot(PhysicsWalker):
         speed /= self.ship.maxSp
         ## physObject.setVelocity(speed)
 
+        # print self.ship.getZ()
+        # self.ship.setZ(0)
+        
         #rotMat=Mat3.rotateMatNormaxis(self.shipNodePath.getH(), Vec3.up())
         #speed=rotMat.xform(speed)
         # The momentumForce makes it feel like we are sliding on ice -- Joe
