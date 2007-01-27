@@ -29,8 +29,7 @@ class PhysicsWalker(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("PhysicsWalker")
     wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
-    wantDemoHacks = base.config.GetBool('want-demo-hacks', 0)
-    
+
     useLifter = 0
     useHeightRay = 0
 
@@ -740,7 +739,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         assert self.debugPrint("enableAvatarControls()")
         assert self.collisionsActive
 
-        if __debug__ or self.wantDemoHacks:
+        if __debug__:
             #self.accept("control-f3", self.spawnTest) #*#
             self.accept("f3", self.reset) # for debugging only.
 
@@ -763,7 +762,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         taskName = "AvatarControlsIndicator%s"%(id(self),)
         taskMgr.remove(taskName)
 
-        if __debug__ or self.wantDemoHacks:
+        if __debug__:
             self.ignore("control-f3") #*#
             self.ignore("f3")
 
