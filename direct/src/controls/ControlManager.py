@@ -212,8 +212,9 @@ class ControlManager:
 
     def stop(self):
         self.disable()
-        self.currentControls.setCollisionsActive(0)
-        self.currentControls.setAvatar(None)
+        if self.currentControls:
+            self.currentControls.setCollisionsActive(0)
+            self.currentControls.setAvatar(None)
         self.currentControls = None
         
     def disableAvatarJump(self):
