@@ -25,7 +25,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
 'FrameDelayedCallback', 'ArgumentEater', 'ClassTree', 'getBase',
 'superFlattenShip','HotkeyBreaker','logMethodCalls','GoldenRatio',
-'GoldenRectangle']
+'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360']
 
 import types
 import string
@@ -666,6 +666,11 @@ def replace(list, old, new, all=0):
                 numReplaced += 1
                 list[i] = new
         return numReplaced
+
+rad90 = math.pi / 2.
+rad180 = math.pi
+rad270 = 1.5 * math.pi
+rad360 = 2. * math.pi
 
 def reduceAngle(deg):
     """
@@ -1742,6 +1747,16 @@ def clampScalar(value, a, b):
         else:
             return value
 
+def pivotScalar(scalar, pivot):
+    # reflect scalar about pivot; see tests below
+    return pivot + (pivot - scalar)
+
+if __debug__:
+    assert pivotScalar(1, 0) == -1
+    assert pivotScalar(-1, 0) == 1
+    assert pivotScalar(3, 5) == 7
+    assert pivotScalar(10, 1) == -8
+
 def weightedChoice(choiceList, rng=random.random, sum=None):
     """given a list of (weight, item) pairs, chooses an item based on the
     weights. rng must return 0..1. if you happen to have the sum of the
@@ -2665,3 +2680,7 @@ __builtin__.notNone = notNone
 __builtin__.clampScalar = clampScalar
 __builtin__.makeList = makeList
 __builtin__.makeTuple = makeTuple
+__builtin__.rad90 = rad90
+__builtin__.rad180 = rad180
+__builtin__.rad270 = rad270
+__builtin__.rad360 = rad360
