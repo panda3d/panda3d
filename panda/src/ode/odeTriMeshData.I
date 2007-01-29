@@ -1,0 +1,88 @@
+// Filename: odeTriMeshData.I
+// Created by:  joswilso (27Dec06)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+INLINE dTriMeshDataID OdeTriMeshData::
+get_id() const {
+  return _id;
+}
+
+/*
+INLINE void OdeTriMeshData::
+set(int data_id, void* in_data) {
+  dGeomTriMeshDataSet(_id, data_id, in_data);
+}
+
+INLINE void* OdeTriMeshData::
+get(int data_id) {
+  dGeomTriMeshDataGet(_id,data_id);
+}
+*/
+
+INLINE void OdeTriMeshData::
+build_single(const void* vertices, int vertex_stride, int vertex_count, const void* indices, int index_count, int tri_stride) {
+  odetrimeshdata_cat.debug() << "build_single(" << vertices << ", " << vertex_stride << ", " << vertex_count << ", " << indices << ", " << index_count << ", " << tri_stride << ")\n";
+  dGeomTriMeshDataBuildSingle(_id, vertices, vertex_stride, vertex_count, indices, index_count, tri_stride);
+}
+
+INLINE void OdeTriMeshData::
+build_single1(const void* vertices, int vertex_stride, int vertex_count, const void* indices, int index_count, int tri_stride, const void* normals) {
+  dGeomTriMeshDataBuildSingle1(_id, vertices, vertex_stride, vertex_count, indices, index_count, tri_stride, normals);
+}
+
+INLINE void OdeTriMeshData::
+build_double(const void* vertices, int vertex_stride, int vertex_count, const void* indices, int index_count, int tri_stride) {
+  dGeomTriMeshDataBuildDouble(_id, vertices, vertex_stride, vertex_count, indices, index_count, tri_stride);
+}
+
+INLINE void OdeTriMeshData::
+build_double1(const void* vertices, int vertex_stride, int vertex_count, const void* indices, int index_count, int tri_stride, const void* normals) {
+  dGeomTriMeshDataBuildDouble1(_id, vertices, vertex_stride, vertex_count, indices, index_count, tri_stride, normals);
+}
+
+INLINE void OdeTriMeshData::
+build_simple(const dReal* vertices, int vertex_count, const int* indices, int index_count) {
+  dGeomTriMeshDataBuildSimple(_id, vertices, vertex_count, indices, index_count);
+}
+
+INLINE void OdeTriMeshData::
+build_simple1(const dReal* vertices, int vertex_count, const int* indices, int index_count, const int* normals) {
+  dGeomTriMeshDataBuildSimple1(_id, vertices, vertex_count, indices, index_count, normals);
+}
+
+INLINE void OdeTriMeshData::
+preprocess() {
+  dGeomTriMeshDataPreprocess(_id);
+}
+
+/*
+INLINE void OdeTriMeshData::
+get_buffer(unsigned char** buf, int* buf_len) const {
+  return dGeomTriMeshDataGetBuffer(_id, buf, buf_len);
+}
+
+INLINE void OdeTriMeshData::
+set_buffer(unsigned char* buf) {
+  dGeomTriMeshDataSetBuffer(_id, buf);
+}
+
+INLINE void OdeTriMeshData::
+update() {
+  dGeomTriMeshDataUpdate(_id);
+}
+
+*/

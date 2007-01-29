@@ -1,0 +1,115 @@
+// Filename: config_effects.cxx
+// Created by:  joswilso (27Dec06)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#include "config_ode.h"
+#include "odeWorld.h"
+#include "odeMass.h"
+#include "odeBody.h"
+#include "odeJointGroup.h"
+#include "odeJoint.h"
+#include "odeSpace.h"
+#include "odeGeom.h"
+#include "odeSurfaceParameters.h"
+#include "odeContactGeom.h"
+#include "odeContact.h"
+#include "odeAMotorJoint.h"
+#include "odeBallJoint.h"
+#include "odeContactJoint.h"
+#include "odeFixedJoint.h"
+#include "odeHingeJoint.h"
+#include "odeHinge2Joint.h"
+#include "odeLMotorJoint.h"
+#include "odeNullJoint.h"
+#include "odePlane2dJoint.h"
+#include "odeSliderJoint.h"
+#include "odeUniversalJoint.h"
+#include "odeSimpleSpace.h"
+#include "odeHashSpace.h"
+#include "odeQuadTreeSpace.h"
+#include "odeSphereGeom.h"
+#include "odeBoxGeom.h"
+#include "odePlaneGeom.h"
+#include "odeCappedCylinderGeom.h"
+#include "odeCylinderGeom.h"
+#include "odeRayGeom.h"
+#include "odeTriMeshData.h"
+#include "odeTriMeshGeom.h"
+#include "dconfig.h"
+
+Configure(config_ode);
+NotifyCategoryDef(ode, "");
+NotifyCategoryDef(odeworld, "");
+NotifyCategoryDef(odebody, "");
+NotifyCategoryDef(odejoint, "");
+NotifyCategoryDef(odespace, "");
+NotifyCategoryDef(odegeom, "");
+NotifyCategoryDef(odetrimeshdata, "");
+
+ConfigureFn(config_ode) {
+  init_libode();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libode
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libode() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+  
+  OdeWorld::init_type();
+  OdeMass::init_type();
+  OdeBody::init_type();
+  OdeJointGroup::init_type();
+  OdeJoint::init_type();
+  OdeSpace::init_type();
+  OdeGeom::init_type();
+  OdeSurfaceParameters::init_type();
+  OdeContactGeom::init_type();
+  OdeContact::init_type();
+  OdeAMotorJoint::init_type();
+  OdeBallJoint::init_type();
+  OdeContactJoint::init_type();
+  OdeFixedJoint::init_type();
+  OdeHingeJoint::init_type();
+  OdeHinge2Joint::init_type();
+  OdeLMotorJoint::init_type();
+  OdeNullJoint::init_type();
+  OdePlane2dJoint::init_type();
+  OdeSliderJoint::init_type();
+  OdeUniversalJoint::init_type();
+  OdeSimpleSpace::init_type();
+  OdeHashSpace::init_type();
+  OdeQuadTreeSpace::init_type();
+  OdeSphereGeom::init_type();
+  OdeBoxGeom::init_type();
+  OdePlaneGeom::init_type();
+  OdeCappedCylinderGeom::init_type();
+  OdeCylinderGeom::init_type();
+  OdeRayGeom::init_type();
+  OdeTriMeshData::init_type();
+  OdeTriMeshGeom::init_type();
+}

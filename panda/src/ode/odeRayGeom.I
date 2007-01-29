@@ -1,0 +1,88 @@
+// Filename: odeRayGeom.I
+// Created by:  joswilso (27Dec06)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+INLINE void OdeRayGeom::
+set_length(dReal length) {
+  dGeomRaySetLength(_id, length);
+}
+
+INLINE dReal OdeRayGeom::
+get_length() {
+  return dGeomRayGetLength(_id);
+}
+
+INLINE void OdeRayGeom::
+set(dReal px, dReal py, dReal pz, dReal dx, dReal dy, dReal dz) {
+  dGeomRaySet(_id, px, py, pz, dx, dy, dz);
+}
+
+
+INLINE void OdeRayGeom::
+get(LVecBase3f &start, LVecBase3f &dir) const {
+  dVector3 s, d;
+  dGeomRayGet(_id, s, d);
+  start.set(s[0], s[1], s[2]);
+  dir.set(d[0], d[1], d[2]);
+}
+
+INLINE LVecBase3f OdeRayGeom::
+get_start() const {
+  dVector3 start, dir;
+  dGeomRayGet(_id, start, dir);
+  return LVecBase3f(start[0], start[1], start[2]);
+}
+
+INLINE LVecBase3f OdeRayGeom::
+get_direction() const {
+  dVector3 start, dir;
+  dGeomRayGet(_id, start, dir);
+  return LVecBase3f(dir[0], dir[1], dir[2]);
+}
+
+INLINE void OdeRayGeom::
+set_params(int first_contact, int backface_cull) {
+  dGeomRaySetParams(_id, first_contact, backface_cull);
+}
+
+INLINE void OdeRayGeom::
+get_params(int &first_contact, int &backface_cull) const {
+  dGeomRayGetParams(_id, &first_contact, &backface_cull);
+}
+
+INLINE int OdeRayGeom::
+get_first_contact() const {
+  int fc, bc;
+  dGeomRayGetParams(_id, &fc, &bc);
+  return fc;
+}
+
+INLINE int OdeRayGeom::
+get_backface_cull() const {
+  int fc, bc;
+  dGeomRayGetParams(_id, &fc, &bc);
+  return bc;
+}
+
+INLINE void OdeRayGeom::
+set_closest_hit(int closest_hit) {
+  dGeomRaySetClosestHit(_id, closest_hit);
+}
+
+INLINE int OdeRayGeom::
+get_closest_hit() {
+  return dGeomRayGetClosestHit(_id);
+}

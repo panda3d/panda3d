@@ -1,0 +1,142 @@
+// Filename: odeBody.h
+// Created by:  joswilso (27Dec06)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef ODEBODY_H
+#define ODEBODY_H
+
+#include "pandabase.h"
+#include "typedObject.h"
+#include "luse.h"
+
+#include "ode/ode.h"
+#include "odeWorld.h"
+#include "odeMass.h"
+
+class OdeJoint;
+class OdeGeom;
+////////////////////////////////////////////////////////////////////
+//       Class : OdeBody
+// Description : 
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAODE OdeBody : public TypedObject {
+  friend class OdeJoint;
+  friend class OdeGeom;
+
+protected:
+  OdeBody(dBodyID id);
+
+PUBLISHED:
+  OdeBody();
+  OdeBody(OdeWorld &world);
+  virtual ~OdeBody();
+  void destroy();
+
+  INLINE void set_auto_disable_linear_threshold(dReal linear_threshold);
+  INLINE void set_auto_disable_angular_threshold(dReal angular_threshold);
+  INLINE void set_auto_disable_steps(int steps);
+  INLINE void set_auto_disable_time(dReal time);
+  INLINE void set_auto_disable_flag(int do_auto_disable);
+  INLINE void set_auto_disable_defaults();
+  INLINE void set_data(void *data);
+
+  INLINE void set_position(dReal x, dReal y, dReal z);
+  INLINE void set_rotation(const LMatrix3f r);
+  INLINE void set_quaternion(const LQuaternionf q);
+  INLINE void set_linear_vel(dReal x, dReal y, dReal z);
+  INLINE void set_angular_vel(dReal x, dReal y, dReal z);
+  INLINE void set_mass(OdeMass &mass);
+
+
+  INLINE dReal get_auto_disable_linear_threshold() const;
+  INLINE dReal get_auto_disable_angular_threshold() const;
+  INLINE int   get_auto_disable_steps() const;
+  INLINE dReal get_auto_disable_time() const;
+  INLINE int   get_auto_disable_flag() const;
+  INLINE void* get_data() const;
+
+  INLINE LVecBase3f  get_position() const;
+  INLINE LVecBase3f  get_rotation() const;
+  INLINE LVecBase4f  get_quaternion() const;
+  INLINE LVecBase3f  get_linear_vel() const;
+  INLINE LVecBase3f  get_angular_vel() const;
+  INLINE OdeMass     get_mass() const;
+
+  INLINE void add_force(dReal fx, dReal fy, dReal fz);
+  INLINE void add_torque(dReal fx, dReal fy, dReal fz);
+  INLINE void add_rel_force(dReal fx, dReal fy, dReal fz);
+  INLINE void add_rel_torque(dReal fx, dReal fy, dReal fz);
+  INLINE void add_force_at_pos(dReal fx, dReal fy, dReal fz, 
+			       dReal px, dReal py, dReal pz);
+  INLINE void add_force_at_rel_pos(dReal fx, dReal fy, dReal fz, 
+				   dReal px, dReal py, dReal pz);
+  INLINE void add_rel_force_at_pos(dReal fx, dReal fy, dReal fz, 
+				   dReal px, dReal py, dReal pz);
+  INLINE void add_rel_force_at_rel_pos(dReal fx, dReal fy, dReal fz, 
+				       dReal px, dReal py, dReal pz);
+  INLINE void set_force(dReal x, dReal y, dReal z);
+  INLINE void set_torque(dReal x, dReal y, dReal z);
+
+  INLINE LPoint3f get_rel_point_pos(dReal px, dReal py, dReal pz) const;
+  INLINE LPoint3f get_rel_point_vel(dReal px, dReal py, dReal pz) const;
+  INLINE LPoint3f get_point_vel(dReal px, dReal py, dReal pz) const;
+  INLINE LPoint3f get_pos_rel_point(dReal px, dReal py, dReal pz) const;
+  INLINE LVecBase3f vector_to_world(dReal px, dReal py, dReal pz) const;
+  INLINE LVecBase3f vector_from_world(dReal px, dReal py, dReal pz) const;
+
+  INLINE void set_finite_rotation_mode(int mode);
+  INLINE void set_finite_rotation_axis(dReal x, dReal y, dReal z);
+  INLINE int get_finite_rotation_mode() const;
+  INLINE LVecBase3f get_finite_rotation_axis() const;
+
+  INLINE int get_num_joints() const;
+  void get_joint(int index, OdeJoint &joint) const;
+  INLINE void enable();
+  INLINE void disable();
+  INLINE int is_enabled() const;
+  INLINE void set_gravity_mode(int mode);
+  INLINE int get_gravity_mode() const;
+
+  virtual void write(ostream &out = cout, unsigned int indent=0) const;
+
+public:
+  INLINE dBodyID get_id() const;
+
+private:
+  dBodyID _id;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedObject::init_type();
+    register_type(_type_handle, "OdeBody",
+		  TypedObject::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
+};
+
+#include "odeBody.I"
+
+#endif
