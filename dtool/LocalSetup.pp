@@ -116,6 +116,11 @@
 #else
 #print - Did not find FFMPEG
 #endif
+#if $[HAVE_ODE]
+#print + ODE
+#else
+#print - Did not find ODE
+#endif
 #if $[HAVE_MAYA]
 #print + OpenMaya
 #else
@@ -222,6 +227,9 @@ $[cdefine HAVE_OPENCV]
 
 /* Define if we have FFMPEG installed and want to build for FFMPEG.  */
 $[cdefine HAVE_FFMPEG]
+
+/* Define if we have ODE installed and want to build for ODE.  */
+$[cdefine HAVE_ODE]
 
 /* Define if we have Mesa installed and want to build mesadisplay.  */
 $[cdefine HAVE_MESA]

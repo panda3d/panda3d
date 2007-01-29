@@ -176,6 +176,13 @@
   #define ffmpeg_libs $[FFMPEG_LIBS]
 #endif
 
+#if $[HAVE_ODE]
+  #define ode_ipath $[wildcard $[ODE_IPATH]]
+  #define ode_lpath $[wildcard $[ODE_LPATH]]
+  #define ode_cflags $[ODE_CFLAGS]
+  #define ode_libs $[ODE_LIBS]
+#endif
+
 #if $[HAVE_JPEG]
   #define jpeg_ipath $[wildcard $[JPEG_IPATH]]
   #define jpeg_lpath $[wildcard $[JPEG_LPATH]]

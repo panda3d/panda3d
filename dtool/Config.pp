@@ -619,6 +619,11 @@
 #define FFMPEG_LIBS $[if $[WINDOWS_PLATFORM],libavcodec.lib libavformat.lib libavutil.lib libgcc.lib,avcodec avformat avutil]
 #defer HAVE_FFMPEG $[libtest $[FFMPEG_LPATH],$[FFMPEG_LIBS]]
 
+// Is ODE installed, and where?
+#define ODE_IPATH
+#define ODE_LPATH
+#define ODE_LIBS $[if $[WINDOWS_PLATFORM],libode.lib,libode]
+#defer HAVE_ODE $[libtest $[ODE_LPATH],$[ODE_LIBS]]
 
 // Do you want to build the DirectD tools for starting Panda clients
 // remotely?  This only affects the direct tree.  Enabling this may

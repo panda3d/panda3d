@@ -10,4 +10,5 @@
     cv.h cvtypes.h cxcore.h cxerror.h cxtypes.h highgui.h \
     avcodec.h avformat.h avio.h avutil.h common.h integer.h \
     intfloat_readwrite.h mathematics.h rational.h rtp.h \
-    rtsp.h rtspcodes.h winsock2.h
+    rtsp.h rtspcodes.h winsock2.h \
+    ode/common.h
