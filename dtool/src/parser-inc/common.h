@@ -6,7 +6,14 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#endif /* COMMON_H */
+
+
+
 # ODE header stuff
+
+#ifndef _ODE_COMMON_H_
+#define _ODE_COMMON_H_
 
 #if defined(dSINGLE)
 typedef float dReal;
@@ -45,4 +52,4 @@ typedef struct dJointFeedback {
   dVector3 t2;		/* torque applied to body 2 */
 } dJointFeedback;
 
-#endif /* COMMON_H */
+#endif /* _ODE_COMMON_H_ */
