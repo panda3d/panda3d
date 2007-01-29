@@ -622,7 +622,7 @@
 // Is ODE installed, and where?
 #define ODE_IPATH
 #define ODE_LPATH
-#define ODE_LIBS $[if $[WINDOWS_PLATFORM],libode.lib,libode]
+#define ODE_LIBS $[if $[WINDOWS_PLATFORM],ode.lib,ode]
 #defer HAVE_ODE $[libtest $[ODE_LPATH],$[ODE_LIBS]]
 
 // Do you want to build the DirectD tools for starting Panda clients
