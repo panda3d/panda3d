@@ -255,50 +255,6 @@ get_glyph(int character, const TextGlyph *&glyph) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::string_render_mode
-//       Access: Public
-//  Description: Returns the RenderMode value associated with the given
-//               string representation, or RM_invalid if the string
-//               does not match any known RenderMode value.
-////////////////////////////////////////////////////////////////////
-DynamicTextFont::RenderMode DynamicTextFont::
-string_render_mode(const string &string) {
-  if (cmp_nocase_uh(string, "texture") == 0) {
-    return RM_texture;
-  } else if (cmp_nocase_uh(string, "wireframe") == 0) {
-    return RM_wireframe;
-  } else if (cmp_nocase_uh(string, "polygon") == 0) {
-    return RM_polygon;
-  } else if (cmp_nocase_uh(string, "extruded") == 0) {
-    return RM_extruded;
-  } else if (cmp_nocase_uh(string, "solid") == 0) {
-    return RM_solid;
-  } else {
-    return RM_invalid;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::string_winding_order
-//       Access: Public
-//  Description: Returns the WindingOrder value associated with the given
-//               string representation, or WO_invalid if the string
-//               does not match any known WindingOrder value.
-////////////////////////////////////////////////////////////////////
-DynamicTextFont::WindingOrder DynamicTextFont::
-string_winding_order(const string &string) {
-  if (cmp_nocase_uh(string, "default") == 0) {
-    return WO_default;
-  } else if (cmp_nocase_uh(string, "left") == 0) {
-    return WO_left;
-  } else if (cmp_nocase_uh(string, "right") == 0) {
-    return WO_right;
-  } else {
-    return WO_invalid;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::initialize
 //       Access: Private
 //  Description: Called from both constructors to set up some initial
@@ -1021,78 +977,6 @@ outline_nurbs(NurbsCurveResult *ncr) {
   }
 
   return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::RenderMode output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-ostream &
-operator << (ostream &out, DynamicTextFont::RenderMode rm) {
-  switch (rm) {
-  case DynamicTextFont::RM_texture:
-    return out << "texture";
-  case DynamicTextFont::RM_wireframe:
-    return out << "wireframe";
-  case DynamicTextFont::RM_polygon:
-    return out << "polygon";
-  case DynamicTextFont::RM_extruded:
-    return out << "extruded";
-  case DynamicTextFont::RM_solid:
-    return out << "solid";
-
-  case DynamicTextFont::RM_invalid:
-    return out << "invalid";
-  }
-
-  return out << "(**invalid DynamicTextFont::RenderMode(" << (int)rm << ")**)";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::RenderMode input operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-istream &
-operator >> (istream &in, DynamicTextFont::RenderMode &rm) {
-  string word;
-  in >> word;
-
-  rm = DynamicTextFont::string_render_mode(word);
-  return in;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::WindingOrder output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-ostream &
-operator << (ostream &out, DynamicTextFont::WindingOrder wo) {
-  switch (wo) {
-  case DynamicTextFont::WO_default:
-    return out << "default";
-  case DynamicTextFont::WO_left:
-    return out << "left";
-  case DynamicTextFont::WO_right:
-    return out << "right";
-
-  case DynamicTextFont::WO_invalid:
-    return out << "invalid";
-  }
-
-  return out << "(**invalid DynamicTextFont::WindingOrder(" << (int)wo << ")**)";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::WindingOrder input operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-istream &
-operator >> (istream &in, DynamicTextFont::WindingOrder &wo) {
-  string word;
-  in >> word;
-
-  wo = DynamicTextFont::string_winding_order(word);
-  return in;
 }
 
 #endif  // HAVE_FREETYPE

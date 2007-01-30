@@ -86,6 +86,9 @@ PUBLISHED:
 public:
   virtual bool get_glyph(int character, const TextGlyph *&glyph)=0;
 
+  static RenderMode string_render_mode(const string &string);
+  static WindingOrder string_winding_order(const string &string);
+
 protected:
   bool _is_valid;
   float _line_height;
@@ -108,6 +111,11 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+EXPCL_PANDA ostream &operator << (ostream &out, TextFont::RenderMode rm);
+EXPCL_PANDA istream &operator >> (istream &in, TextFont::RenderMode &rm);
+EXPCL_PANDA ostream &operator << (ostream &out, TextFont::WindingOrder wo);
+EXPCL_PANDA istream &operator >> (istream &in, TextFont::WindingOrder &wo);
 
 #include "textFont.I"
 

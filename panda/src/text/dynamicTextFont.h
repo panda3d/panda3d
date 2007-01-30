@@ -101,9 +101,6 @@ PUBLISHED:
 public:
   virtual bool get_glyph(int character, const TextGlyph *&glyph);
 
-  static RenderMode string_render_mode(const string &string);
-  static WindingOrder string_winding_order(const string &string);
-
 private:
   void initialize();
   void update_filters();
@@ -194,11 +191,6 @@ private:
 };
 
 INLINE ostream &operator << (ostream &out, const DynamicTextFont &dtf);
-
-EXPCL_PANDA ostream &operator << (ostream &out, DynamicTextFont::RenderMode rm);
-EXPCL_PANDA istream &operator >> (istream &in, DynamicTextFont::RenderMode &rm);
-EXPCL_PANDA ostream &operator << (ostream &out, DynamicTextFont::WindingOrder wo);
-EXPCL_PANDA istream &operator >> (istream &in, DynamicTextFont::WindingOrder &wo);
 
 #include "dynamicTextFont.I"
 

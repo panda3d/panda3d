@@ -55,10 +55,7 @@ extern ConfigVariableInt text_max_never_break;
 extern ConfigVariableEnum<Texture::FilterType> text_minfilter;
 extern ConfigVariableEnum<Texture::FilterType> text_magfilter;
 extern ConfigVariableEnum<Texture::WrapMode> text_wrap_mode;
-
-#ifdef HAVE_FREETYPE
-extern ConfigVariableEnum<DynamicTextFont::RenderMode> text_render_mode;
-#endif
+extern ConfigVariableEnum<TextFont::RenderMode> text_render_mode;
 
 extern EXPCL_PANDA void init_libtext();
 
