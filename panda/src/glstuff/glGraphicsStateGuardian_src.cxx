@@ -1115,6 +1115,22 @@ reset() {
     }
     cg_profile_to_shader_model++;
   }
+
+  // DisplayInformation may have better shader model detection
+  {
+    GraphicsPipe *pipe;
+    DisplayInformation *display_information;
+    
+    pipe = this -> get_pipe ( );
+    if (pipe) {
+      display_information = pipe -> get_display_information ( );
+      if (display_information) {
+        if (display_information -> get_shader_model ( ) > _shader_model) {
+          _shader_model = display_information -> get_shader_model ( );
+        }
+      }
+    }
+  }  
   _auto_detect_shader_model = _shader_model;
 
   CGprofile vertex_profile;
