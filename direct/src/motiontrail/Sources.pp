@@ -18,7 +18,8 @@
     dtool:m \
     pandabase:c \
     prc:c \
-    gsgbase:c
+    gsgbase:c \
+    parametrics:c
 
   
   #define SOURCES \
