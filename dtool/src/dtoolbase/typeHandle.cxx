@@ -94,6 +94,9 @@ operator << (ostream &out, TypeHandle::MemoryClass mem_class) {
 
   case TypeHandle::MC_deleted_chain_inactive:
     return out << "deleted_chain_inactive";
+
+  case TypeHandle::MC_limit:
+    return out << "limit";
   }
   
   return out
