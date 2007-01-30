@@ -157,10 +157,10 @@ subdivide(int scale, int x, int y) {
   if (scale == 0) {
     return false;
   }
-  int size = 1<<scale;
-  int hsize = size >> 1;
-  int xcenter = x+hsize;
-  int ycenter = y+hsize;
+  //  int size = 1<<scale;
+  //  int hsize = size >> 1;
+  //  int xcenter = x+hsize;
+  //  int ycenter = y+hsize;
   int deltax = x - _focal_x;
   int deltay = y - _focal_y;
   if (deltax < 0) deltax = -deltax;
