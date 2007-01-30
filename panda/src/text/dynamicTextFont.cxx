@@ -47,6 +47,7 @@
 #include "nurbsCurveEvaluator.h"
 #include "nurbsCurveResult.h"
 //#include "renderModeAttrib.h"
+//#include "antialiasAttrib.h"
 
 TypeHandle DynamicTextFont::_type_handle;
 
@@ -430,7 +431,15 @@ make_glyph(int character, int glyph_index) {
       return glyph;
 
     case RM_polygon:
-      render_polygon_contours(glyph);
+      render_polygon_contours(glyph, true, false);
+      return glyph;
+
+    case RM_extruded:
+      render_polygon_contours(glyph, false, true);
+      return glyph;
+
+    case RM_solid:
+      render_polygon_contours(glyph, true, true);
       return glyph;
 
     default:
@@ -656,7 +665,7 @@ render_wireframe_contours(DynamicTextGlyph *glyph) {
     Points::const_iterator pi;
 
     for (pi = contour._points.begin(); pi != contour._points.end(); ++pi) {
-      const LPoint2f &p = (*pi);
+      const LPoint2f &p = (*pi)._p;
       vertex.add_data3f(p[0], 0.0f, p[1]);
     }
 
@@ -675,68 +684,167 @@ render_wireframe_contours(DynamicTextGlyph *glyph) {
 //               geometry, as a polygon render.
 ////////////////////////////////////////////////////////////////////
 void DynamicTextFont::
-render_polygon_contours(DynamicTextGlyph *glyph) {
+render_polygon_contours(DynamicTextGlyph *glyph, bool face, bool extrude) {
   PT(GeomVertexData) vdata = new GeomVertexData
-    (string(), GeomVertexFormat::get_v3(),
+    (string(), GeomVertexFormat::get_v3n3(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter normal(vdata, InternalName::get_normal());
 
   PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
   Triangulator t;
 
-  // First, build up the list of vertices, and determine which
-  // contours are solid and which are holes.
   Contours::iterator ci;
-  for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
-    Contour &contour = (*ci);
 
-    t.clear_polygon();
-    contour._start_vertex = t.get_num_vertices();
-    for (size_t i = 0; i < contour._points.size() - 1; ++i) {
-      const LPoint2f &p = contour._points[i];
-      vertex.add_data3f(p[0], 0.0f, p[1]);
-      int vi = t.add_vertex(p[0], p[1]);
-      t.add_polygon_vertex(vi);
+  if (face) {
+    // First, build up the list of vertices for the face, and
+    // determine which contours are solid and which are holes.
+    for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
+      Contour &contour = (*ci);
+      
+      t.clear_polygon();
+      contour._start_vertex = t.get_num_vertices();
+      for (size_t i = 0; i < contour._points.size() - 1; ++i) {
+        const LPoint2f &p = contour._points[i]._p;
+        vertex.add_data3f(p[0], 0.0f, p[1]);
+        normal.add_data3f(0.0f, -1.0f, 0.0f);
+        int vi = t.add_vertex(p[0], p[1]);
+        t.add_polygon_vertex(vi);
+      }
+      
+      contour._is_solid = t.is_left_winding();
     }
 
-    contour._is_solid = t.is_left_winding();
+    // Now go back and generate the actual triangles for the face.
+    for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
+      const Contour &contour = (*ci);
+      
+      if (contour._is_solid && !contour._points.empty()) {
+        t.clear_polygon();
+        for (size_t i = 0; i < contour._points.size() - 1; ++i) {
+          t.add_polygon_vertex(contour._start_vertex + i);
+        }
+        
+        // Also add all the holes to each polygon.
+        Contours::iterator cj;
+        for (cj = _contours.begin(); cj != _contours.end(); ++cj) {
+          Contour &hole = (*cj);
+          if (!hole._is_solid && !hole._points.empty()) {
+            t.begin_hole();
+            for (size_t j = 0; j < hole._points.size() - 1; ++j) {
+              t.add_hole_vertex(hole._start_vertex + j);
+            }
+          }
+        }
+        
+        t.triangulate();
+        int num_triangles = t.get_num_triangles();
+        for (int ti = 0; ti < num_triangles; ++ti) {
+          tris->add_vertex(t.get_triangle_v0(ti));
+          tris->add_vertex(t.get_triangle_v1(ti));
+          tris->add_vertex(t.get_triangle_v2(ti));
+          tris->close_primitive();
+        }
+      }
+    }
   }
 
-  // Now go back and generate the actual triangles.
-  for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
-    const Contour &contour = (*ci);
-    
-    if (contour._is_solid && !contour._points.empty()) {
-      t.clear_polygon();
-      for (size_t i = 0; i < contour._points.size() - 1; ++i) {
-        t.add_polygon_vertex(contour._start_vertex + i);
-      }
+  if (extrude) {
+    // If we're generating extruded geometry (polygons along the
+    // edges, down the y axis), generate them now.  These are pretty
+    // easy, but we need to create more vertices--they don't share the
+    // same normals.
+    for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
+      const Contour &contour = (*ci);
+      Points::const_iterator pi;
 
-      // Also add all the holes to each polygon.
-      Contours::iterator cj;
-      for (cj = _contours.begin(); cj != _contours.end(); ++cj) {
-        Contour &hole = (*cj);
-        if (!hole._is_solid && !hole._points.empty()) {
-          t.begin_hole();
-          for (size_t j = 0; j < hole._points.size() - 1; ++j) {
-            t.add_hole_vertex(hole._start_vertex + j);
-          }
+      for (size_t i = 0; i < contour._points.size(); ++i) {
+        const ContourPoint &cp = contour._points[i];
+        const LPoint2f &p = cp._p;
+        const LVector2f &t_in = cp._in;
+        const LVector2f &t_out = cp._out;
+
+        LVector3f n_in(t_in[1], 0.0f, -t_in[0]);
+        vertex.add_data3f(p[0], 1.0f, p[1]);
+        vertex.add_data3f(p[0], 0.0f, p[1]);
+        normal.add_data3f(n_in);
+        normal.add_data3f(n_in);
+
+        if (i != 0) {
+          int vi = vertex.get_write_row();
+          tris->add_vertex(vi - 4);
+          tris->add_vertex(vi - 2);
+          tris->add_vertex(vi - 1);
+          tris->close_primitive();
+          tris->add_vertex(vi - 1);
+          tris->add_vertex(vi - 3);
+          tris->add_vertex(vi - 4);
+          tris->close_primitive();
+        }
+
+        if (i != contour._points.size() - 1 && !t_in.almost_equal(t_out)) {
+          // If the out tangent is different from the in tangent, we
+          // need to store new vertices for the next quad.
+          LVector3f n_out(t_out[1], 0.0f, -t_out[0]);
+          vertex.add_data3f(p[0], 1.0f, p[1]);
+          vertex.add_data3f(p[0], 0.0f, p[1]);
+          normal.add_data3f(n_out);
+          normal.add_data3f(n_out);
+        }
+      }
+    }
+
+    if (face) {
+      // Render the back side of the face too.
+      int back_start = vertex.get_write_row();
+
+      for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
+        Contour &contour = (*ci);
+        for (size_t i = 0; i < contour._points.size() - 1; ++i) {
+          const LPoint2f &p = contour._points[i]._p;
+          vertex.add_data3f(p[0], 1.0f, p[1]);
+          normal.add_data3f(0.0f, 1.0f, 0.0f);
         }
       }
 
-      t.triangulate();
-      int num_triangles = t.get_num_triangles();
-      for (int ti = 0; ti < num_triangles; ++ti) {
-        tris->add_vertex(t.get_triangle_v0(ti));
-        tris->add_vertex(t.get_triangle_v1(ti));
-        tris->add_vertex(t.get_triangle_v2(ti));
-        tris->close_primitive();
+      // Now go back and generate the actual triangles for the face.
+      for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
+        const Contour &contour = (*ci);
+      
+        if (contour._is_solid && !contour._points.empty()) {
+          t.clear_polygon();
+          for (size_t i = 0; i < contour._points.size() - 1; ++i) {
+            t.add_polygon_vertex(contour._start_vertex + i);
+          }
+        
+          // Also add all the holes to each polygon.
+          Contours::iterator cj;
+          for (cj = _contours.begin(); cj != _contours.end(); ++cj) {
+            Contour &hole = (*cj);
+            if (!hole._is_solid && !hole._points.empty()) {
+              t.begin_hole();
+              for (size_t j = 0; j < hole._points.size() - 1; ++j) {
+                t.add_hole_vertex(hole._start_vertex + j);
+              }
+            }
+          }
+        
+          t.triangulate();
+          int num_triangles = t.get_num_triangles();
+          for (int ti = 0; ti < num_triangles; ++ti) {
+            tris->add_vertex(t.get_triangle_v2(ti) + back_start);
+            tris->add_vertex(t.get_triangle_v1(ti) + back_start);
+            tris->add_vertex(t.get_triangle_v0(ti) + back_start);
+            tris->close_primitive();
+          }
+        }
       }
     }
   }
 
   glyph->set_geom(vdata, tris, RenderState::make_empty());
   //  glyph->set_geom(vdata, tris, RenderState::make(RenderModeAttrib::make(RenderModeAttrib::M_wireframe)));
+  //  glyph->set_geom(vdata, tris, RenderState::make(AntialiasAttrib::make(AntialiasAttrib::M_auto)));
   _contours.clear();
 }
 
@@ -754,8 +862,11 @@ outline_move_to(const FT_Vector *to, void *user) {
   float scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
   LPoint2f p = LPoint2f(to->x, to->y) * scale;
 
-  self->_contours.push_back(Contour());
-  self->_contours.back()._points.push_back(p);
+  if (self->_contours.empty() ||
+      !self->_contours.back()._points.empty()) {
+    self->_contours.push_back(Contour());
+  }
+  self->_q = p;
   return 0;
 }
 
@@ -774,7 +885,18 @@ outline_line_to(const FT_Vector *to, void *user) {
   float scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
   LPoint2f p = LPoint2f(to->x, to->y) * scale;
 
-  self->_contours.back()._points.push_back(p);
+  // Compute the tangent: this is just the vector from the last point.
+  LVector2f t = (p - self->_q);
+  t.normalize();
+
+  if (self->_contours.back()._points.empty()) {
+    self->_contours.back()._points.push_back(ContourPoint(self->_q, LVector2f::zero(), t));
+  } else {
+    self->_contours.back()._points.back().connect_to(t);
+  }
+  
+  self->_contours.back()._points.push_back(ContourPoint(p, t, LVector2f::zero()));
+  self->_q = p;
   return 0;
 }
 
@@ -789,7 +911,6 @@ outline_conic_to(const FT_Vector *control,
                  const FT_Vector *to, void *user) {
   DynamicTextFont *self = (DynamicTextFont *)user;
   nassertr(!self->_contours.empty(), 1);
-  const LPoint2f &q = self->_contours.back()._points.back();
 
   // Convert from 26.6 pixel units to Panda units.
   float scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
@@ -802,22 +923,14 @@ outline_conic_to(const FT_Vector *control,
   nce.local_object();
   nce.set_order(3);
   nce.reset(3);
-  nce.set_vertex(0, LVecBase3f(q[0], q[1], 0.0f));
+  nce.set_vertex(0, LVecBase3f(self->_q[0], self->_q[1], 0.0f));
   nce.set_vertex(1, LVecBase3f(c[0], c[1], 0.0f));
   nce.set_vertex(2, LVecBase3f(p[0], p[1], 0.0f));
 
+  self->_q = p;
+
   PT(NurbsCurveResult) ncr = nce.evaluate();
-
-  // Sample it down so that the lines approximate the curve to within
-  // a "pixel."
-  ncr->adaptive_sample(1.0f / self->_font_pixels_per_unit);
-
-  int num_samples = ncr->get_num_samples();
-  for (int i = 1; i < num_samples; ++i) {
-    const LPoint3f &p = ncr->get_sample_point(i);
-    self->_contours.back()._points.push_back(LPoint2f(p[0], p[1]));
-  }
-  return 0;
+  return self->outline_nurbs(ncr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -831,7 +944,6 @@ outline_cubic_to(const FT_Vector *control1, const FT_Vector *control2,
                  const FT_Vector *to, void *user) {
   DynamicTextFont *self = (DynamicTextFont *)user;
   nassertr(!self->_contours.empty(), 1);
-  const LPoint2f &q = self->_contours.back()._points.back();
 
   // Convert from 26.6 pixel units to Panda units.
   float scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
@@ -845,22 +957,69 @@ outline_cubic_to(const FT_Vector *control1, const FT_Vector *control2,
   nce.local_object();
   nce.set_order(4);
   nce.reset(4);
-  nce.set_vertex(0, LVecBase3f(q[0], q[1], 0.0f));
+  nce.set_vertex(0, LVecBase3f(self->_q[0], self->_q[1], 0.0f));
   nce.set_vertex(1, LVecBase3f(c1[0], c1[1], 0.0f));
   nce.set_vertex(2, LVecBase3f(c2[0], c2[1], 0.0f));
   nce.set_vertex(3, LVecBase3f(p[0], p[1], 0.0f));
 
-  PT(NurbsCurveResult) ncr = nce.evaluate();
+  self->_q = p;
 
+  PT(NurbsCurveResult) ncr = nce.evaluate();
+  return self->outline_nurbs(ncr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::outline_nurbs
+//       Access: Private
+//  Description: Called internally by outline_cubic_to() and
+//               outline_conic_to().
+////////////////////////////////////////////////////////////////////
+int DynamicTextFont::
+outline_nurbs(NurbsCurveResult *ncr) {
   // Sample it down so that the lines approximate the curve to within
   // a "pixel."
-  ncr->adaptive_sample(1.0f / self->_font_pixels_per_unit);
+  ncr->adaptive_sample(1.0f / _font_pixels_per_unit);
 
   int num_samples = ncr->get_num_samples();
-  for (int i = 1; i < num_samples; ++i) {
-    const LPoint3f &p = ncr->get_sample_point(i);
-    self->_contours.back()._points.push_back(LPoint2f(p[0], p[1]));
+
+  bool needs_connect = false;
+  int start = 1;
+  if (_contours.back()._points.empty()) {
+    // If we haven't got the first point of this contour yet, we must
+    // add it now.
+    start = 0;
+  } else {
+    needs_connect = true;
   }
+
+  for (int i = start; i < num_samples; ++i) {
+    float st = ncr->get_sample_t(i);
+    const LPoint3f &p = ncr->get_sample_point(i);
+
+    float st0 = st, st1 = st;
+    if (i > 0) {
+      st0 = ncr->get_sample_t(i - 1) * 0.1f + st * 0.9f;
+    }
+    if (i < num_samples - 1) {
+      st1 = ncr->get_sample_t(i + 1) * 0.1f + st * 0.9f;
+    }
+    // Compute the tangent by deltaing nearby points.  Don't evaluate
+    // the tangent from the NURBS, since that doesn't appear to be
+    // reliable.
+    LPoint3f p0, p1;
+    ncr->eval_point(st0, p0);
+    ncr->eval_point(st1, p1);
+    LVector3f t = p1 - p0;
+    t.normalize();
+
+    if (needs_connect) {
+      _contours.back()._points.back().connect_to(LVector2f(t[0], t[1]));
+      needs_connect = false;
+    }
+
+    _contours.back()._points.push_back(ContourPoint(p[0], p[1], t[0], t[1]));
+  }
+
   return 0;
 }
 

@@ -409,6 +409,50 @@ get_winding_order() const {
   return _winding_order;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::ContourPoint::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE DynamicTextFont::ContourPoint::
+ContourPoint(const LPoint2f &p, const LVector2f &in, const LVector2f &out) :
+  _p(p), _in(in), _out(out)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::ContourPoint::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE DynamicTextFont::ContourPoint::
+ContourPoint(float px, float py, float tx, float ty) :
+  _p(px, py), _in(tx, ty), _out(tx, ty)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::connect_to
+//       Access: Public
+//  Description: Connects the indicated point to the next point, whose
+//               tangent is given.  The given tangent becomes the out
+//               tangent at this point.  If the in tangent and out
+//               tangent are sufficiently close, they will be smoothed
+//               together.
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::ContourPoint::
+connect_to(const LVector2f &out) {
+  _out = out;
+  if (_in.dot(_out) > 0.7071) {
+    // Less than 45 degrees of difference: smooth them.
+    LVector2f av = (_in + _out) * 0.5f;
+    av.normalize();
+    _in = av;
+    _out = av;
+  }
+}
+
+
 INLINE ostream &
 operator << (ostream &out, const DynamicTextFont &dtf) {
   return out << dtf.get_name();

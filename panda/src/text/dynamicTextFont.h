@@ -35,6 +35,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+class NurbsCurveResult;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DynamicTextFont
 // Description : A DynamicTextFont is a special TextFont object that
@@ -140,7 +142,7 @@ private:
   DynamicTextGlyph *slot_glyph(int character, int x_size, int y_size);
 
   void render_wireframe_contours(DynamicTextGlyph *glyph);
-  void render_polygon_contours(DynamicTextGlyph *glyph);
+  void render_polygon_contours(DynamicTextGlyph *glyph, bool face, bool extrude);
 
   static int outline_move_to(const FT_Vector *to, void *user);
   static int outline_line_to(const FT_Vector *to, void *user);
@@ -149,6 +151,7 @@ private:
   static int outline_cubic_to(const FT_Vector *control1, 
                               const FT_Vector *control2, 
                               const FT_Vector *to, void *user);
+  int outline_nurbs(NurbsCurveResult *ncr);
 
   int _texture_margin;
   float _poly_margin;
@@ -177,7 +180,16 @@ private:
   typedef pvector< PT(DynamicTextGlyph) > EmptyGlyphs;
   EmptyGlyphs _empty_glyphs;
 
-  typedef pvector<LPoint2f> Points;
+  class ContourPoint {
+  public:
+    INLINE ContourPoint(const LPoint2f &p, const LVector2f &in, 
+                        const LVector2f &out);
+    INLINE ContourPoint(float px, float py, float tx, float ty);
+    INLINE void connect_to(const LVector2f &out);
+    LPoint2f _p;
+    LVector2f _in, _out;  // tangents into and out of the vertex.
+  };
+  typedef pvector<ContourPoint> Points;
 
   class Contour {
   public:
@@ -188,6 +200,7 @@ private:
 
   typedef pvector<Contour> Contours;
   Contours _contours;
+  LPoint2f _q;  // The "current point".
 
 public:
   static TypeHandle get_class_type() {
