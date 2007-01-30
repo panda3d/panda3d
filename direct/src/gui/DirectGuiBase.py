@@ -12,6 +12,7 @@ from direct.directtools.DirectUtil import ROUND_TO
 from direct.showbase import DirectObject
 from direct.task import Task
 from direct.showbase import ShowBase
+from direct.showbase.PythonUtil import recordCreationStack
 import string, types
 
 """
@@ -646,6 +647,11 @@ def toggleGuiGridSnap():
 
 def setGuiGridSpacing(spacing):
     DirectGuiWidget.gridSpacing = spacing
+
+if __debug__:
+    # this will help track down who created DirectGui objects
+    # call obj.getCreationStackTrace() to figure out who created it
+    DirectGuiBase = recordCreationStack(DirectGuiBase)
 
 class DirectGuiWidget(DirectGuiBase, NodePath):
     # Toggle if you wish widget's to snap to grid when draggin
