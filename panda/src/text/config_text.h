@@ -27,7 +27,7 @@
 #include "configVariableDouble.h"
 #include "configVariableFilename.h"
 #include "configVariableEnum.h"
-#include "dynamicTextFont.h"
+#include "textFont.h"
 
 class DSearchPath;
 

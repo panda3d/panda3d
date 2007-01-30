@@ -45,6 +45,35 @@ public:
 PUBLISHED:
   virtual ~TextFont();
 
+  enum RenderMode {
+    // Each glyph is a single textured rectangle
+    RM_texture,
+
+    // Each glyph is a lot of line segments
+    RM_wireframe,
+
+    // Each glyph is a lot of triangles
+    RM_polygon,
+
+    // a 3-D outline, like a cookie cutter
+    RM_extruded,
+
+    // combination of RM_extruded and RM_polygon
+    RM_solid,
+
+    // Returned by string_render_mode() for an invalid match.
+    RM_invalid,
+  };
+
+  enum WindingOrder {
+    WO_default,
+    WO_left,
+    WO_right,
+
+    WO_invalid,
+  };
+
+
   INLINE bool is_valid() const;
   INLINE float get_line_height() const;
   INLINE void set_line_height(float line_height);

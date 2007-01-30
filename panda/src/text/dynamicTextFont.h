@@ -46,34 +46,6 @@ class NurbsCurveResult;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DynamicTextFont : public TextFont, public FreetypeFont {
 PUBLISHED:
-  enum RenderMode {
-    // Each glyph is a single textured rectangle
-    RM_texture,
-
-    // Each glyph is a lot of line segments
-    RM_wireframe,
-
-    // Each glyph is a lot of triangles
-    RM_polygon,
-
-    // a 3-D outline, like a cookie cutter
-    RM_extruded,
-
-    // combination of RM_extruded and RM_polygon
-    RM_solid,
-
-    // Returned by string_render_mode() for an invalid match.
-    RM_invalid,
-  };
-
-  enum WindingOrder {
-    WO_default,
-    WO_left,
-    WO_right,
-
-    WO_invalid,
-  };
-
   DynamicTextFont(const Filename &font_filename, int face_index = 0);
   DynamicTextFont(const char *font_data, int data_length, int face_index);
   virtual ~DynamicTextFont();
