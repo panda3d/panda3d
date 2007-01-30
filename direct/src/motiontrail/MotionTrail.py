@@ -1,4 +1,5 @@
 
+
 from pandac.PandaModules import *
 from direct.task import Task
 from otp.otpbase import OTPRender
@@ -10,7 +11,7 @@ def remove_task ( ):
         total_motion_trails = len (MotionTrail.motion_trail_list)
 
         if (total_motion_trails > 0):
-            print "warning", total_motion_trails, "motion trails still exist when motion trail task is removed"
+            print "warning:", total_motion_trails, "motion trails still exist when motion trail task is removed"
 
         MotionTrail.motion_trail_list = [ ]
 
@@ -83,7 +84,7 @@ class MotionTrail(NodePath, DirectObject):
         self.sampling_time = 0.0
         self.square_t = True
 
-        self.task_transform = False
+#        self.task_transform = False
         self.root_node_path = None
 
         # node path states
@@ -113,13 +114,22 @@ class MotionTrail(NodePath, DirectObject):
         self.use_nurbs = False
         self.resolution_distance = 0.5
         
+        self.cmotion_trail = CMotionTrail ( )
+        self.cmotion_trail.setGeomNode (self.geom_node)
+
+        self.modified_vertices = True
+
+        self.use_python_version = False
+        
         return
 
     def delete(self):
-        self.root_node_path = None
-        self.parent_node_path = None
+        self.reset_motion_trail()
+        self.reset_motion_trail_geometry()
+        self.cmotion_trail.resetVertexList ( )
         self.removeNode()
-
+        return
+        
     def print_matrix (self, matrix):
         separator = ' '
         print matrix.getCell (0, 0), separator, matrix.getCell (0, 1), separator, matrix.getCell (0, 2), separator, matrix.getCell (0, 3)
@@ -130,33 +140,44 @@ class MotionTrail(NodePath, DirectObject):
     def motion_trail_task (self, task):
 
         current_time = task.time
-
         total_motion_trails = len (MotionTrail.motion_trail_list)
 
         index = 0
         while (index < total_motion_trails):
             motion_trail = MotionTrail.motion_trail_list [index]
-            if (motion_trail.active and motion_trail.check_for_update (current_time)):
+            if (motion_trail.use_python_version):
+                # Python version
+                if (motion_trail.active and motion_trail.check_for_update (current_time)):
+                    transform = None                
+                    if (motion_trail.root_node_path != None) and (motion_trail.root_node_path != render):
+                        motion_trail.root_node_path.update ( )
 
-                transform = None
+                    if (motion_trail.root_node_path and (motion_trail.relative_to_render == False)):
+                        transform = motion_trail.getMat(motion_trail.root_node_path)
+                    else:
+                        transform = Mat4 (motion_trail.getNetTransform ( ).getMat ( ))
 
-#                print motion_trail.time_window
-                
-                if (motion_trail.root_node_path != None) and (motion_trail.root_node_path != render):
-                    motion_trail.root_node_path.update ( )
+                    if (transform != None):
+                        motion_trail.update_motion_trail (current_time, transform)
 
-                if (motion_trail.root_node_path and (motion_trail.relative_to_render == False)):
-                    transform = motion_trail.getMat(motion_trail.root_node_path)
-                else:
-                    transform = Mat4 (motion_trail.getNetTransform ( ).getMat ( ))
+                index += 1
+            else:
+                # C++ version
+                if (motion_trail.active and motion_trail.cmotion_trail.checkForUpdate (current_time)):
+                    transform = None                
+                    if (motion_trail.root_node_path != None) and (motion_trail.root_node_path != render):
+                        motion_trail.root_node_path.update ( )
 
-                if (transform != None):
-                    motion_trail.update_motion_trail (current_time, transform)
+                    if (motion_trail.root_node_path and (motion_trail.relative_to_render == False)):
+                        transform = motion_trail.getMat(motion_trail.root_node_path)
+                    else:
+                        transform = Mat4 (motion_trail.getNetTransform ( ).getMat ( ))
 
-            index += 1
-
-#        print "motion_trail_task ( ): time =", task.time, "total_motion_trails", total_motion_trails
-
+                    if (transform != None):
+                        motion_trail.transferVertices ( )
+                        motion_trail.cmotion_trail.updateMotionTrail (current_time, transform)
+                index += 1
+                                             
         return Task.cont
 
     def add_vertex (self, vertex_id, vertex_function, context):
@@ -168,6 +189,8 @@ class MotionTrail(NodePath, DirectObject):
 
         self.total_vertices = len (self.vertex_list)
 
+        self.modified_vertices = True
+
         return motion_trail_vertex
 
     def set_vertex_color (self, vertex_id, start_color, end_color):
@@ -176,14 +199,20 @@ class MotionTrail(NodePath, DirectObject):
             motion_trail_vertex.start_color = start_color
             motion_trail_vertex.end_color = end_color
 
+        self.modified_vertices = True
+        return
+        
     def set_texture (self, texture):
 
         self.texture = texture
-        self.geom_node_path.setTexture (texture)
+        if (texture):        
+            self.geom_node_path.setTexture (texture)
+#            texture.setWrapU(Texture.WMClamp)
+#            texture.setWrapV(Texture.WMClamp)
+        else:
+            self.geom_node_path.clearTexture ( )
 
-#        texture.setWrapU(Texture.WMClamp)
-#        texture.setWrapV(Texture.WMClamp)
-
+        self.modified_vertices = True
         return
 
     def update_vertices (self):
@@ -212,6 +241,26 @@ class MotionTrail(NodePath, DirectObject):
 
 #                print "motion_trail_vertex.v", motion_trail_vertex.v
 
+        self.modified_vertices = True
+        return
+
+    def transferVertices (self):
+
+        # transfer only on modification
+        if (self.modified_vertices):
+            self.cmotion_trail.setParameters (self.sampling_time, self.time_window, self.texture != None, self.calculate_relative_matrix, self.use_nurbs, self.resolution_distance)
+
+            self.cmotion_trail.resetVertexList ( )
+
+            vertex_index = 0
+            total_vertices = len (self.vertex_list)
+            while (vertex_index < total_vertices):
+                motion_trail_vertex = self.vertex_list [vertex_index]
+                self.cmotion_trail.addVertex (motion_trail_vertex.vertex, motion_trail_vertex.start_color, motion_trail_vertex.end_color, motion_trail_vertex.v)
+                vertex_index += 1
+
+            self.modified_vertices = False
+            
         return
 
     def register_motion_trail (self):
@@ -248,16 +297,16 @@ class MotionTrail(NodePath, DirectObject):
         self.vertex_writer.addData3f (v2 [0], v2 [1], v2 [2])
         self.vertex_writer.addData3f (v3 [0], v3 [1], v3 [2])
 
-        self.color_writer.addData4f (c0 [0], c0 [1], c0 [2], c0 [3])
-        self.color_writer.addData4f (c1 [0], c1 [1], c1 [2], c1 [3])
-        self.color_writer.addData4f (c2 [0], c2 [1], c2 [2], c2 [3])
-        self.color_writer.addData4f (c3 [0], c3 [1], c3 [2], c3 [3])
+        self.color_writer.addData4f (c0)
+        self.color_writer.addData4f (c1)
+        self.color_writer.addData4f (c2)
+        self.color_writer.addData4f (c3)
 
         if (self.texture != None):
-            self.texture_writer.addData2f (t0 [0], t0 [1])
-            self.texture_writer.addData2f (t1 [0], t1 [1])
-            self.texture_writer.addData2f (t2 [0], t2 [1])
-            self.texture_writer.addData2f (t3 [0], t3 [1])
+            self.texture_writer.addData2f (t0)
+            self.texture_writer.addData2f (t1)
+            self.texture_writer.addData2f (t2)
+            self.texture_writer.addData2f (t3)
 
         vertex_index = self.vertex_index;
 
@@ -280,7 +329,6 @@ class MotionTrail(NodePath, DirectObject):
         self.geom_node.removeAllGeoms ( )
         self.geom_node.addGeom (self.geometry)
 
-
     def check_for_update (self, current_time):
 
         state = False
@@ -298,7 +346,7 @@ class MotionTrail(NodePath, DirectObject):
 
         if (len (self.frame_list) >= 1):
             if (transform == self.frame_list [0].transform):
-#                print "duplicate transform"              
+                # ignore duplicate transform updates
                 return
 
         if (self.check_for_update (current_time)):
@@ -323,10 +371,6 @@ class MotionTrail(NodePath, DirectObject):
             # remove expired frames
             minimum_time = current_time - self.time_window
 
-            """
-            print "*** minimum_time", minimum_time
-            """
-
             index = 0
 
             last_frame_index = len (self.frame_list) - 1
@@ -347,9 +391,9 @@ class MotionTrail(NodePath, DirectObject):
             # convert frames and vertices to geometry
             total_frames = len (self.frame_list)
 
-            # print "total_frames", total_frames
-
             """
+            print "total_frames", total_frames
+            
             index = 0;
             while (index < total_frames):
                 motion_trail_frame = self.frame_list [index]
@@ -365,20 +409,9 @@ class MotionTrail(NodePath, DirectObject):
                 minimum_time = last_motion_trail_frame.time
                 delta_time = current_time - minimum_time
 
-#                print "minimum_time", minimum_time
-#                print "delta_time", delta_time
-
                 if (self.calculate_relative_matrix):
                     inverse_matrix = Mat4 (transform)
                     inverse_matrix.invertInPlace ( )
-#                    inverse_matrix.transposeInPlace ( )
-
-                    """
-                    print "current matrix"
-                    self.print_matrix (transform)
-                    print "inverse current matrix"
-                    self.print_matrix (inverse_matrix)
-                    """
                 
                 if (self.use_nurbs and (total_frames >= 5)):
 
@@ -423,8 +456,6 @@ class MotionTrail(NodePath, DirectObject):
 
                         nurbs_curve_evaluator = nurbs_curve_evaluator_list [vertex_segement_index]
 
-#                        print "nurbs_curve_evaluator", nurbs_curve_evaluator, "index", (vertex_segement_index)
-
                         nurbs_curve_evaluator.setVertex (segment_index, v0)
                         
                         while (vertex_segement_index < total_vertex_segments):
@@ -437,31 +468,17 @@ class MotionTrail(NodePath, DirectObject):
 
                             nurbs_curve_evaluator = nurbs_curve_evaluator_list [vertex_segement_index + 1]
                             
-#                            print "nurbs_curve_evaluator", nurbs_curve_evaluator, "index", (vertex_segement_index + 1)
-                            
                             nurbs_curve_evaluator.setVertex (segment_index, v1)
 
-                            """
-                            print v0
-                            print v1
-                            print v2
-                            print v3
-                            """
-
                             if (vertex_segement_index == (total_vertex_segments - 1)):
-#                            if (vertex_segement_index == 0):
                                 v = v1 - v3
                                 vector.set (v[0], v[1], v[2])
                                 distance = vector.length()
                                 total_distance += distance
-#                                print "DISTANCE", distance
 
                             vertex_segement_index += 1
 
                         segment_index += 1
-
-
-#                    print "TOTAL DISTANCE", total_distance, "SEGMENTS", total_distance / self.resolution_distance
 
                     # evaluate NurbsCurveEvaluator for each vertex
                     index = 0
@@ -474,16 +491,12 @@ class MotionTrail(NodePath, DirectObject):
                         nurbs_start_t = nurbs_curve_result.getStartT()
                         nurbs_end_t = nurbs_curve_result.getEndT()
 
-#                        print "nurbs_start_t", nurbs_start_t, "nurbs_end_t", nurbs_end_t
-
                         index += 1
 
                     # create quads from NurbsCurveResult                    
                     total_curve_segments = total_distance / self.resolution_distance
                     if (total_curve_segments < total_segments):
                         total_curve_segments = total_segments;
-
-#                    print "total_curve_segments", total_curve_segments
 
                     v0 = Vec3 ( )
                     v1 = Vec3 ( )
@@ -523,10 +536,6 @@ class MotionTrail(NodePath, DirectObject):
                         c0 = vertex_start_color * one_minus_x (color_start_t)
                         c2 = vertex_start_color * one_minus_x (color_end_t)
 
-#                        c = 1.0 - st 
-#                        c0.set(c,c,c,c)
-#                        c2.set(c,c,c,c)
-                        
                         t0 = Vec2 (one_minus_x (st), motion_trail_vertex_start.v)
                         t2 = Vec2 (one_minus_x (et), motion_trail_vertex_start.v)
                         
@@ -543,7 +552,6 @@ class MotionTrail(NodePath, DirectObject):
                             end_nurbs_start_t = end_nurbs_curve_result.getStartT()
                             end_nurbs_end_t = end_nurbs_curve_result.getEndT()
 
-
                             start_delta_t = (start_nurbs_end_t - start_nurbs_start_t)
                             end_delta_t = (end_nurbs_end_t - end_nurbs_start_t)
 
@@ -559,9 +567,6 @@ class MotionTrail(NodePath, DirectObject):
                             c1 = vertex_end_color * one_minus_x (color_start_t)
                             c3 = vertex_end_color * one_minus_x (color_end_t)
 
-#                            c1.set(c,c,c,c)
-#                            c3.set(c,c,c,c)
-
                             # uv
                             t1 = Vec2 (one_minus_x (st), motion_trail_vertex_end.v)
                             t3 = Vec2 (one_minus_x (et), motion_trail_vertex_end.v)
@@ -569,9 +574,6 @@ class MotionTrail(NodePath, DirectObject):
                             self.add_geometry_quad (v0, v1, v2, v3, c0, c1, c2, c3, t0, t1, t2, t3)
 
                             # reuse calculations
-#                            v0 = v1
-#                            v2 = v3
-
                             c0 = c1
                             c2 = c3
 
@@ -596,15 +598,9 @@ class MotionTrail(NodePath, DirectObject):
                         st = start_t
                         et = end_t
 
-    #                    print "st", st
-    #                    print "et", et
-
                         if (self.square_t):
                             start_t *= start_t
                             end_t *= end_t
-
-    #                    print "start_t", start_t
-    #                    print "end_t", end_t
 
                         vertex_segement_index = 0
                         total_vertex_segments = self.total_vertices - 1
@@ -612,27 +608,8 @@ class MotionTrail(NodePath, DirectObject):
                         if (self.calculate_relative_matrix):
                             start_transform = Mat4 ( )
                             end_transform = Mat4 ( )
-    #                        start_transform.multiply (inverse_matrix, motion_trail_frame_start.transform)
-    #                        end_transform.multiply (inverse_matrix, motion_trail_frame_end.transform)
-
                             start_transform.multiply (motion_trail_frame_start.transform, inverse_matrix)
                             end_transform.multiply (motion_trail_frame_end.transform, inverse_matrix)
-
-    #                        start_transform.transposeInPlace ( )
-    #                        end_transform.transposeInPlace ( )
-
-                            """
-                            print "start matrix"
-                            self.print_matrix (motion_trail_frame_start.transform)
-                            print "relative_matrix 111"
-                            self.print_matrix (start_transform)
-
-                            print "end matrix"
-                            self.print_matrix (motion_trail_frame_end.transform)
-                            print "relative_matrix 222"
-                            self.print_matrix (end_transform)
-                            """
-
                         else:
                             start_transform = motion_trail_frame_start.transform
                             end_transform = motion_trail_frame_end.transform
@@ -659,12 +636,6 @@ class MotionTrail(NodePath, DirectObject):
                             v1 = start_transform.xform (motion_trail_vertex_end.vertex)
                             v3 = end_transform.xform (motion_trail_vertex_end.vertex)
 
-                            """
-                            print v0
-                            print v1
-                            print v2
-                            print v3
-                            """
                             # color
                             vertex_end_color = motion_trail_vertex_end.end_color + (motion_trail_vertex_end.start_color - motion_trail_vertex_end.end_color)
 
@@ -701,13 +672,14 @@ class MotionTrail(NodePath, DirectObject):
 
     def reset_motion_trail(self):
         self.frame_list = [ ]
+        self.cmotion_trail.reset ( );
         return
 
     def reset_motion_trail_geometry(self):
         if (self.geom_node != None):
             self.geom_node.removeAllGeoms ( )
         return
-
+    
     def attach_motion_trail (self):
         self.reset_motion_trail ( )
         return
@@ -726,6 +698,8 @@ class MotionTrail(NodePath, DirectObject):
             self.reset_motion_trail_geometry ( )
             self.playing = False;
         return
+
+    # the following functions are not currently supported in the C++ version
 
     def set_fade (self, time, current_time):
         if (self.pause == False):
