@@ -22,6 +22,7 @@
 #include "configVariableManager.h"
 #include "prcKeyRegistry.h"
 #include "config_prc.h"
+#include "encryptStream.h"
 
 #include <ctype.h>
 
@@ -226,6 +227,19 @@ read_prc(istream &in) {
   bool failed = (in.fail() && !in.eof());
 
   return !failed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigPage::read_encrypted_prc
+//       Access: Published
+//  Description: Automatically decrypts and reads the stream, given
+//               the indicated password.  Note that if the password is
+//               incorrect, the result may be garbage.
+////////////////////////////////////////////////////////////////////
+bool ConfigPage::
+read_encrypted_prc(istream &in, const string &password) {
+  IDecryptStream decrypt(&in, false, password);
+  return read_prc(decrypt);
 }
 
 ////////////////////////////////////////////////////////////////////

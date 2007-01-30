@@ -187,6 +187,15 @@
 // default; normally there's no reason to change this.
 #define PRC_PATTERNS *.prc
 
+// You can optionally encrypt your prc file(s) to help protect them
+// from curious eyes.  You have to specify the encryption key, which
+// gets hard-coded into the executable.  (This feature provides mere
+// obfuscation, not real security, since the encryption key can
+// potentially be extracted by a hacker.)  This requires building with
+// OpenSSL (see below).
+#define PRC_ENCRYPTED_PATTERNS *.prc.pe
+#define PRC_ENCRYPTION_KEY ""
+
 // One unusual feature of config is the ability to execute one or more
 // of the files it discovers as if it were a program, and then treat
 // the output of this program as a prc file.  If you want to use this
@@ -219,6 +228,18 @@
 // or not it is signed.  Set this variable true (nonempty) or false
 // (empty) to explicitly enable or disable this feature.
 #defer PRC_RESPECT_TRUST_LEVEL $[= $[OPTIMIZE],4]
+
+// If trust level is in effect, this specifies the default trust level
+// for any legacy (Dconfig) config variables (that is, variables
+// created using the config.GetBool(), etc. interface, rather than the
+// newer ConfigVariableBool interface).
+#defer PRC_DCONFIG_TRUST_LEVEL 0
+
+// If trust level is in effect, you may globally increment the
+// (mis)trust level of all variables by the specified amount.
+// Incrementing this value by 1 will cause all variables to require at
+// least a level 1 signature.
+#define PRC_INC_TRUST_LEVEL 0
 
 // Similarly, the descriptions are normally saved only in a
 // development build, not in a release build.  Set this value true to

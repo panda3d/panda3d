@@ -57,6 +57,7 @@ PUBLISHED:
 
   void clear();
   bool read_prc(istream &in);
+  bool read_encrypted_prc(istream &in, const string &password);
 
   ConfigDeclaration *make_declaration(const string &variable, const string &value);
   ConfigDeclaration *make_declaration(ConfigVariableCore *variable, const string &value);

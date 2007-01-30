@@ -19,7 +19,7 @@
 #ifndef STREAMWRITER_H
 #define STREAMWRITER_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 #include "pnotify.h"
 #include "numeric_types.h"
 #include "littleEndian.h"
@@ -34,7 +34,7 @@
 //               of writing bytes to a Datagram and then writing the
 //               Datagram to a stream.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS StreamWriter {
+class EXPCL_DTOOLCONFIG StreamWriter {
 public:
   INLINE StreamWriter(ostream &out);
 PUBLISHED:

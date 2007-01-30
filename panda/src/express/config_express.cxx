@@ -67,35 +67,6 @@ ConfigVariableBool lock_to_one_cpu
           "mainly a hack to solve a bug in which QueryPerformanceCounter "
           "returns inconsistent results on multi-core machines. "));
 
-ConfigVariableString encryption_algorithm
-("encryption-algorithm", "bf-cbc",
- PRC_DESC("This defines the OpenSSL encryption algorithm which is used to "
-          "encrypt any streams created by the current runtime.  The default is "
-          "Blowfish; the complete set of available algorithms is defined by "
-          "the current version of OpenSSL.  This value is used only to control "
-          "encryption; the correct algorithm will automatically be selected on "
-          "decryption."));
-
-ConfigVariableInt encryption_key_length
-("encryption-key-length", 0,
- PRC_DESC("This defines the key length, in bits, for the selected encryption "
-          "algorithm.  Some algorithms have a variable key length.  Specifying "
-          "a value of 0 here means to use the default key length for the "
-          "algorithm as defined by OpenSSL.  This value is used only to "
-          "control encryption; the correct key length will automatically be "
-          "selected on decryption."));
-
-ConfigVariableInt encryption_iteration_count
-("encryption-iteration-count", 100000,
- PRC_DESC("This defines the number of times a password is hashed to generate a "
-          "key when encrypting.  Its purpose is to make it computationally "
-          "more expensive for an attacker to search the key space "
-          "exhaustively.  This should be a multiple of 1,000 and should not "
-          "exceed about 65 million; the value 0 indicates just one application "
-          "of the hashing algorithm.  This value is used only to control "
-          "encryption; the correct count will automatically be selected on "
-          "decryption."));
-
 ConfigVariableInt multifile_encryption_iteration_count
 ("multifile-encryption-iteration-count", 0,
  PRC_DESC("This is a special value of encryption-iteration-count used to encrypt "

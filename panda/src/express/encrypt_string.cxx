@@ -1,5 +1,5 @@
-// Filename: encryptStream.cxx
-// Created by:  drose (01Sep04)
+// Filename: encrypt_string.cxx
+// Created by:  drose (30Jan07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "encrypt_string.h"
 #include "encryptStream.h"
 
 #ifdef HAVE_OPENSSL

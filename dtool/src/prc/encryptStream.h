@@ -19,7 +19,7 @@
 #ifndef ENCRYPTSTREAM_H
 #define ENCRYPTSTREAM_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_OPENSSL
@@ -38,7 +38,7 @@
 //
 //               Seeking is not supported.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS IDecryptStream : public istream {
+class EXPCL_DTOOLCONFIG IDecryptStream : public istream {
 public:
   INLINE IDecryptStream();
   INLINE IDecryptStream(istream *source, bool owns_source,
@@ -67,7 +67,7 @@ private:
 //
 //               Seeking is not supported.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS OEncryptStream : public ostream {
+class EXPCL_DTOOLCONFIG OEncryptStream : public ostream {
 public:
   INLINE OEncryptStream();
   INLINE OEncryptStream(ostream *dest, bool owns_dest, 
@@ -84,11 +84,6 @@ public:
 private:
   EncryptStreamBuf _buf;
 };
-
-BEGIN_PUBLISH
-string encrypt_string(const string &source, const string &password);
-string decrypt_string(const string &source, const string &password);
-END_PUBLISH
 
 #include "encryptStream.I"
 

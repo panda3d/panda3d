@@ -9,3 +9,6 @@
 #include "configVariableCore.cxx"
 #include "configVariableDouble.cxx"
 #include "configVariableEnum.cxx"
+#include "configVariableFilename.cxx"
+#include "configVariableInt.cxx"
+#include "configVariableList.cxx"

@@ -17,9 +17,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "encryptStreamBuf.h"
-#include "config_express.h"
+#include "config_prc.h"
 #include "streamReader.h"
 #include "streamWriter.h"
+#include "configVariableInt.h"
+#include "configVariableString.h"
 
 #ifdef HAVE_OPENSSL
 
@@ -45,6 +47,35 @@ EncryptStreamBuf() {
   _owns_source = false;
   _dest = (ostream *)NULL;
   _owns_dest = false;
+
+  ConfigVariableString encryption_algorithm
+    ("encryption-algorithm", "bf-cbc",
+     PRC_DESC("This defines the OpenSSL encryption algorithm which is used to "
+              "encrypt any streams created by the current runtime.  The default is "
+              "Blowfish; the complete set of available algorithms is defined by "
+              "the current version of OpenSSL.  This value is used only to control "
+              "encryption; the correct algorithm will automatically be selected on "
+              "decryption."));
+
+  ConfigVariableInt encryption_key_length
+    ("encryption-key-length", 0,
+     PRC_DESC("This defines the key length, in bits, for the selected encryption "
+              "algorithm.  Some algorithms have a variable key length.  Specifying "
+              "a value of 0 here means to use the default key length for the "
+              "algorithm as defined by OpenSSL.  This value is used only to "
+              "control encryption; the correct key length will automatically be "
+              "selected on decryption."));
+
+  ConfigVariableInt encryption_iteration_count
+    ("encryption-iteration-count", 100000,
+     PRC_DESC("This defines the number of times a password is hashed to generate a "
+              "key when encrypting.  Its purpose is to make it computationally "
+              "more expensive for an attacker to search the key space "
+              "exhaustively.  This should be a multiple of 1,000 and should not "
+              "exceed about 65 million; the value 0 indicates just one application "
+              "of the hashing algorithm.  This value is used only to control "
+              "encryption; the correct count will automatically be selected on "
+              "decryption."));
 
   _algorithm = encryption_algorithm;
   _key_length = encryption_key_length;
@@ -102,7 +133,7 @@ open_read(istream *source, bool owns_source, const string &password) {
   const EVP_CIPHER *cipher = EVP_get_cipherbynid(nid);
 
   if (cipher == NULL) {
-    express_cat.error()
+    prc_cat.error()
       << "Unknown encryption algorithm in stream.\n";
     return;
   }
@@ -111,11 +142,11 @@ open_read(istream *source, bool owns_source, const string &password) {
   _key_length = key_length * 8;
   _iteration_count = count * iteration_count_factor;
 
-  if (express_cat.is_debug()) {
-    express_cat.debug()
+  if (prc_cat.is_debug()) {
+    prc_cat.debug()
       << "Using decryption algorithm " << _algorithm << " with key length "
       << _key_length << " bits.\n";
-    express_cat.debug()
+    prc_cat.debug()
       << "Key is hashed " << _iteration_count << " extra times.\n";
   }
 
@@ -131,7 +162,7 @@ open_read(istream *source, bool owns_source, const string &password) {
 
   result = EVP_CIPHER_CTX_set_key_length(&_read_ctx, key_length);
   if (result <= 0) {
-    express_cat.error()
+    prc_cat.error()
       << "Invalid key length " << key_length * 8 << " bits for algorithm "
       << OBJ_nid2sn(nid) << "\n";
     EVP_CIPHER_CTX_cleanup(&_read_ctx);
@@ -201,7 +232,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
     EVP_get_cipherbyname(_algorithm.c_str());
 
   if (cipher == NULL) {
-    express_cat.error()
+    prc_cat.error()
       << "Unknown encryption algorithm: " << _algorithm << "\n";
     return;
   };
@@ -228,7 +259,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   }
   result = EVP_CIPHER_CTX_set_key_length(&_write_ctx, key_length);
   if (result <= 0) {
-    express_cat.error()
+    prc_cat.error()
       << "Invalid key length " << key_length * 8 << " bits for algorithm "
       << OBJ_nid2sn(nid) << "\n";
     EVP_CIPHER_CTX_cleanup(&_write_ctx);
@@ -237,11 +268,11 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
 
   int count = _iteration_count / iteration_count_factor;
 
-  if (express_cat.is_debug()) {
-    express_cat.debug()
+  if (prc_cat.is_debug()) {
+    prc_cat.debug()
       << "Using encryption algorithm " << OBJ_nid2sn(nid) << " with key length "
       << key_length * 8 << " bits.\n";
-    express_cat.debug()
+    prc_cat.debug()
       << "Hashing key " << count * iteration_count_factor
       << " extra times.\n";
   }
@@ -425,7 +456,7 @@ read_chars(char *start, size_t length) {
     }
 
     if (result <= 0) {
-      express_cat.error()
+      prc_cat.error()
         << "Error decrypting stream.\n";
       if (_read_valid) {
         EVP_CIPHER_CTX_cleanup(&_read_ctx);
@@ -470,7 +501,7 @@ write_chars(const char *start, size_t length) {
       EVP_EncryptUpdate(&_write_ctx, write_buffer, &bytes_written,
                         (unsigned char *)start, length);
     if (result <= 0) {
-      express_cat.error() 
+      prc_cat.error() 
         << "Error encrypting stream.\n";
     }
     _dest->write((const char *)write_buffer, bytes_written);

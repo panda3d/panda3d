@@ -19,7 +19,7 @@
 #ifndef ENCRYPTSTREAMBUF_H
 #define ENCRYPTSTREAMBUF_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_OPENSSL
@@ -31,7 +31,7 @@
 // Description : The streambuf object that implements
 //               IDecompressStream and OCompressStream.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS EncryptStreamBuf : public streambuf {
+class EXPCL_DTOOLCONFIG EncryptStreamBuf : public streambuf {
 public:
   EncryptStreamBuf();
   virtual ~EncryptStreamBuf();

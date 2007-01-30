@@ -9,7 +9,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES \
-    bigEndian.h buffer.I buffer.h \
+    buffer.I buffer.h \
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
     circBuffer.h \
     config_express.h \
@@ -17,19 +17,18 @@
     datagramGenerator.h \
     datagramIterator.I datagramIterator.h datagramSink.I datagramSink.h \
     dcast.T dcast.h \
-    encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
+    encrypt_string.h \
     error_utils.h \
     hashGeneratorBase.I hashGeneratorBase.h \
     hashVal.I hashVal.h \
     indirectLess.I indirectLess.h \
-    littleEndian.h \
     memoryInfo.I memoryInfo.h \
     memoryUsage.I memoryUsage.h \
     memoryUsagePointerCounts.I memoryUsagePointerCounts.h \
     memoryUsagePointers.I memoryUsagePointers.h \
     multifile.I multifile.h \
     namable.I \
-    namable.h nativeNumericData.I nativeNumericData.h \
+    namable.h \
     nodePointerToBase.h nodePointerToBase.I \
     nodePointerTo.h nodePointerTo.I \
     nodeReferenceCount.h nodeReferenceCount.I \
@@ -47,8 +46,6 @@
     pta_uchar.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
-    reversedNumericData.I reversedNumericData.h \
-    streamReader.I streamReader.h streamWriter.I streamWriter.h \
     stringDecoder.h stringDecoder.I \
     subStream.I subStream.h subStreamBuf.h \
     textEncoder.h textEncoder.I \
@@ -78,13 +75,12 @@
     datagram.cxx datagramGenerator.cxx \
     datagramIterator.cxx \
     datagramSink.cxx dcast.cxx \
-    encryptStreamBuf.cxx encryptStream.cxx \
+    encrypt_string.cxx \
     error_utils.cxx \
     hashGeneratorBase.cxx hashVal.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
     memoryUsagePointers.cxx multifile.cxx \
     namable.cxx \
-    nativeNumericData.cxx \
     nodePointerToBase.cxx \
     nodePointerTo.cxx \
     nodeReferenceCount.cxx \
@@ -101,8 +97,6 @@
     pta_uchar.cxx \
     ramfile.cxx \
     referenceCount.cxx \
-    reversedNumericData.cxx \
-    streamReader.cxx streamWriter.cxx \
     stringDecoder.cxx \
     subStream.cxx subStreamBuf.cxx \
     textEncoder.cxx \
@@ -125,7 +119,7 @@
     zStream.cxx zStreamBuf.cxx
 
   #define INSTALL_HEADERS  \
-    bigEndian.h buffer.I buffer.h \
+    buffer.I buffer.h \
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
     circBuffer.h \
     config_express.h \
@@ -133,19 +127,18 @@
     datagramGenerator.h \
     datagramIterator.I datagramIterator.h datagramSink.I datagramSink.h \
     dcast.T dcast.h \
-    encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
+    encrypt_string.h \
     error_utils.h \
     hashGeneratorBase.I hashGeneratorBase.h \
     hashVal.I hashVal.h \
     indirectLess.I indirectLess.h \
-    littleEndian.h \
     memoryInfo.I memoryInfo.h \
     memoryUsage.I memoryUsage.h \
     memoryUsagePointerCounts.I memoryUsagePointerCounts.h \
     memoryUsagePointers.I memoryUsagePointers.h \
     multifile.I multifile.h \
     namable.I \
-    namable.h nativeNumericData.I nativeNumericData.h \
+    namable.h \
     nodePointerToBase.h nodePointerToBase.I \
     nodePointerTo.h nodePointerTo.I \
     nodeReferenceCount.h nodeReferenceCount.I \
@@ -163,8 +156,6 @@
     pta_uchar.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
-    reversedNumericData.I reversedNumericData.h \
-    streamReader.I streamReader.h streamWriter.I streamWriter.h \
     stringDecoder.h stringDecoder.I \
     subStream.I subStream.h subStreamBuf.h \
     textEncoder.h textEncoder.I \

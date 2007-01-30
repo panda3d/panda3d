@@ -1,5 +1,5 @@
-// Filename: bigEndian.h
-// Created by:  drose (23Aug00)
+// Filename: littleEndian.h
+// Created by:  drose (09Feb00)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,27 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef BIGENDIAN_H
-#define BIGENDIAN_H
+#ifndef LITTLEENDIAN_H
+#define LITTLEENDIAN_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 
 #include "numeric_types.h"
 #include "nativeNumericData.h"
 #include "reversedNumericData.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : BigEndian
-// Description : BigEndian is a special class that automatically
+//       Class : LittleEndian
+// Description : LittleEndian is a special class that automatically
 //               reverses the byte-order of numeric values for
-//               little-endian machines, and passes them through
-//               unchanged for big-endian machines.
+//               big-endian machines, and passes them through
+//               unchanged for little-endian machines.
 ////////////////////////////////////////////////////////////////////
 
 #ifdef WORDS_BIGENDIAN
-typedef NativeNumericData BigEndian;
+typedef ReversedNumericData LittleEndian;
 #else
-typedef ReversedNumericData BigEndian;
+typedef NativeNumericData LittleEndian;
 #endif
 
 #endif

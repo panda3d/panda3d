@@ -50,6 +50,9 @@ PUBLISHED:
   INLINE int get_num_prc_patterns() const;
   INLINE string get_prc_pattern(int n) const;
 
+  INLINE int get_num_prc_encrypted_patterns() const;
+  INLINE string get_prc_encrypted_pattern(int n) const;
+
   INLINE int get_num_prc_executable_patterns() const;
   INLINE string get_prc_executable_pattern(int n) const;
 
@@ -88,6 +91,7 @@ private:
 
   typedef vector<GlobPattern> Globs;
   Globs _prc_patterns;
+  Globs _prc_encrypted_patterns;
   Globs _prc_executable_patterns;
 
   // In load_implicit_pages(), we temporarily build up a list of
@@ -96,6 +100,7 @@ private:
   enum FileFlags {
     FF_read     = 0x001,
     FF_execute  = 0x002,
+    FF_decrypt  = 0x004,
   };
   class ConfigFile {
   public:

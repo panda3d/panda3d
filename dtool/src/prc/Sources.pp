@@ -7,6 +7,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx
   
   #define SOURCES \
+    bigEndian.h \
     config_prc.h \
     configDeclaration.I configDeclaration.h \
     configFlags.I configFlags.h \
@@ -24,12 +25,17 @@
     configVariableManager.I configVariableManager.h \
     configVariableSearchPath.I configVariableSearchPath.h \
     configVariableString.I configVariableString.h \
+    encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
     globPattern.I globPattern.h \
+    littleEndian.h \
+    nativeNumericData.I nativeNumericData.h \
     pnotify.I pnotify.h \
     notifyCategory.I notifyCategory.h \
     notifyCategoryProxy.I notifyCategoryProxy.h \
     notifySeverity.h \
-    prcKeyRegistry.h
+    prcKeyRegistry.h \
+    reversedNumericData.I reversedNumericData.h \
+    streamReader.I streamReader.h streamWriter.I streamWriter.h
   
   #define INCLUDED_SOURCES \
     config_prc.cxx \
@@ -49,13 +55,18 @@
     configVariableManager.cxx \
     configVariableSearchPath.cxx \
     configVariableString.cxx \
+    encryptStreamBuf.cxx encryptStream.cxx \
     globPattern.cxx \
+    nativeNumericData.cxx \
     notify.cxx \
     notifyCategory.cxx \
     notifySeverity.cxx \
-    prcKeyRegistry.cxx
+    prcKeyRegistry.cxx \
+    reversedNumericData.cxx \
+    streamReader.cxx streamWriter.cxx
   
   #define INSTALL_HEADERS \
+    bigEndian.h \
     config_prc.h \
     configDeclaration.I configDeclaration.h \
     configFlags.I configFlags.h \
@@ -73,11 +84,20 @@
     configVariableManager.I configVariableManager.h \
     configVariableSearchPath.I configVariableSearchPath.h \
     configVariableString.I configVariableString.h \
+    encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
     globPattern.I globPattern.h \
+    littleEndian.h \
+    nativeNumericData.I nativeNumericData.h \
     pnotify.I pnotify.h \
     notifyCategory.I notifyCategory.h \
     notifyCategoryProxy.I notifyCategoryProxy.h \
     notifySeverity.h \
-    prcKeyRegistry.I prcKeyRegistry.h
+    prcKeyRegistry.I prcKeyRegistry.h \
+    reversedNumericData.I reversedNumericData.h \
+    streamReader.I streamReader.h streamWriter.I streamWriter.h
+
 
 #end lib_target
+
+#include $[THISDIRPREFIX]prc_parameters.h.pp
+

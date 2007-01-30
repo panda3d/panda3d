@@ -10,6 +10,8 @@ forcetype NotifySeverity
 forcetype TypedObject
 forcetype TypeHandle
 forcetype TypeRegistry
+forcetype StreamReader
+forcetype StreamWriter
 
 forcetype ConfigExpress
 renametype ConfigExpress ConfigExpress

@@ -19,7 +19,7 @@
 #ifndef STREAMREADER_H
 #define STREAMREADER_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 #include "pnotify.h"
 #include "numeric_types.h"
 #include "littleEndian.h"
@@ -31,7 +31,7 @@
 //               an istream.  Its interface is similar to
 //               DatagramIterator by design; see also StreamWriter.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS StreamReader {
+class EXPCL_DTOOLCONFIG StreamReader {
 public:
   INLINE StreamReader(istream &in);
 PUBLISHED:

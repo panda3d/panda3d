@@ -1,4 +1,4 @@
-// Filename: nativeNumericData.h
+// Filename: reversedNumericData.h
 // Created by:  drose (09May01)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,15 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef NATIVENUMERICDATA_H
-#define NATIVENUMERICDATA_H
+#ifndef REVERSEDNUMERICDATA_H
+#define REVERSEDNUMERICDATA_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 
 #include <string.h>  // for memcpy()
 
+// The maximum size of any numeric data type.  At present, this is
+// int64 and float64.
+static const int max_numeric_size = 8;
+
 ////////////////////////////////////////////////////////////////////
-//       Class : NativeNumericData
+//       Class : ReversedNumericData
 // Description : NativeNumericData and ReversedNumericData work
 //               together to provide a sneaky interface for
 //               automatically byte-swapping numbers, when necessary,
@@ -45,18 +49,19 @@
 //               BigEndian, which are typedeffed to be one of these or
 //               the other, according to the machine's architecture.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS NativeNumericData {
+class EXPCL_DTOOLCONFIG ReversedNumericData {
 public:
-  INLINE NativeNumericData(const void *data, size_t length);
-  INLINE NativeNumericData(const void *data, size_t start, size_t length);
+  INLINE ReversedNumericData(const void *data, size_t length);
+  INLINE ReversedNumericData(const void *data, size_t start, size_t length);
 
   INLINE void store_value(void *dest, size_t length) const;
   INLINE const void *get_data() const;
 
 private:
-  const void *_source;
+  void reverse_assign(const char *source, size_t length);
+  char _data[max_numeric_size];
 };
 
-#include "nativeNumericData.I"
+#include "reversedNumericData.I"
 
 #endif

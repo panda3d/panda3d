@@ -89,6 +89,31 @@ get_prc_pattern(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigPageManager::get_num_prc_encrypted_patterns
+//       Access: Published
+//  Description: Returns the number of patterns, like "*.pre", that
+//               are compiled in that will be searched for as special
+//               config files that are understood to be encrypted.
+////////////////////////////////////////////////////////////////////
+INLINE int ConfigPageManager::
+get_num_prc_encrypted_patterns() const {
+  return _prc_encrypted_patterns.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigPageManager::get_prc_encrypted_pattern
+//       Access: Published
+//  Description: Returns the nth filename pattern that will be
+//               considered a match as a valid encrypted config
+//               file.  See get_num_prc_encrypted_patterns().
+////////////////////////////////////////////////////////////////////
+INLINE string ConfigPageManager::
+get_prc_encrypted_pattern(int n) const {
+  nassertr(n >= 0 && n < (int)_prc_patterns.size(), string());
+  return _prc_encrypted_patterns[n].get_pattern();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigPageManager::get_num_prc_executable_patterns
 //       Access: Published
 //  Description: Returns the number of patterns, like "*.exe", that
