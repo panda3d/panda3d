@@ -57,8 +57,8 @@ GeomNode(const string &name) :
 GeomNode::
 GeomNode(const GeomNode &copy) :
   PandaNode(copy),
-  _cycler(copy._cycler),
-  _preserved(copy._preserved)
+  _preserved(copy._preserved),
+  _cycler(copy._cycler)
 {
 }
 
