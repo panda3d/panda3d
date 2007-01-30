@@ -15,7 +15,7 @@
     $[TARGET]_composite2.cxx $[TARGET]_composite3.cxx
 
   #define SOURCES \
-    config_ode.h \
+    ode_includes.h config_ode.h \
     odeWorld.I odeWorld.h \
     odeMass.I odeMass.h \
     odeBody.I odeBody.h \
@@ -74,7 +74,7 @@
 
 
   #define INSTALL_HEADERS \
-    config_ode.h \
+    ode_includes.h config_ode.h \
     odeWorld.I odeWorld.h \
     odeMass.I odeMass.h \
     odeBody.I odeBody.h \

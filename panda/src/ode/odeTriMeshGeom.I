@@ -18,7 +18,7 @@
 
 INLINE void OdeTriMeshGeom::
 set_data(OdeTriMeshData &data) {
-  unlink_data(_id);
+  // unlink_data(_id); // not necessary?
   dGeomTriMeshSetData(_id, data.get_id());
   link_data(_id, data);
 }
@@ -69,3 +69,4 @@ INLINE dTriMeshDataID OdeTriMeshGeom::
 get_data_id() const {
   return dGeomTriMeshGetTriMeshDataID(_id);
 }
+

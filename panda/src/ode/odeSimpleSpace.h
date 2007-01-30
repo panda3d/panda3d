@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "luse.h"
 
-#include "ode/ode.h"
+#include "ode_includes.h"
 #include "odeSpace.h"
 
 

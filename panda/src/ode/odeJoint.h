@@ -23,7 +23,7 @@
 #include "typedObject.h"
 #include "luse.h"
 
-#include "ode/ode.h"
+#include "ode_includes.h"
 #include "odeWorld.h" // Needed for derived classes
 #include "odeJointGroup.h"
 
