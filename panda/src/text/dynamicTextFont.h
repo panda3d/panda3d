@@ -23,7 +23,6 @@
 
 #ifdef HAVE_FREETYPE
 
-#include "config_text.h"
 #include "textFont.h"
 #include "freetypeFont.h"
 #include "dynamicTextGlyph.h"
