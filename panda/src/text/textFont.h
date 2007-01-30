@@ -21,7 +21,6 @@
 
 #include "pandabase.h"
 
-#include "config_text.h"
 #include "typedReferenceCount.h"
 #include "namable.h"
 #include "pmap.h"
