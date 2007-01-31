@@ -321,7 +321,7 @@
 // genPyCode.  You may wish to add to this list to add your own
 // libraries, or if you want to use some of the more obscure
 // interfaces like libpandaegg and libpandafx.
-#define GENPYCODE_LIBS libpandaexpress libpanda libpandaphysics libdirect libpandafx libpandaode
+#define GENPYCODE_LIBS libpandaexpress libpanda libpandaphysics libdirect libpandafx
 
 // Normally, Python source files are copied into the INSTALL_LIB_DIR
 // defined above, along with the compiled C++ library objects, when
