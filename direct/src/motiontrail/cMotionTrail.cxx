@@ -487,6 +487,7 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
         for (index = 0; index < total_vertices; index++) {   
           motion_trail_vertex = &_vertex_array [index];
           nurbs_curve_evaluator = motion_trail_vertex -> _nurbs_curve_evaluator;
+          nurbs_curve_evaluator -> set_order (4);
           nurbs_curve_evaluator -> reset (total_segments);
         }
       }
