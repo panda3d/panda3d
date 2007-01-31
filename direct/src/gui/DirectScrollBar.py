@@ -123,6 +123,12 @@ class DirectScrollBar(DirectFrame):
         self.guiItem.setResizeThumb(self['resizeThumb'])
 
     def destroy(self):
+        self.thumb.destroy()
+        del self.thumb
+        self.incButton.destroy()
+        del self.incButton
+        self.decButton.destroy()
+        del self.decButton
         DirectFrame.destroy(self)
 
     def commandFunc(self):
