@@ -94,6 +94,9 @@ CLIENT_OBJECT_LOCATION =                    102
 CLIENT_LOGIN_3 =                             111
 CLIENT_LOGIN_3_RESP =                        110
 
+CLIENT_GET_FRIEND_LIST_EXTENDED =            115
+CLIENT_GET_FRIEND_LIST_EXTENDED_RESP =       116
+
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [
 
