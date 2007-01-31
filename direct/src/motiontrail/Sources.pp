@@ -23,10 +23,12 @@
 
   
   #define SOURCES \
-    cMotionTrail.cxx cMotionTrail.h
+    config_motiontrail.cxx config_motiontrail.h \
+    cMotionTrail.cxx cMotionTrail.h 
 
   #define INSTALL_HEADERS \
-    cMotionTrail.h
+    config_motiontrail.h \
+    cMotionTrail.h 
 
   #define IGATESCAN all
 #end lib_target
