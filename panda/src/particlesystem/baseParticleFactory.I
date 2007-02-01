@@ -40,6 +40,7 @@ set_lifespan_spread(float ld) {
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleFactory::
 set_mass_base(float mb) {
+  nassertv(mb >= _mass_spread);
   _mass_base = mb;
 }
 
@@ -49,6 +50,7 @@ set_mass_base(float mb) {
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleFactory::
 set_mass_spread(float md) {
+  nassertv(md < _mass_base);
   _mass_spread = md;
 }
 
