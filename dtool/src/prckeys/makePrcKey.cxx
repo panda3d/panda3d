@@ -19,7 +19,7 @@
 #include "dtoolbase.h"
 #include "prcKeyRegistry.h"
 #include "filename.h"
-#include "vector_int.h"
+#include "pvector.h"
 #include <stdio.h>
 
 // Pick up the public key definitions.
@@ -40,6 +40,14 @@
     #include <getopt.h>
   #endif
 #endif
+
+class KeyNumber {
+public:
+  int _number;
+  bool _got_pass_phrase;
+  string _pass_phrase;
+};
+typedef pvector<KeyNumber> KeyNumbers;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: output_ssl_errors
@@ -262,7 +270,7 @@ write_private_key(EVP_PKEY *pkey, Filename outfile, int n, time_t now,
 void
 usage() {
   cerr <<
-    "\nmake-prc-key [opts] 1 [2 3 ...]\n\n"
+    "\nmake-prc-key [opts] 1[,\"pass_phrase\"] [2[,\"pass phrase\"] 3 ...]\n\n"
 
     "This program generates one or more new keys to be used for signing\n"
     "a prc file.  The key itself is a completely arbitrary random bit\n"
@@ -301,9 +309,12 @@ usage() {
 
     "   -p \"[pass phrase]\"\n"
     "       Uses the indicated pass phrase to encrypt the private key.\n"
-    "       If this is not specified on the command line, you will be\n"
-    "       prompted interactively (and you may then specify a different\n"
-    "       pass phrase for each key).  Every user of the signing programs\n"
+    "       This specifies an overall pass phrase; you may also specify\n"
+    "       a different pass phrase for each key by using the key,\"pass phrase\"\n"
+    "       syntax.\n\n"
+
+    "       If a pass phrase is not specified on the command line, you will be\n"
+    "       prompted interactively.  Every user of the signing programs\n"
     "       (outfile_sign1.cxx, etc.) will need to know the pass phrase\n"
     "       in order to sign prc files.\n\n"
 
@@ -397,20 +408,28 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  vector_int key_numbers;
+  KeyNumbers key_numbers;
   for (int i = 1; i < argc; i++) {
+    KeyNumber key;
     char *endptr;
-    int number = strtol(argv[i], &endptr, 0);
-    if (*endptr) {
+    key._number = strtol(argv[i], &endptr, 0);
+    key._got_pass_phrase = got_pass_phrase;
+    key._pass_phrase = pass_phrase;
+
+    if (*endptr == ',') {
+      // Here's a pass phrase for this particular key.
+      key._got_pass_phrase = true;
+      key._pass_phrase = endptr + 1;
+    } else if (*endptr) {
       cerr << "Parameter '" << argv[i] << "' should be an integer.\n";
       exit(1);
     }
-    if (number <= 0) {
-      cerr << "Key numbers must be greater than 0; you specified " << number
-           << ".\n";
+    if (key._number <= 0) {
+      cerr << "Key numbers must be greater than 0; you specified " 
+           << key._number << ".\n";
       exit(1);
     }
-    key_numbers.push_back(number);
+    key_numbers.push_back(key);
   }
 
   // Seed the random number generator.
@@ -420,11 +439,6 @@ main(int argc, char *argv[]) {
   OpenSSL_add_all_algorithms();
 
   time_t now = time(NULL);
-
-  const char *pp = NULL;
-  if (got_pass_phrase) {
-    pp = pass_phrase.c_str();
-  }
 
   string name = priv_outfile.get_fullpath_wo_extension();
   string prefix, suffix;
@@ -442,9 +456,14 @@ main(int argc, char *argv[]) {
     got_hash = true;
   }
 
-  vector_int::iterator ki;
+  KeyNumbers::iterator ki;
   for (ki = key_numbers.begin(); ki != key_numbers.end(); ++ki) {
-    int n = (*ki);
+    int n = (*ki)._number;
+    const char *pp = NULL;
+    if ((*ki)._got_pass_phrase) {
+      pp = (*ki)._pass_phrase.c_str();
+    }
+
     EVP_PKEY *pkey = generate_key();
     PrcKeyRegistry::get_global_ptr()->set_key(n, pkey, now);
 
