@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_mass(float m) {
+  nassertv(m > 0);
   _mass = m;
 }
 
