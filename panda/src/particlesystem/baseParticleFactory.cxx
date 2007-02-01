@@ -24,15 +24,13 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleFactory::
-BaseParticleFactory() {
-  _mass_base = 1.0f;
-  _mass_spread = 0.0f;
-
-  _terminal_velocity_base = PhysicsObject::_default_terminal_velocity;
-  _terminal_velocity_spread = 0.0f;
-
-  _lifespan_base = 1.0f;
-  _lifespan_spread = 0.0f;
+BaseParticleFactory() : 
+  _mass_base(1.0f),
+  _mass_spread(0.0f),
+  _terminal_velocity_base(PhysicsObject::_default_terminal_velocity),
+  _terminal_velocity_spread(0.0f),
+  _lifespan_base(1.0),
+  _lifespan_spread(0.0) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,11 +39,13 @@ BaseParticleFactory() {
 // Description : copy constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleFactory::
-BaseParticleFactory(const BaseParticleFactory &copy) {
-  _terminal_velocity_base = copy._terminal_velocity_base;
-  _terminal_velocity_spread = copy._terminal_velocity_spread;
-  _lifespan_base = copy._lifespan_base;
-  _lifespan_spread = copy._lifespan_spread;
+BaseParticleFactory(const BaseParticleFactory &copy) : 
+  _mass_base(copy._mass_base),
+  _mass_spread(copy._mass_spread),
+  _terminal_velocity_base(copy._terminal_velocity_base),
+  _terminal_velocity_spread(copy._terminal_velocity_spread),
+  _lifespan_base(copy._lifespan_base),
+  _lifespan_spread(copy._lifespan_spread) {
 }
 
 ////////////////////////////////////////////////////////////////////
