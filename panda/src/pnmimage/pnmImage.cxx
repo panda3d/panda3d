@@ -19,6 +19,7 @@
 #include "pnmImage.h"
 #include "pnmReader.h"
 #include "pnmWriter.h"
+#include "pnmBrush.h"
 #include "config_pnmimage.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -100,10 +101,9 @@ clear(int x_size, int y_size, int num_channels,
 void PNMImage::
 copy_from(const PNMImage &copy) {
   clear();
+  copy_header_from(copy);
 
   if (copy.is_valid()) {
-    copy_header_from(copy);
-
     if (has_alpha()) {
       memcpy(_alpha, copy._alpha, sizeof(xelval) * _y_size * _x_size);
     }
@@ -130,6 +130,28 @@ copy_header_from(const PNMImageHeader &header) {
 
   allocate_array();
   setup_rc();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::take_from
+//       Access: Published
+//  Description: Move the contents of the other image into this one,
+//               and empty the other image.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+take_from(PNMImage &orig) {
+  clear();
+  PNMImageHeader::operator = (orig);
+  setup_rc();
+
+  if (has_alpha()) {
+    _alpha = orig._alpha;
+    orig._alpha = NULL;
+  }
+  _array = orig._array;
+  orig._array = NULL;
+
+  orig.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -581,39 +603,41 @@ blend(int x, int y, double r, double g, double b, double alpha) {
 void PNMImage::
 copy_sub_image(const PNMImage &copy, int xto, int yto,
                int xfrom, int yfrom, int x_size, int y_size) {
-  if (xfrom < 0) {
-    xto += -xfrom;
-    xfrom = 0;
-  }
-  if (yfrom < 0) {
-    yto += -yfrom;
-    yfrom = 0;
-  }
+  int xmin, ymin, xmax, ymax;
+  setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
+                  xmin, ymin, xmax, ymax);
 
-  x_size = (x_size < 0) ?
-    copy.get_x_size() :
-    min(x_size, copy.get_x_size() - xfrom);
-  y_size = (y_size < 0) ?
-    copy.get_y_size() :
-    min(y_size, copy.get_y_size() - yfrom);
-
-  int xmin = max(0, xto);
-  int ymin = max(0, yto);
-
-  int xmax = min(xmin + x_size, get_x_size());
-  int ymax = min(ymin + y_size, get_y_size());
-
-  int x, y;
-  for (y = ymin; y < ymax; y++) {
-    for (x = xmin; x < xmax; x++) {
-      set_xel(x, y, copy.get_xel(x - xmin + xfrom, y - ymin + yfrom));
-    }
-  }
-
-  if (has_alpha() && copy.has_alpha()) {
+  if (get_maxval() == copy.get_maxval()) {
+    // The simple case: no pixel value rescaling is required.
+    int x, y;
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-        set_alpha(x, y, copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom));
+        set_xel_val(x, y, copy.get_xel_val(x - xmin + xfrom, y - ymin + yfrom));
+      }
+    }
+    
+    if (has_alpha() && copy.has_alpha()) {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          set_alpha_val(x, y, copy.get_alpha_val(x - xmin + xfrom, y - ymin + yfrom));
+        }
+      }
+    }
+
+  } else {
+    // The harder case: rescale pixel values according to maxval.
+    int x, y;
+    for (y = ymin; y < ymax; y++) {
+      for (x = xmin; x < xmax; x++) {
+        set_xel(x, y, copy.get_xel(x - xmin + xfrom, y - ymin + yfrom));
+      }
+    }
+    
+    if (has_alpha() && copy.has_alpha()) {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          set_alpha(x, y, copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom));
+        }
       }
     }
   }
@@ -627,44 +651,182 @@ copy_sub_image(const PNMImage &copy, int xto, int yto,
 //               the destination image, instead of overwriting pixels
 //               unconditionally.
 //
-//               If the copy has no alpha channel, this degenerates
-//               into copy_sub_image().
+//               If pixel_scale is not 1.0, it specifies an amount to
+//               scale each *alpha* value of the source image before
+//               applying it to the target image.
+//
+//               If pixel_scale is 1.0 and the copy has no alpha
+//               channel, this degenerates into copy_sub_image().
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 blend_sub_image(const PNMImage &copy, int xto, int yto,
-                int xfrom, int yfrom, int x_size, int y_size) {
-  if (!copy.has_alpha()) {
+                int xfrom, int yfrom, int x_size, int y_size,
+                double pixel_scale) {
+  if (!copy.has_alpha() && pixel_scale == 1.0) {
     copy_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size);
     return;
   }
 
-  if (xfrom < 0) {
-    xto += -xfrom;
-    xfrom = 0;
-  }
-  if (yfrom < 0) {
-    yto += -yfrom;
-    yfrom = 0;
-  }
-
-  x_size = (x_size < 0) ?
-    copy.get_x_size() :
-    min(x_size, copy.get_x_size() - xfrom);
-  y_size = (y_size < 0) ?
-    copy.get_y_size() :
-    min(y_size, copy.get_y_size() - yfrom);
-
-  int xmin = max(0, xto);
-  int ymin = max(0, yto);
-
-  int xmax = min(xmin + x_size, get_x_size());
-  int ymax = min(ymin + y_size, get_y_size());
+  int xmin, ymin, xmax, ymax;
+  setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
+                  xmin, ymin, xmax, ymax);
 
   int x, y;
-  for (y = ymin; y < ymax; y++) {
-    for (x = xmin; x < xmax; x++) {
-      blend(x, y, copy.get_xel(x - xmin + xfrom, y - ymin + yfrom),
-            copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom));
+  if (copy.has_alpha()) {
+    for (y = ymin; y < ymax; y++) {
+      for (x = xmin; x < xmax; x++) {
+        blend(x, y, copy.get_xel(x - xmin + xfrom, y - ymin + yfrom),
+              copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
+      }
+    }
+  } else {
+    for (y = ymin; y < ymax; y++) {
+      for (x = xmin; x < xmax; x++) {
+        blend(x, y, copy.get_xel(x - xmin + xfrom, y - ymin + yfrom),
+              pixel_scale);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::darken_sub_image
+//       Access: Published
+//  Description: Behaves like copy_sub_image(), but the resulting
+//               color will be the darker of the source and
+//               destination colors at each pixel (and at each R, G,
+//               B, A component value).
+//
+//               If pixel_scale is not 1.0, it specifies an amount to
+//               scale each pixel value of the source image before
+//               applying it to the target image.  The scale is
+//               applied with the center at 1.0: scaling the pixel
+//               value smaller brings it closer to 1.0.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+darken_sub_image(const PNMImage &copy, int xto, int yto,
+                 int xfrom, int yfrom, int x_size, int y_size,
+                 double pixel_scale) {
+  int xmin, ymin, xmax, ymax;
+  setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
+                  xmin, ymin, xmax, ymax);
+
+  if (get_maxval() == copy.get_maxval() && pixel_scale == 1.0) {
+    // The simple case: no pixel value rescaling is required.
+    int x, y;
+    for (y = ymin; y < ymax; y++) {
+      for (x = xmin; x < xmax; x++) {
+        xel c = copy.get_xel_val(x - xmin + xfrom, y - ymin + yfrom);
+        xel o = get_xel_val(x, y);
+        xel p;
+        PPM_ASSIGN(p, min(c.r, o.r), min(c.g, o.g), min(c.b, o.b));
+        set_xel_val(x, y, p);
+      }
+    }
+    
+    if (has_alpha() && copy.has_alpha()) {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          xelval c = copy.get_alpha_val(x - xmin + xfrom, y - ymin + yfrom);
+          xelval o = get_alpha_val(x, y);
+          set_alpha_val(x, y, min(c, o));
+        }
+      }
+    }
+
+  } else {
+    // The harder case: rescale pixel values according to maxval.
+    int x, y;
+    for (y = ymin; y < ymax; y++) {
+      for (x = xmin; x < xmax; x++) {
+        RGBColord c = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
+        RGBColord o = get_xel(x, y);
+        RGBColord p;
+        p.set(min(1.0 - ((1.0 - c[0]) * pixel_scale), o[0]), 
+              min(1.0 - ((1.0 - c[1]) * pixel_scale), o[1]), 
+              min(1.0 - ((1.0 - c[2]) * pixel_scale), o[2]));
+        set_xel(x, y, p);
+      }
+    }
+    
+    if (has_alpha() && copy.has_alpha()) {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          double c = copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom);
+          double o = get_alpha(x, y);
+          set_alpha(x, y, min(1.0 - ((1.0 - c) * pixel_scale), o));
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::lighten_sub_image
+//       Access: Published
+//  Description: Behaves like copy_sub_image(), but the resulting
+//               color will be the lighter of the source and
+//               destination colors at each pixel (and at each R, G,
+//               B, A component value).
+//
+//               If pixel_scale is not 1.0, it specifies an amount to
+//               scale each pixel value of the source image before
+//               applying it to the target image.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+lighten_sub_image(const PNMImage &copy, int xto, int yto,
+                  int xfrom, int yfrom, int x_size, int y_size,
+                  double pixel_scale) {
+  int xmin, ymin, xmax, ymax;
+  setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
+                  xmin, ymin, xmax, ymax);
+
+  if (get_maxval() == copy.get_maxval() && pixel_scale == 1.0) {
+    // The simple case: no pixel value rescaling is required.
+    int x, y;
+    for (y = ymin; y < ymax; y++) {
+      for (x = xmin; x < xmax; x++) {
+        xel c = copy.get_xel_val(x - xmin + xfrom, y - ymin + yfrom);
+        xel o = get_xel_val(x, y);
+        xel p;
+        PPM_ASSIGN(p, max(c.r, o.r), max(c.g, o.g), max(c.b, o.b));
+        set_xel_val(x, y, p);
+      }
+    }
+    
+    if (has_alpha() && copy.has_alpha()) {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          xelval c = copy.get_alpha_val(x - xmin + xfrom, y - ymin + yfrom);
+          xelval o = get_alpha_val(x, y);
+          set_alpha_val(x, y, max(c, o));
+        }
+      }
+    }
+
+  } else {
+    // The harder case: rescale pixel values according to maxval.
+    int x, y;
+    for (y = ymin; y < ymax; y++) {
+      for (x = xmin; x < xmax; x++) {
+        RGBColord c = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
+        RGBColord o = get_xel(x, y);
+        RGBColord p;
+        p.set(max(c[0] * pixel_scale, o[0]), 
+              max(c[1] * pixel_scale, o[1]), 
+              max(c[2] * pixel_scale, o[2]));
+        set_xel(x, y, p);
+      }
+    }
+    
+    if (has_alpha() && copy.has_alpha()) {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          double c = copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom);
+          double o = get_alpha(x, y);
+          set_alpha(x, y, max(c * pixel_scale, o));
+        }
+      }
     }
   }
 }
@@ -678,14 +840,18 @@ blend_sub_image(const PNMImage &copy, int xto, int yto,
 //
 //               The min_radius and max_radius are in the scale 0..1,
 //               where 1.0 means the full width of the image.  If
-//               min_radius == max_radius, there is no fuzzy edge;
-//               otherwise, the pixels between min_radius and
-//               max_radius are smoothly blended between fg and bg
-//               colors.
+//               min_radius == max_radius, the edge is sharp (but
+//               still antialiased); otherwise, the pixels between
+//               min_radius and max_radius are smoothly blended
+//               between fg and bg colors.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 render_spot(const Colord &fg, const Colord &bg,
             double min_radius, double max_radius) {
+  if (_x_size == 0 || _y_size == 0) {
+    return;
+  }
+
   double x_scale = 2.0 / _x_size;
   double y_scale = 2.0 / _y_size;
 
@@ -701,27 +867,46 @@ render_spot(const Colord &fg, const Colord &bg,
 
   for (int yi = 0; yi < y_center1; ++yi) {
     double y = yi * y_scale;
+    double y2_inner = y * y;
+    double y2_outer = (y + y_scale) * (y + y_scale);
     for (int xi = 0; xi < x_center1; ++xi) {
       double x = xi * x_scale;
-      double d2 = (x * x + y * y);
-      if (d2 <= min_r2) {
+      double d2_inner = (x * x + y2_inner);
+      double d2_outer = ((x + x_scale) * (x + x_scale) + y2_outer);
+      double d2_a = ((x + x_scale) * (x + x_scale) + y2_inner);
+      double d2_b = (x * x + y2_outer);
+
+      if ((d2_inner <= min_r2) &&
+          (d2_outer <= min_r2) &&
+          (d2_a <= min_r2) &&
+          (d2_b <= min_r2)) {
+        // This pixel is solidly in the center of the spot.
         set_xel_a(x_center1 - 1 - xi, y_center1 - 1 - yi, fg);
         set_xel_a(x_center0 + xi, y_center1 - 1 - yi, fg);
         set_xel_a(x_center1 - 1 - xi, y_center0 + yi, fg);
         set_xel_a(x_center0 + xi, y_center0 + yi, fg);
 
-      } else if (d2 >= max_r2) {
+      } else if ((d2_inner > max_r2) &&
+                 (d2_outer > max_r2) &&
+                 (d2_a > max_r2) &&
+                 (d2_b > max_r2)) {
+        // This pixel is solidly outside the spot.
         set_xel_a(x_center1 - 1 - xi, y_center1 - 1 - yi, bg);
         set_xel_a(x_center0 + xi, y_center1 - 1 - yi, bg);
         set_xel_a(x_center1 - 1 - xi, y_center0 + yi, bg);
         set_xel_a(x_center0 + xi, y_center0 + yi, bg);
 
       } else {
-        double d = sqrt(d2);
-        d = (d - min_radius) / (max_radius - min_radius);
-        d2 = d * d;
-        double t = (3.0 * d2) - (2.0 * d * d2);
-        Colord c = fg + t * (bg - fg);
+        // This pixel is in a feathered area or along the antialiased edge.
+        Colord c_outer, c_inner, c_a, c_b;
+        compute_spot_pixel(c_outer, d2_outer, min_radius, max_radius, fg, bg);
+        compute_spot_pixel(c_inner, d2_inner, min_radius, max_radius, fg, bg);
+        compute_spot_pixel(c_a, d2_a, min_radius, max_radius, fg, bg);
+        compute_spot_pixel(c_b, d2_b, min_radius, max_radius, fg, bg);
+
+        // Now average all four pixels for the antialiased result.
+        Colord c;
+        c = (c_outer + c_inner + c_a + c_b) * 0.25;
 
         set_xel_a(x_center1 - 1 - xi, y_center1 - 1 - yi, c);
         set_xel_a(x_center0 + xi, y_center1 - 1 - yi, c);
@@ -732,10 +917,34 @@ render_spot(const Colord &fg, const Colord &bg,
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::expand_border
+//       Access: Published
+//  Description: Expands the image by the indicated number of pixels
+//               on each edge.  The new pixels are set to the
+//               indicated color.
+//
+//               If any of the values is negative, this actually crops
+//               the image.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+expand_border(int left, int right, int bottom, int top,
+              const Colord &color) {
+  PNMImage new_image(get_x_size() + left + right,
+                     get_y_size() + bottom + top,
+                     get_num_channels(), get_maxval(), get_type());
+  new_image.fill(color[0], color[1], color[2]);
+  if (has_alpha()) {
+    new_image.alpha_fill(color[3]);
+  }
+  new_image.copy_sub_image(*this, left, top);
+
+  take_from(new_image);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::setup_rc
-//       Access: Published
+//       Access: Private
 //  Description: Sets the _default_rc,bc,gc values appropriately
 //               according to the color type of the image, so that
 //               get_bright() will return a meaningful value for both

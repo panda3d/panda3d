@@ -12,23 +12,33 @@
   #define SOURCES \
      config_pnmimage.h \
      pnmbitio.h \
+     pnmBrush.h pnmBrush.I \
      pnmFileType.h pnmFileTypeRegistry.h pnmImage.I  \
-     pnmImage.h pnmImageHeader.I pnmImageHeader.h pnmReader.I  \
+     pnmImage.h pnmImageHeader.I pnmImageHeader.h  \
+     pnmPainter.h pnmPainter.I \
+     pnmReader.I \
      pnmReader.h pnmWriter.I pnmWriter.h pnmimage_base.h \
      ppmcmap.h
 
   #define INCLUDED_SOURCES \
      config_pnmimage.cxx \
+     pnm-image-filter.cxx \
      pnmbitio.cxx \
-     pnm-image-filter.cxx pnmFileType.cxx  \
+     pnmBrush.cxx \
+     pnmFileType.cxx  \
      pnmFileTypeRegistry.cxx pnmImage.cxx pnmImageHeader.cxx  \
+     pnmPainter.cxx \
      pnmReader.cxx pnmWriter.cxx pnmimage_base.cxx \
      ppmcmap.cxx
 
   #define INSTALL_HEADERS \
-    config_pnmimage.h pnmFileType.h pnmFileTypeRegistry.h pnmImage.I \
-    pnmImage.h pnmImageHeader.I pnmImageHeader.h pnmReader.I \
-    pnmReader.h pnmWriter.I pnmWriter.h pnmimage_base.h
+     config_pnmimage.h \
+     pnmBrush.h pnmBrush.I \
+     pnmFileType.h pnmFileTypeRegistry.h pnmImage.I \
+     pnmImage.h pnmImageHeader.I pnmImageHeader.h \
+     pnmPainter.h pnmPainter.I \
+     pnmReader.I \
+     pnmReader.h pnmWriter.I pnmWriter.h pnmimage_base.h
 
   #define IGATESCAN all
 

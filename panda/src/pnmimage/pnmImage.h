@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "pnmImageHeader.h"
+#include "pnmBrush.h"
 
 #include "luse.h"
 
@@ -77,6 +78,7 @@ PUBLISHED:
 
   void copy_from(const PNMImage &copy);
   void copy_header_from(const PNMImageHeader &header);
+  void take_from(PNMImage &orig);
 
   INLINE void fill(double red, double green, double blue);
   INLINE void fill(double gray = 0.0);
@@ -181,16 +183,27 @@ PUBLISHED:
   INLINE xel *operator [] (int y);
   INLINE const xel *operator [] (int y) const;
 
-
   void copy_sub_image(const PNMImage &copy, int xto, int yto,
                       int xfrom = 0, int yfrom = 0,
                       int x_size = -1, int y_size = -1);
   void blend_sub_image(const PNMImage &copy, int xto, int yto,
                        int xfrom = 0, int yfrom = 0,
-                       int x_size = -1, int y_size = -1);
+                       int x_size = -1, int y_size = -1,
+                       double pixel_scale = 1.0);
+  void darken_sub_image(const PNMImage &copy, int xto, int yto,
+                        int xfrom = 0, int yfrom = 0,
+                        int x_size = -1, int y_size = -1,
+                        double pixel_scale = 1.0);
+  void lighten_sub_image(const PNMImage &copy, int xto, int yto,
+                         int xfrom = 0, int yfrom = 0,
+                         int x_size = -1, int y_size = -1,
+                         double pixel_scale = 1.0);
 
   void render_spot(const Colord &fg, const Colord &bg,
                    double min_radius, double max_radius);
+
+  void expand_border(int left, int right, int bottom, int top,
+                     const Colord &color);
 
   // The bodies for the non-inline *_filter() functions can be found
   // in the file pnm-image-filter.cxx.
@@ -209,6 +222,14 @@ private:
 
   INLINE xel *row(int row) const;
   INLINE xelval *alpha_row(int row) const;
+
+  INLINE void setup_sub_image(const PNMImage &copy, int &xto, int &yto,
+                              int &xfrom, int &yfrom, int &x_size, int &y_size,
+                              int &xmin, int &ymin, int &xmax, int &ymax);
+
+  INLINE static void compute_spot_pixel(Colord &c, double d2, 
+                                        double min_radius, double max_radius,
+                                        const Colord &fg, const Colord &bg);
 
   void setup_rc();
 
