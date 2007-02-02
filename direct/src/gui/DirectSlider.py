@@ -114,8 +114,9 @@ class DirectSlider(DirectFrame):
             raise ValueError, 'Invalid value for orientation: %s' % (self['orientation'])
 
     def destroy(self):
-        self.thumb.destroy() # ow!
-        del self.thumb
+        if (hasattr(self, 'thumb')):
+            self.thumb.destroy() # ow!
+            del self.thumb
         DirectFrame.destroy(self)
 
     def commandFunc(self):
