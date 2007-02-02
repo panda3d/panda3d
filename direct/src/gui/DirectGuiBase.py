@@ -1031,7 +1031,15 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             # Destroy children
             for child in self.getChildrenAsList():
                 childGui = self.guiDict.get(child.getName())
-                if childGui: childGui.destroy()
+                if childGui:
+                    childGui.destroy()
+                else:
+                    # RAU since we added the class to the name, try
+                    # it with the original name
+                    parts = child.getName().split('-')
+                    simpleChildGui = self.guiDict.get(parts[-1])
+                    if simpleChildGui:
+                        simpleChildGui.destroy()
                 # messenger.send(DESTROY + child.getName())
             del self.guiDict[self.guiId]
             del self.frameStyle
