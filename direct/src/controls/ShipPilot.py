@@ -30,8 +30,10 @@ class ShipPilot(PhysicsWalker):
         'want-avatar-physics-indicator', 0)
 
     # special methods
-    def __init__(self, gravity = -32.1740, standableGround=0.707,
-            hardLandingForce=16.0):
+    def __init__(self,
+                 gravity = -32.1740,
+                 standableGround=0.707,
+                 hardLandingForce=16.0):
         assert self.debugPrint(
             "PhysicsWalker(gravity=%s, standableGround=%s)"%(
             gravity, standableGround))
