@@ -33,6 +33,10 @@
 #include "nodePathCollection.h"
 #include "indent.h"
 #include "config_particlesystem.h"
+#include "pStatTimer.h"
+
+PStatCollector SpriteParticleRenderer::_sprite_particle_render("App:Particles:Sprite:Render");
+PStatCollector SpriteParticleRenderer::_sprite_particle_process_vertices("App:Particles:Sprite:Render:Process Verts");
 
 ////////////////////////////////////////////////////////////////////
 //    Function : SpriteParticleRenderer::SpriteParticleRenderer
@@ -556,7 +560,8 @@ kill_particle(int) {
 // Description : big child render.  populates the geom node.
 ////////////////////////////////////////////////////////////////////
 void SpriteParticleRenderer::
-render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
+render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) { 
+  PStatTimer t1(_sprite_particle_process_vertices);
   // There is no texture data available, exit.
   if (_anims.empty()) {
     return;
@@ -610,120 +615,122 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   _aabb_max.set(-99999.0f, -99999.0f, -99999.0f);
 
   // run through every filled slot
-  for (i = 0; i < (int)po_vector.size(); i++) {
-    cur_particle = (BaseParticle *) po_vector[i].p();
+  {
+    PStatTimer t2(_sprite_particle_process_vertices);
+    for (i = 0; i < (int)po_vector.size(); i++) {
+      cur_particle = (BaseParticle *) po_vector[i].p();
 
-    if (!cur_particle->get_alive()) {
-      continue;
-    }
+      if (!cur_particle->get_alive()) {
+        continue;
+      }
 
-    LPoint3f position = cur_particle->get_position();
+      LPoint3f position = cur_particle->get_position();
 
-    // x aabb adjust
-    if (position[0] > _aabb_max[0])
-      _aabb_max[0] = position[0];
-    else if (position[0] < _aabb_min[0])
-      _aabb_min[0] = position[0];
+      // x aabb adjust
+      if (position[0] > _aabb_max[0])
+        _aabb_max[0] = position[0];
+      else if (position[0] < _aabb_min[0])
+        _aabb_min[0] = position[0];
 
-    // y aabb adjust
-    if (position[1] > _aabb_max[1])
-      _aabb_max[1] = position[1];
-    else if (position[1] < _aabb_min[1])
-      _aabb_min[1] = position[1];
+      // y aabb adjust
+      if (position[1] > _aabb_max[1])
+        _aabb_max[1] = position[1];
+      else if (position[1] < _aabb_min[1])
+        _aabb_min[1] = position[1];
 
-    // z aabb adjust
-    if (position[2] > _aabb_max[2])
-      _aabb_max[2] = position[2];
-    else if (position[2] < _aabb_min[2])
-      _aabb_min[2] = position[2];
+      // z aabb adjust
+      if (position[2] > _aabb_max[2])
+        _aabb_max[2] = position[2];
+      else if (position[2] < _aabb_min[2])
+        _aabb_min[2] = position[2];
 
 
-    float t = cur_particle->get_parameterized_age();
-    int anim_index = cur_particle->get_index();
+      float t = cur_particle->get_parameterized_age();
+      int anim_index = cur_particle->get_index();
 
-    // If an animation has been removed, we need to reassign
-    // those particles assigned to the removed animation.
-    if(_animation_removed && (anim_index >= anim_count)) {
-      anim_index = int(NORMALIZED_RAND()*anim_count);
-      anim_index = anim_index<anim_count?anim_index:anim_index-1;
-      cur_particle->set_index(anim_index);
-    }
+      // If an animation has been removed, we need to reassign
+      // those particles assigned to the removed animation.
+      if(_animation_removed && (anim_index >= anim_count)) {
+        anim_index = int(NORMALIZED_RAND()*anim_count);
+        anim_index = anim_index<anim_count?anim_index:anim_index-1;
+        cur_particle->set_index(anim_index);
+      }
 
-    // Find the frame
-    if (_animate_frames) {
-      if (_animate_frames_rate == 0.0f) {
-        frame = (int)(t*_anim_size[anim_index]);
+      // Find the frame
+      if (_animate_frames) {
+        if (_animate_frames_rate == 0.0f) {
+          frame = (int)(t*_anim_size[anim_index]);
+        } else {
+          frame = (int)fmod(cur_particle->get_age()*_animate_frames_rate+1,_anim_size[anim_index]);
+        }
       } else {
-        frame = (int)fmod(cur_particle->get_age()*_animate_frames_rate+1,_anim_size[anim_index]);
+        frame = _animate_frames_index;
       }
-    } else {
-      frame = _animate_frames_index;
-    }
 
-    // Quick check make sure our math above didn't result in an invalid frame.
-    frame = (frame < _anim_size[anim_index]) ? frame : (_anim_size[anim_index]-1);
-    ++_ttl_count[anim_index][frame];
+      // Quick check make sure our math above didn't result in an invalid frame.
+      frame = (frame < _anim_size[anim_index]) ? frame : (_anim_size[anim_index]-1);
+      ++_ttl_count[anim_index][frame];
 
-    // Calculate the color
-    // This is where we'll want to give the renderer the new color
-    Colorf c = _color_interpolation_manager->generateColor(t);
+      // Calculate the color
+      // This is where we'll want to give the renderer the new color
+      Colorf c = _color_interpolation_manager->generateColor(t);
 
-    int alphamode=get_alpha_mode();
-    if (alphamode != PR_ALPHA_NONE) {
-      if (alphamode == PR_ALPHA_OUT)
-        c[3] *= (1.0f - t) * get_user_alpha();
-      else if (alphamode == PR_ALPHA_IN)
-        c[3] *= t * get_user_alpha();
-      else if (alphamode == PR_ALPHA_IN_OUT) {
-        c[3] *= 2.0f * min(t, 1.0f - t) * get_user_alpha();
+      int alphamode=get_alpha_mode();
+      if (alphamode != PR_ALPHA_NONE) {
+        if (alphamode == PR_ALPHA_OUT)
+          c[3] *= (1.0f - t) * get_user_alpha();
+        else if (alphamode == PR_ALPHA_IN)
+          c[3] *= t * get_user_alpha();
+        else if (alphamode == PR_ALPHA_IN_OUT) {
+          c[3] *= 2.0f * min(t, 1.0f - t) * get_user_alpha();
+        }
+        else {
+          assert(alphamode == PR_ALPHA_USER);
+          c[3] *= get_user_alpha();
+        }
       }
-      else {
-        assert(alphamode == PR_ALPHA_USER);
-        c[3] *= get_user_alpha();
-      }
-    }
+          
+      // Send the data on its way...
+      _sprite_writer[anim_index][frame].vertex.add_data3f(position);
+      _sprite_writer[anim_index][frame].color.add_data4f(c);
     
-    // Send the data on its way...
-    _sprite_writer[anim_index][frame].vertex.add_data3f(position);
-    _sprite_writer[anim_index][frame].color.add_data4f(c);
+      float current_x_scale = _initial_x_scale;
+      float current_y_scale = _initial_y_scale;
     
-    float current_x_scale = _initial_x_scale;
-    float current_y_scale = _initial_y_scale;
-    
-    if (_animate_x_ratio || _animate_y_ratio) {
-      if (_blend_method == PP_BLEND_CUBIC) {
-        t = CUBIC_T(t);
-      }
+      if (_animate_x_ratio || _animate_y_ratio) {
+        if (_blend_method == PP_BLEND_CUBIC) {
+          t = CUBIC_T(t);
+        }
       
-      if (_animate_x_ratio) {
-        current_x_scale = (_initial_x_scale +
-                           (t * (_final_x_scale - _initial_x_scale)));
+        if (_animate_x_ratio) {
+          current_x_scale = (_initial_x_scale +
+                             (t * (_final_x_scale - _initial_x_scale)));
+        }
+        if (_animate_y_ratio) {
+          current_y_scale = (_initial_y_scale +
+                             (t * (_final_y_scale - _initial_y_scale)));
+        }
       }
-      if (_animate_y_ratio) {
-        current_y_scale = (_initial_y_scale +
-                           (t * (_final_y_scale - _initial_y_scale)));
-      }
-    }
-    
-    if (_sprite_writer[anim_index][frame].size.has_column()) {
-      _sprite_writer[anim_index][frame].size.add_data1f(current_y_scale * _height);
-    }
-    if (_sprite_writer[anim_index][frame].aspect_ratio.has_column()) {
-      _sprite_writer[anim_index][frame].aspect_ratio.add_data1f(_aspect_ratio * current_x_scale / current_y_scale);
-    }
-    if (_animate_theta) {
-      _sprite_writer[anim_index][frame].rotate.add_data1f(cur_particle->get_theta());
-    } else if (_sprite_writer[anim_index][frame].rotate.has_column()) {
-      _sprite_writer[anim_index][frame].rotate.add_data1f(_theta);
-    }
 
-    // maybe jump out early?
-    remaining_particles--;
-    if (remaining_particles == 0) {
-      break;
+      if (_sprite_writer[anim_index][frame].size.has_column()) {
+        _sprite_writer[anim_index][frame].size.add_data1f(current_y_scale * _height);
+      }
+      if (_sprite_writer[anim_index][frame].aspect_ratio.has_column()) {
+        _sprite_writer[anim_index][frame].aspect_ratio.add_data1f(_aspect_ratio * current_x_scale / current_y_scale);
+      }
+      if (_animate_theta) {
+        _sprite_writer[anim_index][frame].rotate.add_data1f(cur_particle->get_theta());
+      } else if (_sprite_writer[anim_index][frame].rotate.has_column()) {
+        _sprite_writer[anim_index][frame].rotate.add_data1f(_theta);
+      }
+
+      // maybe jump out early?
+      remaining_particles--;
+      if (remaining_particles == 0) {
+        break;
+      }
     }
   }
-
   int n = 0;
   GeomNode *render_node = get_render_node();
   

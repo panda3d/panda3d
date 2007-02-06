@@ -33,6 +33,7 @@
 #include "textureCollection.h"
 #include "nodePathCollection.h"
 #include "vector_int.h"
+#include "pStatCollector.h"
 
 class NodePath;
 
@@ -267,6 +268,9 @@ private:
   vector_int _anim_size;   // Holds the number of frames in each animation.
   pvector<int*> _ttl_count;  // _ttl_count[i][j] holds the number of particles attached to animation 'i' at frame 'j'.
   vector_int _birth_list;  // Holds the list of particles that need a new random animation to start on.
+
+  static PStatCollector _sprite_particle_render;
+  static PStatCollector _sprite_particle_process_vertices;
 };
 
 #include "spriteParticleRenderer.I"

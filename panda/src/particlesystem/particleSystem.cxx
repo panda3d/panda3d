@@ -33,8 +33,11 @@
 #include "pointParticleRenderer.h"
 #include "pointParticleFactory.h"
 #include "sphereSurfaceEmitter.h"
+#include "pStatTimer.h"
 
 TypeHandle ParticleSystem::_type_handle;
+
+PStatCollector ParticleSystem::_update_collector("App:Particles:Update");
 
 ////////////////////////////////////////////////////////////////////
 //    Function : ParticleSystem
@@ -467,6 +470,8 @@ resize_pool(int size) {
 #endif
 void ParticleSystem::
 update(float dt) {
+  PStatTimer t1(_update_collector);
+
   int ttl_updates_left = _living_particles;
   int current_index = 0, index_counter = 0;
   BaseParticle *bp;

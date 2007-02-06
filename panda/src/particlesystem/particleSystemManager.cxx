@@ -22,8 +22,11 @@
 #include "pandabase.h"
 #include "physicsManager.h"
 #include "clockObject.h"
+#include "pStatTimer.h"
 
 #include <algorithm>
+
+PStatCollector ParticleSystemManager::_do_particles_collector("App:Particles:Do Particles");
 
 ////////////////////////////////////////////////////////////////////
 //    Function : ParticleSystemManager
@@ -74,6 +77,7 @@ remove_particlesystem(ParticleSystem *ps) {
 void ParticleSystemManager::
 do_particles(float dt) {
   //  cout << "ParticlesystemManager::doparticles entering." << endl;
+  PStatTimer t1(_do_particles_collector);
 
   plist< PT(ParticleSystem) >::iterator cur;
 

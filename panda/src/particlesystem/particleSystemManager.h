@@ -21,8 +21,8 @@
 
 #include "pandabase.h"
 #include "plist.h"
-
 #include "particleSystem.h"
+#include "pStatCollector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ParticleSystemManager
@@ -55,6 +55,8 @@ private:
 
   int _nth_frame;
   int _cur_frame;
+
+  static PStatCollector _do_particles_collector;
 };
 
 #include "particleSystemManager.I"

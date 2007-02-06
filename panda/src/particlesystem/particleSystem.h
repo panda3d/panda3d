@@ -30,9 +30,8 @@
 #include "physical.h"
 #include "pandaNode.h"
 #include "referenceCount.h"
-
 #include "pdeque.h"
-
+#include "pStatTimer.h"
 #include "baseParticle.h"
 #include "baseParticleRenderer.h"
 #include "baseParticleEmitter.h"
@@ -186,6 +185,8 @@ private:
   static TypeHandle _type_handle;
 
   friend class ParticleSystemManager; // particleSystemManager.h
+
+  static PStatCollector _update_collector;
 };
 
 #include "particleSystem.I"
