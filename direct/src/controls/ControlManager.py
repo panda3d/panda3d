@@ -109,7 +109,6 @@ class ControlManager:
             print "Removing controls:", name
             oldControls.disableAvatarControls()
             oldControls.setCollisionsActive(0)
-            oldControls.delete()
 
     if __debug__:
         def lockControls(self):
@@ -158,7 +157,6 @@ class ControlManager:
                 forwardSpeed, jumpForce, reverseSpeed, rotateSpeed)
 
     def delete(self):
-        import pdb;pdb.set_trace()
         assert self.notify.debugCall(id(self))
         self.disable()
         for controls in self.controls.keys():

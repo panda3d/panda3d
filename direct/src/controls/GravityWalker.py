@@ -65,13 +65,6 @@ class GravityWalker(DirectObject.DirectObject):
         self.isAirborne = 0
         self.highMark = 0
 
-    def delete(self):
-        assert self.notify.debugStateCall(self)
-        if self.doLaterTask is not None:
-            self.doLaterTask.remove()
-            del self.doLaterTask
-        #DirectObject.DirectObject.delete(self)
-
     """
     def spawnTest(self):
         assert self.notify.debugStateCall(self)
