@@ -111,8 +111,6 @@ PUBLISHED:
   INLINE float get_smooth_rotational_velocity() const;
   INLINE const LVecBase3f &get_forward_axis() const;
 
-  // These static methods control the global properties of all
-  // SmoothMovers.
   enum SmoothMode {
     SM_off,
     SM_on,
@@ -127,26 +125,26 @@ PUBLISHED:
     // well.
   };
 
-  INLINE static void set_smooth_mode(SmoothMode mode);
-  INLINE static SmoothMode get_smooth_mode();
+  INLINE void set_smooth_mode(SmoothMode mode);
+  INLINE SmoothMode get_smooth_mode();
 
-  INLINE static void set_prediction_mode(PredictionMode mode);
-  INLINE static PredictionMode get_prediction_mode();
+  INLINE void set_prediction_mode(PredictionMode mode);
+  INLINE PredictionMode get_prediction_mode();
 
-  INLINE static void set_delay(double delay); 
-  INLINE static double get_delay(); 
+  INLINE void set_delay(double delay); 
+  INLINE double get_delay(); 
 
-  INLINE static void set_accept_clock_skew(bool flag); 
-  INLINE static bool get_accept_clock_skew(); 
+  INLINE void set_accept_clock_skew(bool flag); 
+  INLINE bool get_accept_clock_skew(); 
 
-  INLINE static void set_max_position_age(double age); 
-  INLINE static double get_max_position_age(); 
+  INLINE void set_max_position_age(double age); 
+  INLINE double get_max_position_age(); 
 
-  INLINE static void set_expected_broadcast_period(double period); 
-  INLINE static double get_expected_broadcast_period(); 
+  INLINE void set_expected_broadcast_period(double period); 
+  INLINE double get_expected_broadcast_period(); 
 
-  INLINE static void set_reset_velocity_age(double age); 
-  INLINE static double get_reset_velocity_age(); 
+  INLINE void set_reset_velocity_age(double age); 
+  INLINE double get_reset_velocity_age(); 
 
   void output(ostream &out) const;
   void write(ostream &out) const;
@@ -208,13 +206,13 @@ private:
   int _net_timestamp_delay;
   double _last_heard_from;
 
-  static SmoothMode _smooth_mode;
-  static PredictionMode _prediction_mode;
-  static double _delay;
-  static bool _accept_clock_skew;
-  static double _max_position_age;
-  static double _expected_broadcast_period;
-  static double _reset_velocity_age;
+  SmoothMode _smooth_mode;
+  PredictionMode _prediction_mode;
+  double _delay;
+  bool _accept_clock_skew;
+  double _max_position_age;
+  double _expected_broadcast_period;
+  double _reset_velocity_age;
 };
 
 #include "smoothMover.I"

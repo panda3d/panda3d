@@ -30,46 +30,25 @@ Lag = base.config.GetDouble("smooth-lag", 0.2)
 PredictionLag = base.config.GetDouble("smooth-prediction-lag", 0.0)
 
 
+GlobalSmoothing = 0
+GlobalPrediction = 0
+def globalActivateSmoothing(smoothing, prediction):
+    """ Globally activates or deactivates smoothing and prediction on
+    all DistributedSmoothNodes currently in existence, or yet to be
+    generated. """
 
-def activateSmoothing(smoothing, prediction):
-    """
-    Enables or disables the smoothing of other avatars' motion.
-    This is a global flag that controls the behavior of all
-    SmoothMovers in the world.  If smoothing is off, no kind of
-    smoothing will be performed, regardless of the setting of
-    prediction.
-    
-    This is not necessarily predictive smoothing; if predictive
-    smoothing is off, avatars will be lagged by a certain factor
-    to achieve smooth motion.  Otherwise, if predictive smoothing
-    is on, avatars will be drawn as nearly as possible in their
-    current position, by extrapolating from old position reports.
+    global GlobalSmoothing, GlobalPrediction
+    GlobalSmoothing = smoothing
+    GlobalPrediction = prediction
 
-    This assumes you have a client repository that knows its
-    localAvatarDoId -- stored in self.cr.localAvatarDoId
-    """
+    for obj in base.cr.getAllOfType(DistributedSmoothNode):
+        obj.activateSmoothing(smoothing, prediction)
 
-    if smoothing and EnableSmoothing:
-        if prediction and EnablePrediction:
-            # Prediction and smoothing.
-            SmoothMover.setSmoothMode(SmoothMover.SMOn)
-            SmoothMover.setPredictionMode(SmoothMover.PMOn)
-            SmoothMover.setDelay(PredictionLag)
-        else:
-            # Smoothing, but no prediction.
-            SmoothMover.setSmoothMode(SmoothMover.SMOn)
-            SmoothMover.setPredictionMode(SmoothMover.PMOff)
-            SmoothMover.setDelay(Lag)
-            # Set these other variables relative to the lag factor
-            SmoothMover.setExpectedBroadcastPeriod(Lag)
-            SmoothMover.setMaxPositionAge(Lag * 1.25)
-            SmoothMover.setResetVelocityAge(Lag * 1.5)
-    else:
-        # No smoothing, no prediction.
-        SmoothMover.setSmoothMode(SmoothMover.SMOff)
-        SmoothMover.setPredictionMode(SmoothMover.PMOff)
-        SmoothMover.setDelay(0.0)
-        
+# For historical reasons, we temporarily define
+# DistributedSmoothNode.activateSmoothing() to be the global function.
+# We'll remove this soon, so it won't get confused with the instance
+# method, below.
+activateSmoothing = globalActivateSmoothing
 
 
 class DistributedSmoothNode(DistributedNode.DistributedNode,
@@ -96,6 +75,10 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
     def delete(self):
         DistributedSmoothNodeBase.DistributedSmoothNodeBase.delete(self)
         DistributedNode.DistributedNode.delete(self)
+
+    def generate(self):
+        DistributedNode.DistributedNode.generate(self)
+        self.activateSmoothing(GlobalSmoothing, GlobalPrediction)
 
     ### Methods to handle computing and updating of the smoothed
     ### position.
@@ -378,3 +361,40 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
                 self.cr.timeManager.synchronize("suggested by %d" % (avId))
 
         return gotSync
+
+    def activateSmoothing(self, smoothing, prediction):
+        """
+        Enables or disables the smoothing of other avatars' motion.
+        This used to be a global flag, but now it is specific to each
+        avatar instance.  However, see globalActivateSmoothing() in
+        this module.
+
+        If smoothing is off, no kind of smoothing will be performed,
+        regardless of the setting of prediction.
+
+        This is not necessarily predictive smoothing; if predictive
+        smoothing is off, avatars will be lagged by a certain factor
+        to achieve smooth motion.  Otherwise, if predictive smoothing
+        is on, avatars will be drawn as nearly as possible in their
+        current position, by extrapolating from old position reports.
+
+        This assumes you have a client repository that knows its
+        localAvatarDoId -- stored in self.cr.localAvatarDoId
+        """
+
+        if smoothing and EnableSmoothing:
+            if prediction and EnablePrediction:
+                # Prediction and smoothing.
+                self.smoother.setSmoothMode(SmoothMover.SMOn)
+                self.smoother.setPredictionMode(SmoothMover.PMOn)
+                self.smoother.setDelay(PredictionLag)
+            else:
+                # Smoothing, but no prediction.
+                self.smoother.setSmoothMode(SmoothMover.SMOn)
+                self.smoother.setPredictionMode(SmoothMover.PMOff)
+                self.smoother.setDelay(Lag)
+        else:
+            # No smoothing, no prediction.
+            self.smoother.setSmoothMode(SmoothMover.SMOff)
+            self.smoother.setPredictionMode(SmoothMover.PMOff)
+            self.smoother.setDelay(0.0)

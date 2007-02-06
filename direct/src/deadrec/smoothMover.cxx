@@ -20,14 +20,6 @@
 #include "pnotify.h"
 #include "compose_matrix.h"
 
-SmoothMover::SmoothMode SmoothMover::_smooth_mode = SmoothMover::SM_off;
-SmoothMover::PredictionMode SmoothMover::_prediction_mode = SmoothMover::PM_off;
-double SmoothMover::_delay = 0.2;
-bool SmoothMover::_accept_clock_skew = true;
-double SmoothMover::_max_position_age = 0.25;
-double SmoothMover::_expected_broadcast_period = 0.2;
-double SmoothMover::_reset_velocity_age = 0.3;
-
 ////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::Constructor
 //       Access: Published
@@ -63,6 +55,14 @@ SmoothMover() {
   _timestamp_delays.push_back(0);
 
   _last_heard_from = 0.0;
+
+  _smooth_mode = SM_off;
+  _prediction_mode = PM_off;
+  _delay = 0.2;
+  _accept_clock_skew = true;
+  _max_position_age = 0.25;
+  _expected_broadcast_period = 0.2;
+  _reset_velocity_age = 0.3;
 }
 
 ////////////////////////////////////////////////////////////////////
