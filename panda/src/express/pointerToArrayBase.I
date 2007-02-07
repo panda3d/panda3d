@@ -18,23 +18,23 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::Constructor
+//     Function: ReferenceCountedVector::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE PointerToArrayElement<Element>::
-PointerToArrayElement() {
+INLINE ReferenceCountedVector<Element>::
+ReferenceCountedVector() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::Copy Constructor
+//     Function: ReferenceCountedVector::Copy Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE PointerToArrayElement<Element>::
-PointerToArrayElement(const PointerToArrayElement<Element> &copy) :
+INLINE ReferenceCountedVector<Element>::
+ReferenceCountedVector(const ReferenceCountedVector<Element> &copy) :
   NodeReferenceCount(copy),
   pvector<Element>(copy)
 {
@@ -44,24 +44,24 @@ PointerToArrayElement(const PointerToArrayElement<Element> &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::Destructor
+//     Function: ReferenceCountedVector::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE PointerToArrayElement<Element>::
-~PointerToArrayElement() {
+INLINE ReferenceCountedVector<Element>::
+~ReferenceCountedVector() {
   adjust_size(size(), 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::get_col
+//     Function: ReferenceCountedVector::get_col
 //       Access: Public
 //  Description: Returns the pointer to the PStatCollector object that
 //               tracks the total allocated size of this buffer.
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE PStatCollectorForwardBase *PointerToArrayElement<Element>::
+INLINE PStatCollectorForwardBase *ReferenceCountedVector<Element>::
 get_col() const {
 #ifdef DO_PSTATS
   return _col;
@@ -71,13 +71,13 @@ get_col() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::set_col
+//     Function: ReferenceCountedVector::set_col
 //       Access: Public
 //  Description: Changes the pointer to the PStatCollector object that
 //               tracks the total allocated size of this buffer.
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE void PointerToArrayElement<Element>::
+INLINE void ReferenceCountedVector<Element>::
 set_col(PStatCollectorForwardBase *col) {
 #ifdef DO_PSTATS
   if (_col != col) {
@@ -89,97 +89,97 @@ set_col(PStatCollectorForwardBase *col) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::size
+//     Function: ReferenceCountedVector::size
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE TYPENAME PointerToArrayElement<Element>::size_type PointerToArrayElement<Element>::
+INLINE TYPENAME ReferenceCountedVector<Element>::size_type ReferenceCountedVector<Element>::
 size() const {
   return pvector<Element>::size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::insert
+//     Function: ReferenceCountedVector::insert
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE TYPENAME PointerToArrayElement<Element>::iterator PointerToArrayElement<Element>::
+INLINE TYPENAME ReferenceCountedVector<Element>::iterator ReferenceCountedVector<Element>::
 insert(iterator position, const Element &x) {
   adjust_size(0, 1);
   return pvector<Element>::insert(position, x);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::insert
+//     Function: ReferenceCountedVector::insert
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE void PointerToArrayElement<Element>::
+INLINE void ReferenceCountedVector<Element>::
 insert(iterator position, size_type n, const Element &x) {
   adjust_size(0, n);
   pvector<Element>::insert(position, n, x);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::erase
+//     Function: ReferenceCountedVector::erase
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE void PointerToArrayElement<Element>::
+INLINE void ReferenceCountedVector<Element>::
 erase(iterator position) {
   adjust_size(1, 0);
   pvector<Element>::erase(position);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::erase
+//     Function: ReferenceCountedVector::erase
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE void PointerToArrayElement<Element>::
+INLINE void ReferenceCountedVector<Element>::
 erase(iterator first, iterator last) {
   adjust_size(last - first, 0);
   pvector<Element>::erase(first, last);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::pop_back
+//     Function: ReferenceCountedVector::pop_back
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE void PointerToArrayElement<Element>::
+INLINE void ReferenceCountedVector<Element>::
 pop_back() {
   adjust_size(1, 0);
   pvector<Element>::pop_back();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::clear
+//     Function: ReferenceCountedVector::clear
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE void PointerToArrayElement<Element>::
+INLINE void ReferenceCountedVector<Element>::
 clear() {
   adjust_size(size(), 0);
   pvector<Element>::clear();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArrayElement::adjust_size
+//     Function: ReferenceCountedVector::adjust_size
 //       Access: Private
 //  Description: This internal function is used to update the
 //               connected PStatCollector (if any) with the change in
 //               size.
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE void PointerToArrayElement<Element>::
+INLINE void ReferenceCountedVector<Element>::
 adjust_size(size_t orig_size, size_t new_size) {
 #ifdef DO_PSTATS
   if (_col != (PStatCollectorForwardBase *)NULL) {
@@ -195,8 +195,8 @@ adjust_size(size_t orig_size, size_t new_size) {
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArrayBase<Element>::
-PointerToArrayBase(PointerToArrayElement<Element> *ptr) :
-  PointerToBase<PointerToArrayElement<Element> >(ptr)
+PointerToArrayBase(ReferenceCountedVector<Element> *ptr) :
+  PointerToBase<ReferenceCountedVector<Element> >(ptr)
 {
 }
 
@@ -208,7 +208,7 @@ PointerToArrayBase(PointerToArrayElement<Element> *ptr) :
 template<class Element>
 INLINE PointerToArrayBase<Element>::
 PointerToArrayBase(const PointerToArrayBase<Element> &copy) :
-  PointerToBase<PointerToArrayElement<Element> >(copy)
+  PointerToBase<ReferenceCountedVector<Element> >(copy)
 {
 }
 

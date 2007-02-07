@@ -27,7 +27,7 @@
 #include "memoryBase.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PointerToArrayElement
+//       Class : ReferenceCountedVector
 // Description : This defines the object that is actually stored and
 //               reference-counted internally by a PointerToArray.  It
 //               is basically a NodeReferenceCount-capable STL vector.
@@ -44,15 +44,15 @@
 //               may not use it.
 ////////////////////////////////////////////////////////////////////
 template <class Element>
-class PointerToArrayElement : public NodeReferenceCount, public pvector<Element> {
+class ReferenceCountedVector : public NodeReferenceCount, public pvector<Element> {
 public:
   typedef TYPENAME pvector<Element>::iterator iterator;
   typedef TYPENAME pvector<Element>::size_type size_type;
 
-  INLINE PointerToArrayElement();
-  INLINE PointerToArrayElement(const PointerToArrayElement<Element> &copy);
-  INLINE ~PointerToArrayElement();
-  ALLOC_DELETED_CHAIN(PointerToArrayElement<Element>);
+  INLINE ReferenceCountedVector();
+  INLINE ReferenceCountedVector(const ReferenceCountedVector<Element> &copy);
+  INLINE ~ReferenceCountedVector();
+  ALLOC_DELETED_CHAIN(ReferenceCountedVector<Element>);
 
   INLINE PStatCollectorForwardBase *get_col() const;
   INLINE void set_col(PStatCollectorForwardBase *col);
@@ -83,16 +83,16 @@ private:
 //               use either derived class instead.
 //
 //               This extends PointerToBase to be a pointer to a
-//               PointerToArrayElement, above, which is essentially a
+//               ReferenceCountedVector, above, which is essentially a
 //               reference-counted STL vector.
 ////////////////////////////////////////////////////////////////////
 template <class Element>
-class PointerToArrayBase : public PointerToBase<PointerToArrayElement<Element> > {
+class PointerToArrayBase : public PointerToBase<ReferenceCountedVector<Element> > {
 public:
-  typedef TYPENAME PointerToBase<PointerToArrayElement<Element> >::To To;
+  typedef TYPENAME PointerToBase<ReferenceCountedVector<Element> >::To To;
 
 protected:
-  INLINE PointerToArrayBase(PointerToArrayElement<Element> *ptr);
+  INLINE PointerToArrayBase(ReferenceCountedVector<Element> *ptr);
   INLINE PointerToArrayBase(const PointerToArrayBase<Element> &copy);
 
 PUBLISHED:

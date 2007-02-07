@@ -193,7 +193,7 @@ public:
 
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE PointerToArray<Element> &
-  operator = (PointerToArrayElement<Element> *ptr);
+  operator = (ReferenceCountedVector<Element> *ptr);
   INLINE PointerToArray<Element> &
   operator = (const PointerToArray<Element> &copy);
   INLINE void clear();
@@ -281,7 +281,7 @@ public:
 
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE ConstPointerToArray<Element> &
-  operator = (PointerToArrayElement<Element> *ptr);
+  operator = (ReferenceCountedVector<Element> *ptr);
   INLINE ConstPointerToArray<Element> &
   operator = (const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray<Element> &
