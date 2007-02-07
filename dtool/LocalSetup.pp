@@ -101,10 +101,15 @@
 #else
 #print - Did not find OpenGL
 #endif
-#if $[HAVE_DX]
-#print + DirectX
+#if $[HAVE_DX8]
+#print + DirectX8
 #else
-#print - Did not find DirectX
+#print - Did not find DirectX8
+#endif
+#if $[HAVE_DX9]
+#print + DirectX9
+#else
+#print - Did not find DirectX9
 #endif
 #if $[HAVE_OPENCV]
 #print + OpenCV
@@ -245,7 +250,10 @@ $[cdefine HAVE_GLX]
 $[cdefine HAVE_WGL]
 
 /* Define if we have DirectX installed and want to build for DX.  */
-$[cdefine HAVE_DX]
+$[cdefine HAVE_DX8]
+
+/* Define if we have DirectX installed and want to build for DX.  */
+$[cdefine HAVE_DX9]
 
 /* Define if we have Chromium installed and want to use it.  */
 $[cdefine HAVE_CHROMIUM]

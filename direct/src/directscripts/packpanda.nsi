@@ -87,7 +87,7 @@ Section "${SMDIRECTORY}" SecCore
         SetOutPath $INSTDIR
         File "${PANDA}\LICENSE"
         SetOutPath $INSTDIR\bin
-        File /r /x CVS /x *.pyc /x *.map /x *.pdb /x *.exe "${PANDA}\bin\*"
+        File /r /x CVS /x *.pyc /x *.map /x *.pdb /x *.exe /x *.manifest "${PANDA}\bin\*"
         SetOutPath $INSTDIR\etc
         File /r "${PANDA}\etc\*"
         SetOutPath $INSTDIR\direct\src\directscripts

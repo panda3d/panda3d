@@ -622,11 +622,17 @@
 // Should we try to build the SGI-specific glxdisplay?
 #define HAVE_SGIGL $[eq $[PLATFORM],Irix]
 
-// Is DirectX available, and should we try to build with it?
-#define DX_IPATH
-#define DX_LPATH
-#define DX_LIBS d3d8.lib d3dx8.lib dxerr8.lib
-#defer HAVE_DX $[libtest $[DX_LPATH],$[DX_LIBS]]
+// Is DirectX8 available, and should we try to build with it?
+#define DX8_IPATH
+#define DX8_LPATH
+#define DX8_LIBS d3d8.lib d3dx8.lib dxerr8.lib
+#defer HAVE_DX8 $[libtest $[DX8_LPATH],$[DX8_LIBS]]
+
+// Is DirectX9 available, and should we try to build with it?
+#define DX9_IPATH
+#define DX9_LPATH
+#define DX9_LIBS d3d8.lib d3dx8.lib dxerr8.lib
+#defer HAVE_DX9 $[libtest $[DX9_LPATH],$[DX9_LIBS]]
 
 // Is OpenCV installed, and where?
 #define OPENCV_IPATH /usr/local/include/opencv

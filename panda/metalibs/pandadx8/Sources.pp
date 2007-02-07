@@ -1,4 +1,4 @@
-#define BUILD_DIRECTORY $[HAVE_DX]
+#define BUILD_DIRECTORY $[HAVE_DX8]
 
 // DIR_TYPE "metalib" indicates we are building a shared library that
 // consists mostly of references to other shared libraries.  Under

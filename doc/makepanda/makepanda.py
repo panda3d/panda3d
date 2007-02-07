@@ -35,7 +35,8 @@ VERSION=0
 VERBOSE=1
 COMPRESSOR="zlib"
 PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMODEX","NVIDIACG","NSPR",
-          "OPENSSL","FREETYPE","FFTW","MILES","MAYA6","MAYA65","MAYA7","MAX6","MAX7","MAX8",
+          "OPENSSL","FREETYPE","FFTW","MILES",
+          "MAYA6","MAYA65","MAYA7","MAYA8","MAX6","MAX7","MAX8",
           "BISON","FLEX","FFMPEG","PANDATOOL","PANDAAPP","DX8","DX9"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
@@ -52,7 +53,7 @@ BUILTFROMCACHE = {}
 CXXINCLUDECACHE = {}
 THREADCOUNT=0
 DXVERSIONS=["8","9"]
-MAYAVERSIONS=["6","65","7"]
+MAYAVERSIONS=["6","65","7","8"]
 MAXVERSIONS=["6","7","8"]
 ICACHEPATH="built/tmp/makepanda-dcache"
 INTERRUPT=0
@@ -482,7 +483,8 @@ if sys.platform == "win32":
 
 MAYAVERSIONINFO=[("MAYA6",  "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath"),
                  ("MAYA65", "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath"),
-                 ("MAYA7",  "SOFTWARE\\Alias|Wavefront\\Maya\\7.0\\Setup\\InstallPath")
+                 ("MAYA7",  "SOFTWARE\\Alias|Wavefront\\Maya\\7.0\\Setup\\InstallPath"),
+                 ("MAYA8",  "SOFTWARE\\Alias\\Maya\\8.0\\Setup\\InstallPath")
 ]
 
 for (ver,key) in MAYAVERSIONINFO:
@@ -1303,7 +1305,7 @@ def CompileLinkMSVC(wdll, wlib, wobj, opts, dll, ldef):
     if (THIRDPARTYLIBS=="thirdparty/win-libs-vc8/"): cmd = cmd + " /nod:libc /nod:libcmtd"
     if (wdll[-4:]!=".exe"): cmd = cmd + " /DLL"
     optlevel = getoptlevel(opts,OPTIMIZE)
-    if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:LINES /MAPINFO:EXPORTS"
+    if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:EXPORTS"
     if (optlevel==2): cmd = cmd + " /MAP:NUL "
     if (optlevel==3): cmd = cmd + " /MAP:NUL "
     if (optlevel==4): cmd = cmd + " /MAP:NUL /LTCG "
@@ -1331,10 +1333,10 @@ def CompileLinkMSVC(wdll, wlib, wobj, opts, dll, ldef):
     if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
     if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
     if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
-    if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'zlib/lib/libpandazlib1.lib'
-    if (PkgSelected(opts,"PNG")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'png/lib/libpandapng13.lib'
+    if (PkgSelected(opts,"PNG")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'png/lib/libpandapng.lib'
     if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'jpeg/lib/libpandajpeg.lib'
     if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'tiff/lib/libpandatiff.lib'
+    if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'zlib/lib/libpandazlib1.lib'
     if (PkgSelected(opts,"VRPN")):
         cmd = cmd + ' ' + THIRDPARTYLIBS + 'vrpn/lib/vrpn.lib'
         cmd = cmd + ' ' + THIRDPARTYLIBS + 'vrpn/lib/quat.lib'
@@ -1378,6 +1380,10 @@ def CompileLinkMSVC(wdll, wlib, wobj, opts, dll, ldef):
             cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/maxutil.lib"'
             cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/paramblk2.lib"'
     oscmd(cmd)
+    mtcmd = 'mt -manifest ' + wdll + '.manifest -outputresource:' + wdll
+    if (wdll[-4:]!=".exe"): mtcmd = mtcmd + ';2'
+    else:                   mtcmd = mtcmd + ';1'
+    oscmd(mtcmd)
 
 def CompileLinkLINUX(wdll, obj, wobj, opts, dll, ldef):
     if (dll[-4:]==".exe"): cmd = 'g++ -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
@@ -1574,11 +1580,11 @@ if (OMIT.count("PYTHON")==0):
 
 ##########################################################################################
 #
-# Generate dtool_config.h and dtool_have_xxx.dat
+# Generate dtool_config.h, prc_parameters.h, and dtool_have_xxx.dat
 #
 ##########################################################################################
 
-DTOOLDEFAULTS=[
+DEFAULT_SETTINGS=[
     #_Variable_________________________Windows___________________Unix__________
     ("HAVE_PYTHON",                    '1',                      '1'),
     ("PYTHON_FRAMEWORK",               'UNDEF',                  'UNDEF'),
@@ -1594,7 +1600,8 @@ DTOOLDEFAULTS=[
     ("HAVE_SGIGL",                     'UNDEF',                  'UNDEF'),
     ("HAVE_GLX",                       'UNDEF',                  '1'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
-    ("HAVE_DX",                        '1',                      'UNDEF'),
+    ("HAVE_DX8",                       'UNDEF',                  'UNDEF'),
+    ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
     ("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
     ("HAVE_THREADS",                   'UNDEF',                  'UNDEF'),
     ("HAVE_AUDIO",                     '1',                      '1'),
@@ -1608,15 +1615,6 @@ DTOOLDEFAULTS=[
     ("LINK_IN_GL",                     'UNDEF',                  'UNDEF'),
     ("LINK_IN_PHYSICS",                'UNDEF',                  'UNDEF'),
     ("DEFAULT_PATHSEP",                '";"',                    '":"'),
-    ("DEFAULT_PRC_DIR",                '"<auto>etc"',            '"<auto>etc"'),
-    ("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
-    ("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
-    ("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),
-    ("PRC_EXECUTABLE_PATTERNS",        '""',                     '""'),
-    ("PRC_EXECUTABLE_ARGS_ENVVAR",     '"PANDA_PRC_XARGS"',      '"PANDA_PRC_XARGS"'),
-    ("PRC_PUBLIC_KEYS_FILENAME",       '""',                     '""'),
-    ("PRC_RESPECT_TRUST_LEVEL",        'UNDEF',                  'UNDEF'),
-    ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
     ("WORDS_BIGENDIAN",                'UNDEF',                  'UNDEF'),
     ("HAVE_NAMESPACE",                 '1',                      '1'),
     ("HAVE_OPEN_MASK",                 'UNDEF',                  'UNDEF'),
@@ -1682,60 +1680,85 @@ DTOOLDEFAULTS=[
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
     ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),
     ("HAVE_FFMPEG",                    'UNDEF',                  'UNDEF'),
-    ]
+    ("DEFAULT_PRC_DIR",                '"<auto>etc"',            '"<auto>etc"'),
+    ("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
+    ("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
+    ("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),
+    ("PRC_ENCRYPTED_PATTERNS",         '"*.prc.pe"',             '"*.prc.pe"'),
+    ("PRC_ENCRYPTION_KEY",             '""',                     '""'),
+    ("PRC_EXECUTABLE_PATTERNS",        '""',                     '""'),
+    ("PRC_EXECUTABLE_ARGS_ENVVAR",     '"PANDA_PRC_XARGS"',      '"PANDA_PRC_XARGS"'),
+    ("PRC_PUBLIC_KEYS_FILENAME",       '""',                     '""'),
+    ("PRC_RESPECT_TRUST_LEVEL",        'UNDEF',                  'UNDEF'),
+    ("PRC_DCONFIG_TRUST_LEVEL",        '0',                      '0'),
+    ("PRC_INC_TRUST_LEVEL",            '0',                      '0'),
+    ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
+]
 
-def CalculateDtoolConfig():
-    dtoolconfig={}
+def WriteConfigSettings():
+    settings={}
     if (sys.platform == "win32"):
-        for key,win,unix in DTOOLDEFAULTS:
-            dtoolconfig[key] = win
+        for key,win,unix in DEFAULT_SETTINGS:
+            settings[key] = win
     else:
-        for key,win,unix in DTOOLDEFAULTS:
-            dtoolconfig[key] = unix
+        for key,win,unix in DEFAULT_SETTINGS:
+            settings[key] = unix
     
     for x in PACKAGES:
         if (OMIT.count(x)==0):
-            if (dtoolconfig.has_key("HAVE_"+x)):
-                dtoolconfig["HAVE_"+x] = '1'
+            if (settings.has_key("HAVE_"+x)):
+                settings["HAVE_"+x] = '1'
     
-    dtoolconfig["HAVE_NET"] = dtoolconfig["HAVE_NSPR"]
+    settings["HAVE_NET"] = settings["HAVE_NSPR"]
     
     if (OMIT.count("NVIDIACG")==0):
-        dtoolconfig["HAVE_CG"] = '1'
-        dtoolconfig["HAVE_CGGL"] = '1'
-        dtoolconfig["HAVE_CGDX9"] = '1'
+        settings["HAVE_CG"] = '1'
+        settings["HAVE_CGGL"] = '1'
+        settings["HAVE_CGDX9"] = '1'
     
     if (OPTIMIZE <= 3):
-        if (dtoolconfig["HAVE_NET"] != 'UNDEF'):
-            dtoolconfig["DO_PSTATS"] = '1'
+        if (settings["HAVE_NET"] != 'UNDEF'):
+            settings["DO_PSTATS"] = '1'
     
     if (OPTIMIZE <= 3):
-        dtoolconfig["DO_COLLISION_RECORDING"] = '1'
+        settings["DO_COLLISION_RECORDING"] = '1'
     
     #if (OPTIMIZE <= 2):
-    #    dtoolconfig["TRACK_IN_INTERPRETER"] = '1'
+    #    settings["TRACK_IN_INTERPRETER"] = '1'
     
     if (OPTIMIZE <= 3):
-        dtoolconfig["DO_MEMORY_USAGE"] = '1'
+        settings["DO_MEMORY_USAGE"] = '1'
     
     #if (OPTIMIZE <= 1):
-    #    dtoolconfig["DO_PIPELINING"] = '1'
+    #    settings["DO_PIPELINING"] = '1'
     
     if (OPTIMIZE <= 3):
-        dtoolconfig["NOTIFY_DEBUG"] = '1'
-    
+        settings["NOTIFY_DEBUG"] = '1'
+
+    conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
+    for key in settings.keys():
+        if ((key == "DEFAULT_PRC_DIR") or (key[:4]=="PRC_")):
+            val = settings[key]
+            if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
+            else:                conf = conf + "#define " + key + " " + val + "\n"
+            del settings[key]
+    ConditionalWriteFile('built/include/prc_parameters.h', conf)
+
     conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
-    for key,win,unix in DTOOLDEFAULTS:
-        val = dtoolconfig[key]
+    for key in settings.keys():
+        val = settings[key]
         if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
         else:                conf = conf + "#define " + key + " " + val + "\n"
-    return conf
+        del settings[key]
+    ConditionalWriteFile('built/include/dtool_config.h', conf)
+
+    for x in PACKAGES:
+        if (OMIT.count(x)): ConditionalWriteFile('built/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
+        else:               ConditionalWriteFile('built/tmp/dtool_have_'+x.lower()+'.dat',"1\n")
 
 
-for x in PACKAGES:
-    if (OMIT.count(x)): ConditionalWriteFile('built/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
-    else:               ConditionalWriteFile('built/tmp/dtool_have_'+x.lower()+'.dat',"1\n")
-ConditionalWriteFile('built/include/dtool_config.h', CalculateDtoolConfig())
+WriteConfigSettings()
+
 
 ##########################################################################################
 #
@@ -2069,7 +2092,7 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolutil_composite.cxx',  obj='dtooluti
 IPATH=['dtool/metalibs/dtool']
 OPTS=['BUILDING_DTOOL', 'NSPR', 'OPT3']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtool.cxx', obj='dtool_dtool.obj')
-EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT3'], dll='libdtool.dll', obj=[
+EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT3'], dll='libp3dtool.dll', obj=[
              'dtool_dtool.obj',
              'dtoolutil_gnu_getopt.obj',
              'dtoolutil_gnu_getopt1.obj',
@@ -2128,13 +2151,13 @@ SRCFILE="pydtool.cxx"
 if (OMIT.count("PYTHON")): SRCFILE="null.cxx"
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolconfig.cxx', obj='dtoolconfig_dtoolconfig.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src=SRCFILE, obj='dtoolconfig_pydtool.obj', xdep=["built/tmp/dtool_have_python.dat"])
-EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT3'], dll='libdtoolconfig.dll', obj=[
+EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT3'], dll='libp3dtoolconfig.dll', obj=[
              'dtoolconfig_dtoolconfig.obj',
              'dtoolconfig_pydtool.obj',
              'interrogatedb_composite.obj',
              'dconfig_composite.obj',
              'prc_composite.obj',
-             'libdtool.dll',
+             'libp3dtool.dll',
 ])
 
 #
@@ -2144,9 +2167,9 @@ EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT3'], dll='libdtoolconfig.dll'
 IPATH=['dtool/src/pystub']
 OPTS=['BUILDING_DTOOLCONFIG', 'NSPR', 'OPT3']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pystub.cxx', obj='pystub_pystub.obj')
-EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT3'], dll='libpystub.dll', obj=[
+EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPT3'], dll='libp3pystub.dll', obj=[
              'pystub_pystub.obj',
-             'libdtool.dll',
+             'libp3dtool.dll',
 ])
 
 #
@@ -2159,27 +2182,27 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogate_composite.cxx', obj='interro
 EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT3'], dll='interrogate.exe', obj=[
              'interrogate_composite.obj',
              'libcppParser.ilb',
-             'libpystub.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
+             'libp3pystub.dll',
+             'libp3dtoolconfig.dll',
+             'libp3dtool.dll',
 ])
 
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogate_module.cxx', obj='interrogate_module_interrogate_module.obj')
 EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT3'], dll='interrogate_module.exe', obj=[
              'interrogate_module_interrogate_module.obj',
              'libcppParser.ilb',
-             'libpystub.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
+             'libp3pystub.dll',
+             'libp3dtoolconfig.dll',
+             'libp3dtool.dll',
 ])
 
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='parse_file.cxx', obj='parse_file_parse_file.obj')
 EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL', 'OPT3'], dll='parse_file.exe', obj=[
              'parse_file_parse_file.obj',
              'libcppParser.ilb',
-             'libpystub.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
+             'libp3pystub.dll',
+             'libp3dtoolconfig.dll',
+             'libp3dtool.dll',
 ])
 
 #
@@ -2192,9 +2215,9 @@ if (OMIT.count("OPENSSL")==0):
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='makePrcKey.cxx', obj='make-prc-key_makePrcKey.obj')
     EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='make-prc-key.exe', obj=[
                  'make-prc-key_makePrcKey.obj',
-                 'libpystub.dll',
-                 'libdtool.dll',
-                 'libdtoolconfig.dll',
+                 'libp3pystub.dll',
+                 'libp3dtool.dll',
+                 'libp3dtoolconfig.dll',
                  ])
 
 #
@@ -2206,9 +2229,9 @@ OPTS=['NSPR']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='test_interrogate.cxx', obj='test_interrogate_test_interrogate.obj')
 EnqueueLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='test_interrogate.exe', obj=[
              'test_interrogate_test_interrogate.obj',
-             'libpystub.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
+             'libp3pystub.dll',
+             'libp3dtoolconfig.dll',
+             'libp3dtool.dll',
 ])
 
 #
@@ -2261,8 +2284,8 @@ EnqueueLink(opts=['ADVAPI', 'WINSOCK2', 'NSPR', 'OPENSSL', 'ZLIB'], dll='libpand
              'express_composite2.obj',
              'libexpress_igate.obj',
              'pandabase_pandabase.obj',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
+             'libp3dtoolconfig.dll',
+             'libp3dtool.dll',
 ])
 
 #
@@ -2294,7 +2317,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libputil.in', obj='libputil_igate.obj
 
 IPATH=['panda/src/audio']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/audio')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='audio_composite.cxx', obj='audio_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libaudio.in', obj='libaudio_igate.obj',
             src='panda/src/audio',  module='panda', library='libaudio',
@@ -2306,7 +2328,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libaudio.in', obj='libaudio_igate.obj
 
 IPATH=['panda/src/event']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/event')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='event_composite.cxx', obj='event_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libevent.in', obj='libevent_igate.obj',
             src='panda/src/event',  module='panda', library='libevent',
@@ -2318,7 +2339,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libevent.in', obj='libevent_igate.obj
 
 IPATH=['panda/src/linmath']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/linmath')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='linmath_composite.cxx', obj='linmath_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='liblinmath.in', obj='liblinmath_igate.obj',
             src='panda/src/linmath',  module='panda', library='liblinmath',
@@ -2331,7 +2351,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='liblinmath.in', obj='liblinmath_igate
 
 IPATH=['panda/src/mathutil']
 OPTS=['BUILDING_PANDA', 'FFTW', 'NSPR']
-# CopyAllHeaders('panda/src/mathutil')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='mathutil_composite.cxx', obj='mathutil_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmathutil.in', obj='libmathutil_igate.obj',
             src='panda/src/mathutil',  module='panda', library='libmathutil',
@@ -2343,7 +2362,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmathutil.in', obj='libmathutil_iga
 
 IPATH=['panda/src/gsgbase']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/gsgbase')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gsgbase_composite.cxx', obj='gsgbase_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgsgbase.in', obj='libgsgbase_igate.obj',
             src='panda/src/gsgbase',  module='panda', library='libgsgbase',
@@ -2355,7 +2373,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgsgbase.in', obj='libgsgbase_igate
 
 IPATH=['panda/src/pnmimage']
 OPTS=['BUILDING_PANDA', 'NSPR', 'ZLIB']
-# CopyAllHeaders('panda/src/pnmimage')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimage_composite.cxx', obj='pnmimage_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpnmimage.in', obj='libpnmimage_igate.obj',
             src='panda/src/pnmimage',  module='panda', library='libpnmimage',
@@ -2368,7 +2385,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpnmimage.in', obj='libpnmimage_iga
 if (OMIT.count("NSPR")==0):
     IPATH=['panda/src/net']
     OPTS=['BUILDING_PANDA', 'NSPR']
-#     CopyAllHeaders('panda/src/net')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='net_composite.cxx', obj='net_composite.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libnet.in', obj='libnet_igate.obj',
                 src='panda/src/net',  module='panda', library='libnet',
@@ -2380,7 +2396,6 @@ if (OMIT.count("NSPR")==0):
 
 IPATH=['panda/src/pstatclient']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/pstatclient')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pstatclient_composite.cxx', obj='pstatclient_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpstatclient.in', obj='libpstatclient_igate.obj',
             src='panda/src/pstatclient',  module='panda', library='libpstatclient',
@@ -2392,7 +2407,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpstatclient.in', obj='libpstatclie
 
 IPATH=['panda/src/gobj']
 OPTS=['BUILDING_PANDA', 'NSPR', 'ZLIB']
-# CopyAllHeaders('panda/src/gobj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gobj_composite1.cxx', obj='gobj_composite1.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gobj_composite2.cxx', obj='gobj_composite2.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgobj.in', obj='libgobj_igate.obj',
@@ -2405,7 +2419,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgobj.in', obj='libgobj_igate.obj',
 
 IPATH=['panda/src/lerp']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/lerp')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='lerp_composite.cxx', obj='lerp_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='liblerp.in', obj='liblerp_igate.obj',
             src='panda/src/lerp',  module='panda', library='liblerp',
@@ -2417,7 +2430,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='liblerp.in', obj='liblerp_igate.obj',
 
 IPATH=['panda/src/pgraph']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/pgraph')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='nodePath.cxx', obj='pgraph_nodePath.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pgraph_composite1.cxx', obj='pgraph_composite1.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pgraph_composite2.cxx', obj='pgraph_composite2.obj')
@@ -2436,7 +2448,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpgraph.in', obj='libpgraph_igate.o
 
 IPATH=['panda/src/cull']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/cull')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='cull_composite.cxx', obj='cull_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libcull.in', obj='libcull_igate.obj',
             src='panda/src/cull',  module='panda', library='libcull',
@@ -2448,7 +2459,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libcull.in', obj='libcull_igate.obj',
 
 IPATH=['panda/src/effects']
 OPTS=['BUILDING_PANDAFX', 'NSPR', 'NVIDIACG']
-# CopyAllHeaders('panda/src/effects')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='effects_composite.cxx', obj='effects_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libeffects.in', obj='libeffects_igate.obj',
             src='panda/src/effects',  module='pandafx', library='libeffects',
@@ -2461,7 +2471,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libeffects.in', obj='libeffects_igate
 
 IPATH=['panda/src/chan']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/chan')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='chan_composite.cxx', obj='chan_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libchan.in', obj='libchan_igate.obj',
             src='panda/src/chan',  module='panda', library='libchan',
@@ -2474,7 +2483,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libchan.in', obj='libchan_igate.obj',
 
 IPATH=['panda/src/char']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/char')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='char_composite.cxx', obj='char_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libchar.in', obj='libchar_igate.obj',
             src='panda/src/char',  module='panda', library='libchar',
@@ -2486,7 +2494,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libchar.in', obj='libchar_igate.obj',
 
 IPATH=['panda/src/dgraph']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/dgraph')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dgraph_composite.cxx', obj='dgraph_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdgraph.in', obj='libdgraph_igate.obj',
             src='panda/src/dgraph',  module='panda', library='libdgraph',
@@ -2498,7 +2505,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdgraph.in', obj='libdgraph_igate.o
 
 IPATH=['panda/src/display']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/display')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='display_composite.cxx', obj='display_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdisplay.in', obj='libdisplay_igate.obj',
             src='panda/src/display',  module='panda', library='libdisplay',
@@ -2510,7 +2516,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdisplay.in', obj='libdisplay_igate
 
 IPATH=['panda/src/device']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/device')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='device_composite.cxx', obj='device_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdevice.in', obj='libdevice_igate.obj',
             src='panda/src/device',  module='panda', library='libdevice',
@@ -2523,7 +2528,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdevice.in', obj='libdevice_igate.o
 if (OMIT.count("FREETYPE")==0):
     IPATH=['panda/src/pnmtext']
     OPTS=['BUILDING_PANDA', 'NSPR', 'FREETYPE']
-#     CopyAllHeaders('panda/src/pnmtext')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmtext_composite.cxx', obj='pnmtext_composite.obj')
 
 #
@@ -2532,7 +2536,6 @@ if (OMIT.count("FREETYPE")==0):
 
 IPATH=['panda/src/text']
 OPTS=['BUILDING_PANDA', 'ZLIB', 'NSPR', 'FREETYPE']
-# CopyAllHeaders('panda/src/text')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='text_composite.cxx', obj='text_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtext.in', obj='libtext_igate.obj',
             src='panda/src/text',  module='panda', library='libtext',
@@ -2544,7 +2547,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtext.in', obj='libtext_igate.obj',
 
 IPATH=['panda/src/grutil']
 OPTS=['BUILDING_PANDA', 'NSPR', 'FFMPEG']
-# CopyAllHeaders('panda/src/grutil')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='multitexReducer.cxx', obj='grutil_multitexReducer.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='grutil_composite.cxx', obj='grutil_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgrutil.in', obj='libgrutil_igate.obj',
@@ -2557,7 +2559,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgrutil.in', obj='libgrutil_igate.o
 
 IPATH=['panda/src/tform']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/tform')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='tform_composite.cxx', obj='tform_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtform.in', obj='libtform_igate.obj',
             src='panda/src/tform',  module='panda', library='libtform',
@@ -2569,7 +2570,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtform.in', obj='libtform_igate.obj
 
 IPATH=['panda/src/collide']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/collide')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='collide_composite.cxx', obj='collide_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libcollide.in', obj='libcollide_igate.obj',
             src='panda/src/collide',  module='panda', library='libcollide',
@@ -2581,7 +2581,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libcollide.in', obj='libcollide_igate
 
 IPATH=['panda/src/parametrics']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/parametrics')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='parametrics_composite.cxx', obj='parametrics_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libparametrics.in', obj='libparametrics_igate.obj',
             src='panda/src/parametrics',  module='panda', library='libparametrics',
@@ -2593,7 +2592,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libparametrics.in', obj='libparametri
 
 IPATH=['panda/src/pgui']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/pgui')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pgui_composite.cxx', obj='pgui_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpgui.in', obj='libpgui_igate.obj',
             src='panda/src/pgui',  module='panda', library='libpgui',
@@ -2605,7 +2603,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpgui.in', obj='libpgui_igate.obj',
 
 IPATH=['panda/src/pnmimagetypes', 'panda/src/pnmimage']
 OPTS=['BUILDING_PANDA', 'PNG', 'ZLIB', 'JPEG', 'ZLIB', 'NSPR', 'JPEG', 'TIFF']
-# CopyAllHeaders('panda/src/pnmimagetypes')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmFileTypePNG.cxx', obj='pnmimagetypes_pnmFileTypePNG.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmFileTypeTIFF.cxx', obj='pnmimagetypes_pnmFileTypeTIFF.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimagetypes_composite.cxx', obj='pnmimagetypes_composite.obj')
@@ -2616,7 +2613,6 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimagetypes_composite.cxx', obj='pnmim
 
 IPATH=['panda/src/recorder']
 OPTS=['BUILDING_PANDA', 'NSPR']
-# CopyAllHeaders('panda/src/recorder')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='recorder_composite.cxx', obj='recorder_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='librecorder.in', obj='librecorder_igate.obj',
             src='panda/src/recorder',  module='panda', library='librecorder',
@@ -2629,23 +2625,18 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='librecorder.in', obj='librecorder_iga
 if (OMIT.count("VRPN")==0):
     IPATH=['panda/src/vrpn']
     OPTS=['BUILDING_PANDA', 'NSPR', 'VRPN']
-#     CopyAllHeaders('panda/src/vrpn')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='vrpn_composite.cxx', obj='pvrpn_composite.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpvrpn.in', obj='libpvrpn_igate.obj',
                 src='panda/src/vrpn',  module='panda', library='libpvrpn',
                 skip=[], also=["vrpn_composite.cxx"])
 
+
 #
 # DIRECTORY: panda/metalibs/panda/
 #
 
-# CopyAllHeaders('panda/src/glgsg')
-# CopyAllHeaders('panda/src/wgldisplay')
-# CopyAllHeaders('panda/src/physics')
-# CopyAllHeaders('panda/src/particlesystem')
 IPATH=['panda/metalibs/panda']
-OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'NSPR', 'FREETYPE', 'FFTW',
-      'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'FFMPEG']
+OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'ZLIB', 'NSPR', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'FFMPEG']
 INFILES=['librecorder.in', 'libpgraph.in', 'libcull.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
          'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libpipeline.in', 'libevent.in',
          'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libparametrics.in',
@@ -2679,7 +2670,7 @@ OBJFILES=['panda_panda.obj', 'libpanda_module.obj',
           'putil_composite1.obj', 'putil_composite2.obj', 'libputil_igate.obj',
           'audio_composite.obj', 'libaudio_igate.obj',
           'pgui_composite.obj', 'libpgui_igate.obj',
-          'pandabase_pandabase.obj', 'libpandaexpress.dll', 'libdtoolconfig.dll', 'libdtool.dll']
+          'pandabase_pandabase.obj', 'libpandaexpress.dll', 'libp3dtoolconfig.dll', 'libp3dtool.dll']
 if OMIT.count("VRPN")==0:
     OBJFILES.append("pvrpn_composite.obj")
     OBJFILES.append("libpvrpn_igate.obj")
@@ -2707,27 +2698,25 @@ EnqueueLink(opts=OPTS, dll='libpanda.dll', obj=OBJFILES, xdep=[
 if OMIT.count("FMODEX") == 0:
   IPATH=['panda/src/audiotraits']
   OPTS=['BUILDING_FMOD_AUDIO', 'NSPR', 'FMODEX']
-#   CopyAllHeaders('panda/src/audiotraits')
   EnqueueCxx(ipath=IPATH, opts=OPTS, src='fmod_audio_composite.cxx', obj='fmod_audio_fmod_audio_composite.obj')
-  EnqueueLink(opts=['ADVAPI', 'WINUSER', 'WINMM', 'FMODEX', 'NSPR'], dll='libfmod_audio.dll', obj=[
+  EnqueueLink(opts=['ADVAPI', 'WINUSER', 'WINMM', 'FMODEX', 'NSPR'], dll='libp3fmod_audio.dll', obj=[
                'fmod_audio_fmod_audio_composite.obj',
                'libpanda.dll',
                'libpandaexpress.dll',
-               'libdtoolconfig.dll',
-               'libdtool.dll',
+               'libp3dtoolconfig.dll',
+               'libp3dtool.dll',
   ])
 
 if OMIT.count("MILES") == 0:
   IPATH=['panda/src/audiotraits']
   OPTS=['BUILDING_MILES_AUDIO', 'NSPR', 'MILES']
-#   CopyAllHeaders('panda/src/audiotraits')
   EnqueueCxx(ipath=IPATH, opts=OPTS, src='miles_audio_composite.cxx', obj='miles_audio_miles_audio_composite.obj')
-  EnqueueLink(opts=['ADVAPI', 'WINUSER', 'WINMM', 'MILES', 'NSPR'], dll='libmiles_audio.dll', obj=[
+  EnqueueLink(opts=['ADVAPI', 'WINUSER', 'WINMM', 'MILES', 'NSPR'], dll='libp3miles_audio.dll', obj=[
                'miles_audio_miles_audio_composite.obj',
                'libpanda.dll',
                'libpandaexpress.dll',
-               'libdtoolconfig.dll',
-               'libdtool.dll',
+               'libp3dtoolconfig.dll',
+               'libp3dtool.dll',
   ])
 
 #
@@ -2736,7 +2725,6 @@ if OMIT.count("MILES") == 0:
 
 IPATH=['panda/src/distort']
 OPTS=['BUILDING_PANDAFX', 'NSPR']
-# CopyAllHeaders('panda/src/distort')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='distort_composite.cxx', obj='distort_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdistort.in', obj='libdistort_igate.obj',
             src='panda/src/distort',  module='pandafx', library='libdistort',
@@ -2751,8 +2739,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdistort.in', obj='libdistort_igate
 if OMIT.count("OPENSSL")==0:
     IPATH=['panda/src/downloadertools']
     OPTS=['OPENSSL', 'ZLIB', 'NSPR']
-    LIBS=['libpandaexpress.dll', 'libpanda.dll', 'libdtoolconfig.dll', 'libdtool.dll', 'libpystub.dll']
-#     CopyAllHeaders('panda/src/downloadertools')
+    LIBS=['libpandaexpress.dll', 'libpanda.dll', 'libp3dtoolconfig.dll', 'libp3dtool.dll', 'libp3pystub.dll']
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='apply_patch.cxx', obj='apply_patch_apply_patch.obj')
     EnqueueLink(dll='apply_patch.exe', opts=['ADVAPI', 'NSPR'], obj=['apply_patch_apply_patch.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='build_patch.cxx', obj='build_patch_build_patch.obj')
@@ -2783,15 +2770,18 @@ if OMIT.count("OPENSSL")==0:
 if (sys.platform == "win32"):
     IPATH=['panda/src/windisplay']
     OPTS=['BUILDING_PANDAWIN', 'NSPR']
-#     CopyAllHeaders('panda/src/windisplay')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='windisplay_composite.cxx', obj='windisplay_composite.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS + ["DX8"], src='winDetectDx8.cxx', obj='windisplay_windetectdx8.obj')
+    EnqueueCxx(ipath=IPATH, opts=OPTS + ["DX9"], src='winDetectDx9.cxx', obj='windisplay_windetectdx9.obj')
     EnqueueLink(opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'NSPR'],
-                dll='libwindisplay.dll', obj=[
+                dll='libp3windisplay.dll', obj=[
       'windisplay_composite.obj',
+      'windisplay_windetectdx8.obj',
+      'windisplay_windetectdx9.obj',
       'libpanda.dll',
       'libpandaexpress.dll',
-      'libdtoolconfig.dll',
-      'libdtool.dll',
+      'libp3dtoolconfig.dll',
+      'libp3dtool.dll',
       ])
 
 #
@@ -2801,13 +2791,11 @@ if (sys.platform == "win32"):
 # if OMIT.count("DX7")==0:
 #     IPATH=['panda/src/dxgsg7']
 #     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
-# #     CopyAllHeaders('panda/src/dxgsg7')
 #     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian7.cxx', obj='dxgsg7_dxGraphicsStateGuardian7.obj')
 #     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg7_composite.cxx', obj='dxgsg7_composite.obj')
 # 
 #     IPATH=['panda/metalibs/pandadx7']
 #     OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
-# #     CopyAllHeaders('panda/metalibs/pandadx7')
 #     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandadx7.cxx', obj='pandadx7_pandadx7.obj')
 #     EnqueueLink(dll='libpandadx7.dll', opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D8', 'NSPR'], obj=[
 #       'pandadx7_pandadx7.obj',
@@ -2815,9 +2803,9 @@ if (sys.platform == "win32"):
 #       'dxgsg7_composite.obj',
 #       'libpanda.dll',
 #       'libpandaexpress.dll',
-#       'libwindisplay.dll',
-#       'libdtoolconfig.dll',
-#       'libdtool.dll',
+#       'libp3windisplay.dll',
+#       'libp3dtoolconfig.dll',
+#       'libp3dtool.dll',
 #       ])
 # 
 
@@ -2828,8 +2816,6 @@ if (sys.platform == "win32"):
 if OMIT.count("DX8")==0:
     IPATH=['panda/src/dxgsg8', 'panda/metalibs/pandadx8']
     OPTS=['BUILDING_PANDADX', 'DX8', 'NSPR']
-#     CopyAllHeaders('panda/src/dxgsg8')
-#     CopyAllHeaders('panda/metalibs/pandadx8')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian8.cxx', obj='dxgsg8_dxGraphicsStateGuardian8.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg8_composite.cxx', obj='dxgsg8_composite.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandadx8.cxx', obj='pandadx8_pandadx8.obj')
@@ -2840,9 +2826,9 @@ if OMIT.count("DX8")==0:
       'dxgsg8_composite.obj',
       'libpanda.dll',
       'libpandaexpress.dll',
-      'libwindisplay.dll',
-      'libdtoolconfig.dll',
-      'libdtool.dll',
+      'libp3windisplay.dll',
+      'libp3dtoolconfig.dll',
+      'libp3dtool.dll',
       ])
 
 #
@@ -2852,11 +2838,9 @@ if OMIT.count("DX8")==0:
 if OMIT.count("DX9")==0:
     IPATH=['panda/src/dxgsg9']
     OPTS=['BUILDING_PANDADX', 'DX9', 'NSPR', 'NVIDIACG', 'CGDX9']
-#     CopyAllHeaders('panda/src/dxgsg9')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian9.cxx', obj='dxgsg9_dxGraphicsStateGuardian9.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg9_composite.cxx', obj='dxgsg9_composite.obj')
     IPATH=['panda/metalibs/pandadx9']
-#     CopyAllHeaders('panda/metalibs/pandadx9')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandadx9.cxx', obj='pandadx9_pandadx9.obj')
     EnqueueLink(dll='libpandadx9.dll',
       opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DX9', 'NSPR', 'NVIDIACG', 'CGDX9'], obj=[
@@ -2865,9 +2849,9 @@ if OMIT.count("DX9")==0:
       'dxgsg9_composite.obj',
       'libpanda.dll',
       'libpandaexpress.dll',
-      'libwindisplay.dll',
-      'libdtoolconfig.dll',
-      'libdtool.dll',
+      'libp3windisplay.dll',
+      'libp3dtoolconfig.dll',
+      'libp3dtool.dll',
       ])
 
 #
@@ -2876,7 +2860,6 @@ if OMIT.count("DX9")==0:
 
 IPATH=['panda/src/egg']
 OPTS=['BUILDING_PANDAEGG', 'NSPR', 'ZLIB']
-# CopyAllHeaders('panda/src/egg')
 EnqueueBison(ipath=IPATH, opts=OPTS, pre='eggyy', src='parser.yxx', dsth='parser.h', obj='egg_parser.obj')
 EnqueueFlex(ipath=IPATH, opts=OPTS, pre='eggyy', src='lexer.lxx', obj='egg_lexer.obj', dashi=1)
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='egg_composite1.cxx', obj='egg_composite1.obj')
@@ -2891,7 +2874,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libegg.in', obj='libegg_igate.obj',
 
 IPATH=['panda/src/egg2pg']
 OPTS=['BUILDING_PANDAEGG', 'NSPR']
-# CopyAllHeaders('panda/src/egg2pg')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='egg2pg_composite.cxx', obj='egg2pg_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libegg2pg.in', obj='libegg2pg_igate.obj',
             src='panda/src/egg2pg',  module='pandaegg', library='libegg2pg',
@@ -2903,14 +2885,13 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libegg2pg.in', obj='libegg2pg_igate.o
 
 IPATH=['panda/src/framework']
 OPTS=['BUILDING_FRAMEWORK', 'NSPR']
-# CopyAllHeaders('panda/src/framework')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='framework_composite.cxx', obj='framework_composite.obj')
-EnqueueLink(dll='libframework.dll', opts=['ADVAPI', 'NSPR'], obj=[
+EnqueueLink(dll='libp3framework.dll', opts=['ADVAPI', 'NSPR'], obj=[
              'framework_composite.obj',
              'libpanda.dll',
              'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
+             'libp3dtoolconfig.dll',
+             'libp3dtool.dll',
              ])
 
 #
@@ -2919,7 +2900,6 @@ EnqueueLink(dll='libframework.dll', opts=['ADVAPI', 'NSPR'], obj=[
 
 IPATH=['panda/metalibs/pandafx', 'panda/src/distort']
 OPTS=['BUILDING_PANDAFX', 'NSPR', 'NVIDIACG']
-# CopyAllHeaders('panda/metalibs/pandafx')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandafx.cxx', obj='pandafx_pandafx.obj')
 EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpandafx_module.obj',
             module='pandafx', library='libpandafx',
@@ -2933,8 +2913,8 @@ EnqueueLink(dll='libpandafx.dll', opts=['ADVAPI', 'NSPR', 'NVIDIACG'], obj=[
              'libeffects_igate.obj',
              'libpanda.dll',
              'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
+             'libp3dtoolconfig.dll',
+             'libp3dtool.dll',
 ])
 
 #
@@ -2943,15 +2923,14 @@ EnqueueLink(dll='libpandafx.dll', opts=['ADVAPI', 'NSPR', 'NVIDIACG'], obj=[
 
 IPATH=['panda/src/glstuff']
 OPTS=['NSPR', 'NVIDIACG', 'CGGL']
-# CopyAllHeaders('panda/src/glstuff')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='glpure.cxx', obj='glstuff_glpure.obj')
-EnqueueLink(dll='libglstuff.dll', opts=['ADVAPI', 'GLUT', 'NSPR', 'NVIDIACG', 'CGGL'], obj=[
+EnqueueLink(dll='libp3glstuff.dll', opts=['ADVAPI', 'GLUT', 'NSPR', 'NVIDIACG', 'CGGL'], obj=[
              'glstuff_glpure.obj',
              'libpanda.dll',
              'libpandafx.dll',
              'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
+             'libp3dtoolconfig.dll',
+             'libp3dtool.dll',
 ])
 
 #
@@ -2960,7 +2939,6 @@ EnqueueLink(dll='libglstuff.dll', opts=['ADVAPI', 'GLUT', 'NSPR', 'NVIDIACG', 'C
 
 IPATH=['panda/src/glgsg', 'panda/src/glstuff', 'panda/src/gobj']
 OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG']
-# CopyAllHeaders('panda/src/glgsg')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_glgsg.cxx', obj='glgsg_config_glgsg.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='glgsg.cxx', obj='glgsg_glgsg.obj')
 
@@ -2970,7 +2948,6 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='glgsg.cxx', obj='glgsg_glgsg.obj')
 
 IPATH=['panda/metalibs/pandaegg', 'panda/src/egg']
 OPTS=['BUILDING_PANDAEGG', 'NSPR']
-# CopyAllHeaders('panda/metalibs/pandaegg')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandaegg.cxx', obj='pandaegg_pandaegg.obj')
 EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpandaegg_module.obj',
             module='pandaegg', library='libpandaegg',
@@ -2987,8 +2964,50 @@ EnqueueLink(dll='libpandaegg.dll', opts=['ADVAPI', 'NSPR'], obj=[
              'libegg_igate.obj',
              'libpanda.dll',
              'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
+             'libp3dtoolconfig.dll',
+             'libp3dtool.dll',
+])
+
+#
+# DIRECTORY: panda/metalibs/panda/
+#
+
+IPATH=['panda/metalibs/panda']
+OPTS=['BUILDING_PANDA', 'NSPR', 'FFTW', 'PNG', 'JPEG', 'TIFF', 'ZLIB', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
+OBJFILES=[
+          'pipeline_composite.obj',
+          'event_composite.obj',
+          'linmath_composite.obj',
+          'mathutil_composite.obj',
+          'putil_composite1.obj', 'putil_composite2.obj',
+          'pnmimagetypes_composite.obj', 'pnmimagetypes_pnmFileTypePNG.obj', 'pnmimagetypes_pnmFileTypeTIFF.obj',
+          'pnmimage_composite.obj',
+          'pandabase_pandabase.obj', 'libpandaexpress.dll', 'libp3dtoolconfig.dll', 'libp3dtool.dll']
+EnqueueLink(opts=OPTS, dll='libpandastripped.dll', obj=OBJFILES, xdep=[
+        'built/tmp/dtool_have_helix.dat',
+        'built/tmp/dtool_have_vrpn.dat',
+        'built/tmp/dtool_have_nspr.dat',
+        'built/tmp/dtool_have_freetype.dat',
+])
+
+#
+# DIRECTORY: panda/metalibs/pandaegg/
+#
+
+IPATH=['panda/metalibs/pandaegg', 'panda/src/egg']
+OPTS=['BUILDING_PANDAEGG', 'NSPR']
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandaeggnopg.cxx', obj='pandaegg_pandaeggnopg.obj')
+EnqueueLink(dll='libpandaeggstripped.dll', opts=['ADVAPI', 'NSPR'], obj=[
+             'pandaegg_pandaeggnopg.obj',
+#             'egg2pg_composite.obj',
+             'egg_composite1.obj',
+             'egg_composite2.obj',
+             'egg_parser.obj',
+             'egg_lexer.obj',
+             'libpandastripped.dll',
+             'libpandaexpress.dll',
+             'libp3dtoolconfig.dll',
+             'libp3dtool.dll',
 ])
 
 #
@@ -3004,10 +3023,10 @@ if (sys.platform != "win32"):
       'mesadisplay_composite.obj',
       'libpanda.dll',
       'libpandaexpress.dll',
-      'libglstuff.dll',
+      'libp3glstuff.dll',
       'libpandafx.dll',
-      'libdtoolconfig.dll',
-      'libdtool.dll',
+      'libp3dtoolconfig.dll',
+      'libp3dtool.dll',
       ])
 
 #
@@ -3027,10 +3046,10 @@ if (sys.platform != "win32"):
       'glxdisplay_composite.obj',
       'libpanda.dll',
       'libpandaexpress.dll',
-      'libglstuff.dll',
+      'libp3glstuff.dll',
       'libpandafx.dll',
-      'libdtoolconfig.dll',
-      'libdtool.dll',
+      'libp3dtoolconfig.dll',
+      'libp3dtool.dll',
       ])
 
 #
@@ -3049,13 +3068,13 @@ if (sys.platform == "win32"):
       'glgsg_config_glgsg.obj',
       'glgsg_glgsg.obj',
       'wgldisplay_composite.obj',
-      'libwindisplay.dll',
+      'libp3windisplay.dll',
       'libpanda.dll',
       'libpandaexpress.dll',
-      'libglstuff.dll',
+      'libp3glstuff.dll',
       'libpandafx.dll',
-      'libdtoolconfig.dll',
-      'libdtool.dll',
+      'libp3dtoolconfig.dll',
+      'libp3dtool.dll',
       ])
 
 #
@@ -3064,7 +3083,6 @@ if (sys.platform == "win32"):
 
 IPATH=['panda/src/physics']
 OPTS=['BUILDING_PANDAPHYSICS', 'NSPR']
-# CopyAllHeaders('panda/src/physics')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='physics_composite.cxx', obj='physics_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libphysics.in', obj='libphysics_igate.obj',
             src='panda/src/physics',  module='pandaphysics', library='libphysics',
@@ -3076,7 +3094,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libphysics.in', obj='libphysics_igate
 
 IPATH=['panda/src/particlesystem']
 OPTS=['BUILDING_PANDAPHYSICS', 'NSPR']
-# CopyAllHeaders('panda/src/particlesystem')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='particlesystem_composite.cxx', obj='particlesystem_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libparticlesystem.in', obj='libparticlesystem_igate.obj',
             src='panda/src/particlesystem',  module='pandaphysics', library='libparticlesystem',
@@ -3088,7 +3105,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libparticlesystem.in', obj='libpartic
 #
 
 IPATH=['panda/metalibs/pandaphysics']
-# CopyAllHeaders('panda/metalibs/pandaphysics')
 OPTS=['BUILDING_PANDAPHYSICS', 'NSPR']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandaphysics.cxx', obj='pandaphysics_pandaphysics.obj')
 EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpandaphysics_module.obj',
@@ -3103,8 +3119,8 @@ EnqueueLink(dll='libpandaphysics.dll', opts=['ADVAPI', 'NSPR'], obj=[
              'libparticlesystem_igate.obj',
              'libpanda.dll',
              'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
+             'libp3dtoolconfig.dll',
+             'libp3dtool.dll',
 ])
 
 #
@@ -3113,17 +3129,16 @@ EnqueueLink(dll='libpandaphysics.dll', opts=['ADVAPI', 'NSPR'], obj=[
 
 IPATH=['panda/src/testbed']
 OPTS=['NSPR']
-# CopyAllHeaders('panda/src/testbed')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pview.cxx', obj='pview_pview.obj')
 EnqueueLink(dll='pview.exe', opts=['ADVAPI', 'NSPR'], obj=[
              'pview_pview.obj',
-             'libframework.dll',
+             'libp3framework.dll',
              'libpanda.dll',
              'libpandafx.dll',
              'libpandaexpress.dll',
-             'libdtoolconfig.dll',
-             'libdtool.dll',
-             'libpystub.dll',
+             'libp3dtoolconfig.dll',
+             'libp3dtool.dll',
+             'libp3pystub.dll',
 ])
 
 #
@@ -3133,7 +3148,6 @@ EnqueueLink(dll='pview.exe', opts=['ADVAPI', 'NSPR'], obj=[
 if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/directbase']
     OPTS=['BUILDING_DIRECT', 'NSPR']
-#     CopyAllHeaders('direct/src/directbase')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='directbase.cxx', obj='directbase_directbase.obj')
     if (sys.platform != "win32"):
         EnqueueCxx(ipath=IPATH, opts=['BUILDING_PPYTHON'], src='ppython.cxx', obj='ppython.obj')
@@ -3151,12 +3165,11 @@ if (OMIT.count("PYTHON")==0):
 if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/dcparser']
     OPTS=['WITHINPANDA', 'BUILDING_DIRECT', 'NSPR']
-#     CopyAllHeaders('direct/src/dcparser')
     EnqueueBison(ipath=IPATH, opts=OPTS, pre='dcyy', src='dcParser.yxx', dsth='dcParser.h', obj='dcparser_dcParser.obj')
     EnqueueFlex(ipath=IPATH, opts=OPTS, pre='dcyy', src='dcLexer.lxx', obj='dcparser_dcLexer.obj', dashi=0)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dcparser_composite.cxx', obj='dcparser_composite.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdcparser.in', obj='libdcparser_igate.obj',
-                src='direct/src/dcparser',  module='direct', library='libdcparser',
+                src='direct/src/dcparser',  module='p3direct', library='libdcparser',
                 skip=['dcmsgtypes.h'],
                 also=["dcparser_composite.cxx"])
 
@@ -3167,10 +3180,9 @@ if (OMIT.count("PYTHON")==0):
 if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/deadrec']
     OPTS=['BUILDING_DIRECT', 'NSPR']
-#     CopyAllHeaders('direct/src/deadrec')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='deadrec_composite.cxx', obj='deadrec_composite.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdeadrec.in', obj='libdeadrec_igate.obj',
-                src='direct/src/deadrec',  module='direct', library='libdeadrec',
+                src='direct/src/deadrec',  module='p3direct', library='libdeadrec',
                 skip=[], also=["deadrec_composite.cxx"])
 
 #
@@ -3180,12 +3192,11 @@ if (OMIT.count("PYTHON")==0):
 if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/distributed', 'direct/src/dcparser']
     OPTS=['WITHINPANDA', 'BUILDING_DIRECT', 'OPENSSL', 'NSPR']
-#     CopyAllHeaders('direct/src/distributed')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_distributed.cxx', obj='distributed_config_distributed.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='cConnectionRepository.cxx', obj='distributed_cConnectionRepository.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='cDistributedSmoothNodeBase.cxx', obj='distributed_cDistributedSmoothNodeBase.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdistributed.in', obj='libdistributed_igate.obj',
-                src='direct/src/distributed',  module='direct', library='libdistributed',
+                src='direct/src/distributed',  module='p3direct', library='libdistributed',
                 skip=[], also=['config_distributed.cxx', 'cConnectionRepository.cxx', 'cDistributedSmoothNodeBase.cxx'])
 
 #
@@ -3195,10 +3206,9 @@ if (OMIT.count("PYTHON")==0):
 if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/interval']
     OPTS=['BUILDING_DIRECT', 'NSPR']
-#     CopyAllHeaders('direct/src/interval')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='interval_composite.cxx', obj='interval_composite.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libinterval.in', obj='libinterval_igate.obj',
-                src='direct/src/interval',  module='direct', library='libinterval',
+                src='direct/src/interval',  module='p3direct', library='libinterval',
                 skip=[], also=["interval_composite.cxx"])
 
 #
@@ -3208,10 +3218,9 @@ if (OMIT.count("PYTHON")==0):
 if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/showbase']
     OPTS=['BUILDING_DIRECT', 'NSPR']
-#     CopyAllHeaders('direct/src/showbase')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='showBase.cxx', obj='showbase_showBase.obj')
     EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libshowbase.in', obj='libshowbase_igate.obj',
-                src='direct/src/showbase', module='direct', library='libshowbase',
+                src='direct/src/showbase', module='p3direct', library='libshowbase',
                 skip=[], also=["showBase.cxx"])
 
 #
@@ -3221,14 +3230,13 @@ if (OMIT.count("PYTHON")==0):
 if (OMIT.count("PYTHON")==0):
     IPATH=['direct/metalibs/direct']
     OPTS=['BUILDING_DIRECT', 'NSPR']
-#     CopyAllHeaders('direct/metalibs/direct')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='direct.cxx', obj='direct_direct.obj')
-    EnqueueImod(ipath=IPATH, opts=OPTS, obj='libdirect_module.obj',
-                module='direct', library='libdirect',
+    EnqueueImod(ipath=IPATH, opts=OPTS, obj='libp3direct_module.obj',
+                module='p3direct', library='libp3direct',
                 files=['libdcparser.in', 'libshowbase.in', 'libdeadrec.in', 'libinterval.in', 'libdistributed.in'])
-    EnqueueLink(dll='libdirect.dll', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=[
+    EnqueueLink(dll='libp3direct.dll', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=[
                  'direct_direct.obj',
-                 'libdirect_module.obj',
+                 'libp3direct_module.obj',
                  'directbase_directbase.obj',
                  'dcparser_composite.obj',
                  'dcparser_dcParser.obj',
@@ -3246,8 +3254,8 @@ if (OMIT.count("PYTHON")==0):
                  'libdistributed_igate.obj',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
     ])
 
 #
@@ -3257,15 +3265,14 @@ if (OMIT.count("PYTHON")==0):
 if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/dcparse', 'direct/src/dcparser']
     OPTS=['WITHINPANDA', 'NSPR']
-#     CopyAllHeaders('direct/src/dcparse')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dcparse.cxx', obj='dcparse_dcparse.obj')
     EnqueueLink(dll='dcparse.exe', opts=['ADVAPI', 'NSPR'], obj=[
                  'dcparse_dcparse.obj',
-                 'libdirect.dll',
+                 'libp3direct.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -3275,13 +3282,12 @@ if (OMIT.count("PYTHON")==0):
 if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/heapq']
     OPTS=['NSPR']
-#     CopyAllHeaders('direct/src/heapq')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='heapq.cxx', obj='heapq_heapq.obj')
-    EnqueueLink(dll='libheapq.dll', opts=['ADVAPI', 'NSPR'], obj=[
+    EnqueueLink(dll='libp3heapq.dll', opts=['ADVAPI', 'NSPR'], obj=[
                  'heapq_heapq.obj',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
     ])
 
 #
@@ -3291,7 +3297,6 @@ if (OMIT.count("PYTHON")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/pandatoolbase']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/pandatoolbase')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandatoolbase_composite1.cxx', obj='pandatoolbase_composite1.obj')
     EnqueueLib(lib='libpandatoolbase.lib', obj=['pandatoolbase_composite1.obj'])
 
@@ -3302,7 +3307,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/converter']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/converter')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='somethingToEggConverter.cxx', obj='converter_somethingToEggConverter.obj')
     EnqueueLib(lib='libconverter.lib', obj=['converter_somethingToEggConverter.obj'])
 
@@ -3313,7 +3317,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/progbase']
     OPTS=['NSPR', 'ZLIB']
-#     CopyAllHeaders('pandatool/src/progbase')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='progbase_composite1.cxx', obj='progbase_composite1.obj')
     EnqueueLib(lib='libprogbase.lib', obj=['progbase_composite1.obj'])
 
@@ -3324,7 +3327,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/eggbase']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/eggbase')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggbase_composite1.cxx', obj='eggbase_composite1.obj')
     EnqueueLib(lib='libeggbase.lib', obj=['eggbase_composite1.obj'])
 
@@ -3335,7 +3337,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/bam']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/bam')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='bamInfo.cxx', obj='bam-info_bamInfo.obj')
     EnqueueLink(dll='bam-info.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
                  'bam-info_bamInfo.obj',
@@ -3344,9 +3345,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='bamToEgg.cxx', obj='bam2egg_bamToEgg.obj')
     EnqueueLink(dll='bam2egg.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
@@ -3358,9 +3359,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggToBam.cxx', obj='egg2bam_eggToBam.obj')
     EnqueueLink(dll='egg2bam.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
@@ -3372,9 +3373,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     
 #
@@ -3384,7 +3385,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/cvscopy']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/cvscopy')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='cvscopy_composite1.cxx', obj='cvscopy_composite1.obj')
     EnqueueLib(lib='libcvscopy.lib', obj=['cvscopy_composite1.obj'])
 
@@ -3395,7 +3395,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/dxf']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/dxf')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxf_composite1.cxx', obj='dxf_composite1.obj')
     EnqueueLib(lib='libdxf.lib', obj=['dxf_composite1.obj'])
 
@@ -3406,7 +3405,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/dxfegg']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/dxfegg')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxfToEggConverter.cxx', obj='dxfegg_dxfToEggConverter.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxfToEggLayer.cxx', obj='dxfegg_dxfToEggLayer.obj')
     EnqueueLib(lib='libdxfegg.lib', obj=[
@@ -3421,7 +3419,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/dxfprogs']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/dxfprogs')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxfPoints.cxx', obj='dxf-points_dxfPoints.obj')
     EnqueueLink(dll='dxf-points.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
                  'dxf-points_dxfPoints.obj',
@@ -3430,9 +3427,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandatoolbase.lib',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxfToEgg.cxx', obj='dxf2egg_dxfToEgg.obj')
     EnqueueLink(dll='dxf2egg.exe', opts=['ADVAPI', 'NSPR', 'FFTW'], obj=[
@@ -3446,9 +3443,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggToDXF.cxx', obj='egg2dxf_eggToDXF.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggToDXFLayer.cxx', obj='egg2dxf_eggToDXFLayer.obj')
@@ -3463,9 +3460,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -3475,7 +3472,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/palettizer']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/palettizer')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='palettizer_composite1.cxx', obj='palettizer_composite1.obj')
     EnqueueLib(lib='libpalettizer.lib', obj=['palettizer_composite1.obj'])
 
@@ -3486,7 +3482,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("FREETYPE")==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/egg-mkfont', 'pandatool/src/palettizer']
     OPTS=['NSPR', 'FREETYPE']
-#     CopyAllHeaders('pandatool/src/egg-mkfont')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggMakeFont.cxx', obj='egg-mkfont_eggMakeFont.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='rangeDescription.cxx', obj='egg-mkfont_rangeDescription.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='rangeIterator.cxx', obj='egg-mkfont_rangeIterator.obj')
@@ -3502,9 +3497,9 @@ if (OMIT.count("FREETYPE")==0) and (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -3514,7 +3509,6 @@ if (OMIT.count("FREETYPE")==0) and (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/eggcharbase']
     OPTS=['ZLIB', 'NSPR']
-#     CopyAllHeaders('pandatool/src/eggcharbase')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggcharbase_composite1.cxx', obj='eggcharbase_composite1.obj')
     EnqueueLib(lib='libeggcharbase.lib', obj=['eggcharbase_composite1.obj'])
 
@@ -3525,7 +3519,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/egg-optchar']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/egg-optchar')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_egg_optchar.cxx', obj='egg-optchar_config_egg_optchar.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggOptchar.cxx', obj='egg-optchar_eggOptchar.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggOptcharUserData.cxx', obj='egg-optchar_eggOptcharUserData.obj')
@@ -3543,9 +3536,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -3555,7 +3548,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/egg-palettize', 'pandatool/src/palettizer']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/egg-palettize')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggPalettize.cxx', obj='egg-palettize_eggPalettize.obj')
     EnqueueLink(dll='egg-palettize.exe', opts=['ADVAPI', 'NSPR'], obj=[
                  'egg-palettize_eggPalettize.obj',
@@ -3567,9 +3559,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -3579,7 +3571,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/egg-qtess']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/egg-qtess')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='egg-qtess_composite1.cxx', obj='egg-qtess_composite1.obj')
     EnqueueLink(dll='egg-qtess.exe', opts=['ADVAPI', 'NSPR'], obj=[
                  'egg-qtess_composite1.obj',
@@ -3590,9 +3581,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     
 #
@@ -3602,7 +3593,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/eggprogs']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/eggprogs')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggCrop.cxx', obj='egg-crop_eggCrop.obj')
     EnqueueLink(dll='egg-crop.exe', opts=['ADVAPI', 'NSPR'], obj=[
                  'egg-crop_eggCrop.obj',
@@ -3613,9 +3603,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggMakeTube.cxx', obj='egg-make-tube_eggMakeTube.obj')
     EnqueueLink(dll='egg-make-tube.exe', opts=['ADVAPI', 'NSPR'], obj=[
@@ -3627,9 +3617,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggTextureCards.cxx', obj='egg-texture-cards_eggTextureCards.obj')
     EnqueueLink(dll='egg-texture-cards.exe', opts=['ADVAPI', 'NSPR'], obj=[
@@ -3641,9 +3631,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggTopstrip.cxx', obj='egg-topstrip_eggTopstrip.obj')
     EnqueueLink(dll='egg-topstrip.exe', opts=['ADVAPI', 'NSPR'], obj=[
@@ -3656,9 +3646,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggTrans.cxx', obj='egg-trans_eggTrans.obj')
     EnqueueLink(dll='egg-trans.exe', opts=['ADVAPI', 'NSPR'], obj=[
@@ -3670,9 +3660,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggToC.cxx', obj='egg2c_eggToC.obj')
     EnqueueLink(dll='egg2c.exe', opts=['ADVAPI', 'NSPR'], obj=[
@@ -3684,9 +3674,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggRename.cxx', obj='egg-rename_eggRename.obj')
     EnqueueLink(dll='egg-rename.exe', opts=['ADVAPI', 'NSPR'], obj=[
@@ -3698,9 +3688,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggRetargetAnim.cxx', obj='egg-retarget-anim_eggRetargetAnim.obj')
     EnqueueLink(dll='egg-retarget-anim.exe', opts=['ADVAPI', 'NSPR'], obj=[
@@ -3713,9 +3703,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -3725,7 +3715,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/flt']
     OPTS=['NSPR', 'ZLIB']
-#     CopyAllHeaders('pandatool/src/flt')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='fltVectorRecord.cxx', obj='flt_fltVectorRecord.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='flt_composite1.cxx', obj='flt_composite1.obj')
     EnqueueLib(lib='libflt.lib', obj=['flt_fltVectorRecord.obj', 'flt_composite1.obj'])
@@ -3737,7 +3726,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/fltegg']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/fltegg')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='fltToEggConverter.cxx', obj='fltegg_fltToEggConverter.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='fltToEggLevelState.cxx', obj='fltegg_fltToEggLevelState.obj')
     EnqueueLib(lib='libfltegg.lib', obj=['fltegg_fltToEggConverter.obj', 'fltegg_fltToEggLevelState.obj'])
@@ -3749,7 +3737,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/fltprogs', 'pandatool/src/flt', 'pandatool/src/cvscopy']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/fltprogs')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggToFlt.cxx', obj='egg2flt_eggToFlt.obj')
     EnqueueLink(dll='egg2flt.exe', opts=['ADVAPI', 'NSPR'], obj=[
                  'egg2flt_eggToFlt.obj',
@@ -3761,9 +3748,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='fltInfo.cxx', obj='flt-info_fltInfo.obj')
     EnqueueLink(dll='flt-info.exe', opts=['ADVAPI', 'NSPR'], obj=[
@@ -3775,9 +3762,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='fltTrans.cxx', obj='flt-trans_fltTrans.obj')
     EnqueueLink(dll='flt-trans.exe', opts=['ADVAPI', 'NSPR'], obj=[
@@ -3789,9 +3776,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='fltToEgg.cxx', obj='flt2egg_fltToEgg.obj')
     EnqueueLink(dll='flt2egg.exe', opts=['ADVAPI', 'NSPR'], obj=[
@@ -3805,9 +3792,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='fltCopy.cxx', obj='fltcopy_fltCopy.obj')
     EnqueueLink(dll='fltcopy.exe', opts=['ADVAPI', 'NSPR'], obj=[
@@ -3820,9 +3807,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -3832,7 +3819,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/imagebase']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/imagebase')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='imagebase_composite1.cxx', obj='imagebase_composite1.obj')
     EnqueueLib(lib='libimagebase.lib', obj=['imagebase_composite1.obj'])
 
@@ -3843,7 +3829,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/imageprogs']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/imageprogs')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='imageInfo.cxx', obj='image-info_imageInfo.obj')
     EnqueueLink(dll='image-info.exe', opts=['ADVAPI', 'NSPR'], obj=[
                  'image-info_imageInfo.obj',
@@ -3853,9 +3838,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='imageResize.cxx', obj='image-resize_imageResize.obj')
@@ -3867,9 +3852,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='imageTrans.cxx', obj='image-trans_imageTrans.obj')
@@ -3881,9 +3866,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -3893,7 +3878,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/lwo']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/lwo')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='lwo_composite1.cxx', obj='lwo_composite1.obj')
     EnqueueLib(lib='liblwo.lib', obj=['lwo_composite1.obj'])
 
@@ -3904,7 +3888,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/lwoegg']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/lwoegg')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='lwoegg_composite1.cxx', obj='lwoegg_composite1.obj')
     EnqueueLib(lib='liblwoegg.lib', obj=['lwoegg_composite1.obj'])
 
@@ -3915,7 +3898,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/lwoprogs', 'pandatool/src/lwo']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/lwoprogs')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='lwoScan.cxx', obj='lwo-scan_lwoScan.obj')
     EnqueueLink(dll='lwo-scan.exe', opts=['ADVAPI', 'NSPR'], obj=[
                  'lwo-scan_lwoScan.obj',
@@ -3925,9 +3907,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='lwoToEgg.cxx', obj='lwo2egg_lwoToEgg.obj')
@@ -3942,9 +3924,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -3955,7 +3937,6 @@ for VER in MAYAVERSIONS:
   if (OMIT.count("MAYA"+VER)==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
-#     CopyAllHeaders('pandatool/src/maya')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='maya_composite1.cxx',    obj='maya'+VER+'_composite1.obj')
     EnqueueLib(lib='libmaya'+VER+'.lib', obj=[ 'maya'+VER+'_composite1.obj' ])
     
@@ -3967,7 +3948,6 @@ for VER in MAYAVERSIONS:
   if (OMIT.count("MAYA"+VER)==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/mayaegg', 'pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
-#     CopyAllHeaders('pandatool/src/mayaegg')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaEggLoader.cxx', obj='mayaegg'+VER+'_loader.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaegg_composite1.cxx',   obj='mayaegg'+VER+'_composite1.obj')
     EnqueueLib(lib='libmayaegg'+VER+'.lib', obj=[ 'mayaegg'+VER+'_composite1.obj' ])
@@ -3980,7 +3960,6 @@ for VER in MAXVERSIONS:
   if (OMIT.count("MAX"+VER)==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/maxegg']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
-#     CopyAllHeaders('pandatool/src/maxegg')
     CopyFile("built/tmp/maxEgg.obj", "pandatool/src/maxegg/maxEgg.obj")
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='maxEggLoader.cxx',obj='maxegg'+VER+'_loader.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx',obj='maxegg'+VER+'_composite1.obj')
@@ -3991,12 +3970,12 @@ for VER in MAXVERSIONS:
                 'libprogbase.lib',
                 'libpandatoolbase.lib',
                 'libconverter.lib',
-                'libpandaegg.dll',
-                'libpanda.dll',
+                'libpandaeggstripped.dll',
+                'libpandastripped.dll',
                 'libpandaexpress.dll',
-                'libdtoolconfig.dll',
-                'libdtool.dll',
-                'libpystub.dll'
+                'libp3dtoolconfig.dll',
+                'libp3dtool.dll',
+                'libp3pystub.dll'
                ])
 
 #
@@ -4007,19 +3986,18 @@ for VER in MAXVERSIONS:
   if (OMIT.count("MAX"+VER)==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/maxprogs']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
-#     CopyAllHeaders('pandatool/src/maxprogs')
     CopyFile("built/tmp/maxImportRes.obj", "pandatool/src/maxprogs/maxImportRes.obj")
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='maxEggImport.cxx',obj='maxprogs'+VER+'_maxeggimport.obj')
     EnqueueLink(opts=OPTS, dll='maxeggimport'+VER+'.dle', ldef="pandatool/src/maxprogs/maxEggImport.def", obj=[
                 'maxegg'+VER+'_loader.obj',
                 'maxprogs'+VER+'_maxeggimport.obj',
                 'maxImportRes.obj',
-                'libpandaegg.dll',
-                'libpanda.dll',
+                'libpandaeggstripped.dll',
+                'libpandastripped.dll',
                 'libpandaexpress.dll',
-                'libdtoolconfig.dll',
-                'libdtool.dll',
-                'libpystub.dll'
+                'libp3dtoolconfig.dll',
+                'libp3dtool.dll',
+                'libp3pystub.dll'
                ])
 
 #
@@ -4029,7 +4007,6 @@ for VER in MAXVERSIONS:
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/vrml']
     OPTS=['ZLIB', 'NSPR']
-#     CopyAllHeaders('pandatool/src/vrml')
     EnqueueBison(ipath=IPATH, opts=OPTS, pre='vrmlyy', src='vrmlParser.yxx', dsth='vrmlParser.h', obj='pvrml_vrmlParser.obj')
     EnqueueFlex(ipath=IPATH, opts=OPTS, pre='vrmlyy', src='vrmlLexer.lxx', obj='pvrml_vrmlLexer.obj', dashi=0)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='parse_vrml.cxx', obj='pvrml_parse_vrml.obj')
@@ -4052,7 +4029,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/vrmlegg', 'pandatool/src/vrml']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/vrmlegg')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='indexedFaceSet.cxx', obj='vrmlegg_indexedFaceSet.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='vrmlAppearance.cxx', obj='vrmlegg_vrmlAppearance.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='vrmlToEggConverter.cxx', obj='vrmlegg_vrmlToEggConverter.obj')
@@ -4069,7 +4045,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/xfile']
     OPTS=['ZLIB', 'NSPR']
-#     CopyAllHeaders('pandatool/src/xfile')
     EnqueueBison(ipath=IPATH, opts=OPTS, pre='xyy', src='xParser.yxx', dsth='xParser.h', obj='xfile_xParser.obj')
     EnqueueFlex(ipath=IPATH, opts=OPTS, pre='xyy', src='xLexer.lxx', obj='xfile_xLexer.obj', dashi=1)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='xfile_composite1.cxx', obj='xfile_composite1.obj')
@@ -4086,7 +4061,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/xfileegg', 'pandatool/src/xfile']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/xfileegg')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='xfileegg_composite1.cxx', obj='xfileegg_composite1.obj')
     EnqueueLib(lib='libxfileegg.lib', obj=[
                  'xfileegg_composite1.obj',
@@ -4099,10 +4073,9 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/ptloader', 'pandatool/src/flt', 'pandatool/src/lwo', 'pandatool/src/xfile', 'pandatool/src/xfileegg']
     OPTS=['BUILDING_PTLOADER', 'NSPR']
-#     CopyAllHeaders('pandatool/src/ptloader')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_ptloader.cxx', obj='ptloader_config_ptloader.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='loaderFileTypePandatool.cxx', obj='ptloader_loaderFileTypePandatool.obj')
-    EnqueueLink(dll='libptloader.dll', opts=['ADVAPI', 'NSPR'], obj=[
+    EnqueueLink(dll='libp3ptloader.dll', opts=['ADVAPI', 'NSPR'], obj=[
                  'ptloader_config_ptloader.obj',
                  'ptloader_loaderFileTypePandatool.obj',
                  'libfltegg.lib',
@@ -4122,8 +4095,8 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
     ])
 
 #
@@ -4142,15 +4115,15 @@ for VER in MAYAVERSIONS:
                 'libpandaegg.dll',
                 'libpanda.dll',
                 'libpandaexpress.dll',
-                'libdtoolconfig.dll',
-                'libdtool.dll',
-                'libpystub.dll'
+                'libp3dtoolconfig.dll',
+                'libp3dtool.dll',
+                'libp3pystub.dll'
                ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='config_mayaloader.cxx', obj='mayaloader'+VER+'_config_mayaloader.obj')
-    EnqueueLink(dll='libmayaloader'+VER+'.dll',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
+    EnqueueLink(dll='libp3mayaloader'+VER+'.dll',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
                  'mayaloader'+VER+'_config_mayaloader.obj',
                  'libmayaegg'+VER+'.lib',
-                 'libptloader.lib',
+                 'libp3ptloader.lib',
                  'libconverter.lib',
                  'libpandatoolbase.lib',
                  'libmaya'+VER+'.lib',
@@ -4169,8 +4142,8 @@ for VER in MAYAVERSIONS:
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaPview.cxx', obj='mayapview'+VER+'_mayaPview.obj')
     EnqueueLink(dll='libmayapview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
@@ -4180,12 +4153,12 @@ for VER in MAYAVERSIONS:
                  'libconverter.lib',
                  'libpandatoolbase.lib',
                  'libpandaegg.dll',
-                 'libframework.dll',
+                 'libp3framework.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaToEgg.cxx', obj='maya2egg'+VER+'_mayaToEgg.obj')
     EnqueueLink(dll='maya2egg'+VER+'.exe',                 opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
@@ -4199,9 +4172,9 @@ for VER in MAYAVERSIONS:
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaCopy.cxx', obj='mayacopy'+VER+'_mayaCopy.obj')
     EnqueueLink(dll='mayacopy'+VER+'.exe',  opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
@@ -4214,9 +4187,9 @@ for VER in MAYAVERSIONS:
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaSavePview.cxx', obj='mayasavepview'+VER+'_mayaSavePview.obj')
     EnqueueLink(dll='libmayasavepview'+VER+'.mll', opts=['ADVAPI', 'NSPR', 'MAYA'+VER], obj=[
@@ -4231,7 +4204,6 @@ for VER in MAYAVERSIONS:
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/miscprogs']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/miscprogs')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='binToC.cxx', obj='bin2c_binToC.obj')
     EnqueueLink(dll='bin2c.exe', opts=['ADVAPI', 'NSPR'], obj=[
                  'bin2c_binToC.obj',
@@ -4239,9 +4211,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandatoolbase.lib',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -4251,7 +4223,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("NSPR")==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/pstatserver']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/pstatserver')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pstatserver_composite1.cxx', obj='pstatserver_composite1.obj')
     EnqueueLib(lib='libpstatserver.lib', obj=[ 'pstatserver_composite1.obj' ])
 
@@ -4262,7 +4233,6 @@ if (OMIT.count("NSPR")==0) and (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/softprogs']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/softprogs')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='softCVS.cxx', obj='softcvs_softCVS.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='softFilename.cxx', obj='softcvs_softFilename.obj')
     EnqueueLink(opts=['ADVAPI', 'NSPR'], dll='softcvs.exe', obj=[
@@ -4273,9 +4243,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -4285,7 +4255,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("NSPR")==0) and (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/text-stats']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/text-stats')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='textMonitor.cxx', obj='text-stats_textMonitor.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='textStats.cxx', obj='text-stats_textStats.obj')
     EnqueueLink(opts=['ADVAPI', 'NSPR'], dll='text-stats.exe', obj=[
@@ -4297,9 +4266,9 @@ if (OMIT.count("NSPR")==0) and (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -4309,7 +4278,6 @@ if (OMIT.count("NSPR")==0) and (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/vrmlprogs', 'pandatool/src/vrml', 'pandatool/src/vrmlegg']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/vrmlprogs')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='vrmlTrans.cxx', obj='vrml-trans_vrmlTrans.obj')
     EnqueueLink(opts=['ADVAPI', 'NSPR'], dll='vrml-trans.exe', obj=[
                  'vrml-trans_vrmlTrans.obj',
@@ -4318,9 +4286,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandatoolbase.lib',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='vrmlToEgg.cxx', obj='vrml2egg_vrmlToEgg.obj')
     EnqueueLink(opts=['ADVAPI', 'NSPR'], dll='vrml2egg.exe', obj=[
@@ -4334,9 +4302,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -4346,7 +4314,6 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("NSPR")==0) and (OMIT.count("PANDATOOL")==0) and (sys.platform == "win32"):
     IPATH=['pandatool/src/win-stats']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/win-stats')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='winstats_composite1.cxx', obj='pstats_composite1.obj')
     EnqueueLink(opts=['WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'NSPR'],
                 dll='pstats.exe', obj=[
@@ -4356,9 +4323,9 @@ if (OMIT.count("NSPR")==0) and (OMIT.count("PANDATOOL")==0) and (sys.platform ==
                 'libpandatoolbase.lib',
                 'libpandaexpress.dll',
                 'libpanda.dll',
-                'libdtoolconfig.dll',
-                'libdtool.dll',
-                'libpystub.dll',
+                'libp3dtoolconfig.dll',
+                'libp3dtool.dll',
+                'libp3pystub.dll',
                 ])
 
 #
@@ -4368,7 +4335,6 @@ if (OMIT.count("NSPR")==0) and (OMIT.count("PANDATOOL")==0) and (sys.platform ==
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/xfileprogs', 'pandatool/src/xfile', 'pandatool/src/xfileegg']
     OPTS=['NSPR']
-#     CopyAllHeaders('pandatool/src/xfileprogs')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='eggToX.cxx', obj='egg2x_eggToX.obj')
     EnqueueLink(dll='egg2x.exe', opts=['ADVAPI', 'NSPR'], obj=[
                  'egg2x_eggToX.obj',
@@ -4381,9 +4347,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='xFileTrans.cxx', obj='x-trans_xFileTrans.obj')
     EnqueueLink(dll='x-trans.exe', opts=['ADVAPI', 'NSPR'], obj=[
@@ -4393,9 +4359,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandatoolbase.lib',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='xFileToEgg.cxx', obj='x2egg_xFileToEgg.obj')
     EnqueueLink(opts=['ADVAPI', 'NSPR'], dll='x2egg.exe', obj=[
@@ -4409,9 +4375,9 @@ if (OMIT.count("PANDATOOL")==0):
                  'libpandaegg.dll',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libpystub.dll',
+                 'libp3dtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -4439,11 +4405,11 @@ if (OMIT.count("OPENSSL")==0) and (OMIT.count("PANDAAPP")==0):
                  'libpandaappbase.lib',
                  'libpandaexpress.dll',
                  'libpanda.dll',
-                 'libdtool.dll',
-                 'libdtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3dtoolconfig.dll',
                  'libprogbase.lib',
                  'libpandatoolbase.lib',
-                 'libpystub.dll',
+                 'libp3pystub.dll',
     ])
 
 #
@@ -4460,11 +4426,11 @@ if (OMIT.count("FREETYPE")==0) and (OMIT.count("PANDAAPP")==0):
                  'font-samples_fontSamples.obj',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtool.dll',
-                 'libdtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3dtoolconfig.dll',
                  'libprogbase.lib',
                  'libpandatoolbase.lib',
-                 'libpystub.dll',
+                 'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='default_index_icons.cxx', obj='indexify_default_index_icons.obj')
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='default_font.cxx', obj='indexify_default_font.obj')
@@ -4483,67 +4449,13 @@ if (OMIT.count("FREETYPE")==0) and (OMIT.count("PANDAAPP")==0):
                  'indexify_rollDirectory.obj',
                  'libpanda.dll',
                  'libpandaexpress.dll',
-                 'libdtool.dll',
-                 'libdtoolconfig.dll',
+                 'libp3dtool.dll',
+                 'libp3dtoolconfig.dll',
                  'libprogbase.lib',
                  'libpandatoolbase.lib',
-                 'libpystub.dll',
+                 'libp3pystub.dll',
     ])
 
-#
-# DIRECTORY: pandaapp/src/stitchbase/
-#
-
-if (OMIT.count("PANDAAPP")==0):
-    IPATH=['pandaapp/src/stitchbase', 'pandaapp/src/pandaappbase']
-    OPTS=['NSPR']
-    EnqueueBison(ipath=IPATH, opts=OPTS, pre='stitchyy', src='stitchParser.yxx', dsth='stitchParser.h', obj='stitchbase_stitchParser.obj')
-    EnqueueFlex(ipath=IPATH, opts=OPTS, pre='stitchyy', src='stitchLexer.lxx', obj='stitchbase_stitchLexer.obj', dashi=1)
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='stitchbase_composite1.cxx', obj='stitchbase_composite1.obj')
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='stitchbase_composite2.cxx', obj='stitchbase_composite2.obj')
-    EnqueueLib(lib='libstitchbase.lib', obj=[
-                 'stitchbase_composite1.obj',
-                 'stitchbase_composite2.obj',
-                 'stitchbase_stitchParser.obj',
-                 'stitchbase_stitchLexer.obj',
-    ])
-
-#
-# DIRECTORY: pandaapp/src/stitch/
-#
-
-if (OMIT.count("PANDAAPP")==0):
-    IPATH=['pandaapp/src/stitch', 'pandaapp/src/stitchbase', 'pandaapp/src/pandaappbase']
-    OPTS=['NSPR']
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='stitchCommandProgram.cxx', obj='stitch-command_stitchCommandProgram.obj')
-    EnqueueLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-command.exe', obj=[
-                 'stitch-command_stitchCommandProgram.obj',
-                 'libstitchbase.lib',
-                 'libpandaappbase.lib',
-                 'libpanda.dll',
-                 'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libprogbase.lib',
-                 'libpandatoolbase.lib',
-                 'libconverter.lib',
-                 'libpystub.dll',
-    ])
-    
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='stitchImageProgram.cxx', obj='stitch-image_stitchImageProgram.obj')
-    EnqueueLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
-                 'stitch-image_stitchImageProgram.obj',
-                 'libstitchbase.lib',
-                 'libpandaappbase.lib',
-                 'libpanda.dll',
-                 'libpandaexpress.dll',
-                 'libdtoolconfig.dll',
-                 'libdtool.dll',
-                 'libprogbase.lib',
-                 'libpandatoolbase.lib',
-                 'libconverter.lib',
-                 'libpystub.dll',
-    ])
 
 
 #

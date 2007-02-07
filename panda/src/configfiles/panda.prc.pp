@@ -19,13 +19,13 @@ win-size 800 600
 # is found that works, unless the user specifically requests a
 # particular display type with the load-display directive.
 
-#if $[HAVE_DX]
+#if $[HAVE_DX9]
 aux-display pandadx9
 #endif
 #if $[HAVE_GL]
 aux-display pandagl
 #endif
-#if $[HAVE_DX]
+#if $[HAVE_DX8]
 aux-display pandadx8
 #endif
 

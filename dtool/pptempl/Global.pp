@@ -155,11 +155,18 @@
   #define glut_libs $[GLUT_LIBS]
 #endif
 
-#if $[HAVE_DX]
-  #define dx_ipath $[wildcard $[DX_IPATH]]
-  #define dx_lpath $[wildcard $[DX_LPATH]]
-  #define dx_cflags $[DX_CFLAGS]
-  #define dx_libs $[DX_LIBS]
+#if $[HAVE_DX8]
+  #define dx8_ipath $[wildcard $[DX8_IPATH]]
+  #define dx8_lpath $[wildcard $[DX8_LPATH]]
+  #define dx8_cflags $[DX8_CFLAGS]
+  #define dx8_libs $[DX8_LIBS]
+#endif
+
+#if $[HAVE_DX9]
+  #define dx9_ipath $[wildcard $[DX9_IPATH]]
+  #define dx9_lpath $[wildcard $[DX9_LPATH]]
+  #define dx9_cflags $[DX9_CFLAGS]
+  #define dx9_libs $[DX9_LIBS]
 #endif
 
 #if $[HAVE_OPENCV]

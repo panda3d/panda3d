@@ -156,6 +156,14 @@
   #define EXPTP_PANDARIB extern
 #endif
 
+#ifdef BUILDING_PANDASKEL
+  #define EXPCL_PANDASKEL __declspec(dllexport)
+  #define EXPTP_PANDASKEL
+#else
+  #define EXPCL_PANDASKEL __declspec(dllimport)
+  #define EXPTP_PANDASKEL extern
+#endif
+
 #ifdef BUILDING_PANDAWIN
   #define EXPCL_PANDAWIN __declspec(dllexport)
   #define EXPTP_PANDAWIN
@@ -221,6 +229,9 @@
 
 #define EXPCL_PANDARIB
 #define EXPTP_PANDARIB
+
+#define EXPCL_PANDASKEL
+#define EXPTP_PANDASKEL
 
 #define EXPCL_PANDAWIN
 #define EXPTP_PANDAWIN

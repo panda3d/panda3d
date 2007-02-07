@@ -209,10 +209,15 @@
 
 #set HAVE_SGIGL $[HAVE_SGIGL]
 
-#set DX_IPATH $[unixfilename $[DX_IPATH]]
-#set DX_LPATH $[unixfilename $[DX_LPATH]]
-#set DX_LIBS $[DX_LIBS]
-#set HAVE_DX $[HAVE_DX]
+#set DX8_IPATH $[unixfilename $[DX8_IPATH]]
+#set DX8_LPATH $[unixfilename $[DX8_LPATH]]
+#set DX8_LIBS $[DX8_LIBS]
+#set HAVE_DX8 $[HAVE_DX8]
+
+#set DX9_IPATH $[unixfilename $[DX9_IPATH]]
+#set DX9_LPATH $[unixfilename $[DX9_LPATH]]
+#set DX9_LIBS $[DX9_LIBS]
+#set HAVE_DX9 $[HAVE_DX9]
 
 #set OPENCV_IPATH $[unixfilename $[OPENCV_IPATH]]
 #set OPENCV_LPATH $[unixfilename $[OPENCV_LPATH]]
