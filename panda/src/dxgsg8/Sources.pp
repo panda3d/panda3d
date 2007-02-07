@@ -1,4 +1,4 @@
-#define BUILD_DIRECTORY $[HAVE_DX]
+#define BUILD_DIRECTORY $[HAVE_DX8]
 
 #define OTHER_LIBS \
    interrogatedb:c dconfig:c dtoolconfig:m \
