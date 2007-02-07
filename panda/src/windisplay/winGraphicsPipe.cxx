@@ -42,27 +42,21 @@ WinGraphicsPipe() {
       (PFN_TRACKMOUSEEVENT)GetProcAddress(_hUser32, "TrackMouseEvent");
   }
 
-#if HAVE_DX
-  int dx7_display_information (DisplaySearchParameters &display_search_parameters, DisplayInformation *display_information);
-  int dx8_display_information (DisplaySearchParameters &display_search_parameters, DisplayInformation *display_information);
-  int dx9_display_information (DisplaySearchParameters &display_search_parameters, DisplayInformation *display_information);
+#if HAVE_DX9
+  DisplaySearchParameters display_search_parameters_dx9;
+  int dx9_display_information (DisplaySearchParameters &display_search_parameters_dx9, DisplayInformation *display_information);
 
-  DisplaySearchParameters display_search_parameters;
-
-  // DX7
-  if (dx7_display_information (display_search_parameters, _display_information)) {
+  if (dx9_display_information (display_search_parameters_dx9, _display_information)) {
   
   }
-  
-  // try DX9 first
-  if (dx9_display_information (display_search_parameters, _display_information)) {
-  
-  }
-  else {
-    // DX9 failed, try DX8
-    if (dx8_display_information (display_search_parameters, _display_information)) {
+#endif
 
-    }
+#if HAVE_DX8
+  DisplaySearchParameters display_search_parameters_dx8;
+  int dx8_display_information (DisplaySearchParameters &display_search_parameters_dx8, DisplayInformation *display_information);
+  
+  if (dx8_display_information (display_search_parameters_dx8, _display_information)) {
+    
   }
 #endif
 
