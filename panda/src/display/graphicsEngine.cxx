@@ -42,6 +42,7 @@
 #include "throw_event.h"
 #include "objectDeletor.h"
 #include "bamCache.h"
+#include "cullableObject.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -94,6 +95,7 @@ PStatCollector GraphicsEngine::_volume_inv_sphere_pcollector("Collision Volumes:
 PStatCollector GraphicsEngine::_test_inv_sphere_pcollector("Collision Tests:CollisionInvSphere");
 PStatCollector GraphicsEngine::_volume_geom_pcollector("Collision Volumes:CollisionGeom");
 PStatCollector GraphicsEngine::_test_geom_pcollector("Collision Tests:CollisionGeom");
+PStatCollector GraphicsEngine::_sw_sprites_pcollector("SW Sprites");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::Constructor
@@ -665,6 +667,7 @@ render_frame() {
   CullTraverser::flush_level();
   RenderState::flush_level();
   TransformState::flush_level();
+  CullableObject::flush_level();
 
   // Now cycle the pipeline and officially begin the next frame.
 #ifdef THREADED_PIPELINE
@@ -719,6 +722,7 @@ render_frame() {
   _test_inv_sphere_pcollector.clear_level();
   _volume_geom_pcollector.clear_level();
   _test_geom_pcollector.clear_level();
+  _sw_sprites_pcollector.clear_level();
 
 #endif  // DO_PSTATS
 

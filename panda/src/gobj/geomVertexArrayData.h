@@ -79,6 +79,7 @@ PUBLISHED:
 
   INLINE int get_num_rows() const;
   INLINE bool set_num_rows(int n);
+  INLINE bool unclean_set_num_rows(int n);
   INLINE void clear_rows();
 
   INLINE int get_data_size_bytes() const;
@@ -276,6 +277,7 @@ public:
   ALLOC_DELETED_CHAIN(GeomVertexArrayDataPipelineWriter);
 
   bool set_num_rows(int n);
+  bool unclean_set_num_rows(int n);
 
   INLINE GeomVertexArrayData *get_object() const;
   PTA_uchar modify_data();

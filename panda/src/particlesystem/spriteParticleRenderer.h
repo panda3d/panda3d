@@ -269,8 +269,7 @@ private:
   pvector<int*> _ttl_count;  // _ttl_count[i][j] holds the number of particles attached to animation 'i' at frame 'j'.
   vector_int _birth_list;  // Holds the list of particles that need a new random animation to start on.
 
-  static PStatCollector _sprite_particle_render;
-  static PStatCollector _sprite_particle_process_vertices;
+  static PStatCollector _render_collector;
 };
 
 #include "spriteParticleRenderer.I"

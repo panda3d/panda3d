@@ -142,6 +142,7 @@ public:
 
   // Functions specific to vectors.
   INLINE void reserve(size_type n);
+  INLINE void resize(size_type n);
   INLINE size_type capacity() const;
   INLINE reference front() const;
   INLINE reference back() const;

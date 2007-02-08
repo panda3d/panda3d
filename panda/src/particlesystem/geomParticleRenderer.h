@@ -22,12 +22,11 @@
 #include "baseParticleRenderer.h"
 #include "baseParticle.h"
 #include "colorInterpolationManager.h"
-
 #include "pandaNode.h"
 #include "pointerTo.h"
 #include "pointerToArray.h"
-
 #include "pvector.h"
+#include "pStatCollector.h"
 
 class EXPCL_PANDAPHYSICS GeomParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
@@ -65,6 +64,8 @@ private:
 
   virtual void resize_pool(int new_size);
   void kill_nodes();
+
+  static PStatCollector _render_collector;
 };
 
 #include "geomParticleRenderer.I"

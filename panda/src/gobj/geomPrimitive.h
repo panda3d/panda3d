@@ -152,8 +152,8 @@ public:
   // instead.
 
   INLINE const GeomVertexArrayData *get_vertices() const;
-  GeomVertexArrayData *modify_vertices();
-  void set_vertices(const GeomVertexArrayData *vertices);
+  GeomVertexArrayData *modify_vertices(int num_vertices = -1);
+  void set_vertices(const GeomVertexArrayData *vertices, int num_vertices = -1);
   void set_nonindexed_vertices(int first_vertex, int num_vertices);
 
   INLINE int get_index_stride() const;
@@ -165,6 +165,10 @@ public:
 
   INLINE const GeomVertexArrayData *get_mins() const;
   INLINE const GeomVertexArrayData *get_maxs() const;
+
+  void set_minmax(int min_vertex, int max_vertex,
+                  GeomVertexArrayData *mins, GeomVertexArrayData *maxs);
+  void clear_minmax();
 
   virtual int get_num_vertices_per_primitive() const;
   virtual int get_min_num_vertices_per_primitive() const;

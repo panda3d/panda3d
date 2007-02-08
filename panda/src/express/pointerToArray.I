@@ -43,8 +43,10 @@ template<class Element>
 INLINE PointerToArray<Element> 
 PointerToArray<Element>::empty_array(size_type n) {
   PointerToArray<Element> temp;
-  temp.reserve(n);
-  ((To *)temp._void_ptr)->insert(((To *)temp._void_ptr)->begin(), n, Element());
+  temp.reassign(new ReferenceCountedVector<Element>);
+
+  To new_array(n);
+  ((To *)(temp._void_ptr))->swap(new_array);
   return temp;
 }
 
@@ -211,6 +213,20 @@ reserve(TYPENAME PointerToArray<Element>::size_type n) {
     reassign(new ReferenceCountedVector<Element>);
   }
   ((To *)(this->_void_ptr))->reserve(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::resize
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+resize(TYPENAME PointerToArray<Element>::size_type n) {
+  if ((this->_void_ptr) == NULL) {
+    reassign(new ReferenceCountedVector<Element>);
+  }
+  ((To *)(this->_void_ptr))->resize(n);
 }
 
 ////////////////////////////////////////////////////////////////////

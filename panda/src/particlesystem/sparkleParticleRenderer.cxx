@@ -22,6 +22,9 @@
 #include "geom.h"
 #include "geomVertexWriter.h"
 #include "indent.h"
+#include "pStatTimer.h"
+
+PStatCollector SparkleParticleRenderer::_render_collector("App:Particles:Sparkle:Render");
 
 ////////////////////////////////////////////////////////////////////
 //    Function : SparkleParticleRenderer
@@ -149,6 +152,7 @@ init_geoms() {
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
+  PStatTimer t1(_render_collector);
   if (!ttl_particles) {
     return;
   }

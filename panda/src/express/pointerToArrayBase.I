@@ -44,6 +44,18 @@ ReferenceCountedVector(const ReferenceCountedVector<Element> &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ReferenceCountedVector::empty_array constructor
+//       Access: Public
+//  Description: Creates an array of initial_size elements.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE ReferenceCountedVector<Element>::
+ReferenceCountedVector(TYPENAME ReferenceCountedVector<Element>::size_type initial_size) :
+  pvector<Element>(initial_size)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCountedVector::Destructor
 //       Access: Public
 //  Description:

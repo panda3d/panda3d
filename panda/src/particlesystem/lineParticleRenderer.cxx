@@ -22,6 +22,9 @@
 #include "geom.h"
 #include "geomVertexWriter.h"
 #include "indent.h"
+#include "pStatTimer.h"
+
+PStatCollector LineParticleRenderer::_render_collector("App:Particles:Line:Render");
 
 ////////////////////////////////////////////////////////////////////
 //    Function : LineParticleRenderer
@@ -154,6 +157,7 @@ init_geoms() {
 
 void LineParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
+  PStatTimer t1(_render_collector);
 
   if (!ttl_particles)
     return;

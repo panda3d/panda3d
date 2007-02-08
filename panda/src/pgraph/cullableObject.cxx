@@ -35,8 +35,13 @@
 #include "geomTriangles.h"
 #include "light.h"
 
-PStatCollector CullableObject::_munge_points_pcollector("*:Munge:Points");
+CullableObject::FormatMap CullableObject::_format_map;
+
+PStatCollector CullableObject::_munge_sprites_pcollector("*:Munge:Sprites");
+PStatCollector CullableObject::_munge_sprites_verts_pcollector("*:Munge:Sprites:Verts");
+PStatCollector CullableObject::_munge_sprites_prims_pcollector("*:Munge:Sprites:Prims");
 PStatCollector CullableObject::_munge_light_vector_pcollector("*:Munge:Light Vector");
+PStatCollector CullableObject::_sw_sprites_pcollector("SW Sprites");
 
 TypeHandle CullableObject::_type_handle;
 
@@ -191,7 +196,8 @@ output(ostream &out) const {
 void CullableObject::
 munge_points_to_quads(const CullTraverser *traverser) {
   Thread *current_thread = traverser->get_current_thread();
-  PStatTimer timer(_munge_points_pcollector, current_thread);
+  PStatTimer timer(_munge_sprites_pcollector, current_thread);
+  _sw_sprites_pcollector.add_level(_munged_data->get_num_rows());
 
   GraphicsStateGuardianBase *gsg = traverser->get_gsg();
 
@@ -228,70 +234,6 @@ munge_points_to_quads(const CullTraverser *traverser) {
     }
   }
 
-  PT(GeomVertexArrayFormat) new_array_format;
-  if (retransform_sprites) {
-    // With retransform_sprites in effect, we will be sending ordinary
-    // 3-D points to the graphics API.
-    new_array_format = 
-      new GeomVertexArrayFormat(InternalName::get_vertex(), 3, 
-                                Geom::NT_float32,
-                                Geom::C_point);
-  } else {
-    // Without retransform_sprites, we will be sending 4-component
-    // clip-space points.
-    new_array_format = 
-      new GeomVertexArrayFormat(InternalName::get_vertex(), 4, 
-                                Geom::NT_float32,
-                                Geom::C_clip_point);
-  }
-  if (has_normal) {
-    const GeomVertexColumn *c = normal.get_column();
-    new_array_format->add_column
-      (InternalName::get_normal(), c->get_num_components(),
-       c->get_numeric_type(), c->get_contents());
-  }
-  if (has_color) {
-    const GeomVertexColumn *c = color.get_column();
-    new_array_format->add_column
-      (InternalName::get_color(), c->get_num_components(),
-       c->get_numeric_type(), c->get_contents());
-  }
-  if (sprite_texcoord) {
-    new_array_format->add_column
-      (InternalName::get_texcoord(), 2,
-       Geom::NT_float32,
-       Geom::C_texcoord);
-
-  } else if (has_texcoord) {
-    const GeomVertexColumn *c = texcoord.get_column();
-    new_array_format->add_column
-      (InternalName::get_texcoord(), c->get_num_components(),
-       c->get_numeric_type(), c->get_contents());
-  }
-
-  CPT(GeomVertexFormat) new_format = 
-    GeomVertexFormat::register_format(new_array_format);
-
-  PT(GeomVertexData) new_data = new GeomVertexData
-    (_munged_data->get_name(), new_format, Geom::UH_client);
-
-  GeomVertexWriter new_vertex(new_data, InternalName::get_vertex());
-  GeomVertexWriter new_normal(new_data, InternalName::get_normal());
-  GeomVertexWriter new_color(new_data, InternalName::get_color());
-  GeomVertexWriter new_texcoord(new_data, InternalName::get_texcoord());
-  int new_vi = 0;
-
-  PT(Geom) new_geom = new Geom(new_data);
-
-  const LMatrix4f &modelview = _modelview_transform->get_mat();
-
-  SceneSetup *scene = traverser->get_scene();
-  const Lens *lens = scene->get_lens();
-  const LMatrix4f &projection = lens->get_projection_mat();
-
-  int viewport_width = scene->get_viewport_width();
-  int viewport_height = scene->get_viewport_height();
-
   float point_size = 1.0f;
   bool perspective = false;
   const RenderModeAttrib *render_mode = _state->get_render_mode();
@@ -306,6 +248,68 @@ munge_points_to_quads(const CullTraverser *traverser) {
     }
   }
 
+  // Get the vertex format of the newly created geometry.
+  CPT(GeomVertexFormat) new_format;
+  FormatMap::iterator fmi = _format_map.find(_munged_data->get_format());
+  if (fmi != _format_map.end()) {
+    new_format = (*fmi).second;
+
+  } else {
+    // We have to construct the format now.
+    PT(GeomVertexArrayFormat) new_array_format;
+    if (retransform_sprites) {
+      // With retransform_sprites in effect, we will be sending ordinary
+      // 3-D points to the graphics API.
+      new_array_format = 
+        new GeomVertexArrayFormat(InternalName::get_vertex(), 3, 
+                                  Geom::NT_float32,
+                                  Geom::C_point);
+    } else {
+      // Without retransform_sprites, we will be sending 4-component
+      // clip-space points.
+      new_array_format = 
+        new GeomVertexArrayFormat(InternalName::get_vertex(), 4, 
+                                  Geom::NT_float32,
+                                  Geom::C_clip_point);
+    }
+    if (has_normal) {
+      const GeomVertexColumn *c = normal.get_column();
+      new_array_format->add_column
+        (InternalName::get_normal(), c->get_num_components(),
+         c->get_numeric_type(), c->get_contents());
+    }
+    if (has_color) {
+      const GeomVertexColumn *c = color.get_column();
+      new_array_format->add_column
+        (InternalName::get_color(), c->get_num_components(),
+         c->get_numeric_type(), c->get_contents());
+    }
+    if (sprite_texcoord) {
+      new_array_format->add_column
+        (InternalName::get_texcoord(), 2,
+         Geom::NT_float32,
+         Geom::C_texcoord);
+
+    } else if (has_texcoord) {
+      const GeomVertexColumn *c = texcoord.get_column();
+      new_array_format->add_column
+        (InternalName::get_texcoord(), c->get_num_components(),
+         c->get_numeric_type(), c->get_contents());
+    }
+
+    new_format = GeomVertexFormat::register_format(new_array_format);
+    _format_map[_munged_data->get_format()] = new_format;
+  }
+
+  const LMatrix4f &modelview = _modelview_transform->get_mat();
+
+  SceneSetup *scene = traverser->get_scene();
+  const Lens *lens = scene->get_lens();
+  const LMatrix4f &projection = lens->get_projection_mat();
+
+  int viewport_width = scene->get_viewport_width();
+  int viewport_height = scene->get_viewport_height();
+
   // We need a standard projection matrix, in a known coordinate
   // system, to compute the perspective height.
   LMatrix4f height_projection;
@@ -319,6 +323,161 @@ munge_points_to_quads(const CullTraverser *traverser) {
   LMatrix4f inv_render_transform;
   inv_render_transform.invert_from(render_transform);
 
+  // Now convert all of the vertices in the GeomVertexData to quads.
+  // We always convert all the vertices, assuming all the vertices
+  // will referenced by GeomPrimitives, because we want to optimize
+  // for the most common case.
+  int orig_verts = _munged_data->get_num_rows();
+  int new_verts = 4 * orig_verts;        // each vertex becomes four.
+  int new_prim_verts = 6 * orig_verts;  // two triangles per point.
+
+  PT(GeomVertexData) new_data = new GeomVertexData
+    (_munged_data->get_name(), new_format, Geom::UH_client);
+  new_data->unclean_set_num_rows(new_verts);
+
+  GeomVertexWriter new_vertex(new_data, InternalName::get_vertex());
+  GeomVertexWriter new_normal(new_data, InternalName::get_normal());
+  GeomVertexWriter new_color(new_data, InternalName::get_color());
+  GeomVertexWriter new_texcoord(new_data, InternalName::get_texcoord());
+
+  // We'll keep an array of all of the points' eye-space coordinates,
+  // and their distance from the camera, so we can sort the points for
+  // each primitive, below.
+  PointData *points;
+  {
+    PStatTimer t2(_munge_sprites_verts_pcollector, current_thread);
+    points = (PointData *)alloca(orig_verts * sizeof(PointData));
+    int vi = 0;
+    while (!vertex.is_at_end()) {
+      // Get the point in eye-space coordinates.
+      LPoint3f eye = modelview.xform_point(vertex.get_data3f());
+      points[vi]._eye = eye;
+      points[vi]._dist = gsg->compute_distance_to(points[vi]._eye);
+    
+      // The point in clip coordinates.
+      LPoint4f p4 = LPoint4f(eye[0], eye[1], eye[2], 1.0f) * projection;
+
+      if (has_size) {
+        point_size = size.get_data1f();
+      }
+
+      float scale_y = point_size;
+      if (perspective) {
+        // Perspective-sized points.  Here point_size is the point's
+        // height in 3-d units.  To arrange that, we need to figure out
+        // the appropriate scaling factor based on the current viewport
+        // and projection matrix.
+        float scale = _modelview_transform->get_scale()[1];
+        LVector3f height(0.0f, point_size * scale, scale);
+        height = height * height_projection;
+        scale_y = height[1] * viewport_height;
+
+        // We should then divide the radius by the distance from the
+        // camera plane, to emulate the glPointParameters() behavior.
+        if (!lens->is_orthographic()) {
+          scale_y /= gsg->compute_distance_to(eye);
+        }
+      }
+      
+      // Also factor in the homogeneous scale for being in clip
+      // coordinates still.
+      scale_y *= p4[3];
+
+      float scale_x = scale_y;
+      if (has_aspect_ratio) {
+        scale_x *= aspect_ratio.get_data1f();
+      }
+
+      // Define the first two corners based on the scales in X and Y.
+      LPoint2f c0(scale_x, scale_y);
+      LPoint2f c1(-scale_x, scale_y);
+
+      if (has_rotate) { 
+        // If we have a rotate factor, apply it to those two corners.
+        float r = rotate.get_data1f();
+        LMatrix3f mat = LMatrix3f::rotate_mat(r);
+        c0 = c0 * mat;
+        c1 = c1 * mat;
+      }
+
+      // Finally, scale the corners in their newly-rotated position,
+      // to compensate for the aspect ratio of the viewport.
+      float rx = 1.0f / viewport_width;
+      float ry = 1.0f / viewport_height;
+      c0.set(c0[0] * rx, c0[1] * ry);
+      c1.set(c1[0] * rx, c1[1] * ry);
+    
+      if (retransform_sprites) {
+        // With retransform_sprites in effect, we must reconvert the
+        // resulting quad back into the original 3-D space.
+        new_vertex.set_data4f(inv_render_transform.xform(LPoint4f(p4[0] + c0[0], p4[1] + c0[1], p4[2], p4[3])));
+        new_vertex.set_data4f(inv_render_transform.xform(LPoint4f(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3])));
+        new_vertex.set_data4f(inv_render_transform.xform(LPoint4f(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3])));
+        new_vertex.set_data4f(inv_render_transform.xform(LPoint4f(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3])));
+      
+        if (has_normal) {
+          const Normalf &c = normal.get_data3f();
+          new_normal.set_data3f(c);
+          new_normal.set_data3f(c);
+          new_normal.set_data3f(c);
+          new_normal.set_data3f(c);
+        }
+      
+      } else {
+        // Without retransform_sprites, we can simply load the
+        // clip-space coordinates.
+        new_vertex.set_data4f(p4[0] + c0[0], p4[1] + c0[1], p4[2], p4[3]);
+        new_vertex.set_data4f(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3]);
+        new_vertex.set_data4f(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3]);
+        new_vertex.set_data4f(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3]);
+      
+        if (has_normal) {
+          Normalf c = render_transform.xform_vec(normal.get_data3f());
+          new_normal.set_data3f(c);
+          new_normal.set_data3f(c);
+          new_normal.set_data3f(c);
+          new_normal.set_data3f(c);
+        }
+      }
+      if (has_color) {
+        const Colorf &c = color.get_data4f();
+        new_color.set_data4f(c);
+        new_color.set_data4f(c);
+        new_color.set_data4f(c);
+        new_color.set_data4f(c);
+      }
+      if (sprite_texcoord) {
+        new_texcoord.set_data2f(1.0f, 0.0f);
+        new_texcoord.set_data2f(0.0f, 0.0f);
+        new_texcoord.set_data2f(1.0f, 1.0f);
+        new_texcoord.set_data2f(0.0f, 1.0f);
+      } else if (has_texcoord) {
+        const LVecBase4f &c = texcoord.get_data4f();
+        new_texcoord.set_data4f(c);
+        new_texcoord.set_data4f(c);
+        new_texcoord.set_data4f(c);
+        new_texcoord.set_data4f(c);
+      }
+
+      ++vi;
+    }
+
+    nassertv(vi == orig_verts);
+    nassertv(new_data->get_num_rows() == new_verts);
+  }
+
+  PT(Geom) new_geom = new Geom(new_data);
+    
+  // Create an appropriate GeomVertexArrayFormat for the primitive
+  // index.
+  static CPT(GeomVertexArrayFormat) new_prim_format;
+  if (new_prim_format == (GeomVertexArrayFormat *)NULL) {
+    new_prim_format =
+      GeomVertexArrayFormat::register_format
+      (new GeomVertexArrayFormat(InternalName::get_index(), 1, 
+                                 GeomEnums::NT_uint16, GeomEnums::C_index));
+  }
+
   // Replace each primitive in the Geom (it's presumably a GeomPoints
   // primitive, although it might be some other kind of primitive if
   // we got here because RenderModeAttrib::M_point is enabled) with a
@@ -328,188 +487,75 @@ munge_points_to_quads(const CullTraverser *traverser) {
   // BUG: if we're rendering polygons in M_point mode with a
   // CullFaceAttrib in effect, we won't actually apply the
   // CullFaceAttrib but will always render all of the vertices of the
-  // polygons.  This is certainly a bug, but in order to fix it we'd
-  // have to do the face culling ourselves--not sure if it's worth it.
+  // polygons.  This is certainly a bug, but a very minor one; and in
+  // order to fix it we'd have to do the face culling ourselves--not
+  // sure if it's worth it.
 
-  GeomPipelineReader geom_reader(_geom, current_thread);
-  int num_primitives = geom_reader.get_num_primitives();
-  for (int pi = 0; pi < num_primitives; ++pi) {
-    const GeomPrimitive *primitive = geom_reader.get_primitive(pi);
-    if (primitive->get_num_vertices() != 0) {
-      // We must first convert all of the points to eye space.
-      int num_points = primitive->get_max_vertex() + 1;
+  {
+    PStatTimer t3(_munge_sprites_prims_pcollector, current_thread);
+    GeomPipelineReader geom_reader(_geom, current_thread);
+    int num_primitives = geom_reader.get_num_primitives();
+    for (int pi = 0; pi < num_primitives; ++pi) {
+      const GeomPrimitive *primitive = geom_reader.get_primitive(pi);
+      if (primitive->get_num_vertices() != 0) {
+        // Extract out the list of vertices referenced by the primitive.
+        int num_vertices = primitive->get_num_vertices();
+        unsigned int *vertices = (unsigned int *)alloca(num_vertices * sizeof(unsigned int));
+        unsigned int *vertices_end = vertices + num_vertices;
 
-      int num_vertices = primitive->get_num_vertices();
-      PointData *points = (PointData *)alloca(num_points * sizeof(PointData));
-      unsigned int *vertices = (unsigned int *)alloca(num_vertices * sizeof(unsigned int));
-      unsigned int *vertices_end = vertices + num_vertices;
-
-      if (primitive->is_indexed()) {
-        GeomVertexReader index(primitive->get_vertices(), 0, current_thread);
-        for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
-          // Get the point in eye-space coordinates.
-          unsigned int v = index.get_data1i();
-          nassertv(v < (unsigned int)num_points);
-          (*vi) = v;
-          vertex.set_row(v);
-          points[v]._eye = modelview.xform_point(vertex.get_data3f());
-          points[v]._dist = gsg->compute_distance_to(points[v]._eye);
-        }
-      } else {
-        // Nonindexed case.
-        unsigned int first_vertex = primitive->get_first_vertex();
-        for (int i = 0; i < num_vertices; ++i) {
-          unsigned int v = i + first_vertex;
-          nassertv(v < (unsigned int)num_points);
-          vertices[i] = v;
-          vertex.set_row(v);
-          points[v]._eye = modelview.xform_point(vertex.get_data3f());
-          points[v]._dist = gsg->compute_distance_to(points[v]._eye);
-        }
-      }
-  
-      // Now sort the points in order from back-to-front so they will
-      // render properly with transparency, at least with each other.
-      sort(vertices, vertices_end, SortPoints(points));
-  
-      // Go through the points, now in sorted order, and generate a pair
-      // of triangles for each one.  We generate indexed triangles
-      // instead of two-triangle strips, since this seems to be
-      // generally faster on PC hardware (otherwise, we'd have to nearly
-      // double the vertices to stitch all the little triangle strips
-      // together).
-      PT(GeomPrimitive) new_primitive = new GeomTriangles(Geom::UH_client);
-
-      for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
-        // The point in eye coordinates.
-        const LPoint3f &eye = points[*vi]._eye;
-    
-        // The point in clip coordinates.
-        LPoint4f p4 = LPoint4f(eye[0], eye[1], eye[2], 1.0f) * projection;
-
-        if (has_size) {
-          size.set_row(*vi);
-          point_size = size.get_data1f();
-        }
-
-        float scale_y = point_size;
-        if (perspective) {
-          // Perspective-sized points.  Here point_size is the point's
-          // height in 3-d units.  To arrange that, we need to figure
-          // out the appropriate scaling factor based on the current
-          // viewport and projection matrix.
-          float scale = _modelview_transform->get_scale()[1];
-          LVector3f height(0.0f, point_size * scale, scale);
-          height = height * height_projection;
-          scale_y = height[1] * viewport_height;
-
-          // We should then divide the radius by the distance from the
-          // camera plane, to emulate the glPointParameters() behavior.
-          if (!lens->is_orthographic()) {
-            scale_y /= gsg->compute_distance_to(eye);
+        if (primitive->is_indexed()) {
+          // Indexed case.
+          GeomVertexReader index(primitive->get_vertices(), 0, current_thread);
+          for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
+            unsigned int v = index.get_data1i();
+            nassertv(v < (unsigned int)orig_verts);
+            (*vi) = v;
           }
-        }
-      
-        // Also factor in the homogeneous scale for being in clip
-        // coordinates still.
-        scale_y *= p4[3];
-
-        float scale_x = scale_y;
-        if (has_aspect_ratio) {
-          aspect_ratio.set_row(*vi);
-          scale_x *= aspect_ratio.get_data1f();
-        }
-
-        // Define the first two corners based on the scales in X and Y.
-        LPoint2f c0(scale_x, scale_y);
-        LPoint2f c1(-scale_x, scale_y);
-
-        if (has_rotate) { 
-          // If we have a rotate factor, apply it to those two corners.
-          rotate.set_row(*vi);
-          float r = rotate.get_data1f();
-          LMatrix3f mat = LMatrix3f::rotate_mat(r);
-          c0 = c0 * mat;
-          c1 = c1 * mat;
-        }
-
-        // Finally, scale the corners in their newly-rotated position,
-        // to compensate for the aspect ratio of the viewport.
-        float rx = 1.0f / viewport_width;
-        float ry = 1.0f / viewport_height;
-        c0.set(c0[0] * rx, c0[1] * ry);
-        c1.set(c1[0] * rx, c1[1] * ry);
-
-        if (retransform_sprites) {
-          // With retransform_sprites in effect, we must reconvert the
-          // resulting quad back into the original 3-D space.
-          new_vertex.add_data4f(inv_render_transform.xform(LPoint4f(p4[0] + c0[0], p4[1] + c0[1], p4[2], p4[3])));
-          new_vertex.add_data4f(inv_render_transform.xform(LPoint4f(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3])));
-          new_vertex.add_data4f(inv_render_transform.xform(LPoint4f(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3])));
-          new_vertex.add_data4f(inv_render_transform.xform(LPoint4f(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3])));
-          
-          if (has_normal) {
-            normal.set_row(*vi);
-            const Normalf &c = normal.get_data3f();
-            new_normal.add_data3f(c);
-            new_normal.add_data3f(c);
-            new_normal.add_data3f(c);
-            new_normal.add_data3f(c);
-          }
-
         } else {
-          // Without retransform_sprites, we can simply load the
-          // clip-space coordinates.
-          new_vertex.add_data4f(p4[0] + c0[0], p4[1] + c0[1], p4[2], p4[3]);
-          new_vertex.add_data4f(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3]);
-          new_vertex.add_data4f(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3]);
-          new_vertex.add_data4f(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3]);
-          
-          if (has_normal) {
-            normal.set_row(*vi);
-            Normalf c = render_transform.xform_vec(normal.get_data3f());
-            new_normal.add_data3f(c);
-            new_normal.add_data3f(c);
-            new_normal.add_data3f(c);
-            new_normal.add_data3f(c);
+          // Nonindexed case.
+          unsigned int first_vertex = primitive->get_first_vertex();
+          for (int i = 0; i < num_vertices; ++i) {
+            unsigned int v = i + first_vertex;
+            nassertv(v < (unsigned int)orig_verts);
+            vertices[i] = v;
           }
         }
-        if (has_color) {
-          color.set_row(*vi);
-          const Colorf &c = color.get_data4f();
-          new_color.add_data4f(c);
-          new_color.add_data4f(c);
-          new_color.add_data4f(c);
-          new_color.add_data4f(c);
+  
+        // Now sort the points in order from back-to-front so they will
+        // render properly with transparency, at least with each other.
+        sort(vertices, vertices_end, SortPoints(points));
+  
+        // Go through the points, now in sorted order, and generate a pair
+        // of triangles for each one.  We generate indexed triangles
+        // instead of two-triangle strips, since this seems to be
+        // generally faster on PC hardware (otherwise, we'd have to nearly
+        // double the vertices to stitch all the little triangle strips
+        // together).
+        PT(GeomPrimitive) new_primitive = new GeomTriangles(Geom::UH_client);
+
+        PT(GeomVertexArrayData) new_index 
+          = new GeomVertexArrayData(new_prim_format, GeomEnums::UH_client);
+        new_index->unclean_set_num_rows(new_prim_verts);
+
+        GeomVertexWriter index(new_index, 0);
+        for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
+          int new_vi = (*vi) * 4;
+          nassertv(new_vi + 3 < new_prim_verts);
+          index.set_data1i(new_vi);
+          index.set_data1i(new_vi + 1);
+          index.set_data1i(new_vi + 2);
+          index.set_data1i(new_vi + 2);
+          index.set_data1i(new_vi + 1);
+          index.set_data1i(new_vi + 3);
         }
-        if (sprite_texcoord) {
-          new_texcoord.add_data2f(1.0f, 0.0f);
-          new_texcoord.add_data2f(0.0f, 0.0f);
-          new_texcoord.add_data2f(1.0f, 1.0f);
-          new_texcoord.add_data2f(0.0f, 1.0f);
-        } else if (has_texcoord) {
-          texcoord.set_row(*vi);
-          const LVecBase4f &c = texcoord.get_data4f();
-          new_texcoord.add_data4f(c);
-          new_texcoord.add_data4f(c);
-          new_texcoord.add_data4f(c);
-          new_texcoord.add_data4f(c);
-        }
+        new_primitive->set_vertices(new_index, num_vertices * 6);
 
-        new_primitive->add_vertex(new_vi);
-        new_primitive->add_vertex(new_vi + 1);
-        new_primitive->add_vertex(new_vi + 2);
-        new_primitive->close_primitive();
+        int min_vi = primitive->get_min_vertex();
+        int max_vi = primitive->get_max_vertex();
+        new_primitive->set_minmax(min_vi * 4, max_vi * 4 + 3, NULL, NULL);
 
-        new_primitive->add_vertex(new_vi + 2);
-        new_primitive->add_vertex(new_vi + 1);
-        new_primitive->add_vertex(new_vi + 3);
-        new_primitive->close_primitive();
-
-        new_vi += 4;
+        new_geom->add_primitive(new_primitive);
       }
-
-      new_geom->add_primitive(new_primitive);
     }
   }
 

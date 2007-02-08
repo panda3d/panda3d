@@ -573,6 +573,32 @@ set_num_rows(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataPipelineWriter::unclean_set_num_rows
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool GeomVertexArrayDataPipelineWriter::
+unclean_set_num_rows(int n) {
+  int stride = _object->_array_format->get_stride();
+  int delta = n - (_cdata->_data.size() / stride);
+  
+  if (delta != 0) {
+    // Just make a new array.  No reason to keep the old one around.
+    PTA_uchar new_data = PTA_uchar::empty_array(n * stride);
+
+    _cdata->_data.node_unref();
+    _cdata->_data = new_data;
+    _cdata->_data.node_ref();
+    _cdata->_data.set_col(GeomVertexArrayData::_vdata_mem_pcollector);
+    _cdata->_modified = Geom::get_next_modified();
+
+    return true;
+  }
+  
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataPipelineWriter::modify_data
 //       Access: Published
 //  Description: 

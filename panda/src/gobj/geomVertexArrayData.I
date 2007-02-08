@@ -70,6 +70,7 @@ get_num_rows() const {
 //     Function: GeomVertexArrayData::set_num_rows
 //       Access: Published
 //  Description: Sets the length of the array to n rows.
+//
 //               Normally, you would not call this directly, since all
 //               of the arrays in a particular GeomVertexData must
 //               have the same number of rows; instead, call
@@ -91,6 +92,25 @@ INLINE bool GeomVertexArrayData::
 set_num_rows(int n) {
   GeomVertexArrayDataPipelineWriter writer(this, true, Thread::get_current_thread());
   return writer.set_num_rows(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::unclean_set_num_rows
+//       Access: Published
+//  Description: This method behaves like set_num_rows(), except the
+//               new data is not initialized.  Furthermore, after this
+//               call, *any* of the data in the GeomVertexArrayData
+//               may be uninitialized, including the earlier rows.
+//
+//               Normally, you would not call this directly, since all
+//               of the arrays in a particular GeomVertexData must
+//               have the same number of rows; instead, call
+//               GeomVertexData::unclean_set_num_rows().
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexArrayData::
+unclean_set_num_rows(int n) {
+  GeomVertexArrayDataPipelineWriter writer(this, true, Thread::get_current_thread());
+  return writer.unclean_set_num_rows(n);
 }
 
 ////////////////////////////////////////////////////////////////////

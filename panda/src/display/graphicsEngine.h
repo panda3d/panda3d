@@ -376,6 +376,7 @@ private:
   static PStatCollector _test_inv_sphere_pcollector;
   static PStatCollector _volume_geom_pcollector;
   static PStatCollector _test_geom_pcollector;
+  static PStatCollector _sw_sprites_pcollector;
 
   friend class WindowRenderer;
   friend class GraphicsOutput;

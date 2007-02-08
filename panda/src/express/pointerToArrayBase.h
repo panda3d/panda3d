@@ -51,6 +51,7 @@ public:
 
   INLINE ReferenceCountedVector();
   INLINE ReferenceCountedVector(const ReferenceCountedVector<Element> &copy);
+  INLINE ReferenceCountedVector(size_type initial_size);
   INLINE ~ReferenceCountedVector();
   ALLOC_DELETED_CHAIN(ReferenceCountedVector<Element>);
 

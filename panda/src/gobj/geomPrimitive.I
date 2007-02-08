@@ -339,7 +339,7 @@ get_ends() const {
 //  Description: Returns a const pointer to the primitive mins
 //               array so application code can read it directly.  Do
 //               not attempt to modify the returned array; use
-//               modify_mins() or set_mins() for this.
+//               set_minmax() for this.
 //
 //               Note that simple primitive types, like triangles, do
 //               not have a mins array.
@@ -357,7 +357,7 @@ get_mins() const {
 //  Description: Returns a const pointer to the primitive maxs
 //               array so application code can read it directly.  Do
 //               not attempt to modify the returned array; use
-//               modify_maxs() or set_maxs() for this.
+//               set_minmax().
 //
 //               Note that simple primitive types, like triangles, do
 //               not have a maxs array.
@@ -606,9 +606,10 @@ is_indexed() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitivePipelineReader::
 get_num_vertices() const {
-  if (_cdata->_vertices == (GeomVertexArrayData *)NULL) {
+  if (_cdata->_num_vertices != -1) {
     return _cdata->_num_vertices;
   } else {
+    nassertr(_cdata->_vertices != (GeomVertexArrayData *)NULL, 0);
     return _vertices_reader->get_num_rows();
   }
 }

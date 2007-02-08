@@ -21,12 +21,12 @@
 
 #include "baseParticle.h"
 #include "baseParticleRenderer.h"
-
 #include "pointerTo.h"
 #include "pointerToArray.h"
 #include "geom.h"
 #include "geomVertexData.h"
 #include "geomLines.h"
+#include "pStatCollector.h"
 
 enum SparkleParticleLifeScale {
   SP_NO_SCALE,
@@ -97,6 +97,8 @@ private:
   virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles);
   virtual void resize_pool(int new_size);
+
+  static PStatCollector _render_collector;
 };
 
 #include "sparkleParticleRenderer.I"

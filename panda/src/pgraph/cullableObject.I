@@ -126,6 +126,16 @@ draw(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::flush_level
+//       Access: Public, Static
+//  Description: Flushes the PStatCollectors used during traversal.
+////////////////////////////////////////////////////////////////////
+INLINE void CullableObject::
+flush_level() {
+  _sw_sprites_pcollector.flush_level();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::SortPoints::Constructor
 //       Access: Public
 //  Description: 

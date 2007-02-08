@@ -22,6 +22,9 @@
 #include "transformState.h"
 #include "colorScaleAttrib.h"
 #include "colorAttrib.h"
+#include "pStatTimer.h"
+
+PStatCollector GeomParticleRenderer::_render_collector("App:Particles:Geom:Render");
 
 ////////////////////////////////////////////////////////////////////
 //    Function : GeomParticleRenderer
@@ -163,6 +166,8 @@ kill_particle(int index) {
 
 void GeomParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
+  PStatTimer t1(_render_collector);
+
   BaseParticle *cur_particle;
   int i, remaining_particles = ttl_particles;
 

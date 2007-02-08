@@ -1862,6 +1862,43 @@ set_num_rows(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineWriter::unclean_set_num_rows
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool GeomVertexDataPipelineWriter::
+unclean_set_num_rows(int n) {
+  nassertr(_got_array_writers, false);
+  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), false);
+
+  bool any_changed = false;
+
+  int color_array = -1;
+  int orig_color_rows = -1;
+
+  for (size_t i = 0; i < _cdata->_arrays.size(); i++) {
+    if (_array_writers[i]->get_num_rows() != n) {
+      // Copy-on-write.
+      if (_cdata->_arrays[i]->get_ref_count() > 1) {
+        delete _array_writers[i];
+        _cdata->_arrays[i] = new GeomVertexArrayData(*_cdata->_arrays[i]);
+        _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _force_to_0, _current_thread);
+      }
+      _array_writers[i]->unclean_set_num_rows(n);
+      any_changed = true;
+    }
+  }
+
+  if (any_changed) {
+    _object->clear_cache_stage();
+    _cdata->_modified = Geom::get_next_modified();
+    _cdata->_animated_vertices.clear();
+  }
+
+  return any_changed;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineWriter::modify_array
 //       Access: Public
 //  Description: 

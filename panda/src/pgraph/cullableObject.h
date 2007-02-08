@@ -65,6 +65,8 @@ public:
   INLINE void draw(GraphicsStateGuardianBase *gsg,
                    Thread *current_thread);
 
+  INLINE static void flush_level();
+
 public:
   ~CullableObject();
   ALLOC_DELETED_CHAIN(CullableObject);
@@ -107,8 +109,15 @@ private:
     const PointData *_array;
   };
 
-  static PStatCollector _munge_points_pcollector;
+  // This is a cache of converted vertex formats.
+  typedef pmap<CPT(GeomVertexFormat), CPT(GeomVertexFormat) > FormatMap;
+  static FormatMap _format_map;
+
+  static PStatCollector _munge_sprites_pcollector;
+  static PStatCollector _munge_sprites_verts_pcollector;
+  static PStatCollector _munge_sprites_prims_pcollector;
   static PStatCollector _munge_light_vector_pcollector;
+  static PStatCollector _sw_sprites_pcollector;
 
 public:
   static TypeHandle get_class_type() {

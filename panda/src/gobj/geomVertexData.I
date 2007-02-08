@@ -121,6 +121,33 @@ set_num_rows(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::unclean_set_num_rows
+//       Access: Published
+//  Description: This method behaves like set_num_rows(), except the
+//               new data is not initialized.  Furthermore, after this
+//               call, *any* of the data in the GeomVertexData may be
+//               uninitialized, including the earlier rows.
+//
+//               This is intended for applications that are about to
+//               completely fill the GeomVertexData with new data
+//               anyway; it provides a tiny performance boost over
+//               set_num_rows().
+//
+//               Although this method is Published, application code
+//               only very rarely has any need to call it.  Instead,
+//               you should use the GeomVertexWriter to build up the
+//               rows in a GeomVertexData object automatically,
+//               without need to explicitly set the number of
+//               rows.
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexData::
+unclean_set_num_rows(int n) {
+  GeomVertexDataPipelineWriter writer(this, true, Thread::get_current_thread());
+  writer.check_array_writers();
+  return writer.unclean_set_num_rows(n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::get_num_arrays
 //       Access: Published
 //  Description: Returns the number of individual arrays stored within

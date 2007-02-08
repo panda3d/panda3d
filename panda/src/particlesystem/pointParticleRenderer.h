@@ -28,6 +28,7 @@
 #include "geom.h"
 #include "geomVertexData.h"
 #include "geomPoints.h"
+#include "pStatCollector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PointParticleRenderer
@@ -97,6 +98,8 @@ private:
   virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles);
   virtual void resize_pool(int new_size);
+
+  static PStatCollector _render_collector;
 };
 
 #include "pointParticleRenderer.I"
