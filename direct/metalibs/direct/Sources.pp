@@ -13,6 +13,7 @@
 #define OTHER_LIBS \
   panda:m \
   pandaexpress:m \
+  parametrics:c \
   interrogatedb:c dconfig:c dtoolconfig:m \
   dtoolutil:c dtoolbase:c dtool:m \
   express:c pstatclient:c prc:c pandabase:c linmath:c \

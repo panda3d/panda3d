@@ -7,8 +7,17 @@
     linmath:c \
     mathutil:c \
     gobj:c \
+    putil:c \
+    pipeline:c \
+    event:c \
+    pstatclient:c \
+    pnmimage:c \
+    $[if $[HAVE_NET],net:c] \
+    pgraph:c \
+    lerp:c \
     panda:m \
     express:c \
+    downloader:c \
     pandaexpress:m \
     interrogatedb:c \
     dconfig:c \
