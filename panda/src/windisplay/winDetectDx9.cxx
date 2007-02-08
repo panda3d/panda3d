@@ -19,7 +19,7 @@
 
 #include "pandabase.h"
 
-#if HAVE_DX9
+#ifdef HAVE_DX9
 
 #include <d3d9.h>
 

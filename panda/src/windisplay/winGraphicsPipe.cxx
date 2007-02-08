@@ -42,7 +42,7 @@ WinGraphicsPipe() {
       (PFN_TRACKMOUSEEVENT)GetProcAddress(_hUser32, "TrackMouseEvent");
   }
 
-#if HAVE_DX9
+#ifdef HAVE_DX9
   DisplaySearchParameters display_search_parameters_dx9;
   int dx9_display_information (DisplaySearchParameters &display_search_parameters_dx9, DisplayInformation *display_information);
 
@@ -51,7 +51,7 @@ WinGraphicsPipe() {
   }
 #endif
 
-#if HAVE_DX8
+#ifdef HAVE_DX8
   DisplaySearchParameters display_search_parameters_dx8;
   int dx8_display_information (DisplaySearchParameters &display_search_parameters_dx8, DisplayInformation *display_information);
   

@@ -6,7 +6,7 @@
 
 #define BUILDING_DLL BUILDING_PANDAWIN
 
-#define USE_PACKAGES dx
+#define USE_PACKAGES dx8 dx9
 
 #begin lib_target
   #define TARGET windisplay

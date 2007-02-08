@@ -3,11 +3,8 @@
 #define OTHER_LIBS \
    interrogatedb:c dconfig:c dtoolconfig:m \
    dtoolutil:c dtoolbase:c dtool:m
-
-#define WIN_SYS_LIBS \
-   d3d9.lib d3dx9.lib dxerr9.lib
    
-#define USE_PACKAGES dx cg cgdx9
+#define USE_PACKAGES dx9 cg cgdx9
 
 #begin lib_target
   #define TARGET dxgsg9
