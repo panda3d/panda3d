@@ -3138,7 +3138,7 @@ get_texture(TextureStage *stage) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_shader(Shader *sha, int priority) {
+set_shader(const Shader *sha, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =

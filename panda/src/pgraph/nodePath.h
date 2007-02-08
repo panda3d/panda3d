@@ -564,7 +564,7 @@ PUBLISHED:
   Texture *get_texture() const;
   Texture *get_texture(TextureStage *stage) const;
 
-  void set_shader(Shader *sha, int priority = 0);
+  void set_shader(const Shader *sha, int priority = 0);
   void set_shader_off(int priority = 0);
   void clear_shader();
   void set_shader_input(const ShaderInput *inp);
