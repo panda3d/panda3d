@@ -106,7 +106,7 @@ public:
     void   GetValideChildClasses( std::map< std::string ,CastDetails > &answer, CPPStructType * inclass,  const std::string &up_cast_seed = "", bool downcastposible = true);
     bool   DoesInheritFromIsClass( const CPPStructType * inclass, const std::string &name);
     bool   IsPandaTypedObject(CPPStructType * inclass) { return DoesInheritFromIsClass(inclass,"TypedObject"); };
-    void WriteReturnInstance(ostream &out, int indent_level, std::string &return_expr, std::string &ows_memory_flag,const std::string &class_name, CPPType *ctype, bool inplace);
+    void WriteReturnInstance(ostream &out, int indent_level, std::string &return_expr, std::string &ows_memory_flag,const std::string &class_name, CPPType *ctype, bool inplace, const std::string &const_flag);
     bool HasAGetKeyFunction(const InterrogateType &itype_class);
     int NeedsAStrFunction(const InterrogateType &itype_class);
     int NeedsAReprFunction(const InterrogateType &itype_class);

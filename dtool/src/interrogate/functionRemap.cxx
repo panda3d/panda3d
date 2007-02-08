@@ -47,6 +47,7 @@ FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
   _void_return = true;
   _ForcedVoidReturn = false;
   _has_this = false;
+  _const_method = false;
   _first_true_parameter = 0;
   _num_default_parameters = num_default_parameters;
   _type = T_normal;
@@ -444,6 +445,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     // If this is a method, but not a static method, and not a
     // constructor, then we need a "this" parameter.
     _has_this = true;
+    _const_method = (_ftype->_flags & CPPFunctionType::F_const_method) != 0;
 
     if (interface_maker->synthesize_this_parameter()) {
       // If the interface_maker demands it, the "this" parameter is treated
@@ -452,8 +454,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       Parameter param;
       param._name = "this";
       param._has_name = true;
-      bool is_const = (_ftype->_flags & CPPFunctionType::F_const_method) != 0;
-      param._remap = new ParameterRemapThis(_cpptype, is_const);
+      param._remap = new ParameterRemapThis(_cpptype, _const_method);
       _parameters.push_back(param);
       _first_true_parameter = 1;
     }

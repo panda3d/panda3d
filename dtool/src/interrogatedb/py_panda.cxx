@@ -22,11 +22,12 @@
 #ifdef HAVE_PYTHON
 
 PyMemberDef standard_type_members[] = {
-        {"this", T_INT, offsetof(Dtool_PyInstDef,_ptr_to_object),READONLY,"C++ This if any"},
-        {"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY,"C++ 'this' ownership rules"},
-        {"this_signiture", T_INT, offsetof(Dtool_PyInstDef, _signiture), READONLY,"A type check signiture"},
-        {"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY,"The dtool meta object"},
-        {NULL}  /* Sentinel */
+  {"this", T_INT, offsetof(Dtool_PyInstDef,_ptr_to_object),READONLY,"C++ This if any"},
+  {"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY,"C++ 'this' ownership rules"},
+  {"this_const", T_INT, offsetof(Dtool_PyInstDef, _is_const), READONLY,"C++ 'this' const flag"},
+  {"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature), READONLY,"A type check signature"},
+  {"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY,"The dtool meta object"},
+  {NULL}  /* Sentinel */
 };
 
 
@@ -39,7 +40,7 @@ bool DtoolCanThisBeAPandaInstance(PyObject *self)
     if(self->ob_type->tp_basicsize >= (int)sizeof(Dtool_PyInstDef))
     {
         Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;
-        if(pyself->_signiture == PY_PANDA_SIGNITURE)
+        if(pyself->_signature == PY_PANDA_SIGNATURE)
             return true;
     }
     return false;
@@ -47,8 +48,8 @@ bool DtoolCanThisBeAPandaInstance(PyObject *self)
 ////////////////////////////////////////////////////////////////////////
 //  Function : DTOOL_Call_ExtractThisPointerForType
 //
-//  These are the rapers that allow for down and upcast from type .. 
-//      needed by the Dtool py interface.. Be very carefull if you muck with these
+//  These are the wrappers that allow for down and upcast from type .. 
+//      needed by the Dtool py interface.. Be very careful if you muck with these
 //      as the generated code depends on how this is set up..
 ////////////////////////////////////////////////////////////////////////
 void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * classdef, void ** answer)
@@ -61,25 +62,58 @@ void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * 
 
 void *
 DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
-                               int param, const string &function_name) {
+                               int param, const string &function_name, bool const_ok) {
   if (self != NULL) {
     if (DtoolCanThisBeAPandaInstance(self)) {
       Dtool_PyTypedObject *my_type = ((Dtool_PyInstDef *)self)->_My_Type;
       void *result = my_type->_Dtool_UpcastInterface(self, classdef);
       if (result != NULL) {
-        return result;
-      }
+        if (const_ok || !((Dtool_PyInstDef *)self)->_is_const) {
+          return result;
+        }
 
-      ostringstream str;
-      str << function_name << "() argument " << param << " must be "
-          << classdef->_name << ", not " << my_type->_name;
-      string msg = str.str();
-      PyErr_SetString(PyExc_TypeError, msg.c_str());
+        ostringstream str;
+        str << function_name << "() argument " << param << " may not be const";
+        string msg = str.str();
+        PyErr_SetString(PyExc_TypeError, msg.c_str());
+
+      } else {
+        ostringstream str;
+        str << function_name << "() argument " << param << " must be ";
+
+
+        PyObject *fname = PyObject_GetAttrString((PyObject *)classdef->_PyType.ob_type, "__name__");
+        if (fname != (PyObject *)NULL) {
+          str << PyString_AsString(fname);
+          Py_DECREF(fname);
+        } else {
+          str << classdef->_name;
+        }
+
+        PyObject *tname = PyObject_GetAttrString((PyObject *)self->ob_type, "__name__");
+        if (tname != (PyObject *)NULL) {
+          str << ", not " << PyString_AsString(tname);
+          Py_DECREF(tname);
+        } else {
+          str << ", not " << my_type->_name;
+        }
+
+        string msg = str.str();
+        PyErr_SetString(PyExc_TypeError, msg.c_str());
+      }
 
     } else {
       ostringstream str;
-      str << function_name << "() argument " << param << " must be "
-          << classdef->_name;
+      str << function_name << "() argument " << param << " must be ";
+
+      PyObject *fname = PyObject_GetAttrString((PyObject *)classdef->_PyType.ob_type, "__name__");
+      if (fname != (PyObject *)NULL) {
+        str << PyString_AsString(fname);
+        Py_DECREF(fname);
+      } else {
+        str << classdef->_name;
+      }
+
       PyObject *tname = PyObject_GetAttrString((PyObject *)self->ob_type, "__name__");
       if (tname != (PyObject *)NULL) {
         str << ", not " << PyString_AsString(tname);
@@ -116,7 +150,7 @@ void * DTOOL_Call_GetPointerThis(PyObject *self)
 // this function relies on the behavior of typed objects in the panda system. 
 //
 ////////////////////////////////////////////////////////////////////////
-PyObject * DTool_CreatePyInstanceTyped(void * local_this_in, Dtool_PyTypedObject & known_class_type, bool memory_rules, int RunTimeType)
+PyObject * DTool_CreatePyInstanceTyped(void * local_this_in, Dtool_PyTypedObject & known_class_type, bool memory_rules, bool is_const, int RunTimeType)
 {     
     if(local_this_in == NULL )
     {
@@ -149,7 +183,8 @@ PyObject * DTool_CreatePyInstanceTyped(void * local_this_in, Dtool_PyTypedObject
                 {
                     self->_ptr_to_object = new_local_this;
                     self->_memory_rules = memory_rules;
-                    self->_signiture = PY_PANDA_SIGNITURE;
+                    self->_is_const = is_const;
+                    self->_signature = PY_PANDA_SIGNATURE;
                     self->_My_Type = target_class;    
                     return (PyObject *)self;
                 }             
@@ -166,7 +201,8 @@ PyObject * DTool_CreatePyInstanceTyped(void * local_this_in, Dtool_PyTypedObject
     {
         self->_ptr_to_object = local_this_in;
         self->_memory_rules = memory_rules;
-        self->_signiture = PY_PANDA_SIGNITURE;
+        self->_is_const = is_const;
+        self->_signature = PY_PANDA_SIGNATURE;
         self->_My_Type = &known_class_type;    
     }
     return (PyObject *)self;
@@ -176,7 +212,7 @@ PyObject * DTool_CreatePyInstanceTyped(void * local_this_in, Dtool_PyTypedObject
 // DTool_CreatePyInstance .. wrapper function to finalize the existance of a general 
 //    dtool py instance..
 ////////////////////////////////////////////////////////////////////////
-PyObject * DTool_CreatePyInstance(void * local_this, Dtool_PyTypedObject & in_classdef, bool memory_rules)
+PyObject * DTool_CreatePyInstance(void * local_this, Dtool_PyTypedObject & in_classdef, bool memory_rules, bool is_const)
 {    
     if(local_this == NULL)
     {
@@ -190,6 +226,7 @@ PyObject * DTool_CreatePyInstance(void * local_this, Dtool_PyTypedObject & in_cl
     {
         self->_ptr_to_object = local_this;
         self->_memory_rules = memory_rules;
+        self->_is_const = is_const;
         self->_My_Type = classdef;    
     } 
     return (PyObject *)self;
@@ -198,7 +235,7 @@ PyObject * DTool_CreatePyInstance(void * local_this, Dtool_PyTypedObject & in_cl
 ///////////////////////////////////////////////////////////////////////////////
 /// Th Finalizer for simple instances..
 ///////////////////////////////////////////////////////////////////////////////
-int  DTool_PyInit_Finalize(PyObject * self, void * This, Dtool_PyTypedObject *type, bool memory_rules)
+int  DTool_PyInit_Finalize(PyObject * self, void * This, Dtool_PyTypedObject *type, bool memory_rules, bool is_const)
 {
     // lets put some code in here that checks to see the memory is properly configured..
     // prior to my call ..
@@ -206,6 +243,7 @@ int  DTool_PyInit_Finalize(PyObject * self, void * This, Dtool_PyTypedObject *ty
     ((Dtool_PyInstDef *)self)->_My_Type = type;
     ((Dtool_PyInstDef *)self)->_ptr_to_object = This;
     ((Dtool_PyInstDef *)self)->_memory_rules = memory_rules;
+    ((Dtool_PyInstDef *)self)->_is_const = is_const;
     return 0;
 }
 
@@ -313,12 +351,12 @@ void Dtool_PyModuleInitHelper( LibrayDef   *defs[], char *  modulename)
 ///////////////////////////////////////////////////////////////////////////////
 ///  HACK.... Be carefull 
 //
-//  Dtool_BarrowThisRefrence
+//  Dtool_BorrowThisReference
 //      This function can be used to grab the "THIS" pointer from an object and use it
-//      Required to support fom historical inharatence in the for of "is this instance of"..
+//      Required to support historical inheritance in the form of "is this instance of"..
 //
 ///////////////////////////////////////////////////////////////////////////////
-PyObject * Dtool_BarrowThisRefrence(PyObject * self, PyObject * args )
+PyObject * Dtool_BorrowThisReference(PyObject * self, PyObject * args )
 {
     PyObject *from_in = NULL;
     PyObject *to_in = NULL;
@@ -332,13 +370,14 @@ PyObject * Dtool_BarrowThisRefrence(PyObject * self, PyObject * args )
             if(from->_My_Type == to->_My_Type)
             {
                 to->_memory_rules = false;
+                to->_is_const = from->_is_const;
                 to->_ptr_to_object = from->_ptr_to_object;
                 return Py_BuildValue("");
             }
             PyErr_SetString(PyExc_TypeError, "Must Be Same Type??"); 
         }
         else
-            PyErr_SetString(PyExc_TypeError, "One of thesee does not appear to be DTOOL Instance ??"); 
+            PyErr_SetString(PyExc_TypeError, "One of these does not appear to be DTOOL Instance ??"); 
     }
     return (PyObject *) NULL;
 }
@@ -446,7 +485,7 @@ int DTOOL_PyObject_Compare_old(PyObject *v1, PyObject *v2)
 
             };
             // CompareTo Failed some how :(
-            // do a this compare  .. if Posible...
+            // do a this compare  .. if Possible...
             if(v1_this < v2_this)
                 return -1;
 

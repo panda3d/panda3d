@@ -38,6 +38,7 @@ ParameterRemapThis(CPPType *type, bool is_const) :
   } else {
     _new_type = TypeManager::wrap_pointer(type);
   }
+  _orig_type = _new_type;
 }
 
 ////////////////////////////////////////////////////////////////////

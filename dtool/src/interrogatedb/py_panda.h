@@ -84,7 +84,7 @@ EXPCL_DTOOLCONFIG   RunTimeTypeList & GetRunTimeTypeList();
 
 //////////////////////////////////////////////////////////
 // used to stamp dtool instance.. 
-#define PY_PANDA_SIGNITURE 0xdeadbeaf
+#define PY_PANDA_SIGNATURE 0xdeadbeaf
 typedef  void * ( * ConvertFunctionType  )(PyObject *,Dtool_PyTypedObject * );
 typedef  void * ( * ConvertFunctionType1  )(void *, Dtool_PyTypedObject *);
 typedef  void   ( *FreeFunction  )(PyObject *);
@@ -96,37 +96,38 @@ inline void     Dtool_Deallocate_General(PyObject * self);
 ////////////////////////////////////////////////////////////////////////
 // THIS IS THE INSTANCE CONTAINER FOR ALL panda py objects....
 ////////////////////////////////////////////////////////////////////////
-struct Dtool_PyInstDef
-{
-        PyObject_HEAD
-        void                 * _ptr_to_object;
-        bool                   _memory_rules;
-        unsigned long          _signiture;
-        struct Dtool_PyTypedObject * _My_Type;
+struct Dtool_PyInstDef {
+  PyObject_HEAD
+  void *_ptr_to_object;
+  int _memory_rules;   // true if we own the pointer and should delete it or unref it
+  int _is_const;       // true if this is a "const" pointer.
+  unsigned long _signature;
+  struct Dtool_PyTypedObject *_My_Type;
 };
 
 ////////////////////////////////////////////////////////////////////////
-// A Offset Dictionary Definign How to read the Above Object..
+// A Offset Dictionary Defining How to read the Above Object..
 ////////////////////////////////////////////////////////////////////////
 extern EXPCL_DTOOLCONFIG PyMemberDef standard_type_members[];
 
 ////////////////////////////////////////////////////////////////////////
 // The Class Definition Structor For a Dtool python type.
 ////////////////////////////////////////////////////////////////////////
-struct Dtool_PyTypedObject  
-{
-    // Standard Python Fearures..
-    PyTypeObject        _PyType;
-    //                  My Class Level Features..
-    char *                  _name;                                          // cpp name for the object
-    bool                    _Dtool_IsRunTimeCapable;                    // derived from TypedObject
-    ConvertFunctionType     _Dtool_UpcastInterface;                    // The Upcast Function By Slot
-    ConvertFunctionType1    _Dtool_DowncastInterface;                  // The Downcast Function By Slot
-    FreeFunction            _Dtool_FreeInstance;
-    PyModuleClassInit       _Dtool_ClassInit;                          // The init function pointer
-    // some convience functions..
-    inline PyTypeObject    & As_PyTypeObject(void) { return _PyType; };
-    inline PyObject        & As_PyObject(void) { return (PyObject &)_PyType; };
+struct Dtool_PyTypedObject {
+  // Standard Python Features..
+  PyTypeObject _PyType;
+
+  //                  My Class Level Features..
+  const char *_name;                             // cpp name for the object
+  bool _Dtool_IsRunTimeCapable;                  // derived from TypedObject
+  ConvertFunctionType _Dtool_UpcastInterface;    // The Upcast Function By Slot
+  ConvertFunctionType1 _Dtool_DowncastInterface; // The Downcast Function By Slot
+  FreeFunction _Dtool_FreeInstance;
+  PyModuleClassInit _Dtool_ClassInit;            // The init function pointer
+
+  // some convenience functions..
+  inline PyTypeObject &As_PyTypeObject() { return _PyType; };
+  inline PyObject &As_PyObject() { return (PyObject &)_PyType; };
 };
 
 
@@ -234,24 +235,26 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =  {\
 ////////////////////////////////////////////////////////////////////////
 // The Fast Deallocator.. for Our instances..
 ////////////////////////////////////////////////////////////////////////
-inline void    Dtool_Deallocate_General(PyObject * self)
-{
-    ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_FreeInstance(self);
-    self->ob_type->tp_free(self);
+inline void Dtool_Deallocate_General(PyObject * self) {
+  ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_FreeInstance(self);
+  self->ob_type->tp_free(self);
 }
+
 ////////////////////////////////////////////////////////////////////////
-//  More Macro(s) to Implement class functions.. Usally used if C++ needs type information 
+//  More Macro(s) to Implement class functions.. Usually used if C++ needs type information 
 ////////////////////////////////////////////////////////////////////////
 #define Define_Dtool_new(CLASS_NAME,CNAME)\
 PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds)\
 {\
-        PyObject * self = type->tp_alloc(type, 0);\
-    ((Dtool_PyInstDef *)self)->_signiture = PY_PANDA_SIGNITURE;\
+    PyObject *self = type->tp_alloc(type, 0);\
+    ((Dtool_PyInstDef *)self)->_signature = PY_PANDA_SIGNATURE;\
     ((Dtool_PyInstDef *)self)->_ptr_to_object = NULL;\
     ((Dtool_PyInstDef *)self)->_memory_rules = false;\
+    ((Dtool_PyInstDef *)self)->_is_const = false;\
     ((Dtool_PyInstDef *)self)->_My_Type = &Dtool_##CLASS_NAME;\
     return self;\
-}\
+}
+
 ////////////////////////////////////////////////////////////////////////
 /// Delete functions..
 ////////////////////////////////////////////////////////////////////////
@@ -301,14 +304,15 @@ EXPCL_DTOOLCONFIG bool DtoolCanThisBeAPandaInstance(PyObject *self);
 ////////////////////////////////////////////////////////////////////////
 //  Function : DTOOL_Call_ExtractThisPointerForType
 //
-//  These are the rapers that allow for down and upcast from type .. 
-//      needed by the Dtool py interface.. Be very carefull if you muck with these
-//      as the generated code depends on how this is set up..
+//  These are the wrappers that allow for down and upcast from type .. 
+//      needed by the Dtool py interface.. Be very careful if you muck
+//      with these as the generated code depends on how this is set
+//      up..
 ////////////////////////////////////////////////////////////////////////
 EXPCL_DTOOLCONFIG void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * classdef, void ** answer);
 
 
-EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef, int param, const string &function_name);
+EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef, int param, const string &function_name, bool const_ok);
 
 EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThis(PyObject *self);
 
@@ -318,13 +322,13 @@ EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThis(PyObject *self);
 // this function relies on the behavior of typed objects in the panda system. 
 //
 ////////////////////////////////////////////////////////////////////////
-EXPCL_DTOOLCONFIG  PyObject * DTool_CreatePyInstanceTyped(void * local_this_in, Dtool_PyTypedObject & known_class_type, bool memory_rules, int RunTimeType);
+EXPCL_DTOOLCONFIG PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &known_class_type, bool memory_rules, bool is_const, int RunTimeType);
 
 ////////////////////////////////////////////////////////////////////////
 // DTool_CreatePyInstance .. wrapper function to finalize the existance of a general 
 //    dtool py instance..
 ////////////////////////////////////////////////////////////////////////
-EXPCL_DTOOLCONFIG  PyObject * DTool_CreatePyInstance(void * local_this, Dtool_PyTypedObject & in_classdef, bool memory_rules);
+EXPCL_DTOOLCONFIG PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_classdef, bool memory_rules, bool is_const);
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Macro(s) class definition .. Used to allocate storage and 
@@ -374,7 +378,7 @@ Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)
 ///////////////////////////////////////////////////////////////////////////////
 /// Th Finalizer for simple instances..
 ///////////////////////////////////////////////////////////////////////////////
-EXPCL_DTOOLCONFIG int  DTool_PyInit_Finalize(PyObject * self, void * This, Dtool_PyTypedObject *type, bool memory_rules);
+EXPCL_DTOOLCONFIG int DTool_PyInit_Finalize(PyObject *self, void *This, Dtool_PyTypedObject *type, bool memory_rules, bool is_const);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// A heler function to glu methed definition together .. that can not be done at 
@@ -417,12 +421,12 @@ EXPCL_DTOOLCONFIG void Dtool_PyModuleInitHelper( LibrayDef   *defs[], char *  mo
 ///////////////////////////////////////////////////////////////////////////////
 ///  HACK.... Be carefull 
 //
-//  Dtool_BarrowThisRefrence
+//  Dtool_BorrowThisReference
 //      This function can be used to grab the "THIS" pointer from an object and use it
 //      Required to support fom historical inharatence in the for of "is this instance of"..
 //
 ///////////////////////////////////////////////////////////////////////////////
-EXPCL_DTOOLCONFIG PyObject * Dtool_BarrowThisRefrence(PyObject * self, PyObject * args );
+EXPCL_DTOOLCONFIG PyObject * Dtool_BorrowThisReference(PyObject * self, PyObject * args );
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // We do expose a dictionay for dtool classes .. this should be removed at some point..

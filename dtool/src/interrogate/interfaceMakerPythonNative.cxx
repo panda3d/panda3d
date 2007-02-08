@@ -411,7 +411,7 @@ void   InterfaceMakerPythonNative::GetValideChildClasses( std::map< std::string 
 //  Function : WriteReturnInstance
 //
 ///////////////////////////////////////////////////////////////////////////////
-void InterfaceMakerPythonNative::WriteReturnInstance(ostream &out, int indent_level, std::string &return_expr, std::string &ows_memory_flag, const std::string &class_name, CPPType *ctype, bool inplace)
+void InterfaceMakerPythonNative::WriteReturnInstance(ostream &out, int indent_level, std::string &return_expr, std::string &ows_memory_flag, const std::string &class_name, CPPType *ctype, bool inplace, const std::string &const_flag)
 {
     if(inplace == true)
     {
@@ -430,15 +430,14 @@ void InterfaceMakerPythonNative::WriteReturnInstance(ostream &out, int indent_le
         if(IsPandaTypedObject(ctype->as_struct_type()))
         {
             std::string typestr = "(" + return_expr + ")->as_typed_object()->get_type_index()";
-
-            indent(out, indent_level)<<"return DTool_CreatePyInstanceTyped((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(class_name) << ","<< ows_memory_flag<<","<<typestr<<");\n";
+            indent(out, indent_level)<<"return DTool_CreatePyInstanceTyped((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(class_name) << ","<< ows_memory_flag << ", " << const_flag << ", " << typestr << ");\n";
 
         }
         else
         {
             //    indent(out, indent_level)<< "if(" << return_expr <<"!= NULL)\n";
             indent(out, indent_level)
-                <<"return DTool_CreatePyInstance((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(class_name) << ","<<ows_memory_flag<<");\n";
+              <<"return DTool_CreatePyInstance((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(class_name) << ","<<ows_memory_flag << ", " << const_flag <<");\n";
         }
     }
 }
@@ -892,8 +891,8 @@ void InterfaceMakerPythonNative::write_module_support(ostream &out,ostream *out_
 
     if(force_base_functions)
     {
-        out << "  //Support Function For Dtool_types ... for know in each module ??\n";
-        out << "  {\"Dtool_BarrowThisRefrence\", &Dtool_BarrowThisRefrence,METH_VARARGS,\"Used to barrow 'this' poiner ( to, from)\\n Assumes no ownership\"}, \n"; 
+        out << "  //Support Function For Dtool_types ... for now in each module ??\n";
+        out << "  {\"Dtool_BorrowThisReference\", &Dtool_BorrowThisReference,METH_VARARGS,\"Used to borrow 'this' poiner ( to, from)\\n Assumes no ownership\"}, \n"; 
         out << "  {\"Dtool_AddToDictionary\", &Dtool_AddToDictionary,METH_VARARGS,\"Used to Items Into a types (tp_dict)\"}, \n"; 
     }
 
@@ -1730,7 +1729,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Function *func,
     indent(out,8)<< "{\n";
     indent(out,12)
       << "PyErr_Format(PyExc_TypeError, \""
-      << func->_remaps[0]->_cppfunc->get_local_name(&parser)
+      << methodNameFromCppName(func, "")
       << "() takes ";
 
     // We add one to the parameter count for "self", following the
@@ -1920,7 +1919,7 @@ std::vector< FunctionRemap * >  SortFunctionSet(std::set< FunctionRemap *> &rema
 ///////////////////////////////////////////////////////////
 //  Function  : write_function_forset
 //
-//  A set is defined as all  rempas that have the same number of paramaters..
+//  A set is defined as all remaps that have the same number of paramaters..
 ///////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::write_function_forset(ostream &out, InterfaceMaker::Function *func,
                                                        std::set< FunctionRemap *> &remapsin, string &expected_params, int indent_level,ostream &forward_decl, const std::string &functionname, bool is_inplace)
@@ -1937,8 +1936,17 @@ void InterfaceMakerPythonNative::write_function_forset(ostream &out, InterfaceMa
              FunctionRemap *remap = (*sii);
              if(isRemapLegal(*remap))
              {
+                 if (remap->_has_this && !remap->_const_method) {
+                   // If it's a non-const method, we only allow a
+                   // non-const this.
+                   indent(out,indent_level) 
+                     << "if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+                 } else {
+                   indent(out, indent_level)
+                     << "{\n";
+                 }
 
-                 indent(out,indent_level)<< "{ // -2 " ;
+                 indent(out,indent_level) << "  // -2 " ;
                  remap->write_orig_prototype(out, 0); out << "\n" ;
 
                  write_function_instance(out, func, remap,expected_params,indent_level+4,false,forward_decl, func->_name, is_inplace);
@@ -1954,13 +1962,40 @@ void InterfaceMakerPythonNative::write_function_forset(ostream &out, InterfaceMa
         for(sii = remapsin.begin(); sii != remapsin.end(); sii ++)
         {
              FunctionRemap *remap = (*sii);
-             if(isRemapLegal(*remap))
-             {
+             if(isRemapLegal(*remap)) {
+               if (remap->_has_this && !remap->_const_method) {
+                 // If it's a non-const method, we only allow a
+                 // non-const this.
+                 indent(out, indent_level) 
+                   << "if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+               } else {
+                 indent(out, indent_level)
+                   << "{\n";
+               }
 
-             indent(out,indent_level)<< "// 1-" ;remap->write_orig_prototype(out, 0); out << "\n" ;
-//             indent(out,indent_level)<< "do{\n";
-             write_function_instance(out, func, remap,expected_params,indent_level+4,true,forward_decl, func->_name, is_inplace);
-  //           indent(out,indent_level)<< "}while(false);\n";
+               indent(out,indent_level + 2) 
+                 << "// 1-" ;remap->write_orig_prototype(out, 0); out << "\n" ;
+               write_function_instance(out, func, remap,expected_params,indent_level+4,true,forward_decl, func->_name, is_inplace);
+
+               if (remap->_has_this && !remap->_const_method) {
+                 indent(out, indent_level)
+                   << "} else {\n";
+                 indent(out, indent_level + 2)
+                   << "PyErr_SetString(PyExc_TypeError,\n";
+                 string class_name = remap->_cpptype->get_simple_name();
+                 indent(out, indent_level + 2)
+                   << "                \"Cannot call "
+                   << classNameFromCppName(class_name)
+                   << "." << methodNameFromCppName(func, class_name)
+                   << "() on a const object.\");\n";
+                 indent(out, indent_level + 2)
+                   << "return (PyObject *) NULL;\n";
+                 indent(out,indent_level)
+                   << "}\n\n";
+               } else {
+                 indent(out,indent_level)
+                   << "}\n\n";            
+               }
              }
         }
     }
@@ -1997,7 +2032,7 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
   // simultaneously building the ParseTuple() function call and also
   // the parameter expression list for call_function().
 
-  expected_params += remap->_cppfunc->get_simple_name();
+  expected_params += methodNameFromCppName(func1, "");
   expected_params += "(";
 
   int pn;
@@ -2098,7 +2133,7 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       indent(out,indent_level) << "double " << param_name;
       format_specifiers += "d";
       parameter_list += ", &" + param_name;
-      expected_params += "float ";
+      expected_params += "float";
 
     } else if (TypeManager::is_char_pointer(type)) {
       indent(out,indent_level) << "char *" << param_name;
@@ -2112,10 +2147,19 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       parameter_list += ", &" + param_name;
       pexpr_string = param_name;
       pname_for_pyobject += param_name;
-      expected_params += "PyObject";
+      expected_params += "any";
 
     } else if (TypeManager::is_pointer(type)) {
-      expected_params += type->get_preferred_name();
+      CPPType *obj_type = TypeManager::unwrap(TypeManager::resolve_type(type));
+      bool const_ok = !TypeManager::is_non_const_pointer_or_ref(orig_type);
+
+      if (const_ok) {
+        expected_params += "const ";
+      } else {
+        expected_params += "non-const ";
+      }
+      expected_params += classNameFromCppName(obj_type->get_simple_name());
+
       if (!remap->_has_this || pn != 0) {
         indent(out, indent_level) 
           << "PyObject *" << param_name;
@@ -2123,7 +2167,7 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
         parameter_list += ", &" + param_name;
         pname_for_pyobject += param_name;
 
-        TypeIndex p_type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)),false);
+        TypeIndex p_type_index = builder.get_type(obj_type,false);
         InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
         const InterrogateType &p_itype = idb->get_type(p_type_index);    
 
@@ -2135,12 +2179,19 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
           //ForwardDeclrs << "IMPORT_THIS struct   Dtool_PyTypedObject Dtool_" << make_safe_name(p_itype.get_scoped_name()) << ";\n";
         }
 
+        string class_name;
+        string method_prefix;
+        if (remap->_cpptype) {
+          class_name = remap->_cpptype->get_simple_name();
+          method_prefix = classNameFromCppName(class_name) + string(".");
+        }
+
         ostringstream str;
         str << "DTOOL_Call_GetPointerThisClass(" << param_name 
             << ", &Dtool_" << make_safe_name(p_itype.get_scoped_name()) 
             << ", " << pn << ", \"" 
-            << remap->_cppfunc->get_local_name(&parser)
-            << "\");\n";
+            << method_prefix << methodNameFromCppName(func1, class_name)
+            << "\", " << const_ok << ");\n";
 
         extra_convert += str.str();
         extra_param_check += "|| (" + param_name + "_this == NULL)";
@@ -2173,7 +2224,8 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
   // If we got what claimed to be a unary operator, don't check for
   // parameters, since we won't be getting any anyway.
   if (!func1->_ifunc.is_unary_op()) {
-    std::string format_specifiers1 = format_specifiers + ":" + remap->_cppfunc->get_local_name(&parser);
+    std::string format_specifiers1 = format_specifiers + ":" + 
+      methodNameFromCppName(func1, "");
     indent(out,indent_level)
       << "static char * key_word_list[] = {" << keyword_list << "NULL};\n";
 
@@ -2343,6 +2395,13 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
   }
   else if (TypeManager::is_pointer(type)) 
   {
+      string const_flag;
+      if (TypeManager::is_const_pointer_to_anything(type)) {
+        const_flag = "true";
+      } else {
+        const_flag = "false";
+      }
+
       if (TypeManager::is_struct(orig_type) || TypeManager::is_ref_to_anything(orig_type)) 
       {
         if( TypeManager::is_ref_to_anything(orig_type))
@@ -2352,10 +2411,10 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
             const InterrogateType &itype = idb->get_type(type_index);    
             std::string ows_memory_flag("true");
 
-           if(remap->_return_value_needs_management)
-                ows_memory_flag = "true";
+            if(remap->_return_value_needs_management)
+              ows_memory_flag = "true";
             else
-                ows_memory_flag = "false";
+              ows_memory_flag = "false";
 
            if(!isExportThisRun(itype._cpptype))
            {
@@ -2363,9 +2422,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
                //ForwardDeclrs << "IMPORT_THIS struct   Dtool_PyTypedObject Dtool_" << make_safe_name(itype.get_scoped_name()) << ";\n";
            }
 
-           WriteReturnInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype,is_inplace);
-           // indent(out, indent_level)
-             //   <<"return DTool_CreatePyInstance((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(itype.get_scoped_name()) << ","<<ows_memory_flag<<");\n";
+           WriteReturnInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype,is_inplace, const_flag);
 
         }
         else
@@ -2380,7 +2437,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
                 InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
                 const InterrogateType &itype = idb->get_type(type_index);    
                 indent(out, indent_level)
-                    <<"return DTool_PyInit_Finalize(self, " << return_expr <<",&"<<CLASS_PREFEX  << make_safe_name(itype.get_scoped_name()) << ",true);\n";
+                    <<"return DTool_PyInit_Finalize(self, " << return_expr <<",&"<<CLASS_PREFEX  << make_safe_name(itype.get_scoped_name()) << ",true,false);\n";
             }
             else
             {
@@ -2404,9 +2461,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
                     }
 
                     //                    ForwardDeclrs << "extern  \"C\" struct   Dtool_PyTypedObject Dtool_" << make_safe_name(itype.get_scoped_name()) << ";\n";
-                    WriteReturnInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype,is_inplace);
-                    //indent(out, indent_level)
-                    //  <<"return DTool_CreatePyInstance((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(itype.get_scoped_name()) << ","<<ows_memory_flag<<");\n";
+                    WriteReturnInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype,is_inplace, const_flag);
                 }
                 else
                 {
@@ -2421,9 +2476,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
                     }
 
                     //                    ForwardDeclrs << "extern  \"C\" struct   Dtool_PyTypedObject Dtool_" << make_safe_name(itype.get_scoped_name()) << ";\n";
-                    //indent(out, indent_level)
-                    //  <<"return DTool_CreatePyInstance((void *)" << return_expr <<"," << CLASS_PREFEX << make_safe_name(itype.get_scoped_name()) << ","<<ows_memory_flag<<");\n";
-                    WriteReturnInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype,is_inplace);
+                    WriteReturnInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype,is_inplace, const_flag);
 
                 }
             }
@@ -2448,10 +2501,8 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
           }
 
           //        ForwardDeclrs << "extern  \"C\" struct   Dtool_PyTypedObject Dtool_" << make_safe_name(itype.get_scoped_name()) << ";\n";
-          WriteReturnInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype,is_inplace);
+          WriteReturnInstance(out,indent_level,return_expr,ows_memory_flag,itype.get_scoped_name(),itype._cpptype,is_inplace, const_flag);
 
-          //indent(out, indent_level)
-          //  << "return  DTool_CreatePyInstance((void *)" << return_expr  <<","<<CLASS_PREFEX <<  make_safe_name(itype.get_scoped_name()) <<","<< ows_memory_flag<< ");\n";
       }
       else
       {

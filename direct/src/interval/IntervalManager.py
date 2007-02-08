@@ -27,7 +27,7 @@ class IntervalManager(CIntervalManager):
             ##self.dd = self
             if globalPtr:
                 self.cObj = CIntervalManager.getGlobalPtr()
-                Dtool_BarrowThisRefrence(self, self.cObj)
+                Dtool_BorrowThisReference(self, self.cObj)
                 self.dd = self
             else:
                 CIntervalManager.__init__(self)

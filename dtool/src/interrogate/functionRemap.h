@@ -89,6 +89,7 @@ public:
   bool _void_return;
   bool _ForcedVoidReturn;
   bool _has_this;
+  bool _const_method;
   int _first_true_parameter;
   int _num_default_parameters;
   Type _type;

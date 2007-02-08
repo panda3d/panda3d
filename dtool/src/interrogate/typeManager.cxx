@@ -167,6 +167,49 @@ is_const_ref_to_anything(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_const_pointer_to_anything
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is a const
+//               pointer to something, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_const_pointer_to_anything(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_const_pointer_to_anything(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_pointer:
+    return is_const(type->as_pointer_type()->_pointing_at);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_non_const_pointer_or_ref
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is a non-const
+//               pointer or reference to something, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_non_const_pointer_or_ref(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_non_const_pointer_or_ref(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_pointer:
+    return !is_const(type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_reference:
+    return !is_const(type->as_reference_type()->_pointing_at);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_pointer
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is some kind of a
@@ -1586,13 +1629,13 @@ bool TypeManager::IsExported(CPPType *in_type)
         if (type->get_subtype() == CPPDeclaration::ST_struct)
         {
             CPPStructType *struct_type =type->as_type()->resolve_type(&parser, &parser)->as_struct_type();
-            CPPScope *scope = struct_type->_scope;
+            //CPPScope *scope = struct_type->_scope;
             return IsExported(struct_type);
 
         }
         else if (type->get_subtype() == CPPDeclaration::ST_enum) 
         {
-            CPPEnumType *enum_type = type->as_type()->resolve_type(&parser, &parser)->as_enum_type();
+          //CPPEnumType *enum_type = type->as_type()->resolve_type(&parser, &parser)->as_enum_type();
             if (type->_vis <= min_vis)
                 return true;
         }
