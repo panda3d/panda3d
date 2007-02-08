@@ -83,7 +83,7 @@ operator -> () const {
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE ThreadSafePointerTo<T>::
-operator TYPENAME ThreadSafePointerToBase<T>::To *() const {
+operator T * () const {
   return (To *)AtomicAdjust::get_ptr(this->_void_ptr);
 }
 
@@ -205,7 +205,7 @@ operator -> () const {
 
 template<class T>
 INLINE ThreadSafeConstPointerTo<T>::
-operator const TYPENAME ThreadSafePointerToBase<T>::To *() const {
+operator const T * () const {
   return (To *)AtomicAdjust::get_ptr(this->_void_ptr);
 }
 

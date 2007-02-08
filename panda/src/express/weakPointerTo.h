@@ -44,7 +44,8 @@ PUBLISHED:
 public:
   INLINE To &operator *() const;
   INLINE To *operator -> () const;
-  INLINE operator TYPENAME WeakPointerToBase<T>::To *() const;
+  // MSVC.NET 2005 insists that we use T *, and not To *, here.
+  INLINE operator T *() const;
 
 PUBLISHED:
   INLINE To *p() const;
@@ -82,7 +83,7 @@ PUBLISHED:
 public:
   INLINE const To &operator *() const;
   INLINE const To *operator -> () const;
-  INLINE operator const TYPENAME WeakPointerToBase<T>::To *() const;
+  INLINE operator const T *() const;
 
 PUBLISHED:
   INLINE const To *p() const;

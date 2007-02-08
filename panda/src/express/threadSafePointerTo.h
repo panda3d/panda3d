@@ -42,7 +42,8 @@ PUBLISHED:
 public:
   INLINE To &operator *() const;
   INLINE To *operator -> () const;
-  INLINE operator TYPENAME ThreadSafePointerToBase<T>::To *() const;
+  // MSVC.NET 2005 insists that we use T *, and not To *, here.
+  INLINE operator T *() const;
 
 PUBLISHED:
   // When downcasting to a derived class from a ThreadSafePointerTo<BaseClass>,
@@ -89,7 +90,7 @@ PUBLISHED:
 public:
   INLINE const To &operator *() const;
   INLINE const To *operator -> () const;
-  INLINE operator const TYPENAME ThreadSafePointerToBase<T>::To *() const;
+  INLINE operator const T *() const;
 
 PUBLISHED:
   INLINE const To *p() const;

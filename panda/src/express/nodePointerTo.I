@@ -83,7 +83,7 @@ operator -> () const {
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE NodePointerTo<T>::
-operator TYPENAME NodePointerToBase<T>::To *() const {
+operator T *() const {
   return (To *)(this->_void_ptr);
 }
 
@@ -205,7 +205,7 @@ operator -> () const {
 
 template<class T>
 INLINE NodeConstPointerTo<T>::
-operator const TYPENAME NodePointerToBase<T>::To *() const {
+operator const T * () const {
   return (To *)(this->_void_ptr);
 }
 

@@ -39,7 +39,9 @@ public:
 
   INLINE To &operator *() const;
   INLINE To *operator -> () const;
-  INLINE operator TYPENAME NodePointerToBase<T>::To *() const;
+
+  // MSVC.NET 2005 insists that we use T *, and not To *, here.
+  INLINE operator T *() const;
 
   INLINE To *p() const;
 
@@ -64,7 +66,7 @@ public:
 
   INLINE const To &operator *() const;
   INLINE const To *operator -> () const;
-  INLINE operator const TYPENAME NodePointerToBase<T>::To *() const;
+  INLINE operator const T *() const;
 
   INLINE const To *p() const;
 
