@@ -238,8 +238,12 @@ read_prc(istream &in) {
 ////////////////////////////////////////////////////////////////////
 bool ConfigPage::
 read_encrypted_prc(istream &in, const string &password) {
+#ifdef HAVE_OPENSSL
   IDecryptStream decrypt(&in, false, password);
   return read_prc(decrypt);
+#else
+  return false;
+#endif  // HAVE_OPENSSL
 }
 
 ////////////////////////////////////////////////////////////////////
