@@ -27,7 +27,11 @@ class IntervalManager(CIntervalManager):
             ##self.dd = self
             if globalPtr:
                 self.cObj = CIntervalManager.getGlobalPtr()
-                Dtool_BorrowThisReference(self, self.cObj)
+                # Temporary try..except for old Panda.
+                try:
+                    Dtool_BorrowThisReference(self, self.cObj)
+                except:
+                    Dtool_BarrowThisRefrence(self, self.cObj)
                 self.dd = self
             else:
                 CIntervalManager.__init__(self)
