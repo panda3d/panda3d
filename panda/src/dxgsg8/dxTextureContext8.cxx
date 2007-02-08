@@ -76,6 +76,7 @@ create_texture(DXScreenData &scrn) {
   int num_alpha_bits;     //  number of alpha bits in texture pixfmt
   D3DFORMAT target_pixel_format = D3DFMT_UNKNOWN;
   bool needs_luminance = false;
+  bool compress_texture = false;
 
   nassertr(IS_VALID_PTR(get_texture()), false);
 
@@ -131,6 +132,24 @@ create_texture(DXScreenData &scrn) {
   case 4:
     _d3d_format = D3DFMT_A8R8G8B8;
     break;
+  }
+
+  // check for texture compression
+  switch (get_texture()->get_texture_type()) {
+    case Texture::TT_1d_texture:
+    case Texture::TT_2d_texture:
+    case Texture::TT_cube_map:
+      // check config setting
+      if (compressed_textures) {
+        // no compression for render target textures
+        if (get_texture()->get_render_to_texture() == false) {
+          compress_texture = true;
+        }
+      }
+      break;
+    case Texture::TT_3d_texture:
+      // not supported by all video chips
+      break;
   }
 
   // make sure we handled all the possible cases
@@ -288,6 +307,9 @@ create_texture(DXScreenData &scrn) {
       break; //bail
 
     if (!dx_force_16bpptextures) {
+      if (compress_texture) {
+        CHECK_FOR_FMT(DXT3, Conv32toDXT3);    
+      }    
       if (num_color_channels == 4) {
         CHECK_FOR_FMT(A8R8G8B8, Conv32to32);
       } else {
@@ -341,6 +363,10 @@ create_texture(DXScreenData &scrn) {
 
   case 24:
     nassertr(num_color_channels == 3, false);
+
+    if (compress_texture) {
+      CHECK_FOR_FMT(DXT1, Conv24toDXT1);    
+    }
 
     if (!dx_force_16bpptextures) {
       CHECK_FOR_FMT(R8G8B8, Conv24to24);
@@ -466,7 +492,7 @@ create_texture(DXScreenData &scrn) {
 
  found_matching_format:
   // We found a suitable format that matches the texture's format.
-
+  
   if (get_texture()->get_match_framebuffer_format()) {
     // Instead of creating a texture with the found format, we will
     // need to make one that exactly matches the framebuffer's
