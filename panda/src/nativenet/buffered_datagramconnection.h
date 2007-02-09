@@ -64,9 +64,8 @@ protected:
   inline void ClearAll(void);
 
   inline bool SendMessageBufferOnly(Datagram &msg); // do not use this .. this is a way for the the COnnecting UPcall to drop messages in queue first..
-public:
-  inline bool GetMessage(Datagram &val);
 PUBLISHED:
+  inline bool GetMessage(Datagram &val);
   inline bool DoConnect(void);           // all the real state magic is in here
   inline bool IsConnected(void); 
   inline Buffered_DatagramConnection(bool do_blocking_writes, int rbufsize, int wbufsize, int write_flush_point) ;
@@ -245,14 +244,14 @@ inline void Buffered_DatagramConnection::ClearAddresses(void)
     _Addresslist.clear();
 }
 ////////////////////////////////////////////////////////////////////
-// Function name	: Buffered_DatagramConnection::GetMessageInternal
+// Function name	: Buffered_DatagramConnection::GetMessage
 // Description	    :  read a message
 //  
 //	false means something bad happened..
 //
 //
 // Return type		: inline bool 
-// Argument         : DataGram **val
+// Argument         : Datagram &val
 ////////////////////////////////////////////////////////////////////
 inline bool Buffered_DatagramConnection::GetMessage(Datagram  &val)
 {

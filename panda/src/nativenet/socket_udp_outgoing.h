@@ -12,12 +12,20 @@ class EXPCL_PANDA Socket_UDP_Outgoing : public Socket_IP
 {
 public:
 PUBLISHED:
+    inline Socket_UDP_Outgoing() { }
+
     // use this interface for a tagreted UDP connection
     inline bool InitToAddress(Socket_Address & address);
+public:
     inline bool Send(const char * data, int len);
+PUBLISHED:
+    inline bool Send(const string &data);
     // use this interface for a none tagreted UDP connection
     inline bool InitNoAddress();
+public:
     inline bool SendTo(const char * data, int len, const Socket_Address & address);
+PUBLISHED:
+    inline bool SendTo(const string &data, const Socket_Address & address);
     inline bool SetToBroadCast();
 };
 //////////////////////////////////////////////////////////////
@@ -67,6 +75,7 @@ inline bool Socket_UDP_Outgoing::InitNoAddress()
     
     return true;
 }
+
 ////////////////////////////////////////////////////////////////////
 // Function name : Socket_UDP_Outgoing::Send
 // Description     : Send data to connected address
@@ -77,8 +86,21 @@ inline bool Socket_UDP_Outgoing::InitNoAddress()
 ////////////////////////////////////////////////////////////////////
 inline bool Socket_UDP_Outgoing::Send(const char * data, int len)
 {
-    return (DO_SOCKET_WRITE(_socket, data, len) == len);
+  return (DO_SOCKET_WRITE(_socket, data, len) == len);
 }
+
+////////////////////////////////////////////////////////////////////
+// Function name : Socket_UDP_Outgoing::Send
+// Description     : Send data to connected address
+//
+// Return type  : inline bool
+// Argument         : const string &data
+////////////////////////////////////////////////////////////////////
+inline bool Socket_UDP_Outgoing::Send(const string &data)
+{
+  return Send(data.data(), data.size());
+}
+
 ////////////////////////////////////////////////////////////////////
 // Function name : Socket_UDP_Outgoing::SendTo
 // Description     : Send data to specified address
@@ -91,6 +113,19 @@ inline bool Socket_UDP_Outgoing::Send(const char * data, int len)
 inline bool Socket_UDP_Outgoing::SendTo(const char * data, int len, const Socket_Address & address)
 {
     return (DO_SOCKET_WRITE_TO(_socket, data, len, &address.GetAddressInfo()) == len);
+}
+
+////////////////////////////////////////////////////////////////////
+// Function name : Socket_UDP_Outgoing::SendTo
+// Description     : Send data to specified address
+//
+// Return type  : inline bool
+// Argument         : const string &data
+// Argument         : NetAddress & address
+////////////////////////////////////////////////////////////////////
+inline bool Socket_UDP_Outgoing::SendTo(const string &data, const Socket_Address & address)
+{
+  return SendTo(data.data(), data.size(), address);
 }
 
 #endif //__SOCKET_UDP_OUTGOING_H__

@@ -20,24 +20,24 @@ public:
     const AddressType & GetAddressInfo() const   { return _addr; }
 PUBLISHED:
     
-    Socket_Address(short port = 0);
-    Socket_Address(const Socket_Address &inaddr);
+    inline Socket_Address(short port = 0);
+    inline Socket_Address(const Socket_Address &inaddr);
 
-    virtual ~Socket_Address();
+    inline virtual ~Socket_Address();
     
-    bool set_any_IP(int port);
-    bool set_port(int port);
-    bool set_broadcast(int port);
+    inline bool set_any_IP(int port);
+    inline bool set_port(int port);
+    inline bool set_broadcast(int port);
     
-    bool set_host(const std::string &hostname, int port) ;
-    bool set_host(const std::string &hostname) ;
-    bool set_host(unsigned int ip4adr, int port);
-    void clear();
+    inline bool set_host(const std::string &hostname, int port) ;
+    inline bool set_host(const std::string &hostname) ;
+    inline bool set_host(unsigned int ip4adr, int port);
+    inline void clear();
     
-    unsigned short get_port() const;
-    std::string get_ip() const ;
-    std::string get_ip_port() const;
-    unsigned long GetIPAddressRaw() const;
+    inline unsigned short get_port() const;
+    inline std::string get_ip() const ;
+    inline std::string get_ip_port() const;
+    inline unsigned long GetIPAddressRaw() const;
     
     inline bool operator== (const Socket_Address &in) const;
     inline bool operator < (const Socket_Address &in) const;
