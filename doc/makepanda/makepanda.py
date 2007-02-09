@@ -2692,6 +2692,28 @@ EnqueueLink(opts=OPTS, dll='libpanda.dll', obj=OBJFILES, xdep=[
 ])
 
 #
+# DIRECTORY: panda/src/skel
+#
+
+IPATH=['panda/src/skel']
+OPTS=['BUILDING_PANDASKEL', 'NSPR']
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='skel_composite.cxx', obj='skel_composite.obj')
+EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libskel.in', obj='libskel_igate.obj',
+             src='panda/src/skel',  module='pandaskel', library='libskel',
+             skip=[], also=["skel_composite.cxx"])
+EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpandaskel_module.obj',
+            module='pandaskel', library='libpandaskel', files=["libskel.in"])
+EnqueueLink(dll='libpandaskel.dll', opts=['ADVAPI', 'NSPR'], obj=[
+    'skel_composite.obj',
+    'libskel_igate.obj',
+    'libpandaskel_module.obj',
+    'libpanda.dll',
+    'libpandaexpress.dll',
+    'libp3dtoolconfig.dll',
+    'libp3dtool.dll',
+    ])
+
+#
 # DIRECTORY: panda/src/audiotraits/
 #
 
