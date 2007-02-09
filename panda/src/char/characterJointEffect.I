@@ -31,9 +31,14 @@ CharacterJointEffect() {
 //     Function: CharacterJointEffect::get_character
 //       Access: Published
 //  Description: Returns the Character that will get update() called
-//               on it when this node's relative transform is queried.
+//               on it when this node's relative transform is queried,
+//               or NULL if there is no such character.
 ////////////////////////////////////////////////////////////////////
 INLINE Character *CharacterJointEffect::
 get_character() const {
-  return _character;
+  if (_character.is_valid_pointer()) {
+    return _character;
+  } else {
+    return NULL;
+  }
 }

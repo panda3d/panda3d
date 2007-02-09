@@ -25,6 +25,7 @@
 #include "luse.h"
 #include "nodePath.h"
 #include "character.h"
+#include "weakPointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CharacterJointEffect
@@ -65,7 +66,7 @@ protected:
   virtual int compare_to_impl(const RenderEffect *other) const;
 
 private:
-  PT(Character) _character;
+  WPT(Character) _character;
 
 public:
   static void register_with_read_factory();

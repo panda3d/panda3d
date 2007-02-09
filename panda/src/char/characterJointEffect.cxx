@@ -41,7 +41,32 @@ CPT(RenderEffect) CharacterJointEffect::
 make(Character *character) {
   CharacterJointEffect *effect = new CharacterJointEffect;
   effect->_character = character;
-  return return_new(effect);
+
+  CPT(RenderEffect) new_effect_raw = return_new(effect);
+  const CharacterJointEffect *new_effect;
+  DCAST_INTO_R(new_effect, new_effect_raw, new_effect_raw);
+
+  // It is possible that the CharacterJointEffect we have now is a
+  // different CharacterJointEffect to a different Character which has
+  // since been deleted, but which had the same memory address of our
+  // current character.  If this happened, we have to force-update the
+  // CharacterJointEffect to tell its weak pointer that it is no
+  // longer invalid (and that it now points to this once-again-live
+  // Character object).
+
+  // This is a little weird, because it means any nodes that used to
+  // be pointing to a deleted Character object (and knew they were
+  // pointing to a deleted Character object) will suddenly be pointing
+  // to a new, non-deleted Character object--and the wrong Character
+  // object, no less.  But there's no other way to handle this, since
+  // we can't make the CharacterJointEffect's compare function base
+  // itself on whether its pointer is valid or not.
+
+  if (!new_effect->_character.is_valid_pointer()) {
+    ((CharacterJointEffect *)new_effect)->_character = character;
+  }
+
+  return new_effect_raw;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,7 +173,9 @@ void CharacterJointEffect::
 adjust_transform(CPT(TransformState) &net_transform,
                  CPT(TransformState) &node_transform,
                  PandaNode *node) const {
-  _character->update();
+  if (_character.is_valid_pointer()) {
+    _character->update();
+  }
   node_transform = node->get_transform();
 }
 
@@ -176,6 +203,13 @@ compare_to_impl(const RenderEffect *other) const {
   if (_character != ta->_character) {
     return _character < ta->_character ? -1 : 1;
   }
+
+  // As tempting as it is to include the sense of whether the
+  // character pointer is valid in this sorting, we can't, because
+  // that property might change without warning--which would
+  // invalidate the CharacterJointEffect's position in any maps if we
+  // used it to determine its sort.
+
   return 0;
 }
 
