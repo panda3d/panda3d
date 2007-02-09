@@ -19,6 +19,8 @@
 // to a subsequent version of Panda.
 // *******************************************************************
 
+#define IS_LINUX 1
+
 // What additional flags should we pass to interrogate?
 #define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const -Dvolatile=
 

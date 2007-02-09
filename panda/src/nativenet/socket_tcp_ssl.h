@@ -9,6 +9,9 @@
 //               platform differences from machine to machine
 //
 /////////////////////////////////////////////////////////////////////
+#include "pandabase.h"
+#include "numeric_types.h"
+
 #include <openssl/rsa.h>       /* SSLeay stuff */
 #include <openssl/crypto.h>
 #include <openssl/x509.h>
@@ -281,12 +284,12 @@ inline void Socket_TCP_SSL::DetailErrorFormat(void)
 {
     return; // turn on fir debuging
 
-    UINT32 l;
+    PN_uint32 l;
     char buf[256];
     char buf2[4096];
     const char *file,*data;
     int line,flags;
-    UINT32 es;
+    PN_uint32 es;
 
     es=CRYPTO_thread_id();
     while ((l=ERR_get_error_line_data(&file,&line,&data,&flags)) != 0)

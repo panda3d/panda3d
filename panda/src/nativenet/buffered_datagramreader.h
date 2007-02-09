@@ -56,7 +56,7 @@ public:
             int gotbytes = sck.RecvData(ff,(int)readsize);
             if(gotbytes < 0)  // some error
             {
-                int er = GETERROR(); 
+                //int er = GETERROR(); 
                 if(!sck.ErrorIs_WouldBlocking(gotbytes) )
                 {
                     answer = -3;  // hard error ?

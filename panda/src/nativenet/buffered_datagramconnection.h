@@ -11,12 +11,10 @@
 //  3. Handle Framing and Unframing properly ..
 //
 ////////////////////////////////////////////////////////////////////
-#include "dtoolbase.h"
-#include <vector>
+#include "pandabase.h"
 #include "socket_base.h"
-//#include "../express/datagram.h"
 #include "datagram.h"
-
+#include "pvector.h"
 #include "buffered_datagramreader.h"
 #include "buffered_datagramwriter.h"
 
@@ -31,7 +29,7 @@
 class EXPCL_PANDA Buffered_DatagramConnection : protected Socket_TCP
 {
 private:
-  struct AddressQueue : private std::vector<Socket_Address> // this is used to do a round robin for addres to connect to ..
+  struct AddressQueue : private pvector<Socket_Address> // this is used to do a round robin for addres to connect to ..
   {   
     size_t _active_index;   
     bool GetNext(Socket_Address &out) 
@@ -46,17 +44,17 @@ private:
       return true;
     }            
 
-    void clear() { std::vector<Socket_Address>::clear(); };
+    void clear() { pvector<Socket_Address>::clear(); };
     void push_back(Socket_Address &address)
     {
       iterator ii;
       for(ii = begin(); ii != end(); ii++)
         if(*ii == address)
           return;
-      std::vector<Socket_Address>::push_back(address);
+      pvector<Socket_Address>::push_back(address);
     }
 
-    size_t size() { return std::vector<Socket_Address>::size(); };
+    size_t size() { return pvector<Socket_Address>::size(); };
   };
 protected:
   // c++ upcals for 

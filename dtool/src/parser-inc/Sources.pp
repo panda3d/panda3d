@@ -11,5 +11,6 @@
     avcodec.h avformat.h avio.h avutil.h common.h integer.h \
     intfloat_readwrite.h mathematics.h rational.h rtp.h \
     rtsp.h rtspcodes.h winsock2.h \
-    ode/config.h ode/common.h collision_trimesh.h 
+    ode/config.h ode/common.h collision_trimesh.h  \
+    netinet/tcp.h netinet/ip.h
 

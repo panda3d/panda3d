@@ -19,10 +19,13 @@
 // to a subsequent version of Panda.
 // *******************************************************************
 
+#define IS_OSX 1
+
+// Assume that OSX has OpenGL available.
+#define HAVE_GL 1
+
 // What additional flags should we pass to interrogate?
 #define SYSTEM_IGATE_FLAGS -D__FLT_EVAL_METHOD__=0  -D__i386__ -D__const=const -Dvolatile -D__LITTLE_ENDIAN__ -D__inline__=inline -D__GNUC__
-#define HAVE_GL 1
-#define IS_OSX 1
 
 // We don't need worry about defining WORDS_BIGENDIAN (and we
 // shouldn't anyway, since ppc and intel are different).  We rely on

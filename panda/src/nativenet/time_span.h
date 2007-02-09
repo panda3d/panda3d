@@ -372,7 +372,7 @@ inline std::string Time_Span::Format(char * pFormat) const
                 pch += sprintf(pch, "%02d", GetSeconds());
                 break;
             case 'N':
-                pch += sprintf(pch, "%03d", _my_time.tv_usec / 1000);
+                pch += sprintf(pch, "%03ld", _my_time.tv_usec / 1000);
                 break;
             }
         } else {

@@ -1,9 +1,9 @@
 #ifndef __SOCKET_ADDRESS_H__
 #define __SOCKET_ADDRESS_H__
 
-#include <string>
-#include "dtoolbase.h"
 #include "pandabase.h"
+#include "numeric_types.h"
+
 ///////////////////////////////////
 // Class : Socket_Address
 //
@@ -202,7 +202,7 @@ inline bool Socket_Address::set_host(const std::string &hostname, int port)
 	//
 	//
 
-	UINT32 addr =  (long)inet_addr (hostname.c_str());                
+	PN_uint32 addr =  (long)inet_addr (hostname.c_str());                
 	if(addr == INADDR_NONE)
 	{
 		hp = gethostbyname(hostname.c_str());
@@ -241,7 +241,7 @@ inline bool Socket_Address::set_host(const std::string &hostname)
 // Function name : Socket_Address::set_host
 // Description   :
 //////////////////////////////////////////////////////////////
-inline bool Socket_Address::set_host(UINT32 in_hostname, int port)
+inline bool Socket_Address::set_host(PN_uint32 in_hostname, int port)
 {
     memcpy(&_addr.sin_addr, &in_hostname, sizeof(in_hostname));
     _addr.sin_port = htons(port);
@@ -276,7 +276,7 @@ inline bool Socket_Address::operator < (const Socket_Address &in) const
 //////////////////////////////////////////////////////////////
 inline bool Socket_Address::isMcastRange(void)
 {
-    UINT32  address = ntohl(_addr.sin_addr.s_addr);
+    PN_uint32  address = ntohl(_addr.sin_addr.s_addr);
 //224.0.0.0-239.255.255.255 .. e0,ef
     if(address >= 0xe0000000 && address < 0xefffffff)
         return true;

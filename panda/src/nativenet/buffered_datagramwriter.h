@@ -60,7 +60,7 @@ public:
           
           if(Writesize > 0) {
             int Writen = sck.SendData(GetMessageHead(),(int)Writesize);
-            if(_are_we_going_to_block_on_write == true && Writen < 0 && sck.ErrorIs_WouldBlocking(Writen) == TRUE) {
+            if(_are_we_going_to_block_on_write == true && Writen < 0 && sck.ErrorIs_WouldBlocking(Writen) == true) {
               //sck.SetBlocking();
               Writen = sck.SendData(GetMessageHead(),(int)Writesize);		
               //sck.SetNonBlocking();
@@ -74,7 +74,7 @@ public:
                 answer = 1;
             }
             else if(Writen < 0) {
-              if(sck.ErrorIs_WouldBlocking(Writen) != TRUE)
+              if(sck.ErrorIs_WouldBlocking(Writen) != true)
                 answer = -1;
             }
           }		

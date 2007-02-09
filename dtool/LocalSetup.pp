@@ -506,7 +506,7 @@ $[cdefine USE_MEMORY_PTMALLOC2]
 $[cdefine USE_MEMORY_MALLOC]
 $[cdefine USE_MEMORY_NOWRAPPERS]
 
-#define if we want native net
+// If we are to build the native net interfaces.
 $[cdefine WANT_NATIVE_NET]
 
 
@@ -514,7 +514,9 @@ $[cdefine WANT_NATIVE_NET]
 $[cdefine USE_STL_ALLOCATOR]
 
 
+/* Platform-identifying defines. */
 $[cdefine IS_OSX]
+$[cdefine IS_LINUX]
 
 
 #end dtool_config.h

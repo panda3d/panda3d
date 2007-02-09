@@ -11,6 +11,8 @@
 // fits more with the normal Berkeley mind set... ** Not ** Should think about using POLL() on BSD-based systems
 //
 //////////////////////////////////////////////////////////
+#include "pandabase.h"
+#include "numeric_types.h"
 #include "time_base.h"
 
 class Socket_fdset
@@ -20,9 +22,9 @@ public:
     inline Socket_fdset();
     inline void setForSocket(const Socket_IP &incon);
     inline bool IsSetFor(const Socket_IP & incon) const;
-    inline int WaitForRead(bool zeroFds, UINT32 sleep_time = 0xffffffff);
-    inline int WaitForWrite(bool zeroFds, UINT32 sleep_time = 0xffffffff);
-    inline int WaitForError(bool zeroFds, UINT32 sleep_time = 0xffffffff);
+    inline int WaitForRead(bool zeroFds, PN_uint32 sleep_time = 0xffffffff);
+    inline int WaitForWrite(bool zeroFds, PN_uint32 sleep_time = 0xffffffff);
+    inline int WaitForError(bool zeroFds, PN_uint32 sleep_time = 0xffffffff);
     
     
     inline int WaitForRead(bool zeroFds, const Time_Span & timeout);
@@ -90,7 +92,7 @@ inline bool Socket_fdset::IsSetFor(const Socket_IP & incon) const
 // Function name : WaitForRead
 // Description   :
 ////////////////////////////////////////////////////////////////////
-inline int Socket_fdset::WaitForRead(bool zeroFds, UINT32 sleep_time)
+inline int Socket_fdset::WaitForRead(bool zeroFds, PN_uint32 sleep_time)
 {
     int retVal = 0;
     if (sleep_time == 0xffffffff) 
@@ -151,7 +153,7 @@ inline void Socket_fdset::setForSocket(const Socket_IP &incon)
 // Description   : This is the function that will wait till
 //      one of the sockets is ready for writing
 ////////////////////////////////////////////////////////////////////
-inline int Socket_fdset::WaitForWrite(bool zeroFds, UINT32 sleep_time)
+inline int Socket_fdset::WaitForWrite(bool zeroFds, PN_uint32 sleep_time)
 {
     int retVal = 0;
     if (sleep_time == 0xffffffff) 
@@ -177,7 +179,7 @@ inline int Socket_fdset::WaitForWrite(bool zeroFds, UINT32 sleep_time)
 // Description   : This is the function that will wait till
 //      one of the sockets is in error state
 //////////////////////////////////////////////////////////////
-inline int Socket_fdset::WaitForError(bool zeroFds, UINT32 sleep_time)
+inline int Socket_fdset::WaitForError(bool zeroFds, PN_uint32 sleep_time)
 {
     int retVal = 0;
     if (sleep_time == 0xffffffff) 
