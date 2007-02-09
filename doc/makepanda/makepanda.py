@@ -987,7 +987,7 @@ def CompileCxxMSVC(wobj,fullsrc,ipath,opts):
     for x in ipath: cmd = cmd + " /I" + x
     if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
     if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
-    if (opts.count("MSFORSCOPE")==0): cmd = cmd + ' /Zc:forScope'
+    if (opts.count("MSFORSCOPE")): cmd = cmd + ' /Zc:forScope-'
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + " /MD /Zi /RTCs /GS"
     if (optlevel==2): cmd = cmd + " /MD /Zi "
