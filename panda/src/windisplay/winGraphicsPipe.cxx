@@ -30,6 +30,10 @@ TypeHandle WinGraphicsPipe::_type_handle;
 ////////////////////////////////////////////////////////////////////
 WinGraphicsPipe::
 WinGraphicsPipe() {
+
+  bool state;
+  
+  state = false;
   _supported_types = OT_window | OT_fullscreen_window;
 
   // these fns arent defined on win95, so get dynamic ptrs to them
@@ -42,12 +46,13 @@ WinGraphicsPipe() {
       (PFN_TRACKMOUSEEVENT)GetProcAddress(_hUser32, "TrackMouseEvent");
   }
 
+  
 #ifdef HAVE_DX9
   DisplaySearchParameters display_search_parameters_dx9;
   int dx9_display_information (DisplaySearchParameters &display_search_parameters_dx9, DisplayInformation *display_information);
 
-  if (dx9_display_information (display_search_parameters_dx9, _display_information)) {
-  
+  if (state == false && dx9_display_information (display_search_parameters_dx9, _display_information)) {
+    state = true;
   }
 #endif
 
@@ -55,11 +60,14 @@ WinGraphicsPipe() {
   DisplaySearchParameters display_search_parameters_dx8;
   int dx8_display_information (DisplaySearchParameters &display_search_parameters_dx8, DisplayInformation *display_information);
   
-  if (dx8_display_information (display_search_parameters_dx8, _display_information)) {
-    
+  if (state == false && dx8_display_information (display_search_parameters_dx8, _display_information)) {
+    state = true;    
   }
 #endif
 
+  if (state) {
+
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
