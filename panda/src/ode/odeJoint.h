@@ -46,15 +46,15 @@ PUBLISHED:
   virtual ~OdeJoint();
   void destroy();
   
-  // INLINE void set_data(void *data);
-  // INLINE void *get_data();
+  /* INLINE void set_data(void *data); */
+  /* INLINE void *get_data(); */
   INLINE int get_joint_type() const;
   OdeBody get_body(int index) const;
-  // INLINE void set_feedback(dJointFeedback *);
-  // INLINE dJointFeedback *get_feedback();
+  /* INLINE void set_feedback(dJointFeedback *); */
+  /* INLINE dJointFeedback *get_feedback(); */
    
-  void attachBodies(const OdeBody &body1, const OdeBody &body2);
-  void attachBody(const OdeBody &body, int index);
+  void attach_bodies(const OdeBody &body1, const OdeBody &body2);
+  void attach_body(const OdeBody &body, int index);
   void detach();
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;

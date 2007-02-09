@@ -37,14 +37,31 @@ destroy() {
   dJointDestroy(_id);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: OdeJoint::attach_bodies
+//       Access: Published
+//  Description: Attaches two OdeBody objects to this joint.
+//               Order is important.
+//               Consider using the OdeJoint::attach extension
+//               function if you're using the Python interface.
+////////////////////////////////////////////////////////////////////
 void OdeJoint::
-attachBodies(const OdeBody &body1, const OdeBody &body2) {
+attach_bodies(const OdeBody &body1, const OdeBody &body2) {
   nassertv(body1.get_id() != 0 && body2.get_id() != 0);
   dJointAttach(_id, body1.get_id(), body2.get_id());
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: OdeJoint::attach_body
+//       Access: Published
+//  Description: Attaches a single OdeBody to this joint at the
+//               specified index.  The other index will be set to the
+//               environment (null).
+//               Consider using the OdeJoint::attach extension
+//               function if you're using the Python interface.
+////////////////////////////////////////////////////////////////////
 void OdeJoint::
-attachBody(const OdeBody &body, int index) {
+attach_body(const OdeBody &body, int index) {
   nassertv(body.get_id() != 0);
   if (index == 0) {
     dJointAttach(_id, body.get_id(), 0);
