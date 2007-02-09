@@ -3409,11 +3409,26 @@ These are Python temporary files awaiting execution."
 	       (lambda (proc)
 		 (let ((procbuf (process-buffer proc)))
 		   (set-buffer procbuf)
-		   (goto-char (point-max))
-		   (if (and (eobp) proc (= (point) (marker-position (process-mark proc))))
-		       (comint-interrupt-subjob))
-		   )
-		 )
+                   (let ((current (point)))
+                     (goto-char (point-max))
+                     (let ((maxp (point)))
+                       (if (and (eobp) proc (= (point) (marker-position (process-mark proc))))
+                           (let ()
+                             (goto-char (- maxp 4))
+                             (if (or (search-forward ">>> " maxp t)
+                                     (search-forward "... " maxp t))
+                                 (goto-char current)
+                               (let ()
+                                 (comint-interrupt-subjob)
+                                 (goto-char (point-max))
+                                 ); let
+                               ); if
+                             ) ; let
+                         ) ; if
+                       ) ; let max
+                     ) ; let current
+                   ) ; let procbuf
+                 ) ; lambda proc
 	       ))
 	    )
 	  )
