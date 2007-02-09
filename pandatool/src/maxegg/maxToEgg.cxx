@@ -7,6 +7,7 @@
 
 //Our headers, which in turn includes some Max headers. 
 #include "maxToEgg.h"
+#include "errno.h"
 
 //Member Function Definitions
 /* ~MaxToEgg() - Uninteresting destructor.
