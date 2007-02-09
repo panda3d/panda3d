@@ -22,11 +22,6 @@
 TypeHandle OdeBody::_type_handle;
 
 OdeBody::
-OdeBody() :
-  _id(0) {
-}
-
-OdeBody::
 OdeBody(dBodyID id) :
   _id(id) {
 }
@@ -42,6 +37,7 @@ OdeBody::
 
 void OdeBody::
 destroy() {
+  nassertv(_id);
   dBodyDestroy(_id);
 }
 

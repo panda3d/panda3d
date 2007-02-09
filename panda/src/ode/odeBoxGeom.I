@@ -21,6 +21,11 @@ set_lengths(dReal lx, dReal ly, dReal lz) {
   dGeomBoxSetLengths(_id, lx, ly, lz);
 }
 
+INLINE void OdeBoxGeom::
+set_lengths(const LVecBase3f &size) {
+  set_lengths(size[0], size[1], size[2]);
+}
+
 INLINE LVecBase3f OdeBoxGeom::
 get_lengths() {
   dVector3 res;
@@ -31,5 +36,10 @@ get_lengths() {
 INLINE dReal OdeBoxGeom::
 get_point_depth(dReal x, dReal y, dReal z) {
   return dGeomBoxPointDepth(_id, x, y, z);
+}
+
+INLINE dReal OdeBoxGeom::
+get_point_depth(const LPoint3f &p) {
+  return get_point_depth(p[0], p[1], p[2]);
 }
 

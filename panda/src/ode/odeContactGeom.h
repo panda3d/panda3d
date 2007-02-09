@@ -34,7 +34,7 @@ class EXPCL_PANDAODE OdeContactGeom : public TypedReferenceCount {
   friend class OdeContact;
 
 protected:
-  OdeContactGeom(const dContactGeom &contact_geom);
+  OdeContactGeom(const dContactGeom &copy);
 
 PUBLISHED:
   OdeContactGeom();
@@ -60,6 +60,7 @@ public:
 
 private:
   void operator = (const OdeContactGeom &copy);
+  void operator = (const dContactGeom &copy);
   dContactGeom _contact_geom;
 
 public:

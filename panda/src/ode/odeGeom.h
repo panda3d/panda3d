@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "typedObject.h"
 #include "luse.h"
+#include "bitMask.h"
 
 #include "ode_includes.h"
 #include "odeSpace.h" // Needed for derived classes
@@ -41,7 +42,6 @@ protected:
   OdeGeom(dGeomID id);
 
 PUBLISHED:
-  OdeGeom();
   virtual ~OdeGeom();
   void destroy();
 
@@ -49,6 +49,7 @@ PUBLISHED:
   INLINE void set_body(OdeBody &body);
   INLINE OdeBody get_body() const;
   INLINE void set_position(dReal x, dReal y, dReal z);
+  INLINE void set_position(const LVecBase3f &pos);
   INLINE void set_rotation(const LMatrix3f &r);
   INLINE void set_quaternion(const LQuaternionf &q);
   INLINE LPoint3f get_position() const;
@@ -57,15 +58,19 @@ PUBLISHED:
   //INLINE void get_aabb(dReal aabb[6]) const;
   INLINE int is_space();
   INLINE int get_class() const;
-  INLINE void set_category_bits(unsigned long bits);
-  INLINE void set_collide_bits(unsigned long bits);
+  INLINE void set_category_bits(const BitMask32 &bits);
+  INLINE void set_collide_bits(const BitMask32 &bits);
+  INLINE BitMask32 get_category_bits();
+  INLINE BitMask32 get_collide_bits();
   INLINE void enable();
   INLINE void disable();
   INLINE int is_enabled();
   INLINE void set_offset_position(dReal x, dReal y, dReal z);
+  INLINE void set_offset_position(const LVecBase3f &pos);
   INLINE void set_offset_rotation(const LMatrix3f &r);
   INLINE void set_offset_quaternion(const LQuaternionf &q);
   INLINE void set_offset_world_position(dReal x, dReal y, dReal z);
+  INLINE void set_offset_world_position(const LVecBase3f &pos);
   INLINE void set_offset_world_rotation(const LMatrix3f &r);
   INLINE void set_offset_world_quaternion(const LQuaternionf &q);
   INLINE void clear_offset();
@@ -75,7 +80,9 @@ PUBLISHED:
   INLINE LQuaternionf get_offset_quaternion() const;
 
   void get_space(OdeSpace &space) const;
+
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
+
 public:
   INLINE dGeomID get_id() const;
 

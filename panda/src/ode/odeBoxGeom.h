@@ -34,11 +34,14 @@ class EXPCL_PANDAODE OdeBoxGeom : public OdeGeom {
 PUBLISHED:
   OdeBoxGeom(dReal lx, dReal ly, dReal lz);
   OdeBoxGeom(OdeSpace &space, dReal lx, dReal ly, dReal lz);
+  OdeBoxGeom(OdeSpace &space, const LVecBase3f &size);
   virtual ~OdeBoxGeom();
 
   INLINE void set_lengths(dReal lx, dReal ly, dReal lz);
+  INLINE void set_lengths(const LVecBase3f &size);
   INLINE LVecBase3f get_lengths();
   INLINE dReal get_point_depth(dReal x, dReal y, dReal z);
+  INLINE dReal get_point_depth(const LPoint3f &p);
 
 public:
   INLINE static int get_geom_class() { return dBoxClass; };

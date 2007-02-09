@@ -32,5 +32,10 @@ OdeBoxGeom(OdeSpace &space, dReal lx, dReal ly, dReal lz) :
 }
 
 OdeBoxGeom::
+OdeBoxGeom(OdeSpace &space, const LVecBase3f &size) :
+  OdeGeom(dCreateBox(space.get_id(), size[0], size[1], size[2])) {
+}
+
+OdeBoxGeom::
 ~OdeBoxGeom() {
 }

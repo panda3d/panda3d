@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "typedObject.h"
 #include "luse.h"
+#include "bitMask.h"
 
 #include "ode_includes.h"
 
@@ -50,8 +51,10 @@ PUBLISHED:
   // INLINE void get_aabb() const;  
   INLINE int is_space();
   INLINE int get_class() const;
-  INLINE void set_category_bits(unsigned long bits);
-  INLINE void set_collide_bits(unsigned long bits);
+  INLINE void set_category_bits(const BitMask32 &bits);
+  INLINE void set_collide_bits(const BitMask32 &bits);
+  INLINE BitMask32 get_category_bits();
+  INLINE BitMask32 get_collide_bits();
   INLINE void enable();
   INLINE void disable();
   INLINE int is_enabled();
@@ -61,7 +64,7 @@ PUBLISHED:
   void remove(OdeGeom& geom);
   void remove(OdeSpace& space);
   void clean();
-  void get_geom(int i, OdeGeom &geom);
+  OdeGeom get_geom(int i); // Not INLINE because of forward declaration
 
   INLINE OdeSpace get_space() const;
 

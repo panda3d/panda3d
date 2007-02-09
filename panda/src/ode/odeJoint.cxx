@@ -38,12 +38,14 @@ destroy() {
 }
 
 void OdeJoint::
-attach(const OdeBody &body1, const OdeBody &body2) {
+attachBodies(const OdeBody &body1, const OdeBody &body2) {
+  nassertv(body1.get_id() != 0 && body2.get_id() != 0);
   dJointAttach(_id, body1.get_id(), body2.get_id());
 }
 
 void OdeJoint::
-attach(const OdeBody &body, int index) {
+attachBody(const OdeBody &body, int index) {
+  nassertv(body.get_id() != 0);
   if (index == 0) {
     dJointAttach(_id, body.get_id(), 0);
   } else {
@@ -56,9 +58,10 @@ detach() {
   dJointAttach(_id, 0, 0);
 }
 
-void OdeJoint::
-get_body(int index, OdeBody &body) const {
-  body._id = dJointGetBody(_id, index);
+OdeBody OdeJoint::
+get_body(int index) const {
+  nassertr(index == 0 || index == 1, OdeBody(0));
+  return OdeBody(dJointGetBody(_id, index));
 }
 
 void OdeJoint::
@@ -67,8 +70,7 @@ write(ostream &out, unsigned int indent) const {
   out.width(indent); out << "" << get_type() \
 			 << "(id = " << _id \
 			 << ", body1 = ";
-  OdeBody body;
-  get_body(0, body);
+  OdeBody body = get_body(0);
   if (body.get_id() != 0) {
     body.write(out);
   }
@@ -76,7 +78,7 @@ write(ostream &out, unsigned int indent) const {
     out << "0";
   }
   out << ", body2 = ";
-  get_body(1, body);
+  body = get_body(1);
   if (body.get_id() != 0) {
     body.write(out);
   }
@@ -86,4 +88,9 @@ write(ostream &out, unsigned int indent) const {
   out << ")";
 
   #endif //] NDEBUG
+}
+
+bool OdeJoint::
+operator==(const OdeJoint &other) {
+  return _id == other._id;
 }

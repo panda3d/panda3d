@@ -39,6 +39,7 @@ PUBLISHED:
   INLINE void set_radius(dReal radius);
   INLINE dReal get_radius() const;
   INLINE dReal get_point_depth(dReal x, dReal y, dReal z) const;
+  INLINE dReal get_point_depth(const LPoint3f &p) const;
 
 public:
   INLINE static int get_geom_class() { return dSphereClass; };

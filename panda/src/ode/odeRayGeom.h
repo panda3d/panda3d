@@ -38,6 +38,7 @@ PUBLISHED:
   INLINE void set_length(dReal length);
   INLINE dReal get_length();
   INLINE void set(dReal px, dReal py, dReal pz, dReal dx, dReal dy, dReal dz);
+  INLINE void set(const LVecBase3f &start, const LVecBase3f &dir);
   INLINE void get(LVecBase3f &start, LVecBase3f &dir) const;
   INLINE LVecBase3f get_start() const;
   INLINE LVecBase3f get_direction() const;

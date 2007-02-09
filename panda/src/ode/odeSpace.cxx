@@ -33,9 +33,8 @@ OdeSpace::
 void OdeSpace::
 destroy() {
   if (get_cleanup()) {
-    OdeGeom geom;    
     for (int i = 0; i < get_num_geoms(); ++i) {
-      get_geom(i, geom);
+      OdeGeom geom(get_geom(i));
       if (geom.get_class() == OdeTriMeshGeom::get_geom_class()) {
         OdeTriMeshGeom::unlink_data(geom.get_id());
       }
@@ -79,9 +78,9 @@ clean() {
   dSpaceClean(_id);
 }
 
-void OdeSpace::
-get_geom(int i, OdeGeom &geom) {
-  geom._id = dSpaceGetGeom(_id, i);
+OdeGeom OdeSpace::
+get_geom(int i) {
+  return OdeGeom(dSpaceGetGeom(_id, i));
 }
 
 void OdeSpace::

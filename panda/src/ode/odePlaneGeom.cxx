@@ -27,8 +27,18 @@ OdePlaneGeom(dReal a, dReal b, dReal c, dReal d) :
 }
 
 OdePlaneGeom::
+OdePlaneGeom(const LVecBase4f &params) :
+  OdeGeom(dCreatePlane(0, params[0], params[1], params[2], params[3])) {
+}
+
+OdePlaneGeom::
 OdePlaneGeom(OdeSpace &space, dReal a, dReal b, dReal c, dReal d) :
   OdeGeom(dCreatePlane(space.get_id(), a, b, c, d)) {
+}
+
+OdePlaneGeom::
+OdePlaneGeom(OdeSpace &space, const LVecBase4f &params) :
+  OdeGeom(dCreatePlane(space.get_id(), params[0], params[1], params[2], params[3])) {
 }
 
 OdePlaneGeom::

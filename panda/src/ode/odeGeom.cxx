@@ -22,12 +22,6 @@
 TypeHandle OdeGeom::_type_handle;
 
 OdeGeom::
-OdeGeom() :
-  _id(0) {
-  odegeom_cat.debug() << get_type() << "(" << _id << ")\n";
-}
-
-OdeGeom::
 OdeGeom(dGeomID id) :
   _id(id) {
   odegeom_cat.debug() << get_type() << "(" << _id << ")\n";

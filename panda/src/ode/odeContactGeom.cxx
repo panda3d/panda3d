@@ -29,33 +29,13 @@ OdeContactGeom() :
 OdeContactGeom::
 OdeContactGeom(const OdeContactGeom &copy) : 
   _contact_geom() {
-  _contact_geom.pos[0] = copy._contact_geom.pos[0];
-  _contact_geom.pos[1] = copy._contact_geom.pos[1];
-  _contact_geom.pos[2] = copy._contact_geom.pos[2];
-  _contact_geom.normal[0] = copy._contact_geom.normal[0];
-  _contact_geom.normal[1] = copy._contact_geom.normal[1];
-  _contact_geom.normal[2] = copy._contact_geom.normal[2];
-  _contact_geom.depth = copy._contact_geom.depth;
-  _contact_geom.g1 = copy._contact_geom.g1;
-  _contact_geom.g2 = copy._contact_geom.g2;
-  _contact_geom.side1 = copy._contact_geom.side1;
-  _contact_geom.side2 = copy._contact_geom.side2;
+  *this = copy._contact_geom;
 }
 
 OdeContactGeom::
-OdeContactGeom(const dContactGeom &contact_geom) : 
+OdeContactGeom(const dContactGeom &copy) : 
   _contact_geom() {
-  _contact_geom.pos[0] = contact_geom.pos[0];
-  _contact_geom.pos[1] = contact_geom.pos[1];
-  _contact_geom.pos[2] = contact_geom.pos[2];
-  _contact_geom.normal[0] = contact_geom.normal[0];
-  _contact_geom.normal[1] = contact_geom.normal[1];
-  _contact_geom.normal[2] = contact_geom.normal[2];
-  _contact_geom.depth = contact_geom.depth;
-  _contact_geom.g1 = contact_geom.g1;
-  _contact_geom.g2 = contact_geom.g2;
-  _contact_geom.side1 = contact_geom.side1;
-  _contact_geom.side2 = contact_geom.side2;
+  *this = _contact_geom;
 }
 
 OdeContactGeom::
@@ -69,16 +49,21 @@ get_contact_geom_ptr() const {
 
 void OdeContactGeom::
 operator = (const OdeContactGeom &copy) {
-  _contact_geom.pos[0] = copy._contact_geom.pos[0];
-  _contact_geom.pos[1] = copy._contact_geom.pos[1];
-  _contact_geom.pos[2] = copy._contact_geom.pos[2];
-  _contact_geom.normal[0] = copy._contact_geom.normal[0];
-  _contact_geom.normal[1] = copy._contact_geom.normal[1];
-  _contact_geom.normal[2] = copy._contact_geom.normal[2];
-  _contact_geom.depth = copy._contact_geom.depth;
-  _contact_geom.g1 = copy._contact_geom.g1;
-  _contact_geom.g2 = copy._contact_geom.g2;
-  _contact_geom.side1 = copy._contact_geom.side1;
-  _contact_geom.side2 = copy._contact_geom.side2;
+  *this = copy._contact_geom;
+}
+
+void OdeContactGeom::
+operator = (const dContactGeom &contact_geom) {
+  _contact_geom.pos[0] = contact_geom.pos[0];
+  _contact_geom.pos[1] = contact_geom.pos[1];
+  _contact_geom.pos[2] = contact_geom.pos[2];
+  _contact_geom.normal[0] = contact_geom.normal[0];
+  _contact_geom.normal[1] = contact_geom.normal[1];
+  _contact_geom.normal[2] = contact_geom.normal[2];
+  _contact_geom.depth = contact_geom.depth;
+  _contact_geom.g1 = contact_geom.g1;
+  _contact_geom.g2 = contact_geom.g2;
+  _contact_geom.side1 = contact_geom.side1;
+  _contact_geom.side2 = contact_geom.side2;
 }
 

@@ -44,6 +44,11 @@ set_position(dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeGeom::
+set_position(const LVecBase3f &pos) {
+  set_position(pos[0], pos[1], pos[2]);
+}
+
+INLINE void OdeGeom::
 set_rotation(const LMatrix3f &r) {
   dMatrix3 rot = { r._m.data[0], r._m.data[1], r._m.data[2], 0,
                    r._m.data[3], r._m.data[4], r._m.data[5], 0,
@@ -96,13 +101,23 @@ get_class() const {
 }
 
 INLINE void OdeGeom::
-set_category_bits(unsigned long bits) {
-  dGeomSetCategoryBits(_id, bits);
+set_category_bits(const BitMask32 &bits) {
+  dGeomSetCategoryBits(_id, bits.get_word());
 }
 
 INLINE void OdeGeom::
-set_collide_bits(unsigned long bits) {
-  dGeomSetCollideBits(_id, bits);
+set_collide_bits(const BitMask32 &bits) {
+  dGeomSetCollideBits(_id, bits.get_word());
+}
+
+INLINE BitMask32 OdeGeom::
+get_category_bits() {
+  return BitMask32(dGeomGetCategoryBits(_id));
+}
+
+INLINE BitMask32 OdeGeom::
+get_collide_bits() {
+  return BitMask32(dGeomGetCollideBits(_id));
 }
 
 INLINE void OdeGeom::
@@ -126,6 +141,11 @@ set_offset_position(dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeGeom::
+set_offset_position(const LVecBase3f &pos) {
+  set_offset_position(pos[0], pos[1], pos[2]);
+}
+
+INLINE void OdeGeom::
 set_offset_rotation(const LMatrix3f &r) {
   dMatrix3 rot = { r._m.data[0], r._m.data[1], r._m.data[2], 0,
                    r._m.data[3], r._m.data[4], r._m.data[5], 0,
@@ -142,6 +162,11 @@ set_offset_quaternion(const LQuaternionf &q) {
 INLINE void OdeGeom::
 set_offset_world_position(dReal x, dReal y, dReal z) {
   dGeomSetOffsetWorldPosition(_id, x, y, z);
+}
+
+INLINE void OdeGeom::
+set_offset_world_position(const LVecBase3f &pos) {
+  set_offset_world_position(pos[0], pos[1], pos[2]);
 }
 
 INLINE void OdeGeom::

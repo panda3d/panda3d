@@ -30,6 +30,10 @@ set(dReal px, dReal py, dReal pz, dReal dx, dReal dy, dReal dz) {
   dGeomRaySet(_id, px, py, pz, dx, dy, dz);
 }
 
+INLINE void OdeRayGeom::
+set(const LVecBase3f &start, const LVecBase3f &dir) {
+  set(start[0], start[1], start[2], dir[0], dir[1], dir[2]);
+}
 
 INLINE void OdeRayGeom::
 get(LVecBase3f &start, LVecBase3f &dir) const {

@@ -21,6 +21,7 @@ get_id() const {
   return _id;
 }
 
+/*
 INLINE void OdeJoint::
 set_data(void *data) {
   dJointSetData(_id, data);
@@ -30,12 +31,14 @@ INLINE void *OdeJoint::
 get_data() {
   return dJointGetData(_id);
 }
+*/
 
 INLINE int OdeJoint::
 get_joint_type() const {
   return dJointGetType(_id);
 }
 
+/*
 INLINE void OdeJoint::
 set_feedback(dJointFeedback *feedback) {
   dJointSetFeedback(_id, feedback);
@@ -45,3 +48,4 @@ INLINE dJointFeedback *OdeJoint::
 get_feedback() {
   return dJointGetFeedback(_id);
 }
+*/

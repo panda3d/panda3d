@@ -1,4 +1,4 @@
-// Filename: odeBoxGeom.h
+// Filename: odeHeightfieldGeom.h
 // Created by:  joswilso (27Dec06)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef ODEBOXGEOM_H
-#define ODEBOXGEOM_H
+#ifndef ODEHEIGHTFIELDGEOM_H
+#define ODEHEIGHTFIELDGEOM_H
 
 #include "pandabase.h"
 #include "typedObject.h"
@@ -27,13 +27,13 @@
 #include "odeGeom.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : OdeBoxGeom
+//       Class : OdeHeightfieldGeom
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAODE OdeBoxGeom : public OdeGeom {
+class EXPCL_PANDAODE OdeHeightfieldGeom : public OdeGeom {
 PUBLISHED:
-  OdeBoxGeom();
-  virtual ~OdeBoxGeom();
+  OdeHeightfieldGeom();
+  virtual ~OdeHeightfieldGeom();
 
   INLINE dHeightfieldDataID heightfield_data_create();
   INLINE void heightfield_data_destroy(dHeightfieldDataID d);
@@ -51,7 +51,7 @@ public:
   }
   static void init_type() {
     OdeGeom::init_type();
-    register_type(_type_handle, "OdeBoxGeom",
+    register_type(_type_handle, "OdeHeightfieldGeom",
 		  OdeGeom::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -63,6 +63,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "odeBoxGeom.I"
+#include "odeHeightfieldGeom.I"
 
 #endif

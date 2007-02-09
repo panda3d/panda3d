@@ -41,7 +41,6 @@ protected:
   OdeBody(dBodyID id);
 
 PUBLISHED:
-  OdeBody();
   OdeBody(OdeWorld &world);
   virtual ~OdeBody();
   void destroy();
@@ -55,10 +54,13 @@ PUBLISHED:
   INLINE void set_data(void *data);
 
   INLINE void set_position(dReal x, dReal y, dReal z);
+  INLINE void set_position(const LVecBase3f &pos);
   INLINE void set_rotation(const LMatrix3f r);
   INLINE void set_quaternion(const LQuaternionf q);
   INLINE void set_linear_vel(dReal x, dReal y, dReal z);
+  INLINE void set_linear_vel(const LVecBase3f &vel);
   INLINE void set_angular_vel(dReal x, dReal y, dReal z);
+  INLINE void set_angular_vel(const LVecBase3f &vel);
   INLINE void set_mass(OdeMass &mass);
 
 
@@ -77,29 +79,50 @@ PUBLISHED:
   INLINE OdeMass     get_mass() const;
 
   INLINE void add_force(dReal fx, dReal fy, dReal fz);
+  INLINE void add_force(const LVecBase3f &f);
   INLINE void add_torque(dReal fx, dReal fy, dReal fz);
+  INLINE void add_torque(const LVecBase3f &f);
   INLINE void add_rel_force(dReal fx, dReal fy, dReal fz);
+  INLINE void add_rel_force(const LVecBase3f &f);
   INLINE void add_rel_torque(dReal fx, dReal fy, dReal fz);
+  INLINE void add_rel_torque(const LVecBase3f &f);
   INLINE void add_force_at_pos(dReal fx, dReal fy, dReal fz, 
 			       dReal px, dReal py, dReal pz);
+  INLINE void add_force_at_pos(const LVecBase3f &f, 
+			       const LVecBase3f &pos);
   INLINE void add_force_at_rel_pos(dReal fx, dReal fy, dReal fz, 
 				   dReal px, dReal py, dReal pz);
+  INLINE void add_force_at_rel_pos(const LVecBase3f &f, 
+				   const LVecBase3f &pos);
   INLINE void add_rel_force_at_pos(dReal fx, dReal fy, dReal fz, 
 				   dReal px, dReal py, dReal pz);
+  INLINE void add_rel_force_at_pos(const LVecBase3f &f, 
+				   const LVecBase3f &pos);
   INLINE void add_rel_force_at_rel_pos(dReal fx, dReal fy, dReal fz, 
 				       dReal px, dReal py, dReal pz);
+  INLINE void add_rel_force_at_rel_pos(const LVecBase3f &f, 
+				       const LVecBase3f &pos);
   INLINE void set_force(dReal x, dReal y, dReal z);
+  INLINE void set_force(const LVecBase3f &f);
   INLINE void set_torque(dReal x, dReal y, dReal z);
+  INLINE void set_torque(const LVecBase3f &f);
 
   INLINE LPoint3f get_rel_point_pos(dReal px, dReal py, dReal pz) const;
+  INLINE LPoint3f get_rel_point_pos(const LVecBase3f &pos) const;
   INLINE LPoint3f get_rel_point_vel(dReal px, dReal py, dReal pz) const;
+  INLINE LPoint3f get_rel_point_vel(const LVecBase3f &pos) const;
   INLINE LPoint3f get_point_vel(dReal px, dReal py, dReal pz) const;
+  INLINE LPoint3f get_point_vel(const LVecBase3f &pos) const;
   INLINE LPoint3f get_pos_rel_point(dReal px, dReal py, dReal pz) const;
+  INLINE LPoint3f get_pos_rel_point(const LVecBase3f &pos) const;
   INLINE LVecBase3f vector_to_world(dReal px, dReal py, dReal pz) const;
+  INLINE LVecBase3f vector_to_world(const LVecBase3f &pos) const;
   INLINE LVecBase3f vector_from_world(dReal px, dReal py, dReal pz) const;
+  INLINE LVecBase3f vector_from_world(const LVecBase3f &pos) const;
 
   INLINE void set_finite_rotation_mode(int mode);
   INLINE void set_finite_rotation_axis(dReal x, dReal y, dReal z);
+  INLINE void set_finite_rotation_axis(const LVecBase3f &axis);
   INLINE int get_finite_rotation_mode() const;
   INLINE LVecBase3f get_finite_rotation_axis() const;
 

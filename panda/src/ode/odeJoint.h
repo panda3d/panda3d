@@ -27,8 +27,8 @@
 #include "odeWorld.h" // Needed for derived classes
 #include "odeJointGroup.h"
 
-
-class OdeBody;
+// Strange, we should be forced to include this by get_body()
+class OdeBody; 
 
 
 ////////////////////////////////////////////////////////////////////
@@ -45,19 +45,20 @@ protected:
 PUBLISHED:
   virtual ~OdeJoint();
   void destroy();
-
-  INLINE void set_data(void *data);
-  INLINE void *get_data();
+  
+  // INLINE void set_data(void *data);
+  // INLINE void *get_data();
   INLINE int get_joint_type() const;
-  void get_body(int index, OdeBody &body) const;
-  INLINE void set_feedback(dJointFeedback *);
-  INLINE dJointFeedback *get_feedback();
+  OdeBody get_body(int index) const;
+  // INLINE void set_feedback(dJointFeedback *);
+  // INLINE dJointFeedback *get_feedback();
    
-  void attach(const OdeBody &body1, const OdeBody &body2);
-  void attach(const OdeBody &body, int index);
+  void attachBodies(const OdeBody &body1, const OdeBody &body2);
+  void attachBody(const OdeBody &body, int index);
   void detach();
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
+  bool operator==(const OdeJoint &other);
 
 public: 
   INLINE dJointID get_id() const;

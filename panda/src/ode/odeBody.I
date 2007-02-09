@@ -92,6 +92,11 @@ set_position(dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeBody::
+set_position(const LVecBase3f &pos) {
+  set_position(pos[0], pos[1], pos[2]);
+}
+
+INLINE void OdeBody::
 set_rotation(const LMatrix3f r) {
   dMatrix3 mat3 = {r._m.data[0], r._m.data[1], r._m.data[2], 0,
                    r._m.data[3], r._m.data[4], r._m.data[5], 0,
@@ -115,8 +120,18 @@ set_linear_vel(dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeBody::
+set_linear_vel(const LVecBase3f &vel) {
+  set_linear_vel(vel[0], vel[1], vel[2]);
+}
+
+INLINE void OdeBody::
 set_angular_vel(dReal x, dReal y, dReal z) {
   dBodySetAngularVel(_id, x, y, z);
+}
+
+INLINE void OdeBody::
+set_angular_vel(const LVecBase3f &vel) {
+  set_angular_vel(vel[0], vel[1], vel[2]);
 }
 
 INLINE LVecBase3f OdeBody::
@@ -167,8 +182,18 @@ add_force(dReal fx, dReal fy, dReal fz) {
 }
 
 INLINE void OdeBody::
+add_force(const LVecBase3f &f) {
+  add_force(f[0], f[1], f[2]);
+}
+
+INLINE void OdeBody::
 add_torque(dReal fx, dReal fy, dReal fz) {
   dBodyAddTorque(_id, fx, fy, fz);
+}
+
+INLINE void OdeBody::
+add_torque(const LVecBase3f &f) {
+  add_torque(f[0], f[1], f[2]);
 }
 
 INLINE void OdeBody::
@@ -177,8 +202,18 @@ add_rel_force(dReal fx, dReal fy, dReal fz) {
 }
 
 INLINE void OdeBody::
+add_rel_force(const LVecBase3f &f) {
+  add_rel_force(f[0], f[1], f[2]);
+}
+
+INLINE void OdeBody::
 add_rel_torque(dReal fx, dReal fy, dReal fz) {
   dBodyAddRelTorque(_id, fx, fy, fz);
+}
+
+INLINE void OdeBody::
+add_rel_torque(const LVecBase3f &f) {
+  add_rel_torque(f[0], f[1], f[2]);
 }
 
 INLINE void OdeBody::
@@ -187,8 +222,18 @@ add_force_at_pos(dReal fx, dReal fy, dReal fz, dReal px, dReal py, dReal pz) {
 }
 
 INLINE void OdeBody::
+add_force_at_pos(const LVecBase3f &f, const LVecBase3f &pos) {
+  add_force_at_pos(f[0], f[1], f[2], pos[0], pos[1], pos[2]);
+}
+
+INLINE void OdeBody::
 add_force_at_rel_pos(dReal fx, dReal fy, dReal fz, dReal px, dReal py, dReal pz) {
   dBodyAddForceAtRelPos(_id, fx, fy, fz, px, py, pz);
+}
+
+INLINE void OdeBody::
+add_force_at_rel_pos(const LVecBase3f &f, const LVecBase3f &pos) {
+  add_force_at_rel_pos(f[0], f[1], f[2], pos[0], pos[1], pos[2]);
 }
 
 INLINE void OdeBody::
@@ -197,8 +242,18 @@ add_rel_force_at_pos(dReal fx, dReal fy, dReal fz, dReal px, dReal py, dReal pz)
 }
 
 INLINE void OdeBody::
+add_rel_force_at_pos(const LVecBase3f &f, const LVecBase3f &pos) {
+  add_rel_force_at_pos(f[0], f[1], f[2], pos[0], pos[1], pos[2]);
+}
+
+INLINE void OdeBody::
 add_rel_force_at_rel_pos(dReal fx, dReal fy, dReal fz, dReal px, dReal py, dReal pz) {
   dBodyAddRelForceAtRelPos(_id, fx, fy, fz, px, py, pz);
+}
+
+INLINE void OdeBody::
+add_rel_force_at_rel_pos(const LVecBase3f &f, const LVecBase3f &pos) {
+  add_rel_force_at_rel_pos(f[0], f[1], f[2], pos[0], pos[1], pos[2]);
 }
 
 INLINE void OdeBody::
@@ -207,8 +262,18 @@ set_force(dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeBody::
+set_force(const LVecBase3f &f) {
+  set_force(f[0], f[1], f[2]);
+}
+
+INLINE void OdeBody::
 set_torque(dReal x, dReal y, dReal z) {
   dBodySetTorque(_id, x, y, z);
+}
+
+INLINE void OdeBody::
+set_torque(const LVecBase3f &f) {
+  set_torque(f[0], f[1], f[2]);
 }
 
 INLINE LPoint3f OdeBody::
@@ -219,10 +284,20 @@ get_rel_point_pos(dReal px, dReal py, dReal pz) const {
 }
 
 INLINE LPoint3f OdeBody::
+get_rel_point_pos(const LVecBase3f &pos) const {
+  return get_rel_point_pos(pos[0], pos[1], pos[2]);
+}
+
+INLINE LPoint3f OdeBody::
 get_rel_point_vel(dReal px, dReal py, dReal pz) const {
   dVector3 result;
   dBodyGetRelPointVel(_id, px, py, pz, result);
   return LPoint3f(result[0], result[1], result[2]);
+}
+
+INLINE LPoint3f OdeBody::
+get_rel_point_vel(const LVecBase3f &pos) const {
+  return get_rel_point_vel(pos[0], pos[1], pos[2]);
 }
 
 INLINE LPoint3f OdeBody::
@@ -233,10 +308,20 @@ get_point_vel(dReal px, dReal py, dReal pz) const {
 }
 
 INLINE LPoint3f OdeBody::
+get_point_vel(const LVecBase3f &pos) const {
+  return get_point_vel(pos[0], pos[1], pos[2]);
+}
+
+INLINE LPoint3f OdeBody::
 get_pos_rel_point(dReal px, dReal py, dReal pz) const {
   dVector3 result;
   dBodyGetPosRelPoint(_id, px, py, pz, result);
   return LPoint3f(result[0], result[1], result[2]);
+}
+
+INLINE LPoint3f OdeBody::
+get_pos_rel_point(const LVecBase3f &pos) const {
+  return get_pos_rel_point(pos[0], pos[1], pos[2]);
 }
 
 INLINE LVecBase3f OdeBody::
@@ -247,10 +332,20 @@ vector_to_world(dReal px, dReal py, dReal pz) const {
 }
 
 INLINE LVecBase3f OdeBody::
+vector_to_world(const LVecBase3f &pos) const {
+  return vector_to_world(pos[0], pos[1], pos[2]);
+}
+
+INLINE LVecBase3f OdeBody::
 vector_from_world(dReal px, dReal py, dReal pz) const {
   dVector3 result;
   dBodyVectorFromWorld(_id, px, py, pz, result);
   return LVecBase3f(result[0], result[1], result[2]);
+}
+
+INLINE LVecBase3f OdeBody::
+vector_from_world(const LVecBase3f &pos) const {
+  return vector_from_world(pos[0], pos[1], pos[2]);
 }
 
 INLINE void OdeBody::
@@ -261,6 +356,11 @@ set_finite_rotation_mode(int mode) {
 INLINE void OdeBody::
 set_finite_rotation_axis(dReal x, dReal y, dReal z) {
   dBodySetFiniteRotationAxis(_id, x, y, z);
+}
+
+INLINE void OdeBody::
+set_finite_rotation_axis(const LVecBase3f &axis) {
+  set_finite_rotation_axis(axis[0], axis[1], axis[2]);
 }
 
 INLINE int OdeBody::

@@ -61,7 +61,7 @@ write(ostream &out, unsigned int indent) const {
   out << get_type() \
       << "(mag = " << get_magnitude() \
       << ", center = " << get_center() \
-      << ", inertia = " << get_inertia() \
+      << ", inertia = " << get_inertial_tensor() \
       << ")";
   #endif //] NDEBUG
 }

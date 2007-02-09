@@ -41,6 +41,9 @@ PUBLISHED:
                              dReal cgx, dReal cgy, dReal cgz,
                              dReal I11, dReal I22, dReal I33,
                              dReal I12, dReal I13, dReal I23);
+  INLINE void set_parameters(dReal themass,
+                             const LVecBase3f &center,
+                             const LMatrix3f &r);
   INLINE void set_sphere(dReal density, dReal radius);
   INLINE void set_sphere_total(dReal total_mass, dReal radius);
   INLINE void set_capsule(dReal density, int direction,
@@ -53,16 +56,21 @@ PUBLISHED:
                                  dReal radius, dReal length);
   INLINE void set_box(dReal density,
                       dReal lx, dReal ly, dReal lz);
+  INLINE void set_box(dReal density,
+                      const LVecBase3f &size);
   INLINE void set_box_total(dReal total_mass,
                             dReal lx, dReal ly, dReal lz);
+  INLINE void set_box_total(dReal total_mass,
+			    const LVecBase3f &size);
   INLINE void adjust(dReal newmass);
   INLINE void translate(dReal x, dReal y, dReal z);
-  INLINE void rotate(const dMatrix3 R);
+  INLINE void translate(const LVecBase3f &pos);
+  INLINE void rotate(const LMatrix3f &r);
   INLINE void add(OdeMass &other);
 
   INLINE dReal get_magnitude() const;
   INLINE LPoint3f get_center() const;
-  INLINE LMatrix3f get_inertia() const;
+  INLINE LMatrix3f get_inertial_tensor() const;
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
 

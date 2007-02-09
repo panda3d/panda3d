@@ -32,12 +32,16 @@
 class EXPCL_PANDAODE OdePlaneGeom : public OdeGeom {
 PUBLISHED:
   OdePlaneGeom(dReal a, dReal b, dReal c, dReal d);
+  OdePlaneGeom(const LVecBase4f &params);
   OdePlaneGeom(OdeSpace &space, dReal a, dReal b, dReal c, dReal d);
+  OdePlaneGeom(OdeSpace &space, const LVecBase4f &params);
   virtual ~OdePlaneGeom();
 
   INLINE void set_params(dReal a, dReal b, dReal c, dReal d);
+  INLINE void set_params(const LVecBase4f &params);
   INLINE LVecBase4f get_params() const;
   INLINE dReal get_point_depth(dReal x, dReal y, dReal z) const;
+  INLINE dReal get_point_depth(const LPoint3f &p) const;
 
 public:
   INLINE static int get_geom_class() { return dPlaneClass; };

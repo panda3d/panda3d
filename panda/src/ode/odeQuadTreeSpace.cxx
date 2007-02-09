@@ -23,7 +23,7 @@ TypeHandle OdeQuadTreeSpace::_type_handle;
 
 typedef struct { dVector4 vec; } sdVector4;
 
-sdVector4 LVec3TodVector4(const LVecBase3f& vec) {
+sdVector4 LVec3_to_sdVector4(const LVecBase3f& vec) {
   sdVector4 sdVec4;
 
   sdVec4.vec[0] = vec[0];
@@ -39,8 +39,8 @@ OdeQuadTreeSpace(const LPoint3f &center,
 		 const LVecBase3f &extents,
 		 const int depth) :
   OdeSpace(dQuadTreeSpaceCreate(0,
-				LVec3TodVector4(center).vec,
-				LVec3TodVector4(extents).vec,
+				LVec3_to_sdVector4(center).vec,
+				LVec3_to_sdVector4(extents).vec,
 				depth)) {
 }
 
@@ -50,8 +50,8 @@ OdeQuadTreeSpace(OdeSpace &space,
 		 const LVecBase3f &extents,
 		 const int depth) :
   OdeSpace(dQuadTreeSpaceCreate(space.get_id(),
-                                LVec3TodVector4(center).vec,
-				LVec3TodVector4(extents).vec,
+                                LVec3_to_sdVector4(center).vec,
+				LVec3_to_sdVector4(extents).vec,
                                 depth)) {
 }
 

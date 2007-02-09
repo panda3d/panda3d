@@ -21,6 +21,11 @@ set_params(dReal a, dReal b, dReal c, dReal d) {
   dGeomPlaneSetParams(_id, a, b, c, d);
 }
 
+INLINE void OdePlaneGeom::
+set_params(const LVecBase4f &params) {
+  set_params(params[0], params[1], params[2], params[3]);
+}
+
 INLINE LVecBase4f OdePlaneGeom::
 get_params() const {
   dVector4 res;
@@ -31,4 +36,9 @@ get_params() const {
 INLINE dReal OdePlaneGeom::
 get_point_depth(dReal x, dReal y, dReal z) const {
   return dGeomPlanePointDepth(_id, x, y, z);
+}
+
+INLINE dReal OdePlaneGeom::
+get_point_depth(const LPoint3f &p) const {
+  return get_point_depth(p[0], p[1], p[2]);
 }

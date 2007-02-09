@@ -38,6 +38,16 @@ set_parameters(dReal themass,
 }
 
 INLINE void OdeMass::
+set_parameters(dReal themass,
+	       const LVecBase3f &center,
+               const LMatrix3f &i) {
+  set_parameters(themass,
+                 center[0], center[1], center[2], 
+                 i._m.data[0], i._m.data[4], i._m.data[8],
+                 i._m.data[1], i._m.data[2], i._m.data[5]);
+}
+
+INLINE void OdeMass::
 set_sphere(dReal density, dReal radius) {
   _mass.setSphere(density, radius);
 }
@@ -81,7 +91,22 @@ INLINE void OdeMass::
 set_box(dReal density,
         dReal lx, dReal ly, dReal lz) {
   _mass.setBox(density,
-		lx, ly, lz);
+	       lx, ly, lz);
+}
+
+INLINE void OdeMass::
+set_box(dReal density,
+	const LVecBase3f &size) {
+  _mass.setBox(density,
+	       size[0], size[1], size[2]);
+}
+
+INLINE void OdeMass::
+set_box_total(dReal total_mass,
+              const LVecBase3f &size) {
+  dMassSetBoxTotal(&_mass,
+                   total_mass,
+                   size[0], size[1], size[2]);
 }
 
 INLINE void OdeMass::
@@ -103,8 +128,16 @@ translate(dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeMass::
-rotate(const dMatrix3 R) {
-  _mass.rotate(R);
+translate(const LVecBase3f &pos) {
+  translate(pos[0], pos[1], pos[2]);
+}
+
+INLINE void OdeMass::
+rotate(const LMatrix3f &r) {
+  dMatrix3 rot = { r._m.data[0], r._m.data[1], r._m.data[2], 0,
+                   r._m.data[3], r._m.data[4], r._m.data[5], 0,
+                   r._m.data[6], r._m.data[7], r._m.data[8], 0 };
+  _mass.rotate(rot);
 }
 
 INLINE void OdeMass::
@@ -123,7 +156,7 @@ get_center() const {
 }
 
 INLINE LMatrix3f OdeMass::
-get_inertia() const {
+get_inertial_tensor() const {
   return LMatrix3f(_mass.I[0], _mass.I[1], _mass.I[2] ,
                    _mass.I[4], _mass.I[5], _mass.I[6] ,
                    _mass.I[8], _mass.I[9], _mass.I[10]);

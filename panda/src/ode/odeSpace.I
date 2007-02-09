@@ -60,13 +60,23 @@ get_class() const {
 }
 
 INLINE void OdeSpace::
-set_category_bits(unsigned long bits) {
-  dGeomSetCategoryBits((dGeomID)_id, bits);
+set_category_bits(const BitMask32 &bits) {
+  dGeomSetCategoryBits((dGeomID)_id, bits.get_word());
 }
 
 INLINE void OdeSpace::
-set_collide_bits(unsigned long bits) {
-  dGeomSetCollideBits((dGeomID)_id, bits);
+set_collide_bits(const BitMask32 &bits) {
+  dGeomSetCollideBits((dGeomID)_id, bits.get_word());
+}
+
+INLINE BitMask32 OdeSpace::
+get_category_bits() {
+  return BitMask32(dGeomGetCategoryBits((dGeomID)_id));
+}
+
+INLINE BitMask32 OdeSpace::
+get_collide_bits() {
+  return BitMask32(dGeomGetCollideBits((dGeomID)_id));
 }
 
 INLINE void OdeSpace::
