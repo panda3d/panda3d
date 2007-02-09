@@ -2,6 +2,7 @@
                    dtoolutil:c dtoolbase:c dtool:m prc:c
 
 #define USE_PACKAGES 
+#define BUILDING_DLL BUILDING_PANDASKEL
 
 #begin lib_target
   #define TARGET skel
