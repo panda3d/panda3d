@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_skel.h"
+#include "basicSkel.h"
+#include "typedSkel.h"
 #include "dconfig.h"
 
 Configure(config_skel);
@@ -26,7 +28,7 @@ ConfigureFn(config_skel) {
   init_libskel();
 }
 
-ConfigVariableInt skel_number_of_monkeys
+ConfigVariableInt skel_sample_config_variable
 ("skel-sample-config-variable", 3);
 
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +47,6 @@ init_libskel() {
   }
   initialized = true;
 
-  // There's no initialization necessary for the skel library.
-  // But if there were, we would put it here.
+  TypedSkel::init_type();
 }
 
