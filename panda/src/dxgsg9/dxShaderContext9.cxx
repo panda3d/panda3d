@@ -544,6 +544,9 @@ bind(GSG *gsg) {
 
       // clear the last cached FVF to make sure the next SetFVF call goes through
       gsg -> _last_fvf = 0;
+      // turn off fixed-function multi-texture
+      gsg -> set_texture_stage_state (0, D3DTSS_COLOROP, D3DTOP_DISABLE);
+      gsg -> set_texture_stage_state (1, D3DTSS_COLOROP, D3DTOP_DISABLE);
 
       // Pass in k-parameters and transform-parameters
       issue_parameters(gsg, true);
@@ -1088,6 +1091,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
         continue;
       }
       TextureContext *tc = tex->prepare_now(gsg->_prepared_objects, gsg);
+//      TextureContext *tc = tex->prepare_now(gsg->get_prepared_objects(), gsg);
       if (tc == (TextureContext*)NULL) {
         continue;
       }
