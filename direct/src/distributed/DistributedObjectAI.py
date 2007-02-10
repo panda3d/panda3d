@@ -186,8 +186,6 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         Called after the object has been generated and all
         of its required fields filled in. Overwrite when needed.
         """
-        self.__generated = True
-        messenger.send(self.uniqueName("generate"), [self])
 
     def addInterest(self, zoneId, note="", event=None):
         self.air.addInterest(self.getDoId(), zoneId, note, event)
@@ -257,19 +255,27 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         # Inheritors should override
         pass
 
+    def postGenerateMessage(self):
+        self.__generated = True
+        messenger.send(self.uniqueName("generate"), [self])        
+
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
         self.announceGenerate()
-
+        self.postGenerateMessage()
+        
     def updateAllRequiredFields(self, dclass, di):
         dclass.receiveUpdateAllRequired(self, di)
         self.announceGenerate()
+        self.postGenerateMessage()
 
     def updateRequiredOtherFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
         # Announce generate after updating all the required fields,
         # but before we update the non-required fields.
         self.announceGenerate()
+        self.postGenerateMessage()
+        
         dclass.receiveUpdateOther(self, di)
 
     def updateAllRequiredOtherFields(self, dclass, di):
@@ -277,6 +283,8 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         # Announce generate after updating all the required fields,
         # but before we update the non-required fields.
         self.announceGenerate()
+        self.postGenerateMessage()
+        
         dclass.receiveUpdateOther(self, di)
 
     def sendSetZone(self, zoneId):
@@ -375,7 +383,8 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         self.air.generateWithRequired(self, parentId, zoneId, optionalFields)
         self.generate()
         self.announceGenerate()
-
+        self.postGenerateMessage()
+        
     # this is a special generate used for estates, or anything else that
     # needs to have a hard coded doId as assigned by the server
     def generateWithRequiredAndId(self, doId, parentId, zoneId, optionalFields=[]):
@@ -389,7 +398,8 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         self.air.generateWithRequiredAndId(self, doId, parentId, zoneId, optionalFields)
         self.generate()
         self.announceGenerate()
-
+        self.postGenerateMessage()
+        
     def generateOtpObject(self, parentId, zoneId, optionalFields=[], doId=None):
         assert self.notify.debugStateCall(self)
         # have we already allocated a doId?
@@ -409,6 +419,7 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         self.sendGenerateWithRequired(self.air, parentId, zoneId, optionalFields)
         self.generate()
         self.announceGenerate()
+        self.postGenerateMessage()
 
     @calldownEnforced
     def generate(self):

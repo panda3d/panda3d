@@ -207,9 +207,7 @@ class DistributedObject(DistributedObjectBase, EnforcesCalldowns):
         generated and all of its required fields filled in.
         """
         assert self.notify.debug('announceGenerate(): %s' % (self.doId))
-        if self.activeState != ESGenerated:
-            self.activeState = ESGenerated
-            messenger.send(self.uniqueName("generate"), [self])
+
 
     @calldownEnforced
     def disable(self):
@@ -281,14 +279,24 @@ class DistributedObject(DistributedObjectBase, EnforcesCalldowns):
         """
         return self.doId
 
+
+    #This message was moved out of announce generate
+    #to avoid ordering issues.  
+    def postGenerateMessage(self):
+        if self.activeState != ESGenerated:
+            self.activeState = ESGenerated
+            messenger.send(self.uniqueName("generate"), [self])
+            
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
         self.announceGenerate()
+        self.postGenerateMessage()
 
     def updateAllRequiredFields(self, dclass, di):
         dclass.receiveUpdateAllRequired(self, di)
         self.announceGenerate()
-
+        self.postGenerateMessage()
+        
     def updateRequiredOtherFields(self, dclass, di):
         # First, update the required fields
         dclass.receiveUpdateBroadcastRequired(self, di)
@@ -296,7 +304,8 @@ class DistributedObject(DistributedObjectBase, EnforcesCalldowns):
         # Announce generate after updating all the required fields,
         # but before we update the non-required fields.
         self.announceGenerate()
-
+        self.postGenerateMessage()
+        
         dclass.receiveUpdateOther(self, di)
 
     def sendUpdate(self, fieldName, args = [], sendToId = None):

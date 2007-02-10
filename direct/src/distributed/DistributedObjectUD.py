@@ -166,6 +166,8 @@ class DistributedObjectUD(DistributedObjectBase):
         of its required fields filled in. Overwrite when needed.
         """
         self.__generated = True
+
+    def postGenerateMessage(self):
         messenger.send(self.uniqueName("generate"), [self])
 
     def addInterest(self, zoneId, note="", event=None):
@@ -195,16 +197,20 @@ class DistributedObjectUD(DistributedObjectBase):
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
         self.announceGenerate()
+        self.postGenerateMessage()
 
     def updateAllRequiredFields(self, dclass, di):
         dclass.receiveUpdateAllRequired(self, di)
         self.announceGenerate()
+        self.postGenerateMessage()
 
     def updateRequiredOtherFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
         # Announce generate after updating all the required fields,
         # but before we update the non-required fields.
         self.announceGenerate()
+        self.postGenerateMessage()
+        
         dclass.receiveUpdateOther(self, di)
 
     def updateAllRequiredOtherFields(self, dclass, di):
@@ -212,6 +218,8 @@ class DistributedObjectUD(DistributedObjectBase):
         # Announce generate after updating all the required fields,
         # but before we update the non-required fields.
         self.announceGenerate()
+        self.postGenerateMessage()
+        
         dclass.receiveUpdateOther(self, di)
 
     def sendSetZone(self, zoneId):
@@ -300,7 +308,8 @@ class DistributedObjectUD(DistributedObjectBase):
         ## self.zoneId = zoneId
         self.generate()
         self.announceGenerate()
-
+        self.postGenerateMessage()
+        
     def generateOtpObject(self, parentId, zoneId, optionalFields=[], doId=None):
         assert self.notify.debugStateCall(self)
         # have we already allocated a doId?

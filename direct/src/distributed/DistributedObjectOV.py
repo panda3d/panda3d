@@ -126,9 +126,6 @@ class DistributedObjectOV(DistributedObjectBase):
         generated and all of its required fields filled in.
         """
         assert self.notify.debug('announceGenerate(): %s' % (self.doId))
-        if self.activeState != ESGenerated:
-            self.activeState = ESGenerated
-            messenger.send(self.uniqueName("generate"), [self])
 
     def disable(self):
         """
@@ -187,13 +184,21 @@ class DistributedObjectOV(DistributedObjectBase):
         """
         return self.doId
 
+    def postGenerateMessage(self):
+        if self.activeState != ESGenerated:
+            self.activeState = ESGenerated
+            messenger.send(self.uniqueName("generate"), [self])
+
+
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
         self.announceGenerate()
+        self.postGenerateMessage()
 
     def updateAllRequiredFields(self, dclass, di):
         dclass.receiveUpdateAllRequired(self, di)
         self.announceGenerate()
+        self.postGenerateMessage()
 
     def updateRequiredOtherFields(self, dclass, di):
         # First, update the required fields
@@ -202,7 +207,8 @@ class DistributedObjectOV(DistributedObjectBase):
         # Announce generate after updating all the required fields,
         # but before we update the non-required fields.
         self.announceGenerate()
-
+        self.postGenerateMessage()
+        
         dclass.receiveUpdateOther(self, di)
 
     def getCacheable(self):
