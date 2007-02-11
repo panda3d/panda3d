@@ -32,11 +32,6 @@ set_angle(int anum, dReal angle) {
 }
 
 INLINE void OdeAMotorJoint::
-set_param(int parameter, dReal value) {
-  dJointSetAMotorParam(_id, parameter, value);
-}
-
-INLINE void OdeAMotorJoint::
 set_mode(int mode) {
   dJointSetAMotorMode(_id, mode);
 }
@@ -51,9 +46,11 @@ get_num_axes() const {
   return dJointGetAMotorNumAxes(_id);
 }
 
-INLINE void OdeAMotorJoint::
-get_axis(int anum, dVector3 result) const {
-  return dJointGetAMotorAxis(_id, anum, result);
+INLINE LVecBase3f OdeAMotorJoint::
+get_axis(int anum) const {
+  dVector3 result;
+  dJointGetAMotorAxis(_id, anum, result);
+  return LVecBase3f(result[0], result[1], result[2]);
 }
 
 INLINE int OdeAMotorJoint::
@@ -71,12 +68,251 @@ get_angle_rate(int anum) const {
   return dJointGetAMotorAngleRate(_id, anum);
 }
 
-INLINE dReal OdeAMotorJoint::
-get_param(int parameter) const {
-  return dJointGetAMotorParam(_id, parameter);
-}
-
 INLINE int OdeAMotorJoint::
 get_mode() const {
   return dJointGetAMotorMode(_id);
 }
+
+INLINE void OdeAMotorJoint::
+set_param_lo_stop(int axis, dReal val) {
+  nassertv( _id != 0 );
+  nassertv( 0 <= axis && axis <= 2 );
+  if ( axis == 0 ) {
+    dJointSetAMotorParam(_id, dParamLoStop, val);
+  } else if ( axis == 1 ) {
+    dJointSetAMotorParam(_id, dParamLoStop, val);
+  } else if ( axis == 2 ) {
+    dJointSetAMotorParam(_id, dParamLoStop, val);
+  }
+}
+
+INLINE void OdeAMotorJoint::
+set_param_hi_stop(int axis, dReal val) {
+  nassertv( _id != 0 );
+  nassertv( 0 <= axis && axis <= 2 );
+  if ( axis == 0 ) {
+    dJointSetAMotorParam(_id, dParamHiStop, val);
+  } else if ( axis == 1 ) {
+    dJointSetAMotorParam(_id, dParamHiStop, val);
+  } else if ( axis == 2 ) {
+    dJointSetAMotorParam(_id, dParamHiStop, val);
+  }
+}
+
+INLINE void OdeAMotorJoint::
+set_param_vel(int axis, dReal val) {
+  nassertv( _id != 0 );
+  nassertv( 0 <= axis && axis <= 2 );
+  if ( axis == 0 ) {
+    dJointSetAMotorParam(_id, dParamVel, val);
+  } else if ( axis == 1 ) {
+    dJointSetAMotorParam(_id, dParamVel, val);
+  } else if ( axis == 2 ) {
+    dJointSetAMotorParam(_id, dParamVel, val);
+  }
+}
+
+INLINE void OdeAMotorJoint::
+set_param_f_max(int axis, dReal val) {
+  nassertv( _id != 0 );
+  nassertv( 0 <= axis && axis <= 2 );
+  if ( axis == 0 ) {
+    dJointSetAMotorParam(_id, dParamFMax, val);
+  } else if ( axis == 1 ) {
+    dJointSetAMotorParam(_id, dParamFMax, val);
+  } else if ( axis == 2 ) {
+    dJointSetAMotorParam(_id, dParamFMax, val);
+  }
+}
+
+INLINE void OdeAMotorJoint::
+set_param_fudge_factor(int axis, dReal val) {
+  nassertv( _id != 0 );
+  nassertv( 0 <= axis && axis <= 2 );
+  if ( axis == 0 ) {
+    dJointSetAMotorParam(_id, dParamFudgeFactor, val);
+  } else if ( axis == 1 ) {
+    dJointSetAMotorParam(_id, dParamFudgeFactor, val);
+  } else if ( axis == 2 ) {
+    dJointSetAMotorParam(_id, dParamFudgeFactor, val);
+  }
+}
+
+INLINE void OdeAMotorJoint::
+set_param_bounce(int axis, dReal val) {
+  nassertv( _id != 0 );
+  nassertv( 0 <= axis && axis <= 2 );
+  if ( axis == 0 ) {
+    dJointSetAMotorParam(_id, dParamBounce, val);
+  } else if ( axis == 1 ) {
+    dJointSetAMotorParam(_id, dParamBounce, val);
+  } else if ( axis == 2 ) {
+    dJointSetAMotorParam(_id, dParamBounce, val);
+  }
+}
+
+INLINE void OdeAMotorJoint::
+set_param_CFM(int axis, dReal val) {
+  nassertv( _id != 0 );
+  nassertv( 0 <= axis && axis <= 2 );
+  if ( axis == 0 ) {
+    dJointSetAMotorParam(_id, dParamCFM, val);
+  } else if ( axis == 1 ) {
+    dJointSetAMotorParam(_id, dParamCFM, val);
+  } else if ( axis == 2 ) {
+    dJointSetAMotorParam(_id, dParamCFM, val);
+  }
+}
+
+INLINE void OdeAMotorJoint::
+set_param_stop_ERP(int axis, dReal val) {
+  nassertv( _id != 0 );
+  nassertv( 0 <= axis && axis <= 2 );
+  if ( axis == 0 ) {
+    dJointSetAMotorParam(_id, dParamStopERP, val);
+  } else if ( axis == 1 ) {
+    dJointSetAMotorParam(_id, dParamStopERP, val);
+  } else if ( axis == 2 ) {
+    dJointSetAMotorParam(_id, dParamStopERP, val);
+  }
+}
+
+INLINE void OdeAMotorJoint::
+set_param_stop_CFM(int axis, dReal val) {
+  nassertv( _id != 0 );
+  nassertv( 0 <= axis && axis <= 2 );
+  if ( axis == 0 ) {
+    dJointSetAMotorParam(_id, dParamStopCFM, val);
+  } else if ( axis == 1 ) {
+    dJointSetAMotorParam(_id, dParamStopCFM, val);
+  } else if ( axis == 2 ) {
+    dJointSetAMotorParam(_id, dParamStopCFM, val);
+  }
+}
+
+INLINE dReal OdeAMotorJoint::
+get_param_lo_stop(int axis) const {
+  nassertr( _id != 0, 0 );
+  nassertr( 0 <= axis && axis <= 2, 0 );
+  if ( axis == 0 ) {
+    return dJointGetAMotorParam(_id, dParamLoStop);
+  } else if ( axis == 1 ) {
+    return dJointGetAMotorParam(_id, dParamLoStop);
+  } else if ( axis == 2 ) {
+    return dJointGetAMotorParam(_id, dParamLoStop);
+  }
+  return 0;
+}
+
+INLINE dReal OdeAMotorJoint::
+get_param_hi_stop(int axis) const {
+  nassertr( _id != 0, 0 );
+  nassertr( 0 <= axis && axis <= 2, 0 );
+  if ( axis == 0 ) {
+    return dJointGetAMotorParam(_id, dParamHiStop);
+  } else if ( axis == 1 ) {
+    return dJointGetAMotorParam(_id, dParamHiStop);
+  } else if ( axis == 2 ) {
+    return dJointGetAMotorParam(_id, dParamHiStop);
+  }
+  return 0;
+}
+
+INLINE dReal OdeAMotorJoint::
+get_param_vel(int axis) const {
+  nassertr( _id != 0, 0 );
+  nassertr( 0 <= axis && axis <= 2, 0 );
+  if ( axis == 0 ) {
+    return dJointGetAMotorParam(_id, dParamVel);
+  } else if ( axis == 1 ) {
+    return dJointGetAMotorParam(_id, dParamVel);
+  } else if ( axis == 2 ) {
+    return dJointGetAMotorParam(_id, dParamVel);
+  }
+  return 0;
+}
+
+INLINE dReal OdeAMotorJoint::
+get_param_f_max(int axis) const {
+  nassertr( _id != 0, 0 );
+  nassertr( 0 <= axis && axis <= 2, 0 );
+  if ( axis == 0 ) {
+    return dJointGetAMotorParam(_id, dParamFMax);
+  } else if ( axis == 1 ) {
+    return dJointGetAMotorParam(_id, dParamFMax);
+  } else if ( axis == 2 ) {
+    return dJointGetAMotorParam(_id, dParamFMax);
+  }
+  return 0;
+}
+
+INLINE dReal OdeAMotorJoint::
+get_param_fudge_factor(int axis) const {
+  nassertr( _id != 0, 0 );
+  nassertr( 0 <= axis && axis <= 2, 0 );
+  if ( axis == 0 ) {
+    return dJointGetAMotorParam(_id, dParamFudgeFactor);
+  } else if ( axis == 1 ) {
+    return dJointGetAMotorParam(_id, dParamFudgeFactor);
+  } else if ( axis == 2 ) {
+    return dJointGetAMotorParam(_id, dParamFudgeFactor);
+  }
+  return 0;
+}
+
+INLINE dReal OdeAMotorJoint::
+get_param_bounce(int axis) const {
+  nassertr( _id != 0, 0 );
+  nassertr( 0 <= axis && axis <= 2, 0 );
+  if ( axis == 0 ) {
+    return dJointGetAMotorParam(_id, dParamBounce);
+  } else if ( axis == 1 ) {
+    return dJointGetAMotorParam(_id, dParamBounce);
+  } else if ( axis == 2 ) {
+    return dJointGetAMotorParam(_id, dParamBounce);
+  }
+  return 0;
+}
+
+INLINE dReal OdeAMotorJoint::
+get_param_CFM(int axis) const {
+  nassertr( _id != 0, 0 );
+  nassertr( 0 <= axis && axis <= 2, 0 );
+  if ( axis == 0 ) {
+    return dJointGetAMotorParam(_id, dParamCFM);
+  } else if ( axis == 1 ) {
+    return dJointGetAMotorParam(_id, dParamCFM);
+  } else if ( axis == 2 ) {
+    return dJointGetAMotorParam(_id, dParamCFM);
+  }
+  return 0;
+}
+
+INLINE dReal OdeAMotorJoint::
+get_param_stop_ERP(int axis) const {
+  nassertr( _id != 0, 0 );
+  nassertr( 0 <= axis && axis <= 2, 0 );
+  if ( axis == 0 ) {
+    return dJointGetAMotorParam(_id, dParamStopERP);
+  } else if ( axis == 1 ) {
+    return dJointGetAMotorParam(_id, dParamStopERP);
+  } else if ( axis == 2 ) {
+    return dJointGetAMotorParam(_id, dParamStopERP);
+  }
+  return 0;
+}
+
+INLINE dReal OdeAMotorJoint::
+get_param_stop_CFM(int axis) const {
+  nassertr( _id != 0, 0 );
+  nassertr( 0 <= axis && axis <= 2, 0 );
+  if ( axis == 0 ) {
+    return dJointGetAMotorParam(_id, dParamStopCFM);
+  } else if ( axis == 1 ) {
+    return dJointGetAMotorParam(_id, dParamStopCFM);
+  } else if ( axis == 2 ) {
+    return dJointGetAMotorParam(_id, dParamStopCFM);
+  }
+  return 0;
+}
+

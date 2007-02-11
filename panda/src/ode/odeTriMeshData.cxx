@@ -59,9 +59,7 @@ remove_data(OdeTriMeshData *data) {
   odetrimeshdata_cat.debug() << get_class_type() << "::remove_data(" << data->get_id() << ")" << "\n";
   TriMeshDataMap::iterator iter = _tri_mesh_data_map.begin();  
   for (;iter != _tri_mesh_data_map.end(); ++iter) {
-    cout << iter->second << "\t" << data << "\n";
     if ( iter->second == data ) {
-      cout << "ERASING\n";
       _tri_mesh_data_map.erase(iter);
       iter = _tri_mesh_data_map.end();
     }

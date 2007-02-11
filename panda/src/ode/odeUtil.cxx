@@ -18,6 +18,8 @@
 
 #include "odeUtil.h"
 
+dReal OdeUtil::OC_infinity = dInfinity;
+
 OdeJoint OdeUtil::
 get_connecting_joint(const OdeBody &body1, const OdeBody &body2) {
   return OdeJoint(dConnectingJoint(body1.get_id(),body2.get_id()));

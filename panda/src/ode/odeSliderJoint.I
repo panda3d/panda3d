@@ -27,11 +27,6 @@ set_axis_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az) {
 }
 
 INLINE void OdeSliderJoint::
-set_param(int parameter, dReal value) {
-  dJointSetSliderParam(_id, parameter, value);
-}
-
-INLINE void OdeSliderJoint::
 add_force(dReal force) {
   dJointAddSliderForce(_id, force);
 }
@@ -51,7 +46,111 @@ get_axis(dVector3 result) const {
   return dJointGetSliderAxis(_id, result);
 }
 
-INLINE dReal OdeSliderJoint::
-get_param(int parameter) const {
-  return dJointGetSliderParam(_id, parameter);
+INLINE void OdeSliderJoint::
+set_param_lo_stop(dReal val) {
+  nassertv( _id != 0 );
+  dJointSetSliderParam(_id, dParamLoStop, val);
 }
+
+INLINE void OdeSliderJoint::
+set_param_hi_stop(dReal val) {
+  nassertv( _id != 0 );
+  dJointSetSliderParam(_id, dParamHiStop, val);
+}
+
+INLINE void OdeSliderJoint::
+set_param_vel(dReal val) {
+  nassertv( _id != 0 );
+  dJointSetSliderParam(_id, dParamVel, val);
+}
+
+INLINE void OdeSliderJoint::
+set_param_f_max(dReal val) {
+  nassertv( _id != 0 );
+  dJointSetSliderParam(_id, dParamFMax, val);
+}
+
+INLINE void OdeSliderJoint::
+set_param_fudge_factor(dReal val) {
+  nassertv( _id != 0 );
+  dJointSetSliderParam(_id, dParamFudgeFactor, val);
+}
+
+INLINE void OdeSliderJoint::
+set_param_bounce(dReal val) {
+  nassertv( _id != 0 );
+  dJointSetSliderParam(_id, dParamBounce, val);
+}
+
+INLINE void OdeSliderJoint::
+set_param_CFM(dReal val) {
+  nassertv( _id != 0 );
+  dJointSetSliderParam(_id, dParamCFM, val);
+}
+
+INLINE void OdeSliderJoint::
+set_param_stop_ERP(dReal val) {
+  nassertv( _id != 0 );
+  dJointSetSliderParam(_id, dParamStopERP, val);
+}
+
+INLINE void OdeSliderJoint::
+set_param_stop_CFM(dReal val) {
+  nassertv( _id != 0 );
+  dJointSetSliderParam(_id, dParamStopCFM, val);
+}
+
+INLINE dReal OdeSliderJoint::
+get_param_lo_stop() const {
+  nassertr( _id != 0, 0 );
+  return dJointGetSliderParam(_id, dParamLoStop);
+}
+
+INLINE dReal OdeSliderJoint::
+get_param_hi_stop() const {
+  nassertr( _id != 0, 0 );
+  return dJointGetSliderParam(_id, dParamHiStop);
+}
+
+INLINE dReal OdeSliderJoint::
+get_param_vel() const {
+  nassertr( _id != 0, 0 );
+  return dJointGetSliderParam(_id, dParamVel);
+}
+
+INLINE dReal OdeSliderJoint::
+get_param_f_max() const {
+  nassertr( _id != 0, 0 );
+  return dJointGetSliderParam(_id, dParamFMax);
+}
+
+INLINE dReal OdeSliderJoint::
+get_param_fudge_factor() const {
+  nassertr( _id != 0, 0 );
+  return dJointGetSliderParam(_id, dParamFudgeFactor);
+}
+
+INLINE dReal OdeSliderJoint::
+get_param_bounce() const {
+  nassertr( _id != 0, 0 );
+  return dJointGetSliderParam(_id, dParamBounce);
+}
+
+INLINE dReal OdeSliderJoint::
+get_param_CFM() const {
+  nassertr( _id != 0, 0 );
+  return dJointGetSliderParam(_id, dParamCFM);
+}
+
+INLINE dReal OdeSliderJoint::
+get_param_stop_ERP() const {
+  nassertr( _id != 0, 0 );
+  return dJointGetSliderParam(_id, dParamStopERP);
+}
+
+INLINE dReal OdeSliderJoint::
+get_param_stop_CFM() const {
+  nassertr( _id != 0, 0 );
+  return dJointGetSliderParam(_id, dParamStopCFM);
+}
+

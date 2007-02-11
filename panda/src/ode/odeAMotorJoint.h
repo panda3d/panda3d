@@ -27,17 +27,36 @@ PUBLISHED:
   INLINE void set_num_axes(int num);
   INLINE void set_axis(int anum, int rel, dReal x, dReal y, dReal z);
   INLINE void set_angle(int anum, dReal angle);
-  INLINE void set_param(int parameter, dReal value);
   INLINE void set_mode(int mode);
   INLINE void add_torques(dReal torque1, dReal torque2, dReal torque3);
 
   INLINE int get_num_axes() const;
-  INLINE void get_axis(int anum, dVector3 result) const;
+  INLINE LVecBase3f get_axis(int anum) const;
   INLINE int get_axis_rel(int anum) const;
   INLINE dReal get_angle(int anum) const;
   INLINE dReal get_angle_rate(int anum) const;
-  INLINE dReal get_param(int parameter) const;
   INLINE int get_mode() const;
+
+  INLINE void set_param_lo_stop(int axis, dReal val);
+  INLINE void set_param_hi_stop(int axis, dReal val);
+  INLINE void set_param_vel(int axis, dReal val);
+  INLINE void set_param_f_max(int axis, dReal val);
+  INLINE void set_param_fudge_factor(int axis, dReal val);
+  INLINE void set_param_bounce(int axis, dReal val);
+  INLINE void set_param_CFM(int axis, dReal val);
+  INLINE void set_param_stop_ERP(int axis, dReal val);
+  INLINE void set_param_stop_CFM(int axis, dReal val);
+
+  INLINE dReal get_param_lo_stop(int axis) const;
+  INLINE dReal get_param_hi_stop(int axis) const;
+  INLINE dReal get_param_vel(int axis) const;
+  INLINE dReal get_param_f_max(int axis) const;
+  INLINE dReal get_param_fudge_factor(int axis) const;
+  INLINE dReal get_param_bounce(int axis) const;
+  INLINE dReal get_param_CFM(int axis) const;
+  INLINE dReal get_param_stop_ERP(int axis) const;
+  INLINE dReal get_param_stop_CFM(int axis) const;
+
 
 public:
   static TypeHandle get_class_type() {

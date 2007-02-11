@@ -44,7 +44,8 @@ PUBLISHED:
   static int are_connected_excluding(const OdeBody &body1,
 	                             const OdeBody &body2,
 	                             const int joint_type);
-  
+
+  static dReal OC_infinity;  
 };
 
 #endif

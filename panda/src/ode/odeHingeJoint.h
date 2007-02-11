@@ -26,15 +26,33 @@ PUBLISHED:
   INLINE void set_anchor(dReal x, dReal y, dReal z);
   INLINE void set_anchor_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az);
   INLINE void set_axis(dReal x, dReal y, dReal z);
-  INLINE void set_param(int parameter, dReal value);
   INLINE void add_torque(dReal torque);
 
-  INLINE void get_anchor(dVector3 result) const;
-  INLINE void get_anchor2(dVector3 result) const;
-  INLINE void get_axis(dVector3 result) const;
-  INLINE dReal get_param(int parameter) const;
+  INLINE LVecBase3f get_anchor() const;
+  INLINE LVecBase3f get_anchor2() const;
+  INLINE LVecBase3f get_axis() const;
   INLINE dReal get_angle() const;
   INLINE dReal get_angle_rate() const;
+
+  INLINE void set_param_lo_stop(dReal val);
+  INLINE void set_param_hi_stop(dReal val);
+  INLINE void set_param_vel(dReal val);
+  INLINE void set_param_f_max(dReal val);
+  INLINE void set_param_fudge_factor(dReal val);
+  INLINE void set_param_bounce(dReal val);
+  INLINE void set_param_CFM(dReal val);
+  INLINE void set_param_stop_ERP(dReal val);
+  INLINE void set_param_stop_CFM(dReal val);
+
+  INLINE dReal get_param_lo_stop() const;
+  INLINE dReal get_param_hi_stop() const;
+  INLINE dReal get_param_vel() const;
+  INLINE dReal get_param_f_max() const;
+  INLINE dReal get_param_fudge_factor() const;
+  INLINE dReal get_param_bounce() const;
+  INLINE dReal get_param_CFM() const;
+  INLINE dReal get_param_stop_ERP() const;
+  INLINE dReal get_param_stop_CFM() const;
 
 public:
   static TypeHandle get_class_type() {
