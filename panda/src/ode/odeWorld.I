@@ -26,6 +26,11 @@ set_gravity(dReal x, dReal y, dReal z) {
   dWorldSetGravity(_id, x, y, z);
 }
 
+INLINE void OdeWorld::
+set_gravity(const LVecBase3f &vec) {
+  dWorldSetGravity(_id, vec[0], vec[1], vec[2]);
+}
+
 INLINE LVecBase3f OdeWorld::
 get_gravity() const {
   dVector3 gravity;
@@ -61,11 +66,22 @@ step(dReal stepsize) {
 
 INLINE LVecBase3f OdeWorld::
 impulse_to_force(dReal stepsize, \
-               dReal ix, dReal iy, dReal iz){
+                 dReal ix, dReal iy, dReal iz){
   dVector3 force;
   dWorldImpulseToForce(_id,
                        stepsize,
                        ix, iy, iz,
+                       force);
+  return LVecBase3f(force[0], force[1], force[2]);
+}
+
+INLINE LVecBase3f OdeWorld::
+impulse_to_force(dReal stepsize, \
+                 const LVecBase3f &impulse){
+  dVector3 force;
+  dWorldImpulseToForce(_id,
+                       stepsize,
+                       impulse[0], impulse[1], impulse[2],
                        force);
   return LVecBase3f(force[0], force[1], force[2]);
 }
