@@ -127,7 +127,7 @@ PUBLISHED:
   INLINE LVecBase3f get_finite_rotation_axis() const;
 
   INLINE int get_num_joints() const;
-  void get_joint(int index, OdeJoint &joint) const;
+  OdeJoint get_joint(int index) const;
   INLINE void enable();
   INLINE void disable();
   INLINE int is_enabled() const;
@@ -135,6 +135,7 @@ PUBLISHED:
   INLINE int get_gravity_mode() const;
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
+  INLINE int compare_to(const OdeBody &other) const;
 
 public:
   INLINE dBodyID get_id() const;

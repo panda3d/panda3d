@@ -22,6 +22,11 @@
 TypeHandle OdeSimpleSpace::_type_handle;
 
 OdeSimpleSpace::
+OdeSimpleSpace(dSpaceID id) :
+  OdeSpace(id) {
+}
+
+OdeSimpleSpace::
 OdeSimpleSpace() :
   OdeSpace(dSimpleSpaceCreate(0)) {
 }

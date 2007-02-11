@@ -38,6 +38,7 @@
     odePlane2dJoint.I odePlane2dJoint.h \
     odeSliderJoint.I odeSliderJoint.h \
     odeUniversalJoint.I odeUniversalJoint.h \
+    odeJointCollection.h \
     odeSimpleSpace.I odeSimpleSpace.h \
     odeHashSpace.I odeHashSpace.h \
     odeQuadTreeSpace.I odeQuadTreeSpace.h \
@@ -64,7 +65,7 @@
     odeHingeJoint.cxx odeHinge2Joint.cxx \
     odeLMotorJoint.cxx odeNullJoint.cxx \
     odePlane2dJoint.cxx odeSliderJoint.cxx \
-    odeUniversalJoint.cxx \
+    odeUniversalJoint.cxx odeJointCollection.cxx\
     odeSimpleSpace.cxx \
     odeHashSpace.cxx odeQuadTreeSpace.cxx \
     odeSphereGeom.cxx odeBoxGeom.cxx \
@@ -97,6 +98,7 @@
     odePlane2dJoint.I odePlane2dJoint.h \
     odeSliderJoint.I odeSliderJoint.h \
     odeUniversalJoint.I odeUniversalJoint.h \
+    odeJointCollection.h \
     odeSimpleSpace.I odeSimpleSpace.h \
     odeHashSpace.I odeHashSpace.h \
     odeQuadTreeSpace.I odeQuadTreeSpace.h \

@@ -83,5 +83,3 @@ INLINE void OdeContactGeom::
 set_g2(const OdeGeom &geom){
   _contact_geom.g2 = geom._id;
 }
-
-

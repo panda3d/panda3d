@@ -30,20 +30,20 @@
 //       Class : OdeTriMeshGeom
 // Description : 
 ////////////////////////////////////////////////////////////////////
-
-typedef pmap<dGeomID, PT(OdeTriMeshData)> TriMeshDataMap;
-
 class EXPCL_PANDAODE OdeTriMeshGeom : public OdeGeom {
-protected:
-  static TriMeshDataMap MeshData;
+  friend class OdeGeom;
+
+private:
+  OdeTriMeshGeom(dGeomID id);
 
 PUBLISHED:
-  //ODE_API dGeomID dCreateTriMesh(dSpaceID space, dTriMeshDataID Data, dTriCallback* Callback, dTriArrayCallback* ArrayCallback, dTriRayCallback* RayCallback);
+  /* ODE_API dGeomID dCreateTriMesh(dSpaceID space, dTriMeshDataID Data, dTriCallback* Callback, dTriArrayCallback* ArrayCallback, dTriRayCallback* RayCallback); */
   OdeTriMeshGeom(OdeTriMeshData &data);
   OdeTriMeshGeom(OdeSpace &space, OdeTriMeshData &data);
-  OdeTriMeshGeom(OdeTriMeshGeom &copy);
+  OdeTriMeshGeom(const OdeTriMeshGeom &copy);
   virtual ~OdeTriMeshGeom();
-
+  
+  void destroy();
   INLINE void set_data(OdeTriMeshData &data);
   INLINE PT(OdeTriMeshData) get_data() const;
   INLINE void enable_TC(int geom_class, int enable);
@@ -56,8 +56,6 @@ PUBLISHED:
 public:
   INLINE static int get_geom_class() { return dTriMeshClass; };
   INLINE dTriMeshDataID get_data_id() const;
-  static void link_data(dGeomID, OdeTriMeshData &data);
-  static void unlink_data(dGeomID);
 
 private:
   void operator = (const OdeTriMeshGeom &copy);

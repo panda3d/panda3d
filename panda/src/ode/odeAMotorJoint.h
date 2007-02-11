@@ -14,6 +14,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeAMotorJoint : public OdeJoint {
+  friend class OdeJoint;
+
+private:
+  OdeAMotorJoint(dJointID id);
+
 PUBLISHED:
   OdeAMotorJoint(OdeWorld &world);
   OdeAMotorJoint(OdeWorld &world, OdeJointGroup &joint_group);

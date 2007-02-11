@@ -14,6 +14,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeBallJoint : public OdeJoint {
+  friend class OdeJoint;
+
+private:
+  OdeBallJoint(dJointID id);
+
 PUBLISHED:
   OdeBallJoint(OdeWorld &world);
   OdeBallJoint(OdeWorld &world, OdeJointGroup &joint_group);

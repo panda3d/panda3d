@@ -20,23 +20,28 @@
 #include "odeTriMeshGeom.h"
 
 TypeHandle OdeTriMeshGeom::_type_handle;
-TriMeshDataMap OdeTriMeshGeom::MeshData;
+
+OdeTriMeshGeom::
+OdeTriMeshGeom(dGeomID id) :
+  OdeGeom(id) {
+}
 
 OdeTriMeshGeom::
 OdeTriMeshGeom(OdeTriMeshData &data) :
   OdeGeom(dCreateTriMesh(0, data.get_id(), 0, 0, 0)) {
-  link_data(_id, data);
+  OdeTriMeshData::link_data(_id, &data);
 }
 
 OdeTriMeshGeom::
 OdeTriMeshGeom(OdeSpace &space, OdeTriMeshData &data) :
   OdeGeom(dCreateTriMesh(space.get_id(), data.get_id(), 0, 0, 0)) {
-  link_data(_id, data);
+  OdeTriMeshData::link_data(_id, &data);
 }
 
 OdeTriMeshGeom::
-OdeTriMeshGeom(OdeTriMeshGeom &copy) :
+OdeTriMeshGeom(const OdeTriMeshGeom &copy) :
   OdeGeom(dCreateTriMesh(0, copy.get_data_id(), 0, 0, 0)) {
+  OdeTriMeshData::link_data(_id, copy.get_data());
 }
 
 OdeTriMeshGeom::
@@ -44,20 +49,6 @@ OdeTriMeshGeom::
 }
 
 void OdeTriMeshGeom::
-link_data(dGeomID id, OdeTriMeshData &data) {
-  odegeom_cat.debug() << get_class_type() << "(" << id << ") linking to data: " << data.get_id() << "\n";
-  MeshData[id] = &data;
-}
-
-void OdeTriMeshGeom::
-unlink_data(dGeomID id) {
-  TriMeshDataMap::iterator iter = MeshData.find(id);
-  
-  if (iter != MeshData.end()) {
-    odegeom_cat.debug() << get_class_type() << "(" << id << ") unlinking from data: " << iter->second->get_id() << "\n";
-  } else {
-    odegeom_cat.warning() << get_class_type() << "(" << id << ") Unlinking from absent data!\n";
-  }
-
-  MeshData.erase(id);
+destroy() {
+  OdeTriMeshData::unlink_data(_id);
 }

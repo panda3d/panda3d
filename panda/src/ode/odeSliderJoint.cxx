@@ -22,6 +22,11 @@
 TypeHandle OdeSliderJoint::_type_handle;
 
 OdeSliderJoint::
+OdeSliderJoint(dJointID id) : 
+  OdeJoint(id) {
+}
+
+OdeSliderJoint::
 OdeSliderJoint(OdeWorld &world) : 
   OdeJoint(dJointCreateSlider(world.get_id(), 0)) {
 }

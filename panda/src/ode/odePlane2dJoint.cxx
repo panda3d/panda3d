@@ -22,6 +22,11 @@
 TypeHandle OdePlane2dJoint::_type_handle;
 
 OdePlane2dJoint::
+OdePlane2dJoint(dJointID id) : 
+  OdeJoint(id) {
+}
+
+OdePlane2dJoint::
 OdePlane2dJoint(OdeWorld &world) : 
   OdeJoint(dJointCreatePlane2D(world.get_id(), 0)) {
 }

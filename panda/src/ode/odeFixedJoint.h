@@ -14,6 +14,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeFixedJoint : public OdeJoint {
+  friend class OdeJoint;
+
+private:
+  OdeFixedJoint(dJointID id);
+
 PUBLISHED:
   OdeFixedJoint(OdeWorld &world);
   OdeFixedJoint(OdeWorld &world, OdeJointGroup &joint_group);

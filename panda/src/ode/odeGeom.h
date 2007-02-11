@@ -25,10 +25,21 @@
 #include "bitMask.h"
 
 #include "ode_includes.h"
-#include "odeSpace.h" // Needed for derived classes
+#include "odeSpace.h"
 #include "odeBody.h"
 
+class OdeBoxGeom;
+class OdeCappedCylinderGeom;
+// class OdeConvexGeom;
+class OdeCylinderGeom;
+// class OdeHeightfieldGeom;
+class OdePlaneGeom;
+class OdeRayGeom;
+class OdeSphereGeom;
 class OdeTriMeshGeom;
+class OdeSimpleSpace;
+class OdeHashSpace;
+class OdeQuadTreeSpace;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeGeom
@@ -42,6 +53,22 @@ protected:
   OdeGeom(dGeomID id);
 
 PUBLISHED:
+  enum GeomClass { GC_sphere = 0, 
+		   GC_box,
+		   GC_capped_cylinder,
+		   GC_cylinder,
+		   GC_plane,
+		   GC_ray,
+		   // GC_convex,
+		   // GC_geom_transform,
+		   GC_tri_mesh = 8,
+		   // GC_heightfield,
+		   
+		   GC_simple_space = 10,
+		   GC_hash_space,
+		   GC_quad_tree_space,
+  };
+
   virtual ~OdeGeom();
   void destroy();
 
@@ -79,9 +106,23 @@ PUBLISHED:
   INLINE LMatrix3f get_offset_rotation() const;
   INLINE LQuaternionf get_offset_quaternion() const;
 
-  void get_space(OdeSpace &space) const;
+  OdeSpace get_space() const;
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
+  INLINE int compare_to(const OdeGeom &other) const;
+
+  OdeBoxGeom convert_to_box() const;
+  OdeCappedCylinderGeom convert_to_capped_cylinder() const;
+  // OdeConvexGeom convert_to_convex() const;
+  OdeCylinderGeom convert_to_cylinder() const;
+  // OdeHeightfieldGeom convert_to_heightfield() const;
+  OdePlaneGeom convert_to_plane() const;
+  OdeRayGeom convert_to_ray() const;
+  OdeSphereGeom convert_to_sphere() const;
+  OdeTriMeshGeom convert_to_tri_mesh() const;
+  OdeSimpleSpace convert_to_simple_space() const;
+  OdeHashSpace convert_to_hash_space() const;
+  OdeQuadTreeSpace convert_to_quad_tree_space() const;
 
 public:
   INLINE dGeomID get_id() const;

@@ -22,6 +22,11 @@
 TypeHandle OdeBoxGeom::_type_handle;
 
 OdeBoxGeom::
+OdeBoxGeom(dGeomID id) :
+  OdeGeom(id) {
+}
+
+OdeBoxGeom::
 OdeBoxGeom(dReal lx, dReal ly, dReal lz) :
   OdeGeom(dCreateBox(0, lx, ly, lz)) {
 }

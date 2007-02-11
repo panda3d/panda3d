@@ -31,6 +31,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeConvexGeom : public OdeGeom {
+  friend class OdeGeom;
+
+private:
+  OdeConvexGeom(dGeomID id);
+
 PUBLISHED:
   OdeConvexGeom();
   virtual ~OdeConvexGeom();

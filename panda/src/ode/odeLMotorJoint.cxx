@@ -22,6 +22,11 @@
 TypeHandle OdeLMotorJoint::_type_handle;
 
 OdeLMotorJoint::
+OdeLMotorJoint(dJointID id) : 
+  OdeJoint(id) {
+}
+
+OdeLMotorJoint::
 OdeLMotorJoint(OdeWorld &world  ) : 
   OdeJoint(dJointCreateLMotor(world.get_id(), 0)) {
 }

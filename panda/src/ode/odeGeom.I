@@ -213,3 +213,11 @@ get_offset_quaternion() const {
   dGeomGetOffsetQuaternion(_id, res);
   return LQuaternionf(res[0], res[1], res[2], res[3]);
 }
+
+INLINE int OdeGeom::
+compare_to(const OdeGeom &other) const {
+  if (_id != other._id) {
+    return _id < other._id ? -1 : 1;
+  }
+  return 0;
+}

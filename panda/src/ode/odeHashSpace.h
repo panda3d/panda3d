@@ -32,6 +32,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////c
 class EXPCL_PANDAODE OdeHashSpace : public OdeSpace {
+  friend class OdeSpace;
+
+private:
+  OdeHashSpace(dSpaceID id);
+
 PUBLISHED:
   OdeHashSpace();
   OdeHashSpace(OdeSpace &space);

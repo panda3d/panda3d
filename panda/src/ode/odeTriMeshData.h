@@ -37,12 +37,27 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeTriMeshData : public TypedReferenceCount {
+public:
+  static void link_data(dGeomID id, PT(OdeTriMeshData) data);
+  static PT(OdeTriMeshData) get_data(dGeomID id);
+  static void unlink_data(dGeomID id);
+  static void remove_data(OdeTriMeshData *data);
+  static void print_data(const string &marker);
+
+private:
+  typedef pmap<dGeomID, PT(OdeTriMeshData)> TriMeshDataMap;
+  static TriMeshDataMap _tri_mesh_data_map;
+
 PUBLISHED:
+
+  enum DataType { DT_face_normals = 0,
+		  DT_last_transformation };
+
   OdeTriMeshData(const NodePath& model, bool use_normals = false);
   virtual ~OdeTriMeshData();
 
-  enum DataType { DT_face_normals,
-		  DT_last_transformation };
+  void destroy();
+  
   // INLINE void set(int data_id, void* in_data);
   // INLINE void* get(int data_id);
   // INLINE void get_buffer(unsigned char** buf, int* buf_len) const;
@@ -81,6 +96,9 @@ private:
   void analyze(const Geom *geom);
   void analyze(const GeomPrimitive *geom);
 
+  OdeTriMeshData(const OdeTriMeshData &other);
+  void operator = (const OdeTriMeshData &other);
+  
 protected:
   struct StridedVertex{
     dReal Vertex[3];

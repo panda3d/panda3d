@@ -18,31 +18,26 @@
 
 #include "odeUtil.h"
 
-void OdeUtil::
-get_connecting_joint(const OdeBody &body1, const OdeBody &body2, OdeJoint &joint) {
-  joint._id = dConnectingJoint(body1.get_id(),body2.get_id());
+OdeJoint OdeUtil::
+get_connecting_joint(const OdeBody &body1, const OdeBody &body2) {
+  return OdeJoint(dConnectingJoint(body1.get_id(),body2.get_id()));
 }
 
-/*
-OdeJointList OdeUtil::
+OdeJointCollection OdeUtil::
 get_connecting_joint_list(const OdeBody &body1, const OdeBody &body2) {
   const int max_possible_joints = min(body1.get_num_joints(), body1.get_num_joints());
 
-  dJointID *joint_list_store = new dJointID[max_possible_joints];
-  OdeJointList joint_list;
-
-  int num_joints = dConnectingJointList(body1.get_id(),
-					body2.get_id(),
-					joint_list_store);
-
+  dJointID *joint_list = new dJointID[max_possible_joints];
+  int num_joints = dConnectingJointList(body1.get_id(), body2.get_id(),
+					joint_list);
+  OdeJointCollection joints;
   for (int i = 0; i < num_joints; i++) {
-    joint_list.push_back(body1.get_world()->get_joint(joint_list_store[i]));
+    joints.add_joint(OdeJoint(joint_list[i]));
   }
   
-  delete joint_list_store;
-  return joint_list;
+  delete[] joint_list;
+  return joints;
 }
-*/
 
 int OdeUtil::
 are_connected(const OdeBody &body1, const OdeBody &body2) {

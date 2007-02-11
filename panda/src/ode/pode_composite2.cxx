@@ -10,4 +10,5 @@
 #include "odeNullJoint.cxx"
 #include "odeSliderJoint.cxx"
 #include "odeUniversalJoint.cxx"
+#include "odeJointCollection.cxx"
 

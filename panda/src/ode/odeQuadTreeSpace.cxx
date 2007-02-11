@@ -35,6 +35,11 @@ sdVector4 LVec3_to_sdVector4(const LVecBase3f& vec) {
 }
 
 OdeQuadTreeSpace::
+OdeQuadTreeSpace(dSpaceID id) :
+  OdeSpace(id) {
+}
+
+OdeQuadTreeSpace::
 OdeQuadTreeSpace(const LPoint3f &center,
 		 const LVecBase3f &extents,
 		 const int depth) :

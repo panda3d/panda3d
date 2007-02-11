@@ -22,6 +22,11 @@
 TypeHandle OdePlaneGeom::_type_handle;
 
 OdePlaneGeom::
+OdePlaneGeom(dGeomID id) :
+  OdeGeom(id) {
+}
+
+OdePlaneGeom::
 OdePlaneGeom(dReal a, dReal b, dReal c, dReal d) :
   OdeGeom(dCreatePlane(0, a, b, c, d)) {
 }

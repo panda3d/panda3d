@@ -22,6 +22,11 @@
 TypeHandle OdeCappedCylinderGeom::_type_handle;
 
 OdeCappedCylinderGeom::
+OdeCappedCylinderGeom(dGeomID id) :
+  OdeGeom(id) {
+}
+
+OdeCappedCylinderGeom::
 OdeCappedCylinderGeom(dReal radius, dReal length) :
   OdeGeom(dCreateCapsule(0, radius, length)) {
 }

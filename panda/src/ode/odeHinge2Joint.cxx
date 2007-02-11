@@ -22,6 +22,11 @@
 TypeHandle OdeHinge2Joint::_type_handle;
 
 OdeHinge2Joint::
+OdeHinge2Joint(dJointID id) : 
+  OdeJoint(id) {
+}
+
+OdeHinge2Joint::
 OdeHinge2Joint(OdeWorld &world) : 
   OdeJoint(dJointCreateHinge2(world.get_id(), 0)) {
 }

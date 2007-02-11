@@ -22,6 +22,11 @@
 TypeHandle OdeCylinderGeom::_type_handle;
 
 OdeCylinderGeom::
+OdeCylinderGeom(dGeomID id) :
+  OdeGeom(id) {
+}
+
+OdeCylinderGeom::
 OdeCylinderGeom(dReal radius, dReal length) :
   OdeGeom(dCreateCylinder(0, radius, length)) {
 }

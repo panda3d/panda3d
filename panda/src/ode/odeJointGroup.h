@@ -37,6 +37,8 @@ PUBLISHED:
 
   INLINE void empty() const;
 
+  INLINE int compare_to(const OdeJointGroup &other) const;
+
 public: 
   INLINE dJointGroupID get_id() const;
 

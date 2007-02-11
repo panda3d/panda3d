@@ -22,6 +22,11 @@
 TypeHandle OdeConvexGeom::_type_handle;
 
 OdeConvexGeom::
+OdeConvexGeom(dGeomID id) :
+  OdeGeom(id) {
+}
+
+OdeConvexGeom::
 OdeConvexGeom(dReal radius, dReal length) :
   OdeGeom(dCreateConvex(0, radius, length)) {
 }

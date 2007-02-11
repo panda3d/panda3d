@@ -22,15 +22,13 @@
 TypeHandle OdeWorld::_type_handle;
 
 OdeWorld::
-OdeWorld(const string &name) : 
-  _name(name),
+OdeWorld() : 
   _id(dWorldCreate()) {
   odeworld_cat.debug() << get_type() << "(" << _id << ")" << "\n";
 }
 
 OdeWorld::
 OdeWorld(const OdeWorld &copy) :
-  _name(copy._name),
   _id(copy._id) {
 }
 

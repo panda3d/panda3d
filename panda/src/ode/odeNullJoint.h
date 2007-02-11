@@ -13,6 +13,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeNullJoint : public OdeJoint {
+  friend class OdeJoint;
+
+private:
+  OdeNullJoint(dJointID id);
+
 PUBLISHED:
   OdeNullJoint(OdeWorld &world);
   OdeNullJoint(OdeWorld &world, OdeJointGroup &joint_group);

@@ -30,6 +30,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeRayGeom : public OdeGeom {
+  friend class OdeGeom;
+
+private:
+  OdeRayGeom(dGeomID id);
+
 PUBLISHED:
   OdeRayGeom(dReal length);
   OdeRayGeom(OdeSpace &space, dReal length);

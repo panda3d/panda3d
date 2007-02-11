@@ -22,6 +22,11 @@
 TypeHandle OdeBallJoint::_type_handle;
 
 OdeBallJoint::
+OdeBallJoint(dJointID id) : 
+  OdeJoint(id) {
+}
+
+OdeBallJoint::
 OdeBallJoint(OdeWorld &world) : 
   OdeJoint(dJointCreateBall(world.get_id(), 0)) {
 }

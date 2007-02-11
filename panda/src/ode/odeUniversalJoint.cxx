@@ -22,6 +22,11 @@
 TypeHandle OdeUniversalJoint::_type_handle;
 
 OdeUniversalJoint::
+OdeUniversalJoint(dJointID id) : 
+  OdeJoint(id) {
+}
+
+OdeUniversalJoint::
 OdeUniversalJoint(OdeWorld &world) : 
   OdeJoint(dJointCreateUniversal(world.get_id(), 0)) {
 }

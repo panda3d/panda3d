@@ -24,6 +24,8 @@
 #include "luse.h"
 
 #include "ode_includes.h"
+#include "odeJointCollection.h"
+
 class OdeBody;
 class OdeJoint;
 
@@ -33,11 +35,10 @@ class OdeJoint;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeUtil {
 PUBLISHED:
-  static void get_connecting_joint(const OdeBody &body1,
-				   const OdeBody &body2,
-				   OdeJoint &joint);
-  // static OdeJointList get_connecting_joint_list(const OdeBody &body1,
-  // 					const OdeBody &body2);
+  static OdeJoint get_connecting_joint(const OdeBody &body1,
+				       const OdeBody &body2);
+  static OdeJointCollection get_connecting_joint_list(const OdeBody &body1,
+						      const OdeBody &body2);
   static int are_connected(const OdeBody &body1,
                            const OdeBody &body2);
   static int are_connected_excluding(const OdeBody &body1,
@@ -45,7 +46,5 @@ PUBLISHED:
 	                             const int joint_type);
   
 };
-
-// #include "odeUtil.I"
 
 #endif

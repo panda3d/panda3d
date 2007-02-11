@@ -31,6 +31,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeBoxGeom : public OdeGeom {
+  friend class OdeGeom;
+
+private:
+  OdeBoxGeom(dGeomID id);
+
 PUBLISHED:
   OdeBoxGeom(dReal lx, dReal ly, dReal lz);
   OdeBoxGeom(OdeSpace &space, dReal lx, dReal ly, dReal lz);

@@ -24,12 +24,23 @@
 #include "luse.h"
 
 #include "ode_includes.h"
-#include "odeWorld.h" // Needed for derived classes
+#include "odeWorld.h"      // Needed for derived classes
 #include "odeJointGroup.h"
 
 // Strange, we should be forced to include this by get_body()
 class OdeBody; 
 
+class OdeBallJoint;
+class OdeHingeJoint;
+class OdeSliderJoint;
+class OdeContactJoint;
+class OdeUniversalJoint;
+class OdeHinge2Joint;
+class OdeFixedJoint;
+class OdeNullJoint;
+class OdeAMotorJoint;
+class OdeLMotorJoint;
+class OdePlane2dJoint;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeJoint
@@ -39,10 +50,26 @@ class EXPCL_PANDAODE OdeJoint : public TypedObject {
   friend class OdeBody;
   friend class OdeUtil;
 
+public:
+  OdeJoint();
+
 protected:
   OdeJoint(dJointID id);
 
 PUBLISHED:
+  enum JointType { JT_none = 0,	/* or "unknown" */
+		   JT_ball,
+		   JT_hinge,
+		   JT_slider,
+		   JT_contact,
+		   JT_universal,
+		   JT_hinge2,
+		   JT_fixed,
+		   JT_null,
+		   JT_a_motor,
+		   JT_l_motor,
+		   JT_plane2d };
+
   virtual ~OdeJoint();
   void destroy();
   
@@ -58,7 +85,20 @@ PUBLISHED:
   void detach();
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
-  bool operator==(const OdeJoint &other);
+  INLINE int compare_to(const OdeJoint &other) const;
+  INLINE bool operator == (const OdeJoint &other) const;
+
+  OdeBallJoint convert_to_ball() const;
+  OdeHingeJoint convert_to_hinge() const;
+  OdeSliderJoint convert_to_slider() const;
+  OdeContactJoint convert_to_contact() const;
+  OdeUniversalJoint convert_to_universal() const;
+  OdeHinge2Joint convert_to_hinge2() const;
+  OdeFixedJoint convert_to_fixed() const;
+  OdeNullJoint convert_to_null() const;
+  OdeAMotorJoint convert_to_a_motor() const;
+  OdeLMotorJoint convert_to_l_motor() const;
+  OdePlane2dJoint convert_to_plane2d() const;
 
 public: 
   INLINE dJointID get_id() const;

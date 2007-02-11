@@ -22,6 +22,11 @@
 TypeHandle OdeHashSpace::_type_handle;
 
 OdeHashSpace::
+OdeHashSpace(dSpaceID id) :
+  OdeSpace(id) {
+}
+
+OdeHashSpace::
 OdeHashSpace() :
   OdeSpace(dHashSpaceCreate(0)) {
 }

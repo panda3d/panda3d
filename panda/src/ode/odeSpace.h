@@ -28,6 +28,9 @@
 
 class OdeGeom;
 class OdeTriMeshGeom;
+class OdeSimpleSpace;
+class OdeHashSpace;
+class OdeQuadTreeSpace;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeSpace
@@ -69,6 +72,10 @@ PUBLISHED:
   INLINE OdeSpace get_space() const;
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
+
+  OdeSimpleSpace convert_to_simple_space() const;
+  OdeHashSpace convert_to_hash_space() const;
+  OdeQuadTreeSpace convert_to_quad_tree_space() const;
 
 public: 
   INLINE dSpaceID get_id() const;

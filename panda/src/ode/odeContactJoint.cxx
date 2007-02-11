@@ -22,6 +22,11 @@
 TypeHandle OdeContactJoint::_type_handle;
 
 OdeContactJoint::
+OdeContactJoint(dJointID id) : 
+  OdeJoint(id) {
+}
+
+OdeContactJoint::
 OdeContactJoint(OdeWorld &world, const OdeContact &contact) : 
   OdeJoint(dJointCreateContact(world.get_id(), 0, contact.get_contact_ptr())) {
 }

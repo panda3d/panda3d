@@ -18,33 +18,38 @@
 
 INLINE void OdeTriMeshGeom::
 set_data(OdeTriMeshData &data) {
-  // unlink_data(_id); // not necessary?
+  nassertv(_id != 0);
   dGeomTriMeshSetData(_id, data.get_id());
-  link_data(_id, data);
+  OdeTriMeshData::link_data(_id, &data);
 }
 
 INLINE PT(OdeTriMeshData) OdeTriMeshGeom::
 get_data() const {
-  return MeshData[_id];
+  nassertr(_id != 0 ,0);
+  return OdeTriMeshData::get_data(_id);
 }
 
 INLINE void OdeTriMeshGeom::
 enable_TC(int geom_class, int enable){
+  nassertv(_id != 0);
   dGeomTriMeshEnableTC(_id, geom_class, enable);
 }
 
 INLINE int OdeTriMeshGeom::
 is_TC_enabled(int geom_class) const {
+  nassertr(_id != 0, 0);
   return dGeomTriMeshIsTCEnabled(_id, geom_class);
 }
 
 INLINE void OdeTriMeshGeom::
 clear_TC_cache(const OdeGeom &geom){
+  nassertv(_id != 0);
   dGeomTriMeshClearTCCache(_id);
 }
 
 INLINE void OdeTriMeshGeom::
 get_triangle(int face_index, LPoint3f &v0, LPoint3f &v1, LPoint3f &v2) const {
+  nassertv(_id != 0);
   dVector3 dv0, dv1, dv2;
   dGeomTriMeshGetTriangle(_id, face_index, &dv0, &dv1, &dv2);
   
@@ -55,6 +60,7 @@ get_triangle(int face_index, LPoint3f &v0, LPoint3f &v1, LPoint3f &v2) const {
 
 INLINE LPoint3f OdeTriMeshGeom::
 get_point(int face_index, dReal u, dReal v) const {
+  nassertr(_id != 0, LPoint3f(0));
   dVector3 out;
   dGeomTriMeshGetPoint(_id, face_index, u, v, out);
   return LPoint3f(out[0], out[1], out[2]);
@@ -62,11 +68,13 @@ get_point(int face_index, dReal u, dReal v) const {
 
 INLINE int OdeTriMeshGeom::
 get_num_triangles() const {
+  nassertr(_id != 0, 0);
   return dGeomTriMeshGetTriangleCount(_id);
 }
 
 INLINE dTriMeshDataID OdeTriMeshGeom::
 get_data_id() const {
+  nassertr(_id != 0, 0);
   return dGeomTriMeshGetTriMeshDataID(_id);
 }
 

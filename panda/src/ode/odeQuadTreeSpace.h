@@ -31,6 +31,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////c
 class EXPCL_PANDAODE OdeQuadTreeSpace : public OdeSpace {
+  friend class OdeSpace;
+
+private:
+  OdeQuadTreeSpace(dSpaceID id);
+
 PUBLISHED:
   OdeQuadTreeSpace(const LPoint3f &center,
                    const LVecBase3f &extents,

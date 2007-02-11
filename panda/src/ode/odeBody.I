@@ -404,3 +404,11 @@ INLINE int OdeBody::
 get_gravity_mode() const {
   return dBodyGetGravityMode(_id);
 }
+
+INLINE int OdeBody::
+compare_to(const OdeBody &other) const {
+  if (_id != other._id) {
+    return _id < other._id ? -1 : 1;
+  }
+  return 0;
+}

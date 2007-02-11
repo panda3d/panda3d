@@ -31,6 +31,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeHeightfieldGeom : public OdeGeom {
+  friend class OdeGeom;
+
+private:
+  OdeHeightfieldGeom(dGeomID id);
+
 PUBLISHED:
   OdeHeightfieldGeom();
   virtual ~OdeHeightfieldGeom();

@@ -31,6 +31,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeCylinderGeom : public OdeGeom {
+  friend class OdeGeom;
+
+private:
+  OdeCylinderGeom(dGeomID id);
+
 PUBLISHED:
   OdeCylinderGeom(dReal radius, dReal length);
   OdeCylinderGeom(OdeSpace &space, dReal radius, dReal length);

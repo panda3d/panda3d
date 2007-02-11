@@ -22,6 +22,11 @@
 TypeHandle OdeRayGeom::_type_handle;
 
 OdeRayGeom::
+OdeRayGeom(dGeomID id) :
+  OdeGeom(id) {
+}
+
+OdeRayGeom::
 OdeRayGeom(dReal length) :
   OdeGeom(dCreateRay(0, length)) {
 }

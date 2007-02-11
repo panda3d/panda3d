@@ -13,6 +13,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeSliderJoint : public OdeJoint {
+  friend class OdeJoint;
+
+private:
+  OdeSliderJoint(dJointID id);
+
 PUBLISHED:
   OdeSliderJoint(OdeWorld &world);
   OdeSliderJoint(OdeWorld &world, OdeJointGroup &joint_group);

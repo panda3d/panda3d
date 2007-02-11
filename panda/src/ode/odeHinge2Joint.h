@@ -14,6 +14,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeHinge2Joint : public OdeJoint {
+  friend class OdeJoint;
+
+private:
+  OdeHinge2Joint(dJointID id);
+
 PUBLISHED:
   OdeHinge2Joint(OdeWorld &world, OdeJointGroup &joint_group);
   OdeHinge2Joint(OdeWorld &world);

@@ -26,3 +26,10 @@ empty() const {
   dJointGroupEmpty(_id);
 }
 
+INLINE int OdeJointGroup::
+compare_to(const OdeJointGroup &other) const {
+  if (_id != other._id) {
+    return _id < other._id ? -1 : 1;
+  }
+  return 0;
+}

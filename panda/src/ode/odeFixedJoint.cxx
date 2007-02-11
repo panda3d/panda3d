@@ -22,6 +22,11 @@
 TypeHandle OdeFixedJoint::_type_handle;
 
 OdeFixedJoint::
+OdeFixedJoint(dJointID id) : 
+  OdeJoint(id) {
+}
+
+OdeFixedJoint::
 OdeFixedJoint(OdeWorld &world) : 
   OdeJoint(dJointCreateFixed(world.get_id(), 0)) {
 }

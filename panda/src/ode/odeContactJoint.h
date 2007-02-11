@@ -15,6 +15,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeContactJoint : public OdeJoint {
+  friend class OdeJoint;
+
+private:
+  OdeContactJoint(dJointID id);
+
 PUBLISHED:
   OdeContactJoint(OdeWorld &world, const OdeContact &contact);
   OdeContactJoint(OdeWorld &world, OdeJointGroup &joint_group, const OdeContact &contact);

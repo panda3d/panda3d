@@ -22,6 +22,11 @@
 TypeHandle OdeSphereGeom::_type_handle;
 
 OdeSphereGeom::
+OdeSphereGeom(dGeomID id) :
+  OdeGeom(id) {
+}
+
+OdeSphereGeom::
 OdeSphereGeom(dReal radius) :
   OdeGeom(dCreateSphere(0, radius)) {
 }

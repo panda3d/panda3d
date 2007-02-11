@@ -19,6 +19,57 @@
 #include "odeTriMeshData.h"
 
 TypeHandle OdeTriMeshData::_type_handle;
+OdeTriMeshData::TriMeshDataMap OdeTriMeshData::_tri_mesh_data_map;
+
+void OdeTriMeshData::
+link_data(dGeomID id, PT(OdeTriMeshData) data) {
+  odetrimeshdata_cat.debug() << get_class_type() << "::link_data(" << id << "->" << data << ")" << "\n";
+  _tri_mesh_data_map[id] = data;
+}
+
+PT(OdeTriMeshData) OdeTriMeshData::
+get_data(dGeomID id) {
+  TriMeshDataMap::iterator iter = _tri_mesh_data_map.find(id);
+  if (iter != _tri_mesh_data_map.end()) {
+    return iter->second;
+  }
+  return 0;
+}
+
+void OdeTriMeshData::
+unlink_data(dGeomID id) {
+  odetrimeshdata_cat.debug() << get_class_type() << "::unlink_data(" << id << ")" << "\n";
+  TriMeshDataMap::iterator iter = _tri_mesh_data_map.find(id);
+  if (iter != _tri_mesh_data_map.end()) {
+    _tri_mesh_data_map.erase(iter);
+  }
+}
+
+void OdeTriMeshData::
+print_data(const string &marker) {
+  odetrimeshdata_cat.debug() << get_class_type() << "::print_data(" << marker << ")\n";
+  TriMeshDataMap::iterator iter = _tri_mesh_data_map.begin();
+  for (;iter != _tri_mesh_data_map.end(); ++iter) {
+    odetrimeshdata_cat.debug() << "\t" << iter->first << " : " << iter->second << "\n";
+  }
+}
+
+void OdeTriMeshData::
+remove_data(OdeTriMeshData *data) {
+  odetrimeshdata_cat.debug() << get_class_type() << "::remove_data(" << data->get_id() << ")" << "\n";
+  TriMeshDataMap::iterator iter = _tri_mesh_data_map.begin();  
+  for (;iter != _tri_mesh_data_map.end(); ++iter) {
+    cout << iter->second << "\t" << data << "\n";
+    if ( iter->second == data ) {
+      cout << "ERASING\n";
+      _tri_mesh_data_map.erase(iter);
+      iter = _tri_mesh_data_map.end();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 OdeTriMeshData::
 OdeTriMeshData(const NodePath& model, bool use_normals) :
@@ -41,17 +92,24 @@ OdeTriMeshData(const NodePath& model, bool use_normals) :
     build_single1(_vertices, sizeof(StridedVertex), _num_vertices,
 		  _faces, _num_faces * 3, sizeof(StridedTri),
 		  _normals);
-  }    
+  }
+
   preprocess();
+}
+
+// Private copy constructor, shouldn't be copying these objects
+OdeTriMeshData::
+OdeTriMeshData(const OdeTriMeshData &other) {
 }
 
 OdeTriMeshData::
 ~OdeTriMeshData() {
   odetrimeshdata_cat.debug() << "~" << get_type() << "(" << _id << ")" << "\n";
-  dGeomTriMeshDataDestroy(_id);
+  destroy();
   if (_vertices != 0) {
     delete[] _vertices;
     _vertices = 0;
+    _num_vertices = 0;
   }
   if (_faces != 0) {
     delete[] _faces;
@@ -59,8 +117,22 @@ OdeTriMeshData::
   }
   if (_normals != 0) {
     delete[] _normals;
-    _normals = 0;
   }
+}
+
+void OdeTriMeshData::
+destroy() {
+  odetrimeshdata_cat.debug() << get_type() << "::destroy(" << _id << ")" << "\n";
+  if (_id != 0) {
+    dGeomTriMeshDataDestroy(_id);
+    remove_data(this);
+    _id = 0; 
+  }
+}
+
+// Private assignment operator, shouldn't be copying these objects
+void OdeTriMeshData::
+operator = (const OdeTriMeshData &other) {
 }
 
 void OdeTriMeshData::
@@ -231,6 +303,6 @@ write_faces(ostream &out) const {
 void OdeTriMeshData::
 write(ostream &out, unsigned int indent) const {
   out.width(indent); out << "" << get_type() << "(id = " << _id << ") : " \
-			 << "" << "Vertices: " << _num_vertices << ", " \
-			 << "" << "Triangles: " << _num_faces << "\n";
+			 << "" << "Vertices: " << (_id ? _num_vertices : 0) << ", " \
+			 << "" << "Triangles: " << (_id ? _num_faces : 0);
 }

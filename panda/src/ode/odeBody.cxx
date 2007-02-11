@@ -41,9 +41,11 @@ destroy() {
   dBodyDestroy(_id);
 }
 
-void OdeBody::
-get_joint(int index, OdeJoint &joint) const {
-  joint._id = dBodyGetJoint(_id, index);
+OdeJoint OdeBody::
+get_joint(int index) const {
+  nassertr(_id != 0, OdeJoint(0));
+  nassertr(index < get_num_joints(), OdeJoint(0)); 
+  return OdeJoint(dBodyGetJoint(_id, index));
 }
 
 void OdeBody::

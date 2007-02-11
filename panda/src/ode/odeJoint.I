@@ -49,3 +49,16 @@ get_feedback() {
   return dJointGetFeedback(_id);
 }
 */
+
+INLINE int OdeJoint::
+compare_to(const OdeJoint &other) const {
+  if (_id != other._id) {
+    return _id < other._id ? -1 : 1;
+  }
+  return 0;
+}
+
+INLINE bool OdeJoint::
+operator == (const OdeJoint &other) const {
+  return _id == other._id;
+}

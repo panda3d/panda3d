@@ -13,6 +13,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdePlane2dJoint : public OdeJoint {
+  friend class OdeJoint;
+
+private:
+  OdePlane2dJoint(dJointID id);
+
 PUBLISHED:
   OdePlane2dJoint(OdeWorld &world);
   OdePlane2dJoint(OdeWorld &world, OdeJointGroup &joint_group);

@@ -30,6 +30,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdePlaneGeom : public OdeGeom {
+  friend class OdeGeom;
+
+private:
+  OdePlaneGeom(dGeomID id);
+
 PUBLISHED:
   OdePlaneGeom(dReal a, dReal b, dReal c, dReal d);
   OdePlaneGeom(const LVecBase4f &params);

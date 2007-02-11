@@ -180,7 +180,10 @@ set_auto_disable_flag(int do_auto_disable) {
   dWorldSetAutoDisableFlag(_id, do_auto_disable);
 }
 
-INLINE string OdeWorld::
-get_name() const {
-  return _name;
+INLINE int OdeWorld::
+compare_to(const OdeWorld &other) const {
+  if (_id != other._id) {
+    return _id < other._id ? -1 : 1;
+  }
+  return 0;
 }

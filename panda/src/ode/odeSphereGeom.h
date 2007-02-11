@@ -30,6 +30,11 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeSphereGeom : public OdeGeom {
+  friend class OdeGeom;
+
+private:
+  OdeSphereGeom(dGeomID id);
+
 PUBLISHED:
   OdeSphereGeom(dReal radius);
   OdeSphereGeom(OdeSpace &space, dReal radius);

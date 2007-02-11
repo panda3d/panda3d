@@ -32,14 +32,6 @@ OdeSpace::
 
 void OdeSpace::
 destroy() {
-  if (get_cleanup()) {
-    for (int i = 0; i < get_num_geoms(); ++i) {
-      OdeGeom geom(get_geom(i));
-      if (geom.get_class() == OdeTriMeshGeom::get_geom_class()) {
-        OdeTriMeshGeom::unlink_data(geom.get_id());
-      }
-    }
-  }
   dSpaceDestroy(_id);
 }
 
@@ -88,5 +80,26 @@ write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out << "" << get_type() << "(id = " << _id << ")";
   #endif //] NDEBUG
+}
+
+OdeSimpleSpace OdeSpace::
+convert_to_simple_space() const {
+  nassertr(_id != 0, OdeSimpleSpace((dSpaceID)0));
+  nassertr(get_class() == OdeGeom::GC_simple_space, OdeSimpleSpace((dSpaceID)0));
+  return OdeSimpleSpace(_id);
+}
+
+OdeHashSpace OdeSpace::
+convert_to_hash_space() const {
+  nassertr(_id != 0, OdeHashSpace((dSpaceID)0));
+  nassertr(get_class() == OdeGeom::GC_hash_space, OdeHashSpace((dSpaceID)0));
+  return OdeHashSpace(_id);
+}
+
+OdeQuadTreeSpace OdeSpace::
+convert_to_quad_tree_space() const {
+  nassertr(_id != 0, OdeQuadTreeSpace((dSpaceID)0));
+  nassertr(get_class() == OdeGeom::GC_quad_tree_space, OdeQuadTreeSpace((dSpaceID)0));
+  return OdeQuadTreeSpace(_id);
 }
 

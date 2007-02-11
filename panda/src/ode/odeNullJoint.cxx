@@ -22,6 +22,11 @@
 TypeHandle OdeNullJoint::_type_handle;
 
 OdeNullJoint::
+OdeNullJoint(dJointID id) : 
+  OdeJoint(id) {
+}
+
+OdeNullJoint::
 OdeNullJoint(OdeWorld &world) : 
   OdeJoint(dJointCreateNull(world.get_id(), 0)) {
 }

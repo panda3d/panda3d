@@ -33,7 +33,7 @@ class OdeJoint;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeWorld : public TypedObject {
 PUBLISHED:
-  OdeWorld(const string &name = "");
+  OdeWorld();
   OdeWorld(const OdeWorld &copy);
   virtual ~OdeWorld();
   void destroy();
@@ -70,13 +70,11 @@ PUBLISHED:
   INLINE int get_auto_disable_flag() const;
   INLINE void set_auto_disable_flag(int do_auto_disable);
 
-  INLINE string get_name() const;
-
+  INLINE int compare_to(const OdeWorld &other) const;
 public: 
   INLINE dWorldID get_id() const;
   
 private:
-  string _name;
   dWorldID _id;
 
 public:

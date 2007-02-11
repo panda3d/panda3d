@@ -54,7 +54,7 @@ PUBLISHED:
   INLINE void set_depth(const dReal depth);          
   INLINE void set_g1(const OdeGeom &geom);
   INLINE void set_g2(const OdeGeom &geom);
-
+  
 public:
   const dContactGeom* get_contact_geom_ptr() const;
 
