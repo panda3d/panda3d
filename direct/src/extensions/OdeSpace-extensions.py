@@ -21,3 +21,12 @@ def getConvertedSpace(self):
     """
     """
     return self.getSpace().convert()
+
+def getAABounds(self):
+    """
+    A more Pythonic way of calling getAABB()
+    """
+    min = Point3()
+    max = Point3()
+    self.getAABB(min,max)
+    return min,max

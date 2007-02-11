@@ -41,3 +41,14 @@ def getConvertedSpace(self):
 Dtool_funcToMethod(getConvertedSpace, OdeSpace)
 del getConvertedSpace
 
+def getAABounds(self):
+    """
+    A more Pythonic way of calling getAABB()
+    """
+    min = Point3()
+    max = Point3()
+    self.getAABB(min,max)
+    return min,max
+Dtool_funcToMethod(getAABounds, OdeSpace)
+del getAABounds
+

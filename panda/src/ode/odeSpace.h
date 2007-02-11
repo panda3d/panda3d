@@ -51,7 +51,7 @@ PUBLISHED:
   INLINE int query(const OdeGeom& geom) const;
   INLINE int query(const OdeSpace& space) const;
   INLINE int get_num_geoms() const;
-  // INLINE void get_aabb() const;  
+  INLINE void get_AABB(LVecBase3f &min, LVecBase3f &max) const;
   INLINE int is_space();
   INLINE int get_class() const;
   INLINE void set_category_bits(const BitMask32 &bits);

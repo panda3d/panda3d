@@ -82,7 +82,7 @@ PUBLISHED:
   INLINE LPoint3f get_position() const;
   INLINE LMatrix3f get_rotation() const;
   INLINE LQuaternionf get_quaternion() const;
-  //INLINE void get_aabb(dReal aabb[6]) const;
+  INLINE void get_AABB(LVecBase3f &min, LVecBase3f &max) const;
   INLINE int is_space();
   INLINE int get_class() const;
   INLINE void set_category_bits(const BitMask32 &bits);

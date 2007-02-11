@@ -42,12 +42,13 @@ get_space() const {
   return OdeSpace(dGeomGetSpace((dGeomID)_id));
 }
 
-/*
 INLINE void OdeSpace::
-get_aabb(dReal aabb[6]) const {
-  return dGeomGetAABB((dGeomID)_id, aabb[6]);
+get_AABB(LVecBase3f &min, LVecBase3f &max) const {
+  dReal result[6];
+  dGeomGetAABB((dGeomID)_id, result);
+  min.set(result[0], result[2], result[4]);
+  max.set(result[1], result[3], result[5]);
 }
-*/
 
 INLINE int OdeSpace::
 is_space() {

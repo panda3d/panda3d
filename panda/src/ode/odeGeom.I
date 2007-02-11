@@ -83,12 +83,13 @@ get_quaternion() const {
   return LQuaternionf(res[0], res[1], res[2], res[3]);
 }
 
-/*
 INLINE void OdeGeom::
-get_aabb(dReal aabb[6]) const {
-  return dGeomGetAABB(_id, aabb[6]);
+get_AABB(LVecBase3f &min, LVecBase3f &max) const {
+  dReal result[6];
+  dGeomGetAABB(_id, result);
+  min.set(result[0], result[2], result[4]);
+  max.set(result[1], result[3], result[5]);
 }
-*/
 
 INLINE int OdeGeom::
 is_space() {

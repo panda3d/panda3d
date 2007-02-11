@@ -50,3 +50,15 @@ def getConvertedSpace(self):
     return self.getSpace().convert()
 Dtool_funcToMethod(getConvertedSpace, OdeGeom)
 del getConvertedSpace
+
+def getAABounds(self):
+    """
+    A more Pythonic way of calling getAABB()
+    """
+    min = Point3()
+    max = Point3()
+    self.getAABB(min,max)
+    return min,max
+Dtool_funcToMethod(getAABounds, OdeGeom)
+del getAABounds
+
