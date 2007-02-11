@@ -22,13 +22,28 @@ set_anchor(dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeUniversalJoint::
+set_anchor(const LVecBase3f &anchor) {
+  dJointSetUniversalAnchor(_id, anchor[0], anchor[1], anchor[2]);
+}
+
+INLINE void OdeUniversalJoint::
 set_axis1(dReal x, dReal y, dReal z) {
   dJointSetUniversalAxis1(_id, x, y, z);
 }
 
 INLINE void OdeUniversalJoint::
+set_axis1(const LVecBase3f &axis) {
+  dJointSetUniversalAxis1(_id, axis[0], axis[1], axis[2]);
+}
+
+INLINE void OdeUniversalJoint::
 set_axis2(dReal x, dReal y, dReal z) {
   dJointSetUniversalAxis2(_id, x, y, z);
+}
+
+INLINE void OdeUniversalJoint::
+set_axis2(const LVecBase3f &axis) {
+  dJointSetUniversalAxis2(_id, axis[0], axis[1], axis[2]);
 }
 
 INLINE void OdeUniversalJoint::

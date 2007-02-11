@@ -28,6 +28,11 @@ set_axis(int anum, int rel, dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeLMotorJoint::
+set_axis(int anum, int rel, const LVecBase3f &axis) {
+  dJointSetLMotorAxis(_id, anum, rel, axis[0], axis[1], axis[2]);
+}
+
+INLINE void OdeLMotorJoint::
 set_param(int parameter, dReal value) {
   dJointSetLMotorParam(_id, parameter, value);
 }
@@ -37,9 +42,11 @@ get_num_axes() const {
   return dJointGetLMotorNumAxes(_id);
 }
 
-INLINE void OdeLMotorJoint::
-get_axis(int anum, dVector3 result) const {
-  return dJointGetLMotorAxis(_id, anum, result);
+INLINE LVecBase3f OdeLMotorJoint::
+get_axis(int anum) const {
+  dVector3 result;
+  dJointGetLMotorAxis(_id, anum, result);
+  return LVecBase3f(result[0], result[1], result[2]);
 }
 
 INLINE dReal OdeLMotorJoint::

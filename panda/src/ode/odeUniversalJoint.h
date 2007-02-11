@@ -25,8 +25,11 @@ PUBLISHED:
   virtual ~OdeUniversalJoint();
 
   INLINE void set_anchor(dReal x, dReal y, dReal z);
+  INLINE void set_anchor(const LVecBase3f &anchor);
   INLINE void set_axis1(dReal x, dReal y, dReal z);
+  INLINE void set_axis1(const LVecBase3f &axis);
   INLINE void set_axis2(dReal x, dReal y, dReal z);
+  INLINE void set_axis2(const LVecBase3f &axis);
   INLINE void add_torques(dReal torque1, dReal torque2);
 
   INLINE LVecBase3f get_anchor() const;

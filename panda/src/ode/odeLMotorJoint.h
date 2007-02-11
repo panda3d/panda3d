@@ -25,10 +25,11 @@ PUBLISHED:
 
   INLINE void set_num_axes(int num);
   INLINE void set_axis(int anum, int rel, dReal x, dReal y, dReal z);
+  INLINE void set_axis(int anum, int rel, const LVecBase3f &axis);
   INLINE void set_param(int parameter, dReal value);
 
   INLINE int get_num_axes() const;
-  INLINE void get_axis(int anum, dVector3 result) const;
+  INLINE LVecBase3f get_axis(int anum) const;
   INLINE dReal get_param(int parameter) const;
 
 public:

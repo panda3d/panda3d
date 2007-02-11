@@ -22,13 +22,28 @@ set_anchor(dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeHingeJoint::
+set_anchor(const LVecBase3f &anchor) {
+  dJointSetHingeAnchor(_id, anchor[0], anchor[1], anchor[2]);
+}
+
+INLINE void OdeHingeJoint::
 set_anchor_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az) {
   dJointSetHingeAnchorDelta(_id, x, y, z, ax, ay, az);
 }
 
 INLINE void OdeHingeJoint::
+set_anchor_delta(const LVecBase3f &anchor, const LVecBase3f &vec) {
+  dJointSetHingeAnchorDelta(_id, anchor[0], anchor[1], anchor[2], vec[0], vec[1], vec[2]);
+}
+
+INLINE void OdeHingeJoint::
 set_axis(dReal x, dReal y, dReal z) {
   dJointSetHingeAxis(_id, x, y, z);
+}
+
+INLINE void OdeHingeJoint::
+set_axis(const LVecBase3f &axis) {
+  dJointSetHingeAxis(_id, axis[0], axis[1], axis[2]);
 }
 
 INLINE void OdeHingeJoint::

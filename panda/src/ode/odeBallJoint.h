@@ -25,10 +25,12 @@ PUBLISHED:
   virtual ~OdeBallJoint();
 
   INLINE void set_anchor(dReal x, dReal y, dReal z);
+  INLINE void set_anchor(const LVecBase3f &anchor);
   INLINE void set_anchor2(dReal x, dReal y, dReal z);
+  INLINE void set_anchor2(const LVecBase3f &anchor);
 
-  INLINE void get_anchor(dVector3 result) const;
-  INLINE void get_anchor2(dVector3 result) const;
+  INLINE LVecBase3f get_anchor() const;
+  INLINE LVecBase3f get_anchor2() const;
 
 public:
   static TypeHandle get_class_type() {

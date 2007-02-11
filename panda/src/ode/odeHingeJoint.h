@@ -24,8 +24,11 @@ PUBLISHED:
   virtual ~OdeHingeJoint();
 
   INLINE void set_anchor(dReal x, dReal y, dReal z);
+  INLINE void set_anchor(const LVecBase3f &anchor);
   INLINE void set_anchor_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az);
+  INLINE void set_anchor_delta(const LVecBase3f &anchor, const LVecBase3f &vec);
   INLINE void set_axis(dReal x, dReal y, dReal z);
+  INLINE void set_axis(const LVecBase3f &axis);
   INLINE void add_torque(dReal torque);
 
   INLINE LVecBase3f get_anchor() const;

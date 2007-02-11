@@ -23,13 +23,28 @@ set_anchor(dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeHinge2Joint::
+set_anchor(const LVecBase3f &anchor) {
+  dJointSetHinge2Anchor(_id, anchor[0], anchor[1], anchor[2]);
+}
+
+INLINE void OdeHinge2Joint::
 set_axis1(dReal x, dReal y, dReal z) {
   dJointSetHinge2Axis1(_id, x, y, z);
 }
 
 INLINE void OdeHinge2Joint::
+set_axis1(const LVecBase3f &axis) {
+  dJointSetHinge2Axis1(_id, axis[0], axis[1], axis[2]);
+}
+
+INLINE void OdeHinge2Joint::
 set_axis2(dReal x, dReal y, dReal z) {
   dJointSetHinge2Axis2(_id, x, y, z);
+}
+
+INLINE void OdeHinge2Joint::
+set_axis2(const LVecBase3f &axis) {
+  dJointSetHinge2Axis2(_id, axis[0], axis[1], axis[2]);
 }
 
 INLINE void OdeHinge2Joint::

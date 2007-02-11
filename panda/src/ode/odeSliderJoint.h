@@ -24,12 +24,14 @@ PUBLISHED:
   virtual ~OdeSliderJoint();
 
   INLINE void set_axis(dReal x, dReal y, dReal z);
+  INLINE void set_axis(const LVecBase3f &axis);
   INLINE void set_axis_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az);
+  INLINE void set_axis_delta(const LVecBase3f &axis, const LVecBase3f &vec);
   INLINE void add_force(dReal force);
 
   INLINE dReal get_position() const;
   INLINE dReal get_position_rate() const;
-  INLINE void get_axis(dVector3 result) const;
+  INLINE LVecBase3f get_axis() const;
 
   INLINE void set_param_lo_stop(dReal val);
   INLINE void set_param_hi_stop(dReal val);

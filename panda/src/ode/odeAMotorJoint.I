@@ -27,6 +27,11 @@ set_axis(int anum, int rel, dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeAMotorJoint::
+set_axis(int anum, int rel, const LVecBase3f &axis) {
+  dJointSetAMotorAxis(_id, anum, rel, axis[0], axis[1], axis[2]);
+}
+
+INLINE void OdeAMotorJoint::
 set_angle(int anum, dReal angle) {
   dJointSetAMotorAngle(_id, anum, angle);
 }

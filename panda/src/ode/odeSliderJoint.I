@@ -22,8 +22,18 @@ set_axis(dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeSliderJoint::
+set_axis(const LVecBase3f &axis) {
+  dJointSetSliderAxis(_id, axis[0], axis[1], axis[2]);
+}
+
+INLINE void OdeSliderJoint::
 set_axis_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az) {
   dJointSetSliderAxisDelta(_id, x, y, z, ax, ay, az);
+}
+
+INLINE void OdeSliderJoint::
+set_axis_delta(const LVecBase3f &axis, const LVecBase3f &vec) {
+  dJointSetSliderAxisDelta(_id, axis[0], axis[1], axis[2], vec[0], vec[1], vec[2]);
 }
 
 INLINE void OdeSliderJoint::
@@ -41,9 +51,11 @@ get_position_rate() const {
   return dJointGetSliderPositionRate(_id);
 }
 
-INLINE void OdeSliderJoint::
-get_axis(dVector3 result) const {
-  return dJointGetSliderAxis(_id, result);
+INLINE LVecBase3f OdeSliderJoint::
+get_axis() const {
+  dVector3 result;
+  dJointGetSliderAxis(_id, result);
+  return LVecBase3f(result[0], result[1], result[2]);
 }
 
 INLINE void OdeSliderJoint::

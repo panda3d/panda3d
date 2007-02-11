@@ -22,16 +22,30 @@ set_anchor(dReal x, dReal y, dReal z) {
 }
 
 INLINE void OdeBallJoint::
+set_anchor(const LVecBase3f &anchor) {
+  dJointSetBallAnchor(_id, anchor[0], anchor[1], anchor[2]);
+}
+
+INLINE void OdeBallJoint::
 set_anchor2(dReal x, dReal y, dReal z) {
   dJointSetBallAnchor2(_id, x, y, z);
 }
 
 INLINE void OdeBallJoint::
-get_anchor(dVector3 result) const {
-  return dJointGetBallAnchor(_id, result);
+set_anchor2(const LVecBase3f &anchor) {
+  dJointSetBallAnchor2(_id, anchor[0], anchor[1], anchor[2]);
 }
 
-INLINE void OdeBallJoint::
-get_anchor2(dVector3 result) const {
-  return dJointGetBallAnchor2(_id, result);
+INLINE LVecBase3f OdeBallJoint::
+get_anchor() const {
+  dVector3 result;
+  dJointGetBallAnchor(_id, result);
+  return LVecBase3f(result[0], result[1], result[2]);
+}
+
+INLINE LVecBase3f OdeBallJoint::
+get_anchor2() const {
+  dVector3 result;
+  dJointGetBallAnchor2(_id, result);
+  return LVecBase3f(result[0], result[1], result[2]);
 }

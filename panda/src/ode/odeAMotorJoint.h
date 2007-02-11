@@ -26,6 +26,7 @@ PUBLISHED:
 
   INLINE void set_num_axes(int num);
   INLINE void set_axis(int anum, int rel, dReal x, dReal y, dReal z);
+  INLINE void set_axis(int anum, int rel, const LVecBase3f &axis);
   INLINE void set_angle(int anum, dReal angle);
   INLINE void set_mode(int mode);
   INLINE void add_torques(dReal torque1, dReal torque2, dReal torque3);
