@@ -18,32 +18,32 @@
 
 
 INLINE void OdeLMotorJoint::
-set_l_motor_num_axes(int num) {
+set_num_axes(int num) {
   dJointSetLMotorNumAxes(_id, num);
 }
 
 INLINE void OdeLMotorJoint::
-set_l_motor_axis(int anum, int rel, dReal x, dReal y, dReal z) {
+set_axis(int anum, int rel, dReal x, dReal y, dReal z) {
   dJointSetLMotorAxis(_id, anum, rel, x, y, z);
 }
 
 INLINE void OdeLMotorJoint::
-set_l_motor_param(int parameter, dReal value) {
+set_param(int parameter, dReal value) {
   dJointSetLMotorParam(_id, parameter, value);
 }
 
 INLINE int OdeLMotorJoint::
-get_l_motor_num_axes() const {
+get_num_axes() const {
   return dJointGetLMotorNumAxes(_id);
 }
 
 INLINE void OdeLMotorJoint::
-get_l_motor_axis(int anum, dVector3 result) const {
+get_axis(int anum, dVector3 result) const {
   return dJointGetLMotorAxis(_id, anum, result);
 }
 
 INLINE dReal OdeLMotorJoint::
-get_l_motor_param(int parameter) const {
+get_param(int parameter) const {
   return dJointGetLMotorParam(_id, parameter);
 }
 

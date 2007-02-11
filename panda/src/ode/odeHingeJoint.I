@@ -17,57 +17,57 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE void OdeHingeJoint::
-set_hinge_anchor(dReal x, dReal y, dReal z) {
+set_anchor(dReal x, dReal y, dReal z) {
   dJointSetHingeAnchor(_id, x, y, z);
 }
 
 INLINE void OdeHingeJoint::
-set_hinge_anchor_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az) {
+set_anchor_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az) {
   dJointSetHingeAnchorDelta(_id, x, y, z, ax, ay, az);
 }
 
 INLINE void OdeHingeJoint::
-set_hinge_axis(dReal x, dReal y, dReal z) {
+set_axis(dReal x, dReal y, dReal z) {
   dJointSetHingeAxis(_id, x, y, z);
 }
 
 INLINE void OdeHingeJoint::
-set_hinge_param(int parameter, dReal value) {
+set_param(int parameter, dReal value) {
   dJointSetHingeParam(_id, parameter, value);
 }
 
 INLINE void OdeHingeJoint::
-add_hinge_torque(dReal torque) {
+add_torque(dReal torque) {
   dJointAddHingeTorque(_id, torque);
 }
 
 INLINE void OdeHingeJoint::
-get_hinge_anchor(dVector3 result) const {
+get_anchor(dVector3 result) const {
   return dJointGetHingeAnchor(_id, result);
 }
 
 INLINE void OdeHingeJoint::
-get_hinge_anchor2(dVector3 result) const {
+get_anchor2(dVector3 result) const {
   return dJointGetHingeAnchor2(_id, result);
 }
 
 INLINE void OdeHingeJoint::
-get_hinge_axis(dVector3 result) const {
+get_axis(dVector3 result) const {
   return dJointGetHingeAxis(_id, result);
 }
 
 INLINE dReal OdeHingeJoint::
-get_hinge_param(int parameter) const {
+get_param(int parameter) const {
   return dJointGetHingeParam(_id, parameter);
 }
 
 INLINE dReal OdeHingeJoint::
-get_hinge_angle() const {
+get_angle() const {
   return dJointGetHingeAngle(_id);
 }
 
 INLINE dReal OdeHingeJoint::
-get_hinge_angle_rate() const {
+get_angle_rate() const {
   return dJointGetHingeAngleRate(_id);
 }
 

@@ -23,13 +23,13 @@ PUBLISHED:
   OdeLMotorJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeLMotorJoint();
 
-  INLINE void set_l_motor_num_axes(int num);
-  INLINE void set_l_motor_axis(int anum, int rel, dReal x, dReal y, dReal z);
-  INLINE void set_l_motor_param(int parameter, dReal value);
+  INLINE void set_num_axes(int num);
+  INLINE void set_axis(int anum, int rel, dReal x, dReal y, dReal z);
+  INLINE void set_param(int parameter, dReal value);
 
-  INLINE int get_l_motor_num_axes() const;
-  INLINE void get_l_motor_axis(int anum, dVector3 result) const;
-  INLINE dReal get_l_motor_param(int parameter) const;
+  INLINE int get_num_axes() const;
+  INLINE void get_axis(int anum, dVector3 result) const;
+  INLINE dReal get_param(int parameter) const;
 
 public:
   static TypeHandle get_class_type() {

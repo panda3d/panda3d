@@ -23,15 +23,15 @@ PUBLISHED:
   OdeSliderJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeSliderJoint();
 
-  INLINE void set_slider_axis(dReal x, dReal y, dReal z);
-  INLINE void set_slider_axis_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az);
-  INLINE void set_slider_param(int parameter, dReal value);
-  INLINE void add_slider_force(dReal force);
+  INLINE void set_axis(dReal x, dReal y, dReal z);
+  INLINE void set_axis_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az);
+  INLINE void set_param(int parameter, dReal value);
+  INLINE void add_force(dReal force);
 
-  INLINE dReal get_slider_position() const;
-  INLINE dReal get_slider_position_rate() const;
-  INLINE void get_slider_axis(dVector3 result) const;
-  INLINE dReal get_slider_param(int parameter) const;
+  INLINE dReal get_position() const;
+  INLINE dReal get_position_rate() const;
+  INLINE void get_axis(dVector3 result) const;
+  INLINE dReal get_param(int parameter) const;
 
 public:
   static TypeHandle get_class_type() {

@@ -23,18 +23,18 @@ PUBLISHED:
   OdeHingeJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeHingeJoint();
 
-  INLINE void set_hinge_anchor(dReal x, dReal y, dReal z);
-  INLINE void set_hinge_anchor_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az);
-  INLINE void set_hinge_axis(dReal x, dReal y, dReal z);
-  INLINE void set_hinge_param(int parameter, dReal value);
-  INLINE void add_hinge_torque(dReal torque);
+  INLINE void set_anchor(dReal x, dReal y, dReal z);
+  INLINE void set_anchor_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az);
+  INLINE void set_axis(dReal x, dReal y, dReal z);
+  INLINE void set_param(int parameter, dReal value);
+  INLINE void add_torque(dReal torque);
 
-  INLINE void get_hinge_anchor(dVector3 result) const;
-  INLINE void get_hinge_anchor2(dVector3 result) const;
-  INLINE void get_hinge_axis(dVector3 result) const;
-  INLINE dReal get_hinge_param(int parameter) const;
-  INLINE dReal get_hinge_angle() const;
-  INLINE dReal get_hinge_angle_rate() const;
+  INLINE void get_anchor(dVector3 result) const;
+  INLINE void get_anchor2(dVector3 result) const;
+  INLINE void get_axis(dVector3 result) const;
+  INLINE dReal get_param(int parameter) const;
+  INLINE dReal get_angle() const;
+  INLINE dReal get_angle_rate() const;
 
 public:
   static TypeHandle get_class_type() {

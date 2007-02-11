@@ -17,41 +17,41 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE void OdeSliderJoint::
-set_slider_axis(dReal x, dReal y, dReal z) {
+set_axis(dReal x, dReal y, dReal z) {
   dJointSetSliderAxis(_id, x, y, z);
 }
 
 INLINE void OdeSliderJoint::
-set_slider_axis_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az) {
+set_axis_delta(dReal x, dReal y, dReal z, dReal ax, dReal ay, dReal az) {
   dJointSetSliderAxisDelta(_id, x, y, z, ax, ay, az);
 }
 
 INLINE void OdeSliderJoint::
-set_slider_param(int parameter, dReal value) {
+set_param(int parameter, dReal value) {
   dJointSetSliderParam(_id, parameter, value);
 }
 
 INLINE void OdeSliderJoint::
-add_slider_force(dReal force) {
+add_force(dReal force) {
   dJointAddSliderForce(_id, force);
 }
 
 INLINE dReal OdeSliderJoint::
-get_slider_position() const {
+get_position() const {
   return dJointGetSliderPosition(_id);
 }
 
 INLINE dReal OdeSliderJoint::
-get_slider_position_rate() const {
+get_position_rate() const {
   return dJointGetSliderPositionRate(_id);
 }
 
 INLINE void OdeSliderJoint::
-get_slider_axis(dVector3 result) const {
+get_axis(dVector3 result) const {
   return dJointGetSliderAxis(_id, result);
 }
 
 INLINE dReal OdeSliderJoint::
-get_slider_param(int parameter) const {
+get_param(int parameter) const {
   return dJointGetSliderParam(_id, parameter);
 }

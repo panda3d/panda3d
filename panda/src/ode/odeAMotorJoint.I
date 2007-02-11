@@ -17,66 +17,66 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE void OdeAMotorJoint::
-set_a_motor_num_axes(int num) {
+set_num_axes(int num) {
   dJointSetAMotorNumAxes(_id, num);
 }
 
 INLINE void OdeAMotorJoint::
-set_a_motor_axis(int anum, int rel, dReal x, dReal y, dReal z) {
+set_axis(int anum, int rel, dReal x, dReal y, dReal z) {
   dJointSetAMotorAxis(_id, anum, rel, x, y, z);
 }
 
 INLINE void OdeAMotorJoint::
-set_a_motor_angle(int anum, dReal angle) {
+set_angle(int anum, dReal angle) {
   dJointSetAMotorAngle(_id, anum, angle);
 }
 
 INLINE void OdeAMotorJoint::
-set_a_motor_param(int parameter, dReal value) {
+set_param(int parameter, dReal value) {
   dJointSetAMotorParam(_id, parameter, value);
 }
 
 INLINE void OdeAMotorJoint::
-set_a_motor_mode(int mode) {
+set_mode(int mode) {
   dJointSetAMotorMode(_id, mode);
 }
 
 INLINE void OdeAMotorJoint::
-add_a_motor_torques(dReal torque1, dReal torque2, dReal torque3) {
+add_torques(dReal torque1, dReal torque2, dReal torque3) {
   dJointAddAMotorTorques(_id, torque1, torque2, torque3);
 }
 
 INLINE int OdeAMotorJoint::
-get_a_motor_num_axes() const {
+get_num_axes() const {
   return dJointGetAMotorNumAxes(_id);
 }
 
 INLINE void OdeAMotorJoint::
-get_a_motor_axis(int anum, dVector3 result) const {
+get_axis(int anum, dVector3 result) const {
   return dJointGetAMotorAxis(_id, anum, result);
 }
 
 INLINE int OdeAMotorJoint::
-get_a_motor_axis_rel(int anum) const {
+get_axis_rel(int anum) const {
   return dJointGetAMotorAxisRel(_id, anum);
 }
 
 INLINE dReal OdeAMotorJoint::
-get_a_motor_angle(int anum) const {
+get_angle(int anum) const {
   return dJointGetAMotorAngle(_id, anum);
 }
 
 INLINE dReal OdeAMotorJoint::
-get_a_motor_angle_rate(int anum) const {
+get_angle_rate(int anum) const {
   return dJointGetAMotorAngleRate(_id, anum);
 }
 
 INLINE dReal OdeAMotorJoint::
-get_a_motor_param(int parameter) const {
+get_param(int parameter) const {
   return dJointGetAMotorParam(_id, parameter);
 }
 
 INLINE int OdeAMotorJoint::
-get_a_motor_mode() const {
+get_mode() const {
   return dJointGetAMotorMode(_id);
 }

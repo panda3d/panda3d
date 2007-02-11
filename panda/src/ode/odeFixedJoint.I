@@ -17,6 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE void OdeFixedJoint::
-set_fixed() {
+set() {
   dJointSetFixed(_id);
 }

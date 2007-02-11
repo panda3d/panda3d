@@ -17,21 +17,21 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE void OdeBallJoint::
-set_ball_anchor(dReal x, dReal y, dReal z) {
+set_anchor(dReal x, dReal y, dReal z) {
   dJointSetBallAnchor(_id, x, y, z);
 }
 
 INLINE void OdeBallJoint::
-set_ball_anchor2(dReal x, dReal y, dReal z) {
+set_anchor2(dReal x, dReal y, dReal z) {
   dJointSetBallAnchor2(_id, x, y, z);
 }
 
 INLINE void OdeBallJoint::
-get_ball_anchor(dVector3 result) const {
+get_anchor(dVector3 result) const {
   return dJointGetBallAnchor(_id, result);
 }
 
 INLINE void OdeBallJoint::
-get_ball_anchor2(dVector3 result) const {
+get_anchor2(dVector3 result) const {
   return dJointGetBallAnchor2(_id, result);
 }

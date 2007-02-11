@@ -23,9 +23,9 @@ PUBLISHED:
   OdePlane2dJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdePlane2dJoint();
 
-  INLINE void set_plane2_dxparam(int parameter, dReal value);
-  INLINE void set_plane2_dyparam(int parameter, dReal value);
-  INLINE void set_plane2_dangle_param(int parameter, dReal value);
+  INLINE void set_x_param(int parameter, dReal value);
+  INLINE void set_y_param(int parameter, dReal value);
+  INLINE void set_angle_param(int parameter, dReal value);
 
 public:
   static TypeHandle get_class_type() {

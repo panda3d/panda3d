@@ -17,16 +17,16 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE void OdePlane2dJoint::
-set_plane2_dxparam(int parameter, dReal value) {
+set_x_param(int parameter, dReal value) {
   dJointSetPlane2DXParam(_id, parameter, value);
 }
 
 INLINE void OdePlane2dJoint::
-set_plane2_dyparam(int parameter, dReal value) {
+set_y_param(int parameter, dReal value) {
   dJointSetPlane2DYParam(_id, parameter, value);
 }
 
 INLINE void OdePlane2dJoint::
-set_plane2_dangle_param(int parameter, dReal value) {
+set_angle_param(int parameter, dReal value) {
   dJointSetPlane2DAngleParam(_id, parameter, value);
 }

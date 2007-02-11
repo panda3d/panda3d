@@ -24,7 +24,7 @@ PUBLISHED:
   OdeFixedJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeFixedJoint();
 
-  INLINE void set_fixed();
+  INLINE void set();
 
 public:
   static TypeHandle get_class_type() {

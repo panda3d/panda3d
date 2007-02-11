@@ -24,11 +24,11 @@ PUBLISHED:
   OdeBallJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeBallJoint();
 
-  INLINE void set_ball_anchor(dReal x, dReal y, dReal z);
-  INLINE void set_ball_anchor2(dReal x, dReal y, dReal z);
+  INLINE void set_anchor(dReal x, dReal y, dReal z);
+  INLINE void set_anchor2(dReal x, dReal y, dReal z);
 
-  INLINE void get_ball_anchor(dVector3 result) const;
-  INLINE void get_ball_anchor2(dVector3 result) const;
+  INLINE void get_anchor(dVector3 result) const;
+  INLINE void get_anchor2(dVector3 result) const;
 
 public:
   static TypeHandle get_class_type() {
