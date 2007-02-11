@@ -32,6 +32,7 @@
 ////////////////////////////////////////////////////////////////////c
 class EXPCL_PANDAODE OdeSimpleSpace : public OdeSpace {
   friend class OdeSpace;
+  friend class OdeGeom;
 
 private:
   OdeSimpleSpace(dSpaceID id);
