@@ -13,14 +13,17 @@
 
   #define SOURCES \
     config_skel.h \
-    basicSkel.I basicSkel.h
+    basicSkel.I basicSkel.h \
+    typedSkel.I typedSkel.h
     
   #define INCLUDED_SOURCES \
     config_skel.cxx \
-    basicSkel.cxx
+    basicSkel.cxx \
+    typedSkel.cxx
 
   #define INSTALL_HEADERS \
-    basicSkel.h basicSkel.I
+    basicSkel.h basicSkel.I \
+    typedSkel.I typedSkel.h
 
   #define IGATESCAN all
 
