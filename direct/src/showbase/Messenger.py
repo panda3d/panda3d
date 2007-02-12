@@ -66,10 +66,10 @@ class Messenger:
 
         # Make sure we are not inadvertently overwriting an existing event
         # on this particular object.
-        if __debug__:
+        if Messenger.notify.getDebug():        
             if acceptorDict.has_key(object):
                 oldMethod = acceptorDict[object][0]
-                if oldMethod == method:                    
+                if oldMethod == method:
                     self.notify.warning(
                         "object: %s was already accepting: \"%s\" with same callback: %s()" %
                         (object.__class__.__name__, event, method.__name__))
