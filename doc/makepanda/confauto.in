@@ -79,7 +79,7 @@ egg-object-type-ghost           <Scalar> collide-mask { 0 }
 
 # This module allows direct loading of formats like .flt, .mb, or .dxf
 
-load-file-type ptloader
+load-file-type p3ptloader
 
 # Define a new egg object type.  See the comments in _panda.prc about this.
 
@@ -94,3 +94,7 @@ cull-bin gui-popup 60 unsorted
 lock-to-one-cpu #t
 paranoid-clock 1
 
+# This default only comes into play if you try to load a model
+# and don't specify an extension.
+
+default-model-extension .egg

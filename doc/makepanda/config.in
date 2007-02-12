@@ -62,7 +62,7 @@ show-frame-rate-meter  #f
 
 # Enable audio using the FMod audio library by default:
 
-audio-library-name fmod_audio
+audio-library-name p3fmod_audio
 
 # The new version of panda supports hardware vertex animation, but it's not quite ready
 
