@@ -89,3 +89,23 @@ operator < (const PointerToVoid &other) const {
   return _void_ptr < other._void_ptr;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::operator ==
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator == (const PointerToVoid &other) const {
+  return _void_ptr == other._void_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::operator !=
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+operator != (const PointerToVoid &other) const {
+  return _void_ptr != other._void_ptr;
+}
+

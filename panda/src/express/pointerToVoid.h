@@ -52,6 +52,9 @@ public:
   INLINE bool operator < (const void *other) const;
   INLINE bool operator < (const PointerToVoid &other) const;
 
+  INLINE bool operator == (const PointerToVoid &other) const;
+  INLINE bool operator != (const PointerToVoid &other) const;
+
 protected:
   // Within the PointerToVoid class, we only store a void pointer.
   // This is actually the (To *) pointer that is typecast to (void *)
