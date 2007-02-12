@@ -32,6 +32,7 @@ class FT_Face;
 class FT_Library;
 class FT_Bitmap;
 class FT_Vector;
+class FT_Span;
 
 #endif
 
