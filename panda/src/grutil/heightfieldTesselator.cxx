@@ -27,9 +27,9 @@
 //       Access: Published
 //  Description: Makes sure that the heightfield is a grayscale
 //               image of valid dimensions.  If necessary, adds a
-//               band of zeros onto the top and right side of
-//               the heightfield, so as to make the size of the
-//               heightfield a multiple of the given size plus one.
+//               band of zeros onto two sides of the heightfield,
+//               so as to make the size of the heightfield a multiple
+//               of the given size plus one.
 ////////////////////////////////////////////////////////////////////
 void HeightfieldTesselator::
 fix_heightfield(int size) {
@@ -73,8 +73,7 @@ fix_heightfield(int size) {
 //               coordinate is specified in pixels.  This ignores the
 //               current tesselation level and instead provides an
 //               accurate number.  Linear blending is used for 
-//               non-integral coordinates.  The current vertical
-//               scale is taken into account.
+//               non-integral coordinates.
 ////////////////////////////////////////////////////////////////////
 double HeightfieldTesselator::
 get_elevation(double x, double y) {
@@ -186,7 +185,6 @@ generate() {
       total += count_triangles(scale,x*size,y*size);
     }
   }
-  cerr << "Terrain mesh is " << total << " triangles.\n";
   for (int y=0; y<ycells; y++) {
     for (int x=0; x<xcells; x++) {
       generate_square(root,scale,x*size,y*size,true);
@@ -366,11 +364,6 @@ count_triangles(int scale, int x, int y) {
 //     Function: HeightfieldTesselator::add_quad_to_strip
 //       Access: Private
 //  Description: Adds a quad to the current triangle strip.
-//
-//               If the quad is adjacent to the previous quad,
-//               then the two quads are stitched together into
-//               a strip.  If not, degenerate triangles are
-//               inserted into the strip to separate the two.
 ////////////////////////////////////////////////////////////////////
 void HeightfieldTesselator::
 add_quad_to_strip(int v1, int v2, int v3, int v4) {
@@ -380,22 +373,6 @@ add_quad_to_strip(int v1, int v2, int v3, int v4) {
   if ((v3 != v2)&&(v2 != v4)&&(v4 != v3)) {
     _triangles->add_vertices(v3,v4,v2);
   }
-  //  if ((v1 == _last_vertex_a)&&(v2 == _last_vertex_b)) {
-  //    _tristrip->add_vertices(v3,v4);
-  //    _last_vertex_a = v3;
-  //    _last_vertex_b = v4;
-  //  } else {
-  //    if ((_last_vertex_a == -1)&&(_last_vertex_b == -1)) {
-  //      _tristrip->add_vertices(v1,v2,v3,v4);
-  //      _last_vertex_a = v3;
-  //      _last_vertex_b = v4;
-  //    } else {
-  //      _tristrip->add_vertices(_last_vertex_b, v1, v1, v2);
-  //      _tristrip->add_vertices(v1,v2,v3,v4);
-  //      _last_vertex_a = v3;
-  //      _last_vertex_b = v4;
-  //    }
-  //  }
 }
 
 ////////////////////////////////////////////////////////////////////
