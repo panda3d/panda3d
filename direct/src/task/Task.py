@@ -18,7 +18,10 @@ import time
 import fnmatch
 import string
 import signal
-from libheapq import heappush, heappop, heapify
+try:
+  from libp3heapq import heappush, heappop, heapify
+except:
+  from libheapq import heappush, heappop, heapify
 import types
 
 if __debug__:
