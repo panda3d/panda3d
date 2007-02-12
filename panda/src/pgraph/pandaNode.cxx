@@ -2730,17 +2730,21 @@ detach_one_stage(NodePathComponent *child, int pipeline_stage,
     Down::iterator di;
     bool found = false;
     Down &down = *cdata_parent->modify_down();
-    for (di = down.begin(); di != down.end() && !found; ++di) {
+    for (di = down.begin(); di != down.end(); ++di) {
       if ((*di).get_child() == child_node) {
 	down.erase(di);
 	found = true;
+        break;
       }
     }
-    Down &stashed = *cdata_parent->modify_stashed();
-    for (di = stashed.begin(); di != stashed.end() && !found; ++di) {
-      if ((*di).get_child() == child_node) {
-	stashed.erase(di);
-	found = true;
+    if (!found) {
+      Down &stashed = *cdata_parent->modify_stashed();
+      for (di = stashed.begin(); di != stashed.end(); ++di) {
+        if ((*di).get_child() == child_node) {
+          stashed.erase(di);
+          found = true;
+          break;
+        }
       }
     }
     nassertv(found);
