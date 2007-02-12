@@ -115,7 +115,10 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
                 parentEvent = eventGroup.newEvent('%s.parent.removeInterest' % self.doId)
             else:
                 parentEvent = None
-            self.cr.doId2do[self.parentId].worldGrid.stopProcessVisibility(event=parentEvent)
+
+            ##HACK BANDAID FOR PVP INSTANCES
+            if(hasattr(self.cr.doId2do[self.parentId],"worldGrid")):
+                self.cr.doId2do[self.parentId].worldGrid.stopProcessVisibility(event=parentEvent)
 
     def processVisibility(self, task):
         if self.visAvatar.gameFSM.state == 'Cutscene':
