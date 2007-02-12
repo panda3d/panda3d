@@ -21,8 +21,10 @@ static int _siftup(PyObject *list, int pos);
 
 #ifdef _WIN32
 extern "C" __declspec(dllexport) void initlibheapq(void);
+extern "C" __declspec(dllexport) void initlibp3heapq(void);
 #else
 extern "C" void initlibheapq();
+extern "C" void initlibp3heapq();
 #endif
 
 static PyObject *
@@ -232,4 +234,7 @@ void initlibheapq(void) {
     (void) Py_InitModule("libheapq", heapqcMethods);
 };
 
+void initlibp3heapq(void) {
+    (void) Py_InitModule("libp3heapq", heapqcMethods);
+};
 
