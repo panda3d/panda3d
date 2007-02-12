@@ -103,7 +103,12 @@ safe_to_combine() const {
 ////////////////////////////////////////////////////////////////////
 void CharacterJointEffect::
 output(ostream &out) const {
-  out << get_type() << "(" << _character->get_name() << ")";
+  out << get_type();
+  if (_character.is_valid_pointer()) {
+    out << "(" << _character->get_name() << ")";
+  } else {
+    out << "(**invalid**)";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
