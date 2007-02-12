@@ -24,7 +24,7 @@
 #include "luse.h"
 
 #include "ode_includes.h"
-#include "OdeGeom.h"
+#include "odeGeom.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeContactGeom

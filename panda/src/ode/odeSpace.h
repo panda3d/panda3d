@@ -48,8 +48,8 @@ PUBLISHED:
 
   INLINE void set_cleanup(int mode);
   INLINE int get_cleanup() const;
-  INLINE int query(const OdeGeom& geom) const;
-  INLINE int query(const OdeSpace& space) const;
+  int query(const OdeGeom& geom) const;
+  int query(const OdeSpace& space) const;
   INLINE int get_num_geoms() const;
   INLINE void get_AABB(LVecBase3f &min, LVecBase3f &max) const;
   INLINE int is_space();

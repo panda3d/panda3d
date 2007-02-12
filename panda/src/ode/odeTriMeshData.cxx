@@ -74,9 +74,9 @@ OdeTriMeshData(const NodePath& model, bool use_normals) :
   _id(dGeomTriMeshDataCreate()),
   _vertices(0),
   _faces(0),
+  _normals(false),
   _num_vertices(0),
-  _num_faces(0),
-  _normals(false) {
+  _num_faces(0) {
   odetrimeshdata_cat.debug() << get_type() << "(" << _id << ")" << "\n";
   
   process_model(model, use_normals);
