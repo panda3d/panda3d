@@ -762,8 +762,8 @@
 
 // Info for the Fmod audio engine
 // note this may be overwritten in wintools Config.pp
-#define FMODEX_IPATH
-#define FMODEX_LPATH
+#define FMODEX_IPATH /usr/local/fmod/api/inc
+#define FMODEX_LPATH /usr/local/fmod/api/lib
 #define FMODEX_LIBS fmodex
 #defer HAVE_FMODEX $[libtest $[FMODEX_LPATH],$[FMODEX_LIBS]]
 
