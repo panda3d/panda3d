@@ -39,13 +39,13 @@ default-directnotify-level warning
 # a special variable that indicates the same directory as this
 # particular Config.prc file.
 
-model-path    .
+model-path    $MAIN_DIR
 model-path    $THIS_PRC_DIR/..
 model-path    $THIS_PRC_DIR/../models
-sound-path    .
+sound-path    $MAIN_DIR
 sound-path    $THIS_PRC_DIR/..
 sound-path    $THIS_PRC_DIR/../models
-texture-path  .
+texture-path  $MAIN_DIR
 texture-path  $THIS_PRC_DIR/..
 texture-path  $THIS_PRC_DIR/../models
 

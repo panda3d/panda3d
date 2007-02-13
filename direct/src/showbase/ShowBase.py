@@ -27,8 +27,7 @@ from direct.showbase.BufferViewer import BufferViewer
 from direct.task import Task
 from direct.directutil import Verify
 import EventManager
-import math
-import sys
+import math,sys,os
 import Loader
 import time
 from direct.fsm import ClassicFSM
@@ -50,6 +49,12 @@ class ShowBase(DirectObject.DirectObject):
     notify = directNotify.newCategory("ShowBase")
 
     def __init__(self):
+
+        # Locate the directory containing the main program
+        maindir=os.path.abspath(sys.path[0])
+        self.mainDir = Filename.fromOsSpecific(maindir).getFullpath()
+        ExecutionEnvironment.setEnvironmentVariable("MAIN_DIR", self.mainDir)
+
         # Get the dconfig object
         #self.config = ConfigConfigureGetConfigConfigShowbase
         self.config = config
