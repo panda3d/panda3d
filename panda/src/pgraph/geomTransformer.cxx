@@ -28,6 +28,7 @@
 #include "pStatCollector.h"
 #include "pStatTimer.h"
 #include "vector_int.h"
+#include "userVertexTransform.h"
 
 static PStatCollector apply_vertex_collector("*:Flatten:apply:vertex");
 static PStatCollector apply_texcoord_collector("*:Flatten:apply:texcoord");
@@ -414,7 +415,16 @@ collect_vertex_data(Geom *geom, int collect_bits) {
   if ((collect_bits & SceneGraphReducer::CVD_format) != 0) {
     key._format = format;
   }
-  key._usage_hint = vdata->get_usage_hint();
+  if ((collect_bits & SceneGraphReducer::CVD_usage_hint) != 0) {
+    key._usage_hint = vdata->get_usage_hint();
+  } else {
+    key._usage_hint = Geom::UH_unspecified;
+  }
+  if ((collect_bits & SceneGraphReducer::CVD_animation_type) != 0) {
+    key._animation_type = format->get_animation().get_animation_type();
+  } else {
+    key._animation_type = Geom::AT_none;
+  }
 
   AlreadyCollected::const_iterator ai;
   ai = _already_collected.find(vdata);
@@ -492,9 +502,20 @@ collect_vertex_data(Geom *geom, int collect_bits) {
   // slightly different kinds of data.
   typedef vector_int IndexMap;
 
-  if (vdata->get_transform_table() != (TransformTable *)NULL) {
+  if (vdata->get_transform_table() != (TransformTable *)NULL ||
+      new_data->get_transform_table() != (TransformTable *)NULL) {
     // The TransformTable.
-    const TransformTable *old_table = vdata->get_transform_table();
+    CPT(TransformTable) old_table;
+    if (vdata->get_transform_table() != (TransformTable *)NULL) {
+      old_table = vdata->get_transform_table();
+    } else {
+      PT(TransformTable) temp_table = new TransformTable;
+      // There's an implicit identity transform for all nodes.
+      PT(VertexTransform) identity_transform = new UserVertexTransform("identity");
+      temp_table->add_transform(identity_transform);
+      old_table = TransformTable::register_table(temp_table);
+    }
+    
     // First, build a mapping of the transforms we already have in the
     // current table.  We must do this because the TransformTable
     // doesn't automatically unquify index numbers for us (it doesn't
@@ -560,11 +581,21 @@ collect_vertex_data(Geom *geom, int collect_bits) {
     }
   }
 
-  if (vdata->get_transform_blend_table() != (TransformBlendTable *)NULL)  {
+  if (vdata->get_transform_blend_table() != (TransformBlendTable *)NULL ||
+      new_data->get_transform_blend_table() != (TransformBlendTable *)NULL) {
     // The TransformBlendTable.  This one is the easiest, because we
     // can modify it directly, and it will uniquify blend objects for
     // us.
-    const TransformBlendTable *old_btable = vdata->get_transform_blend_table();
+    CPT(TransformBlendTable) old_btable;
+    if (vdata->get_transform_blend_table() != (TransformBlendTable *)NULL) {
+      old_btable = vdata->get_transform_blend_table();
+    } else {
+      PT(TransformBlendTable) temp_btable;
+      temp_btable = new TransformBlendTable;
+      temp_btable->add_blend(TransformBlend());
+      old_btable = temp_btable;
+    }
+
     PT(TransformBlendTable) new_btable;
     if (new_data->get_transform_blend_table() != (TransformBlendTable *)NULL) {
       new_btable = new_data->modify_transform_blend_table();

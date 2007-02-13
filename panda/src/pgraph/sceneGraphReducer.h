@@ -93,6 +93,18 @@ PUBLISHED:
     // formats may be combined by expanding all GeomVertexDatas to the
     // union of all defined columns.
     CVD_format         = 0x020,
+
+    // If set, two GeomVertexDatas with different usage hints (for
+    // instance, UH_static vs. UH_dynamic) will not be collected
+    // together.
+    CVD_usage_hint     = 0x040,
+
+    // If set, GeomVertexDatas with unanimated vertices will not be
+    // combined with GeomVertexDatas with animated vertices.  Although
+    // it is legal to mix unanimated and animated vertex datas, doing
+    // so will convert the unanimated vertices to animated vertices,
+    // which can result in additional processing requirements.
+    CVD_animation_type = 0x080, 
   };
 
   enum MakeNonindexed {

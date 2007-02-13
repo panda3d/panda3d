@@ -99,5 +99,8 @@ operator < (const GeomTransformer::NewCollectedKey &other) const {
   if (_usage_hint != other._usage_hint) {
     return (int)_usage_hint < (int)other._usage_hint;
   }
+  if (_animation_type != other._animation_type) {
+    return (int)_animation_type < (int)other._animation_type;
+  }
   return _name < other._name;
 }

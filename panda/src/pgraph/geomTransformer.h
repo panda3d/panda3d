@@ -128,6 +128,7 @@ private:
     string _name;
     CPT(GeomVertexFormat) _format;
     Geom::UsageHint _usage_hint;
+    Geom::AnimationType _animation_type;
   };
   typedef pmap< NewCollectedKey, PT(GeomVertexData) > NewCollectedData;
   NewCollectedData _new_collected_data;
