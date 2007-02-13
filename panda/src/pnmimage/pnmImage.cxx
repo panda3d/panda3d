@@ -192,6 +192,26 @@ alpha_fill_val(xelval alpha) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::remix_channels
+//       Access: Published
+//  Description: Transforms every pixel using the operation
+//               (Ro,Go,Bo) = conv.xform_point(Ri,Gi,Bi);
+//               Input must be a color image.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+remix_channels(LMatrix4f &conv) {
+  int nchannels = get_num_channels();
+  nassertv((nchannels >= 3) && (nchannels <= 4));
+  for (int y = 0; y < get_y_size(); y++) {
+    for (int x = 0; x < get_x_size(); x++) {
+      LVector3f inv(get_red(x,y),get_green(x,y),get_blue(x,y));
+      LVector3f outv(conv.xform_point(inv));
+      set_xel(x,y,outv[0],outv[1],outv[2]);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::read
 //       Access: Published
 //  Description: Reads the indicated image filename.  If type is
