@@ -81,6 +81,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool FadeLODNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  if (!support_fade_lod) {
+    return LODNode::cull_callback(trav, data);
+  }
+
   if (is_any_shown()) {
     return show_switches_cull_callback(trav, data);
   }

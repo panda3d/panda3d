@@ -193,6 +193,12 @@ ConfigVariableBool retransform_sprites
           "re-transformed back into the original object space, which is "
           "necessary in order for fog to work correctly on the sprites."));
 
+ConfigVariableBool support_fade_lod
+("support-fade-lod", true,
+ PRC_DESC("Set this false to make FadeLOD nodes behave like regular LOD nodes "
+          "(ignoring the fade time).  This may be useful, for instance, to "
+          "test the performance impact of using FadeLOD nodes."));
+
 ConfigVariableInt max_collect_vertices
 ("max-collect-vertices", 65535,
  PRC_DESC("Specifies the maximum number of vertices that are allowed to be "

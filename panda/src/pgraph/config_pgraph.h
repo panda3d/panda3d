@@ -46,6 +46,7 @@ extern ConfigVariableBool auto_break_cycles;
 extern ConfigVariableBool transform_cache;
 extern ConfigVariableBool state_cache;
 extern ConfigVariableBool retransform_sprites;
+extern ConfigVariableBool support_fade_lod;
 extern ConfigVariableInt max_collect_vertices;
 extern ConfigVariableInt max_collect_indices;
 
