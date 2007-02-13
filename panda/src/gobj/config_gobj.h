@@ -38,6 +38,7 @@ EXPCL_PANDA istream &operator >> (istream &in, AutoTextureScale &ats);
 
 // Configure variables for gobj package.
 extern EXPCL_PANDA ConfigVariableInt max_texture_dimension;
+extern EXPCL_PANDA ConfigVariableDouble texture_scale;
 extern EXPCL_PANDA ConfigVariableBool keep_texture_ram;
 extern EXPCL_PANDA ConfigVariableBool preload_textures;
 extern EXPCL_PANDA ConfigVariableBool compressed_textures;

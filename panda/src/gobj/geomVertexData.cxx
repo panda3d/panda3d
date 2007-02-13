@@ -1873,9 +1873,6 @@ unclean_set_num_rows(int n) {
 
   bool any_changed = false;
 
-  int color_array = -1;
-  int orig_color_rows = -1;
-
   for (size_t i = 0; i < _cdata->_arrays.size(); i++) {
     if (_array_writers[i]->get_num_rows() != n) {
       // Copy-on-write.

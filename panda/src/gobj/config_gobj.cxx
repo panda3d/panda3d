@@ -74,6 +74,14 @@ ConfigVariableInt max_texture_dimension
           "loaded from a file) will be automatically scaled down, if "
           "necessary, so that neither dimension is larger than this value."));
 
+ConfigVariableDouble texture_scale
+("texture-scale", 1.0,
+ PRC_DESC("This is a global scale factor that is applied to each texture "
+          "as it is loaded from disk.  For instance, a value of 0.5 will "
+          "reduce each texture to one-half its size in each dimension.  This "
+          "scale factor is applied before textures-power-2 or "
+          "max-texture-dimension."));
+
 ConfigVariableBool keep_texture_ram
 ("keep-texture-ram", false,
  PRC_DESC("Set this to true to retain the ram image for each texture after it "

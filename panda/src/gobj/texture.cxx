@@ -37,6 +37,7 @@
 #include "bam.h"
 #include "zStream.h"
 #include "indent.h"
+#include "cmath.h"
 
 #include <stddef.h>
 
@@ -2815,6 +2816,9 @@ void Texture::
 consider_rescale(PNMImage &pnmimage, const string &name) {
   int new_x_size = pnmimage.get_x_size();
   int new_y_size = pnmimage.get_y_size();
+
+  new_x_size = (int)cfloor(new_x_size * texture_scale + 0.5);
+  new_y_size = (int)cfloor(new_y_size * texture_scale + 0.5);
 
   switch (textures_power_2) {
   case ATS_down:
