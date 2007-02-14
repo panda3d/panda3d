@@ -411,8 +411,8 @@
 #defer HAVE_NSPR $[isfile $[NSPR_IPATH]/prtypes.h]
 
 // Define this true to build a native network implementation,
-// bypassing NSPR.
-#define WANT_NATIVE_NET
+// which does not require NSPR.
+#define WANT_NATIVE_NET 1
 
 // Is a third-party STL library installed, and where?  This is only
 // necessary if the default include and link lines that come with the
