@@ -76,7 +76,7 @@ void PartBundleNode::
 add_bundle(PartBundle *bundle) {
   nassertv(bundle->_node == NULL);
   _bundles.push_back(bundle);
-  bundle->_node = this;
+  bundle->set_node(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ steal_bundles(PartBundleNode *other) {
   for (bi = other->_bundles.begin(); bi != other->_bundles.end(); ++bi) {
     PartBundle *bundle = (*bi);
     _bundles.push_back(bundle);
-    bundle->_node = this;
+    bundle->set_node(this);
   }
   other->_bundles.clear();
 }

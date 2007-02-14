@@ -318,7 +318,18 @@ control_activated(AnimControl *control) {
   }
 }
 
-
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::set_node
+//       Access: Protected, Virtual
+//  Description: Changes the PartBundleNode pointer associated with
+//               the PartBundle.  Normally called only by the
+//               PartBundleNode itself, for instance when the bundle
+//               is flattened with another node.
+////////////////////////////////////////////////////////////////////
+void PartBundle::
+set_node(PartBundleNode *node) {
+  _node = node;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::do_set_control_effect

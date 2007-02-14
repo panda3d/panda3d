@@ -140,6 +140,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class Character;
+  friend class CharacterJointBundle;
 };
 
 #include "partGroup.I"

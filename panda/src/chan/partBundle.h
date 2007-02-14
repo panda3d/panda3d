@@ -127,6 +127,9 @@ public:
   // bunch of friends.
   virtual void control_activated(AnimControl *control);
 
+protected:
+  virtual void set_node(PartBundleNode *node);
+
 private:
   class CData;
 
