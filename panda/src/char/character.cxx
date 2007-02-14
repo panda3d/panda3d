@@ -806,10 +806,7 @@ r_clear_joint_characters(PartGroup *part) {
   if (part->is_of_type(CharacterJoint::get_class_type())) {
     CharacterJoint *joint = DCAST(CharacterJoint, part);
 
-    // Whoops!  We are not properly assigning the joint->_character
-    // node when we flatten characters!  TODO: fix this.
-    //    nassertv(joint->get_character() == this || joint->get_character() == NULL);
-
+    nassertv(joint->get_character() == this || joint->get_character() == NULL);
     joint->set_character(NULL);
   }
 

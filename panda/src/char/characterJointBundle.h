@@ -42,9 +42,14 @@ public:
 PUBLISHED:
   INLINE Character *get_node() const;
 
-public:
+protected:
   virtual PartGroup *make_copy() const;
+  virtual void set_node(PartBundleNode *node);
 
+private:
+  void r_set_character(PartGroup *group, Character *character);
+
+public:
   static void register_with_read_factory();
 
   static TypedWritable *make_CharacterJointBundle(const FactoryParams &params);

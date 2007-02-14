@@ -35,13 +35,48 @@ CharacterJointBundle(const string &name) : PartBundle(name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJointBundle::make_copy
-//       Access: Public, Virtual
+//       Access: Protected, Virtual
 //  Description: Allocates and returns a new copy of the node.
 //               Children are not copied, but see copy_subgraph().
 ////////////////////////////////////////////////////////////////////
 PartGroup *CharacterJointBundle::
 make_copy() const {
   return new CharacterJointBundle(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJointBundle::set_node
+//       Access: Protected, Virtual
+//  Description: Changes the PartBundleNode pointer associated with
+//               the PartBundle.  Normally called only by the
+//               PartBundleNode itself, for instance when the bundle
+//               is flattened with another node.
+////////////////////////////////////////////////////////////////////
+void CharacterJointBundle::
+set_node(PartBundleNode *node) {
+  PartBundle::set_node(node);
+  if (node->is_of_type(Character::get_class_type())) {
+    Character *character = DCAST(Character, node);
+    r_set_character(this, character);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJointBundle::r_set_character
+//       Access: Private
+//  Description: Recursively sets the Character on each joint in the
+//               hierarchy.
+////////////////////////////////////////////////////////////////////
+void CharacterJointBundle::
+r_set_character(PartGroup *group, Character *character) {
+  if (group->is_of_type(CharacterJoint::get_class_type())) {
+    DCAST(CharacterJoint, group)->set_character(character);
+  }
+
+  Children::const_iterator ci;
+  for (ci = group->_children.begin(); ci != group->_children.end(); ++ci) {
+    r_set_character((*ci), character);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
