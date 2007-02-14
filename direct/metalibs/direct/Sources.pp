@@ -19,7 +19,8 @@
   express:c pstatclient:c prc:c pandabase:c linmath:c \
   putil:c display:c event:c pgraph:c gsgbase:c gobj:c mathutil:c \
   lerp:c downloader:c pnmimage:c chan:c \
-  pipeline:c cull:c $[if $[HAVE_NET],net:c]
+  pipeline:c cull:c \
+  $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c]
 
 #begin metalib_target
   #define TARGET direct
