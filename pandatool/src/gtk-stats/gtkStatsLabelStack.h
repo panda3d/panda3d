@@ -44,7 +44,7 @@ public:
   int get_label_height(int label_index) const;
   int get_label_collector_index(int label_index) const;
 
-  void clear_labels();
+  void clear_labels(bool delete_widgets = true);
   int add_label(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
                 int thread_index, int collector_index, bool use_fullname);
   int get_num_labels() const;

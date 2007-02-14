@@ -84,6 +84,7 @@ private:
   void remove_graph(GtkStatsGraph *graph);
 
   void create_window();
+  void shutdown();
   static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event, 
 				      gpointer data);
   static void window_destroy(GtkWidget *widget, gpointer data);

@@ -63,8 +63,11 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
 
   _window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
-  gtk_window_set_transient_for(GTK_WINDOW(_window), GTK_WINDOW(parent_window));
-  gtk_window_set_destroy_with_parent(GTK_WINDOW(_window), TRUE);
+  // These calls were intended to kind of emulate the Windows MDI
+  // behavior, but it's just weird.
+  // gtk_window_set_transient_for(GTK_WINDOW(_window), GTK_WINDOW(parent_window));
+  // gtk_window_set_destroy_with_parent(GTK_WINDOW(_window), TRUE);
+
   gtk_widget_add_events(_window, 
 			GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
 			GDK_POINTER_MOTION_MASK);
@@ -142,7 +145,13 @@ GtkStatsGraph::
     g_object_unref(gc);
   }
 
-  gtk_widget_destroy(_window);
+  _label_stack.clear_labels();
+
+  if (_window != (GtkWidget *)NULL) {
+    GtkWidget *window = _window;
+    _window = NULL;
+    gtk_widget_destroy(window);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -248,10 +257,15 @@ clicked_label(int collector_index) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsGraph::
 close() {
-  GtkStatsMonitor *monitor = _monitor;
-  _monitor = (GtkStatsMonitor *)NULL;
-  if (monitor != (GtkStatsMonitor *)NULL) {
-    monitor->remove_graph(this);
+  _label_stack.clear_labels(false);
+  if (_window != (GtkWidget *)NULL) {
+    _window = NULL;
+
+    GtkStatsMonitor *monitor = _monitor;
+    _monitor = (GtkStatsMonitor *)NULL;
+    if (monitor != (GtkStatsMonitor *)NULL) {
+      monitor->remove_graph(this);
+    }
   }
 }
 

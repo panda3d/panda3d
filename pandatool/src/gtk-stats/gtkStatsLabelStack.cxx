@@ -100,12 +100,14 @@ get_label_collector_index(int label_index) const {
 //  Description: Removes the set of labels and starts a new set.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsLabelStack::
-clear_labels() {
+clear_labels(bool delete_widgets) {
   Labels::iterator li;
   for (li = _labels.begin(); li != _labels.end(); ++li) {
     GtkStatsLabel *label = (*li);
-    gtk_container_remove(GTK_CONTAINER(_widget), label->get_widget());
-    delete (*li);
+    if (delete_widgets) {
+      gtk_container_remove(GTK_CONTAINER(_widget), label->get_widget());
+    }
+    delete label;
   }
   _labels.clear();
 }

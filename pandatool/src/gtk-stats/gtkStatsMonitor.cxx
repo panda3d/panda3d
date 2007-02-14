@@ -69,27 +69,7 @@ GtkStatsMonitor(GtkStatsServer *server) : PStatMonitor(server) {
 ////////////////////////////////////////////////////////////////////
 GtkStatsMonitor::
 ~GtkStatsMonitor() {
-  Graphs::iterator gi;
-  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
-    delete (*gi);
-  }
-  _graphs.clear();
-
-  ChartMenus::iterator mi;
-  for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
-    delete (*mi);
-  }
-  _chart_menus.clear();
-
-  if (_window != NULL) {
-    gtk_widget_destroy(_window);
-    _window = NULL;
-  }
-
-#ifdef DEVELOP_GTKSTATS
-  // For GtkStats developers, exit when the first monitor closes.
-  gtk_main_quit();
-#endif
+  shutdown();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -247,10 +227,7 @@ void GtkStatsMonitor::
 lost_connection() {
   nout << "Lost connection to " << get_client_hostname() << "\n";
 
-  if (_window != NULL) {
-    gtk_widget_destroy(_window);
-    _window = NULL;
-  }
+  shutdown();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -503,6 +480,36 @@ create_window() {
   gtk_widget_show(_window);
 
   set_pause(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsMonitor::shutdown
+//       Access: Private
+//  Description: Closes all the graphs associated with this monitor.
+////////////////////////////////////////////////////////////////////
+void GtkStatsMonitor::
+shutdown() {
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    delete (*gi);
+  }
+  _graphs.clear();
+
+  ChartMenus::iterator mi;
+  for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
+    delete (*mi);
+  }
+  _chart_menus.clear();
+
+  if (_window != NULL) {
+    gtk_widget_destroy(_window);
+    _window = NULL;
+  }
+
+#ifdef DEVELOP_GTKSTATS
+  // For GtkStats developers, exit when the first monitor closes.
+  gtk_main_quit();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
