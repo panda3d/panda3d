@@ -506,10 +506,13 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
 
   float then = now - pstats_average_time;
 
-  while (thread_data->get_frame(then_i).get_end() < then) {
+  int latest_frame = thread_data->get_latest_frame_number();
+  while (then_i <= latest_frame &&
+         thread_data->get_frame(then_i).get_end() < then) {
     then_i++;
   }
-  while (thread_data->get_frame(now_i).get_end() < now) {
+  while (now_i <= latest_frame &&
+         thread_data->get_frame(now_i).get_end() < now) {
     now_i++;
   }
 
