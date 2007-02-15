@@ -17,8 +17,30 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "bitArray.h"
+#include "sparseArray.h"
 
 TypeHandle BitArray::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitArray::Constructor (from SparseArray)
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+BitArray::
+BitArray(const SparseArray &from) {
+  _highest_bits = 0;
+
+  int num_subranges = from.get_num_subranges();
+  for (int i = 0; i < num_subranges; ++i) {
+    int begin = from.get_subrange_begin(i);
+    int end = from.get_subrange_end(i);
+    set_range(begin, end - begin);
+  }
+
+  if (from.is_inverse()) {
+    invert_in_place();
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitArray::is_zero
@@ -37,10 +59,145 @@ is_zero() const {
   // Start from the high end, since that's more likely to be nonzero.
   Array::reverse_iterator ai;
   for (ai = _array.rbegin(); ai != _array.rend(); ++ai) {
-    if ((*ai) != 0) {
+    if (!(*ai).is_zero()) {
       return false;
     }
   }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitArray::is_all_on
+//       Access: Published
+//  Description: Returns true if the entire bitmask is one, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool BitArray::
+is_all_on() const {
+  if (!_highest_bits) {
+    // If all the infinite highest bits are not set, certainly the
+    // bitmask is not all on.
+    return false;
+  }
+
+  Array::reverse_iterator ai;
+  for (ai = _array.rbegin(); ai != _array.rend(); ++ai) {
+    if (!(*ai).is_all_on()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitArray::has_any_of
+//       Access: Published
+//  Description: Returns true if any bit in the indicated range is
+//               set, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool BitArray::
+has_any_of(int low_bit, int size) const {
+  if ((low_bit + size - 1) / num_bits_per_word >= get_num_words()) {
+    // This range touches the highest bits.
+    if (_highest_bits) {
+      return true;
+    }
+  }
+
+  int w = low_bit / num_bits_per_word;
+  int b = low_bit % num_bits_per_word;
+
+  if (w >= get_num_words()) {
+    // This range is entirely among the highest bits.
+    return _highest_bits;
+  }
+  if (b + size <= num_bits_per_word) {
+    // The whole thing fits within one word of the array.
+    return get_word(w).has_any_of(b, size);
+  }
+
+  int num_high_bits = num_bits_per_word - b;
+  if (_array[w].has_any_of(b, num_high_bits)) {
+    return true;
+  }
+  size -= num_high_bits;
+  ++w;
+
+  while (size > 0) {
+    if (size <= num_bits_per_word) {
+      // The remainder fits within one word of the array.
+      return _array[w].has_any_of(0, size);
+    }
+
+    // Keep going.
+    if (!_array[w].is_zero()) {
+      return true;
+    }
+    size -= num_bits_per_word;
+    ++w;
+
+    if (w >= get_num_words()) {
+      // Now we're up to the highest bits.
+      return _highest_bits;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitArray::has_all_of
+//       Access: Published
+//  Description: Returns true if all bits in the indicated range are
+//               set, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool BitArray::
+has_all_of(int low_bit, int size) const {
+  if ((low_bit + size - 1) / num_bits_per_word >= get_num_words()) {
+    // This range touches the highest bits.
+    if (!_highest_bits) {
+      return false;
+    }
+  }
+
+  int w = low_bit / num_bits_per_word;
+  int b = low_bit % num_bits_per_word;
+
+  if (w >= get_num_words()) {
+    // This range is entirely among the highest bits.
+    return _highest_bits;
+  }
+  if (b + size <= num_bits_per_word) {
+    // The whole thing fits within one word of the array.
+    return get_word(w).has_all_of(b, size);
+  }
+
+  int num_high_bits = num_bits_per_word - b;
+  if (!_array[w].has_all_of(b, num_high_bits)) {
+    return false;
+  }
+  size -= num_high_bits;
+  ++w;
+
+  while (size > 0) {
+    if (size <= num_bits_per_word) {
+      // The remainder fits within one word of the array.
+      return _array[w].has_all_of(0, size);
+    }
+
+    // Keep going.
+    if (!_array[w].is_all_on()) {
+      return false;
+    }
+    size -= num_bits_per_word;
+    ++w;
+
+    if (w >= get_num_words()) {
+      // Now we're up to the highest bits.
+      return _highest_bits;
+    }
+  }
+
   return true;
 }
 

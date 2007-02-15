@@ -32,6 +32,7 @@
 #include "namable.h"
 #include "nodeCachedReferenceCount.h"
 #include "referenceCount.h"
+#include "sparseArray.h"
 #include "typedObject.h"
 #include "typedReferenceCount.h"
 #include "typedWritable.h"
@@ -94,6 +95,7 @@ ConfigureFn(config_util) {
   Namable::init_type();
   NodeCachedReferenceCount::init_type();
   ReferenceCount::init_type();
+  SparseArray::init_type();
   TypedObject::init_type();
   TypedReferenceCount::init_type();
   TypedWritable::init_type();

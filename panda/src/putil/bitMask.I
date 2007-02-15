@@ -274,6 +274,18 @@ is_zero() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BitMask::is_all_on
+//       Access: Published
+//  Description: Returns true if the entire bitmask is one, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE bool BitMask<WType, nbits>::
+is_all_on() const {
+  return (~_word == 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BitMask::extract
 //       Access: Published
 //  Description: Returns a word that represents only the indicated
@@ -298,6 +310,32 @@ INLINE void BitMask<WType, nbits>::
 store(WordType value, int low_bit, int size) {
   WordType mask = BitMask<WType, nbits>::range(low_bit, size)._word;
   _word = (_word & ~mask) | ((value << low_bit) & mask);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::has_any_of
+//       Access: Published
+//  Description: Returns true if any bit in the indicated range is
+//               set, false otherwise.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE bool BitMask<WType, nbits>::
+has_any_of(int low_bit, int size) const {
+  WordType mask = BitMask<WType, nbits>::range(low_bit, size)._word;
+  return (_word & mask) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::has_all_of
+//       Access: Published
+//  Description: Returns true if all bits in the indicated range are
+//               set, false otherwise.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE bool BitMask<WType, nbits>::
+has_all_of(int low_bit, int size) const {
+  WordType mask = BitMask<WType, nbits>::range(low_bit, size)._word;
+  return (_word & mask) == mask;
 }
 
 ////////////////////////////////////////////////////////////////////

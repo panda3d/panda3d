@@ -29,6 +29,8 @@
 
 #include "checksumHashGenerator.h"
 
+class SparseArray;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : BitArray
 // Description : A dynamic array with an unlimited number of bits.
@@ -44,11 +46,11 @@ public:
   enum { num_bits_per_word = MaskType::num_bits };
 
 PUBLISHED:
-
   INLINE BitArray();
   INLINE BitArray(WordType init_value);
   INLINE BitArray(const BitArray &copy);
   INLINE BitArray &operator = (const BitArray &copy);
+  BitArray(const SparseArray &from);
 
   INLINE static BitArray all_on();
   INLINE static BitArray all_off();
@@ -69,9 +71,12 @@ PUBLISHED:
   INLINE void set_bit_to(int index, bool value);
   INLINE bool get_highest_bits() const;
   bool is_zero() const;
+  bool is_all_on() const;
 
   INLINE WordType extract(int low_bit, int size) const;
   INLINE void store(WordType value, int low_bit, int size);
+  bool has_any_of(int low_bit, int size) const;
+  bool has_all_of(int low_bit, int size) const;
   void set_range(int low_bit, int size);
   void clear_range(int low_bit, int size);
   INLINE void set_range_to(bool value, int low_bit, int size);

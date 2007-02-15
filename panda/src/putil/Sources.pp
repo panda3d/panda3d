@@ -53,6 +53,7 @@
     nonDeletor.h \
     pta_double.h \
     pta_float.h pta_int.h \
+    sparseArray.I sparseArray.h \
     string_utils.I string_utils.N string_utils.h \
     timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritableReferenceCount.I \
@@ -94,6 +95,7 @@
     nonDeletor.cxx \
     pta_double.cxx pta_float.cxx \
     pta_int.cxx pta_ushort.cxx \
+    sparseArray.cxx \
     string_utils.cxx timedCycle.cxx typedWritable.cxx \
     typedWritableReferenceCount.cxx updateSeq.cxx \
     uniqueIdAllocator.cxx \
@@ -145,6 +147,7 @@
     nonDeletor.h \
     pta_double.h \
     pta_float.h pta_int.h pta_ushort.h \
+    sparseArray.I sparseArray.h \
     string_utils.I \
     string_utils.h timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritableReferenceCount.I \

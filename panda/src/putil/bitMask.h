@@ -64,9 +64,12 @@ PUBLISHED:
   INLINE void clear_bit(int index);
   INLINE void set_bit_to(int index, bool value);
   INLINE bool is_zero() const;
+  INLINE bool is_all_on() const;
 
   INLINE WordType extract(int low_bit, int size) const;
   INLINE void store(WordType value, int low_bit, int size);
+  INLINE bool has_any_of(int low_bit, int size) const;
+  INLINE bool has_all_of(int low_bit, int size) const;
   INLINE void set_range(int low_bit, int size);
   INLINE void clear_range(int low_bit, int size);
   INLINE void set_range_to(bool value, int low_bit, int size);

@@ -13,6 +13,7 @@
 #include "pta_float.cxx"
 #include "pta_int.cxx"
 #include "pta_ushort.cxx"
+#include "sparseArray.cxx"
 #include "string_utils.cxx"
 #include "timedCycle.cxx"
 #include "typedWritable.cxx"
