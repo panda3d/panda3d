@@ -337,7 +337,7 @@ insert_unique(const TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE &key) {
 //               the appropriate place.  If there are already elements
 //               sorting equivalent to the key in the vector, the new
 //               value is inserted following them.  
-
+//
 //               The return value is the iterator referencing the new
 //               element.
 ////////////////////////////////////////////////////////////////////
@@ -352,6 +352,23 @@ insert_nonunique(const TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE &key) {
   return result;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::insert_unverified
+//       Access: Public
+//  Description: Inserts the indicated key into the ordered vector at
+//               the indicated place.  The user is trusted to have
+//               already verified that this is the correct sorting
+//               position; no checks are made.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE TYPENAME ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+insert_unverified(TYPENAME ordered_vector<Key, Compare>::ITERATOR position, 
+                  const TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE &key) {
+  TAU_PROFILE("ordered_vector::insert_unverified(iterator, const value_type &)", " ", TAU_USER);
+  ITERATOR result = _vector.insert(position, key);
+  return result;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ordered_vector::erase, with iterator

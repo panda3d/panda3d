@@ -192,6 +192,7 @@ public:
   ITERATOR insert_nonunique(ITERATOR position, const VALUE_TYPE &key);
   INLINE pair<ITERATOR, bool> insert_unique(const VALUE_TYPE &key);
   INLINE ITERATOR insert_nonunique(const VALUE_TYPE &key);
+  INLINE ITERATOR insert_unverified(ITERATOR position, const VALUE_TYPE &key);
 
   // Erase operations.
   INLINE ITERATOR erase(ITERATOR position);
