@@ -109,7 +109,7 @@ has_any_of(int low_bit, int size) const {
 
   if (w >= get_num_words()) {
     // This range is entirely among the highest bits.
-    return _highest_bits;
+    return (_highest_bits != 0);
   }
   if (b + size <= num_bits_per_word) {
     // The whole thing fits within one word of the array.
@@ -138,7 +138,7 @@ has_any_of(int low_bit, int size) const {
 
     if (w >= get_num_words()) {
       // Now we're up to the highest bits.
-      return _highest_bits;
+      return (_highest_bits != 0);
     }
   }
 
@@ -165,7 +165,7 @@ has_all_of(int low_bit, int size) const {
 
   if (w >= get_num_words()) {
     // This range is entirely among the highest bits.
-    return _highest_bits;
+    return (_highest_bits != 0);
   }
   if (b + size <= num_bits_per_word) {
     // The whole thing fits within one word of the array.
@@ -194,7 +194,7 @@ has_all_of(int low_bit, int size) const {
 
     if (w >= get_num_words()) {
       // Now we're up to the highest bits.
-      return _highest_bits;
+      return (_highest_bits != 0);
     }
   }
 
