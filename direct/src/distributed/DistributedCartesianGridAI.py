@@ -92,19 +92,17 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
     def updateGridTask(self, task=None):
         # Run through all grid objects and update their parents if needed
         missingObjs = []
-        for avId in self.gridObjects:
+        for avId in self.gridObjects.keys():
             av = self.gridObjects[avId]
             # handle a missing object after it is already gone?
             if (av.isEmpty()):
-                missingObjs.append(avId)
+                del self.gridObjects[avId]
                 continue
             pos = av.getPos()
             if ((pos[0] < 0 or pos[1] < 0) or
                 (pos[0] > self.cellWidth or pos[1] > self.cellWidth)):
                 # we are out of the bounds of this current cell
                 self.handleAvatarZoneChange(av)
-        for currMissingObj in missingObjs:
-            del self.gridObjects[avId]
         # Do this every second, not every frame
         if (task):
             task.delayTime = 1.0
