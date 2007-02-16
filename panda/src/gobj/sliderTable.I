@@ -79,34 +79,47 @@ get_num_sliders() const {
 INLINE const VertexSlider *SliderTable::
 get_slider(int n) const {
   nassertr(n >= 0 && n < (int)_sliders.size(), NULL);
-  return _sliders[n];
+  return _sliders[n]._slider;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::find_slider
+//     Function: SliderTable::get_slider_rows
 //       Access: Published
-//  Description: Returns the slider with the indicated name, or NULL
-//               if no slider in the table has that name.
+//  Description: Returns the set of rows (vertices) governed by the
+//               nth slider in the table.
 ////////////////////////////////////////////////////////////////////
-INLINE const VertexSlider *SliderTable::
-find_slider(const InternalName *name) const {
+INLINE const SparseArray &SliderTable::
+get_slider_rows(int n) const {
+  nassertr(n >= 0 && n < (int)_sliders.size(), _empty_array);
+  return _sliders[n]._rows;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SliderTable::find_sliders
+//       Access: Published
+//  Description: Returns a list of slider indices that represent the
+//               list of sliders with the indicated name, or an empty
+//               SparseArray if no slider in the table has that name.
+////////////////////////////////////////////////////////////////////
+INLINE const SparseArray &SliderTable::
+find_sliders(const InternalName *name) const {
   SlidersByName::const_iterator sni;
   sni = _sliders_by_name.find(name);
   if (sni != _sliders_by_name.end()) {
     return (*sni).second;
   }
-  return NULL;
+  return _empty_array;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SliderTable::has_slider
 //       Access: Published
-//  Description: Returns true if the table has a slider by the
-//               indicated name, false otherwise.
+//  Description: Returns true if the table has at least one slider by
+//               the indicated name, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool SliderTable::
 has_slider(const InternalName *name) const {
-  return (find_slider(name) != (VertexSlider *)NULL);
+  return (!find_sliders(name).is_zero());
 }
 
 ////////////////////////////////////////////////////////////////////

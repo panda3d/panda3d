@@ -32,6 +32,7 @@
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
+#include "sparseArray.h"
 
 class FactoryParams;
 
@@ -68,6 +69,10 @@ PUBLISHED:
   INLINE int get_num_transforms() const;
   INLINE int get_max_simultaneous_transforms() const;
 
+  INLINE void set_rows(const SparseArray &rows);
+  INLINE const SparseArray &get_rows() const;
+  INLINE SparseArray &modify_rows();
+
   void write(ostream &out, int indent_level) const;
 
 private:
@@ -87,6 +92,8 @@ private:
   // table.
   typedef pvector<TransformBlend> Blends;
   Blends _blends;
+
+  SparseArray _rows;
 
   // This map indexes directly into the above vector.  That means any
   // time we add or remove anything from the vector, we must

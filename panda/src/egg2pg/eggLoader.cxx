@@ -90,6 +90,8 @@
 #include "configVariableString.h"
 #include "transformBlendTable.h"
 #include "transformBlend.h"
+#include "sparseArray.h"
+#include "bitArray.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -2094,6 +2096,7 @@ make_vertex_data(const EggRenderState *render_state,
     temp_format->set_animation(animation);
 
     blend_table = new TransformBlendTable;
+    blend_table->set_rows(SparseArray::lower_on(vertex_pool->size()));
 
     PT(GeomVertexArrayFormat) anim_array_format = new GeomVertexArrayFormat;
     anim_array_format->add_column
@@ -2101,21 +2104,21 @@ make_vertex_data(const EggRenderState *render_state,
        Geom::NT_uint16, Geom::C_index);
     temp_format->add_array(anim_array_format);
 
-    pset<string> slider_names;
+    pmap<string, BitArray> slider_names;
     EggVertexPool::const_iterator vi;
     for (vi = vertex_pool->begin(); vi != vertex_pool->end(); ++vi) {
       EggVertex *vertex = (*vi);
       
       EggMorphVertexList::const_iterator mvi;
       for (mvi = vertex->_dxyzs.begin(); mvi != vertex->_dxyzs.end(); ++mvi) {
-        slider_names.insert((*mvi).get_name());
+        slider_names[(*mvi).get_name()].set_bit(vertex->get_index());
         record_morph(anim_array_format, character_maker, (*mvi).get_name(),
                      InternalName::get_vertex(), 3);
       }
       if (vertex->has_normal()) {
         EggMorphNormalList::const_iterator mni;
         for (mni = vertex->_dnormals.begin(); mni != vertex->_dnormals.end(); ++mni) {
-          slider_names.insert((*mni).get_name());
+          slider_names[(*mni).get_name()].set_bit(vertex->get_index());
           record_morph(anim_array_format, character_maker, (*mni).get_name(),
                        InternalName::get_normal(), 3);
         }
@@ -2123,7 +2126,7 @@ make_vertex_data(const EggRenderState *render_state,
       if (has_colors && vertex->has_color()) {
         EggMorphColorList::const_iterator mci;
         for (mci = vertex->_drgbas.begin(); mci != vertex->_drgbas.end(); ++mci) {
-          slider_names.insert((*mci).get_name());
+          slider_names[(*mci).get_name()].set_bit(vertex->get_index());
           record_morph(anim_array_format, character_maker, (*mci).get_name(),
                        InternalName::get_color(), 4);
         }
@@ -2137,7 +2140,7 @@ make_vertex_data(const EggRenderState *render_state,
 
         EggMorphTexCoordList::const_iterator mti;
         for (mti = egg_uv->_duvs.begin(); mti != egg_uv->_duvs.end(); ++mti) {
-          slider_names.insert((*mti).get_name());
+          slider_names[(*mti).get_name()].set_bit(vertex->get_index());
           record_morph(anim_array_format, character_maker, (*mti).get_name(),
                        iname, has_w ? 3 : 2);
         }
@@ -2149,10 +2152,10 @@ make_vertex_data(const EggRenderState *render_state,
 
       slider_table = new SliderTable;
       
-      pset<string>::iterator si;
+      pmap<string, BitArray>::iterator si;
       for (si = slider_names.begin(); si != slider_names.end(); ++si) {
-        VertexSlider *slider = character_maker->egg_to_slider(*si);
-        slider_table->add_slider(slider);
+        PT(VertexSlider) slider = character_maker->egg_to_slider((*si).first);
+        slider_table->add_slider(slider, (*si).second);
       }
     }
 

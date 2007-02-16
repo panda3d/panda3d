@@ -100,10 +100,7 @@ PUBLISHED:
     CVD_usage_hint     = 0x040,
 
     // If set, GeomVertexDatas with unanimated vertices will not be
-    // combined with GeomVertexDatas with animated vertices.  Although
-    // it is legal to mix unanimated and animated vertex datas, doing
-    // so will convert the unanimated vertices to animated vertices,
-    // which can result in additional processing requirements.
+    // combined with GeomVertexDatas with animated vertices.
     CVD_animation_type = 0x080, 
   };
 

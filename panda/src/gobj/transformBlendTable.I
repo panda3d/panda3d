@@ -89,6 +89,43 @@ get_max_simultaneous_transforms() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformBlendTable::set_rows
+//       Access: Published
+//  Description: Specifies the subset of rows (vertices) in the
+//               associated GeomVertexData that this
+//               TransformBlendTable actually affects.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlendTable::
+set_rows(const SparseArray &rows) {
+  _rows = rows;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlendTable::get_rows
+//       Access: Published
+//  Description: Returns the subset of rows (vertices) in the
+//               associated GeomVertexData that this
+//               TransformBlendTable actually affects.
+////////////////////////////////////////////////////////////////////
+INLINE const SparseArray &TransformBlendTable::
+get_rows() const {
+  return _rows;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlendTable::modify_rows
+//       Access: Published
+//  Description: Returns a modifiable reference to the SparseArray
+//               that specifies the subset of rows (vertices) in the
+//               associated GeomVertexData that this
+//               TransformBlendTable actually affects.
+////////////////////////////////////////////////////////////////////
+INLINE SparseArray &TransformBlendTable::
+modify_rows() {
+  return _rows;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformBlendTable::consider_rebuild_index
 //       Access: Private
 //  Description: Calls rebuild_index() if the index needs to be

@@ -21,6 +21,7 @@
 #include "bamWriter.h"
 #include "vertexTransform.h"
 
+SparseArray SliderTable::_empty_array;
 TypeHandle SliderTable::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -82,13 +83,29 @@ set_slider(int n, const VertexSlider *slider) {
   nassertv(!_is_registered);
   nassertv(n >= 0 && n < (int)_sliders.size());
 
-  if (_sliders[n]->get_name() != slider->get_name()) {
-    // Not allowed to move a slider this way.
-    nassertv(!has_slider(slider->get_name()));
+  if (_sliders[n]._slider->get_name() != slider->get_name()) {
+    _sliders_by_name[_sliders[n]._slider->get_name()].clear_bit(n);
+    _sliders_by_name[slider->get_name()].set_bit(n);
   }
 
-  _sliders[n] = slider;
-  _sliders_by_name[slider->get_name()] = slider;
+  _sliders[n]._slider = slider;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SliderTable::set_slider_rows
+//       Access: Published
+//  Description: Replaces the rows affected by the nth slider.  Only
+//               valid for unregistered tables.
+////////////////////////////////////////////////////////////////////
+void SliderTable::
+set_slider_rows(int n, const SparseArray &rows) {
+  // We don't actually enforce the registration requirement, since
+  // gee, it doesn't actually matter here; and the GeomVertexData
+  // needs to be able to change the SparseArrays in the bam reader.
+  //  nassertv(!_is_registered);
+  nassertv(n >= 0 && n < (int)_sliders.size());
+
+  _sliders[n]._rows = rows;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,41 +119,28 @@ remove_slider(int n) {
   nassertv(!_is_registered);
   nassertv(n >= 0 && n < (int)_sliders.size());
 
-  SlidersByName::iterator si = _sliders_by_name.find(_sliders[n]->get_name());
-  nassertv(si != _sliders_by_name.end());
-  _sliders_by_name.erase(si);
-
+  _sliders_by_name[_sliders[n]._slider->get_name()].clear_bit(n);
   _sliders.erase(_sliders.begin() + n);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SliderTable::add_slider
 //       Access: Published
-//  Description: Adds a new slider to the table, or replaces an
-//               existing slider with the same name, and returns the
+//  Description: Adds a new slider to the table, and returns the
 //               index number of the new slider.  Only valid for
 //               unregistered tables.
 ////////////////////////////////////////////////////////////////////
 int SliderTable::
-add_slider(const VertexSlider *slider) {
+add_slider(const VertexSlider *slider, const SparseArray &rows) {
   nassertr(!_is_registered, -1);
 
-  SlidersByName::iterator sni = _sliders_by_name.find(slider->get_name());
-  if (sni != _sliders_by_name.end()) {
-    // We've already got a slider with this name; replace it.
-    CPT(VertexSlider) orig_slider = (*sni).second;
-    Sliders::iterator si = find(_sliders.begin(), _sliders.end(), orig_slider);
-    nassertr(si != _sliders.end(), -1);
-    (*si) = slider;
-    (*sni).second = slider;
-    
-    return si - _sliders.begin();
-  }
-
-  // This is the first slider with this name.
   int new_index = (int)_sliders.size();
-  _sliders.push_back(slider);
-  _sliders_by_name[slider->get_name()] = slider;
+
+  SliderDef slider_def;
+  slider_def._slider = slider;
+  slider_def._rows = rows;
+  _sliders.push_back(slider_def);
+  _sliders_by_name[slider->get_name()].set_bit(new_index);
 
   return new_index;
 }
@@ -149,7 +153,8 @@ add_slider(const VertexSlider *slider) {
 void SliderTable::
 write(ostream &out) const {
   for (size_t i = 0; i < _sliders.size(); ++i) {
-    out << i << ". " << *_sliders[i] << "\n";
+    out << i << ". " << *_sliders[i]._slider << " " 
+        << _sliders[i]._rows << "\n";
   }
 }
 
@@ -164,7 +169,7 @@ do_register() {
 
   Sliders::iterator si;
   for (si = _sliders.begin(); si != _sliders.end(); ++si) {
-    const VertexSlider *slider = (*si);
+    const VertexSlider *slider = (*si)._slider;
     bool inserted = ((VertexSlider *)slider)->_tables.insert(this).second;
     nassertv(inserted);
   }
@@ -183,7 +188,7 @@ do_unregister() {
 
   Sliders::iterator si;
   for (si = _sliders.begin(); si != _sliders.end(); ++si) {
-    const VertexSlider *slider = (*si);
+    const VertexSlider *slider = (*si)._slider;
     ((VertexSlider *)slider)->_tables.erase(this);
   }
   _is_registered = false;
@@ -213,8 +218,9 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint16(_sliders.size());
   Sliders::const_iterator si;
   for (si = _sliders.begin(); si != _sliders.end(); ++si) {
-    manager->write_pointer(dg, (*si)->get_name());
-    manager->write_pointer(dg, (*si));
+    manager->write_pointer(dg, (*si)._slider->get_name());
+    manager->write_pointer(dg, (*si)._slider);
+    (*si)._rows.write_datagram(manager, dg);
   }
 
   manager->write_cdata(dg, _cycler);
@@ -231,15 +237,12 @@ int SliderTable::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
 
-  Sliders::iterator si;
-  for (si = _sliders.begin(); si != _sliders.end(); ++si) {
+  for (size_t n = 0; n < _sliders.size(); ++n) {
     CPT(InternalName) name = DCAST(InternalName, p_list[pi++]);
     PT(VertexSlider) slider = DCAST(VertexSlider, p_list[pi++]);
 
-    (*si) = slider;
-
-    bool inserted = _sliders_by_name.insert(SlidersByName::value_type(name, slider.p())).second;
-    nassertr(inserted, pi);
+    _sliders[n]._slider = slider;
+    _sliders_by_name[name].set_bit(n);
   }
 
   return pi;
@@ -281,7 +284,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (size_t i = 0; i < num_sliders; ++i) {
     manager->read_pointer(scan);
     manager->read_pointer(scan);
-    _sliders.push_back(NULL);
+    _sliders.push_back(SliderDef());
+    if (manager->get_file_minor_ver() >= 7) {
+      _sliders[i]._rows.read_datagram(scan, manager);
+    } else {
+      // In this case, for bam files prior to 6.7, we must define the
+      // SparseArray with the full number of vertices.  This is done
+      // in GeomVertexData::complete_pointers().
+    }
   }
 
   manager->read_cdata(scan, _cycler);

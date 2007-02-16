@@ -30,6 +30,10 @@
 #include "checksumHashGenerator.h"
 
 class SparseArray;
+class BamWriter;
+class BamReader;
+class Datagram;
+class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BitArray
@@ -135,6 +139,10 @@ private:
   typedef PTA(MaskType) Array;
   Array _array;
   int _highest_bits;  // Either 0 or 1.
+
+public:
+  void write_datagram(BamWriter *manager, Datagram &dg) const;
+  void read_datagram(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

@@ -1244,43 +1244,75 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
     int num_morphs = orig_format->get_num_morphs();
     for (int mi = 0; mi < num_morphs; mi++) {
       CPT(InternalName) slider_name = orig_format->get_morph_slider(mi);
-      const VertexSlider *slider = slider_table->find_slider(slider_name);
-      if (slider != (VertexSlider *)NULL) {
-        float slider_value = slider->get_slider();
-        if (slider_value != 0.0f) {
-          CPT(InternalName) base_name = orig_format->get_morph_base(mi);
-          CPT(InternalName) delta_name = orig_format->get_morph_delta(mi);
-          
-          GeomVertexRewriter data(new_data, base_name);
-          GeomVertexReader delta(this, delta_name);
 
-          if (data.get_column()->get_num_values() == 4) {
-            if (data.get_column()->has_homogeneous_coord()) {
-              for (int i = 0; i < num_rows; i++) {
-                // Scale the delta by the homogeneous coordinate.
-                LPoint4f vertex = data.get_data4f();
-                LPoint3f d = delta.get_data3f();
-                d *= slider_value * vertex[3];
-                data.set_data4f(vertex[0] + d[0],
-                                vertex[1] + d[1],
-                                vertex[2] + d[2],
-                                vertex[3]);
+      const SparseArray &sliders = slider_table->find_sliders(slider_name);
+      if (!sliders.is_zero()) {
+        nassertv(!sliders.is_inverse());
+        int num_slider_subranges = sliders.get_num_subranges();
+        for (int sni = 0; sni < num_slider_subranges; ++sni) {
+          int slider_begin = sliders.get_subrange_begin(sni);
+          int slider_end = sliders.get_subrange_end(sni);
+          for (int sn = slider_begin; sn < slider_end; ++sn) {
+            const VertexSlider *slider = slider_table->get_slider(sn);
+            const SparseArray &rows = slider_table->get_slider_rows(sn);
+            nassertv(!rows.is_inverse());
+
+            float slider_value = slider->get_slider();
+            if (slider_value != 0.0f) {
+              CPT(InternalName) base_name = orig_format->get_morph_base(mi);
+              CPT(InternalName) delta_name = orig_format->get_morph_delta(mi);
+              
+              GeomVertexRewriter data(new_data, base_name);
+              GeomVertexReader delta(this, delta_name);
+              int num_subranges = rows.get_num_subranges();
+
+              if (data.get_column()->get_num_values() == 4) {
+                if (data.get_column()->has_homogeneous_coord()) {
+                  // Scale the delta by the homogeneous coordinate.
+                  for (int i = 0; i < num_subranges; ++i) {
+                    int begin = rows.get_subrange_begin(i);
+                    int end = rows.get_subrange_end(i);
+                    data.set_row(begin);
+                    delta.set_row(begin);
+                    for (int j = begin; j < end; ++j) {
+                      LPoint4f vertex = data.get_data4f();
+                      LPoint3f d = delta.get_data3f();
+                      d *= slider_value * vertex[3];
+                      data.set_data4f(vertex[0] + d[0],
+                                      vertex[1] + d[1],
+                                      vertex[2] + d[2],
+                                      vertex[3]);
+                    }
+                  }
+                } else {
+                  // Just apply the four-component delta.
+                  for (int i = 0; i < num_subranges; ++i) {
+                    int begin = rows.get_subrange_begin(i);
+                    int end = rows.get_subrange_end(i);
+                    data.set_row(begin);
+                    delta.set_row(begin);
+                    for (int j = begin; j < end; ++j) {
+                      const LPoint4f &vertex = data.get_data4f();
+                      LPoint4f d = delta.get_data4f();
+                      data.set_data4f(vertex + d * slider_value);
+                    }
+                  }
+                }
+              } else {
+                // 3-component or smaller values; don't worry about a
+                // homogeneous coordinate.
+                for (int i = 0; i < num_subranges; ++i) {
+                  int begin = rows.get_subrange_begin(i);
+                  int end = rows.get_subrange_end(i);
+                  data.set_row(begin);
+                  delta.set_row(begin);
+                  for (int j = begin; j < end; ++j) {
+                    const LPoint3f &vertex = data.get_data3f();
+                    LPoint3f d = delta.get_data3f();
+                    data.set_data3f(vertex + d * slider_value);
+                  }
+                }
               }
-            } else {
-              // Just apply the four-component delta.
-              for (int i = 0; i < num_rows; i++) {
-                const LPoint4f &vertex = data.get_data4f();
-                LPoint4f d = delta.get_data4f();
-                data.set_data4f(vertex + d * slider_value);
-              }
-            }
-          } else {
-            // 3-component or smaller values; don't worry about a
-            // homogeneous coordinate.
-            for (int i = 0; i < num_rows; i++) {
-              const LPoint3f &vertex = data.get_data3f();
-              LPoint3f d = delta.get_data3f();
-              data.set_data3f(vertex + d * slider_value);
             }
           }
         }
@@ -1310,36 +1342,54 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
       return;
     }
 
+    const SparseArray &rows = tb_table->get_rows();
+    int num_subranges = rows.get_num_subranges();
+
     int ci;
     for (ci = 0; ci < orig_format->get_num_points(); ci++) {
       GeomVertexRewriter data(new_data, orig_format->get_point(ci));
-      blendi.set_row(0);
       
       if (data.get_column()->get_num_values() == 4) {
-        for (int i = 0; i < num_rows; i++) {
-          LPoint4f vertex = data.get_data4f();
-          int bi = blendi.get_data1i();
-          tb_table->get_blend(bi).transform_point(vertex, current_thread);
-          data.set_data4f(vertex);
+        for (int i = 0; i < num_subranges; ++i) {
+          int begin = rows.get_subrange_begin(i);
+          int end = rows.get_subrange_end(i);
+          data.set_row(begin);
+          blendi.set_row(begin);
+          for (int j = begin; j < end; ++j) {
+            LPoint4f vertex = data.get_data4f();
+            int bi = blendi.get_data1i();
+            tb_table->get_blend(bi).transform_point(vertex, current_thread);
+            data.set_data4f(vertex);
+          }
         }
       } else {
-        for (int i = 0; i < num_rows; i++) {
-          LPoint3f vertex = data.get_data3f();
-          int bi = blendi.get_data1i();
-          tb_table->get_blend(bi).transform_point(vertex, current_thread);
-          data.set_data3f(vertex);
+        for (int i = 0; i < num_subranges; ++i) {
+          int begin = rows.get_subrange_begin(i);
+          int end = rows.get_subrange_end(i);
+          data.set_row(begin);
+          blendi.set_row(begin);
+          for (int j = begin; j < end; ++j) {
+            LPoint3f vertex = data.get_data3f();
+            int bi = blendi.get_data1i();
+            tb_table->get_blend(bi).transform_point(vertex, current_thread);
+            data.set_data3f(vertex);
+          }
         }
       }
     }
     for (ci = 0; ci < orig_format->get_num_vectors(); ci++) {
       GeomVertexRewriter data(new_data, orig_format->get_vector(ci));
-      blendi.set_row(0);
-      
-      for (int i = 0; i < num_rows; i++) {
-        LVector3f vertex = data.get_data3f();
-        int bi = blendi.get_data1i();
-        tb_table->get_blend(bi).transform_vector(vertex, current_thread);
-        data.set_data3f(vertex);
+      for (int i = 0; i < num_subranges; ++i) {
+        int begin = rows.get_subrange_begin(i);
+        int end = rows.get_subrange_end(i);
+        data.set_row(begin);
+        blendi.set_row(begin);
+        for (int j = begin; j < end; ++j) {
+          LVector3f vertex = data.get_data3f();
+          int bi = blendi.get_data1i();
+          tb_table->get_blend(bi).transform_vector(vertex, current_thread);
+          data.set_data3f(vertex);
+        }
       }
     }
   }
@@ -1563,6 +1613,25 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   _slider_table = DCAST(SliderTable, p_list[pi++]);
 
   _modified = Geom::get_next_modified();
+
+  if (!_arrays.empty() && manager->get_file_minor_ver() < 7) {
+    // Bam files prior to 6.7 did not store a SparseArray in the
+    // SliderTable or TransformBlendTable entries.  We need to make up
+    // a SparseArray for each of them that reflects the complete
+    // number of rows in the data.
+    SparseArray all_rows;
+    all_rows.set_range(0, _arrays[0]->get_num_rows());
+
+    if (_slider_table != (SliderTable *)NULL) {
+      int num_sliders = _slider_table->get_num_sliders();
+      for (int i = 0; i < num_sliders; ++i) {
+        ((SliderTable *)_slider_table.p())->set_slider_rows(i, all_rows);
+      }
+    }
+    if (_transform_blend_table != (TransformBlendTable *)NULL) {
+      _transform_blend_table->set_rows(all_rows);
+    }
+  }
 
   return pi;
 }

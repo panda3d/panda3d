@@ -601,8 +601,14 @@ collect_vertex_data(Geom *geom, int collect_bits) {
       new_btable = new_data->modify_transform_blend_table();
     } else {
       new_btable = new TransformBlendTable;
+      new_btable->add_blend(TransformBlend());
       new_data->set_transform_blend_table(new_btable);
     }
+
+    SparseArray new_rows = old_btable->get_rows();
+    new_rows <<= offset;
+    new_rows |= new_btable->get_rows();
+    new_btable->set_rows(new_rows);
 
     // We still need to build up the IndexMap.
     IndexMap blend_map;
@@ -644,7 +650,9 @@ collect_vertex_data(Geom *geom, int collect_bits) {
     }
     int num_sliders = old_sliders->get_num_sliders();
     for (int si = 0; si < num_sliders; ++si) {
-      new_sliders->add_slider(old_sliders->get_slider(si));
+      SparseArray new_rows = old_sliders->get_slider_rows(si);
+      new_rows <<= offset;
+      new_sliders->add_slider(old_sliders->get_slider(si), new_rows);
     }
     new_data->set_slider_table(SliderTable::register_table(new_sliders));
   }

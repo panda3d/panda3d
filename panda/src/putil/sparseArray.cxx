@@ -515,3 +515,38 @@ do_shift(int offset) {
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: SparseArray::write_datagram
+//       Access: Public
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void SparseArray::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+  dg.add_uint32(_subranges.size());
+  Subranges::const_iterator si;
+  for (si = _subranges.begin(); si != _subranges.end(); ++si) {
+    dg.add_int32((*si)._begin);
+    dg.add_int32((*si)._end);
+  }
+  dg.add_bool(_inverse);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SparseArray::read_datagram
+//       Access: Public
+//  Description: Reads the object that was previously written to a Bam
+//               file.
+////////////////////////////////////////////////////////////////////
+void SparseArray::
+read_datagram(DatagramIterator &scan, BamReader *manager) {
+  size_t num_subranges = scan.get_uint32();
+  _subranges.reserve(num_subranges);
+  for (size_t i = 0; i < num_subranges; ++i) {
+    int begin = scan.get_int32();
+    int end = scan.get_int32();
+    _subranges.push_back(Subrange(begin, end));
+  }
+  _inverse = scan.get_bool();
+}

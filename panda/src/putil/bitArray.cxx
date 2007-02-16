@@ -808,3 +808,35 @@ normalize() {
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitArray::write_datagram
+//       Access: Public
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void BitArray::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+  dg.add_uint32(_array.size());
+  Array::const_iterator ai;
+  for (ai = _array.begin(); ai != _array.end(); ++ai) {
+    dg.add_uint32((*ai).get_word());
+  }
+  dg.add_uint8(_highest_bits);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitArray::read_datagram
+//       Access: Public
+//  Description: Reads the object that was previously written to a Bam
+//               file.
+////////////////////////////////////////////////////////////////////
+void BitArray::
+read_datagram(DatagramIterator &scan, BamReader *manager) {
+  size_t num_words = scan.get_uint32();
+  _array = Array::empty_array(num_words);
+  for (size_t i = 0; i < num_words; ++i) {
+    _array[i] = WordType(scan.get_uint32());
+  }
+  _highest_bits = scan.get_uint8();
+}

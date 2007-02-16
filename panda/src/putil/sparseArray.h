@@ -23,6 +23,10 @@
 #include "ordered_vector.h"
 
 class BitArray;
+class BamWriter;
+class BamReader;
+class Datagram;
+class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SparseArray
@@ -143,6 +147,10 @@ private:
   typedef ov_set<Subrange> Subranges;
   Subranges _subranges;
   bool _inverse;
+
+public:
+  void write_datagram(BamWriter *manager, Datagram &dg) const;
+  void read_datagram(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

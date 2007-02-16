@@ -39,7 +39,8 @@ TransformBlendTable() {
 ////////////////////////////////////////////////////////////////////
 TransformBlendTable::
 TransformBlendTable(const TransformBlendTable &copy) :
-  _blends(copy._blends)
+  _blends(copy._blends),
+  _rows(copy._rows)
 {
 }
 
@@ -51,6 +52,7 @@ TransformBlendTable(const TransformBlendTable &copy) :
 void TransformBlendTable::
 operator = (const TransformBlendTable &copy) {
   _blends = copy._blends;
+  _rows = copy._rows;
   clear_index();
 }
 
@@ -229,6 +231,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
     (*bi).write_datagram(manager, dg);
   }
 
+  _rows.write_datagram(manager, dg);
+
   manager->write_cdata(dg, _cycler);
 }
 
@@ -289,6 +293,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     TransformBlend blend;
     blend.fillin(scan, manager);
     _blends.push_back(blend);
+  }
+
+  if (manager->get_file_minor_ver() >= 7) {
+    _rows.read_datagram(scan, manager);
+  } else {
+    // In this case, for bam files prior to 6.7, we must define the
+    // SparseArray with the full number of vertices.  This is done
+    // in GeomVertexData::complete_pointers().
   }
 
   manager->read_cdata(scan, _cycler);

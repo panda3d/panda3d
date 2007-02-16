@@ -28,7 +28,7 @@
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
-
+#include "sparseArray.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SliderTable
@@ -55,15 +55,17 @@ PUBLISHED:
 
   INLINE int get_num_sliders() const;
   INLINE const VertexSlider *get_slider(int n) const;
+  INLINE const SparseArray &get_slider_rows(int n) const;
 
-  INLINE const VertexSlider *find_slider(const InternalName *name) const;
+  INLINE const SparseArray &find_sliders(const InternalName *name) const;
   INLINE bool has_slider(const InternalName *name) const;
   INLINE bool is_empty() const;
   INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
   void set_slider(int n, const VertexSlider *slider);
+  void set_slider_rows(int n, const SparseArray &rows);
   void remove_slider(int n);
-  int add_slider(const VertexSlider *slider);
+  int add_slider(const VertexSlider *slider, const SparseArray &rows);
 
   void write(ostream &out) const;
 
@@ -75,11 +77,19 @@ private:
 private:
   bool _is_registered;
 
-  typedef pvector< CPT(VertexSlider) > Sliders;
+  class SliderDef {
+  public:
+    CPT(VertexSlider) _slider;
+    SparseArray _rows;
+  };
+
+  typedef pvector<SliderDef> Sliders;
   Sliders _sliders;
 
-  typedef pmap< CPT(InternalName), const VertexSlider *> SlidersByName;
+  typedef pmap< CPT(InternalName), SparseArray > SlidersByName;
   SlidersByName _sliders_by_name;
+
+  static SparseArray _empty_array;
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
