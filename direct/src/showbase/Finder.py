@@ -101,8 +101,12 @@ def copyFuncs(fromClass, toClass):
             # See if we already have a function with this name
             oldFunc = toClass.__dict__.get(funcName)
             if oldFunc:
+
+                """
+                # This code is nifty, but with nested functions, give an error:
+                #   SystemError: cellobject.c:22: bad argument to internal function
                 # Give the new function code the same filename as the old function
-                # Perhaps there is a cleaner way to do this? This is my best idea.
+                # Perhaps there is a cleaner way to do this? This was my best idea.
                 newCode = new.code(newFunc.func_code.co_argcount,
                                    newFunc.func_code.co_nlocals,
                                    newFunc.func_code.co_stacksize,
@@ -116,12 +120,12 @@ def copyFuncs(fromClass, toClass):
                                    newFunc.func_code.co_name,
                                    newFunc.func_code.co_firstlineno,
                                    newFunc.func_code.co_lnotab)
-                # print 'creating new function:', newFunc.func_code.co_name
                 newFunc = new.function(newCode,
-                                       oldFunc.func_globals,
-                                       oldFunc.func_name,
-                                       oldFunc.func_defaults)
-                                       # oldFunc.func_closure)
+                                       newFunc.func_globals,
+                                       newFunc.func_name,
+                                       newFunc.func_defaults,
+                                       newFunc.func_closure)
+                """
                 replaceFuncList.append((oldFunc, funcName, newFunc))
             else:
                 # TODO: give these new functions a proper code filename
