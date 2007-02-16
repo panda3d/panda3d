@@ -298,6 +298,9 @@ do_add_range(int begin, int end) {
       // The new range straddles two elements, so they get combined.
       (*si2)._end = (*si)._end;
       _subranges.erase(si);
+    } else {
+      // Stop here.
+      break;
     }
     si = si2;
   }
