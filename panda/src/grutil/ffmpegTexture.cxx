@@ -307,7 +307,7 @@ update_frame(int frame) {
 bool FFMpegTexture::
 do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
-            BamCacheRecord *record) {
+            bool header_only, BamCacheRecord *record) {
   if (record != (BamCacheRecord *)NULL) {
     record->add_dependent_file(fullpath);
   }
