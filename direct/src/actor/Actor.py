@@ -1588,7 +1588,9 @@ class Actor(DirectObject, NodePath):
                     # Now we've already bound the animation, but we
                     # have no associated filename.  So store the
                     # animControl, but put None in for the filename.
-                    self.__animControlDict[lodName][partName][animName] = [None, animControl]
+                    animDef = Actor.AnimDef(None)
+                    animDef.animControl = animControl
+                    self.__animControlDict[lodName][partName][animName] = animDef
 
     def __prepareBundle(self, bundleNP, model,
                         partName="modelRoot", lodName="lodRoot"):
