@@ -66,6 +66,19 @@ write(ostream &out, int indent_level) const {
 void MatrixLens::
 compute_projection_mat() {
   _projection_mat = get_lens_mat_inv() * _user_mat * get_film_mat();
+  
+  if (_ml_flags & MF_has_left_eye) {
+    _projection_mat_left = get_lens_mat_inv() * _left_eye_mat * get_film_mat();
+  } else {
+    _projection_mat_left = _projection_mat;
+  }
+  
+  if (_ml_flags & MF_has_right_eye) {
+    _projection_mat_right = get_lens_mat_inv() * _right_eye_mat * get_film_mat();
+  } else {
+    _projection_mat_right = _projection_mat;
+  }
+  
   adjust_comp_flags(CF_projection_mat_inv, 
                     CF_projection_mat);
 }

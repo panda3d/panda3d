@@ -23,7 +23,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE MatrixLens::
 MatrixLens() :
-  _user_mat(LMatrix4f::ident_mat())
+  _user_mat(LMatrix4f::ident_mat()),
+  _ml_flags(0)
 {
   // The default film size for a MatrixLens is 2, which makes the
   // default range for both X and Y be [-1, 1].  This also,
@@ -39,7 +40,10 @@ MatrixLens() :
 INLINE MatrixLens::
 MatrixLens(const MatrixLens &copy) : 
   Lens(copy),
-  _user_mat(copy._user_mat)
+  _user_mat(copy._user_mat),
+  _left_eye_mat(copy._left_eye_mat),
+  _right_eye_mat(copy._right_eye_mat),
+  _ml_flags(copy._ml_flags)
 {
 }
 
@@ -51,7 +55,10 @@ MatrixLens(const MatrixLens &copy) :
 INLINE void MatrixLens::
 operator = (const MatrixLens &copy) {
   Lens::operator = (copy);
-  _user_mat = copy.get_user_mat();
+  _user_mat = copy._user_mat;
+  _left_eye_mat = copy._left_eye_mat;
+  _right_eye_mat = copy._right_eye_mat;
+  _ml_flags = copy._ml_flags;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,5 +93,129 @@ set_user_mat(const LMatrix4f &user_mat) {
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4f &MatrixLens::
 get_user_mat() const {
+  return _user_mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MatrixLens::set_left_eye_mat
+//       Access: Published
+//  Description: Sets a custom projection matrix for the left eye.
+//               This is only used if the lens is attached to a stereo
+//               camera, in which case the left eye matrix will be
+//               used to draw the scene in the left eye (but the
+//               center matrix--the user_mat--will still be used to
+//               cull the scene).
+//
+//               This matrix should not be too different from the
+//               center matrix (set by set_user_mat()) or culling
+//               errors may become obvious.
+////////////////////////////////////////////////////////////////////
+INLINE void MatrixLens::
+set_left_eye_mat(const LMatrix4f &left_eye_mat) {
+  _left_eye_mat = left_eye_mat;
+  _ml_flags |= MF_has_left_eye;
+  adjust_comp_flags(CF_mat, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MatrixLens::clear_left_eye_mat
+//       Access: Published
+//  Description: Removes the custom projection matrix set for the left
+//               eye, and uses the center matrix (set by set_user_mat)
+//               instead.
+////////////////////////////////////////////////////////////////////
+INLINE void MatrixLens::
+clear_left_eye_mat() {
+  _ml_flags &= ~MF_has_left_eye;
+  adjust_comp_flags(CF_mat, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MatrixLens::has_left_eye_mat
+//       Access: Published
+//  Description: Returns true if the camera has a custom projection
+//               matrix set for the left eye, or false if the center
+//               matrix (set by set_user_mat) will be used for the
+//               left eye.
+////////////////////////////////////////////////////////////////////
+INLINE bool MatrixLens::
+has_left_eye_mat() const {
+  return (_ml_flags & MF_has_left_eye) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MatrixLens::get_left_eye_mat
+//       Access: Published
+//  Description: Returns the custom projection matrix for the left
+//               eye, if any, or the center matrix if there is no
+//               custom matrix set for the left eye.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4f &MatrixLens::
+get_left_eye_mat() const {
+  if ((_ml_flags & MF_has_left_eye) != 0) {
+    return _left_eye_mat;
+  }
+  return _user_mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MatrixLens::set_right_eye_mat
+//       Access: Published
+//  Description: Sets a custom projection matrix for the right eye.
+//               This is only used if the lens is attached to a stereo
+//               camera, in which case the right eye matrix will be
+//               used to draw the scene in the right eye (but the
+//               center matrix--the user_mat--will still be used to
+//               cull the scene).
+//
+//               This matrix should not be too different from the
+//               center matrix (set by set_user_mat()) or culling
+//               errors may become obvious.
+////////////////////////////////////////////////////////////////////
+INLINE void MatrixLens::
+set_right_eye_mat(const LMatrix4f &right_eye_mat) {
+  _right_eye_mat = right_eye_mat;
+  _ml_flags |= MF_has_right_eye;
+  adjust_comp_flags(CF_mat, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MatrixLens::clear_right_eye_mat
+//       Access: Published
+//  Description: Removes the custom projection matrix set for the right
+//               eye, and uses the center matrix (set by set_user_mat)
+//               instead.
+////////////////////////////////////////////////////////////////////
+INLINE void MatrixLens::
+clear_right_eye_mat() {
+  _ml_flags &= ~MF_has_right_eye;
+  adjust_comp_flags(CF_mat, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MatrixLens::has_right_eye_mat
+//       Access: Published
+//  Description: Returns true if the camera has a custom projection
+//               matrix set for the right eye, or false if the center
+//               matrix (set by set_user_mat) will be used for the
+//               right eye.
+////////////////////////////////////////////////////////////////////
+INLINE bool MatrixLens::
+has_right_eye_mat() const {
+  return (_ml_flags & MF_has_right_eye) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MatrixLens::get_right_eye_mat
+//       Access: Published
+//  Description: Returns the custom projection matrix for the right
+//               eye, if any, or the center matrix if there is no
+//               custom matrix set for the right eye.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4f &MatrixLens::
+get_right_eye_mat() const {
+  if ((_ml_flags & MF_has_right_eye) != 0) {
+    return _right_eye_mat;
+  }
   return _user_mat;
 }
