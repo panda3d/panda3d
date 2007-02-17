@@ -968,6 +968,20 @@ if __debug__:
     assert len(q) == 0
     assert q.isEmpty()
 
+def mostDerivedLast(classList):
+    """pass in list of classes. sorts list in-place, with derived classes
+    appearing after their bases"""
+    def compare(a, b):
+        if issubclass(a, b):
+            result=1
+        elif issubclass(b, a):
+            result=-1
+        else:
+            result=0
+        #print a, b, result
+        return result
+    classList.sort(compare)
+
 """
 ParamObj/ParamSet
 =================
@@ -1363,7 +1377,19 @@ faction3 = s3.faction
 class POD:
     DataSet = {
         # base class does not define any data items, but they would
-        # appear here as 'name': value,
+        # appear here as 'name': defaultValue,
+        #
+        # WARNING: default values of mutable types that do not copy by
+        # value ( dicts, lists etc.) will be shared by all class instances
+        # if default value is callable, it will be called to get actual
+        # default value
+        #
+        # for example:
+        #
+        # class MapData(POD):
+        #     DataSet = {
+        #         'spawnIndices': Functor(list, [1,5,22]),
+        #         }
         }
     def __init__(self, **kwArgs):
         self.__class__._compileDefaultDataSet()
@@ -1417,7 +1443,10 @@ class POD:
     getDataNames = classmethod(getDataNames)
     def getDefaultValue(cls, name):
         cls._compileDefaultDataSet()
-        return cls._DataSet[name]
+        dv = cls._DataSet[name]
+        if callable(dv):
+            dv = dv()
+        return dv
     getDefaultValue = classmethod(getDefaultValue)
     def _compileDefaultDataSet(cls):
         if cls.__dict__.has_key('_DataSet'):
@@ -1460,25 +1489,15 @@ class POD:
             argStr += '%s=%s,' % (name, repr(getSetter(self, name, 'get')()))
         return '%s(%s)' % (self.__class__.__name__, argStr)
 
-    """ TODO
-    if __dev__:
-        @staticmethod
-        def unitTest():
-            tColor = 'red'
-            tColor2 = 'blue'
-            class test(POD):
-                DataSet = {
-                    'color': tColor,
-                    }
-
-            t = test()
-            assert t.getColor() == tColor
-            t.setColor(tColor2)
-            assert t.getColor() == tColor2
-
-            t2 = test().makeCopy()
-            assert t2.getColor() == t.getColor() == tColor2
-            """
+if __debug__:
+    class PODtest(POD):
+        DataSet = {
+            'foo': dict,
+            }
+    p1 = PODtest()
+    p2 = PODtest()
+    p1.foo[1] = 2
+    assert len(p2.foo) == 0
 
 def bound(value, bound1, bound2):
     """
@@ -1720,20 +1739,6 @@ def describeException(backTrace = 4):
 
     description += "%s: %s" % (exceptionName, extraInfo)
     return description
-
-def mostDerivedLast(classList):
-    """pass in list of classes. sorts list in-place, with derived classes
-    appearing after their bases"""
-    def compare(a, b):
-        if issubclass(a, b):
-            result=1
-        elif issubclass(b, a):
-            result=-1
-        else:
-            result=0
-        #print a, b, result
-        return result
-    classList.sort(compare)
 
 def clampScalar(value, a, b):
     # calling this ought to be faster than calling both min and max
