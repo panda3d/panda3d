@@ -1131,7 +1131,21 @@ class ParamObj:
     class ParamSet:
         Params = {
             # base class does not define any parameters, but they would
-            # appear here as 'name': value,
+            # appear here as 'name': defaultValue,
+            #
+            # WARNING: default values of mutable types that do not copy by
+            # value (dicts, lists etc.) will be shared by all class instances
+            # if default value is callable, it will be called to get actual
+            # default value
+            #
+            # for example:
+            #
+            # class MapArea(ParamObj):
+            #     class ParamSet(ParamObj.ParamSet):
+            #         Params = {
+            #             'spawnIndices': Functor(list, [1,5,22]),
+            #         }
+            #
             }
 
         def __init__(self, *args, **kwArgs):
@@ -1166,7 +1180,10 @@ class ParamObj:
         getParams = classmethod(getParams)
         def getDefaultValue(cls, param):
             cls._compileDefaultParams()
-            return cls._Params[param]
+            dv = cls._Params[param]
+            if callable(dv):
+                dv = dv()
+            return dv
         getDefaultValue = classmethod(getDefaultValue)
         def _compileDefaultParams(cls):
             if cls.__dict__.has_key('_Params'):
@@ -1380,7 +1397,7 @@ class POD:
         # appear here as 'name': defaultValue,
         #
         # WARNING: default values of mutable types that do not copy by
-        # value ( dicts, lists etc.) will be shared by all class instances
+        # value (dicts, lists etc.) will be shared by all class instances
         # if default value is callable, it will be called to get actual
         # default value
         #
