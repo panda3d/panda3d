@@ -143,6 +143,11 @@ class StackTrace:
         r+="***** NOTE: This is not a crash. This is a debug stack trace. *****"
         return r
 
+def printStack():
+    print StackTrace(start=1).compact()
+def printVerboseStack():
+    print StackTrace(start=1)
+
 #-----------------------------------------------------------------------------
 
 def traceFunctionCall(frame):
@@ -2684,3 +2689,5 @@ __builtin__.rad90 = rad90
 __builtin__.rad180 = rad180
 __builtin__.rad270 = rad270
 __builtin__.rad360 = rad360
+__builtin__.printStack = printStack
+__builtin__.printVerboseStack = printVerboseStack
