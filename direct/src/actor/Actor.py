@@ -446,7 +446,7 @@ class Actor(DirectObject, NodePath):
             self.removeNode()
 
     def removeNode(self):
-        if self.__geomNode:
+        if self.__geomNode and (self.__geomNode.getNumChildren() > 0):
             self.notify.warning("called actor.removeNode() on %s without calling cleanup()" % self.getName())
         NodePath.removeNode(self)
 
@@ -467,9 +467,10 @@ class Actor(DirectObject, NodePath):
             self.__LODNode.removeNode()
             self.__LODNode = None
 
-        for child in self.__geomNode.getChildrenAsList():
+        # remove geom node and all its children
+        for i in xrange (0, self.__geomNode.getNumChildren()):
+            child = self.__geomNode.getChild(i)
             child.removeNode()
-            
 
         self.__hasLOD = 0
 
