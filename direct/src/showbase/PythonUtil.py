@@ -2487,7 +2487,7 @@ class ClassTree:
         return self._getStr()
 
 
-def report(types = [], notifyFunc = None, dConfigParam = ''):
+def report(types = [], notifyFunc = None, dConfigParam = []):
     try:
         def decorator(f):
             __dev__
@@ -2509,14 +2509,36 @@ def report(types = [], notifyFunc = None, dConfigParam = ''):
                 if 'timeStamp' in types:
                     outStr = '%5.3f : %s' % (globalClock.getFrameTime(), outStr)
 
-                if not dConfigParam or (config.GetBool(dConfigParam, 0)):
+                if 'avLocation' in types:
+                    outStr = '%s : %s' % (outStr, str(localAvatar.getLocation()))
+
+                # determine whether we should print
+                doPrint = False
+                if not dConfigParam:
+                    doPrint = True
+                else:
+                    if isinstance(dConfigParam,str):
+                        if(config.GetBool(dConfigParam, 0)):
+                            doPrint = True
+                    elif isinstance(dConfigParam, (list,tuple)):
+                        for param in dConfigParam:
+                            if(config.GetBool(dConfigParam, 0)):
+                                doPrint = True
+                                break
+
+                if doPrint:
                     if notifyFunc:
                         notifyFunc(outStr)
                     else:
                         print outStr
-                        
-                return f(*args,**kwargs)
 
+                    if 'printInterests' in types:
+                        base.cr.printInterestSets()
+                    
+                    if 'stackTrace' in types:
+                        print StackTrace()
+
+                return f(*args,**kwargs)
 
             wrap.func_name = f.func_name
             wrap.func_dict = f.func_dict
