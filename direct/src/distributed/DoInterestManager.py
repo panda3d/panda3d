@@ -14,6 +14,7 @@ from direct.showbase import DirectObject
 from PyDatagram import PyDatagram
 from direct.directnotify.DirectNotifyGlobal import directNotify
 import types
+from direct.showbase.PythonUtil import report
 
 class InterestState:
     StateActive = 'Active'
@@ -366,7 +367,7 @@ class DoInterestManager(DirectObject.DirectObject):
             DoInterestManager._debug_maxDescriptionLen = max(
                 DoInterestManager._debug_maxDescriptionLen, len(description))
 
-        def printInterests(self):
+        def printInterestHistory(self):
             print "***************** Interest History *************"
             format = '%9s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %6s %6s %9s %s'
             print format % (
@@ -376,6 +377,8 @@ class DoInterestManager(DirectObject.DirectObject):
                 print format % tuple(i)
             print "Note: interests with a Scope of 0 do not get" \
                 " done/finished notices."
+            
+        def printInterestSets(self):
             print "******************* Interest Sets **************"
             format = '%6s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %10s %5s %9s %9s %10s'
             print format % (
@@ -392,6 +395,10 @@ class DoInterestManager(DirectObject.DirectObject):
                                 state.parentId, state.zoneIdList, event)
             print "************************************************"
 
+        def printInterests(self):
+            self.printInterestHistory()
+            self.printInterestSets()
+            
     def _sendAddInterest(self, handle, scopeId, parentId, zoneIdList, description,
                          action=None):
         """
