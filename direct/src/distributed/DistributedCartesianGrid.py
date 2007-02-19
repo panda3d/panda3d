@@ -6,6 +6,7 @@ from direct.distributed.DistributedNode import DistributedNode
 from direct.task import Task
 from direct.gui import DirectGuiGlobals
 from direct.showbase.EventGroup import EventGroup
+from direct.showbase.PythonUtil import report
 
 if __debug__:
     # For grid drawing
@@ -21,7 +22,7 @@ GRID_Z_OFFSET = 0.0
 class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
     notify = directNotify.newCategory("DistributedCartesianGrid")
     notify.setDebug(0)
-
+    
     VisualizeGrid = config.GetBool("visualize-cartesian-grid", 0)
 
     RuleSeparator = ":"
@@ -71,6 +72,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
     def getCenterPos(self):
         return self.centerPos
 
+    @report(types = ['frameCount', 'avLocation'], dConfigParam = 'want-connector-report')
     def startProcessVisibility(self, avatar):
         assert not self.cr._noNewInterests
         if self.cr.noNewInterests():
@@ -87,6 +89,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         taskMgr.add(
             self.processVisibility, self.taskName("processVisibility"))
 
+    @report(types = ['frameCount', 'avLocation'], dConfigParam = 'want-connector-report')
     def stopProcessVisibility(self, clearAll=False, event=None):
         self.ignore(self.cr.StopVisibilityEvent)
         taskMgr.remove(self.taskName("processVisibility"))
@@ -178,10 +181,10 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
                     self.handleAvatarZoneChange(self.visAvatar, zoneId)
             return Task.cont
 
-    # Take an avatar (or other object) from somewhere in the world and
-    # wrtReparent him to the grid.
+    # Update our location based on our avatar's position on the grid
+    # Assumes our position is correct, relative to the grid    
     def addObjectToGrid(self, av):
-        self.notify.debug("addObjectToGrid %s" % av)
+        assert self.notify.debug("addObjectToGrid %s" % av)
         # Get our pos relative to the island grid
         pos = av.getPos(self)
         # Figure out what zone in that island grid
@@ -190,7 +193,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         self.handleAvatarZoneChange(av, zoneId)
 
     def removeObjectFromGrid(self, av):
-        self.notify.debug("removeObjectFromGrid %s" % av)
+        assert self.notify.debug("removeObjectFromGrid %s" % av)
         # TODO: WHAT LOCATION SHOULD WE SET THIS TO?
         #av.reparentTo(hidden)
         if (av.getParent().compareTo(self) == 0):
@@ -213,6 +216,13 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         av.b_setLocation(self.doId, zoneId)
 
 
+    def turnOff(self):
+        self.stopProcessVisibility()
+        
+    def turnOn(self, av = None):
+        if av:
+            self.startProcessVisibility(av)
+        
     ##################################################
     # Visualization Tools
     ##################################################
