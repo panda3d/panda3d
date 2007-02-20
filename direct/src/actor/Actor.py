@@ -468,10 +468,9 @@ class Actor(DirectObject, NodePath):
             self.__LODNode = None
 
         # remove geom node and all its children
-        for i in xrange (0, self.__geomNode.getNumChildren()):
-            child = self.__geomNode.getChild(i)
-            child.removeNode()
-
+        self.__geomNode.removeChildren()
+        self.__geomNode.removeNode()
+        
         self.__hasLOD = 0
 
     # accessing
