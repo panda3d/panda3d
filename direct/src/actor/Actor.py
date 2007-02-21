@@ -441,7 +441,7 @@ class Actor(DirectObject, NodePath):
         self.stop(None)
         self.flush()
         self.__geomNode.removeNode()
-        self.__geomNode=None
+        self.__geomNode = None
         if not self.isEmpty():
             self.removeNode()
 
@@ -467,9 +467,9 @@ class Actor(DirectObject, NodePath):
             self.__LODNode.removeNode()
             self.__LODNode = None
 
-        # remove geom node and all its children
+        # remove all its children
         self.__geomNode.removeChildren()
-        self.__geomNode.removeNode()
+
         
         self.__hasLOD = 0
 
