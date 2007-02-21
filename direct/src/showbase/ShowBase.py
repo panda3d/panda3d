@@ -307,13 +307,6 @@ class ShowBase(DirectObject.DirectObject):
         # This needs to be allocated even if the viewer is off.
         self.bufferViewer = BufferViewer()
 
-        # Start Tk and DIRECT if specified by Config.prc
-        fTk = self.config.GetBool('want-tk', 0)
-        # Start DIRECT if specified in Config.prc or in cluster mode
-        fDirect = (self.config.GetBool('want-directtools', 0) or
-                   (base.config.GetString("cluster-mode", '') != ''))
-        # Set fWantTk to 0 to avoid starting Tk with this call
-        self.startDirect(fWantDirect = fDirect, fWantTk = fTk)
         # Start IGLOOP
         self.restart()
 
@@ -581,6 +574,14 @@ class ShowBase(DirectObject.DirectObject):
                 # Unless require-window is set to false, it is an
                 # error not to open a window.
                 raise StandardError, 'Could not open window.'
+
+        # Start Tk and DIRECT if specified by Config.prc
+        fTk = self.config.GetBool('want-tk', 0)
+        # Start DIRECT if specified in Config.prc or in cluster mode
+        fDirect = (self.config.GetBool('want-directtools', 0) or
+                   (base.config.GetString("cluster-mode", '') != ''))
+        # Set fWantTk to 0 to avoid starting Tk with this call
+        self.startDirect(fWantDirect = fDirect, fWantTk = fTk)
 
         return self.win != None
 
