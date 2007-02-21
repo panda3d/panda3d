@@ -109,6 +109,16 @@ get_num_normals() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphAnalyzer::get_num_colors
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int SceneGraphAnalyzer::
+get_num_colors() const {
+  return _num_colors;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::get_num_texcoords
 //       Access: Published
 //  Description: 

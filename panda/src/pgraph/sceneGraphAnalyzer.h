@@ -56,6 +56,7 @@ PUBLISHED:
 
   INLINE int get_num_vertices() const;
   INLINE int get_num_normals() const;
+  INLINE int get_num_colors() const;
   INLINE int get_num_texcoords() const;
   INLINE int get_num_tris() const;
   INLINE int get_num_lines() const;
@@ -98,6 +99,7 @@ private:
 
   int _num_vertices;
   int _num_normals;
+  int _num_colors;
   int _num_texcoords;
   int _num_tris;
   int _num_lines;

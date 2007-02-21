@@ -74,6 +74,7 @@ clear() {
 
   _num_vertices = 0;
   _num_normals = 0;
+  _num_colors = 0;
   _num_texcoords = 0;
   _num_tris = 0;
   _num_lines = 0;
@@ -132,6 +133,7 @@ write(ostream &out, int indent_level) const {
 
   indent(out, indent_level)
     << _num_vertices << " vertices, " << _num_normals << " normals, "
+    << _num_colors << " colors, "
     << _num_texcoords << " texture coordinates.\n";
 
   if (_num_long_normals != 0 || _num_short_normals != 0) {
@@ -277,6 +279,9 @@ collect_statistics(const Geom *geom) {
     }
     if (vdata->has_column(InternalName::get_normal())) {
       _num_normals += num_rows;
+    }
+    if (vdata->has_column(InternalName::get_color())) {
+      _num_colors += num_rows;
     }
     const GeomVertexFormat *format = vdata->get_format();
     int num_texcoords = format->get_num_texcoords();
