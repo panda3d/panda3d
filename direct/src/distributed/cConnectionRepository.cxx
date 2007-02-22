@@ -236,7 +236,7 @@ check_datagram() {
   #endif //WANT_NATIVE_NET
   while (do_check_datagram()) { //Read a datagram
     if (get_verbose()) {
-      describe_message(nout, "receive ", _dg.get_message());
+      describe_message(nout, "RECV ", _dg.get_message());
     }
 
     // Start breaking apart the datagram.
@@ -361,7 +361,7 @@ send_datagram(const Datagram &dg) {
   }
 
   if (get_verbose()) {
-    describe_message(nout, "send ", dg.get_message());
+    describe_message(nout, "SEND ", dg.get_message());
   }
 
 #ifdef WANT_NATIVE_NET
@@ -772,8 +772,8 @@ describe_message(ostream &out, const string &prefix,
           << ", field " << field_id << "\n";
 
     } else {
-      out << full_prefix << "update for " << dclass->get_name()
-          << " " << do_id << ": ";
+      out << full_prefix << "update for " << do_id << "(" << dclass->get_name()
+          << "): ";
       DCField *field = dclass->get_field_by_index(field_id);
       if (field == (DCField *)NULL) {
         out << "unknown field " << field_id << "\n";
