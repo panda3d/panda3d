@@ -339,7 +339,7 @@ compare_to_impl(const RenderAttrib *other) const {
   if (i1 != this->_inputs.end()) {
     return 1;
   }
-  if (i1 != that->_inputs.end()) {
+  if (i2 != that->_inputs.end()) {
     return -1;
   }
   
