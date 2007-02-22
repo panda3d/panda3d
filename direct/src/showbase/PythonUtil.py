@@ -145,8 +145,10 @@ class StackTrace:
 
 def printStack():
     print StackTrace(start=1).compact()
+    return True
 def printVerboseStack():
     print StackTrace(start=1)
+    return True
 
 #-----------------------------------------------------------------------------
 
