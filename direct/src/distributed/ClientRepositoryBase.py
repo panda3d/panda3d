@@ -26,6 +26,9 @@ class ClientRepositoryBase(ConnectionRepository):
     def __init__(self, dcFileNames = None):
         self.dcSuffix=""
         ConnectionRepository.__init__(self, ConnectionRepository.CM_HTTP, base.config, hasOwnerView=True)
+        if hasattr(self, 'setVerbose'):
+            if self.config.GetBool('verbose-clientrepository'):
+                self.setVerbose(1)
 
         self.context=100000
         self.setClientDatagram(1)

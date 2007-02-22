@@ -42,7 +42,8 @@ class ConnectionRepository(
         self.config = config
 
         if hasattr(self, 'setVerbose'):
-            self.setVerbose(self.config.GetBool('verbose-repository', 0))
+            if self.config.GetBool('verbose-repository'):
+                self.setVerbose(1)
 
         # Set this to 'http' to establish a connection to the server
         # using the HTTPClient interface, which ultimately uses the
