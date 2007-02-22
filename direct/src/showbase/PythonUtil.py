@@ -23,7 +23,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 '_equal', '_notEqual', '_isNone', '_notNone', '_contains', '_notIn',
 'ScratchPad', 'Sync', 'RefCounter', 'itype', 'getNumberedTypedString',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
-'FrameDelayedCallback', 'ArgumentEater', 'ClassTree', 'getBase',
+'FrameDelayedCall', 'ArgumentEater', 'ClassTree', 'getBase',
 'superFlattenShip','HotkeyBreaker','logMethodCalls','GoldenRatio',
 'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360']
 
@@ -2360,6 +2360,39 @@ class DelayedCall:
         del self._func
         func()
 
+class FrameDelayedCall:
+    """ calls a func after N frames """
+    def __init__(self, name, callback, frames=None, cancelFunc=None):
+        # checkFunc is optional; called every frame, if returns True, FrameDelay is cancelled
+        # and callback is not called
+        if frames is None:
+            frames = 1
+        self._name = name
+        self._frames = frames
+        self._callback = callback
+        self._cancelFunc = cancelFunc
+        self._taskName = uniqueName('%s-%s' % (self.__class__.__name__, self._name))
+        self._startTask()
+    def destroy(self):
+        self._stopTask()
+    def finish(self):
+        self._callback()
+        self.destroy()
+    def _startTask(self):
+        taskMgr.add(self._frameTask, self._taskName)
+        self._counter = 0
+    def _stopTask(self):
+        taskMgr.remove(self._taskName)
+    def _frameTask(self, task):
+        if self._cancelFunc and self._cancelFunc():
+            self.destroy()
+            return task.done
+        self._counter += 1
+        if self._counter >= self._frames:
+            self.finish()
+            return task.done
+        return task.cont
+
 class DelayedFunctor:
     """ Waits for this object to be called, then calls supplied functor after a delay.
     Effectively inserts a time delay between the caller and the functor. """
@@ -2383,37 +2416,6 @@ class DelayedFunctor:
         self._args = args
         self._kwArgs = kwArgs
         self._delayedCall = DelayedCall(self._callFunctor, self._name, self._delay)
-
-class FrameDelayedCallback:
-    """ waits N frames and then calls a callback """
-    def __init__(self, name, frames, callback, cancelFunc=None):
-        # checkFunc is optional; called every frame, if returns True, FrameDelay is cancelled
-        # and callback is not called
-        self._name = name
-        self._frames = frames
-        self._callback = callback
-        self._cancelFunc = cancelFunc
-        self._taskName = uniqueName('%s-%s' % (self.__class__.__name__, self._name))
-        self._startTask()
-    def destroy(self):
-        self._stopTask()
-    def finish(self):
-        self._callback()
-        self.destroy()
-    def _startTask(self):
-        taskMgr.add(self._frameTask, self._taskName)
-        self._counter = 0
-    def _stopTask(self):
-        taskMgr.remove(self._taskName)
-    def _frameTask(self, task):
-        if self._cancelFunc():
-            self.destroy()
-            return task.done
-        self._counter += 1
-        if self._counter >= self._frames:
-            self.finish()
-            return task.done
-        return task.cont
 
 class ArgumentEater:
     def __init__(self, numToEat, func):
@@ -2737,6 +2739,6 @@ __builtin__.printStack = printStack
 __builtin__.printVerboseStack = printVerboseStack
 __builtin__.DelayedCall = DelayedCall
 __builtin__.DelayedFunctor = DelayedFunctor
-__builtin__.FrameDelayedCallback = FrameDelayedCallback
+__builtin__.FrameDelayedCall = FrameDelayedCall
 __builtin__.ArgumentEater = ArgumentEater
 __builtin__.ClassTree = ClassTree
