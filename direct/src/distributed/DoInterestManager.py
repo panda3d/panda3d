@@ -113,6 +113,9 @@ class DoInterestManager(DirectObject.DirectObject):
         self._completeEventCount = ScratchPad(num=0)
         self._allInterestsCompleteCallbacks = []
 
+    def __verbose(self):
+        return self.InterestDebug or self.getVerbose()
+
     def _getAnonymousEvent(self, desc):
         return 'anonymous-%s-%s' % (desc, DoInterestManager._SerialGen.next())
 
@@ -181,8 +184,8 @@ class DoInterestManager(DirectObject.DirectObject):
                 event = self._getAnonymousEvent('addInterest')
         DoInterestManager._interests[handle] = InterestState(
             description, InterestState.StateActive, scopeId, event, parentId, zoneIdList, self._completeEventCount)
-        if self.InterestDebug:
-            print 'INTEREST DEBUG: addInterest(): handle=%s, parent=%s, zoneIds=%s, description=%s, event=%s, auto=%s' % (
+        if self.__verbose():
+            print 'CR::INTEREST.addInterest(handle=%s, parentId=%s, zoneIdList=%s, description=%s, event=%s, auto=%s)' % (
                 handle, parentId, zoneIdList, description, event, auto)
         if not auto:
             self._sendAddInterest(handle, scopeId, parentId, zoneIdList, description)
@@ -234,9 +237,9 @@ class DoInterestManager(DirectObject.DirectObject):
                     self._sendRemoveInterest(handle, scopeId)
                     if event is None:
                         self._considerRemoveInterest(handle)
-                if self.InterestDebug:
-                    print 'INTEREST DEBUG: removeInterest(): handle=%s, event=%s' % (
-                        handle, event)
+                if self.__verbose():
+                    print 'CR::INTEREST.removeInterest(handle=%s, event=%s, auto=%s)' % (
+                        handle, event, auto)
         else:
             DoInterestManager.notify.warning(
                 "removeInterest: handle not found: %s" % (handle))
@@ -279,8 +282,8 @@ class DoInterestManager(DirectObject.DirectObject):
             DoInterestManager._interests[handle].zoneIdList = zoneIdList
             DoInterestManager._interests[handle].addEvent(event)
 
-            if self.InterestDebug:
-                print 'INTEREST DEBUG: alterInterest(): handle=%s, parent=%s, zoneIds=%s, description=%s, event=%s' % (
+            if self.__verbose():
+                print 'CR::INTEREST.alterInterest(handle=%s, parentId=%s, zoneIdList=%s, description=%s, event=%s)' % (
                     handle, parentId, zoneIdList, description, event)
             self._sendAddInterest(handle, scopeId, parentId, zoneIdList, description, action='modify')
             exists = True
@@ -470,8 +473,8 @@ class DoInterestManager(DirectObject.DirectObject):
         assert DoInterestManager.notify.debugCall()
         handle = di.getUint16()
         scopeId = di.getUint32()
-        if self.InterestDebug:
-            print 'INTEREST DEBUG: interestDone(): handle=%s' % handle
+        if self.__verbose():
+            print 'CR::INTEREST.interestDone(handle=%s)' % handle
         DoInterestManager.notify.debug(
             "handleInterestDoneMessage--> Received handle %s, scope %s" % (
             handle, scopeId))
@@ -507,10 +510,10 @@ class DoInterestManager(DirectObject.DirectObject):
                     callback()
                 self._allInterestsCompleteCallbacks = []
             self.cleanupWaitAllInterestsClosed()
-            self._completeDelayedCallback = FrameDelayedCallback(
+            self._completeDelayedCallback = FrameDelayedCall(
                 'waitForAllInterestCompletes',
-                frames=3,
                 callback=sendEvent,
+                frames=3,
                 cancelFunc=checkMoreInterests)
             checkMoreInterests = None
             sendEvent = None
