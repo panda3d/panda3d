@@ -65,6 +65,7 @@ class ShowBase(DirectObject.DirectObject):
         vfs = VirtualFileSystem.getGlobalPtr()
 
         self.nextWindowIndex = 1
+        self.__directStarted = False
 
         # Store dconfig variables
         self.sfxActive = self.config.GetBool('audio-sfx-active', 1)
@@ -197,7 +198,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Open the default rendering window.
         if self.windowType != 'none':
-            self.openDefaultWindow()
+            self.openDefaultWindow(startDirect = False)
 
         self.loader = Loader.Loader(self)
         self.eventMgr = eventMgr
@@ -307,6 +308,9 @@ class ShowBase(DirectObject.DirectObject):
         # This needs to be allocated even if the viewer is off.
         self.bufferViewer = BufferViewer()
 
+        if self.windowType != 'none':
+            self.__doStartDirect()
+            
         # Start IGLOOP
         self.restart()
 
@@ -546,6 +550,10 @@ class ShowBase(DirectObject.DirectObject):
         # startup.  It is normally called automatically unless
         # window-type is configured to 'none'.
 
+        startDirect = kw.get('startDirect', True)
+        if 'startDirect' in kw:
+            del kw['startDirect']
+            
         self.openMainWindow(*args, **kw)
 
         # Give the window a chance to truly open.
@@ -575,13 +583,8 @@ class ShowBase(DirectObject.DirectObject):
                 # error not to open a window.
                 raise StandardError, 'Could not open window.'
 
-        # Start Tk and DIRECT if specified by Config.prc
-        fTk = self.config.GetBool('want-tk', 0)
-        # Start DIRECT if specified in Config.prc or in cluster mode
-        fDirect = (self.config.GetBool('want-directtools', 0) or
-                   (self.config.GetString("cluster-mode", '') != ''))
-        # Set fWantTk to 0 to avoid starting Tk with this call
-        self.startDirect(fWantDirect = fDirect, fWantTk = fTk)
+        if startDirect:
+            self.__doStartDirect()
 
         return self.win != None
 
@@ -2045,6 +2048,19 @@ class ShowBase(DirectObject.DirectObject):
             base.direct.enable()
         else:
             __builtins__["direct"] = self.direct = None
+
+    def __doStartDirect(self):
+        if self.__directStarted:
+            return
+        self.__directStarted = False
+        
+        # Start Tk and DIRECT if specified by Config.prc
+        fTk = self.config.GetBool('want-tk', 0)
+        # Start DIRECT if specified in Config.prc or in cluster mode
+        fDirect = (self.config.GetBool('want-directtools', 0) or
+                   (self.config.GetString("cluster-mode", '') != ''))
+        # Set fWantTk to 0 to avoid starting Tk with this call
+        self.startDirect(fWantDirect = fDirect, fWantTk = fTk)
 
     def profileNextFrame(self):
         self.taskMgr.profileNextFrame()
