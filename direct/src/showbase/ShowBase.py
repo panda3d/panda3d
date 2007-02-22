@@ -579,7 +579,7 @@ class ShowBase(DirectObject.DirectObject):
         fTk = self.config.GetBool('want-tk', 0)
         # Start DIRECT if specified in Config.prc or in cluster mode
         fDirect = (self.config.GetBool('want-directtools', 0) or
-                   (base.config.GetString("cluster-mode", '') != ''))
+                   (self.config.GetString("cluster-mode", '') != ''))
         # Set fWantTk to 0 to avoid starting Tk with this call
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk)
 
