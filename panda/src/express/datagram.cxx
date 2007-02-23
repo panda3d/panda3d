@@ -53,12 +53,15 @@ clear() {
 //               contents, as a sequence of hex (and ASCII) values.
 ////////////////////////////////////////////////////////////////////
 void Datagram::
-dump_hex(ostream &out) const {
+dump_hex(ostream &out, unsigned int indent) const {
   const char *message = (const char *)get_data();
   size_t num_bytes = get_length();
   for (size_t line = 0; line < num_bytes; line += 16) {
     char hex[12];
     sprintf(hex, "%04x ", ((unsigned int )line));
+    for (unsigned int ind = 0; ind < indent; ind++) {
+      out << " ";
+    }
     out << hex;
 
     size_t p;
@@ -226,6 +229,6 @@ write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"Datagram:\n";
-  dump_hex(out);
+  dump_hex(out, indent);
   #endif //] NDEBUG
 }

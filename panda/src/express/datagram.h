@@ -55,7 +55,7 @@ PUBLISHED:
   virtual ~Datagram();
 
   virtual void clear();
-  void dump_hex(ostream &out) const;
+  void dump_hex(ostream &out, unsigned int indent=0) const;
 
   INLINE void add_bool(bool value);
   INLINE void add_int8(PN_int8 value);
