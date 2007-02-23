@@ -46,6 +46,11 @@
 
 #undef HAVE_CGGL // Mesa does not support Nvidia Cg... make sure it tries to compile
                  // without it
+
+// Don't include Mesa's provided glext.h file; we'll provide our own
+// that's more current.
+#define __glext_h_
+
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/osmesa.h>
