@@ -80,6 +80,20 @@ private:
   typedef pvector< PT(NodeVertexTransform) > Transforms;
   Transforms _internal_transforms;
 
+  class VDUnifier {
+  public:
+    INLINE VDUnifier(const VertexTransform *transform, 
+                     const GeomVertexData *orig);
+    INLINE bool operator < (const VDUnifier &other) const;
+
+    const VertexTransform *_transform;
+    const GeomVertexData *_orig;
+  };
+
+  typedef pmap<VDUnifier, PT(GeomVertexData) > VDTable;
+  VDTable _vd_table;
+
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

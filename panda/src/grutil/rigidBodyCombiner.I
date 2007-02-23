@@ -16,3 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: RigidBodyCombiner::VDUnifier::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE RigidBodyCombiner::VDUnifier::
+VDUnifier(const VertexTransform *transform, const GeomVertexData *orig) :
+  _transform(transform),
+  _orig(orig)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RigidBodyCombiner::VDUnifier::operator <
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool RigidBodyCombiner::VDUnifier::
+operator < (const RigidBodyCombiner::VDUnifier &other) const {
+  if (_transform != other._transform) {
+    return _transform < other._transform;
+  }
+  return _orig < other._orig;
+}

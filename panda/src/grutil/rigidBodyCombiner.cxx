@@ -96,12 +96,15 @@ void RigidBodyCombiner::
 collect() {
   _internal_root = new GeomNode(get_name());
   _internal_transforms.clear();
+  _vd_table.clear();
 
   Children cr = get_children();
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
     r_collect(cr.get_child(i), RenderState::make_empty(), NULL);
   }
+
+  _vd_table.clear();
 
   SceneGraphReducer gr;
   gr.apply_attribs(_internal_root);
@@ -224,7 +227,14 @@ r_collect(PandaNode *node, const RenderState *state,
 ////////////////////////////////////////////////////////////////////
 PT(GeomVertexData) RigidBodyCombiner::
 convert_vd(const VertexTransform *transform, const GeomVertexData *orig) {
-  // TODO: unify this operation for unique transform/data combinations.
+  // First, unify this operation for unique transform/data
+  // combinations.  If we encounter a given GeomVertexData more than
+  // once under the same transform, we should return exactly the same
+  // GeomVertexData.
+  VDTable::iterator vdti = _vd_table.find(VDUnifier(transform, orig));
+  if (vdti != _vd_table.end()) {
+    return (*vdti).second;
+  }
 
   PT(GeomVertexFormat) format = new GeomVertexFormat(*orig->get_format());
   if (!orig->get_format()->has_column(InternalName::get_transform_blend())) {
@@ -253,6 +263,9 @@ convert_vd(const VertexTransform *transform, const GeomVertexData *orig) {
     // The GeomVertexData already has a TransformBlendTable.  In this
     // case, we'll have to adjust it.  TODO.
   }
+
+  // Store the result for the next time.
+  _vd_table[VDUnifier(transform, orig)] = new_data;
 
   return new_data;
 }
