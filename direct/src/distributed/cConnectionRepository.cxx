@@ -756,7 +756,7 @@ describe_message(ostream &out, const string &prefix,
       msgName += "\n";
     }
     out << full_prefix << ":" << msgName << "\n";
-    dg.dump_hex(out);
+    dg.dump_hex(out, 2);
 
   } else {
     // It's an update message.  Figure out what dclass the object is
