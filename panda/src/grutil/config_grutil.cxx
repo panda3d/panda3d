@@ -22,6 +22,8 @@
 #include "ffmpegTexture.h"
 #include "pandaSystem.h"
 #include "texturePool.h"
+#include "nodeVertexTransform.h"
+#include "rigidBodyCombiner.h"
 
 #include "dconfig.h"
 
@@ -65,6 +67,9 @@ init_libgrutil() {
   initialized = true;
 
   FrameRateMeter::init_type();
+  NodeVertexTransform::init_type();
+  RigidBodyCombiner::init_type();
+
 #ifdef HAVE_OPENCV
   
   {

@@ -6,4 +6,6 @@
 #include "frameRateMeter.cxx"
 #include "openCVTexture.cxx"
 #include "ffmpegTexture.cxx"
+#include "nodeVertexTransform.cxx"
+#include "rigidBodyCombiner.cxx"
 

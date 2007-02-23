@@ -36,7 +36,7 @@ UserVertexTransform(const string &name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: UserVertexTransform::get_matrix
 //       Access: Published, Virtual
-//  Description: Stores the transform's matrix in the indicated object.
+//  Description: Returns the transform's matrix.
 ////////////////////////////////////////////////////////////////////
 void UserVertexTransform::
 get_matrix(LMatrix4f &matrix) const {

@@ -12,34 +12,41 @@
 
   #define SOURCES \
     cardMaker.I cardMaker.h \
-    fisheyeMaker.I fisheyeMaker.h \
     config_grutil.h \
+    ffmpegTexture.I ffmpegTexture.h \
+    fisheyeMaker.I fisheyeMaker.h \
     frameRateMeter.I frameRateMeter.h \
     heightfieldTesselator.I heightfieldTesselator.h \
     lineSegs.I lineSegs.h \
     multitexReducer.I multitexReducer.h multitexReducer.cxx \
-    openCVTexture.h openCVTexture.I ffmpegTexture.h ffmpegTexture.I 
+    nodeVertexTransform.I nodeVertexTransform.h \
+    openCVTexture.I openCVTexture.h \
+    rigidBodyCombiner.I rigidBodyCombiner.h
     
   #define INCLUDED_SOURCES \
     cardMaker.cxx \
+    ffmpegTexture.cxx \
     fisheyeMaker.cxx \
     config_grutil.cxx \
     frameRateMeter.cxx \
     heightfieldTesselator.cxx \
+    nodeVertexTransform.cxx \
     openCVTexture.cxx \    	 
     lineSegs.cxx \
-    ffmpegTexture.cxx
+    rigidBodyCombiner.cxx
     
 
   #define INSTALL_HEADERS \
     cardMaker.I cardMaker.h \
+    ffmpegTexture.I ffmpegTexture.h \
     fisheyeMaker.I fisheyeMaker.h \
     frameRateMeter.I frameRateMeter.h \
     heightfieldTesselator.I heightfieldTesselator.h \
     lineSegs.I lineSegs.h \
     multitexReducer.I multitexReducer.h \
-    openCVTexture.I openCVTexture.h\
-    ffmpegTexture.I ffmpegTexture.h
+    nodeVertexTransform.I nodeVertexTransform.h \
+    openCVTexture.I openCVTexture.h \
+    rigidBodyCombiner.I rigidBodyCombiner.h
 
   #define IGATESCAN all
 
