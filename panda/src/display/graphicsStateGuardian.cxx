@@ -152,6 +152,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_generate_mipmap = false;
   _supports_render_texture = false;
   _supports_depth_texture = false;
+  _supports_depth_stencil = false;
   _supports_shadow_filter = false;
   _supports_basic_shaders = false;
 

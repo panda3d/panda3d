@@ -425,6 +425,11 @@ reset() {
   _supports_depth_texture =
     has_extension("GL_ARB_depth_texture") || is_at_least_version(1, 4);
 
+  if (_supports_depth_texture) {
+    _supports_depth_stencil =
+      has_extension("GL_EXT_packed_depth_stencil");
+  }
+  
   _supports_3d_texture = false;
 
   if (is_at_least_version(1, 2)) {
@@ -2405,14 +2410,11 @@ extract_texture_data(Texture *tex) {
   case GL_COLOR_INDEX:
     format = Texture::F_color_index;
     break;
-  case GL_STENCIL_INDEX:
-    format = Texture::F_stencil_index;
-    break;
   case GL_DEPTH_COMPONENT:
+  case GL_DEPTH_STENCIL_EXT:
     type = Texture::T_float;
-    format = Texture::F_depth_component;
+    format = Texture::F_depth_stencil;
     break;
-
   case GL_RGBA:
     format = Texture::F_rgba;
     break;
@@ -3081,8 +3083,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   if (tex->get_match_framebuffer_format()) {
 
     switch (tex->get_format()) {
-    case Texture::F_depth_component:
-    case Texture::F_stencil_index:
+    case Texture::F_depth_stencil:
       // If the texture is one of these special formats, we don't want
       // to adapt it to the framebuffer's color format.
       break;
@@ -3149,16 +3150,8 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 
   Texture::Format format = tex->get_format();
   switch (format) {
-  case Texture::F_depth_component:
+  case Texture::F_depth_stencil:
     if (_current_properties->get_depth_bits() <= 8) {
-      component_type = Texture::T_unsigned_byte;
-    } else {
-      component_type = Texture::T_unsigned_short;
-    }
-    break;
-
-  case Texture::F_stencil_index:
-    if (_current_properties->get_stencil_bits() <= 8) {
       component_type = Texture::T_unsigned_byte;
     } else {
       component_type = Texture::T_unsigned_short;
@@ -3203,6 +3196,9 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
     switch (external_format) {
     case GL_DEPTH_COMPONENT:
       GLCAT.spam(false) << "GL_DEPTH_COMPONENT, ";
+      break;
+    case GL_DEPTH_STENCIL_EXT:
+      GLCAT.spam(false) << "GL_DEPTH_STENCIL, ";
       break;
     case GL_RGB:
       GLCAT.spam(false) << "GL_RGB, ";
@@ -4635,8 +4631,7 @@ get_texture_filter_type(Texture::FilterType ft, Texture::Format fmt,
     case Texture::FT_shadow:
       return GL_LINEAR;
     case Texture::FT_default:
-      if ((fmt == Texture::F_depth_component)||
-          (fmt == Texture::F_stencil_index)) {
+      if ((fmt == Texture::F_depth_stencil)) {
         return GL_NEAREST;
       } else {
         return GL_LINEAR;
@@ -4662,8 +4657,7 @@ get_texture_filter_type(Texture::FilterType ft, Texture::Format fmt,
     case Texture::FT_shadow:
       return GL_LINEAR;
     case Texture::FT_default:
-      if ((fmt == Texture::F_depth_component)||
-          (fmt == Texture::F_stencil_index)) {
+      if ((fmt == Texture::F_depth_stencil)) {
         return GL_NEAREST;
       } else {
         return GL_LINEAR;
@@ -4739,42 +4733,41 @@ get_external_image_format(Texture *tex) const {
     case Texture::CM_on:
       switch (tex->get_format()) {
       case Texture::F_color_index:
-      case Texture::F_stencil_index:
-      case Texture::F_depth_component:
-  // This shouldn't be possible.
-  nassertr(false, GL_RGB);
-  break;
-
+      case Texture::F_depth_stencil:
+        // This shouldn't be possible.
+        nassertr(false, GL_RGB);
+        break;
+        
       case Texture::F_rgba:
       case Texture::F_rgbm:
       case Texture::F_rgba4:
       case Texture::F_rgba8:
       case Texture::F_rgba12:
-  return GL_COMPRESSED_RGBA;
-
+        return GL_COMPRESSED_RGBA;
+        
       case Texture::F_rgb:
       case Texture::F_rgb5:
       case Texture::F_rgba5:
       case Texture::F_rgb8:
       case Texture::F_rgb12:
       case Texture::F_rgb332:
-  return GL_COMPRESSED_RGB;
-
+        return GL_COMPRESSED_RGB;
+        
       case Texture::F_alpha:
-  return GL_COMPRESSED_ALPHA;
-
+        return GL_COMPRESSED_ALPHA;
+        
       case Texture::F_red:
       case Texture::F_green:
       case Texture::F_blue:
       case Texture::F_luminance:
-  return GL_COMPRESSED_LUMINANCE;
-
+        return GL_COMPRESSED_LUMINANCE;
+        
       case Texture::F_luminance_alpha:
       case Texture::F_luminance_alphamask:
-  return GL_COMPRESSED_LUMINANCE_ALPHA;
+        return GL_COMPRESSED_LUMINANCE_ALPHA;
       }
       break;
-
+      
     case Texture::CM_dxt1:
       if (Texture::has_alpha(tex->get_format())) {
         return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
@@ -4808,11 +4801,12 @@ get_external_image_format(Texture *tex) const {
   switch (tex->get_format()) {
   case Texture::F_color_index:
     return GL_COLOR_INDEX;
-  case Texture::F_stencil_index:
-    return GL_STENCIL_INDEX;
-  case Texture::F_depth_component:
-    return GL_DEPTH_COMPONENT;
-
+  case Texture::F_depth_stencil:
+    if (_supports_depth_stencil) {
+      return GL_DEPTH_STENCIL_EXT;
+    } else {
+      return GL_DEPTH_COMPONENT;
+    }
   case Texture::F_red:
     return GL_RED;
   case Texture::F_green:
@@ -4878,69 +4872,68 @@ get_internal_image_format(Texture *tex) const {
 
       switch (tex->get_format()) {
       case Texture::F_color_index:
-      case Texture::F_stencil_index:
-      case Texture::F_depth_component:
-  // Unsupported; fall through to below.
-  break;
-
+      case Texture::F_depth_stencil:
+        // Unsupported; fall through to below.
+        break;
+        
       case Texture::F_rgbm:
-  if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
-    return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-  } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
-    return GL_COMPRESSED_RGBA_FXT1_3DFX;
-  } else {
-    return GL_COMPRESSED_RGBA;
-  }
-
+        if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
+          return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+          return GL_COMPRESSED_RGBA_FXT1_3DFX;
+        } else {
+          return GL_COMPRESSED_RGBA;
+        }
+        
       case Texture::F_rgba4:
-  if (get_supports_compressed_texture_format(Texture::CM_dxt3) && !is_3d) {
-    return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-  } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
-    return GL_COMPRESSED_RGBA_FXT1_3DFX;
-  } else {
-    return GL_COMPRESSED_RGBA;
-  }
-
+        if (get_supports_compressed_texture_format(Texture::CM_dxt3) && !is_3d) {
+          return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+        } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+          return GL_COMPRESSED_RGBA_FXT1_3DFX;
+        } else {
+          return GL_COMPRESSED_RGBA;
+        }
+        
       case Texture::F_rgba:
       case Texture::F_rgba8:
       case Texture::F_rgba12:
-  if (get_supports_compressed_texture_format(Texture::CM_dxt5) && !is_3d) {
-    return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-  } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
-    return GL_COMPRESSED_RGBA_FXT1_3DFX;
-  } else {
-    return GL_COMPRESSED_RGBA;
-  }
-
+        if (get_supports_compressed_texture_format(Texture::CM_dxt5) && !is_3d) {
+          return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+          return GL_COMPRESSED_RGBA_FXT1_3DFX;
+        } else {
+          return GL_COMPRESSED_RGBA;
+        }
+        
       case Texture::F_rgb:
       case Texture::F_rgb5:
       case Texture::F_rgba5:
       case Texture::F_rgb8:
       case Texture::F_rgb12:
       case Texture::F_rgb332:
-  if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
-    return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-  } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
-    return GL_COMPRESSED_RGB_FXT1_3DFX;
-  } else {
-    return GL_COMPRESSED_RGB;
-  }
-
+        if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
+          return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+        } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+          return GL_COMPRESSED_RGB_FXT1_3DFX;
+        } else {
+          return GL_COMPRESSED_RGB;
+        }
+        
       case Texture::F_alpha:
-  return GL_COMPRESSED_ALPHA;
-
+        return GL_COMPRESSED_ALPHA;
+        
       case Texture::F_red:
       case Texture::F_green:
       case Texture::F_blue:
       case Texture::F_luminance:
-  return GL_COMPRESSED_LUMINANCE;
-
+        return GL_COMPRESSED_LUMINANCE;
+        
       case Texture::F_luminance_alpha:
       case Texture::F_luminance_alphamask:
-  return GL_COMPRESSED_LUMINANCE_ALPHA;
+        return GL_COMPRESSED_LUMINANCE_ALPHA;
       }
       break;
-
+      
     case Texture::CM_dxt1:
       if (Texture::has_alpha(tex->get_format())) {
         return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
@@ -4973,11 +4966,12 @@ get_internal_image_format(Texture *tex) const {
   switch (tex->get_format()) {
   case Texture::F_color_index:
     return GL_COLOR_INDEX;
-  case Texture::F_stencil_index:
-    return GL_STENCIL_INDEX;
-  case Texture::F_depth_component:
-    return GL_DEPTH_COMPONENT;
-
+  case Texture::F_depth_stencil:
+    if (_supports_depth_stencil) {
+      return GL_DEPTH_STENCIL_EXT;
+    } else {
+      return GL_DEPTH_COMPONENT;
+    }
   case Texture::F_rgba:
   case Texture::F_rgbm:
     return GL_RGBA;
@@ -6416,7 +6410,7 @@ specify_texture(Texture *tex) {
   GLP(TexParameteri)(target, GL_TEXTURE_MAG_FILTER,
                      get_texture_filter_type(magfilter, tex->get_format(), true));
 
-  if (tex->get_format() == Texture::F_depth_component) {
+  if (tex->get_format() == Texture::F_depth_stencil) {
     GLP(TexParameteri)(target, GL_DEPTH_TEXTURE_MODE_ARB, GL_INTENSITY);
     if (_supports_shadow_filter) {
       if ((tex->get_magfilter() == Texture::FT_shadow) ||
@@ -6448,8 +6442,7 @@ compute_gl_image_size(int x_size, int y_size, int z_size,
   int num_components = 0;
   switch (external_format) {
   case GL_COLOR_INDEX:
-  case GL_STENCIL_INDEX:
-  case GL_DEPTH_COMPONENT:
+  case GL_DEPTH_STENCIL:
   case GL_RED:
   case GL_GREEN:
   case GL_BLUE:

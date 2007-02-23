@@ -422,13 +422,15 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_color_index:
-  case Texture::F_stencil_index:
-  case Texture::F_depth_component:
   case Texture::F_rgb8:
   case Texture::F_rgba8:
     bpp = 4;
     break;
 
+  case Texture::F_depth_stencil:
+    bpp = 32;
+    break;
+    
   case Texture::F_rgba12:
   case Texture::F_rgb12:
     bpp = 6;
@@ -1355,11 +1357,8 @@ write(ostream &out, int indent_level) const {
   case F_color_index:
     out << "color_index";
     break;
-  case F_stencil_index:
-    out << "stencil_index";
-    break;
-  case F_depth_component:
-    out << "depth_component";
+  case F_depth_stencil:
+    out << "depth_stencil";
     break;
 
   case F_rgba:
@@ -1499,8 +1498,7 @@ set_format(Texture::Format format) {
 
   switch (_format) {
   case F_color_index:
-  case F_stencil_index:
-  case F_depth_component:
+  case F_depth_stencil:
   case F_red:
   case F_green:
   case F_blue:

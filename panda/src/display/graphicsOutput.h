@@ -87,9 +87,9 @@ PUBLISHED:
   // RenderBuffer::Type.  However, the fact that RenderBuffer::Type
   // is a bitmask makes it awfully awkward to work with.
   enum RenderTexturePlane {
+    RTP_depth_stencil=1,
+    RTP_depth=1,
     RTP_color,
-    RTP_depth,
-    RTP_stencil,
     RTP_aux_rgba_0,
     RTP_aux_rgba_1,
     RTP_aux_rgba_2,

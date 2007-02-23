@@ -76,8 +76,8 @@ protected:
 
 private:
   
-  void bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane plane,
-                 GLenum attachpoint, GLenum texformat, Texture::Format fmt);
+  void bind_slot(bool rb_resize, Texture **attach,
+                 RenderTexturePlane plane, GLenum attachpoint);
   bool check_fbo();
   void generate_mipmaps();
   void rebuild_bitplanes();

@@ -239,8 +239,7 @@ rebuild_bitplanes() {
   int depth_tex_index = -1;
   for (int i=0; i<count_textures(); i++) {
     if (get_rtm_mode(i) == RTM_bind_or_copy) {
-      if ((get_texture(i)->get_format() != Texture::F_depth_component)&&
-          (get_texture(i)->get_format() != Texture::F_stencil_index)&&
+      if ((get_texture(i)->get_format() != Texture::F_depth_stencil)&&
           (color_tex_index < 0)) {
         color_tex_index = i;
       } else {
@@ -327,7 +326,7 @@ rebuild_bitplanes() {
     depth_tex = get_texture(depth_tex_index);
     depth_tex->set_x_size(bitplane_x);
     depth_tex->set_y_size(bitplane_y);
-    depth_tex->set_format(Texture::F_depth_component); // Should say depth_stencil
+    depth_tex->set_format(Texture::F_depth_stencil);
     depth_ctx =
       DCAST(DXTextureContext9,
             depth_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
@@ -404,8 +403,7 @@ select_cube_map(int cube_map_index) {
 
   for (int i=0; i<count_textures(); i++) {
     if (get_rtm_mode(i) == RTM_bind_or_copy) {
-      if ((get_texture(i)->get_format() != Texture::F_depth_component)&&
-          (get_texture(i)->get_format() != Texture::F_stencil_index)&&
+      if ((get_texture(i)->get_format() != Texture::F_depth_stencil)&&
           (color_tex_index < 0)) {
         color_tex_index = i;
       } else {

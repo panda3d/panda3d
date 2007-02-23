@@ -496,11 +496,27 @@ get_supports_render_texture() const {
 //     Function: GraphicsStateGuardian::get_supports_depth_texture
 //       Access: Published
 //  Description: Returns true if this particular GSG supports
-//               textures whose format is F_depth_component.
+//               textures whose format is F_depth_stencil.  This
+//               returns true if the GSG supports GL_DEPTH_COMPONENT
+//               textures, which are considered a limited but still
+//               valid case of F_depth_stencil.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsStateGuardian::
 get_supports_depth_texture() const {
   return _supports_depth_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_depth_stencil
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               textures whose format is F_depth_stencil.  This
+//               only returns true if the GSG supports the full
+//               packed depth-stencil functionality.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_depth_stencil() const {
+  return _supports_depth_stencil;
 }
 
 ////////////////////////////////////////////////////////////////////

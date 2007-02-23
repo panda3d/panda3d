@@ -73,9 +73,9 @@ PUBLISHED:
   };
 
   enum Format {
+    F_depth_stencil = 1,
+    F_depth_component = 1,
     F_color_index,
-    F_stencil_index,
-    F_depth_component,
     F_red,
     F_green,
     F_blue,

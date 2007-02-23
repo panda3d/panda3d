@@ -2047,8 +2047,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
   Texture::ComponentType component_type = tex->get_component_type();
 
   switch (format) {
-  case Texture::F_depth_component:
-  case Texture::F_stencil_index:
+  case Texture::F_depth_stencil:
     // Sorry, not (yet?) supported in pandadx.
     return false;
 

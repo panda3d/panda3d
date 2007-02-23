@@ -238,8 +238,7 @@ clear_render_textures() {
 //               You can specify a bitplane to attach the texture to.
 //               the legal choices are:
 //
-//               * RTP_depth
-//               * RTP_stencil
+//               * RTP_depth_stencil
 //               * RTP_color
 //               * RTP_aux_rgba_0
 //               * RTP_aux_rgba_1
@@ -250,15 +249,14 @@ clear_render_textures() {
 //               texture to, this routine will use a default based
 //               on the texture's format:
 //
-//               * F_depth_component attaches to RTP_depth
-//               * F_stencil_index attaches to RTP_stencil
+//               * F_depth_stencil attaches to RTP_depth_stencil
 //               * all other formats attach to RTP_color.
 //
 //               The texture's format will be changed to match
 //               the format of the bitplane to which it is attached.
 //               For example, if you pass in an F_rgba texture and
-//               order that it be attached to RTP_depth, it will turn
-//               into an F_depth_component texture.
+//               order that it be attached to RTP_depth_stencil, it will turn
+//               into an F_depth_stencil texture.
 //
 //               Also see make_texture_buffer(), which is a
 //               higher-level interface for preparing
@@ -285,10 +283,8 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
 
   // Choose a default bitplane.
   if (plane == RTP_COUNT) {
-    if (tex->get_format()==Texture::F_depth_component) {
-      plane = RTP_depth;
-    } else if (tex->get_format()==Texture::F_stencil_index) {
-      plane = RTP_stencil;
+    if (tex->get_format()==Texture::F_depth_stencil) {
+      plane = RTP_depth_stencil;
     } else {
       plane = RTP_color;
     }
@@ -297,11 +293,8 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   // Set the texture's format to match the bitplane.
   // (And validate the bitplane, while we're at it).
 
-  if (plane == RTP_depth) {
-    tex->set_format(Texture::F_depth_component);
-    tex->set_match_framebuffer_format(true);
-  } else if (plane == RTP_stencil) {
-    tex->set_format(Texture::F_stencil_index);
+  if (plane == RTP_depth_stencil) {
+    tex->set_format(Texture::F_depth_stencil);
     tex->set_match_framebuffer_format(true);
   } else if ((plane == RTP_color)||
              (plane == RTP_aux_rgba_0)||
@@ -687,8 +680,7 @@ get_texture_card() {
   // card's texture attrib.
   for (int i=0; i<count_textures(); i++) {
     Texture *texture = get_texture(i);
-    if ((texture->get_format() != Texture::F_depth_component) &&
-        (texture->get_format() != Texture::F_stencil_index)) {
+    if ((texture->get_format() != Texture::F_depth_stencil)) {
       path.set_texture(texture, 0);
       break;
     }

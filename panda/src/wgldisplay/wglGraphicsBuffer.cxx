@@ -147,8 +147,7 @@ bind_texture_to_pbuffer() {
   int tex_index = -1;
   for (int i=0; i<count_textures(); i++) {
     if (get_rtm_mode(i) == RTM_bind_or_copy) {
-      if ((get_texture(i)->get_format() != Texture::F_depth_component)&&
-          (get_texture(i)->get_format() != Texture::F_stencil_index)&&
+      if ((get_texture(i)->get_format() != Texture::F_depth_stencil)&&
           (tex_index < 0)) {
         tex_index = i;
       } else {
@@ -402,8 +401,7 @@ rebuild_bitplanes() {
   Texture *bindtexture = NULL;
   for (int i=0; i<count_textures(); i++) {
     if ((get_rtm_mode(i) == RTM_bind_or_copy)&&
-        (get_texture(i)->get_format() != Texture::F_depth_component)&&
-        (get_texture(i)->get_format() != Texture::F_stencil_index)) {
+        (get_texture(i)->get_format() != Texture::F_depth_stencil)) {
       bindtexture = get_texture(i);
       break;
     }

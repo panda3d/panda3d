@@ -180,8 +180,7 @@ rebuild_bitplanes() {
   
   Texture *attach[RTP_COUNT];
   attach[RTP_color] = 0;
-  attach[RTP_depth] = 0;
-  attach[RTP_stencil] = 0;
+  attach[RTP_depth_stencil] = 0;
   for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
     attach[RTP_aux_rgba_0+i] = 0;
   }
@@ -224,26 +223,19 @@ rebuild_bitplanes() {
 
   // For all slots, update the slot.
   
-  bind_slot(rb_resize, attach, RTP_depth,   
-            GL_DEPTH_ATTACHMENT_EXT,    GL_DEPTH_COMPONENT,  Texture::F_depth_component);
-  //bind_slot(rb_resize, attach, RTP_stencil,
-  //          GL_STENCIL_ATTACHMENT_EXT,  GL_STENCIL_INDEX,    Texture::F_stencil_index);
-  bind_slot(rb_resize, attach, RTP_color, 
-            GL_COLOR_ATTACHMENT0_EXT,   GL_RGBA,             Texture::F_rgba);
+  bind_slot(rb_resize, attach, RTP_depth_stencil, GL_DEPTH_ATTACHMENT_EXT);
+  bind_slot(rb_resize, attach, RTP_color, GL_COLOR_ATTACHMENT0_EXT);
   int next = GL_COLOR_ATTACHMENT1_EXT;
   for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
-    bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i),
-              next, GL_RGBA, Texture::F_rgba);
+    bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next);
     next += 1;
   }
   for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
-    bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_hrgba_0+i),
-              next, GL_RGBA, Texture::F_rgba);
+    bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_hrgba_0+i), next);
     next += 1;
   }
   for (int i=0; i<_fb_properties.get_aux_float(); i++) {
-    bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_float_0+i),
-              next, GL_RGBA, Texture::F_rgba);
+    bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_float_0+i), next);
     next += 1;
   }
   _cube_face_active = 0;
@@ -258,8 +250,7 @@ rebuild_bitplanes() {
 //               specified bitplane.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
-bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot,
-          GLenum attachpoint, GLenum texformat, Texture::Format fmt) {
+bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum attachpoint) {
   
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
@@ -277,20 +268,46 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot,
     // Bind the texture to the slot.
     tex->set_x_size(_rb_size_x);
     tex->set_y_size(_rb_size_y);
-    tex->set_format(fmt);
-    TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
-    nassertv(tc != (TextureContext *)NULL);
-    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-    glgsg->apply_texture(tc);
-    
-    if (tex->get_texture_type() == Texture::TT_2d_texture) {
-      glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
-                                     GL_TEXTURE_2D, gtc->_index, 0);
+    if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
+      tex->set_format(Texture::F_depth_stencil);
+      TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
+      nassertv(tc != (TextureContext *)NULL);
+      CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+      glgsg->apply_texture(tc);
+      if (tex->get_texture_type() == Texture::TT_2d_texture) {
+        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                       GL_TEXTURE_2D, gtc->_index, 0);
+      } else {
+        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                       GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
+                                       gtc->_index, 0);
+      }
+      if (_gsg->get_supports_depth_stencil()) {
+        if (tex->get_texture_type() == Texture::TT_2d_texture) {
+          glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+                                         GL_TEXTURE_2D, gtc->_index, 0);
+        } else {
+          glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+                                         GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
+                                         gtc->_index, 0);
+        }
+      }
     } else {
-      glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
-                                     GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
-                                     gtc->_index, 0);
+      tex->set_format(Texture::F_rgba);
+      TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
+      nassertv(tc != (TextureContext *)NULL);
+      CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+      glgsg->apply_texture(tc);
+      if (tex->get_texture_type() == Texture::TT_2d_texture) {
+        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
+                                       GL_TEXTURE_2D, gtc->_index, 0);
+      } else {
+        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
+                                       GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
+                                       gtc->_index, 0);
+      }
     }
+    
     _tex[slot] = tex;
     _attach_point[slot] = attachpoint;
     
@@ -313,15 +330,31 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot,
       glgsg->_glGenRenderbuffers(1, &(_rb[slot]));
     }
     
-    // Resize the renderbuffer appropriately.
+    // Allocate and bind the renderbuffer.
     glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rb[slot]);
-    glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, texformat,
-                                  _rb_size_x, _rb_size_y);
-    glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
-    
-    // Bind the renderbuffer to the slot.
-    glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, attachpoint,
-                                      GL_RENDERBUFFER_EXT, _rb[slot]);
+    if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
+      if (_gsg->get_supports_depth_stencil()) {
+        glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT,
+                                      _rb_size_x, _rb_size_y);
+        glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+        glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                          GL_RENDERBUFFER_EXT, _rb[slot]);
+        glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+                                          GL_RENDERBUFFER_EXT, _rb[slot]);
+      } else {
+        glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
+                                      _rb_size_x, _rb_size_y);
+        glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+        glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                          GL_RENDERBUFFER_EXT, _rb[slot]);
+      }
+    } else {
+      glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_RGBA,
+                                    _rb_size_x, _rb_size_y);
+      glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+      glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, attachpoint,
+                                        GL_RENDERBUFFER_EXT, _rb[slot]);
+    }
     
     // Toss any texture that was connected to the slot.
     _tex[slot] = 0;
@@ -463,7 +496,11 @@ open_buffer() {
   _fb_properties.set_depth_bits(1);
   _fb_properties.set_color_bits(1);
   _fb_properties.set_alpha_bits(1);
-  _fb_properties.set_stencil_bits(0);
+  if (_gsg->get_supports_depth_stencil()) {
+    _fb_properties.set_stencil_bits(1);
+  } else {
+    _fb_properties.set_stencil_bits(0);
+  }
   _fb_properties.set_accum_bits(0);
   _fb_properties.set_multisamples(0);
   _fb_properties.set_back_buffers(0);

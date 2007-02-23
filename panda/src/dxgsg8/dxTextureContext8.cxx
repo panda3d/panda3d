@@ -1390,7 +1390,8 @@ get_bits_per_pixel(Texture::Format format, int *alphbits) {
   case Texture::F_rgba5:
     *alphbits = 1;
     return 16;
-  case Texture::F_depth_component:
+  case Texture::F_depth_stencil:
+    return 32;
   case Texture::F_rgb5:
     return 16;
   case Texture::F_rgb8:
