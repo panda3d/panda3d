@@ -236,7 +236,7 @@ check_datagram() {
   #endif //WANT_NATIVE_NET
   while (do_check_datagram()) { //Read a datagram
     if (get_verbose()) {
-      describe_message(nout, "RECV", _dg.get_message());
+      describe_message(nout, "RECV", _dg);
     }
 
     // Start breaking apart the datagram.
@@ -361,7 +361,7 @@ send_datagram(const Datagram &dg) {
   }
 
   if (get_verbose()) {
-    describe_message(nout, "SEND", dg.get_message());
+    describe_message(nout, "SEND", dg);
   }
 
 #ifdef WANT_NATIVE_NET
@@ -703,10 +703,10 @@ handle_update_field_owner() {
 ////////////////////////////////////////////////////////////////////
 void CConnectionRepository::
 describe_message(ostream &out, const string &prefix, 
-                 const string &message_data) const {
+                 const Datagram &dg) const {
   DCPacker packer;
   
-  packer.set_unpack_data(message_data);
+  packer.set_unpack_data(dg.get_message());
   CHANNEL_TYPE do_id;
   int msg_type;
   bool is_update = false;
@@ -728,7 +728,35 @@ describe_message(ostream &out, const string &prefix,
   }
 
   if (!is_update) {
-    out << full_prefix << "message " << msg_type << "\n";
+    // figure out the name of the message
+    // TODO: print out the arguments to the message
+    string msgName;
+
+    #ifdef HAVE_PYTHON
+    if (_python_repository != (PyObject *)NULL) {
+      PyObject *msgId = PyLong_FromLong(msg_type);
+      nassertv(msgId != NULL);
+      PyObject *methodName = PyString_FromString("_getMsgName");
+      nassertv(methodName != NULL);
+
+      PyObject *result = PyObject_CallMethodObjArgs(_python_repository, methodName,
+						    msgId, NULL);
+      nassertv(result != NULL);
+
+      msgName += string(PyString_AsString(result));
+
+      Py_DECREF(methodName);
+      Py_DECREF(msgId);
+      Py_DECREF(result);
+    }
+    #endif
+    if (msgName.length() == 0) {
+      msgName += "unknown message ";
+      msgName += msg_type;
+      msgName += "\n";
+    }
+    out << full_prefix << ":" << msgName << "\n";
+    dg.dump_hex(out);
 
   } else {
     // It's an update message.  Figure out what dclass the object is
@@ -773,8 +801,7 @@ describe_message(ostream &out, const string &prefix,
 
     } else {
       out << full_prefix <<
-        ":" << do_id <<
-        ":" << dclass->get_name() << ".";
+        ":" << dclass->get_name() << "(" << do_id << ").";
       DCField *field = dclass->get_field_by_index(field_id);
       if (field == (DCField *)NULL) {
         out << "unknown field " << field_id << "\n";

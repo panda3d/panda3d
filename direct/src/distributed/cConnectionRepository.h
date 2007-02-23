@@ -130,7 +130,7 @@ private:
   bool handle_update_field_owner();
 
   void describe_message(ostream &out, const string &prefix, 
-                        const string &message_data) const;
+                        const Datagram &dg) const;
 
 #ifdef HAVE_PYTHON
   PyObject *_python_repository;
