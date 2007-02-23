@@ -82,6 +82,9 @@ class ClientRepositoryBase(ConnectionRepository):
         else:
             return self.doId2do, self.cache
 
+    def _getMsgName(self, msgId):
+        return makeList(MsgId2Names.get(msgId, 'UNKNOWN MESSAGE: %s' % msgId))[0]
+
     def sendDisconnect(self):
         if self.isConnected():
             # Tell the game server that we're going:
