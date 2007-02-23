@@ -2962,6 +2962,7 @@ do_issue_shader() {
       _current_shader_context->unbind(this);
       _current_shader_expansion = 0;
       _current_shader_context = 0;
+      disable_standard_texture_bindings();
     }
     return;
   }
@@ -2973,6 +2974,7 @@ do_issue_shader() {
       _current_shader_context->unbind(this);
       _current_shader_context = 0;
       _current_shader_expansion = 0;
+      disable_standard_texture_bindings();
     }
     if (context != 0) {
       context->bind(this);
@@ -3622,6 +3624,7 @@ disable_standard_texture_bindings() {
         << ", NULL) failed "
         << D3DERRORSTRING(hr);
     }
+    set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
   }
 
   _num_active_texture_stages = 0;
