@@ -30,8 +30,33 @@ get_progress() const {
       << "Patchfile::get_progress() - Patch has not been initiated" << endl;
     return 0.0f;
   }
-  nassertr(_result_file_length > 0, 0.0f);
-  return ((float)_total_bytes_processed / (float)_result_file_length);
+  nassertr(_total_bytes_to_process > 0, 0.0f);
+  return ((float)_total_bytes_processed / (float)_total_bytes_to_process);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::set_allow_multifile
+//       Access: Published
+//  Description: If this flag is set true, the Patchfile will make a
+//               special case for patching Panda Multifiles, if
+//               detected, and attempt to patch them on a
+//               subfile-by-subfile basis.  If this flag is false, the
+//               Patchfile will always patch the file on a full-file
+//               basis.
+////////////////////////////////////////////////////////////////////
+INLINE void Patchfile::
+set_allow_multifile(bool allow_multifile) {
+  _allow_multifile = allow_multifile;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::get_allow_multifile
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool Patchfile::
+get_allow_multifile() {
+  return _allow_multifile;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +66,7 @@ get_progress() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Patchfile::
 set_footprint_length(int length) {
-  nassertv(_footprint_length > 0);
+  nassertv(length > 0);
   _footprint_length = length;
 }
 

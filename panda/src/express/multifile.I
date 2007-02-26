@@ -204,6 +204,17 @@ read_subfile(int index) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_magic_number
+//       Access: Published, Static
+//  Description: Returns a string with the first n bytes written to a
+//               Multifile, to identify it as a Multifile.
+////////////////////////////////////////////////////////////////////
+INLINE string Multifile::
+get_magic_number() {
+  return string(_header, _header_size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::word_to_streampos
 //       Access: Private
 //  Description: Converts a size_t address read from the file to

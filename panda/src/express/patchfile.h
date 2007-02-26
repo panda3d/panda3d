@@ -67,6 +67,9 @@ PUBLISHED:
 
   INLINE float get_progress() const;
 
+  INLINE void set_allow_multifile(bool allow_multifile);
+  INLINE bool get_allow_multifile();
+
   INLINE void set_footprint_length(int length);
   INLINE int get_footprint_length();
   INLINE void reset_footprint_length();
@@ -91,11 +94,30 @@ private:
   PN_uint32 calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length,
     PN_uint32 min_length);
 
-  void emit_ADD(ofstream &write_stream, PN_uint32 length, const char* buffer,
+  void emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer,
                 PN_uint32 ADD_pos);
-  void emit_COPY(ofstream &write_stream, PN_uint32 length, 
-                 PN_uint32 COPY_pos, PN_uint32 last_copy_pos,
-                 PN_uint32 ADD_pos);
+  PN_uint32 emit_COPY(ostream &write_stream, PN_uint32 length, 
+                      PN_uint32 COPY_pos, PN_uint32 last_copy_pos,
+                      PN_uint32 ADD_pos);
+  PN_uint32 emit_add_and_copy(ostream &write_stream, 
+                              PN_uint32 add_length, const char *add_buffer,
+                              PN_uint32 copy_length, PN_uint32 copy_pos, PN_uint32 last_copy_pos,
+                              PN_uint32 add_pos);
+
+
+  void write_header(ostream &write_stream, 
+                    char *buffer_orig, PN_uint32 source_file_length,
+                    char *buffer_new, PN_uint32 result_file_length);
+  void write_terminator(ostream &write_stream, PN_uint32 result_file_length,
+                        PN_uint32 last_copy_pos);
+
+  PN_uint32 compute_patches(ostream &write_stream, PN_uint32 last_copy_pos,
+                            PN_uint32 copy_offset,
+                            char *buffer_orig, PN_uint32 source_file_length,
+                            char *buffer_new, PN_uint32 result_file_length);
+  PN_uint32 compute_mf_patches(ostream &write_stream, 
+                               char *buffer_orig, PN_uint32 source_file_length,
+                               char *buffer_new, PN_uint32 result_file_length);
 
   static const PN_uint32 _HASH_BITS;
   static const PN_uint32 _HASHTABLESIZE;
@@ -104,6 +126,7 @@ private:
   static const PN_uint32 _MAX_RUN_LENGTH;
   static const PN_uint32 _HASH_MASK;
 
+  bool _allow_multifile;
   PN_uint32 _footprint_length;
 
 protected:
@@ -115,11 +138,11 @@ protected:
   PN_uint16 _version_number;
 
   HashVal _MD5_ofSource;  
-  PN_uint32 _source_file_length;
 
   HashVal _MD5_ofResult;  
-  PN_uint32 _result_file_length;
-  int _total_bytes_processed;
+
+  PN_uint32 _total_bytes_to_process;
+  PN_uint32 _total_bytes_processed;
 
   ifstream _patch_stream;
   ofstream _write_stream;

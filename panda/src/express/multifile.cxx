@@ -77,7 +77,7 @@ const size_t Multifile::_encrypt_header_size = 6;
 // sequential order at the beginning of the file (although they will
 // after the file has been "packed").
 //
-//   uint32     The address of the next entry.
+//   uint32     The address of the next entry.  0 to mark the end.
 //   uint32     The address of this subfile's data record.
 //   uint32     The length in bytes of this subfile's data record.
 //   uint16     The Subfile::_flags member.
@@ -463,6 +463,7 @@ flush() {
   if (!_new_subfiles.empty()) {
     // Add a few more files to the end.  We always add subfiles at the
     // end of the multifile, so go there first.
+    sort(_new_subfiles.begin(), _new_subfiles.end(), IndirectLess<Subfile>());
     if (_last_index != (streampos)0) {
       _write->seekp(0, ios::end);
       if (_write->fail()) {
@@ -576,6 +577,7 @@ repack() {
   if (_next_index == (streampos)0) {
     // If the Multifile hasn't yet been written, this is really just a
     // flush operation.
+    _needs_repack = false;
     return flush();
   }
 
@@ -852,6 +854,41 @@ bool Multifile::
 is_subfile_encrypted(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
   return (_subfiles[index]->_flags & SF_encrypted) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_index_end
+//       Access: Published
+//  Description: Returns the first byte that is guaranteed to follow
+//               any index byte already written to disk in the
+//               Multifile.
+//
+//               This number is largely meaningless in many cases, but
+//               if needs_repack() is false, and the file is flushed,
+//               this will indicate the number of bytes in the header
+//               + index.  Everything at this byte position and later
+//               will be actual data.
+////////////////////////////////////////////////////////////////////
+streampos Multifile::
+get_index_end() const {
+  return normalize_streampos(_next_index + (streampos)4);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_subfile_internal_start
+//       Access: Published
+//  Description: Returns the starting byte position within the
+//               Multifile at which the indicated subfile begins.
+//               This may be used, with get_subfile_internal_length(),
+//               for low-level access to the subfile, but usually it
+//               is better to use open_read_subfile() instead (which
+//               automatically decrypts and/or uncompresses the
+//               subfile data).
+////////////////////////////////////////////////////////////////////
+streampos Multifile::
+get_subfile_internal_start(int index) const {
+  nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
+  return _subfiles[index]->_data_start;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1453,13 +1490,24 @@ read_index() {
     return false;
   }
 
-  size_t before_size = _subfiles.size();
-  _subfiles.sort();
-  size_t after_size = _subfiles.size();
+  // Check if the list is already sorted.  If it is not, we need a
+  // repack.
+  for (size_t si = 1; si < _subfiles.size() && !_needs_repack; ++si) {
+    if (*_subfiles[si] < *_subfiles[si - 1]) {
+      _needs_repack = true;
+    }
+  }
 
-  // If these don't match, the same filename appeared twice in the
-  // index, which shouldn't be possible.
-  nassertr(before_size == after_size, true);
+  if (_needs_repack) {
+    // At least sort them now.
+    size_t before_size = _subfiles.size();
+    _subfiles.sort();
+    size_t after_size = _subfiles.size();
+    
+    // If these don't match, the same filename appeared twice in the
+    // index, which shouldn't be possible.
+    nassertr(before_size == after_size, true);
+  }
 
   delete subfile;
   return true;

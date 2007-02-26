@@ -85,6 +85,9 @@ PUBLISHED:
   time_t get_subfile_timestamp(int index) const;
   bool is_subfile_compressed(int index) const;
   bool is_subfile_encrypted(int index) const;
+
+  streampos get_index_end() const;
+  streampos get_subfile_internal_start(int index) const;
   size_t get_subfile_internal_length(int index) const;
 
   INLINE string read_subfile(int index);
@@ -94,6 +97,8 @@ PUBLISHED:
 
   void output(ostream &out) const;
   void ls(ostream &out = cout) const;
+
+  static INLINE string get_magic_number();
 
 public:
   bool read_subfile(int index, string &result);
