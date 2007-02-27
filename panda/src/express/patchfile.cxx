@@ -1080,7 +1080,6 @@ compute_mf_patches(ostream &write_stream,
         emit_add_and_copy(write_stream, new_size, &buffer_new[new_start],
                           0, last_copy_pos, last_copy_pos, add_pos);
       add_pos += new_size;
-      ++ni;
 
     } else {
       // This subfile exists in both the original and the new files.
