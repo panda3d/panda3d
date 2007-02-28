@@ -190,7 +190,8 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
 
     if (show_frame_rate_meter) {
       _frame_rate_meter = new FrameRateMeter("frame_rate_meter");
-      _frame_rate_meter->setup_window(_window);
+      //      _frame_rate_meter->setup_window(_window);
+      _panda_framework->get_models().attach_new_node(_frame_rate_meter);
     }
   }
 

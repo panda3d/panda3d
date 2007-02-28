@@ -26,6 +26,7 @@
 #include "streamReader.h"
 #include "streamWriter.h"
 #include "multifile.h"
+#include "hashVal.h"
 
 #include <stdio.h> // for tempnam
 
@@ -109,6 +110,7 @@ const PN_uint32 Patchfile::_HASH_MASK = (PN_uint32(1) << Patchfile::_HASH_BITS) 
 ////////////////////////////////////////////////////////////////////
 Patchfile::
 Patchfile() {
+  _hash_table = NULL;
   PT(Buffer) buffer = new Buffer(patchfile_buffer_size);
   init(buffer);
 }
@@ -120,6 +122,7 @@ Patchfile() {
 ////////////////////////////////////////////////////////////////////
 Patchfile::
 Patchfile(PT(Buffer) buffer) {
+  _hash_table = NULL;
   init(buffer);
 }
 
@@ -146,6 +149,10 @@ init(PT(Buffer) buffer) {
 ////////////////////////////////////////////////////////////////////
 Patchfile::
 ~Patchfile() {
+  if (_hash_table != (PN_uint32 *)NULL) {
+    delete[] _hash_table;
+  }
+
   if (true == _initiated)
     cleanup();
 }
@@ -299,7 +306,7 @@ run() {
     _total_bytes_processed += (int)ADD_length;
 
     // if there are bytes to add, read them from patch file and write them to output
-    if (express_cat.is_spam()) {
+    if (express_cat.is_spam() && ADD_length != 0) {
       express_cat.spam()
         << "ADD: " << ADD_length << " (to " 
         << _write_stream.tellp() << ")" << endl;
@@ -762,14 +769,12 @@ find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_pos, PN_uint16 &copy_lengt
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
-emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer,
-         PN_uint32 ADD_pos) {
-
+emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer) {
   nassertv(length == (PN_uint16)length); //we only write a uint16
 
   if (express_cat.is_spam()) {
     express_cat.spam()
-      << "ADD: " << length << " (to " << ADD_pos << ")" << endl;
+      << "ADD: " << length << " (to " << _add_pos << ")" << endl;
   }
 
   // write ADD length
@@ -780,6 +785,8 @@ emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer,
   if (length > 0) {
     patch_writer.append_data(buffer, (PN_uint16)length);
   }
+
+  _add_pos += length;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -787,29 +794,28 @@ emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer,
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PN_uint32 Patchfile::
-emit_COPY(ostream &write_stream, PN_uint32 length, PN_uint32 COPY_pos,
-          PN_uint32 last_copy_pos, PN_uint32 ADD_pos) {
+void Patchfile::
+emit_COPY(ostream &write_stream, PN_uint32 length, PN_uint32 copy_pos) {
+  nassertv(length == (PN_uint16)length); //we only write a uint16
 
-  nassertr(length == (PN_uint16)length, last_copy_pos); //we only write a uint16
-
-  PN_int32 offset = (int)COPY_pos - (int)last_copy_pos;
+  PN_int32 offset = (int)copy_pos - (int)_last_copy_pos;
   if (express_cat.is_spam()) {
     express_cat.spam()
       << "COPY: " << length << " bytes from offset " << offset
-      << " (from " << COPY_pos << " to " << ADD_pos << ")" << endl;
+      << " (from " << copy_pos << " to " << _add_pos << ")" << endl;
   }
 
   // write COPY length
   StreamWriter patch_writer(write_stream);
   patch_writer.add_uint16((PN_uint16)length);
 
-  if((PN_uint16)length > 0) {
+  if ((PN_uint16)length != 0) {
     // write COPY offset
     patch_writer.add_int32(offset);
+    _last_copy_pos = copy_pos + length;
   }
 
-  return COPY_pos + length;
+  _add_pos += length;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -819,42 +825,91 @@ emit_COPY(ostream &write_stream, PN_uint32 length, PN_uint32 COPY_pos,
 //               pair as needed to work around the 16-bit chunk size
 //               limit.
 ////////////////////////////////////////////////////////////////////
-PN_uint32 Patchfile::
+void Patchfile::
 emit_add_and_copy(ostream &write_stream, 
                   PN_uint32 add_length, const char *add_buffer,
-                  PN_uint32 copy_length, PN_uint32 copy_pos, PN_uint32 last_copy_pos,
-                  PN_uint32 add_pos) {
-  while (add_length > 65535) {
+                  PN_uint32 copy_length, PN_uint32 copy_pos) {
+  if (add_length == 0 && copy_length == 0) {
+    // Don't accidentally emit a termination code.
+    return;
+  }
+
+  static const PN_uint16 max_write = 65535;
+  while (add_length > max_write) {
     // Overflow.  This chunk is too large to fit into a single
     // ADD block, so we have to write it as multiple ADDs.
-    static const PN_uint16 max_write = 65535;
-    emit_ADD(write_stream, max_write, add_buffer, add_pos);
-    add_pos += max_write;
+    emit_ADD(write_stream, max_write, add_buffer);
     add_buffer += max_write;
     add_length -= max_write;
-    emit_COPY(write_stream, 0, last_copy_pos, last_copy_pos, add_pos);
+    emit_COPY(write_stream, 0, 0);
   }
 
-  emit_ADD(write_stream, add_length, add_buffer, add_pos);
+  emit_ADD(write_stream, add_length, add_buffer);
 
-  while (copy_length > 65535) {
+  while (copy_length > max_write) {
     // Overflow.
-    static const PN_uint16 max_write = 65535;
-    last_copy_pos =
-      emit_COPY(write_stream, max_write, copy_pos, last_copy_pos, add_pos);
+    emit_COPY(write_stream, max_write, copy_pos);
     copy_pos += max_write;
-    add_pos += max_write;
     copy_length -= max_write;
-    emit_ADD(write_stream, 0, NULL, add_pos);
+    emit_ADD(write_stream, 0, NULL);
   }
 
-  last_copy_pos =
-    emit_COPY(write_stream, copy_length, copy_pos, last_copy_pos, add_pos);
-
-  return last_copy_pos;
+  emit_COPY(write_stream, copy_length, copy_pos);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::cache_add_and_copy
+//       Access: Private
+//  Description: Potentially emits one or more add/copy pairs.  The
+//               current state is saved, so as to minimize wasted
+//               emits from consecutive adds or copies.
+////////////////////////////////////////////////////////////////////
+void Patchfile::
+cache_add_and_copy(ostream &write_stream, 
+                   PN_uint32 add_length, const char *add_buffer,
+                   PN_uint32 copy_length, PN_uint32 copy_pos) {
+  if (add_length != 0) {
+    if (_cache_copy_length != 0) {
+      // Have to flush.
+      cache_flush(write_stream);
+    }
+    // Add the string to the current cache.
+    _cache_add_data += string(add_buffer, add_length);
+  }
 
+  if (copy_length != 0) {
+    if (_cache_copy_length == 0) {
+      // Start a new copy phase.
+      _cache_copy_start = copy_pos;
+      _cache_copy_length = copy_length;
+
+    } else if (_cache_copy_start + _cache_copy_length == copy_pos) {
+      // We can just tack on the copy to what we've already got.
+      _cache_copy_length += copy_length;
+
+    } else {
+      // It's a discontinuous copy.  We have to flush.
+      cache_flush(write_stream);
+      _cache_copy_start = copy_pos;
+      _cache_copy_length = copy_length;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::cache_flush
+//       Access: Private
+//  Description: Closes any copy or add phases that are still open
+//               after a previous call to cache_add_and_copy().
+////////////////////////////////////////////////////////////////////
+void Patchfile::
+cache_flush(ostream &write_stream) {
+  emit_add_and_copy(write_stream, 
+                    _cache_add_data.size(), _cache_add_data.data(),
+                    _cache_copy_length, _cache_copy_start);
+  _cache_add_data = string();
+  _cache_copy_length = 0;
+}
 
 
 ////////////////////////////////////////////////////////////////////
@@ -865,8 +920,7 @@ emit_add_and_copy(ostream &write_stream,
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
 write_header(ostream &write_stream, 
-             char *buffer_orig, PN_uint32 source_file_length,
-             char *buffer_new, PN_uint32 result_file_length) {
+             istream &stream_orig, istream &stream_new) {
   // prepare to write the patch file header
 
   START_PROFILE(writeHeader);
@@ -875,19 +929,33 @@ write_header(ostream &write_stream,
   StreamWriter patch_writer(write_stream);
   patch_writer.add_uint32(_magic_number);
   patch_writer.add_uint16(_current_version);
-  patch_writer.add_uint32(source_file_length);
-  {
-    // calc MD5 of original file
-    _MD5_ofSource.hash_buffer(buffer_orig, source_file_length);
-    // add it to the header
-    _MD5_ofSource.write_stream(patch_writer);
+
+  stream_orig.seekg(0, ios::end);
+  streampos source_file_length = stream_orig.tellg();
+  patch_writer.add_uint32((PN_uint32)source_file_length);
+
+  // calc MD5 of original file
+  _MD5_ofSource.hash_stream(stream_orig);
+  // add it to the header
+  _MD5_ofSource.write_stream(patch_writer);
+
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Orig: " << _MD5_ofSource << "\n";
   }
-  patch_writer.add_uint32(result_file_length);
-  {
-    // calc MD5 of resultant patched file
-    _MD5_ofResult.hash_buffer(buffer_new, result_file_length);
-    // add it to the header
-    _MD5_ofResult.write_stream(patch_writer);
+
+  stream_new.seekg(0, ios::end);
+  streampos result_file_length = stream_new.tellg();
+  patch_writer.add_uint32((PN_uint32)result_file_length);
+
+  // calc MD5 of resultant patched file
+  _MD5_ofResult.hash_stream(stream_new);
+  // add it to the header
+  _MD5_ofResult.write_stream(patch_writer);
+
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << " New: " << _MD5_ofResult << "\n";
   }
 
   END_PROFILE(writeHeader, "writing patch file header");
@@ -900,11 +968,11 @@ write_header(ostream &write_stream,
 //               Writes the patchfile terminator.
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
-write_terminator(ostream &write_stream, PN_uint32 result_file_length,
-                 PN_uint32 last_copy_pos) {
+write_terminator(ostream &write_stream) {
+  cache_flush(write_stream);
   // write terminator (null ADD, null COPY)
-  emit_ADD(write_stream, 0, NULL, result_file_length);
-  emit_COPY(write_stream, 0, last_copy_pos, last_copy_pos, result_file_length);
+  emit_ADD(write_stream, 0, NULL);
+  emit_COPY(write_stream, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -914,23 +982,47 @@ write_terminator(ostream &write_stream, PN_uint32 result_file_length,
 //               Computes the patches for the entire file (if it is
 //               not a multifile) or for a single subfile (if it is)
 //
-//               Returns last_copy_pos, the last byte position from
-//               which we copied from the original file.
+//               Returns true if successful, false on error.
 ////////////////////////////////////////////////////////////////////
-PN_uint32 Patchfile::
-compute_patches(ostream &write_stream, PN_uint32 last_copy_pos,
-                PN_uint32 copy_offset,
-                char *buffer_orig, PN_uint32 source_file_length,
-                char *buffer_new, PN_uint32 result_file_length) {
+bool Patchfile::
+compute_patches(ostream &write_stream, PN_uint32 copy_offset,
+                istream &stream_orig, istream &stream_new) {
+  // read in original file
+  stream_orig.seekg(0, ios::end);
+  nassertr(stream_orig, false);
+  PN_uint32 source_file_length = stream_orig.tellg();
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Allocating " << source_file_length << " bytes to read orig\n";
+  }
+
+  char *buffer_orig = new char[source_file_length];
+  stream_orig.seekg(0, ios::beg);
+  stream_orig.read(buffer_orig, source_file_length);
+
+  // read in new file
+  stream_new.seekg(0, ios::end);
+  PN_uint32 result_file_length = stream_new.tellg();
+  nassertr(stream_new, false);
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Allocating " << result_file_length << " bytes to read new\n";
+  }
+
+  char *buffer_new = new char[result_file_length];
+  stream_new.seekg(0, ios::beg);
+  stream_new.read(buffer_new, result_file_length);
+
   START_PROFILE(allocTables);
 
   // allocate hash/link tables
-  if (express_cat.is_debug()) {
-    express_cat.debug()
-      << "Allocating hashtable of size " << _HASHTABLESIZE << " * 4\n";
+  if (_hash_table == (PN_uint32 *)NULL) {
+    if (express_cat.is_debug()) {
+      express_cat.debug()
+        << "Allocating hashtable of size " << _HASHTABLESIZE << " * 4\n";
+    }
+    _hash_table = new PN_uint32[_HASHTABLESIZE];
   }
-
-  PN_uint32* hash_table = new PN_uint32[_HASHTABLESIZE];
 
   if (express_cat.is_debug()) {
     express_cat.debug()
@@ -944,7 +1036,7 @@ compute_patches(ostream &write_stream, PN_uint32 last_copy_pos,
   START_PROFILE(buildTables);
 
   // build hash and link tables for original file
-  build_hash_link_tables(buffer_orig, source_file_length, hash_table, link_table);
+  build_hash_link_tables(buffer_orig, source_file_length, _hash_table, link_table);
 
   END_PROFILE(buildTables, "building hash and link tables");
 
@@ -952,7 +1044,7 @@ compute_patches(ostream &write_stream, PN_uint32 last_copy_pos,
   START_PROFILE(buildPatchfile);
 
   PN_uint32 new_pos = 0;
-  PN_uint32 ADD_pos = new_pos; // this is the position for the start of ADD operations
+  PN_uint32 start_pos = new_pos; // this is the position for the start of ADD operations
 
   if(((PN_uint32) result_file_length) >= _footprint_length)
   {
@@ -962,7 +1054,7 @@ compute_patches(ostream &write_stream, PN_uint32 last_copy_pos,
       PN_uint32 COPY_pos;
       PN_uint16 COPY_length;
 
-      find_longest_match(new_pos, COPY_pos, COPY_length, hash_table, link_table,
+      find_longest_match(new_pos, COPY_pos, COPY_length, _hash_table, link_table,
         buffer_orig, source_file_length, buffer_new, result_file_length);
 
       // if no match or match not longer than footprint length, skip to next byte
@@ -971,22 +1063,16 @@ compute_patches(ostream &write_stream, PN_uint32 last_copy_pos,
         new_pos++;
       } else {
         // emit ADD for all skipped bytes
-        int num_skipped = (int)new_pos - (int)ADD_pos;
+        int num_skipped = (int)new_pos - (int)start_pos;
         if (express_cat.is_spam()) {
           express_cat.spam()
             << "build: num_skipped = " << num_skipped 
             << endl;
         }
-        last_copy_pos =
-          emit_add_and_copy(write_stream, num_skipped, &buffer_new[ADD_pos],
-                            COPY_length, COPY_pos + copy_offset,
-                            last_copy_pos, ADD_pos);
-        ADD_pos += num_skipped;
-        nassertr(ADD_pos == new_pos, last_copy_pos);
-
-        // skip past match in new_file
+        cache_add_and_copy(write_stream, num_skipped, &buffer_new[start_pos],
+                           COPY_length, COPY_pos + copy_offset);
         new_pos += (PN_uint32)COPY_length;
-        ADD_pos = new_pos;
+        start_pos = new_pos;
       }
     }
   }
@@ -994,28 +1080,28 @@ compute_patches(ostream &write_stream, PN_uint32 last_copy_pos,
   if (express_cat.is_spam()) {
     express_cat.spam()
       << "build: result_file_length = " << result_file_length
-      << " ADD_pos = " << ADD_pos
+      << " start_pos = " << start_pos
       << endl;
   }
 
   // are there still more bytes left in the new file?
-  if (ADD_pos != result_file_length) {
+  if (start_pos != result_file_length) {
     // emit ADD for all remaining bytes
 
-    PN_uint32 remaining_bytes = result_file_length - ADD_pos;
-    last_copy_pos =
-      emit_add_and_copy(write_stream, remaining_bytes, &buffer_new[ADD_pos], 
-                        0, last_copy_pos, last_copy_pos, ADD_pos);
-    ADD_pos += remaining_bytes;
-    nassertr(ADD_pos == result_file_length, last_copy_pos);
+    PN_uint32 remaining_bytes = result_file_length - start_pos;
+    cache_add_and_copy(write_stream, remaining_bytes, &buffer_new[start_pos], 
+                       0, 0);
+    start_pos += remaining_bytes;
   }
 
   END_PROFILE(buildPatchfile, "building patch file");
 
-  delete[] hash_table;
   delete[] link_table;
 
-  return last_copy_pos;
+  delete[] buffer_orig;
+  delete[] buffer_new;
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1028,36 +1114,33 @@ compute_patches(ostream &write_stream, PN_uint32 last_copy_pos,
 //               much faster for large Multifiles that contain many
 //               small subfiles.
 ////////////////////////////////////////////////////////////////////
-PN_uint32 Patchfile::
+bool Patchfile::
 compute_mf_patches(ostream &write_stream, 
-                   char *buffer_orig, PN_uint32 source_file_length,
-                   char *buffer_new, PN_uint32 result_file_length) {
-  string string_orig(buffer_orig, source_file_length);
-  string string_new(buffer_new, result_file_length);
-  istringstream strm_orig(string_orig);
-  istringstream strm_new(string_new);
-
+                   istream &stream_orig, istream &stream_new) {
   Multifile mf_orig, mf_new;
-  if (!mf_orig.open_read(&strm_orig) ||
-      !mf_new.open_read(&strm_new)) {
+  if (!mf_orig.open_read(&stream_orig) ||
+      !mf_new.open_read(&stream_new)) {
     express_cat.error()
       << "Input multifiles appear to be corrupt.\n";
-    return 0;
+    return false;
   }
 
   if (mf_new.needs_repack()) {
     express_cat.error()
       << "Input multifiles need to be repacked.\n";
-    return 0;
+    return false;
   }
 
   // First, compute the patch for the header / index.
 
-  PN_uint32 last_copy_pos =
-    compute_patches(write_stream, 0, 0,
-                    buffer_orig, (PN_uint32)mf_orig.get_index_end(),
-                    buffer_new, (PN_uint32)mf_new.get_index_end());
-  PN_uint32 add_pos = (PN_uint32)mf_new.get_index_end();
+  {
+    ISubStream index_orig(&stream_orig, 0, mf_orig.get_index_end());
+    ISubStream index_new(&stream_new, 0, mf_new.get_index_end());
+    if (!compute_patches(write_stream, 0, index_orig, index_new)) {
+      return false;
+    }
+    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == mf_new.get_index_end(), false);
+  }
 
   // Now walk through each subfile in the new multifile.  If a
   // particular subfile exists in both source files, we compute the
@@ -1066,54 +1149,128 @@ compute_mf_patches(ostream &write_stream,
   // never even notice this case).
   int new_num_subfiles = mf_new.get_num_subfiles();
   for (int ni = 0; ni < new_num_subfiles; ++ni) {
-    nassertr(add_pos == mf_new.get_subfile_internal_start(ni), last_copy_pos);
+    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == mf_new.get_subfile_internal_start(ni), false);
     string name = mf_new.get_subfile_name(ni);
     int oi = mf_orig.find_subfile(name);
+
+    /*
     if (oi < 0) {
-      // This subfile exists in the new file, but not in the original
-      // file.  Trivially add it.
+      string new_ext = Filename(name).get_extension();
+      if (new_ext != "jpg") {
+        // This is a newly-added subfile.  Look for another subfile with
+        // the same extension, so we can generate a patch against that
+        // other subfile--the idea is that there are likely to be
+        // similar byte sequences in files with the same extension, so
+        // "patching" a new subfile against a different subfile may come
+        // out smaller than baldly adding the new subfile.
+        size_t new_size = mf_new.get_subfile_internal_length(ni);
+        
+        int orig_num_subfiles = mf_orig.get_num_subfiles();
+        size_t best_size = 0;
+        for (int i = 0; i < orig_num_subfiles; ++i) {
+          string orig_ext = Filename(mf_orig.get_subfile_name(i)).get_extension();
+          if (orig_ext == new_ext) {
+            size_t orig_size = mf_orig.get_subfile_internal_length(i);
+            
+            // Find the smallest candidate that is no smaller than our
+            // target file.  If all the candidates are smaller than our
+            // target file, choose the largest of them.
+            if ((best_size < new_size && orig_size > best_size) ||
+                (best_size >= new_size && orig_size >= new_size && orig_size < best_size)) {
+              best_size = orig_size;
+              oi = i;
+            }
+          }
+        }
+      }
+    }
+    */
+
+    if (oi < 0) {
+      // This is a newly-added subfile, and we didn't find another
+      // subfile with a matching extension.  Add it the hard way.
       express_cat.info()
         << "Adding subfile " << mf_new.get_subfile_name(ni) << "\n";
-      PN_uint32 new_start = (PN_uint32)mf_new.get_subfile_internal_start(ni);
-      PN_uint32 new_size = (PN_uint32)mf_new.get_subfile_internal_length(ni);
-      last_copy_pos =
-        emit_add_and_copy(write_stream, new_size, &buffer_new[new_start],
-                          0, last_copy_pos, last_copy_pos, add_pos);
-      add_pos += new_size;
+
+      streampos new_start = mf_new.get_subfile_internal_start(ni);
+      size_t new_size = mf_new.get_subfile_internal_length(ni);
+      char *buffer_new = new char[new_size];
+      stream_new.seekg(new_start, ios::beg);
+      stream_new.read(buffer_new, new_size);
+      cache_add_and_copy(write_stream, new_size, buffer_new, 0, 0);
+      delete[] buffer_new;
 
     } else {
       // This subfile exists in both the original and the new files.
       // Patch it.
-      PN_uint32 orig_start = (PN_uint32)mf_orig.get_subfile_internal_start(oi);
-      PN_uint32 orig_size = (PN_uint32)mf_orig.get_subfile_internal_length(oi);
-      PN_uint32 new_start = (PN_uint32)mf_new.get_subfile_internal_start(ni);
-      PN_uint32 new_size = (PN_uint32)mf_new.get_subfile_internal_length(ni);
-      if (orig_size == new_size &&
-          memcmp(&buffer_orig[orig_start], &buffer_new[new_start], new_size) == 0) {
-        // Actually, the subfile is unchanged; just emit it.
+
+      streampos orig_start = mf_orig.get_subfile_internal_start(oi);
+      size_t orig_size = mf_orig.get_subfile_internal_length(oi);
+      ISubStream subfile_orig(&stream_orig, orig_start, orig_start + (streampos)orig_size);
+
+      streampos new_start = mf_new.get_subfile_internal_start(ni);
+      size_t new_size = mf_new.get_subfile_internal_length(ni);
+      ISubStream subfile_new(&stream_new, new_start, new_start + (streampos)new_size);
+
+      bool is_unchanged = false;
+      if (orig_size == new_size) {
+        HashVal hash_orig, hash_new;
+        hash_orig.hash_stream(subfile_orig);
+        hash_new.hash_stream(subfile_new);
+
+        if (hash_orig == hash_new) {
+          // Actually, the subfile is unchanged; just emit it.
+          is_unchanged = true;
+        }
+      }
+
+      if (is_unchanged) {
         if (express_cat.is_debug()) {
           express_cat.debug()
-            << "Keeping subfile " << mf_new.get_subfile_name(ni) << "\n";
+            << "Keeping subfile " << mf_new.get_subfile_name(ni);
+          if (mf_orig.get_subfile_name(oi) != mf_new.get_subfile_name(ni)) {
+            express_cat.debug(false)
+              << " (identical to " << mf_orig.get_subfile_name(oi) << ")";
+          }
+          express_cat.debug(false) << "\n";
         }
-        last_copy_pos =
-          emit_add_and_copy(write_stream, 0, NULL, 
-                            new_size, orig_start, last_copy_pos,
-                            add_pos);
-                  
+        cache_add_and_copy(write_stream, 0, NULL, 
+                           orig_size, orig_start);
+
       } else {
         express_cat.info()
-          << "Patching subfile " << mf_new.get_subfile_name(ni) << "\n";
-        last_copy_pos = 
-          compute_patches(write_stream, last_copy_pos, orig_start,
-                          &buffer_orig[orig_start], orig_size,
-                          &buffer_new[new_start], new_size);
+          << "Patching subfile " << mf_new.get_subfile_name(ni);
+        if (mf_orig.get_subfile_name(oi) != mf_new.get_subfile_name(ni)) {
+          express_cat.info(false)
+            << " (against " << mf_orig.get_subfile_name(oi) << ")";
+        }
+        express_cat.info(false) << "\n";
+
+        if (!compute_patches(write_stream, orig_start,
+                             subfile_orig, subfile_new)) {
+          return false;
+        }
+
+        /*
+        // Simply copy the new file; don't attempt to patch.
+        if (express_cat.is_debug()) {
+          express_cat.debug()
+            << "Copying subfile " << mf_new.get_subfile_name(ni) << "\n";
+        }
+        streampos new_start = mf_new.get_subfile_internal_start(ni);
+        size_t new_size = mf_new.get_subfile_internal_length(ni);
+        char *buffer_new = new char[new_size];
+        stream_new.seekg(new_start, ios::beg);
+        stream_new.read(buffer_new, new_size);
+        cache_add_and_copy(write_stream, new_size, buffer_new,
+                           0, 0);
+        delete[] buffer_new;
+        */
       }
-      add_pos += new_size;
     }
   }
 
-  nassertr(add_pos == result_file_length, last_copy_pos);
-  return last_copy_pos;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1133,8 +1290,6 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   patch_name.set_binary();
 
   START_PROFILE(overall);
-
-  START_PROFILE(readFiles);
 
   // Open the original file for read
   ifstream stream_orig;
@@ -1162,73 +1317,67 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
     return false;
   }
 
-  // read in original file
-  stream_orig.seekg(0, ios::end);
-  PN_uint32 source_file_length = stream_orig.tellg();
-  if (express_cat.is_debug()) {
-    express_cat.debug()
-      << "Allocating " << source_file_length << " bytes to read " 
-      << file_orig << "\n";
-  }
+  _last_copy_pos = 0;
+  _add_pos = 0;
+  _cache_add_data = string();
+  _cache_copy_start = 0;
+  _cache_copy_length = 0;
 
-  char *buffer_orig = new char[source_file_length];
-  stream_orig.seekg(0, ios::beg);
-  stream_orig.read(buffer_orig, source_file_length);
-
-  // read in new file
-  stream_new.seekg(0, ios::end);
-  PN_uint32 result_file_length = stream_new.tellg();
-  if (express_cat.is_debug()) {
-    express_cat.debug()
-      << "Allocating " << result_file_length << " bytes to write " 
-      << file_new << "\n";
-  }
-
-  char *buffer_new = new char[result_file_length];
-  stream_new.seekg(0, ios::beg);
-  stream_new.read(buffer_new, result_file_length);
-
-  // close the original and new files (we have em in memory)
-  stream_orig.close();
-  stream_new.close();
-
-  END_PROFILE(readFiles, "reading files");
-
-  write_header(write_stream, buffer_orig, source_file_length,
-               buffer_new, result_file_length);
-
-  PN_uint32 last_copy_pos;
+  write_header(write_stream, stream_orig, stream_new);
 
   // Check whether our input files are Panda multifiles.
   bool is_multifile = false;
   if (_allow_multifile) {
     if (file_orig.get_extension() == "mf" || file_new.get_extension() == "mf") {
+      // Read the first n bytes of both files for the Multifile magic
+      // number.
       string magic_number = Multifile::get_magic_number();
-      if (source_file_length > magic_number.size() &&
-          result_file_length > magic_number.size() &&
-          memcmp(buffer_orig, magic_number.data(), magic_number.size()) == 0 &&
-          memcmp(buffer_new, magic_number.data(), magic_number.size()) == 0) {
-        is_multifile = true;
+      char *buffer = new char[magic_number.size()];
+      stream_orig.seekg(0, ios::beg);
+      stream_orig.read(buffer, magic_number.size());
+      
+      if (stream_orig.gcount() == magic_number.size() &&
+          memcmp(buffer, magic_number.data(), magic_number.size()) == 0) {
+        stream_new.seekg(0, ios::beg);
+        stream_new.read(buffer, magic_number.size());
+        if (stream_new.gcount() == magic_number.size() &&
+            memcmp(buffer, magic_number.data(), magic_number.size()) == 0) {
+          is_multifile = true;
+        }
       }
+      delete[] buffer;
     }
   }
 
   if (is_multifile) {
-    last_copy_pos =
-      compute_mf_patches(write_stream, buffer_orig, source_file_length,
-                         buffer_new, result_file_length);
+    if (express_cat.is_debug()) {
+      express_cat.debug()
+        << "Input files appear to be Panda Multifiles.\n";
+    }
+    if (!compute_mf_patches(write_stream, stream_orig, stream_new)) {
+      return false;
+    }
   } else {
-    last_copy_pos =
-      compute_patches(write_stream, 0, 0,
-                      buffer_orig, source_file_length,
-                      buffer_new, result_file_length);
+    if (express_cat.is_debug()) {
+      express_cat.debug()
+        << "Input files are NOT Panda Multifiles.\n";
+    }
+    if (!compute_patches(write_stream, 0, stream_orig, stream_new)) {
+      return false;
+    }
   }
 
-  write_terminator(write_stream, result_file_length, last_copy_pos);
+  write_terminator(write_stream);
 
   END_PROFILE(overall, "total patch building operation");
 
-  return (last_copy_pos != 0);
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Patch file will generate " << _add_pos << "-byte file.\n";
+  }
+  //  nassertr(_add_pos == result_file_length, false);
+
+  return (_last_copy_pos != 0);
 }
 
 #endif // HAVE_OPENSSL

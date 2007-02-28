@@ -1161,6 +1161,7 @@ open_read(istream *multifile_stream) {
   _timestamp = time(NULL);
   _timestamp_dirty = true;
   _read = multifile_stream;
+  _read->seekg(0, ios::beg);
   return read_index();
 }
 
@@ -1180,6 +1181,7 @@ open_write(ostream *multifile_stream) {
   _timestamp = time(NULL);
   _timestamp_dirty = true;
   _write = multifile_stream;
+  _write->seekp(0, ios::beg);
   return true;
 }
 
@@ -1201,6 +1203,7 @@ open_read_write(iostream *multifile_stream) {
   _timestamp_dirty = true;
   _read = multifile_stream;
   _write = multifile_stream;
+  _write->seekp(0, ios::beg);
 
   // Check whether the read stream is empty.
   _read->seekg(0, ios::end);
@@ -1211,7 +1214,7 @@ open_read_write(iostream *multifile_stream) {
 
   // The read stream is not empty, so we'd better have a valid
   // Multifile.
-  _read->seekg(0);
+  _read->seekg(0, ios::beg);
   return read_index();
 }
 

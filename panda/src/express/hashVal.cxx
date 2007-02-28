@@ -211,6 +211,25 @@ hash_file(const Filename &filename) {
     return false;
   }
 
+  bool result = hash_stream(*istr);
+  vfs->close_read_file(istr);
+
+  return result;
+}
+#endif  // HAVE_OPENSSL
+
+#ifdef HAVE_OPENSSL
+////////////////////////////////////////////////////////////////////
+//     Function: HashVal::hash_stream
+//       Access: Published
+//  Description: Generates the hash value from the indicated file.
+//               Returns true on success, false if the file cannot be
+//               read.  This method is only defined if we have the
+//               OpenSSL library (which provides md5 functionality)
+//               available.
+////////////////////////////////////////////////////////////////////
+bool HashVal::
+hash_stream(istream &stream) {
   unsigned char md[16];
 
   MD5_CTX ctx;
@@ -219,15 +238,21 @@ hash_file(const Filename &filename) {
   static const int buffer_size = 1024;
   char buffer[buffer_size];
 
-  istr->read(buffer, buffer_size);
-  size_t count = istr->gcount();
+  // Seek the stream to the beginning in case it wasn't there already.
+  stream.seekg(0, ios::beg);
+
+  stream.read(buffer, buffer_size);
+  size_t count = stream.gcount();
   while (count != 0) {
     MD5_Update(&ctx, buffer, count);
-    istr->read(buffer, buffer_size);
-    count = istr->gcount();
+    stream.read(buffer, buffer_size);
+    count = stream.gcount();
   }
+  
+  // Clear the fail bit so the caller can still read the stream (if it
+  // wants to).
+  stream.clear();
 
-  vfs->close_read_file(istr);
   MD5_Final(md, &ctx);
 
   // Store the individual bytes as big-endian ints, from historical
@@ -239,7 +264,10 @@ hash_file(const Filename &filename) {
 
   return true;
 }
+#endif  // HAVE_OPENSSL
 
+
+#ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
 //     Function: HashVal::hash_buffer
 //       Access: Published

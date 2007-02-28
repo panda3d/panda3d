@@ -32,8 +32,9 @@
 bool create = false;           // -c
 bool append = false;           // -r
 bool update = false;           // -u
-bool tlist = false;             // -t
+bool tlist = false;            // -t
 bool extract = false;          // -x
+bool kill = false;             // -k
 bool verbose = false;          // -v
 bool compress_flag = false;         // -z
 int default_compression_level = 6;
@@ -138,9 +139,13 @@ help() {
     "      Extract the contents of an existing Multifile.  The Subfiles named on\n"
     "      the command line, or all Subfiles if nothing is named, are extracted\n"
     "      into the current directory or into whichever directory is specified\n"
-    "      with -C.\n\n\n"
+    "      with -C.\n\n"
 
-    
+    "  -k\n"
+    "      Delete (kill) the named Subfiles from the Multifile.  The Multifile\n"
+    "      will be repacked after completion.\n\n"
+
+    "\n"
     "  You must always specify the following switch:\n\n"
 
     "  -f <multifile_name>\n"
@@ -437,6 +442,41 @@ extract_files(int argc, char *argv[]) {
   return true;
 }
 
+bool
+kill_files(int argc, char *argv[]) {
+  if (!multifile_name.exists()) {
+    cerr << multifile_name << " not found.\n";
+    return false;
+  }
+  PT(Multifile) multifile = new Multifile;
+  if (!multifile->open_read_write(multifile_name)) {
+    cerr << "Unable to open " << multifile_name << " for read/write.\n";
+    return false;
+  }
+
+  int i = 0;
+  while (i < multifile->get_num_subfiles()) {
+    string subfile_name = multifile->get_subfile_name(i);
+    if (is_named(subfile_name, argc, argv)) {
+      Filename filename = subfile_name;
+
+      if (verbose) {
+        cout << filename << "\n";
+      }
+      multifile->remove_subfile(i);
+    } else {
+      ++i;
+    }
+  }
+
+  if (!multifile->repack()) {
+    cerr << "Failed to write " << multifile_name << ".\n";
+    return false;
+  }
+
+  return true;
+}
+
 const char *
 format_timestamp(bool record_timestamp, time_t timestamp) {
   static const size_t buffer_size = 512;
@@ -582,7 +622,7 @@ main(int argc, char *argv[]) {
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "crutxvz123456789Z:T:f:OC:ep:F:h";
+  static const char *optflags = "crutxkvz123456789Z:T:f:OC:ep:F:h";
   int flag = getopt(argc, argv, optflags);
   Filename rel_path;
   while (flag != EOF) {
@@ -601,6 +641,9 @@ main(int argc, char *argv[]) {
       break;
     case 'x':
       extract = true;
+      break;
+    case 'k':
+      kill = true;
       break;
     case 'v':
       verbose = true;
@@ -711,8 +754,8 @@ main(int argc, char *argv[]) {
   argv += (optind - 1);
 
   // We should have exactly one of these options.
-  if ((create?1:0) + (append?1:0) + (update?1:0) + (tlist?1:0) + (extract?1:0) != 1) {
-    cerr << "Exactly one of -c, -r, -u, -t, -x must be specified.\n";
+  if ((create?1:0) + (append?1:0) + (update?1:0) + (tlist?1:0) + (extract?1:0) + (kill?1:0) != 1) {
+    cerr << "Exactly one of -c, -r, -u, -t, -x, -k must be specified.\n";
     usage();
     return 1;
   }
@@ -734,6 +777,11 @@ main(int argc, char *argv[]) {
       cerr << "Warning: -T ignored on extract.\n";
     }
     okflag = extract_files(argc, argv);
+  } else if (kill) {
+    if (got_record_timestamp_flag) {
+      cerr << "Warning: -T ignored on kill.\n";
+    }
+    okflag = kill_files(argc, argv);
   } else { // list
     if (got_record_timestamp_flag) {
       cerr << "Warning: -T ignored on list.\n";

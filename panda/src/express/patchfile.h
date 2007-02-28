@@ -94,30 +94,24 @@ private:
   PN_uint32 calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length,
     PN_uint32 min_length);
 
-  void emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer,
-                PN_uint32 ADD_pos);
-  PN_uint32 emit_COPY(ostream &write_stream, PN_uint32 length, 
-                      PN_uint32 COPY_pos, PN_uint32 last_copy_pos,
-                      PN_uint32 ADD_pos);
-  PN_uint32 emit_add_and_copy(ostream &write_stream, 
-                              PN_uint32 add_length, const char *add_buffer,
-                              PN_uint32 copy_length, PN_uint32 copy_pos, PN_uint32 last_copy_pos,
-                              PN_uint32 add_pos);
-
+  void emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer);
+  void emit_COPY(ostream &write_stream, PN_uint32 length, PN_uint32 COPY_pos);
+  void emit_add_and_copy(ostream &write_stream, 
+                         PN_uint32 add_length, const char *add_buffer,
+                         PN_uint32 copy_length, PN_uint32 copy_pos);
+  void cache_add_and_copy(ostream &write_stream, 
+                          PN_uint32 add_length, const char *add_buffer,
+                          PN_uint32 copy_length, PN_uint32 copy_pos);
+  void cache_flush(ostream &write_stream);
 
   void write_header(ostream &write_stream, 
-                    char *buffer_orig, PN_uint32 source_file_length,
-                    char *buffer_new, PN_uint32 result_file_length);
-  void write_terminator(ostream &write_stream, PN_uint32 result_file_length,
-                        PN_uint32 last_copy_pos);
+                    istream &stream_orig, istream &stream_new);
+  void write_terminator(ostream &write_stream);
 
-  PN_uint32 compute_patches(ostream &write_stream, PN_uint32 last_copy_pos,
-                            PN_uint32 copy_offset,
-                            char *buffer_orig, PN_uint32 source_file_length,
-                            char *buffer_new, PN_uint32 result_file_length);
-  PN_uint32 compute_mf_patches(ostream &write_stream, 
-                               char *buffer_orig, PN_uint32 source_file_length,
-                               char *buffer_new, PN_uint32 result_file_length);
+  bool compute_patches(ostream &write_stream, PN_uint32 copy_offset,
+                       istream &stream_orig, istream &stream_new);
+  bool compute_mf_patches(ostream &write_stream, 
+                          istream &stream_orig, istream &stream_new);
 
   static const PN_uint32 _HASH_BITS;
   static const PN_uint32 _HASHTABLESIZE;
@@ -128,6 +122,15 @@ private:
 
   bool _allow_multifile;
   PN_uint32 _footprint_length;
+
+  PN_uint32 *_hash_table;
+
+  PN_uint32 _add_pos;
+  PN_uint32 _last_copy_pos;
+
+  string _cache_add_data;
+  PN_uint32 _cache_copy_start;
+  PN_uint32 _cache_copy_length;
 
 protected:
   PT(Buffer) _buffer; // this is the work buffer for apply -- used to prevent virtual memory swapping

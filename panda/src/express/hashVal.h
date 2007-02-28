@@ -71,6 +71,7 @@ PUBLISHED:
 
 #ifdef HAVE_OPENSSL
   bool hash_file(const Filename &filename);
+  bool hash_stream(istream &stream);
   INLINE void hash_ramfile(const Ramfile &ramfile);
   INLINE void hash_string(const string &data);
   void hash_buffer(const char *buffer, int length);
