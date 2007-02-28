@@ -34,7 +34,7 @@ bool append = false;           // -r
 bool update = false;           // -u
 bool tlist = false;            // -t
 bool extract = false;          // -x
-bool kill = false;             // -k
+bool kill_cmd = false;             // -k
 bool verbose = false;          // -v
 bool compress_flag = false;         // -z
 int default_compression_level = 6;
@@ -643,7 +643,7 @@ main(int argc, char *argv[]) {
       extract = true;
       break;
     case 'k':
-      kill = true;
+      kill_cmd = true;
       break;
     case 'v':
       verbose = true;
@@ -754,7 +754,7 @@ main(int argc, char *argv[]) {
   argv += (optind - 1);
 
   // We should have exactly one of these options.
-  if ((create?1:0) + (append?1:0) + (update?1:0) + (tlist?1:0) + (extract?1:0) + (kill?1:0) != 1) {
+  if ((create?1:0) + (append?1:0) + (update?1:0) + (tlist?1:0) + (extract?1:0) + (kill_cmd?1:0) != 1) {
     cerr << "Exactly one of -c, -r, -u, -t, -x, -k must be specified.\n";
     usage();
     return 1;
@@ -777,7 +777,7 @@ main(int argc, char *argv[]) {
       cerr << "Warning: -T ignored on extract.\n";
     }
     okflag = extract_files(argc, argv);
-  } else if (kill) {
+  } else if (kill_cmd) {
     if (got_record_timestamp_flag) {
       cerr << "Warning: -T ignored on kill.\n";
     }
