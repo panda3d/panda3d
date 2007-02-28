@@ -27,7 +27,7 @@
 
 void 
 usage() {
-  cerr << "Usage: build_patch [-f] <old_file> <new_file>" << endl;
+  cerr << "Usage: build_patch [opts] <old_file> <new_file>" << endl;
 }
 
 void
@@ -42,23 +42,45 @@ help() {
     "The patching algorithm can get very slow for very large files.  As an\n"
     "optimization, if the input files are both Panda Multifiles, the patcher\n"
     "will by default patch them on a per-subfile basis, which has the potential\n"
-    "to be much faster.  The -f option will forbid this and force the patcher\n"
-    "to work on the full file.\n\n";
+    "to be much faster.  The -c option will forbid this and force the patcher\n"
+    "to work on the full file.\n\n"
+
+    "Options:\n\n"
+
+    "    -o output_name\n"
+    "        Specify the filename of the patch file to generate.\n\n"
+
+    "    -c\n"
+    "        Always generate patches against the complete file, even if the\n"
+    "        input files appear to be multifiles.\n\n"
+
+    "    -f footprint_length\n"
+    "        Specify the footprint length for the patching algorithm.\n\n";
 }
 
 int
 main(int argc, char *argv[]) {
-  bool full_file = false;
+  Filename patch_file;
+  bool complete_file = false;
+  int footprint_length = 0;
 
   //  extern char *optarg;
   extern int optind;
-  static const char *optflags = "fh";
+  static const char *optflags = "o:cf:h";
   int flag = getopt(argc, argv, optflags);
   Filename rel_path;
   while (flag != EOF) {
     switch (flag) {
+    case 'o':
+      patch_file = optarg;
+      break;
+
+    case 'c':
+      complete_file = true;
+      break;
+
     case 'f':
-      full_file = true;
+      footprint_length = atoi(optarg);
       break;
 
     case 'h':
@@ -87,10 +109,16 @@ main(int argc, char *argv[]) {
   Filename dest_file = Filename::from_os_specific(argv[2]);
   dest_file.set_binary();
 
-  Filename patch_file = dest_file.get_fullpath() + ".pch";
+  if (patch_file.empty()) {
+    patch_file = dest_file.get_fullpath() + ".pch";
+  }
   Patchfile pfile;
 
-  pfile.set_allow_multifile(!full_file);
+  pfile.set_allow_multifile(!complete_file);
+  if (footprint_length != 0) {
+    cerr << "Footprint length is " << footprint_length << "\n";
+    pfile.set_footprint_length(footprint_length);
+  }
 
   cerr << "Building patch file to convert " << src_file << " to "
        << dest_file << endl;

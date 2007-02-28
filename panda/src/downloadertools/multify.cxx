@@ -469,12 +469,21 @@ kill_files(int argc, char *argv[]) {
     }
   }
 
-  if (!multifile->repack()) {
-    cerr << "Failed to write " << multifile_name << ".\n";
-    return false;
+  bool okflag = true;
+
+  if (multifile->needs_repack()) {
+    if (!multifile->repack()) {
+      cerr << "Failed to write " << multifile_name << ".\n";
+      okflag = false;
+    }
+  } else {
+    if (!multifile->flush()) {
+      cerr << "Failed to write " << multifile_name << ".\n";
+      okflag = false;
+    }
   }
 
-  return true;
+  return okflag;
 }
 
 const char *
