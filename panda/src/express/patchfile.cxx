@@ -29,6 +29,7 @@
 #include "hashVal.h"
 
 #include <stdio.h> // for tempnam
+#include <string.h>  // for strstr
 
 #ifdef WIN32_VC
 #define tempnam _tempnam
@@ -1328,7 +1329,8 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   // Check whether our input files are Panda multifiles.
   bool is_multifile = false;
   if (_allow_multifile) {
-    if (file_orig.get_extension() == "mf" || file_new.get_extension() == "mf") {
+    if (strstr(file_orig.get_basename().c_str(), ".mf") != NULL ||
+        strstr(file_new.get_basename().c_str(), ".mf") != NULL) {
       // Read the first n bytes of both files for the Multifile magic
       // number.
       string magic_number = Multifile::get_magic_number();
