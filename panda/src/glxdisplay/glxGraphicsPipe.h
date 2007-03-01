@@ -114,6 +114,12 @@ public:
   Atom _net_wm_window_type;
   Atom _net_wm_window_type_splash;
   Atom _net_wm_window_type_fullscreen;
+  Atom _net_wm_state;
+  Atom _net_wm_state_fullscreen;
+  Atom _net_wm_state_above;
+  Atom _net_wm_state_below;
+  Atom _net_wm_state_add;
+  Atom _net_wm_state_remove;
 
 protected:
   virtual PT(GraphicsOutput) make_output(const string &name,

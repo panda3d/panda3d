@@ -54,7 +54,8 @@ protected:
   virtual bool open_window();
 
 private:
-  void set_wm_properties(const WindowProperties &properties);
+  void set_wm_properties(const WindowProperties &properties,
+                         bool already_mapped);
 
 #ifdef HAVE_GLXFBCONFIG
   void setup_colormap(GLXFBConfig fbconfig);
@@ -82,6 +83,12 @@ private:
   Atom _net_wm_window_type;
   Atom _net_wm_window_type_splash;
   Atom _net_wm_window_type_fullscreen;
+  Atom _net_wm_state;
+  Atom _net_wm_state_fullscreen;
+  Atom _net_wm_state_above;
+  Atom _net_wm_state_below;
+  Atom _net_wm_state_add;
+  Atom _net_wm_state_remove;
 
 public:
   static TypeHandle get_class_type() {

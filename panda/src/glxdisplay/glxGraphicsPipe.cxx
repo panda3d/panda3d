@@ -121,6 +121,12 @@ glxGraphicsPipe(const string &display) {
   _net_wm_window_type = XInternAtom(_display, "_NET_WM_WINDOW_TYPE", false);
   _net_wm_window_type_splash = XInternAtom(_display, "_NET_WM_WINDOW_TYPE_SPLASH", false);
   _net_wm_window_type_fullscreen = XInternAtom(_display, "_NET_WM_WINDOW_TYPE_FULLSCREEN", false);
+  _net_wm_state = XInternAtom(_display, "_NET_WM_STATE", false);
+  _net_wm_state_fullscreen = XInternAtom(_display, "_NET_WM_STATE_FULLSCREEN", false);
+  _net_wm_state_above = XInternAtom(_display, "_NET_WM_STATE_ABOVE", false);
+  _net_wm_state_below = XInternAtom(_display, "_NET_WM_STATE_BELOW", false);
+  _net_wm_state_add = XInternAtom(_display, "_NET_WM_STATE_ADD", false);
+  _net_wm_state_remove = XInternAtom(_display, "_NET_WM_STATE_REMOVE", false);
 }
 
 ////////////////////////////////////////////////////////////////////

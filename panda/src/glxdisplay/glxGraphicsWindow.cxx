@@ -65,6 +65,12 @@ glxGraphicsWindow(GraphicsPipe *pipe,
   _net_wm_window_type = glx_pipe->_net_wm_window_type;
   _net_wm_window_type_splash = glx_pipe->_net_wm_window_type_splash;
   _net_wm_window_type_fullscreen = glx_pipe->_net_wm_window_type_fullscreen;
+  _net_wm_state = glx_pipe->_net_wm_state;
+  _net_wm_state_fullscreen = glx_pipe->_net_wm_state_fullscreen;
+  _net_wm_state_above = glx_pipe->_net_wm_state_above;
+  _net_wm_state_below = glx_pipe->_net_wm_state_below;
+  _net_wm_state_add = glx_pipe->_net_wm_state_add;
+  _net_wm_state_remove = glx_pipe->_net_wm_state_remove;
 
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
@@ -431,14 +437,21 @@ set_properties_now(WindowProperties &properties) {
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_V(glx_pipe, _pipe);
 
+  // We'll pass some property requests on as a window manager hint.
+  WindowProperties wm_properties = _properties;
+  wm_properties.add_properties(properties);
+
   // The window title may be changed by issuing another hint request.
   // Assume this will be honored.
   if (properties.has_title()) {
-    WindowProperties wm_properties;
-    wm_properties.set_title(properties.get_title());
     _properties.set_title(properties.get_title());
-    set_wm_properties(wm_properties);
     properties.clear_title();
+  }
+
+  // Ditto for fullscreen.
+  if (properties.has_fullscreen()) {
+    _properties.set_fullscreen(properties.get_fullscreen());
+    properties.clear_fullscreen();
   }
 
   // The size and position of an already-open window are changed via
@@ -460,9 +473,31 @@ set_properties_now(WindowProperties &properties) {
     value_mask |= (CWWidth | CWHeight);
     properties.clear_size();
   }
+  if (properties.has_z_order()) {
+    // We'll send the classing stacking request through the standard
+    // interface, for users of primitive window managers; but we'll
+    // also send it as a window manager hint, for users of modern
+    // window managers.
+    switch (properties.get_z_order()) {
+    case WindowProperties::Z_bottom:
+      changes.stack_mode = Below;
+      break;
+
+    case WindowProperties::Z_normal:
+      changes.stack_mode = TopIf;
+      break;
+
+    case WindowProperties::Z_top:
+      changes.stack_mode = Above;
+      break;
+    }
+
+    value_mask |= (CWStackMode);
+    properties.clear_z_order();
+  }
 
   if (value_mask != 0) {
-    XConfigureWindow(_display, _xwindow, value_mask, &changes);
+    XReconfigureWMWindow(_display, _xwindow, _screen, value_mask, &changes);
 
     // Don't draw anything until this is done reconfiguring.
     _awaiting_configure = true;
@@ -478,6 +513,8 @@ set_properties_now(WindowProperties &properties) {
     }
     properties.clear_cursor_hidden();
   }
+
+  set_wm_properties(wm_properties, true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -600,7 +637,7 @@ open_window() {
       << "failed to create X window.\n";
     return false;
   }
-  set_wm_properties(_properties);
+  set_wm_properties(_properties, false);
 
   // We don't specify any fancy properties of the XIC.  It would be
   // nicer if we could support fancy IM's that want preedit callbacks,
@@ -645,9 +682,13 @@ open_window() {
 //               specified directly by the application; they must be
 //               requested via the window manager, which may or may
 //               not choose to honor the request.
+//
+//               If already_mapped is true, the window has already
+//               been mapped (manifested) on the display.  This means
+//               we may need to use a different action in some cases.
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
-set_wm_properties(const WindowProperties &properties) {
+set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   // Name the window if there is a name
   XTextProperty window_name;
   XTextProperty *window_name_p = (XTextProperty *)NULL;
@@ -698,6 +739,40 @@ set_wm_properties(const WindowProperties &properties) {
     wm_hints_p->flags = StateHint;
   }
 
+  // Two competing window manager interfaces have evolved.  One of
+  // them allows to set certain properties as a "type"; the other one
+  // as a "state".  We'll try to honor both.
+  static const int max_type_data = 32;
+  PN_int32 type_data[max_type_data];
+  int next_type_data = 0;
+
+  static const int max_state_data = 32;
+  PN_int32 state_data[max_state_data];
+  int next_state_data = 0;
+
+  static const int max_set_data = 32;
+  class SetAction {
+  public:
+    inline SetAction() { }
+    inline SetAction(Atom state, Atom action) : _state(state), _action(action) { }
+    Atom _state;
+    Atom _action;
+  };
+  SetAction set_data[max_set_data];
+  int next_set_data = 0;
+
+  if (properties.get_fullscreen()) {
+    // For a "fullscreen" request, we pass this through, hoping the
+    // window manager will support EWMH.
+    type_data[next_type_data++] = _net_wm_window_type_fullscreen;
+
+    // We also request it as a state.
+    state_data[next_state_data++] = _net_wm_state_fullscreen;
+    set_data[next_set_data++] = SetAction(_net_wm_state_fullscreen, _net_wm_state_add);
+  } else {
+    set_data[next_set_data++] = SetAction(_net_wm_state_fullscreen, _net_wm_state_remove);
+  }
+
   // If we asked for a window without a border, there's no excellent
   // way to arrange that.  For users whose window managers follow the
   // EWMH specification, we can ask for a "splash" screen, which is
@@ -712,25 +787,77 @@ set_wm_properties(const WindowProperties &properties) {
     class_hints_p = XAllocClassHint();
     class_hints_p->res_class = "Undecorated";
 
-    long data[2];
-    data[0] = _net_wm_window_type_splash;
-    data[1] = None;
-
-    XChangeProperty(_display, _xwindow, _net_wm_window_type,
-                    XA_ATOM, 32, PropModeReplace,
-                    (unsigned char *)data, 1);
+    if (!properties.get_fullscreen()) {
+      type_data[next_type_data++] = _net_wm_window_type_splash;
+    }
   }
 
-  if (properties.get_fullscreen()) {
-    // For a "fullscreen" request, we pass this through, hoping the
-    // window manager will support EWMH.
-    long data[2];
-    data[0] = _net_wm_window_type_fullscreen;
-    data[1] = None;
+  if (properties.has_z_order()) {
+    switch (properties.get_z_order()) {
+    case WindowProperties::Z_bottom:
+      state_data[next_state_data++] = _net_wm_state_below;
+      set_data[next_set_data++] = SetAction(_net_wm_state_below, _net_wm_state_add);
+      set_data[next_set_data++] = SetAction(_net_wm_state_above, _net_wm_state_remove);
+      break;
 
-    XChangeProperty(_display, _xwindow, _net_wm_window_type,
-                    XA_ATOM, 32, PropModeReplace,
-                    (unsigned char *)data, 1);
+    case WindowProperties::Z_normal:
+      set_data[next_set_data++] = SetAction(_net_wm_state_below, _net_wm_state_remove);
+      set_data[next_set_data++] = SetAction(_net_wm_state_above, _net_wm_state_remove);
+      break;
+
+    case WindowProperties::Z_top:
+      state_data[next_state_data++] = _net_wm_state_above;
+      set_data[next_set_data++] = SetAction(_net_wm_state_below, _net_wm_state_remove);
+      set_data[next_set_data++] = SetAction(_net_wm_state_above, _net_wm_state_add);
+      break;
+    }
+  }
+
+  nassertv(next_type_data < max_type_data);
+  nassertv(next_state_data < max_state_data);
+  nassertv(next_set_data < max_set_data);
+
+  XChangeProperty(_display, _xwindow, _net_wm_window_type,
+                  XA_ATOM, 32, PropModeReplace,
+                  (unsigned char *)type_data, next_type_data);
+
+  // Request the state properties all at once.
+  XChangeProperty(_display, _xwindow, _net_wm_state,
+                  XA_ATOM, 32, PropModeReplace,
+                  (unsigned char *)state_data, next_state_data);
+
+  if (!already_mapped) {
+    // We have to request state changes differently when the window
+    // has been mapped.  To do this, we need to send a client message
+    // to the root window for each change.
+
+    // This doesn't appear to be working for me, though I think I'm
+    // doing everything right.  There's no feedback mechanism,
+    // however, so it's impossible to tell whether I'm actually doing
+    // something wrong, or whether this feature is simply not
+    // supported in my current window manager.  I'll leave it here for
+    // now.
+
+    glxGraphicsPipe *glx_pipe;
+    DCAST_INTO_V(glx_pipe, _pipe);
+  
+    for (int i = 0; i < next_set_data; ++i) {
+      XClientMessageEvent event;
+      memset(&event, 0, sizeof(event));
+
+      event.type = ClientMessage;
+      event.send_event = True;
+      event.display = _display;
+      event.window = _xwindow;
+      event.message_type = _net_wm_state;
+      event.format = 32;
+      event.data.l[0] = set_data[i]._action;
+      event.data.l[1] = set_data[i]._state;
+      event.data.l[2] = 0;
+      event.data.l[3] = 1;
+
+      XSendEvent(_display, glx_pipe->get_root(), True, 0, (XEvent *)&event);
+    }
   }
 
   XSetWMProperties(_display, _xwindow, window_name_p, window_name_p,
