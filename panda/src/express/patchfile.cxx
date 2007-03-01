@@ -1338,11 +1338,11 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
       stream_orig.seekg(0, ios::beg);
       stream_orig.read(buffer, magic_number.size());
       
-      if (stream_orig.gcount() == magic_number.size() &&
+      if (stream_orig.gcount() == (int)magic_number.size() &&
           memcmp(buffer, magic_number.data(), magic_number.size()) == 0) {
         stream_new.seekg(0, ios::beg);
         stream_new.read(buffer, magic_number.size());
-        if (stream_new.gcount() == magic_number.size() &&
+        if (stream_new.gcount() == (int)magic_number.size() &&
             memcmp(buffer, magic_number.data(), magic_number.size()) == 0) {
           is_multifile = true;
         }
