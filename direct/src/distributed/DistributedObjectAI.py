@@ -186,6 +186,7 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         Called after the object has been generated and all
         of its required fields filled in. Overwrite when needed.
         """
+        pass
 
     def addInterest(self, zoneId, note="", event=None):
         self.air.addInterest(self.getDoId(), zoneId, note, event)
