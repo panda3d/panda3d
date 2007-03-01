@@ -1174,6 +1174,12 @@ class ParamObj:
             for param in self.getParams():
                 getSetter(obj, param)(self.getValue(param))
             obj.unlockParams()
+        def extractFrom(self, obj):
+            # Extract our entire set of params from a ParamObj
+            obj.lockParams()
+            for param in self.getParams():
+                self.paramVals[param] = getSetter(obj, param, 'get')()
+            obj.unlockParams()
         # CLASS METHODS
         def getParams(cls):
             # returns safely-mutable list of param names
@@ -1202,6 +1208,13 @@ class ParamObj:
                     # apply this class' default param values to our dict
                     cls._Params.update(c.Params)
         _compileDefaultParams = classmethod(_compileDefaultParams)
+        def __repr__(self):
+            argStr = ''
+            for param in self.getParams():
+                argStr += '%s=%s,' % (param,
+                                      repr(self.getValue(param)))
+            return '%s.%s(%s)' % (
+                self.__class__.__module__, self.__class__.__name__, argStr)
     # END PARAMSET SUBCLASS
 
     def __init__(self, *args, **kwArgs):
@@ -1303,6 +1316,11 @@ class ParamObj:
     def setDefaultParams(self):
         # set all the default parameters on ourself
         self.ParamSet().applyTo(self)
+
+    def getCurrentParams(self):
+        params = self.ParamSet()
+        params.extractFrom(self)
+        return params
 
     def lockParams(self):
         self._paramLockRefCount += 1
