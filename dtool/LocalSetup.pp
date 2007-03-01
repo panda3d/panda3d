@@ -91,6 +91,11 @@
 #else
 #print - Did not find FMOD Ex sound library
 #endif
+#if $[HAVE_GTK]
+#print + gtk+-2
+#else
+#print - Did not find gtk+-2
+#endif
 #if $[HAVE_FREETYPE]
 #print + Freetype
 #else
