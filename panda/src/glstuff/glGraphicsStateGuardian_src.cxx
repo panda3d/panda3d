@@ -3062,6 +3062,11 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
     tex->set_x_size(Texture::up_to_power_2(w));
     tex->set_y_size(Texture::up_to_power_2(h));
   }
+  if (tex->get_compression() == Texture::CM_default) {
+    // Unless the user explicitly turned on texture compression, turn
+    // it off for the copy-to-texture case.
+    tex->set_compression(Texture::CM_off);
+  }
 
   // Sanity check everything.
   if (z >= 0) {
@@ -4869,7 +4874,6 @@ get_internal_image_format(Texture *tex) const {
       // appropriate choice), since that makes saving the result as a
       // pre-compressed texture more dependable--this way, we will know
       // which compression algorithm was applied.
-
       switch (tex->get_format()) {
       case Texture::F_color_index:
       case Texture::F_depth_stencil:
@@ -4920,17 +4924,35 @@ get_internal_image_format(Texture *tex) const {
         }
         
       case Texture::F_alpha:
-        return GL_COMPRESSED_ALPHA;
+        if (get_supports_compressed_texture_format(Texture::CM_dxt5) && !is_3d) {
+          return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+          return GL_COMPRESSED_RGBA_FXT1_3DFX;
+        } else {
+          return GL_COMPRESSED_ALPHA;
+        }
         
       case Texture::F_red:
       case Texture::F_green:
       case Texture::F_blue:
       case Texture::F_luminance:
-        return GL_COMPRESSED_LUMINANCE;
+        if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
+          return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+        } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+          return GL_COMPRESSED_RGB_FXT1_3DFX;
+        } else {
+          return GL_COMPRESSED_LUMINANCE;
+        }
         
       case Texture::F_luminance_alpha:
       case Texture::F_luminance_alphamask:
-        return GL_COMPRESSED_LUMINANCE_ALPHA;
+        if (get_supports_compressed_texture_format(Texture::CM_dxt5) && !is_3d) {
+          return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
+          return GL_COMPRESSED_RGBA_FXT1_3DFX;
+        } else {
+          return GL_COMPRESSED_LUMINANCE_ALPHA;
+        }
       }
       break;
       
