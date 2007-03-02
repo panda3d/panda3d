@@ -72,7 +72,7 @@ PUBLISHED:
   INLINE void* get_data() const;
 
   INLINE LVecBase3f  get_position() const;
-  INLINE LVecBase3f  get_rotation() const;
+  INLINE LMatrix3f  get_rotation() const;
   INLINE LVecBase4f  get_quaternion() const;
   INLINE LVecBase3f  get_linear_vel() const;
   INLINE LVecBase3f  get_angular_vel() const;

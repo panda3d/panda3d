@@ -140,10 +140,12 @@ get_position() const {
   return LVecBase3f(res[0], res[1], res[2]);
 }
 
-INLINE LVecBase3f OdeBody::
+INLINE LMatrix3f OdeBody::
 get_rotation() const {
-  const dReal *res = dBodyGetRotation(_id);
-  return LVecBase3f(res[0], res[1], res[2]);
+  const dReal *rot = dBodyGetRotation(_id);
+  return LMatrix3f(rot[0], rot[1], rot[2],
+                   rot[4], rot[5], rot[6],
+                   rot[8], rot[9], rot[10]);
 }
 
 INLINE LVecBase4f OdeBody::
