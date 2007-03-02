@@ -3604,6 +3604,100 @@ write_datagram(BamWriter *manager, Datagram &me) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::TextureType output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, Texture::TextureType tt) {
+  switch (tt) {
+  case Texture::TT_1d_texture:
+    return out << "1d_texture";
+  case Texture::TT_2d_texture:
+    return out << "2d_texture";
+  case Texture::TT_3d_texture:
+    return out << "3d_texture";
+  case Texture::TT_cube_map:
+    return out << "cube_map";
+  }
+
+  return out << "(**invalid Texture::TextureType(" << (int)tt << ")**)";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::ComponentType output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, Texture::ComponentType ct) {
+  switch (ct) {
+  case Texture::T_unsigned_byte:
+    return out << "unsigned_byte";
+  case Texture::T_unsigned_short:
+    return out << "unsigned_short";
+  case Texture::T_float:
+    return out << "float";
+  }
+
+  return out << "(**invalid Texture::ComponentType(" << (int)ct << ")**)";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::Format output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, Texture::Format f) {
+  switch (f) {
+  case Texture::F_depth_stencil:
+    return out << "depth_stencil";
+  case Texture::F_color_index:
+    return out << "color_index";
+  case Texture::F_red:
+    return out << "red";
+  case Texture::F_green:
+    return out << "green";
+  case Texture::F_blue:
+    return out << "blue";
+  case Texture::F_alpha:
+    return out << "alpha";
+  case Texture::F_rgb:
+    return out << "rgb";
+  case Texture::F_rgb5:
+    return out << "rgb5";
+  case Texture::F_rgb8:
+    return out << "rgb8";
+  case Texture::F_rgb12:
+    return out << "rgb12";
+  case Texture::F_rgb332:
+    return out << "rgb332";
+  case Texture::F_rgba:
+    return out << "rgba";
+  case Texture::F_rgbm:
+    return out << "rgbm";
+  case Texture::F_rgba4:
+    return out << "rgba4";
+  case Texture::F_rgba5:
+    return out << "rgba5";
+  case Texture::F_rgba8:
+    return out << "rgba8";
+  case Texture::F_rgba12:
+    return out << "rgba12";
+  case Texture::F_luminance:
+    return out << "luminance";
+  case Texture::F_luminance_alpha:
+    return out << "luminance_alpha";
+  case Texture::F_luminance_alphamask:
+    return out << "luminance_alphamask";
+  case Texture::F_rgba16:
+    return out << "rgba16";
+  case Texture::F_rgba32:
+    return out << "rgba32";
+  }
+
+  return out << "(**invalid Texture::Format(" << (int)f << ")**)";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::FilterType output operator
 //  Description:
 ////////////////////////////////////////////////////////////////////

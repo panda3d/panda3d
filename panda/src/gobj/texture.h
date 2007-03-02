@@ -569,6 +569,10 @@ private:
   friend class TexturePool;
 };
 
+EXPCL_PANDA ostream &operator << (ostream &out, Texture::TextureType tt);
+EXPCL_PANDA ostream &operator << (ostream &out, Texture::ComponentType ct);
+EXPCL_PANDA ostream &operator << (ostream &out, Texture::Format f);
+
 EXPCL_PANDA ostream &operator << (ostream &out, Texture::FilterType ft);
 EXPCL_PANDA istream &operator >> (istream &in, Texture::FilterType &ft);
 
