@@ -35,16 +35,24 @@ class SfxPlayer:
         # this is a scale factor to convert distances so that a sound
         # located at self.cutoffDistance will have a volume
         # of self.cutoffVolume
-        self.distanceScale = rawCutoffDistance / self.cutoffDistance        
+        self.distanceScale = rawCutoffDistance / self.cutoffDistance
 
-    def getLocalizedVolume(self, node):
+    def getCutoffDistance(self):
+        """Return the curent cutoff distance."""
+        return self.cutoffDistance
+
+    def getLocalizedVolume(self, node, listenerNode = None):
         """
         Get the volume that a sound should be played at if it is
         localized at this node. We compute this wrt the camera
+        or to listenerNode.
         """
         d = None
         if not node.isEmpty():
-            d = node.getDistance(base.cam)
+            if listenerNode and not listenerNode.isEmpty():
+                d = node.getDistance(listenerNode)
+            else:
+                d = node.getDistance(base.cam)
         if d == None or d > self.cutoffDistance:
             volume = 0
         else:
@@ -59,25 +67,31 @@ class SfxPlayer:
 
     def playSfx(
             self, sfx, looping = 0, interrupt = 1, volume = None,
-            time = 0.0, node=None):
+            time = 0.0, node=None, listenerNode = None):
         if sfx:
-            # If we have either a node or a volume, we need to adjust the sfx
-            # The volume passed in multiplies the distance base volume
-            if node or (volume is not None):
-                if node:
-                    finalVolume = self.getLocalizedVolume(node)
-                else:
-                    finalVolume = 1
-                if volume is not None:
-                    finalVolume *= volume
-                if node is not None:
-                    finalVolume *= node.getNetAudioVolume()
-                sfx.setVolume(finalVolume)
-
+            self.setFinalVolume(sfx, node, volume, listenerNode)
+            
             # dont start over if it's already playing, unless
             # "interrupt" was specified
             if interrupt or (sfx.status() != AudioSound.PLAYING):
                 sfx.setTime(time)
                 sfx.setLoop(looping)
                 sfx.play()
+
+    def setFinalVolume(self, sfx, node, volume, listenerNode):
+        """Calculate the final volume based on all contributed factors."""
+        # If we have either a node or a volume, we need to adjust the sfx
+        # The volume passed in multiplies the distance base volume
+        if node or (volume is not None):
+            if node:
+                finalVolume = self.getLocalizedVolume(node, listenerNode)
+            else:
+                finalVolume = 1
+            if volume is not None:
+                finalVolume *= volume
+            if node is not None:
+                finalVolume *= node.getNetAudioVolume()
+            sfx.setVolume(finalVolume)
+        
+    
         

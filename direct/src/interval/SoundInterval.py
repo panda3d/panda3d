@@ -28,9 +28,11 @@ class SoundInterval(Interval.Interval):
     # the sound is caused by the delay between the end of the sound
     # and the next taskMgr cycle). There still seems to be a skip
     # in Miles when looping MP3s. =(
+    # RAU 03/01/07 add listenerNode in case we dont want to
+    # use base.camera as the listener, node must not be None
     def __init__(self, sound, loop = 0, duration = 0.0, name = None,
                  volume = 1.0, startTime = 0.0, node=None,
-                 seamlessLoop=True):
+                 seamlessLoop=True, listenerNode = None):
         """__init__(sound, loop, name)
         """
         # Generate unique name
@@ -46,6 +48,7 @@ class SoundInterval(Interval.Interval):
         self.volume = volume
         self.startTime = startTime
         self.node = node
+        self.listenerNode = listenerNode
         self._seamlessLoop = seamlessLoop
         if self._seamlessLoop:
             self._fLoop = True
@@ -88,7 +91,8 @@ class SoundInterval(Interval.Interval):
             t1 = 0.0
         if (t1 < self.soundDuration) and not (self._seamlessLoop and self._soundPlaying):
             base.sfxPlayer.playSfx(
-                self.sound, self.fLoop, 1, self.volume, t1, self.node)
+                self.sound, self.fLoop, 1, self.volume, t1, self.node,
+                listenerNode = self.listenerNode)
             self._soundPlaying = True
         self.state = CInterval.SStarted
         self.currT = t
@@ -99,7 +103,13 @@ class SoundInterval(Interval.Interval):
             t1 = t + self.startTime
             if t1 < self.soundDuration:
                 base.sfxPlayer.playSfx(
-                    self.sound, self.fLoop, 1, self.volume, t1, self.node)
+                    self.sound, self.fLoop, 1, self.volume, t1, self.node,
+                    listenerNode = self.listenerNode)
+        if self.listenerNode and not self.listenerNode.isEmpty() and \
+           self.node and not self.node.isEmpty():
+            base.sfxPlayer.setFinalVolume(self.sound, self.node, self.volume,
+                                          self.listenerNode)
+        
         self.state = CInterval.SStarted
         self.currT = t
 
