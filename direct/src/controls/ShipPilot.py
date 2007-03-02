@@ -25,7 +25,7 @@ import math
 from PhysicsWalker import PhysicsWalker
 
 class ShipPilot(PhysicsWalker):
-    notify = directNotify.newCategory("PhysicsWalker")
+    notify = directNotify.newCategory("ShipPilot")
     wantDebugIndicator = base.config.GetBool(
         'want-avatar-physics-indicator', 0)
 
