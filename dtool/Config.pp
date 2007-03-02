@@ -413,6 +413,7 @@
 // Define this true to build a native network implementation,
 // which does not require NSPR.
 #define WANT_NATIVE_NET 1
+#define NATIVE_NET_LIBS $[if $[WINDOWS_PLATFORM],Ws2_32.lib]
 
 // Is a third-party STL library installed, and where?  This is only
 // necessary if the default include and link lines that come with the

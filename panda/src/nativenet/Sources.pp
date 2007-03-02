@@ -1,5 +1,3 @@
-
-
 #define LOCAL_LIBS express pandabase
 
 #define OTHER_LIBS \
@@ -7,6 +5,7 @@
     dtoolutil:c dtoolbase:c prc:c dtool:m
 
 #define BUILD_DIRECTORY $[WANT_NATIVE_NET]
+#define USE_PACKAGES native_net
 
 #begin lib_target
   #define TARGET nativenet

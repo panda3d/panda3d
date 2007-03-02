@@ -317,6 +317,12 @@
   #define net_libs $[NET_LIBS]
 #endif
 
+#if $[WANT_NATIVE_NET]
+  #define native_net_ipath $[wildcard $[NATIVE_NET_IPATH]]
+  #define native_net_lpath $[wildcard $[NATIVE_NET_LPATH]]
+  #define native_net_libs $[NATIVE_NET_LIBS]
+#endif
+
 #if $[HAVE_RAD_MSS]
   #define rad_mss_ipath $[wildcard $[RAD_MSS_IPATH]]
   #define rad_mss_lpath $[wildcard $[RAD_MSS_LPATH]]
