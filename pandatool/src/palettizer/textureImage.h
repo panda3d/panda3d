@@ -79,6 +79,9 @@ public:
   bool is_used() const;
   EggRenderMode::AlphaMode get_alpha_mode() const;
 
+  EggTexture::WrapMode get_txa_wrap_u() const;
+  EggTexture::WrapMode get_txa_wrap_v() const;
+
   SourceTextureImage *get_source(const Filename &filename,
                                  const Filename &alpha_filename,
                                  int alpha_file_channel);
@@ -139,6 +142,7 @@ private:
   double _mid_pixel_ratio;
   bool _is_cutout;
   EggRenderMode::AlphaMode _alpha_mode;
+  EggTexture::WrapMode _txa_wrap_u, _txa_wrap_v;
 
   PaletteGroups _explicitly_assigned_groups;
   PaletteGroups _actual_assigned_groups;

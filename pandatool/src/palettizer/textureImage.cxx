@@ -51,6 +51,8 @@ TextureImage() {
   _forced_grayscale = false;
   _alpha_bits = 0;
   _alpha_mode = EggRenderMode::AM_unspecified;
+  _txa_wrap_u = EggTexture::WM_unspecified;
+  _txa_wrap_v = EggTexture::WM_unspecified;
   _texture_named = false;
   _got_txa_file = false;
 }
@@ -332,6 +334,22 @@ post_txa_file() {
     _y_size = _request._y_size;
   }
 
+  if (_txa_wrap_u != _request._wrap_u ||
+      _txa_wrap_v != _request._wrap_v) {
+    _txa_wrap_u = _request._wrap_u;
+    _txa_wrap_v = _request._wrap_v;
+
+    // If the explicit wrap mode changes, we may need to regenerate
+    // the egg files, and/or refill the palettes.
+    mark_eggs_stale();
+
+    Placement::iterator pi;
+    for (pi = _placement.begin(); pi != _placement.end(); ++pi) {
+      TexturePlacement *placement = (*pi).second;
+      placement->mark_unfilled();
+    }
+  }
+
   if (_properties.has_num_channels() && !_request._keep_format) {
     int num_channels = _properties.get_num_channels();
     // Examine the image to determine if we can downgrade the number
@@ -523,6 +541,28 @@ is_used() const {
 EggRenderMode::AlphaMode TextureImage::
 get_alpha_mode() const {
   return _alpha_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::get_txa_wrap_u
+//       Access: Public
+//  Description: Returns the wrap mode specified in the u direction in
+//               the txa file, or WM_unspecified.
+////////////////////////////////////////////////////////////////////
+EggTexture::WrapMode TextureImage::
+get_txa_wrap_u() const {
+  return _txa_wrap_u;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::get_txa_wrap_v
+//       Access: Public
+//  Description: Returns the wrap mode specified in the v direction in
+//               the txa file, or WM_unspecified.
+////////////////////////////////////////////////////////////////////
+EggTexture::WrapMode TextureImage::
+get_txa_wrap_v() const {
+  return _txa_wrap_v;
 }
 
 
@@ -1336,6 +1376,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_int16((int)_alpha_mode);
   datagram.add_float64(_mid_pixel_ratio);
   datagram.add_bool(_is_cutout);
+  datagram.add_uint8((int)_txa_wrap_u);
+  datagram.add_uint8((int)_txa_wrap_v);
 
   // We don't write out _explicitly_assigned_groups; this is re-read
   // from the .txa file each time.
@@ -1459,6 +1501,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _ever_read_image = false;
     _mid_pixel_ratio = 0.0;
     _is_cutout = false;
+  }
+  if (pal->_read_pi_version >= 17) {
+    _txa_wrap_u = (EggTexture::WrapMode)scan.get_uint8();
+    _txa_wrap_v = (EggTexture::WrapMode)scan.get_uint8();
   }
 
   _actual_assigned_groups.fillin(scan, manager);

@@ -348,6 +348,12 @@ describe_input_file() {
             "the alpha mode.  This may be any valid egg alpha mode, e.g. "
             "blend, binary, ms, or dual.\n\n");
 
+  show_text("  repeat_u, repeat_v, clamp_u, clamp_v", 10,
+            "Explcitly specify whether the source texture should repeat or "
+            "clamp in each direction.  Although palette images are always "
+            "clamped, this will affect the pixels that are painted into "
+            "the palette image.\n\n");
+
   show_text("  (image type)", 10,
             "A texture may be converted to a particular image type, for "
             "instance jpg or rgb, by naming the type.  If present, this "

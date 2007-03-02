@@ -282,6 +282,15 @@ determine_size() {
     }
   }
 
+  // However, if the user specified an explicit wrap mode, allow it to
+  // apply.
+  if (_texture->get_txa_wrap_u() != EggTexture::WM_unspecified) {
+    _position._wrap_u = _texture->get_txa_wrap_u();
+  }
+  if (_texture->get_txa_wrap_v() != EggTexture::WM_unspecified) {
+    _position._wrap_v = _texture->get_txa_wrap_v();
+  }
+
   if (!_has_uvs) {
     force_replace();
     _omit_reason = OR_unused;

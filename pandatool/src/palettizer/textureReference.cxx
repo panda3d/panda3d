@@ -422,10 +422,10 @@ update_egg() {
 
   nassertv(_placement != (TexturePlacement *)NULL);
 
-  // Make sure the alpha mode is set according to what the texture
-  // image wants.
   TextureImage *texture = get_texture();
   if (texture != (TextureImage *)NULL) {
+    // Make sure the alpha mode is set according to what the texture
+    // image wants.
     if (texture->has_num_channels() && 
         !_egg_tex->has_alpha_channel(texture->get_num_channels())) {
       // The egg file doesn't want to use the alpha on the texture;
@@ -440,6 +440,14 @@ update_egg() {
       if (am != EggRenderMode::AM_unspecified) {
         _egg_tex->set_alpha_mode(am);
       }
+    }
+
+    // Also make sure the wrap mode is set properly.
+    if (texture->get_txa_wrap_u() != EggTexture::WM_unspecified) {
+      _egg_tex->set_wrap_u(texture->get_txa_wrap_u());
+    }
+    if (texture->get_txa_wrap_v() != EggTexture::WM_unspecified) {
+      _egg_tex->set_wrap_v(texture->get_txa_wrap_v());
     }
   }
 

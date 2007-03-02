@@ -73,6 +73,7 @@ private:
   bool _generic_format;
   bool _keep_format;
   EggRenderMode::AlphaMode _alpha_mode;
+  EggTexture::WrapMode _wrap_u, _wrap_v;
 
   int _aniso_degree;
   bool _got_margin;

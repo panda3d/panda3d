@@ -52,6 +52,7 @@ public:
   EggTexture::FilterType _magfilter;
   int _anisotropic_degree;
   EggRenderMode::AlphaMode _alpha_mode;
+  EggTexture::WrapMode _wrap_u, _wrap_v;
   bool _omit;
   int _margin;
   double _coverage_threshold;

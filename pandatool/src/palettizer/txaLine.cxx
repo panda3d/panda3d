@@ -45,6 +45,8 @@ TxaLine() {
   _generic_format = false;
   _keep_format = false;
   _alpha_mode = EggRenderMode::AM_unspecified;
+  _wrap_u = EggTexture::WM_unspecified;
+  _wrap_v = EggTexture::WM_unspecified;
   _got_margin = false;
   _margin = 0;
   _got_coverage_threshold = false;
@@ -285,6 +287,24 @@ parse(const string &line) {
             if (am != EggRenderMode::AM_unspecified) {
               _alpha_mode = am;
 
+            } else if (word.length() > 2 && word[word.length() - 2] == '_' &&
+                       strchr("uv", word[word.length() - 1]) != NULL) {
+              // It must be a wrap mode for u or v.
+              string prefix = word.substr(0, word.length() - 2);
+              EggTexture::WrapMode wm = EggTexture::string_wrap_mode(prefix);
+              if (wm == EggTexture::WM_unspecified) {
+                return false;
+              }
+              switch (word[word.length() - 1]) {
+              case 'u':
+                _wrap_u = wm;
+                break;
+
+              case 'v':
+                _wrap_v = wm;
+                break;
+              }
+
             } else {
               // Maybe it's an image file request.
               if (!parse_image_type_request(word, _color_type, _alpha_type)) {
@@ -450,6 +470,13 @@ match_texture(TextureImage *texture) const {
 
   if (_alpha_mode != EggRenderMode::AM_unspecified) {
     request._alpha_mode = _alpha_mode;
+  }
+
+  if (_wrap_u != EggTexture::WM_unspecified) {
+    request._wrap_u = _wrap_u;
+  }
+  if (_wrap_v != EggTexture::WM_unspecified) {
+    request._wrap_v = _wrap_v;
   }
 
   bool got_cont = false;
