@@ -50,23 +50,16 @@ class FunctionInterval(Interval.Interval):
     def __init__(self, function, **kw):
         """__init__(function, name = None, openEnded = 1, extraArgs = [])
         """
-        name = kw.get('name', None)
-        openEnded = kw.get('openEnded', 1)
-        extraArgs = kw.get('extraArgs', [])
-        if kw.has_key('name'):
-            del kw['name']
-        if kw.has_key('openEnded'):
-            del kw['openEnded']
-        if kw.has_key('extraArgs'):
-            del kw['extraArgs']
+        name = kw.pop('name', None)
+        openEnded = kw.pop('openEnded', 1)
+        extraArgs = kw.pop('extraArgs', [])
 
         # Record instance variables
         self.function = function
             
         # Create a unique name for the interval if necessary
         if (name == None):
-            name = 'Func-%s-%d' % (function.__name__, FunctionInterval.functionIntervalNum)
-            FunctionInterval.functionIntervalNum += 1
+            name = self.makeUniqueName(function)
         assert isinstance(name, types.StringType)
         # Record any arguments
         self.extraArgs = extraArgs
@@ -82,6 +75,13 @@ class FunctionInterval(Interval.Interval):
         if __debug__:
             self.FunctionIntervals[self] = 1
 
+    @staticmethod
+    def makeUniqueName(func, suffix = ''):
+        name = 'Func-%s-%d' % (func.__name__, FunctionInterval.functionIntervalNum)
+        FunctionInterval.functionIntervalNum += 1
+        if suffix:
+            name = '%s-%s' % (name, str(suffix))
+        return name
 
     def privInstant(self):
         # Evaluate the function
