@@ -24,6 +24,10 @@
 #include "luse.h"
 #include "bitMask.h"
 
+//included for collision tests
+#include "odeWorld.h"
+#include "odeJointGroup.h"
+
 #include "ode_includes.h"
 
 class OdeGeom;
@@ -31,6 +35,8 @@ class OdeTriMeshGeom;
 class OdeSimpleSpace;
 class OdeHashSpace;
 class OdeQuadTreeSpace;
+    
+
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeSpace
@@ -38,6 +44,8 @@ class OdeQuadTreeSpace;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeSpace : public TypedObject {
   friend class OdeGeom;
+  static const int MAX_CONTACTS;
+  
 
 protected:
   OdeSpace(dSpaceID id);
@@ -61,6 +69,8 @@ PUBLISHED:
   INLINE void enable();
   INLINE void disable();
   INLINE int is_enabled();
+  INLINE void set_auto_collide_world(OdeWorld&);
+  INLINE void set_auto_collide_joint_group(OdeJointGroup&);
 
   void add(OdeGeom& geom);
   void add(OdeSpace& space);
@@ -76,12 +86,24 @@ PUBLISHED:
   OdeSimpleSpace convert_to_simple_space() const;
   OdeHashSpace convert_to_hash_space() const;
   OdeQuadTreeSpace convert_to_quad_tree_space() const;
+  
+  int autoCollide();
+  static void autoCallback(void*, dGeomID, dGeomID);
+  static double get_contact_data(int data_index);
 
 public: 
   INLINE dSpaceID get_id() const;
+  static OdeWorld* _collide_world;
+  static dJointGroupID _collide_joint_group;
+  static int contactCount;
+
+  static double contact_data[192]; // 64 times three
+  
 
 protected:
   dSpaceID _id;
+  int _g; // REMOVE ME
+
 
 public:
   static TypeHandle get_class_type() {
