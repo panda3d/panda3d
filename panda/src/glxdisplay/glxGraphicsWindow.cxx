@@ -127,7 +127,7 @@ bool glxGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
-  begin_frame_spam();
+  begin_frame_spam(mode);
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
@@ -168,7 +168,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
-  end_frame_spam();
+  end_frame_spam(mode);
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
   if (mode == FM_render) {

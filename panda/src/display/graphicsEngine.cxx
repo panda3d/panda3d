@@ -117,6 +117,7 @@ GraphicsEngine(Pipeline *pipeline) :
 
   _windows_sorted = true;
   _window_sort_index = 0;
+  _needs_open_windows = false;
   
   set_threading_model(GraphicsThreadingModel(threading_model));
   if (!_threading_model.is_default()) {
@@ -568,6 +569,15 @@ render_frame() {
   }
 #endif
 
+  if (_needs_open_windows) {
+    // Make sure our buffers and windows are fully realized before we
+    // render a frame.  We do this particularly to realize our
+    // offscreen buffers, so that we don't render a frame before the
+    // offscreen buffers are ready (which might result in a frame
+    // going by without some textures having been rendered).
+    open_windows();
+  }
+
   ClockObject *global_clock = ClockObject::get_global_clock();
 
   if (display_cat.is_spam()) {
@@ -800,6 +810,8 @@ open_windows() {
       thread->_cv_mutex.release();
     }
   }
+
+  _needs_open_windows = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1166,6 +1178,8 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
+  nassertv(wlist.verify_list());
+
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
@@ -1173,7 +1187,11 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
       PStatTimer timer(win->get_draw_window_pcollector(), current_thread);
       if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
         win->clear(current_thread);
-      
+
+        if (display_cat.is_spam()) {
+          display_cat.spam()
+            << "Drawing window " << win->get_name() << "\n";
+        }
         int num_display_regions = win->get_num_active_display_regions();
         for (int i = 0; i < num_display_regions; ++i) {
           DisplayRegion *dr = win->get_active_display_region(i);
@@ -1195,6 +1213,16 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
             }
           }
         }
+      } else {
+        if (display_cat.is_spam()) {
+          display_cat.spam()
+            << "Not drawing window " << win->get_name() << "\n";
+        }
+      }
+    } else {
+      if (display_cat.is_spam()) {
+        display_cat.spam()
+          << "Window " << win->get_name() << " is inactive\n";
       }
     }
   }
@@ -1648,6 +1676,7 @@ do_add_window(GraphicsOutput *window,
   }
 
   window->request_open();
+  _needs_open_windows = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1920,6 +1949,8 @@ remove_window(GraphicsOutput *window) {
   PT(GraphicsOutput) ptwin = window;
 
   _cull.erase(ptwin);
+  _cdraw.erase(ptwin);
+  _draw.erase(ptwin);
 
   Windows::iterator wi;
 
@@ -1963,6 +1994,14 @@ resort_windows() {
       << "Windows resorted:";
     Windows::const_iterator wi;
     for (wi = _window.begin(); wi != _window.end(); ++wi) {
+      GraphicsOutput *win = (*wi);
+      display_cat.debug(false)
+        << " " << win->get_name() << "(" << win->get_sort() << ")";
+    }
+    display_cat.debug(false)
+      << "\n";
+
+    for (wi = _draw.begin(); wi != _draw.end(); ++wi) {
       GraphicsOutput *win = (*wi);
       display_cat.debug(false)
         << " " << win->get_name() << "(" << win->get_sort() << ")";
@@ -2090,12 +2129,18 @@ do_pending(GraphicsEngine *engine, Thread *current_thread) {
   ReMutexHolder holder(_wl_lock);
 
   if (!_pending_close.empty()) {
+    if (display_cat.is_debug()) {
+      display_cat.debug()
+        << "_pending_close.size() = " << _pending_close.size() << "\n";
+    }
+
     // Close any windows that were pending closure.
     Windows::iterator wi;
     for (wi = _pending_close.begin(); wi != _pending_close.end(); ++wi) {
       GraphicsOutput *win = (*wi);
       win->set_close_now();
     }
+    _pending_close.clear();
   }
 }
 

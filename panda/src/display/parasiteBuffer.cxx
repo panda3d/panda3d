@@ -109,7 +109,7 @@ get_host() {
 ////////////////////////////////////////////////////////////////////
 bool ParasiteBuffer::
 begin_frame(FrameMode mode, Thread *current_thread) {
-  begin_frame_spam();
+  begin_frame_spam(mode);
 
   if (!_host->begin_frame(FM_parasite, current_thread)) {
     return false;
@@ -136,7 +136,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void ParasiteBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
-  end_frame_spam();
+  end_frame_spam(mode);
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 

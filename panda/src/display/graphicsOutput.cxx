@@ -1189,3 +1189,21 @@ do_determine_display_regions() {
   stable_sort(_active_display_regions.begin(), _active_display_regions.end(), IndirectLess<DisplayRegion>());
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::FrameMode output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, GraphicsOutput::FrameMode fm) {
+  switch (fm) {
+  case GraphicsOutput::FM_render:
+    return out << "render";
+  case GraphicsOutput::FM_parasite:
+    return out << "parasite";
+  case GraphicsOutput::FM_refresh:
+    return out << "refresh";
+  }
+
+  return out << "(**invalid GraphicsOutput::FrameMode(" << (int)fm << ")**)";
+}
+

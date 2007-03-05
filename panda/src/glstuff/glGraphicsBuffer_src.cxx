@@ -68,11 +68,21 @@ CLP(GraphicsBuffer)::
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsBuffer)::
 begin_frame(FrameMode mode, Thread *current_thread) {
+  begin_frame_spam(mode);
+
   if (!_is_valid) {
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << get_name() << " is not valid\n";
+    }
     return false;
   }
 
   if (!_host->begin_frame(FM_parasite, current_thread)) {
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << get_name() << "'s host is not ready\n";
+    }
     return false;
   }
   
@@ -81,6 +91,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     rebuild_bitplanes();
     clear_cube_map_selection();
     if (!check_fbo()) {
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << get_name() << " check_fbo() returns false\n";
+      }
       return false;
     }
   }
@@ -401,7 +415,7 @@ generate_mipmaps() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 end_frame(FrameMode mode, Thread *current_thread) {
-  end_frame_spam();
+  end_frame_spam(mode);
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
   if (mode == FM_render) {

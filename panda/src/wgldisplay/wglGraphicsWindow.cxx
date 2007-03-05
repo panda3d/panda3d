@@ -66,7 +66,7 @@ wglGraphicsWindow::
 bool wglGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
 
-  begin_frame_spam();
+  begin_frame_spam(mode);
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
@@ -98,7 +98,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void wglGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
 
-  end_frame_spam();
+  end_frame_spam(mode);
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 

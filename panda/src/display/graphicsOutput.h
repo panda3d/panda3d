@@ -242,8 +242,8 @@ protected:
   void prepare_for_deletion();
   void copy_to_textures();
   
-  INLINE void begin_frame_spam();
-  INLINE void end_frame_spam();
+  INLINE void begin_frame_spam(FrameMode mode);
+  INLINE void end_frame_spam(FrameMode mode);
   INLINE void clear_cube_map_selection();
   INLINE void trigger_flip();
 
@@ -341,6 +341,8 @@ private:
   friend class GraphicsEngine;
   friend class DisplayRegion;
 };
+
+EXPCL_PANDA ostream &operator << (ostream &out, GraphicsOutput::FrameMode mode);
 
 #include "graphicsOutput.I"
 

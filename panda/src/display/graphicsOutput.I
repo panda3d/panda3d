@@ -554,10 +554,10 @@ get_draw_window_pcollector() {
 //  Description: Display the spam message associated with begin_frame
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsOutput::
-begin_frame_spam() {
+begin_frame_spam(FrameMode mode) {
   if (display_cat.is_spam()) {
     display_cat.spam()
-      << "begin_frame(): " << get_type() << " "
+      << "begin_frame(" << mode << "): " << get_type() << " "
       << get_name() << " " << (void *)this << "\n";
   }
 }
@@ -568,10 +568,10 @@ begin_frame_spam() {
 //  Description: Display the spam message associated with end_frame
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsOutput::
-end_frame_spam() {
+end_frame_spam(FrameMode mode) {
   if (display_cat.is_spam()) {
     display_cat.spam()
-      << "end_frame(): " << get_type() << " "
+      << "end_frame(" << mode << "): " << get_type() << " "
       << get_name() << " " << (void *)this << "\n";
   }
 }

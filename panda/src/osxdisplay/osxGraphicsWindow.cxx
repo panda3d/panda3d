@@ -687,7 +687,7 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode, Thread *current_thread)
  {
   PStatTimer timer(_make_current_pcollector);
   
-  begin_frame_spam();
+  begin_frame_spam(mode);
   if (_gsg == (GraphicsStateGuardian *)NULL || 
       (_osx_window == NULL && _is_fullscreen != true)) {
     // not powered up .. just abort..
@@ -749,7 +749,7 @@ bool osxGraphicsWindow::begin_frame(FrameMode mode, Thread *current_thread)
 ////////////////////////////////////////////////////////////////////
 void osxGraphicsWindow::end_frame(FrameMode mode, Thread *current_thread) 
 {
-  end_frame_spam();
+  end_frame_spam(mode);
   
   if(mode == FM_render ) {
     nassertv(_gsg != (GraphicsStateGuardian *)NULL);
