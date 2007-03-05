@@ -187,6 +187,9 @@ class FSM(DirectObject):
             return self.state
         return self.newState
 
+    def isInTransition(self):
+        return self.state == None
+    
     def forceTransition(self, request, *args):
         """Changes unconditionally to the indicated state.  This
         bypasses the filterState() function, and just calls
