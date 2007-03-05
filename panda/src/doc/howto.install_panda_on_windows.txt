@@ -367,11 +367,11 @@ access to the VR fileserver, mover, and SourceForge.
 
     If VC7.1 is installed:
       > mkdir /msvc71
-      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio .NET\ 2003 /msvc71
+      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio\ .NET\ 2003 /msvc71
 
     If VC7 is installed:
       > mkdir /msvc7
-      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio .NET /msvc7
+      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio\ .NET /msvc7
 
     If VC6 is installed:
       > mkdir /msvc98 /mscommon /mspsdk
