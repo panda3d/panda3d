@@ -294,11 +294,12 @@ class AsyncRequest(DirectObject):
             self._checkCompletion, [name, None])
         self.air.requestDatabaseGenerate(className, context, values=values)
         self.startTimeOut()
-        
+
     def _doCreateObject(self, name, className, values, doId):
         assert self.notify.debugCall()
         assert not self.__deleted
         isInDoId2do = doId in self.air.doId2do
+        # TODO: this creates an object with no location
         distObj = self.air.generateGlobalObject(doId, className, values)
         if not isInDoId2do and game.name == 'uberDog':
             # only remove doId if this is the uberdog?, in pirates this was
