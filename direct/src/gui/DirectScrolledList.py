@@ -189,8 +189,8 @@ class DirectScrolledList(DirectFrame):
         try:
             self["numItemsVisible"]
         except:
-            # RAU hack to kill 27637
-            self.notify.info('crash 27637 fixed!')
+            # RAU hack to kill 27633
+            self.notify.info('crash 27633 fixed!')
             return
 
         numItemsVisible=self["numItemsVisible"]
