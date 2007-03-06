@@ -83,6 +83,7 @@ class ClientRepositoryBase(ConnectionRepository):
             return self.doId2do, self.cache
 
     def _getMsgName(self, msgId):
+        # we might get a list of message names, use the first one
         return makeList(MsgId2Names.get(msgId, 'UNKNOWN MESSAGE: %s' % msgId))[0]
 
     def sendDisconnect(self):
