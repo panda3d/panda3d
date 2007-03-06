@@ -186,6 +186,12 @@ class DirectScrolledList(DirectFrame):
         """ scrolls list so selected index is at top, or centered in box"""
         assert self.notify.debugStateCall(self)
         # print "scrollTo[", index,"] called, len(self[items])=", len(self["items"])," self[numItemsVisible]=", self["numItemsVisible"]
+        try:
+            self["numItemsVisible"]
+        except:
+            # RAU hack to kill 27637
+            self.notify.info('crash 27637 fixed!')
+            return
 
         numItemsVisible=self["numItemsVisible"]
         numItemsTotal = len(self["items"])
