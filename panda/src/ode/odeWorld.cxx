@@ -49,7 +49,7 @@ destroy() {
 }
 
 void OdeWorld::
-init_surface_table(uint8 num_surfaces)
+init_surface_table(PN_uint8 num_surfaces)
 {
     _surface_table = new dSurfaceParameters[num_surfaces * num_surfaces];
     _num_surfaces = num_surfaces;
@@ -72,7 +72,7 @@ set_surface(int pos1, int pos2, dSurfaceParameters& entry)
 }
 
 dSurfaceParameters& OdeWorld::
-get_surface(uint8 surface1, uint8 surface2)
+get_surface(PN_uint8 surface1, PN_uint8 surface2)
 {
     int true_pos = 0;
     if(surface1 >= surface2)
@@ -87,7 +87,7 @@ get_surface(uint8 surface1, uint8 surface2)
 }
 
 void OdeWorld:: 
-set_surface_entry(  uint8 pos1, uint8 pos2, 
+set_surface_entry(  PN_uint8 pos1, PN_uint8 pos2, 
                     dReal mu,
                     dReal bounce, 
                     dReal bounce_vel, 

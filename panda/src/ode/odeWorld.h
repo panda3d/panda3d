@@ -22,8 +22,10 @@
 #include "pandabase.h"
 #include "typedObject.h"
 #include "luse.h"
-
 #include "ode_includes.h"
+#include "pmap.h"
+#include "numeric_types.h"
+
 class OdeBody;
 class OdeJoint;
 
@@ -78,9 +80,9 @@ PUBLISHED:
   INLINE void step_fast1(dReal stepsize, int maxiterations);
 
   INLINE int compare_to(const OdeWorld &other) const;
-  INLINE void init_surface_table(uint8 num_surfaces);
+  INLINE void init_surface_table(PN_uint8 num_surfaces);
   INLINE void assign_surface_body(OdeBody& body, int surface);
-  INLINE void set_surface_entry(uint8 pos1, uint8 pos2, 
+  INLINE void set_surface_entry(PN_uint8 pos1, PN_uint8 pos2, 
                                 dReal mu, 
                                 dReal bounce, 
                                 dReal bounce_vel, 
@@ -91,14 +93,14 @@ PUBLISHED:
     
 public: 
   INLINE dWorldID get_id() const;
-  INLINE dSurfaceParameters& get_surface(uint8 surface1, uint8 surface2);
+  INLINE dSurfaceParameters& get_surface(PN_uint8 surface1, PN_uint8 surface2);
   INLINE void set_surface(int pos1, int pos2, dSurfaceParameters& entry);
   INLINE int get_surface_body(dBodyID id);
   
 private:
   dWorldID _id;
   dSurfaceParameters *_surface_table;
-  uint8 _num_surfaces;
+  PN_uint8 _num_surfaces;
   typedef pmap<dBodyID, int> BodySurfaceMap;
   BodySurfaceMap _body_surface_map;
 
