@@ -336,7 +336,7 @@ class TaskManager:
         # List of tasks scheduled to execute in the future
         self.__doLaterList = []
 
-        self._profileNextFrame = False
+        self._profileFrames = False
 
         # We copy this value in from __builtins__ when it gets set.
         # But since the TaskManager might have to run before it gets
@@ -772,12 +772,18 @@ class TaskManager:
                     self.__addNewTask(task)
         self.pendingTaskDict.clear()
 
-    def profileNextFrame(self):
-        self._profileNextFrame = True
+    def profileFrames(self, num=None):
+        self._profileFrames = True
+        if num is None:
+            num = 1
+        self._profileFrameCount = num
 
     @profiled()
-    def _profiledFrame(self, *args, **kArgs):
-        return self.step(*args, **kArgs)
+    def _doProfiledFrames(self, *args, **kArgs):
+        print '** profiling %s frames' % self._profileFrameCount
+        for i in xrange(self._profileFrameCount):
+            result = self.step(*args, **kArgs)
+        return result
 
     def step(self):
         # assert TaskManager.notify.debug('step: begin')
@@ -849,9 +855,9 @@ class TaskManager:
             self.running = 1
             while self.running:
                 try:
-                    if self._profileNextFrame:
-                        self._profiledFrame()
-                        self._profileNextFrame = False
+                    if self._profileFrames:
+                        self._profileFrames = False
+                        self._doProfiledFrames()
                     else:
                         self.step()
                 except KeyboardInterrupt:
