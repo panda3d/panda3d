@@ -94,15 +94,15 @@ class DoCollectionManager:
             count2classes[count].sort()
             for name in count2classes[count]:
                 print '%s %s' % (count, name)
+        print ''
 
     def printObjectCount(self):
         # print object counts by distributed object type
-        print '==== OBJECT DUMP ===='
+        print '==== OBJECT COUNT ===='
         if self.hasOwnerView():
             print '== doId2do'
         self._printObjects(self.getDoTable(ownerView=False))
         if self.hasOwnerView():
-            print ''
             print '== doId2ownerView'
             self._printObjects(self.getDoTable(ownerView=True))
 
