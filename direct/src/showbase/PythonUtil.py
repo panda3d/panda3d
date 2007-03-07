@@ -2763,3 +2763,5 @@ __builtin__.DelayedFunctor = DelayedFunctor
 __builtin__.FrameDelayedCall = FrameDelayedCall
 __builtin__.ArgumentEater = ArgumentEater
 __builtin__.ClassTree = ClassTree
+__builtin__.invertDict = invertDict
+__builtin__.invertDictLossless = invertDictLossless

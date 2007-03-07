@@ -80,6 +80,32 @@ class DoCollectionManager:
                     distObj.dclass.getName(),
                     distObj.__dict__.get("name"))
 
+    def _printObjects(self, table):
+        class2count = {}
+        for obj in self.getDoTable(ownerView=False).values():
+            className = obj.__class__.__name__
+            class2count.setdefault(className, 0)
+            class2count[className] += 1
+        count2classes = invertDictLossless(class2count)
+        counts = count2classes.keys()
+        counts.sort()
+        counts.reverse()
+        for count in counts:
+            count2classes[count].sort()
+            for name in count2classes[count]:
+                print '%s %s' % (count, name)
+
+    def printObjectCount(self):
+        # print object counts by distributed object type
+        print '==== OBJECT DUMP ===='
+        if self.hasOwnerView():
+            print '== doId2do'
+        self._printObjects(self.getDoTable(ownerView=False))
+        if self.hasOwnerView():
+            print ''
+            print '== doId2ownerView'
+            self._printObjects(self.getDoTable(ownerView=True))
+
     def getDoList(self, parentId, zoneId=None, classType=None):
         """
         parentId is any distributed object id.
