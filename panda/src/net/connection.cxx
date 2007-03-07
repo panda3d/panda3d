@@ -470,7 +470,7 @@ do_flush() {
   Socket_TCP *tcp;
   DCAST_INTO_R(tcp, _socket, false);
 
-  bool okflag = (tcp->SendData(_queued_data) == _queued_data.size());
+  bool okflag = (tcp->SendData(_queued_data) == (int)_queued_data.size());
 
   _queued_data = string();
   _queued_count = 0;
